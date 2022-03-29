@@ -85,13 +85,13 @@ public class Biolingua {
      * Javadoc explanations of k*
      */
     public static synchronized BiolinguaDigraph BiolinguaAlgorithm(
-            SymMatrixF correlMatrix, BiolinguaDigraph initGraph) {
+            final SymMatrixF correlMatrix, final BiolinguaDigraph initGraph) {
         // Run with some (quite arbitrary so far) default coefficients
         // TODO:  Make these coefficients a function of the # of vars
-        float ka = (float) 0.1;
-        float ke = (float) 3.0;
-        float kl = (float) 4.0;
-        float kp = (float) 3.0;
+        final float ka = (float) 0.1;
+        final float ke = (float) 3.0;
+        final float kl = (float) 4.0;
+        final float kp = (float) 3.0;
         return doBiolinguaAlgorithm(correlMatrix, null, initGraph, ka, ke, kl,
                 kp);
     }
@@ -104,9 +104,9 @@ public class Biolingua {
      * metric.
      */
     public static synchronized BiolinguaDigraph BiolinguaAlgorithm(
-            SymMatrixF correlMatrix, BiolinguaDigraph initGraph,
-            float vBitsAnnotat, float vBitsErrors, float vbitsLinks,
-            float vBitsPredic) {
+            final SymMatrixF correlMatrix, final BiolinguaDigraph initGraph,
+            final float vBitsAnnotat, final float vBitsErrors, final float vbitsLinks,
+            final float vBitsPredic) {
         return doBiolinguaAlgorithm(correlMatrix, null, initGraph, vbitsLinks,
                 vBitsPredic, vBitsAnnotat, vBitsErrors);
     }
@@ -119,17 +119,17 @@ public class Biolingua {
      * metric.
      */
     public static synchronized BiolinguaDigraph BiolinguaAlgorithm(
-            SymMatrixF correlMatrix, SymMatrixF signifMatrix,
-            BiolinguaDigraph initGraph, float vBitsAnnotat, float vBitsErrors,
-            float vbitsLinks, float vBitsPredic) {
+            final SymMatrixF correlMatrix, final SymMatrixF signifMatrix,
+            final BiolinguaDigraph initGraph, final float vBitsAnnotat, final float vBitsErrors,
+            final float vbitsLinks, final float vBitsPredic) {
         return doBiolinguaAlgorithm(correlMatrix, signifMatrix, initGraph,
                 vbitsLinks, vBitsPredic, vBitsAnnotat, vBitsErrors);
     }
 
     private static BiolinguaDigraph doBiolinguaAlgorithm(
-            SymMatrixF correlMatrix, SymMatrixF signifMatrix,
-            BiolinguaDigraph initGraph, float vBitsAnnotat, float vBitsErrors,
-            float vbitsLinks, float vBitsPredic) {
+            final SymMatrixF correlMatrix, final SymMatrixF signifMatrix,
+            final BiolinguaDigraph initGraph, final float vBitsAnnotat, final float vBitsErrors,
+            final float vbitsLinks, final float vBitsPredic) {
         /*
         // A null pointer exception will be thrown anyway if some of the
         // arguments are null, so this test is really not that necessary
@@ -196,7 +196,7 @@ public class Biolingua {
                     if (vi == vj) {
                         continue;
                     }
-                    int origState = (int) g.getEdge(vi, vj);
+                    final int origState = (int) g.getEdge(vi, vj);
 
                     // Try all 2 possible changes for this edge:
                     //
@@ -306,7 +306,7 @@ public class Biolingua {
 
                     // Determine the predicted sign according to all undirectedPaths
                     // between these variables
-                    int predictedSign =
+                    final int predictedSign =
                             ((pos == neg) ? 0 : (pos > neg ? 1 : -1));
 
                     // Value of edge between vi and vj in the correlation matrix
@@ -322,7 +322,7 @@ public class Biolingua {
                     }
 
                     // Sign of that value
-                    int correlMSign = (Biolingua.isZero(correlValue) ? 0 : (
+                    final int correlMSign = (Biolingua.isZero(correlValue) ? 0 : (
                             correlValue > 0 ? 1 : -1));
 
                     if (correlMSign == predictedSign) {
@@ -344,8 +344,8 @@ public class Biolingua {
             }
         }
         // Compute evaluation metric for this model and return that value
-        int nEdges = Biolingua.g.getNumEdges();
-        float evalMetric = bitsLinks * nEdges + bitsAnnotat * annotations +
+        final int nEdges = Biolingua.g.getNumEdges();
+        final float evalMetric = bitsLinks * nEdges + bitsAnnotat * annotations +
                 bitsErrors * errors - bitsPredic * predictions;
 
         return evalMetric;
@@ -353,7 +353,7 @@ public class Biolingua {
 
     // Think about a new name for this method, since it not only "finds"
     // undirectedPaths, but updates all these counters used  in the eval. metric.
-    private static void findPaths(int vj, int pathLen) {
+    private static void findPaths(final int vj, final int pathLen) {
 
         if (visited[vj]) {
             // That node is already in the path,
@@ -392,9 +392,9 @@ public class Biolingua {
             }
         } else {
             // Get parents of this node
-            int[] parent = Biolingua.g.getParents(vj);
+            final int[] parent = Biolingua.g.getParents(vj);
             visited[vj] = true;
-            int np = parent.length;
+            final int np = parent.length;
             for (int p = 0; p < np; p++) {
                 // Recursive call to findPaths()
                 Biolingua.findPaths(parent[p], pathLen + 1);
@@ -421,7 +421,7 @@ public class Biolingua {
     //    }
 
 
-    private static boolean isZero(float x) {
+    private static boolean isZero(final float x) {
         return (Math.abs(x) <= ALMOST_ZERO);
     }
 

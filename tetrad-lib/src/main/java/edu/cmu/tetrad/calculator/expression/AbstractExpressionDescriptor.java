@@ -30,7 +30,7 @@ abstract class AbstractExpressionDescriptor implements ExpressionDescriptor {
     static final long serialVersionUID = 23L;
 
     /**
-     * The human readable name for the descriptor.
+     * The human-readable name for the descriptor.
      */
     private final String name;
 
@@ -63,7 +63,7 @@ abstract class AbstractExpressionDescriptor implements ExpressionDescriptor {
      * @param position  The position that the expression can occur in.
      * @param unlimited States whether an unlimited number of arguments is allowed.
      */
-    public AbstractExpressionDescriptor(String name, String token, Position position, boolean unlimited) {
+    public AbstractExpressionDescriptor(final String name, final String token, final Position position, final boolean unlimited) {
         if (name == null) {
             throw new NullPointerException("name was null.");
         }
@@ -101,7 +101,7 @@ abstract class AbstractExpressionDescriptor implements ExpressionDescriptor {
     }
 
     public boolean isDisplay() {
-        return display;
+        return this.display;
     }
 
     //=============================== Inner Class ==============================================//
@@ -116,7 +116,7 @@ abstract class AbstractExpressionDescriptor implements ExpressionDescriptor {
         private String signature;
         private final String[] arguments;
 
-        public Signature(String function, boolean unlimited, boolean commulative, String... arguments) {
+        public Signature(final String function, final boolean unlimited, final boolean commulative, final String... arguments) {
             if (function == null) {
                 throw new NullPointerException("function was null.");
             }
@@ -150,7 +150,7 @@ abstract class AbstractExpressionDescriptor implements ExpressionDescriptor {
             return this.arguments.length;
         }
 
-        public String getArgument(int index) {
+        public String getArgument(final int index) {
             return this.arguments[index];
         }
 

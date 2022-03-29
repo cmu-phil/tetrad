@@ -102,7 +102,7 @@ public class PcStable implements GraphSearch {
      * @param independenceTest The oracle for conditional independence facts. This does not make a copy of the
      *                         independence test, for fear of duplicating the data set!
      */
-    public PcStable(IndependenceTest independenceTest) {
+    public PcStable(final IndependenceTest independenceTest) {
         if (independenceTest == null) {
             throw new NullPointerException();
         }
@@ -122,7 +122,7 @@ public class PcStable implements GraphSearch {
     /**
      * @param aggressivelyPreventCycles Set to true just in case edges will not be addeds if they would create cycles.
      */
-    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
+    public void setAggressivelyPreventCycles(final boolean aggressivelyPreventCycles) {
         this.aggressivelyPreventCycles = aggressivelyPreventCycles;
     }
 
@@ -130,20 +130,20 @@ public class PcStable implements GraphSearch {
      * @return the independence test being used in the search.
      */
     public IndependenceTest getIndependenceTest() {
-        return independenceTest;
+        return this.independenceTest;
     }
 
     /**
      * @return the knowledge specification used in the search. Non-null.
      */
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     /**
      * Sets the knowledge specification to be used in the search. May not be null.
      */
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(final IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -163,7 +163,7 @@ public class PcStable implements GraphSearch {
      * independence checked.
      */
     public int getDepth() {
-        return depth;
+        return this.depth;
     }
 
     /**
@@ -174,7 +174,7 @@ public class PcStable implements GraphSearch {
      *              should be high (1000). A value of Integer.MAX_VALUE may not be used, due to a bug on multi-core
      *              machines.
      */
-    public void setDepth(int depth) {
+    public void setDepth(final int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException("Depth must be -1 or >= 0: " + depth);
         }
@@ -194,7 +194,7 @@ public class PcStable implements GraphSearch {
      * of latent common causes, or due to statistical errors in conditional independence judgments.
      */
     public Graph search() {
-        return search(independenceTest.getVariables());
+        return search(this.independenceTest.getVariables());
     }
 
     /**
@@ -206,80 +206,80 @@ public class PcStable implements GraphSearch {
      * <p>
      * All of the given nodes must be in the domain of the given conditional independence test.
      */
-    public Graph search(List<Node> nodes) {
+    public Graph search(final List<Node> nodes) {
         this.logger.log("info", "Starting PC algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
 
-        long startTime = System.currentTimeMillis();
+        final long startTime = System.currentTimeMillis();
 
         if (getIndependenceTest() == null) {
             throw new NullPointerException();
         }
 
-        List<Node> allNodes = getIndependenceTest().getVariables();
+        final List<Node> allNodes = getIndependenceTest().getVariables();
 
         if (!allNodes.containsAll(nodes)) {
             throw new IllegalArgumentException("All of the given nodes must " +
                     "be in the domain of the independence test provided.");
         }
 
-        graph = new EdgeListGraph(nodes);
+        this.graph = new EdgeListGraph(nodes);
 
-        Fas fas = new Fas(getIndependenceTest());
+        final Fas fas = new Fas(getIndependenceTest());
         fas.setStable(true);
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
-        fas.setVerbose(verbose);
+        fas.setVerbose(this.verbose);
 
-        graph = fas.search();
-        sepsets = fas.getSepsets();
+        this.graph = fas.search();
+        this.sepsets = fas.getSepsets();
 
-        SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
-        SearchGraphUtils.orientCollidersUsingSepsets(this.sepsets, knowledge, graph, verbose, false);
+        SearchGraphUtils.pcOrientbk(this.knowledge, this.graph, nodes);
+        SearchGraphUtils.orientCollidersUsingSepsets(this.sepsets, this.knowledge, this.graph, this.verbose, false);
 
-        MeekRules rules = new MeekRules();
+        final MeekRules rules = new MeekRules();
         rules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
-        rules.setKnowledge(knowledge);
-        rules.orientImplied(graph);
+        rules.setKnowledge(this.knowledge);
+        rules.orientImplied(this.graph);
 
-        this.logger.log("graph", "\nReturning this graph: " + graph);
+        this.logger.log("graph", "\nReturning this graph: " + this.graph);
 
         this.elapsedTime = System.currentTimeMillis() - startTime;
 
-        this.logger.log("info", "Elapsed time = " + (elapsedTime) / 1000. + " s");
+        this.logger.log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
         this.logger.log("info", "Finishing PC Algorithm.");
         this.logger.flush();
 
-        return graph;
+        return this.graph;
     }
 
     /**
      * @return the elapsed time of the search, in milliseconds.
      */
     public long getElapsedTime() {
-        return elapsedTime;
+        return this.elapsedTime;
     }
 
     //===============================PRIVATE METHODS=======================//
 
     public List<Node> getNodes() {
-        return graph.getNodes();
+        return this.graph.getNodes();
     }
 
-    public void setExternalGraph(Graph externalGraph) {
+    public void setExternalGraph(final Graph externalGraph) {
         this.externalGraph = externalGraph;
     }
 
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 
-    public void setOut(PrintStream out) {
+    public void setOut(final PrintStream out) {
         this.out = out;
     }
 
     public PrintStream getOut() {
-        return out;
+        return this.out;
     }
 }
 

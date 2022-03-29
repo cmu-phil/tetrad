@@ -20,8 +20,8 @@ public class Simulations {
      *
      * @param simulation The simulation to add.
      */
-    public void add(Simulation simulation) {
-        simulations.add(simulation);
+    public void add(final Simulation simulation) {
+        this.simulations.add(simulation);
     }
 
     /**
@@ -30,6 +30,6 @@ public class Simulations {
      * @return A copy of the list of simulations that have been added, in that order.
      */
     public List<Simulation> getSimulations() {
-        return new ArrayList<>(simulations);
+        return new ArrayList<>(this.simulations);
     }
 }

@@ -60,7 +60,7 @@ public final class GSquareTest extends ChiSquareTest {
 //     */
 //    private double alpha = 0.05;
 
-    public GSquareTest(DataSet dataSet, double alpha) {
+    public GSquareTest(final DataSet dataSet, final double alpha) {
         super(dataSet, alpha);
 //        if (alpha < 0.0 || alpha > 1.0) {
 //            throw new IllegalArgumentException("Significance level must be " +
@@ -86,7 +86,7 @@ public final class GSquareTest extends ChiSquareTest {
      * summing up g square and degrees of freedom for each conditional table in turn, where rows or columns that consist
      * entirely of zeros have been removed.
      */
-    public synchronized GSquareTest.Result calcGSquare(int[] testIndices) {
+    public synchronized GSquareTest.Result calcGSquare(final int[] testIndices) {
 
         // Reset the cell table for the columns referred to in
         // 'testIndices.' Do cell coefs for those columns.
@@ -96,49 +96,49 @@ public final class GSquareTest extends ChiSquareTest {
         // to calculate. For x _||_ y | z1, z2, ..., we want to
         // calculate the margin for x, the margin for y, and the
         // margin for x and y. (These will be used later.)
-        int[] firstVar = new int[]{0};
-        int[] secondVar = new int[]{1};
-        int[] bothVars = new int[]{0, 1};
+        final int[] firstVar = new int[]{0};
+        final int[] secondVar = new int[]{1};
+        final int[] bothVars = new int[]{0, 1};
 
         double g2 = 0.0;
         int df = 0;
 
-        int[] condDims = new int[testIndices.length - 2];
+        final int[] condDims = new int[testIndices.length - 2];
         System.arraycopy(selectFromArray(getDims(), testIndices), 2, condDims, 0,
                 condDims.length);
 
-        int[] coords = new int[testIndices.length];
-        int numRows = this.getCellTable().getNumValues(0);
-        int numCols = this.getCellTable().getNumValues(1);
+        final int[] coords = new int[testIndices.length];
+        final int numRows = this.getCellTable().getNumValues(0);
+        final int numCols = this.getCellTable().getNumValues(1);
 
-        boolean[] attestedRows = new boolean[numRows];
-        boolean[] attestedCols = new boolean[numCols];
+        final boolean[] attestedRows = new boolean[numRows];
+        final boolean[] attestedCols = new boolean[numCols];
 
-        CombinationIterator combinationIterator =
+        final CombinationIterator combinationIterator =
                 new CombinationIterator(condDims);
 
         while (combinationIterator.hasNext()) {
-            int[] combination = (int[]) combinationIterator.next();
+            final int[] combination = (int[]) combinationIterator.next();
 
             System.arraycopy(combination, 0, coords, 2, combination.length);
             Arrays.fill(attestedRows, true);
             Arrays.fill(attestedCols, true);
 
-            long total = this.getCellTable().calcMargin(coords, bothVars);
+            final long total = this.getCellTable().calcMargin(coords, bothVars);
 
             double _gSquare = 0.0;
 
-            List<Double> e = new ArrayList<>();
-            List<Long> o = new ArrayList<>();
+            final List<Double> e = new ArrayList<>();
+            final List<Long> o = new ArrayList<>();
 
             for (int i = 0; i < numRows; i++) {
                 for (int j = 0; j < numCols; j++) {
                     coords[0] = i;
                     coords[1] = j;
 
-                    long sumRow = this.getCellTable().calcMargin(coords, secondVar);
-                    long sumCol = this.getCellTable().calcMargin(coords, firstVar);
-                    long observed = (int) this.getCellTable().getValue(coords);
+                    final long sumRow = this.getCellTable().calcMargin(coords, secondVar);
+                    final long sumCol = this.getCellTable().calcMargin(coords, firstVar);
+                    final long observed = (int) this.getCellTable().getValue(coords);
 
                     boolean skip = false;
 
@@ -162,7 +162,7 @@ public final class GSquareTest extends ChiSquareTest {
             }
 
             for (int i = 0; i < o.size(); i++) {
-                double expected = e.get(i) / (double) total;
+                final double expected = e.get(i) / (double) total;
 
                 if (o.get(i) != 0) {
                     _gSquare += 2.0 * o.get(i) * log(o.get(i) / expected);
@@ -176,19 +176,19 @@ public final class GSquareTest extends ChiSquareTest {
             int numAttestedRows = 0;
             int numAttestedCols = 0;
 
-            for (boolean attestedRow : attestedRows) {
+            for (final boolean attestedRow : attestedRows) {
                 if (attestedRow) {
                     numAttestedRows++;
                 }
             }
 
-            for (boolean attestedCol : attestedCols) {
+            for (final boolean attestedCol : attestedCols) {
                 if (attestedCol) {
                     numAttestedCols++;
                 }
             }
 
-            int _df = (numAttestedRows - 1) * (numAttestedCols - 1);
+            final int _df = (numAttestedRows - 1) * (numAttestedCols - 1);
 
             if (_df > 0) {
                 df += _df;
@@ -201,8 +201,8 @@ public final class GSquareTest extends ChiSquareTest {
             df = 1;
         }
 
-        double pValue = 1.0 - ProbUtils.chisqCdf(g2, df);
-        boolean indep = (pValue > getAlpha());
+        final double pValue = 1.0 - ProbUtils.chisqCdf(g2, df);
+        final boolean indep = (pValue > getAlpha());
         return new GSquareTest.Result(g2, pValue, df, indep);
     }
 
@@ -389,7 +389,7 @@ public final class GSquareTest extends ChiSquareTest {
         /**
          * Constructs a new g square result using the given parameters.
          */
-        public Result(double gSquare, double pValue, int df, boolean isIndep) {
+        public Result(final double gSquare, final double pValue, final int df, final boolean isIndep) {
             this.gSquare = gSquare;
             this.pValue = pValue;
             this.df = df;
@@ -397,19 +397,19 @@ public final class GSquareTest extends ChiSquareTest {
         }
 
         public final double getGSquare() {
-            return gSquare;
+            return this.gSquare;
         }
 
         public final double getPValue() {
-            return pValue;
+            return this.pValue;
         }
 
         public final int getDf() {
-            return df;
+            return this.df;
         }
 
         public final boolean isIndep() {
-            return isIndep;
+            return this.isIndep;
         }
     }
 }

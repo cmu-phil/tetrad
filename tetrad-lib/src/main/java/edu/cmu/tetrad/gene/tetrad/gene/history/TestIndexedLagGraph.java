@@ -36,7 +36,7 @@ public class TestIndexedLagGraph extends TestCase {
     /**
      * Change the name of this constructor to match the name of the test class.
      */
-    public TestIndexedLagGraph(String name) {
+    public TestIndexedLagGraph(final String name) {
         super(name);
     }
 
@@ -44,7 +44,7 @@ public class TestIndexedLagGraph extends TestCase {
      *
      */
     public void testConstruction() {
-        LagGraph lagGraph = new BasicLagGraph();
+        final LagGraph lagGraph = new BasicLagGraph();
         lagGraph.addFactor("G1");
         lagGraph.addFactor("G2");
         lagGraph.addFactor("G3");
@@ -55,7 +55,7 @@ public class TestIndexedLagGraph extends TestCase {
 
         System.out.println(lagGraph);
 
-        IndexedLagGraph indexedLagGraph = new IndexedLagGraph(lagGraph);
+        final IndexedLagGraph indexedLagGraph = new IndexedLagGraph(lagGraph);
 
         System.out.println(indexedLagGraph);
 

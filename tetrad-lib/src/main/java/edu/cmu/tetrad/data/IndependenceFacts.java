@@ -45,11 +45,11 @@ public class IndependenceFacts implements DataModel {
         // blank
     }
 
-    public void add(IndependenceFact fact) {
+    public void add(final IndependenceFact fact) {
         this.unsortedFacts.add(fact);
     }
 
-    public IndependenceFacts(IndependenceFacts facts) {
+    public IndependenceFacts(final IndependenceFacts facts) {
         this();
         this.unsortedFacts = new HashSet<>(facts.unsortedFacts);
     }
@@ -62,9 +62,9 @@ public class IndependenceFacts implements DataModel {
     }
 
     public String toString() {
-        StringBuilder builder = new StringBuilder();
+        final StringBuilder builder = new StringBuilder();
 
-        for (IndependenceFact fact : unsortedFacts) {
+        for (final IndependenceFact fact : this.unsortedFacts) {
             builder.append(fact).append("\n");
         }
 
@@ -87,7 +87,7 @@ public class IndependenceFacts implements DataModel {
     }
 
     @Override
-    public Node getVariable(String name) {
+    public Node getVariable(final String name) {
         return null;
     }
 
@@ -96,12 +96,12 @@ public class IndependenceFacts implements DataModel {
         return null;
     }
 
-    public void remove(IndependenceFact fact) {
+    public void remove(final IndependenceFact fact) {
 //        this.facts.remove(fact);
         this.unsortedFacts.remove(fact);
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
@@ -109,34 +109,34 @@ public class IndependenceFacts implements DataModel {
         return this.name;
     }
 
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        IndependenceFact fact = new IndependenceFact(x, y, z);
-        return unsortedFacts.contains(fact);
+    public boolean isIndependent(final Node x, final Node y, final Node... z) {
+        final IndependenceFact fact = new IndependenceFact(x, y, z);
+        return this.unsortedFacts.contains(fact);
     }
 
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
-        IndependenceFact fact = new IndependenceFact(x, y, z);
-        System.out.println("Looking up " + fact + " in " + unsortedFacts);
-        return unsortedFacts.contains(fact);
+    public boolean isIndependent(final Node x, final Node y, final List<Node> z) {
+        final IndependenceFact fact = new IndependenceFact(x, y, z);
+        System.out.println("Looking up " + fact + " in " + this.unsortedFacts);
+        return this.unsortedFacts.contains(fact);
     }
 
     public IKnowledge getKnowledge() {
         return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(final IKnowledge knowledge) {
         if (knowledge == null) throw new NullPointerException();
         this.knowledge = knowledge;
     }
 
     public List<Node> getVariables() {
-        Set<Node> variables = new HashSet<>();
+        final Set<Node> variables = new HashSet<>();
 
-        for (IndependenceFact fact : unsortedFacts) {
+        for (final IndependenceFact fact : this.unsortedFacts) {
             variables.add(fact.getX());
             variables.add(fact.getY());
 
-            for (Node z : fact.getZ()) {
+            for (final Node z : fact.getZ()) {
                 variables.add(z);
             }
         }
@@ -145,10 +145,10 @@ public class IndependenceFacts implements DataModel {
     }
 
     public List<String> getVariableNames() {
-        List<Node> variables = getVariables();
-        List<String> names = new ArrayList<>();
+        final List<Node> variables = getVariables();
+        final List<String> names = new ArrayList<>();
 
-        for (Node node : variables) {
+        for (final Node node : variables) {
             names.add(node.getName());
         }
 

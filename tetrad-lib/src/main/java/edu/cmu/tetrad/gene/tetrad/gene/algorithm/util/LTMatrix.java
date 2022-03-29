@@ -37,7 +37,7 @@ public class LTMatrix extends BasicLTMatrix {
     /**
      * Creates a lower triangular matrix with <code>nrows</code> rows.
      */
-    public LTMatrix(String mname, int nrows) {
+    public LTMatrix(final String mname, final int nrows) {
         super(mname, nrows);
     }
 
@@ -45,7 +45,7 @@ public class LTMatrix extends BasicLTMatrix {
      * Creates a lower triangular matrix reading it from file
      * <code>fname</code>.
      */
-    public LTMatrix(String fname) throws IOException {
+    public LTMatrix(final String fname) throws IOException {
         super(fname);
     }
 
@@ -60,7 +60,7 @@ public class LTMatrix extends BasicLTMatrix {
      * Casts double x to short and assigns it to element (r,c) This method
      * checks that x can be converted to a short without causing overflow.
      */
-    public void setDoubleValue(int r, int c, double x) {
+    public void setDoubleValue(final int r, final int c, final double x) {
         if ((x < MIN_SHORT) || (x > MAX_SHORT)) {
             throw new IllegalArgumentException(
                     "Double " + x + " cannot be stored as a short");
@@ -72,7 +72,7 @@ public class LTMatrix extends BasicLTMatrix {
      * Assigns integer x to matrix element (r, c).  This method checks that x
      * can be converted to a short without causing overflow.
      */
-    public void setValue(int r, int c, int x) {
+    public void setValue(final int r, final int c, final int x) {
         if ((x < MIN_SHORT) || (x > MAX_SHORT)) {
             throw new IllegalArgumentException(
                     "Double " + x + " cannot be stored as a short");
@@ -83,7 +83,7 @@ public class LTMatrix extends BasicLTMatrix {
     /**
      * Assigns short x to matrix element (r, c)
      */
-    public void setValue(int r, int c, short x) {
+    public void setValue(final int r, final int c, final short x) {
         if (r < c) {
             upperTriangXcp(r, c);
         }
@@ -96,8 +96,8 @@ public class LTMatrix extends BasicLTMatrix {
     /**
      * Returns element (r,c) as a double
      */
-    public double getDoubleValue(int r, int c) {
-        if ((r >= n) || (c >= n) || (r < 0) || (c < 0)) {
+    public double getDoubleValue(final int r, final int c) {
+        if ((r >= this.n) || (c >= this.n) || (r < 0) || (c < 0)) {
             badIndexXcp(r, c);
         }
         return (double) (r >= c ? this.A[r * (r + 1) / 2 + c] : 0);
@@ -106,8 +106,8 @@ public class LTMatrix extends BasicLTMatrix {
     /**
      * Returns element (r,c)
      */
-    public short getValue(int r, int c) {
-        if ((r >= n) || (c >= n) || (r < 0) || (c < 0)) {
+    public short getValue(final int r, final int c) {
+        if ((r >= this.n) || (c >= this.n) || (r < 0) || (c < 0)) {
             badIndexXcp(r, c);
         }
         return (r >= c ? this.A[r * (r + 1) / 2 + c] : 0);
@@ -118,7 +118,7 @@ public class LTMatrix extends BasicLTMatrix {
      */
     public void setAllValuesToZero() {
         for (int i = 0; i < this.A.length; i++) {
-            A[i] = 0;
+            this.A[i] = 0;
         }
     }
 
@@ -139,7 +139,7 @@ public class LTMatrix extends BasicLTMatrix {
         return s;
     }
 
-    private void upperTriangXcp(int r, int c) {
+    private void upperTriangXcp(final int r, final int c) {
         throw new IllegalArgumentException("Trying to set a value in (" + r +
                 "," + c + ") -> " + "Upper Triangular region ");
     }

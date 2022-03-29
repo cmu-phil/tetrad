@@ -148,10 +148,10 @@ public class RegressionResult implements TetradSerializable {
      * @param alpha                The alpha value for the regression,
      *                             determining which regressors are taken to be
      */
-    public RegressionResult(boolean zeroInterceptAssumed, String[] regressorNames,
-                            int n, double[] b, double[] t,
-                            double[] p, double[] se, double r2,
-                            double rss, double alpha, Vector yHat, Vector res) {
+    public RegressionResult(final boolean zeroInterceptAssumed, final String[] regressorNames,
+                            final int n, final double[] b, final double[] t,
+                            final double[] p, final double[] se, final double r2,
+                            final double rss, final double alpha, final Vector yHat, final Vector res) {
 //        if (regressorNames == null) {
 //            throw new NullPointerException();
 //        }
@@ -200,84 +200,84 @@ public class RegressionResult implements TetradSerializable {
     }
 
     public boolean isZeroInterceptAssumed() {
-        return zeroInterceptAssumed;
+        return this.zeroInterceptAssumed;
     }
 
     public double getRSquared() {
-        return r2;
+        return this.r2;
     }
 
     /**
      * @return the number of data points.
      */
     public int getN() {
-        return n;
+        return this.n;
     }
 
     /**
      * @return the number of regressors.
      */
     public int getNumRegressors() {
-        return regressorNames.length;
+        return this.regressorNames.length;
     }
 
     /**
      * @return the array of regression coeffients.
      */
     public double[] getCoef() {
-        return b;
+        return this.b;
     }
 
     /**
      * @return the array of t-statistics for the regression coefficients.
      */
     public double[] getT() {
-        return t;
+        return this.t;
     }
 
     /**
      * @return the array of p-values for the regression coefficients.
      */
     public double[] getP() {
-        return p;
+        return this.p;
     }
 
     public double[] getSe() {
-        return se;
+        return this.se;
     }
 
 
     public String[] getRegressorNames() {
-        return regressorNames;
+        return this.regressorNames;
     }
 
-    public double getPredictedValue(double[] x) {
+    public double getPredictedValue(final double[] x) {
         double yHat = 0.0;
 
-        int offset = zeroInterceptAssumed ? 0 : 1;
+        final int offset = this.zeroInterceptAssumed ? 0 : 1;
 
         for (int i = 0; i < getNumRegressors(); i++) {
-            yHat += b[i + offset] * x[i];
+            yHat += this.b[i + offset] * x[i];
         }
 
-        if (!zeroInterceptAssumed) {
-            yHat += b[0]; // error term.
+        if (!this.zeroInterceptAssumed) {
+            yHat += this.b[0]; // error term.
         }
 
         return yHat;
     }
 
     public String toString() {
-        StringBuilder summary = new StringBuilder(getPreamble());
-        TextTable table = getResultsTable();
+        final StringBuilder summary = new StringBuilder(getPreamble());
+        final TextTable table = getResultsTable();
 
         summary.append("\n").append(table.toString());
         return summary.toString();
     }
 
     public TextTable getResultsTable() {
-        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-        TextTable table = new TextTable(getNumRegressors() + 3, 6);
+        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        final TextTable table = new TextTable(getNumRegressors() + 3, 6);
 
         table.setToken(0, 0, "VAR");
         table.setToken(0, 1, "COEF");
@@ -289,31 +289,31 @@ public class RegressionResult implements TetradSerializable {
         for (int i = 0; i < getNumRegressors() + 1; i++) {
 
             // Note: the first column contains the regression constants.
-            String variableName = (i > 0) ? regressorNames[i - 1] : "const";
+            final String variableName = (i > 0) ? this.regressorNames[i - 1] : "const";
 
             table.setToken(i + 2, 0, variableName);
-            table.setToken(i + 2, 1, nf.format(b[i]));
+            table.setToken(i + 2, 1, nf.format(this.b[i]));
 
-            if (se.length != 0) {
-                table.setToken(i + 2, 2, nf.format(se[i]));
+            if (this.se.length != 0) {
+                table.setToken(i + 2, 2, nf.format(this.se[i]));
             } else {
                 table.setToken(i + 2, 2, "-1");
             }
 
-            if (t.length != 0) {
-                table.setToken(i + 2, 3, nf.format(t[i]));
+            if (this.t.length != 0) {
+                table.setToken(i + 2, 3, nf.format(this.t[i]));
             } else {
                 table.setToken(i + 2, 3, "-1");
             }
 
-            if (p.length != 0) {
-                table.setToken(i + 2, 4, nf.format(p[i]));
+            if (this.p.length != 0) {
+                table.setToken(i + 2, 4, nf.format(this.p[i]));
             } else {
                 table.setToken(i + 2, 4, "-1");
             }
 
-            if (p.length != 0) {
-                table.setToken(i + 2, 5, (p[i] < alpha) ? "significant " : "");
+            if (this.p.length != 0) {
+                table.setToken(i + 2, 5, (this.p[i] < this.alpha) ? "significant " : "");
             } else {
                 table.setToken(i + 2, 5, "(p not defined)");
             }
@@ -323,13 +323,13 @@ public class RegressionResult implements TetradSerializable {
     }
 
     public String getPreamble() {
-        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-        String rssString = nf.format(rss);
-        String r2String = nf.format(r2);
-        String preamble = "\n REGRESSION RESULT" +
-                "\n n = " + n + ", k = " +
-                (getNumRegressors() + 1) + ", alpha = " + alpha +
+        final String rssString = nf.format(this.rss);
+        final String r2String = nf.format(this.r2);
+        final String preamble = "\n REGRESSION RESULT" +
+                "\n n = " + this.n + ", k = " +
+                (getNumRegressors() + 1) + ", alpha = " + this.alpha +
                 "\n" + " SSE = " + rssString +
                 "\n" + " R^2 = " + r2String +
                 "\n";
@@ -337,11 +337,11 @@ public class RegressionResult implements TetradSerializable {
     }
 
     public Vector getYHat() {
-        return yHat;
+        return this.yHat;
     }
 
     public Vector getResiduals() {
-        return res;
+        return this.res;
     }
 }
 

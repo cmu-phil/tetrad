@@ -61,32 +61,32 @@ public class TestStatUtils {
         RandomUtil.getInstance().setSeed(30299533L);
 
         // Make sure the unconditional correlations and covariances are OK.
-        List<Node> nodes1 = new ArrayList<>();
+        final List<Node> nodes1 = new ArrayList<>();
 
         for (int i = 0; i < 5; i++) {
             nodes1.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph graph = new Dag(GraphUtils.randomGraph(nodes1, 0, 5,
+        final Graph graph = new Dag(GraphUtils.randomGraph(nodes1, 0, 5,
                 3, 3, 3, false));
-        SemPm pm = new SemPm(graph);
-        SemIm im = new SemIm(pm);
-        DataSet dataSet = im.simulateData(1000, false);
-        double[] x = dataSet.getDoubleData().getColumn(0).toArray();
-        double[] y = dataSet.getDoubleData().getColumn(1).toArray();
+        final SemPm pm = new SemPm(graph);
+        final SemIm im = new SemIm(pm);
+        final DataSet dataSet = im.simulateData(1000, false);
+        final double[] x = dataSet.getDoubleData().getColumn(0).toArray();
+        final double[] y = dataSet.getDoubleData().getColumn(1).toArray();
 
-        double r1 = StatUtils.correlation(x, y);
-        double s1 = StatUtils.covariance(x, y);
-        double v1 = StatUtils.variance(x);
-        double sd1 = StatUtils.sd(x);
+        final double r1 = StatUtils.correlation(x, y);
+        final double s1 = StatUtils.covariance(x, y);
+        final double v1 = StatUtils.variance(x);
+        final double sd1 = StatUtils.sd(x);
 
-        ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
-        Matrix _cov = cov.getMatrix();
+        final ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
+        final Matrix _cov = cov.getMatrix();
 
-        double r2 = StatUtils.partialCorrelation(_cov, 0, 1);
-        double s2 = StatUtils.partialCovariance(_cov, 0, 1);
-        double v2 = StatUtils.partialVariance(_cov, 0);
-        double sd2 = StatUtils.partialStandardDeviation(_cov, 0);
+        final double r2 = StatUtils.partialCorrelation(_cov, 0, 1);
+        final double s2 = StatUtils.partialCovariance(_cov, 0, 1);
+        final double v2 = StatUtils.partialVariance(_cov, 0);
+        final double sd2 = StatUtils.partialStandardDeviation(_cov, 0);
 
         assertEquals(r1, r2, .1);
         assertEquals(s1, s2, .1);
@@ -96,31 +96,31 @@ public class TestStatUtils {
 
     @Test
     public void testRankCorr() {
-        double[] a1 = new double[]{2, 2, 3};
-        double[] a2 = new double[]{2, 3, 4};
+        final double[] a1 = new double[]{2, 2, 3};
+        final double[] a2 = new double[]{2, 3, 4};
 
-        double r = StatUtils.rankCorrelation(a1, a2);
+        final double r = StatUtils.rankCorrelation(a1, a2);
         assertEquals(0.87, r, 0.01);
     }
 
     @Test
     public void testChiSqCdf() {
-        ChiSquaredDistribution dist = new ChiSquaredDistribution(1);
-        double log = Math.log(1000);
-        double p = 1.0 - dist.cumulativeProbability(log);
+        final ChiSquaredDistribution dist = new ChiSquaredDistribution(1);
+        final double log = Math.log(1000);
+        final double p = 1.0 - dist.cumulativeProbability(log);
         assertEquals(0.008, p, 0.001);
     }
 
     @Test
     public void testSpecial() {
         RandomUtil.getInstance().setSeed(3829483L);
-        int numCases = 1000;
+        final int numCases = 1000;
 
         double x, y, z, w;
-        double _x[] = new double[numCases];
-        double _y[] = new double[numCases];
-        double _z[] = new double[numCases];
-        double _w[] = new double[numCases];
+        final double[] _x = new double[numCases];
+        final double[] _y = new double[numCases];
+        final double[] _z = new double[numCases];
+        final double[] _w = new double[numCases];
 
         for (int i = 0; i < numCases; i++) {
             x = RandomUtil.getInstance().nextDouble();
@@ -156,41 +156,41 @@ public class TestStatUtils {
     //    @Test
     public void testNongaussianSums() {
         RandomUtil.getInstance().setSeed(3829483L);
-        int numTrials = 10;
-        int sampleSize = 1000;
+        final int numTrials = 10;
+        final int sampleSize = 1000;
         int count = 0;
         int failed = 0;
 
         for (int trial = 0; trial < numTrials; trial++) {
-            double d1 = RandomUtil.getInstance().nextUniform(.1, 2.0);
-            double d2 = RandomUtil.getInstance().nextUniform(.1, 2.0);
+            final double d1 = RandomUtil.getInstance().nextUniform(.1, 2.0);
+            final double d2 = RandomUtil.getInstance().nextUniform(.1, 2.0);
 
-            double c1 = 1.0; //RandomUtil.getInstance().nextUniform(-1, 1);
-            double c2 = 1.0; //RandomUtil.getInstance().nextUniform(-1, 1);
+            final double c1 = 1.0; //RandomUtil.getInstance().nextUniform(-1, 1);
+            final double c2 = 1.0; //RandomUtil.getInstance().nextUniform(-1, 1);
 
-            double[] col1 = new double[sampleSize];
-            double[] col2 = new double[sampleSize];
-            double[] sum = new double[sampleSize];
+            final double[] col1 = new double[sampleSize];
+            final double[] col2 = new double[sampleSize];
+            final double[] sum = new double[sampleSize];
 
 
-            int dist1 = RandomUtil.getInstance().nextInt(3);
-            int dist2 = RandomUtil.getInstance().nextInt(3);
-            double orientation1 = RandomUtil.getInstance().nextDouble();
-            double orientation2 = RandomUtil.getInstance().nextDouble();
+            final int dist1 = RandomUtil.getInstance().nextInt(3);
+            final int dist2 = RandomUtil.getInstance().nextInt(3);
+            final double orientation1 = RandomUtil.getInstance().nextDouble();
+            final double orientation2 = RandomUtil.getInstance().nextDouble();
 
             for (int i = 0; i < sampleSize; i++) {
 
                 switch (dist1) {
                     case 0:
-                        double v = RandomUtil.getInstance().nextUniform(0, 1);
+                        final double v = RandomUtil.getInstance().nextUniform(0, 1);
                         col1[i] = signum(v) * Math.pow(Math.abs(v), d1);
                         break;
                     case 1:
-                        double v1 = RandomUtil.getInstance().nextNormal(0, 1);
+                        final double v1 = RandomUtil.getInstance().nextNormal(0, 1);
                         col1[i] = signum(v1) * Math.pow(Math.abs(v1), d1);
                         break;
                     case 2:
-                        double v2 = RandomUtil.getInstance().nextBeta(2, 5);
+                        final double v2 = RandomUtil.getInstance().nextBeta(2, 5);
                         col1[i] = signum(v2) * Math.pow(v2, d1);
                         if (orientation1 < 0.5) col1[i] = -col1[i];
                         break;
@@ -200,15 +200,15 @@ public class TestStatUtils {
 
                 switch (dist2) {
                     case 0:
-                        double v = RandomUtil.getInstance().nextUniform(0, 1);
+                        final double v = RandomUtil.getInstance().nextUniform(0, 1);
                         col2[i] = signum(v) * Math.pow(Math.abs(v), d2);
                         break;
                     case 1:
-                        double v1 = RandomUtil.getInstance().nextNormal(0, 1);
+                        final double v1 = RandomUtil.getInstance().nextNormal(0, 1);
                         col2[i] = signum(v1) * Math.pow(Math.abs(v1), d2);
                         break;
                     case 2:
-                        double v2 = RandomUtil.getInstance().nextBeta(2, 5);
+                        final double v2 = RandomUtil.getInstance().nextBeta(2, 5);
                         col2[i] = signum(v2) * Math.pow(v2, d2);
                         if (orientation2 < 0.5) col1[i] = -col1[i];
                         break;
@@ -220,8 +220,8 @@ public class TestStatUtils {
                 sum[i] = c1 * col1[i] + c2 * col2[i];
             }
 
-            double a1 = new AndersonDarlingTest(col1).getASquaredStar();
-            double s = new AndersonDarlingTest(sum).getASquaredStar();
+            final double a1 = new AndersonDarlingTest(col1).getASquaredStar();
+            final double s = new AndersonDarlingTest(sum).getASquaredStar();
 
             if (!(s <= a1)) { //min(a1, a2))) {
                 failed++;
@@ -230,28 +230,28 @@ public class TestStatUtils {
             count++;
         }
 
-        double percentFailed = failed / (double) count;
+        final double percentFailed = failed / (double) count;
         assertEquals(0.2, percentFailed, 0.1);
     }
 
     //    @Test
     public void testNongaussianSums2() {
         RandomUtil.getInstance().setSeed(3829483L);
-        int sampleSize = 1000;
+        final int sampleSize = 1000;
         int count = 0;
         int failed = 0;
 
-        double bound = 2.0;
-        double step = 0.1;
+        final double bound = 2.0;
+        final double step = 0.1;
 
-        int dist1 = RandomUtil.getInstance().nextInt(4);
-        int dist2 = RandomUtil.getInstance().nextInt(4);
+        final int dist1 = RandomUtil.getInstance().nextInt(4);
+        final int dist2 = RandomUtil.getInstance().nextInt(4);
 
         for (double d1 = -bound; d1 <= bound; d1 += step) {
             for (double d2 = -bound; d2 <= bound; d2 += step) {
-                double[] col1 = new double[sampleSize];
-                double[] col2 = new double[sampleSize];
-                double[] sum = new double[sampleSize];
+                final double[] col1 = new double[sampleSize];
+                final double[] col2 = new double[sampleSize];
+                final double[] sum = new double[sampleSize];
 
                 for (int i = 0; i < sampleSize; i++) {
 
@@ -293,9 +293,9 @@ public class TestStatUtils {
                     sum[i] = d1 * col1[i] + d2 * col2[i];
                 }
 
-                double a1 = StatUtils.logCoshScore(col1);
-                double a2 = StatUtils.logCoshScore(col2);
-                double s = StatUtils.logCoshScore(sum);
+                final double a1 = StatUtils.logCoshScore(col1);
+                final double a2 = StatUtils.logCoshScore(col2);
+                final double s = StatUtils.logCoshScore(sum);
 
                 if (!(s <= max(a1, a2))) {
                     failed++;
@@ -305,27 +305,27 @@ public class TestStatUtils {
             }
         }
 
-        double percentFailed = failed / (double) count;
+        final double percentFailed = failed / (double) count;
         assertEquals(0.0106, percentFailed, 0.0001);
     }
 
     //    @Test
     public void testNongaussianSums3() {
         RandomUtil.getInstance().setSeed(3829483L);
-        int n = 1000;
+        final int n = 1000;
         int count = 0;
         int positive = 0;
 
-        double[] col1 = new double[n];
-        double[] col2 = new double[n];
-        double[] sum = new double[n];
+        final double[] col1 = new double[n];
+        final double[] col2 = new double[n];
+        final double[] sum = new double[n];
 
         for (int k = 0; k < 10; k++) {
-            double d1 = RandomUtil.getInstance().nextUniform(-10, 10);
-            double d2 = RandomUtil.getInstance().nextUniform(-10, 10);
+            final double d1 = RandomUtil.getInstance().nextUniform(-10, 10);
+            final double d2 = RandomUtil.getInstance().nextUniform(-10, 10);
 
-            double e1 = RandomUtil.getInstance().nextUniform(0, 3);
-            double e2 = RandomUtil.getInstance().nextUniform(0, 3);
+            final double e1 = RandomUtil.getInstance().nextUniform(0, 3);
+            final double e2 = RandomUtil.getInstance().nextUniform(0, 3);
 
             for (int i = 0; i < n; i++) {
                 col1[i] = Math.pow(RandomUtil.getInstance().nextNormal(0, 1), e1);
@@ -333,9 +333,9 @@ public class TestStatUtils {
                 sum[i] = d1 * col1[i] + d2 * col2[i];
             }
 
-            double a1 = new AndersonDarlingTest(col1).getASquared();
-            double a2 = new AndersonDarlingTest(col2).getASquared();
-            double s = new AndersonDarlingTest(sum).getASquared();
+            final double a1 = new AndersonDarlingTest(col1).getASquared();
+            final double a2 = new AndersonDarlingTest(col2).getASquared();
+            final double s = new AndersonDarlingTest(sum).getASquared();
 
             if (!(s < max(a1, a2))) {
                 positive++;
@@ -344,31 +344,31 @@ public class TestStatUtils {
             count++;
         }
 
-        double percentErrors = positive / (double) count;
+        final double percentErrors = positive / (double) count;
         assertEquals(0.0, percentErrors, 0.01);
     }
 
     //    @Test
     public void testNongaussianSums4() {
         RandomUtil.getInstance().setSeed(3829483L);
-        int n = 1000;
+        final int n = 1000;
         int count = 0;
         int positive = 0;
 
-        double[] col1 = new double[n];
-        double[] col2 = new double[n];
-        double[] sum = new double[n];
+        final double[] col1 = new double[n];
+        final double[] col2 = new double[n];
+        final double[] sum = new double[n];
 
         for (int k = 0; k < 10; k++) {
-            double f1 = RandomUtil.getInstance().nextUniform(0, 5);
-            double f2 = RandomUtil.getInstance().nextUniform(0, 5);
-            double f3 = RandomUtil.getInstance().nextUniform(0, 5);
-            double f4 = RandomUtil.getInstance().nextUniform(0, 5);
-            double f5 = RandomUtil.getInstance().nextUniform(0, 5);
-            double f6 = RandomUtil.getInstance().nextUniform(0, 5);
+            final double f1 = RandomUtil.getInstance().nextUniform(0, 5);
+            final double f2 = RandomUtil.getInstance().nextUniform(0, 5);
+            final double f3 = RandomUtil.getInstance().nextUniform(0, 5);
+            final double f4 = RandomUtil.getInstance().nextUniform(0, 5);
+            final double f5 = RandomUtil.getInstance().nextUniform(0, 5);
+            final double f6 = RandomUtil.getInstance().nextUniform(0, 5);
 
-            double d1 = RandomUtil.getInstance().nextUniform(-1, 1);
-            double d2 = RandomUtil.getInstance().nextUniform(-1, 1);
+            final double d1 = RandomUtil.getInstance().nextUniform(-1, 1);
+            final double d2 = RandomUtil.getInstance().nextUniform(-1, 1);
 
             for (int i = 0; i < n; i++) {
                 col1[i] = RandomUtil.getInstance().nextBeta(2, 5) + f1;
@@ -382,9 +382,9 @@ public class TestStatUtils {
                 sum[i] = d1 * col1[i] + d2 * col2[i];
             }
 
-            double a1 = new AndersonDarlingTest(col1).getASquared();
-            double a2 = new AndersonDarlingTest(col2).getASquared();
-            double s = new AndersonDarlingTest(sum).getASquared();
+            final double a1 = new AndersonDarlingTest(col1).getASquared();
+            final double a2 = new AndersonDarlingTest(col2).getASquared();
+            final double s = new AndersonDarlingTest(sum).getASquared();
 
             if (!(s < 1.2 * max(a1, a2))) {
                 positive++;
@@ -393,47 +393,47 @@ public class TestStatUtils {
             count++;
         }
 
-        double percentErrors = positive / (double) count;
+        final double percentErrors = positive / (double) count;
         assertEquals(0.0, percentErrors, 0.01);
     }
 
     //    @Test
     public void testNongaussianSums5() {
         RandomUtil.getInstance().setSeed(3829483L);
-        int numTrials = 10;
-        int sampleSize = 10;
+        final int numTrials = 10;
+        final int sampleSize = 10;
         int count = 0;
         int failed = 0;
 
         for (int trial = 0; trial < numTrials; trial++) {
-            double d1 = RandomUtil.getInstance().nextUniform(.1, 2.0);
+            final double d1 = RandomUtil.getInstance().nextUniform(.1, 2.0);
 
-            double c1 = RandomUtil.getInstance().nextUniform(-1, 1);
-            double c2 = RandomUtil.getInstance().nextUniform(-1, 1);
-            double c3 = RandomUtil.getInstance().nextUniform(-1, 1);
+            final double c1 = RandomUtil.getInstance().nextUniform(-1, 1);
+            final double c2 = RandomUtil.getInstance().nextUniform(-1, 1);
+            final double c3 = RandomUtil.getInstance().nextUniform(-1, 1);
 
-            double[] col1 = new double[sampleSize];
-            double[] col2 = new double[sampleSize];
-            double[] col3 = new double[sampleSize];
-            double[] sum = new double[sampleSize];
+            final double[] col1 = new double[sampleSize];
+            final double[] col2 = new double[sampleSize];
+            final double[] col3 = new double[sampleSize];
+            final double[] sum = new double[sampleSize];
 
-            int dist1 = RandomUtil.getInstance().nextInt(3);
-            double orientation1 = RandomUtil.getInstance().nextDouble();
-            double orientation2 = RandomUtil.getInstance().nextDouble();
-            double orientation3 = RandomUtil.getInstance().nextDouble();
+            final int dist1 = RandomUtil.getInstance().nextInt(3);
+            final double orientation1 = RandomUtil.getInstance().nextDouble();
+            final double orientation2 = RandomUtil.getInstance().nextDouble();
+            final double orientation3 = RandomUtil.getInstance().nextDouble();
 
             for (int i = 0; i < sampleSize; i++) {
                 switch (dist1) {
                     case 0:
-                        double v = RandomUtil.getInstance().nextUniform(0, 1);
+                        final double v = RandomUtil.getInstance().nextUniform(0, 1);
                         col1[i] = signum(v) * Math.pow(Math.abs(v), d1);
                         break;
                     case 1:
-                        double v1 = RandomUtil.getInstance().nextNormal(0, 1);
+                        final double v1 = RandomUtil.getInstance().nextNormal(0, 1);
                         col1[i] = signum(v1) * Math.pow(Math.abs(v1), d1);
                         break;
                     case 2:
-                        double v2 = RandomUtil.getInstance().nextBeta(2, 5);
+                        final double v2 = RandomUtil.getInstance().nextBeta(2, 5);
                         col1[i] = signum(v2) * Math.pow(v2, d1);
                         if (orientation1 < 0.5) col1[i] = -col1[i];
                         break;
@@ -443,15 +443,15 @@ public class TestStatUtils {
 
                 switch (dist1) {
                     case 0:
-                        double v = RandomUtil.getInstance().nextUniform(0, 1);
+                        final double v = RandomUtil.getInstance().nextUniform(0, 1);
                         col2[i] = signum(v) * Math.pow(Math.abs(v), d1);
                         break;
                     case 1:
-                        double v1 = RandomUtil.getInstance().nextNormal(0, 1);
+                        final double v1 = RandomUtil.getInstance().nextNormal(0, 1);
                         col2[i] = signum(v1) * Math.pow(Math.abs(v1), d1);
                         break;
                     case 2:
-                        double v2 = RandomUtil.getInstance().nextBeta(2, 5);
+                        final double v2 = RandomUtil.getInstance().nextBeta(2, 5);
                         col2[i] = signum(v2) * Math.pow(v2, d1);
                         if (orientation2 < 0.5) col1[i] = -col1[i];
                         break;
@@ -461,15 +461,15 @@ public class TestStatUtils {
 
                 switch (dist1) {
                     case 0:
-                        double v = RandomUtil.getInstance().nextUniform(0, 1);
+                        final double v = RandomUtil.getInstance().nextUniform(0, 1);
                         col3[i] = signum(v) * Math.pow(Math.abs(v), d1);
                         break;
                     case 1:
-                        double v1 = RandomUtil.getInstance().nextNormal(0, 1);
+                        final double v1 = RandomUtil.getInstance().nextNormal(0, 1);
                         col3[i] = signum(v1) * Math.pow(Math.abs(v1), d1);
                         break;
                     case 2:
-                        double v2 = RandomUtil.getInstance().nextBeta(2, 5);
+                        final double v2 = RandomUtil.getInstance().nextBeta(2, 5);
                         col3[i] = signum(v2) * Math.pow(v2, d1);
                         if (orientation3 < 0.5) col1[i] = -col1[i];
                         break;
@@ -481,10 +481,10 @@ public class TestStatUtils {
                 sum[i] = c1 * col1[i] + c2 * col2[i] + c3 * col3[i];
             }
 
-            double a1 = new AndersonDarlingTest(col1).getASquaredStar();
-            double a2 = new AndersonDarlingTest(col2).getASquaredStar();
-            double a3 = new AndersonDarlingTest(col3).getASquaredStar();
-            double s = new AndersonDarlingTest(sum).getASquaredStar();
+            final double a1 = new AndersonDarlingTest(col1).getASquaredStar();
+            final double a2 = new AndersonDarlingTest(col2).getASquaredStar();
+            final double a3 = new AndersonDarlingTest(col3).getASquaredStar();
+            final double s = new AndersonDarlingTest(sum).getASquaredStar();
 
             if (!(s <= min(min(a1, a2), a3))) {
                 failed++;
@@ -493,11 +493,11 @@ public class TestStatUtils {
             count++;
         }
 
-        double percentFailed = failed / (double) count;
+        final double percentFailed = failed / (double) count;
 
 
         // depending on OS the correct unit test result is different
-        String OS = System.getProperty("os.name").toLowerCase();
+        final String OS = System.getProperty("os.name").toLowerCase();
         System.out.println("OS is " + OS);
         double expectedPercentFailed = 0.6;
         if (OS.indexOf("win") >= 0) {
@@ -520,13 +520,13 @@ public class TestStatUtils {
     @Test
     public void testNongaussianSums6() {
         RandomUtil.getInstance().setSeed(3829483L);
-        int numTrials = 10;
-        int sampleSize = 1000;
+        final int numTrials = 10;
+        final int sampleSize = 1000;
         int count = 0;
         int failed = 0;
 
         for (int trial = 0; trial < numTrials; trial++) {
-            double c = RandomUtil.getInstance().nextUniform(.2, 2.0);
+            final double c = RandomUtil.getInstance().nextUniform(.2, 2.0);
 
             double c1 = RandomUtil.getInstance().nextUniform(.5, 1.5);
             double c2 = RandomUtil.getInstance().nextUniform(.5, 1.5);
@@ -536,12 +536,12 @@ public class TestStatUtils {
             if (RandomUtil.getInstance().nextDouble() > 0.5) c2 = -c2;
             if (RandomUtil.getInstance().nextDouble() > 0.5) c3 = -c3;
 
-            double[] ex = new double[sampleSize];
-            double[] ey = new double[sampleSize];
-            double[] ez = new double[sampleSize];
+            final double[] ex = new double[sampleSize];
+            final double[] ey = new double[sampleSize];
+            final double[] ez = new double[sampleSize];
 
-            int dist1 = RandomUtil.getInstance().nextInt(3);
-            double orientation = RandomUtil.getInstance().nextDouble();
+            final int dist1 = RandomUtil.getInstance().nextInt(3);
+            final double orientation = RandomUtil.getInstance().nextDouble();
 
             for (int i = 0; i < sampleSize; i++) {
                 switch (dist1) {
@@ -583,9 +583,9 @@ public class TestStatUtils {
                 }
             }
 
-            double[] sumx = new double[sampleSize];
-            double[] sumy = new double[sampleSize];
-            double[] sumz = new double[sampleSize];
+            final double[] sumx = new double[sampleSize];
+            final double[] sumy = new double[sampleSize];
+            final double[] sumz = new double[sampleSize];
 
             for (int i = 0; i < sampleSize; i++) {
                 sumx[i] = ex[i];
@@ -593,9 +593,9 @@ public class TestStatUtils {
                 sumz[i] = c2 * sumx[i] + c3 * sumy[i] + ez[i];
             }
 
-            double a3 = new AndersonDarlingTest(sumz).getASquaredStar();
+            final double a3 = new AndersonDarlingTest(sumz).getASquaredStar();
 
-            double aey = new AndersonDarlingTest(ey).getASquaredStar();
+            final double aey = new AndersonDarlingTest(ey).getASquaredStar();
 
             if (!(aey > a3)) {
                 failed++;
@@ -604,7 +604,7 @@ public class TestStatUtils {
             count++;
         }
 
-        double percentFailed = failed / (double) count;
+        final double percentFailed = failed / (double) count;
         assertEquals(0.0, percentFailed, 0.01);
     }
 
@@ -612,31 +612,31 @@ public class TestStatUtils {
     public void testLogCoshExp() {
         RandomUtil.getInstance().setSeed(3848293L);
         double sum = 0.0;
-        int numSamples = 100;
+        final int numSamples = 100;
 
         for (int i = 0; i < numSamples; i++) {
-            double randNorm = RandomUtil.getInstance().nextNormal(0, 1);
+            final double randNorm = RandomUtil.getInstance().nextNormal(0, 1);
 
-            double a = Math.log(Math.cosh(randNorm));
+            final double a = Math.log(Math.cosh(randNorm));
 
             sum += a;
         }
 
-        double b = sum / numSamples;
+        final double b = sum / numSamples;
 
         assertEquals(.41, b, 0.01);
     }
 
     @Test
     public void testMaxEnt() {
-        double[] x = new double[]{1, 2, 3, 4, 5};
+        final double[] x = new double[]{1, 2, 3, 4, 5};
 
-        double maxEnt = StatUtils.maxEntApprox(x);
+        final double maxEnt = StatUtils.maxEntApprox(x);
         assertEquals(1.75, maxEnt, 0.01);
     }
 
     public void test2() {
-        double d = .06;
+        final double d = .06;
         double sum = 0.0;
 
         for (int n = 1; n <= 1000; n++) {
@@ -650,25 +650,25 @@ public class TestStatUtils {
     //    @Test
     public void test3() {
         int count = 0;
-        int total = 100000;
+        final int total = 100000;
 
         for (int i = 0; i < total; i++) {
-            double v1 = RandomUtil.getInstance().nextUniform(0, 100);
-            double v2 = RandomUtil.getInstance().nextUniform(0, 100);
-            double w1 = RandomUtil.getInstance().nextUniform(0, 1);
-            double w2 = 1.0 - w1;
-            double m1 = RandomUtil.getInstance().nextUniform(-5.0, 5.0);
-            double m2 = RandomUtil.getInstance().nextUniform(-5.0, 5.0);
+            final double v1 = RandomUtil.getInstance().nextUniform(0, 100);
+            final double v2 = RandomUtil.getInstance().nextUniform(0, 100);
+            final double w1 = RandomUtil.getInstance().nextUniform(0, 1);
+            final double w2 = 1.0 - w1;
+            final double m1 = RandomUtil.getInstance().nextUniform(-5.0, 5.0);
+            final double m2 = RandomUtil.getInstance().nextUniform(-5.0, 5.0);
 
-            double left1 = 1.0 / v1;
-            double left2 = 1.0 / v2;
-            double m = (left1 + left2) / 2.0;
+            final double left1 = 1.0 / v1;
+            final double left2 = 1.0 / v2;
+            final double m = (left1 + left2) / 2.0;
 
-            double denRight = w1 * v1 + w2 * v2 + w1 * (m1 - m) * (m1 - m) + w1 * (m2 - m) * (m2 - m);
+            final double denRight = w1 * v1 + w2 * v2 + w1 * (m1 - m) * (m1 - m) + w1 * (m2 - m) * (m2 - m);
 
-            double right = 1.0 / denRight;
+            final double right = 1.0 / denRight;
 
-            boolean holds = left1 + left2 > right;
+            final boolean holds = left1 + left2 > right;
 
             if (holds) count++;
 
@@ -679,8 +679,8 @@ public class TestStatUtils {
         System.out.println(count);
     }
 
-    private String f(double d1) {
-        NumberFormat f = new DecimalFormat("0.000000");
+    private String f(final double d1) {
+        final NumberFormat f = new DecimalFormat("0.000000");
         return f.format(d1);
     }
 }

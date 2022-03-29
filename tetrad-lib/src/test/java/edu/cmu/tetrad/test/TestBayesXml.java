@@ -44,33 +44,33 @@ public final class TestBayesXml {
 
     @Test
     public void testRoundtrip() {
-        BayesIm bayesIm = sampleBayesIm1();
-        Element element = BayesXmlRenderer.getElement(bayesIm);
+        final BayesIm bayesIm = sampleBayesIm1();
+        final Element element = BayesXmlRenderer.getElement(bayesIm);
 
-        BayesXmlParser parser = new BayesXmlParser();
-        BayesIm bayesIm2 = parser.getBayesIm(element);
+        final BayesXmlParser parser = new BayesXmlParser();
+        final BayesIm bayesIm2 = parser.getBayesIm(element);
 
         assertEquals(bayesIm, bayesIm2);
     }
 
     @Test
     public void testRoundtrip2() {
-        BayesIm bayesIm = sampleBayesIm2();
-        Element element = BayesXmlRenderer.getElement(bayesIm);
+        final BayesIm bayesIm = sampleBayesIm2();
+        final Element element = BayesXmlRenderer.getElement(bayesIm);
 
-        BayesXmlParser parser = new BayesXmlParser();
-        BayesIm bayesIm2 = parser.getBayesIm(element);
+        final BayesXmlParser parser = new BayesXmlParser();
+        final BayesIm bayesIm2 = parser.getBayesIm(element);
 
         assertEquals(bayesIm, bayesIm2);
     }
 
     @Test
     public void testRoundtrip3() {
-        BayesIm bayesIm = sampleBayesIm3();
-        Element element = BayesXmlRenderer.getElement(bayesIm);
+        final BayesIm bayesIm = sampleBayesIm3();
+        final Element element = BayesXmlRenderer.getElement(bayesIm);
 
-        BayesXmlParser parser = new BayesXmlParser();
-        BayesIm bayesIm2 = parser.getBayesIm(element);
+        final BayesXmlParser parser = new BayesXmlParser();
+        final BayesIm bayesIm2 = parser.getBayesIm(element);
 
         assertEquals(bayesIm, bayesIm2);
     }
@@ -82,18 +82,18 @@ public final class TestBayesXml {
     @Test
     public void testLoadFromFile() {
         try {
-            Builder builder = new Builder();
-            Document document =
+            final Builder builder = new Builder();
+            final Document document =
                     builder.build(new File("src/test/resources/parsableBayesNet.xml"));
 
-            BayesXmlParser parser = new BayesXmlParser();
+            final BayesXmlParser parser = new BayesXmlParser();
             parser.getBayesIm(document.getRootElement());
-        } catch (ParsingException e) {
+        } catch (final ParsingException e) {
             e.printStackTrace();
             fail("The file referred to cannot be parsed as a Bayes IM." +
                     " The file referred to MUST LOAD!! PLEASE FIX IMMEDIATELY!!!" +
                     " (Ask Joe Ramsey jdramsey@andrew.cmu.edu for details.");
-        } catch (IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
             fail("The file referred to cannot be opened (or doesn't exist). " +
                     "Maybe the working directory is not set correctly.");
@@ -101,11 +101,11 @@ public final class TestBayesXml {
     }
 
     private static BayesIm sampleBayesIm1() {
-        Node a = new GraphNode("a");
-        Node b = new GraphNode("b");
-        Node c = new GraphNode("c");
+        final Node a = new GraphNode("a");
+        final Node b = new GraphNode("b");
+        final Node c = new GraphNode("c");
 
-        Dag graph;
+        final Dag graph;
 
         graph = new Dag();
 
@@ -117,10 +117,10 @@ public final class TestBayesXml {
         graph.addDirectedEdge(a, c);
         graph.addDirectedEdge(b, c);
 
-        BayesPm bayesPm = new BayesPm(graph);
+        final BayesPm bayesPm = new BayesPm(graph);
         bayesPm.setNumCategories(b, 3);
 
-        BayesIm bayesIm1 = new MlBayesIm(bayesPm);
+        final BayesIm bayesIm1 = new MlBayesIm(bayesPm);
         bayesIm1.setProbability(0, 0, 0, .3);
         bayesIm1.setProbability(0, 0, 1, .7);
 
@@ -153,11 +153,11 @@ public final class TestBayesXml {
     }
 
     private static BayesIm sampleBayesIm2() {
-        Node a = new GraphNode("a");
-        Node b = new GraphNode("b");
-        Node c = new GraphNode("c");
+        final Node a = new GraphNode("a");
+        final Node b = new GraphNode("b");
+        final Node c = new GraphNode("c");
 
-        Dag graph = new Dag();
+        final Dag graph = new Dag();
 
         graph.addNode(a);
         graph.addNode(b);
@@ -167,7 +167,7 @@ public final class TestBayesXml {
         graph.addDirectedEdge(a, c);
         graph.addDirectedEdge(b, c);
 
-        BayesPm bayesPm = new BayesPm(graph);
+        final BayesPm bayesPm = new BayesPm(graph);
         bayesPm.setNumCategories(b, 3);
 
         return new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
@@ -175,14 +175,14 @@ public final class TestBayesXml {
 
 
     private static BayesIm sampleBayesIm3() {
-        Node a = new GraphNode("a");
+        final Node a = new GraphNode("a");
         a.setNodeType(NodeType.LATENT);
         a.setCenterX(5);
         a.setCenterY(5);
-        Node b = new GraphNode("b");
-        Node c = new GraphNode("c");
+        final Node b = new GraphNode("b");
+        final Node c = new GraphNode("c");
 
-        Dag graph;
+        final Dag graph;
 
         graph = new Dag();
 
@@ -194,7 +194,7 @@ public final class TestBayesXml {
         graph.addDirectedEdge(a, c);
         graph.addDirectedEdge(b, c);
 
-        BayesPm bayesPm = new BayesPm(graph);
+        final BayesPm bayesPm = new BayesPm(graph);
         bayesPm.setNumCategories(b, 3);
 
         return new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
@@ -205,19 +205,19 @@ public final class TestBayesXml {
      *
      * @param element the element to print.
      */
-    private static void printElement(Element element) {
+    private static void printElement(final Element element) {
         printDocument(new Document(element));
     }
 
-    private static void printDocument(Document document) {
-        Serializer serializer = new Serializer(System.out);
+    private static void printDocument(final Document document) {
+        final Serializer serializer = new Serializer(System.out);
 
         serializer.setLineSeparator("\n");
         serializer.setIndent(2);
 
         try {
             serializer.write(document);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new RuntimeException(e);
         }
     }

@@ -73,7 +73,7 @@ public final class KnowledgeGroup implements TetradSerializable {
      *
      * @param type - the type
      */
-    public KnowledgeGroup(int type, Set<String> from, Set<String> to) {
+    public KnowledgeGroup(final int type, final Set<String> from, final Set<String> to) {
         if (type != REQUIRED && type != FORBIDDEN) {
             throw new NullPointerException("The given type needs to be either REQUIRED or FORBIDDEN");
         }
@@ -95,7 +95,7 @@ public final class KnowledgeGroup implements TetradSerializable {
     /**
      * Constructs an empty instance of a knowledge group.
      */
-    public KnowledgeGroup(int type) {
+    public KnowledgeGroup(final int type) {
         if (type != REQUIRED && type != FORBIDDEN) {
             throw new NullPointerException("The given type needs to be either REQUIRED or FORBIDDEN");
         }
@@ -144,9 +144,9 @@ public final class KnowledgeGroup implements TetradSerializable {
      * @return - edges.
      */
     public List<KnowledgeEdge> getEdges() {
-        List<KnowledgeEdge> edges = new ArrayList<>(this.fromGroup.size() + this.toGroup.size());
-        for (String from : this.fromGroup) {
-            for (String to : this.toGroup) {
+        final List<KnowledgeEdge> edges = new ArrayList<>(this.fromGroup.size() + this.toGroup.size());
+        for (final String from : this.fromGroup) {
+            for (final String to : this.toGroup) {
                 edges.add(new KnowledgeEdge(from, to));
             }
         }
@@ -154,7 +154,7 @@ public final class KnowledgeGroup implements TetradSerializable {
     }
 
 
-    public boolean containsEdge(KnowledgeEdge edge) {
+    public boolean containsEdge(final KnowledgeEdge edge) {
         return this.fromGroup.contains(edge.getFrom()) && this.toGroup.contains(edge.getTo());
     }
 
@@ -176,7 +176,7 @@ public final class KnowledgeGroup implements TetradSerializable {
      *
      * @return true iff there is a conflict.
      */
-    public boolean isConflict(KnowledgeGroup group) {
+    public boolean isConflict(final KnowledgeGroup group) {
         // if they have different types, then if they share an edge there is a conflict.
         if (this.type != group.type) {
             return intersect(this.fromGroup, group.fromGroup) && intersect(this.toGroup, group.toGroup);
@@ -190,7 +190,7 @@ public final class KnowledgeGroup implements TetradSerializable {
     /**
      * Equals when they are the same type and have the same edges.
      */
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (o == this) {
             return true;
         }
@@ -199,7 +199,7 @@ public final class KnowledgeGroup implements TetradSerializable {
             return false;
         }
 
-        KnowledgeGroup thatGroup = (KnowledgeGroup) o;
+        final KnowledgeGroup thatGroup = (KnowledgeGroup) o;
 
         return this.type == thatGroup.type && this.fromGroup.equals(thatGroup.fromGroup)
                 && this.toGroup.equals(thatGroup.toGroup);
@@ -212,8 +212,8 @@ public final class KnowledgeGroup implements TetradSerializable {
     /**
      * States whether the two have a non-empty intersection or not.
      */
-    private static boolean intersect(Set<String> set1, Set<String> set2) {
-        for (String var : set1) {
+    private static boolean intersect(final Set<String> set1, final Set<String> set2) {
+        for (final String var : set1) {
             if (set2.contains(var)) {
                 return true;
             }
@@ -235,7 +235,7 @@ public final class KnowledgeGroup implements TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
@@ -243,11 +243,11 @@ public final class KnowledgeGroup implements TetradSerializable {
             throw new IllegalStateException("Type must be REQUIRED or FORBIDDEN");
         }
 
-        if (fromGroup == null) {
+        if (this.fromGroup == null) {
             throw new NullPointerException();
         }
 
-        if (toGroup == null) {
+        if (this.toGroup == null) {
             throw new NullPointerException();
         }
 

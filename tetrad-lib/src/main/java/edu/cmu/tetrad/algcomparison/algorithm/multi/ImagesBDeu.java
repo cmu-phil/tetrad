@@ -46,27 +46,27 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
     }
 
     @Override
-    public Graph search(List<DataModel> dataSets, Parameters parameters) {
+    public Graph search(final List<DataModel> dataSets, final Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            BdeuScoreImages score = new BdeuScoreImages(dataSets);
+            final BdeuScoreImages score = new BdeuScoreImages(dataSets);
             score.setSamplePrior(parameters.getDouble(Params.PRIOR_EQUIVALENT_SAMPLE_SIZE));
             score.setStructurePrior(parameters.getDouble(Params.STRUCTURE_PRIOR));
-            edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(score);
+            final edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(score);
             search.setFaithfulnessAssumed(true);
-            search.setKnowledge(knowledge);
+            search.setKnowledge(this.knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             return search.search();
         } else {
-            ImagesBDeu imagesBDeu = new ImagesBDeu();
+            final ImagesBDeu imagesBDeu = new ImagesBDeu();
 
-            List<DataSet> datasets = new ArrayList<>();
+            final List<DataSet> datasets = new ArrayList<>();
 
-            for (DataModel dataModel : dataSets) {
+            for (final DataModel dataModel : dataSets) {
                 datasets.add((DataSet) dataModel);
             }
-            GeneralResamplingTest search = new GeneralResamplingTest(datasets, imagesBDeu, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(knowledge);
+            final GeneralResamplingTest search = new GeneralResamplingTest(datasets, imagesBDeu, parameters.getInt(Params.NUMBER_RESAMPLING));
+            search.setKnowledge(this.knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -92,15 +92,15 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(final DataModel dataSet, final Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             return search(Collections.singletonList((DataModel) DataUtils.getDiscreteDataSet(dataSet)), parameters);
         } else {
-            ImagesBDeu imagesBDeu = new ImagesBDeu();
+            final ImagesBDeu imagesBDeu = new ImagesBDeu();
 
-            List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
-            GeneralResamplingTest search = new GeneralResamplingTest(dataSets, imagesBDeu, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(knowledge);
+            final List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
+            final GeneralResamplingTest search = new GeneralResamplingTest(dataSets, imagesBDeu, parameters.getInt(Params.NUMBER_RESAMPLING));
+            search.setKnowledge(this.knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -126,7 +126,7 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
     }
 
     @Override
-    public Graph getComparisonGraph(Graph graph) {
+    public Graph getComparisonGraph(final Graph graph) {
         return SearchGraphUtils.cpdagForDag(new EdgeListGraph(graph));
     }
 
@@ -142,7 +142,7 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new LinkedList<>();
+        final List<String> parameters = new LinkedList<>();
         parameters.addAll((new Fges()).getParameters());
         parameters.addAll((new BdeuScore()).getParameters());
         parameters.add(Params.NUM_RUNS);
@@ -154,11 +154,11 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(final IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 }

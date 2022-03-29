@@ -5,16 +5,16 @@ package edu.cmu.tetrad.simulation;
  */
 public class HsimRepeatAuto {
 
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
         //***!!!!===!!!=== Parameters for the User to fill in! !!!===!!!===***
-        String readfilename = "YeastNoDupe2Slim.csv";
-        String filenameOut = "dataOutYeast.txt";
-        char delimiter = ',';//'\t';
+        final String readfilename = "YeastNoDupe2Slim.csv";
+        final String filenameOut = "dataOutYeast.txt";
+        final char delimiter = ',';//'\t';
 
-        int resimSize = 2;
-        int repeat = 100;
+        final int resimSize = 2;
+        final int repeat = 100;
 
-        HsimRepeatAutoRun study = new HsimRepeatAutoRun(readfilename, delimiter);
+        final HsimRepeatAutoRun study = new HsimRepeatAutoRun(readfilename, delimiter);
         study.setVerbose(false);
         study.setWrite(true);
         study.setFilenameOut(filenameOut);

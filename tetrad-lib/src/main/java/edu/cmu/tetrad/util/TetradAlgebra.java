@@ -32,19 +32,19 @@ import cern.colt.matrix.linalg.Algebra;
  */
 public class TetradAlgebra {
 
-    public static Matrix multOuter(Vector v1, Vector v2) {
-        DoubleMatrix2D m = new Algebra().multOuter(new DenseDoubleMatrix1D(v1.toArray()),
+    public static Matrix multOuter(final Vector v1, final Vector v2) {
+        final DoubleMatrix2D m = new Algebra().multOuter(new DenseDoubleMatrix1D(v1.toArray()),
                 new DenseDoubleMatrix1D(v2.toArray()), null);
         return new Matrix(m.toArray());
     }
 
-    public static Matrix solve(Matrix a, Matrix b) {
-        DoubleMatrix2D _a = new DenseDoubleMatrix2D(a.toArray());
-        DoubleMatrix2D _b = new DenseDoubleMatrix2D(b.toArray());
+    public static Matrix solve(final Matrix a, final Matrix b) {
+        final DoubleMatrix2D _a = new DenseDoubleMatrix2D(a.toArray());
+        final DoubleMatrix2D _b = new DenseDoubleMatrix2D(b.toArray());
         return new Matrix(new Algebra().solve(_a, _b).toArray());
     }
 
-    public static Matrix identity(int rows) {
+    public static Matrix identity(final int rows) {
         return new Matrix(DoubleFactory2D.dense.identity(rows).toArray());
     }
 }

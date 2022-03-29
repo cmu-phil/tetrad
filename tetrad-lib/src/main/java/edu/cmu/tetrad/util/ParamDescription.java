@@ -20,7 +20,7 @@ public class ParamDescription {
     private int lowerBoundInt = Integer.MIN_VALUE;
     private int upperBoundInt = Integer.MAX_VALUE;
 
-    public ParamDescription(String paramName, String shortDescription, String longDescription, Serializable defaultValue) {
+    public ParamDescription(final String paramName, final String shortDescription, final String longDescription, final Serializable defaultValue) {
         if (paramName == null) {
             throw new NullPointerException("Target parameter name is null.");
         }
@@ -39,7 +39,7 @@ public class ParamDescription {
         this.defaultValue = defaultValue;
     }
 
-    public ParamDescription(String paramName, String shortDescription, String longDescription, Serializable defaultValue, int lowerBound, int upperBound) {
+    public ParamDescription(final String paramName, final String shortDescription, final String longDescription, final Serializable defaultValue, final int lowerBound, final int upperBound) {
         if (paramName == null) {
             throw new NullPointerException("Target parameter name is null.");
         }
@@ -60,7 +60,7 @@ public class ParamDescription {
         this.upperBoundInt = upperBound;
     }
 
-    public ParamDescription(String paramName, String shortDescription, String longDescription, Serializable defaultValue, double lowerBound, double upperBound) {
+    public ParamDescription(final String paramName, final String shortDescription, final String longDescription, final Serializable defaultValue, final double lowerBound, final double upperBound) {
         if (paramName == null) {
             throw new NullPointerException("Target parameter name is null.");
         }
@@ -82,66 +82,66 @@ public class ParamDescription {
     }
 
     public String getParamName() {
-        return paramName;
+        return this.paramName;
     }
 
-    public void setParamName(String paramName) {
+    public void setParamName(final String paramName) {
         this.paramName = paramName;
     }
 
     public String getShortDescription() {
-        return shortDescription;
+        return this.shortDescription;
     }
 
-    public void setShortDescription(String shortDescription) {
+    public void setShortDescription(final String shortDescription) {
         this.shortDescription = shortDescription;
     }
 
     public String getLongDescription() {
-        return longDescription;
+        return this.longDescription;
     }
 
-    public void setLongDescription(String longDescription) {
+    public void setLongDescription(final String longDescription) {
         this.longDescription = longDescription;
     }
 
     public Serializable getDefaultValue() {
-        return defaultValue;
+        return this.defaultValue;
     }
 
-    public void setDefaultValue(Serializable defaultValue) {
+    public void setDefaultValue(final Serializable defaultValue) {
         this.defaultValue = defaultValue;
     }
 
     public double getLowerBoundDouble() {
-        return lowerBoundDouble;
+        return this.lowerBoundDouble;
     }
 
-    public void setLowerBoundDouble(double lowerBoundDouble) {
+    public void setLowerBoundDouble(final double lowerBoundDouble) {
         this.lowerBoundDouble = lowerBoundDouble;
     }
 
     public double getUpperBoundDouble() {
-        return upperBoundDouble;
+        return this.upperBoundDouble;
     }
 
-    public void setUpperBoundDouble(double upperBoundDouble) {
+    public void setUpperBoundDouble(final double upperBoundDouble) {
         this.upperBoundDouble = upperBoundDouble;
     }
 
     public int getLowerBoundInt() {
-        return lowerBoundInt;
+        return this.lowerBoundInt;
     }
 
-    public void setLowerBoundInt(int lowerBoundInt) {
+    public void setLowerBoundInt(final int lowerBoundInt) {
         this.lowerBoundInt = lowerBoundInt;
     }
 
     public int getUpperBoundInt() {
-        return upperBoundInt;
+        return this.upperBoundInt;
     }
 
-    public void setUpperBoundInt(int upperBoundInt) {
+    public void setUpperBoundInt(final int upperBoundInt) {
         this.upperBoundInt = upperBoundInt;
     }
 

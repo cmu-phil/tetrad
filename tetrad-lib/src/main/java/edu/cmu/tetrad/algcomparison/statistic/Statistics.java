@@ -22,7 +22,7 @@ public class Statistics {
      *
      * @param statistic The statistic to add.
      */
-    public void add(Statistic statistic) {
+    public void add(final Statistic statistic) {
         this.statistics.add(statistic);
     }
 
@@ -32,12 +32,12 @@ public class Statistics {
      * @param abbrebiation The abbreviation set in the statistic.
      * @param weight       The utility weight for that statistic.
      */
-    public void setWeight(String abbrebiation, double weight) {
+    public void setWeight(final String abbrebiation, final double weight) {
         if (weight < 0 || weight > 1) throw new IllegalArgumentException("Weight must be in [0, 1]: " + weight);
 
         boolean set = false;
 
-        for (Statistic stat : statistics) {
+        for (final Statistic stat : this.statistics) {
             if (stat.getAbbreviation().equals(abbrebiation)) {
                 this.weights.put(stat, weight);
                 set = true;
@@ -56,7 +56,7 @@ public class Statistics {
      * @return A copy of this list, in the order added.
      */
     public List<Statistic> getStatistics() {
-        return new ArrayList<>(statistics);
+        return new ArrayList<>(this.statistics);
     }
 
     /**
@@ -65,9 +65,9 @@ public class Statistics {
      * @param statistic The statistic.
      * @return The utility weight for it.
      */
-    public double getWeight(Statistic statistic) {
-        if (weights.keySet().contains(statistic)) {
-            return weights.get(statistic);
+    public double getWeight(final Statistic statistic) {
+        if (this.weights.keySet().contains(statistic)) {
+            return this.weights.get(statistic);
         } else {
             return 0.0;
         }
@@ -79,7 +79,7 @@ public class Statistics {
      * @return This number.
      */
     public int size() {
-        return statistics.size();
+        return this.statistics.size();
     }
 
 

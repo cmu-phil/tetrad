@@ -81,29 +81,29 @@ public final class IndTestKciMatlab implements IndependenceTest {
      * @param dataSet A data set containing only continuous columns.
      * @param alpha   The alpha level of the test.
      */
-    public IndTestKciMatlab(DataSet dataSet, double alpha) {
+    public IndTestKciMatlab(final DataSet dataSet, final double alpha) {
         if (!(dataSet.isContinuous())) {
             throw new IllegalArgumentException("Data set must be continuous.");
         }
 
-        List<Node> nodes = dataSet.getVariables();
+        final List<Node> nodes = dataSet.getVariables();
 
         this.variables = Collections.unmodifiableList(nodes);
         setAlpha(alpha);
 
         this.dataSet = dataSet;
-        data = this.dataSet.getDoubleData();
+        this.data = this.dataSet.getDoubleData();
 
 //        _data = data.transpose().toArray();
-        _data = data.toArray();
+        this._data = this.data.toArray();
 
-        nodeMap = new HashMap<>();
+        this.nodeMap = new HashMap<>();
 
         for (int i = 0; i < nodes.size(); i++) {
-            nodeMap.put(nodes.get(i), i);
+            this.nodeMap.put(nodes.get(i), i);
         }
 
-        numTests = 0;
+        this.numTests = 0;
     }
 
     //==========================PUBLIC METHODS=============================//
@@ -111,14 +111,14 @@ public final class IndTestKciMatlab implements IndependenceTest {
     /**
      * Creates a new IndTestCramerT instance for a subset of the variables.
      */
-    public IndependenceTest indTestSubset(List<Node> vars) {
+    public IndependenceTest indTestSubset(final List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
-        boolean independent = checkIndependent(x, y, z);
+    public boolean isIndependent(final Node x, final Node y, final List<Node> z) {
+        final boolean independent = checkIndependent(x, y, z);
 
-        if (verbose) {
+        if (this.verbose) {
             if (independent) {
                 TetradLogger.getInstance().log("independencies",
                         SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
@@ -128,21 +128,21 @@ public final class IndTestKciMatlab implements IndependenceTest {
             }
         }
 
-        if (verbose) {
+        if (this.verbose) {
             SearchLogUtils.independenceFactMsg(x, y, z, getPValue());
         }
 
         return independent;
     }
 
-    public boolean isIndependent(Node x, Node y, Node... z) {
+    public boolean isIndependent(final Node x, final Node y, final Node... z) {
         return isIndependent(x, y, Arrays.asList(z));
     }
 
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        boolean independent = checkIndependent(x, y, z);
+    public boolean isDependent(final Node x, final Node y, final List<Node> z) {
+        final boolean independent = checkIndependent(x, y, z);
 
-        if (verbose) {
+        if (this.verbose) {
             if (independent) {
                 TetradLogger.getInstance().log("independencies",
                         SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
@@ -155,8 +155,8 @@ public final class IndTestKciMatlab implements IndependenceTest {
         return !independent;
     }
 
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
+    public boolean isDependent(final Node x, final Node y, final Node... z) {
+        final List<Node> zList = Arrays.asList(z);
         return isDependent(x, y, zList);
     }
 
@@ -171,7 +171,7 @@ public final class IndTestKciMatlab implements IndependenceTest {
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
-    public void setAlpha(double alpha) {
+    public void setAlpha(final double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
             throw new IllegalArgumentException("Significance out of range.");
         }
@@ -197,8 +197,8 @@ public final class IndTestKciMatlab implements IndependenceTest {
     /**
      * @return the variable with the given name.
      */
-    public Node getVariable(String name) {
-        for (Node node : variables) {
+    public Node getVariable(final String name) {
+        for (final Node node : this.variables) {
             if (node.getName().equals(name)) {
                 return node;
             }
@@ -211,9 +211,9 @@ public final class IndTestKciMatlab implements IndependenceTest {
      * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
-        List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<>();
-        for (Node variable1 : variables) {
+        final List<Node> variables = getVariables();
+        final List<String> variableNames = new ArrayList<>();
+        for (final Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }
         return variableNames;
@@ -223,7 +223,7 @@ public final class IndTestKciMatlab implements IndependenceTest {
      * If <code>isDeterminismAllowed()</code>, deters to IndTestFisherZD; otherwise throws
      * UnsupportedOperationException.
      */
-    public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
+    public boolean determines(final List<Node> z, final Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
 
@@ -231,7 +231,7 @@ public final class IndTestKciMatlab implements IndependenceTest {
      * @return the data set being analyzed.
      */
     public DataSet getData() {
-        return dataSet;
+        return this.dataSet;
     }
 
     @Override
@@ -268,7 +268,7 @@ public final class IndTestKciMatlab implements IndependenceTest {
 
     //==================================PRIVATE METHODS================================
 
-    private boolean checkIndependent(Node x, Node y, List<Node> z) {
+    private boolean checkIndependent(final Node x, final Node y, final List<Node> z) {
 //        numTests++;
 //
 //        int xIndex = dataSet.getColumn(x) + 1;
@@ -297,14 +297,14 @@ public final class IndTestKciMatlab implements IndependenceTest {
     }
 
     public int getNumTests() {
-        return numTests;
+        return this.numTests;
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 }

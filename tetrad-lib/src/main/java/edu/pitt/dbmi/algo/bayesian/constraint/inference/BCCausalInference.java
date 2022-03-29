@@ -50,17 +50,17 @@ public class BCCausalInference {
     private final int[] nodeDimension;
     private final int[][] cases;
 
-    public BCCausalInference(int[] nodeDimension, int[][] cases) {
+    public BCCausalInference(final int[] nodeDimension, final int[][] cases) {
         this.nodeDimension = nodeDimension;
         this.cases = cases;
         this.numberOfNodes = nodeDimension.length - 2;
         this.numberOfCases = cases.length - 1;
-        this.maximumNodes = numberOfNodes;
+        this.maximumNodes = this.numberOfNodes;
         this.maximumCases = cases.length - 1;
         this.maximumValues = Arrays.stream(nodeDimension).max().getAsInt();
-        this.maximumParents = maximumNodes - 2;
-        this.maximumCells = maximumParents * maximumValues * maximumValues * maximumCases;
-        this.logFactorial = computeLogFactorial(maximumCases, maximumValues);
+        this.maximumParents = this.maximumNodes - 2;
+        this.maximumCells = this.maximumParents * this.maximumValues * this.maximumValues * this.maximumCases;
+        this.logFactorial = computeLogFactorial(this.maximumCases, this.maximumValues);
         this.scoreFn = 1;  // right now we just fixed it to 1
     }
 
@@ -90,55 +90,55 @@ public class BCCausalInference {
      * @return P(x dependent y given z | data) or P(x independent y given z |
      * data)
      */
-    public double probConstraint(OP constraint, int x, int y, int[] z) {
+    public double probConstraint(final OP constraint, final int x, final int y, final int[] z) {
         double probability = 0;
 
-        CountsTracker countsTracker = createCountsTracker(z);
+        final CountsTracker countsTracker = createCountsTracker(z);
 
-        int[][] parents = countsTracker.parents;
-        int[] countsTree = countsTracker.countsTree;
-        int[] counts = countsTracker.counts;
-        double[][] scores = countsTracker.scores;
-        int[] xyProducts = countsTracker.xyProducts;
+        final int[][] parents = countsTracker.parents;
+        final int[] countsTree = countsTracker.countsTree;
+        final int[] counts = countsTracker.counts;
+        final double[][] scores = countsTracker.scores;
+        final int[] xyProducts = countsTracker.xyProducts;
 
-        int n = z[0];
+        final int n = z[0];
         parents[x][0] = n;
         for (int i = 1; i <= n; i++) {
             parents[x][i] = z[i];
         }
-        double lnMarginalLikelihood_X = scoreNode(x, 1, countsTracker);  // the 1 indicates the scoring of X
+        final double lnMarginalLikelihood_X = scoreNode(x, 1, countsTracker);  // the 1 indicates the scoring of X
         parents[y][0] = n;
         for (int i = 1; i <= n; i++) {
             parents[y][i] = z[i];
         }
-        double lnMarginalLikelihood_Y = scoreNode(y, 2, countsTracker);  // the 2 indicates the scoring of Y
-        double lnMarginalLikelihood_X_Y = lnMarginalLikelihood_X + lnMarginalLikelihood_Y;  // lnMarginalLikelihood_X_Y is the ln of the marginal likelihood, assuming X and Y are conditionally independence given Z.
+        final double lnMarginalLikelihood_Y = scoreNode(y, 2, countsTracker);  // the 2 indicates the scoring of Y
+        final double lnMarginalLikelihood_X_Y = lnMarginalLikelihood_X + lnMarginalLikelihood_Y;  // lnMarginalLikelihood_X_Y is the ln of the marginal likelihood, assuming X and Y are conditionally independence given Z.
         probability = priorIndependent(x, y, z); // p should be in (0, 1), and thus, not 0 or 1.
-        double lnPrior_X_Y = Math.log(probability);
-        double score_X_Y = lnMarginalLikelihood_X_Y + lnPrior_X_Y;
+        final double lnPrior_X_Y = Math.log(probability);
+        final double score_X_Y = lnMarginalLikelihood_X_Y + lnPrior_X_Y;
 
         countsTracker.numOfNodes++;
-        int xy = countsTracker.numOfNodes;  // this is a constructed variable that represents the Cartesian product of X and Y.
-        for (int casei = 1; casei <= numberOfCases; casei++) {  // derive and store values for the new variable XY.
-            int xValue = cases[casei][x];
-            int yValue = cases[casei][y];
-            xyProducts[casei] = (xValue - 1) * nodeDimension[x] + yValue;  // a value in the Cartesian product of X and Y
+        final int xy = countsTracker.numOfNodes;  // this is a constructed variable that represents the Cartesian product of X and Y.
+        for (int casei = 1; casei <= this.numberOfCases; casei++) {  // derive and store values for the new variable XY.
+            final int xValue = this.cases[casei][x];
+            final int yValue = this.cases[casei][y];
+            xyProducts[casei] = (xValue - 1) * this.nodeDimension[x] + yValue;  // a value in the Cartesian product of X and Y
         }
-        countsTracker.xyDim = nodeDimension[x] * nodeDimension[y];
+        countsTracker.xyDim = this.nodeDimension[x] * this.nodeDimension[y];
         parents[xy][0] = n;
         for (int i = 1; i <= n; i++) {
             parents[xy][i] = z[i];
         }
-        double lnMarginalLikelihood_XY = scoreNode(xy, 3, countsTracker);  // the 3 indicates the scoring of XY, which assumes X and Y are dependent given Z;
+        final double lnMarginalLikelihood_XY = scoreNode(xy, 3, countsTracker);  // the 3 indicates the scoring of XY, which assumes X and Y are dependent given Z;
         //Note: lnMarginalLikelihood_XY is not used, but the above call to ScoreNode creates scores^[*, 3], which is used below
         countsTracker.numOfNodes--;
-        double lnTermPrior_X_Y = Math.log(probability) / countsTracker.numOfScores;  // this is equal to ln(p^(1/numberOfScores))
-        double lnTermPrior_XY = Math.log(1 - Math.exp(lnTermPrior_X_Y));  // this is equal to ln(1 - p^(1/numberOfScores))
+        final double lnTermPrior_X_Y = Math.log(probability) / countsTracker.numOfScores;  // this is equal to ln(p^(1/numberOfScores))
+        final double lnTermPrior_XY = Math.log(1 - Math.exp(lnTermPrior_X_Y));  // this is equal to ln(1 - p^(1/numberOfScores))
         double scoreAll = 0;  // will contain the sum over the scores of all hypotheses
         for (int i = 1; i <= countsTracker.numOfScores; i++) {
             scoreAll += lnXpluslnY(lnTermPrior_X_Y + (scores[i][1] + scores[i][2]), lnTermPrior_XY + scores[i][3]);
         }
-        double probInd = Math.exp(score_X_Y - scoreAll);
+        final double probInd = Math.exp(score_X_Y - scoreAll);
 
         if (constraint == OP.INDEPENDENT) {
             probability = probInd;  // return P(X independent Y given Z | data)
@@ -149,18 +149,18 @@ public class BCCausalInference {
         return probability;
     }
 
-    private double scoreNode(int node, int whichList, CountsTracker countsTracker) {
+    private double scoreNode(final int node, final int whichList, final CountsTracker countsTracker) {
         double totalScore = 0;
 
-        int[][] parents = countsTracker.parents;
-        int[] counts = countsTracker.counts;
-        int[] countsTree = countsTracker.countsTree;
-        double[][] scores = countsTracker.scores;
+        final int[][] parents = countsTracker.parents;
+        final int[] counts = countsTracker.counts;
+        final int[] countsTree = countsTracker.countsTree;
+        final double[][] scores = countsTracker.scores;
 
-        int nodeDim = (node > numberOfNodes) ? countsTracker.xyDim : nodeDimension[node];
+        final int nodeDim = (node > this.numberOfNodes) ? countsTracker.xyDim : this.nodeDimension[node];
 
         if (parents[node][0] > 0) {
-            int firstParentSize = nodeDimension[parents[node][1]];
+            final int firstParentSize = this.nodeDimension[parents[node][1]];
             for (int i = 1; i <= firstParentSize; i++) {
                 countsTree[i] = 0;
             }
@@ -174,20 +174,20 @@ public class BCCausalInference {
             }
         }
 
-        for (int casei = 1; casei <= numberOfCases; casei++) {
+        for (int casei = 1; casei <= this.numberOfCases; casei++) {
             fileCase(node, casei, countsTracker);
         }
         int instancePtr = 1;
 
         int q = 1;  // state space size of parent instantiations
         for (int i = 1; i <= parents[node][0]; i++) {
-            q *= nodeDimension[parents[node][i]];
+            q *= this.nodeDimension[parents[node][i]];
         }
 
         countsTracker.numOfScores = 0;
         while (instancePtr < countsTracker.countsPtr) {
-            double score;
-            if (scoreFn == 1) {
+            final double score;
+            if (this.scoreFn == 1) {
                 score = scoringFn1(node, instancePtr, q, PESS_VALUE, countsTracker);
             } else {
                 score = scoringFn2(node, instancePtr, countsTracker);
@@ -209,18 +209,18 @@ public class BCCausalInference {
      * @param pess        is the prior equivalent sample size
      * @return
      */
-    private double scoringFn1(int node, int instancePtr, double q, double pess, CountsTracker countsTracker) {
-        int[] counts = countsTracker.counts;
+    private double scoringFn1(final int node, final int instancePtr, final double q, final double pess, final CountsTracker countsTracker) {
+        final int[] counts = countsTracker.counts;
 
         int Nij = 0;
         double scoreOfSum = 0;
-        int r = (node > numberOfNodes) ? countsTracker.xyDim : nodeDimension[node];
-        double rr = r;
-        double pessDivQR = pess / (q * rr);
-        double pessDivQ = pess / q;
-        double lngammPessDivQR = gammln(pessDivQR);
+        final int r = (node > this.numberOfNodes) ? countsTracker.xyDim : this.nodeDimension[node];
+        final double rr = r;
+        final double pessDivQR = pess / (q * rr);
+        final double pessDivQ = pess / q;
+        final double lngammPessDivQR = gammln(pessDivQR);
         for (int k = 0; k <= (r - 1); k++) {
-            int Nijk = counts[instancePtr + k];
+            final int Nijk = counts[instancePtr + k];
             Nij += Nijk;
             scoreOfSum += gammln(Nijk + pessDivQR) - lngammPessDivQR;
         }
@@ -235,45 +235,45 @@ public class BCCausalInference {
      * @param instancePtr
      * @return
      */
-    private double scoringFn2(int node, int instancePtr, CountsTracker countsTracker) {
-        int[] counts = countsTracker.counts;
-        int nodeDim = (node > numberOfNodes) ? countsTracker.xyDim : nodeDimension[node];
+    private double scoringFn2(final int node, final int instancePtr, final CountsTracker countsTracker) {
+        final int[] counts = countsTracker.counts;
+        final int nodeDim = (node > this.numberOfNodes) ? countsTracker.xyDim : this.nodeDimension[node];
 
         int hits = 0;
         double scoreNI = 0;
         for (int i = 0; i <= (nodeDim - 1); i++) {
-            int count = counts[instancePtr + i];
+            final int count = counts[instancePtr + i];
             hits += count;
-            scoreNI += logFactorial[count];
+            scoreNI += this.logFactorial[count];
         }
-        scoreNI += logFactorial[nodeDim - 1] - logFactorial[hits + nodeDim - 1];
+        scoreNI += this.logFactorial[nodeDim - 1] - this.logFactorial[hits + nodeDim - 1];
 
         return scoreNI;
     }
 
-    private void fileCase(int node, int casei, CountsTracker countsTracker) {
-        int nodeDim = (node > numberOfNodes) ? countsTracker.xyDim : nodeDimension[node];
+    private void fileCase(final int node, final int casei, final CountsTracker countsTracker) {
+        final int nodeDim = (node > this.numberOfNodes) ? countsTracker.xyDim : this.nodeDimension[node];
 
         int parent = 0;
         int parentValue = 0;
         int cPtr = 0;
         int parenti = 0;
 
-        int[][] parents = countsTracker.parents;
-        int[] counts = countsTracker.counts;
-        int[] countsTree = countsTracker.countsTree;
-        int[] xyProducts = countsTracker.xyProducts;
+        final int[][] parents = countsTracker.parents;
+        final int[] counts = countsTracker.counts;
+        final int[] countsTree = countsTracker.countsTree;
+        final int[] xyProducts = countsTracker.xyProducts;
 
-        int nodeValue = (node > numberOfNodes) ? xyProducts[casei] : cases[casei][node];
+        final int nodeValue = (node > this.numberOfNodes) ? xyProducts[casei] : this.cases[casei][node];
         if (nodeValue == 0) {
 //            System.exit(1);
             throw new IllegalArgumentException();
         }
-        int numberOfParents = parents[node][0];
-        boolean missingValue = false;
+        final int numberOfParents = parents[node][0];
+        final boolean missingValue = false;
         for (int i = 1; i <= numberOfParents; i++) {
             parent = parents[node][i];
-            parentValue = (parent > numberOfNodes) ? xyProducts[casei] : cases[casei][parent];
+            parentValue = (parent > this.numberOfNodes) ? xyProducts[casei] : this.cases[casei][parent];
             if (parentValue == 0) {
 //                System.exit(1);
                 throw new IllegalArgumentException();
@@ -283,7 +283,7 @@ public class BCCausalInference {
         int ptr = 1;
         for (int i = 1; i <= numberOfParents; i++) {
             parent = parents[node][i];
-            parentValue = (parent > numberOfNodes) ? xyProducts[casei] : cases[casei][parent];
+            parentValue = (parent > this.numberOfNodes) ? xyProducts[casei] : this.cases[casei][parent];
             ptr = countsTree[ctPtr + parentValue - 1];
 
             if (ptr > 0) {
@@ -301,19 +301,19 @@ public class BCCausalInference {
             // GrowBranch
             for (int i = parenti; i <= numberOfParents; i++) {
                 parent = parents[node][i];
-                parentValue = (parent > numberOfNodes) ? xyProducts[casei] : cases[casei][parent];
+                parentValue = (parent > this.numberOfNodes) ? xyProducts[casei] : this.cases[casei][parent];
 
                 if (i == numberOfParents) {
                     countsTree[ctPtr + parentValue - 1] = countsTracker.countsPtr;
                 } else {
                     countsTree[ctPtr + parentValue - 1] = countsTracker.countsTreePtr;
 
-                    for (int j = countsTracker.countsTreePtr; j <= (countsTracker.countsTreePtr + nodeDimension[parents[node][i + 1]] - 1); j++) {
+                    for (int j = countsTracker.countsTreePtr; j <= (countsTracker.countsTreePtr + this.nodeDimension[parents[node][i + 1]] - 1); j++) {
                         countsTree[j] = 0;
                     }
 
                     ctPtr = countsTracker.countsTreePtr;
-                    countsTracker.countsTreePtr += nodeDimension[parents[node][i + 1]];
+                    countsTracker.countsTreePtr += this.nodeDimension[parents[node][i + 1]];
 
                     if (countsTracker.countsPtr > countsTracker.maxCells) {
 //                        System.exit(0);
@@ -338,15 +338,15 @@ public class BCCausalInference {
         } // end of else
     }
 
-    private CountsTracker createCountsTracker(int[] z) {
-        CountsTracker tracker = new CountsTracker();
-        tracker.numOfNodes = numberOfNodes;
-        tracker.numOfCases = numberOfCases;
-        tracker.maxNodes = maximumNodes;
-        tracker.maxCases = maximumCases;
-        tracker.maxValues = maximumValues;
-        tracker.maxParents = maximumParents;
-        tracker.maxCells = maximumCells;
+    private CountsTracker createCountsTracker(final int[] z) {
+        final CountsTracker tracker = new CountsTracker();
+        tracker.numOfNodes = this.numberOfNodes;
+        tracker.numOfCases = this.numberOfCases;
+        tracker.maxNodes = this.maximumNodes;
+        tracker.maxCases = this.maximumCases;
+        tracker.maxValues = this.maximumValues;
+        tracker.maxParents = this.maximumParents;
+        tracker.maxCells = this.maximumCells;
 
         if (z.length > tracker.maxParents) {
             tracker.maxParents = z.length;
@@ -374,13 +374,13 @@ public class BCCausalInference {
      * @param z
      * @return
      */
-    private double priorIndependent(int x, int y, int[] z) {
+    private double priorIndependent(final int x, final int y, final int[] z) {
         return 0.5;  // currently assumes uniform priors
     }
 
-    private double[] computeLogFactorial(int maxCases, int maxValues) {
-        int size = (2 * maxCases) + maxValues;
-        double[] logFact = new double[size + 1];
+    private double[] computeLogFactorial(final int maxCases, final int maxValues) {
+        final int size = (2 * maxCases) + maxValues;
+        final double[] logFact = new double[size + 1];
         for (int i = 1; i < logFact.length; i++) {
             logFact[i] = Math.log(i) + logFact[i - 1];
         }
@@ -397,37 +397,37 @@ public class BCCausalInference {
      */
     private static double lnXpluslnY(double lnX, double lnY) {
         if (lnY > lnX) {
-            double temp = lnX;
+            final double temp = lnX;
             lnX = lnY;
             lnY = temp;
         }
 
-        double lnYminusLnX = lnY - lnX;
+        final double lnYminusLnX = lnY - lnX;
 
         return (lnYminusLnX < Double.MIN_EXPONENT)
                 ? lnX
                 : Math.log1p(Math.exp(lnYminusLnX)) + lnX;
     }
 
-    private double gammln(double xx) {
+    private double gammln(final double xx) {
         if (xx == 1) {
             return 0;  // this is a correction to a bug that used to be here
         } else {
             if (xx > 1) {
                 return gammlnCore(xx);
             } else {
-                double z = 1 - xx;
+                final double z = 1 - xx;
                 return Math.log(Math.PI * z) - gammlnCore(1 + z) - Math.log(Math.sin(Math.PI * z));
             }
         }
     }
 
-    private double gammlnCore(double xx) {
-        double stp = 2.50662827465;
-        double half = 0.5;
-        double one = 1.0;
-        double fpf = 5.5;
-        double[] cof = {
+    private double gammlnCore(final double xx) {
+        final double stp = 2.50662827465;
+        final double half = 0.5;
+        final double one = 1.0;
+        final double fpf = 5.5;
+        final double[] cof = {
                 0,
                 76.18009173,
                 -86.50532033,

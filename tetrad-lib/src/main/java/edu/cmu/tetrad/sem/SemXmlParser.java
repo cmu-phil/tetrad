@@ -39,19 +39,19 @@ public class SemXmlParser {
      * @param semImElement the xml of the IM
      * @return the SemIM
      */
-    public static SemIm getSemIm(Element semImElement) {
+    public static SemIm getSemIm(final Element semImElement) {
         if (!SemXmlConstants.SEM.equals(semImElement.getQualifiedName())) {
             throw new IllegalArgumentException("Expecting '" + SemXmlConstants.SEM + "' element"); //$NON-NLS-1$ //$NON-NLS-2$
         }
 
-        Element variablesElement = semImElement.getFirstChildElement(SemXmlConstants.SEM_VARIABLES);
-        Element edgesElement = semImElement.getFirstChildElement(SemXmlConstants.EDGES);
-        Element marginalDistributionElement = semImElement.getFirstChildElement(SemXmlConstants.MARGINAL_ERROR_DISTRIBUTION);
-        Element jointDistributionElement = semImElement.getFirstChildElement(SemXmlConstants.JOINT_ERROR_DISTRIBUTION);
+        final Element variablesElement = semImElement.getFirstChildElement(SemXmlConstants.SEM_VARIABLES);
+        final Element edgesElement = semImElement.getFirstChildElement(SemXmlConstants.EDGES);
+        final Element marginalDistributionElement = semImElement.getFirstChildElement(SemXmlConstants.MARGINAL_ERROR_DISTRIBUTION);
+        final Element jointDistributionElement = semImElement.getFirstChildElement(SemXmlConstants.JOINT_ERROR_DISTRIBUTION);
 
 
-        Dag graph = makeVariables(variablesElement);
-        SemIm im = makeEdges(edgesElement, graph);
+        final Dag graph = makeVariables(variablesElement);
+        final SemIm im = makeEdges(edgesElement, graph);
         setNodeMeans(variablesElement, im);
         addMarginalErrorDistribution(marginalDistributionElement, im);
         addJointErrorDistribution(jointDistributionElement, im);
@@ -60,15 +60,15 @@ public class SemXmlParser {
     }
 
 
-    private static Dag makeVariables(Element variablesElement) {
+    private static Dag makeVariables(final Element variablesElement) {
         if (!SemXmlConstants.SEM_VARIABLES.equals(variablesElement.getQualifiedName())) {
             throw new IllegalArgumentException("Expecting '" + SemXmlConstants.SEM_VARIABLES + "' element"); //$NON-NLS-1$ //$NON-NLS-2$
         }
         Element var;
         GraphNode node;
         Integer x, y;
-        Dag semGraph = new Dag();
-        Elements vars = variablesElement.getChildElements(SemXmlConstants.CONTINUOUS_VARIABLE);
+        final Dag semGraph = new Dag();
+        final Elements vars = variablesElement.getChildElements(SemXmlConstants.CONTINUOUS_VARIABLE);
 
         for (int i = 0; i < vars.size(); i++) {
             var = vars.get(i);
@@ -87,14 +87,14 @@ public class SemXmlParser {
         return semGraph;
     }
 
-    private static SemIm makeEdges(Element edgesElement, Dag semGraph) {
+    private static SemIm makeEdges(final Element edgesElement, final Dag semGraph) {
         if (!SemXmlConstants.EDGES.equals(edgesElement.getQualifiedName())) {
             throw new IllegalArgumentException("Expecting '" + SemXmlConstants.EDGES + "' element"); //$NON-NLS-1$ //$NON-NLS-2$
         }
         Element edge;
         Node causeNode, effectNode;
 
-        Elements edges = edgesElement.getChildElements(SemXmlConstants.EDGE);
+        final Elements edges = edgesElement.getChildElements(SemXmlConstants.EDGE);
 
         for (int i = 0; i < edges.size(); i++) {
             edge = edges.get(i);
@@ -104,7 +104,7 @@ public class SemXmlParser {
         }
 
         //SemIm semIm = SemIm.newInstance(new SemPm(semGraph));
-        SemIm semIm = new SemIm(new SemPm(semGraph));
+        final SemIm semIm = new SemIm(new SemPm(semGraph));
         for (int i = 0; i < edges.size(); i++) {
             edge = edges.get(i);
             causeNode = semGraph.getNode(edge.getAttributeValue(SemXmlConstants.CAUSE_NODE));
@@ -112,10 +112,10 @@ public class SemXmlParser {
             semIm.setParamValue(causeNode, effectNode, new Double(edge.getAttributeValue(SemXmlConstants.COEF)));
             //semIm.getSemPm().getParameter(causeNode, effectNode).setFixed(new Boolean(edge.getAttributeValue(SemXmlConstants.FIXED)).booleanValue());
 
-            Parameter covarianceParameter = semIm.getSemPm().getCovarianceParameter(causeNode, effectNode);
+            final Parameter covarianceParameter = semIm.getSemPm().getCovarianceParameter(causeNode, effectNode);
 
             if (covarianceParameter != null) {
-                Boolean aBoolean = Boolean.valueOf(edge.getAttributeValue(SemXmlConstants.FIXED));
+                final Boolean aBoolean = Boolean.valueOf(edge.getAttributeValue(SemXmlConstants.FIXED));
                 covarianceParameter.setFixed(aBoolean);
             }
         }
@@ -123,12 +123,12 @@ public class SemXmlParser {
         return semIm;
     }
 
-    private static void setNodeMeans(Element variablesElement, SemIm im) {
-        Elements vars = variablesElement.getChildElements(SemXmlConstants.CONTINUOUS_VARIABLE);
+    private static void setNodeMeans(final Element variablesElement, final SemIm im) {
+        final Elements vars = variablesElement.getChildElements(SemXmlConstants.CONTINUOUS_VARIABLE);
 
         for (int i = 0; i < vars.size(); i++) {
-            Element var = vars.get(i);
-            Node node = im.getSemPm().getGraph().getNode(var.getAttributeValue(SemXmlConstants.NAME));
+            final Element var = vars.get(i);
+            final Node node = im.getSemPm().getGraph().getNode(var.getAttributeValue(SemXmlConstants.NAME));
 
             if (var.getAttributeValue(SemXmlConstants.INTERCEPT) != null) {
                 im.setMean(node, Double.parseDouble(var.getAttributeValue(SemXmlConstants.INTERCEPT)));
@@ -138,18 +138,18 @@ public class SemXmlParser {
         }
     }
 
-    private static void addMarginalErrorDistribution(Element marginalDistributionElement, SemIm semIm) {
+    private static void addMarginalErrorDistribution(final Element marginalDistributionElement, final SemIm semIm) {
         if (!SemXmlConstants.MARGINAL_ERROR_DISTRIBUTION.equals(marginalDistributionElement.getQualifiedName())) {
             throw new IllegalArgumentException("Expecting '" + SemXmlConstants.MARGINAL_ERROR_DISTRIBUTION + "' element"); //$NON-NLS-1$ //$NON-NLS-2$
         }
         Element normal;
         Node node;
-        Elements normals = marginalDistributionElement.getChildElements(SemXmlConstants.NORMAL);
+        final Elements normals = marginalDistributionElement.getChildElements(SemXmlConstants.NORMAL);
 
         for (int i = 0; i < normals.size(); i++) {
             normal = normals.get(i);
 
-            SemGraph graph = semIm.getSemPm().getGraph();
+            final SemGraph graph = semIm.getSemPm().getGraph();
             graph.setShowErrorTerms(true);
 
             node = graph.getExogenous(graph.getNode(normal.getAttributeValue(SemXmlConstants.VARIABLE)));
@@ -158,14 +158,14 @@ public class SemXmlParser {
         }
     }
 
-    private static void addJointErrorDistribution(Element jointDistributionElement, SemIm semIm) {
+    private static void addJointErrorDistribution(final Element jointDistributionElement, final SemIm semIm) {
         if (!SemXmlConstants.JOINT_ERROR_DISTRIBUTION.equals(jointDistributionElement.getQualifiedName())) {
             throw new IllegalArgumentException("Expecting '" + SemXmlConstants.JOINT_ERROR_DISTRIBUTION + "' element"); //$NON-NLS-1$ //$NON-NLS-2$
         }
 
         Element normal;
         Node node1, node2;
-        Elements normals = jointDistributionElement.getChildElements(SemXmlConstants.NORMAL);
+        final Elements normals = jointDistributionElement.getChildElements(SemXmlConstants.NORMAL);
 
         for (int i = 0; i < normals.size(); i++) {
             normal = normals.get(i);

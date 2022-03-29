@@ -66,7 +66,7 @@ public class ParamConstraintType implements TetradSerializable {
      * Protected constructor for the types; this allows for extension in case
      * anyone wants to add formula types.
      */
-    private ParamConstraintType(String name) {
+    private ParamConstraintType(final String name) {
         this.name = name;
     }
 
@@ -81,7 +81,7 @@ public class ParamConstraintType implements TetradSerializable {
      * Prints out the name of the type.
      */
     public String toString() {
-        return name;
+        return this.name;
     }
 
     // Declarations required for serialization.
@@ -90,7 +90,7 @@ public class ParamConstraintType implements TetradSerializable {
     private static final ParamConstraintType[] TYPES = {LT, GT, EQ, NONE};
 
     Object readResolve() throws ObjectStreamException {
-        return TYPES[ordinal]; // Canonicalize.
+        return TYPES[this.ordinal]; // Canonicalize.
     }
 }
 

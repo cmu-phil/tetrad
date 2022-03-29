@@ -28,13 +28,13 @@ public class Comparison {
      * Simulates data from model paramerizing the given DAG, and runs the algorithm on that data,
      * printing out error statistics.
      */
-    public static ComparisonResult compare(ComparisonParameters params) {
-        DataSet dataSet;
-        Graph trueDag;
+    public static ComparisonResult compare(final ComparisonParameters params) {
+        final DataSet dataSet;
+        final Graph trueDag;
         IndependenceTest test = null;
         Score score = null;
 
-        ComparisonResult result = new ComparisonResult(params);
+        final ComparisonResult result = new ComparisonResult(params);
 
         if (params.getDataFile() != null) {
             dataSet = loadDataFile(params.getDataFile());
@@ -54,7 +54,7 @@ public class Comparison {
             }
 
             if (params.getDataType() == ComparisonParameters.DataType.Continuous) {
-                List<Node> nodes = new ArrayList<>();
+                final List<Node> nodes = new ArrayList<>();
 
                 for (int i = 0; i < params.getNumVars(); i++) {
                     nodes.add(new ContinuousVariable("X" + (i + 1)));
@@ -71,10 +71,10 @@ public class Comparison {
                     throw new IllegalArgumentException("Sample size not set.");
                 }
 
-                LargeScaleSimulation sim = new LargeScaleSimulation(trueDag);
+                final LargeScaleSimulation sim = new LargeScaleSimulation(trueDag);
                 dataSet = sim.simulateDataFisher(params.getSampleSize());
             } else if (params.getDataType() == ComparisonParameters.DataType.Discrete) {
-                List<Node> nodes = new ArrayList<>();
+                final List<Node> nodes = new ArrayList<>();
 
                 for (int i = 0; i < params.getNumVars(); i++) {
                     nodes.add(new DiscreteVariable("X" + (i + 1), 3));
@@ -91,14 +91,14 @@ public class Comparison {
                     throw new IllegalArgumentException("Sample size not set.");
                 }
 
-                int[] tiers = new int[nodes.size()];
+                final int[] tiers = new int[nodes.size()];
 
                 for (int i = 0; i < nodes.size(); i++) {
                     tiers[i] = i;
                 }
 
-                BayesPm pm = new BayesPm(trueDag, 3, 3);
-                MlBayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+                final BayesPm pm = new BayesPm(trueDag, 3, 3);
+                final MlBayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
                 dataSet = im.simulateData(params.getSampleSize(), false, tiers);
             } else {
                 throw new IllegalArgumentException("Unrecognized data type.");
@@ -144,7 +144,7 @@ public class Comparison {
                 throw new IllegalArgumentException("Penalty discount not set.");
             }
 
-            SemBicScore semBicScore = new SemBicScore(new CovarianceMatrix(dataSet));
+            final SemBicScore semBicScore = new SemBicScore(new CovarianceMatrix(dataSet));
             semBicScore.setPenaltyDiscount(params.getPenaltyDiscount());
             score = semBicScore;
 
@@ -175,57 +175,57 @@ public class Comparison {
             throw new IllegalArgumentException("Algorithm not set.");
         }
 
-        long time1 = System.currentTimeMillis();
+        final long time1 = System.currentTimeMillis();
 
         if (params.getAlgorithm() == ComparisonParameters.Algorithm.PC) {
             if (test == null) throw new IllegalArgumentException("Test not set.");
-            Pc search = new Pc(test);
+            final Pc search = new Pc(test);
             result.setResultGraph(search.search());
             result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.CPC) {
             if (test == null) throw new IllegalArgumentException("Test not set.");
-            Cpc search = new Cpc(test);
+            final Cpc search = new Cpc(test);
             result.setResultGraph(search.search());
             result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.PCLocal) {
             if (test == null) throw new IllegalArgumentException("Test not set.");
-            PcLocal search = new PcLocal(test);
+            final PcLocal search = new PcLocal(test);
             result.setResultGraph(search.search());
             result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.PCStableMax) {
             if (test == null) throw new IllegalArgumentException("Test not set.");
-            PcStableMax search = new PcStableMax(test);
+            final PcStableMax search = new PcStableMax(test);
             result.setResultGraph(search.search());
             result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGES) {
             if (score == null) throw new IllegalArgumentException("Score not set.");
-            Fges search = new Fges(score);
+            final Fges search = new Fges(score);
             search.setFaithfulnessAssumed(params.isOneEdgeFaithfulnessAssumed());
             result.setResultGraph(search.search());
             result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGES2) {
             if (score == null) throw new IllegalArgumentException("Score not set.");
-            Fges search = new Fges(score);
+            final Fges search = new Fges(score);
             search.setFaithfulnessAssumed(params.isOneEdgeFaithfulnessAssumed());
             result.setResultGraph(search.search());
             result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FCI) {
             if (test == null) throw new IllegalArgumentException("Test not set.");
-            Fci search = new Fci(test);
+            final Fci search = new Fci(test);
             result.setResultGraph(search.search());
             result.setCorrectResult(new DagToPag2(trueDag).convert());
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.GFCI) {
             if (test == null) throw new IllegalArgumentException("Test not set.");
-            GFci search = new GFci(test, score);
+            final GFci search = new GFci(test, score);
             result.setResultGraph(search.search());
             result.setCorrectResult(new DagToPag2(trueDag).convert());
         } else {
             throw new IllegalArgumentException("Unrecognized algorithm.");
         }
 
-        long time2 = System.currentTimeMillis();
+        final long time2 = System.currentTimeMillis();
 
-        long elapsed = time2 - time1;
+        final long elapsed = time2 - time1;
         result.setElapsed(elapsed);
 
 
@@ -234,22 +234,22 @@ public class Comparison {
         return result;
     }
 
-    private static Graph loadGraphFile(String graphFile) {
+    private static Graph loadGraphFile(final String graphFile) {
         return null;
     }
 
-    private static DataSet loadDataFile(String dataFile) {
+    private static DataSet loadDataFile(final String dataFile) {
         return null;
     }
 
-    public static String summarize(List<ComparisonResult> results, List<TableColumn> tableColumns) {
+    public static String summarize(final List<ComparisonResult> results, final List<TableColumn> tableColumns) {
 
-        List<Node> variables = new ArrayList<>();
-        for (TableColumn column : tableColumns) {
+        final List<Node> variables = new ArrayList<>();
+        for (final TableColumn column : tableColumns) {
             variables.add(new ContinuousVariable(column.toString()));
         }
 
-        DataSet dataSet = new BoxDataSet(new DoubleDataBox(0, variables.size()), variables);
+        final DataSet dataSet = new BoxDataSet(new DoubleDataBox(0, variables.size()), variables);
         dataSet.setNumberFormat(new DecimalFormat("0"));
 
         for (int i = 0; i < results.size(); i++) {
@@ -258,13 +258,13 @@ public class Comparison {
 
         System.out.println();
 
-        for (ComparisonResult _result : results) {
-            Graph correctGraph = _result.getCorrectResult();
-            Graph resultGraph = _result.getResultGraph();
+        for (final ComparisonResult _result : results) {
+            final Graph correctGraph = _result.getCorrectResult();
+            final Graph resultGraph = _result.getResultGraph();
 
-            GraphUtils.GraphComparison comparison = SearchGraphUtils.getGraphComparison2(correctGraph, resultGraph);
+            final GraphUtils.GraphComparison comparison = SearchGraphUtils.getGraphComparison2(correctGraph, resultGraph);
 
-            int newRow = dataSet.getNumRows();
+            final int newRow = dataSet.getNumRows();
 
             if (tableColumns.contains(TableColumn.AdjCor)) {
                 dataSet.setDouble(newRow, tableColumns.indexOf(TableColumn.AdjCor), comparison.getAdjCor());
@@ -315,7 +315,7 @@ public class Comparison {
             }
         }
 
-        int[] cols = new int[tableColumns.size()];
+        final int[] cols = new int[tableColumns.size()];
         for (int i = 0; i < cols.length; i++) {
             cols[i] = i;
         }
@@ -324,8 +324,8 @@ public class Comparison {
     }
 
 
-    private static TextTable getTextTable(DataSet dataSet, int[] columns, NumberFormat nf) {
-        TextTable table = new TextTable(dataSet.getNumRows() + 2, columns.length + 1);
+    private static TextTable getTextTable(final DataSet dataSet, final int[] columns, final NumberFormat nf) {
+        final TextTable table = new TextTable(dataSet.getNumRows() + 2, columns.length + 1);
 
         table.setToken(0, 0, "Run #");
 
@@ -343,7 +343,7 @@ public class Comparison {
             }
         }
 
-        NumberFormat nf2 = new DecimalFormat("0.00");
+        final NumberFormat nf2 = new DecimalFormat("0.00");
 
         for (int j = 0; j < columns.length; j++) {
             double sum = 0.0;
@@ -352,7 +352,7 @@ public class Comparison {
                 sum += dataSet.getDouble(i, columns[j]);
             }
 
-            double avg = sum / dataSet.getNumRows();
+            final double avg = sum / dataSet.getNumRows();
 
             table.setToken(dataSet.getNumRows() + 2 - 1, j + 1, nf2.format(avg));
         }

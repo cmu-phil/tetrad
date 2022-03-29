@@ -299,13 +299,13 @@ public interface DataSet extends KnowledgeTransferable, DataModel, TetradSeriali
      * @return a new data set in which the the column at indices[i] is placed at
      * index i, for i = 0 to indices.length - 1. (View instead?)
      */
-    DataSet subsetColumns(int columns[]);
+    DataSet subsetColumns(int[] columns);
 
     /**
      * @return a new data set in which the the row at indices[i] is placed at
      * index i, for i = 0 to indices.length - 1. (View instead?)
      */
-    DataSet subsetRows(int rows[]);
+    DataSet subsetRows(int[] rows);
 
     /**
      * @return a string representation of this dataset.

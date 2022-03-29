@@ -24,8 +24,8 @@ package edu.cmu.tetrad.gene.tetrad.gene.algorithm.urchin;
 import edu.cmu.tetrad.util.RandomUtil;
 
 public class NbGeneOr extends AbstractNbComponent {
-    public NbGeneOr(double factor, double power, NbComponent[] parents,
-                    int[] inhibitExcite, String name, double sd) {
+    public NbGeneOr(final double factor, final double power, final NbComponent[] parents,
+                    final int[] inhibitExcite, final String name, final double sd) {
         super(factor, power, parents, inhibitExcite, name);
     }
 
@@ -42,7 +42,7 @@ public class NbGeneOr extends AbstractNbComponent {
         }
 
         for (int i = 1; i < getNparents(); i++) {
-            double v = getParents()[i].getValue();
+            final double v = getParents()[i].getValue();
             if (getInhibitExcite()[i] > 0) {
                 sum += v / (v + 1.0) * (1.0 - sum);
             } else {
@@ -54,7 +54,7 @@ public class NbGeneOr extends AbstractNbComponent {
         if (getSd() == 0.0) {
             return;
         } else {
-            double r = 1.0 +
+            final double r = 1.0 +
                     RandomUtil.getInstance().nextNormal(0, 1) * getSd();
             setValue(getValue() * r);
         }

@@ -79,7 +79,7 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
 
     //==============================CONSTRUCTORS===========================//
 
-    public CptInvariantUpdater(BayesIm bayesIm) {
+    public CptInvariantUpdater(final BayesIm bayesIm) {
         if (bayesIm == null) {
             throw new NullPointerException();
         }
@@ -91,7 +91,7 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
     /**
      * Constructs a new updater for the given Bayes net.
      */
-    public CptInvariantUpdater(BayesIm bayesIm, Evidence evidence) {
+    public CptInvariantUpdater(final BayesIm bayesIm, final Evidence evidence) {
         if (bayesIm == null) {
             throw new NullPointerException();
         }
@@ -129,12 +129,12 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
         return new Evidence(this.evidence);
     }
 
-    public void setEvidence(Evidence evidence) {
+    public void setEvidence(final Evidence evidence) {
         if (evidence == null) {
             throw new NullPointerException();
         }
 
-        if (evidence.isIncompatibleWith(bayesIm)) {
+        if (evidence.isIncompatibleWith(this.bayesIm)) {
             throw new IllegalArgumentException("The variable list for this evidence " +
                     "must be compatible with the variable list of the stored IM.");
         }
@@ -142,38 +142,38 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
         this.evidence = evidence;
 
         // Create the manipulated Bayes Im.
-        Graph graph = bayesIm.getBayesPm().getDag();
-        Dag manipulatedGraph = createManipulatedGraph(graph);
-        BayesPm manipulatedBayesPm = createManipulatedBayesPm(manipulatedGraph);
+        final Graph graph = this.bayesIm.getBayesPm().getDag();
+        final Dag manipulatedGraph = createManipulatedGraph(graph);
+        final BayesPm manipulatedBayesPm = createManipulatedBayesPm(manipulatedGraph);
         this.manipulatedBayesIm = createdManipulatedBayesIm(manipulatedBayesPm);
 
         // Create the updated BayesIm from the manipulated Bayes Im.
-        Evidence evidence2 = new Evidence(evidence, manipulatedBayesIm);
-        this.updatedBayesIm = new UpdatedBayesIm(manipulatedBayesIm, evidence2);
+        final Evidence evidence2 = new Evidence(evidence, this.manipulatedBayesIm);
+        this.updatedBayesIm = new UpdatedBayesIm(this.manipulatedBayesIm, evidence2);
 
         // Create the marginal calculator from the updated Bayes Im.
         this.cptInvariantMarginalCalculator =
-                new CptInvariantMarginalCalculator(bayesIm,
+                new CptInvariantMarginalCalculator(this.bayesIm,
                         evidence2);
     }
 
-    public double getMarginal(int variable, int value) {
-        return cptInvariantMarginalCalculator.getMarginal(variable, value);
+    public double getMarginal(final int variable, final int value) {
+        return this.cptInvariantMarginalCalculator.getMarginal(variable, value);
     }
 
     public boolean isJointMarginalSupported() {
         return false;
     }
 
-    public double getJointMarginal(int[] variables, int[] values) {
+    public double getJointMarginal(final int[] variables, final int[] values) {
         throw new UnsupportedOperationException();
     }
 
-    public double[] calculatePriorMarginals(int nodeIndex) {
-        Evidence evidence = getEvidence();
+    public double[] calculatePriorMarginals(final int nodeIndex) {
+        final Evidence evidence = getEvidence();
         setEvidence(Evidence.tautology(evidence.getVariableSource()));
 
-        double[] marginals = new double[evidence.getNumCategories(nodeIndex)];
+        final double[] marginals = new double[evidence.getNumCategories(nodeIndex)];
 
         for (int i = 0;
              i < getBayesIm().getNumColumns(nodeIndex); i++) {
@@ -184,8 +184,8 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
         return marginals;
     }
 
-    public double[] calculateUpdatedMarginals(int nodeIndex) {
-        double[] marginals = new double[evidence.getNumCategories(nodeIndex)];
+    public double[] calculateUpdatedMarginals(final int nodeIndex) {
+        final double[] marginals = new double[this.evidence.getNumCategories(nodeIndex)];
 
         for (int i = 0;
              i < getBayesIm().getNumColumns(nodeIndex); i++) {
@@ -199,29 +199,29 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
      * Prints out the most recent marginal.
      */
     public String toString() {
-        return "CPT Invariant Updater, evidence = " + evidence;
+        return "CPT Invariant Updater, evidence = " + this.evidence;
     }
 
     //==============================PRIVATE METHODS=======================//
 
-    private BayesIm createdManipulatedBayesIm(BayesPm updatedBayesPm) {
-        return new MlBayesIm(updatedBayesPm, bayesIm, MlBayesIm.MANUAL);
+    private BayesIm createdManipulatedBayesIm(final BayesPm updatedBayesPm) {
+        return new MlBayesIm(updatedBayesPm, this.bayesIm, MlBayesIm.MANUAL);
     }
 
-    private BayesPm createManipulatedBayesPm(Dag updatedGraph) {
-        return new BayesPm(updatedGraph, bayesIm.getBayesPm());
+    private BayesPm createManipulatedBayesPm(final Dag updatedGraph) {
+        return new BayesPm(updatedGraph, this.bayesIm.getBayesPm());
     }
 
-    private Dag createManipulatedGraph(Graph graph) {
-        Dag updatedGraph = new Dag(graph);
+    private Dag createManipulatedGraph(final Graph graph) {
+        final Dag updatedGraph = new Dag(graph);
 
         // alters graph for manipulated evidenceItems
-        for (int i = 0; i < evidence.getNumNodes(); ++i) {
-            if (evidence.isManipulated(i)) {
-                Node node = updatedGraph.getNode(evidence.getNode(i).getName());
-                List<Node> parents = updatedGraph.getParents(node);
+        for (int i = 0; i < this.evidence.getNumNodes(); ++i) {
+            if (this.evidence.isManipulated(i)) {
+                final Node node = updatedGraph.getNode(this.evidence.getNode(i).getName());
+                final List<Node> parents = updatedGraph.getParents(node);
 
-                for (Node parent1 : parents) {
+                for (final Node parent1 : parents) {
                     updatedGraph.removeEdge(node, parent1);
                 }
             }
@@ -240,15 +240,15 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (bayesIm == null) {
+        if (this.bayesIm == null) {
             throw new NullPointerException();
         }
 
-        if (evidence == null) {
+        if (this.evidence == null) {
             throw new NullPointerException();
         }
     }

@@ -51,7 +51,7 @@ public final class Manipulation implements TetradSerializable {
     /**
      * Constructs a container for evidence for the given Bayes IM.
      */
-    public Manipulation(VariableSource variableSource) {
+    public Manipulation(final VariableSource variableSource) {
         if (variableSource == null) {
             throw new NullPointerException();
         }
@@ -63,7 +63,7 @@ public final class Manipulation implements TetradSerializable {
     /**
      * Copy constructor.
      */
-    public Manipulation(Manipulation manipulation) {
+    public Manipulation(final Manipulation manipulation) {
         if (manipulation == null) {
             throw new NullPointerException();
         }
@@ -77,7 +77,7 @@ public final class Manipulation implements TetradSerializable {
 
         this.manipulated = new boolean[getNumNodes()];
 
-        for (int i = 0; i < manipulated.length; i++) {
+        for (int i = 0; i < this.manipulated.length; i++) {
             this.manipulated[i] = manipulation.isManipulated(i);
         }
     }
@@ -91,12 +91,12 @@ public final class Manipulation implements TetradSerializable {
 
     //===========================PUBLIC METHODS=========================//
 
-    public void setManipulated(int nodeIndex, boolean manipulated) {
+    public void setManipulated(final int nodeIndex, final boolean manipulated) {
         this.manipulated[nodeIndex] = manipulated;
     }
 
     public String toString() {
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
 
         buf.append("\nManipulation:");
         buf.append("\n");
@@ -109,7 +109,7 @@ public final class Manipulation implements TetradSerializable {
         return buf.toString();
     }
 
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (o == null) {
             return false;
         }
@@ -118,14 +118,14 @@ public final class Manipulation implements TetradSerializable {
             return false;
         }
 
-        Manipulation evidence = (Manipulation) o;
+        final Manipulation evidence = (Manipulation) o;
 
         if (!(getVariableSource() == evidence.getVariableSource())) {
             return false;
         }
 
-        for (int i = 0; i < manipulated.length; i++) {
-            if (manipulated[i] != evidence.manipulated[i]) {
+        for (int i = 0; i < this.manipulated.length; i++) {
+            if (this.manipulated[i] != evidence.manipulated[i]) {
                 return false;
             }
         }
@@ -136,7 +136,7 @@ public final class Manipulation implements TetradSerializable {
     public int hashCode() {
         int hashCode = 37;
         hashCode = 19 * hashCode + getVariableSource().hashCode();
-        hashCode = 19 * hashCode + Arrays.hashCode(manipulated);
+        hashCode = 19 * hashCode + Arrays.hashCode(this.manipulated);
         return hashCode;
     }
 
@@ -146,8 +146,8 @@ public final class Manipulation implements TetradSerializable {
         return getVariableSource().getVariables().size();
     }
 
-    public boolean isManipulated(int nodeIndex) {
-        return manipulated[nodeIndex];
+    public boolean isManipulated(final int nodeIndex) {
+        return this.manipulated[nodeIndex];
     }
 
     /**
@@ -160,7 +160,7 @@ public final class Manipulation implements TetradSerializable {
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
@@ -170,7 +170,7 @@ public final class Manipulation implements TetradSerializable {
     }
 
     private VariableSource getVariableSource() {
-        return variableSource;
+        return this.variableSource;
     }
 }
 

@@ -38,14 +38,14 @@ public class BiolinguaDigraph extends Digraph implements OutputGraph {
      * Creates a BiolinguaDigraph with name <code>gName</code> and
      * <code>n</code> nodes
      */
-    public BiolinguaDigraph(String gName, int n) {
+    public BiolinguaDigraph(final String gName, final int n) {
         super(gName, n);
     }
 
     /**
      * Creates a BiolinguaDigraph reading it from file <code>fname</code>.
      */
-    public BiolinguaDigraph(String fname)
+    public BiolinguaDigraph(final String fname)
             throws IOException {
         super(fname);
     }
@@ -53,7 +53,7 @@ public class BiolinguaDigraph extends Digraph implements OutputGraph {
     /**
      * Copy constructor.
      */
-    public BiolinguaDigraph(BiolinguaDigraph digraph) {
+    public BiolinguaDigraph(final BiolinguaDigraph digraph) {
         this("Clone_of_[" + digraph + "]", digraph.nNodes);
         for (int i = 0; i < digraph.nNodes; i++) {
             this.nodeNames[i] = digraph.nodeNames[i];
@@ -67,7 +67,7 @@ public class BiolinguaDigraph extends Digraph implements OutputGraph {
      * Returns a clone of this graph
      */
     public Object clone() {
-        BiolinguaDigraph g2 = new BiolinguaDigraph(
+        final BiolinguaDigraph g2 = new BiolinguaDigraph(
                 "Clone_of_[" + this.graphName + "]", this.nNodes);
         for (int i = 0; i < this.nNodes; i++) {
             g2.nodeNames[i] = this.nodeNames[i];
@@ -81,7 +81,7 @@ public class BiolinguaDigraph extends Digraph implements OutputGraph {
     /**
      * Returns true if node p is parent of node c.<p>
      */
-    public boolean isParent(int p, int c) {
+    public boolean isParent(final int p, final int c) {
         return (this.getEdges().getDoubleValue(p, c) != 0.0);
     }
 
@@ -89,11 +89,11 @@ public class BiolinguaDigraph extends Digraph implements OutputGraph {
      * Returns a string with the indexes of all parents of node i separated by
      * spaces (useful for printouts)
      */
-    public String strOfParents(int i) {
-        int[] ap = this.getParents(i);
+    public String strOfParents(final int i) {
+        final int[] ap = this.getParents(i);
         String s = "";
 
-        for (int anAp : ap) {
+        for (final int anAp : ap) {
             s = s + " " + anAp;
         }
 
@@ -103,7 +103,7 @@ public class BiolinguaDigraph extends Digraph implements OutputGraph {
     /**
      * Returns null (no lag information is stored in a BiolinguaDigraph).
      */
-    public int[] getLags(int i) {
+    public int[] getLags(final int i) {
         return null;
     }
 

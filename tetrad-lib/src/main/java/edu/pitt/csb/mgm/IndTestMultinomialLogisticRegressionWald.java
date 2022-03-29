@@ -61,22 +61,22 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
     private final boolean preferLinear;
     private boolean verbose = false;
 
-    public IndTestMultinomialLogisticRegressionWald(DataSet data, double alpha, boolean preferLinear) {
+    public IndTestMultinomialLogisticRegressionWald(final DataSet data, final double alpha, final boolean preferLinear) {
         if (!(alpha >= 0 && alpha <= 1)) {
             throw new IllegalArgumentException("Alpha mut be in [0, 1]");
         }
 
         this.searchVariables = data.getVariables();
         this.originalData = data.copy();
-        DataSet internalData = data.copy();
+        final DataSet internalData = data.copy();
         this.alpha = alpha;
         this.preferLinear = preferLinear;
 
-        List<Node> variables = internalData.getVariables();
+        final List<Node> variables = internalData.getVariables();
 
-        for (Node node : variables) {
-            List<Node> nodes = expandVariable(internalData, node);
-            variablesPerNode.put(node, nodes);
+        for (final Node node : variables) {
+            final List<Node> nodes = expandVariable(internalData, node);
+            this.variablesPerNode.put(node, nodes);
         }
 
         this.internalData = internalData;
@@ -87,7 +87,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
     /**
      * @return an Independence test for a subset of the searchVariables.
      */
-    public IndependenceTest indTestSubset(List<Node> vars) {
+    public IndependenceTest indTestSubset(final List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
@@ -96,10 +96,10 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
      * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are searchVariables in the list returned by
      * getVariableNames().
      */
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
+    public boolean isIndependent(final Node x, final Node y, final List<Node> z) {
         if (x instanceof DiscreteVariable && y instanceof DiscreteVariable) {
             return isIndependentMultinomialLogisticRegression(x, y, z);
-        } else if (!preferLinear) {
+        } else if (!this.preferLinear) {
             if (x instanceof DiscreteVariable)
                 return isIndependentMultinomialLogisticRegression(x, y, z);
             else if (y instanceof DiscreteVariable)
@@ -115,7 +115,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
         }
     }
 
-    private List<Node> expandVariable(DataSet dataSet, Node node) {
+    private List<Node> expandVariable(final DataSet dataSet, final Node node) {
         if (node instanceof ContinuousVariable) {
             return Collections.singletonList(node);
         }
@@ -128,28 +128,28 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
             throw new IllegalArgumentException();
         }
 
-        List<String> varCats = new ArrayList<>(((DiscreteVariable) node).getCategories());
+        final List<String> varCats = new ArrayList<>(((DiscreteVariable) node).getCategories());
         varCats.remove(0);
-        List<Node> variables = new ArrayList<>();
+        final List<Node> variables = new ArrayList<>();
 
-        for (String cat : varCats) {
+        for (final String cat : varCats) {
 
             Node newVar;
 
             do {
-                String newVarName = node.getName() + "MULTINOM" + "." + cat;
+                final String newVarName = node.getName() + "MULTINOM" + "." + cat;
                 newVar = new DiscreteVariable(newVarName, 2);
             } while (dataSet.getVariable(newVar.getName()) != null);
 
             variables.add(newVar);
 
             dataSet.addVariable(newVar);
-            int newVarIndex = dataSet.getColumn(newVar);
-            int numCases = dataSet.getNumRows();
+            final int newVarIndex = dataSet.getColumn(newVar);
+            final int numCases = dataSet.getNumRows();
 
             for (int l = 0; l < numCases; l++) {
-                Object dataCell = dataSet.getObject(l, dataSet.getColumn(node));
-                int dataCellIndex = ((DiscreteVariable) node).getIndex(dataCell.toString());
+                final Object dataCell = dataSet.getObject(l, dataSet.getColumn(node));
+                final int dataCellIndex = ((DiscreteVariable) node).getIndex(dataCell.toString());
 
                 if (dataCellIndex == ((DiscreteVariable) node).getIndex(cat))
                     dataSet.setInt(l, newVarIndex, 1);
@@ -161,30 +161,30 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
         return variables;
     }
 
-    private boolean isIndependentMultinomialLogisticRegression(Node x, Node y, List<Node> z) {
-        if (!variablesPerNode.containsKey(x)) {
+    private boolean isIndependentMultinomialLogisticRegression(final Node x, final Node y, final List<Node> z) {
+        if (!this.variablesPerNode.containsKey(x)) {
             throw new IllegalArgumentException("Unrecogized node: " + x);
         }
 
-        if (!variablesPerNode.containsKey(y)) {
+        if (!this.variablesPerNode.containsKey(y)) {
             throw new IllegalArgumentException("Unrecogized node: " + y);
         }
 
-        for (Node node : z) {
-            if (!variablesPerNode.containsKey(x)) {
+        for (final Node node : z) {
+            if (!this.variablesPerNode.containsKey(x)) {
                 throw new IllegalArgumentException("Unrecogized node: " + node);
             }
         }
 
-        List<Double> pValues = new ArrayList<>();
+        final List<Double> pValues = new ArrayList<>();
 
-        int[] _rows = getNonMissingRows(x, y, z);
-        logisticRegression.setRows(_rows);
+        final int[] _rows = getNonMissingRows(x, y, z);
+        this.logisticRegression.setRows(_rows);
 
-        boolean indep;
+        final boolean indep;
 
         double p = 1.0;
-        for (Node _x : variablesPerNode.get(x)) {
+        for (final Node _x : this.variablesPerNode.get(x)) {
 
             // Without y
 //            List<Node> regressors0 = new ArrayList<Node>();
@@ -196,14 +196,14 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
 //            LogisticRegression.Result result0 = logisticRegression.regress((DiscreteVariable) _x, regressors0);
 
             // With y.
-            List<Node> regressors1 = new ArrayList<>();
-            regressors1.addAll(variablesPerNode.get(y));
+            final List<Node> regressors1 = new ArrayList<>();
+            regressors1.addAll(this.variablesPerNode.get(y));
 
-            for (Node _z : z) {
-                regressors1.addAll(variablesPerNode.get(_z));
+            for (final Node _z : z) {
+                regressors1.addAll(this.variablesPerNode.get(_z));
             }
 
-            LogisticRegression.Result result1 = logisticRegression.regress((DiscreteVariable) _x, regressors1);
+            final LogisticRegression.Result result1 = this.logisticRegression.regress((DiscreteVariable) _x, regressors1);
 
             // Returns -2 LL
 //            double ll0 = result0.getLogLikelihood();
@@ -214,16 +214,16 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
 //            double p = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(chisq);
 //            pValues.add(p);
             //double[] wald = new double[variablesPerNode.get(y).size()];
-            int n = originalData.getNumRows();
-            int k = regressors1.size() + 1;
+            final int n = this.originalData.getNumRows();
+            final int k = regressors1.size() + 1;
 
-            for (int i = 0; i < variablesPerNode.get(y).size(); i++) {
-                double wald = Math.abs(result1.getCoefs()[i + 1] / result1.getStdErrs()[i + 1]);
+            for (int i = 0; i < this.variablesPerNode.get(y).size(); i++) {
+                final double wald = Math.abs(result1.getCoefs()[i + 1] / result1.getStdErrs()[i + 1]);
                 //double val = (1.0 - new NormalDistribution(0,1).cumulativeProbability(wald))*2;//two-tailed test
                 //double val = 1-result1.getProbs()[i+1];
 
                 //this is exactly the same test as the linear case
-                double val = (1.0 - ProbUtils.tCdf(wald, n - k)) * 2;
+                final double val = (1.0 - ProbUtils.tCdf(wald, n - k)) * 2;
 
                 //System.out.println("My p: " + val + " Their p: " + otherVal + "1-their p:" + (1-otherVal));
                 if (val < p) {
@@ -231,7 +231,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
                 }
 
                 //faster but won't find min p
-                if (p <= alpha) {
+                if (p <= this.alpha) {
                     indep = false;
                     this.lastP = p;
 
@@ -253,7 +253,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
 //            if (val < p) p = val;
 //        }
 
-        indep = p > alpha;
+        indep = p > this.alpha;
 
         this.lastP = p;
 
@@ -267,7 +267,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
     }
 
     // This takes an inordinate amount of time. -jdramsey 20150929
-    private int[] getNonMissingRows(Node x, Node y, List<Node> z) {
+    private int[] getNonMissingRows(final Node x, final Node y, final List<Node> z) {
 //        List<Integer> rows = new ArrayList<Integer>();
 //
 //        I:
@@ -292,17 +292,17 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
 //        int[] _rows = new int[rows.size()];
 //        for (int k = 0; k < rows.size(); k++) _rows[k] = rows.get(k);
 
-        int[] _rows = new int[internalData.getNumRows()];
+        final int[] _rows = new int[this.internalData.getNumRows()];
         for (int k = 0; k < _rows.length; k++) _rows[k] = k;
 
         return _rows;
     }
 
-    private boolean isMissing(Node x, int i) {
-        int j = internalData.getColumn(x);
+    private boolean isMissing(final Node x, final int i) {
+        final int j = this.internalData.getColumn(x);
 
         if (x instanceof DiscreteVariable) {
-            int v = internalData.getInt(i, j);
+            final int v = this.internalData.getInt(i, j);
 
             if (v == -99) {
                 return true;
@@ -310,7 +310,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
         }
 
         if (x instanceof ContinuousVariable) {
-            double v = internalData.getDouble(i, j);
+            final double v = this.internalData.getDouble(i, j);
 
             if (Double.isNaN(v)) {
                 return true;
@@ -320,40 +320,40 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
         return false;
     }
 
-    private boolean isIndependentRegression(Node x, Node y, List<Node> z) {
-        if (!variablesPerNode.containsKey(x)) {
+    private boolean isIndependentRegression(final Node x, final Node y, final List<Node> z) {
+        if (!this.variablesPerNode.containsKey(x)) {
             throw new IllegalArgumentException("Unrecogized node: " + x);
         }
 
-        if (!variablesPerNode.containsKey(y)) {
+        if (!this.variablesPerNode.containsKey(y)) {
             throw new IllegalArgumentException("Unrecogized node: " + y);
         }
 
-        for (Node node : z) {
-            if (!variablesPerNode.containsKey(node)) {
+        for (final Node node : z) {
+            if (!this.variablesPerNode.containsKey(node)) {
                 throw new IllegalArgumentException("Unrecogized node: " + node);
             }
         }
 
-        List<Node> regressors = new ArrayList<>();
+        final List<Node> regressors = new ArrayList<>();
         if (y instanceof ContinuousVariable) {
-            regressors.add(internalData.getVariable(y.getName()));
+            regressors.add(this.internalData.getVariable(y.getName()));
         } else {
-            regressors.addAll(variablesPerNode.get(y));
+            regressors.addAll(this.variablesPerNode.get(y));
         }
 
-        for (Node _z : z) {
-            regressors.addAll(variablesPerNode.get(_z));
+        for (final Node _z : z) {
+            regressors.addAll(this.variablesPerNode.get(_z));
         }
 
-        int[] _rows = getNonMissingRows(x, y, z);
-        regression.setRows(_rows);
+        final int[] _rows = getNonMissingRows(x, y, z);
+        this.regression.setRows(_rows);
 
-        RegressionResult result;
+        final RegressionResult result;
 
         try {
-            result = regression.regress(x, regressors);
-        } catch (Exception e) {
+            result = this.regression.regress(x, regressors);
+        } catch (final Exception e) {
             return false;
         }
 
@@ -361,15 +361,15 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
         if (y instanceof ContinuousVariable) {
             p = result.getP()[1];
         } else {
-            for (int i = 0; i < variablesPerNode.get(y).size(); i++) {
-                double val = result.getP()[1 + i];
+            for (int i = 0; i < this.variablesPerNode.get(y).size(); i++) {
+                final double val = result.getP()[1 + i];
                 if (val < p)
                     p = val;
             }
         }
         this.lastP = p;
 
-        boolean indep = p > alpha;
+        final boolean indep = p > this.alpha;
 
         if (indep) {
             TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, p));
@@ -381,8 +381,8 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
     }
 
 
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
+    public boolean isIndependent(final Node x, final Node y, final Node... z) {
+        final List<Node> zList = Arrays.asList(z);
         return isIndependent(x, y, zList);
     }
 
@@ -391,12 +391,12 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
      * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are searchVariables in the list returned by
      * getVariableNames().
      */
-    public boolean isDependent(Node x, Node y, List<Node> z) {
+    public boolean isDependent(final Node x, final Node y, final List<Node> z) {
         return !this.isIndependent(x, y, z);
     }
 
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
+    public boolean isDependent(final Node x, final Node y, final Node... z) {
+        final List<Node> zList = Arrays.asList(z);
         return isDependent(x, y, zList);
     }
 
@@ -413,24 +413,24 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
      * relations.
      */
     public List<Node> getVariables() {
-        return searchVariables; // Make sure the variables from the ORIGINAL data set are returned, not the modified dataset!
+        return this.searchVariables; // Make sure the variables from the ORIGINAL data set are returned, not the modified dataset!
     }
 
     /**
      * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
-        List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<>();
-        for (Node variable1 : variables) {
+        final List<Node> variables = getVariables();
+        final List<String> variableNames = new ArrayList<>();
+        for (final Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }
         return variableNames;
     }
 
-    public Node getVariable(String name) {
+    public Node getVariable(final String name) {
         for (int i = 0; i < getVariables().size(); i++) {
-            Node variable = getVariables().get(i);
+            final Node variable = getVariables().get(i);
             if (variable.getName().equals(name)) {
                 return variable;
             }
@@ -442,7 +442,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
     /**
      * @return true if y is determined the variable in z.
      */
-    public boolean determines(List<Node> z, Node y) {
+    public boolean determines(final List<Node> z, final Node y) {
         return false; //stub
     }
 
@@ -457,7 +457,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
     /**
      * Sets the significance level.
      */
-    public void setAlpha(double alpha) {
+    public void setAlpha(final double alpha) {
         this.alpha = alpha;
     }
 
@@ -494,17 +494,17 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
      * @return a string representation of this test.
      */
     public String toString() {
-        NumberFormat nf = new DecimalFormat("0.0000");
+        final NumberFormat nf = new DecimalFormat("0.0000");
         return "Multinomial Logistic Regression, alpha = " + nf.format(getAlpha());
     }
 
     @Override
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     @Override
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 }

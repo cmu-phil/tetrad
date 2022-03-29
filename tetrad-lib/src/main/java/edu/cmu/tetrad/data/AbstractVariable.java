@@ -77,7 +77,7 @@ public abstract class AbstractVariable implements Variable {
     /**
      * Sets the name of this variable.
      */
-    public final void setName(String name) {
+    public final void setName(final String name) {
         if (name == null) {
             throw new NullPointerException(
                     "AbstractVariable name must not be null.");
@@ -95,7 +95,7 @@ public abstract class AbstractVariable implements Variable {
      * @return the name of this variable.
      */
     public final String getName() {
-        return name;
+        return this.name;
     }
 
     /**
@@ -115,7 +115,7 @@ public abstract class AbstractVariable implements Variable {
      * @return <tt>true</tt> if the value is an acceptable value for
      * <tt>this</tt> variable, and <tt>false</tt> otherwise
      */
-    public boolean checkValue(Object value) {
+    public boolean checkValue(final Object value) {
         return true;
     }
 
@@ -124,22 +124,22 @@ public abstract class AbstractVariable implements Variable {
      * of the variable is returned.
      */
     public String toString() {
-        return name;
+        return this.name;
     }
 
     public abstract Node like(String name);
 
     @Override
-    public int compareTo(Node node) {
-        String node1 = getName();
-        String node2 = node.getName();
+    public int compareTo(final Node node) {
+        final String node1 = getName();
+        final String node2 = node.getName();
 
-        boolean isAlpha1 = ALPHA.matcher(node1).matches();
-        boolean isAlpha2 = ALPHA.matcher(node2).matches();
-        boolean isAlphaNum1 = ALPHA_NUM.matcher(node1).matches();
-        boolean isAlphaNum2 = ALPHA_NUM.matcher(node2).matches();
-        boolean isLag1 = LAG.matcher(node1).matches();
-        boolean isLag2 = LAG.matcher(node2).matches();
+        final boolean isAlpha1 = ALPHA.matcher(node1).matches();
+        final boolean isAlpha2 = ALPHA.matcher(node2).matches();
+        final boolean isAlphaNum1 = ALPHA_NUM.matcher(node1).matches();
+        final boolean isAlphaNum2 = ALPHA_NUM.matcher(node2).matches();
+        final boolean isLag1 = LAG.matcher(node1).matches();
+        final boolean isLag2 = LAG.matcher(node2).matches();
 
         if (isAlpha1) {
             if (isLag2) {
@@ -147,11 +147,11 @@ public abstract class AbstractVariable implements Variable {
             }
         } else if (isAlphaNum1) {
             if (isAlphaNum2) {
-                String s1 = node1.replaceAll("\\d+", "");
-                String s2 = node2.replaceAll("\\d+", "");
+                final String s1 = node1.replaceAll("\\d+", "");
+                final String s2 = node2.replaceAll("\\d+", "");
                 if (s1.equals(s2)) {
-                    String n1 = node1.replaceAll("\\D+", "");
-                    String n2 = node2.replaceAll("\\D+", "");
+                    final String n1 = node1.replaceAll("\\D+", "");
+                    final String n2 = node2.replaceAll("\\D+", "");
 
                     return Integer.valueOf(n1).compareTo(Integer.valueOf(n2));
                 } else {
@@ -164,13 +164,13 @@ public abstract class AbstractVariable implements Variable {
             if (isAlpha2 || isAlphaNum2) {
                 return 1;
             } else if (isLag2) {
-                String l1 = node1.replaceAll(":", "");
-                String l2 = node2.replaceAll(":", "");
-                String s1 = l1.replaceAll("\\d+", "");
-                String s2 = l2.replaceAll("\\d+", "");
+                final String l1 = node1.replaceAll(":", "");
+                final String l2 = node2.replaceAll(":", "");
+                final String s1 = l1.replaceAll("\\d+", "");
+                final String s2 = l2.replaceAll("\\d+", "");
                 if (s1.equals(s2)) {
-                    String n1 = l1.replaceAll("\\D+", "");
-                    String n2 = l2.replaceAll("\\D+", "");
+                    final String n1 = l1.replaceAll("\\D+", "");
+                    final String n2 = l2.replaceAll("\\D+", "");
 
                     return Integer.valueOf(n1).compareTo(Integer.valueOf(n2));
                 } else {

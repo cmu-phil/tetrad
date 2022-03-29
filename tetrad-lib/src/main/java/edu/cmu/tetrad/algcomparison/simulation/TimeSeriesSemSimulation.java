@@ -33,7 +33,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
     private List<DataSet> dataSets = new ArrayList<>();
     private IKnowledge knowledge;
 
-    public TimeSeriesSemSimulation(RandomGraph randomGraph) {
+    public TimeSeriesSemSimulation(final RandomGraph randomGraph) {
         if (randomGraph == null) {
             throw new NullPointerException();
         }
@@ -41,40 +41,40 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
     }
 
     @Override
-    public void createData(Parameters parameters, boolean newModel) {
+    public void createData(final Parameters parameters, final boolean newModel) {
 //        if (!newModel && !dataSets.isEmpty()) return;
-        dataSets = new ArrayList<>();
-        graphs = new ArrayList<>();
+        this.dataSets = new ArrayList<>();
+        this.graphs = new ArrayList<>();
 
-        Graph graph = randomGraph.createGraph(parameters);
+        Graph graph = this.randomGraph.createGraph(parameters);
         graph = TimeSeriesUtils.graphToLagGraph(graph, parameters.getInt(Params.NUM_LAGS));
         topToBottomLayout((TimeLagGraph) graph);
         this.knowledge = TimeSeriesUtils.getKnowledge(graph);
 
         for (int i = 0; i < parameters.getInt(Params.NUM_RUNS); i++) {
             if (parameters.getBoolean(Params.DIFFERENT_GRAPHS) && i > 0) {
-                graph = randomGraph.createGraph(parameters);
+                graph = this.randomGraph.createGraph(parameters);
                 graph = TimeSeriesUtils.graphToLagGraph(graph, 2);
                 topToBottomLayout((TimeLagGraph) graph);
             }
 
-            graphs.add(graph);
+            this.graphs.add(graph);
 
-            SemPm pm = new SemPm(graph);
-            SemIm im = new SemIm(pm, parameters);
+            final SemPm pm = new SemPm(graph);
+            final SemIm im = new SemIm(pm, parameters);
 
             final int sampleSize = parameters.getInt(Params.SAMPLE_SIZE);
 
-            boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
+            final boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
             DataSet dataSet = im.simulateData(sampleSize, saveLatentVars);
 
-            int numLags = ((TimeLagGraph) graph).getMaxLag();
+            final int numLags = ((TimeLagGraph) graph).getMaxLag();
 
             dataSet = TimeSeriesUtils.createLagData(dataSet, numLags);
 
             dataSet.setName("" + (i + 1));
-            dataSet.setKnowledge(knowledge.copy());
-            dataSets.add(dataSet);
+            dataSet.setKnowledge(this.knowledge.copy());
+            this.dataSets.add(dataSet);
 
 //            LargeScaleSimulation sim = new LargeScaleSimulation(graph);
 //            if (parameters.getDouble("coefHigh") > 0.80) {
@@ -118,13 +118,13 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
     }
 
     @Override
-    public DataModel getDataModel(int index) {
-        return dataSets.get(index);
+    public DataModel getDataModel(final int index) {
+        return this.dataSets.get(index);
     }
 
     @Override
-    public Graph getTrueGraph(int index) {
-        return graphs.get(index);
+    public Graph getTrueGraph(final int index) {
+        return this.graphs.get(index);
     }
 
     @Override
@@ -134,12 +134,12 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
+        final List<String> parameters = new ArrayList<>();
 
         parameters.add(Params.NUM_LAGS);
 
-        if (!(randomGraph instanceof SingleGraph)) {
-            parameters.addAll(randomGraph.getParameters());
+        if (!(this.randomGraph instanceof SingleGraph)) {
+            parameters.addAll(this.randomGraph.getParameters());
         }
 
         parameters.addAll(SemIm.getParameterNames());
@@ -157,7 +157,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 
     @Override
     public int getNumDataModels() {
-        return dataSets.size();
+        return this.dataSets.size();
     }
 
     @Override
@@ -167,38 +167,38 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 
     @Override
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(final IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
-    public static void topToBottomLayout(TimeLagGraph graph) {
+    public static void topToBottomLayout(final TimeLagGraph graph) {
 
-        int xStart = 65;
-        int yStart = 50;
-        int xSpace = 100;
-        int ySpace = 100;
-        List<Node> lag0Nodes = graph.getLag0Nodes();
+        final int xStart = 65;
+        final int yStart = 50;
+        final int xSpace = 100;
+        final int ySpace = 100;
+        final List<Node> lag0Nodes = graph.getLag0Nodes();
 
         Collections.sort(lag0Nodes, new Comparator<Node>() {
-            public int compare(Node o1, Node o2) {
+            public int compare(final Node o1, final Node o2) {
                 return o1.getCenterX() - o2.getCenterX();
             }
         });
 
         int x = xStart - xSpace;
 
-        for (Node node : lag0Nodes) {
+        for (final Node node : lag0Nodes) {
             x += xSpace;
             int y = yStart - ySpace;
-            TimeLagGraph.NodeId id = graph.getNodeId(node);
+            final TimeLagGraph.NodeId id = graph.getNodeId(node);
 
             for (int lag = graph.getMaxLag(); lag >= 0; lag--) {
                 y += ySpace;
-                Node _node = graph.getNode(id.getName(), lag);
+                final Node _node = graph.getNode(id.getName(), lag);
 
                 if (_node == null) {
                     System.out.println("Couldn't find " + _node);

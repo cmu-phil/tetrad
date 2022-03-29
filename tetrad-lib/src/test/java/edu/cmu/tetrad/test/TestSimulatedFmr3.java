@@ -38,7 +38,7 @@ import edu.cmu.tetrad.util.Params;
 public class TestSimulatedFmr3 {
 
     public void TestCycles_Data_fMRI_FASK() {
-        Parameters parameters = new Parameters();
+        final Parameters parameters = new Parameters();
 
         parameters.set(Params.PENALTY_DISCOUNT, 4);
         parameters.set(Params.DEPTH, -1);
@@ -59,7 +59,7 @@ public class TestSimulatedFmr3 {
 
         parameters.set("Structure", "Placeholder");
 
-        Statistics statistics = new Statistics();
+        final Statistics statistics = new Statistics();
 
         statistics.add(new ParameterColumn("Structure"));
         statistics.add(new AdjacencyPrecision());
@@ -81,11 +81,11 @@ public class TestSimulatedFmr3 {
         statistics.setWeight("2CR", 1.0);
         statistics.setWeight("2CFP", 1.0);
 
-        Simulations simulations = new Simulations();
+        final Simulations simulations = new Simulations();
 
 //        String dir =  "/Users/user/Downloads/Cycles_Data_fMRI_Training/";
-        String dir = "/Users/user/Downloads/CyclesTestingData/";
-        String subdir = "data_fslfilter_concat";
+        final String dir = "/Users/user/Downloads/CyclesTestingData/";
+        final String subdir = "data_fslfilter_concat";
 //        String subdir = "data_fslfilter";
 
         simulations.add(new LoadContinuousDataAndSingleGraph(
@@ -129,11 +129,11 @@ public class TestSimulatedFmr3 {
 //        simulations.add(new LoadContinuousDataAndSingleGraph(
 //                dir + "Markov_Complex_1", subdir));
 
-        Algorithms algorithms = new Algorithms();
+        final Algorithms algorithms = new Algorithms();
 
         algorithms.add(new Fask());
 
-        Comparison comparison = new Comparison();
+        final Comparison comparison = new Comparison();
 
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
@@ -146,7 +146,7 @@ public class TestSimulatedFmr3 {
     }
 
     public void TestMadelynDAta() {
-        Parameters parameters = new Parameters();
+        final Parameters parameters = new Parameters();
 
         parameters.set(Params.PENALTY_DISCOUNT, 10);
         parameters.set(Params.DEPTH, -1);
@@ -167,7 +167,7 @@ public class TestSimulatedFmr3 {
 
         parameters.set("Structure", "Placeholder");
 
-        Statistics statistics = new Statistics();
+        final Statistics statistics = new Statistics();
 
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
@@ -189,16 +189,16 @@ public class TestSimulatedFmr3 {
         statistics.setWeight("2CFP", 1.0);
 
 
-        String dir = "/Users/user/Downloads/SimulatedData_2/";
+        final String dir = "/Users/user/Downloads/SimulatedData_2/";
 
-        String[] dirs = new String[]{"AllNegative", "AllPositive", "TwoCycleNegative", "XYNegative", "XYPositive",
+        final String[] dirs = new String[]{"AllNegative", "AllPositive", "TwoCycleNegative", "XYNegative", "XYPositive",
                 "XZNegative", "XZPositive", "YZNegative", "YZPositive"};
-        String[] suffixes = new String[]{"allneg", "allpos", "twocycleneg", "XYneg", "XYpos", "XZneg", "XZpos",
+        final String[] suffixes = new String[]{"allneg", "allpos", "twocycleneg", "XYneg", "XYpos", "XZneg", "XZpos",
                 "YZneg", "YZpos"};
 
         for (int i = 0; i < dirs.length; i++) {
             System.out.println("Directory " + dirs[i]);
-            Simulations simulations = new Simulations();
+            final Simulations simulations = new Simulations();
 
             simulations.add(new LoadMadelynData(
                     dir + dirs[i], suffixes[i], 1));
@@ -215,11 +215,11 @@ public class TestSimulatedFmr3 {
             simulations.add(new LoadMadelynData(
                     dir + dirs[i], suffixes[i], 7));
 
-            Algorithms algorithms = new Algorithms();
+            final Algorithms algorithms = new Algorithms();
 
             algorithms.add(new FaskConcatenated());
 
-            Comparison comparison = new Comparison();
+            final Comparison comparison = new Comparison();
 
             comparison.setShowAlgorithmIndices(true);
             comparison.setShowSimulationIndices(true);
@@ -234,7 +234,7 @@ public class TestSimulatedFmr3 {
         }
     }
 
-    public static void main(String... args) {
+    public static void main(final String... args) {
         new TestSimulatedFmr3().TestCycles_Data_fMRI_FASK();
     }
 }

@@ -29,44 +29,44 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
     private final List<String> usedParameters = new ArrayList<>();
     private final Parameters parametersValues = new Parameters();
 
-    public LoadContinuousDataAndSingleGraph(String path) {
+    public LoadContinuousDataAndSingleGraph(final String path) {
         this.path = path;
-        String structure = new File(path).getName();
-        parametersValues.set("structure", structure);
+        final String structure = new File(path).getName();
+        this.parametersValues.set("structure", structure);
     }
 
     @Override
-    public void createData(Parameters parameters, boolean newModel) {
+    public void createData(final Parameters parameters, final boolean newModel) {
         this.dataSets = new ArrayList<>();
 
-        File dir = new File(path + "/data_noise");
+        final File dir = new File(this.path + "/data_noise");
 
         if (dir.exists()) {
-            File[] files = dir.listFiles();
+            final File[] files = dir.listFiles();
 
-            for (File file : files) {
+            for (final File file : files) {
                 if (!file.getName().endsWith(".txt")) continue;
                 System.out.println("Loading data from " + file.getAbsolutePath());
                 try {
-                    DataSet data = DataUtils.loadContinuousData(file, "//", '\"' ,
+                    final DataSet data = DataUtils.loadContinuousData(file, "//", '\"' ,
                             "*", true, Delimiter.TAB);
-                    dataSets.add(data);
-                } catch (Exception e) {
+                    this.dataSets.add(data);
+                } catch (final Exception e) {
                     System.out.println("Couldn't parse " + file.getAbsolutePath());
                 }
             }
         }
 
-        File dir2 = new File(path + "/graph");
+        final File dir2 = new File(this.path + "/graph");
 
         if (dir2.exists()) {
-            File[] files = dir2.listFiles();
+            final File[] files = dir2.listFiles();
 
             if (files.length != 1) {
                 throw new IllegalArgumentException("Expecting exactly one graph file.");
             }
 
-            File file = files[0];
+            final File file = files[0];
 
             System.out.println("Loading graph from " + file.getAbsolutePath());
             this.graph = GraphUtils.loadGraphTxt(file);
@@ -81,40 +81,40 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
         if (parameters.get(Params.NUM_RUNS) != null) {
             parameters.set(Params.NUM_RUNS, parameters.get(Params.NUM_RUNS));
         } else {
-            parameters.set(Params.NUM_RUNS, dataSets.size());
+            parameters.set(Params.NUM_RUNS, this.dataSets.size());
         }
 
         System.out.println();
     }
 
     @Override
-    public Graph getTrueGraph(int index) {
+    public Graph getTrueGraph(final int index) {
         return this.graph;
     }
 
     @Override
-    public DataModel getDataModel(int index) {
-        return dataSets.get(index);
+    public DataModel getDataModel(final int index) {
+        return this.dataSets.get(index);
     }
 
     public String getDescription() {
         try {
-            StringBuilder b = new StringBuilder();
+            final StringBuilder b = new StringBuilder();
             b.append("Load data sets and graphs from a directory.").append("\n\n");
             return b.toString();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
     public List<String> getParameters() {
-        return usedParameters;
+        return this.usedParameters;
     }
 
     @Override
     public int getNumDataModels() {
-        return dataSets.size();
+        return this.dataSets.size();
     }
 
     @Override
@@ -124,6 +124,6 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
 
     @Override
     public Parameters getParameterValues() {
-        return parametersValues;
+        return this.parametersValues;
     }
 }

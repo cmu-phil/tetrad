@@ -29,20 +29,20 @@ public class StabilitySelection implements Algorithm, TakesExternalGraph {
     private final Algorithm algorithm;
     private Graph externalGraph = null;
 
-    public StabilitySelection(Algorithm algorithm) {
+    public StabilitySelection(final Algorithm algorithm) {
         this.algorithm = algorithm;
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
-        DataSet _dataSet = (DataSet) dataSet;
+    public Graph search(final DataModel dataSet, final Parameters parameters) {
+        final DataSet _dataSet = (DataSet) dataSet;
 
-        double percentageB = parameters.getDouble("percentSubsampleSize");
-        int numSubsamples = parameters.getInt("numSubsamples");
+        final double percentageB = parameters.getDouble("percentSubsampleSize");
+        final int numSubsamples = parameters.getInt("numSubsamples");
 
-        Map<Edge, Integer> counts = new HashMap<>();
+        final Map<Edge, Integer> counts = new HashMap<>();
 
-        List<Graph> graphs = new ArrayList<>();
+        final List<Graph> graphs = new ArrayList<>();
 
         final ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
 
@@ -52,7 +52,7 @@ public class StabilitySelection implements Algorithm, TakesExternalGraph {
             private final int from;
             private final int to;
 
-            private StabilityAction(int chunk, int from, int to) {
+            private StabilityAction(final int chunk, final int from, final int to) {
                 this.chunk = chunk;
                 this.from = from;
                 this.to = to;
@@ -60,19 +60,19 @@ public class StabilitySelection implements Algorithm, TakesExternalGraph {
 
             @Override
             protected void compute() {
-                if (to - from <= chunk) {
-                    for (int s = from; s < to; s++) {
-                        BootstrapSampler sampler = new BootstrapSampler();
+                if (this.to - this.from <= this.chunk) {
+                    for (int s = this.from; s < this.to; s++) {
+                        final BootstrapSampler sampler = new BootstrapSampler();
                         sampler.setWithoutReplacements(true);
-                        DataSet sample = sampler.sample(_dataSet, (int) (percentageB * _dataSet.getNumRows()));
-                        Graph graph = algorithm.search(sample, parameters);
+                        final DataSet sample = sampler.sample(_dataSet, (int) (percentageB * _dataSet.getNumRows()));
+                        final Graph graph = StabilitySelection.this.algorithm.search(sample, parameters);
                         graphs.add(graph);
                     }
                 } else {
-                    final int mid = (to + from) / 2;
+                    final int mid = (this.to + this.from) / 2;
 
-                    StabilityAction left = new StabilityAction(chunk, from, mid);
-                    StabilityAction right = new StabilityAction(chunk, mid, to);
+                    final StabilityAction left = new StabilityAction(this.chunk, this.from, mid);
+                    final StabilityAction right = new StabilityAction(this.chunk, mid, this.to);
 
                     left.fork();
                     right.compute();
@@ -92,47 +92,47 @@ public class StabilitySelection implements Algorithm, TakesExternalGraph {
 //            Graph graph = algorithm.search(sample, parameters);
 //            graphs.add(graph);
 //        }
-        for (Graph graph : graphs) {
-            for (Edge edge : graph.getEdges()) {
+        for (final Graph graph : graphs) {
+            for (final Edge edge : graph.getEdges()) {
                 increment(edge, counts);
             }
         }
 
-        externalGraph = new EdgeListGraph(dataSet.getVariables());
-        double percentStability = parameters.getDouble("percentStability");
+        this.externalGraph = new EdgeListGraph(dataSet.getVariables());
+        final double percentStability = parameters.getDouble("percentStability");
 
-        for (Edge edge : counts.keySet()) {
+        for (final Edge edge : counts.keySet()) {
             if (counts.get(edge) > percentStability * numSubsamples) {
-                externalGraph.addEdge(edge);
+                this.externalGraph.addEdge(edge);
             }
         }
 
-        return externalGraph;
+        return this.externalGraph;
     }
 
-    private void increment(Edge edge, Map<Edge, Integer> counts) {
+    private void increment(final Edge edge, final Map<Edge, Integer> counts) {
         counts.putIfAbsent(edge, 0);
         counts.put(edge, counts.get(edge) + 1);
     }
 
     @Override
-    public Graph getComparisonGraph(Graph graph) {
-        return algorithm.getComparisonGraph(graph);
+    public Graph getComparisonGraph(final Graph graph) {
+        return this.algorithm.getComparisonGraph(graph);
     }
 
     @Override
     public String getDescription() {
-        return "Stability selection for " + algorithm.getDescription();
+        return "Stability selection for " + this.algorithm.getDescription();
     }
 
     @Override
     public DataType getDataType() {
-        return algorithm.getDataType();
+        return this.algorithm.getDataType();
     }
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = algorithm.getParameters();
+        final List<String> parameters = this.algorithm.getParameters();
         parameters.add("depth");
         parameters.add("verbose");
         parameters.add("numSubsamples");
@@ -144,16 +144,16 @@ public class StabilitySelection implements Algorithm, TakesExternalGraph {
 
     @Override
     public Graph getExternalGraph() {
-        return externalGraph;
+        return this.externalGraph;
     }
 
     @Override
-    public void setExternalGraph(Graph externalGraph) {
+    public void setExternalGraph(final Graph externalGraph) {
         this.externalGraph = externalGraph;
     }
 
     @Override
-    public void setExternalGraph(Algorithm algorithm) {
+    public void setExternalGraph(final Algorithm algorithm) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

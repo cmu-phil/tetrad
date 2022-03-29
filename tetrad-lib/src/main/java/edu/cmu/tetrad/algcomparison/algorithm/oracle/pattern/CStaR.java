@@ -34,11 +34,11 @@ public class CStaR implements Algorithm, TakesIndependenceWrapper {
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(final DataModel dataSet, final Parameters parameters) {
         System.out.println("# Available Processors = " + Runtime.getRuntime().availableProcessors());
         System.out.println("Parallelism = " + parameters.getInt("parallelism"));
 
-        Cstar cStaR = new Cstar();
+        final Cstar cStaR = new Cstar();
 
         cStaR.setParallelism(parameters.getInt(Params.PARALLELISM));
         cStaR.setNumSubsamples(parameters.getInt(Params.NUM_SUBSAMPLES));
@@ -49,26 +49,26 @@ public class CStaR implements Algorithm, TakesIndependenceWrapper {
         cStaR.setSampleStyle(Cstar.SampleStyle.SPLIT);
         cStaR.setVerbose(parameters.getBoolean("verbose"));
 
-        List<Node> possibleEffects = new ArrayList<>();
+        final List<Node> possibleEffects = new ArrayList<>();
 
         final String targetName = parameters.getString("targetNames");
 
         if (targetName.trim().equalsIgnoreCase("all")) {
-            for (String name : dataSet.getVariableNames()) {
+            for (final String name : dataSet.getVariableNames()) {
                 possibleEffects.add(dataSet.getVariable(name));
             }
         } else {
-            String[] names = targetName.split(",");
+            final String[] names = targetName.split(",");
 
-            for (String name : names) {
+            for (final String name : names) {
                 possibleEffects.add(dataSet.getVariable(name.trim()));
             }
         }
 
-        List<Node> possibleCauses = new ArrayList<>(dataSet.getVariables());
+        final List<Node> possibleCauses = new ArrayList<>(dataSet.getVariables());
 
         final LinkedList<LinkedList<Cstar.Record>> allRecords
-                = cStaR.getRecords((DataSet) dataSet, possibleCauses, possibleEffects, test.getTest(dataSet, parameters));
+                = cStaR.getRecords((DataSet) dataSet, possibleCauses, possibleEffects, this.test.getTest(dataSet, parameters));
 
         if (allRecords.isEmpty()) {
             throw new IllegalStateException("There were no records.");
@@ -82,7 +82,7 @@ public class CStaR implements Algorithm, TakesIndependenceWrapper {
     }
 
     @Override
-    public Graph getComparisonGraph(Graph graph) {
+    public Graph getComparisonGraph(final Graph graph) {
         return new EdgeListGraph();
     }
 
@@ -98,7 +98,7 @@ public class CStaR implements Algorithm, TakesIndependenceWrapper {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>(test.getParameters());
+        final List<String> parameters = new ArrayList<>(this.test.getParameters());
         parameters.add(Params.SELECTION_ALPHA);
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.NUM_SUBSAMPLES);
@@ -109,16 +109,16 @@ public class CStaR implements Algorithm, TakesIndependenceWrapper {
     }
 
     public LinkedList<Cstar.Record> getRecords() {
-        return records;
+        return this.records;
     }
 
     @Override
-    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
+    public void setIndependenceWrapper(final IndependenceWrapper independenceWrapper) {
         this.test = independenceWrapper;
     }
 
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
-        return test;
+        return this.test;
     }
 }

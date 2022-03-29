@@ -45,7 +45,7 @@ public final class TestParser {
      */
     @Test
     public void testInvalidExpressions() {
-        ExpressionParser parser = new ExpressionParser();
+        final ExpressionParser parser = new ExpressionParser();
 
         parseInvalid(parser, "(1 + 3))");
         parseInvalid(parser, "(1 + (4 * 5) + sqrt(5)");
@@ -55,10 +55,10 @@ public final class TestParser {
 
     @Test
     public void testParseEquation() {
-        ExpressionParser parser = new ExpressionParser(Arrays.asList("x", "y"), ExpressionParser.RestrictionType.MAY_ONLY_CONTAIN);
+        final ExpressionParser parser = new ExpressionParser(Arrays.asList("x", "y"), ExpressionParser.RestrictionType.MAY_ONLY_CONTAIN);
         try {
             parser.parseEquation("x = (1 + y)");
-        } catch (ParseException ex) {
+        } catch (final ParseException ex) {
             fail(ex.getMessage());
         }
     }
@@ -68,7 +68,7 @@ public final class TestParser {
      */
     @Test
     public void testBasicExpressions() {
-        ExpressionParser parser = new ExpressionParser();
+        final ExpressionParser parser = new ExpressionParser();
 
         Expression expression = parse(parser, "+(1,1)");
         assertTrue(expression.evaluate(new TestingContext()) == 2.0);
@@ -122,8 +122,8 @@ public final class TestParser {
      */
     @Test
     public void testVariables() {
-        ExpressionParser parser = new ExpressionParser(Arrays.asList("x", "y", "z"), ExpressionParser.RestrictionType.MAY_ONLY_CONTAIN);
-        TestingContext context = new TestingContext();
+        final ExpressionParser parser = new ExpressionParser(Arrays.asList("x", "y", "z"), ExpressionParser.RestrictionType.MAY_ONLY_CONTAIN);
+        final TestingContext context = new TestingContext();
 
         Expression expression = parse(parser, "x");
         context.assign("x", 5.6);
@@ -146,7 +146,7 @@ public final class TestParser {
      */
     @Test
     public void testVariableRestriction() {
-        ExpressionParser parser = new ExpressionParser(Arrays.asList("x", "y", "z"), ExpressionParser.RestrictionType.MAY_ONLY_CONTAIN);
+        final ExpressionParser parser = new ExpressionParser(Arrays.asList("x", "y", "z"), ExpressionParser.RestrictionType.MAY_ONLY_CONTAIN);
         parseInvalid(parser, "x + x1");
     }
 
@@ -155,7 +155,7 @@ public final class TestParser {
      */
     @Test
     public void testCommutativeOperators() {
-        ExpressionParser parser = new ExpressionParser();
+        final ExpressionParser parser = new ExpressionParser();
 
         Expression expression = parse(parser, "1 + 2 + 3");
         assertTrue(expression.evaluate(new TestingContext()) == 6.0);
@@ -169,11 +169,11 @@ public final class TestParser {
 
     //============================== Private Methods ===========================//
 
-    private static void parseInvalid(ExpressionParser parser, String exp) {
+    private static void parseInvalid(final ExpressionParser parser, final String exp) {
         try {
-            Expression e = parser.parseExpression(exp);
+            final Expression e = parser.parseExpression(exp);
             fail("Should not have parsed, " + exp + ", but got " + e);
-        } catch (ParseException ex) {
+        } catch (final ParseException ex) {
             // Succeeded
         }
     }
@@ -181,11 +181,11 @@ public final class TestParser {
     /**
      * Tests the expression on the given parser.
      */
-    private static Expression parse(ExpressionParser parser, String expression) {
+    private static Expression parse(final ExpressionParser parser, final String expression) {
         try {
             return parser.parseExpression(expression);
-        } catch (ParseException ex) {
-            int offset = ex.getErrorOffset();
+        } catch (final ParseException ex) {
+            final int offset = ex.getErrorOffset();
             System.out.println(expression);
             for (int i = 0; i < offset; i++) {
                 System.out.print(" ");
@@ -204,17 +204,17 @@ public final class TestParser {
         private final Map<String, Double> doubleVars = new HashMap<>();
         private final Map<String, Object> vars = new HashMap<>();
 
-        public void assign(String v, double d) {
-            doubleVars.put(v, d);
+        public void assign(final String v, final double d) {
+            this.doubleVars.put(v, d);
         }
 
         public void clear() {
             this.doubleVars.clear();
-            vars.clear();
+            this.vars.clear();
         }
 
-        public Double getValue(String var) {
-            return doubleVars.get(var);
+        public Double getValue(final String var) {
+            return this.doubleVars.get(var);
         }
     }
 }

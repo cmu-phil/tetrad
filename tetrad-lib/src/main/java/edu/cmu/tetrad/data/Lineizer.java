@@ -58,7 +58,7 @@ final class Lineizer {
      * Constructs a tokenizer for the given input line, using the given Pattern
      * as delimiter.
      */
-    public Lineizer(Reader reader, String commentMarker) {
+    public Lineizer(final Reader reader, final String commentMarker) {
         if (reader == null) {
             throw new NullPointerException();
         }
@@ -75,11 +75,11 @@ final class Lineizer {
      * @return true iff more tokens exist in the line.
      */
     public final boolean hasMoreLines() {
-        if (tempLine == null) {
+        if (this.tempLine == null) {
             try {
-                tempLine = readLine();
-                return tempLine != null;
-            } catch (IOException e) {
+                this.tempLine = readLine();
+                return this.tempLine != null;
+            } catch (final IOException e) {
                 return false;
             }
         } else {
@@ -91,17 +91,17 @@ final class Lineizer {
      * Return the next token in the line.
      */
     public final String nextLine() {
-        lineNumber++;
+        this.lineNumber++;
 
-        if (tempLine == null) {
+        if (this.tempLine == null) {
             try {
                 return readLine();
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 throw new RuntimeException(e);
             }
         } else {
-            String line = tempLine;
-            tempLine = null;
+            final String line = this.tempLine;
+            this.tempLine = null;
             return line;
         }
     }
@@ -109,12 +109,12 @@ final class Lineizer {
     private String readLine() throws IOException {
         String line;
 
-        while ((line = reader.readLine()) != null) {
+        while ((line = this.reader.readLine()) != null) {
             if ("".equals(line)) {
                 continue;
             }
 
-            if (line.startsWith(commentMarker)) {
+            if (line.startsWith(this.commentMarker)) {
                 continue;
             }
 
@@ -125,7 +125,7 @@ final class Lineizer {
     }
 
     public int getLineNumber() {
-        return lineNumber;
+        return this.lineNumber;
     }
 }
 

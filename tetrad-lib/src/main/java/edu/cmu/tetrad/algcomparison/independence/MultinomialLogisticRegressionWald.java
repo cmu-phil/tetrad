@@ -24,7 +24,7 @@ public class MultinomialLogisticRegressionWald implements IndependenceWrapper {
     static final long serialVersionUID = 23L;
 
     @Override
-    public edu.cmu.tetrad.search.IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+    public edu.cmu.tetrad.search.IndependenceTest getTest(final DataModel dataSet, final Parameters parameters) {
         return new IndTestMultinomialLogisticRegressionWald(
                 DataUtils.getMixedDataSet(dataSet),
                 parameters.getDouble("alpha"),
@@ -43,7 +43,7 @@ public class MultinomialLogisticRegressionWald implements IndependenceWrapper {
 
     @Override
     public List<String> getParameters() {
-        List<String> params = new ArrayList<>();
+        final List<String> params = new ArrayList<>();
         params.add("alpha");
         return params;
     }

@@ -32,22 +32,22 @@ public class MathewsCorrArrow implements Statistic {
     }
 
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        ArrowConfusion adjConfusion = new ArrowConfusion(trueGraph, estGraph);
-        int arrowsTp = adjConfusion.getArrowsTp();
-        int arrowsFp = adjConfusion.getArrowsFp();
-        int arrowsFn = adjConfusion.getArrowsFn();
-        int arrowsTn = adjConfusion.getArrowsTn();
+    public double getValue(final Graph trueGraph, final Graph estGraph, final DataModel dataModel) {
+        final ArrowConfusion adjConfusion = new ArrowConfusion(trueGraph, estGraph);
+        final int arrowsTp = adjConfusion.getArrowsTp();
+        final int arrowsFp = adjConfusion.getArrowsFp();
+        final int arrowsFn = adjConfusion.getArrowsFn();
+        final int arrowsTn = adjConfusion.getArrowsTn();
         return mcc(arrowsTp, arrowsFp, arrowsTn, arrowsFn);
     }
 
     @Override
-    public double getNormValue(double value) {
+    public double getNormValue(final double value) {
         return 0.5 + 0.5 * value;
     }
 
-    private double mcc(double adjTp, double adjFp, double adjTn, double adjFn) {
-        double a = adjTp * adjTn - adjFp * adjFn;
+    private double mcc(final double adjTp, final double adjFp, final double adjTn, final double adjFn) {
+        final double a = adjTp * adjTn - adjFp * adjFn;
         double b = (adjTp + adjFp) * (adjTp + adjFn) * (adjTn + adjFp) * (adjTn + adjFn);
 
         if (b == 0) b = 1;

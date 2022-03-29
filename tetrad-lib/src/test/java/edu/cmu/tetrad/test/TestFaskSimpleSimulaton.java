@@ -37,14 +37,14 @@ public class TestFaskSimpleSimulaton {
         int xtoy = 0;
         int ytox = 0;
 
-        int sampleSize = 1000;
+        final int sampleSize = 1000;
 
         for (int i = 0; i < 1000; i++) {
 
             // Pick coefficients.
-            double a = .2 + RandomUtil.getInstance().nextDouble() * 0.6;
-            double b = .2 + RandomUtil.getInstance().nextDouble() * 0.6;
-            double c = .2 + RandomUtil.getInstance().nextDouble() * 0.6;
+            final double a = .2 + RandomUtil.getInstance().nextDouble() * 0.6;
+            final double b = .2 + RandomUtil.getInstance().nextDouble() * 0.6;
+            final double c = .2 + RandomUtil.getInstance().nextDouble() * 0.6;
 
             double[] z = new double[sampleSize];
             double[] y = new double[sampleSize];
@@ -63,7 +63,7 @@ public class TestFaskSimpleSimulaton {
             z = DataUtils.center(z);
 
             // Swap x and y so y->x instead.
-            double[] w = x;
+            final double[] w = x;
             x = y;
             y = w;
 
@@ -84,23 +84,23 @@ public class TestFaskSimpleSimulaton {
         return RandomUtil.getInstance().nextBeta(2, 5);
     }
 
-    private boolean leftright(double[] x, double[] y) {
+    private boolean leftright(final double[] x, final double[] y) {
         return r(x, y) > 0;
     }
 
-    private double r(double[] x, double[] y) {
+    private double r(final double[] x, final double[] y) {
         return q(x, y) - q(y, x);
     }
 
-    private double q(double[] x, double[] y) {
+    private double q(final double[] x, final double[] y) {
         return cv(x, y, x) / cv(x, x, x) - cv(x, y, y) / cv(x, x, y);
     }
 
-    private double symmetric(double[] x, double[] y) {
+    private double symmetric(final double[] x, final double[] y) {
         return cv(x, y, x) / cv(x, x, x) - cv(x, y, y) / cv(y, y, y);
     }
 
-    public static double cv(double[] x, double[] y, double[] condition) {
+    public static double cv(final double[] x, final double[] y, final double[] condition) {
         double exy = 0.0;
         double ex = 0.0;
         double ey = 0.0;
@@ -124,18 +124,18 @@ public class TestFaskSimpleSimulaton {
         int xtoy = 0;
         int ytox = 0;
 
-        int sampleSize = 1000;
+        final int sampleSize = 1000;
 
-        double[] zzdiff = new double[sampleSize];
-        double[] xxdiff = new double[sampleSize];
-        double[] ratiodiff = new double[sampleSize];
+        final double[] zzdiff = new double[sampleSize];
+        final double[] xxdiff = new double[sampleSize];
+        final double[] ratiodiff = new double[sampleSize];
 
         for (int i = 0; i < 1000; i++) {
 
             // Pick coefficients.
-            double a = .2 + RandomUtil.getInstance().nextDouble() * 0.6;
-            double b = .2 + RandomUtil.getInstance().nextDouble() * 0.6;
-            double c = .2 + RandomUtil.getInstance().nextDouble() * 0.6;
+            final double a = .2 + RandomUtil.getInstance().nextDouble() * 0.6;
+            final double b = .2 + RandomUtil.getInstance().nextDouble() * 0.6;
+            final double c = .2 + RandomUtil.getInstance().nextDouble() * 0.6;
 
             double[] z = new double[sampleSize];
             double[] y = new double[sampleSize];
@@ -180,7 +180,7 @@ public class TestFaskSimpleSimulaton {
 
     }
 
-    public static double cu(double[] x, double[] y, double[] condition) {
+    public static double cu(final double[] x, final double[] y, final double[] condition) {
         double exy = 0.0;
 
         int n = 0;
@@ -196,7 +196,7 @@ public class TestFaskSimpleSimulaton {
     }
 
 
-    public static void main(String... args) {
+    public static void main(final String... args) {
         new TestFaskSimpleSimulaton().test2();
     }
 }

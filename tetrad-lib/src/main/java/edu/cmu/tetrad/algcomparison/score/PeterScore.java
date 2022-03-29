@@ -21,9 +21,9 @@ public class PeterScore implements ScoreWrapper {
     private DataModel dataSet;
 
     @Override
-    public Score getScore(DataModel dataSet, Parameters parameters) {
+    public Score getScore(final DataModel dataSet, final Parameters parameters) {
         this.dataSet = dataSet;
-        edu.cmu.tetrad.search.PeterScore argesScore = new edu.cmu.tetrad.search.PeterScore((DataSet) dataSet);
+        final edu.cmu.tetrad.search.PeterScore argesScore = new edu.cmu.tetrad.search.PeterScore((DataSet) dataSet);
         argesScore.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         return argesScore;
     }
@@ -40,13 +40,13 @@ public class PeterScore implements ScoreWrapper {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
+        final List<String> parameters = new ArrayList<>();
         parameters.add("penaltyDiscount");
         return parameters;
     }
 
     @Override
-    public Node getVariable(String name) {
-        return dataSet.getVariable(name);
+    public Node getVariable(final String name) {
+        return this.dataSet.getVariable(name);
     }
 }

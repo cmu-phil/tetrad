@@ -43,21 +43,21 @@ public class TestFas {
 
     @Test
     public void test1() {
-        int numVars = 10;
-        double edgesPerNode = 1.0;
+        final int numVars = 10;
+        final double edgesPerNode = 1.0;
 
-        List<Node> vars = new ArrayList<>();
+        final List<Node> vars = new ArrayList<>();
 
         for (int i = 0; i < numVars; i++) {
             vars.add(new ContinuousVariable("X" + i));
         }
 
-        Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgesPerNode), 30, 15, 15, false, true);
+        final Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgesPerNode), 30, 15, 15, false, true);
 
-        IndependenceTest test = new IndTestDSep(graph);
+        final IndependenceTest test = new IndTestDSep(graph);
 
-        Graph fasGraph = new Fas(test).search();
-        Graph pcGraph = new Pc(test).search();
+        final Graph fasGraph = new Fas(test).search();
+        final Graph pcGraph = new Pc(test).search();
 
         assertEquals(fasGraph, GraphUtils.undirectedGraph(pcGraph));
     }

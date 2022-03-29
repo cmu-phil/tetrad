@@ -30,7 +30,7 @@ package edu.cmu.tetrad.calculator.expression;
 public class ExpressionInitializationException extends Exception {
 
 
-    public ExpressionInitializationException(String message) {
+    public ExpressionInitializationException(final String message) {
         super(message);
     }
 

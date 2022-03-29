@@ -45,14 +45,14 @@ public class TestKernelGaussian {
      */
     @Test
     public void testMedianBandwidth() {
-        Node X = new ContinuousVariable("X");
-        DataSet dataset = new BoxDataSet(new VerticalDoubleDataBox(5, 1), Arrays.asList(X));
+        final Node X = new ContinuousVariable("X");
+        final DataSet dataset = new BoxDataSet(new VerticalDoubleDataBox(5, 1), Arrays.asList(X));
         dataset.setDouble(0, 0, 1);
         dataset.setDouble(1, 0, 2);
         dataset.setDouble(2, 0, 3);
         dataset.setDouble(3, 0, 4);
         dataset.setDouble(4, 0, 5);
-        KernelGaussian kernel = new KernelGaussian(dataset, X);
+        final KernelGaussian kernel = new KernelGaussian(dataset, X);
         assertTrue(kernel.getBandwidth() == 2);
 
     }

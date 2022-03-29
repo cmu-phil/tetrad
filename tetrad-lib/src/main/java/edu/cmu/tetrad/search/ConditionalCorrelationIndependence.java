@@ -121,16 +121,16 @@ public final class ConditionalCorrelationIndependence {
      * @param dataSet A data set containing only continuous columns.
      * @param alpha   The alpha level of the test.
      */
-    public ConditionalCorrelationIndependence(DataSet dataSet, double alpha) {
+    public ConditionalCorrelationIndependence(final DataSet dataSet, final double alpha) {
         if (dataSet == null) throw new NullPointerException();
         this.alpha = alpha;
         this.dataSet = dataSet;
 
-        variables = dataSet.getVariables();
+        this.variables = dataSet.getVariables();
 
-        nodesHash = new HashMap<>();
-        for (int i = 0; i < variables.size(); i++) {
-            nodesHash.put(variables.get(i), i);
+        this.nodesHash = new HashMap<>();
+        for (int i = 0; i < this.variables.size(); i++) {
+            this.nodesHash.put(this.variables.get(i), i);
         }
     }
 
@@ -139,30 +139,30 @@ public final class ConditionalCorrelationIndependence {
     /**
      * @return true iff x is independent of y conditional on z.
      */
-    public double isIndependent(Node x, Node y, List<Node> z) {
+    public double isIndependent(final Node x, final Node y, final List<Node> z) {
         try {
-            Map<Node, Integer> nodesHash = new HashMap<>();
-            for (int i = 0; i < variables.size(); i++) {
-                nodesHash.put(variables.get(i), i);
+            final Map<Node, Integer> nodesHash = new HashMap<>();
+            for (int i = 0; i < this.variables.size(); i++) {
+                nodesHash.put(this.variables.get(i), i);
             }
 
-            List<Node> allNodes = new ArrayList<>(z);
+            final List<Node> allNodes = new ArrayList<>(z);
             allNodes.add(x);
             allNodes.add(y);
 
-            List<Integer> rows = getRows(dataSet, allNodes, nodesHash);
+            final List<Integer> rows = getRows(this.dataSet, allNodes, nodesHash);
 
             if (rows.isEmpty()) return 0;
 
-            double[] rx = residuals(x, z, rows);
-            double[] ry = residuals(y, z, rows);
+            final double[] rx = residuals(x, z, rows);
+            final double[] ry = residuals(y, z, rows);
 
             // rx _||_ ry ?
-            double score = independent(rx, ry);
+            final double score = independent(rx, ry);
             this.score = score;
 
             return score;
-        } catch (Exception e) {
+        } catch (final Exception e) {
             e.printStackTrace();
             return 0;
         }
@@ -175,21 +175,21 @@ public final class ConditionalCorrelationIndependence {
      * @return a double[2][] array. The first double[] array contains the residuals for x
      * and the second double[] array contains the resituls for y.
      */
-    public double[] residuals(Node x, List<Node> z, List<Integer> rows) {
-        int[] _rows = new int[rows.size()];
+    public double[] residuals(final Node x, final List<Node> z, final List<Integer> rows) {
+        final int[] _rows = new int[rows.size()];
         for (int i = 0; i < rows.size(); i++) _rows[i] = rows.get(i);
 
-        int[] _cols = new int[z.size() + 1];
-        _cols[0] = nodesHash.get(x);
-        for (int i = 0; i < z.size(); i++) _cols[1 + i] = nodesHash.get(z.get(i));
+        final int[] _cols = new int[z.size() + 1];
+        _cols[0] = this.nodesHash.get(x);
+        for (int i = 0; i < z.size(); i++) _cols[1 + i] = this.nodesHash.get(z.get(i));
 
-        DataSet _dataSet = (this.dataSet.subsetRowsColumns(_rows, _cols));
+        final DataSet _dataSet = (this.dataSet.subsetRowsColumns(_rows, _cols));
 
         for (int j = 0; j < _dataSet.getNumColumns(); j++) {
             scale(_dataSet, j);
         }
 
-        double[][] _data = _dataSet.getDoubleData().transpose().toArray();
+        final double[][] _data = _dataSet.getDoubleData().transpose().toArray();
 
         if (_data.length == 0) {
             return new double[0];
@@ -199,20 +199,20 @@ public final class ConditionalCorrelationIndependence {
             return _data[0];
         }
 
-        List<List<Integer>> _sortedIndices = new ArrayList<>();
+        final List<List<Integer>> _sortedIndices = new ArrayList<>();
 
         for (int z2 = 0; z2 < z.size(); z2++) {
-            double[] w = _data[z2 + 1];
-            List<Integer> sorted = new ArrayList<>();
+            final double[] w = _data[z2 + 1];
+            final List<Integer> sorted = new ArrayList<>();
             for (int t = 0; t < w.length; t++) sorted.add(t);
             sorted.sort(Comparator.comparingDouble(o -> w[o]));
             _sortedIndices.add(sorted);
         }
 
-        List<Map<Integer, Integer>> _reverseLookup = new ArrayList<>();
+        final List<Map<Integer, Integer>> _reverseLookup = new ArrayList<>();
 
         for (int z2 = 0; z2 < z.size(); z2++) {
-            Map<Integer, Integer> m = new HashMap<>();
+            final Map<Integer, Integer> m = new HashMap<>();
 
             for (int j = 0; j < _data[z2 + 1].length; j++) {
                 m.put(_sortedIndices.get(z2).get(j), j);
@@ -221,17 +221,17 @@ public final class ConditionalCorrelationIndependence {
             _reverseLookup.add(m);
         }
 
-        int _N = _data[0].length;
+        final int _N = _data[0].length;
 
-        double[] _residualsx = new double[_N];
+        final double[] _residualsx = new double[_N];
 
-        double[] _xdata = _data[0];
+        final double[] _xdata = _data[0];
 
-        double[] _sumx = new double[_N];
+        final double[] _sumx = new double[_N];
 
-        double[] _totalWeightx = new double[_N];
+        final double[] _totalWeightx = new double[_N];
 
-        int[] _z = new int[z.size()];
+        final int[] _z = new int[z.size()];
 
         for (int m = 0; m < z.size(); m++) {
             _z[m] = m;
@@ -239,22 +239,22 @@ public final class ConditionalCorrelationIndependence {
 
         double _max = Double.NEGATIVE_INFINITY;
 
-        for (double[] datum : _data) {
-            double h = h(datum);
+        for (final double[] datum : _data) {
+            final double h = h(datum);
             if (h > _max) _max = h;
         }
 
-        double h = _max;
+        final double h = _max;
 
         for (int i = 0; i < _N; i++) {
-            Set<Integer> js = getCloseZs(_data, _z, i, kernelRegressionSampleSize,
+            final Set<Integer> js = getCloseZs(_data, _z, i, this.kernelRegressionSampleSize,
                     _reverseLookup, _sortedIndices);
 
-            for (int j : js) {
-                double xj = _xdata[j];
-                double d = distance(_data, _z, i, j);
+            for (final int j : js) {
+                final double xj = _xdata[j];
+                final double d = distance(_data, _z, i, j);
 
-                double k;
+                final double k;
 
                 if (getKernelMultiplier() == Kernel.Epinechnikov) {
                     k = kernelEpinechnikov(d, h);
@@ -286,38 +286,38 @@ public final class ConditionalCorrelationIndependence {
      * Number of functions to use in (truncated) basis
      */
     public int getNumFunctions() {
-        return numFunctions;
+        return this.numFunctions;
     }
 
-    public void setNumFunctions(int numFunctions) {
+    public void setNumFunctions(final int numFunctions) {
         this.numFunctions = numFunctions;
     }
 
     public Kernel getKernelMultiplier() {
-        return kernelMultiplier;
+        return this.kernelMultiplier;
     }
 
-    public void setKernelMultiplier(Kernel kernelMultiplier) {
+    public void setKernelMultiplier(final Kernel kernelMultiplier) {
         this.kernelMultiplier = kernelMultiplier;
     }
 
-    public void setBasis(Basis basis) {
+    public void setBasis(final Basis basis) {
         this.basis = basis;
     }
 
     public double getWidth() {
-        return width;
+        return this.width;
     }
 
-    public void setWidth(double width) {
+    public void setWidth(final double width) {
         this.width = width;
     }
 
     public double getPValue() {
-        return getPValue(score);
+        return getPValue(this.score);
     }
 
-    public double getPValue(double score) {
+    public double getPValue(final double score) {
         return 2.0 * (1.0 - new NormalDistribution(0, 1).cumulativeProbability(abs(score)));
     }
 
@@ -326,19 +326,19 @@ public final class ConditionalCorrelationIndependence {
      * recent independence check.
      */
     public double getScore() {
-        return abs(score) - cutoff;//  alpha - getPValue();
+        return abs(this.score) - this.cutoff;//  alpha - getPValue();
     }
 
-    public void setAlpha(double alpha) {
+    public void setAlpha(final double alpha) {
         this.alpha = alpha;
         this.cutoff = getZForAlpha(alpha);
     }
 
     public double getAlpha() {
-        return alpha;
+        return this.alpha;
     }
 
-    public void setKernelRegressionSampleSize(int kernelRegressionSapleSize) {
+    public void setKernelRegressionSampleSize(final int kernelRegressionSapleSize) {
         this.kernelRegressionSampleSize = kernelRegressionSapleSize;
     }
 
@@ -349,9 +349,9 @@ public final class ConditionalCorrelationIndependence {
      * once undefined values have been removed. Left public so it can be
      * accessed separately.
      */
-    private double independent(double[] x, double[] y) {
-        double[] _x = new double[x.length];
-        double[] _y = new double[y.length];
+    private double independent(final double[] x, final double[] y) {
+        final double[] _x = new double[x.length];
+        final double[] _y = new double[y.length];
 
         double maxScore = Double.NEGATIVE_INFINITY;
 
@@ -374,42 +374,42 @@ public final class ConditionalCorrelationIndependence {
         return maxScore;
     }
 
-    private void scale(DataSet dataSet, int col) {
+    private void scale(final DataSet dataSet, final int col) {
         double max = Double.MIN_VALUE;
         double min = Double.MAX_VALUE;
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
-            double d = dataSet.getDouble(i, col);
+            final double d = dataSet.getDouble(i, col);
             if (Double.isNaN(d)) continue;
             if (d > max) max = d;
             if (d < min) min = d;
         }
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
-            double d = dataSet.getDouble(i, col);
+            final double d = dataSet.getDouble(i, col);
             if (Double.isNaN(d)) continue;
             dataSet.setDouble(i, col, min + (d - min) / (max - min));
         }
     }
 
-    private double nonparametricFisherZ(double[] _x, double[] _y) {
+    private double nonparametricFisherZ(final double[] _x, final double[] _y) {
 
         // Testing the hypothesis that _x and _y are uncorrelated and assuming that 4th moments of _x and _y
         // are finite and that the sample is large.
-        double[] __x = standardize(_x);
-        double[] __y = standardize(_y);
+        final double[] __x = standardize(_x);
+        final double[] __y = standardize(_y);
 
-        double r = covariance(__x, __y); // correlation
-        int N = __x.length;
+        final double r = covariance(__x, __y); // correlation
+        final int N = __x.length;
 
         // Non-parametric Fisher Z test.
-        double z = 0.5 * sqrt(N) * (log(1.0 + r) - log(1.0 - r));
+        final double z = 0.5 * sqrt(N) * (log(1.0 + r) - log(1.0 - r));
 
         return z / (sqrt((moment22(__x, __y))));
     }
 
-    private double moment22(double[] x, double[] y) {
-        int N = x.length;
+    private double moment22(final double[] x, final double[] y) {
+        final int N = x.length;
         double sum = 0.0;
 
         for (int j = 0; j < x.length; j++) {
@@ -419,8 +419,8 @@ public final class ConditionalCorrelationIndependence {
         return sum / N;
     }
 
-    private double function(int index, double x) {
-        if (basis == Basis.Polynomial) {
+    private double function(final int index, final double x) {
+        if (this.basis == Basis.Polynomial) {
             double g = 1.0;
 
             for (int i = 1; i <= index; i++) {
@@ -430,8 +430,8 @@ public final class ConditionalCorrelationIndependence {
             if (abs(g) == Double.POSITIVE_INFINITY) g = Double.NaN;
 
             return g;
-        } else if (basis == Basis.Cosine) {
-            int i = (index + 1) / 2;
+        } else if (this.basis == Basis.Cosine) {
+            final int i = (index + 1) / 2;
 
             if (index % 2 == 1) {
                 return sin(i * x);
@@ -439,37 +439,37 @@ public final class ConditionalCorrelationIndependence {
                 return cos(i * x);
             }
         } else {
-            throw new IllegalStateException("That basis is not configured: " + basis);
+            throw new IllegalStateException("That basis is not configured: " + this.basis);
         }
     }
 
     // Optimal bandwidth qsuggested by Bowman and Bowman and Azzalini (1997) q.31,
     // using MAD.
-    private double h(double[] xCol) {
-        double[] g = new double[xCol.length];
-        double median = median(xCol);
+    private double h(final double[] xCol) {
+        final double[] g = new double[xCol.length];
+        final double median = median(xCol);
         for (int j = 0; j < xCol.length; j++) g[j] = abs(xCol[j] - median);
-        double mad = median(g);
+        final double mad = median(g);
         return (1.4826 * mad) * pow((4.0 / 3.0) / xCol.length, 0.2);
     }
 
-    private double kernelEpinechnikov(double z, double h) {
+    private double kernelEpinechnikov(double z, final double h) {
         z /= getWidth() * h;
         if (abs(z) > 1) return 0.0;
         else return (/*0.75 **/ (1.0 - z * z));
     }
 
-    private double kernelGaussian(double z, double h) {
+    private double kernelGaussian(double z, final double h) {
         z /= getWidth() * h;
         return Math.exp(-z * z);
     }
 
     // Euclidean distance.
-    private double distance(double[][] data, int[] z, int i, int j) {
+    private double distance(final double[][] data, final int[] z, final int i, final int j) {
         double sum = 0.0;
 
-        for (int _z : z) {
-            double d = (data[_z][i] - data[_z][j]) / 2.0;
+        for (final int _z : z) {
+            final double d = (data[_z][i] - data[_z][j]) / 2.0;
 
             if (!Double.isNaN(d)) {
                 sum += d * d;
@@ -480,14 +480,14 @@ public final class ConditionalCorrelationIndependence {
     }
 
     // Standardizes the given data array. No need to make a copy here.
-    private double[] standardize(double[] data) {
+    private double[] standardize(final double[] data) {
         double sum = 0.0;
 
-        for (double d : data) {
+        for (final double d : data) {
             sum += d;
         }
 
-        double mean = sum / data.length;
+        final double mean = sum / data.length;
 
         for (int i = 0; i < data.length; i++) {
             data[i] = data[i] - mean;
@@ -495,12 +495,12 @@ public final class ConditionalCorrelationIndependence {
 
         double var = 0.0;
 
-        for (double d : data) {
+        for (final double d : data) {
             var += d * d;
         }
 
         var /= (data.length);
-        double sd = sqrt(var);
+        final double sd = sqrt(var);
 
         for (int i = 0; i < data.length; i++) {
             data[i] /= sd;
@@ -509,10 +509,10 @@ public final class ConditionalCorrelationIndependence {
         return data;
     }
 
-    private Set<Integer> getCloseZs(double[][] _data, int[] _z, int i, int sampleSize,
-                                    List<Map<Integer, Integer>> reverseLookup,
-                                    List<List<Integer>> sortedIndices) {
-        Set<Integer> js = new HashSet<>();
+    private Set<Integer> getCloseZs(final double[][] _data, final int[] _z, final int i, int sampleSize,
+                                    final List<Map<Integer, Integer>> reverseLookup,
+                                    final List<List<Integer>> sortedIndices) {
+        final Set<Integer> js = new HashSet<>();
 
         if (sampleSize > _data[0].length) sampleSize = (int) ceil(0.8 * _data.length);
         if (_z.length == 0) return new HashSet<>();
@@ -520,8 +520,8 @@ public final class ConditionalCorrelationIndependence {
         int radius = 0;
 
         while (true) {
-            for (int z1 : _z) {
-                int q = reverseLookup.get(z1).get(i);
+            for (final int z1 : _z) {
+                final int q = reverseLookup.get(z1).get(i);
 
                 if (q - radius >= 0 && q - radius < _data[z1 + 1].length) {
                     final int r2 = sortedIndices.get(z1).get(q - radius);
@@ -540,12 +540,12 @@ public final class ConditionalCorrelationIndependence {
         }
     }
 
-    private List<Integer> getRows(DataSet dataSet, List<Node> allVars, Map<Node, Integer> nodesHash) {
-        List<Integer> rows = new ArrayList<>();
+    private List<Integer> getRows(final DataSet dataSet, final List<Node> allVars, final Map<Node, Integer> nodesHash) {
+        final List<Integer> rows = new ArrayList<>();
 
         K:
         for (int k = 0; k < dataSet.getNumRows(); k++) {
-            for (Node node : allVars) {
+            for (final Node node : allVars) {
                 if (Double.isNaN(dataSet.getDouble(k, nodesHash.get(node)))) continue K;
             }
 

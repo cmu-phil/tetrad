@@ -34,57 +34,57 @@ public class SepsetsSet implements SepsetProducer {
     private double p;
     private boolean verbose = false;
 
-    public SepsetsSet(SepsetMap sepsets, IndependenceTest test) {
+    public SepsetsSet(final SepsetMap sepsets, final IndependenceTest test) {
         this.sepsets = sepsets;
         this.test = test;
     }
 
     @Override
-    public List<Node> getSepset(Node a, Node b) {
+    public List<Node> getSepset(final Node a, final Node b) {
         //isIndependent(a, b, sepsets.get(a, b));
-        return sepsets.get(a, b);
+        return this.sepsets.get(a, b);
     }
 
     @Override
-    public boolean isCollider(Node i, Node j, Node k) {
-        List<Node> sepset = sepsets.get(i, k);
+    public boolean isCollider(final Node i, final Node j, final Node k) {
+        final List<Node> sepset = this.sepsets.get(i, k);
         if (sepset == null) return false;
         else return !sepset.contains(j);
     }
 
     @Override
-    public boolean isNoncollider(Node i, Node j, Node k) {
-        List<Node> sepset = sepsets.get(i, k);
-        isIndependent(i, k, sepsets.get(i, k));
+    public boolean isNoncollider(final Node i, final Node j, final Node k) {
+        final List<Node> sepset = this.sepsets.get(i, k);
+        isIndependent(i, k, this.sepsets.get(i, k));
         return sepset != null && sepset.contains(j);
     }
 
     @Override
-    public boolean isIndependent(Node a, Node b, List<Node> c) {
-        return test.isIndependent(a, b, c);
+    public boolean isIndependent(final Node a, final Node b, final List<Node> c) {
+        return this.test.isIndependent(a, b, c);
     }
 
     @Override
     public double getPValue() {
-        return test.getPValue();
+        return this.test.getPValue();
     }
 
     @Override
     public double getScore() {
-        return -(test.getPValue() - test.getAlpha());
+        return -(this.test.getPValue() - this.test.getAlpha());
     }
 
     @Override
     public List<Node> getVariables() {
-        return test.getVariables();
+        return this.test.getVariables();
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     @Override
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 

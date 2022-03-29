@@ -39,13 +39,13 @@ public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm {
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(final DataModel dataSet, final Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            ICovarianceMatrix cov = DataUtils.getCovMatrix(dataSet);
-            double alpha = parameters.getDouble(Params.ALPHA);
+            final ICovarianceMatrix cov = DataUtils.getCovMatrix(dataSet);
+            final double alpha = parameters.getDouble(Params.ALPHA);
 
-            boolean wishart = parameters.getBoolean(Params.USE_WISHART, true);
-            TestType testType;
+            final boolean wishart = parameters.getBoolean(Params.USE_WISHART, true);
+            final TestType testType;
 
             if (wishart) {
                 testType = TestType.TETRAD_WISHART;
@@ -53,8 +53,8 @@ public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm {
                 testType = TestType.TETRAD_DELTA;
             }
 
-            boolean gap = parameters.getBoolean(Params.USE_GAP, true);
-            FindOneFactorClusters.Algorithm algorithm;
+            final boolean gap = parameters.getBoolean(Params.USE_GAP, true);
+            final FindOneFactorClusters.Algorithm algorithm;
 
             if (gap) {
                 algorithm = FindOneFactorClusters.Algorithm.GAP;
@@ -62,19 +62,19 @@ public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm {
                 algorithm = FindOneFactorClusters.Algorithm.SAG;
             }
 
-            edu.cmu.tetrad.search.FindOneFactorClusters search
+            final edu.cmu.tetrad.search.FindOneFactorClusters search
                     = new edu.cmu.tetrad.search.FindOneFactorClusters(cov, testType, algorithm, alpha);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
-            Graph graph = search.search();
+            final Graph graph = search.search();
 
             if (!parameters.getBoolean(Params.INCLUDE_STRUCTURE_MODEL)) {
                 return graph;
             } else {
 
-                Clusters clusters = ClusterUtils.mimClusters(graph);
+                final Clusters clusters = ClusterUtils.mimClusters(graph);
 
-                Mimbuild mimbuild = new Mimbuild();
+                final Mimbuild mimbuild = new Mimbuild();
                 mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
                 mimbuild.setKnowledge((IKnowledge) parameters.get("knowledge", new Knowledge2()));
 
@@ -84,33 +84,33 @@ public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm {
                     mimbuild.setMinClusterSize(4);
                 }
 
-                List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters, dataSet.getVariables());
-                List<String> latentNames = new ArrayList<>();
+                final List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters, dataSet.getVariables());
+                final List<String> latentNames = new ArrayList<>();
 
                 for (int i = 0; i < clusters.getNumClusters(); i++) {
                     latentNames.add(clusters.getClusterName(i));
                 }
 
-                Graph structureGraph = mimbuild.search(partition, latentNames, cov);
+                final Graph structureGraph = mimbuild.search(partition, latentNames, cov);
                 GraphUtils.circleLayout(structureGraph, 200, 200, 150);
                 GraphUtils.fruchtermanReingoldLayout(structureGraph);
 
-                ICovarianceMatrix latentsCov = mimbuild.getLatentsCov();
+                final ICovarianceMatrix latentsCov = mimbuild.getLatentsCov();
 
                 TetradLogger.getInstance().log("details", "Latent covs = \n" + latentsCov);
 
-                Graph fullGraph = mimbuild.getFullGraph();
+                final Graph fullGraph = mimbuild.getFullGraph();
                 GraphUtils.circleLayout(fullGraph, 200, 200, 150);
                 GraphUtils.fruchtermanReingoldLayout(fullGraph);
 
                 return fullGraph;
             }
         } else {
-            Fofc algorithm = new Fofc();
+            final Fofc algorithm = new Fofc();
 
-            DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(knowledge);
+            final DataSet data = (DataSet) dataSet;
+            final GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
+            search.setKnowledge(this.knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -136,7 +136,7 @@ public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm {
     }
 
     @Override
-    public Graph getComparisonGraph(Graph graph) {
+    public Graph getComparisonGraph(final Graph graph) {
         return SearchGraphUtils.cpdagForDag(graph);
     }
 
@@ -152,7 +152,7 @@ public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
+        final List<String> parameters = new ArrayList<>();
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.USE_WISHART);
         parameters.add(Params.USE_GAP);
@@ -164,11 +164,11 @@ public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
     @Override
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(final IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 }

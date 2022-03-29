@@ -65,36 +65,36 @@ public final class EmBayesProperties {
         }
     };
 
-    public EmBayesProperties(DataSet dataSet, Graph graph) {
+    public EmBayesProperties(final DataSet dataSet, final Graph graph) {
         setDataSet(dataSet);
         setGraph(graph);
     }
 
-    public void setGraph(Graph graph) {
+    public void setGraph(final Graph graph) {
         if (graph == null) {
             throw new NullPointerException();
         }
 
-        List<Node> vars = dataSet.getVariables();
-        Map<String, DiscreteVariable> nodesToVars =
+        final List<Node> vars = this.dataSet.getVariables();
+        final Map<String, DiscreteVariable> nodesToVars =
                 new HashMap<>();
-        for (int i = 0; i < dataSet.getNumColumns(); i++) {
-            DiscreteVariable var = (DiscreteVariable) vars.get(i);
-            String name = var.getName();
-            Node node = new GraphNode(name);
+        for (int i = 0; i < this.dataSet.getNumColumns(); i++) {
+            final DiscreteVariable var = (DiscreteVariable) vars.get(i);
+            final String name = var.getName();
+            final Node node = new GraphNode(name);
             nodesToVars.put(node.getName(), var);
         }
 
-        Dag dag = new Dag(graph);
-        BayesPm bayesPm = new BayesPm(dag);
+        final Dag dag = new Dag(graph);
+        final BayesPm bayesPm = new BayesPm(dag);
 
-        List<Node> nodes = bayesPm.getDag().getNodes();
+        final List<Node> nodes = bayesPm.getDag().getNodes();
 
-        for (Node node1 : nodes) {
-            DiscreteVariable var = nodesToVars.get(node1.getName());
+        for (final Node node1 : nodes) {
+            final DiscreteVariable var = nodesToVars.get(node1.getName());
 
             if (var != null) {
-                List<String> categories = var.getCategories();
+                final List<String> categories = var.getCategories();
                 bayesPm.setCategories(node1, categories);
             }
         }
@@ -117,31 +117,31 @@ public final class EmBayesProperties {
      * Calculates the p-value of the graph with respect to the given data.
      */
     public double getLikelihoodRatioP() {
-        Graph graph1 = getGraph();
-        List<Node> nodes = getGraph().getNodes();
+        final Graph graph1 = getGraph();
+        final List<Node> nodes = getGraph().getNodes();
 
         // Null hypothesis = no edges.
-        Graph graph0 = new Dag();
+        final Graph graph0 = new Dag();
 
-        for (Node node : nodes) {
+        for (final Node node : nodes) {
             graph0.addNode(node);
         }
 
-        EmBayesProperties scorer1 = new EmBayesProperties(getDataSet(), graph1);
-        EmBayesProperties scorer0 = new EmBayesProperties(getDataSet(), graph0);
+        final EmBayesProperties scorer1 = new EmBayesProperties(getDataSet(), graph1);
+        final EmBayesProperties scorer0 = new EmBayesProperties(getDataSet(), graph0);
 
-        double l1 = scorer1.logProbDataGivenStructure();
-        double l0 = scorer0.logProbDataGivenStructure();
+        final double l1 = scorer1.logProbDataGivenStructure();
+        final double l0 = scorer0.logProbDataGivenStructure();
 
         System.out.println("l1 = " + l1);
         System.out.println("l0 = " + l0);
 
-        double chisq = -2.0 * (l0 - l1);
-        int n1 = scorer1.numNonredundantParams();
-        int n0 = scorer0.numNonredundantParams();
+        final double chisq = -2.0 * (l0 - l1);
+        final int n1 = scorer1.numNonredundantParams();
+        final int n0 = scorer0.numNonredundantParams();
 
-        int df = n1 - n0;
-        double pValue = (1.0 - ProbUtils.chisqCdf(chisq, df));
+        final int df = n1 - n0;
+        final double pValue = (1.0 - ProbUtils.chisqCdf(chisq, df));
 
         this.pValueDf = df;
         this.chisq = chisq;
@@ -149,42 +149,42 @@ public final class EmBayesProperties {
     }
 
     public BayesPm getBayesPm() {
-        return bayesPm;
+        return this.bayesPm;
     }
 
     public int getPValueDf() {
-        return pValueDf;
+        return this.pValueDf;
     }
 
     public double getPValueChisq() {
-        return chisq;
+        return this.chisq;
     }
 
     public Estimator getEstimator() {
-        return estimator;
+        return this.estimator;
     }
 
-    public void setEstimator(Estimator estimator) {
+    public void setEstimator(final Estimator estimator) {
         this.estimator = estimator;
     }
 
     //=========================================PRIVATE METHODS===================================//
 
     private double logProbDataGivenStructure() {
-        BayesIm bayesIm = this.estimator.estimate(bayesPm, dataSet);
-        BayesImProbs probs = new BayesImProbs(bayesIm);
-        List<Node> variables = bayesIm.getVariables();
+        final BayesIm bayesIm = this.estimator.estimate(this.bayesPm, this.dataSet);
+        final BayesImProbs probs = new BayesImProbs(bayesIm);
+        final List<Node> variables = bayesIm.getVariables();
 
         System.out.println("E1 bayesIm : " + variables);
-        System.out.println("E2 data set : " + dataSet.getVariables());
+        System.out.println("E2 data set : " + this.dataSet.getVariables());
 
-        DataSet reorderedDataSet = dataSet.subsetColumns(variables);
+        final DataSet reorderedDataSet = this.dataSet.subsetColumns(variables);
 
-        int n = reorderedDataSet.getNumRows();
-        int m = reorderedDataSet.getNumColumns();
+        final int n = reorderedDataSet.getNumRows();
+        final int m = reorderedDataSet.getNumColumns();
 
         double score = 0.0;
-        int[] _case = new int[m];
+        final int[] _case = new int[m];
 
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < m; j++) {
@@ -201,9 +201,9 @@ public final class EmBayesProperties {
         setGraph(getGraph());
         int numParams = 0;
 
-        for (int j = 0; j < blankBayesIm.getNumNodes(); j++) {
-            int numColumns = blankBayesIm.getNumColumns(j);
-            int numRows = blankBayesIm.getNumRows(j);
+        for (int j = 0; j < this.blankBayesIm.getNumNodes(); j++) {
+            final int numColumns = this.blankBayesIm.getNumColumns(j);
+            final int numRows = this.blankBayesIm.getNumRows(j);
 
             if (numColumns > 1) {
                 numParams += (numColumns - 1) * numRows;
@@ -214,20 +214,20 @@ public final class EmBayesProperties {
     }
 
     private double parameterPenalty() {
-        int numParams = numNonredundantParams();
-        double r = dataSet.getNumRows();
+        final int numParams = numNonredundantParams();
+        final double r = this.dataSet.getNumRows();
         return (double) numParams * Math.log(r) / 2.;
     }
 
     private Graph getGraph() {
-        return graph;
+        return this.graph;
     }
 
     private DataSet getDataSet() {
-        return dataSet;
+        return this.dataSet;
     }
 
-    private void setDataSet(DataSet dataSet) {
+    private void setDataSet(final DataSet dataSet) {
         if (dataSet == null) {
             throw new NullPointerException();
         }

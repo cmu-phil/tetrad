@@ -58,7 +58,7 @@ public abstract class BasicGraph {
     /**
      * Creates a graph with <code>gName</code> name, and <code>n</code> nodes.
      */
-    public BasicGraph(String gName, int n) {
+    public BasicGraph(final String gName, final int n) {
         if (n <= 0) {
             throw new IllegalArgumentException("Invalid # nodes " + n);
         }
@@ -95,11 +95,11 @@ public abstract class BasicGraph {
      * Support of int, long, floating point, or doubles as edge values will
      * depend on how a subclass of Graph implement the set of edges.
      */
-    public BasicGraph(String fname) throws IOException {
+    public BasicGraph(final String fname) throws IOException {
         // Create and prepare stream tokenizer
-        File f = new File(fname);
-        BufferedReader in = new BufferedReader(new FileReader(f));
-        StreamTokenizer strmTok = new StreamTokenizer(in);
+        final File f = new File(fname);
+        final BufferedReader in = new BufferedReader(new FileReader(f));
+        final StreamTokenizer strmTok = new StreamTokenizer(in);
         strmTok.slashStarComments(true);
         strmTok.slashSlashComments(true);
         strmTok.parseNumbers();
@@ -143,11 +143,11 @@ public abstract class BasicGraph {
             if (nt == StreamTokenizer.TT_EOF) {
                 break;
             }
-            int node_i = (int) strmTok.nval;
+            final int node_i = (int) strmTok.nval;
             nt = strmTok.nextToken();
-            int node_j = (int) strmTok.nval;
+            final int node_j = (int) strmTok.nval;
             nt = strmTok.nextToken();
-            double edgeValue = strmTok.nval;
+            final double edgeValue = strmTok.nval;
             this.setEdge(node_i, node_j, edgeValue);
         }
         in.close();
@@ -163,7 +163,7 @@ public abstract class BasicGraph {
     /**
      * Sets the name of the graph
      */
-    public void setGraphName(String newName) {
+    public void setGraphName(final String newName) {
         this.graphName = newName;
     }
 
@@ -171,13 +171,13 @@ public abstract class BasicGraph {
      * Returns the # nodes in this graph
      */
     public int getSize() {
-        return nNodes;
+        return this.nNodes;
     }
 
     /**
      * Sets the name of node <code>i</code> in this graph
      */
-    public void setNodeName(int i, String nodeName) {
+    public void setNodeName(final int i, final String nodeName) {
         if ((i < 0) || (i > this.nNodes - 1)) {
             this.badNodeIndex(i);
         }
@@ -187,7 +187,7 @@ public abstract class BasicGraph {
     /**
      * Returns the name of node <code>i</code> in this graph
      */
-    public String getNodeName(int i) {
+    public String getNodeName(final int i) {
         if ((i < 0) || (i > this.nNodes - 1)) {
             this.badNodeIndex(i);
         }
@@ -217,7 +217,7 @@ public abstract class BasicGraph {
         return s;
     }
 
-    protected void badNodeIndex(int i) {
+    protected void badNodeIndex(final int i) {
         throw new IllegalArgumentException("Bad node index " + i +
                 " for Graph with " + this.nNodes + " nodes");
     }

@@ -48,56 +48,56 @@ public class ExperimentalSetup {
     private final Graph gNat;
     private final Graph gManip;
 
-    public ExperimentalSetup(BayesPm pm) {
+    public ExperimentalSetup(final BayesPm pm) {
         this.bayesPm = pm;
         this.pmType = PmType.bayes;
 
-        Graph dag = pm.getDag();
+        final Graph dag = pm.getDag();
         this.gNat = new EdgeListGraph(dag);
-        this.gManip = new EdgeListGraph(gNat);
+        this.gManip = new EdgeListGraph(this.gNat);
     }
 
-    public ExperimentalSetup(SemPm pm) {
+    public ExperimentalSetup(final SemPm pm) {
         this.semPm = pm;
         this.pmType = PmType.sem;
 
-        SemGraph graph = pm.getGraph();
+        final SemGraph graph = pm.getGraph();
         graph.setShowErrorTerms(false);
         this.gNat = new EdgeListGraph(graph);
-        this.gManip = new EdgeListGraph(gNat);
+        this.gManip = new EdgeListGraph(this.gNat);
     }
 
-    public ExperimentalSetup(GeneralizedSemPm pm) {
+    public ExperimentalSetup(final GeneralizedSemPm pm) {
         this.generalizedSemPm = pm;
         this.pmType = PmType.generalized;
 
-        SemGraph graph = pm.getGraph();
+        final SemGraph graph = pm.getGraph();
         graph.setShowErrorTerms(false);
         this.gNat = new EdgeListGraph(graph);
-        this.gManip = new EdgeListGraph(gNat);
+        this.gManip = new EdgeListGraph(this.gNat);
     }
 
     private void updateManipulated() {
-        if (esType == EsType.simpleSurgical) {
-            addSimpleSurgicalEdges(gNat, gManip);
-        } else if (esType == EsType.simpleSoft) {
-            addSimpleSoftEdges(gNat, gManip);
-        } else if (esType == EsType.fullExperimental) {
-            addFullExperimentalEdges(gNat, gManip);
-        } else if (esType == EsType.counterfactualExperimental) {
-            addCounterfactualExperimentalEdges(gNat, gManip);
+        if (this.esType == EsType.simpleSurgical) {
+            addSimpleSurgicalEdges(this.gNat, this.gManip);
+        } else if (this.esType == EsType.simpleSoft) {
+            addSimpleSoftEdges(this.gNat, this.gManip);
+        } else if (this.esType == EsType.fullExperimental) {
+            addFullExperimentalEdges(this.gNat, this.gManip);
+        } else if (this.esType == EsType.counterfactualExperimental) {
+            addCounterfactualExperimentalEdges(this.gNat, this.gManip);
         }
     }
 
-    private void addSimpleSurgicalEdges(Graph gNat, Graph gManip) {
+    private void addSimpleSurgicalEdges(final Graph gNat, final Graph gManip) {
         removeCausalEdges(gManip);
 
         EDGE:
-        for (Edge edge : gNat.getEdges()) {
-            Node to = Edges.getDirectedEdgeHead(edge);
-            List<Node> parents = gNat.getParents(to);
+        for (final Edge edge : gNat.getEdges()) {
+            final Node to = Edges.getDirectedEdgeHead(edge);
+            final List<Node> parents = gNat.getParents(to);
 
-            for (Node node : parents) {
+            for (final Node node : parents) {
                 if (node.getNodeType() == NodeType.LOCK) {
                     continue EDGE;
                 }
@@ -111,26 +111,26 @@ public class ExperimentalSetup {
         }
     }
 
-    private void addSimpleSoftEdges(Graph gNat, Graph gManip) {
+    private void addSimpleSoftEdges(final Graph gNat, final Graph gManip) {
         removeCausalEdges(gManip);
 
         //To change body of created methods use File | Settings | File Templates.
     }
 
-    private void addFullExperimentalEdges(Graph gNat, Graph gManip) {
+    private void addFullExperimentalEdges(final Graph gNat, final Graph gManip) {
         removeCausalEdges(gManip);
 
         //To change body of created methods use File | Settings | File Templates.
     }
 
-    private void addCounterfactualExperimentalEdges(Graph gNat, Graph gManip) {
+    private void addCounterfactualExperimentalEdges(final Graph gNat, final Graph gManip) {
         removeCausalEdges(gManip);
 
         //To change body of created methods use File | Settings | File Templates.
     }
 
-    private void removeCausalEdges(Graph manipulatedGraph) {
-        for (Edge edge : manipulatedGraph.getEdges()) {
+    private void removeCausalEdges(final Graph manipulatedGraph) {
+        for (final Edge edge : manipulatedGraph.getEdges()) {
             if (edge.getNode1().getNodeType() == NodeType.LOCK) continue;
             if (edge.getNode1().getNodeType() == NodeType.RANDOMIZE) continue;
             manipulatedGraph.removeEdge(edge);
@@ -139,10 +139,10 @@ public class ExperimentalSetup {
 
 
     public EsType getEsType() {
-        return esType;
+        return this.esType;
     }
 
-    public void setEsType(EsType esType) {
+    public void setEsType(final EsType esType) {
         this.esType = esType;
     }
 

@@ -52,12 +52,12 @@ public class IntDataBox implements DataBox {
     /**
      * Constructs an 2D short array consisting entirely of missing values (-99).
      */
-    public IntDataBox(int rows, int cols) {
+    public IntDataBox(final int rows, final int cols) {
         this.data = new int[rows][cols];
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                data[i][j] = -99;
+                this.data[i][j] = -99;
             }
         }
 
@@ -68,10 +68,10 @@ public class IntDataBox implements DataBox {
     /**
      * Constructs a new data box using the given 2D short data array as data.
      */
-    public IntDataBox(int[][] data) {
-        int length = data[0].length;
+    public IntDataBox(final int[][] data) {
+        final int length = data[0].length;
 
-        for (int[] datum : data) {
+        for (final int[] datum : data) {
             if (datum.length != length) {
                 throw new IllegalArgumentException("All rows must have same length.");
             }
@@ -87,7 +87,7 @@ public class IntDataBox implements DataBox {
      * Generates a simple exemplar of this class to test serialization.
      */
     public static BoxDataSet serializableInstance() {
-        List<Node> vars = new ArrayList<>();
+        final List<Node> vars = new ArrayList<>();
         for (int i = 0; i < 4; i++) vars.add(new ContinuousVariable("X" + i));
         return new BoxDataSet(new ShortDataBox(4, 4), vars);
     }
@@ -96,28 +96,28 @@ public class IntDataBox implements DataBox {
      * @return the number of rows in this data box.
      */
     public int numRows() {
-        return numRows;
+        return this.numRows;
     }
 
     /**
      * @return the number of columns in this data box.n
      */
     public int numCols() {
-        return numCols;
+        return this.numCols;
     }
 
     /**
      * Sets the value at the given row/column to the given Number value. The
      * value used is number.shortValue().
      */
-    public void set(int row, int col, Number value) {
+    public void set(final int row, final int col, final Number value) {
         if (value == null) {
-            synchronized (data) {
-                data[row][col] = -99;
+            synchronized (this.data) {
+                this.data[row][col] = -99;
             }
         } else {
-            synchronized (data) {
-                data[row][col] = value.shortValue();
+            synchronized (this.data) {
+                this.data[row][col] = value.shortValue();
             }
         }
     }
@@ -126,8 +126,8 @@ public class IntDataBox implements DataBox {
      * @return the Number value at the given row and column. If the value is
      * missing (-99), null, is returned.
      */
-    public Number get(int row, int col) {
-        int datum = data[row][col];
+    public Number get(final int row, final int col) {
+        final int datum = this.data[row][col];
 
         if (datum == -99) {
             return null;
@@ -140,7 +140,7 @@ public class IntDataBox implements DataBox {
      * @return a copy of this data box.
      */
     public DataBox copy() {
-        ShortDataBox box = new ShortDataBox(numRows(), numCols());
+        final ShortDataBox box = new ShortDataBox(numRows(), numCols());
 
         for (int i = 0; i < numRows(); i++) {
             for (int j = 0; j < numCols(); j++) {
@@ -155,8 +155,8 @@ public class IntDataBox implements DataBox {
      * @return a DataBox of type ShortDataBox, but with the given dimensions.
      */
     public DataBox like() {
-        int[] rows = new int[numRows()];
-        int[] cols = new int[numCols()];
+        final int[] rows = new int[numRows()];
+        final int[] cols = new int[numCols()];
 
         for (int i = 0; i < numRows(); i++) {
             rows[i] = i;
@@ -169,8 +169,8 @@ public class IntDataBox implements DataBox {
     }
 
     @Override
-    public DataBox viewSelection(int[] rows, int[] cols) {
-        DataBox _dataBox = new IntDataBox(rows.length, cols.length);
+    public DataBox viewSelection(final int[] rows, final int[] cols) {
+        final DataBox _dataBox = new IntDataBox(rows.length, cols.length);
 
         for (int i = 0; i < rows.length; i++) {
             for (int j = 0; j < cols.length; j++) {
@@ -182,7 +182,7 @@ public class IntDataBox implements DataBox {
     }
 
     public int[][] getData() {
-        return data;
+        return this.data;
     }
 
 }

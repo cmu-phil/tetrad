@@ -36,18 +36,18 @@ public class GwpResult {
         public Integer errorsOfOmission;
         public Integer errorsOfCommission;
 
-        public AdjacencyEvaluationResult(Integer errorsOfOmission, Integer errorsOfCommission) {
+        public AdjacencyEvaluationResult(final Integer errorsOfOmission, final Integer errorsOfCommission) {
             super();
             this.errorsOfOmission = errorsOfOmission;
             this.errorsOfCommission = errorsOfCommission;
         }
 
         public double loss() {
-            return errorsOfOmission + errorsOfCommission;
+            return this.errorsOfOmission + this.errorsOfCommission;
         }
 
         public double[] values() {
-            return new double[]{errorsOfOmission, errorsOfCommission, loss()};
+            return new double[]{this.errorsOfOmission, this.errorsOfCommission, loss()};
         }
     }
 
@@ -58,8 +58,8 @@ public class GwpResult {
         public Integer directedWhenShouldBeUndirected;
 
 
-        public OrientationEvaluationResult(Integer correct, Integer directedWrongWay,
-                                           Integer undirectedWhenShouldBeDirected, Integer directedWhenShouldBeUndirected) {
+        public OrientationEvaluationResult(final Integer correct, final Integer directedWrongWay,
+                                           final Integer undirectedWhenShouldBeDirected, final Integer directedWhenShouldBeUndirected) {
             super();
             this.nCorrect = correct;
             this.directedWrongWay = directedWrongWay;
@@ -68,7 +68,7 @@ public class GwpResult {
         }
 
         public double[] values() {
-            return new double[]{nCorrect, directedWrongWay, undirectedWhenShouldBeDirected, directedWhenShouldBeUndirected};
+            return new double[]{this.nCorrect, this.directedWrongWay, this.undirectedWhenShouldBeDirected, this.directedWhenShouldBeUndirected};
         }
 
 //		public double loss(){
@@ -81,18 +81,18 @@ public class GwpResult {
         public Double totalCoeffErrorSq;
         public Integer nEdgesEvaluated;
 
-        public CoefficientEvaluationResult(Double totalCoeffErrorSq, Integer edgesEvaluated) {
+        public CoefficientEvaluationResult(final Double totalCoeffErrorSq, final Integer edgesEvaluated) {
             super();
             this.totalCoeffErrorSq = totalCoeffErrorSq;
             this.nEdgesEvaluated = edgesEvaluated;
         }
 
         public double loss() {
-            return totalCoeffErrorSq;
+            return this.totalCoeffErrorSq;
         }
 
         public double[] values() {
-            return new double[]{totalCoeffErrorSq, nEdgesEvaluated, loss()};
+            return new double[]{this.totalCoeffErrorSq, this.nEdgesEvaluated, loss()};
         }
 
     }
@@ -117,20 +117,20 @@ public class GwpResult {
         public AdjacencyEvaluationResult adj;
         public OrientationEvaluationResult ori;
 
-        public CPDAGEvaluationResult(AdjacencyEvaluationResult adj, OrientationEvaluationResult ori) {
+        public CPDAGEvaluationResult(final AdjacencyEvaluationResult adj, final OrientationEvaluationResult ori) {
             this.adj = adj;
             this.ori = ori;
         }
 
         public double loss() {
-            double oriLoss = ori.directedWrongWay + 0.5 * ori.undirectedWhenShouldBeDirected +
-                    0.5 * ori.directedWhenShouldBeUndirected;
+            final double oriLoss = this.ori.directedWrongWay + 0.5 * this.ori.undirectedWhenShouldBeDirected +
+                    0.5 * this.ori.directedWhenShouldBeUndirected;
 
-            double adjLoss = 1.5 * adj.errorsOfOmission + 1.0 * adj.errorsOfCommission;
+            final double adjLoss = 1.5 * this.adj.errorsOfOmission + 1.0 * this.adj.errorsOfCommission;
 
             //			System.out.println("adjLoss = " + adjLoss);
 //			System.out.println("oriLoss = " + oriLoss);
-            double loss = adjLoss + oriLoss;
+            final double loss = adjLoss + oriLoss;
 //			System.out.println("returning loss = " + loss);
             return loss;
         }
@@ -141,8 +141,8 @@ public class GwpResult {
     /**
      * constructor for evaluations where the method evaluated purports to give us the entire structure.
      */
-    public GwpResult(String methodName, AdjacencyEvaluationResult adj, OrientationEvaluationResult ori,
-                     CoefficientEvaluationResult coeffAll, CoefficientEvaluationResult coeffSome) {
+    public GwpResult(final String methodName, final AdjacencyEvaluationResult adj, final OrientationEvaluationResult ori,
+                     final CoefficientEvaluationResult coeffAll, final CoefficientEvaluationResult coeffSome) {
         super();
         this.name = methodName;
         this.adj = adj;
@@ -158,7 +158,7 @@ public class GwpResult {
      * <p>
      * * @param methodName
      */
-    public GwpResult(String methodName, CPDAGEvaluationResult pat) {
+    public GwpResult(final String methodName, final CPDAGEvaluationResult pat) {
         super();
         this.name = methodName;
         this.pat = pat;

@@ -42,8 +42,8 @@ import edu.cmu.tetrad.util.Params;
  * @author jdramsey
  */
 public class LingamStudy {
-    public static void main(String... args) {
-        Statistics statistics = new Statistics();
+    public static void main(final String... args) {
+        final Statistics statistics = new Statistics();
 
 //        statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
         statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
@@ -60,14 +60,14 @@ public class LingamStudy {
         statistics.setWeight("AHP", 1);
         statistics.setWeight("AHR", 1);
 
-        Algorithms algorithms = new Algorithms();
+        final Algorithms algorithms = new Algorithms();
 
         algorithms.add(new Lingam());
         algorithms.add(new R3(new FAS(new FisherZ())));
         algorithms.add(new RSkew(new FAS(new FisherZ())));
         algorithms.add(new Fask(new FisherZ()));
 
-        Comparison comparison = new Comparison();
+        final Comparison comparison = new Comparison();
 
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
@@ -75,7 +75,7 @@ public class LingamStudy {
         comparison.setShowUtilities(false);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
-        Simulations simulations = new Simulations();
+        final Simulations simulations = new Simulations();
         simulations.add(new LinearFisherModel(new RandomForward()));
 
         comparison.compareFromSimulations("lingam", simulations, algorithms, statistics, getParameters());
@@ -83,7 +83,7 @@ public class LingamStudy {
     }
 
     private static Parameters getParameters() {
-        Parameters parameters = new Parameters();
+        final Parameters parameters = new Parameters();
 
         parameters.set(Params.VERBOSE, false);
 

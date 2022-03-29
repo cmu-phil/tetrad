@@ -68,7 +68,7 @@ public class StoredLagGraphParams implements TetradSerializable {
     /**
      * Sets the stored file.
      */
-    public void setFilename(String filename) {
+    public void setFilename(final String filename) {
         if (filename == null) {
             throw new NullPointerException("Filename must not be null.");
         }

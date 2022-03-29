@@ -66,15 +66,15 @@ public final class SelectionGenerator {
      *
      * @param a the number of objects being selected from.
      */
-    public SelectionGenerator(int a) {
+    public SelectionGenerator(final int a) {
         if ((a < 0)) {
             throw new IllegalArgumentException(
                     "a must be non-zero");
         }
 
         this.a = a;
-        selectionLocal = new int[a];
-        selectionReturned = new int[a];
+        this.selectionLocal = new int[a];
+        this.selectionReturned = new int[a];
 
 
         // Initialize the choice array with successive integers [0 1 2 ...].
@@ -82,14 +82,14 @@ public final class SelectionGenerator {
         // a series, ([0 1 2 ... b - 2]) so that on the first call to next()
         // the first combination ([0 1 2 ... b - 1]) is returned correctly.
         for (int i = 1; i < a; i++) {
-            selectionLocal[i] = 0;
+            this.selectionLocal[i] = 0;
         }
 
         if (a > 0) {
-            selectionLocal[a - 1] = -1;
+            this.selectionLocal[a - 1] = -1;
         }
 
-        begun = false;
+        this.begun = false;
     }
 
     /**
@@ -110,18 +110,18 @@ public final class SelectionGenerator {
                     this.selectionLocal[i1] = 0;
                 }
 
-                begun = true;
-                System.arraycopy(selectionLocal, 0, selectionReturned, 0, a);
-                return selectionReturned;
+                this.begun = true;
+                System.arraycopy(this.selectionLocal, 0, this.selectionReturned, 0, this.a);
+                return this.selectionReturned;
             }
         }
 
         if (this.begun) {
             return null;
         } else {
-            begun = true;
-            System.arraycopy(selectionLocal, 0, selectionReturned, 0, a);
-            return selectionReturned;
+            this.begun = true;
+            System.arraycopy(this.selectionLocal, 0, this.selectionReturned, 0, this.a);
+            return this.selectionReturned;
         }
     }
 
@@ -131,8 +131,8 @@ public final class SelectionGenerator {
      *
      * @param a the number of objects being selected from.
      */
-    public static void testPrint(int a) {
-        SelectionGenerator cg = new SelectionGenerator(a);
+    public static void testPrint(final int a) {
+        final SelectionGenerator cg = new SelectionGenerator(a);
         int[] selection;
 
         System.out.println();
@@ -144,7 +144,7 @@ public final class SelectionGenerator {
             if (selection.length == 0) {
                 System.out.println("zero-length array");
             } else {
-                for (int aSelection : selection) {
+                for (final int aSelection : selection) {
                     System.out.print(aSelection + "\t");
                 }
 

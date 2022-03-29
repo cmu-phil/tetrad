@@ -53,12 +53,12 @@ public class VerticalDoubleDataBox implements DataBox {
      * Constructs an 2D double array consisting entirely of missing values
      * (Double.NaN).
      */
-    public VerticalDoubleDataBox(int rows, int cols) {
+    public VerticalDoubleDataBox(final int rows, final int cols) {
         this.data = new double[cols][rows];
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                data[j][i] = Double.NaN;
+                this.data[j][i] = Double.NaN;
             }
         }
 
@@ -69,10 +69,10 @@ public class VerticalDoubleDataBox implements DataBox {
     /**
      * Constructs a new data box using the given 2D double data array as data.
      */
-    public VerticalDoubleDataBox(double[][] data) {
-        int length = data[0].length;
+    public VerticalDoubleDataBox(final double[][] data) {
+        final int length = data[0].length;
 
-        for (double[] datum : data) {
+        for (final double[] datum : data) {
             if (datum.length != length) {
                 throw new IllegalArgumentException("All columns must have same length.");
             }
@@ -86,24 +86,24 @@ public class VerticalDoubleDataBox implements DataBox {
     /**
      * Copies the data from the given data box into this one.
      */
-    public VerticalDoubleDataBox(DataBox dataBox) {
-        data = new double[dataBox.numCols()][dataBox.numRows()];
+    public VerticalDoubleDataBox(final DataBox dataBox) {
+        this.data = new double[dataBox.numCols()][dataBox.numRows()];
 
         for (int i = 0; i < dataBox.numRows(); i++) {
             for (int j = 0; j < dataBox.numCols(); j++) {
-                data[j][i] = dataBox.get(i, j).doubleValue();
+                this.data[j][i] = dataBox.get(i, j).doubleValue();
             }
         }
 
-        numRows = dataBox.numRows();
-        numCols = dataBox.numCols();
+        this.numRows = dataBox.numRows();
+        this.numCols = dataBox.numCols();
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
     public static BoxDataSet serializableInstance() {
-        List<Node> vars = new ArrayList<>();
+        final List<Node> vars = new ArrayList<>();
         for (int i = 0; i < 4; i++) vars.add(new ContinuousVariable("X" + i));
         return new BoxDataSet(new ShortDataBox(4, 4), vars);
     }
@@ -112,28 +112,28 @@ public class VerticalDoubleDataBox implements DataBox {
      * @return the number of rows in this data box.
      */
     public int numRows() {
-        return numRows;
+        return this.numRows;
     }
 
     /**
      * @return the number of columns in this data box.
      */
     public int numCols() {
-        return numCols;
+        return this.numCols;
     }
 
     /**
      * Sets the value at the given row/column to the given Number value.
      * The value used is number.doubleValue().
      */
-    public void set(int row, int col, Number value) {
+    public void set(final int row, final int col, final Number value) {
         if (value == null) {
-            synchronized (data[col]) {
-                data[col][row] = Double.NaN;
+            synchronized (this.data[col]) {
+                this.data[col][row] = Double.NaN;
             }
         } else {
-            synchronized (data[col]) {
-                data[col][row] = value.doubleValue();
+            synchronized (this.data[col]) {
+                this.data[col][row] = value.doubleValue();
             }
         }
     }
@@ -142,26 +142,26 @@ public class VerticalDoubleDataBox implements DataBox {
      * @return the Number value at the given row and column. If the value
      * is missing (-99), null, is returned.
      */
-    public Number get(int row, int col) {
-        return data[col][row];
+    public Number get(final int row, final int col) {
+        return this.data[col][row];
     }
 
     public double[][] getVariableVectors() {
-        if (numCols == 0 || numRows == 0) {
+        if (this.numCols == 0 || this.numRows == 0) {
             return new double[0][0];
         }
 
-        return data;
+        return this.data;
     }
 
     /**
      * @return a copy of this data box.
      */
     public DataBox copy() {
-        double[][] copy = new double[data.length][data[0].length];
+        final double[][] copy = new double[this.data.length][this.data[0].length];
 
-        for (int i = 0; i < data.length; i++) {
-            System.arraycopy(data[i], 0, copy[i], 0, data[0].length);
+        for (int i = 0; i < this.data.length; i++) {
+            System.arraycopy(this.data[i], 0, copy[i], 0, this.data[0].length);
         }
 
         return new VerticalDoubleDataBox(copy);
@@ -171,8 +171,8 @@ public class VerticalDoubleDataBox implements DataBox {
      * @return a DataBox of type DoubleDataBox, but with the given dimensions.
      */
     public DataBox like() {
-        int[] rows = new int[numRows()];
-        int[] cols = new int[numCols()];
+        final int[] rows = new int[numRows()];
+        final int[] cols = new int[numCols()];
 
         for (int i = 0; i < numRows(); i++) rows[i] = i;
         for (int j = 0; j < numCols(); j++) cols[j] = j;
@@ -181,8 +181,8 @@ public class VerticalDoubleDataBox implements DataBox {
     }
 
     @Override
-    public DataBox viewSelection(int[] rows, int[] cols) {
-        DataBox _dataBox = new VerticalDoubleDataBox(rows.length, cols.length);
+    public DataBox viewSelection(final int[] rows, final int[] cols) {
+        final DataBox _dataBox = new VerticalDoubleDataBox(rows.length, cols.length);
 
         for (int i = 0; i < rows.length; i++) {
             for (int j = 0; j < cols.length; j++) {

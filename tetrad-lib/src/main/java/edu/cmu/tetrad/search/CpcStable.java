@@ -96,7 +96,7 @@ public final class CpcStable implements GraphSearch {
      * Constructs a CPC algorithm that uses the given independence test as oracle. This does not make a copy of the
      * independence test, for fear of duplicating the data set!
      */
-    public CpcStable(IndependenceTest independenceTest) {
+    public CpcStable(final IndependenceTest independenceTest) {
         if (independenceTest == null) {
             throw new NullPointerException();
         }
@@ -116,7 +116,7 @@ public final class CpcStable implements GraphSearch {
     /**
      * Sets to true just in case edges will not be added if they would create cycles.
      */
-    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
+    public void setAggressivelyPreventCycles(final boolean aggressivelyPreventCycles) {
         this.aggressivelyPreventCycles = aggressivelyPreventCycles;
     }
 
@@ -124,7 +124,7 @@ public final class CpcStable implements GraphSearch {
      * Sets the maximum number of variables conditioned on in any conditional independence test. If set to -1, the value
      * of 1000 will be used. May not be set to Integer.MAX_VALUE, due to a Java bug on multi-core systems.
      */
-    public final void setDepth(int depth) {
+    public final void setDepth(final int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException("Depth must be -1 or >= 0: " + depth);
         }
@@ -148,13 +148,13 @@ public final class CpcStable implements GraphSearch {
      * @return the knowledge specification used in the search. Non-null.
      */
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     /**
      * Sets the knowledge specification used in the search. Non-null.
      */
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(final IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
@@ -163,7 +163,7 @@ public final class CpcStable implements GraphSearch {
      * of duplicating the data set!
      */
     public IndependenceTest getIndependenceTest() {
-        return independenceTest;
+        return this.independenceTest;
     }
 
     /**
@@ -171,7 +171,7 @@ public final class CpcStable implements GraphSearch {
      * independence test.
      */
     public int getDepth() {
-        return depth;
+        return this.depth;
     }
 
     /**
@@ -179,21 +179,21 @@ public final class CpcStable implements GraphSearch {
      * <code>search()</code>.
      */
     public Set<Triple> getAllTriples() {
-        return new HashSet<>(allTriples);
+        return new HashSet<>(this.allTriples);
     }
 
     public Set<Edge> getAdjacencies() {
-        Set<Edge> adjacencies = new HashSet<>();
-        for (Edge edge : graph.getEdges()) {
+        final Set<Edge> adjacencies = new HashSet<>();
+        for (final Edge edge : this.graph.getEdges()) {
             adjacencies.add(edge);
         }
         return adjacencies;
     }
 
     public Set<Edge> getNonadjacencies() {
-        Graph complete = GraphUtils.completeGraph(graph);
-        Set<Edge> nonAdjacencies = complete.getEdges();
-        Graph undirected = GraphUtils.undirectedGraph(graph);
+        final Graph complete = GraphUtils.completeGraph(this.graph);
+        final Set<Edge> nonAdjacencies = complete.getEdges();
+        final Graph undirected = GraphUtils.undirectedGraph(this.graph);
         nonAdjacencies.removeAll(undirected.getEdges());
         return new HashSet<>(nonAdjacencies);
     }
@@ -203,32 +203,32 @@ public final class CpcStable implements GraphSearch {
      * See PC for caveats. The number of possible cycles and bidirected edges is far less with CPC than with PC.
      */
     public final Graph search() {
-        return search(independenceTest.getVariables());
+        return search(this.independenceTest.getVariables());
     }
 
-    public Graph search(List<Node> nodes) {
-        graph = new EdgeListGraph(nodes);
+    public Graph search(final List<Node> nodes) {
+        this.graph = new EdgeListGraph(nodes);
 
 
         final FasConcurrent fas = new FasConcurrent(getIndependenceTest());
-        fas.setOut(out);
+        fas.setOut(this.out);
         return search(fas, nodes);
     }
 
-    public Graph search(IFas fas, List<Node> nodes) {
+    public Graph search(final IFas fas, final List<Node> nodes) {
         this.logger.log("info", "Starting CPC Stable algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
         this.allTriples = new HashSet<>();
 
 //        this.logger.log("info", "Variables " + independenceTest.getVariable());
 
-        long startTime = System.currentTimeMillis();
+        final long startTime = System.currentTimeMillis();
 
         if (getIndependenceTest() == null) {
             throw new NullPointerException();
         }
 
-        List<Node> allNodes = getIndependenceTest().getVariables();
+        final List<Node> allNodes = getIndependenceTest().getVariables();
         if (!allNodes.containsAll(nodes)) {
             throw new IllegalArgumentException("All of the given nodes must " +
                     "be in the domain of the independence test provided.");
@@ -237,13 +237,13 @@ public final class CpcStable implements GraphSearch {
 
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
-        fas.setVerbose(verbose);
-        fas.setOut(out);
+        fas.setVerbose(this.verbose);
+        fas.setOut(this.out);
 
         // Note that we are ignoring the sepset map returned by this method
         // on purpose; it is not used in this search.
-        graph = fas.search();
-        sepsets = fas.getSepsets();
+        this.graph = fas.search();
+        this.sepsets = fas.getSepsets();
 
 //        for (int i = 0; i < nodes.size(); i++) {
 //            for (int j = i+1; j < nodes.size(); j++) {
@@ -255,24 +255,24 @@ public final class CpcStable implements GraphSearch {
 //            }
 //        }
 
-        if (verbose) {
-            out.println("CPC orientation...");
+        if (this.verbose) {
+            this.out.println("CPC orientation...");
         }
 
-        SearchGraphUtils.pcOrientbk(knowledge, getGraph(), nodes);
+        SearchGraphUtils.pcOrientbk(this.knowledge, getGraph(), nodes);
 
 //            orientUnshieldedTriplesConcurrent(knowledge, getIndependenceTest(), getMaxIndegree());
-        orientUnshieldedTriples(knowledge);
+        orientUnshieldedTriples(this.knowledge);
 
-        MeekRules meekRules = new MeekRules();
-        meekRules.setOut(out);
+        final MeekRules meekRules = new MeekRules();
+        meekRules.setOut(this.out);
 
         meekRules.orientImplied(getGraph());
 
-        long endTime = System.currentTimeMillis();
+        final long endTime = System.currentTimeMillis();
         this.elapsedTime = endTime - startTime;
 
-        TetradLogger.getInstance().log("info", "Elapsed time = " + (elapsedTime) / 1000. + " s");
+        TetradLogger.getInstance().log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
         TetradLogger.getInstance().log("info", "Finishing CPC algorithm.");
 
         TetradLogger.getInstance().flush();
@@ -281,41 +281,41 @@ public final class CpcStable implements GraphSearch {
 
     //==========================PRIVATE METHODS===========================//
 
-    private void orientUnshieldedTriples(IKnowledge knowledge) {
+    private void orientUnshieldedTriples(final IKnowledge knowledge) {
         TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
 
-        List<Node> nodes = graph.getNodes();
+        final List<Node> nodes = this.graph.getNodes();
 
-        for (Node y : nodes) {
-            List<Node> adjacentNodes = graph.getAdjacentNodes(y);
+        for (final Node y : nodes) {
+            final List<Node> adjacentNodes = this.graph.getAdjacentNodes(y);
 
             if (adjacentNodes.size() < 2) {
                 continue;
             }
 
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            final ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
             int[] combination;
 
             while ((combination = cg.next()) != null) {
-                Node x = adjacentNodes.get(combination[0]);
-                Node z = adjacentNodes.get(combination[1]);
+                final Node x = adjacentNodes.get(combination[0]);
+                final Node z = adjacentNodes.get(combination[1]);
 
                 if (this.graph.isAdjacentTo(x, z)) {
                     continue;
                 }
 
-                List<List<Node>> sepsetsxz = getSepsets(x, z, graph);
+                final List<List<Node>> sepsetsxz = getSepsets(x, z, this.graph);
 
                 if (isColliderSepset(y, sepsetsxz)) {
                     if (colliderAllowed(x, y, z, knowledge)) {
-                        graph.setEndpoint(x, y, Endpoint.ARROW);
-                        graph.setEndpoint(z, y, Endpoint.ARROW);
+                        this.graph.setEndpoint(x, y, Endpoint.ARROW);
+                        this.graph.setEndpoint(z, y, Endpoint.ARROW);
 
                         TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(x, y, z));
                     }
                 } else {
-                    Triple triple = new Triple(x, y, z);
-                    graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                    final Triple triple = new Triple(x, y, z);
+                    this.graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                 }
 
                 getAllTriples().add(new Triple(x, y, z));
@@ -325,28 +325,28 @@ public final class CpcStable implements GraphSearch {
         TetradLogger.getInstance().log("info", "Finishing Collider Orientation.");
     }
 
-    private List<List<Node>> getSepsets(Node i, Node k, Graph g) {
-        List<Node> adji = g.getAdjacentNodes(i);
-        List<Node> adjk = g.getAdjacentNodes(k);
-        List<List<Node>> sepsets = new ArrayList<>();
+    private List<List<Node>> getSepsets(final Node i, final Node k, final Graph g) {
+        final List<Node> adji = g.getAdjacentNodes(i);
+        final List<Node> adjk = g.getAdjacentNodes(k);
+        final List<List<Node>> sepsets = new ArrayList<>();
 
         for (int d = 0; d <= Math.max(adji.size(), adjk.size()); d++) {
             if (adji.size() >= 2 && d <= adji.size()) {
-                ChoiceGenerator gen = new ChoiceGenerator(adji.size(), d);
+                final ChoiceGenerator gen = new ChoiceGenerator(adji.size(), d);
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
-                    List<Node> v = GraphUtils.asList(choice, adji);
+                    final List<Node> v = GraphUtils.asList(choice, adji);
                     if (getIndependenceTest().isIndependent(i, k, v)) sepsets.add(v);
                 }
             }
 
             if (adjk.size() >= 2 && d <= adjk.size()) {
-                ChoiceGenerator gen = new ChoiceGenerator(adjk.size(), d);
+                final ChoiceGenerator gen = new ChoiceGenerator(adjk.size(), d);
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
-                    List<Node> v = GraphUtils.asList(choice, adjk);
+                    final List<Node> v = GraphUtils.asList(choice, adjk);
                     if (getIndependenceTest().isIndependent(i, k, v)) sepsets.add(v);
                 }
             }
@@ -356,10 +356,10 @@ public final class CpcStable implements GraphSearch {
     }
 
 
-    private boolean isColliderSepset(Node j, List<List<Node>> sepsets) {
+    private boolean isColliderSepset(final Node j, final List<List<Node>> sepsets) {
         if (sepsets.isEmpty()) return false;
 
-        for (List<Node> sepset : sepsets) {
+        for (final List<Node> sepset : sepsets) {
             if (sepset.contains(j)) return false;
         }
 
@@ -452,42 +452,42 @@ public final class CpcStable implements GraphSearch {
 //        TetradLogger.getInstance().log("info", "Finishing Collider Orientation.");
 //    }
 
-    private boolean colliderAllowed(Node x, Node y, Node z, IKnowledge knowledge) {
+    private boolean colliderAllowed(final Node x, final Node y, final Node z, final IKnowledge knowledge) {
         return CpcStable.isArrowpointAllowed1(x, y, knowledge) &&
                 CpcStable.isArrowpointAllowed1(z, y, knowledge);
     }
 
-    public static boolean isArrowpointAllowed1(Node from, Node to,
-                                               IKnowledge knowledge) {
+    public static boolean isArrowpointAllowed1(final Node from, final Node to,
+                                               final IKnowledge knowledge) {
         return knowledge == null || !knowledge.isRequired(to.toString(), from.toString()) &&
                 !knowledge.isForbidden(from.toString(), to.toString());
     }
 
     public SepsetMap getSepsets() {
-        return sepsets;
+        return this.sepsets;
     }
 
     /**
      * The graph that's constructed during the search.
      */
     public Graph getGraph() {
-        return graph;
+        return this.graph;
     }
 
-    public void setGraph(Graph graph) {
+    public void setGraph(final Graph graph) {
         this.graph = graph;
     }
 
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 
-    public void setOut(PrintStream out) {
+    public void setOut(final PrintStream out) {
         this.out = out;
     }
 
     public PrintStream getOut() {
-        return out;
+        return this.out;
     }
 }
 

@@ -33,16 +33,16 @@ import edu.cmu.tetrad.util.Parameters;
  * @author jdramsey
  */
 public class ExampleSave {
-    public static void main(String... args) {
-        Parameters parameters = new Parameters();
+    public static void main(final String... args) {
+        final Parameters parameters = new Parameters();
 
         parameters.set("numRuns", 10);
         parameters.set("numMeasures", 100);
         parameters.set("avgDegree", 4);
         parameters.set("sampleSize", 100, 500, 1000);
 
-        Simulation simulation = new SemSimulation(new RandomForward());
-        Comparison comparison = new Comparison();
+        final Simulation simulation = new SemSimulation(new RandomForward());
+        final Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
         comparison.saveToFiles("comparison", simulation, parameters);
     }

@@ -41,8 +41,8 @@ public class SepsetsPossibleDsep implements SepsetProducer {
     private boolean verbose = false;
     private final IndependenceTest test;
 
-    public SepsetsPossibleDsep(Graph graph, IndependenceTest independenceTest, IKnowledge knowledge,
-                               int depth, int maxPathLength) {
+    public SepsetsPossibleDsep(final Graph graph, final IndependenceTest independenceTest, final IKnowledge knowledge,
+                               final int depth, final int maxPathLength) {
         this.graph = graph;
         this.independenceTest = independenceTest;
         this.maxPathLength = maxPathLength;
@@ -54,40 +54,40 @@ public class SepsetsPossibleDsep implements SepsetProducer {
     /**
      * Pick out the sepset from among adj(i) or adj(k) with the highest p value.
      */
-    public List<Node> getSepset(Node i, Node k) {
-        List<Node> condSet = getCondSet(test, i, k, maxPathLength);
+    public List<Node> getSepset(final Node i, final Node k) {
+        List<Node> condSet = getCondSet(this.test, i, k, this.maxPathLength);
 
         if (condSet == null) {
-            condSet = getCondSet(test, k, i, maxPathLength);
+            condSet = getCondSet(this.test, k, i, this.maxPathLength);
         }
 
         return condSet;
     }
 
-    public boolean isCollider(Node i, Node j, Node k) {
-        List<Node> sepset = getSepset(i, k);
+    public boolean isCollider(final Node i, final Node j, final Node k) {
+        final List<Node> sepset = getSepset(i, k);
         return sepset != null && !sepset.contains(j);
     }
 
-    public boolean isNoncollider(Node i, Node j, Node k) {
-        List<Node> sepset = getSepset(i, k);
+    public boolean isNoncollider(final Node i, final Node j, final Node k) {
+        final List<Node> sepset = getSepset(i, k);
         return sepset != null && sepset.contains(j);
     }
 
     @Override
-    public boolean isIndependent(Node a, Node b, List<Node> c) {
-        return independenceTest.isIndependent(a, b, c);
+    public boolean isIndependent(final Node a, final Node b, final List<Node> c) {
+        return this.independenceTest.isIndependent(a, b, c);
     }
 
-    private List<Node> getCondSet(IndependenceTest test, Node node1, Node node2, int maxPathLength) {
+    private List<Node> getCondSet(final IndependenceTest test, final Node node1, final Node node2, final int maxPathLength) {
         final List<Node> possibleDsepSet = getPossibleDsep(node1, node2, maxPathLength);
-        List<Node> possibleDsep = new ArrayList<>(possibleDsepSet);
-        boolean noEdgeRequired = knowledge.noEdgeRequired(node1.getName(), node2.getName());
+        final List<Node> possibleDsep = new ArrayList<>(possibleDsepSet);
+        final boolean noEdgeRequired = this.knowledge.noEdgeRequired(node1.getName(), node2.getName());
 
-        int _depth = depth == -1 ? 1000 : depth;
+        final int _depth = this.depth == -1 ? 1000 : this.depth;
 
         for (int d = 0; d <= Math.min(_depth, possibleDsep.size()); d++) {
-            ChoiceGenerator cg = new ChoiceGenerator(possibleDsep.size(), d);
+            final ChoiceGenerator cg = new ChoiceGenerator(possibleDsep.size(), d);
             int[] choice;
 
             while ((choice = cg.next()) != null) {
@@ -95,13 +95,13 @@ public class SepsetsPossibleDsep implements SepsetProducer {
                     break;
                 }
 
-                List<Node> condSet = GraphUtils.asList(choice, possibleDsep);
+                final List<Node> condSet = GraphUtils.asList(choice, possibleDsep);
                 // check against bk knowledge added by DMalinsky 07/24/17 **/
-                if (!(knowledge == null)) {
+                if (!(this.knowledge == null)) {
 //                    if (knowledge.isForbidden(node1.getName(), node2.getName())) continue;
                     boolean flagForbid = false;
-                    for (Node j : condSet) {
-                        if (knowledge.isInWhichTier(j) > Math.max(knowledge.isInWhichTier(node1), knowledge.isInWhichTier(node2))) { // condSet cannot be in the future of both endpoints
+                    for (final Node j : condSet) {
+                        if (this.knowledge.isInWhichTier(j) > Math.max(this.knowledge.isInWhichTier(node1), this.knowledge.isInWhichTier(node2))) { // condSet cannot be in the future of both endpoints
 //                        if (knowledge.isForbidden(j.getName(), node1.getName()) && knowledge.isForbidden(j.getName(), node2.getName())) {
                             flagForbid = true;
                             break;
@@ -109,7 +109,7 @@ public class SepsetsPossibleDsep implements SepsetProducer {
                     }
                     if (flagForbid) continue;
                 }
-                boolean independent = independenceTest.isIndependent(node1, node2, condSet);
+                final boolean independent = this.independenceTest.isIndependent(node1, node2, condSet);
 
                 if (independent && noEdgeRequired) {
                     return condSet;
@@ -120,10 +120,10 @@ public class SepsetsPossibleDsep implements SepsetProducer {
         return null;
     }
 
-    private List<Node> getPossibleDsep(Node x, Node y, int maxPathLength) {
-        List<Node> dsep = GraphUtils.possibleDsep(x, y, graph, maxPathLength, test);
+    private List<Node> getPossibleDsep(final Node x, final Node y, final int maxPathLength) {
+        final List<Node> dsep = GraphUtils.possibleDsep(x, y, this.graph, maxPathLength, this.test);
 
-        if (verbose) {
+        if (this.verbose) {
             System.out.println("Possible-D-Sep(" + x + ", " + y + ") = " + dsep);
         }
 
@@ -134,13 +134,13 @@ public class SepsetsPossibleDsep implements SepsetProducer {
     /**
      * Removes from the list of nodes any that cannot be parents of x given the background knowledge.
      */
-    private List<Node> possibleParents(Node x, List<Node> nodes,
-                                       IKnowledge knowledge) {
-        List<Node> possibleParents = new LinkedList<>();
-        String _x = x.getName();
+    private List<Node> possibleParents(final Node x, final List<Node> nodes,
+                                       final IKnowledge knowledge) {
+        final List<Node> possibleParents = new LinkedList<>();
+        final String _x = x.getName();
 
-        for (Node z : nodes) {
-            String _z = z.getName();
+        for (final Node z : nodes) {
+            final String _z = z.getName();
 
             if (possibleParentOf(_z, _x, knowledge)) {
                 possibleParents.add(z);
@@ -150,30 +150,30 @@ public class SepsetsPossibleDsep implements SepsetProducer {
         return possibleParents;
     }
 
-    private boolean possibleParentOf(String _z, String _x, IKnowledge bk) {
+    private boolean possibleParentOf(final String _z, final String _x, final IKnowledge bk) {
         return !(bk.isForbidden(_z, _x) || bk.isRequired(_x, _z));
     }
 
     @Override
     public double getPValue() {
-        return independenceTest.getPValue();
+        return this.independenceTest.getPValue();
     }
 
     @Override
     public double getScore() {
-        return -(independenceTest.getPValue() - independenceTest.getAlpha());
+        return -(this.independenceTest.getPValue() - this.independenceTest.getAlpha());
     }
 
     @Override
     public List<Node> getVariables() {
-        return independenceTest.getVariables();
+        return this.independenceTest.getVariables();
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 

@@ -30,10 +30,10 @@ public class EbicScore implements ScoreWrapper {
     private DataModel dataSet;
 
     @Override
-    public Score getScore(DataModel dataSet, Parameters parameters) {
+    public Score getScore(final DataModel dataSet, final Parameters parameters) {
         this.dataSet = dataSet;
 
-        edu.cmu.tetrad.search.EbicScore score;
+        final edu.cmu.tetrad.search.EbicScore score;
 
         if (dataSet instanceof DataSet) {
             score = new edu.cmu.tetrad.search.EbicScore((DataSet) this.dataSet);
@@ -60,14 +60,14 @@ public class EbicScore implements ScoreWrapper {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
+        final List<String> parameters = new ArrayList<>();
         parameters.add(Params.EBIC_GAMMA);
 //        parameters.add(Params.CORRELATION_THRESHOLD);
         return parameters;
     }
 
     @Override
-    public Node getVariable(String name) {
-        return dataSet.getVariable(name);
+    public Node getVariable(final String name) {
+        return this.dataSet.getVariable(name);
     }
 }

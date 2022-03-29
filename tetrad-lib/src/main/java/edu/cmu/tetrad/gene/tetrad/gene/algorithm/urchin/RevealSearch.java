@@ -41,7 +41,7 @@ public class RevealSearch {
     String[] names;
     RevealEvaluator re;
 
-    public RevealSearch(int[][] cases, String[] names) {
+    public RevealSearch(final int[][] cases, final String[] names) {
         this.cases = cases;
         this.names = names;
         this.ntimes = cases.length;
@@ -55,49 +55,49 @@ public class RevealSearch {
      * information between the regulated gene and the regulator set divided by
      * the entropy of the regulated gene.
      */
-    public RevealOutputGraph exhaustiveSearch(int lag) {
+    public RevealOutputGraph exhaustiveSearch(final int lag) {
 
-        double[] entropies = new double[ngenes];
-        for (int g = 0; g < ngenes; g++) {
+        final double[] entropies = new double[this.ngenes];
+        for (int g = 0; g < this.ngenes; g++) {
             //int[] x = new int[ntimes - lag];
             //for(int i = 0; i < ntimes - lag; i++)
             //  x[i] = cases[i + lag][g];
             //entropies[g] = re.entropy(x);
-            entropies[g] = re.entropy(g, lag);
+            entropies[g] = this.re.entropy(g, lag);
         }
 
         //Report crosstabulations among all genes
         int[][] ct = null;
-        for (int child = 0; child < ngenes; child++) {
+        for (int child = 0; child < this.ngenes; child++) {
             System.out.println("Crosstabs of gene " + child);
-            for (int parent = 0; parent < ngenes; parent++) {
+            for (int parent = 0; parent < this.ngenes; parent++) {
                 if (parent == child) {
                     continue;
                 }
-                ct = re.crossTab(child, parent, lag);
+                ct = this.re.crossTab(child, parent, lag);
                 System.out.println("with parent " + parent + " at lag " + lag);
                 System.out.println("  " + ct[0][0] + " " + ct[0][1]);
                 System.out.println("  " + ct[1][0] + " " + ct[1][1]);
             }
         }
 
-        int[][] parents = new int[ngenes][];
-        double[] best1 = new double[ngenes];
-        double[] best2 = new double[ngenes];
-        double[] best3 = new double[ngenes];
+        final int[][] parents = new int[this.ngenes][];
+        final double[] best1 = new double[this.ngenes];
+        final double[] best2 = new double[this.ngenes];
+        final double[] best3 = new double[this.ngenes];
 
         //One parent cases
-        int[] p = new int[1];  //TODO:  Make p parents
-        for (int child = 0; child < ngenes; child++) {
+        final int[] p = new int[1];  //TODO:  Make p parents
+        for (int child = 0; child < this.ngenes; child++) {
             System.out.println("For gene " + child);
 
             best1[child] = -1.0;
 
-            for (int i = 0; i < ngenes; i++) {
+            for (int i = 0; i < this.ngenes; i++) {
                 //if(i == child) continue;
                 p[0] = i;
-                double m = re.mutualInformation(child, p, lag);
-                double me = m / entropies[child];
+                final double m = this.re.mutualInformation(child, p, lag);
+                final double me = m / entropies[child];
                 if (me > best1[child]) {
                     best1[child] = me;
                     parents[child] = new int[1];
@@ -109,19 +109,19 @@ public class RevealSearch {
         }
 
         //Two parent cases
-        int[] pp = new int[2];
-        for (int child = 0; child < ngenes; child++) {
+        final int[] pp = new int[2];
+        for (int child = 0; child < this.ngenes; child++) {
             System.out.println("For gene " + child);
 
             best2[child] = -1.0;
 
-            for (int p1 = 0; p1 < ngenes; p1++) {
-                for (int p2 = 0; p2 < ngenes && p1 != p2; p2++) {
+            for (int p1 = 0; p1 < this.ngenes; p1++) {
+                for (int p2 = 0; p2 < this.ngenes && p1 != p2; p2++) {
                     pp[0] = p1;
                     pp[1] = p2;
 
-                    double mm = re.mutualInformation(child, pp, lag);
-                    double mme = mm / entropies[child];
+                    final double mm = this.re.mutualInformation(child, pp, lag);
+                    final double mme = mm / entropies[child];
                     if (mme > best2[child] && mme > best1[child]) {
                         best2[child] = mme;
                         parents[child] = new int[2];
@@ -135,20 +135,20 @@ public class RevealSearch {
         }
 
         //Three parent cases
-        int[] ppp = new int[3];
-        for (int child = 0; child < ngenes; child++) {
+        final int[] ppp = new int[3];
+        for (int child = 0; child < this.ngenes; child++) {
 
             best3[child] = -1.0;
 
             System.out.println("For gene " + child);
-            for (int p1 = 0; p1 < ngenes; p1++) {
-                for (int p2 = 0; p2 < ngenes && p2 != p1; p2++) {
-                    for (int p3 = 0; p3 < ngenes && p3 != p2 && p3 != p1; p3++) {
+            for (int p1 = 0; p1 < this.ngenes; p1++) {
+                for (int p2 = 0; p2 < this.ngenes && p2 != p1; p2++) {
+                    for (int p3 = 0; p3 < this.ngenes && p3 != p2 && p3 != p1; p3++) {
                         ppp[0] = p1;
                         ppp[1] = p2;
                         ppp[2] = p3;
-                        double mmm = re.mutualInformation(child, ppp, lag);
-                        double mmme = mmm / entropies[child];
+                        final double mmm = this.re.mutualInformation(child, ppp, lag);
+                        final double mmme = mmm / entropies[child];
                         if (mmme > best3[child] && mmme > best2[child] &&
                                 mmme > best1[child]) {
                             best3[child] = mmme;
@@ -165,7 +165,7 @@ public class RevealSearch {
             }
         }
 
-        for (int gene = 0; gene < ngenes; gene++) {
+        for (int gene = 0; gene < this.ngenes; gene++) {
             System.out.println("Parents of gene " + gene);
             for (int par = 0; par < parents[gene].length; par++) {
                 System.out.print(parents[gene][par] + " ");
@@ -173,17 +173,17 @@ public class RevealSearch {
             System.out.println();
         }
 
-        int[][] lags = new int[ngenes][];
-        for (int i = 0; i < ngenes; i++) {
-            int k = parents[i].length;
+        final int[][] lags = new int[this.ngenes][];
+        for (int i = 0; i < this.ngenes; i++) {
+            final int k = parents[i].length;
             lags[i] = new int[k];
             for (int j = 0; j < k; j++) {
                 lags[i][j] = 1;
             }
         }
 
-        RevealOutputGraph rog = new RevealOutputGraph(ngenes, parents, lags,
-                names, "TestReveal");
+        final RevealOutputGraph rog = new RevealOutputGraph(this.ngenes, parents, lags,
+                this.names, "TestReveal");
         return rog;
     }
 
@@ -193,7 +193,7 @@ public class RevealSearch {
      * will specify the parents of each gene as well as the time lag associated
      * with each causal link.
      */
-    public RevealOutputGraph exhaustiveSearch(int lag1, int lag2) {
+    public RevealOutputGraph exhaustiveSearch(final int lag1, final int lag2) {
 
         if (lag2 <= lag1 || lag1 <= 0) {
             System.out.println(
@@ -201,31 +201,31 @@ public class RevealSearch {
             return null;
         }
 
-        int[] parents1 = new int[ngenes];
-        int[] lags1 = new int[ngenes];
-        int[][] parents2 = new int[ngenes][];
-        int[][] lags2 = new int[ngenes][];
-        int[][] parents3 = new int[ngenes][];
-        int[][] lags3 = new int[ngenes][];
-        int[] nparents = new int[ngenes];
+        final int[] parents1 = new int[this.ngenes];
+        final int[] lags1 = new int[this.ngenes];
+        final int[][] parents2 = new int[this.ngenes][];
+        final int[][] lags2 = new int[this.ngenes][];
+        final int[][] parents3 = new int[this.ngenes][];
+        final int[][] lags3 = new int[this.ngenes][];
+        final int[] nparents = new int[this.ngenes];
 
-        int[][] parents = new int[ngenes][];
-        int[][] lags = new int[ngenes][];
+        final int[][] parents = new int[this.ngenes][];
+        final int[][] lags = new int[this.ngenes][];
 
-        for (int gchild = 0; gchild < ngenes; gchild++) {
+        for (int gchild = 0; gchild < this.ngenes; gchild++) {
 
             double bestme = -1000.0;
 
             //One parent cases
-            int[] parent1 = new int[1];
-            for (int gparent = 0; gparent < ngenes; gparent++) {
+            final int[] parent1 = new int[1];
+            for (int gparent = 0; gparent < this.ngenes; gparent++) {
                 parent1[0] = gparent;
 
                 for (int lag = lag1; lag <= lag2; lag++) {
-                    double entropyChild = re.entropy(gchild, lag);
-                    double mutualInf =
-                            re.mutualInformation(gchild, parent1, lag);
-                    double mOverE = mutualInf / entropyChild;
+                    final double entropyChild = this.re.entropy(gchild, lag);
+                    final double mutualInf =
+                            this.re.mutualInformation(gchild, parent1, lag);
+                    final double mOverE = mutualInf / entropyChild;
                     if (mOverE > bestme) {
                         bestme = mOverE;
                         parents1[gchild] = gparent;
@@ -236,25 +236,25 @@ public class RevealSearch {
             }
 
             //Two parent cases
-            int[] parent2 = new int[2];
+            final int[] parent2 = new int[2];
             parents2[gchild] = new int[2];
             lags2[gchild] = new int[2];
-            for (int gparent1 = 0; gparent1 < ngenes; gparent1++) {
+            for (int gparent1 = 0; gparent1 < this.ngenes; gparent1++) {
                 for (int lagp1 = lag1; lagp1 <= lag2; lagp1++) {
-                    for (int gparent2 = 0; gparent2 < ngenes &&
+                    for (int gparent2 = 0; gparent2 < this.ngenes &&
                             gparent1 != gparent2; gparent2++) {
                         for (int lagp2 = lag1; lagp2 <= lag2; lagp2++) {
                             parent2[0] = gparent1;
                             parent2[1] = gparent2;
-                            int[] lagsa = new int[2];
+                            final int[] lagsa = new int[2];
                             lagsa[0] = lagp1;
                             lagsa[1] = lagp2;
-                            int lag = (lagp1 > lagp2) ? lagp1 : lagp2;
+                            final int lag = (lagp1 > lagp2) ? lagp1 : lagp2;
                             //lag = 1;
-                            double entropyChild = re.entropy(gchild, lag);
-                            double mutualInf = re.mutualInformation(gchild,
+                            final double entropyChild = this.re.entropy(gchild, lag);
+                            final double mutualInf = this.re.mutualInformation(gchild,
                                     parent2, lagsa);
-                            double mOverE = mutualInf / entropyChild;
+                            final double mOverE = mutualInf / entropyChild;
                             if (mOverE > bestme) {
                                 bestme = mOverE;
                                 //parents2[gchild] = new int[2];
@@ -270,30 +270,30 @@ public class RevealSearch {
             }
 
             //Three parent cases
-            int[] parent3 = new int[3];
+            final int[] parent3 = new int[3];
             parents3[gchild] = new int[3];
             lags3[gchild] = new int[3];
-            for (int gparent1 = 0; gparent1 < ngenes; gparent1++) {
+            for (int gparent1 = 0; gparent1 < this.ngenes; gparent1++) {
                 for (int lagp1 = lag1; lagp1 <= lag2; lagp1++) {
-                    for (int gparent2 = 0; gparent2 < ngenes; gparent2++) {
+                    for (int gparent2 = 0; gparent2 < this.ngenes; gparent2++) {
                         for (int lagp2 = lag1; lagp2 <= lag2; lagp2++) {
                             for (int gparent3 = 0;
-                                 gparent3 < ngenes; gparent3++) {
+                                 gparent3 < this.ngenes; gparent3++) {
                                 for (int lagp3 = lag1; lagp3 <= lag2; lagp3++) {
                                     parent3[0] = gparent1;
                                     parent3[1] = gparent2;
                                     parent3[2] = gparent3;
-                                    int[] lagsa = new int[3];
+                                    final int[] lagsa = new int[3];
                                     lagsa[0] = lagp1;
                                     lagsa[1] = lagp2;
                                     lagsa[2] = lagp3;
                                     int lag = (lagp1 > lagp2) ? lagp1 : lagp2;
                                     lag = (lag > lagp3) ? lag : lagp3;
-                                    double entropyChild =
-                                            re.entropy(gchild, lag);
-                                    double mutualInf = re.mutualInformation(
+                                    final double entropyChild =
+                                            this.re.entropy(gchild, lag);
+                                    final double mutualInf = this.re.mutualInformation(
                                             gchild, parent3, lagsa);
-                                    double mOverE = mutualInf / entropyChild;
+                                    final double mOverE = mutualInf / entropyChild;
                                     if (mOverE > bestme) {
                                         bestme = mOverE;
                                         //parents3[gchild] = new int[3];
@@ -348,8 +348,8 @@ public class RevealSearch {
 
         }
 
-        RevealOutputGraph rog = new RevealOutputGraph(ngenes, parents, lags,
-                names, "TestReveal");
+        final RevealOutputGraph rog = new RevealOutputGraph(this.ngenes, parents, lags,
+                this.names, "TestReveal");
         return rog;
 
     }

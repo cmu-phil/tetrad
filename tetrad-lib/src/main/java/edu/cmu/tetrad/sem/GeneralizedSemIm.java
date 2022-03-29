@@ -81,44 +81,44 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
      *
      * @param pm the GeneralizedSemPm. Includes all of the equations and distributions of the model.
      */
-    public GeneralizedSemIm(GeneralizedSemPm pm) {
+    public GeneralizedSemIm(final GeneralizedSemPm pm) {
         this.pm = new GeneralizedSemPm(pm);
 
         this.parameterValues = new HashMap<>();
 
-        Set<String> parameters = pm.getParameters();
+        final Set<String> parameters = pm.getParameters();
 
-        for (String parameter : parameters) {
-            Expression expression = pm.getParameterExpression(parameter);
+        for (final String parameter : parameters) {
+            final Expression expression = pm.getParameterExpression(parameter);
 
-            Context context = new Context() {
-                public Double getValue(String var) {
-                    return parameterValues.get(var);
+            final Context context = new Context() {
+                public Double getValue(final String var) {
+                    return GeneralizedSemIm.this.parameterValues.get(var);
                 }
             };
 
-            double initialValue = expression.evaluate(context);
-            parameterValues.put(parameter, initialValue);
+            final double initialValue = expression.evaluate(context);
+            this.parameterValues.put(parameter, initialValue);
         }
     }
 
-    public GeneralizedSemIm(GeneralizedSemPm pm, SemIm semIm) {
+    public GeneralizedSemIm(final GeneralizedSemPm pm, final SemIm semIm) {
         this(pm);
-        SemPm semPm = semIm.getSemPm();
+        final SemPm semPm = semIm.getSemPm();
 
-        Set<String> parameters = pm.getParameters();
+        final Set<String> parameters = pm.getParameters();
 
         // If there are any missing freeParameters, just ignore the sem IM.
-        for (String parameter : parameters) {
-            Parameter paramObject = semPm.getParameter(parameter);
+        for (final String parameter : parameters) {
+            final Parameter paramObject = semPm.getParameter(parameter);
 
             if (paramObject == null) {
                 return;
             }
         }
 
-        for (String parameter : parameters) {
-            Parameter paramObject = semPm.getParameter(parameter);
+        for (final String parameter : parameters) {
+            final Parameter paramObject = semPm.getParameter(parameter);
 
             if (paramObject == null) {
                 throw new IllegalArgumentException("Parameter missing from Gaussian SEM IM: " + parameter);
@@ -145,59 +145,59 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
      * @return a copy of the stored GeneralizedSemPm.
      */
     public GeneralizedSemPm getGeneralizedSemPm() {
-        return new GeneralizedSemPm(pm);
+        return new GeneralizedSemPm(this.pm);
     }
 
     /**
      * @param parameter The parameter whose values is to be set.
      * @param value     The double value that <code>param</code> is to be set to.
      */
-    public void setParameterValue(String parameter, double value) {
+    public void setParameterValue(final String parameter, final double value) {
         if (parameter == null) {
             throw new NullPointerException("Parameter not specified.");
         }
 
-        if (!(parameterValues.keySet().contains(parameter))) {
+        if (!(this.parameterValues.keySet().contains(parameter))) {
             throw new IllegalArgumentException("Not a parameter in this model: " + parameter);
         }
 
-        parameterValues.put(parameter, value);
+        this.parameterValues.put(parameter, value);
     }
 
     /**
      * @param parameter The parameter whose value is to be retrieved.
      * @return The retrieved value.
      */
-    public double getParameterValue(String parameter) {
+    public double getParameterValue(final String parameter) {
         if (parameter == null) {
             throw new NullPointerException("Parameter not specified.");
         }
 
-        if (!parameterValues.keySet().contains(parameter)) {
+        if (!this.parameterValues.keySet().contains(parameter)) {
             throw new IllegalArgumentException("Not a parameter in this model: " + parameter);
         }
 
-        return parameterValues.get(parameter);
+        return this.parameterValues.get(parameter);
     }
 
     /**
      * @return the user's String formula with numbers substituted for freeParameters, where substitutions exist.
      */
-    public String getNodeSubstitutedString(Node node) {
-        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-        String expressionString = pm.getNodeExpressionString(node);
+    public String getNodeSubstitutedString(final Node node) {
+        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        final String expressionString = this.pm.getNodeExpressionString(node);
 
         if (expressionString == null) return null;
 
-        ExpressionLexer lexer = new ExpressionLexer(expressionString);
-        StringBuilder buf = new StringBuilder();
+        final ExpressionLexer lexer = new ExpressionLexer(expressionString);
+        final StringBuilder buf = new StringBuilder();
         Token token;
 
         while ((token = lexer.nextTokenIncludingWhitespace()) != Token.EOF) {
-            String tokenString = lexer.getTokenString();
+            final String tokenString = lexer.getTokenString();
 
             if (token == Token.PARAMETER) {
-                Double value = parameterValues.get(tokenString);
+                final Double value = this.parameterValues.get(tokenString);
 
                 if (value != null) {
                     buf.append(nf.format(value));
@@ -217,7 +217,7 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
      *                          substituted for the stored values where applicable.
      * @return the expression string with values substituted for freeParameters.
      */
-    public String getNodeSubstitutedString(Node node, Map<String, Double> substitutedValues) {
+    public String getNodeSubstitutedString(final Node node, final Map<String, Double> substitutedValues) {
         if (node == null) {
             throw new NullPointerException();
         }
@@ -226,21 +226,21 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
             throw new NullPointerException();
         }
 
-        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-        String expressionString = pm.getNodeExpressionString(node);
+        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        final String expressionString = this.pm.getNodeExpressionString(node);
 
-        ExpressionLexer lexer = new ExpressionLexer(expressionString);
-        StringBuilder buf = new StringBuilder();
+        final ExpressionLexer lexer = new ExpressionLexer(expressionString);
+        final StringBuilder buf = new StringBuilder();
         Token token;
 
         while ((token = lexer.nextTokenIncludingWhitespace()) != Token.EOF) {
-            String tokenString = lexer.getTokenString();
+            final String tokenString = lexer.getTokenString();
 
             if (token == Token.PARAMETER) {
                 Double value = substitutedValues.get(tokenString);
 
                 if (value == null) {
-                    value = parameterValues.get(tokenString);
+                    value = this.parameterValues.get(tokenString);
                 }
 
                 if (value != null) {
@@ -259,40 +259,40 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
      * @return a String representation of the IM, in this case a lsit of freeParameters and their values.
      */
     public String toString() {
-        List<String> parameters = new ArrayList<>(pm.getParameters());
+        final List<String> parameters = new ArrayList<>(this.pm.getParameters());
         Collections.sort(parameters);
-        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-        StringBuilder buf = new StringBuilder();
-        GeneralizedSemPm pm = getGeneralizedSemPm();
+        final StringBuilder buf = new StringBuilder();
+        final GeneralizedSemPm pm = getGeneralizedSemPm();
         buf.append("\nVariable nodes:\n");
 
-        for (Node node : pm.getVariableNodes()) {
-            String string = getNodeSubstitutedString(node);
+        for (final Node node : pm.getVariableNodes()) {
+            final String string = getNodeSubstitutedString(node);
             buf.append("\n").append(node).append(" = ").append(string);
         }
 
         buf.append("\n\nErrors:\n");
 
-        for (Node node : pm.getErrorNodes()) {
-            String string = getNodeSubstitutedString(node);
+        for (final Node node : pm.getErrorNodes()) {
+            final String string = getNodeSubstitutedString(node);
             buf.append("\n").append(node).append(" ~ ").append(string);
         }
 
         buf.append("\n\nParameter values:\n");
-        for (String parameter : parameters) {
-            double value = getParameterValue(parameter);
+        for (final String parameter : parameters) {
+            final double value = getParameterValue(parameter);
             buf.append("\n").append(parameter).append(" = ").append(nf.format(value));
         }
 
         return buf.toString();
     }
 
-    public synchronized DataSet simulateData(int sampleSize, boolean latentDataSaved) {
-        long seed = RandomUtil.getInstance().getSeed();
+    public synchronized DataSet simulateData(final int sampleSize, final boolean latentDataSaved) {
+        final long seed = RandomUtil.getInstance().getSeed();
         TetradLogger.getInstance().log("info", "Seed = " + seed);
 
-        if (pm.getGraph().isTimeLagModel()) {
+        if (this.pm.getGraph().isTimeLagModel()) {
             return simulateTimeSeries(sampleSize);
         }
 
@@ -304,48 +304,48 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
     }
 
     @Override
-    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
-        RandomUtil random = RandomUtil.getInstance();
-        long _seed = random.getSeed();
+    public DataSet simulateData(final int sampleSize, final long seed, final boolean latentDataSaved) {
+        final RandomUtil random = RandomUtil.getInstance();
+        final long _seed = random.getSeed();
         random.setSeed(seed);
-        DataSet dataSet = simulateData(sampleSize, latentDataSaved);
+        final DataSet dataSet = simulateData(sampleSize, latentDataSaved);
         random.revertSeed(_seed);
         return dataSet;
     }
 
-    private DataSet simulateTimeSeries(int sampleSize) {
-        SemGraph semGraph = new SemGraph(getSemPm().getGraph());
+    private DataSet simulateTimeSeries(final int sampleSize) {
+        final SemGraph semGraph = new SemGraph(getSemPm().getGraph());
         semGraph.setShowErrorTerms(true);
-        TimeLagGraph timeLagGraph = getSemPm().getGraph().getTimeLagGraph();
+        final TimeLagGraph timeLagGraph = getSemPm().getGraph().getTimeLagGraph();
 
-        List<Node> variables = new ArrayList<>();
+        final List<Node> variables = new ArrayList<>();
 
-        for (Node node : timeLagGraph.getLag0Nodes()) {
+        for (final Node node : timeLagGraph.getLag0Nodes()) {
             if (node.getNodeType() == NodeType.ERROR) continue;
             variables.add(new ContinuousVariable(timeLagGraph.getNodeId(node).getName()));
         }
 
-        List<Node> lag0Nodes = timeLagGraph.getLag0Nodes();
+        final List<Node> lag0Nodes = timeLagGraph.getLag0Nodes();
 
-        for (Node node : new ArrayList<>(lag0Nodes)) {
+        for (final Node node : new ArrayList<>(lag0Nodes)) {
             if (node.getNodeType() == NodeType.ERROR) {
                 lag0Nodes.remove(node);
             }
         }
 
-        DataSet fullData = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, variables.size()), variables);
+        final DataSet fullData = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, variables.size()), variables);
 
-        Map<Node, Integer> nodeIndices = new HashMap<>();
+        final Map<Node, Integer> nodeIndices = new HashMap<>();
 
         for (int i = 0; i < lag0Nodes.size(); i++) {
             nodeIndices.put(lag0Nodes.get(i), i);
         }
 
-        Graph contemporaneousDag = timeLagGraph.subgraph(timeLagGraph.getLag0Nodes());
+        final Graph contemporaneousDag = timeLagGraph.subgraph(timeLagGraph.getLag0Nodes());
 
-        List<Node> tierOrdering = contemporaneousDag.getCausalOrdering();
+        final List<Node> tierOrdering = contemporaneousDag.getCausalOrdering();
 
-        for (Node node : new ArrayList<>(tierOrdering)) {
+        for (final Node node : new ArrayList<>(tierOrdering)) {
             if (node.getNodeType() == NodeType.ERROR) {
                 tierOrdering.remove(node);
             }
@@ -353,9 +353,9 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
 
         final Map<String, Double> variableValues = new HashMap<>();
 
-        Context context = new Context() {
-            public Double getValue(String term) {
-                Double value = parameterValues.get(term);
+        final Context context = new Context() {
+            public Double getValue(final String term) {
+                Double value = GeneralizedSemIm.this.parameterValues.get(term);
 
                 if (value != null) {
                     return value;
@@ -373,33 +373,33 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
 
         ROW:
         for (int currentStep = 0; currentStep < sampleSize; currentStep++) {
-            for (Node node : tierOrdering) {
-                Expression expression = pm.getNodeExpression(node);
-                double value = expression.evaluate(context);
+            for (final Node node : tierOrdering) {
+                final Expression expression = this.pm.getNodeExpression(node);
+                final double value = expression.evaluate(context);
 
                 if (isSimulatePositiveDataOnly() && value < 0) {
                     currentStep--;
                     continue ROW;
                 }
 
-                int col = nodeIndices.get(node);
+                final int col = nodeIndices.get(node);
                 fullData.setDouble(currentStep, col, value);
                 variableValues.put(node.getName(), value);
             }
 
-            for (Node node : lag0Nodes) {
-                TimeLagGraph.NodeId _id = timeLagGraph.getNodeId(node);
+            for (final Node node : lag0Nodes) {
+                final TimeLagGraph.NodeId _id = timeLagGraph.getNodeId(node);
 
                 for (int lag = 1; lag <= timeLagGraph.getMaxLag(); lag++) {
-                    Node _node = timeLagGraph.getNode(_id.getName(), lag);
-                    int col = lag0Nodes.indexOf(node);
+                    final Node _node = timeLagGraph.getNode(_id.getName(), lag);
+                    final int col = lag0Nodes.indexOf(node);
 
                     if (_node == null) {
                         continue;
                     }
 
                     if (currentStep - lag + 1 >= 0) {
-                        double _value = fullData.getDouble((currentStep - lag + 1), col);
+                        final double _value = fullData.getDouble((currentStep - lag + 1), col);
                         variableValues.put(_node.getName(), _value);
                     }
                 }
@@ -417,15 +417,15 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
      * @param sampleSize > 0.
      * @return the simulated data set.
      */
-    public DataSet simulateDataRecursive(int sampleSize, boolean latentDataSaved) {
-        List<Node> variables = pm.getNodes();
-        Map<String, Double> std = new HashMap<>();
+    public DataSet simulateDataRecursive(final int sampleSize, final boolean latentDataSaved) {
+        final List<Node> variables = this.pm.getNodes();
+        final Map<String, Double> std = new HashMap<>();
 
         final Map<String, Double> variableValues = new HashMap<>();
 
-        Context context = new Context() {
-            public Double getValue(String term) {
-                Double value = parameterValues.get(term);
+        final Context context = new Context() {
+            public Double getValue(final String term) {
+                Double value = GeneralizedSemIm.this.parameterValues.get(term);
 
                 if (value != null) {
                     return value;
@@ -441,12 +441,12 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
             }
         };
 
-        List<Node> continuousVariables = new LinkedList<>();
-        List<Node> nonErrorVariables = pm.getVariableNodes();
+        final List<Node> continuousVariables = new LinkedList<>();
+        final List<Node> nonErrorVariables = this.pm.getVariableNodes();
 
         // Work with a copy of the variables, because their type can be set externally.
-        for (Node node : nonErrorVariables) {
-            ContinuousVariable var = new ContinuousVariable(node.getName());
+        for (final Node node : nonErrorVariables) {
+            final ContinuousVariable var = new ContinuousVariable(node.getName());
             var.setNodeType(node.getNodeType());
 
             if (var.getNodeType() != NodeType.ERROR) {
@@ -454,28 +454,28 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
             }
         }
 
-        DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, continuousVariables.size()), continuousVariables);
+        final DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, continuousVariables.size()), continuousVariables);
 
         // Create some index arrays to hopefully speed up the simulation.
-        SemGraph graph = pm.getGraph();
-        List<Node> tierOrdering = graph.getFullTierOrdering();
+        final SemGraph graph = this.pm.getGraph();
+        final List<Node> tierOrdering = graph.getFullTierOrdering();
 
-        int[] tierIndices = new int[variables.size()];
+        final int[] tierIndices = new int[variables.size()];
 
         for (int i = 0; i < tierIndices.length; i++) {
             tierIndices[i] = nonErrorVariables.indexOf(tierOrdering.get(i));
         }
 
-        int[][] _parents = new int[variables.size()][];
+        final int[][] _parents = new int[variables.size()][];
 
         for (int i = 0; i < variables.size(); i++) {
-            Node node = variables.get(i);
-            List<Node> parents = graph.getParents(node);
+            final Node node = variables.get(i);
+            final List<Node> parents = graph.getParents(node);
 
             _parents[i] = new int[parents.size()];
 
             for (int j = 0; j < parents.size(); j++) {
-                Node _parent = parents.get(j);
+                final Node _parent = parents.get(j);
                 _parents[i][j] = variables.indexOf(_parent);
             }
         }
@@ -483,9 +483,9 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
 
         // Do the simulation.
         for (int tier = 0; tier < variables.size(); tier++) {
-            double[] v = new double[sampleSize];
+            final double[] v = new double[sampleSize];
 
-            int col = tierIndices[tier];
+            final int col = tierIndices[tier];
 
             if (col == -1) {
                 continue;
@@ -494,9 +494,9 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
             for (int row = 0; row < sampleSize; row++) {
                 variableValues.clear();
 
-                Node node = tierOrdering.get(tier);
-                Expression expression = pm.getNodeExpression(node);
-                double value = expression.evaluate(context);
+                final Node node = tierOrdering.get(tier);
+                final Expression expression = this.pm.getNodeExpression(node);
+                final double value = expression.evaluate(context);
                 v[row] = value;
                 variableValues.put(node.getName(), value);
 
@@ -530,15 +530,15 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
     }
 
 
-    public DataSet simulateDataMinimizeSurface(int sampleSize, boolean latentDataSaved) {
+    public DataSet simulateDataMinimizeSurface(final int sampleSize, final boolean latentDataSaved) {
         final Map<String, Double> variableValues = new HashMap<>();
 
-        List<Node> continuousVariables = new LinkedList<>();
-        final List<Node> variableNodes = pm.getVariableNodes();
+        final List<Node> continuousVariables = new LinkedList<>();
+        final List<Node> variableNodes = this.pm.getVariableNodes();
 
         // Work with a copy of the variables, because their type can be set externally.
-        for (Node node : variableNodes) {
-            ContinuousVariable var = new ContinuousVariable(node.getName());
+        for (final Node node : variableNodes) {
+            final ContinuousVariable var = new ContinuousVariable(node.getName());
             var.setNodeType(node.getNodeType());
 
             if (var.getNodeType() != NodeType.ERROR) {
@@ -546,11 +546,11 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
             }
         }
 
-        DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, continuousVariables.size()), continuousVariables);
+        final DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, continuousVariables.size()), continuousVariables);
 
         final Context context = new Context() {
-            public Double getValue(String term) {
-                Double value = parameterValues.get(term);
+            public Double getValue(final String term) {
+                Double value = GeneralizedSemIm.this.parameterValues.get(term);
 
                 if (value != null) {
                     return value;
@@ -568,19 +568,19 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
 
         final double[] _metric = new double[1];
 
-        MultivariateFunction function = new MultivariateFunction() {
+        final MultivariateFunction function = new MultivariateFunction() {
             double metric;
 
-            public double value(double[] doubles) {
+            public double value(final double[] doubles) {
                 for (int i = 0; i < variableNodes.size(); i++) {
                     variableValues.put(variableNodes.get(i).getName(), doubles[i]);
                 }
 
-                double[] image = new double[doubles.length];
+                final double[] image = new double[doubles.length];
 
                 for (int i = 0; i < variableNodes.size(); i++) {
-                    Node node = variableNodes.get(i);
-                    Expression expression = pm.getNodeExpression(node);
+                    final Node node = variableNodes.get(i);
+                    final Expression expression = GeneralizedSemIm.this.pm.getNodeExpression(node);
                     image[i] = expression.evaluate(context);
 
                     if (Double.isNaN(image[i])) {
@@ -588,39 +588,39 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
                     }
                 }
 
-                metric = 0.0;
+                this.metric = 0.0;
 
                 for (int i = 0; i < variableNodes.size(); i++) {
-                    double diff = doubles[i] - image[i];
-                    metric += diff * diff;
+                    final double diff = doubles[i] - image[i];
+                    this.metric += diff * diff;
                 }
 
                 for (int i = 0; i < variableNodes.size(); i++) {
                     variableValues.put(variableNodes.get(i).getName(), image[i]);
                 }
 
-                _metric[0] = metric;
+                _metric[0] = this.metric;
 
-                return metric;
+                return this.metric;
             }
         };
 
-        MultivariateOptimizer search = new PowellOptimizer(1e-7, 1e-7);
+        final MultivariateOptimizer search = new PowellOptimizer(1e-7, 1e-7);
 
         // Do the simulation.
         ROW:
         for (int row = 0; row < sampleSize; row++) {
 
             // Take random draws from error distributions.
-            for (Node variable : variableNodes) {
-                Node error = pm.getErrorNode(variable);
+            for (final Node variable : variableNodes) {
+                final Node error = this.pm.getErrorNode(variable);
 
                 if (error == null) {
                     throw new NullPointerException();
                 }
 
-                Expression expression = pm.getNodeExpression(error);
-                double value = expression.evaluate(context);
+                final Expression expression = this.pm.getNodeExpression(error);
+                final double value = expression.evaluate(context);
 
                 if (Double.isNaN(value)) {
                     throw new IllegalArgumentException("Undefined value for expression: " + expression);
@@ -629,7 +629,7 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
                 variableValues.put(error.getName(), value);
             }
 
-            for (Node variable : variableNodes) {
+            for (final Node variable : variableNodes) {
                 variableValues.put(variable.getName(), 0.0);// RandomUtil.getInstance().nextUniform(-5, 5));
             }
 
@@ -641,7 +641,7 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
                     values[i] = variableValues.get(variableNodes.get(i).getName());
                 }
 
-                PointValuePair pair = search.optimize(
+                final PointValuePair pair = search.optimize(
                         new InitialGuess(values),
                         new ObjectiveFunction(function),
                         GoalType.MINIMIZE,
@@ -655,8 +655,8 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
                         continue ROW;
                     }
 
-                    if (!Double.isNaN(selfLoopCoef) && row > 0) {
-                        values[i] += selfLoopCoef * fullDataSet.getDouble(row - 1, i);
+                    if (!Double.isNaN(this.selfLoopCoef) && row > 0) {
+                        values[i] += this.selfLoopCoef * fullDataSet.getDouble(row - 1, i);
                     }
 
                     variableValues.put(variableNodes.get(i).getName(), values[i]);
@@ -676,15 +676,15 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
         }
     }
 
-    public DataSet simulateDataAvoidInfinity(int sampleSize, boolean latentDataSaved) {
+    public DataSet simulateDataAvoidInfinity(final int sampleSize, final boolean latentDataSaved) {
         final Map<String, Double> variableValues = new HashMap<>();
 
-        List<Node> continuousVariables = new LinkedList<>();
-        final List<Node> variableNodes = pm.getVariableNodes();
+        final List<Node> continuousVariables = new LinkedList<>();
+        final List<Node> variableNodes = this.pm.getVariableNodes();
 
         // Work with a copy of the variables, because their type can be set externally.
-        for (Node node : variableNodes) {
-            ContinuousVariable var = new ContinuousVariable(node.getName());
+        for (final Node node : variableNodes) {
+            final ContinuousVariable var = new ContinuousVariable(node.getName());
             var.setNodeType(node.getNodeType());
 
             if (var.getNodeType() != NodeType.ERROR) {
@@ -692,11 +692,11 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
             }
         }
 
-        DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, continuousVariables.size()), continuousVariables);
+        final DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, continuousVariables.size()), continuousVariables);
 
         final Context context = new Context() {
-            public Double getValue(String term) {
-                Double value = parameterValues.get(term);
+            public Double getValue(final String term) {
+                Double value = GeneralizedSemIm.this.parameterValues.get(term);
 
                 if (value != null) {
                     return value;
@@ -719,15 +719,15 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
         for (int row = 0; row < sampleSize; row++) {
 
             // Take random draws from error distributions.
-            for (Node variable : variableNodes) {
-                Node error = pm.getErrorNode(variable);
+            for (final Node variable : variableNodes) {
+                final Node error = this.pm.getErrorNode(variable);
 
                 if (error == null) {
                     throw new NullPointerException();
                 }
 
-                Expression expression = pm.getNodeExpression(error);
-                double value;
+                final Expression expression = this.pm.getNodeExpression(error);
+                final double value;
 
                 value = expression.evaluate(context);
 
@@ -739,11 +739,11 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
             }
 
             // Set the variable nodes to zero.
-            for (Node variable : variableNodes) {
-                Node error = pm.getErrorNode(variable);
+            for (final Node variable : variableNodes) {
+                final Node error = this.pm.getErrorNode(variable);
 
-                Expression expression = pm.getNodeExpression(error);
-                double value = expression.evaluate(context);
+                final Expression expression = this.pm.getNodeExpression(error);
+                final double value = expression.evaluate(context);
 
                 if (Double.isNaN(value)) {
                     throw new IllegalArgumentException("Undefined value for expression: " + expression);
@@ -755,23 +755,23 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
             // Repeatedly update variable values until one of them hits infinity or negative infinity or
             // convergence within delta.
 
-            double delta = 1e-10;
+            final double delta = 1e-10;
             int count = -1;
 
             while (++count < 5000) {
-                double[] values = new double[variableNodes.size()];
+                final double[] values = new double[variableNodes.size()];
 
                 for (int i = 0; i < values.length; i++) {
-                    Node node = variableNodes.get(i);
-                    Expression expression = pm.getNodeExpression(node);
-                    double value = expression.evaluate(context);
+                    final Node node = variableNodes.get(i);
+                    final Expression expression = this.pm.getNodeExpression(node);
+                    final double value = expression.evaluate(context);
                     values[i] = value;
                 }
 
                 allInRange = true;
 
                 for (int i = 0; i < values.length; i++) {
-                    Node node = variableNodes.get(i);
+                    final Node node = variableNodes.get(i);
 
                     // If any of the variables hasn't converged or if any of the variable values has gone
                     // outside of the bound (-1e6, 1e6), judge nonconvergence and pick another random starting point.
@@ -822,8 +822,8 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
                     continue ROW;
                 }
 
-                if (!Double.isNaN(selfLoopCoef) && row > 0) {
-                    value += selfLoopCoef * fullDataSet.getDouble(row - 1, i);
+                if (!Double.isNaN(this.selfLoopCoef) && row > 0) {
+                    value += this.selfLoopCoef * fullDataSet.getDouble(row - 1, i);
                 }
 
                 fullDataSet.setDouble(row, i, value);
@@ -850,7 +850,7 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
      * @param sampleSize The number of samples to be drawn. Must be a positive
      *                   integer.
      */
-    public synchronized DataSet simulateDataFisher(int sampleSize) {
+    public synchronized DataSet simulateDataFisher(final int sampleSize) {
         return simulateDataFisher(sampleSize, 50, 1e-10);
     }
 
@@ -867,8 +867,8 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
      *                              Must be positive integer.
      * @param epsilon               The convergence criterion; |xi.t - xi.t-1| < epsilon.
      */
-    public synchronized DataSet simulateDataFisher(int sampleSize, int intervalBetweenShocks,
-                                                   double epsilon) {
+    public synchronized DataSet simulateDataFisher(final int sampleSize, final int intervalBetweenShocks,
+                                                   final double epsilon) {
         boolean printedUndefined = false;
         boolean printedInfinite = false;
 
@@ -880,8 +880,8 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
         final Map<String, Double> variableValues = new HashMap<>();
 
         final Context context = new Context() {
-            public Double getValue(String term) {
-                Double value = parameterValues.get(term);
+            public Double getValue(final String term) {
+                Double value = GeneralizedSemIm.this.parameterValues.get(term);
 
                 if (value != null) {
                     return value;
@@ -897,25 +897,25 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
             }
         };
 
-        final List<Node> variableNodes = pm.getVariableNodes();
+        final List<Node> variableNodes = this.pm.getVariableNodes();
 
         double[] t1 = new double[variableNodes.size()];
         double[] t2 = new double[variableNodes.size()];
-        double[] shocks = new double[variableNodes.size()];
-        double[][] all = new double[variableNodes.size()][sampleSize];
+        final double[] shocks = new double[variableNodes.size()];
+        final double[][] all = new double[variableNodes.size()][sampleSize];
 
         // Do the simulation.
 
         for (int row = 0; row < sampleSize; row++) {
             for (int j = 0; j < t1.length; j++) {
-                Node error = pm.getErrorNode(variableNodes.get(j));
+                final Node error = this.pm.getErrorNode(variableNodes.get(j));
 
                 if (error == null) {
                     throw new NullPointerException();
                 }
 
-                Expression expression = pm.getNodeExpression(error);
-                double value = expression.evaluate(context);
+                final Expression expression = this.pm.getNodeExpression(error);
+                final double value = expression.evaluate(context);
 
                 if (Double.isNaN(value)) {
                     throw new IllegalArgumentException("Undefined value for expression: " + expression);
@@ -928,8 +928,8 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
 
             for (int i = 0; i < intervalBetweenShocks; i++) {
                 for (int j = 0; j < t1.length; j++) {
-                    Node node = variableNodes.get(j);
-                    Expression expression = pm.getNodeExpression(node);
+                    final Node node = variableNodes.get(j);
+                    final Expression expression = this.pm.getNodeExpression(node);
                     t2[j] = expression.evaluate(context);
 
                     if (Double.isNaN(t2[j])) {
@@ -958,7 +958,7 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
                     }
                 }
 
-                double[] t3 = t1;
+                final double[] t3 = t1;
                 t1 = t2;
                 t2 = t3;
 
@@ -972,27 +972,27 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
             }
         }
 
-        List<Node> continuousVars = new ArrayList<>();
+        final List<Node> continuousVars = new ArrayList<>();
 
-        for (Node node : variableNodes) {
+        for (final Node node : variableNodes) {
             final ContinuousVariable var = new ContinuousVariable(node.getName());
             var.setNodeType(node.getNodeType());
             continuousVars.add(var);
         }
 
-        BoxDataSet boxDataSet = new BoxDataSet(new VerticalDoubleDataBox(all), continuousVars);
+        final BoxDataSet boxDataSet = new BoxDataSet(new VerticalDoubleDataBox(all), continuousVars);
         return DataUtils.restrictToMeasured(boxDataSet);
     }
 
 
-    public Vector simulateOneRecord(Vector e) {
+    public Vector simulateOneRecord(final Vector e) {
         final Map<String, Double> variableValues = new HashMap<>();
 
-        final List<Node> variableNodes = pm.getVariableNodes();
+        final List<Node> variableNodes = this.pm.getVariableNodes();
 
         final Context context = new Context() {
-            public Double getValue(String term) {
-                Double value = parameterValues.get(term);
+            public Double getValue(final String term) {
+                Double value = GeneralizedSemIm.this.parameterValues.get(term);
 
                 if (value != null) {
                     return value;
@@ -1010,7 +1010,7 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
 
         // Take random draws from error distributions.
         for (int i = 0; i < variableNodes.size(); i++) {
-            Node error = pm.getErrorNode(variableNodes.get(i));
+            final Node error = this.pm.getErrorNode(variableNodes.get(i));
 
             if (error == null) {
                 throw new NullPointerException();
@@ -1020,30 +1020,30 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
         }
 
         // Set the variable nodes to zero.
-        for (Node variable : variableNodes) {
+        for (final Node variable : variableNodes) {
             variableValues.put(variable.getName(), 0.0);// RandomUtil.getInstance().nextUniform(-5, 5));
         }
 
         // Repeatedly update variable values until one of them hits infinity or negative infinity or
         // convergence within delta.
 
-        double delta = 1e-6;
+        final double delta = 1e-6;
         int count = -1;
 
         while (++count < 10000) {
-            double[] values = new double[variableNodes.size()];
+            final double[] values = new double[variableNodes.size()];
 
             for (int i = 0; i < values.length; i++) {
-                Node node = variableNodes.get(i);
-                Expression expression = pm.getNodeExpression(node);
-                double value = expression.evaluate(context);
+                final Node node = variableNodes.get(i);
+                final Expression expression = this.pm.getNodeExpression(node);
+                final double value = expression.evaluate(context);
                 values[i] = value;
             }
 
             boolean allInRange = true;
 
             for (int i = 0; i < values.length; i++) {
-                Node node = variableNodes.get(i);
+                final Node node = variableNodes.get(i);
 
                 if (!(Math.abs(variableValues.get(node.getName()) - values[i]) < delta)) {
                     allInRange = false;
@@ -1061,25 +1061,25 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
             }
         }
 
-        Vector _case = new Vector(e.size());
+        final Vector _case = new Vector(e.size());
 
         for (int i = 0; i < variableNodes.size(); i++) {
-            double value = variableValues.get(variableNodes.get(i).getName());
+            final double value = variableValues.get(variableNodes.get(i).getName());
             _case.set(i, value);
         }
 
         return _case;
     }
 
-    public DataSet simulateDataNSteps(int sampleSize, boolean latentDataSaved) {
+    public DataSet simulateDataNSteps(final int sampleSize, final boolean latentDataSaved) {
         final Map<String, Double> variableValues = new HashMap<>();
 
-        List<Node> continuousVariables = new LinkedList<>();
-        final List<Node> variableNodes = pm.getVariableNodes();
+        final List<Node> continuousVariables = new LinkedList<>();
+        final List<Node> variableNodes = this.pm.getVariableNodes();
 
         // Work with a copy of the variables, because their type can be set externally.
-        for (Node node : variableNodes) {
-            ContinuousVariable var = new ContinuousVariable(node.getName());
+        for (final Node node : variableNodes) {
+            final ContinuousVariable var = new ContinuousVariable(node.getName());
             var.setNodeType(node.getNodeType());
 
             if (var.getNodeType() != NodeType.ERROR) {
@@ -1087,11 +1087,11 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
             }
         }
 
-        DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, continuousVariables.size()), continuousVariables);
+        final DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, continuousVariables.size()), continuousVariables);
 
         final Context context = new Context() {
-            public Double getValue(String term) {
-                Double value = parameterValues.get(term);
+            public Double getValue(final String term) {
+                Double value = GeneralizedSemIm.this.parameterValues.get(term);
 
                 if (value != null) {
                     return value;
@@ -1112,15 +1112,15 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
         for (int row = 0; row < sampleSize; row++) {
 
             // Take random draws from error distributions.
-            for (Node variable : variableNodes) {
-                Node error = pm.getErrorNode(variable);
+            for (final Node variable : variableNodes) {
+                final Node error = this.pm.getErrorNode(variable);
 
                 if (error == null) {
                     throw new NullPointerException();
                 }
 
-                Expression expression = pm.getNodeExpression(error);
-                double value = expression.evaluate(context);
+                final Expression expression = this.pm.getNodeExpression(error);
+                final double value = expression.evaluate(context);
 
                 if (Double.isNaN(value)) {
                     throw new IllegalArgumentException("Undefined value for expression: " + expression);
@@ -1130,7 +1130,7 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
             }
 
             // Set the variable nodes to zero.
-            for (Node variable : variableNodes) {
+            for (final Node variable : variableNodes) {
                 variableValues.put(variable.getName(), 0.0);// RandomUtil.getInstance().nextUniform(-5, 5));
             }
 
@@ -1138,12 +1138,12 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
             // convergence within delta.
 
             for (int m = 0; m < 1; m++) {
-                double[] values = new double[variableNodes.size()];
+                final double[] values = new double[variableNodes.size()];
 
                 for (int i = 0; i < values.length; i++) {
-                    Node node = variableNodes.get(i);
-                    Expression expression = pm.getNodeExpression(node);
-                    double value = expression.evaluate(context);
+                    final Node node = variableNodes.get(i);
+                    final Expression expression = this.pm.getNodeExpression(node);
+                    final double value = expression.evaluate(context);
 
                     if (Double.isNaN(value)) {
                         throw new IllegalArgumentException("Undefined value for expression: " + expression);
@@ -1152,7 +1152,7 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
                     values[i] = value;
                 }
 
-                for (double value : values) {
+                for (final double value : values) {
                     if (value == Double.POSITIVE_INFINITY || value == Double.NEGATIVE_INFINITY) {
                         row--;
                         continue ROW;
@@ -1166,7 +1166,7 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
             }
 
             for (int i = 0; i < variableNodes.size(); i++) {
-                double value = variableValues.get(variableNodes.get(i).getName());
+                final double value = variableValues.get(variableNodes.get(i).getName());
                 fullDataSet.setDouble(row, i, value);
             }
         }
@@ -1181,11 +1181,11 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
 
 
     public GeneralizedSemPm getSemPm() {
-        return new GeneralizedSemPm(pm);
+        return new GeneralizedSemPm(this.pm);
     }
 
-    public void setSubstitutions(Map<String, Double> parameterValues) {
-        for (String parameter : parameterValues.keySet()) {
+    public void setSubstitutions(final Map<String, Double> parameterValues) {
+        for (final String parameter : parameterValues.keySet()) {
             if (this.parameterValues.keySet().contains(parameter)) {
                 this.parameterValues.put(parameter, parameterValues.get(parameter));
             }
@@ -1193,10 +1193,10 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
     }
 
     private boolean isSimulatePositiveDataOnly() {
-        return simulatePositiveDataOnly;
+        return this.simulatePositiveDataOnly;
     }
 
-    public void setSimulatePositiveDataOnly(boolean simulatedPositiveDataOnly) {
+    public void setSimulatePositiveDataOnly(final boolean simulatedPositiveDataOnly) {
         this.simulatePositiveDataOnly = simulatedPositiveDataOnly;
     }
 }

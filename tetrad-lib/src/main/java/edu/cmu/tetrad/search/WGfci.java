@@ -22,45 +22,45 @@ public class WGfci implements GraphSearch {
     private final IndependenceTest test;
     private final SemBicScore score;
 
-    public WGfci(DataSet data) {
+    public WGfci(final DataSet data) {
         this.searchVariables = data.getVariables();
-        DataSet internalData = data.copy();
+        final DataSet internalData = data.copy();
 
-        List<Node> variables = data.getVariables();
+        final List<Node> variables = data.getVariables();
 
-        for (Node node : variables) {
-            List<Node> nodes = expandVariable(internalData, node);
-            variablesPerNode.put(node, nodes);
+        for (final Node node : variables) {
+            final List<Node> nodes = expandVariable(internalData, node);
+            this.variablesPerNode.put(node, nodes);
         }
 
         System.out.println("Data expanded.");
 
-        ICovarianceMatrix covariances = new CovarianceMatrix(internalData);
+        final ICovarianceMatrix covariances = new CovarianceMatrix(internalData);
 
         System.out.println("Cov matrix made.");
 
-        test = new IndTestFisherZ(covariances, 0.001);
+        this.test = new IndTestFisherZ(covariances, 0.001);
         this.score = new SemBicScore(covariances);
-        score.setPenaltyDiscount(4);
-        this.gfci = new GFci(test, score);
+        this.score.setPenaltyDiscount(4);
+        this.gfci = new GFci(this.test, this.score);
     }
 
-    private List<Node> expandVariable(DataSet dataSet, Node node) {
+    private List<Node> expandVariable(final DataSet dataSet, final Node node) {
         if (node instanceof ContinuousVariable) {
             return Collections.singletonList(node);
         }
 
-        List<String> varCats = new ArrayList<>(((DiscreteVariable) node).getCategories());
+        final List<String> varCats = new ArrayList<>(((DiscreteVariable) node).getCategories());
 
-        List<Node> variables = new ArrayList<>();
+        final List<Node> variables = new ArrayList<>();
 
         for (int i = 0; i < varCats.size() - 1; i++) {
-            Node newVar = new ContinuousVariable(node.getName() + "." + varCats.get(i));
+            final Node newVar = new ContinuousVariable(node.getName() + "." + varCats.get(i));
             variables.add(newVar);
             dataSet.addVariable(newVar);
-            int newVarIndex = dataSet.getColumn(newVar);
+            final int newVarIndex = dataSet.getColumn(newVar);
             for (int l = 0; l < dataSet.getNumRows(); l++) {
-                int v = dataSet.getInt(l, dataSet.getColumn(node));
+                final int v = dataSet.getInt(l, dataSet.getColumn(node));
 
                 if (v == i) {
                     dataSet.setDouble(l, newVarIndex, 1);
@@ -76,18 +76,18 @@ public class WGfci implements GraphSearch {
     }
 
     public Graph search() {
-        test.setAlpha(alpha);
-        Graph g = gfci.search();
+        this.test.setAlpha(this.alpha);
+        final Graph g = this.gfci.search();
 
-        Graph out = new EdgeListGraph(searchVariables);
+        final Graph out = new EdgeListGraph(this.searchVariables);
 
-        for (int i = 0; i < searchVariables.size(); i++) {
-            for (int j = i + 1; j < searchVariables.size(); j++) {
-                Node x = searchVariables.get(i);
-                Node y = searchVariables.get(j);
+        for (int i = 0; i < this.searchVariables.size(); i++) {
+            for (int j = i + 1; j < this.searchVariables.size(); j++) {
+                final Node x = this.searchVariables.get(i);
+                final Node y = this.searchVariables.get(j);
 
-                List<Node> xNodes = variablesPerNode.get(x);
-                List<Node> yNodes = variablesPerNode.get(y);
+                final List<Node> xNodes = this.variablesPerNode.get(x);
+                final List<Node> yNodes = this.variablesPerNode.get(y);
 
                 int left = 0;
                 int right = 0;
@@ -95,7 +95,7 @@ public class WGfci implements GraphSearch {
 
                 for (int k = 0; k < xNodes.size(); k++) {
                     for (int l = 0; l < yNodes.size(); l++) {
-                        Edge e = g.getEdge(xNodes.get(k), yNodes.get(l));
+                        final Edge e = g.getEdge(xNodes.get(k), yNodes.get(l));
 
                         if (e != null) {
                             total++;
@@ -121,7 +121,7 @@ public class WGfci implements GraphSearch {
         return 0;
     }
 
-    public void setAlpha(double alpha) {
+    public void setAlpha(final double alpha) {
         this.alpha = alpha;
     }
 }

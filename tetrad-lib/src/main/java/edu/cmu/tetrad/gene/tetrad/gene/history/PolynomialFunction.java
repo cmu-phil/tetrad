@@ -64,7 +64,7 @@ public class PolynomialFunction implements UpdateFunction {
      * Constructs a polyomial function where each factor is given a zero
      * polynomial.
      */
-    public PolynomialFunction(LagGraph lagGraph) {
+    public PolynomialFunction(final LagGraph lagGraph) {
 
         if (lagGraph == null) {
             throw new NullPointerException("Lag graph must not be null.");
@@ -72,7 +72,7 @@ public class PolynomialFunction implements UpdateFunction {
 
         // Construct the "snapshot" indexed connectivity.
         this.connectivity = new IndexedLagGraph(lagGraph);
-        int numFactors = this.connectivity.getNumFactors();
+        final int numFactors = this.connectivity.getNumFactors();
 
         // Give each factor a zero polynomial.
         this.polynomials = new Polynomial[numFactors];
@@ -82,10 +82,10 @@ public class PolynomialFunction implements UpdateFunction {
         }
 
         // Set up error distributions.
-        errorDistributions = new Distribution[numFactors];
+        this.errorDistributions = new Distribution[numFactors];
 
-        for (int i = 0; i < errorDistributions.length; i++) {
-            errorDistributions[i] = new Normal(0.0, 0.05);
+        for (int i = 0; i < this.errorDistributions.length; i++) {
+            this.errorDistributions[i] = new Normal(0.0, 0.05);
         }
     }
 
@@ -104,16 +104,16 @@ public class PolynomialFunction implements UpdateFunction {
     /**
      * Returns the value of the function.
      */
-    public double getValue(int factorIndex, double[][] history) {
+    public double getValue(final int factorIndex, final double[][] history) {
 
-        int numParents = this.connectivity.getNumParents(factorIndex);
-        double[] values = new double[numParents];
+        final int numParents = this.connectivity.getNumParents(factorIndex);
+        final double[] values = new double[numParents];
         for (int i = 0; i < numParents; i++) {
-            IndexedParent parent = this.connectivity.getParent(factorIndex, i);
+            final IndexedParent parent = this.connectivity.getParent(factorIndex, i);
             values[i] = history[parent.getLag()][parent.getIndex()];
         }
-        return polynomials[factorIndex].evaluate(values) +
-                errorDistributions[factorIndex].nextRandom();
+        return this.polynomials[factorIndex].evaluate(values) +
+                this.errorDistributions[factorIndex].nextRandom();
     }
 
     /**
@@ -129,7 +129,7 @@ public class PolynomialFunction implements UpdateFunction {
      * @param factor
      * @param distribution
      */
-    public void setErrorDistribution(int factor, Distribution distribution) {
+    public void setErrorDistribution(final int factor, final Distribution distribution) {
         if (distribution != null) {
             this.errorDistributions[factor] = distribution;
         } else {
@@ -143,14 +143,14 @@ public class PolynomialFunction implements UpdateFunction {
      * @param factor the factor in question.
      * @return the error distribution for <code>factor</code>.
      */
-    public Distribution getErrorDistribution(int factor) {
+    public Distribution getErrorDistribution(final int factor) {
         return this.errorDistributions[factor];
     }
 
     /**
      * Sets the polynomial for the given factor.
      */
-    public void setPolynomial(int factor, Polynomial polynomial) {
+    public void setPolynomial(final int factor, final Polynomial polynomial) {
 
         if (polynomial == null) {
             throw new NullPointerException("Polynomial must not be null.");
@@ -162,7 +162,7 @@ public class PolynomialFunction implements UpdateFunction {
     /**
      * Returns the polynomial for the given factor.
      */
-    public Polynomial getPolynomial(int factor) {
+    public Polynomial getPolynomial(final int factor) {
         return this.polynomials[factor];
     }
 
@@ -182,7 +182,7 @@ public class PolynomialFunction implements UpdateFunction {
         int maxLag = 0;
         for (int i = 0; i < this.connectivity.getNumFactors(); i++) {
             for (int j = 0; j < this.connectivity.getNumParents(i); j++) {
-                IndexedParent parent = this.connectivity.getParent(i, j);
+                final IndexedParent parent = this.connectivity.getParent(i, j);
                 if (parent.getLag() > maxLag) {
                     maxLag = parent.getLag();
                 }
@@ -204,19 +204,19 @@ public class PolynomialFunction implements UpdateFunction {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (connectivity == null) {
+        if (this.connectivity == null) {
             throw new NullPointerException();
         }
 
-        if (polynomials == null) {
+        if (this.polynomials == null) {
             throw new NullPointerException();
         }
 
-        if (errorDistributions == null) {
+        if (this.errorDistributions == null) {
             throw new NullPointerException();
         }
 

@@ -37,17 +37,17 @@ import static java.lang.Math.abs;
 public class ReidentifyVariables {
     // This reidentifies a variable if all of its members belong to one of the clusters
     // in the original graph.
-    public static List<String> reidentifyVariables1(List<List<Node>> partition, Graph trueGraph) {
-        List<String> names = new ArrayList<>();
+    public static List<String> reidentifyVariables1(final List<List<Node>> partition, final Graph trueGraph) {
+        final List<String> names = new ArrayList<>();
         Node latent;
 
-        for (List<Node> _partition : partition) {
+        for (final List<Node> _partition : partition) {
             boolean added = false;
 
-            for (Node _latent : trueGraph.getNodes()) {
-                List<Node> trueChildren = trueGraph.getChildren(_latent);
+            for (final Node _latent : trueGraph.getNodes()) {
+                final List<Node> trueChildren = trueGraph.getChildren(_latent);
 
-                for (Node node2 : new ArrayList<>(trueChildren)) {
+                for (final Node node2 : new ArrayList<>(trueChildren)) {
                     if (node2.getNodeType() == NodeType.LATENT) {
                         trueChildren.remove(node2);
                     }
@@ -56,10 +56,10 @@ public class ReidentifyVariables {
                 boolean containsAll = true;
                 latent = _latent;
 
-                for (Node child : _partition) {
+                for (final Node child : _partition) {
                     boolean contains = false;
 
-                    for (Node _child : trueChildren) {
+                    for (final Node _child : trueChildren) {
                         if (child.getName().equals(_child.getName())) {
                             contains = true;
                             break;
@@ -81,7 +81,7 @@ public class ReidentifyVariables {
 
                     names.add(name);
 
-                    for (Node child : _partition) {
+                    for (final Node child : _partition) {
                         if (!_partition.contains(child)) {
                             _partition.add(child);
                         }
@@ -101,7 +101,7 @@ public class ReidentifyVariables {
 
                 names.add(name);
 
-                for (Node child : _partition) {
+                for (final Node child : _partition) {
                     if (!_partition.contains(child)) {
                         _partition.add(child);
                     }
@@ -115,49 +115,49 @@ public class ReidentifyVariables {
     // This reidentifies a variable in the output with a variable in the input if the sum of the
     // factor loadings for the output clusters on the input's loadings is greater than for
     // any other input latent.
-    public static List<String> reidentifyVariables2(List<List<Node>> clusters, Graph trueGraph, DataSet data) {
+    public static List<String> reidentifyVariables2(final List<List<Node>> clusters, Graph trueGraph, final DataSet data) {
         trueGraph = GraphUtils.replaceNodes(trueGraph, data.getVariables());
-        Map<Node, SemIm> ims = new HashMap<>();
-        List<String> latentNames = new ArrayList<>();
+        final Map<Node, SemIm> ims = new HashMap<>();
+        final List<String> latentNames = new ArrayList<>();
 
-        for (Node node : trueGraph.getNodes()) {
+        for (final Node node : trueGraph.getNodes()) {
             if (node.getNodeType() != NodeType.LATENT) continue;
 
-            List<Node> children = trueGraph.getChildren(node);
+            final List<Node> children = trueGraph.getChildren(node);
             children.removeAll(getLatents(trueGraph));
 
-            List<Node> all = new ArrayList<>();
+            final List<Node> all = new ArrayList<>();
             all.add(node);
             all.addAll(children);
 
-            Graph subgraph = trueGraph.subgraph(all);
+            final Graph subgraph = trueGraph.subgraph(all);
 
-            SemPm pm = new SemPm(subgraph);
+            final SemPm pm = new SemPm(subgraph);
             pm.fixOneLoadingPerLatent();
 
-            SemOptimizer semOptimizer = new SemOptimizerPowell();
-            SemEstimator est = new SemEstimator(data, pm, semOptimizer);
+            final SemOptimizer semOptimizer = new SemOptimizerPowell();
+            final SemEstimator est = new SemEstimator(data, pm, semOptimizer);
             est.setScoreType(ScoreType.Fgls);
-            SemIm im = est.estimate();
+            final SemIm im = est.estimate();
 
             ims.put(node, im);
         }
 
-        Map<List<Node>, String> clustersToNames = new HashMap<>();
+        final Map<List<Node>, String> clustersToNames = new HashMap<>();
 
 
 //        Graph reidentifiedGraph = new EdgeListGraph();
 
-        for (List<Node> cluster : clusters) {
+        for (final List<Node> cluster : clusters) {
             double maxSum = Double.NEGATIVE_INFINITY;
             Node maxLatent = null;
 
-            for (Node _latent : trueGraph.getNodes()) {
+            for (final Node _latent : trueGraph.getNodes()) {
                 if (_latent.getNodeType() != NodeType.LATENT) {
                     continue;
                 }
 
-                double sum = sumOfAbsLoadings(cluster, _latent, trueGraph, ims);
+                final double sum = sumOfAbsLoadings(cluster, _latent, trueGraph, ims);
 
                 if (sum > maxSum) {
                     maxSum = sum;
@@ -169,28 +169,28 @@ public class ReidentifyVariables {
                 throw new NullPointerException("No such latent");
             }
 
-            String name = maxLatent.getName();
+            final String name = maxLatent.getName();
             latentNames.add(name);
             clustersToNames.put(cluster, name);
         }
 
 
-        Set<String> values = new HashSet<>(clustersToNames.values());
+        final Set<String> values = new HashSet<>(clustersToNames.values());
 
-        for (String key : values) {
-            double maxSum = Double.NEGATIVE_INFINITY;
+        for (final String key : values) {
+            final double maxSum = Double.NEGATIVE_INFINITY;
             List<Node> maxCluster = null;
 
-            for (List<Node> _cluster : clustersToNames.keySet()) {
+            for (final List<Node> _cluster : clustersToNames.keySet()) {
                 if (clustersToNames.get(_cluster).equals(key)) {
-                    double sum = sumOfAbsLoadings(_cluster, trueGraph.getNode(key), trueGraph, ims);
+                    final double sum = sumOfAbsLoadings(_cluster, trueGraph.getNode(key), trueGraph, ims);
                     if (sum > maxSum) {
                         maxCluster = _cluster;
                     }
                 }
             }
 
-            for (List<Node> _cluster : clustersToNames.keySet()) {
+            for (final List<Node> _cluster : clustersToNames.keySet()) {
                 if (clustersToNames.get(_cluster).equals(key)) {
                     if (!_cluster.equals(maxCluster)) {
                         String name = key;
@@ -209,15 +209,15 @@ public class ReidentifyVariables {
         return latentNames;
     }
 
-    private static double sumOfAbsLoadings(List<Node> searchChildren, Node latent, Graph mim, Map<Node, SemIm> ims) {
+    private static double sumOfAbsLoadings(final List<Node> searchChildren, final Node latent, final Graph mim, final Map<Node, SemIm> ims) {
         double sum = 0.0;
 
 //        System.out.println(latent + " " + searchChildren + " " + mim.getChildren(latent));
 
-        for (Node child : searchChildren) {
+        for (final Node child : searchChildren) {
             if (mim.isParentOf(latent, child)) {
-                SemIm im = ims.get(latent);
-                double coef = im.getEdgeCoef(latent, child);
+                final SemIm im = ims.get(latent);
+                final double coef = im.getEdgeCoef(latent, child);
                 sum += abs(coef);
             }
         }
@@ -225,9 +225,9 @@ public class ReidentifyVariables {
         return sum;
     }
 
-    public static List<Node> getLatents(Graph graph) {
-        List<Node> latents = new ArrayList<>();
-        for (Node node : graph.getNodes()) if (node.getNodeType() == NodeType.LATENT) latents.add(node);
+    public static List<Node> getLatents(final Graph graph) {
+        final List<Node> latents = new ArrayList<>();
+        for (final Node node : graph.getNodes()) if (node.getNodeType() == NodeType.LATENT) latents.add(node);
         return latents;
     }
 }

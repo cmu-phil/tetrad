@@ -29,24 +29,24 @@ public class PercentAmbiguous implements Statistic {
     }
 
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+    public double getValue(final Graph trueGraph, final Graph estGraph, final DataModel dataModel) {
         int numAmbiguous = 0;
         int numTriples = 0;
 
-        List<Node> nodes = estGraph.getNodes();
+        final List<Node> nodes = estGraph.getNodes();
 
-        for (Node b : nodes) {
-            List<Node> adjb = estGraph.getAdjacentNodes(b);
+        for (final Node b : nodes) {
+            final List<Node> adjb = estGraph.getAdjacentNodes(b);
 
             if (adjb.size() < 2) continue;
 
-            ChoiceGenerator gen = new ChoiceGenerator(adjb.size(), 2);
+            final ChoiceGenerator gen = new ChoiceGenerator(adjb.size(), 2);
             int[] choice;
 
             while ((choice = gen.next()) != null) {
-                List<Node> _adj = GraphUtils.asList(choice, adjb);
-                Node a = _adj.get(0);
-                Node c = _adj.get(1);
+                final List<Node> _adj = GraphUtils.asList(choice, adjb);
+                final Node a = _adj.get(0);
+                final Node c = _adj.get(1);
 
                 if (estGraph.isAmbiguousTriple(a, b, c)) {
                     numAmbiguous++;
@@ -60,7 +60,7 @@ public class PercentAmbiguous implements Statistic {
     }
 
     @Override
-    public double getNormValue(double value) {
+    public double getNormValue(final double value) {
         return 1.0 - value;
     }
 }

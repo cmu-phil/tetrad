@@ -38,21 +38,21 @@ public class Type2 implements SessionModel, TetradSerializableExcluded {
      * should allow a model of type Type1 to be created. SessionNodes wrapping
      * models of other types should not be addable as parents.
      */
-    public Type2(Parameters parameters) {
+    public Type2(final Parameters parameters) {
     }
 
     public static Type2 serializableInstance() {
         return new Type2(new Parameters());
     }
 
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         return (o instanceof Type2);
     }
 
     /**
      * Sets the name of the session model.
      */
-    public void setName(String name) {
+    public void setName(final String name) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 

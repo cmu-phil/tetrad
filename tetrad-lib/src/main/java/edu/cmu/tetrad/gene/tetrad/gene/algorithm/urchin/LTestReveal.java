@@ -30,28 +30,28 @@ public class LTestReveal {
 
     static int[][] cases = new int[ntimes][ngenes];
 
-    public static void main(String[] argv) {
+    public static void main(final String[] argv) {
 
-        String fileName = argv[0];
+        final String fileName = argv[0];
 
-        InputStream s;
+        final InputStream s;
         StringTokenizer st;
 
         try {
             s = new FileInputStream(fileName);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             System.out.println("Cannot open file " + fileName);
             return;
         }
 
-        BufferedReader in = new BufferedReader(new InputStreamReader(s));
+        final BufferedReader in = new BufferedReader(new InputStreamReader(s));
         for (int k = 0; k < ntimes; k++) {
             try {
                 st = new StringTokenizer(in.readLine());
                 for (int j = 0; j < ngenes; j++) {
                     cases[k][j] = Integer.parseInt(st.nextToken("\t"));
                 }
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 System.out.println("Read error in " + fileName);
                 return;
             }
@@ -67,21 +67,21 @@ public class LTestReveal {
             }
         }
 
-        int lag = 1;
+        final int lag = 1;
         //One parent cases
-        int[] p = new int[1];
+        final int[] p = new int[1];
         for (int child = 0; child < ngenes; child++) {
             System.out.println("For gene " + child);
             for (int i = 0; i < ngenes; i++) {
                 //if(i == child) continue;
                 p[0] = i;
-                double m = mutualInformation(child, p, lag);
+                final double m = mutualInformation(child, p, lag);
                 System.out.println("for parent = " + i + " m = " + m);
             }
         }
 
         //Two parent cases
-        int[] pp = new int[2];
+        final int[] pp = new int[2];
         for (int child = 0; child < ngenes; child++) {
             System.out.println("For gene " + child);
             for (int p1 = 0; p1 < ngenes; p1++) {
@@ -89,7 +89,7 @@ public class LTestReveal {
                     pp[0] = p1;
                     pp[1] = p2;
 
-                    double mm = mutualInformation(child, pp, lag);
+                    final double mm = mutualInformation(child, pp, lag);
                     System.out.println(
                             "for parents = " + p1 + "," + p2 + " m = " + mm);
                 }
@@ -97,7 +97,7 @@ public class LTestReveal {
         }
 
         //Three parent cases
-        int[] ppp = new int[3];
+        final int[] ppp = new int[3];
         for (int child = 0; child < ngenes; child++) {
             System.out.println("For gene " + child);
             for (int p1 = 0; p1 < ngenes; p1++) {
@@ -106,7 +106,7 @@ public class LTestReveal {
                         ppp[0] = p1;
                         ppp[1] = p2;
                         ppp[2] = p3;
-                        double mmm = mutualInformation(child, ppp, lag);
+                        final double mmm = mutualInformation(child, ppp, lag);
                         System.out.println("for parents = " + p1 + "," + p2 +
                                 "," + p3 + " m = " + mmm);
                     }
@@ -115,22 +115,22 @@ public class LTestReveal {
         }
     }
 
-    public static double mutualInformation(int child, int[] parents, int lag) {
+    public static double mutualInformation(final int child, final int[] parents, final int lag) {
 
         //make sure child is not in parents etc.
 
         double M = 0.0;
 
         //H(child)
-        int[] c = new int[ntimes - lag];
+        final int[] c = new int[ntimes - lag];
         for (int i = lag; i < ntimes; i++) {
             c[i - lag] = cases[i][child];
         }
         //double hchild = entropy(c);
-        double hchild = entropy(child, lag);
+        final double hchild = entropy(child, lag);
 
-        int[] p1 = new int[ntimes - lag];  //1 parent
-        int[][] pm = new int[parents.length][ntimes - lag];  //multiple parents
+        final int[] p1 = new int[ntimes - lag];  //1 parent
+        final int[][] pm = new int[parents.length][ntimes - lag];  //multiple parents
 
         //H(parents)
         double hparents = 0.0;
@@ -154,7 +154,7 @@ public class LTestReveal {
         if (parents.length == 1) {
             hjoint = jointEntropy(c, p1);
         } else {
-            int[][] p1pm = new int[parents.length][ntimes - lag];
+            final int[][] p1pm = new int[parents.length][ntimes - lag];
             for (int i = 0; i < ntimes - lag; i++) {
                 p1pm[0][i] = p1[i];
                 for (int j = 0; j < parents.length - 1; j++) {
@@ -168,10 +168,10 @@ public class LTestReveal {
         return M;
     }
 
-    public static double entropy(int[] x) {
+    public static double entropy(final int[] x) {
         double h = 0.0;
-        int n = x.length;
-        double ln2 = Math.log(2.0);
+        final int n = x.length;
+        final double ln2 = Math.log(2.0);
 
         int n0 = 0;
         for (int i = 0; i < n; i++) {
@@ -180,7 +180,7 @@ public class LTestReveal {
             }
         }
 
-        double p;
+        final double p;
         if (n0 == 0 || n0 == n) {
             return h;
         } else {
@@ -190,11 +190,11 @@ public class LTestReveal {
         return h;
     }
 
-    public static double entropy(int g, int lag) {
+    public static double entropy(final int g, final int lag) {
         double h = 0.0;
-        int n = cases.length - lag;
+        final int n = cases.length - lag;
 
-        double ln2 = Math.log(2.0);
+        final double ln2 = Math.log(2.0);
 
         int n0 = 0;
         for (int i = 0; i < n; i++) {
@@ -203,7 +203,7 @@ public class LTestReveal {
             }
         }
 
-        double p;
+        final double p;
         if (n0 == 0 || n0 == n) {
             return h;
         } else {
@@ -213,11 +213,11 @@ public class LTestReveal {
         return h;
     }
 
-    public static double jointEntropy(int[] x, int[] y) {
+    public static double jointEntropy(final int[] x, final int[] y) {
         double h = 0.0;
-        int[][] ns = new int[2][2];
-        int n = x.length;
-        double ln2 = Math.log(2.0);
+        final int[][] ns = new int[2][2];
+        final int n = x.length;
+        final double ln2 = Math.log(2.0);
 
         ns[0][0] = 0;
         ns[0][1] = 0;
@@ -230,10 +230,13 @@ public class LTestReveal {
             }
         }
 
-        int ntot = ns[0][0] + ns[0][1] + ns[1][0] + ns[1][1];
+        final int ntot = ns[0][0] + ns[0][1] + ns[1][0] + ns[1][1];
 
-        double[][] p = new double[2][2];
-        double lp00, lp01, lp10, lp11;
+        final double[][] p = new double[2][2];
+        final double lp00;
+        double lp01;
+        double lp10;
+        final double lp11;
 
         p[0][0] = (double) ns[0][0] / (double) ntot;
         p[0][1] = (double) ns[0][1] / (double) ntot;
@@ -266,12 +269,12 @@ public class LTestReveal {
         return h;
     }
 
-    public static double jointEntropy(int[] x, int[][] y) {
+    public static double jointEntropy(final int[] x, final int[][] y) {
         double h = 0.0;
-        int m = y.length;
+        final int m = y.length;
         //System.out.println("m = " + m);
-        int n = x.length;
-        double ln2 = Math.log(2.0);
+        final int n = x.length;
+        final double ln2 = Math.log(2.0);
 
         if (y[0].length != n) {
             System.out.println("x and rows of y and must have same length");
@@ -283,10 +286,10 @@ public class LTestReveal {
             nyconfigs *= 2;              //number of configurations of ys
         }
 
-        int nconfigs = 2 * nyconfigs;        //x also makes a config
+        final int nconfigs = 2 * nyconfigs;        //x also makes a config
 
         //System.out.println("nconfigs = " + nconfigs);
-        int[] counts = new int[nconfigs];
+        final int[] counts = new int[nconfigs];
         for (int i = 0; i < nconfigs; i++) {
             counts[i] = 0;
         }
@@ -324,15 +327,15 @@ public class LTestReveal {
      * Computes a byte vector which corresponds to the argument ind.  rep[0] is
      * the high order bit. E.g.  if n=3 and ind=6 the vector will be (1, 1, 0).
      */
-    public byte[] booleanRepresentation(int ind, int n) {
-        byte[] rep = new byte[n];
+    public byte[] booleanRepresentation(int ind, final int n) {
+        final byte[] rep = new byte[n];
 
         for (int i = 0; i < n; i++) {
             rep[i] = (byte) 0;
         }
 
         for (int i = 0; i < n; i++) {
-            int rem = ind % 2;
+            final int rem = ind % 2;
             if (rem == 1) {
                 rep[n - i - 1] = (byte) 1;
                 ind -= 1;

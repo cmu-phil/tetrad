@@ -115,7 +115,7 @@ public class FasDci {
     /**
      * Constructs a new FastAdjacencySearch for DCI.
      */
-    public FasDci(Graph graph, IndependenceTest independenceTest) {
+    public FasDci(final Graph graph, final IndependenceTest independenceTest) {
         this.graph = graph;
         this.independenceTest = independenceTest;
         this.variables.addAll(independenceTest.getVariables());
@@ -124,10 +124,10 @@ public class FasDci {
     /**
      * Constructs a new FastAdjacencySearch for DCI with independence test pooling to resolve inconsistencies.
      */
-    public FasDci(Graph graph, IndependenceTest independenceTest,
-                  ResolveSepsets.Method method, List<Set<Node>> marginalVars,
-                  List<IndependenceTest> independenceTests,
-                  SepsetMapDci knownIndependencies, SepsetMapDci knownAssociations) {
+    public FasDci(final Graph graph, final IndependenceTest independenceTest,
+                  final ResolveSepsets.Method method, final List<Set<Node>> marginalVars,
+                  final List<IndependenceTest> independenceTests,
+                  final SepsetMapDci knownIndependencies, final SepsetMapDci knownAssociations) {
         this.graph = graph;
         this.independenceTest = independenceTest;
         this.variables.addAll(independenceTest.getVariables());
@@ -153,17 +153,17 @@ public class FasDci {
     public SepsetMapDci search() {
         this.logger.log("info", "Starting Fast Adjacency Search (DCI).");
         // Remove edges forbidden both ways.
-        Set<Edge> edges = graph.getEdges();
+        final Set<Edge> edges = this.graph.getEdges();
 
 //        logger.log("info", "Edges: " + edges);
 
-        for (Edge _edge : edges) {
-            String name1 = _edge.getNode1().getName();
-            String name2 = _edge.getNode2().getName();
+        for (final Edge _edge : edges) {
+            final String name1 = _edge.getNode1().getName();
+            final String name2 = _edge.getNode2().getName();
 
-            if (knowledge.isForbidden(name1, name2) &&
-                    knowledge.isForbidden(name2, name1)) {
-                graph.removeEdge(_edge);
+            if (this.knowledge.isForbidden(name1, name2) &&
+                    this.knowledge.isForbidden(name2, name1)) {
+                this.graph.removeEdge(_edge);
 
                 this.logger.log("edgeRemoved", "Removed " + _edge + " because it was " +
                         "forbidden by background knowledge.");
@@ -174,16 +174,16 @@ public class FasDci {
 //        this.logger.info("Depth = " + ((depth == Integer
 //               .MAX_VALUE) ? "Unlimited" : Integer.toString(depth)));
 
-        SepsetMapDci sepset = new SepsetMapDci();
+        final SepsetMapDci sepset = new SepsetMapDci();
 
-        int _depth = depth;
+        int _depth = this.depth;
 
         if (_depth == -1) {
             _depth = 1000;
         }
 
         for (int d = 0; d <= _depth; d++) {
-            boolean more = searchAtDepth(graph, independenceTest, new Knowledge2(),
+            final boolean more = searchAtDepth(this.graph, this.independenceTest, new Knowledge2(),
                     sepset, d);
 
             if (!more) {
@@ -214,10 +214,10 @@ public class FasDci {
 
 
     public int getDepth() {
-        return depth;
+        return this.depth;
     }
 
-    public void setDepth(int depth) {
+    public void setDepth(final int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException(
                     "Depth must be -1 (unlimited) or >= 0.");
@@ -227,10 +227,10 @@ public class FasDci {
     }
 
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(final IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException("Cannot set knowledge to null");
         }
@@ -242,13 +242,13 @@ public class FasDci {
     /**
      * Removes from the list of nodes any that cannot be parents of x given the background knowledge.
      */
-    private List<Node> possibleParents(Node x, List<Node> adjx,
-                                       IKnowledge knowledge) {
-        List<Node> possibleParents = new LinkedList<>();
-        String _x = x.getName();
+    private List<Node> possibleParents(final Node x, final List<Node> adjx,
+                                       final IKnowledge knowledge) {
+        final List<Node> possibleParents = new LinkedList<>();
+        final String _x = x.getName();
 
-        for (Node z : adjx) {
-            String _z = z.getName();
+        for (final Node z : adjx) {
+            final String _z = z.getName();
 
             if (possibleParentOf(_z, _x, knowledge)) {
                 possibleParents.add(z);
@@ -262,7 +262,7 @@ public class FasDci {
      * @return true just in case z is a possible parent of x, in the sense that edges are not forbidden from z to x, and
      * edges are not required from either x to z, according to background knowledge.
      */
-    private boolean possibleParentOf(String z, String x, IKnowledge knowledge) {
+    private boolean possibleParentOf(final String z, final String x, final IKnowledge knowledge) {
         return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
     }
 
@@ -276,43 +276,43 @@ public class FasDci {
      * @param depth            The depth at which this step will be done.
      * @return true if there are more changes possible, false if not.
      */
-    private boolean searchAtDepth(Graph graph, IndependenceTest independenceTest,
-                                  IKnowledge knowledge, SepsetMapDci sepset, int depth) {
+    private boolean searchAtDepth(final Graph graph, final IndependenceTest independenceTest,
+                                  final IKnowledge knowledge, final SepsetMapDci sepset, final int depth) {
 
         boolean more = false;
 
-        for (Node x : variables) {
-            List<Node> b = new LinkedList<>();
-            for (Node node : graph.getAdjacentNodes(x)) {
-                if (variables.contains(node)) {
+        for (final Node x : this.variables) {
+            final List<Node> b = new LinkedList<>();
+            for (final Node node : graph.getAdjacentNodes(x)) {
+                if (this.variables.contains(node)) {
                     b.add(node);
                 }
             }
 
             nextEdge:
-            for (Node y : b) {
+            for (final Node y : b) {
 
                 // This is the standard algorithm, without the v1 bias.
-                List<Node> adjx = new ArrayList<>(b);
+                final List<Node> adjx = new ArrayList<>(b);
                 adjx.remove(y);
-                List<Node> ppx = possibleParents(x, adjx, knowledge);
+                final List<Node> ppx = possibleParents(x, adjx, knowledge);
 
 //                System.out.println("Possible parents for removing " + x + " --- " + y + " are " + ppx);
 
-                boolean noEdgeRequired =
+                final boolean noEdgeRequired =
                         knowledge.noEdgeRequired(x.getName(), y.getName());
 
                 if (ppx.size() >= depth) {
-                    ChoiceGenerator cg = new ChoiceGenerator(ppx.size(), depth);
+                    final ChoiceGenerator cg = new ChoiceGenerator(ppx.size(), depth);
                     int[] choice;
 
                     while ((choice = cg.next()) != null) {
-                        List<Node> condSet = GraphUtils.asList(choice, ppx);
+                        final List<Node> condSet = GraphUtils.asList(choice, ppx);
 
                         boolean independent = false;
                         boolean known = false;
-                        if (knownIndependencies != null && knownIndependencies.get(x, y) != null) {
-                            for (List<Node> set : knownIndependencies.getSet(x, y)) {
+                        if (this.knownIndependencies != null && this.knownIndependencies.get(x, y) != null) {
+                            for (final List<Node> set : this.knownIndependencies.getSet(x, y)) {
                                 if (set.containsAll(condSet) && set.size() == condSet.size()) {
                                     independent = true;
                                     known = true;
@@ -320,8 +320,8 @@ public class FasDci {
                                 }
                             }
                         }
-                        if (knownAssociations != null && knownAssociations.get(x, y) != null) {
-                            for (List<Node> set : knownAssociations.getSet(x, y)) {
+                        if (this.knownAssociations != null && this.knownAssociations.get(x, y) != null) {
+                            for (final List<Node> set : this.knownAssociations.getSet(x, y)) {
                                 if (set.containsAll(condSet) && set.size() == condSet.size()) {
                                     independent = false;
                                     known = true;
@@ -331,28 +331,28 @@ public class FasDci {
                         }
                         if (!known) {
                             independent = independenceTest.isIndependent(x, y, condSet);
-                            if (method != null) {
-                                List<IndependenceTest> testsWithVars = new ArrayList<>();
-                                for (int k = 0; k < marginalVars.size(); k++) {
-                                    Set<Node> marginalSet = marginalVars.get(k);
+                            if (this.method != null) {
+                                final List<IndependenceTest> testsWithVars = new ArrayList<>();
+                                for (int k = 0; k < this.marginalVars.size(); k++) {
+                                    final Set<Node> marginalSet = this.marginalVars.get(k);
                                     if (marginalSet.contains(x) && marginalSet.contains(y) &&
                                             marginalSet.containsAll(condSet)) {
-                                        testsWithVars.add(independenceTests.get(k));
+                                        testsWithVars.add(this.independenceTests.get(k));
                                     }
                                 }
                                 boolean inconsistency = false;
-                                for (IndependenceTest testWithVars : testsWithVars) {
+                                for (final IndependenceTest testWithVars : testsWithVars) {
                                     if (testWithVars.isIndependent(x, y, condSet) != independent) {
                                         inconsistency = true;
                                         break;
                                     }
                                 }
                                 if (inconsistency) {
-                                    independent = ResolveSepsets.isIndependentPooled(method,
+                                    independent = ResolveSepsets.isIndependentPooled(this.method,
                                             testsWithVars, x, y, condSet);
                                 }
                             }
-                            numIndependenceTests++;
+                            this.numIndependenceTests++;
                         }
 
                         if (independent && noEdgeRequired) {
@@ -365,9 +365,9 @@ public class FasDci {
                 }
             }
 
-            List<Node> currentAdjNodes = new ArrayList<>();
-            for (Node node : graph.getAdjacentNodes(x)) {
-                if (variables.contains(node)) {
+            final List<Node> currentAdjNodes = new ArrayList<>();
+            for (final Node node : graph.getAdjacentNodes(x)) {
+                if (this.variables.contains(node)) {
                     currentAdjNodes.add(node);
                 }
             }
@@ -382,7 +382,7 @@ public class FasDci {
     }
 
     public int getNumIndependenceTests() {
-        return numIndependenceTests;
+        return this.numIndependenceTests;
     }
 }
 

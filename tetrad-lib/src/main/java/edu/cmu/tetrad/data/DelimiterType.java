@@ -60,7 +60,7 @@ public final class DelimiterType implements TetradSerializable {
      * Protected constructor for the types; this allows for extension in case
      * anyone wants to add formula types.
      */
-    private DelimiterType(String name, String regex) {
+    private DelimiterType(final String name, final String regex) {
         this.name = name;
         this.pattern = Pattern.compile(regex);
     }
@@ -84,7 +84,7 @@ public final class DelimiterType implements TetradSerializable {
      * Prints out the name of the type.
      */
     public final String toString() {
-        return name;
+        return this.name;
     }
 
     // Declarations required for serialization.
@@ -93,6 +93,6 @@ public final class DelimiterType implements TetradSerializable {
     private static final DelimiterType[] TYPES = {WHITESPACE, TAB, COMMA};
 
     final Object readResolve() throws ObjectStreamException {
-        return TYPES[ordinal]; // Canonicalize.
+        return TYPES[this.ordinal]; // Canonicalize.
     }
 }

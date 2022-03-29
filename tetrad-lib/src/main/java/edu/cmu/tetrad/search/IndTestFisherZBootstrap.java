@@ -54,7 +54,7 @@ public class IndTestFisherZBootstrap implements IndependenceTest {
     private final IndependenceTest[] tests;
     private boolean verbose = false;
 
-    public IndTestFisherZBootstrap(DataSet dataSet, double alpha, int numBootstrapSamples, int bootstrapSampleSize) {
+    public IndTestFisherZBootstrap(final DataSet dataSet, final double alpha, final int numBootstrapSamples, final int bootstrapSampleSize) {
         if (!(dataSet.isContinuous())) {
             throw new IllegalArgumentException("Data set must be continuous.");
         }
@@ -63,42 +63,42 @@ public class IndTestFisherZBootstrap implements IndependenceTest {
             throw new IllegalArgumentException("Alpha mut be in [0, 1]");
         }
 
-        ICovarianceMatrix covMatrix = new CovarianceMatrix(dataSet);
+        final ICovarianceMatrix covMatrix = new CovarianceMatrix(dataSet);
         this.dataSet = dataSet;
 
         this.variables = Collections.unmodifiableList(covMatrix.getVariables());
         setAlpha(alpha);
 
         this.numBootstrapSamples = numBootstrapSamples;
-        Matrix[] bootstrapSamples = new Matrix[numBootstrapSamples];
+        final Matrix[] bootstrapSamples = new Matrix[numBootstrapSamples];
         this.tests = new IndependenceTest[numBootstrapSamples];
 
         for (int i = 0; i < numBootstrapSamples; i++) {
-            Matrix fullData = dataSet.getDoubleData();
+            final Matrix fullData = dataSet.getDoubleData();
             bootstrapSamples[i] = DataUtils.getBootstrapSample(fullData, bootstrapSampleSize);
-            tests[i] = new IndTestFisherZ(bootstrapSamples[i], dataSet.getVariables(), alpha);
+            this.tests[i] = new IndTestFisherZ(bootstrapSamples[i], dataSet.getVariables(), alpha);
 
         }
 
     }
 
-    public IndependenceTest indTestSubset(List<Node> vars) {
+    public IndependenceTest indTestSubset(final List<Node> vars) {
         return null;
     }
 
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
-        int[] independentGuys = new int[numBootstrapSamples];
+    public boolean isIndependent(final Node x, final Node y, final List<Node> z) {
+        final int[] independentGuys = new int[this.numBootstrapSamples];
 
-        for (int i = 0; i < numBootstrapSamples; i++) {
-            boolean independent = tests[i].isIndependent(x, y, z);
+        for (int i = 0; i < this.numBootstrapSamples; i++) {
+            final boolean independent = this.tests[i].isIndependent(x, y, z);
             independentGuys[i] = independent ? 1 : 0;
         }
 
         int sum = 0;
-        for (int i = 0; i < numBootstrapSamples; i++) sum += independentGuys[i];
-        boolean independent = sum > numBootstrapSamples / 2;
+        for (int i = 0; i < this.numBootstrapSamples; i++) sum += independentGuys[i];
+        final boolean independent = sum > this.numBootstrapSamples / 2;
 
-        if (verbose) {
+        if (this.verbose) {
             if (independent) {
                 TetradLogger.getInstance().log("independencies",
                         SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
@@ -111,17 +111,17 @@ public class IndTestFisherZBootstrap implements IndependenceTest {
         return independent;
     }
 
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
+    public boolean isIndependent(final Node x, final Node y, final Node... z) {
+        final List<Node> zList = Arrays.asList(z);
         return isIndependent(x, y, zList);
     }
 
-    public boolean isDependent(Node x, Node y, List<Node> z) {
+    public boolean isDependent(final Node x, final Node y, final List<Node> z) {
         return !isIndependent(x, y, z);
     }
 
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
+    public boolean isDependent(final Node x, final Node y, final Node... z) {
+        final List<Node> zList = Arrays.asList(z);
         return isDependent(x, y, zList);
     }
 
@@ -140,9 +140,9 @@ public class IndTestFisherZBootstrap implements IndependenceTest {
     /**
      * @return the variable with the given name.
      */
-    public Node getVariable(String name) {
+    public Node getVariable(final String name) {
         for (int i = 0; i < getVariables().size(); i++) {
-            Node variable = getVariables().get(i);
+            final Node variable = getVariables().get(i);
             if (variable.getName().equals(name)) {
                 return variable;
             }
@@ -155,23 +155,23 @@ public class IndTestFisherZBootstrap implements IndependenceTest {
      * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
-        List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<>();
-        for (Node variable1 : variables) {
+        final List<Node> variables = getVariables();
+        final List<String> variableNames = new ArrayList<>();
+        for (final Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }
         return variableNames;
     }
 
-    public boolean determines(List<Node> z, Node x1) {
+    public boolean determines(final List<Node> z, final Node x1) {
         return false;
     }
 
     public double getAlpha() {
-        return alpha;
+        return this.alpha;
     }
 
-    public void setAlpha(double alpha) {
+    public void setAlpha(final double alpha) {
         this.alpha = alpha;
     }
 
@@ -181,7 +181,7 @@ public class IndTestFisherZBootstrap implements IndependenceTest {
 
 
     public DataSet getData() {
-        return dataSet;
+        return this.dataSet;
     }
 
     @Override
@@ -210,10 +210,10 @@ public class IndTestFisherZBootstrap implements IndependenceTest {
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 }

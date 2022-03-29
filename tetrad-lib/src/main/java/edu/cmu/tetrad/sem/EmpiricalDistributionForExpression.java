@@ -37,19 +37,19 @@ public class EmpiricalDistributionForExpression {
     private final Node error;
     private final Context context;
 
-    public EmpiricalDistributionForExpression(GeneralizedSemPm semPm, Node error,
-                                              Context context) {
+    public EmpiricalDistributionForExpression(final GeneralizedSemPm semPm, final Node error,
+                                              final Context context) {
         this.semPm = semPm;
         this.error = error;
         this.context = context;
     }
 
     public RealDistribution getDist() {
-        List<Double> drawFromDistribution = new ArrayList<>();
-        Expression expression = semPm.getNodeExpression(error);
+        final List<Double> drawFromDistribution = new ArrayList<>();
+        final Expression expression = this.semPm.getNodeExpression(this.error);
 
         for (int k = 0; k < 5000; k++) {
-            double evaluate = expression.evaluate(context);
+            final double evaluate = expression.evaluate(this.context);
             drawFromDistribution.add(evaluate);
         }
 

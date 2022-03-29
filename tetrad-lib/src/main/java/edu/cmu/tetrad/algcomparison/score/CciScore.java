@@ -34,7 +34,7 @@ public class CciScore implements ScoreWrapper {
     private DataModel dataSet;
 
     @Override
-    public Score getScore(DataModel dataSet, Parameters parameters) {
+    public Score getScore(final DataModel dataSet, final Parameters parameters) {
         this.dataSet = dataSet;
         final IndTestConditionalCorrelation cci = new IndTestConditionalCorrelation(DataUtils.getContinuousDataSet(dataSet),
                 parameters.getDouble(Params.CCI_SCORE_ALPHA));
@@ -72,7 +72,7 @@ public class CciScore implements ScoreWrapper {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
+        final List<String> parameters = new ArrayList<>();
         parameters.add(Params.CCI_SCORE_ALPHA);
         parameters.add(Params.NUM_BASIS_FUNCTIONS);
         parameters.add(Params.KERNEL_TYPE);
@@ -85,8 +85,8 @@ public class CciScore implements ScoreWrapper {
     }
 
     @Override
-    public Node getVariable(String name) {
-        return dataSet.getVariable(name);
+    public Node getVariable(final String name) {
+        return this.dataSet.getVariable(name);
     }
 
 }

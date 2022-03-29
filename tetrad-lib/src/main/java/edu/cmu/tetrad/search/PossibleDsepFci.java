@@ -66,7 +66,7 @@ public class PossibleDsepFci {
      * @param graph The GaSearchGraph on which to work
      * @param test  The IndependenceChecker to use as an oracle
      */
-    public PossibleDsepFci(Graph graph, IndependenceTest test, CorrelationMatrix corr) {
+    public PossibleDsepFci(final Graph graph, final IndependenceTest test, final CorrelationMatrix corr) {
         if (graph == null) {
             throw new NullPointerException("null GaSearchGraph passed in " +
                     "PossibleDSepSearch constructor!");
@@ -81,7 +81,7 @@ public class PossibleDsepFci {
         this.sepset = new SepsetMap();
         this.corr = corr;
 
-        setMaxPathLength(maxReachablePathLength);
+        setMaxPathLength(this.maxReachablePathLength);
     }
 
     //============================== Public Methods =========================//
@@ -96,55 +96,55 @@ public class PossibleDsepFci {
      */
     public SepsetMap search() {
 
-        for (Edge edge : new ArrayList<>(graph.getEdges())) {
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
+        for (final Edge edge : new ArrayList<>(this.graph.getEdges())) {
+            final Node x = edge.getNode1();
+            final Node y = edge.getNode2();
 
-            List<Node> condSet = getSepset(test, x, y);
+            final List<Node> condSet = getSepset(this.test, x, y);
 
             if (condSet != null) {
-                for (Node n : condSet) {
-                    if (!(graph.getAdjacentNodes(n).contains(x) || graph.getAdjacentNodes(n).contains(y))) {
+                for (final Node n : condSet) {
+                    if (!(this.graph.getAdjacentNodes(n).contains(x) || this.graph.getAdjacentNodes(n).contains(y))) {
                         System.out.println("Not adjacent");
                     }
                 }
 
-                graph.removeEdge(x, y);
-                sepset.set(x, y, condSet);
+                this.graph.removeEdge(x, y);
+                this.sepset.set(x, y, condSet);
                 System.out.println("Removed " + x + "--- " + y + " sepset = " + condSet);
             }
 
         }
 
-        return sepset;
+        return this.sepset;
     }
 
-    public List<Node> getSepset(IndependenceTest test, Node node1, Node node2) {
-        List<Node> condSet = getCondSet(test, node1, node2, maxReachablePathLength);
+    public List<Node> getSepset(final IndependenceTest test, final Node node1, final Node node2) {
+        List<Node> condSet = getCondSet(test, node1, node2, this.maxReachablePathLength);
 
-        if (sepset == null) {
-            condSet = getCondSet(test, node2, node1, maxReachablePathLength);
+        if (this.sepset == null) {
+            condSet = getCondSet(test, node2, node1, this.maxReachablePathLength);
         }
 
         return condSet;
     }
 
-    private List<Node> getCondSet(IndependenceTest test, Node node1, Node node2, int maxPathLength) {
+    private List<Node> getCondSet(final IndependenceTest test, final Node node1, final Node node2, final int maxPathLength) {
         final List<Node> possibleDsepSet = getPossibleDsep(node1, node2, maxPathLength);
-        List<Node> possibleDsep = new ArrayList<>(possibleDsepSet);
-        boolean noEdgeRequired = getKnowledge().noEdgeRequired(node1.getName(), node2.getName());
+        final List<Node> possibleDsep = new ArrayList<>(possibleDsepSet);
+        final boolean noEdgeRequired = getKnowledge().noEdgeRequired(node1.getName(), node2.getName());
 
-        List<Node> possParents = possibleParents(node1, possibleDsep, getKnowledge());
+        final List<Node> possParents = possibleParents(node1, possibleDsep, getKnowledge());
 
-        int _depth = getDepth() == -1 ? 1000 : getDepth();
+        final int _depth = getDepth() == -1 ? 1000 : getDepth();
 
         for (int d = 0; d <= Math.min(_depth, possParents.size()); d++) {
-            ChoiceGenerator cg = new ChoiceGenerator(possParents.size(), d);
+            final ChoiceGenerator cg = new ChoiceGenerator(possParents.size(), d);
             int[] choice;
 
             while ((choice = cg.next()) != null) {
-                List<Node> condSet = GraphUtils.asList(choice, possParents);
-                boolean independent = test.isIndependent(node1, node2, condSet);
+                final List<Node> condSet = GraphUtils.asList(choice, possParents);
+                final boolean independent = test.isIndependent(node1, node2, condSet);
 
                 if (independent && noEdgeRequired) {
                     return condSet;
@@ -158,13 +158,13 @@ public class PossibleDsepFci {
     /**
      * Removes from the list of nodes any that cannot be parents of x given the background knowledge.
      */
-    private List<Node> possibleParents(Node x, List<Node> nodes,
-                                       IKnowledge knowledge) {
-        List<Node> possibleParents = new LinkedList<>();
-        String _x = x.getName();
+    private List<Node> possibleParents(final Node x, final List<Node> nodes,
+                                       final IKnowledge knowledge) {
+        final List<Node> possibleParents = new LinkedList<>();
+        final String _x = x.getName();
 
-        for (Node z : nodes) {
-            String _z = z.getName();
+        for (final Node z : nodes) {
+            final String _z = z.getName();
 
             if (possibleParentOf(_z, _x, knowledge)) {
                 possibleParents.add(z);
@@ -174,7 +174,7 @@ public class PossibleDsepFci {
         return possibleParents;
     }
 
-    private boolean possibleParentOf(String _z, String _x, IKnowledge bk) {
+    private boolean possibleParentOf(final String _z, final String _x, final IKnowledge bk) {
         return !(bk.isForbidden(_z, _x) || bk.isRequired(_x, _z));
     }
 
@@ -188,8 +188,8 @@ public class PossibleDsepFci {
      * 		(b) X is adjacent to Z.
      * </pre>
      */
-    private List<Node> getPossibleDsep(Node node1, Node node2, int maxPathLength) {
-        List<Node> dsep = GraphUtils.possibleDsep(node1, node2, graph, maxPathLength, test);
+    private List<Node> getPossibleDsep(final Node node1, final Node node2, final int maxPathLength) {
+        final List<Node> dsep = GraphUtils.possibleDsep(node1, node2, this.graph, maxPathLength, this.test);
 
         dsep.remove(node1);
         dsep.remove(node2);
@@ -200,10 +200,10 @@ public class PossibleDsepFci {
     }
 
     public int getDepth() {
-        return depth;
+        return this.depth;
     }
 
-    public void setDepth(int depth) {
+    public void setDepth(final int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException(
                     "Depth must be -1 (unlimited) or >= 0: " + depth);
@@ -213,18 +213,18 @@ public class PossibleDsepFci {
     }
 
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(final IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
     public int getMaxReachablePathLength() {
-        return maxReachablePathLength == Integer.MAX_VALUE ? -1 : maxReachablePathLength;
+        return this.maxReachablePathLength == Integer.MAX_VALUE ? -1 : this.maxReachablePathLength;
     }
 
-    public void setMaxPathLength(int maxReachablePathLength) {
+    public void setMaxPathLength(final int maxReachablePathLength) {
         if (maxReachablePathLength < -1) {
             throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxReachablePathLength);
         }

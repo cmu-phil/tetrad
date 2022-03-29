@@ -27,19 +27,19 @@ public class F1Adj implements Statistic {
     }
 
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        AdjacencyConfusion adjConfusion = new AdjacencyConfusion(trueGraph, estGraph);
-        int adjTp = adjConfusion.getAdjTp();
-        int adjFp = adjConfusion.getAdjFp();
-        int adjFn = adjConfusion.getAdjFn();
-        int adjTn = adjConfusion.getAdjTn();
-        double adjPrecision = adjTp / (double) (adjTp + adjFp);
-        double adjRecall = adjTp / (double) (adjTp + adjFn);
+    public double getValue(final Graph trueGraph, final Graph estGraph, final DataModel dataModel) {
+        final AdjacencyConfusion adjConfusion = new AdjacencyConfusion(trueGraph, estGraph);
+        final int adjTp = adjConfusion.getAdjTp();
+        final int adjFp = adjConfusion.getAdjFp();
+        final int adjFn = adjConfusion.getAdjFn();
+        final int adjTn = adjConfusion.getAdjTn();
+        final double adjPrecision = adjTp / (double) (adjTp + adjFp);
+        final double adjRecall = adjTp / (double) (adjTp + adjFn);
         return 2 * (adjPrecision * adjRecall) / (adjPrecision + adjRecall);
     }
 
     @Override
-    public double getNormValue(double value) {
+    public double getNormValue(final double value) {
         return value;
     }
 }

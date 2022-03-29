@@ -72,7 +72,7 @@ public class IndTestProbabilisticVerbose implements IndependenceTest {
     /**
      * Initializes the test using a discrete data sets.
      */
-    public IndTestProbabilisticVerbose(DataSet dataSet, PrintWriter out, IndTestDSep dsepTest) {
+    public IndTestProbabilisticVerbose(final DataSet dataSet, final PrintWriter out, final IndTestDSep dsepTest) {
         this.out = out;
         this.dsepTest = dsepTest;
 
@@ -83,16 +83,16 @@ public class IndTestProbabilisticVerbose implements IndependenceTest {
 
         this.data = dataSet;
 
-        int[] nodeDimensions = new int[dataSet.getNumColumns() + 2];
+        final int[] nodeDimensions = new int[dataSet.getNumColumns() + 2];
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
-            DiscreteVariable variable = (DiscreteVariable) (dataSet.getVariable(j));
-            int numCategories = variable.getNumCategories();
+            final DiscreteVariable variable = (DiscreteVariable) (dataSet.getVariable(j));
+            final int numCategories = variable.getNumCategories();
 //            out.println("Variable " + variable + " # cat = " + numCategories);
             nodeDimensions[j + 1] = numCategories;
         }
 
-        int[][] cases = new int[dataSet.getNumRows() + 1][dataSet.getNumColumns() + 2];
+        final int[][] cases = new int[dataSet.getNumRows() + 1][dataSet.getNumColumns() + 2];
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
             for (int j = 0; j < dataSet.getNumColumns(); j++) {
@@ -100,65 +100,65 @@ public class IndTestProbabilisticVerbose implements IndependenceTest {
             }
         }
 
-        bci = new BCInference(cases, nodeDimensions);
+        this.bci = new BCInference(cases, nodeDimensions);
 
-        nodes = dataSet.getVariables();
+        this.nodes = dataSet.getVariables();
 
-        indices = new HashMap<>();
+        this.indices = new HashMap<>();
 
-        for (int i = 0; i < nodes.size(); i++) {
-            indices.put(nodes.get(i), i);
+        for (int i = 0; i < this.nodes.size(); i++) {
+            this.indices.put(this.nodes.get(i), i);
         }
 
         this.H = new HashMap<>();
     }
 
     @Override
-    public IndependenceTest indTestSubset(List<Node> vars) {
+    public IndependenceTest indTestSubset(final List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
-        Node[] _z = z.toArray(new Node[z.size()]);
+    public boolean isIndependent(final Node x, final Node y, final List<Node> z) {
+        final Node[] _z = z.toArray(new Node[z.size()]);
         return isIndependent(x, y, _z);
     }
 
     @Override
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        IndependenceFact key = new IndependenceFact(x, y, z);
+    public boolean isIndependent(final Node x, final Node y, final Node... z) {
+        final IndependenceFact key = new IndependenceFact(x, y, z);
 
-        if (!H.containsKey(key)) {
-            double pInd = probConstraint(BCInference.OP.independent, x, y, z);
-            H.put(key, pInd);
+        if (!this.H.containsKey(key)) {
+            final double pInd = probConstraint(BCInference.OP.independent, x, y, z);
+            this.H.put(key, pInd);
         }
 
-        double pInd = H.get(key);
+        final double pInd = this.H.get(key);
 
-        double p = probOp(BCInference.OP.independent, pInd);
+        final double p = probOp(BCInference.OP.independent, pInd);
 
         this.posterior = p;
 
 //        boolean ind = RandomUtil.getInstance().nextDouble() < p;
 
-        boolean dsep = dsepTest.isIndependent(x, y, z);
+        final boolean dsep = this.dsepTest.isIndependent(x, y, z);
 
-        out.print((nodes.indexOf(x) + 1) + " ");
-        out.print((nodes.indexOf(y) + 1) + (z.length > 0 ? " " : ""));
+        this.out.print((this.nodes.indexOf(x) + 1) + " ");
+        this.out.print((this.nodes.indexOf(y) + 1) + (z.length > 0 ? " " : ""));
 
         for (int i = 0; i < z.length; i++) {
-            out.print(nodes.indexOf(z[i]) + 1);
+            this.out.print(this.nodes.indexOf(z[i]) + 1);
 
             if (i < z.length - 1) {
-                out.print(" ");
+                this.out.print(" ");
             }
         }
 
-        out.print(",");
-        out.print((dsep ? 1 : 0) + ",");
-        out.print(p);
+        this.out.print(",");
+        this.out.print((dsep ? 1 : 0) + ",");
+        this.out.print(p);
 
-        out.println();
+        this.out.println();
 
         if (dsep) {
             return true;
@@ -167,46 +167,46 @@ public class IndTestProbabilisticVerbose implements IndependenceTest {
         }
     }
 
-    public double probConstraint(BCInference.OP op, Node x, Node y, Node[] z) {
+    public double probConstraint(final BCInference.OP op, final Node x, final Node y, final Node[] z) {
 
-        int _x = indices.get(x) + 1;
-        int _y = indices.get(y) + 1;
+        final int _x = this.indices.get(x) + 1;
+        final int _y = this.indices.get(y) + 1;
 
-        int[] _z = new int[z.length + 1];
+        final int[] _z = new int[z.length + 1];
         _z[0] = z.length;
         for (int i = 0; i < z.length; i++) {
-            _z[i + 1] = indices.get(z[i]) + 1;
+            _z[i + 1] = this.indices.get(z[i]) + 1;
         }
 
 //        out.println("test " + _x + " _||_ " + _y + " | " + Arrays.toString(_z));
 
-        return bci.probConstraint(op, _x, _y, _z);
+        return this.bci.probConstraint(op, _x, _y, _z);
     }
 
     @Override
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        Node[] _z = z.toArray(new Node[z.size()]);
+    public boolean isDependent(final Node x, final Node y, final List<Node> z) {
+        final Node[] _z = z.toArray(new Node[z.size()]);
         return !isIndependent(x, y, _z);
     }
 
     @Override
-    public boolean isDependent(Node x, Node y, Node... z) {
+    public boolean isDependent(final Node x, final Node y, final Node... z) {
         return !isIndependent(x, y, z);
     }
 
     @Override
     public double getPValue() {
-        return posterior;
+        return this.posterior;
     }
 
     @Override
     public List<Node> getVariables() {
-        return nodes;
+        return this.nodes;
     }
 
     @Override
-    public Node getVariable(String name) {
-        for (Node node : nodes) {
+    public Node getVariable(final String name) {
+        for (final Node node : this.nodes) {
             if (name.equals(node.getName())) return node;
         }
 
@@ -215,16 +215,16 @@ public class IndTestProbabilisticVerbose implements IndependenceTest {
 
     @Override
     public List<String> getVariableNames() {
-        List<String> names = new ArrayList<>();
+        final List<String> names = new ArrayList<>();
 
-        for (Node node : nodes) {
+        for (final Node node : this.nodes) {
             names.add(node.getName());
         }
         return names;
     }
 
     @Override
-    public boolean determines(List<Node> z, Node y) {
+    public boolean determines(final List<Node> z, final Node y) {
         throw new UnsupportedOperationException();
     }
 
@@ -234,13 +234,13 @@ public class IndTestProbabilisticVerbose implements IndependenceTest {
     }
 
     @Override
-    public void setAlpha(double alpha) {
+    public void setAlpha(final double alpha) {
         throw new UnsupportedOperationException();
     }
 
     @Override
     public DataModel getData() {
-        return data;
+        return this.data;
     }
 
     @Override
@@ -269,11 +269,11 @@ public class IndTestProbabilisticVerbose implements IndependenceTest {
     }
 
     public Map<IndependenceFact, Double> getH() {
-        return new HashMap<>(H);
+        return new HashMap<>(this.H);
     }
 
-    private double probOp(BCInference.OP type, double pInd) {
-        double probOp;
+    private double probOp(final BCInference.OP type, final double pInd) {
+        final double probOp;
 
         if (BCInference.OP.independent == type) {
             probOp = pInd;
@@ -285,23 +285,23 @@ public class IndTestProbabilisticVerbose implements IndependenceTest {
     }
 
     public double getPosterior() {
-        return posterior;
+        return this.posterior;
     }
 
     /**
      * The nodes of the data set.
      */
     public List<Node> getNodes() {
-        return nodes;
+        return this.nodes;
     }
 
     @Override
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     @Override
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 }

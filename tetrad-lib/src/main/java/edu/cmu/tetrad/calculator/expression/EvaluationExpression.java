@@ -47,7 +47,7 @@ public class EvaluationExpression implements Expression {
     private final String string;
 
 
-    public EvaluationExpression(VariableExpression exp, String s) {
+    public EvaluationExpression(final VariableExpression exp, final String s) {
         if (exp == null) {
             throw new NullPointerException("Variable must not be null.");
         }
@@ -66,9 +66,9 @@ public class EvaluationExpression implements Expression {
         return super.toString();
     }
 
-    public double evaluate(Context context) {
-        Object o = variable.evaluateGeneric(context);
-        if (o != null && string.equals(o.toString())) {
+    public double evaluate(final Context context) {
+        final Object o = this.variable.evaluateGeneric(context);
+        if (o != null && this.string.equals(o.toString())) {
             return 1.0;
         }
         return 0.0;
@@ -83,15 +83,15 @@ public class EvaluationExpression implements Expression {
     }
 
     public List<Expression> getExpressions() {
-        return Collections.singletonList((Expression) variable);
+        return Collections.singletonList((Expression) this.variable);
     }
 
     @Override
-    public RealDistribution getRealDistribution(Context context) {
+    public RealDistribution getRealDistribution(final Context context) {
         return null;
     }
 
-    public IntegerDistribution getIntegerDistribution(Context context) {
+    public IntegerDistribution getIntegerDistribution(final Context context) {
         return null;
     }
 }

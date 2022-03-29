@@ -74,7 +74,7 @@ public abstract class BasicMatrix {
      * Creates a matrix with <code>nrows</code> rows, and with name
      * <code>mname</code>.
      */
-    public BasicMatrix(String mname, int nrows) {
+    public BasicMatrix(final String mname, final int nrows) {
         this.name = mname;
         if (nrows <= 0) {
             throw new IllegalArgumentException("Invalid # nodes " + nrows);
@@ -101,11 +101,11 @@ public abstract class BasicMatrix {
      * the total needed to fill the matrix.  If it has more elements an illegal
      * argument exception will be generated.
      */
-    public BasicMatrix(String fname) throws IOException {
+    public BasicMatrix(final String fname) throws IOException {
         // Create and prepare stream tokenizer
-        File f = new File(fname);
-        BufferedReader in = new BufferedReader(new FileReader(f));
-        StreamTokenizer strmTok = new StreamTokenizer(in);
+        final File f = new File(fname);
+        final BufferedReader in = new BufferedReader(new FileReader(f));
+        final StreamTokenizer strmTok = new StreamTokenizer(in);
         strmTok.slashStarComments(true);
         strmTok.slashSlashComments(true);
         strmTok.parseNumbers();
@@ -127,7 +127,7 @@ public abstract class BasicMatrix {
             throw new IllegalArgumentException(
                     "Error parsing # of rows: " + strmTok.sval);
         }
-        int vnrows = (int) strmTok.nval;
+        final int vnrows = (int) strmTok.nval;
         if (vnrows <= 0) {
             throw new IllegalArgumentException("Invalid # rows " + vnrows);
         }
@@ -137,11 +137,11 @@ public abstract class BasicMatrix {
         // Now read elements from the file
         int row = 0;
         int col = 0;
-        int val = 0;
+        final int val = 0;
         while (true) {
             try {
                 nt = strmTok.nextToken();
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 break;
             }
             if (nt == StreamTokenizer.TT_EOF) {
@@ -172,7 +172,7 @@ public abstract class BasicMatrix {
     /**
      * Sets the name of this matrix
      */
-    public void setName(String newName) {
+    public void setName(final String newName) {
         this.name = newName;
     }
 
@@ -200,7 +200,7 @@ public abstract class BasicMatrix {
         return s;
     }
 
-    protected void badIndexXcp(int r, int c) {
+    protected void badIndexXcp(final int r, final int c) {
         throw new IllegalArgumentException(
                 "Bad index (" + r + "," + c + ") for matrix of size " + this.n);
     }

@@ -32,22 +32,22 @@ public class TestMultiDimIntTable {
 
     public void setUp() {
 
-        int[] dims = new int[]{2, 3, 4, 5};
+        final int[] dims = new int[]{2, 3, 4, 5};
 
-        table = new MultiDimIntTable(dims);
+        this.table = new MultiDimIntTable(dims);
     }
 
     @Test
     public void testSize() {
         setUp();
-        assertEquals(table.getNumCells(), 2 * 3 * 4 * 5);
+        assertEquals(this.table.getNumCells(), 2 * 3 * 4 * 5);
     }
 
     @Test
     public void testIndexCalculation1() {
         setUp();
-        int[] coords = new int[]{0, 0, 1, 0};
-        int index = table.getCellIndex(coords);
+        final int[] coords = new int[]{0, 0, 1, 0};
+        final int index = this.table.getCellIndex(coords);
 
         assertEquals(5, index);
     }
@@ -55,8 +55,8 @@ public class TestMultiDimIntTable {
     @Test
     public void testIndexCalculation2() {
         setUp();
-        int[] coords = new int[]{0, 1, 2, 0};
-        int index = table.getCellIndex(coords);
+        final int[] coords = new int[]{0, 1, 2, 0};
+        final int index = this.table.getCellIndex(coords);
 
         assertEquals(30, index);
     }
@@ -64,7 +64,7 @@ public class TestMultiDimIntTable {
     @Test
     public void testCoordinateCalculation() {
         setUp();
-        int[] coords = table.getCoordinates(30);
+        final int[] coords = this.table.getCoordinates(30);
 
         assertEquals(1, coords[1]);
     }
@@ -72,16 +72,16 @@ public class TestMultiDimIntTable {
     @Test
     public void testCellIncrement() {
         setUp();
-        int[] coords = table.getCoordinates(30);
+        final int[] coords = this.table.getCoordinates(30);
 
-        table.increment(coords, 1);
-        assertEquals(1, table.getValue(coords));
+        this.table.increment(coords, 1);
+        assertEquals(1, this.table.getValue(coords));
     }
 
     @Test
     public void testNumDimensions() {
         setUp();
-        assertEquals(4, table.getNumDimensions());
+        assertEquals(4, this.table.getNumDimensions());
     }
 }
 

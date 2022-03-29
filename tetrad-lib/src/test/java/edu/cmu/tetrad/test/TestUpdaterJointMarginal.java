@@ -38,11 +38,11 @@ public final class TestUpdaterJointMarginal {
     @Test
     public void testEstimate1() {
 
-        Dag graph = new Dag();
-        Node L1 = new GraphNode("L1");
-        Node X1 = new GraphNode("X1");
-        Node X2 = new GraphNode("X2");
-        Node X3 = new GraphNode("X3");
+        final Dag graph = new Dag();
+        final Node L1 = new GraphNode("L1");
+        final Node X1 = new GraphNode("X1");
+        final Node X2 = new GraphNode("X2");
+        final Node X3 = new GraphNode("X3");
 
         L1.setNodeType(NodeType.MEASURED);
         X1.setNodeType(NodeType.MEASURED);
@@ -58,26 +58,26 @@ public final class TestUpdaterJointMarginal {
         graph.addDirectedEdge(L1, X2);
         graph.addDirectedEdge(L1, X3);
 
-        BayesPm bayesPm = new BayesPm(graph);
+        final BayesPm bayesPm = new BayesPm(graph);
         bayesPm.setNumCategories(L1, 2);
         bayesPm.setNumCategories(X1, 2);
         bayesPm.setNumCategories(X2, 2);
         bayesPm.setNumCategories(X3, 2);
 
-        BayesIm estimatedIm = new MlBayesIm(bayesPm);
+        final BayesIm estimatedIm = new MlBayesIm(bayesPm);
 
-        Node l1Node = graph.getNode("L1");
+        final Node l1Node = graph.getNode("L1");
         //int l1Index = bayesImMixed.getNodeIndex(l1Node);
-        int l1Index = estimatedIm.getNodeIndex(l1Node);
-        Node x1Node = graph.getNode("X1");
+        final int l1Index = estimatedIm.getNodeIndex(l1Node);
+        final Node x1Node = graph.getNode("X1");
         //int x1Index = bayesImMixed.getNodeIndex(x1Node);
-        int x1Index = estimatedIm.getNodeIndex(x1Node);
-        Node x2Node = graph.getNode("X2");
+        final int x1Index = estimatedIm.getNodeIndex(x1Node);
+        final Node x2Node = graph.getNode("X2");
         //int x2Index = bayesImMixed.getNodeIndex(x2Node);
-        int x2Index = estimatedIm.getNodeIndex(x2Node);
-        Node x3Node = graph.getNode("X3");
+        final int x2Index = estimatedIm.getNodeIndex(x2Node);
+        final Node x3Node = graph.getNode("X3");
         //int x3Index = bayesImMixed.getNodeIndex(x3Node);
-        int x3Index = estimatedIm.getNodeIndex(x3Node);
+        final int x3Index = estimatedIm.getNodeIndex(x3Node);
 
         //bayesImMixed.setProbability(l1Index, 0, 0, 0.5);
         //bayesImMixed.setProbability(l1Index, 0, 1, 0.5);
@@ -117,30 +117,30 @@ public final class TestUpdaterJointMarginal {
         estimatedIm.setProbability(x3Index, 0, 1,
                 0.66667);      //p(x3 = 1 | l1 = 0)
 
-        Evidence evidence = Evidence.tautology(estimatedIm);
+        final Evidence evidence = Evidence.tautology(estimatedIm);
         evidence.getProposition().setCategory(x1Index, 0);
         evidence.getProposition().setCategory(x2Index, 0);
         evidence.getProposition().setCategory(x3Index, 0);
 
-        RowSummingExactUpdater rseu = new RowSummingExactUpdater(estimatedIm);
+        final RowSummingExactUpdater rseu = new RowSummingExactUpdater(estimatedIm);
 
         rseu.setEvidence(evidence);
 
-        int[] vars1 = {l1Index};
-        int[] vals1 = {0};
+        final int[] vars1 = {l1Index};
+        final int[] vals1 = {0};
 
-        double p1 = rseu.getJointMarginal(vars1, vals1);
+        final double p1 = rseu.getJointMarginal(vars1, vals1);
         assertEquals(0.1111, p1, 0.0001);
 
-        int[] vars2 = {l1Index, x1Index};
-        int[] vals2 = {0, 0};
+        final int[] vars2 = {l1Index, x1Index};
+        final int[] vals2 = {0, 0};
 
-        double p2 = rseu.getJointMarginal(vars2, vals2);
+        final double p2 = rseu.getJointMarginal(vars2, vals2);
         assertEquals(0.1111, p2, 0.0001);
 
-        int[] vals3 = {1, 0};
+        final int[] vals3 = {1, 0};
 
-        double p3 = rseu.getJointMarginal(vars2, vals3);
+        final double p3 = rseu.getJointMarginal(vars2, vals3);
         assertEquals(0.8888, p3, 0.0001);
     }
 }

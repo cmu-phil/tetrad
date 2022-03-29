@@ -48,7 +48,7 @@ public class BiolinguaRunner {
     /**
      * Displays usage information for this program (moves line options)
      */
-    static void usageInfo(boolean welcome) {
+    static void usageInfo(final boolean welcome) {
         if (welcome) {
             System.out.println("\n" + welcomeMsg + "\n");
         }
@@ -69,7 +69,7 @@ public class BiolinguaRunner {
     /**
      * Used to display the usage info and an error message
      */
-    static void bailout(String errorMsg, boolean showUsageInfo, int exitCode) {
+    static void bailout(final String errorMsg, final boolean showUsageInfo, final int exitCode) {
         final String highlight =
                 "***************************************************************";
         if (showUsageInfo) {
@@ -83,15 +83,15 @@ public class BiolinguaRunner {
         System.exit(exitCode);
     }
 
-    public static void main(String args[]) {
+    public static void main(final String[] args) {
         if ((args.length > 0) && (args[0].equals("/?"))) {
             // Help invoked, or no arguments -> show usage info
             usageInfo(true);
             System.exit(0);
         }
         // Get and validate parameters from moves line
-        for (String arg : args) {
-            String varg = arg.toLowerCase();
+        for (final String arg : args) {
+            final String varg = arg.toLowerCase();
             try {
                 if (varg.startsWith("-m")) {
                     mfname = varg.substring(2);
@@ -118,15 +118,15 @@ public class BiolinguaRunner {
                     continue;
                 }
                 bailout("Unrecognized parameter  " + arg, true, 2);
-            } catch (Exception xcp) {
+            } catch (final Exception xcp) {
                 bailout("Unable to parse value from parameter  " + arg, true,
                         1);
             }
         }
 
         try {
-            SymMatrixF cm = new SymMatrixF(mfname);
-            BiolinguaDigraph g = new BiolinguaDigraph(gfname);
+            final SymMatrixF cm = new SymMatrixF(mfname);
+            final BiolinguaDigraph g = new BiolinguaDigraph(gfname);
 
             System.out.println(welcomeMsg);
             System.out.println("Inputs:");
@@ -138,11 +138,11 @@ public class BiolinguaRunner {
             System.out.println("**** Initial graph:\n" + g);
 
             System.out.println("Running Biolingua");
-            BiolinguaDigraph result =
+            final BiolinguaDigraph result =
                     Biolingua.BiolinguaAlgorithm(cm, g, ka, ke, kl, kp);
 
             System.out.println("\nFinal Graph:\n" + result);
-        } catch (Exception xcp) {
+        } catch (final Exception xcp) {
             System.out.println("Watch out!!!!  There was an exception:");
             xcp.printStackTrace();
         }

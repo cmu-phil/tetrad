@@ -135,7 +135,7 @@ public class Kpc implements GraphSearch {
      * @param dataset The oracle for conditional independence facts. This does not make a copy of the independence test,
      *                for fear of duplicating the data set!
      */
-    public Kpc(DataSet dataset, double alpha) {
+    public Kpc(final DataSet dataset, final double alpha) {
         if (dataset == null) {
             throw new NullPointerException();
         }
@@ -156,7 +156,7 @@ public class Kpc implements GraphSearch {
     /**
      * @param aggressivelyPreventCycles Set to true just in case edges will not be addeds if they would create cycles.
      */
-    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
+    public void setAggressivelyPreventCycles(final boolean aggressivelyPreventCycles) {
         this.aggressivelyPreventCycles = aggressivelyPreventCycles;
     }
 
@@ -164,20 +164,20 @@ public class Kpc implements GraphSearch {
      * @return the independence test being used in the search.
      */
     public IndependenceTest getIndependenceTest() {
-        return independenceTest;
+        return this.independenceTest;
     }
 
     /**
      * @return the knowledge specification used in the search. Non-null.
      */
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     /**
      * Sets the knowledge specification to be used in the search. May not be null.
      */
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(final IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -189,7 +189,7 @@ public class Kpc implements GraphSearch {
      * @return the sepset map from the most recent search. Non-null after the first call to <code>search()</code>.
      */
     public SepsetMap getSepset() {
-        return sepset;
+        return this.sepset;
     }
 
     /**
@@ -197,7 +197,7 @@ public class Kpc implements GraphSearch {
      * independence checked.
      */
     public int getDepth() {
-        return depth;
+        return this.depth;
     }
 
     /**
@@ -208,7 +208,7 @@ public class Kpc implements GraphSearch {
      *              should be high (1000). A value of Integer.MAX_VALUE may not be used, due to a bug on multi-core
      *              machines.
      */
-    public void setDepth(int depth) {
+    public void setDepth(final int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException("Depth must be -1 or >= 0.");
         }
@@ -228,7 +228,7 @@ public class Kpc implements GraphSearch {
      * of latent common causes, or due to statistical errors in conditional independence judgments.
      */
     public Graph search() {
-        return search(independenceTest.getVariables());
+        return search(this.independenceTest.getVariables());
     }
 
     /**
@@ -240,61 +240,61 @@ public class Kpc implements GraphSearch {
      * <p>
      * All of the given nodes must be in the domain of the given conditional independence test.
      */
-    public Graph search(List<Node> nodes) {
+    public Graph search(final List<Node> nodes) {
         this.logger.log("info", "Starting kPC algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
 
 //        this.logger.log("info", "Variables " + independenceTest.getVariable());
 
-        long startTime = System.currentTimeMillis();
+        final long startTime = System.currentTimeMillis();
 
         if (getIndependenceTest() == null) {
             throw new NullPointerException();
         }
 
-        List allNodes = getIndependenceTest().getVariables();
+        final List allNodes = getIndependenceTest().getVariables();
         if (!allNodes.containsAll(nodes)) {
             throw new IllegalArgumentException("All of the given nodes must " +
                     "be in the domain of the independence test provided.");
         }
 
-        graph = new EdgeListGraph(nodes);
-        graph.fullyConnect(Endpoint.TAIL);
+        this.graph = new EdgeListGraph(nodes);
+        this.graph.fullyConnect(Endpoint.TAIL);
 
-        Fas fas = new Fas(getIndependenceTest());
+        final Fas fas = new Fas(getIndependenceTest());
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
-        fas.setTrueGraph(trueGraph);
-        graph = fas.search();
+        fas.setTrueGraph(this.trueGraph);
+        this.graph = fas.search();
         this.sepset = fas.getSepsets();
         this.numIndependenceTests = fas.getNumIndependenceTests();
         this.numDependenceJudgements = fas.getNumDependenceJudgments();
 
         enumerateTriples();
 
-        SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
-        SearchGraphUtils.orientCollidersUsingSepsets(sepset, knowledge, graph, verbose, true);
-        MeekRules rules = new MeekRules();
+        SearchGraphUtils.pcOrientbk(this.knowledge, this.graph, nodes);
+        SearchGraphUtils.orientCollidersUsingSepsets(this.sepset, this.knowledge, this.graph, this.verbose, true);
+        final MeekRules rules = new MeekRules();
         rules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
-        rules.setKnowledge(knowledge);
-        rules.orientImplied(graph);
+        rules.setKnowledge(this.knowledge);
+        rules.orientImplied(this.graph);
 
-        this.logger.log("graph", "\nReturning this graph: " + graph);
+        this.logger.log("graph", "\nReturning this graph: " + this.graph);
 
         this.elapsedTime = System.currentTimeMillis() - startTime;
 
-        this.logger.log("info", "Elapsed time = " + (elapsedTime) / 1000. + " s");
+        this.logger.log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
         this.logger.log("info", "Finishing PC Algorithm.");
         this.logger.flush();
 
-        return graph;
+        return this.graph;
     }
 
     /**
      * @return the elapsed time of the search, in milliseconds.
      */
     public long getElapsedTime() {
-        return elapsedTime;
+        return this.elapsedTime;
     }
 
     /**
@@ -302,7 +302,7 @@ public class Kpc implements GraphSearch {
      * <code>search</code> is called.
      */
     public Set<Triple> getUnshieldedColliders() {
-        return unshieldedColliders;
+        return this.unshieldedColliders;
     }
 
     /**
@@ -310,7 +310,7 @@ public class Kpc implements GraphSearch {
      * <code>search</code> is called.
      */
     public Set<Triple> getUnshieldedNoncolliders() {
-        return unshieldedNoncolliders;
+        return this.unshieldedNoncolliders;
     }
 
     //===============================ADDED FOR KPC=========================//
@@ -318,38 +318,38 @@ public class Kpc implements GraphSearch {
     /**
      * Sets the significance level at which independence judgments should be made.
      */
-    public void setAlpha(double alpha) {
+    public void setAlpha(final double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
             throw new IllegalArgumentException("Significance out of range.");
         }
 
         this.alpha = alpha;
-        independenceTest.setAlpha(alpha);
+        this.independenceTest.setAlpha(alpha);
     }
 
     /**
      * Sets the precision for the Incomplete Choleksy factorization method for approximating Gram matrices. A value <= 0
      * indicates that the Incomplete Cholesky method should not be used and instead use the exact matrices.
      */
-    public void setIncompleteCholesky(double precision) {
+    public void setIncompleteCholesky(final double precision) {
         this.useIncompleteCholesky = precision;
-        independenceTest.setIncompleteCholesky(precision);
+        this.independenceTest.setIncompleteCholesky(precision);
     }
 
     /**
      * Set the number of bootstrap samples to use
      */
-    public void setPerms(int perms) {
+    public void setPerms(final int perms) {
         this.perms = perms;
-        independenceTest.setPerms(perms);
+        this.independenceTest.setPerms(perms);
     }
 
     /**
      * Sets the regularizer
      */
-    public void setRegularizer(double regularizer) {
+    public void setRegularizer(final double regularizer) {
         this.regularizer = regularizer;
-        independenceTest.setRegularizer(regularizer);
+        this.independenceTest.setRegularizer(regularizer);
     }
 
     /**
@@ -386,21 +386,21 @@ public class Kpc implements GraphSearch {
         this.unshieldedColliders = new HashSet<>();
         this.unshieldedNoncolliders = new HashSet<>();
 
-        for (Node y : graph.getNodes()) {
-            List<Node> adj = graph.getAdjacentNodes(y);
+        for (final Node y : this.graph.getNodes()) {
+            final List<Node> adj = this.graph.getAdjacentNodes(y);
 
             if (adj.size() < 2) {
                 continue;
             }
 
-            ChoiceGenerator gen = new ChoiceGenerator(adj.size(), 2);
+            final ChoiceGenerator gen = new ChoiceGenerator(adj.size(), 2);
             int[] choice;
 
             while ((choice = gen.next()) != null) {
-                Node x = adj.get(choice[0]);
-                Node z = adj.get(choice[1]);
+                final Node x = adj.get(choice[0]);
+                final Node z = adj.get(choice[1]);
 
-                List<Node> nodes = sepset.get(x, z);
+                final List<Node> nodes = this.sepset.get(x, z);
 
                 // Note that checking adj(x, z) does not suffice when knowledge
                 // has been specified.
@@ -418,18 +418,18 @@ public class Kpc implements GraphSearch {
     }
 
     public int getNumIndependenceTests() {
-        return numIndependenceTests;
+        return this.numIndependenceTests;
     }
 
-    public void setTrueGraph(Graph trueGraph) {
+    public void setTrueGraph(final Graph trueGraph) {
         this.trueGraph = trueGraph;
     }
 
     public int getNumDependenceJudgements() {
-        return numDependenceJudgements;
+        return this.numDependenceJudgements;
     }
 
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 }

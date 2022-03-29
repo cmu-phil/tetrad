@@ -33,25 +33,25 @@ public class RBExperiments {
     private String directory;
 
     private static class MapUtil {
-        public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
-            List<Map.Entry<K, V>> list = new LinkedList<Map.Entry<K, V>>(map.entrySet());
+        public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(final Map<K, V> map) {
+            final List<Map.Entry<K, V>> list = new LinkedList<Map.Entry<K, V>>(map.entrySet());
             Collections.sort(list, new Comparator<Map.Entry<K, V>>() {
-                public int compare(Map.Entry<K, V> o1, Map.Entry<K, V> o2) {
+                public int compare(final Map.Entry<K, V> o1, final Map.Entry<K, V> o2) {
                     return (o2.getValue()).compareTo(o1.getValue());
                 }
             });
 
-            Map<K, V> result = new LinkedHashMap<K, V>();
-            for (Map.Entry<K, V> entry : list) {
+            final Map<K, V> result = new LinkedHashMap<K, V>();
+            for (final Map.Entry<K, V> entry : list) {
                 result.put(entry.getKey(), entry.getValue());
             }
             return result;
         }
     }
 
-    private List<Node> getLatents(Graph dag) {
-        List<Node> latents = new ArrayList<>();
-        for (Node n : dag.getNodes()) {
+    private List<Node> getLatents(final Graph dag) {
+        final List<Node> latents = new ArrayList<>();
+        for (final Node n : dag.getNodes()) {
             if (n.getNodeType() == NodeType.LATENT) {
                 latents.add(n);
             }
@@ -59,13 +59,13 @@ public class RBExperiments {
         return latents;
     }
 
-    public Graph makeSimpleDAG(int numLatentConfounders) {
-        List<Node> nodes = new ArrayList<>();
+    public Graph makeSimpleDAG(final int numLatentConfounders) {
+        final List<Node> nodes = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             nodes.add(new DiscreteVariable(Integer.toString(i + 1)));
         }
 
-        Graph dag = new EdgeListGraph(nodes);
+        final Graph dag = new EdgeListGraph(nodes);
         dag.addDirectedEdge(nodes.get(0), nodes.get(1));
         dag.addDirectedEdge(nodes.get(0), nodes.get(2));
         dag.addDirectedEdge(nodes.get(1), nodes.get(3));
@@ -74,7 +74,7 @@ public class RBExperiments {
         return dag;
     }
 
-    private BayesIm initializeIM(BayesIm im) {
+    private BayesIm initializeIM(final BayesIm im) {
         int node = 0;
         im.setProbability(node, 0, 0, 0.8);
         im.setProbability(node, 0, 1, 0.2);
@@ -127,7 +127,7 @@ public class RBExperiments {
 //	}
 
 
-    public static void main(String[] args) throws IOException {
+    public static void main(final String[] args) throws IOException {
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
 
         // read and process input arguments
@@ -181,12 +181,12 @@ public class RBExperiments {
         }
 
         // create an instance of class and run an experiment on it
-        RBExperiments DFC = new RBExperiments();
+        final RBExperiments DFC = new RBExperiments();
         DFC.directory = dataPath;
-        double[] lv = new double[]{0.0};//, 0.1, 0.2};
-        int[] cases = new int[]{200};//, 2000};
-        for (int numCase : cases) {
-            for (double numLatentConfounder : lv) {
+        final double[] lv = new double[]{0.0};//, 0.1, 0.2};
+        final int[] cases = new int[]{200};//, 2000};
+        for (final int numCase : cases) {
+            for (final double numLatentConfounder : lv) {
                 for (int i = 0; i < 10; i++) {
                     DFC.experiment(modelName, numCase, numModels, numBootstrapSamples, alpha, numLatentConfounder, threshold1,
                             threshold2, lower, upper, filePath, i);
@@ -195,22 +195,22 @@ public class RBExperiments {
         }
     }
 
-    public void experiment(String modelName, int numCases, int numModels, int numBootstrapSamples, double alpha,
-                           double numLatentConfounders, boolean threshold1, boolean threshold2, double lower, double upper,
-                           String filePath, int round) {
+    public void experiment(final String modelName, final int numCases, final int numModels, final int numBootstrapSamples, final double alpha,
+                           final double numLatentConfounders, final boolean threshold1, final boolean threshold2, final double lower, final double upper,
+                           String filePath, final int round) {
         // 32827167123L
-        Long seed = 878376L;
+        final Long seed = 878376L;
         RandomUtil.getInstance().setSeed(seed);
-        PrintStream out;
+        final PrintStream out;
 
         // get the Bayesian network (graph and parameters) of the given model
-        BayesIm im = getBayesIM(modelName);
-        BayesPm pm = im.getBayesPm();
-        Graph dag = pm.getDag();
+        final BayesIm im = getBayesIM(modelName);
+        final BayesPm pm = im.getBayesPm();
+        final Graph dag = pm.getDag();
 
         // set the "numLatentConfounders" percentage of variables to be latent
-        int numVars = im.getNumNodes();
-        int LV = (int) Math.floor(numLatentConfounders * numVars);
+        final int numVars = im.getNumNodes();
+        final int LV = (int) Math.floor(numLatentConfounders * numVars);
         GraphUtils.fixLatents4(LV, dag);
         System.out.println("Variables set to be latent:" + getLatents(dag));
 
@@ -218,9 +218,9 @@ public class RBExperiments {
         filePath = filePath + "/" + modelName + "-Vars" + dag.getNumNodes() + "-Edges" + dag.getNumEdges() + "-H"
                 + numLatentConfounders + "-Cases" + numCases + "-numModels" + numModels + "-BS" + numBootstrapSamples;
         try {
-            File dir = new File(filePath);
+            final File dir = new File(filePath);
             dir.mkdirs();
-            File file = new File(dir,
+            final File file = new File(dir,
                     "Results-" + modelName + "-Vars" + dag.getNumNodes() + "-Edges" + dag.getNumEdges() + "-H"
                             + numLatentConfounders + "-Cases" + numCases + "-numModels" + numModels + "-BS"
                             + numBootstrapSamples + "-" + round + ".txt");
@@ -229,14 +229,14 @@ public class RBExperiments {
             } else {
                 return;
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new RuntimeException(e);
         }
 
         // simulate data from instantiated model
         DataSet fullData = im.simulateData(numCases, round * 1000000 + 71512, true);
         fullData = refineData(fullData);
-        DataSet data = DataUtils.restrictToMeasured(fullData);
+        final DataSet data = DataUtils.restrictToMeasured(fullData);
 
         // get the true underlying PAG
         final DagToPag2 dagToPag = new DagToPag2(dag);
@@ -246,62 +246,62 @@ public class RBExperiments {
 
         // run RFCI to get a PAG using chi-squared test
         long start = System.currentTimeMillis();
-        Graph rfciPag = runPagCs(data, alpha);
-        long RfciTime = System.currentTimeMillis() - start;
+        final Graph rfciPag = runPagCs(data, alpha);
+        final long RfciTime = System.currentTimeMillis() - start;
         System.out.println("RFCI done!");
 
         // run RFCI-BSC (RB) search using BSC test and obtain constraints that
         // are queried during the search
-        List<Graph> bscPags = new ArrayList<Graph>();
+        final List<Graph> bscPags = new ArrayList<Graph>();
         start = System.currentTimeMillis();
-        IndTestProbabilistic testBSC = runRB(data, bscPags, numModels, threshold1);
-        long BscRfciTime = System.currentTimeMillis() - start;
-        Map<IndependenceFact, Double> H = testBSC.getH();
+        final IndTestProbabilistic testBSC = runRB(data, bscPags, numModels, threshold1);
+        final long BscRfciTime = System.currentTimeMillis() - start;
+        final Map<IndependenceFact, Double> H = testBSC.getH();
         //		out.println("H Size:" + H.size());
         System.out.println("RB (RFCI-BSC) done!");
         //
         // create empirical data for constraints
         start = System.currentTimeMillis();
-        DataSet depData = createDepDataFiltering(H, data, numBootstrapSamples, threshold2, lower, upper);
+        final DataSet depData = createDepDataFiltering(H, data, numBootstrapSamples, threshold2, lower, upper);
         out.println("DepData(row,col):" + depData.getNumRows() + "," + depData.getNumColumns());
         System.out.println("Dep data creation done!");
 
         // learn structure of constraints using empirical data
-        Graph depCPDAG = runFGS(depData);
-        Graph estDepBN = SearchGraphUtils.dagFromCPDAG(depCPDAG);
+        final Graph depCPDAG = runFGS(depData);
+        final Graph estDepBN = SearchGraphUtils.dagFromCPDAG(depCPDAG);
         System.out.println("estDepBN: " + estDepBN.getEdges());
         out.println("DepGraph(nodes,edges):" + estDepBN.getNumNodes() + "," + estDepBN.getNumEdges());
         System.out.println("Dependency graph done!");
 
         // estimate parameters of the graph learned for constraints
-        BayesPm pmHat = new BayesPm(estDepBN, 2, 2);
-        DirichletBayesIm prior = DirichletBayesIm.symmetricDirichletIm(pmHat, 0.5);
-        BayesIm imHat = DirichletEstimator.estimate(prior, depData);
-        Long BscdTime = System.currentTimeMillis() - start;
+        final BayesPm pmHat = new BayesPm(estDepBN, 2, 2);
+        final DirichletBayesIm prior = DirichletBayesIm.symmetricDirichletIm(pmHat, 0.5);
+        final BayesIm imHat = DirichletEstimator.estimate(prior, depData);
+        final Long BscdTime = System.currentTimeMillis() - start;
         System.out.println("Dependency BN_Param done");
 
         // compute scores of graphs that are output by RB search using BSC-I and
         // BSC-D methods
         start = System.currentTimeMillis();
-        allScores lnProbs = getLnProbsAll(bscPags, H, data, imHat, estDepBN);
-        Long mutualTime = (System.currentTimeMillis() - start) / 2;
+        final allScores lnProbs = getLnProbsAll(bscPags, H, data, imHat, estDepBN);
+        final Long mutualTime = (System.currentTimeMillis() - start) / 2;
 
         // normalize the scores
         start = System.currentTimeMillis();
         Map<Graph, Double> normalizedDep = normalProbs(lnProbs.LnBSCD);
-        Long dTime = System.currentTimeMillis() - start;
+        final Long dTime = System.currentTimeMillis() - start;
 
         start = System.currentTimeMillis();
         Map<Graph, Double> normalizedInd = normalProbs(lnProbs.LnBSCI);
-        Long iTime = System.currentTimeMillis() - start;
+        final Long iTime = System.currentTimeMillis() - start;
 
         // get the most probable PAG using each scoring method
         normalizedDep = MapUtil.sortByValue(normalizedDep);
-        Graph maxBND = normalizedDep.keySet().iterator().next();
+        final Graph maxBND = normalizedDep.keySet().iterator().next();
 //		Graph maxBND = bscPags.get(0);
 
         normalizedInd = MapUtil.sortByValue(normalizedInd);
-        Graph maxBNI = normalizedInd.keySet().iterator().next();
+        final Graph maxBNI = normalizedInd.keySet().iterator().next();
 //		Graph maxBNI = bscPags.get(0);
 
         // summarize and write the results into output files
@@ -475,7 +475,7 @@ public class RBExperiments {
 	}
 */
 
-    private DataSet refineData(DataSet fullData) {
+    private DataSet refineData(final DataSet fullData) {
         for (int c = 0; c < fullData.getNumColumns(); c++) {
             for (int r = 0; r < fullData.getNumRows(); r++) {
                 if (fullData.getInt(r, c) < 0) {
@@ -487,7 +487,7 @@ public class RBExperiments {
         return fullData;
     }
 
-    private BayesIm getBayesIM(String type) {
+    private BayesIm getBayesIM(final String type) {
         if ("Alarm".equals(type)) {
             return loadBayesIm("Alarm.xdsl", true);
         } else if ("Hailfinder".equals(type)) {
@@ -503,9 +503,9 @@ public class RBExperiments {
         throw new IllegalArgumentException("Not a recogized Bayes IM type.");
     }
 
-    private void summarize(Graph graph, Graph trueGraph, PrintStream out) {
+    private void summarize(final Graph graph, final Graph trueGraph, final PrintStream out) {
         out.flush();
-        ArrayList<Comparison.TableColumn> tableColumns = new ArrayList<>();
+        final ArrayList<Comparison.TableColumn> tableColumns = new ArrayList<>();
 
         tableColumns.add(Comparison.TableColumn.AhdCor);
         tableColumns.add(Comparison.TableColumn.AhdFp);
@@ -521,17 +521,17 @@ public class RBExperiments {
 
         tableColumns.add(Comparison.TableColumn.SHD);
 
-        GraphUtils.GraphComparison comparison = SearchGraphUtils.getGraphComparison(graph, trueGraph);
+        final GraphUtils.GraphComparison comparison = SearchGraphUtils.getGraphComparison(graph, trueGraph);
 
-        List<Node> variables = new ArrayList<>();
-        for (TableColumn column : tableColumns) {
+        final List<Node> variables = new ArrayList<>();
+        for (final TableColumn column : tableColumns) {
             variables.add(new ContinuousVariable(column.toString()));
         }
 
-        DataSet dataSet = new BoxDataSet(new DoubleDataBox(0, variables.size()), variables);
+        final DataSet dataSet = new BoxDataSet(new DoubleDataBox(0, variables.size()), variables);
         dataSet.setNumberFormat(new DecimalFormat("0"));
 
-        int newRow = dataSet.getNumRows();
+        final int newRow = dataSet.getNumRows();
 
         if (tableColumns.contains(TableColumn.AdjCor)) {
             dataSet.setDouble(newRow, tableColumns.indexOf(TableColumn.AdjCor), comparison.getAdjCor());
@@ -577,7 +577,7 @@ public class RBExperiments {
             dataSet.setDouble(newRow, tableColumns.indexOf(TableColumn.SHD), comparison.getShd());
         }
 
-        int[] cols = new int[tableColumns.size()];
+        final int[] cols = new int[tableColumns.size()];
         for (int i = 0; i < cols.length; i++) {
             cols[i] = i;
         }
@@ -586,8 +586,8 @@ public class RBExperiments {
         out.println(MisclassificationUtils.edgeMisclassifications(graph, trueGraph));
         //		printCorrectArrows(graph, trueGraph, out);
         //		printCorrectTails(graph, trueGraph, out);
-        int SHDAdj = comparison.getEdgesAdded().size() + comparison.getEdgesRemoved().size();
-        int diffEdgePoint = comparison.getShd() - SHDAdj * 2;
+        final int SHDAdj = comparison.getEdgesAdded().size() + comparison.getEdgesRemoved().size();
+        final int diffEdgePoint = comparison.getShd() - SHDAdj * 2;
         out.println("# missing/extra edges: " + SHDAdj);
         out.println("# different edge points: " + diffEdgePoint);
 
@@ -601,19 +601,19 @@ public class RBExperiments {
         // //deleted .toString()
     }
 
-    private double[] printCorrectArrows(Graph outGraph, Graph truePag, PrintStream out) {
+    private double[] printCorrectArrows(final Graph outGraph, final Graph truePag, final PrintStream out) {
         int correctArrows = 0;
         int totalEstimatedArrows = 0;
         int totalTrueArrows = 0;
 
-        double[] stats = new double[5];
+        final double[] stats = new double[5];
 
-        for (Edge edge : outGraph.getEdges()) {
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
+        for (final Edge edge : outGraph.getEdges()) {
+            final Node x = edge.getNode1();
+            final Node y = edge.getNode2();
 
-            Endpoint ex = edge.getEndpoint1();
-            Endpoint ey = edge.getEndpoint2();
+            final Endpoint ex = edge.getEndpoint1();
+            final Endpoint ey = edge.getEndpoint2();
 
             final Edge edge1 = truePag.getEdge(x, y);
 
@@ -633,9 +633,9 @@ public class RBExperiments {
             }
         }
 
-        for (Edge edge : truePag.getEdges()) {
-            Endpoint ex = edge.getEndpoint1();
-            Endpoint ey = edge.getEndpoint2();
+        for (final Edge edge : truePag.getEdges()) {
+            final Endpoint ex = edge.getEndpoint1();
+            final Endpoint ey = edge.getEndpoint2();
 
             if (ex == Endpoint.ARROW) {
                 totalTrueArrows++;
@@ -652,7 +652,7 @@ public class RBExperiments {
         out.println("# total true arrows: " + totalTrueArrows);
 
         out.println();
-        NumberFormat nf = new DecimalFormat("0.00");
+        final NumberFormat nf = new DecimalFormat("0.00");
         final double precision = correctArrows / (double) totalEstimatedArrows;
         out.println("Arrow precision: " + nf.format(precision));
         final double recall = correctArrows / (double) totalTrueArrows;
@@ -667,19 +667,19 @@ public class RBExperiments {
         return stats;
     }
 
-    private double[] printCorrectTails(Graph outGraph, Graph truePag, PrintStream out) {
+    private double[] printCorrectTails(final Graph outGraph, final Graph truePag, final PrintStream out) {
         int correctTails = 0;
         int totalEstimatedTails = 0;
         int totalTrueTails = 0;
 
-        double[] stats = new double[5];
+        final double[] stats = new double[5];
 
-        for (Edge edge : outGraph.getEdges()) {
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
+        for (final Edge edge : outGraph.getEdges()) {
+            final Node x = edge.getNode1();
+            final Node y = edge.getNode2();
 
-            Endpoint ex = edge.getEndpoint1();
-            Endpoint ey = edge.getEndpoint2();
+            final Endpoint ex = edge.getEndpoint1();
+            final Endpoint ey = edge.getEndpoint2();
 
             final Edge edge1 = truePag.getEdge(x, y);
 
@@ -700,9 +700,9 @@ public class RBExperiments {
             }
         }
 
-        for (Edge edge : truePag.getEdges()) {
-            Endpoint ex = edge.getEndpoint1();
-            Endpoint ey = edge.getEndpoint2();
+        for (final Edge edge : truePag.getEdges()) {
+            final Endpoint ex = edge.getEndpoint1();
+            final Endpoint ey = edge.getEndpoint2();
 
             if (ex == Endpoint.TAIL) {
                 totalTrueTails++;
@@ -719,7 +719,7 @@ public class RBExperiments {
         out.println("# total true tails: " + totalTrueTails);
 
         out.println();
-        NumberFormat nf = new DecimalFormat("0.00");
+        final NumberFormat nf = new DecimalFormat("0.00");
         final double precision = correctTails / (double) totalEstimatedTails;
         out.println("Tail precision: " + nf.format(precision));
         final double recall = correctTails / (double) totalTrueTails;
@@ -734,8 +734,8 @@ public class RBExperiments {
         return stats;
     }
 
-    private TextTable getTextTable(DataSet dataSet, int[] columns, NumberFormat nf) {
-        TextTable table = new TextTable(dataSet.getNumRows() + 2, columns.length + 1);
+    private TextTable getTextTable(final DataSet dataSet, final int[] columns, final NumberFormat nf) {
+        final TextTable table = new TextTable(dataSet.getNumRows() + 2, columns.length + 1);
 
         table.setToken(0, 0, "Run #");
 
@@ -753,7 +753,7 @@ public class RBExperiments {
             }
         }
 
-        NumberFormat nf2 = new DecimalFormat("0.00");
+        final NumberFormat nf2 = new DecimalFormat("0.00");
 
         for (int j = 0; j < columns.length; j++) {
             double sum = 0.0;
@@ -762,7 +762,7 @@ public class RBExperiments {
                 sum += dataSet.getDouble(i, columns[j]);
             }
 
-            double avg = sum / dataSet.getNumRows();
+            final double avg = sum / dataSet.getNumRows();
 
             table.setToken(dataSet.getNumRows() + 2 - 1, j + 1, nf2.format(avg));
         }
@@ -772,40 +772,40 @@ public class RBExperiments {
         return table;
     }
 
-    private DataSet createDepDataFiltering(Map<IndependenceFact, Double> H, DataSet data, int numBootstrapSamples,
-                                           boolean threshold, double lower, double upper) {
-        List<Node> vars = new ArrayList<>();
-        Map<IndependenceFact, Double> HCopy = new HashMap<>();
-        for (IndependenceFact f : H.keySet()) {
+    private DataSet createDepDataFiltering(final Map<IndependenceFact, Double> H, final DataSet data, final int numBootstrapSamples,
+                                           final boolean threshold, final double lower, final double upper) {
+        final List<Node> vars = new ArrayList<>();
+        final Map<IndependenceFact, Double> HCopy = new HashMap<>();
+        for (final IndependenceFact f : H.keySet()) {
             if (H.get(f) > lower && H.get(f) < upper) {
                 HCopy.put(f, H.get(f));
-                DiscreteVariable var = new DiscreteVariable(f.toString());
+                final DiscreteVariable var = new DiscreteVariable(f.toString());
                 vars.add(var);
             }
         }
 
-        DataSet depData = new BoxDataSet(new DoubleDataBox(numBootstrapSamples, vars.size()), vars);
+        final DataSet depData = new BoxDataSet(new DoubleDataBox(numBootstrapSamples, vars.size()), vars);
         System.out.println("\nDep data rows: " + depData.getNumRows() + ", columns: " + depData.getNumColumns());
         System.out.println("HCopy size: " + HCopy.size());
 
         for (int b = 0; b < numBootstrapSamples; b++) {
-            DataSet bsData = DataUtils.getBootstrapSample(data, data.getNumRows());
-            IndTestProbabilistic bsTest = new IndTestProbabilistic(bsData);
+            final DataSet bsData = DataUtils.getBootstrapSample(data, data.getNumRows());
+            final IndTestProbabilistic bsTest = new IndTestProbabilistic(bsData);
             bsTest.setThreshold(threshold);
-            for (IndependenceFact f : HCopy.keySet()) {
-                boolean ind = bsTest.isIndependent(f.getX(), f.getY(), f.getZ());
-                int value = ind ? 1 : 0;
+            for (final IndependenceFact f : HCopy.keySet()) {
+                final boolean ind = bsTest.isIndependent(f.getX(), f.getY(), f.getZ());
+                final int value = ind ? 1 : 0;
                 depData.setInt(b, depData.getColumn(depData.getVariable(f.toString())), value);
             }
         }
         return depData;
     }
 
-    private Graph runFGS(DataSet data) {
-        BDeuScore sd = new BDeuScore(data);
+    private Graph runFGS(final DataSet data) {
+        final BDeuScore sd = new BDeuScore(data);
         sd.setSamplePrior(1.0);
         sd.setStructurePrior(1.0);
-        Fges fgs = new Fges(sd);
+        final Fges fgs = new Fges(sd);
         fgs.setVerbose(false);
         fgs.setFaithfulnessAssumed(true);
         Graph fgsCPDAG = fgs.search();
@@ -813,19 +813,19 @@ public class RBExperiments {
         return fgsCPDAG;
     }
 
-    private allScores getLnProbsAll(List<Graph> pags, Map<IndependenceFact, Double> H, DataSet data, BayesIm im,
-                                    Graph dep) {
+    private allScores getLnProbsAll(final List<Graph> pags, final Map<IndependenceFact, Double> H, final DataSet data, final BayesIm im,
+                                    final Graph dep) {
         // Map<Graph, Double> pagLnBDeu = new HashMap<Graph, Double>();
-        Map<Graph, Double> pagLnBSCD = new HashMap<Graph, Double>();
-        Map<Graph, Double> pagLnBSCI = new HashMap<Graph, Double>();
+        final Map<Graph, Double> pagLnBSCD = new HashMap<Graph, Double>();
+        final Map<Graph, Double> pagLnBSCI = new HashMap<Graph, Double>();
 
         for (int i = 0; i < pags.size(); i++) {
-            Graph pagOrig = pags.get(i);
+            final Graph pagOrig = pags.get(i);
             if (!pagLnBSCD.containsKey(pagOrig)) {
-                double lnInd = getLnProb(pagOrig, H);
+                final double lnInd = getLnProb(pagOrig, H);
 
                 // Filtering
-                double lnDep = getLnProbUsingDepFiltering(pagOrig, H, im, dep);
+                final double lnDep = getLnProbUsingDepFiltering(pagOrig, H, im, dep);
                 pagLnBSCD.put(pagOrig, lnDep);
                 pagLnBSCI.put(pagOrig, lnInd);
             }
@@ -841,18 +841,18 @@ public class RBExperiments {
         Map<Graph, Double> LnBSCD;
         Map<Graph, Double> LnBSCI;
 
-        allScores(Map<Graph, Double> LnBSCD, Map<Graph, Double> LnBSCI) {
+        allScores(final Map<Graph, Double> LnBSCD, final Map<Graph, Double> LnBSCI) {
             this.LnBSCD = LnBSCD;
             this.LnBSCI = LnBSCI;
         }
 
     }
 
-    private IndTestProbabilistic runRB(DataSet data, List<Graph> pags, int numModels, boolean threshold) {
-        IndTestProbabilistic BSCtest = new IndTestProbabilistic(data);
+    private IndTestProbabilistic runRB(final DataSet data, final List<Graph> pags, final int numModels, final boolean threshold) {
+        final IndTestProbabilistic BSCtest = new IndTestProbabilistic(data);
 
         BSCtest.setThreshold(threshold);
-        Rfci BSCrfci = new Rfci(BSCtest);
+        final Rfci BSCrfci = new Rfci(BSCtest);
 
         BSCrfci.setVerbose(false);
         BSCrfci.setCompleteRuleSetUsed(false);
@@ -869,10 +869,10 @@ public class RBExperiments {
         return BSCtest;
     }
 
-    private Graph runPagCs(DataSet data, double alpha) {
-        IndTestChiSquare test = new IndTestChiSquare(data, alpha);
+    private Graph runPagCs(final DataSet data, final double alpha) {
+        final IndTestChiSquare test = new IndTestChiSquare(data, alpha);
 
-        Rfci fci1 = new Rfci(test);
+        final Rfci fci1 = new Rfci(test);
         fci1.setDepth(this.depth);
         fci1.setVerbose(false);
         fci1.setCompleteRuleSetUsed(false);
@@ -958,11 +958,11 @@ public class RBExperiments {
     // return lnQ;
     // }
 
-    private double getLnProbUsingDepFiltering(Graph pag, Map<IndependenceFact, Double> H, BayesIm im, Graph dep) {
+    private double getLnProbUsingDepFiltering(final Graph pag, final Map<IndependenceFact, Double> H, final BayesIm im, final Graph dep) {
         double lnQ = 0;
 
-        for (IndependenceFact fact : H.keySet()) {
-            BCInference.OP op;
+        for (final IndependenceFact fact : H.keySet()) {
+            final BCInference.OP op;
             double p = 0.0;
 
             if (pag.isDSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
@@ -972,30 +972,30 @@ public class RBExperiments {
             }
 
             if (im.getNode(fact.toString()) != null) {
-                Node node = im.getNode(fact.toString());
+                final Node node = im.getNode(fact.toString());
 
-                int[] parents = im.getParents(im.getNodeIndex(node));
+                final int[] parents = im.getParents(im.getNodeIndex(node));
 
                 if (parents.length > 0) {
 
-                    int[] parentValues = new int[parents.length];
+                    final int[] parentValues = new int[parents.length];
 
                     for (int parentIndex = 0; parentIndex < parentValues.length; parentIndex++) {
-                        String parentName = im.getNode(parents[parentIndex]).getName();
-                        String[] splitParent = parentName.split(Pattern.quote("_||_"));
-                        Node X = pag.getNode(splitParent[0].trim());
+                        final String parentName = im.getNode(parents[parentIndex]).getName();
+                        final String[] splitParent = parentName.split(Pattern.quote("_||_"));
+                        final Node X = pag.getNode(splitParent[0].trim());
 
-                        String[] splitParent2 = splitParent[1].trim().split(Pattern.quote("|"));
-                        Node Y = pag.getNode(splitParent2[0].trim());
+                        final String[] splitParent2 = splitParent[1].trim().split(Pattern.quote("|"));
+                        final Node Y = pag.getNode(splitParent2[0].trim());
 
-                        List<Node> Z = new ArrayList<Node>();
+                        final List<Node> Z = new ArrayList<Node>();
                         if (splitParent2.length > 1) {
-                            String[] splitParent3 = splitParent2[1].trim().split(Pattern.quote(","));
-                            for (String s : splitParent3) {
+                            final String[] splitParent3 = splitParent2[1].trim().split(Pattern.quote(","));
+                            for (final String s : splitParent3) {
                                 Z.add(pag.getNode(s.trim()));
                             }
                         }
-                        IndependenceFact parentFact = new IndependenceFact(X, Y, Z);
+                        final IndependenceFact parentFact = new IndependenceFact(X, Y, Z);
                         if (pag.isDSeparatedFrom(parentFact.getX(), parentFact.getY(), parentFact.getZ())) {
                             parentValues[parentIndex] = 1;
                         } else {
@@ -1003,7 +1003,7 @@ public class RBExperiments {
                         }
                     }
 
-                    int rowIndex = im.getRowIndex(im.getNodeIndex(node), parentValues);
+                    final int rowIndex = im.getRowIndex(im.getNodeIndex(node), parentValues);
                     p = im.getProbability(im.getNodeIndex(node), rowIndex, 1);
 
                     if (op == BCInference.OP.dependent) {
@@ -1020,7 +1020,7 @@ public class RBExperiments {
                     throw new IllegalArgumentException("p illegally equals " + p);
                 }
 
-                double v = lnQ + log(p);
+                final double v = lnQ + log(p);
 
                 if (Double.isNaN(v) || Double.isInfinite(v)) {
                     continue;
@@ -1038,7 +1038,7 @@ public class RBExperiments {
                     p = 1.0 - p;
                 }
 
-                double v = lnQ + log(p);
+                final double v = lnQ + log(p);
 
                 if (Double.isNaN(v) || Double.isInfinite(v)) {
                     continue;
@@ -1051,10 +1051,10 @@ public class RBExperiments {
         return lnQ;
     }
 
-    private double getLnProb(Graph pag, Map<IndependenceFact, Double> H) {
+    private double getLnProb(final Graph pag, final Map<IndependenceFact, Double> H) {
         double lnQ = 0;
-        for (IndependenceFact fact : H.keySet()) {
-            BCInference.OP op;
+        for (final IndependenceFact fact : H.keySet()) {
+            final BCInference.OP op;
 
             if (pag.isDSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
                 op = BCInference.OP.independent;
@@ -1072,7 +1072,7 @@ public class RBExperiments {
                 p = 1.0 - p;
             }
 
-            double v = lnQ + log(p);
+            final double v = lnQ + log(p);
 
             if (Double.isNaN(v) || Double.isInfinite(v)) {
                 continue;
@@ -1083,29 +1083,29 @@ public class RBExperiments {
         return lnQ;
     }
 
-    private Map<Graph, Double> normalProbs(Map<Graph, Double> pagLnProbs) {
-        double lnQTotal = lnQTotal(pagLnProbs);
-        Map<Graph, Double> normalized = new HashMap<Graph, Double>();
-        for (Graph pag : pagLnProbs.keySet()) {
-            double lnQ = pagLnProbs.get(pag);
-            double normalizedlnQ = lnQ - lnQTotal;
+    private Map<Graph, Double> normalProbs(final Map<Graph, Double> pagLnProbs) {
+        final double lnQTotal = lnQTotal(pagLnProbs);
+        final Map<Graph, Double> normalized = new HashMap<Graph, Double>();
+        for (final Graph pag : pagLnProbs.keySet()) {
+            final double lnQ = pagLnProbs.get(pag);
+            final double normalizedlnQ = lnQ - lnQTotal;
             normalized.put(pag, Math.exp(normalizedlnQ));
         }
         return normalized;
     }
 
-    private BayesIm loadBayesIm(String filename, boolean useDisplayNames) {
+    private BayesIm loadBayesIm(final String filename, final boolean useDisplayNames) {
         try {
-            Builder builder = new Builder();
-            File dir = new File(this.directory + "/xdsl");
-            File file = new File(dir, filename);
-            Document document = builder.build(file);
-            XdslXmlParser parser = new XdslXmlParser();
+            final Builder builder = new Builder();
+            final File dir = new File(this.directory + "/xdsl");
+            final File file = new File(dir, filename);
+            final Document document = builder.build(file);
+            final XdslXmlParser parser = new XdslXmlParser();
             parser.setUseDisplayNames(useDisplayNames);
             return parser.getBayesIm(document.getRootElement());
-        } catch (ParsingException e) {
+        } catch (final ParsingException e) {
             throw new RuntimeException(e);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -1138,7 +1138,8 @@ public class RBExperiments {
     // }
 
     protected double lnXplusY(double lnX, double lnY) {
-        double lnYminusLnX, temp;
+        final double lnYminusLnX;
+        final double temp;
 
         if (lnY > lnX) {
             temp = lnX;
@@ -1151,19 +1152,19 @@ public class RBExperiments {
         if (lnYminusLnX < MININUM_EXPONENT) {
             return lnX;
         } else {
-            double w = Math.log1p(exp(lnYminusLnX));
+            final double w = Math.log1p(exp(lnYminusLnX));
             return w + lnX;
         }
     }
 
-    private double lnQTotal(Map<Graph, Double> pagLnProb) {
-        Set<Graph> pags = pagLnProb.keySet();
-        Iterator<Graph> iter = pags.iterator();
+    private double lnQTotal(final Map<Graph, Double> pagLnProb) {
+        final Set<Graph> pags = pagLnProb.keySet();
+        final Iterator<Graph> iter = pags.iterator();
         double lnQTotal = pagLnProb.get(iter.next());
 
         while (iter.hasNext()) {
-            Graph pag = iter.next();
-            double lnQ = pagLnProb.get(pag);
+            final Graph pag = iter.next();
+            final double lnQ = pagLnProb.get(pag);
             lnQTotal = lnXplusY(lnQTotal, lnQ);
         }
 
@@ -1199,9 +1200,9 @@ public class RBExperiments {
     // return dag;
     // }
 
-    public DataSet bootStrapSampling(DataSet data, int numBootstrapSamples, int bootsrapSampleSize) {
+    public DataSet bootStrapSampling(final DataSet data, final int numBootstrapSamples, final int bootsrapSampleSize) {
 
-        DataSet bootstrapSample = DataUtils.getBootstrapSample(data, bootsrapSampleSize);
+        final DataSet bootstrapSample = DataUtils.getBootstrapSample(data, bootsrapSampleSize);
         return bootstrapSample;
     }
 

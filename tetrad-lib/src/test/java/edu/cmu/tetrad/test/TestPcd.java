@@ -65,7 +65,7 @@ public class TestPcd {
      */
 //    @Test
     public void testSearch3() {
-        IKnowledge knowledge = new Knowledge2();
+        final IKnowledge knowledge = new Knowledge2();
         knowledge.setForbidden("B", "D");
         knowledge.setForbidden("D", "B");
         checkWithKnowledge("A-->B,C-->B,B-->D", "A-->B,C-->B,D",
@@ -76,20 +76,20 @@ public class TestPcd {
      * Presents the input graph to FCI and checks to make sure the output of FCI is equivalent to the given output
      * graph.
      */
-    private void checkSearch(String inputGraph, String outputGraph) {
+    private void checkSearch(final String inputGraph, final String outputGraph) {
 
         // Set up graph and node objects.
-        Graph graph = GraphConverter.convert(inputGraph);
+        final Graph graph = GraphConverter.convert(inputGraph);
 
         // Set up search.
-        IndependenceTest independence = new IndTestDSep(graph);
-        Pcd pc = new Pcd(independence);
+        final IndependenceTest independence = new IndTestDSep(graph);
+        final Pcd pc = new Pcd(independence);
 
         // Run search
         Graph resultGraph = pc.search();
 
         // Build comparison graph.
-        Graph trueGraph = GraphConverter.convert(outputGraph);
+        final Graph trueGraph = GraphConverter.convert(outputGraph);
 
         resultGraph = GraphUtils.replaceNodes(resultGraph, trueGraph.getNodes());
 
@@ -101,22 +101,22 @@ public class TestPcd {
      * Presents the input graph to FCI and checks to make sure the output of FCI is equivalent to the given output
      * graph.
      */
-    private void checkWithKnowledge(String inputGraph, String outputGraph,
-                                    IKnowledge knowledge) {
+    private void checkWithKnowledge(final String inputGraph, final String outputGraph,
+                                    final IKnowledge knowledge) {
 
         // Set up graph and node objects.
-        Graph graph = GraphConverter.convert(inputGraph);
+        final Graph graph = GraphConverter.convert(inputGraph);
 
         // Set up search.
-        IndependenceTest independence = new IndTestDSep(graph);
-        Pc pc = new Pc(independence);
+        final IndependenceTest independence = new IndTestDSep(graph);
+        final Pc pc = new Pc(independence);
         pc.setKnowledge(knowledge);
 
         // Run search
         Graph resultGraph = pc.search();
 
         // Build comparison graph.
-        Graph trueGraph = GraphConverter.convert(outputGraph);
+        final Graph trueGraph = GraphConverter.convert(outputGraph);
 
         resultGraph = GraphUtils.replaceNodes(resultGraph, trueGraph.getNodes());
 

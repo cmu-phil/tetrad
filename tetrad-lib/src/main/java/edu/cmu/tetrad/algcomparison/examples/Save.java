@@ -33,8 +33,8 @@ import edu.cmu.tetrad.util.Parameters;
  * @author jdramsey
  */
 public class Save {
-    public static void main(String... args) {
-        Parameters parameters = new Parameters();
+    public static void main(final String... args) {
+        final Parameters parameters = new Parameters();
 
         parameters.set("numRuns", 10);
         parameters.set("numMeasures", 50, 100);
@@ -45,8 +45,8 @@ public class Save {
         parameters.set("percentDiscrete", 50);
         parameters.set("differentGraphs", true);
 
-        Simulation simulation = new LeeHastieSimulation(new RandomForward());
-        Comparison comparison = new Comparison();
+        final Simulation simulation = new LeeHastieSimulation(new RandomForward());
+        final Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
         comparison.saveToFiles("comparison", simulation, parameters);
     }

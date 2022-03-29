@@ -32,32 +32,32 @@ public class CovariancesDoubleForkJoin {
     private final int numOfCols;
     private final double[][] covariances;
 
-    public CovariancesDoubleForkJoin(double[][] data, boolean biasCorrected) {
+    public CovariancesDoubleForkJoin(final double[][] data, final boolean biasCorrected) {
         this.numOfCols = data[0].length;
-        RealCovarianceMatrixForkJoin cov = new RealCovarianceMatrixForkJoin(data, 10 * Runtime.getRuntime().availableProcessors());
+        final RealCovarianceMatrixForkJoin cov = new RealCovarianceMatrixForkJoin(data, 10 * Runtime.getRuntime().availableProcessors());
         this.covariances = cov.compute(biasCorrected);
     }
 
-    public double covariance(int i, int j) {
-        return covariances[i][j];
+    public double covariance(final int i, final int j) {
+        return this.covariances[i][j];
     }
 
     public int size() {
-        return numOfCols;
+        return this.numOfCols;
     }
 
     public double[][] getMatrix() {
-        int[] rows = new int[size()];
+        final int[] rows = new int[size()];
         for (int i = 0; i < rows.length; i++) rows[i] = i;
         return getSubMatrix(rows, rows);
     }
 
-    public double[][] getSubMatrix(int[] rows, int[] cols) {
-        double[][] submatrix = new double[rows.length][cols.length];
+    public double[][] getSubMatrix(final int[] rows, final int[] cols) {
+        final double[][] submatrix = new double[rows.length][cols.length];
 
         for (int i = 0; i < rows.length; i++) {
             for (int j = 0; j < cols.length; j++) {
-                submatrix[i][j] = covariances[rows[i]][cols[j]];
+                submatrix[i][j] = this.covariances[rows[i]][cols[j]];
             }
         }
 

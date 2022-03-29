@@ -48,14 +48,14 @@ public final class TestDiscretizer {
 
     @Test
     public void testBreakpointCalculation() {
-        double[] data = {13, 1.2, 2.2, 4.5, 12.005, 5.5, 10.1, 7.5, 3.4};
+        final double[] data = {13, 1.2, 2.2, 4.5, 12.005, 5.5, 10.1, 7.5, 3.4};
         double[] breakpoints = Discretizer.getEqualFrequencyBreakPoints(data, 3);
 
         assertTrue(breakpoints.length == 2);
         assertEquals(4.5, breakpoints[0], 0.1);
         assertEquals(10.1, breakpoints[1], 0.1);
 
-        Discretizer.Discretization dis = Discretizer.discretize(data, breakpoints, "after", Arrays.asList("0", "1", "2"));
+        final Discretizer.Discretization dis = Discretizer.discretize(data, breakpoints, "after", Arrays.asList("0", "1", "2"));
 
         breakpoints = Discretizer.getEqualFrequencyBreakPoints(data, 4);
         assertTrue(breakpoints.length == 3);
@@ -68,9 +68,9 @@ public final class TestDiscretizer {
 
     @Test
     public void testManualDiscretize() {
-        Node x = new ContinuousVariable("X");
-        List<Node> nodes = Collections.singletonList(x);
-        DataSet data = new BoxDataSet(new DoubleDataBox(9, nodes.size()), nodes);
+        final Node x = new ContinuousVariable("X");
+        final List<Node> nodes = Collections.singletonList(x);
+        final DataSet data = new BoxDataSet(new DoubleDataBox(9, nodes.size()), nodes);
 
         data.setDouble(0, 0, 13.0);
         data.setDouble(1, 0, 1.2);
@@ -82,11 +82,11 @@ public final class TestDiscretizer {
         data.setDouble(7, 0, 7.5);
         data.setDouble(8, 0, 3.4);
 
-        Discretizer discretizer = new Discretizer(data);
+        final Discretizer discretizer = new Discretizer(data);
         discretizer.setVariablesCopied(true);
 
         discretizer.equalCounts(x, 3);
-        DataSet discretized = discretizer.discretize();
+        final DataSet discretized = discretizer.discretize();
 
         assertEquals(discretized.getInt(0, 0), 2);
         assertEquals(discretized.getInt(1, 0), 0);
@@ -102,21 +102,21 @@ public final class TestDiscretizer {
 
     @Test
     public void testManualDiscretize2() {
-        List<Node> nodes1 = new ArrayList<>();
+        final List<Node> nodes1 = new ArrayList<>();
 
         for (int i = 0; i < 5; i++) {
             nodes1.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph graph = new Dag(GraphUtils.randomGraph(nodes1, 0, 5,
+        final Graph graph = new Dag(GraphUtils.randomGraph(nodes1, 0, 5,
                 3, 3, 3, false));
-        SemPm pm = new SemPm(graph);
-        SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(100, false);
+        final SemPm pm = new SemPm(graph);
+        final SemIm im = new SemIm(pm);
+        final DataSet data = im.simulateData(100, false);
 
-        List<Node> nodes = data.getVariables();
+        final List<Node> nodes = data.getVariables();
 
-        Discretizer discretizer = new Discretizer(data);
+        final Discretizer discretizer = new Discretizer(data);
 
         discretizer.equalCounts(nodes.get(0), 3);
         discretizer.equalIntervals(nodes.get(1), 2);
@@ -124,7 +124,7 @@ public final class TestDiscretizer {
         discretizer.equalIntervals(nodes.get(3), 8);
         discretizer.equalCounts(nodes.get(4), 4);
 
-        DataSet discretized = discretizer.discretize();
+        final DataSet discretized = discretizer.discretize();
 
         assertEquals(2, maxInColumn(discretized, 0));
         assertEquals(1, maxInColumn(discretized, 1));
@@ -135,27 +135,27 @@ public final class TestDiscretizer {
 
     @Test
     public void testManualDiscretize3() {
-        List<Node> nodes1 = new ArrayList<>();
+        final List<Node> nodes1 = new ArrayList<>();
 
         for (int i = 0; i < 5; i++) {
             nodes1.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph graph = new Dag(GraphUtils.randomGraph(nodes1, 0, 5,
+        final Graph graph = new Dag(GraphUtils.randomGraph(nodes1, 0, 5,
                 3, 3, 3, false));
-        SemPm pm = new SemPm(graph);
-        SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(100, false);
+        final SemPm pm = new SemPm(graph);
+        final SemIm im = new SemIm(pm);
+        final DataSet data = im.simulateData(100, false);
 
-        List<Node> nodes = data.getVariables();
+        final List<Node> nodes = data.getVariables();
 
-        Discretizer discretizer = new Discretizer(data);
+        final Discretizer discretizer = new Discretizer(data);
         discretizer.setVariablesCopied(true);
 
         discretizer.setVariablesCopied(true);
         discretizer.equalCounts(nodes.get(0), 3);
 
-        DataSet discretized = discretizer.discretize();
+        final DataSet discretized = discretizer.discretize();
 
         assertTrue(discretized.getVariable(0) instanceof DiscreteVariable);
         assertTrue(discretized.getVariable(1) instanceof ContinuousVariable);
@@ -169,11 +169,11 @@ public final class TestDiscretizer {
      * @param column the column in question.
      * @return the max value in that column.
      */
-    private int maxInColumn(DataSet dataSet, int column) {
+    private int maxInColumn(final DataSet dataSet, final int column) {
         int max = -1;
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
-            int value = dataSet.getInt(i, column);
+            final int value = dataSet.getInt(i, column);
             if (value > max) max = value;
         }
 
@@ -184,14 +184,14 @@ public final class TestDiscretizer {
     public void testContinuous() {
         final double[] data = {1, 2, 2.5, 3, 4, 5};
 
-        double[] cutoffs = new double[]{2.5, 3.2};
-        List<String> categories = Arrays.asList("lo", "med", "hi");
+        final double[] cutoffs = new double[]{2.5, 3.2};
+        final List<String> categories = Arrays.asList("lo", "med", "hi");
 
-        Discretizer.Discretization discretization = Discretizer.discretize(data, cutoffs, "after", categories);
+        final Discretizer.Discretization discretization = Discretizer.discretize(data, cutoffs, "after", categories);
 
-        List<String> discretizedCategories =
+        final List<String> discretizedCategories =
                 discretization.getVariable().getCategories();
-        int[] discretizedData = discretization.getData();
+        final int[] discretizedData = discretization.getData();
 
         assertEquals("lo", discretizedCategories.get(discretizedData[0]));
         assertEquals("lo", discretizedCategories.get(discretizedData[1]));

@@ -49,12 +49,12 @@ public class DataUtility {
      * @return the number of column of the first line in the file.
      * @throws IOException
      */
-    public static int countColumn(File file, char delimiter) throws IOException {
+    public static int countColumn(final File file, final char delimiter) throws IOException {
         int count = 0;
 
-        byte delim = (byte) delimiter;
-        try (FileChannel fc = new RandomAccessFile(file, "r").getChannel()) {
-            MappedByteBuffer buffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
+        final byte delim = (byte) delimiter;
+        try (final FileChannel fc = new RandomAccessFile(file, "r").getChannel()) {
+            final MappedByteBuffer buffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
             byte currentChar = -1;
             byte prevChar = NEW_LINE;
             while (buffer.hasRemaining()) {
@@ -87,11 +87,11 @@ public class DataUtility {
      * @return the number of lines that contain data.
      * @throws IOException
      */
-    public static int countLine(File file) throws IOException {
+    public static int countLine(final File file) throws IOException {
         int count = 0;
 
-        try (FileChannel fc = new RandomAccessFile(file, "r").getChannel()) {
-            MappedByteBuffer buffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
+        try (final FileChannel fc = new RandomAccessFile(file, "r").getChannel()) {
+            final MappedByteBuffer buffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
             byte prevChar = NEW_LINE;
             while (buffer.hasRemaining()) {
                 byte currentChar = buffer.get();

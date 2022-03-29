@@ -40,7 +40,7 @@ public class BinaryFunctionUtils {
      */
     private final int numArgs;
 
-    public BinaryFunctionUtils(int numArgs) {
+    public BinaryFunctionUtils(final int numArgs) {
         this.numArgs = numArgs;
     }
 
@@ -51,7 +51,7 @@ public class BinaryFunctionUtils {
 //    }
 
     public long getNumFunctions() {
-        int numRows = getNumRows();
+        final int numRows = getNumRows();
         long numFunctions = 1L;
 
         for (int i = 0; i < numRows; i++) {
@@ -61,16 +61,16 @@ public class BinaryFunctionUtils {
     }
 
     public int getNumRows() {
-        BinaryFunction first = new BinaryFunction(numArgs, 0);
+        final BinaryFunction first = new BinaryFunction(this.numArgs, 0);
         return first.getNumRows();
     }
 
     public long count() {
-        Set<Integer> variables = new HashSet<>();
-        for (int i = 0; i < numArgs; i++) variables.add(i);
+        final Set<Integer> variables = new HashSet<>();
+        for (int i = 0; i < this.numArgs; i++) variables.add(i);
         long numValidated = 0;
-        long numFunctions = getNumFunctions();
-        BinaryFunction function = new BinaryFunction(numArgs, 0);
+        final long numFunctions = getNumFunctions();
+        final BinaryFunction function = new BinaryFunction(this.numArgs, 0);
 
         FUNCTION:
         for (long index = 0; index < numFunctions; index++) {
@@ -80,21 +80,21 @@ public class BinaryFunctionUtils {
             }
 
             function.resetFunction(index);
-            Set<Integer> validated = new HashSet<>();
+            final Set<Integer> validated = new HashSet<>();
 
             for (int row = 0; row < getNumRows(); row++) {
-                boolean[] vals = function.getRow(row);
-                boolean val1 = function.getValue(vals);
+                final boolean[] vals = function.getRow(row);
+                final boolean val1 = function.getValue(vals);
 
-                for (int v : variables) {
+                for (final int v : variables) {
                     if (validated.contains(v)) continue;
 
                     vals[v] = !vals[v];
-                    boolean val2 = function.getValue(vals);
+                    final boolean val2 = function.getValue(vals);
 
                     if (val1 != val2) {
                         validated.add(v);
-                        if (validated.size() == numArgs) {
+                        if (validated.size() == this.numArgs) {
                             if (function.getOppositeFunction() < index) {
                                 continue FUNCTION;
                             }
@@ -122,24 +122,24 @@ public class BinaryFunctionUtils {
         return numValidated;
     }
 
-    public boolean satisfiesTestPair(BinaryFunction function) {
-        Set<Integer> variables = new HashSet<>();
-        for (int i = 0; i < numArgs; i++) variables.add(i);
-        Set<Integer> validated = new HashSet<>();
+    public boolean satisfiesTestPair(final BinaryFunction function) {
+        final Set<Integer> variables = new HashSet<>();
+        for (int i = 0; i < this.numArgs; i++) variables.add(i);
+        final Set<Integer> validated = new HashSet<>();
 
         for (int row = 0; row < getNumRows(); row++) {
-            boolean[] vals = function.getRow(row);
-            boolean val1 = function.getValue(vals);
+            final boolean[] vals = function.getRow(row);
+            final boolean val1 = function.getValue(vals);
 
-            for (int v : variables) {
+            for (final int v : variables) {
                 if (validated.contains(v)) continue;
 
                 vals[v] = !vals[v];
-                boolean val2 = function.getValue(vals);
+                final boolean val2 = function.getValue(vals);
 
                 if (val1 != val2) {
                     validated.add(v);
-                    if (validated.size() == numArgs) {
+                    if (validated.size() == this.numArgs) {
                         return true;
                     }
                 }
@@ -154,8 +154,8 @@ public class BinaryFunctionUtils {
     /**
      * @return true if f1 is equal to f2 under some column permutation.
      */
-    private boolean equalsUnderSomePermutation(BinaryFunction f1, BinaryFunction f2) {
-        PermutationGenerator pg = new PermutationGenerator(f1.getNumArgs());
+    private boolean equalsUnderSomePermutation(final BinaryFunction f1, final BinaryFunction f2) {
+        final PermutationGenerator pg = new PermutationGenerator(f1.getNumArgs());
         int[] permutation;
 
         while ((permutation = pg.next()) != null) {
@@ -180,10 +180,10 @@ public class BinaryFunctionUtils {
 //        return false;
 //    }
 
-    public boolean checkTriple(int numArgs, boolean[] g1Rows, boolean[] g2Rows, boolean[] g3Rows) {
-        BinaryFunction g1 = new BinaryFunction(numArgs, g1Rows);
-        BinaryFunction g2 = new BinaryFunction(numArgs, g2Rows);
-        BinaryFunction g3 = new BinaryFunction(numArgs, g3Rows);
+    public boolean checkTriple(final int numArgs, final boolean[] g1Rows, final boolean[] g2Rows, final boolean[] g3Rows) {
+        final BinaryFunction g1 = new BinaryFunction(numArgs, g1Rows);
+        final BinaryFunction g2 = new BinaryFunction(numArgs, g2Rows);
+        final BinaryFunction g3 = new BinaryFunction(numArgs, g3Rows);
 
         System.out.println("g1");
         System.out.println(g1);
@@ -250,12 +250,12 @@ public class BinaryFunctionUtils {
 //        return isTransposable;
 //    }
 
-    private boolean equalsUnderPermutation(BinaryFunction f1,
-                                           BinaryFunction f3,
-                                           int[] permutation) {
+    private boolean equalsUnderPermutation(final BinaryFunction f1,
+                                           final BinaryFunction f3,
+                                           final int[] permutation) {
         for (int i = 0; i < f1.getNumRows(); i++) {
-            boolean[] row = f1.getRow(i);
-            boolean[] newRow = new boolean[row.length];
+            final boolean[] row = f1.getRow(i);
+            final boolean[] newRow = new boolean[row.length];
 
             for (int j = 0; j < row.length; j++) {
                 newRow[j] = row[permutation[j]];

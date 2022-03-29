@@ -70,7 +70,7 @@ public final class DagScorer implements TetradSerializable, Scorer {
      * @param dataSet a DataSet, all of whose variables are contained in
      *                the given SemPm. (They are identified by name.)
      */
-    public DagScorer(DataSet dataSet) {
+    public DagScorer(final DataSet dataSet) {
         this(new CovarianceMatrix(dataSet));
         this.dataSet = dataSet;
     }
@@ -82,7 +82,7 @@ public final class DagScorer implements TetradSerializable, Scorer {
      *                  contained in the given SemPm. (They are identified by
      *                  name.)
      */
-    public DagScorer(ICovarianceMatrix covMatrix) {
+    public DagScorer(final ICovarianceMatrix covMatrix) {
         if (covMatrix == null) {
             throw new NullPointerException(
                     "CovarianceMatrix must not be null.");
@@ -91,7 +91,7 @@ public final class DagScorer implements TetradSerializable, Scorer {
         this.variables = covMatrix.getVariables();
         this.covMatrix = covMatrix;
 
-        int m = this.getVariables().size();
+        final int m = this.getVariables().size();
         this.edgeCoef = new Matrix(m, m);
         this.errorCovar = new Matrix(m, m);
         this.sampleCovar = covMatrix.getMatrix();
@@ -110,11 +110,11 @@ public final class DagScorer implements TetradSerializable, Scorer {
      * Runs the estimator on the data and SemPm passed in through the
      * constructor. Returns the fml score of the resulting model.
      */
-    public double score(Graph dag) {
-        List<Node> changedNodes = getChangedNodes(dag);
+    public double score(final Graph dag) {
+        final List<Node> changedNodes = getChangedNodes(dag);
 
-        for (Node node : changedNodes) {
-            int i1 = indexOf(node);
+        for (final Node node : changedNodes) {
+            final int i1 = indexOf(node);
             getErrorCovar().set(i1, i1, 0);
             for (int _j = 0; _j < getVariables().size(); _j++) {
                 getEdgeCoef().set(_j, i1, 0);
@@ -124,11 +124,11 @@ public final class DagScorer implements TetradSerializable, Scorer {
                 continue;
             }
 
-            int idx = indexOf(node);
-            List<Node> parents = dag.getParents(node);
+            final int idx = indexOf(node);
+            final List<Node> parents = dag.getParents(node);
 
             for (int i = 0; i < parents.size(); i++) {
-                Node nextParent = parents.get(i);
+                final Node nextParent = parents.get(i);
                 if (nextParent.getNodeType() == NodeType.ERROR) {
                     parents.remove(nextParent);
                     break;
@@ -138,31 +138,31 @@ public final class DagScorer implements TetradSerializable, Scorer {
             double variance = getSampleCovar().get(idx, idx);
 
             if (parents.size() > 0) {
-                Vector nodeParentsCov = new Vector(parents.size());
-                Matrix parentsCov = new Matrix(parents.size(), parents.size());
+                final Vector nodeParentsCov = new Vector(parents.size());
+                final Matrix parentsCov = new Matrix(parents.size(), parents.size());
 
                 for (int i = 0; i < parents.size(); i++) {
-                    int idx2 = indexOf(parents.get(i));
+                    final int idx2 = indexOf(parents.get(i));
                     nodeParentsCov.set(i, getSampleCovar().get(idx, idx2));
 
                     for (int j = i; j < parents.size(); j++) {
-                        int idx3 = indexOf(parents.get(j));
+                        final int idx3 = indexOf(parents.get(j));
                         parentsCov.set(i, j, getSampleCovar().get(idx2, idx3));
                         parentsCov.set(j, i, getSampleCovar().get(idx3, idx2));
                     }
                 }
 
-                Vector edges = parentsCov.inverse().times(nodeParentsCov);
+                final Vector edges = parentsCov.inverse().times(nodeParentsCov);
 
                 for (int i = 0; i < edges.size(); i++) {
-                    int idx2 = indexOf(parents.get(i));
-                    edgeCoef.set(idx2, indexOf(node), edges.get(i));
+                    final int idx2 = indexOf(parents.get(i));
+                    this.edgeCoef.set(idx2, indexOf(node), edges.get(i));
                 }
 
                 variance -= nodeParentsCov.dotProduct(edges);
             }
 
-            errorCovar.set(i1, i1, variance);
+            this.errorCovar.set(i1, i1, variance);
         }
 
 
@@ -172,7 +172,7 @@ public final class DagScorer implements TetradSerializable, Scorer {
         return getFml();
     }
 
-    private int indexOf(Node node) {
+    private int indexOf(final Node node) {
         for (int i = 0; i < getVariables().size(); i++) {
             if (node.getName().equals(this.getVariables().get(i).getName())) {
                 return i;
@@ -182,20 +182,20 @@ public final class DagScorer implements TetradSerializable, Scorer {
         throw new IllegalArgumentException("Dag must have the same nodes as the data.");
     }
 
-    private List<Node> getChangedNodes(Graph dag) {
+    private List<Node> getChangedNodes(final Graph dag) {
         if (this.dag == null) {
             return dag.getNodes();
         }
 
         if (!new HashSet<>(this.getVariables()).equals(new HashSet<>(dag.getNodes()))) {
             System.out.println(new TreeSet<>(dag.getNodes()));
-            System.out.println(new TreeSet<>(variables));
+            System.out.println(new TreeSet<>(this.variables));
             throw new IllegalArgumentException("Dag must have the same nodes as the data.");
         }
 
-        List<Node> changedNodes = new ArrayList<>();
+        final List<Node> changedNodes = new ArrayList<>();
 
-        for (Node node : dag.getNodes()) {
+        for (final Node node : dag.getNodes()) {
             if (!new HashSet<>(this.dag.getParents(node)).equals(new HashSet<>(dag.getParents(node)))) {
                 changedNodes.add(node);
             }
@@ -205,7 +205,7 @@ public final class DagScorer implements TetradSerializable, Scorer {
     }
 
     public ICovarianceMatrix getCovMatrix() {
-        return covMatrix;
+        return this.covMatrix;
     }
 
     /**
@@ -227,21 +227,21 @@ public final class DagScorer implements TetradSerializable, Scorer {
             return this.fml;
         }
 
-        Matrix implCovarMeas; // Do this once.
+        final Matrix implCovarMeas; // Do this once.
 
         try {
             implCovarMeas = implCovarMeas();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             e.printStackTrace();
             return Double.NaN;
         }
 
-        Matrix sampleCovar = sampleCovar();
+        final Matrix sampleCovar = sampleCovar();
 
-        double logDetSigma = logDet(implCovarMeas);
-        double traceSSigmaInv = traceABInv(sampleCovar, implCovarMeas);
-        double logDetSample = logDetSample();
-        int pPlusQ = getMeasuredNodes().size();
+        final double logDetSigma = logDet(implCovarMeas);
+        final double traceSSigmaInv = traceABInv(sampleCovar, implCovarMeas);
+        final double logDetSample = logDetSample();
+        final int pPlusQ = getMeasuredNodes().size();
 
         double fml = logDetSigma + traceSSigmaInv - logDetSample - pPlusQ;
 
@@ -254,19 +254,19 @@ public final class DagScorer implements TetradSerializable, Scorer {
     }
 
     public double getLogLikelihood() {
-        Matrix SigmaTheta; // Do this once.
+        final Matrix SigmaTheta; // Do this once.
 
         try {
             SigmaTheta = implCovarMeas();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             return Double.NaN;
         }
 
-        Matrix sStar = sampleCovar();
+        final Matrix sStar = sampleCovar();
 
-        double logDetSigmaTheta = logDet(SigmaTheta);
-        double traceSStarSigmaInv = traceABInv(sStar, SigmaTheta);
-        int pPlusQ = getMeasuredNodes().size();
+        final double logDetSigmaTheta = logDet(SigmaTheta);
+        final double traceSStarSigmaInv = traceABInv(sStar, SigmaTheta);
+        final int pPlusQ = getMeasuredNodes().size();
 
         return -(getSampleSize() / 2.) * pPlusQ * Math.log(2 * Math.PI)
                 - (getSampleSize() / 2.) * logDetSigmaTheta
@@ -281,12 +281,12 @@ public final class DagScorer implements TetradSerializable, Scorer {
      */
     public double getTruncLL() {
         // Formula Bollen p. 263.
-        Matrix Sigma = implCovarMeas();
+        final Matrix Sigma = implCovarMeas();
 
         // Using (n - 1) / n * s as in Bollen p. 134 causes sinkholes to open
         // up immediately. Not sure why.
-        Matrix S = sampleCovar();
-        int n = getSampleSize();
+        final Matrix S = sampleCovar();
+        final int n = getSampleSize();
         return -(n - 1) / 2. * (logDet(Sigma) + traceAInvB(Sigma, S));
     }
 
@@ -303,19 +303,19 @@ public final class DagScorer implements TetradSerializable, Scorer {
      * @return BIC score, calculated as chisq - dof. This is equal to getFullBicScore() up to a constant.
      */
     public double getBicScore() {
-        int dof = getDof();
+        final int dof = getDof();
         return getChiSquare() - dof * Math.log(getSampleSize());
     }
 
     public double getAicScore() {
-        int dof = getDof();
+        final int dof = getDof();
         return getChiSquare() - 2 * dof;
     }
 
     public double getKicScore() {
-        double fml = getFml();
-        int edgeCount = dag.getNumEdges();
-        int sampleSize = getSampleSize();
+        final double fml = getFml();
+        final int edgeCount = this.dag.getNumEdges();
+        final int sampleSize = getSampleSize();
 
         return -fml + (edgeCount * Math.log(sampleSize));
     }
@@ -349,7 +349,7 @@ public final class DagScorer implements TetradSerializable, Scorer {
      * @throws ClassNotFoundException
      */
     private void readObject
-    (ObjectInputStream
+    (final ObjectInputStream
              s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
@@ -370,10 +370,10 @@ public final class DagScorer implements TetradSerializable, Scorer {
 
         // Note. Since the sizes of the temp matrices in this calculation
         // never change, we ought to be able to reuse them.
-        Matrix implCovarC = MatrixUtils.impliedCovar(edgeCoef().transpose(), errCovar());
+        final Matrix implCovarC = MatrixUtils.impliedCovar(edgeCoef().transpose(), errCovar());
 
         // Submatrix of implied covar for measured vars only.
-        int size = getMeasuredNodes().size();
+        final int size = getMeasuredNodes().size();
         this.implCovarMeasC = new Matrix(size, size);
 
         for (int i = 0; i < size; i++) {
@@ -391,18 +391,18 @@ public final class DagScorer implements TetradSerializable, Scorer {
         return getEdgeCoef();
     }
 
-    private double logDet(Matrix matrix2D) {
+    private double logDet(final Matrix matrix2D) {
         return Math.log(matrix2D.det());
     }
 
-    private double traceAInvB(Matrix A, Matrix B) {
+    private double traceAInvB(final Matrix A, final Matrix B) {
 
         // Note that at this point the sem and the sample covar MUST have the
         // same variables in the same order.
-        Matrix inverse = A.inverse();
-        Matrix product = inverse.times(B);
+        final Matrix inverse = A.inverse();
+        final Matrix product = inverse.times(B);
 
-        double trace = product.trace();
+        final double trace = product.trace();
 
 //        double trace = MatrixUtils.trace(product);
 
@@ -413,34 +413,34 @@ public final class DagScorer implements TetradSerializable, Scorer {
         return trace;
     }
 
-    private double traceABInv(Matrix A, Matrix B) {
+    private double traceABInv(final Matrix A, final Matrix B) {
 
         // Note that at this point the sem and the sample covar MUST have the
         // same variables in the same order.
         try {
 
-            Matrix product = A.times(B.inverse());
+            final Matrix product = A.times(B.inverse());
 
-            double trace = product.trace();
+            final double trace = product.trace();
 
             if (trace < -1e-8) {
                 throw new IllegalArgumentException("Trace was negative: " + trace);
             }
 
             return trace;
-        } catch (Exception e) {
+        } catch (final Exception e) {
             System.out.println(B);
             throw new RuntimeException(e);
         }
     }
 
     private double logDetSample() {
-        if (logDetSample == 0.0 && sampleCovar() != null) {
-            double det = sampleCovar().det();
-            logDetSample = Math.log(det);
+        if (this.logDetSample == 0.0 && sampleCovar() != null) {
+            final double det = sampleCovar().det();
+            this.logDetSample = Math.log(det);
         }
 
-        return logDetSample;
+        return this.logDetSample;
     }
 
 //    private double traceSSigmaInv2(TetradMatrix s,
@@ -486,19 +486,19 @@ public final class DagScorer implements TetradSerializable, Scorer {
 //    }
 
     public DataSet getDataSet() {
-        return dataSet;
+        return this.dataSet;
     }
 
     public int getNumFreeParams() {
-        return dag.getEdges().size() + dag.getNodes().size();
+        return this.dag.getEdges().size() + this.dag.getNodes().size();
     }
 
     public int getDof() {
-        return (dag.getNodes().size() * (dag.getNodes().size() + 1)) / 2 - getNumFreeParams();
+        return (this.dag.getNodes().size() * (this.dag.getNodes().size() + 1)) / 2 - getNumFreeParams();
     }
 
     public int getSampleSize() {
-        return covMatrix.getSampleSize();
+        return this.covMatrix.getSampleSize();
     }
 
 
@@ -507,28 +507,28 @@ public final class DagScorer implements TetradSerializable, Scorer {
     }
 
     public Matrix getSampleCovar() {
-        return sampleCovar;
+        return this.sampleCovar;
     }
 
     public Matrix getEdgeCoef() {
-        return edgeCoef;
+        return this.edgeCoef;
     }
 
     public Matrix getErrorCovar() {
-        return errorCovar;
+        return this.errorCovar;
     }
 
     public List<Node> getVariables() {
-        return variables;
+        return this.variables;
     }
 
     public SemIm getEstSem() {
-        SemPm pm = new SemPm(dag);
+        final SemPm pm = new SemPm(this.dag);
 
-        if (dataSet != null) {
-            return new SemEstimator(dataSet, pm, new SemOptimizerRegression()).estimate();
-        } else if (covMatrix != null) {
-            return new SemEstimator(covMatrix, pm, new SemOptimizerRegression()).estimate();
+        if (this.dataSet != null) {
+            return new SemEstimator(this.dataSet, pm, new SemOptimizerRegression()).estimate();
+        } else if (this.covMatrix != null) {
+            return new SemEstimator(this.covMatrix, pm, new SemOptimizerRegression()).estimate();
         } else {
             throw new IllegalStateException();
         }

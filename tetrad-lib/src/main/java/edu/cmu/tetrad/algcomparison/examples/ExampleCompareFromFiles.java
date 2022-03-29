@@ -23,7 +23,9 @@ package edu.cmu.tetrad.algcomparison.examples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.*;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.CPC;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PC;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PCMAX;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
@@ -40,15 +42,15 @@ import edu.cmu.tetrad.util.Parameters;
  * @author jdramsey
  */
 public class ExampleCompareFromFiles {
-    public static void main(String... args) {
-        Parameters parameters = new Parameters();
+    public static void main(final String... args) {
+        final Parameters parameters = new Parameters();
 
         // Can leave the simulation parameters out since
         // we're loading from file here.
         parameters.set("alpha", 1e-4);
         parameters.set("numRuns", 10);
 
-        Statistics statistics = new Statistics();
+        final Statistics statistics = new Statistics();
 
         statistics.add(new ParameterColumn("avgDegree"));
         statistics.add(new ParameterColumn("sampleSize"));
@@ -68,13 +70,13 @@ public class ExampleCompareFromFiles {
         statistics.setWeight("AHP", 1.0);
         statistics.setWeight("AHR", 0.5);
 
-        Algorithms algorithms = new Algorithms();
+        final Algorithms algorithms = new Algorithms();
 
         algorithms.add(new PC(new FisherZ()));
         algorithms.add(new CPC(new FisherZ()));
         algorithms.add(new PCMAX(new FisherZ()));
 
-        Comparison comparison = new Comparison();
+        final Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(false);
         comparison.setShowSimulationIndices(false);
         comparison.setSortByUtility(true);

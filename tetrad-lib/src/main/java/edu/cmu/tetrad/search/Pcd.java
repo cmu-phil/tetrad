@@ -123,7 +123,7 @@ public class Pcd implements GraphSearch {
      * @param independenceTest The oracle for conditional independence facts. This does not make a copy of the
      *                         independence test, for fear of duplicating the data set!
      */
-    public Pcd(IndependenceTest independenceTest) {
+    public Pcd(final IndependenceTest independenceTest) {
         if (independenceTest == null) {
             throw new NullPointerException();
         }
@@ -143,7 +143,7 @@ public class Pcd implements GraphSearch {
     /**
      * @param aggressivelyPreventCycles Set to true just in case edges will not be addeds if they would create cycles.
      */
-    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
+    public void setAggressivelyPreventCycles(final boolean aggressivelyPreventCycles) {
         this.aggressivelyPreventCycles = aggressivelyPreventCycles;
     }
 
@@ -151,20 +151,20 @@ public class Pcd implements GraphSearch {
      * @return the independence test being used in the search.
      */
     public IndependenceTest getIndependenceTest() {
-        return independenceTest;
+        return this.independenceTest;
     }
 
     /**
      * @return the knowledge specification used in the search. Non-null.
      */
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     /**
      * Sets the knowledge specification to be used in the search. May not be null.
      */
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(final IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -184,7 +184,7 @@ public class Pcd implements GraphSearch {
      * independence checked.
      */
     public int getDepth() {
-        return depth;
+        return this.depth;
     }
 
     /**
@@ -195,7 +195,7 @@ public class Pcd implements GraphSearch {
      *              should be high (1000). A value of Integer.MAX_VALUE may not be used, due to a bug on multi-core
      *              machines.
      */
-    public void setDepth(int depth) {
+    public void setDepth(final int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException("Depth must be -1 or >= 0: " + depth);
         }
@@ -215,7 +215,7 @@ public class Pcd implements GraphSearch {
      * of latent common causes, or due to statistical errors in conditional independence judgments.
      */
     public Graph search() {
-        return search(independenceTest.getVariables());
+        return search(this.independenceTest.getVariables());
     }
 
     /**
@@ -227,23 +227,23 @@ public class Pcd implements GraphSearch {
      * <p>
      * All of the given nodes must be in the domain of the given conditional independence test.
      */
-    public Graph search(List<Node> nodes) {
+    public Graph search(final List<Node> nodes) {
         return search(new Fas(getIndependenceTest()), nodes);
     }
 
-    public Graph search(IFas fas, List<Node> nodes) {
+    public Graph search(final IFas fas, final List<Node> nodes) {
         this.logger.log("info", "Starting PC algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
 
 //        this.logger.log("info", "Variables " + independenceTest.getVariable());
 
-        long startTime = System.currentTimeMillis();
+        final long startTime = System.currentTimeMillis();
 
         if (getIndependenceTest() == null) {
             throw new NullPointerException();
         }
 
-        List<Node> allNodes = getIndependenceTest().getVariables();
+        final List<Node> allNodes = getIndependenceTest().getVariables();
         if (!allNodes.containsAll(nodes)) {
             throw new IllegalArgumentException("All of the given nodes must " +
                     "be in the domain of the independence test provided.");
@@ -252,40 +252,40 @@ public class Pcd implements GraphSearch {
 
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
-        fas.setVerbose(verbose);
+        fas.setVerbose(this.verbose);
 
-        graph = fas.search();
-        sepsets = fas.getSepsets();
+        this.graph = fas.search();
+        this.sepsets = fas.getSepsets();
 
         this.numIndependenceTests = fas.getNumIndependenceTests();
         this.numDependenceJudgements = fas.getNumDependenceJudgments();
 
         enumerateTriples();
 
-        SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
-        SearchGraphUtils.pcdOrientC(sepsets, getIndependenceTest(), knowledge, graph);
+        SearchGraphUtils.pcOrientbk(this.knowledge, this.graph, nodes);
+        SearchGraphUtils.pcdOrientC(this.sepsets, getIndependenceTest(), this.knowledge, this.graph);
 
-        MeekRules rules = new MeekRules();
+        final MeekRules rules = new MeekRules();
         rules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
-        rules.setKnowledge(knowledge);
-        rules.orientImplied(graph);
+        rules.setKnowledge(this.knowledge);
+        rules.orientImplied(this.graph);
 
-        this.logger.log("graph", "\nReturning this graph: " + graph);
+        this.logger.log("graph", "\nReturning this graph: " + this.graph);
 
         this.elapsedTime = System.currentTimeMillis() - startTime;
 
-        this.logger.log("info", "Elapsed time = " + (elapsedTime) / 1000. + " s");
+        this.logger.log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
         this.logger.log("info", "Finishing PC Algorithm.");
         this.logger.flush();
 
-        return graph;
+        return this.graph;
     }
 
     /**
      * @return the elapsed time of the search, in milliseconds.
      */
     public long getElapsedTime() {
-        return elapsedTime;
+        return this.elapsedTime;
     }
 
     /**
@@ -293,7 +293,7 @@ public class Pcd implements GraphSearch {
      * <code>search</code> is called.
      */
     public Set<Triple> getUnshieldedColliders() {
-        return unshieldedColliders;
+        return this.unshieldedColliders;
     }
 
     /**
@@ -301,21 +301,21 @@ public class Pcd implements GraphSearch {
      * <code>search</code> is called.
      */
     public Set<Triple> getUnshieldedNoncolliders() {
-        return unshieldedNoncolliders;
+        return this.unshieldedNoncolliders;
     }
 
     public Set<Edge> getAdjacencies() {
-        Set<Edge> adjacencies = new HashSet<>();
-        for (Edge edge : graph.getEdges()) {
+        final Set<Edge> adjacencies = new HashSet<>();
+        for (final Edge edge : this.graph.getEdges()) {
             adjacencies.add(edge);
         }
         return adjacencies;
     }
 
     public Set<Edge> getNonadjacencies() {
-        Graph complete = GraphUtils.completeGraph(graph);
-        Set<Edge> nonAdjacencies = complete.getEdges();
-        Graph undirected = GraphUtils.undirectedGraph(graph);
+        final Graph complete = GraphUtils.completeGraph(this.graph);
+        final Set<Edge> nonAdjacencies = complete.getEdges();
+        final Graph undirected = GraphUtils.undirectedGraph(this.graph);
         nonAdjacencies.removeAll(undirected.getEdges());
         return new HashSet<>(nonAdjacencies);
     }
@@ -326,21 +326,21 @@ public class Pcd implements GraphSearch {
         this.unshieldedColliders = new HashSet<>();
         this.unshieldedNoncolliders = new HashSet<>();
 
-        for (Node y : graph.getNodes()) {
-            List<Node> adj = graph.getAdjacentNodes(y);
+        for (final Node y : this.graph.getNodes()) {
+            final List<Node> adj = this.graph.getAdjacentNodes(y);
 
             if (adj.size() < 2) {
                 continue;
             }
 
-            ChoiceGenerator gen = new ChoiceGenerator(adj.size(), 2);
+            final ChoiceGenerator gen = new ChoiceGenerator(adj.size(), 2);
             int[] choice;
 
             while ((choice = gen.next()) != null) {
-                Node x = adj.get(choice[0]);
-                Node z = adj.get(choice[1]);
+                final Node x = adj.get(choice[0]);
+                final Node z = adj.get(choice[1]);
 
-                List<Node> nodes = this.sepsets.get(x, z);
+                final List<Node> nodes = this.sepsets.get(x, z);
 
                 // Note that checking adj(x, z) does not suffice when knowledge
                 // has been specified.
@@ -358,50 +358,50 @@ public class Pcd implements GraphSearch {
     }
 
     public int getNumIndependenceTests() {
-        return numIndependenceTests;
+        return this.numIndependenceTests;
     }
 
-    public void setTrueGraph(Graph trueGraph) {
+    public void setTrueGraph(final Graph trueGraph) {
         this.trueGraph = trueGraph;
     }
 
     public int getNumDependenceJudgements() {
-        return numDependenceJudgements;
+        return this.numDependenceJudgements;
     }
 
     public List<Node> getNodes() {
-        return graph.getNodes();
+        return this.graph.getNodes();
     }
 
-    public List<Triple> getColliders(Node node) {
+    public List<Triple> getColliders(final Node node) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public List<Triple> getNoncolliders(Node node) {
+    public List<Triple> getNoncolliders(final Node node) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public List<Triple> getAmbiguousTriples(Node node) {
+    public List<Triple> getAmbiguousTriples(final Node node) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public List<Triple> getUnderlineTriples(Node node) {
+    public List<Triple> getUnderlineTriples(final Node node) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public List<Triple> getDottedUnderlineTriples(Node node) {
+    public List<Triple> getDottedUnderlineTriples(final Node node) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public void setExternalGraph(Graph externalGraph) {
+    public void setExternalGraph(final Graph externalGraph) {
         this.externalGraph = externalGraph;
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 
@@ -409,10 +409,10 @@ public class Pcd implements GraphSearch {
      * True iff the algorithm should be run with False Discovery Rate tests.
      */
     public boolean isFdr() {
-        return fdr;
+        return this.fdr;
     }
 
-    public void setFdr(boolean fdr) {
+    public void setFdr(final boolean fdr) {
         this.fdr = fdr;
     }
 }

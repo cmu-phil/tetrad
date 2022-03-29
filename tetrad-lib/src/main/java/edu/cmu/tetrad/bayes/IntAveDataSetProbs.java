@@ -64,22 +64,22 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
     /**
      * Creates a cell count table for the given data set.
      */
-    public IntAveDataSetProbs(DataSet dataSet) {
+    public IntAveDataSetProbs(final DataSet dataSet) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
 
         this.dataSet = dataSet;
-        dims = new int[dataSet.getNumColumns()];
+        this.dims = new int[dataSet.getNumColumns()];
 
-        for (int i = 0; i < dims.length; i++) {
-            DiscreteVariable variable =
+        for (int i = 0; i < this.dims.length; i++) {
+            final DiscreteVariable variable =
                     (DiscreteVariable) dataSet.getVariable(i);
-            dims[i] = variable.getNumCategories();
+            this.dims[i] = variable.getNumCategories();
         }
 
 //        untrimmedData = dataSet.getIntMatrixTransposed();
-        numRows = dataSet.getNumRows();
+        this.numRows = dataSet.getNumRows();
     }
 
     //===========================PUBLIC METHODS=========================//
@@ -88,14 +88,14 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
      * @return the estimated probability for the given cell. The order of the
      * variable values is the order of the variables in getVariable().
      */
-    public double getCellProb(int[] variableValues) {
-        int[] point = new int[dims.length];
+    public double getCellProb(final int[] variableValues) {
+        final int[] point = new int[this.dims.length];
         int count = 0;
 
         point:
-        for (int i = 0; i < numRows; i++) {
-            for (int j = 0; j < dims[i]; j++) {
-                point[j] = dataSet.getInt(i, j);
+        for (int i = 0; i < this.numRows; i++) {
+            for (int j = 0; j < this.dims[i]; j++) {
+                point[j] = this.dataSet.getInt(i, j);
 
                 if (point[j] == DiscreteVariable.MISSING_VALUE) {
                     continue point;
@@ -113,14 +113,14 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
     /**
      * @return the estimated probability of the given proposition.
      */
-    public double getProb(Proposition assertion) {
-        int[] point = new int[dims.length];
+    public double getProb(final Proposition assertion) {
+        final int[] point = new int[this.dims.length];
         int count = 0;
 
         point:
-        for (int i = 0; i < numRows; i++) {
-            for (int j = 0; j < dims.length; j++) {
-                point[j] = dataSet.getInt(i, j);
+        for (int i = 0; i < this.numRows; i++) {
+            for (int j = 0; j < this.dims.length; j++) {
+                point[j] = this.dataSet.getInt(i, j);
 
                 if (point[j] == DiscreteVariable.MISSING_VALUE) {
                     continue point;
@@ -139,16 +139,16 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
      * @return the estimated conditional probability for the given assertion
      * conditional on the given condition.
      */
-    public double getConditionalProb(Proposition assertion,
-                                     Proposition condition) {
+    public double getConditionalProb(final Proposition assertion,
+                                     final Proposition condition) {
         if (assertion.getVariableSource() != condition.getVariableSource()) {
             throw new IllegalArgumentException(
                     "Assertion and condition must be " +
                             "for the same Bayes IM.");
         }
 
-        List<Node> assertionVars = assertion.getVariableSource().getVariables();
-        List<Node> dataVars = dataSet.getVariables();
+        final List<Node> assertionVars = assertion.getVariableSource().getVariables();
+        final List<Node> dataVars = this.dataSet.getVariables();
 
         if (!assertionVars.equals(dataVars)) {
             throw new IllegalArgumentException(
@@ -158,14 +158,14 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
                             "\n\tData vars: " + dataVars);
         }
 
-        int[] point = new int[dims.length];
+        final int[] point = new int[this.dims.length];
         int count1 = 0;
         int count2 = 0;
 
         point:
-        for (int i = 0; i < numRows; i++) {
-            for (int j = 0; j < dims.length; j++) {
-                point[j] = dataSet.getInt(i, j);
+        for (int i = 0; i < this.numRows; i++) {
+            for (int j = 0; j < this.dims.length; j++) {
+                point[j] = this.dataSet.getInt(i, j);
 
                 if (point[j] == DiscreteVariable.MISSING_VALUE) {
                     continue point;
@@ -193,17 +193,17 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
         int numDefinedProbs = 0;
         double sumProbs = 0.0;
 
-        for (int i = 0; i < dims.length; i++) {
+        for (int i = 0; i < this.dims.length; i++) {
             if (condition.isConditioned(i)) {
-                Proposition condition2 = new Proposition(condition);
+                final Proposition condition2 = new Proposition(condition);
                 condition.setVariable(i, true);
                 count1 = 0;
                 count2 = 0;
 
                 point:
-                for (int i1 = 0; i1 < numRows; i1++) {
-                    for (int j = 0; j < dims.length; j++) {
-                        point[j] = dataSet.getInt(i, j);
+                for (int i1 = 0; i1 < this.numRows; i1++) {
+                    for (int j = 0; j < this.dims.length; j++) {
+                        point[j] = this.dataSet.getInt(i, j);
 
                         if (point[j] == DiscreteVariable.MISSING_VALUE) {
                             continue point;
@@ -235,7 +235,7 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
      * @return the dataset that this is estimating probabilities for.
      */
     public DataSet getDataSet() {
-        return dataSet;
+        return this.dataSet;
     }
 
     /**

@@ -114,7 +114,7 @@ public class GeneHistory implements TetradSerializable {
      * Constructs a new history with the given initializer and the given update
      * function.
      */
-    public GeneHistory(Initializer initializer, UpdateFunction updateFunction) {
+    public GeneHistory(final Initializer initializer, final UpdateFunction updateFunction) {
         if (initializer == null) {
             throw new NullPointerException("Initializer cannot be null.");
         }
@@ -124,10 +124,10 @@ public class GeneHistory implements TetradSerializable {
         this.initializer = initializer;
         this.updateFunction = updateFunction;
 
-        updatePeriods = new int[updateFunction.getNumFactors()];
+        this.updatePeriods = new int[updateFunction.getNumFactors()];
 
-        for (int i = 0; i < updatePeriods.length; i++) {
-            updatePeriods[i] = 1;
+        for (int i = 0; i < this.updatePeriods.length; i++) {
+            this.updatePeriods[i] = 1;
         }
     }
 
@@ -172,13 +172,13 @@ public class GeneHistory implements TetradSerializable {
      * @return this array.
      */
     public double[][] getHistoryArray() {
-        return historyArray;
+        return this.historyArray;
     }
 
     /**
      * Sets whether initialization should be synchronized.
      */
-    public void setInitSync(boolean initSync) {
+    public void setInitSync(final boolean initSync) {
         this.initSync = initSync;
     }
 
@@ -188,7 +188,7 @@ public class GeneHistory implements TetradSerializable {
      * @return the getModel value of <code>initSync</code>.
      */
     public boolean getInitSync() {
-        return initSync;
+        return this.initSync;
     }
 
     /**
@@ -196,13 +196,13 @@ public class GeneHistory implements TetradSerializable {
      * generated.
      */
     public void reset() {
-        syncInitialization = null;
+        this.syncInitialization = null;
     }
 
     /**
      * Sets the dish model.
      */
-    public void setDishModel(DishModel dishModel) {
+    public void setDishModel(final DishModel dishModel) {
         this.dishModel = dishModel;
     }
 
@@ -218,20 +218,20 @@ public class GeneHistory implements TetradSerializable {
      */
     public void update() {
 
-        double[] last = historyArray[historyArray.length - 1];
+        final double[] last = this.historyArray[this.historyArray.length - 1];
 
-        for (int i = historyArray.length - 1; i > 0; i--) {
-            historyArray[i] = historyArray[i - 1];
+        for (int i = this.historyArray.length - 1; i > 0; i--) {
+            this.historyArray[i] = this.historyArray[i - 1];
         }
 
-        historyArray[0] = last;
+        this.historyArray[0] = last;
 
         ++this.step;
 
-        for (int i = 0; i < updateFunction.getNumFactors(); i++) {
-            if (this.step % updatePeriods[i] == 0) {
-                historyArray[0][i] =
-                        this.updateFunction.getValue(i, historyArray);
+        for (int i = 0; i < this.updateFunction.getNumFactors(); i++) {
+            if (this.step % this.updatePeriods[i] == 0) {
+                this.historyArray[0][i] =
+                        this.updateFunction.getValue(i, this.historyArray);
             }
         }
     }
@@ -243,43 +243,43 @@ public class GeneHistory implements TetradSerializable {
      */
     public void initialize() {
 
-        int numFactors = this.updateFunction.getNumFactors();
-        int maxLag = this.updateFunction.getMaxLag();
+        final int numFactors = this.updateFunction.getNumFactors();
+        final int maxLag = this.updateFunction.getMaxLag();
 
-        if (initSync) {
-            if (syncInitialization == null) {
-                syncInitialization = new double[maxLag + 1][numFactors];
-                historyArray = new double[maxLag + 1][numFactors];
+        if (this.initSync) {
+            if (this.syncInitialization == null) {
+                this.syncInitialization = new double[maxLag + 1][numFactors];
+                this.historyArray = new double[maxLag + 1][numFactors];
 
-                getInitializer().initialize(syncInitialization);
+                getInitializer().initialize(this.syncInitialization);
             }
 
             // copy values from the stored initialization array to the real
             // history array.
-            for (int i = 0; i < historyArray.length; i++) {
-                for (int j = 0; j < historyArray[0].length; j++) {
+            for (int i = 0; i < this.historyArray.length; i++) {
+                for (int j = 0; j < this.historyArray[0].length; j++) {
                     if (getDishModel() == null) {
-                        historyArray[i][j] = syncInitialization[i][j];
+                        this.historyArray[i][j] = this.syncInitialization[i][j];
                     } else {
-                        historyArray[i][j] = getDishModel().bumpInitialization(
-                                syncInitialization[i][j]);
+                        this.historyArray[i][j] = getDishModel().bumpInitialization(
+                                this.syncInitialization[i][j]);
                     }
                 }
             }
         } else {
-            if (historyArray == null) {
-                historyArray = new double[maxLag + 1][numFactors];
+            if (this.historyArray == null) {
+                this.historyArray = new double[maxLag + 1][numFactors];
             }
 
-            getInitializer().initialize(historyArray);
+            getInitializer().initialize(this.historyArray);
         }
 
         // PrintUtil out the history array.
         if (false) {
             System.out.println("\nHistory array:");
 
-            for (double[] aHistoryArray : historyArray) {
-                for (int j = 0; j < historyArray[0].length; j++) {
+            for (final double[] aHistoryArray : this.historyArray) {
+                for (int j = 0; j < this.historyArray[0].length; j++) {
                     System.out.print(aHistoryArray[j] + "\t");
                 }
 
@@ -305,19 +305,19 @@ public class GeneHistory implements TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (initializer == null) {
+        if (this.initializer == null) {
             throw new NullPointerException();
         }
 
-        if (updateFunction == null) {
+        if (this.updateFunction == null) {
             throw new NullPointerException();
         }
 
-        if (updatePeriods == null) {
+        if (this.updatePeriods == null) {
             throw new NullPointerException();
         }
 

@@ -180,11 +180,11 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     /**
      * The data set must either be all continuous or all discrete.
      */
-    public FgesOrienter(DataSet dataSet) {
-        out.println("GES constructor");
+    public FgesOrienter(final DataSet dataSet) {
+        this.out.println("GES constructor");
 
         if (dataSet.isDiscrete()) {
-            DataBox box = new VerticalIntDataBox(dataSet.getNumRows(), dataSet.getNumColumns());
+            final DataBox box = new VerticalIntDataBox(dataSet.getNumRows(), dataSet.getNumColumns());
 
             for (int i = 0; i < dataSet.getNumRows(); i++) {
                 for (int j = 0; j < dataSet.getNumColumns(); j++) {
@@ -192,10 +192,10 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
                 }
             }
 
-            BoxDataSet dataSet1 = new BoxDataSet(box, dataSet.getVariables());
+            final BoxDataSet dataSet1 = new BoxDataSet(box, dataSet.getVariables());
 
             setDataSet(dataSet1);
-            BDeuScore score = new BDeuScore(dataSet1);
+            final BDeuScore score = new BDeuScore(dataSet1);
             score.setSamplePrior(10);
             score.setStructurePrior(0.001);
             setDiscreteScore(score);
@@ -205,32 +205,32 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
             setCovMatrix(new CovarianceMatrix(dataSet));
         }
 
-        out.println("GES constructor done");
+        this.out.println("GES constructor done");
     }
 
     /**
      * Continuous case--where a covariance matrix is already available.
      */
-    public FgesOrienter(ICovarianceMatrix covMatrix) {
-        out.println("GES(orient) constructor");
+    public FgesOrienter(final ICovarianceMatrix covMatrix) {
+        this.out.println("GES(orient) constructor");
 
         setCovMatrix(covMatrix);
 
-        out.println("GES(orient) constructor done");
+        this.out.println("GES(orient) constructor done");
     }
 
     // This will "orient" graph
     @Override
-    public void orient(Graph graph) {
+    public void orient(final Graph graph) {
         this.graphToOrient = new EdgeListGraph(graph);
         this.graphToOrient = GraphUtils.undirectedGraph(this.graphToOrient);
 
         // Had to fix this reference to the original graph was modified.
-        Graph _graph = search();
+        final Graph _graph = search();
 
         graph.removeEdges(graph.getEdges());
 
-        for (Edge edge : _graph.getEdges()) {
+        for (final Edge edge : _graph.getEdges()) {
             graph.addEdge(edge);
         }
     }
@@ -241,13 +241,13 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
      * Returns superstructure graph
      */
     public Graph getGraphToOrient() {
-        return graphToOrient;
+        return this.graphToOrient;
     }
 
     /**
      * Set to true if it is assumed that all path pairs with one length 1 path do not cancelAll.
      */
-    public void setFaithfulnessAssumed(boolean faithfulness) {
+    public void setFaithfulnessAssumed(final boolean faithfulness) {
         this.faithfulnessAssumed = faithfulness;
     }
 
@@ -265,36 +265,36 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
      * @return the resulting CPDAG.
      */
     public Graph search() {
-        lookupArrows = new ConcurrentHashMap<>();
-        final List<Node> nodes = new ArrayList<>(variables);
+        this.lookupArrows = new ConcurrentHashMap<>();
+        final List<Node> nodes = new ArrayList<>(this.variables);
         this.effectEdgesGraph = getEffectEdges(nodes);
 
-        if (adjacencies != null) {
-            adjacencies = GraphUtils.replaceNodes(adjacencies, nodes);
+        if (this.adjacencies != null) {
+            this.adjacencies = GraphUtils.replaceNodes(this.adjacencies, nodes);
         }
 
-        Graph graph;
+        final Graph graph;
 
-        if (externalGraph == null) {
+        if (this.externalGraph == null) {
             graph = new EdgeListGraph(getVariables());
         } else {
-            graph = new EdgeListGraph(externalGraph);
+            graph = new EdgeListGraph(this.externalGraph);
 
-            for (Edge edge : externalGraph.getEdges()) {
-                if (!effectEdgesGraph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                    effectEdgesGraph.addUndirectedEdge(edge.getNode1(), edge.getNode2());
+            for (final Edge edge : this.externalGraph.getEdges()) {
+                if (!this.effectEdgesGraph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+                    this.effectEdgesGraph.addUndirectedEdge(edge.getNode1(), edge.getNode2());
                 }
             }
         }
 
         addRequiredEdges(graph);
 
-        topGraphs.clear();
+        this.topGraphs.clear();
 
         storeGraph(graph);
 
-        long start = System.currentTimeMillis();
-        score = 0.0;
+        final long start = System.currentTimeMillis();
+        this.score = 0.0;
 
         // Do forward search.
         fes(graph);
@@ -302,11 +302,11 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
         // Do backward search.
         bes(graph);
 
-        long endTime = System.currentTimeMillis();
+        final long endTime = System.currentTimeMillis();
         this.elapsedTime = endTime - start;
         this.logger.log("graph", "\nReturning this graph: " + graph);
 
-        this.logger.log("info", "Elapsed time = " + (elapsedTime) / 1000. + " s");
+        this.logger.log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
         this.logger.flush();
 
         return graph;
@@ -317,7 +317,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
      * @return the background knowledge.
      */
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     /**
@@ -325,7 +325,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
      *
      * @param knowledge the knowledge object, specifying forbidden and required edges.
      */
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(final IKnowledge knowledge) {
         if (knowledge == null) throw new NullPointerException();
         this.knowledge = knowledge;
     }
@@ -333,7 +333,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     /**
      * For BDeu score for discrete search; see Chickering (2002).
      */
-    public void setStructurePrior(double structurePrior) {
+    public void setStructurePrior(final double structurePrior) {
         if (getDiscreteScore() != null) {
             getDiscreteScore().setStructurePrior(structurePrior);
         }
@@ -342,27 +342,27 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     /**
      * For BDeu score for discrete search; see Chickering (2002).
      */
-    public void setSamplePrior(double samplePrior) {
+    public void setSamplePrior(final double samplePrior) {
         if (getDiscreteScore() != null) {
             getDiscreteScore().setSamplePrior(samplePrior);
         }
     }
 
     public long getElapsedTime() {
-        return elapsedTime;
+        return this.elapsedTime;
     }
 
     /**
      * For BIC score, a multiplier on the penalty term. For continuous searches.
      */
     public double getPenaltyDiscount() {
-        return penaltyDiscount;
+        return this.penaltyDiscount;
     }
 
     /**
      * For BIC score, a multiplier on the penalty term. For continuous searches.
      */
-    public void setPenaltyDiscount(double penaltyDiscount) {
+    public void setPenaltyDiscount(final double penaltyDiscount) {
         if (penaltyDiscount < 0) {
             throw new IllegalArgumentException("Penalty penaltyDiscount must be >= 0: "
                     + penaltyDiscount);
@@ -374,14 +374,14 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     /**
      * If the true graph is set, askterisks will be printed in log output for the true edges.
      */
-    public void setTrueGraph(Graph trueGraph) {
+    public void setTrueGraph(final Graph trueGraph) {
         this.trueGraph = trueGraph;
     }
 
     /**
      * @return the score of the given DAG, up to a constant.
      */
-    public double getScore(Graph dag) {
+    public double getScore(final Graph dag) {
         return scoreDag(dag);
     }
 
@@ -389,20 +389,20 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
      * @return the list of top scoring graphs.
      */
     public SortedSet<ScoredGraph> getTopGraphs() {
-        return topGraphs;
+        return this.topGraphs;
     }
 
     /**
      * @return the number of CPDAGs to store.
      */
     public int getnumCPDAGsToStore() {
-        return numCPDAGsToStore;
+        return this.numCPDAGsToStore;
     }
 
     /**
      * Sets the number of CPDAGs to store. This should be set to zero for fast search.
      */
-    public void setnumCPDAGsToStore(int numCPDAGsToStore) {
+    public void setnumCPDAGsToStore(final int numCPDAGsToStore) {
         if (numCPDAGsToStore < 0) {
             throw new IllegalArgumentException("# graphs to store must at least 0: " + numCPDAGsToStore);
         }
@@ -414,13 +414,13 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
      * @return the discrete scoring function being used. By default, BDeu.
      */
     public LocalDiscreteScore getDiscreteScore() {
-        return discreteScore;
+        return this.discreteScore;
     }
 
     /**
      * Sets the discrete scoring function to use.
      */
-    public void setDiscreteScore(LocalDiscreteScore discreteScore) {
+    public void setDiscreteScore(final LocalDiscreteScore discreteScore) {
         this.discreteScore = discreteScore;
     }
 
@@ -428,13 +428,13 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
      * True iff log output should be produced.
      */
     public boolean isLog() {
-        return log;
+        return this.log;
     }
 
     /**
      * Sets whether log output should be produced. Set to false a faster search.
      */
-    public void setLog(boolean log) {
+    public void setLog(final boolean log) {
         this.log = log;
     }
 
@@ -443,19 +443,19 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
      * proceeds from there.
      */
     public Graph getExternalGraph() {
-        return externalGraph;
+        return this.externalGraph;
     }
 
     /**
      * Sets the initial graph.
      */
     public void setExternalGraph(Graph externalGraph) {
-        externalGraph = GraphUtils.replaceNodes(externalGraph, variables);
+        externalGraph = GraphUtils.replaceNodes(externalGraph, this.variables);
 
-        out.println("Initial graph variables: " + externalGraph.getNodes());
-        out.println("Data set variables: " + variables);
+        this.out.println("Initial graph variables: " + externalGraph.getNodes());
+        this.out.println("Data set variables: " + this.variables);
 
-        if (!new HashSet<>(externalGraph.getNodes()).equals(new HashSet<>(variables))) {
+        if (!new HashSet<>(externalGraph.getNodes()).equals(new HashSet<>(this.variables))) {
             throw new IllegalArgumentException("Variables aren't the same.");
         }
 
@@ -465,7 +465,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     /**
      * Sets whether verbose output should be produced.
      */
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 
@@ -473,7 +473,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
      * Sets the output stream that output (except for log output) should be sent to.
      * By detault System.out.
      */
-    public void setOut(PrintStream out) {
+    public void setOut(final PrintStream out) {
         this.out = out;
     }
 
@@ -481,7 +481,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
      * @return the output stream that output (except for log output) should be sent to.
      */
     public PrintStream getOut() {
-        return out;
+        return this.out;
     }
 
     /**
@@ -489,14 +489,14 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
      * will not be added.
      */
     public Graph getAdjacencies() {
-        return adjacencies;
+        return this.adjacencies;
     }
 
     /**
      * Sets the set of preset adjacenies for the algorithm; edges not in this adjacencies graph
      * will not be added.
      */
-    public void setAdjacencies(Graph adjacencies) {
+    public void setAdjacencies(final Graph adjacencies) {
         this.adjacencies = adjacencies;
     }
 
@@ -504,14 +504,14 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
      * @return the depth for the forward reevaluation step.
      */
     public int getDepth() {
-        return depth;
+        return this.depth;
     }
 
     /**
      * -1 for unlimited depth, otherwise a number >= 0. In the forward reevaluation step, subsets of neighbors up to
      * depth in size are considered. Limiting depth can speed up the algorithm.
      */
-    public void setDepth(int depth) {
+    public void setDepth(final int depth) {
         this.depth = depth;
     }
 
@@ -519,7 +519,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
      * A bound on cycle length.
      */
     public int getCycleBound() {
-        return cycleBound;
+        return this.cycleBound;
     }
 
     /**
@@ -527,7 +527,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
      *
      * @param cycleBound The bound, >= 1, or -1 for unlimited.
      */
-    public void setCycleBound(int cycleBound) {
+    public void setCycleBound(final int cycleBound) {
         if (!(cycleBound == -1 || cycleBound >= 1))
             throw new IllegalArgumentException("Cycle bound needs to be -1 or >= 1: " + cycleBound);
         this.cycleBound = cycleBound;
@@ -538,7 +538,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     // Simultaneously finds the first edge to add to an empty graph and finds all length 1 undirectedPaths that are
     // not canceled by other undirectedPaths (the "effect edges")
     private Graph getEffectEdges(final List<Node> nodes) {
-        long start = System.currentTimeMillis();
+        final long start = System.currentTimeMillis();
         final Graph effectEdgesGraph = new EdgeListGraph(nodes);
         final Set<Node> emptySet = new HashSet<>(0);
 
@@ -549,7 +549,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
             private final int from;
             private final int to;
 
-            public EffectTask(int chunk, int from, int to) {
+            public EffectTask(final int chunk, final int from, final int to) {
                 this.chunk = chunk;
                 this.from = from;
                 this.to = to;
@@ -557,18 +557,18 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
 
             @Override
             protected Boolean compute() {
-                if (to - from <= chunk) {
-                    for (int i = from; i < to; i++) {
+                if (this.to - this.from <= this.chunk) {
+                    for (int i = this.from; i < this.to; i++) {
                         synchronized (count) {
-                            if (((count[0]++) + 1) % 1000 == 0) out.println("Initializing effect edges: " + count[0]);
+                            if (((count[0]++) + 1) % 1000 == 0) FgesOrienter.this.out.println("Initializing effect edges: " + count[0]);
                         }
 
-                        Node y = nodes.get(i);
+                        final Node y = nodes.get(i);
 
                         for (int j = 0; j < i; j++) {
-                            Node x = nodes.get(j);
+                            final Node x = nodes.get(j);
 //
-                            if (!graphToOrient.isAdjacentTo(x, y)) {
+                            if (!FgesOrienter.this.graphToOrient.isAdjacentTo(x, y)) {
                                 continue;
                             }
 
@@ -582,18 +582,18 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
                                 }
                             }
 
-                            if (adjacencies != null && !adjacencies.isAdjacentTo(x, y)) {
+                            if (FgesOrienter.this.adjacencies != null && !FgesOrienter.this.adjacencies.isAdjacentTo(x, y)) {
                                 continue;
                             }
 
-                            double bump;
+                            final double bump;
 
-                            if (covariances != null) {
-                                double s1 = localSemScoreSingleParent(hashIndices.get(y), hashIndices.get(x));
-                                double s2 = localSemScoreSingleParent(hashIndices.get(y));
+                            if (FgesOrienter.this.covariances != null) {
+                                final double s1 = localSemScoreSingleParent(FgesOrienter.this.hashIndices.get(y), FgesOrienter.this.hashIndices.get(x));
+                                final double s2 = localSemScoreSingleParent(FgesOrienter.this.hashIndices.get(y));
                                 bump = s1 - s2;
                             } else {
-                                bump = scoreGraphChange(y, Collections.singleton(x), emptySet, hashIndices);
+                                bump = scoreGraphChange(y, Collections.singleton(x), emptySet, FgesOrienter.this.hashIndices);
                             }
 //
 //                            if (bump > 0.0) {
@@ -604,13 +604,13 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
                             }
 
                             if (bump > 0.0) {
-                                Arrow arrow1 = new Arrow(bump, x, y, emptySet, emptySet);
-                                Arrow arrow2 = new Arrow(bump, y, x, emptySet, emptySet);
+                                final Arrow arrow1 = new Arrow(bump, x, y, emptySet, emptySet);
+                                final Arrow arrow2 = new Arrow(bump, y, x, emptySet, emptySet);
 
-                                sortedArrows.add(arrow1);
+                                FgesOrienter.this.sortedArrows.add(arrow1);
                                 addLookupArrow(x, y, arrow1);
 
-                                sortedArrows.add(arrow2);
+                                FgesOrienter.this.sortedArrows.add(arrow2);
                                 addLookupArrow(y, x, arrow2);
                             }
                         }
@@ -618,12 +618,12 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
 
                     return true;
                 } else {
-                    int mid = (to + from) / 2;
+                    final int mid = (this.to + this.from) / 2;
 
-                    List<EffectTask> tasks = new ArrayList<>();
+                    final List<EffectTask> tasks = new ArrayList<>();
 
-                    tasks.add(new EffectTask(chunk, from, mid));
-                    tasks.add(new EffectTask(chunk, mid, to));
+                    tasks.add(new EffectTask(this.chunk, this.from, mid));
+                    tasks.add(new EffectTask(this.chunk, mid, this.to));
 
                     invokeAll(tasks);
 
@@ -633,12 +633,12 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
         }
 
         buildIndexing(nodes);
-        pool.invoke(new EffectTask(minChunk, 0, nodes.size()));
+        this.pool.invoke(new EffectTask(this.minChunk, 0, nodes.size()));
 
-        long stop = System.currentTimeMillis();
+        final long stop = System.currentTimeMillis();
 
-        if (verbose) {
-            out.println("Elapsed getEffectEdges = " + (stop - start) + " ms");
+        if (this.verbose) {
+            this.out.println("Elapsed getEffectEdges = " + (stop - start) + " ms");
         }
 
         return effectEdgesGraph;
@@ -649,15 +649,15 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
      *
      * @param graph The graph in the state prior to the forward equivalence search.
      */
-    private void fes(Graph graph) {
+    private void fes(final Graph graph) {
         TetradLogger.getInstance().log("info", "** FORWARD EQUIVALENCE SEARCH");
 
-        while (!sortedArrows.isEmpty()) {
-            Arrow arrow = sortedArrows.first();
-            sortedArrows.remove(arrow);
+        while (!this.sortedArrows.isEmpty()) {
+            final Arrow arrow = this.sortedArrows.first();
+            this.sortedArrows.remove(arrow);
 
-            Node x = arrow.getA();
-            Node y = arrow.getB();
+            final Node x = arrow.getA();
+            final Node y = arrow.getB();
 
             clearArrow(x, y);
 
@@ -669,16 +669,16 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
                 continue;
             }
 
-            Set<Node> t = arrow.getHOrT();
-            double bump = arrow.getBump();
+            final Set<Node> t = arrow.getHOrT();
+            final double bump = arrow.getBump();
 
             insert(x, y, t, graph, bump);
-            score += bump;
+            this.score += bump;
 
-            Set<Node> visited = rebuildCPDAGRestricted(graph, x, y);
-            Set<Node> toProcess = new HashSet<>();
+            final Set<Node> visited = rebuildCPDAGRestricted(graph, x, y);
+            final Set<Node> toProcess = new HashSet<>();
 
-            for (Node node : visited) {
+            for (final Node node : visited) {
                 final Set<Node> neighbors = getNeighbors(node, graph);
                 final Set<Node> storedNeighbors = this.neighbors.get(node);
 
@@ -688,7 +688,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
                 }
             }
 
-            Edge xy = graph.getEdge(x, y);
+            final Edge xy = graph.getEdge(x, y);
 
             if (xy.pointsTowards(x)) {
                 toProcess.add(x);
@@ -703,8 +703,8 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     }
 
     // Returns the set of nodes {x} U {y} U adj(x) U adj(y).
-    private Set<Node> adjNodes(Graph graph, Node x, Node y) {
-        Set<Node> adj = new HashSet<>();
+    private Set<Node> adjNodes(final Graph graph, final Node x, final Node y) {
+        final Set<Node> adj = new HashSet<>();
         adj.addAll(graph.getAdjacentNodes(x));
         adj.addAll(graph.getAdjacentNodes(y));
         adj.add(x);
@@ -717,17 +717,17 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
      *
      * @param graph The graph in the state after the forward equivalence search.
      */
-    private void bes(Graph graph) {
+    private void bes(final Graph graph) {
         TetradLogger.getInstance().log("info", "** BACKWARD EQUIVALENCE SEARCH");
 
         initializeArrowsBackward(graph);
 
-        while (!sortedArrows.isEmpty()) {
-            Arrow arrow = sortedArrows.first();
-            sortedArrows.remove(arrow);
+        while (!this.sortedArrows.isEmpty()) {
+            final Arrow arrow = this.sortedArrows.first();
+            this.sortedArrows.remove(arrow);
 
-            Node x = arrow.getA();
-            Node y = arrow.getB();
+            final Node x = arrow.getA();
+            final Node y = arrow.getB();
 
             if (!graph.isAdjacentTo(x, y)) continue;
 
@@ -735,11 +735,11 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
                 continue;
             }
 
-            Set<Node> h = arrow.getHOrT();
-            double bump = arrow.getBump();
+            final Set<Node> h = arrow.getHOrT();
+            final double bump = arrow.getBump();
 
             delete(x, y, h, graph, bump);
-            score += bump;
+            this.score += bump;
 
             rebuildCPDAGRestricted(graph, x, y);
 
@@ -751,17 +751,17 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
 
     // Returns true if knowledge is not empty.
     private boolean existsKnowledge() {
-        return !knowledge.isEmpty();
+        return !this.knowledge.isEmpty();
     }
 
     // Initiaizes the sorted arrows and lookup arrows lists for the backward search.
-    private void initializeArrowsBackward(Graph graph) {
-        sortedArrows.clear();
-        lookupArrows.clear();
+    private void initializeArrowsBackward(final Graph graph) {
+        this.sortedArrows.clear();
+        this.lookupArrows.clear();
 
-        for (Edge edge : graph.getEdges()) {
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
+        for (final Edge edge : graph.getEdges()) {
+            final Node x = edge.getNode1();
+            final Node y = edge.getNode2();
 
             if (existsKnowledge()) {
                 if (!getKnowledge().noEdgeRequired(x.getName(), y.getName())) {
@@ -780,20 +780,20 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
 
     // Calcuates new arrows based on changes in the graph for the forward search.
     private void reevaluateForward(final Graph graph, final Set<Node> nodes) {
-        List<Node> _nodes = new ArrayList<>(nodes);
+        final List<Node> _nodes = new ArrayList<>(nodes);
 
-        List<OrderedPair<Node>> pairs = new ArrayList<>();
+        final List<OrderedPair<Node>> pairs = new ArrayList<>();
 
         for (final Node x : _nodes) {
-            List<Node> adj;
+            final List<Node> adj;
 
             if (isFaithfulnessAssumed()) {
-                adj = effectEdgesGraph.getAdjacentNodes(x);
+                adj = this.effectEdgesGraph.getAdjacentNodes(x);
             } else {
-                adj = variables;
+                adj = this.variables;
             }
 
-            for (Node w : adj) {
+            for (final Node w : adj) {
                 pairs.add(new OrderedPair<>(w, x));
             }
         }
@@ -803,7 +803,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
             private final int from;
             private final int to;
 
-            public AdjTask(List<OrderedPair<Node>> pairs, int from, int to) {
+            public AdjTask(final List<OrderedPair<Node>> pairs, final int from, final int to) {
                 this.pairs = pairs;
                 this.from = from;
                 this.to = to;
@@ -811,15 +811,15 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
 
             @Override
             protected Boolean compute() {
-                if (to - from <= 25) {
-                    for (int _w = from; _w < to; _w++) {
-                        final OrderedPair<Node> p = pairs.get(_w);
-                        Node w = p.getFirst();
-                        Node x = p.getSecond();
+                if (this.to - this.from <= 25) {
+                    for (int _w = this.from; _w < this.to; _w++) {
+                        final OrderedPair<Node> p = this.pairs.get(_w);
+                        final Node w = p.getFirst();
+                        final Node x = p.getSecond();
 
                         if (w == x) continue;
 
-                        if (adjacencies != null && !(adjacencies.isAdjacentTo(w, x))) {
+                        if (FgesOrienter.this.adjacencies != null && !(FgesOrienter.this.adjacencies.isAdjacentTo(w, x))) {
                             continue;
                         }
 
@@ -830,12 +830,12 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
 
                     return true;
                 } else {
-                    int mid = (to + from) / 2;
+                    final int mid = (this.to + this.from) / 2;
 
-                    List<AdjTask> tasks = new ArrayList<>();
+                    final List<AdjTask> tasks = new ArrayList<>();
 
-                    tasks.add(new AdjTask(pairs, from, mid));
-                    tasks.add(new AdjTask(pairs, mid, to));
+                    tasks.add(new AdjTask(this.pairs, this.from, mid));
+                    tasks.add(new AdjTask(this.pairs, mid, this.to));
 
                     invokeAll(tasks);
 
@@ -846,16 +846,16 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
 
         final AdjTask task = new AdjTask(pairs, 0, pairs.size());
 
-        pool.invoke(task);
+        this.pool.invoke(task);
 
     }
 
     // Calculates the new arrows for an a->b edge.
     private void calculateArrowsForward(final Node a, final Node b, final Graph graph) {
-        if (isFaithfulnessAssumed() && !effectEdgesGraph.isAdjacentTo(a, b)) return;
-        if (adjacencies != null && !adjacencies.isAdjacentTo(a, b)) return;
+        if (isFaithfulnessAssumed() && !this.effectEdgesGraph.isAdjacentTo(a, b)) return;
+        if (this.adjacencies != null && !this.adjacencies.isAdjacentTo(a, b)) return;
 
-        if (!graphToOrient.isAdjacentTo(a, b)) {
+        if (!this.graphToOrient.isAdjacentTo(a, b)) {
             return;
         }
 
@@ -868,7 +868,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
         final Set<Node> naYX = getNaYX(a, b, graph);
         final List<Node> t = getTNeighbors(a, b, graph);
 
-        final int _depth = Math.min(t.size(), depth == -1 ? 1000 : depth);
+        final int _depth = Math.min(t.size(), this.depth == -1 ? 1000 : this.depth);
 
         clearArrow(a, b);
 
@@ -877,9 +877,9 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
         int[] choice;
 
         while ((choice = gen.next()) != null) {
-            Set<Node> s = GraphUtils.asSet(choice, t);
+            final Set<Node> s = GraphUtils.asSet(choice, t);
 
-            Set<Node> union = new HashSet<>(s);
+            final Set<Node> union = new HashSet<>(s);
             union.addAll(naYX);
 
             // Necessary condition for it to be a clique later (after possible edge removals) is that it be a clique
@@ -893,11 +893,11 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
             }
 
 
-            double bump = insertEval(a, b, s, naYX, graph, hashIndices);
+            final double bump = insertEval(a, b, s, naYX, graph, this.hashIndices);
 
             if (bump > 0.0) {
-                Arrow arrow = new Arrow(bump, a, b, s, naYX);
-                sortedArrows.add(arrow);
+                final Arrow arrow = new Arrow(bump, a, b, s, naYX);
+                this.sortedArrows.add(arrow);
                 addLookupArrow(a, b, arrow);
             }
         }
@@ -912,8 +912,8 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
             private final int from;
             private final int to;
 
-            public BackwardTask(List<Node> nodes, int chunk, int from, int to,
-                                Map<Node, Integer> hashIndices) {
+            public BackwardTask(final List<Node> nodes, final int chunk, final int from, final int to,
+                                final Map<Node, Integer> hashIndices) {
                 this.nodes = new ArrayList<>(nodes);
                 this.hashIndices = new HashMap<>(hashIndices);
                 this.chunk = chunk;
@@ -923,9 +923,9 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
 
             @Override
             protected Boolean compute() {
-                if (to - from <= chunk) {
-                    for (int _w = from; _w < to; _w++) {
-                        final Node w = nodes.get(_w);
+                if (this.to - this.from <= this.chunk) {
+                    for (int _w = this.from; _w < this.to; _w++) {
+                        final Node w = this.nodes.get(_w);
 
                         if (w == x) continue;
                         if (w == y) continue;
@@ -941,12 +941,12 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
 
                     return true;
                 } else {
-                    int mid = (to + from) / 2;
+                    final int mid = (this.to + this.from) / 2;
 
-                    List<BackwardTask> tasks = new ArrayList<>();
+                    final List<BackwardTask> tasks = new ArrayList<>();
 
-                    tasks.add(new BackwardTask(nodes, chunk, from, mid, hashIndices));
-                    tasks.add(new BackwardTask(nodes, chunk, mid, to, hashIndices));
+                    tasks.add(new BackwardTask(this.nodes, this.chunk, this.from, mid, this.hashIndices));
+                    tasks.add(new BackwardTask(this.nodes, this.chunk, mid, this.to, this.hashIndices));
 
                     invokeAll(tasks);
 
@@ -955,14 +955,14 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
             }
         }
 
-        Set<Node> _adj = adjNodes(graph, x, y);
+        final Set<Node> _adj = adjNodes(graph, x, y);
         final List<Node> adj = new ArrayList<>(_adj);
 
-        pool.invoke(new BackwardTask(adj, minChunk, 0, adj.size(), hashIndices));
+        this.pool.invoke(new BackwardTask(adj, this.minChunk, 0, adj.size(), this.hashIndices));
     }
 
     // Calculates the arrows for the removal in the backward direction.
-    private void calculateArrowsBackward(Node a, Node b, Graph graph) {
+    private void calculateArrowsBackward(final Node a, final Node b, final Graph graph) {
         if (a == b) {
             return;
         }
@@ -977,20 +977,20 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
             }
         }
 
-        Set<Node> naYX = getNaYX(a, b, graph);
+        final Set<Node> naYX = getNaYX(a, b, graph);
 
         clearArrow(a, b);
 
-        List<Node> _naYX = new ArrayList<>(naYX);
+        final List<Node> _naYX = new ArrayList<>(naYX);
 //        final int _depth = Math.min(_naYX.size(), depth == -1 ? 1000 : depth);
 
-        DepthChoiceGenerator gen = new DepthChoiceGenerator(_naYX.size(), _naYX.size());
+        final DepthChoiceGenerator gen = new DepthChoiceGenerator(_naYX.size(), _naYX.size());
         int[] choice;
 
         while ((choice = gen.next()) != null) {
-            Set<Node> h = GraphUtils.asSet(choice, _naYX);
+            final Set<Node> h = GraphUtils.asSet(choice, _naYX);
 
-            Set<Node> diff = new HashSet<>(naYX);
+            final Set<Node> diff = new HashSet<>(naYX);
             diff.removeAll(h);
 
             if (!GraphUtils.isClique(diff, graph)) continue;
@@ -1001,11 +1001,11 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
                 }
             }
 
-            double bump = deleteEval(a, b, h, naYX, graph, hashIndices);
+            final double bump = deleteEval(a, b, h, naYX, graph, this.hashIndices);
 
             if (bump > 0.0) {
-                Arrow arrow = new Arrow(bump, a, b, h, naYX);
-                sortedArrows.add(arrow);
+                final Arrow arrow = new Arrow(bump, a, b, h, naYX);
+                this.sortedArrows.add(arrow);
                 addLookupArrow(a, b, arrow);
             }
         }
@@ -1023,7 +1023,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
         private final Set<Node> hOrT;
         private final Set<Node> naYX;
 
-        public Arrow(double bump, Node a, Node b, Set<Node> hOrT, Set<Node> naYX) {
+        public Arrow(final double bump, final Node a, final Node b, final Set<Node> hOrT, final Set<Node> naYX) {
             this.bump = bump;
             this.a = a;
             this.b = b;
@@ -1032,46 +1032,46 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
         }
 
         public double getBump() {
-            return bump;
+            return this.bump;
         }
 
         public Node getA() {
-            return a;
+            return this.a;
         }
 
         public Node getB() {
-            return b;
+            return this.b;
         }
 
         public Set<Node> getHOrT() {
-            return hOrT;
+            return this.hOrT;
         }
 
         public Set<Node> getNaYX() {
-            return naYX;
+            return this.naYX;
         }
 
         // Sorting by bump, high to low.
-        public int compareTo(Arrow arrow) {
+        public int compareTo(final Arrow arrow) {
             return Double.compare(arrow.getBump(), getBump());
         }
 
         public String toString() {
-            return "Arrow<" + a + "->" + b + " bump = " + bump + " t/h = " + hOrT + " naYX = " + naYX + ">";
+            return "Arrow<" + this.a + "->" + this.b + " bump = " + this.bump + " t/h = " + this.hOrT + " naYX = " + this.naYX + ">";
         }
     }
 
     // Get all nodes that are connected to Y by an undirected edge and not adjacent to X.
-    private static List<Node> getTNeighbors(Node x, Node y, Graph graph) {
-        List<Edge> yEdges = graph.getEdges(y);
-        List<Node> tNeighbors = new ArrayList<>();
+    private static List<Node> getTNeighbors(final Node x, final Node y, final Graph graph) {
+        final List<Edge> yEdges = graph.getEdges(y);
+        final List<Node> tNeighbors = new ArrayList<>();
 
-        for (Edge edge : yEdges) {
+        for (final Edge edge : yEdges) {
             if (!Edges.isUndirectedEdge(edge)) {
                 continue;
             }
 
-            Node z = edge.getDistalNode(y);
+            final Node z = edge.getDistalNode(y);
 
             if (graph.isAdjacentTo(z, x)) {
                 continue;
@@ -1084,16 +1084,16 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     }
 
     // Get all nodes that are connected to Y by an undirected edge.
-    private static Set<Node> getNeighbors(Node y, Graph graph) {
-        List<Edge> yEdges = graph.getEdges(y);
-        Set<Node> neighbors = new HashSet<>();
+    private static Set<Node> getNeighbors(final Node y, final Graph graph) {
+        final List<Edge> yEdges = graph.getEdges(y);
+        final Set<Node> neighbors = new HashSet<>();
 
-        for (Edge edge : yEdges) {
+        for (final Edge edge : yEdges) {
             if (!Edges.isUndirectedEdge(edge)) {
                 continue;
             }
 
-            Node z = edge.getDistalNode(y);
+            final Node z = edge.getDistalNode(y);
 
             neighbors.add(z);
         }
@@ -1102,35 +1102,35 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     }
 
     // Evaluate the Insert(X, Y, T) operator (Definition 12 from Chickering, 2002).
-    private double insertEval(Node x, Node y, Set<Node> t, Set<Node> naYX, Graph graph,
-                              Map<Node, Integer> hashIndices) {
-        Set<Node> set1 = new HashSet<>(naYX);
+    private double insertEval(final Node x, final Node y, final Set<Node> t, final Set<Node> naYX, final Graph graph,
+                              final Map<Node, Integer> hashIndices) {
+        final Set<Node> set1 = new HashSet<>(naYX);
         set1.addAll(t);
         set1.addAll(graph.getParents(y));
         set1.remove(x);
 
-        Set<Node> set2 = new HashSet<>(set1);
+        final Set<Node> set2 = new HashSet<>(set1);
         set1.add(x);
 
         return scoreGraphChange(y, set1, set2, hashIndices);
     }
 
     // Evaluate the Delete(X, Y, T) operator (Definition 12 from Chickering, 2002).
-    private double deleteEval(Node x, Node y, Set<Node> h, Set<Node> naYX, Graph graph,
-                              Map<Node, Integer> hashIndices) {
-        Set<Node> set1 = new HashSet<>(naYX);
+    private double deleteEval(final Node x, final Node y, final Set<Node> h, final Set<Node> naYX, final Graph graph,
+                              final Map<Node, Integer> hashIndices) {
+        final Set<Node> set1 = new HashSet<>(naYX);
         set1.removeAll(h);
         set1.addAll(graph.getParents(y));
         set1.remove(x);
 
-        Set<Node> set2 = new HashSet<>(set1);
+        final Set<Node> set2 = new HashSet<>(set1);
         set2.add(x);
 
         return scoreGraphChange(y, set1, set2, hashIndices);
     }
 
     // Do an actual insertion. (Definition 12 from Chickering, 2002).
-    private void insert(Node x, Node y, Set<Node> t, Graph graph, double bump) {
+    private void insert(final Node x, final Node y, final Set<Node> t, final Graph graph, final double bump) {
         if (graph.isAdjacentTo(x, y)) {
             return; // The initial graph may already have put this edge in the graph.
 //            throw new IllegalArgumentException(x + " and " + y + " are already adjacent in the graph.");
@@ -1138,86 +1138,86 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
 
         Edge trueEdge = null;
 
-        if (trueGraph != null) {
-            Node _x = trueGraph.getNode(x.getName());
-            Node _y = trueGraph.getNode(y.getName());
-            trueEdge = trueGraph.getEdge(_x, _y);
+        if (this.trueGraph != null) {
+            final Node _x = this.trueGraph.getNode(x.getName());
+            final Node _y = this.trueGraph.getNode(y.getName());
+            trueEdge = this.trueGraph.getEdge(_x, _y);
         }
 
         graph.addDirectedEdge(x, y);
 
-        if (log) {
-            String label = trueGraph != null && trueEdge != null ? "*" : "";
+        if (this.log) {
+            final String label = this.trueGraph != null && trueEdge != null ? "*" : "";
             TetradLogger.getInstance().log("insertedEdges", graph.getNumEdges() + ". INSERT " + graph.getEdge(x, y) +
                     " " + t + " " + bump + " " + label);
         }
 
-        int numEdges = graph.getNumEdges();
-        if (numEdges % 1000 == 0) out.println("Num edges added: " + numEdges);
+        final int numEdges = graph.getNumEdges();
+        if (numEdges % 1000 == 0) this.out.println("Num edges added: " + numEdges);
 
-        if (verbose) {
-            String label = trueGraph != null && trueEdge != null ? "*" : "";
-            out.println(graph.getNumEdges() + ". INSERT " + graph.getEdge(x, y) +
+        if (this.verbose) {
+            final String label = this.trueGraph != null && trueEdge != null ? "*" : "";
+            this.out.println(graph.getNumEdges() + ". INSERT " + graph.getEdge(x, y) +
                     " " + t + " " + bump + " " + label);
         }
 
-        for (Node _t : t) {
-            Edge oldEdge = graph.getEdge(_t, y);
+        for (final Node _t : t) {
+            final Edge oldEdge = graph.getEdge(_t, y);
 
             if (oldEdge == null) throw new IllegalArgumentException("Not adjacent: " + _t + ", " + y);
 
             graph.removeEdge(_t, y);
             graph.addDirectedEdge(_t, y);
 
-            if (log && verbose) {
+            if (this.log && this.verbose) {
                 TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldEdge + " to " +
                         graph.getEdge(_t, y));
-                out.println("--- Directing " + oldEdge + " to " +
+                this.out.println("--- Directing " + oldEdge + " to " +
                         graph.getEdge(_t, y));
             }
         }
     }
 
     // Do an actual deletion (Definition 13 from Chickering, 2002).
-    private void delete(Node x, Node y, Set<Node> subset, Graph graph, double bump) {
+    private void delete(final Node x, final Node y, final Set<Node> subset, final Graph graph, final double bump) {
 
         Edge trueEdge = null;
 
-        if (trueGraph != null) {
-            Node _x = trueGraph.getNode(x.getName());
-            Node _y = trueGraph.getNode(y.getName());
-            trueEdge = trueGraph.getEdge(_x, _y);
+        if (this.trueGraph != null) {
+            final Node _x = this.trueGraph.getNode(x.getName());
+            final Node _y = this.trueGraph.getNode(y.getName());
+            trueEdge = this.trueGraph.getEdge(_x, _y);
         }
 
         graph.removeEdge(x, y);
 
-        if (verbose) {
-            int numEdges = graph.getNumEdges();
-            if (numEdges % 1000 == 0) out.println("Num edges (backwards) = " + numEdges);
+        if (this.verbose) {
+            final int numEdges = graph.getNumEdges();
+            if (numEdges % 1000 == 0) this.out.println("Num edges (backwards) = " + numEdges);
         }
 
-        if (log) {
-            Edge oldEdge = graph.getEdge(x, y);
-            String label = trueGraph != null && trueEdge != null ? "*" : "";
+        if (this.log) {
+            final Edge oldEdge = graph.getEdge(x, y);
+            final String label = this.trueGraph != null && trueEdge != null ? "*" : "";
             TetradLogger.getInstance().log("deletedEdges", (graph.getNumEdges() - 1) + ". DELETE " + oldEdge +
                     " " + subset + " (" + bump + ") " + label);
-            out.println((graph.getNumEdges()) + ". DELETE " + oldEdge +
+            this.out.println((graph.getNumEdges()) + ". DELETE " + oldEdge +
                     " " + subset + " (" + bump + ") " + label);
         }
 
-        for (Node h : subset) {
+        for (final Node h : subset) {
             Edge oldEdge = graph.getEdge(y, h);
 
             graph.removeEdge(y, h);
             graph.addDirectedEdge(y, h);
 
-            if (log) {
+            if (this.log) {
                 TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldEdge + " to " +
                         graph.getEdge(y, h));
             }
 
-            if (verbose) {
-                out.println("--- Directing " + oldEdge + " to " +
+            if (this.verbose) {
+                this.out.println("--- Directing " + oldEdge + " to " +
                         graph.getEdge(y, h));
             }
 
@@ -1234,13 +1234,13 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
                 graph.removeEdge(x, h);
                 graph.addDirectedEdge(x, h);
 
-                if (log) {
+                if (this.log) {
                     TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldEdge + " to " +
                             edge);
                 }
 
-                if (verbose) {
-                    out.println("--- Directing " + oldEdge + " to " +
+                if (this.verbose) {
+                    this.out.println("--- Directing " + oldEdge + " to " +
                             edge);
                 }
             }
@@ -1249,21 +1249,21 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
 
     // Test if the candidate insertion is a valid operation
     // (Theorem 15 from Chickering, 2002).
-    private boolean validInsert(Node x, Node y, Set<Node> s, Set<Node> naYX, Graph graph) {
-        Set<Node> union = new HashSet<>(s);
+    private boolean validInsert(final Node x, final Node y, final Set<Node> s, final Set<Node> naYX, final Graph graph) {
+        final Set<Node> union = new HashSet<>(s);
         union.addAll(naYX);
 
         // Note s U NaYX must be a clique, but this has already been checked. Nevertheless, at this
         // point it must be verified that all nodes in s U NaYX are neighbors of Y, since some of
         // the edges g---Y may have been oriented in the interim.
-        return allNeighbors(y, union, graph) && !existsUnblockedSemiDirectedPath(y, x, union, graph, cycleBound);
+        return allNeighbors(y, union, graph) && !existsUnblockedSemiDirectedPath(y, x, union, graph, this.cycleBound);
 
     }
 
     // Returns true if all of the members of 'union' are neighbors of y.
-    private boolean allNeighbors(Node y, Set<Node> union, Graph graph) {
-        for (Node n : union) {
-            Edge e = graph.getEdge(y, n);
+    private boolean allNeighbors(final Node y, final Set<Node> union, final Graph graph) {
+        for (final Node n : union) {
+            final Edge e = graph.getEdge(y, n);
             if (e == null) {
                 return false;
             }
@@ -1276,21 +1276,21 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     }
 
     // Test if the candidate deletion is a valid operation (Theorem 17 from Chickering, 2002).
-    private boolean validDelete(Node y, Set<Node> h, Set<Node> naXY, Graph graph) {
-        Set<Node> set = new HashSet<>(naXY);
+    private boolean validDelete(final Node y, final Set<Node> h, final Set<Node> naXY, final Graph graph) {
+        final Set<Node> set = new HashSet<>(naXY);
         set.removeAll(h);
         return GraphUtils.isClique(set, graph) && allNeighbors(y, set, graph);
     }
 
     // Adds edges required by knowledge.
-    private void addRequiredEdges(Graph graph) {
+    private void addRequiredEdges(final Graph graph) {
         if (!existsKnowledge()) return;
 
-        for (Iterator<KnowledgeEdge> it = getKnowledge().requiredEdgesIterator(); it.hasNext(); ) {
-            KnowledgeEdge next = it.next();
+        for (final Iterator<KnowledgeEdge> it = getKnowledge().requiredEdgesIterator(); it.hasNext(); ) {
+            final KnowledgeEdge next = it.next();
 
-            Node nodeA = graph.getNode(next.getFrom());
-            Node nodeB = graph.getNode(next.getTo());
+            final Node nodeA = graph.getNode(next.getFrom());
+            final Node nodeB = graph.getNode(next.getTo());
 
             if (!graph.isAncestorOf(nodeB, nodeA)) {
                 graph.removeEdges(nodeA, nodeB);
@@ -1298,13 +1298,13 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
                 TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeA, nodeB));
             }
         }
-        for (Edge edge : graph.getEdges()) {
+        for (final Edge edge : graph.getEdges()) {
             final String A = edge.getNode1().getName();
             final String B = edge.getNode2().getName();
 
-            if (knowledge.isForbidden(A, B)) {
-                Node nodeA = edge.getNode1();
-                Node nodeB = edge.getNode2();
+            if (this.knowledge.isForbidden(A, B)) {
+                final Node nodeA = edge.getNode1();
+                final Node nodeB = edge.getNode2();
                 if (nodeA == null || nodeB == null) throw new NullPointerException();
 
                 if (graph.isAdjacentTo(nodeA, nodeB) && !graph.isChildOf(nodeA, nodeB)) {
@@ -1322,9 +1322,9 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
                         TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
                     }
                 }
-            } else if (knowledge.isForbidden(B, A)) {
-                Node nodeA = edge.getNode2();
-                Node nodeB = edge.getNode1();
+            } else if (this.knowledge.isForbidden(B, A)) {
+                final Node nodeA = edge.getNode2();
+                final Node nodeB = edge.getNode1();
                 if (nodeA == null || nodeB == null) throw new NullPointerException();
 
                 if (graph.isAdjacentTo(nodeA, nodeB) && !graph.isChildOf(nodeA, nodeB)) {
@@ -1348,8 +1348,8 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     // Use background knowledge to decide if an insert or delete operation does not orient edges in a forbidden
     // direction according to prior knowledge. If some orientation is forbidden in the subset, the whole subset is
     // forbidden.
-    private boolean validSetByKnowledge(Node y, Set<Node> subset) {
-        for (Node node : subset) {
+    private boolean validSetByKnowledge(final Node y, final Set<Node> subset) {
+        for (final Node node : subset) {
             if (getKnowledge().isForbidden(node.getName(), y.getName())) {
                 return false;
             }
@@ -1359,16 +1359,16 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
 
     // Find all nodes that are connected to Y by an undirected edge that are adjacent to X (that is, by undirected or
     // directed edge).
-    private static Set<Node> getNaYX(Node x, Node y, Graph graph) {
-        List<Edge> yEdges = graph.getEdges(y);
-        Set<Node> nayx = new HashSet<>();
+    private static Set<Node> getNaYX(final Node x, final Node y, final Graph graph) {
+        final List<Edge> yEdges = graph.getEdges(y);
+        final Set<Node> nayx = new HashSet<>();
 
-        for (Edge edge : yEdges) {
+        for (final Edge edge : yEdges) {
             if (!Edges.isUndirectedEdge(edge)) {
                 continue;
             }
 
-            Node z = edge.getDistalNode(y);
+            final Node z = edge.getDistalNode(y);
 
             if (!graph.isAdjacentTo(z, x)) {
                 continue;
@@ -1382,16 +1382,16 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
 
     // Returns true is a path consisting of undirected and directed edges toward 'to' exists of
     // length at most 'bound'. Cycle checker in other words.
-    private boolean existsUnblockedSemiDirectedPath(Node from, Node to, Set<Node> cond, Graph G, int bound) {
-        Queue<Node> Q = new LinkedList<>();
-        Set<Node> V = new HashSet<>();
+    private boolean existsUnblockedSemiDirectedPath(final Node from, final Node to, final Set<Node> cond, final Graph G, final int bound) {
+        final Queue<Node> Q = new LinkedList<>();
+        final Set<Node> V = new HashSet<>();
         Q.offer(from);
         V.add(from);
         Node e = null;
         int distance = 0;
 
         while (!Q.isEmpty()) {
-            Node t = Q.remove();
+            final Node t = Q.remove();
             if (t == to) return true;
 
             if (e == t) {
@@ -1400,9 +1400,9 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
                 if (distance > (bound == -1 ? 1000 : bound)) return true;
             }
 
-            for (Node u : G.getAdjacentNodes(t)) {
-                Edge edge = G.getEdge(t, u);
-                Node c = traverseSemiDirected(t, edge);
+            for (final Node u : G.getAdjacentNodes(t)) {
+                final Edge edge = G.getEdge(t, u);
+                final Node c = traverseSemiDirected(t, edge);
                 if (c == null) continue;
                 if (cond.contains(c)) continue;
                 if (c == to) return true;
@@ -1423,7 +1423,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     }
 
     // Used to find semidirected undirectedPaths for cycle checking.
-    private static Node traverseSemiDirected(Node node, Edge edge) {
+    private static Node traverseSemiDirected(final Node node, final Edge edge) {
         if (node == edge.getNode1()) {
             if (edge.getEndpoint1() == Endpoint.TAIL) {
                 return edge.getNode2();
@@ -1437,8 +1437,8 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     }
 
     // Runs the Meek rules on just the changed nodes.
-    private Set<Node> rebuildCPDAGRestricted(Graph graph, Node x, Node y) {
-        Set<Node> visited = new HashSet<>();
+    private Set<Node> rebuildCPDAGRestricted(final Graph graph, final Node x, final Node y) {
+        final Set<Node> visited = new HashSet<>();
 
         visited.addAll(reorientNode(graph, x));
         visited.addAll(reorientNode(graph, y));
@@ -1451,21 +1451,21 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     }
 
     // Runs Meek rules on jsut the changed nodes.
-    private Set<Node> reorientNode(Graph graph, Node a) {
-        List<Node> nodes = graph.getAdjacentNodes(a);
+    private Set<Node> reorientNode(final Graph graph, final Node a) {
+        final List<Node> nodes = graph.getAdjacentNodes(a);
         nodes.add(a);
 
-        List<Edge> edges = graph.getEdges(a);
+        final List<Edge> edges = graph.getEdges(a);
         SearchGraphUtils.basicCpdagRestricted2(graph, a);
         addRequiredEdges(graph);
-        Set<Node> visited = meekOrientRestricted(graph, nodes, getKnowledge());
+        final Set<Node> visited = meekOrientRestricted(graph, nodes, getKnowledge());
 
-        List<Edge> newEdges = graph.getEdges(a);
+        final List<Edge> newEdges = graph.getEdges(a);
         newEdges.removeAll(edges); // The newly oriented edges.
 
-        for (Edge edge : newEdges) {
+        for (final Edge edge : newEdges) {
             if (Edges.isUndirectedEdge(edge)) {
-                Node _node = edge.getDistalNode(a);
+                final Node _node = edge.getDistalNode(a);
                 visited.addAll(reorientNode(graph, _node));
             }
         }
@@ -1474,8 +1474,8 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     }
 
     // Runs Meek rules on just the changed nodes.
-    private Set<Node> meekOrientRestricted(Graph graph, List<Node> nodes, IKnowledge knowledge) {
-        MeekRulesRestricted rules = new MeekRulesRestricted();
+    private Set<Node> meekOrientRestricted(final Graph graph, final List<Node> nodes, final IKnowledge knowledge) {
+        final MeekRulesRestricted rules = new MeekRulesRestricted();
         rules.setOrientInPlace(false);
         rules.setKnowledge(knowledge);
         rules.orientImplied(graph, new HashSet<>(nodes));
@@ -1483,12 +1483,12 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     }
 
     // Sets the data set, possibly calculating a covariane matrix.
-    private void setDataSet(DataSet dataSet) {
+    private void setDataSet(final DataSet dataSet) {
         this.variables = dataSet.getVariables();
         this.discrete = dataSet.isDiscrete();
 
         if (!isDiscrete()) {
-            CovarianceMatrix covariances = new CovarianceMatrix(dataSet);
+            final CovarianceMatrix covariances = new CovarianceMatrix(dataSet);
             setCovMatrix(covariances);
         }
 
@@ -1501,24 +1501,24 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
         this.variables = covarianceMatrix.getVariables();
         this.sampleSize = covarianceMatrix.getSampleSize();
 
-        out.println("Calculating variances");
+        this.out.println("Calculating variances");
     }
 
     // Maps nodes to their indices for quick lookup.
-    private void buildIndexing(List<Node> nodes) {
+    private void buildIndexing(final List<Node> nodes) {
         this.hashIndices = new ConcurrentHashMap<>();
-        for (Node node : nodes) {
-            this.hashIndices.put(node, variables.indexOf(node));
+        for (final Node node : nodes) {
+            this.hashIndices.put(node, this.variables.indexOf(node));
         }
     }
 
     // Removes informatilon associated with an edge x->y.
-    private void clearArrow(Node x, Node y) {
+    private void clearArrow(final Node x, final Node y) {
         final OrderedPair<Node> pair = new OrderedPair<>(x, y);
         final Set<Arrow> lookupArrows = this.lookupArrows.get(pair);
 
         if (lookupArrows != null) {
-            sortedArrows.removeAll(lookupArrows);
+            this.sortedArrows.removeAll(lookupArrows);
         }
 
         this.lookupArrows.remove(pair);
@@ -1526,13 +1526,13 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
 
     // Adds the given arrow for the adjacency i->j. These all are for i->j but may have
     // different T or H or NaYX sets, and so different bumps.
-    private void addLookupArrow(Node i, Node j, Arrow arrow) {
-        OrderedPair<Node> pair = new OrderedPair<>(i, j);
-        Set<Arrow> arrows = lookupArrows.get(pair);
+    private void addLookupArrow(final Node i, final Node j, final Arrow arrow) {
+        final OrderedPair<Node> pair = new OrderedPair<>(i, j);
+        Set<Arrow> arrows = this.lookupArrows.get(pair);
 
         if (arrows == null) {
             arrows = new ConcurrentSkipListSet<>();
-            lookupArrows.put(pair, arrows);
+            this.lookupArrows.put(pair, arrows);
         }
 
         arrows.add(arrow);
@@ -1543,23 +1543,23 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     /**
      * Scores the given DAG, up to a constant.
      */
-    public double scoreDag(Graph dag) {
+    public double scoreDag(final Graph dag) {
         buildIndexing(dag.getNodes());
 
         double score = 0.0;
 
-        for (Node y : dag.getNodes()) {
-            Set<Node> parents = new HashSet<>(dag.getParents(y));
+        for (final Node y : dag.getNodes()) {
+            final Set<Node> parents = new HashSet<>(dag.getParents(y));
             int nextIndex = -1;
             for (int i = 0; i < getVariables().size(); i++) {
-                nextIndex = hashIndices.get(variables.get(i));
+                nextIndex = this.hashIndices.get(this.variables.get(i));
             }
-            int parentIndices[] = new int[parents.size()];
-            Iterator<Node> pi = parents.iterator();
+            final int[] parentIndices = new int[parents.size()];
+            final Iterator<Node> pi = parents.iterator();
             int count = 0;
             while (pi.hasNext()) {
-                Node nextParent = pi.next();
-                parentIndices[count++] = hashIndices.get(nextParent);
+                final Node nextParent = pi.next();
+                parentIndices[count++] = this.hashIndices.get(nextParent);
             }
 
             if (this.isDiscrete()) {
@@ -1572,16 +1572,17 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     }
 
     // Scores the difference between y with 'parents1' as parents an y with 'parents2' as parents.
-    private double scoreGraphChange(Node y, Set<Node> parents1,
-                                    Set<Node> parents2, Map<Node, Integer> hashIndices) {
-        int yIndex = hashIndices.get(y);
+    private double scoreGraphChange(final Node y, final Set<Node> parents1,
+                                    final Set<Node> parents2, final Map<Node, Integer> hashIndices) {
+        final int yIndex = hashIndices.get(y);
 
-        double score1, score2;
+        final double score1;
+        final double score2;
 
-        int[] parentIndices1 = new int[parents1.size()];
+        final int[] parentIndices1 = new int[parents1.size()];
 
         int count = -1;
-        for (Node parent : parents1) {
+        for (final Node parent : parents1) {
             parentIndices1[++count] = hashIndices.get(parent);
         }
 
@@ -1591,10 +1592,10 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
             score1 = localSemScore(yIndex, parentIndices1);
         }
 
-        int[] parentIndices2 = new int[parents2.size()];
+        final int[] parentIndices2 = new int[parents2.size()];
 
         int count2 = -1;
-        for (Node parent : parents2) {
+        for (final Node parent : parents2) {
             parentIndices2[++count2] = hashIndices.get(parent);
         }
 
@@ -1608,83 +1609,83 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     }
 
     // Compute the local BDeu score of (i, parents(i)). See (Chickering, 2002).
-    private double localDiscreteScore(int i, int parents[]) {
+    private double localDiscreteScore(final int i, final int[] parents) {
         return getDiscreteScore().localScore(i, parents);
     }
 
     // Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model.
-    private double localSemScore(int i, int[] parents) {
-        ICovarianceMatrix cov = getCovMatrix();
+    private double localSemScore(final int i, final int[] parents) {
+        final ICovarianceMatrix cov = getCovMatrix();
         double residualVariance = cov.getValue(i, i);
-        int n = sampleSize();
-        int p = parents.length;
-        Matrix covxx = getSelection1(cov, parents);
+        final int n = sampleSize();
+        final int p = parents.length;
+        final Matrix covxx = getSelection1(cov, parents);
         Matrix covxxInv;
         try {
             covxxInv = covxx.inverse();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             printMinimalLinearlyDependentSet(parents, cov);
-            out.println("Using generalized inverse.");
+            this.out.println("Using generalized inverse.");
             covxxInv = covxx.ginverse();
         }
-        Vector covxy = getSelection2(cov, parents, i);
-        Vector b = covxxInv.times(covxy);
+        final Vector covxy = getSelection2(cov, parents, i);
+        final Vector b = covxxInv.times(covxy);
         residualVariance -= covxy.dotProduct(b);
 
-        if (residualVariance <= 0 && verbose) {
-            out.println("Nonpositive residual varianceY: resVar / varianceY = " + (residualVariance / cov.getValue(i, i)));
+        if (residualVariance <= 0 && this.verbose) {
+            this.out.println("Nonpositive residual varianceY: resVar / varianceY = " + (residualVariance / cov.getValue(i, i)));
             return Double.NaN;
         }
 
-        double c = getPenaltyDiscount();
+        final double c = getPenaltyDiscount();
         return score(residualVariance, n, p, c);
     }
 
     // Specialized scoring method for a single parent. Used to speed up the effect edges search.
-    private double localSemScoreSingleParent(int i, int parent) {
-        double residualVariance = covariances.getValue(i, i);
-        int n = sampleSize();
-        int p = 1;
-        final double covXX = covariances.getValue(parent, parent);
-        double covxxInv = 1.0 / covXX;
-        double covxy = getCovMatrix().getValue(i, parent);
-        double b = covxxInv * covxy;
+    private double localSemScoreSingleParent(final int i, final int parent) {
+        double residualVariance = this.covariances.getValue(i, i);
+        final int n = sampleSize();
+        final int p = 1;
+        final double covXX = this.covariances.getValue(parent, parent);
+        final double covxxInv = 1.0 / covXX;
+        final double covxy = getCovMatrix().getValue(i, parent);
+        final double b = covxxInv * covxy;
         residualVariance -= covxy * b;
 
-        if (residualVariance <= 0 && verbose) {
-            out.println("Nonpositive residual varianceY: resVar / varianceY = " + (residualVariance / getCovMatrix().getValue(i, i)));
+        if (residualVariance <= 0 && this.verbose) {
+            this.out.println("Nonpositive residual varianceY: resVar / varianceY = " + (residualVariance / getCovMatrix().getValue(i, i)));
             return Double.NaN;
         }
 
-        double c = getPenaltyDiscount();
+        final double c = getPenaltyDiscount();
         return score(residualVariance, n, p, c);
     }
 
     // Calculates the BIC score.
-    private double score(double residualVariance, int n, int p, double c) {
+    private double score(final double residualVariance, final int n, final int p, final double c) {
         return -n * Math.log(residualVariance) - c * getK(p) * Math.log(n);
     }
 
     // Degrees of freedom--a stringent choice.
-    private int getK(int p) {
+    private int getK(final int p) {
         return (p + 1) * (p + 2) / 2;
 //        return p + 1;
     }
 
     // Specialized scoring method for a no parents. Used to speed up the effect edges search.
-    private double localSemScoreSingleParent(int i) {
-        ICovarianceMatrix cov = getCovMatrix();
+    private double localSemScoreSingleParent(final int i) {
+        final ICovarianceMatrix cov = getCovMatrix();
 
-        double residualVariance = cov.getValue(i, i);
-        int n = sampleSize();
-        int p = 0;
+        final double residualVariance = cov.getValue(i, i);
+        final int n = sampleSize();
+        final int p = 0;
 
-        if (residualVariance <= 0 && verbose) {
-            out.println("Nonpositive residual varianceY: resVar / varianceY = " + (residualVariance / cov.getValue(i, i)));
+        if (residualVariance <= 0 && this.verbose) {
+            this.out.println("Nonpositive residual varianceY: resVar / varianceY = " + (residualVariance / cov.getValue(i, i)));
             return Double.NaN;
         }
 
-        double c = getPenaltyDiscount();
+        final double c = getPenaltyDiscount();
         return score(residualVariance, n, p, c);
     }
 
@@ -1695,8 +1696,8 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     Vector lastColumnCov = new Vector(0);
     int lastK = -1;
 
-    private Matrix getSelection1(ICovarianceMatrix cov, int[] rows) {
-        Matrix m = new Matrix(rows.length, rows.length);
+    private Matrix getSelection1(final ICovarianceMatrix cov, final int[] rows) {
+        final Matrix m = new Matrix(rows.length, rows.length);
 
         for (int i = 0; i < rows.length; i++) {
             for (int j = i; j < rows.length; j++) {
@@ -1706,51 +1707,51 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
             }
         }
 
-        lastSquareIndices = rows;
-        lastSquareCovs = m;
+        this.lastSquareIndices = rows;
+        this.lastSquareCovs = m;
 
         return m;
     }
 
-    private Vector getSelection2(ICovarianceMatrix cov, int[] rows, int k) {
-        Vector m = new Vector(rows.length);
+    private Vector getSelection2(final ICovarianceMatrix cov, final int[] rows, final int k) {
+        final Vector m = new Vector(rows.length);
 
         for (int i = 0; i < rows.length; i++) {
             final double value = cov.getValue(rows[i], k);
             m.set(i, value);
         }
 
-        lastColumnCov = m;
-        lastColumnIndices = rows;
-        lastK = k;
+        this.lastColumnCov = m;
+        this.lastColumnIndices = rows;
+        this.lastK = k;
 
         return m;
     }
 
     // This is supposed to print a smallest subset of parents that causes a singular matrix exception.
     // Doesn't quite work but should.
-    private void printMinimalLinearlyDependentSet(int[] parents, ICovarianceMatrix cov) {
-        List<Node> _parents = new ArrayList<>();
-        for (int p : parents) _parents.add(variables.get(p));
+    private void printMinimalLinearlyDependentSet(final int[] parents, final ICovarianceMatrix cov) {
+        final List<Node> _parents = new ArrayList<>();
+        for (final int p : parents) _parents.add(this.variables.get(p));
 
-        DepthChoiceGenerator gen = new DepthChoiceGenerator(_parents.size(), _parents.size());
+        final DepthChoiceGenerator gen = new DepthChoiceGenerator(_parents.size(), _parents.size());
         int[] choice;
 
         while ((choice = gen.next()) != null) {
-            int[] sel = new int[choice.length];
-            List<Node> _sel = new ArrayList<>();
+            final int[] sel = new int[choice.length];
+            final List<Node> _sel = new ArrayList<>();
             for (int m = 0; m < choice.length; m++) {
                 sel[m] = parents[m];
-                _sel.add(variables.get(sel[m]));
+                _sel.add(this.variables.get(sel[m]));
             }
 
-            Matrix m = cov.getSelection(sel, sel);
+            final Matrix m = cov.getSelection(sel, sel);
 
             try {
                 m.inverse();
-            } catch (Exception e2) {
+            } catch (final Exception e2) {
 //                e2.printStackTrace();
-                out.println("### Linear dependence among variables: " + _sel);
+                this.out.println("### Linear dependence among variables: " + _sel);
             }
         }
     }
@@ -1760,28 +1761,28 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     }
 
     private List<Node> getVariables() {
-        return variables;
+        return this.variables;
     }
 
     private ICovarianceMatrix getCovMatrix() {
-        return covariances;
+        return this.covariances;
     }
 
     private boolean isDiscrete() {
-        return discrete;
+        return this.discrete;
     }
 
     // Stores the graph, if its score knocks out one of the top ones.
-    private void storeGraph(Graph graph) {
-        if (numCPDAGsToStore < 1) return;
+    private void storeGraph(final Graph graph) {
+        if (this.numCPDAGsToStore < 1) return;
 
-        if (topGraphs.isEmpty() || score > topGraphs.first().getScore()) {
-            Graph graphCopy = new EdgeListGraph(graph);
+        if (this.topGraphs.isEmpty() || this.score > this.topGraphs.first().getScore()) {
+            final Graph graphCopy = new EdgeListGraph(graph);
 
-            topGraphs.add(new ScoredGraph(graphCopy, score));
+            this.topGraphs.add(new ScoredGraph(graphCopy, this.score));
 
-            if (topGraphs.size() > getnumCPDAGsToStore()) {
-                topGraphs.remove(topGraphs.first());
+            if (this.topGraphs.size() > getnumCPDAGsToStore()) {
+                this.topGraphs.remove(this.topGraphs.first());
             }
         }
     }

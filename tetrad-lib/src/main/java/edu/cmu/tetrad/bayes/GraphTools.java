@@ -44,12 +44,12 @@ public final class GraphTools {
      * @param separators set of separator sets
      * @return parent cliques
      */
-    public static Map<Node, Node> getCliqueTree(Node[] ordering, Map<Node, Set<Node>> cliques, Map<Node, Set<Node>> separators) {
-        Map<Node, Node> parentCliques = new HashMap<>();
+    public static Map<Node, Node> getCliqueTree(final Node[] ordering, final Map<Node, Set<Node>> cliques, final Map<Node, Set<Node>> separators) {
+        final Map<Node, Node> parentCliques = new HashMap<>();
 
         Arrays.stream(ordering).forEach(v -> {
             if (cliques.containsKey(v) && separators.containsKey(v) && !separators.get(v).isEmpty()) {
-                for (Node w : ordering) {
+                for (final Node w : ordering) {
                     if (v != w && cliques.containsKey(w) && cliques.get(w).containsAll(separators.get(v))) {
                         parentCliques.put(v, w);
                         break;
@@ -69,15 +69,15 @@ public final class GraphTools {
      * @param cliques  set of cliques
      * @return set of separator sets
      */
-    public static Map<Node, Set<Node>> getSeparators(Node[] ordering, Map<Node, Set<Node>> cliques) {
-        Map<Node, Set<Node>> separators = new HashMap<>();
+    public static Map<Node, Set<Node>> getSeparators(final Node[] ordering, final Map<Node, Set<Node>> cliques) {
+        final Map<Node, Set<Node>> separators = new HashMap<>();
 
-        Set<Node> processedNodes = new HashSet<>();
+        final Set<Node> processedNodes = new HashSet<>();
         Arrays.stream(ordering).forEach(node -> {
             if (cliques.containsKey(node)) {
-                Set<Node> clique = cliques.get(node);
+                final Set<Node> clique = cliques.get(node);
                 if (!clique.isEmpty()) {
-                    Set<Node> separator = new HashSet<>(clique);
+                    final Set<Node> separator = new HashSet<>(clique);
                     separator.retainAll(processedNodes);
                     separators.put(node, separator);
                     processedNodes.addAll(clique);
@@ -96,16 +96,16 @@ public final class GraphTools {
      * @param ordering maximum cardinality ordering
      * @return set of cliques
      */
-    public static Map<Node, Set<Node>> getCliques(Node[] ordering, Graph graph) {
-        Map<Node, Set<Node>> cliques = new HashMap<>();
+    public static Map<Node, Set<Node>> getCliques(final Node[] ordering, final Graph graph) {
+        final Map<Node, Set<Node>> cliques = new HashMap<>();
         for (int i = ordering.length - 1; i >= 0; i--) {
-            Node v = ordering[i];
+            final Node v = ordering[i];
 
-            Set<Node> clique = new HashSet<>();
+            final Set<Node> clique = new HashSet<>();
             clique.add(v);
 
             for (int j = 0; j < i; j++) {
-                Node w = ordering[j];
+                final Node w = ordering[j];
                 if (graph.isAdjacentTo(v, w)) {
                     clique.add(w);
                 }
@@ -137,19 +137,19 @@ public final class GraphTools {
      * @param graph    moral graph
      * @param ordering maximum cardinality ordering
      */
-    public static void fillIn(Graph graph, Node[] ordering) {
-        int numOfNodes = ordering.length;
+    public static void fillIn(final Graph graph, final Node[] ordering) {
+        final int numOfNodes = ordering.length;
 
         // in reverse order, insert edges between any non-adjacent neighbors that are lower numbered in the ordering.
         for (int i = numOfNodes - 1; i >= 0; i--) {
-            Node v = ordering[i];
+            final Node v = ordering[i];
 
             // find pairs of neighbors with lower order
             for (int j = 0; j < i; j++) {
-                Node w = ordering[j];
+                final Node w = ordering[j];
                 if (graph.isAdjacentTo(v, w)) {
                     for (int k = j + 1; k < i; k++) {
-                        Node x = ordering[k];
+                        final Node x = ordering[k];
                         if (graph.isAdjacentTo(x, v)) {
                             graph.addUndirectedEdge(x, w); // fill in edge
                         }
@@ -166,22 +166,22 @@ public final class GraphTools {
      * @param graph moral graph
      * @return maximum cardinality ordering of the graph
      */
-    public static Node[] getMaximumCardinalityOrdering(Graph graph) {
-        int numOfNodes = graph.getNumNodes();
+    public static Node[] getMaximumCardinalityOrdering(final Graph graph) {
+        final int numOfNodes = graph.getNumNodes();
         if (numOfNodes == 0) {
             return new Node[0];
         }
 
-        Node[] ordering = new Node[numOfNodes];
-        Set<Node> numbered = new HashSet<>(numOfNodes);
+        final Node[] ordering = new Node[numOfNodes];
+        final Set<Node> numbered = new HashSet<>(numOfNodes);
         for (int i = 0; i < numOfNodes; i++) {
             // find an unnumbered node that is adjacent to the most number of numbered nodes
             Node maxCardinalityNode = null;
             int maxCardinality = -1;
-            for (Node v : graph.getNodes()) {
+            for (final Node v : graph.getNodes()) {
                 if (!numbered.contains(v)) {
                     // count the number of times node v is adjacent to numbered node w
-                    int cardinality = (int) graph.getAdjacentNodes(v).stream()
+                    final int cardinality = (int) graph.getAdjacentNodes(v).stream()
                             .filter(numbered::contains)
                             .count();
 
@@ -209,8 +209,8 @@ public final class GraphTools {
      * @param graph to moralized
      * @return a moral graph
      */
-    public static Graph moralize(Graph graph) {
-        Graph moralGraph = new EdgeListGraph(graph.getNodes());
+    public static Graph moralize(final Graph graph) {
+        final Graph moralGraph = new EdgeListGraph(graph.getNodes());
 
         // make skeleton
         graph.getEdges()
@@ -219,13 +219,13 @@ public final class GraphTools {
         // add edges to connect parents with common child
         graph.getNodes()
                 .forEach(node -> {
-                    List<Node> parents = graph.getParents(node);
+                    final List<Node> parents = graph.getParents(node);
                     if (!(parents == null || parents.isEmpty()) && parents.size() > 1) {
-                        Node[] p = parents.toArray(new Node[0]);
+                        final Node[] p = parents.toArray(new Node[0]);
                         for (int i = 0; i < p.length; i++) {
                             for (int j = i + 1; j < p.length; j++) {
-                                Node node1 = p[i];
-                                Node node2 = p[j];
+                                final Node node1 = p[i];
+                                final Node node2 = p[j];
                                 if (!moralGraph.isAdjacentTo(node1, node2)) {
                                     moralGraph.addUndirectedEdge(node1, node2);
                                 }

@@ -59,7 +59,7 @@ public final class SemProposition implements TetradSerializable {
     /**
      * Creates a new Proposition which allows all values.
      */
-    public SemProposition(SemIm semIm) {
+    public SemProposition(final SemIm semIm) {
         if (semIm == null) {
             throw new NullPointerException();
         }
@@ -67,17 +67,17 @@ public final class SemProposition implements TetradSerializable {
         this.semIm = semIm;
         this.values = new double[semIm.getVariableNodes().size()];
 
-        for (int i = 0; i < values.length; i++) {
-            values[i] = Double.NaN;
+        for (int i = 0; i < this.values.length; i++) {
+            this.values[i] = Double.NaN;
         }
     }
 
-    public SemProposition(SemProposition proposition) {
+    public SemProposition(final SemProposition proposition) {
         this.semIm = proposition.semIm;
         this.values = Arrays.copyOf(proposition.values, proposition.values.length);
     }
 
-    public static SemProposition tautology(SemIm semIm) {
+    public static SemProposition tautology(final SemIm semIm) {
         return new SemProposition(semIm);
     }
 
@@ -123,7 +123,7 @@ public final class SemProposition implements TetradSerializable {
      * @return the number of variables for the proposition.
      */
     public int getNumVariables() {
-        return values.length;
+        return this.values.length;
     }
 
     /**
@@ -135,7 +135,7 @@ public final class SemProposition implements TetradSerializable {
         return -1;
     }
 
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (o == null) {
             return false;
         }
@@ -144,15 +144,15 @@ public final class SemProposition implements TetradSerializable {
             throw new IllegalArgumentException();
         }
 
-        SemProposition proposition = (SemProposition) o;
+        final SemProposition proposition = (SemProposition) o;
 
-        if (!(semIm == proposition.semIm)) {
+        if (!(this.semIm == proposition.semIm)) {
             return false;
         }
 
-        for (int i = 0; i < values.length; i++) {
-            if (!(Double.isNaN(values[i]) && Double.isNaN(proposition.values[i]))) {
-                if (values[i] != proposition.values[i]) {
+        for (int i = 0; i < this.values.length; i++) {
+            if (!(Double.isNaN(this.values[i]) && Double.isNaN(proposition.values[i]))) {
+                if (this.values[i] != proposition.values[i]) {
                     return false;
                 }
             }
@@ -163,19 +163,19 @@ public final class SemProposition implements TetradSerializable {
 
     public int hashCode() {
         int hashCode = 37;
-        hashCode = 19 * hashCode + semIm.hashCode();
-        hashCode = 19 * hashCode + Arrays.hashCode(values);
+        hashCode = 19 * hashCode + this.semIm.hashCode();
+        hashCode = 19 * hashCode + Arrays.hashCode(this.values);
         return hashCode;
     }
 
     public String toString() {
-        List nodes = semIm.getVariableNodes();
-        StringBuilder buf = new StringBuilder();
+        final List nodes = this.semIm.getVariableNodes();
+        final StringBuilder buf = new StringBuilder();
         buf.append("\nProposition: ");
 
         for (int i = 0; i < nodes.size(); i++) {
-            Node node = (Node) nodes.get(i);
-            buf.append("\n").append(node).append(" = ").append(values[i]);
+            final Node node = (Node) nodes.get(i);
+            buf.append("\n").append(node).append(" = ").append(this.values[i]);
         }
 
         return buf.toString();
@@ -194,27 +194,27 @@ public final class SemProposition implements TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
 
-    public double getValue(int i) {
-        return values[i];
+    public double getValue(final int i) {
+        return this.values[i];
     }
 
-    public void setValue(int i, double value) {
-        values[i] = value;
+    public void setValue(final int i, final double value) {
+        this.values[i] = value;
     }
 
-    public double getValue(Node node) {
-        List nodes = semIm.getVariableNodes();
-        return values[nodes.indexOf(node)];
+    public double getValue(final Node node) {
+        final List nodes = this.semIm.getVariableNodes();
+        return this.values[nodes.indexOf(node)];
     }
 
-    public void setValue(Node node, double value) {
-        List nodes = semIm.getVariableNodes();
-        values[nodes.indexOf(node)] = value;
+    public void setValue(final Node node, final double value) {
+        final List nodes = this.semIm.getVariableNodes();
+        this.values[nodes.indexOf(node)] = value;
     }
 }
 

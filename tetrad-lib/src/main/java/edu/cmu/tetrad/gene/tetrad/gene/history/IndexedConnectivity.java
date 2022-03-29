@@ -61,7 +61,7 @@ public class IndexedConnectivity implements TetradSerializable {
      * Constructs an indexed connectivity for the getModel state of the given lag
      * graph, including all edges.
      */
-    public IndexedConnectivity(LagGraph lagGraph) {
+    public IndexedConnectivity(final LagGraph lagGraph) {
         this(lagGraph, false);
     }
 
@@ -73,7 +73,7 @@ public class IndexedConnectivity implements TetradSerializable {
      *                           gene one time step back to the same gene in the
      *                           getModel time step.
      */
-    public IndexedConnectivity(LagGraph lagGraph, boolean excludeSelfOneBack) {
+    public IndexedConnectivity(final LagGraph lagGraph, final boolean excludeSelfOneBack) {
         if (lagGraph == null) {
             throw new NullPointerException("Lag graph must not be null.");
         }
@@ -83,29 +83,29 @@ public class IndexedConnectivity implements TetradSerializable {
         this.parents = new IndexedParent[this.factors.size()][];
 
         for (int i = 0; i < this.factors.size(); i++) {
-            String factor = this.factors.get(i);
-            SortedSet<LaggedFactor> factorParents = lagGraph.getParents(factor);
-            List<IndexedParent> list = new ArrayList<>();
+            final String factor = this.factors.get(i);
+            final SortedSet<LaggedFactor> factorParents = lagGraph.getParents(factor);
+            final List<IndexedParent> list = new ArrayList<>();
 
-            for (LaggedFactor factorParent1 : factorParents) {
-                int index = this.factors.indexOf(factorParent1.getFactor());
-                int lag = factorParent1.getLag();
+            for (final LaggedFactor factorParent1 : factorParents) {
+                final int index = this.factors.indexOf(factorParent1.getFactor());
+                final int lag = factorParent1.getLag();
 
                 if (excludeSelfOneBack && index == i && lag == 1) {
                     continue;
                 }
 
-                IndexedParent parent = new IndexedParent(index, lag);
+                final IndexedParent parent = new IndexedParent(index, lag);
                 list.add(parent);
             }
 
-            IndexedParent[] _parents = new IndexedParent[list.size()];
+            final IndexedParent[] _parents = new IndexedParent[list.size()];
 
             for (int i2 = 0; i2 < list.size(); i2++) {
                 _parents[i2] = list.get(i2);
             }
 
-            parents[i] = _parents;
+            this.parents[i] = _parents;
         }
     }
 
@@ -131,24 +131,24 @@ public class IndexedConnectivity implements TetradSerializable {
     /**
      * Returns the (string name of) the factor at the given index.
      */
-    public String getFactor(int factor) {
+    public String getFactor(final int factor) {
         return this.factors.get(factor);
     }
 
     /**
      * Returns the index of the given String factor.
      */
-    public int getIndex(String factor) {
+    public int getIndex(final String factor) {
         return this.factors.indexOf(factor);
     }
 
     /**
      * Returns the index of the given parent for the given factor.
      */
-    public int getIndex(String factor, LaggedFactor parent) {
-        int factorIndex = this.factors.indexOf(factor);
-        int parentIndex = this.factors.indexOf(parent.getFactor());
-        IndexedParent indexedParent =
+    public int getIndex(final String factor, final LaggedFactor parent) {
+        final int factorIndex = this.factors.indexOf(factor);
+        final int parentIndex = this.factors.indexOf(parent.getFactor());
+        final IndexedParent indexedParent =
                 new IndexedParent(parentIndex, parent.getLag());
         return getIndex(factorIndex, indexedParent);
     }
@@ -158,9 +158,9 @@ public class IndexedConnectivity implements TetradSerializable {
      * given IndexedParent, or -1 if the given IndexedParent is not equal to any
      * parent.
      */
-    public int getIndex(int factor, IndexedParent parent) {
-        for (int i = 0; i < parents[factor].length; i++) {
-            if (parent.equals(parents[factor][i])) {
+    public int getIndex(final int factor, final IndexedParent parent) {
+        for (int i = 0; i < this.parents[factor].length; i++) {
+            if (parent.equals(this.parents[factor][i])) {
                 return i;
             }
         }
@@ -171,14 +171,14 @@ public class IndexedConnectivity implements TetradSerializable {
      * Returns the number of parents of the given factor. Each parent is a
      * factor at a given lag.
      */
-    public int getNumParents(int factor) {
+    public int getNumParents(final int factor) {
         return this.parents[factor].length;
     }
 
     /**
      * Returns the given parent as an IndexedParent.
      */
-    public IndexedParent getParent(int factor, int parent) {
+    public IndexedParent getParent(final int factor, final int parent) {
         return this.parents[factor][parent];
     }
 
@@ -190,19 +190,19 @@ public class IndexedConnectivity implements TetradSerializable {
      */
     public String toString() {
 
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
 
         buf.append("\nIndexed connectivity:\n");
 
         for (int i = 0; i < getNumFactors(); i++) {
-            String factor = getFactor(i);
+            final String factor = getFactor(i);
 
             buf.append("\n");
             buf.append(factor);
             buf.append("\t<-- ");
 
             for (int j = 0; j < getNumParents(i); j++) {
-                IndexedParent parent = getParent(i, j);
+                final IndexedParent parent = getParent(i, j);
                 buf.append("\t");
                 buf.append(getFactor(parent.getIndex()));
                 buf.append(":");
@@ -228,15 +228,15 @@ public class IndexedConnectivity implements TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (factors == null) {
+        if (this.factors == null) {
             throw new NullPointerException();
         }
 
-        if (parents == null) {
+        if (this.parents == null) {
             throw new IllegalStateException();
         }
 

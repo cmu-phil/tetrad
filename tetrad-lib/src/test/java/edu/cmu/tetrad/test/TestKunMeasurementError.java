@@ -42,7 +42,7 @@ import edu.cmu.tetrad.util.Parameters;
 public class TestKunMeasurementError {
 
     public void TestCycles_Data_fMRI_FASK() {
-        Parameters parameters = new Parameters();
+        final Parameters parameters = new Parameters();
 
         parameters.set("numRuns", 20);
 
@@ -55,7 +55,7 @@ public class TestKunMeasurementError {
         parameters.set("faithfulnessAssumed", false);
         parameters.set("maxDegree", 100);
 
-        Statistics statistics = new Statistics();
+        final Statistics statistics = new Statistics();
 
 //        statistics.add(new ParameterColumn("determinismThreshold"));
         statistics.add(new AdjacencyPrecision());
@@ -63,10 +63,10 @@ public class TestKunMeasurementError {
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
 
-        Simulations simulations = new Simulations();
+        final Simulations simulations = new Simulations();
 
 //        String dir = "/Users/user/Downloads/Simul1_T500";
-        String dir = "/Users/user/Downloads/Simul1_T2000";
+        final String dir = "/Users/user/Downloads/Simul1_T2000";
 //        String dir = "/Users/user/Downloads/Simul2_T500";
 //        String dir = "/Users/user/Downloads/Simul2_T2000";
 
@@ -77,16 +77,16 @@ public class TestKunMeasurementError {
         simulations.add(new LoadContinuousDataAndSingleGraphKun(
                 dir, "Cov_tilde_hat"));
 //
-        Algorithms algorithms = new Algorithms();
+        final Algorithms algorithms = new Algorithms();
 
-        IndependenceWrapper test = new SemBicTest();
-        ScoreWrapper score = new SemBicScore();
+        final IndependenceWrapper test = new SemBicTest();
+        final ScoreWrapper score = new SemBicScore();
 
         algorithms.add(new PC(test));
         algorithms.add(new Fges(score));
         algorithms.add(new Pcd());
 
-        Comparison comparison = new Comparison();
+        final Comparison comparison = new Comparison();
 
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
@@ -98,7 +98,7 @@ public class TestKunMeasurementError {
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
     }
 
-    public static void main(String... args) {
+    public static void main(final String... args) {
         new TestKunMeasurementError().TestCycles_Data_fMRI_FASK();
     }
 }

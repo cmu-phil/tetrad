@@ -119,7 +119,7 @@ public final class Session implements TetradSerializable {
     /**
      * Constructs a new session with the given name. (The name cannot be null.)
      */
-    public Session(String name) {
+    public Session(final String name) {
         setName(name);
     }
 
@@ -135,7 +135,7 @@ public final class Session implements TetradSerializable {
     /**
      * Sets the name.
      */
-    public final void setName(String name) {
+    public final void setName(final String name) {
         if (name == null) {
             throw new NullPointerException("Name must not be null.");
         }
@@ -165,7 +165,7 @@ public final class Session implements TetradSerializable {
      * @see edu.cmu.tetrad.session.SessionNode#isFreshlyCreated
      * @see edu.cmu.tetrad.session.SessionNode#resetToFreshlyCreated
      */
-    public void addNode(SessionNode node) {
+    public void addNode(final SessionNode node) {
         if (node == null) {
             throw new NullPointerException("Node cannot be null.");
         }
@@ -196,7 +196,7 @@ public final class Session implements TetradSerializable {
      * list are removed. Also, any listeners that are not SessionNodes are
      * removed from each node.
      */
-    public void addNodeList(List<SessionNode> nodes) {
+    public void addNodeList(final List<SessionNode> nodes) {
 
         if (nodes == null) {
             throw new NullPointerException(
@@ -213,7 +213,7 @@ public final class Session implements TetradSerializable {
 
         // Check to make sure none of the nodes has a name already in the
         // session.
-        for (SessionNode node : nodes) {
+        for (final SessionNode node : nodes) {
             if (existsNodeByName(node.getDisplayName())) {
                 throw new IllegalArgumentException(
                         "Attempt to add node to the " +
@@ -224,7 +224,7 @@ public final class Session implements TetradSerializable {
 
         // Add the nodes, removing any parents or children not in the list.
         for (int i = 0; i < nodes.size(); i++) {
-            SessionNode node = nodes.get(i);
+            final SessionNode node = nodes.get(i);
             node.restrictConnectionsToList(nodes);
             node.restrictListenersToSessionNodes();
             this.nodes.add(node);
@@ -242,10 +242,10 @@ public final class Session implements TetradSerializable {
      *                                  session.
      * @see edu.cmu.tetrad.session.SessionNode#resetToFreshlyCreated
      */
-    public void removeNode(SessionNode node) {
-        if (nodes.contains(node)) {
+    public void removeNode(final SessionNode node) {
+        if (this.nodes.contains(node)) {
             node.resetToFreshlyCreated();
-            nodes.remove(node);
+            this.nodes.remove(node);
             node.removeSessionListener(getSessionHandler());
             getSessionSupport().fireNodeRemoved(node);
         } else {
@@ -258,7 +258,7 @@ public final class Session implements TetradSerializable {
      * @return the getModel set of session nodes.
      */
     public Set<SessionNode> getNodes() {
-        return new HashSet<>(nodes);
+        return new HashSet<>(this.nodes);
     }
 
     /**
@@ -267,28 +267,28 @@ public final class Session implements TetradSerializable {
     public void clearNodes() {
 
         // Use the removeNode method to make sure events are fired.
-        Set<SessionNode> _nodes = new HashSet<>(this.nodes);
+        final Set<SessionNode> _nodes = new HashSet<>(this.nodes);
 
-        for (SessionNode node : _nodes) {
+        for (final SessionNode node : _nodes) {
             removeNode(node);
         }
     }
 
-    public boolean contains(SessionNode node) {
+    public boolean contains(final SessionNode node) {
         return this.nodes.contains(node);
     }
 
     /**
      * Adds a session listener.
      */
-    public void addSessionListener(SessionListener l) {
+    public void addSessionListener(final SessionListener l) {
         getSessionSupport().addSessionListener(l);
     }
 
     /**
      * Removes a session listener.
      */
-    public void removeSessionListener(SessionListener l) {
+    public void removeSessionListener(final SessionListener l) {
         getSessionSupport().removeSessionListener(l);
     }
 
@@ -303,7 +303,7 @@ public final class Session implements TetradSerializable {
         if (this.sessionSupport == null) {
             this.sessionSupport = new SessionSupport(this);
 
-            for (SessionNode node : this.nodes) {
+            for (final SessionNode node : this.nodes) {
                 node.addSessionListener(getSessionHandler());
             }
         }
@@ -328,12 +328,12 @@ public final class Session implements TetradSerializable {
     /**
      * @return true iff a node exists in the session with the given name.
      */
-    private boolean existsNodeByName(String name) {
+    private boolean existsNodeByName(final String name) {
         if (name == null) {
             return false;
         }
 
-        for (SessionNode node : getNodes()) {
+        for (final SessionNode node : getNodes()) {
             if (name.equals(node.getDisplayName())) {
                 return true;
             }
@@ -342,18 +342,18 @@ public final class Session implements TetradSerializable {
     }
 
     public boolean isSessionChanged() {
-        return sessionChanged;
+        return this.sessionChanged;
     }
 
-    public void setSessionChanged(boolean sessionChanged) {
+    public void setSessionChanged(final boolean sessionChanged) {
         this.sessionChanged = sessionChanged;
     }
 
     public boolean isNewSession() {
-        return newSession;
+        return this.newSession;
     }
 
-    public void setNewSession(boolean newSession) {
+    public void setNewSession(final boolean newSession) {
         this.newSession = newSession;
     }
 
@@ -368,7 +368,7 @@ public final class Session implements TetradSerializable {
         /**
          * This method is called when a node is added.
          */
-        public void nodeAdded(SessionEvent event) {
+        public void nodeAdded(final SessionEvent event) {
             getSessionSupport().fireSessionEvent(event);
             setSessionChanged(true);
         }
@@ -376,7 +376,7 @@ public final class Session implements TetradSerializable {
         /**
          * This method is called when a node is removed.
          */
-        public void nodeRemoved(SessionEvent event) {
+        public void nodeRemoved(final SessionEvent event) {
             getSessionSupport().fireSessionEvent(event);
             setSessionChanged(true);
         }
@@ -384,7 +384,7 @@ public final class Session implements TetradSerializable {
         /**
          * This method is called when a parent is added.
          */
-        public void parentAdded(SessionEvent event) {
+        public void parentAdded(final SessionEvent event) {
             getSessionSupport().fireSessionEvent(event);
             setSessionChanged(true);
         }
@@ -392,7 +392,7 @@ public final class Session implements TetradSerializable {
         /**
          * This method is called when a parent is removed.
          */
-        public void parentRemoved(SessionEvent event) {
+        public void parentRemoved(final SessionEvent event) {
             getSessionSupport().fireSessionEvent(event);
             setSessionChanged(true);
         }
@@ -400,7 +400,7 @@ public final class Session implements TetradSerializable {
         /**
          * This method is called when a model is created for a node.
          */
-        public void modelCreated(SessionEvent event) {
+        public void modelCreated(final SessionEvent event) {
             getSessionSupport().fireSessionEvent(event);
             setSessionChanged(true);
         }
@@ -408,7 +408,7 @@ public final class Session implements TetradSerializable {
         /**
          * This method is called when a model is destroyed for a node.
          */
-        public void modelDestroyed(SessionEvent event) {
+        public void modelDestroyed(final SessionEvent event) {
             getSessionSupport().fireSessionEvent(event);
             setSessionChanged(true);
         }
@@ -417,13 +417,13 @@ public final class Session implements TetradSerializable {
          * Relays addingEdge events up the chain, without changing their
          * source.
          */
-        public void addingEdge(SessionEvent event) {
+        public void addingEdge(final SessionEvent event) {
             getSessionSupport().fireSessionEvent(event, false);
         }
     }
 
     public boolean isEmpty() {
-        return nodes.isEmpty();
+        return this.nodes.isEmpty();
     }
 
     /**
@@ -439,20 +439,20 @@ public final class Session implements TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (name == null) {
+        if (this.name == null) {
             throw new NullPointerException();
         }
 
-        if (nodes == null) {
+        if (this.nodes == null) {
             throw new NullPointerException();
         }
 
-        sessionChanged = false;
-        newSession = false;
+        this.sessionChanged = false;
+        this.newSession = false;
     }
 }
 

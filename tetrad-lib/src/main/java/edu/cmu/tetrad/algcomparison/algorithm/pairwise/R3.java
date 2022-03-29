@@ -41,37 +41,37 @@ public class R3 implements Algorithm, TakesExternalGraph {
     public R3() {
     }
 
-    public R3(Algorithm algorithm) {
+    public R3(final Algorithm algorithm) {
         this.algorithm = algorithm;
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(final DataModel dataSet, final Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            Graph graph = algorithm.search(dataSet, parameters);
+            final Graph graph = this.algorithm.search(dataSet, parameters);
 
             if (graph != null) {
-                externalGraph = graph;
+                this.externalGraph = graph;
             } else {
                 throw new IllegalArgumentException("This R3 algorithm needs both data and a graph source as inputs; it \n"
                         + "will orient the edges in the input graph using the data");
             }
 
-            List<DataSet> dataSets = new ArrayList<>();
+            final List<DataSet> dataSets = new ArrayList<>();
             dataSets.add(DataUtils.getContinuousDataSet(dataSet));
 
-            Lofs2 lofs = new Lofs2(externalGraph, dataSets);
+            final Lofs2 lofs = new Lofs2(this.externalGraph, dataSets);
             lofs.setRule(Lofs2.Rule.R3);
 
             return lofs.orient();
         } else {
-            R3 r3 = new R3(algorithm);
-            if (externalGraph != null) {
-                r3.setExternalGraph(externalGraph);
+            final R3 r3 = new R3(this.algorithm);
+            if (this.externalGraph != null) {
+                r3.setExternalGraph(this.externalGraph);
             }
 
-            DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, r3, parameters.getInt(Params.NUMBER_RESAMPLING));
+            final DataSet data = (DataSet) dataSet;
+            final GeneralResamplingTest search = new GeneralResamplingTest(data, r3, parameters.getInt(Params.NUMBER_RESAMPLING));
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -97,14 +97,14 @@ public class R3 implements Algorithm, TakesExternalGraph {
     }
 
     @Override
-    public Graph getComparisonGraph(Graph graph) {
+    public Graph getComparisonGraph(final Graph graph) {
         return new EdgeListGraph(graph);
     }
 
     @Override
     public String getDescription() {
-        return "R3, entropy based pairwise orientation" + (algorithm != null ? " with initial graph from "
-                + algorithm.getDescription() : "");
+        return "R3, entropy based pairwise orientation" + (this.algorithm != null ? " with initial graph from "
+                + this.algorithm.getDescription() : "");
     }
 
     @Override
@@ -114,10 +114,10 @@ public class R3 implements Algorithm, TakesExternalGraph {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
+        final List<String> parameters = new ArrayList<>();
 
-        if (algorithm != null && !algorithm.getParameters().isEmpty()) {
-            parameters.addAll(algorithm.getParameters());
+        if (this.algorithm != null && !this.algorithm.getParameters().isEmpty()) {
+            parameters.addAll(this.algorithm.getParameters());
         }
 
         parameters.add(Params.VERBOSE);
@@ -127,16 +127,16 @@ public class R3 implements Algorithm, TakesExternalGraph {
 
     @Override
     public Graph getExternalGraph() {
-        return externalGraph;
+        return this.externalGraph;
     }
 
     @Override
-    public void setExternalGraph(Graph externalGraph) {
+    public void setExternalGraph(final Graph externalGraph) {
         this.externalGraph = externalGraph;
     }
 
     @Override
-    public void setExternalGraph(Algorithm algorithm) {
+    public void setExternalGraph(final Algorithm algorithm) {
         if (algorithm == null) {
             throw new IllegalArgumentException("This R3 algorithm needs both data and a graph source as inputs; it \n"
                     + "will orient the edges in the input graph using the data.");

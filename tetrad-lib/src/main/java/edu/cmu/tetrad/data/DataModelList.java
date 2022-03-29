@@ -74,12 +74,12 @@ public final class DataModelList extends AbstractList<DataModel>
         super();
     }
 
-    public DataModelList(DataModelList dataModelList) {
+    public DataModelList(final DataModelList dataModelList) {
         super();
 
         try {
             throw new NullPointerException();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             e.printStackTrace();
         }
 
@@ -101,8 +101,8 @@ public final class DataModelList extends AbstractList<DataModel>
     /**
      * @return this model, as an Object.
      */
-    public DataModel get(int index) {
-        return modelList.get(index);
+    public DataModel get(final int index) {
+        return this.modelList.get(index);
     }
 
     /**
@@ -110,7 +110,7 @@ public final class DataModelList extends AbstractList<DataModel>
      */
     @Override
     public int size() {
-        return modelList.size();
+        return this.modelList.size();
     }
 
     public List<Node> getVariables() {
@@ -124,7 +124,7 @@ public final class DataModelList extends AbstractList<DataModel>
         return this.knowledge.copy();
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(final IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -150,8 +150,8 @@ public final class DataModelList extends AbstractList<DataModel>
      * @param element the DataModel to be added. (Note that this must be a
      *                DataModel.)
      */
-    public void add(int index, DataModel element) {
-        modelList.add(index, element);
+    public void add(final int index, final DataModel element) {
+        this.modelList.add(index, element);
     }
 
     /**
@@ -162,7 +162,7 @@ public final class DataModelList extends AbstractList<DataModel>
      */
     @Override
     public boolean isEmpty() {
-        return modelList.isEmpty();
+        return this.modelList.isEmpty();
     }
 
     /**
@@ -173,15 +173,15 @@ public final class DataModelList extends AbstractList<DataModel>
      * @return
      */
     public boolean containsEmptyData() {
-        if (modelList.isEmpty()) {
+        if (this.modelList.isEmpty()) {
             return true;
         } else {
-            return modelList.get(0).getVariableNames().isEmpty();
+            return this.modelList.get(0).getVariableNames().isEmpty();
         }
     }
 
     public List<DataModel> getModelList() {
-        return modelList;
+        return this.modelList;
     }
 
     /**
@@ -191,8 +191,8 @@ public final class DataModelList extends AbstractList<DataModel>
      * @param index the index of the DataModel to remove.
      * @return the DataModel just removed.
      */
-    public DataModel remove(int index) {
-        DataModel removedObject = this.modelList.remove(index);
+    public DataModel remove(final int index) {
+        final DataModel removedObject = this.modelList.remove(index);
 
         if (removedObject == this.selectedModel) {
             this.selectedModel = null;
@@ -215,7 +215,7 @@ public final class DataModelList extends AbstractList<DataModel>
         }
     }
 
-    public void setSelectedModel(DataModel model) {
+    public void setSelectedModel(final DataModel model) {
         if (model == null) {
             throw new NullPointerException();
         }
@@ -229,13 +229,13 @@ public final class DataModelList extends AbstractList<DataModel>
      * Gets the name of the data model list.
      */
     public String getName() {
-        return name;
+        return this.name;
     }
 
     /**
      * Sets the name of the data model list..
      */
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
@@ -243,9 +243,9 @@ public final class DataModelList extends AbstractList<DataModel>
      * @return a string representation of the data model list.
      */
     public String toString() {
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
         buf.append("Data Model List <");
-        for (Object aModelList : modelList) {
+        for (final Object aModelList : this.modelList) {
             buf.append(aModelList).append(", ");
         }
         buf.append(">");
@@ -268,7 +268,7 @@ public final class DataModelList extends AbstractList<DataModel>
     }
 
     @Override
-    public Node getVariable(String name) {
+    public Node getVariable(final String name) {
         return null;
     }
 
@@ -279,11 +279,11 @@ public final class DataModelList extends AbstractList<DataModel>
 
     public int hashCode() {
         int hashcode = 17;
-        hashcode += 17 * name.hashCode();
+        hashcode += 17 * this.name.hashCode();
         return hashcode;
     }
 
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (o == null) {
             return false;
         }
@@ -292,9 +292,9 @@ public final class DataModelList extends AbstractList<DataModel>
             return false;
         }
 
-        DataModelList list = (DataModelList) o;
+        final DataModelList list = (DataModelList) o;
 
-        return name.equals(list.name) && modelList.equals(list.modelList) && knowledge.equals(list.knowledge) && selectedModel.equals(list.selectedModel);
+        return this.name.equals(list.name) && this.modelList.equals(list.modelList) && this.knowledge.equals(list.knowledge) && this.selectedModel.equals(list.selectedModel);
 
     }
 
@@ -311,15 +311,15 @@ public final class DataModelList extends AbstractList<DataModel>
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (modelList == null) {
+        if (this.modelList == null) {
             throw new NullPointerException();
         }
 
-        if (knowledge == null) {
+        if (this.knowledge == null) {
             throw new NullPointerException();
         }
     }

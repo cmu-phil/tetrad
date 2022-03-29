@@ -28,25 +28,25 @@ public class NodesInCyclesPrecision implements Statistic {
     }
 
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+    public double getValue(Graph trueGraph, final Graph estGraph, final DataModel dataModel) {
         trueGraph = GraphUtils.replaceNodes(trueGraph, estGraph.getNodes());
 
-        Set<Node> inTrue = getNodesInCycles(trueGraph);
-        Set<Node> inEst = getNodesInCycles(estGraph);
+        final Set<Node> inTrue = getNodesInCycles(trueGraph);
+        final Set<Node> inEst = getNodesInCycles(estGraph);
 
-        Set<Node> tp = new HashSet<>(inTrue);
+        final Set<Node> tp = new HashSet<>(inTrue);
         tp.retainAll(inEst);
 
-        Set<Node> fp = new HashSet<>(inEst);
+        final Set<Node> fp = new HashSet<>(inEst);
         fp.removeAll(inTrue);
 
         return tp.size() / (double) (tp.size() + fp.size());
     }
 
-    private Set<Node> getNodesInCycles(Graph graph) {
-        Set<Node> inCycle = new HashSet<>();
+    private Set<Node> getNodesInCycles(final Graph graph) {
+        final Set<Node> inCycle = new HashSet<>();
 
-        for (Node x : graph.getNodes()) {
+        for (final Node x : graph.getNodes()) {
             if (GraphUtils.existsDirectedPathFromTo(x, x, graph)) {
                 inCycle.add(x);
             }
@@ -56,7 +56,7 @@ public class NodesInCyclesPrecision implements Statistic {
     }
 
     @Override
-    public double getNormValue(double value) {
+    public double getNormValue(final double value) {
         return value;
     }
 }

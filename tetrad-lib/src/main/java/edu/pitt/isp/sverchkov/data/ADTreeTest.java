@@ -40,13 +40,13 @@ import java.util.TreeMap;
  */
 public class ADTreeTest {
 
-    public static void main(String[] args) throws Exception {
-        int columns = 40;
-        int numEdges = 40;
-        int rows = 500;
+    public static void main(final String[] args) throws Exception {
+        final int columns = 40;
+        final int numEdges = 40;
+        final int rows = 500;
 
-        List<Node> variables = new ArrayList<>();
-        List<String> varNames = new ArrayList<>();
+        final List<Node> variables = new ArrayList<>();
+        final List<String> varNames = new ArrayList<>();
 
         for (int i = 0; i < columns; i++) {
             final String name = "X" + (i + 1);
@@ -54,19 +54,19 @@ public class ADTreeTest {
             variables.add(new ContinuousVariable(name));
         }
 
-        Graph graph = GraphUtils.randomGraphRandomForwardEdges(variables, 0, numEdges, 30, 15, 15, false, true);
+        final Graph graph = GraphUtils.randomGraphRandomForwardEdges(variables, 0, numEdges, 30, 15, 15, false, true);
 
-        BayesPm pm = new BayesPm(graph);
-        BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
-        DataSet data = im.simulateData(rows, false);
+        final BayesPm pm = new BayesPm(graph);
+        final BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+        final DataSet data = im.simulateData(rows, false);
 
         // This implementation uses a DataTable to represent the data
         // The first type parameter is the type for the variables
         // The second type parameter is the type for the values of the variables
-        DataTableImpl<Node, Short> dataTable = new DataTableImpl<>(variables);
+        final DataTableImpl<Node, Short> dataTable = new DataTableImpl<>(variables);
 
         for (int i = 0; i < rows; i++) {
-            ArrayList<Short> intArray = new ArrayList<>();
+            final ArrayList<Short> intArray = new ArrayList<>();
             for (int j = 0; j < columns; j++) {
                 intArray.add((short) data.getInt(i, j));
             }
@@ -75,11 +75,11 @@ public class ADTreeTest {
 
         // create the tree
         long start = System.currentTimeMillis();
-        ADTree<Node, Short> adTree = new ADTree<>(dataTable);
+        final ADTree<Node, Short> adTree = new ADTree<>(dataTable);
         System.out.println(String.format("Generated tree in %s millis", System.currentTimeMillis() - start));
 
         // the query is an arbitrary map of vars and their values
-        TreeMap<Node, Short> query = new TreeMap<>();
+        final TreeMap<Node, Short> query = new TreeMap<>();
         query.put(node(pm, "X1"), (short) 1);
         query.put(node(pm, "X5"), (short) 0);
         start = System.currentTimeMillis();
@@ -98,7 +98,7 @@ public class ADTreeTest {
 
     }
 
-    private static Node node(BayesPm pm, String x1) {
+    private static Node node(final BayesPm pm, final String x1) {
         return pm.getNode(x1);
     }
 }

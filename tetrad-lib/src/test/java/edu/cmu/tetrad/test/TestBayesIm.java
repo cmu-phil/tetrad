@@ -39,22 +39,22 @@ public final class TestBayesIm {
 
     @Test
     public void testCopyConstructor() {
-        Graph graph = GraphConverter.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
-        Dag dag = new Dag(graph);
-        BayesPm bayesPm = new BayesPm(dag);
-        BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
-        BayesIm bayesIm2 = new MlBayesIm(bayesIm);
+        final Graph graph = GraphConverter.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
+        final Dag dag = new Dag(graph);
+        final BayesPm bayesPm = new BayesPm(dag);
+        final BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+        final BayesIm bayesIm2 = new MlBayesIm(bayesIm);
         assertEquals(bayesIm, bayesIm2);
     }
 
     @Test
     public void testConstructManual() {
-        Graph graph = GraphConverter.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
-        Graph dag = new Dag(graph);
-        BayesPm bayesPm = new BayesPm(dag);
-        BayesIm bayesIm = new MlBayesIm(bayesPm);
-        Graph dag1 = bayesIm.getBayesPm().getDag();
-        Graph dag2 = GraphUtils.replaceNodes(dag1, graph.getNodes());
+        final Graph graph = GraphConverter.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
+        final Graph dag = new Dag(graph);
+        final BayesPm bayesPm = new BayesPm(dag);
+        final BayesIm bayesIm = new MlBayesIm(bayesPm);
+        final Graph dag1 = bayesIm.getBayesPm().getDag();
+        final Graph dag2 = GraphUtils.replaceNodes(dag1, graph.getNodes());
         assertEquals(dag2, graph);
     }
 
@@ -69,29 +69,29 @@ public final class TestBayesIm {
      */
     @Test
     public void testAddRemoveParent() {
-        Node a = new GraphNode("a");
-        Node b = new GraphNode("b");
+        final Node a = new GraphNode("a");
+        final Node b = new GraphNode("b");
 
-        Graph dag = new EdgeListGraph();
+        final Graph dag = new EdgeListGraph();
 
         dag.addNode(a);
         dag.addNode(b);
 
         dag.addDirectedEdge(a, b);
 
-        BayesPm bayesPm = new BayesPm(dag);
-        BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+        final BayesPm bayesPm = new BayesPm(dag);
+        final BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
 
-        BayesIm bayesIm2 = new MlBayesIm(bayesPm, bayesIm, MlBayesIm.MANUAL);
+        final BayesIm bayesIm2 = new MlBayesIm(bayesPm, bayesIm, MlBayesIm.MANUAL);
 
         assertEquals(bayesIm, bayesIm2);
 
-        Node c = new GraphNode("c");
+        final Node c = new GraphNode("c");
         dag.addNode(c);
         dag.addDirectedEdge(c, b);
 
-        BayesPm bayesPm3 = new BayesPm(dag, bayesPm);
-        BayesIm bayesIm3 = new MlBayesIm(bayesPm3, bayesIm2, MlBayesIm.MANUAL);
+        final BayesPm bayesPm3 = new BayesPm(dag, bayesPm);
+        final BayesIm bayesIm3 = new MlBayesIm(bayesPm3, bayesIm2, MlBayesIm.MANUAL);
 
         // Make sure the rows got repeated.
 //        assertTrue(rowsEqual(bayesIm3, bayesIm3.getNodeIndex(b), 0, 1));
@@ -102,8 +102,8 @@ public final class TestBayesIm {
         assertTrue(rowUnspecified(bayesIm3, bayesIm3.getNodeIndex(c), 0));
 
         dag.removeNode(c);
-        BayesPm bayesPm4 = new BayesPm(dag, bayesPm3);
-        BayesIm bayesIm4 = new MlBayesIm(bayesPm4, bayesIm3, MlBayesIm.MANUAL);
+        final BayesPm bayesPm4 = new BayesPm(dag, bayesPm3);
+        final BayesIm bayesIm4 = new MlBayesIm(bayesPm4, bayesIm3, MlBayesIm.MANUAL);
 
         // Make sure the 'b' node has 2 rows of '?'s'.
         assertTrue(bayesIm4.getNumRows(bayesIm4.getNodeIndex(b)) == 2);
@@ -121,11 +121,11 @@ public final class TestBayesIm {
      */
     @Test
     public void testAddRemoveValues() {
-        Node a = new GraphNode("a");
-        Node b = new GraphNode("b");
-        Node c = new GraphNode("c");
+        final Node a = new GraphNode("a");
+        final Node b = new GraphNode("b");
+        final Node c = new GraphNode("c");
 
-        Dag dag = new Dag();
+        final Dag dag = new Dag();
 
         dag.addNode(a);
         dag.addNode(b);
@@ -136,18 +136,18 @@ public final class TestBayesIm {
 
         assertTrue(Edges.isDirectedEdge(dag.getEdge(a, b)));
 
-        BayesPm bayesPm = new BayesPm(dag, 3, 3);
-        BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+        final BayesPm bayesPm = new BayesPm(dag, 3, 3);
+        final BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
 
         bayesPm.setNumCategories(a, 4);
         bayesPm.setNumCategories(c, 4);
-        BayesIm bayesIm2 = new MlBayesIm(bayesPm, bayesIm, MlBayesIm.MANUAL);
+        final BayesIm bayesIm2 = new MlBayesIm(bayesPm, bayesIm, MlBayesIm.MANUAL);
 
         bayesPm.setNumCategories(a, 2);
-        BayesIm bayesIm3 = new MlBayesIm(bayesPm, bayesIm2, MlBayesIm.MANUAL);
+        final BayesIm bayesIm3 = new MlBayesIm(bayesPm, bayesIm2, MlBayesIm.MANUAL);
 
         bayesPm.setNumCategories(b, 2);
-        BayesIm bayesIm4 = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+        final BayesIm bayesIm4 = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
 
         // At this point, a has 2 categories, b has 2 categories, and c has 4 categories.
 
@@ -159,11 +159,11 @@ public final class TestBayesIm {
             }
         }
 
-        double[][] aTable = {
+        final double[][] aTable = {
                 {.2, .8}
         };
 
-        double[][] bTable = {
+        final double[][] bTable = {
                 {.1, .9},
                 {.7, .3},
                 {.3, .7},
@@ -174,11 +174,11 @@ public final class TestBayesIm {
                 {.8, .2}
         };
 
-        double[][] cTable = {
+        final double[][] cTable = {
                 {.1, .2, .3, .4},
         };
 
-        int _a = bayesIm.getNodeIndex(a);
+        final int _a = bayesIm.getNodeIndex(a);
 
         for (int row = 0; row < bayesIm4.getNumRows(_a); row++) {
             for (int col = 0; col < bayesIm4.getNumColumns(_a); col++) {
@@ -186,7 +186,7 @@ public final class TestBayesIm {
             }
         }
 
-        int _b = bayesIm.getNodeIndex(b);
+        final int _b = bayesIm.getNodeIndex(b);
 
         for (int row = 0; row < bayesIm4.getNumRows(_b); row++) {
             for (int col = 0; col < bayesIm4.getNumColumns(_b); col++) {
@@ -194,7 +194,7 @@ public final class TestBayesIm {
             }
         }
 
-        int _c = bayesIm.getNodeIndex(c);
+        final int _c = bayesIm.getNodeIndex(c);
 
         for (int row = 0; row < bayesIm4.getNumRows(_c); row++) {
             for (int col = 0; col < bayesIm4.getNumColumns(_c); col++) {
@@ -203,11 +203,11 @@ public final class TestBayesIm {
         }
     }
 
-    private static boolean rowsEqual(BayesIm bayesIm, int node, int row1,
-                                     int row2) {
+    private static boolean rowsEqual(final BayesIm bayesIm, final int node, final int row1,
+                                     final int row2) {
         for (int col = 0; col < bayesIm.getNumColumns(node); col++) {
-            double prob1 = bayesIm.getProbability(node, row1, col);
-            double prob2 = bayesIm.getProbability(node, row2, col);
+            final double prob1 = bayesIm.getProbability(node, row1, col);
+            final double prob2 = bayesIm.getProbability(node, row2, col);
             if (prob1 != prob2) {
                 return false;
             }
@@ -216,9 +216,9 @@ public final class TestBayesIm {
         return true;
     }
 
-    private static boolean rowUnspecified(BayesIm bayesIm, int node, int row) {
+    private static boolean rowUnspecified(final BayesIm bayesIm, final int node, final int row) {
         for (int col = 0; col < bayesIm.getNumColumns(node); col++) {
-            double prob = bayesIm.getProbability(node, row, col);
+            final double prob = bayesIm.getProbability(node, row, col);
             if (!Double.isNaN(prob)) {
                 return false;
             }

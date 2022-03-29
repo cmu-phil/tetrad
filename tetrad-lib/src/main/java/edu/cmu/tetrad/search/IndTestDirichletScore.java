@@ -86,7 +86,7 @@ public final class IndTestDirichletScore implements IndependenceTest {
      *
      * @param dataSet A data set containing only continuous columns.
      */
-    public IndTestDirichletScore(DataSet dataSet, double samplePrior, double structurePrior) {
+    public IndTestDirichletScore(final DataSet dataSet, final double samplePrior, final double structurePrior) {
         if (!(dataSet.isDiscrete())) {
             throw new IllegalArgumentException("Data set must be discrete.");
         }
@@ -104,25 +104,25 @@ public final class IndTestDirichletScore implements IndependenceTest {
     /**
      * Creates a new independence test instance for a subset of the variables.
      */
-    public IndependenceTest indTestSubset(List<Node> vars) {
+    public IndependenceTest indTestSubset(final List<Node> vars) {
         if (vars.isEmpty()) {
             throw new IllegalArgumentException("Subset may not be empty.");
         }
 
-        for (Node var : vars) {
-            if (!variables.contains(var)) {
+        for (final Node var : vars) {
+            if (!this.variables.contains(var)) {
                 throw new IllegalArgumentException(
                         "All vars must be original vars");
             }
         }
 
-        int[] indices = new int[vars.size()];
+        final int[] indices = new int[vars.size()];
 
         for (int i = 0; i < indices.length; i++) {
-            indices[i] = indexMap.get(vars.get(i));
+            indices[i] = this.indexMap.get(vars.get(i));
         }
 
-        DataSet newDataSet = dataSet.subsetColumns(indices);
+        final DataSet newDataSet = this.dataSet.subsetColumns(indices);
         return new IndTestDirichletScore(newDataSet, getSamplePrior(), getStructurePrior());
     }
 
@@ -135,32 +135,32 @@ public final class IndTestDirichletScore implements IndependenceTest {
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
-        double v = -this.score.localScoreDiff(variables.indexOf(x), variables.indexOf(y), varIndices(z));
+    public boolean isIndependent(final Node x, final Node y, final List<Node> z) {
+        final double v = -this.score.localScoreDiff(this.variables.indexOf(x), this.variables.indexOf(y), varIndices(z));
         this.bump = v;
         return v > 0;
     }
 
-    private int[] varIndices(List<Node> z) {
-        int[] indices = new int[z.size()];
+    private int[] varIndices(final List<Node> z) {
+        final int[] indices = new int[z.size()];
 
         for (int i = 0; i < z.size(); i++) {
-            indices[i] = variables.indexOf(z.get(i));
+            indices[i] = this.variables.indexOf(z.get(i));
         }
 
         return indices;
     }
 
-    public boolean isIndependent(Node x, Node y, Node... z) {
+    public boolean isIndependent(final Node x, final Node y, final Node... z) {
         return isIndependent(x, y, Arrays.asList(z));
     }
 
-    public boolean isDependent(Node x, Node y, List<Node> z) {
+    public boolean isDependent(final Node x, final Node y, final List<Node> z) {
         return !isIndependent(x, y, z);
     }
 
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
+    public boolean isDependent(final Node x, final Node y, final Node... z) {
+        final List<Node> zList = Arrays.asList(z);
         return isDependent(x, y, zList);
     }
 
@@ -182,17 +182,17 @@ public final class IndTestDirichletScore implements IndependenceTest {
     /**
      * @return the variable with the given name.
      */
-    public Node getVariable(String name) {
-        return nameMap.get(name);
+    public Node getVariable(final String name) {
+        return this.nameMap.get(name);
     }
 
     /**
      * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
-        List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<>();
-        for (Node variable1 : variables) {
+        final List<Node> variables = getVariables();
+        final List<String> variableNames = new ArrayList<>();
+        for (final Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }
         return variableNames;
@@ -202,31 +202,31 @@ public final class IndTestDirichletScore implements IndependenceTest {
      * If <code>isDeterminismAllowed()</code>, deters to IndTestFisherZD; otherwise throws
      * UnsupportedOperationException.
      */
-    public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
-        int[] parents = new int[z.size()];
+    public boolean determines(final List<Node> z, final Node x) throws UnsupportedOperationException {
+        final int[] parents = new int[z.size()];
 
         for (int j = 0; j < parents.length; j++) {
-            parents[j] = covMatrix.getVariables().indexOf(z.get(j));
+            parents[j] = this.covMatrix.getVariables().indexOf(z.get(j));
         }
 
-        int i = covMatrix.getVariables().indexOf(x);
+        final int i = this.covMatrix.getVariables().indexOf(x);
 
-        double variance = covMatrix.getValue(i, i);
+        double variance = this.covMatrix.getValue(i, i);
 
         if (parents.length > 0) {
 
             // Regress z onto i, yielding regression coefficients b.
-            Matrix Czz = covMatrix.getSelection(parents, parents);
-            Matrix inverse;
+            final Matrix Czz = this.covMatrix.getSelection(parents, parents);
+            final Matrix inverse;
 
             try {
                 inverse = Czz.inverse();
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 return true;
             }
 
-            Vector Cyz = covMatrix.getSelection(parents, new int[]{i}).getColumn(0);
-            Vector b = inverse.times(Cyz);
+            final Vector Cyz = this.covMatrix.getSelection(parents, new int[]{i}).getColumn(0);
+            final Vector b = inverse.times(Cyz);
 
             variance -= Cyz.dotProduct(b);
         }
@@ -240,7 +240,7 @@ public final class IndTestDirichletScore implements IndependenceTest {
     }
 
     @Override
-    public void setAlpha(double alpha) {
+    public void setAlpha(final double alpha) {
         this.alpha = alpha;
     }
 
@@ -248,7 +248,7 @@ public final class IndTestDirichletScore implements IndependenceTest {
      * @return the data set being analyzed.
      */
     public DataSet getData() {
-        return dataSet;
+        return this.dataSet;
     }
 
     /**
@@ -260,29 +260,29 @@ public final class IndTestDirichletScore implements IndependenceTest {
 
     //==========================PRIVATE METHODS============================//
 
-    public void setVariables(List<Node> variables) {
+    public void setVariables(final List<Node> variables) {
         if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");
         this.variables = new ArrayList<>(variables);
-        covMatrix.setVariables(variables);
+        this.covMatrix.setVariables(variables);
     }
 
     public ICovarianceMatrix getCov() {
-        return covMatrix;
+        return this.covMatrix;
     }
 
     @Override
     public List<DataSet> getDataSets() {
 
-        List<DataSet> dataSets = new ArrayList<>();
+        final List<DataSet> dataSets = new ArrayList<>();
 
-        dataSets.add(dataSet);
+        dataSets.add(this.dataSet);
 
         return dataSets;
     }
 
     @Override
     public int getSampleSize() {
-        return covMatrix.getSampleSize();
+        return this.covMatrix.getSampleSize();
     }
 
     @Override
@@ -291,10 +291,10 @@ public final class IndTestDirichletScore implements IndependenceTest {
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 
@@ -304,18 +304,18 @@ public final class IndTestDirichletScore implements IndependenceTest {
     }
 
     public double getSamplePrior() {
-        return samplePrior;
+        return this.samplePrior;
     }
 
-    public void setSamplePrior(double samplePrior) {
+    public void setSamplePrior(final double samplePrior) {
         this.samplePrior = samplePrior;
     }
 
     public double getStructurePrior() {
-        return structurePrior;
+        return this.structurePrior;
     }
 
-    public void setStructurePrior(double structurePrior) {
+    public void setStructurePrior(final double structurePrior) {
         this.structurePrior = structurePrior;
     }
 }

@@ -91,12 +91,12 @@ class RegressionPlane {
      * @param coefP         the array of coefP-values for the regression
      *                      coefficients.
      */
-    public RegressionPlane(boolean zeroIntercept, String[] varNames,
-                           int numRegressors, int sampleSize, double[] coefs, double[] coefT,
-                           double[] coefP, double rsquare, double[] coefSE, String summary) {
+    public RegressionPlane(final boolean zeroIntercept, final String[] varNames,
+                           final int numRegressors, final int sampleSize, final double[] coefs, final double[] coefT,
+                           final double[] coefP, final double rsquare, final double[] coefSE, final String summary) {
         this.zeroIntercept = zeroIntercept;
 
-        int error = zeroIntercept ? 0 : 1;
+        final int error = zeroIntercept ? 0 : 1;
 
         if (varNames.length != numRegressors + error) {
             throw new IllegalArgumentException();
@@ -126,71 +126,71 @@ class RegressionPlane {
     }
 
     public double[] getCoefSE() {
-        return coefSE;
+        return this.coefSE;
     }
 
     public double getRSquare() {
-        return rSquare;
+        return this.rSquare;
     }
 
     /**
      * @return the number of data points.
      */
     public int getSampleSize() {
-        return sampleSize;
+        return this.sampleSize;
     }
 
     /**
      * @return the number of regressors.
      */
     public int getNumRegressors() {
-        return numRegressors;
+        return this.numRegressors;
     }
 
     /**
      * @return the array of regression coeffients.
      */
     public double[] getCoef() {
-        return coefs;
+        return this.coefs;
     }
 
     /**
      * @return the array of coefT-statistics for the regression coefficients.
      */
     public double[] getCoefT() {
-        return coefT;
+        return this.coefT;
     }
 
     /**
      * @return the array of coefP-values for the regression coefficients.
      */
     public double[] getCoefP() {
-        return coefP;
+        return this.coefP;
     }
 
 
     public String[] getVarNames() {
-        return varNames;
+        return this.varNames;
     }
 
-    public double getPredictedValue(double[] x) {
+    public double getPredictedValue(final double[] x) {
         double yHat = 0.0;
 
-        int offset = zeroIntercept ? 0 : 1;
+        final int offset = this.zeroIntercept ? 0 : 1;
 
-        for (int i = offset; i < numRegressors; i++) {
-            yHat += coefs[i + offset] * x[i];
+        for (int i = offset; i < this.numRegressors; i++) {
+            yHat += this.coefs[i + offset] * x[i];
         }
 
-        if (!zeroIntercept) {
-            yHat += coefs[0]; // error term.
+        if (!this.zeroIntercept) {
+            yHat += this.coefs[0]; // error term.
         }
 
         return yHat;
     }
 
     public String toString() {
-        return summary;
+        return this.summary;
     }
 }
 

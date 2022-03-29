@@ -25,7 +25,6 @@ import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.CPC;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PC;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PcStable;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
@@ -39,8 +38,8 @@ import edu.cmu.tetrad.util.Parameters;
  * @author jdramsey
  */
 public class ExampleCompareSimulation {
-    public static void main(String... args) {
-        Parameters parameters = new Parameters();
+    public static void main(final String... args) {
+        final Parameters parameters = new Parameters();
         //https:arxiv.org/abs/1607.08110
         parameters.set("numRuns", 10);
         parameters.set("numMeasures", 10);
@@ -48,7 +47,7 @@ public class ExampleCompareSimulation {
         parameters.set("sampleSize", 500);
         parameters.set("alpha", 1e-2);
 
-        Statistics statistics = new Statistics();
+        final Statistics statistics = new Statistics();
 
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
@@ -64,16 +63,16 @@ public class ExampleCompareSimulation {
         statistics.setWeight("AP", 1.0);
         statistics.setWeight("AR", 0.5);
 
-        Algorithms algorithms = new Algorithms();
+        final Algorithms algorithms = new Algorithms();
 
         algorithms.add(new PC(new FisherZ()));
         algorithms.add(new CPC(new FisherZ()));
 
-        Simulations simulations = new Simulations();
+        final Simulations simulations = new Simulations();
 
         simulations.add(new SemSimulation(new RandomForward()));
 
-        Comparison comparison = new Comparison();
+        final Comparison comparison = new Comparison();
 
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);

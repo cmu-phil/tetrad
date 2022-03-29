@@ -31,7 +31,7 @@ public class Kci implements IndependenceWrapper {
 
 
     @Override
-    public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+    public IndependenceTest getTest(final DataModel dataSet, final Parameters parameters) {
         final edu.cmu.tetrad.search.Kci kci = new edu.cmu.tetrad.search.Kci(DataUtils.getContinuousDataSet(dataSet),
                 parameters.getDouble(Params.ALPHA));
         kci.setApproximate(parameters.getBoolean(Params.KCI_USE_APPROMATION));
@@ -54,7 +54,7 @@ public class Kci implements IndependenceWrapper {
 
     @Override
     public List<String> getParameters() {
-        List<String> params = new ArrayList<>();
+        final List<String> params = new ArrayList<>();
         params.add(Params.KCI_USE_APPROMATION);
         params.add(Params.ALPHA);
         params.add(Params.KERNEL_MULTIPLIER);

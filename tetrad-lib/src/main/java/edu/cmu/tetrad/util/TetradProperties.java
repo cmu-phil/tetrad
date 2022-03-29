@@ -38,15 +38,15 @@ public class TetradProperties {
 
     private TetradProperties() {
         final Properties properties = new Properties();
-        try (InputStream inputStream = TetradProperties.class.getResourceAsStream("/tetrad-lib.properties")) {
+        try (final InputStream inputStream = TetradProperties.class.getResourceAsStream("/tetrad-lib.properties")) {
             if (inputStream != null) {
                 properties.load(inputStream);
             }
-        } catch (IOException exception) {
+        } catch (final IOException exception) {
             exception.printStackTrace(System.err);
         }
 
-        properties.stringPropertyNames().forEach(e -> props.put(e, properties.getProperty(e)));
+        properties.stringPropertyNames().forEach(e -> this.props.put(e, properties.getProperty(e)));
     }
 
     public static TetradProperties getInstance() {
@@ -54,15 +54,15 @@ public class TetradProperties {
     }
 
     public Set<String> getProperties() {
-        return props.keySet();
+        return this.props.keySet();
     }
 
-    public String getValue(String property) {
+    public String getValue(final String property) {
         if (property == null) {
             return null;
         }
 
-        return props.get(property);
+        return this.props.get(property);
     }
 
 }

@@ -28,7 +28,7 @@ public class MNLRLRT implements IndependenceWrapper {
     static final long serialVersionUID = 23L;
 
     @Override
-    public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+    public IndependenceTest getTest(final DataModel dataSet, final Parameters parameters) {
         return new IndTestMNLRLRT(DataUtils.getMixedDataSet(dataSet), parameters.getDouble("alpha"));
     }
 
@@ -44,7 +44,7 @@ public class MNLRLRT implements IndependenceWrapper {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
+        final List<String> parameters = new ArrayList<>();
         parameters.add("alpha");
         return parameters;
     }

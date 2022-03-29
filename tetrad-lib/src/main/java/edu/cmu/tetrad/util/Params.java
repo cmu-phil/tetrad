@@ -272,23 +272,23 @@ public final class Params {
     private Params() {
     }
 
-    public static Set<String> getAlgorithmParameters(Algorithm algorithm) {
+    public static Set<String> getAlgorithmParameters(final Algorithm algorithm) {
         return new HashSet<>(algorithm.getParameters());
     }
 
-    public static Set<String> getTestParameters(Algorithm algorithm) {
+    public static Set<String> getTestParameters(final Algorithm algorithm) {
         return (algorithm instanceof TakesIndependenceWrapper)
                 ? new HashSet<>(((TakesIndependenceWrapper) algorithm).getIndependenceWrapper().getParameters())
                 : Collections.emptySet();
     }
 
-    public static Set<String> getScoreParameters(Algorithm algorithm) {
+    public static Set<String> getScoreParameters(final Algorithm algorithm) {
         return (algorithm instanceof UsesScoreWrapper)
                 ? new HashSet<>(((UsesScoreWrapper) algorithm).getScoreWrapper().getParameters())
                 : Collections.emptySet();
     }
 
-    public static Set<String> getBootstrappingParameters(Algorithm algorithm) {
+    public static Set<String> getBootstrappingParameters(final Algorithm algorithm) {
         return (algorithm.getClass().isAnnotationPresent(Bootstrapping.class))
                 ? BOOTSTRAPPING_PARAMS
                 : Collections.emptySet();

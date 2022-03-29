@@ -40,9 +40,9 @@ public final class TestTransform {
 
     @Test
     public void testTransformWithNewColumnVariable() {
-        List<Node> list = Arrays.asList((Node) new ContinuousVariable("x"),
+        final List<Node> list = Arrays.asList((Node) new ContinuousVariable("x"),
                 new ContinuousVariable("y"));
-        BoxDataSet data = new BoxDataSet(new VerticalDoubleDataBox(2, list.size()), list);
+        final BoxDataSet data = new BoxDataSet(new VerticalDoubleDataBox(2, list.size()), list);
 
         data.setDouble(0, 0, 1);
         data.setDouble(1, 0, 1);
@@ -51,11 +51,11 @@ public final class TestTransform {
         data.setDouble(1, 1, 1);
 
         try {
-            String eq = "w = (x + y) * x";
+            final String eq = "w = (x + y) * x";
             Transformation.transform(data, eq);
             assertTrue(data.getDouble(0, 2) == 2.0);
             assertTrue(data.getDouble(0, 2) == 2.0);
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             ex.printStackTrace();
             fail(ex.getMessage());
         }
@@ -64,10 +64,10 @@ public final class TestTransform {
     @Test
     public void testSingleTransforms() {
         // build a dataset.
-        List<Node> list = Arrays.asList((Node) new ContinuousVariable("x"),
+        final List<Node> list = Arrays.asList((Node) new ContinuousVariable("x"),
                 new ContinuousVariable("y"),
                 new ContinuousVariable("z"));
-        DataSet data = new BoxDataSet(new DoubleDataBox(3, list.size()), list);
+        final DataSet data = new BoxDataSet(new DoubleDataBox(3, list.size()), list);
         data.setDouble(0, 0, 2);
         data.setDouble(1, 0, 3);
         data.setDouble(2, 0, 4);
@@ -104,7 +104,7 @@ public final class TestTransform {
             assertTrue(copy.getDouble(1, 0) == 23.0);
             assertTrue(copy.getDouble(2, 0) == 29.0);
 
-        } catch (ParseException ex) {
+        } catch (final ParseException ex) {
             fail(ex.getMessage());
         }
     }

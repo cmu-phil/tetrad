@@ -47,12 +47,12 @@ public class GraphScore implements Score {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public GraphScore(Graph dag) {
+    public GraphScore(final Graph dag) {
         this.dag = dag;
 
         this.variables = new ArrayList<>();
 
-        for (Node node : dag.getNodes()) {
+        for (final Node node : dag.getNodes()) {
             if (node.getNodeType() == NodeType.MEASURED) {
                 this.variables.add(node);
             }
@@ -62,13 +62,13 @@ public class GraphScore implements Score {
     /**
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */
-    public double localScore(int i, int[] parents) {
+    public double localScore(final int i, final int[] parents) {
         throw new UnsupportedOperationException();
     }
 
-    private List<Node> getVariableList(int[] indices) {
-        List<Node> variables = new ArrayList<>();
-        for (int i : indices) {
+    private List<Node> getVariableList(final int[] indices) {
+        final List<Node> variables = new ArrayList<>();
+        for (final int i : indices) {
             variables.add(this.variables.get(i));
         }
         return variables;
@@ -76,22 +76,22 @@ public class GraphScore implements Score {
 
 
     @Override
-    public double localScoreDiff(int x, int y, int[] z) {
+    public double localScoreDiff(final int x, final int y, final int[] z) {
         return locallyConsistentScoringCriterion(x, y, z);
 //        return aBetterScore(x, y, z);
     }
 
     @Override
-    public double localScoreDiff(int x, int y) {
+    public double localScoreDiff(final int x, final int y) {
         return localScoreDiff(x, y, new int[0]);
 //        return localScore(y, x) - localScore(y);
     }
 
-    private double locallyConsistentScoringCriterion(int x, int y, int[] z) {
-        Node _y = variables.get(y);
-        Node _x = variables.get(x);
-        List<Node> _z = getVariableList(z);
-        boolean dSeparatedFrom = dag.isDSeparatedFrom(_x, _y, _z);
+    private double locallyConsistentScoringCriterion(final int x, final int y, final int[] z) {
+        final Node _y = this.variables.get(y);
+        final Node _x = this.variables.get(x);
+        final List<Node> _z = getVariableList(z);
+        final boolean dSeparatedFrom = this.dag.isDSeparatedFrom(_x, _y, _z);
 
 //        if (dSeparatedFrom) {
 //            System.out.println(SearchLogUtils.independenceFact(_x, _y, _z));
@@ -102,35 +102,35 @@ public class GraphScore implements Score {
         return dSeparatedFrom ? -1.0 : 1.0;
     }
 
-    private double aBetterScore(int x, int y, int[] z) {
-        Node _y = variables.get(y);
-        Node _x = variables.get(x);
-        List<Node> _z = getVariableList(z);
-        boolean dsep = dag.isDSeparatedFrom(_x, _y, _z);
+    private double aBetterScore(final int x, final int y, final int[] z) {
+        final Node _y = this.variables.get(y);
+        final Node _x = this.variables.get(x);
+        final List<Node> _z = getVariableList(z);
+        final boolean dsep = this.dag.isDSeparatedFrom(_x, _y, _z);
         int count = 0;
 
         if (!dsep) count++;
 
-        for (Node z0 : _z) {
-            if (dag.isDSeparatedFrom(_x, z0, _z)) {
+        for (final Node z0 : _z) {
+            if (this.dag.isDSeparatedFrom(_x, z0, _z)) {
                 count += 1;
             }
         }
 
-        double score = dsep ? -1 - count : 1 + count;
+        final double score = dsep ? -1 - count : 1 + count;
 
 //        if (score == 1) score -= Math.tanh(z.length);
         return score;
     }
 
-    private List<Node> minus(List<Node> z, Node z0) {
-        List<Node> diff = new ArrayList<>(z);
+    private List<Node> minus(final List<Node> z, final Node z0) {
+        final List<Node> diff = new ArrayList<>(z);
         diff.remove(z0);
         return diff;
     }
 
-    int[] append(int[] parents, int extra) {
-        int[] all = new int[parents.length + 1];
+    int[] append(final int[] parents, final int extra) {
+        final int[] all = new int[parents.length + 1];
         System.arraycopy(parents, 0, all, 0, parents.length);
         all[parents.length] = extra;
         return all;
@@ -140,19 +140,19 @@ public class GraphScore implements Score {
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
 
-    public double localScore(int i, int parent) {
+    public double localScore(final int i, final int parent) {
         throw new UnsupportedOperationException();
     }
 
     /**
      * Specialized scoring method for no parents. Used to speed up the effect edges search.
      */
-    public double localScore(int i) {
+    public double localScore(final int i) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public boolean isEffectEdge(double bump) {
+    public boolean isEffectEdge(final double bump) {
         return bump > 0;
     }
 
@@ -161,20 +161,20 @@ public class GraphScore implements Score {
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 
     @Override
     public List<Node> getVariables() {
-        return variables;
+        return this.variables;
     }
 
-    public Node getVariable(String name) {
-        for (Node node : variables) {
+    public Node getVariable(final String name) {
+        for (final Node node : this.variables) {
             if (node.getName().equals(name)) {
                 return node;
             }
@@ -189,7 +189,7 @@ public class GraphScore implements Score {
     }
 
     @Override
-    public boolean determines(List<Node> z, Node y) {
+    public boolean determines(final List<Node> z, final Node y) {
         return false;
     }
 
@@ -201,12 +201,12 @@ public class GraphScore implements Score {
         return false;
     }
 
-    public void setAlternativePenalty(double alpha) {
+    public void setAlternativePenalty(final double alpha) {
         throw new UnsupportedOperationException("No alpha can be set when searching usign d-separation.");
     }
 
     public Graph getDag() {
-        return dag;
+        return this.dag;
     }
 }
 

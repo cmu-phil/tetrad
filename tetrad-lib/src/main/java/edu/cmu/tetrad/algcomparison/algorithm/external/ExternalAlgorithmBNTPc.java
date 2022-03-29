@@ -1,7 +1,10 @@
 package edu.cmu.tetrad.algcomparison.algorithm.external;
 
 import edu.cmu.tetrad.algcomparison.algorithm.ExternalAlgorithm;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -48,12 +51,12 @@ public class ExternalAlgorithmBNTPc extends ExternalAlgorithm {
     private final String extDir;
     private String shortDescription = null;
 
-    public ExternalAlgorithmBNTPc(String extDir) {
+    public ExternalAlgorithmBNTPc(final String extDir) {
         this.extDir = extDir;
         this.shortDescription = new File(extDir).getName().replace("_", " ");
     }
 
-    public ExternalAlgorithmBNTPc(String extDir, String shortDecription) {
+    public ExternalAlgorithmBNTPc(final String extDir, final String shortDecription) {
         this.extDir = extDir;
         this.shortDescription = shortDecription;
     }
@@ -61,23 +64,23 @@ public class ExternalAlgorithmBNTPc extends ExternalAlgorithm {
     /**
      * Reads in the relevant graph from the file (see above) and returns it.
      */
-    public Graph search(DataModel dataSet, Parameters parameters) {
-        int index = getIndex(dataSet);
+    public Graph search(final DataModel dataSet, final Parameters parameters) {
+        final int index = getIndex(dataSet);
 
-        File file = new File(path, "/results/" + extDir + "/" + (simIndex + 1) + "/graph." + index + ".txt");
+        final File file = new File(this.path, "/results/" + this.extDir + "/" + (this.simIndex + 1) + "/graph." + index + ".txt");
 
         System.out.println(file.getAbsolutePath());
 
         try {
-            DataSet dataSet2 = DataUtils.loadContinuousData(file, "//", '\"',
+            final DataSet dataSet2 = DataUtils.loadContinuousData(file, "//", '\"',
                     "*", true, Delimiter.TAB);
             System.out.println("Loading graph from " + file.getAbsolutePath());
-            Graph graph = GraphUtils.loadGraphBNTPcMatrix(dataSet.getVariables(), dataSet2);
+            final Graph graph = GraphUtils.loadGraphBNTPcMatrix(dataSet.getVariables(), dataSet2);
 
             GraphUtils.circleLayout(graph, 225, 200, 150);
 
             return graph;
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new RuntimeException("Couldn't parse graph.", e);
         }
     }
@@ -85,15 +88,15 @@ public class ExternalAlgorithmBNTPc extends ExternalAlgorithm {
     /**
      * Returns the CPDAG of the supplied DAG.
      */
-    public Graph getComparisonGraph(Graph graph) {
+    public Graph getComparisonGraph(final Graph graph) {
         return new EdgeListGraph(graph);
     }
 
     public String getDescription() {
-        if (shortDescription == null) {
-            return "Load data from " + path + "/" + extDir;
+        if (this.shortDescription == null) {
+            return "Load data from " + this.path + "/" + this.extDir;
         } else {
-            return shortDescription;
+            return this.shortDescription;
         }
     }
 
@@ -103,16 +106,16 @@ public class ExternalAlgorithmBNTPc extends ExternalAlgorithm {
     }
 
     @Override
-    public long getElapsedTime(DataModel dataSet, Parameters parameters) {
-        int index = getIndex(dataSet);
+    public long getElapsedTime(final DataModel dataSet, final Parameters parameters) {
+        final int index = getIndex(dataSet);
 
-        File file = new File(path, "/elapsed/" + extDir + "/" + (simIndex + 1) + "/graph." + index + ".txt");
+        final File file = new File(this.path, "/elapsed/" + this.extDir + "/" + (this.simIndex + 1) + "/graph." + index + ".txt");
 
         try {
-            BufferedReader r = new BufferedReader(new FileReader(file));
-            String l = r.readLine(); // Skip the first line.
+            final BufferedReader r = new BufferedReader(new FileReader(file));
+            final String l = r.readLine(); // Skip the first line.
             return (long) Double.parseDouble(l);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             return -99;
         }
     }

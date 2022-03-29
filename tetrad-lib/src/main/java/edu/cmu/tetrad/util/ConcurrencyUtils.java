@@ -7,24 +7,24 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class ConcurrencyUtils {
-    public static void runCallables(List<Callable<Boolean>> tasks, int parallelism) {
+    public static void runCallables(final List<Callable<Boolean>> tasks, final int parallelism) {
         if (tasks.isEmpty()) return;
 
         if (parallelism == 1) {
-            for (Callable<Boolean> task : tasks) {
+            for (final Callable<Boolean> task : tasks) {
                 try {
                     task.call();
-                } catch (Exception e) {
+                } catch (final Exception e) {
                     e.printStackTrace();
                 }
             }
         } else {
 
-            ExecutorService executorService = Executors.newWorkStealingPool();
+            final ExecutorService executorService = Executors.newWorkStealingPool();
 
             try {
                 executorService.invokeAll(tasks);
-            } catch (InterruptedException e) {
+            } catch (final InterruptedException e) {
                 e.printStackTrace();
             }
 
@@ -34,7 +34,7 @@ public class ConcurrencyUtils {
                 if (!executorService.awaitTermination(800, TimeUnit.MILLISECONDS)) {
                     executorService.shutdownNow();
                 }
-            } catch (InterruptedException e) {
+            } catch (final InterruptedException e) {
                 executorService.shutdownNow();
             }
         }

@@ -36,18 +36,18 @@ public final class TestSemGraph extends TestCase {
     /**
      * Standard constructor for JUnit test cases.
      */
-    public TestSemGraph(String name) {
+    public TestSemGraph(final String name) {
         super(name);
     }
 
     public void test1() {
-        SemGraph graph = new SemGraph();
+        final SemGraph graph = new SemGraph();
 
-        Node a = new GraphNode("a");
-        Node b = new GraphNode("b");
-        Node c = new GraphNode("c");
-        Node d = new GraphNode("d");
-        Node e = new GraphNode("e");
+        final Node a = new GraphNode("a");
+        final Node b = new GraphNode("b");
+        final Node c = new GraphNode("c");
+        final Node d = new GraphNode("d");
+        final Node e = new GraphNode("e");
 
         graph.addNode(a);
         graph.addNode(b);
@@ -66,7 +66,7 @@ public final class TestSemGraph extends TestCase {
 
         graph.addBidirectedEdge(c, d);
 
-        SemGraph graph2 = new SemGraph(graph);
+        final SemGraph graph2 = new SemGraph(graph);
 
         assertEquals(graph, graph2);
     }

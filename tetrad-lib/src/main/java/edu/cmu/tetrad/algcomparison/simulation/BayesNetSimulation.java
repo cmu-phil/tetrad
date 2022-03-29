@@ -30,41 +30,41 @@ public class BayesNetSimulation implements Simulation {
     private List<Graph> graphs = new ArrayList<>();
     private List<BayesIm> ims = new ArrayList<>();
 
-    public BayesNetSimulation(RandomGraph graph) {
+    public BayesNetSimulation(final RandomGraph graph) {
         this.randomGraph = graph;
     }
 
-    public BayesNetSimulation(BayesPm pm) {
+    public BayesNetSimulation(final BayesPm pm) {
         this.randomGraph = new SingleGraph(pm.getDag());
         this.pm = pm;
     }
 
-    public BayesNetSimulation(BayesIm im) {
+    public BayesNetSimulation(final BayesIm im) {
         this.randomGraph = new SingleGraph(im.getDag());
         this.im = im;
         this.pm = im.getBayesPm();
         this.ims = new ArrayList<>();
-        ims.add(im);
+        this.ims.add(im);
     }
 
     @Override
-    public void createData(Parameters parameters, boolean newModel) {
+    public void createData(final Parameters parameters, final boolean newModel) {
 //        if (!newModel && !dataSets.isEmpty()) return;
 
-        Graph graph = randomGraph.createGraph(parameters);
+        Graph graph = this.randomGraph.createGraph(parameters);
 
-        dataSets = new ArrayList<>();
-        graphs = new ArrayList<>();
-        ims = new ArrayList<>();
+        this.dataSets = new ArrayList<>();
+        this.graphs = new ArrayList<>();
+        this.ims = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt(Params.NUM_RUNS); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
 
             if (parameters.getBoolean(Params.DIFFERENT_GRAPHS) && i > 0) {
-                graph = randomGraph.createGraph(parameters);
+                graph = this.randomGraph.createGraph(parameters);
             }
 
-            graphs.add(graph);
+            this.graphs.add(graph);
 
             DataSet dataSet = simulate(graph, parameters);
 
@@ -73,42 +73,42 @@ public class BayesNetSimulation implements Simulation {
             }
 
             dataSet.setName("" + (i + 1));
-            dataSets.add(dataSet);
+            this.dataSets.add(dataSet);
         }
     }
 
     @Override
-    public DataModel getDataModel(int index) {
-        return dataSets.get(index);
+    public DataModel getDataModel(final int index) {
+        return this.dataSets.get(index);
     }
 
     @Override
-    public Graph getTrueGraph(int index) {
-        if (graphs.isEmpty()) {
+    public Graph getTrueGraph(final int index) {
+        if (this.graphs.isEmpty()) {
             return new EdgeListGraph();
         } else {
-            return graphs.get(index);
+            return this.graphs.get(index);
         }
     }
 
     @Override
     public String getDescription() {
-        return "Bayes net simulation using " + randomGraph.getDescription();
+        return "Bayes net simulation using " + this.randomGraph.getDescription();
     }
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
+        final List<String> parameters = new ArrayList<>();
 
-        if (!(randomGraph instanceof SingleGraph)) {
-            parameters.addAll(randomGraph.getParameters());
+        if (!(this.randomGraph instanceof SingleGraph)) {
+            parameters.addAll(this.randomGraph.getParameters());
         }
 
-        if (pm == null) {
+        if (this.pm == null) {
             parameters.addAll(BayesPm.getParameterNames());
         }
 
-        if (im == null) {
+        if (this.im == null) {
             parameters.addAll(MlBayesIm.getParameterNames());
         }
 
@@ -123,7 +123,7 @@ public class BayesNetSimulation implements Simulation {
 
     @Override
     public int getNumDataModels() {
-        return dataSets.size();
+        return this.dataSets.size();
     }
 
     @Override
@@ -131,8 +131,8 @@ public class BayesNetSimulation implements Simulation {
         return DataType.Discrete;
     }
 
-    private DataSet simulate(Graph graph, Parameters parameters) {
-        boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
+    private DataSet simulate(final Graph graph, final Parameters parameters) {
+        final boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
 
         try {
             BayesIm im = this.im;
@@ -141,23 +141,23 @@ public class BayesNetSimulation implements Simulation {
                 BayesPm pm = this.pm;
 
                 if (pm == null) {
-                    int minCategories = parameters.getInt(Params.MIN_CATEGORIES);
-                    int maxCategories = parameters.getInt(Params.MAX_CATEGORIES);
+                    final int minCategories = parameters.getInt(Params.MIN_CATEGORIES);
+                    final int maxCategories = parameters.getInt(Params.MAX_CATEGORIES);
                     pm = new BayesPm(graph, minCategories, maxCategories);
                     im = new MlBayesIm(pm, MlBayesIm.RANDOM);
-                    ims.add(im);
+                    this.ims.add(im);
                     return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
                 } else {
                     im = new MlBayesIm(pm, MlBayesIm.RANDOM);
                     this.im = im;
-                    ims.add(im);
+                    this.ims.add(im);
                     return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
                 }
             } else {
-                ims.add(im);
+                this.ims.add(im);
                 return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             e.printStackTrace();
             throw new IllegalArgumentException("Sorry, I couldn't simulate from that Bayes IM; perhaps not all of\n"
                     + "the parameters have been specified.");
@@ -165,7 +165,7 @@ public class BayesNetSimulation implements Simulation {
     }
 
     public List<BayesIm> getBayesIms() {
-        return ims;
+        return this.ims;
     }
 
 }

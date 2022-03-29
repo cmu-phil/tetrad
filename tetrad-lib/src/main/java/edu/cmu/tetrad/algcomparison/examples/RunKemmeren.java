@@ -23,30 +23,30 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RunKemmeren {
-    public static void main(String... args) {
+    public static void main(final String... args) {
 
 //        Path path = Paths.get("/home/bandrews/Desktop/Kemmeren/data_kemmeren_centered.txt");
-        Path path = Paths.get("/home/bandrews/Desktop/Kemmeren/obs_data.txt");
+        final Path path = Paths.get("/home/bandrews/Desktop/Kemmeren/obs_data.txt");
 //        Path path = Paths.get("/home/bandrews/Desktop/Kemmeren/subsampled_data.txt");
 //        Path path = Paths.get("/home/bandrews/Desktop/test.txt");
 
         System.out.println("Loading Data");
 
-        ContinuousTabularDatasetFileReader reader = new ContinuousTabularDatasetFileReader(path, Delimiter.TAB);
+        final ContinuousTabularDatasetFileReader reader = new ContinuousTabularDatasetFileReader(path, Delimiter.TAB);
 
         try {
-            ContinuousTabularData data = ((ContinuousTabularData) reader.readInData());
-            List<Node> variables = new ArrayList<>();
-            for (DataColumn column : data.getDataColumns()) {
-                Node node = new ContinuousVariable(column.getName());
+            final ContinuousTabularData data = ((ContinuousTabularData) reader.readInData());
+            final List<Node> variables = new ArrayList<>();
+            for (final DataColumn column : data.getDataColumns()) {
+                final Node node = new ContinuousVariable(column.getName());
                 variables.add(node);
             }
 
-            BoxDataSet dataSet = new BoxDataSet(new DoubleDataBox(data.getData()), variables);
+            final BoxDataSet dataSet = new BoxDataSet(new DoubleDataBox(data.getData()), variables);
 
             System.out.println("Generating Background Knowledge");
 
-            Knowledge2 knowledge = new Knowledge2(dataSet.getVariableNames());
+            final Knowledge2 knowledge = new Knowledge2(dataSet.getVariableNames());
 
 //            Set<String> meta = new HashSet<>();
 //            Set<String> domain = new HashSet<>();
@@ -70,7 +70,7 @@ public class RunKemmeren {
 
             System.out.println("Running Search");
 
-            Parameters parameters = new Parameters();
+            final Parameters parameters = new Parameters();
             parameters.set("penaltyDiscount", 2);
             parameters.set("structurePrior", 1);
             parameters.set("faithfulnessAssumed", true);
@@ -80,22 +80,22 @@ public class RunKemmeren {
             parameters.set("sepsetsReturnEmptyIfNotFixed", true);
             parameters.set("verbose", true);
 
-            SemBicScore score = new SemBicScore();
-            SemBicTest test = new SemBicTest();
+            final SemBicScore score = new SemBicScore();
+            final SemBicTest test = new SemBicTest();
 
 //            Fges search = new Fges(score);
-            FAS search = new FAS(test);
+            final FAS search = new FAS(test);
 //            Gfci search = new Gfci(test, score);
             search.setKnowledge(knowledge);
-            Graph graph = search.search(dataSet, parameters);
+            final Graph graph = search.search(dataSet, parameters);
 
             System.out.println("Writing Output");
 
-            PrintWriter out = new PrintWriter("/home/bandrews/Desktop/out.txt");
+            final PrintWriter out = new PrintWriter("/home/bandrews/Desktop/out.txt");
             out.println(graph.toString());
             out.close();
 
-        } catch (IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
         }
 

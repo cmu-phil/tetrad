@@ -45,61 +45,61 @@ public final class TestGraph {
         checkGraph(new EdgeListGraph());
     }
 
-    private void checkGraph(Graph graph) {
+    private void checkGraph(final Graph graph) {
         checkAddRemoveNodes(graph);
         checkCopy(graph);
     }
 
     @Test
     public void testXml() {
-        List<Node> nodes1 = new ArrayList<>();
+        final List<Node> nodes1 = new ArrayList<>();
 
         for (int i = 0; i < 10; i++) {
             nodes1.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph graph = new Dag(GraphUtils.randomGraph(nodes1, 0, 10,
+        final Graph graph = new Dag(GraphUtils.randomGraph(nodes1, 0, 10,
                 30, 15, 15, false));
 
-        Set<Triple> ambiguousTriples = new HashSet<>();
+        final Set<Triple> ambiguousTriples = new HashSet<>();
         ambiguousTriples.add(pickRandomTriple(graph));
         ambiguousTriples.add(pickRandomTriple(graph));
         graph.setAmbiguousTriples(ambiguousTriples);
 
-        Set<Triple> underlineTriples = new HashSet<>();
+        final Set<Triple> underlineTriples = new HashSet<>();
         underlineTriples.add(pickRandomTriple(graph));
         underlineTriples.add(pickRandomTriple(graph));
         graph.setUnderLineTriples(underlineTriples);
 
-        Set<Triple> dottedUnderlineTriples = new HashSet<>();
+        final Set<Triple> dottedUnderlineTriples = new HashSet<>();
         dottedUnderlineTriples.add(pickRandomTriple(graph));
         dottedUnderlineTriples.add(pickRandomTriple(graph));
         graph.setDottedUnderLineTriples(dottedUnderlineTriples);
 
-        Map<String, Node> nodes = new HashMap<>();
+        final Map<String, Node> nodes = new HashMap<>();
 
-        for (Node node : graph.getNodes()) {
+        for (final Node node : graph.getNodes()) {
             nodes.put(node.getName(), node);
         }
 
-        Element element = GraphUtils.convertToXml(graph);
+        final Element element = GraphUtils.convertToXml(graph);
 
         try {
-            Graph _graph = GraphUtils.parseGraphXml(element, nodes);
+            final Graph _graph = GraphUtils.parseGraphXml(element, nodes);
 
             assertEquals(graph, new Dag(_graph));
-        } catch (ParsingException e) {
+        } catch (final ParsingException e) {
             e.printStackTrace();
         }
     }
 
     @Test
     public void testTripleCode() {
-        Graph graph = new EdgeListGraph();
-        Node x = new GraphNode("X");
-        Node y = new GraphNode("Y");
-        Node z = new GraphNode("Z");
-        Node w = new GraphNode("W");
+        final Graph graph = new EdgeListGraph();
+        final Node x = new GraphNode("X");
+        final Node y = new GraphNode("Y");
+        final Node z = new GraphNode("Z");
+        final Node w = new GraphNode("W");
 
         graph.addNode(x);
         graph.addNode(y);
@@ -167,7 +167,7 @@ public final class TestGraph {
 
         graph.addDirectedEdge(z, w);
 
-        Set<Triple> triples = new HashSet<>();
+        final Set<Triple> triples = new HashSet<>();
         triples.add(new Triple(x, z, w));
         triples.add(new Triple(x, y, z));
 
@@ -183,18 +183,18 @@ public final class TestGraph {
 
     @Test
     public void testHighlighted() {
-        Graph graph = new EdgeListGraph();
+        final Graph graph = new EdgeListGraph();
 
-        Node x1 = new GraphNode("X1");
-        Node x2 = new GraphNode("X2");
-        Node x3 = new GraphNode("X3");
+        final Node x1 = new GraphNode("X1");
+        final Node x2 = new GraphNode("X2");
+        final Node x3 = new GraphNode("X3");
 
         graph.addNode(x1);
         graph.addNode(x2);
         graph.addNode(x3);
 
-        Edge e1 = Edges.directedEdge(x1, x2);
-        Edge e2 = Edges.directedEdge(x2, x3);
+        final Edge e1 = Edges.directedEdge(x1, x2);
+        final Edge e2 = Edges.directedEdge(x2, x3);
 
         graph.addEdge(e1);
         graph.addEdge(e2);
@@ -208,30 +208,30 @@ public final class TestGraph {
         assertFalse(graph.isHighlighted(Edges.directedEdge(x1, x2)));
     }
 
-    private Triple pickRandomTriple(Graph graph) {
-        List<Node> nodes = graph.getNodes();
+    private Triple pickRandomTriple(final Graph graph) {
+        final List<Node> nodes = graph.getNodes();
 
         int trial = 0;
 
         while (++trial < 1000) {
-            int i = RandomUtil.getInstance().nextInt(nodes.size());
-            Node y = nodes.get(i);
+            final int i = RandomUtil.getInstance().nextInt(nodes.size());
+            final Node y = nodes.get(i);
 
-            List<Node> adjCenter = graph.getAdjacentNodes(y);
+            final List<Node> adjCenter = graph.getAdjacentNodes(y);
 
             if (adjCenter.isEmpty()) {
                 continue;
             }
 
-            int j1 = RandomUtil.getInstance().nextInt(adjCenter.size());
-            int j2 = RandomUtil.getInstance().nextInt(adjCenter.size());
+            final int j1 = RandomUtil.getInstance().nextInt(adjCenter.size());
+            final int j2 = RandomUtil.getInstance().nextInt(adjCenter.size());
 
             if (j1 == j2) {
                 continue;
             }
 
-            Node x = adjCenter.get(j1);
-            Node z = adjCenter.get(j2);
+            final Node x = adjCenter.get(j1);
+            final Node z = adjCenter.get(j2);
 
             return new Triple(x, y, z);
         }
@@ -239,12 +239,12 @@ public final class TestGraph {
         throw new IllegalArgumentException("Couldn't find a random triple.");
     }
 
-    private void checkAddRemoveNodes(Graph graph) {
-        Node x1 = new GraphNode("x1");
-        Node x2 = new GraphNode("x2");
-        Node x3 = new GraphNode("x3");
-        Node x4 = new GraphNode("x4");
-        Node x5 = new GraphNode("x5");
+    private void checkAddRemoveNodes(final Graph graph) {
+        final Node x1 = new GraphNode("x1");
+        final Node x2 = new GraphNode("x2");
+        final Node x3 = new GraphNode("x3");
+        final Node x4 = new GraphNode("x4");
+        final Node x5 = new GraphNode("x5");
 
         graph.addNode(x1);
         graph.addNode(x2);
@@ -256,8 +256,8 @@ public final class TestGraph {
         graph.addDirectedEdge(x2, x3);
         graph.addDirectedEdge(x3, x4);
 
-        List<Node> children = graph.getChildren(x1);
-        List<Node> parents = graph.getParents(x4);
+        final List<Node> children = graph.getChildren(x1);
+        final List<Node> parents = graph.getParents(x4);
 
         assertTrue(graph.isDConnectedTo(x1, x3, new LinkedList<Node>()));
 
@@ -267,8 +267,8 @@ public final class TestGraph {
     }
 
 
-    private void checkCopy(Graph graph) {
-        Graph graph2 = new EdgeListGraph(graph);
+    private void checkCopy(final Graph graph) {
+        final Graph graph2 = new EdgeListGraph(graph);
         assertEquals(graph, graph2);
     }
 }

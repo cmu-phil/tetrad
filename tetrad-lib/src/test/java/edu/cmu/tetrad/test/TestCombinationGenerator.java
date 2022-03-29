@@ -30,7 +30,7 @@ public class TestCombinationGenerator {
 
     @Test
     public void test1() {
-        CombinationGenerator gen = new CombinationGenerator(new int[]{5, 3});
+        final CombinationGenerator gen = new CombinationGenerator(new int[]{5, 3});
         int count = 0;
 
         while (gen.next() != null) {
@@ -42,7 +42,7 @@ public class TestCombinationGenerator {
 
     @Test
     public void test2() {
-        CombinationGenerator gen = new CombinationGenerator(new int[]{2, 1});
+        final CombinationGenerator gen = new CombinationGenerator(new int[]{2, 1});
         int count = 0;
 
         while (gen.next() != null) {
@@ -54,7 +54,7 @@ public class TestCombinationGenerator {
 
     @Test
     public void test3() {
-        CombinationGenerator gen = new CombinationGenerator(new int[]{2, 3, 4});
+        final CombinationGenerator gen = new CombinationGenerator(new int[]{2, 3, 4});
         int count = 0;
 
         while (gen.next() != null) {

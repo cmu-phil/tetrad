@@ -47,7 +47,7 @@ public class ExternalAlgorithmIntersection extends ExternalAlgorithm {
     private String shortDescription = null;
     private long elapsed = -99;
 
-    public ExternalAlgorithmIntersection(String shortDescription, ExternalAlgorithm... algorithms) {
+    public ExternalAlgorithmIntersection(final String shortDescription, final ExternalAlgorithm... algorithms) {
         this.algorithms = algorithms;
         this.shortDescription = shortDescription;
     }
@@ -55,26 +55,26 @@ public class ExternalAlgorithmIntersection extends ExternalAlgorithm {
     /**
      * Reads in the relevant graph from the file (see above) and returns it.
      */
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(final DataModel dataSet, final Parameters parameters) {
         this.elapsed = 0;
 
-        for (ExternalAlgorithm algorithm : algorithms) {
+        for (final ExternalAlgorithm algorithm : this.algorithms) {
             algorithm.setPath(this.path);
             algorithm.setSimIndex(this.simIndex);
             algorithm.setSimulation(this.simulation);
-            elapsed += algorithm.getElapsedTime((DataSet) dataSet, parameters);
+            this.elapsed += algorithm.getElapsedTime((DataSet) dataSet, parameters);
         }
 
-        Graph graph0 = algorithms[0].search(dataSet, parameters);
-        Set<Edge> edges = graph0.getEdges();
+        final Graph graph0 = this.algorithms[0].search(dataSet, parameters);
+        final Set<Edge> edges = graph0.getEdges();
 
-        for (int i = 1; i < algorithms.length; i++) {
-            edges.retainAll(algorithms[i].search(dataSet, parameters).getEdges());
+        for (int i = 1; i < this.algorithms.length; i++) {
+            edges.retainAll(this.algorithms[i].search(dataSet, parameters).getEdges());
         }
 
-        EdgeListGraph intersection = new EdgeListGraph(graph0.getNodes());
+        final EdgeListGraph intersection = new EdgeListGraph(graph0.getNodes());
 
-        for (Edge edge : edges) {
+        for (final Edge edge : edges) {
             intersection.addEdge(edge);
         }
 
@@ -84,19 +84,19 @@ public class ExternalAlgorithmIntersection extends ExternalAlgorithm {
     /**
      * Returns the CPDAG of the supplied DAG.
      */
-    public Graph getComparisonGraph(Graph graph) {
-        return algorithms[0].getComparisonGraph(graph);
+    public Graph getComparisonGraph(final Graph graph) {
+        return this.algorithms[0].getComparisonGraph(graph);
     }
 
     public String getDescription() {
-        return shortDescription;
+        return this.shortDescription;
     }
 
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
-    public long getElapsedTime(DataModel dataSet, Parameters parameters) {
+    public long getElapsedTime(final DataModel dataSet, final Parameters parameters) {
         return this.elapsed;
     }
 

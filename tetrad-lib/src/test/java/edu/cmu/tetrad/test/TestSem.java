@@ -46,18 +46,18 @@ public class TestSem {
 
     @Test
     public void testSet1() {
-        Graph graph = constructGraph1();
-        SemPm semPm = new SemPm(graph);
-        ICovarianceMatrix covMatrix = constructCovMatrix1();
+        final Graph graph = constructGraph1();
+        final SemPm semPm = new SemPm(graph);
+        final ICovarianceMatrix covMatrix = constructCovMatrix1();
         new SemIm(semPm, covMatrix);
     }
 
     @Test
     public void testSet2() {
-        Graph graph = constructGraph2();
-        SemPm semPm = new SemPm(graph);
-        ICovarianceMatrix covMatrix = constructCovMatrix2();
-        SemIm sem = new SemIm(semPm, covMatrix);
+        final Graph graph = constructGraph2();
+        final SemPm semPm = new SemPm(graph);
+        final ICovarianceMatrix covMatrix = constructCovMatrix2();
+        final SemIm sem = new SemIm(semPm, covMatrix);
     }
 
     /**
@@ -65,12 +65,12 @@ public class TestSem {
      */
     @Test
     public void testSet3() {
-        Graph graph = constructGraph2();
-        SemPm semPm = new SemPm(graph);
-        List parameters = semPm.getParameters();
+        final Graph graph = constructGraph2();
+        final SemPm semPm = new SemPm(graph);
+        final List parameters = semPm.getParameters();
 
-        Parameter a = (Parameter) parameters.get(0);
-        Parameter b = (Parameter) parameters.get(1);
+        final Parameter a = (Parameter) parameters.get(0);
+        final Parameter b = (Parameter) parameters.get(1);
         assertEquals(ParamComparison.NC, semPm.getParamComparison(a, b));
 
         semPm.setParamComparison(a, b, ParamComparison.EQ);
@@ -86,17 +86,17 @@ public class TestSem {
      */
     @Test
     public void testEstimation() {
-        Graph graph = constructGraph1();
-        SemPm semPm = new SemPm(graph);
-        ICovarianceMatrix covMatrix = constructCovMatrix1();
+        final Graph graph = constructGraph1();
+        final SemPm semPm = new SemPm(graph);
+        final ICovarianceMatrix covMatrix = constructCovMatrix1();
 
-        SemEstimator estimator = new SemEstimator(covMatrix, semPm);
+        final SemEstimator estimator = new SemEstimator(covMatrix, semPm);
         estimator.estimate();
-        SemIm semIm2 = estimator.getEstimatedSem();
+        final SemIm semIm2 = estimator.getEstimatedSem();
 
-        double[][] edgeCoef = semIm2.getEdgeCoef().toArray();
+        final double[][] edgeCoef = semIm2.getEdgeCoef().toArray();
 
-        double[][] _edgeCoef = {{0.0000, 0.7750, 0.0000, 1.3192, 0.0000},
+        final double[][] _edgeCoef = {{0.0000, 0.7750, 0.0000, 1.3192, 0.0000},
                 {0.0000, 0.0000, 1.0756, 0.0000, 0.0000},
                 {0.0000, 0.0000, 0.0000, 0.9639, 0.0000},
                 {0.0000, 0.0000, 0.0000, 0.0000, 0.5198},
@@ -108,9 +108,9 @@ public class TestSem {
             }
         }
 
-        double[][] errCovar = semIm2.getErrCovar().toArray();
+        final double[][] errCovar = semIm2.getErrCovar().toArray();
 
-        double[][] _errCovar = {{1.0439, 0.0000, 0.0000, 0.0000, 0.0000},
+        final double[][] _errCovar = {{1.0439, 0.0000, 0.0000, 0.0000, 0.0000},
                 {0.0000, 0.9293, 0.0000, 0.0000, 0.0000},
                 {0.0000, 0.0000, 1.0756, 0.0000, 0.0000},
                 {0.0000, 0.0000, 0.0000, 1.0233, 0.0000},
@@ -124,13 +124,13 @@ public class TestSem {
     }
 
     private Graph constructGraph1() {
-        Graph graph = new EdgeListGraph();
+        final Graph graph = new EdgeListGraph();
 
-        Node x1 = new GraphNode("X1");
-        Node x2 = new GraphNode("X2");
-        Node x3 = new GraphNode("X3");
-        Node x4 = new GraphNode("X4");
-        Node x5 = new GraphNode("X5");
+        final Node x1 = new GraphNode("X1");
+        final Node x2 = new GraphNode("X2");
+        final Node x3 = new GraphNode("X3");
+        final Node x4 = new GraphNode("X4");
+        final Node x5 = new GraphNode("X5");
 
         graph.addNode(x1);
         graph.addNode(x2);
@@ -148,28 +148,28 @@ public class TestSem {
     }
 
     private ICovarianceMatrix constructCovMatrix1() {
-        String[] vars = new String[]{"X1", "X2", "X3", "X4", "X5"};
-        double[][] arr = {{1.04408}, {0.80915, 1.55607},
+        final String[] vars = new String[]{"X1", "X2", "X3", "X4", "X5"};
+        final double[][] arr = {{1.04408}, {0.80915, 1.55607},
                 {0.89296, 1.67375, 2.87584},
                 {2.23792, 2.68536, 3.94996, 7.78259},
                 {1.17516, 1.36337, 1.99039, 4.04533, 3.14922}};
 
-        double[][] m = MatrixUtils.convertLowerTriangleToSymmetric(arr);
-        Matrix m2 = new Matrix(m);
+        final double[][] m = MatrixUtils.convertLowerTriangleToSymmetric(arr);
+        final Matrix m2 = new Matrix(m);
         return new CovarianceMatrix(DataUtils.createContinuousVariables(vars), m2, 1000);
     }
 
     private Graph constructGraph2() {
-        Graph graph = new EdgeListGraph();
+        final Graph graph = new EdgeListGraph();
 
-        Node x1 = new GraphNode("X1");
-        Node x2 = new GraphNode("X2");
-        Node x3 = new GraphNode("X3");
-        Node x4 = new GraphNode("X4");
-        Node x5 = new GraphNode("X5");
-        Node x6 = new GraphNode("X6");
-        Node x7 = new GraphNode("X7");
-        Node x8 = new GraphNode("X8");
+        final Node x1 = new GraphNode("X1");
+        final Node x2 = new GraphNode("X2");
+        final Node x3 = new GraphNode("X3");
+        final Node x4 = new GraphNode("X4");
+        final Node x5 = new GraphNode("X5");
+        final Node x6 = new GraphNode("X6");
+        final Node x7 = new GraphNode("X7");
+        final Node x8 = new GraphNode("X8");
 
         graph.addNode(x1);
         graph.addNode(x2);
@@ -194,18 +194,18 @@ public class TestSem {
     }
 
     private ICovarianceMatrix constructCovMatrix2() {
-        String[] vars =
+        final String[] vars =
                 new String[]{"X1", "X2", "X3", "X4", "X5", "X6", "X7", "X8"};
-        int sampleSize = 173;
+        final int sampleSize = 173;
 
-        double[][] arr = {{1.0}, {.215, 1.0}, {-.164, -.472, 1.0},
+        final double[][] arr = {{1.0}, {.215, 1.0}, {-.164, -.472, 1.0},
                 {.112, .079, -.157, 1.0}, {.034, .121, -.184, .407, 1.0},
                 {.101, .197, -.190, .176, .120, 1.0},
                 {.071, -.172, .206, -.049, -.084, -.291, 1.0},
                 {.043, -.038, -.037, -.062, .028, .166, -.149, 1.0}};
 
-        double[][] m = MatrixUtils.convertLowerTriangleToSymmetric(arr);
-        Matrix m2 = new Matrix(m);
+        final double[][] m = MatrixUtils.convertLowerTriangleToSymmetric(arr);
+        final Matrix m2 = new Matrix(m);
 
         return new CovarianceMatrix(DataUtils.createContinuousVariables(vars), m2, sampleSize);
     }

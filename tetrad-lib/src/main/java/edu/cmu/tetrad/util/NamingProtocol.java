@@ -33,7 +33,7 @@ public class NamingProtocol {
      * @param name Ibid.
      * @return Ibid.
      */
-    public static boolean isLegalName(String name) {
+    public static boolean isLegalName(final String name) {
         return name.matches("[^0-9]?[^ \t]*");
     }
 

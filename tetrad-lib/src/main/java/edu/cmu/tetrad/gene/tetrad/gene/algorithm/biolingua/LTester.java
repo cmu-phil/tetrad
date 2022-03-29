@@ -33,14 +33,14 @@ package edu.cmu.tetrad.gene.tetrad.gene.algorithm.biolingua;
 import edu.cmu.tetrad.gene.tetrad.gene.algorithm.util.*;
 
 public class LTester {
-    public static void main(String args[]) {
-        LTMatrix ltm;
-        LTMatrixF ltmf;
-        SymMatrix sm /*, cm*/;
-        SymMatrixF smf /*, cmf*/;
-        Matrix m;
-        MatrixF mf;
-        Digraph g;
+    public static void main(final String[] args) {
+        final LTMatrix ltm;
+        final LTMatrixF ltmf;
+        final SymMatrix sm /*, cm*/;
+        final SymMatrixF smf /*, cmf*/;
+        final Matrix m;
+        final MatrixF mf;
+        final Digraph g;
 
         try {
             ltm = new LTMatrix("ltm.txt");
@@ -69,7 +69,7 @@ public class LTester {
                             (cm, g, (float) 0.01, (float) 3, (float) 0.1, (float) 3);
                         System.out.println (result);
             */
-        } catch (Exception xcp) {
+        } catch (final Exception xcp) {
             System.out.println("WATCH OUT!!!  There was an exception:");
             xcp.printStackTrace();
         }

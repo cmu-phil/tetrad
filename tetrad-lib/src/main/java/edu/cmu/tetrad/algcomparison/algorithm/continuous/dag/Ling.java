@@ -35,12 +35,12 @@ public class Ling implements Algorithm {
 
     static final long serialVersionUID = 23L;
 
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(final DataModel dataSet, final Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            DataSet _dataSet = DataUtils.getContinuousDataSet(dataSet);
-            edu.cmu.tetrad.search.Ling lingam = new edu.cmu.tetrad.search.Ling(_dataSet);
+            final DataSet _dataSet = DataUtils.getContinuousDataSet(dataSet);
+            final edu.cmu.tetrad.search.Ling lingam = new edu.cmu.tetrad.search.Ling(_dataSet);
 //            lingam.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-            edu.cmu.tetrad.search.Ling.StoredGraphs search = lingam.search();
+            final edu.cmu.tetrad.search.Ling.StoredGraphs search = lingam.search();
 
             if (search.getNumGraphs() > 0) {
                 return search.getGraph(0);
@@ -48,10 +48,10 @@ public class Ling implements Algorithm {
                 return new EdgeListGraph();
             }
         } else {
-            Ling algorithm = new Ling();
+            final Ling algorithm = new Ling();
 
-            DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
+            final DataSet data = (DataSet) dataSet;
+            final GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -77,7 +77,7 @@ public class Ling implements Algorithm {
     }
 
     @Override
-    public Graph getComparisonGraph(Graph graph) {
+    public Graph getComparisonGraph(final Graph graph) {
         return new EdgeListGraph(graph);
     }
 
@@ -92,7 +92,7 @@ public class Ling implements Algorithm {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
+        final List<String> parameters = new ArrayList<>();
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.VERBOSE);
         return parameters;

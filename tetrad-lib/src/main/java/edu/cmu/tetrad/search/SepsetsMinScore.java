@@ -45,7 +45,7 @@ public class SepsetsMinScore implements SepsetProducer {
     private boolean verbose = false;
     private boolean returnNullWhenIndep;
 
-    public SepsetsMinScore(Graph graph, IndependenceTest independenceTest, int depth) {
+    public SepsetsMinScore(final Graph graph, final IndependenceTest independenceTest, final int depth) {
         this.graph = graph;
         this.independenceTest = independenceTest;
         this.depth = depth;
@@ -54,45 +54,45 @@ public class SepsetsMinScore implements SepsetProducer {
     /**
      * Pick out the sepset from among adj(i) or adj(k) with the highest p value.
      */
-    public List<Node> getSepset(Node i, Node k) {
+    public List<Node> getSepset(final Node i, final Node k) {
         return getMinSepset(i, k);
     }
 
     /**
      * Assumes i--j--k is an unshielded triple.
      */
-    public boolean isCollider(Node i, Node j, Node k) {
+    public boolean isCollider(final Node i, final Node j, final Node k) {
         return !getMinSepset(i, k).contains(j);
     }
 
     /**
      * Assumes i--j--k is an unshielded triple.
      */
-    public boolean isNoncollider(Node i, Node j, Node k) {
+    public boolean isNoncollider(final Node i, final Node j, final Node k) {
         return getMinSepset(i, k).contains(j);
     }
 
-    private List<Node> getMinSepset(Node i, Node k) {
+    private List<Node> getMinSepset(final Node i, final Node k) {
         double _p = Double.POSITIVE_INFINITY;
         List<Node> _v = null;
 
-        List<Node> adji = graph.getAdjacentNodes(i);
-        List<Node> adjk = graph.getAdjacentNodes(k);
+        final List<Node> adji = this.graph.getAdjacentNodes(i);
+        final List<Node> adjk = this.graph.getAdjacentNodes(k);
         adji.remove(k);
         adjk.remove(i);
 
-        for (int d = 0; d <= Math.min((depth == -1 ? 1000 : depth), Math.max(adji.size(), adjk.size())); d++) {
+        for (int d = 0; d <= Math.min((this.depth == -1 ? 1000 : this.depth), Math.max(adji.size(), adjk.size())); d++) {
             if (d <= adji.size()) {
-                ChoiceGenerator gen = new ChoiceGenerator(adji.size(), d);
+                final ChoiceGenerator gen = new ChoiceGenerator(adji.size(), d);
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
-                    List<Node> v2 = GraphUtils.asList(choice, adji);
+                    final List<Node> v2 = GraphUtils.asList(choice, adji);
 
                     getIndependenceTest().isIndependent(i, k, v2);
-                    double p2 = getIndependenceTest().getScore();
+                    final double p2 = getIndependenceTest().getScore();
 
-                    if (returnNullWhenIndep) {
+                    if (this.returnNullWhenIndep) {
                         if (p2 < _p && p2 < 0) {
                             _p = p2;
                             _v = v2;
@@ -107,16 +107,16 @@ public class SepsetsMinScore implements SepsetProducer {
             }
 
             if (d <= adjk.size()) {
-                ChoiceGenerator gen = new ChoiceGenerator(adjk.size(), d);
+                final ChoiceGenerator gen = new ChoiceGenerator(adjk.size(), d);
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
-                    List<Node> v2 = GraphUtils.asList(choice, adjk);
+                    final List<Node> v2 = GraphUtils.asList(choice, adjk);
 
                     getIndependenceTest().isIndependent(i, k, v2);
-                    double p2 = getIndependenceTest().getScore();
+                    final double p2 = getIndependenceTest().getScore();
 
-                    if (returnNullWhenIndep) {
+                    if (this.returnNullWhenIndep) {
                         if (p2 < _p && p2 < 0) {
                             _p = p2;
                             _v = v2;
@@ -137,73 +137,73 @@ public class SepsetsMinScore implements SepsetProducer {
 
 
     @Override
-    public boolean isIndependent(Node a, Node b, List<Node> c) {
-        return independenceTest.isIndependent(a, b, c);
+    public boolean isIndependent(final Node a, final Node b, final List<Node> c) {
+        return this.independenceTest.isIndependent(a, b, c);
     }
 
     @Override
     public double getPValue() {
-        return p;
+        return this.p;
     }
 
     @Override
     public double getScore() {
-        return -(p - independenceTest.getAlpha());
+        return -(this.p - this.independenceTest.getAlpha());
     }
 
     @Override
     public List<Node> getVariables() {
-        return independenceTest.getVariables();
+        return this.independenceTest.getVariables();
     }
 
     private IndependenceTest getIndependenceTest() {
-        return independenceTest;
+        return this.independenceTest;
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     @Override
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 
-    public void setReturnNullWhenIndep(boolean returnNullWhenIndep) {
+    public void setReturnNullWhenIndep(final boolean returnNullWhenIndep) {
         this.returnNullWhenIndep = returnNullWhenIndep;
     }
 
     public boolean isReturnNullWhenIndep() {
-        return returnNullWhenIndep;
+        return this.returnNullWhenIndep;
     }
 
-    public List<Node> getSepset(Node a, Node y, Set<Node> inSet) {
+    public List<Node> getSepset(final Node a, final Node y, final Set<Node> inSet) {
         return getMinSepset(a, y, inSet);
     }
 
-    private List<Node> getMinSepset(Node i, Node k, Set<Node> insSet) {
+    private List<Node> getMinSepset(final Node i, final Node k, final Set<Node> insSet) {
         double _p = Double.POSITIVE_INFINITY;
         List<Node> _v = null;
 
-        List<Node> adji = graph.getAdjacentNodes(i);
-        List<Node> adjk = graph.getAdjacentNodes(k);
+        final List<Node> adji = this.graph.getAdjacentNodes(i);
+        final List<Node> adjk = this.graph.getAdjacentNodes(k);
         adji.remove(k);
         adjk.remove(i);
 
-        for (int d = 0; d <= Math.min((depth == -1 ? 1000 : depth), Math.max(adji.size(), adjk.size())); d++) {
+        for (int d = 0; d <= Math.min((this.depth == -1 ? 1000 : this.depth), Math.max(adji.size(), adjk.size())); d++) {
             if (d <= adji.size()) {
-                ChoiceGenerator gen = new ChoiceGenerator(adji.size(), d);
+                final ChoiceGenerator gen = new ChoiceGenerator(adji.size(), d);
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
-                    List<Node> v2 = GraphUtils.asList(choice, adji);
+                    final List<Node> v2 = GraphUtils.asList(choice, adji);
 
                     if (!insSet.containsAll(v2)) continue;
 
                     getIndependenceTest().isIndependent(i, k, v2);
-                    double p2 = getIndependenceTest().getScore();
+                    final double p2 = getIndependenceTest().getScore();
 
-                    if (returnNullWhenIndep) {
+                    if (this.returnNullWhenIndep) {
                         if (p2 < _p && p2 < 0) {
                             _p = p2;
                             _v = v2;
@@ -218,18 +218,18 @@ public class SepsetsMinScore implements SepsetProducer {
             }
 
             if (d <= adjk.size()) {
-                ChoiceGenerator gen = new ChoiceGenerator(adjk.size(), d);
+                final ChoiceGenerator gen = new ChoiceGenerator(adjk.size(), d);
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
-                    List<Node> v2 = GraphUtils.asList(choice, adjk);
+                    final List<Node> v2 = GraphUtils.asList(choice, adjk);
 
                     if (!insSet.containsAll(v2)) continue;
 
                     getIndependenceTest().isIndependent(i, k, v2);
-                    double p2 = getIndependenceTest().getScore();
+                    final double p2 = getIndependenceTest().getScore();
 
-                    if (returnNullWhenIndep) {
+                    if (this.returnNullWhenIndep) {
                         if (p2 < _p && p2 < 0) {
                             _p = p2;
                             _v = v2;

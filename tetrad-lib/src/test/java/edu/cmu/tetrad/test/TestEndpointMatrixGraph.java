@@ -44,104 +44,104 @@ public final class TestEndpointMatrixGraph {
     private Graph graph;
 
     public void setUp() {
-        x1 = new GraphNode("x1");
-        x2 = new GraphNode("x2");
-        x3 = new GraphNode("x3");
-        x4 = new GraphNode("x4");
-        x5 = new GraphNode("x5");
+        this.x1 = new GraphNode("x1");
+        this.x2 = new GraphNode("x2");
+        this.x3 = new GraphNode("x3");
+        this.x4 = new GraphNode("x4");
+        this.x5 = new GraphNode("x5");
 //        graph = new EdgeListGraph();
-        graph = new EndpointMatrixGraph();
+        this.graph = new EndpointMatrixGraph();
     }
 
     @Test
     public void testSequence1() {
         setUp();
 
-        graph.clear();
+        this.graph.clear();
 
         // Add and remove some nodes.
-        graph.addNode(x1);
-        graph.addNode(x2);
-        graph.addNode(x3);
-        graph.addNode(x4);
-        graph.addNode(x5);
+        this.graph.addNode(this.x1);
+        this.graph.addNode(this.x2);
+        this.graph.addNode(this.x3);
+        this.graph.addNode(this.x4);
+        this.graph.addNode(this.x5);
 
-        graph.addDirectedEdge(x1, x2);
-        graph.addDirectedEdge(x2, x3);
-        graph.addDirectedEdge(x3, x4);
+        this.graph.addDirectedEdge(this.x1, this.x2);
+        this.graph.addDirectedEdge(this.x2, this.x3);
+        this.graph.addDirectedEdge(this.x3, this.x4);
 
-        List<Node> children = graph.getChildren(x1);
-        List<Node> parents = graph.getParents(x4);
+        final List<Node> children = this.graph.getChildren(this.x1);
+        final List<Node> parents = this.graph.getParents(this.x4);
 
-        assertEquals(children, Collections.singletonList(x2));
-        assertEquals(parents, Collections.singletonList(x3));
+        assertEquals(children, Collections.singletonList(this.x2));
+        assertEquals(parents, Collections.singletonList(this.x3));
 
-        assertTrue(graph.isDConnectedTo(x1, x3, Collections.EMPTY_LIST));
-        graph.removeNode(x2);
+        assertTrue(this.graph.isDConnectedTo(this.x1, this.x3, Collections.EMPTY_LIST));
+        this.graph.removeNode(this.x2);
 
         // No cycles.
-        assertTrue(!graph.existsDirectedCycle());
+        assertTrue(!this.graph.existsDirectedCycle());
 
         // Copy the graph.
-        Graph graph2 = new EndpointMatrixGraph(graph);
-        assertEquals(graph, graph2);
+        final Graph graph2 = new EndpointMatrixGraph(this.graph);
+        assertEquals(this.graph, graph2);
 
-        Graph graph3 = new EndpointMatrixGraph(graph);
-        assertEquals(graph, graph3);
+        final Graph graph3 = new EndpointMatrixGraph(this.graph);
+        assertEquals(this.graph, graph3);
     }
 
     public void testSequence2() {
         setUp();
 
-        graph.clear();
+        this.graph.clear();
 
         // Add some edges in a cycle.
-        graph.addNode(x1);
-        graph.addNode(x2);
-        graph.addNode(x3);
-        graph.addNode(x4);
-        graph.addNode(x5);
+        this.graph.addNode(this.x1);
+        this.graph.addNode(this.x2);
+        this.graph.addNode(this.x3);
+        this.graph.addNode(this.x4);
+        this.graph.addNode(this.x5);
 
-        assertTrue(!graph.existsDirectedCycle());
+        assertTrue(!this.graph.existsDirectedCycle());
 
-        graph.addDirectedEdge(x1, x3);
+        this.graph.addDirectedEdge(this.x1, this.x3);
 
         try {
-            graph.addDirectedEdge(x1, x3);
-        } catch (IllegalArgumentException e) {
+            this.graph.addDirectedEdge(this.x1, this.x3);
+        } catch (final IllegalArgumentException e) {
             fail("This should have been ignored.");
         }
 
-        graph.addDirectedEdge(x3, x4);
-        graph.addDirectedEdge(x4, x1);
-        graph.addDirectedEdge(x1, x2);
-        graph.addDirectedEdge(x2, x3);
-        graph.addDirectedEdge(x3, x5);
-        graph.addDirectedEdge(x5, x2);
+        this.graph.addDirectedEdge(this.x3, this.x4);
+        this.graph.addDirectedEdge(this.x4, this.x1);
+        this.graph.addDirectedEdge(this.x1, this.x2);
+        this.graph.addDirectedEdge(this.x2, this.x3);
+        this.graph.addDirectedEdge(this.x3, this.x5);
+        this.graph.addDirectedEdge(this.x5, this.x2);
 
-        graph.setEndpoint(x4, x3, Endpoint.ARROW);
-        graph.setEndpoint(x3, x4, Endpoint.ARROW);
+        this.graph.setEndpoint(this.x4, this.x3, Endpoint.ARROW);
+        this.graph.setEndpoint(this.x3, this.x4, Endpoint.ARROW);
 
-        assertTrue(graph.existsDirectedCycle());
+        assertTrue(this.graph.existsDirectedCycle());
     }
 
     @Test
     public void testSequence4() {
         setUp();
 
-        graph.clear();
+        this.graph.clear();
 
         // Add some edges in a cycle.
-        graph.addNode(x1);
-        graph.addNode(x2);
+        this.graph.addNode(this.x1);
+        this.graph.addNode(this.x2);
 
-        graph.addUndirectedEdge(x1, x2);
+        this.graph.addUndirectedEdge(this.x1, this.x2);
 
-        List<Edge> edges = new ArrayList<>(graph.getEdges());
+        final List<Edge> edges = new ArrayList<>(this.graph.getEdges());
 
-        Edge e1 = edges.get(0);
+        final Edge e1 = edges.get(0);
 
-        Edge e2 = new Edge(x2, x1, Endpoint.TAIL, Endpoint.TAIL);
+        final Edge e2 = new Edge(this.x2, this.x1, Endpoint.TAIL, Endpoint.TAIL);
 
         assertTrue(e1.equals(e2));
 
@@ -150,19 +150,19 @@ public final class TestEndpointMatrixGraph {
 
     @Test
     public void test5() {
-        Graph graph1 = GraphUtils.emptyGraph(3);
+        final Graph graph1 = GraphUtils.emptyGraph(3);
 
-        List<Node> nodes = graph1.getNodes();
+        final List<Node> nodes = graph1.getNodes();
 
         graph1.addDirectedEdge(nodes.get(0), nodes.get(1));
         graph1.addDirectedEdge(nodes.get(1), nodes.get(2));
         graph1.addDirectedEdge(nodes.get(0), nodes.get(2));
 
-        Graph graph2 = new EndpointMatrixGraph(graph1);
+        final Graph graph2 = new EndpointMatrixGraph(graph1);
 
         graph2.removeEdge(nodes.get(0), nodes.get(1));
 
-        int shd = SearchGraphUtils.structuralHammingDistance(graph1, graph2);
+        final int shd = SearchGraphUtils.structuralHammingDistance(graph1, graph2);
 
         assertEquals(3, shd);
     }

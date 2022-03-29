@@ -49,21 +49,21 @@ public class TestIndTestGSquare {
     @Test
     public void testIsIndependent() {
         try {
-            DataSet dataSet = getDataSet(1);
+            final DataSet dataSet = getDataSet(1);
 
-            IndTestGSquare test = new IndTestGSquare(dataSet, 0.05);
-            List<Node> v = test.getVariables();
+            final IndTestGSquare test = new IndTestGSquare(dataSet, 0.05);
+            final List<Node> v = test.getVariables();
 
-            Node x = v.get(0);
-            Node y = v.get(1);
-            ArrayList<Node> z = new ArrayList<>();
+            final Node x = v.get(0);
+            final Node y = v.get(1);
+            final ArrayList<Node> z = new ArrayList<>();
             z.add(v.get(2));
             assertTrue(test.isIndependent(x, y, z));
 
             test.setDeterminationP(0.99);
             assertFalse(test.determines(z, x));
             assertFalse(test.determines(z, y));
-        } catch (IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
     }
@@ -71,22 +71,22 @@ public class TestIndTestGSquare {
     @Test
     public void testDetermination() {
         try {
-            DataSet dataSet = getDataSet(1);
+            final DataSet dataSet = getDataSet(1);
 
-            IndTestGSquare test = new IndTestGSquare(dataSet, 0.05);
+            final IndTestGSquare test = new IndTestGSquare(dataSet, 0.05);
 
-            Node x = dataSet.getVariable("X4");
-            ArrayList<Node> z = new ArrayList<>();
+            final Node x = dataSet.getVariable("X4");
+            final ArrayList<Node> z = new ArrayList<>();
 
             test.setDeterminationP(0.99);
             assertFalse(test.determines(z, x));
-        } catch (IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
     }
 
-    private DataSet getDataSet(int i) throws IOException {
-        String filename = discreteFiles[i];
+    private DataSet getDataSet(final int i) throws IOException {
+        final String filename = this.discreteFiles[i];
         System.out.println("Loading " + filename);
 
         return DataUtils.loadDiscreteData(new File(filename),

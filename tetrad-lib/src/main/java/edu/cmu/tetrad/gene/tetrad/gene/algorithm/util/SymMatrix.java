@@ -37,14 +37,14 @@ public class SymMatrix extends LTMatrix {
     /**
      * Creates a symmetric matrix with <code>nrows</code> rows.
      */
-    public SymMatrix(String mname, int nrows) {
+    public SymMatrix(final String mname, final int nrows) {
         super(mname, nrows);
     }
 
     /**
      * Creates a symmetric matrix reading it from file <code>fname</code>.
      */
-    public SymMatrix(String fname) throws IOException {
+    public SymMatrix(final String fname) throws IOException {
         super(fname);
     }
 
@@ -52,7 +52,7 @@ public class SymMatrix extends LTMatrix {
      * Sets the value of element (<code>row</code>,<code>col</code>) to
      * <code>x</code>
      */
-    public void setValue(int row, int col, int x) {
+    public void setValue(final int row, final int col, final int x) {
         if (row >= col) {
             super.setValue(row, col, x);
         } else {
@@ -64,7 +64,7 @@ public class SymMatrix extends LTMatrix {
      * Sets the value of element (<code>row</code>,<code>col</code>) to
      * <code>x</code>
      */
-    public void setValue(int row, int col, short x) {
+    public void setValue(final int row, final int col, final short x) {
         if (row >= col) {
             super.setValue(row, col, x);
         } else {
@@ -75,7 +75,7 @@ public class SymMatrix extends LTMatrix {
     /**
      * Returns the value of element at (<code>row</code>,<code>col</code>)
      */
-    public short getValue(int row, int col) {
+    public short getValue(final int row, final int col) {
         return (row >= col ? super.getValue(row, col) : super.getValue(col,
                 row));
     }

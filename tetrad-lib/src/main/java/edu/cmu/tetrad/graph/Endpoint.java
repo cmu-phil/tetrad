@@ -49,7 +49,7 @@ public final class Endpoint implements TetradSerializable {
      * Protected constructor for the types; this allows for extension in case
      * anyone wants to add formula types.
      */
-    private Endpoint(String name) {
+    private Endpoint(final String name) {
         this.name = name;
     }
 
@@ -64,7 +64,7 @@ public final class Endpoint implements TetradSerializable {
      * Prints out the name of the type.
      */
     public String toString() {
-        return name;
+        return this.name;
     }
 
     // Declarations required for serialization.
@@ -73,7 +73,7 @@ public final class Endpoint implements TetradSerializable {
     public static final Endpoint[] TYPES = {TAIL, ARROW, CIRCLE, STAR, NULL};
 
     Object readResolve() throws ObjectStreamException {
-        return TYPES[ordinal]; // Canonicalize.
+        return TYPES[this.ordinal]; // Canonicalize.
     }
 }
 

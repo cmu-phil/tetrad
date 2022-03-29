@@ -103,20 +103,20 @@ public class TestRicf {
      */
     @Test
     public void testRicf1() {
-        String[] varNames = new String[]{"y", "x", "z", "u"};
-        int numVars = varNames.length;
+        final String[] varNames = new String[]{"y", "x", "z", "u"};
+        final int numVars = varNames.length;
 
-        double[] values = {2.93, -1.7, 0.76, -0.06, -1.7, 1.64, -0.78, 0.1,
+        final double[] values = {2.93, -1.7, 0.76, -0.06, -1.7, 1.64, -0.78, 0.1,
                 0.76, -0.78, 1.66, -0.78, -0.06, 0.1, -0.78, 0.81};
-        Matrix m = matrix(values, numVars, numVars);
+        final Matrix m = matrix(values, numVars, numVars);
 
-        ICovarianceMatrix s = new CovarianceMatrix(DataUtils.createContinuousVariables(varNames), m, 30);
+        final ICovarianceMatrix s = new CovarianceMatrix(DataUtils.createContinuousVariables(varNames), m, 30);
 
-        Graph mag = new EdgeListGraph();
-        Node x = new ContinuousVariable("x");
-        Node y = new ContinuousVariable("y");
-        Node z = new ContinuousVariable("z");
-        Node u = new ContinuousVariable("u");
+        final Graph mag = new EdgeListGraph();
+        final Node x = new ContinuousVariable("x");
+        final Node y = new ContinuousVariable("y");
+        final Node z = new ContinuousVariable("z");
+        final Node u = new ContinuousVariable("u");
         mag.addNode(x);
         mag.addNode(y);
         mag.addNode(z);
@@ -128,13 +128,13 @@ public class TestRicf {
         mag.addDirectedEdge(u, z);
 
 //        int n = 100;
-        double tol = 1e-06;
+        final double tol = 1e-06;
 
-        Ricf ricf = new Ricf();
-        Ricf.RicfResult ricfResult = ricf.ricf(new SemGraph(mag), s, tol);
+        final Ricf ricf = new Ricf();
+        final Ricf.RicfResult ricfResult = ricf.ricf(new SemGraph(mag), s, tol);
 
         // Test shat at least.
-        double[] shatValues = {2.93, -1.434425, 0, 0,
+        final double[] shatValues = {2.93, -1.434425, 0, 0,
                 -1.434425, 1.379968, -0.343037, 0,
                 0, -0.343037, 1.594307, -0.744252,
                 0, 0, -0.744252, 0.81};
@@ -156,17 +156,17 @@ public class TestRicf {
         assertTrue(norm < 0.0001);
     }
 
-    private double normdiff(Ricf.RicfResult ricfResult, double[] shatValues,
-                            int rows, int cols) {
-        Matrix shat = matrix(shatValues, rows, cols);
+    private double normdiff(final Ricf.RicfResult ricfResult, final double[] shatValues,
+                            final int rows, final int cols) {
+        final Matrix shat = matrix(shatValues, rows, cols);
         Matrix diff = shat.copy();
 //        diff.assign(ricfResult.getShat(), PlusMult.plusMult(-1));
         diff = diff.minus(new Matrix(ricfResult.getShat().toArray()));
         return diff.norm1();
     }
 
-    private Matrix matrix(double[] values, int rows, int cols) {
-        Matrix m = new Matrix(rows, cols);
+    private Matrix matrix(final double[] values, final int rows, final int cols) {
+        final Matrix m = new Matrix(rows, cols);
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
@@ -179,14 +179,14 @@ public class TestRicf {
 
     @Test
     public void testCliques() {
-        Graph graph = new EdgeListGraph();
+        final Graph graph = new EdgeListGraph();
 
-        ContinuousVariable x0 = new ContinuousVariable("X0");
-        ContinuousVariable x1 = new ContinuousVariable("X1");
-        ContinuousVariable x2 = new ContinuousVariable("X2");
-        ContinuousVariable x3 = new ContinuousVariable("X3");
-        ContinuousVariable x4 = new ContinuousVariable("X4");
-        ContinuousVariable x5 = new ContinuousVariable("X5");
+        final ContinuousVariable x0 = new ContinuousVariable("X0");
+        final ContinuousVariable x1 = new ContinuousVariable("X1");
+        final ContinuousVariable x2 = new ContinuousVariable("X2");
+        final ContinuousVariable x3 = new ContinuousVariable("X3");
+        final ContinuousVariable x4 = new ContinuousVariable("X4");
+        final ContinuousVariable x5 = new ContinuousVariable("X5");
 
         graph.addNode(x0);
         graph.addNode(x1);
@@ -212,13 +212,13 @@ public class TestRicf {
 
     @Test
     public void testCliques2() {
-        List<Node> nodes = new ArrayList<>();
+        final List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < 8; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 20,
+        final Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 20,
                 5, 5, 5, false));
         new Ricf().cliques(graph);
     }
@@ -228,15 +228,15 @@ public class TestRicf {
      */
     @Test
     public void testCliques3() {
-        Graph graph = new EdgeListGraph();
+        final Graph graph = new EdgeListGraph();
 
-        ContinuousVariable x1 = new ContinuousVariable("X1");
-        ContinuousVariable x2 = new ContinuousVariable("X2");
-        ContinuousVariable x3 = new ContinuousVariable("X3");
-        ContinuousVariable x4 = new ContinuousVariable("X4");
-        ContinuousVariable x5 = new ContinuousVariable("X5");
-        ContinuousVariable x6 = new ContinuousVariable("X6");
-        ContinuousVariable x7 = new ContinuousVariable("X7");
+        final ContinuousVariable x1 = new ContinuousVariable("X1");
+        final ContinuousVariable x2 = new ContinuousVariable("X2");
+        final ContinuousVariable x3 = new ContinuousVariable("X3");
+        final ContinuousVariable x4 = new ContinuousVariable("X4");
+        final ContinuousVariable x5 = new ContinuousVariable("X5");
+        final ContinuousVariable x6 = new ContinuousVariable("X6");
+        final ContinuousVariable x7 = new ContinuousVariable("X7");
 
         graph.addNode(x1);
         graph.addNode(x2);
@@ -259,20 +259,20 @@ public class TestRicf {
 
     @Test
     public void test2() {
-        List<Node> nodes = new ArrayList<>();
+        final List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < 10; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 10,
+        final Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 10,
                 30, 15, 15, false));
-        SemPm pm = new SemPm(graph);
-        SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(1000, false);
-        CovarianceMatrix cov = new CovarianceMatrix(data);
+        final SemPm pm = new SemPm(graph);
+        final SemIm im = new SemIm(pm);
+        final DataSet data = im.simulateData(1000, false);
+        final CovarianceMatrix cov = new CovarianceMatrix(data);
 
-        Ricf.RicfResult result = new Ricf().ricf(new SemGraph(graph), cov, 0.001);
+        final Ricf.RicfResult result = new Ricf().ricf(new SemGraph(graph), cov, 0.001);
 
         result.getBhat();
 
@@ -282,43 +282,43 @@ public class TestRicf {
     public void test3() {
         try {
             final File datapath = new File("/Users/josephramsey/Downloads/data6.txt");
-            DataSet dataSet = DataUtils.loadContinuousData(datapath, "//", '\"' ,
+            final DataSet dataSet = DataUtils.loadContinuousData(datapath, "//", '\"' ,
                     "*", true, Delimiter.TAB);
-            Graph mag = GraphUtils.loadGraphTxt(new File("/Users/josephramsey/Downloads/graph3.txt"));
+            final Graph mag = GraphUtils.loadGraphTxt(new File("/Users/josephramsey/Downloads/graph3.txt"));
 
-            ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
+            final ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
 
             new Ricf().ricf(new SemGraph(mag), cov, 0.001);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
         }
     }
 
     @Test
     public void test4() {
-        List<Node> nodes1 = new ArrayList<>();
+        final List<Node> nodes1 = new ArrayList<>();
 
         for (int i1 = 0; i1 < 5; i1++) {
             nodes1.add(new ContinuousVariable("X" + (i1 + 1)));
         }
 
-        Graph g1 = GraphUtils.randomGraph(nodes1, 0, 5,
+        final Graph g1 = GraphUtils.randomGraph(nodes1, 0, 5,
                 0, 0, 0, false);
-        List<Node> nodes = new ArrayList<>();
+        final List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < 5; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph g2 = GraphUtils.randomGraph(nodes, 0, 5,
+        final Graph g2 = GraphUtils.randomGraph(nodes, 0, 5,
                 0, 0, 0, false);
 
-        SemPm pm = new SemPm(g1);
-        SemIm im = new SemIm(pm);
+        final SemPm pm = new SemPm(g1);
+        final SemIm im = new SemIm(pm);
 
-        DataSet dataset = im.simulateData(1000, false);
+        final DataSet dataset = im.simulateData(1000, false);
 
-        ICovarianceMatrix cov = new CovarianceMatrix(dataset);
+        final ICovarianceMatrix cov = new CovarianceMatrix(dataset);
 
         new Ricf().ricf(new SemGraph(g1), cov, 0.001);
         new Ricf().ricf(new SemGraph(g2), cov, 0.001);

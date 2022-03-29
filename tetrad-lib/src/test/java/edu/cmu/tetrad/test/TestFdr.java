@@ -39,14 +39,14 @@ public class TestFdr {
 
     @Test
     public void testSimpleCase() {
-        double[] p = new double[]{
+        final double[] p = new double[]{
                 .8, .01, .2, .07, .003, .9, .05, .03, .0001
         };
 
-        List<Double> pValues = new ArrayList<>();
-        for (double _p : p) pValues.add(_p);
+        final List<Double> pValues = new ArrayList<>();
+        for (final double _p : p) pValues.add(_p);
 
-        double alpha = 0.05;
+        final double alpha = 0.05;
         boolean negativelyCorrelated = false;
 
         double cutoff = StatUtils.fdrCutoff(alpha, pValues, negativelyCorrelated);

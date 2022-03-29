@@ -43,7 +43,7 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
     private final IndependenceFacts facts;
     private boolean verbose = false;
 
-    public IndTestIndependenceFacts(IndependenceFacts facts) {
+    public IndTestIndependenceFacts(final IndependenceFacts facts) {
         this.facts = facts;
 
 //        System.out.println("Independence Facts for test: ");
@@ -51,20 +51,20 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
     }
 
 
-    public IndependenceTest indTestSubset(List<Node> vars) {
+    public IndependenceTest indTestSubset(final List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
-        Node[] _z = new Node[z.size()];
+    public boolean isIndependent(final Node x, final Node y, final List<Node> z) {
+        final Node[] _z = new Node[z.size()];
 
         for (int i = 0; i < z.size(); i++) {
             _z[i] = z.get(i);
         }
 
-        boolean independent = facts.isIndependent(x, y, _z);
+        final boolean independent = this.facts.isIndependent(x, y, _z);
 
-        if (verbose) {
+        if (this.verbose) {
             if (independent) {
                 TetradLogger.getInstance().log("independencies",
                         SearchLogUtils.independenceFactMsg(x, y, z, Double.NaN));
@@ -79,21 +79,21 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
         return independent;
     }
 
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        List<Node> zz = new ArrayList<>();
+    public boolean isIndependent(final Node x, final Node y, final Node... z) {
+        final List<Node> zz = new ArrayList<>();
 
-        for (Node node : z) {
+        for (final Node node : z) {
             zz.add(node);
         }
 
         return isIndependent(x, y, zz);
     }
 
-    public boolean isDependent(Node x, Node y, List<Node> z) {
+    public boolean isDependent(final Node x, final Node y, final List<Node> z) {
         return !isIndependent(x, y, z);
     }
 
-    public boolean isDependent(Node x, Node y, Node... z) {
+    public boolean isDependent(final Node x, final Node y, final Node... z) {
         return !isIndependent(x, y, z);
     }
 
@@ -102,15 +102,15 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
     }
 
     public List<Node> getVariables() {
-        return facts.getVariables();
+        return this.facts.getVariables();
     }
 
-    public Node getVariable(String name) {
+    public Node getVariable(final String name) {
         if (name == null) throw new NullPointerException();
 
-        List<Node> variables = facts.getVariables();
+        final List<Node> variables = this.facts.getVariables();
 
-        for (Node node : variables) {
+        for (final Node node : variables) {
             if (name.equals(node.getName())) {
                 return node;
             }
@@ -120,10 +120,10 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
     }
 
     public List<String> getVariableNames() {
-        return facts.getVariableNames();
+        return this.facts.getVariableNames();
     }
 
-    public boolean determines(List<Node> z, Node y) {
+    public boolean determines(final List<Node> z, final Node y) {
         return false;
     }
 
@@ -131,12 +131,12 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
         return Double.NaN;
     }
 
-    public void setAlpha(double alpha) {
+    public void setAlpha(final double alpha) {
         throw new UnsupportedOperationException();
     }
 
     public DataModel getData() {
-        return facts;
+        return this.facts;
     }
 
     @Override
@@ -165,10 +165,10 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 }

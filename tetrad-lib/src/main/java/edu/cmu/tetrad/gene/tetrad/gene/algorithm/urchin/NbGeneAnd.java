@@ -24,8 +24,8 @@ package edu.cmu.tetrad.gene.tetrad.gene.algorithm.urchin;
 import edu.cmu.tetrad.util.RandomUtil;
 
 public class NbGeneAnd extends AbstractNbComponent {
-    public NbGeneAnd(double factor, double power, NbComponent[] parents,
-                     int[] inhibitExcite, String name, double sd) {
+    public NbGeneAnd(final double factor, final double power, final NbComponent[] parents,
+                     final int[] inhibitExcite, final String name, final double sd) {
         super(factor, power, parents, inhibitExcite, name);
     }
 
@@ -33,7 +33,7 @@ public class NbGeneAnd extends AbstractNbComponent {
         //System.out.println("Updating " + name);
         double product = 1.0;
         for (int i = 0; i < getNparents(); i++) {
-            double v = getParents()[i].getValue();
+            final double v = getParents()[i].getValue();
             if (getInhibitExcite()[i] > 0) {
                 product *= v / (v + 1.0);
             } else {
@@ -45,7 +45,7 @@ public class NbGeneAnd extends AbstractNbComponent {
         if (getSd() == 0.0) {
             return;
         } else {
-            double r = 1.0 +
+            final double r = 1.0 +
                     RandomUtil.getInstance().nextNormal(0, 1) * getSd();
             setValue(getValue() * r);
         }

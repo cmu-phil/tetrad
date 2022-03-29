@@ -56,7 +56,7 @@ public class LaggedFactor implements Comparable, TetradSerializable {
      * @param factor the name of the factor.
      * @param lag    the time lag of the factor.
      */
-    public LaggedFactor(String factor, int lag) {
+    public LaggedFactor(final String factor, final int lag) {
         if (factor == null) {
             throw new NullPointerException("Factor name must not be null");
         }
@@ -73,7 +73,7 @@ public class LaggedFactor implements Comparable, TetradSerializable {
      * Copy constructor- creates a new object with the same properties as the
      * original
      */
-    public LaggedFactor(LaggedFactor orig) {
+    public LaggedFactor(final LaggedFactor orig) {
         this.factor = orig.factor;
         this.lag = orig.lag;
     }
@@ -98,11 +98,11 @@ public class LaggedFactor implements Comparable, TetradSerializable {
      * @return this lag minus the given lag, if the lagged factors have the same
      * name; otherwise, 0.
      */
-    public int compareTo(Object o) {
+    public int compareTo(final Object o) {
 
         if (o instanceof LaggedFactor) {
-            LaggedFactor f = (LaggedFactor) o;
-            int n = this.factor.compareTo(f.getFactor());
+            final LaggedFactor f = (LaggedFactor) o;
+            final int n = this.factor.compareTo(f.getFactor());
 
             if (n != 0) {
                 return n;
@@ -120,7 +120,7 @@ public class LaggedFactor implements Comparable, TetradSerializable {
      * @return this name.
      */
     public String getFactor() {
-        return factor;
+        return this.factor;
     }
 
     /**
@@ -129,13 +129,13 @@ public class LaggedFactor implements Comparable, TetradSerializable {
      * @return the lag.
      */
     public int getLag() {
-        return lag;
+        return this.lag;
     }
 
     /**
      * Sets the name of the lagged factor
      */
-    public void setFactor(String factor) {
+    public void setFactor(final String factor) {
         this.factor = factor;
     }
 
@@ -143,21 +143,21 @@ public class LaggedFactor implements Comparable, TetradSerializable {
      * Probably should recheck this later.
      */
     public int hashCode() {
-        return 127 * factor.hashCode() + lag;
+        return 127 * this.factor.hashCode() + this.lag;
     }
 
     /**
      * Two lagged factors are equals just in case their factors are equals and
      * their lags are equal.
      */
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (o == this) {
             return true;
         }
         if (!(o instanceof LaggedFactor)) {
             return false;
         }
-        LaggedFactor c = (LaggedFactor) o;
+        final LaggedFactor c = (LaggedFactor) o;
         return c.getFactor().equals(this.getFactor()) &&
                 c.getLag() == this.getLag();
     }
@@ -168,7 +168,7 @@ public class LaggedFactor implements Comparable, TetradSerializable {
      * @return this string.
      */
     public String toString() {
-        return factor + ":" + lag;
+        return this.factor + ":" + this.lag;
     }
 
     /**
@@ -184,15 +184,15 @@ public class LaggedFactor implements Comparable, TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (factor == null) {
+        if (this.factor == null) {
             throw new NullPointerException();
         }
 
-        if (lag < 0) {
+        if (this.lag < 0) {
             throw new IllegalStateException();
         }
 

@@ -83,8 +83,8 @@ public class Mapping implements TetradSerializable {
      * @param i         Left coordinates of matrix[i][j].
      * @param j         Right coordinate of matrix[i][j].
      */
-    public Mapping(ISemIm semIm, Parameter parameter, Matrix matrix,
-                   int i, int j) {
+    public Mapping(final ISemIm semIm, final Parameter parameter, final Matrix matrix,
+                   final int i, final int j) {
         if (semIm == null) {
             throw new NullPointerException("SemIm must not be null.");
         }
@@ -121,19 +121,19 @@ public class Mapping implements TetradSerializable {
      * Sets the value of the array element at the stored coordinates (i, j).
      * If the array is symmetric sets two elements.
      */
-    public void setValue(double x) {
+    public void setValue(final double x) {
         if (this.semIm.isParameterBoundsEnforced() &&
                 getParameter().getType() == ParamType.VAR && x < 0.0) {
             throw new IllegalArgumentException(
                     "Variances cannot " + "have values <= 0.0: " + x);
         }
 
-        a.set(i, j, x);
+        this.a.set(this.i, this.j, x);
 
         if (getParameter().getType() == ParamType.VAR ||
                 getParameter().getType() == ParamType.COVAR) {
-            a.set(j, i, x);
-            a.set(i, j, x);
+            this.a.set(this.j, this.i, x);
+            this.a.set(this.i, this.j, x);
         }
     }
 
@@ -141,7 +141,7 @@ public class Mapping implements TetradSerializable {
      * @return the value of the array element at (i, j).
      */
     public double getValue() {
-        return a.get(i, j);
+        return this.a.get(this.i, this.j);
     }
 
     /**
@@ -157,7 +157,7 @@ public class Mapping implements TetradSerializable {
      */
     public String toString() {
         return "<" + getParameter().getName() + " " + getParameter().getType() +
-                "[" + i + "][" + j + "]>";
+                "[" + this.i + "][" + this.j + "]>";
     }
 
     /**
@@ -173,15 +173,15 @@ public class Mapping implements TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (semIm == null) {
+        if (this.semIm == null) {
             throw new NullPointerException();
         }
 
-        if (parameter == null) {
+        if (this.parameter == null) {
             throw new NullPointerException();
         }
     }

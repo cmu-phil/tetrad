@@ -86,7 +86,7 @@ public final class IndTestChiSquare implements IndependenceTest {
      * @param dataSet the discrete data set.
      * @param alpha   the significance level of the tests.
      */
-    public IndTestChiSquare(DataSet dataSet, double alpha) {
+    public IndTestChiSquare(final DataSet dataSet, final double alpha) {
 
         // The g square test requires as parameters: (a) the data set
         // itself, (b) an array containing the number of values for
@@ -108,19 +108,19 @@ public final class IndTestChiSquare implements IndependenceTest {
     /**
      * Creates a new IndTestChiSquare for a subset of the nodes.
      */
-    public IndependenceTest indTestSubset(List<Node> nodes) {
+    public IndependenceTest indTestSubset(final List<Node> nodes) {
         if (nodes.isEmpty()) {
             throw new IllegalArgumentException("Subset may not be empty.");
         }
 
-        for (Node variable : nodes) {
+        for (final Node variable : nodes) {
             if (!this.variables.contains(variable)) {
                 throw new IllegalArgumentException(
                         "All nodes must be original nodes");
             }
         }
 
-        int[] indices = new int[nodes.size()];
+        final int[] indices = new int[nodes.size()];
         int j = -1;
 
         for (int i = 0; i < this.variables.size(); i++) {
@@ -131,8 +131,8 @@ public final class IndTestChiSquare implements IndependenceTest {
             indices[++j] = i;
         }
 
-        DataSet newDataSet = dataSet.subsetColumns(indices);
-        double alpha = this.chiSquareTest.getAlpha();
+        final DataSet newDataSet = this.dataSet.subsetColumns(indices);
+        final double alpha = this.chiSquareTest.getAlpha();
         return new IndTestChiSquare(newDataSet, alpha);
     }
 
@@ -140,7 +140,7 @@ public final class IndTestChiSquare implements IndependenceTest {
      * @return the G Square value.
      */
     public double getXSquare() {
-        return xSquare;
+        return this.xSquare;
     }
 
     /**
@@ -148,14 +148,14 @@ public final class IndTestChiSquare implements IndependenceTest {
      * @ return degrees of freedom
      */
     public int getDf() {
-        return df;
+        return this.df;
     }
 
     /**
      * @return the p value associated with the most recent call of isIndependent.
      */
     public double getPValue() {
-        return pValue;
+        return this.pValue;
     }
 
     /**
@@ -166,14 +166,14 @@ public final class IndTestChiSquare implements IndependenceTest {
      * @param z the list of conditioning varNames.
      * @return true iff x _||_ y | z.
      */
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
-        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    public boolean isIndependent(final Node x, final Node y, final List<Node> z) {
+        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
         if (z == null) {
             throw new NullPointerException();
         }
 
-        for (Node v : z) {
+        for (final Node v : z) {
             if (v == null) {
                 throw new NullPointerException();
             }
@@ -181,13 +181,13 @@ public final class IndTestChiSquare implements IndependenceTest {
 
         // For testing x, y given z1,...,zn, set up an array of length
         // n + 2 containing the indices of these variables in order.
-        int[] testIndices = new int[2 + z.size()];
+        final int[] testIndices = new int[2 + z.size()];
 
-        testIndices[0] = variables.indexOf(x);
-        testIndices[1] = variables.indexOf(y);
+        testIndices[0] = this.variables.indexOf(x);
+        testIndices[1] = this.variables.indexOf(y);
 
         for (int i = 0; i < z.size(); i++) {
-            testIndices[i + 2] = variables.indexOf(z.get(i));
+            testIndices[i + 2] = this.variables.indexOf(z.get(i));
         }
 
         // the following is lame code--need a better test
@@ -198,13 +198,13 @@ public final class IndTestChiSquare implements IndependenceTest {
             }
         }
 
-        ChiSquareTest.Result result = chiSquareTest.calcChiSquare(testIndices);
+        final ChiSquareTest.Result result = this.chiSquareTest.calcChiSquare(testIndices);
         this.xSquare = result.getXSquare();
         this.df = result.getDf();
         this.pValue = result.getPValue();
 
         if (result.isIndep()) {
-            String sb = "INDEPENDENCE ACCEPTED: " +
+            final String sb = "INDEPENDENCE ACCEPTED: " +
                     SearchLogUtils.independenceFact(x, y, z) +
                     "\tp = " + nf.format(result.getPValue()) +
                     "\tx^2 = " + nf.format(result.getXSquare()) +
@@ -217,17 +217,17 @@ public final class IndTestChiSquare implements IndependenceTest {
         return result.isIndep();
     }
 
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
+    public boolean isIndependent(final Node x, final Node y, final Node... z) {
+        final List<Node> zList = Arrays.asList(z);
         return isIndependent(x, y, zList);
     }
 
-    public boolean isDependent(Node x, Node y, List<Node> z) {
+    public boolean isDependent(final Node x, final Node y, final List<Node> z) {
         return !isIndependent(x, y, z);
     }
 
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
+    public boolean isDependent(final Node x, final Node y, final Node... z) {
+        final List<Node> zList = Arrays.asList(z);
         return isDependent(x, y, zList);
     }
 
@@ -236,12 +236,12 @@ public final class IndTestChiSquare implements IndependenceTest {
      * @param x1 The one variable whose determination by z we want to know.
      * @return true if it is estimated that z determines x or z determines y.
      */
-    public boolean determines(List<Node> z, Node x1) {
+    public boolean determines(final List<Node> z, final Node x1) {
         if (z == null) {
             throw new NullPointerException();
         }
 
-        for (Node aZ : z) {
+        for (final Node aZ : z) {
             if (aZ == null) {
                 throw new NullPointerException();
             }
@@ -249,11 +249,11 @@ public final class IndTestChiSquare implements IndependenceTest {
 
         // For testing x, y given z1,...,zn, set up an array of length
         // n + 2 containing the indices of these variables in order.
-        int[] testIndices = new int[1 + z.size()];
-        testIndices[0] = variables.indexOf(x1);
+        final int[] testIndices = new int[1 + z.size()];
+        testIndices[0] = this.variables.indexOf(x1);
 
         for (int i = 0; i < z.size(); i++) {
-            testIndices[i + 1] = variables.indexOf(z.get(i));
+            testIndices[i + 1] = this.variables.indexOf(z.get(i));
         }
 
         // the following is lame code--need a better test
@@ -266,11 +266,11 @@ public final class IndTestChiSquare implements IndependenceTest {
 
         //        System.out.println("Testing " + x + " _||_ " + y + " | " + z);
 
-        boolean countDetermined =
-                chiSquareTest.isDetermined(testIndices, getDeterminationP());
+        final boolean countDetermined =
+                this.chiSquareTest.isDetermined(testIndices, getDeterminationP());
 
         if (countDetermined) {
-            StringBuilder sb = new StringBuilder();
+            final StringBuilder sb = new StringBuilder();
             sb.append("Determination found: ").append(x1).append(
                     " is determined by {");
 
@@ -291,7 +291,7 @@ public final class IndTestChiSquare implements IndependenceTest {
     }
 
     public double getAlpha() {
-        return chiSquareTest.getAlpha();
+        return this.chiSquareTest.getAlpha();
     }
 
     /**
@@ -300,7 +300,7 @@ public final class IndTestChiSquare implements IndependenceTest {
      *
      * @param alpha the new significance level.
      */
-    public void setAlpha(double alpha) {
+    public void setAlpha(final double alpha) {
         this.chiSquareTest.setAlpha(alpha);
     }
 
@@ -309,24 +309,24 @@ public final class IndTestChiSquare implements IndependenceTest {
      * relations-- that is, all the variables in the given graph or the given data set.
      */
     public List<Node> getVariables() {
-        return Collections.unmodifiableList(variables);
+        return Collections.unmodifiableList(this.variables);
     }
 
     /**
      * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
-        List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<>();
-        for (Node variable1 : variables) {
+        final List<Node> variables = getVariables();
+        final List<String> variableNames = new ArrayList<>();
+        for (final Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }
         return variableNames;
     }
 
-    public Node getVariable(String name) {
+    public Node getVariable(final String name) {
         for (int i = 0; i < getVariables().size(); i++) {
-            Node variable = getVariables().get(i);
+            final Node variable = getVariables().get(i);
             if (variable.getName().equals(name)) {
                 return variable;
             }
@@ -336,7 +336,7 @@ public final class IndTestChiSquare implements IndependenceTest {
     }
 
     public String toString() {
-        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         return "Chi Square, alpha = " + nf.format(getAlpha());
     }
 
@@ -349,7 +349,7 @@ public final class IndTestChiSquare implements IndependenceTest {
     }
 
     public DataSet getData() {
-        return dataSet;
+        return this.dataSet;
     }
 
     @Override
@@ -378,16 +378,16 @@ public final class IndTestChiSquare implements IndependenceTest {
     }
 
     public HashSet<IndependenceFact> getFacts() {
-        return facts;
+        return this.facts;
     }
 
     @Override
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     @Override
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 }

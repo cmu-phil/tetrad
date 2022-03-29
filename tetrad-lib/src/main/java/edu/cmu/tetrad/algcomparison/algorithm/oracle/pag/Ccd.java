@@ -26,24 +26,24 @@ public class Ccd implements Algorithm {
     static final long serialVersionUID = 23L;
     private final IndependenceWrapper test;
 
-    public Ccd(IndependenceWrapper test) {
+    public Ccd(final IndependenceWrapper test) {
         this.test = test;
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(final DataModel dataSet, final Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            edu.cmu.tetrad.search.Ccd search = new edu.cmu.tetrad.search.Ccd(
-                    test.getTest(dataSet, parameters));
+            final edu.cmu.tetrad.search.Ccd search = new edu.cmu.tetrad.search.Ccd(
+                    this.test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setApplyR1(parameters.getBoolean(Params.APPLY_R1));
 
             return search.search();
         } else {
-            Ccd algorithm = new Ccd(test);
+            final Ccd algorithm = new Ccd(this.test);
 
-            DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
+            final DataSet data = (DataSet) dataSet;
+            final GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -69,23 +69,23 @@ public class Ccd implements Algorithm {
     }
 
     @Override
-    public Graph getComparisonGraph(Graph graph) {
+    public Graph getComparisonGraph(final Graph graph) {
         return new EdgeListGraph(graph);
     }
 
     @Override
     public String getDescription() {
-        return "CCD (Cyclic Causal Discovery using " + test.getDescription();
+        return "CCD (Cyclic Causal Discovery using " + this.test.getDescription();
     }
 
     @Override
     public DataType getDataType() {
-        return test.getDataType();
+        return this.test.getDataType();
     }
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = test.getParameters();
+        final List<String> parameters = this.test.getParameters();
         parameters.add(Params.DEPTH);
         parameters.add(Params.APPLY_R1);
 

@@ -43,27 +43,27 @@ public class TestChoiceGenerator {
      */
     @Test
     public void testPrintChoiceGenerator() {
-        int a = 10;
-        int b = 3;
+        final int a = 10;
+        final int b = 3;
 
-        int numCombinations = ChoiceGenerator.getNumCombinations(a, b);
+        final int numCombinations = ChoiceGenerator.getNumCombinations(a, b);
 
         assertEquals(120, numCombinations);
     }
 
     @Test
     public void testPrintDepthChoiceGenerator() {
-        int a = 4;
-        int b = 2;
+        final int a = 4;
+        final int b = 2;
 
-        int numCombinations = DepthChoiceGenerator.getNumCombinations(a, b);
+        final int numCombinations = DepthChoiceGenerator.getNumCombinations(a, b);
 
         assertEquals(11, numCombinations);
     }
 
     @Test
     public void testPrintPermutationGenerator() {
-        PermutationGenerator gen = new PermutationGenerator(4);
+        final PermutationGenerator gen = new PermutationGenerator(4);
         int count = 0;
 
         while (gen.next() != null) {
@@ -75,7 +75,7 @@ public class TestChoiceGenerator {
 
     @Test
     public void testPrintSelectionGenerator() {
-        SelectionGenerator gen = new SelectionGenerator(4);
+        final SelectionGenerator gen = new SelectionGenerator(4);
         int count = 0;
 
         while (gen.next() != null) {
@@ -93,7 +93,7 @@ public class TestChoiceGenerator {
     public void testChoiceGeneratorCounts() {
         for (int a = 0; a <= 20; a++) {
             for (int b = 0; b <= a; b++) {
-                ChoiceGenerator generator = new ChoiceGenerator(a, b);
+                final ChoiceGenerator generator = new ChoiceGenerator(a, b);
 
                 int n = 0;
 
@@ -109,7 +109,7 @@ public class TestChoiceGenerator {
                     denominator *= k - b;
                 }
 
-                long numChoices = numerator / denominator;
+                final long numChoices = numerator / denominator;
 
                 if (n != numChoices) {
                     fail("a = " + a + " b = " + b + " numChoices = " + numChoices + " n = " + n);

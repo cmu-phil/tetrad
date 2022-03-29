@@ -46,7 +46,7 @@ class IonLegalPairs implements LegalPairs {
      *
      * @param graph The graph with respect to which legal pairs will be tested.
      */
-    public IonLegalPairs(Graph graph) {
+    public IonLegalPairs(final Graph graph) {
         if (graph == null) {
             throw new NullPointerException();
         }
@@ -57,19 +57,19 @@ class IonLegalPairs implements LegalPairs {
     /**
      * @return true iff x is adjacent to y.
      */
-    public boolean isLegalFirstEdge(Node x, Node y) {
+    public boolean isLegalFirstEdge(final Node x, final Node y) {
         return this.graph.isAdjacentTo(x, y);
     }
 
     /**
      * @throws IllegalArgumentException if x is not adjacent to y or y is not adjacent to z.
      */
-    public boolean isLegalPair(Node x, Node y, Node z, List<Node> c, List<Node> d) {
-        if (!(graph.isAdjacentTo(x, y)) || !(graph.isAdjacentTo(y, z))) {
+    public boolean isLegalPair(final Node x, final Node y, final Node z, final List<Node> c, final List<Node> d) {
+        if (!(this.graph.isAdjacentTo(x, y)) || !(this.graph.isAdjacentTo(y, z))) {
             throw new IllegalArgumentException();
         }
         //noinspection SimplifiableIfStatement                
-        if (graph.isDefCollider(x, y, x) || graph.isAdjacentTo(x, z)) {
+        if (this.graph.isDefCollider(x, y, x) || this.graph.isAdjacentTo(x, z)) {
             return true;
         }
 

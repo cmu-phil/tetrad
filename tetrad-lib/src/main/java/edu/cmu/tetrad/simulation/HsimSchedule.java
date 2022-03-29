@@ -7,12 +7,12 @@ import java.util.List;
  * Created by Erich on 4/29/2016.
  */
 public class HsimSchedule {
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
         //parameter: set of positive integers, which are resimSize values.
-        List<Integer> schedule = Arrays.asList(5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5);
+        final List<Integer> schedule = Arrays.asList(5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5);
 
-        boolean verbose = false;//set this to true if you want HsimautoRun to report information
-        double[] evalTotal;
+        final boolean verbose = false;//set this to true if you want HsimautoRun to report information
+        final double[] evalTotal;
         evalTotal = new double[5];
         evalTotal[0] = 0;
         evalTotal[1] = 0;
@@ -24,8 +24,8 @@ public class HsimSchedule {
         //evalIncrement = new double[5];
 
         Integer count = 1;
-        for (Integer i : schedule) {
-            HsimAutoRun study = new HsimAutoRun("GeMSlim.csv", ',');
+        for (final Integer i : schedule) {
+            final HsimAutoRun study = new HsimAutoRun("GeMSlim.csv", ',');
             study.setWrite(true);
             study.setFilenameOut("autoout" + i + "-" + count + ".txt");
             evalIncrement = study.run(i);

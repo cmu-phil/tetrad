@@ -49,10 +49,10 @@ public final class DataWriter {
      * @param separator The character separating fields, usually '\t' or ','.
      * @throws IOException If there is some problem dealing with the writer.
      */
-    public static void writeRectangularData(DataSet dataSet,
-                                            Writer out, char separator) throws IOException {
-        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-        StringBuilder buf = new StringBuilder();
+    public static void writeRectangularData(final DataSet dataSet,
+                                            final Writer out, final char separator) throws IOException {
+        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        final StringBuilder buf = new StringBuilder();
 
 //        boolean isCaseMultipliersCollapsed = dataSet.isMulipliersCollapsed();
 
@@ -83,10 +83,10 @@ public final class DataWriter {
 //            }
 
             for (int col = 0; col < dataSet.getNumColumns(); col++) {
-                Node variable = dataSet.getVariable(col);
+                final Node variable = dataSet.getVariable(col);
 
                 if (variable instanceof ContinuousVariable) {
-                    double value = dataSet.getDouble(row, col);
+                    final double value = dataSet.getDouble(row, col);
 
                     if (ContinuousVariable.isDoubleMissingValue(value)) {
                         buf.append("*");
@@ -98,8 +98,8 @@ public final class DataWriter {
                         buf.append(separator);
                     }
                 } else if (variable instanceof DiscreteVariable) {
-                    Object obj = dataSet.getObject(row, col);
-                    String val = ((obj == null) ? "" : obj.toString());
+                    final Object obj = dataSet.getObject(row, col);
+                    final String val = ((obj == null) ? "" : obj.toString());
 
                     buf.append(val);
 
@@ -187,16 +187,16 @@ public final class DataWriter {
      *
      * @param out The writer to write the output to.
      */
-    public static void writeCovMatrix(ICovarianceMatrix covMatrix,
-                                      PrintWriter out, NumberFormat nf) {
+    public static void writeCovMatrix(final ICovarianceMatrix covMatrix,
+                                      final PrintWriter out, final NumberFormat nf) {
 //        out.println("/Covariance");
         out.println(covMatrix.getSampleSize());
 
-        List<String> variables = covMatrix.getVariableNames();
-        int numVars = variables.size();
+        final List<String> variables = covMatrix.getVariableNames();
+        final int numVars = variables.size();
 
         int varCount = 0;
-        for (String variable : variables) {
+        for (final String variable : variables) {
             varCount++;
             if (varCount < numVars) {
                 out.print(variable);
@@ -208,7 +208,7 @@ public final class DataWriter {
 
         for (int j = 0; j < numVars; j++) {
             for (int i = 0; i <= j; i++) {
-                double value = covMatrix.getValue(i, j);
+                final double value = covMatrix.getValue(i, j);
                 if (Double.isNaN(value)) {
                     out.print("*");
                 } else {
@@ -222,20 +222,20 @@ public final class DataWriter {
         out.close();
     }
 
-    public static void saveKnowledge(IKnowledge knowledge, Writer out) throws IOException {
-        StringBuilder buf = new StringBuilder();
+    public static void saveKnowledge(final IKnowledge knowledge, final Writer out) throws IOException {
+        final StringBuilder buf = new StringBuilder();
         buf.append("/knowledge");
 
         buf.append("\naddtemporal\n");
 
         for (int i = 0; i < knowledge.getNumTiers(); i++) {
 
-            String forbiddenWithin = knowledge.isTierForbiddenWithin(i) ? "*" : "";
-            String onlyCanCauseNextTier = knowledge.isOnlyCanCauseNextTier(i) ? "-" : "";
+            final String forbiddenWithin = knowledge.isTierForbiddenWithin(i) ? "*" : "";
+            final String onlyCanCauseNextTier = knowledge.isOnlyCanCauseNextTier(i) ? "-" : "";
             buf.append("\n").append(i + 1).append(forbiddenWithin).append(onlyCanCauseNextTier).append(" ");
 
 
-            List<String> tier = knowledge.getTier(i);
+            final List<String> tier = knowledge.getTier(i);
             if (!(tier == null || tier.isEmpty())) {
                 buf.append(" ");
                 buf.append(tier.stream().collect(Collectors.joining(" ")));
@@ -244,11 +244,11 @@ public final class DataWriter {
 
         buf.append("\n\nforbiddirect");
 
-        for (Iterator<KnowledgeEdge> i
+        for (final Iterator<KnowledgeEdge> i
              = knowledge.forbiddenEdgesIterator(); i.hasNext(); ) {
-            KnowledgeEdge pair = i.next();
-            String from = pair.getFrom();
-            String to = pair.getTo();
+            final KnowledgeEdge pair = i.next();
+            final String from = pair.getFrom();
+            final String to = pair.getTo();
 
             if (knowledge.isForbiddenByTiers(from, to)) {
                 continue;
@@ -259,11 +259,11 @@ public final class DataWriter {
 
         buf.append("\n\nrequiredirect");
 
-        for (Iterator<KnowledgeEdge> i
+        for (final Iterator<KnowledgeEdge> i
              = knowledge.requiredEdgesIterator(); i.hasNext(); ) {
-            KnowledgeEdge pair = i.next();
-            String from = pair.getFrom();
-            String to = pair.getTo();
+            final KnowledgeEdge pair = i.next();
+            final String from = pair.getFrom();
+            final String to = pair.getTo();
             buf.append("\n").append(from).append(" ").append(to);
         }
 

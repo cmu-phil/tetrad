@@ -30,7 +30,7 @@ public final class SimulationUtils {
     private SimulationUtils() {
     }
 
-    public static Simulation create(String simulationType, RandomGraph randomGraph) {
+    public static Simulation create(final String simulationType, final RandomGraph randomGraph) {
         switch (simulationType) {
             case SimulationTypes.BAYS_NET:
                 return new BayesNetSimulation(randomGraph);

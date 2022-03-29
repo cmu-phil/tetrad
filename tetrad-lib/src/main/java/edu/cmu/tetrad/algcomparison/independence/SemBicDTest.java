@@ -22,8 +22,8 @@ public class SemBicDTest implements IndependenceWrapper {
     static final long serialVersionUID = 23L;
 
     @Override
-    public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        SemBicScoreDeterministic score = new SemBicScoreDeterministic(new CovarianceMatrix((ICovarianceMatrix) dataSet));
+    public IndependenceTest getTest(final DataModel dataSet, final Parameters parameters) {
+        final SemBicScoreDeterministic score = new SemBicScoreDeterministic(new CovarianceMatrix((ICovarianceMatrix) dataSet));
         score.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         return new IndTestScore(score, dataSet);
     }
@@ -40,7 +40,7 @@ public class SemBicDTest implements IndependenceWrapper {
 
     @Override
     public List<String> getParameters() {
-        List<String> params = new ArrayList<>();
+        final List<String> params = new ArrayList<>();
         params.add("penaltyDiscount");
         return params;
     }

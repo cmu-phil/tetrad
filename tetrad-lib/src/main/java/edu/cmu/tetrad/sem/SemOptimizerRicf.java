@@ -57,14 +57,14 @@ public class SemOptimizerRicf implements SemOptimizer {
      * Optimizes the fitting function of the given Sem using the Powell method
      * from Numerical Recipes by adjusting the freeParameters of the Sem.
      */
-    public void optimize(SemIm semIm) {
-        if (numRestarts < 1) numRestarts = 1;
+    public void optimize(final SemIm semIm) {
+        if (this.numRestarts < 1) this.numRestarts = 1;
 
-        if (numRestarts != 1) {
+        if (this.numRestarts != 1) {
             throw new IllegalArgumentException("Number of restarts must be 1 for this method.");
         }
 
-        Matrix sampleCovar = semIm.getSampleCovar();
+        final Matrix sampleCovar = semIm.getSampleCovar();
 
         if (sampleCovar == null) {
             throw new NullPointerException("Sample covar has not been set.");
@@ -81,11 +81,11 @@ public class SemOptimizerRicf implements SemOptimizer {
         TetradLogger.getInstance().log("info", "Trying EM...");
 //        new SemOptimizerEm().optimize(semIm);
 
-        CovarianceMatrix cov = new CovarianceMatrix(semIm.getMeasuredNodes(),
+        final CovarianceMatrix cov = new CovarianceMatrix(semIm.getMeasuredNodes(),
                 sampleCovar, semIm.getSampleSize());
 
-        SemGraph graph = semIm.getSemPm().getGraph();
-        Ricf.RicfResult result = new Ricf().ricf(graph, cov, 0.001);
+        final SemGraph graph = semIm.getSemPm().getGraph();
+        final Ricf.RicfResult result = new Ricf().ricf(graph, cov, 0.001);
 
 
 //        Ricf.RicfResult result = null;
@@ -133,19 +133,19 @@ public class SemOptimizerRicf implements SemOptimizer {
 //            }
 //        }
 
-        Matrix bHat = new Matrix(result.getBhat().toArray());
-        Matrix lHat = new Matrix(result.getLhat().toArray());
-        Matrix oHat = new Matrix(result.getOhat().toArray());
+        final Matrix bHat = new Matrix(result.getBhat().toArray());
+        final Matrix lHat = new Matrix(result.getLhat().toArray());
+        final Matrix oHat = new Matrix(result.getOhat().toArray());
 
-        for (Parameter param : semIm.getFreeParameters()) {
+        for (final Parameter param : semIm.getFreeParameters()) {
             if (param.getType() == ParamType.COEF) {
-                int i = semIm.getSemPm().getVariableNodes().indexOf(param.getNodeA());
-                int j = semIm.getSemPm().getVariableNodes().indexOf(param.getNodeB());
+                final int i = semIm.getSemPm().getVariableNodes().indexOf(param.getNodeA());
+                final int j = semIm.getSemPm().getVariableNodes().indexOf(param.getNodeB());
                 semIm.setEdgeCoef(param.getNodeA(), param.getNodeB(), -bHat.get(j, i));
             }
 
             if (param.getType() == ParamType.VAR) {
-                int i = semIm.getSemPm().getVariableNodes().indexOf(param.getNodeA());
+                final int i = semIm.getSemPm().getVariableNodes().indexOf(param.getNodeA());
                 if (lHat.get(i, i) != 0) {
                     semIm.setErrVar(param.getNodeA(), lHat.get(i, i));
                 } else if (oHat.get(i, i) != 0) {
@@ -154,8 +154,8 @@ public class SemOptimizerRicf implements SemOptimizer {
             }
 
             if (param.getType() == ParamType.COVAR) {
-                int i = semIm.getSemPm().getVariableNodes().indexOf(param.getNodeA());
-                int j = semIm.getSemPm().getVariableNodes().indexOf(param.getNodeB());
+                final int i = semIm.getSemPm().getVariableNodes().indexOf(param.getNodeA());
+                final int j = semIm.getSemPm().getVariableNodes().indexOf(param.getNodeB());
                 if (lHat.get(i, i) != 0) {
                     semIm.setErrCovar(param.getNodeA(), param.getNodeB(), lHat.get(j, i));
                 } else if (oHat.get(i, i) != 0) {
@@ -169,13 +169,13 @@ public class SemOptimizerRicf implements SemOptimizer {
     }
 
     @Override
-    public void setNumRestarts(int numRestarts) {
+    public void setNumRestarts(final int numRestarts) {
         this.numRestarts = numRestarts;
     }
 
     @Override
     public int getNumRestarts() {
-        return numRestarts;
+        return this.numRestarts;
     }
 
     public String toString() {

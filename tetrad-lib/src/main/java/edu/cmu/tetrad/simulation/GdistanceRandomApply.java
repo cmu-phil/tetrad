@@ -15,9 +15,9 @@ import java.util.List;
  */
 public class GdistanceRandomApply {
 
-    public static void main(String... args) {
+    public static void main(final String... args) {
         //thresholds are the barriers between histogram buckets.
-        double[] thresholds;
+        final double[] thresholds;
         thresholds = new double[5];
         thresholds[0] = 0;
         thresholds[1] = 2;
@@ -25,16 +25,16 @@ public class GdistanceRandomApply {
         thresholds[3] = 6;
         thresholds[4] = 8;
         //load the location map
-        String workingDirectory = System.getProperty("user.dir");
+        final String workingDirectory = System.getProperty("user.dir");
         System.out.println(workingDirectory);
-        Path mapPath = Paths.get("erich_coordinates.txt");
+        final Path mapPath = Paths.get("erich_coordinates.txt");
         System.out.println(mapPath);
-        ContinuousTabularDatasetFileReader dataReaderMap = new ContinuousTabularDatasetFileReader(mapPath, Delimiter.COMMA);
+        final ContinuousTabularDatasetFileReader dataReaderMap = new ContinuousTabularDatasetFileReader(mapPath, Delimiter.COMMA);
         try {
-            DataSet locationMap = (DataSet) DataConvertUtils.toDataModel(dataReaderMap.readInData());
+            final DataSet locationMap = (DataSet) DataConvertUtils.toDataModel(dataReaderMap.readInData());
             System.out.println("locationMap loaded");
 
-            GdistanceRandom simRandGdistances = new GdistanceRandom(locationMap);
+            final GdistanceRandom simRandGdistances = new GdistanceRandom(locationMap);
             System.out.println("GdistanceRandom constructed");
 
             simRandGdistances.setNumEdges1(300);
@@ -42,10 +42,10 @@ public class GdistanceRandomApply {
             simRandGdistances.setVerbose(false);
 
             System.out.println("Edge parameters set, starting simulations");
-            List<List<Double>> GdistanceLists = simRandGdistances.randomSimulation(2);
+            final List<List<Double>> GdistanceLists = simRandGdistances.randomSimulation(2);
             System.out.println("Simulations done, calculating histograms");
-            for (List<Double> gdist : GdistanceLists) {
-                double[] histogram = GdistanceUtils.histogram(gdist, thresholds);
+            for (final List<Double> gdist : GdistanceLists) {
+                final double[] histogram = GdistanceUtils.histogram(gdist, thresholds);
                 //making the string to print out histogram values
                 String histString = " ";
                 for (int i = 0; i < Array.getLength(histogram); i++) {
@@ -53,7 +53,7 @@ public class GdistanceRandomApply {
                 }
                 System.out.println(histString);
             }
-        } catch (Exception IOException) {
+        } catch (final Exception IOException) {
             IOException.printStackTrace();
         }
     }

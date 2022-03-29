@@ -40,14 +40,14 @@ public class PcAll implements Algorithm, HasKnowledge, TakesIndependenceWrapper 
     public PcAll() {
     }
 
-    public PcAll(IndependenceWrapper test) {
+    public PcAll(final IndependenceWrapper test) {
         this.test = test;
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(final DataModel dataSet, final Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            edu.cmu.tetrad.search.PcAll.ColliderDiscovery colliderDiscovery;
+            final edu.cmu.tetrad.search.PcAll.ColliderDiscovery colliderDiscovery;
 
             switch (parameters.getInt(Params.COLLIDER_DISCOVERY_RULE)) {
                 case 1:
@@ -63,7 +63,7 @@ public class PcAll implements Algorithm, HasKnowledge, TakesIndependenceWrapper 
                     throw new IllegalArgumentException("Not a choice.");
             }
 
-            edu.cmu.tetrad.search.PcAll.ConflictRule conflictRule;
+            final edu.cmu.tetrad.search.PcAll.ConflictRule conflictRule;
 
             switch (parameters.getInt(Params.CONFLICT_RULE)) {
                 case 1:
@@ -79,10 +79,10 @@ public class PcAll implements Algorithm, HasKnowledge, TakesIndependenceWrapper 
                     throw new IllegalArgumentException("Not a choice.");
             }
 
-            edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters));
+            final edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(this.test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setHeuristic(parameters.getInt(Params.FAS_HEURISTIC));
-            search.setKnowledge(knowledge);
+            search.setKnowledge(this.knowledge);
 
             if (parameters.getBoolean(Params.STABLE_FAS)) {
                 search.setFasType(edu.cmu.tetrad.search.PcAll.FasType.STABLE);
@@ -104,11 +104,11 @@ public class PcAll implements Algorithm, HasKnowledge, TakesIndependenceWrapper 
 
             return search.search();
         } else {
-            PcAll pcAll = new PcAll(test);
+            final PcAll pcAll = new PcAll(this.test);
 
-            DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, pcAll, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(knowledge);
+            final DataSet data = (DataSet) dataSet;
+            final GeneralResamplingTest search = new GeneralResamplingTest(data, pcAll, parameters.getInt(Params.NUMBER_RESAMPLING));
+            search.setKnowledge(this.knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -134,23 +134,23 @@ public class PcAll implements Algorithm, HasKnowledge, TakesIndependenceWrapper 
     }
 
     @Override
-    public Graph getComparisonGraph(Graph graph) {
+    public Graph getComparisonGraph(final Graph graph) {
         return SearchGraphUtils.cpdagForDag(new EdgeListGraph(graph));
     }
 
     @Override
     public String getDescription() {
-        return "PC using " + test.getDescription();
+        return "PC using " + this.test.getDescription();
     }
 
     @Override
     public DataType getDataType() {
-        return test.getDataType();
+        return this.test.getDataType();
     }
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
+        final List<String> parameters = new ArrayList<>();
         parameters.add(Params.STABLE_FAS);
         parameters.add(Params.CONCURRENT_FAS);
         parameters.add(Params.COLLIDER_DISCOVERY_RULE);
@@ -166,21 +166,21 @@ public class PcAll implements Algorithm, HasKnowledge, TakesIndependenceWrapper 
 
     @Override
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(final IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
-        return test;
+        return this.test;
     }
 
     @Override
-    public void setIndependenceWrapper(IndependenceWrapper test) {
+    public void setIndependenceWrapper(final IndependenceWrapper test) {
         this.test = test;
     }
 

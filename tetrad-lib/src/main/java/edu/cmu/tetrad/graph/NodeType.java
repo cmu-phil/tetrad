@@ -51,7 +51,7 @@ public final class NodeType implements TetradSerializable {
      * Protected constructor for the types; this allows for extension in case
      * anyone wants to add formula types.
      */
-    private NodeType(String name) {
+    private NodeType(final String name) {
         this.name = name;
     }
 
@@ -66,7 +66,7 @@ public final class NodeType implements TetradSerializable {
      * Prints out the name of the type.
      */
     public String toString() {
-        return name;
+        return this.name;
     }
 
     // Declarations required for serialization.
@@ -75,7 +75,7 @@ public final class NodeType implements TetradSerializable {
     public static final NodeType[] TYPES = {MEASURED, LATENT, ERROR, NO_TYPE, RANDOMIZE, LOCK};
 
     Object readResolve() throws ObjectStreamException {
-        return TYPES[ordinal]; // Canonicalize.
+        return TYPES[this.ordinal]; // Canonicalize.
     }
 }
 

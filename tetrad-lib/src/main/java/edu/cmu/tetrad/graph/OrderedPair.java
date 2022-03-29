@@ -44,7 +44,7 @@ public class OrderedPair<E> implements TetradSerializable, TetradSerializableExc
     private final E second;
 
 
-    public OrderedPair(E first, E second) {
+    public OrderedPair(final E first, final E second) {
         if (first == null) {
             throw new NullPointerException("First node must not be null.");
         }
@@ -69,9 +69,9 @@ public class OrderedPair<E> implements TetradSerializable, TetradSerializableExc
         return 13 * this.first.hashCode() + 67 * this.second.hashCode();
     }
 
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (!(o instanceof OrderedPair)) throw new IllegalArgumentException();
-        OrderedPair<E> that = (OrderedPair<E>) o;
+        final OrderedPair<E> that = (OrderedPair<E>) o;
         return this.first.equals(that.first) && this.second.equals(that.second);
     }
 

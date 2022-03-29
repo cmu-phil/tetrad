@@ -40,12 +40,12 @@ public class TestGraphConverter {
     public void testStringSpecConverter() {
 
         // Set up graph and node objects.
-        Graph graph = new EdgeListGraph();
-        Node x1 = new GraphNode("X1");
-        Node x2 = new GraphNode("X2");
-        Node x3 = new GraphNode("X3");
-        Node x4 = new GraphNode("X4");
-        Node x5 = new GraphNode("X5");
+        final Graph graph = new EdgeListGraph();
+        final Node x1 = new GraphNode("X1");
+        final Node x2 = new GraphNode("X2");
+        final Node x3 = new GraphNode("X3");
+        final Node x4 = new GraphNode("X4");
+        final Node x5 = new GraphNode("X5");
 
         // Construct graph from nodes.
         graph.addNode(x1);

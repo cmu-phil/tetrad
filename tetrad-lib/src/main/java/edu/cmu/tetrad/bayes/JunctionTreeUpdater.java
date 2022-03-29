@@ -70,11 +70,11 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
      */
     private final BayesIm bayesIm;
 
-    public JunctionTreeUpdater(BayesIm bayesIm) {
+    public JunctionTreeUpdater(final BayesIm bayesIm) {
         this(bayesIm, Evidence.tautology(bayesIm));
     }
 
-    public JunctionTreeUpdater(BayesIm bayesIm, Evidence evidence) {
+    public JunctionTreeUpdater(final BayesIm bayesIm, final Evidence evidence) {
         if (bayesIm == null) {
             throw new NullPointerException();
         }
@@ -85,7 +85,7 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
 
     @Override
     public BayesIm getManipulatedBayesIm() {
-        return manipulatedBayesIm;
+        return this.manipulatedBayesIm;
     }
 
     @Override
@@ -95,16 +95,16 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
 
     @Override
     public Evidence getEvidence() {
-        return new Evidence(evidence);
+        return new Evidence(this.evidence);
     }
 
     @Override
-    public void setEvidence(Evidence evidence) {
+    public void setEvidence(final Evidence evidence) {
         if (evidence == null) {
             throw new NullPointerException();
         }
 
-        if (evidence.isIncompatibleWith(bayesIm)) {
+        if (evidence.isIncompatibleWith(this.bayesIm)) {
             throw new IllegalArgumentException("The variable list for the "
                     + "given bayesIm must be compatible with the variable list "
                     + "for this evidence.");
@@ -112,36 +112,36 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
 
         this.evidence = evidence;
 
-        Graph graph = bayesIm.getBayesPm().getDag();
-        Dag manipulatedGraph = createManipulatedGraph(graph);
-        BayesPm manipulatedPm = createUpdatedBayesPm(manipulatedGraph);
+        final Graph graph = this.bayesIm.getBayesPm().getDag();
+        final Dag manipulatedGraph = createManipulatedGraph(graph);
+        final BayesPm manipulatedPm = createUpdatedBayesPm(manipulatedGraph);
 
         this.manipulatedBayesIm = createdUpdatedBayesIm(manipulatedPm);
 
-        Evidence evidence2 = new Evidence(evidence, manipulatedBayesIm);
-        this.updatedBayesIm = new UpdatedBayesIm(manipulatedBayesIm, evidence2);
+        final Evidence evidence2 = new Evidence(evidence, this.manipulatedBayesIm);
+        this.updatedBayesIm = new UpdatedBayesIm(this.manipulatedBayesIm, evidence2);
 
-        this.jta = new JunctionTreeAlgorithm(updatedBayesIm);
+        this.jta = new JunctionTreeAlgorithm(this.updatedBayesIm);
     }
 
     @Override
     public BayesIm getUpdatedBayesIm() {
-        if (updatedBayesIm == null) {
+        if (this.updatedBayesIm == null) {
             updateAll();
         }
 
-        return updatedBayesIm;
+        return this.updatedBayesIm;
     }
 
     @Override
-    public double getMarginal(int variable, int category) {
-        Proposition assertion = Proposition.tautology(manipulatedBayesIm);
-        Proposition condition
-                = new Proposition(manipulatedBayesIm, evidence.getProposition());
+    public double getMarginal(final int variable, final int category) {
+        final Proposition assertion = Proposition.tautology(this.manipulatedBayesIm);
+        final Proposition condition
+                = new Proposition(this.manipulatedBayesIm, this.evidence.getProposition());
         assertion.setCategory(variable, category);
 
         if (condition.existsCombination()) {
-            return jta.getMarginalProbability(variable, category);
+            return this.jta.getMarginalProbability(variable, category);
         } else {
             return Double.NaN;
         }
@@ -153,14 +153,14 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
     }
 
     @Override
-    public double getJointMarginal(int[] variables, int[] values) {
+    public double getJointMarginal(final int[] variables, final int[] values) {
         if (variables.length != values.length) {
             throw new IllegalArgumentException("Values must match variables.");
         }
 
-        Proposition assertion = Proposition.tautology(manipulatedBayesIm);
-        Proposition condition
-                = new Proposition(manipulatedBayesIm, evidence.getProposition());
+        final Proposition assertion = Proposition.tautology(this.manipulatedBayesIm);
+        final Proposition condition
+                = new Proposition(this.manipulatedBayesIm, this.evidence.getProposition());
 
         for (int i = 0; i < variables.length; i++) {
             assertion.setCategory(variables[i], values[i]);
@@ -169,7 +169,7 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
         if (condition.existsCombination()) {
             double joint = 1.0;
             for (int i = 0; i < variables.length; i++) {
-                joint *= jta.getMarginalProbability(variables[i], values[i]);
+                joint *= this.jta.getMarginalProbability(variables[i], values[i]);
             }
 
             return joint;
@@ -180,15 +180,15 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
 
     @Override
     public BayesIm getBayesIm() {
-        return bayesIm;
+        return this.bayesIm;
     }
 
     @Override
-    public double[] calculatePriorMarginals(int nodeIndex) {
-        Evidence evidence = getEvidence();
+    public double[] calculatePriorMarginals(final int nodeIndex) {
+        final Evidence evidence = getEvidence();
         setEvidence(Evidence.tautology(evidence.getVariableSource()));
 
-        double[] marginals = new double[evidence.getNumCategories(nodeIndex)];
+        final double[] marginals = new double[evidence.getNumCategories(nodeIndex)];
 
         for (int i = 0; i < getBayesIm().getNumColumns(nodeIndex); i++) {
             marginals[i] = getMarginal(nodeIndex, i);
@@ -200,8 +200,8 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
     }
 
     @Override
-    public double[] calculateUpdatedMarginals(int nodeIndex) {
-        double[] marginals = new double[evidence.getNumCategories(nodeIndex)];
+    public double[] calculateUpdatedMarginals(final int nodeIndex) {
+        final double[] marginals = new double[this.evidence.getNumCategories(nodeIndex)];
 
         for (int i = 0; i < getBayesIm().getNumColumns(nodeIndex); i++) {
             marginals[i] = getMarginal(nodeIndex, i);
@@ -212,25 +212,25 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
 
     @Override
     public String toString() {
-        return "Junction tree updater, evidence = " + evidence;
+        return "Junction tree updater, evidence = " + this.evidence;
     }
 
     private void updateAll() {
-        updatedBayesIm = new MlBayesIm(manipulatedBayesIm);
-        int numNodes = manipulatedBayesIm.getNumNodes();
+        this.updatedBayesIm = new MlBayesIm(this.manipulatedBayesIm);
+        final int numNodes = this.manipulatedBayesIm.getNumNodes();
 
-        Proposition assertion = Proposition.tautology(manipulatedBayesIm);
-        Proposition condition = Proposition.tautology(manipulatedBayesIm);
-        Evidence evidence2 = new Evidence(evidence, manipulatedBayesIm);
+        final Proposition assertion = Proposition.tautology(this.manipulatedBayesIm);
+        final Proposition condition = Proposition.tautology(this.manipulatedBayesIm);
+        final Evidence evidence2 = new Evidence(this.evidence, this.manipulatedBayesIm);
 
         for (int node = 0; node < numNodes; node++) {
-            int numRows = manipulatedBayesIm.getNumRows(node);
-            int numCols = manipulatedBayesIm.getNumColumns(node);
-            int[] parents = manipulatedBayesIm.getParents(node);
+            final int numRows = this.manipulatedBayesIm.getNumRows(node);
+            final int numCols = this.manipulatedBayesIm.getNumColumns(node);
+            final int[] parents = this.manipulatedBayesIm.getParents(node);
 
             for (int row = 0; row < numRows; row++) {
-                int[] parentValues
-                        = manipulatedBayesIm.getParentValues(node, row);
+                final int[] parentValues
+                        = this.manipulatedBayesIm.getParentValues(node, row);
 
                 for (int col = 0; col < numCols; col++) {
                     assertion.setToTautology();
@@ -252,12 +252,12 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
                     }
 
                     if (condition.existsCombination()) {
-                        double p = (parents.length > 0)
-                                ? jta.getConditionalProbability(node, col, parents, parentValues)
-                                : jta.getMarginalProbability(node, col);
-                        updatedBayesIm.setProbability(node, row, col, p);
+                        final double p = (parents.length > 0)
+                                ? this.jta.getConditionalProbability(node, col, parents, parentValues)
+                                : this.jta.getMarginalProbability(node, col);
+                        this.updatedBayesIm.setProbability(node, row, col, p);
                     } else {
-                        updatedBayesIm.setProbability(node, row, col,
+                        this.updatedBayesIm.setProbability(node, row, col,
                                 Double.NaN);
                     }
                 }
@@ -265,25 +265,25 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
         }
     }
 
-    private BayesIm createdUpdatedBayesIm(BayesPm updatedBayesPm) {
-        return new MlBayesIm(updatedBayesPm, bayesIm, MlBayesIm.MANUAL);
+    private BayesIm createdUpdatedBayesIm(final BayesPm updatedBayesPm) {
+        return new MlBayesIm(updatedBayesPm, this.bayesIm, MlBayesIm.MANUAL);
     }
 
-    private BayesPm createUpdatedBayesPm(Dag updatedGraph) {
-        return new BayesPm(updatedGraph, bayesIm.getBayesPm());
+    private BayesPm createUpdatedBayesPm(final Dag updatedGraph) {
+        return new BayesPm(updatedGraph, this.bayesIm.getBayesPm());
     }
 
-    private Dag createManipulatedGraph(Graph graph) {
-        Dag updatedGraph = new Dag(graph);
+    private Dag createManipulatedGraph(final Graph graph) {
+        final Dag updatedGraph = new Dag(graph);
 
         // alters graph for manipulated evidenceItems
-        for (int i = 0; i < evidence.getNumNodes(); ++i) {
-            if (evidence.isManipulated(i)) {
-                Node node = updatedGraph.getNode(evidence.getNode(i).getName());
-                List<Node> parents = updatedGraph.getParents(node);
+        for (int i = 0; i < this.evidence.getNumNodes(); ++i) {
+            if (this.evidence.isManipulated(i)) {
+                final Node node = updatedGraph.getNode(this.evidence.getNode(i).getName());
+                final List<Node> parents = updatedGraph.getParents(node);
 
-                for (Object parent1 : parents) {
-                    Node parent = (Node) parent1;
+                for (final Object parent1 : parents) {
+                    final Node parent = (Node) parent1;
                     updatedGraph.removeEdge(node, parent);
                 }
             }
@@ -302,15 +302,15 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (bayesIm == null) {
+        if (this.bayesIm == null) {
             throw new NullPointerException();
         }
 
-        if (evidence == null) {
+        if (this.evidence == null) {
             throw new NullPointerException();
         }
     }

@@ -85,7 +85,7 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
      * Constructs Bayes net in which CPT's updated for the given evidence are
      * calculated on the fly.
      */
-    public UpdatedBayesIm(BayesIm bayesIm) {
+    public UpdatedBayesIm(final BayesIm bayesIm) {
 
         this(bayesIm, Evidence.tautology(bayesIm));
     }
@@ -94,7 +94,7 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
      * Constructs Bayes net in which CPT's updated for the given evidence are
      * calculated on the fly.
      */
-    public UpdatedBayesIm(BayesIm bayesIm, Evidence evidence) {
+    public UpdatedBayesIm(final BayesIm bayesIm, final Evidence evidence) {
         if (bayesIm == null) {
             throw new NullPointerException();
         }
@@ -128,7 +128,7 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
     }
 
     private BayesIm getBayesIm() {
-        return bayesIm;
+        return this.bayesIm;
     }
 
     public Graph getDag() {
@@ -139,51 +139,51 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
         return getBayesIm().getNumNodes();
     }
 
-    public Node getNode(int nodeIndex) {
+    public Node getNode(final int nodeIndex) {
         return getBayesIm().getNode(nodeIndex);
     }
 
-    public Node getNode(String name) {
+    public Node getNode(final String name) {
         return getBayesIm().getNode(name);
     }
 
-    public int getNodeIndex(Node node) {
+    public int getNodeIndex(final Node node) {
         return getBayesIm().getNodeIndex(node);
     }
 
-    public int getNumColumns(int nodeIndex) {
+    public int getNumColumns(final int nodeIndex) {
         return getBayesIm().getNumColumns(nodeIndex);
     }
 
-    public int getNumRows(int nodeIndex) {
+    public int getNumRows(final int nodeIndex) {
         return getBayesIm().getNumRows(nodeIndex);
     }
 
-    public int getNumParents(int nodeIndex) {
+    public int getNumParents(final int nodeIndex) {
         return getBayesIm().getNumParents(nodeIndex);
     }
 
-    public int getParent(int nodeIndex, int parentIndex) {
+    public int getParent(final int nodeIndex, final int parentIndex) {
         return getBayesIm().getParent(nodeIndex, parentIndex);
     }
 
-    public int getParentDim(int nodeIndex, int parentIndex) {
+    public int getParentDim(final int nodeIndex, final int parentIndex) {
         return getBayesIm().getParentDim(nodeIndex, parentIndex);
     }
 
-    public int[] getParentDims(int nodeIndex) {
+    public int[] getParentDims(final int nodeIndex) {
         return getBayesIm().getParentDims(nodeIndex);
     }
 
-    public int[] getParents(int nodeIndex) {
+    public int[] getParents(final int nodeIndex) {
         return getBayesIm().getParents(nodeIndex);
     }
 
-    public int[] getParentValues(int nodeIndex, int rowIndex) {
+    public int[] getParentValues(final int nodeIndex, final int rowIndex) {
         return getBayesIm().getParentValues(nodeIndex, rowIndex);
     }
 
-    public int getParentValue(int nodeIndex, int rowIndex, int colIndex) {
+    public int getParentValue(final int nodeIndex, final int rowIndex, final int colIndex) {
         return getBayesIm().getParentValue(nodeIndex, rowIndex, colIndex);
     }
 
@@ -192,32 +192,32 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
      * column of the conditional probability table (CPT), updated for the
      * evidence provided in the constuctor.
      */
-    public double getProbability(int nodeIndex, int rowIndex, int colIndex) {
-        if (!affectedVars[nodeIndex]) {
+    public double getProbability(final int nodeIndex, final int rowIndex, final int colIndex) {
+        if (!this.affectedVars[nodeIndex]) {
             return getBayesIm().getProbability(nodeIndex, rowIndex, colIndex);
         }
 
-        if (changedProbs[nodeIndex] == null) {
-            int numRows = getNumRows(nodeIndex);
-            int numCols = getNumColumns(nodeIndex);
-            double[][] table = new double[numRows][numCols];
+        if (this.changedProbs[nodeIndex] == null) {
+            final int numRows = getNumRows(nodeIndex);
+            final int numCols = getNumColumns(nodeIndex);
+            final double[][] table = new double[numRows][numCols];
 
-            for (double[] aTable : table) {
+            for (final double[] aTable : table) {
                 Arrays.fill(aTable, -99.0);
             }
 
-            changedProbs[nodeIndex] = table;
+            this.changedProbs[nodeIndex] = table;
         }
 
-        if (changedProbs[nodeIndex][rowIndex][colIndex] == -99.0) {
-            changedProbs[nodeIndex][rowIndex][colIndex]
+        if (this.changedProbs[nodeIndex][rowIndex][colIndex] == -99.0) {
+            this.changedProbs[nodeIndex][rowIndex][colIndex]
                     = calcUpdatedProb(nodeIndex, rowIndex, colIndex);
         }
 
-        return changedProbs[nodeIndex][rowIndex][colIndex];
+        return this.changedProbs[nodeIndex][rowIndex][colIndex];
     }
 
-    public int getRowIndex(int nodeIndex, int[] values) {
+    public int getRowIndex(final int nodeIndex, final int[] values) {
         return getBayesIm().getRowIndex(nodeIndex, values);
     }
 
@@ -225,64 +225,64 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
         getBayesIm().normalizeAll();
     }
 
-    public void normalizeNode(int nodeIndex) {
+    public void normalizeNode(final int nodeIndex) {
         getBayesIm().normalizeNode(nodeIndex);
     }
 
-    public void normalizeRow(int nodeIndex, int rowIndex) {
+    public void normalizeRow(final int nodeIndex, final int rowIndex) {
         getBayesIm().normalizeRow(nodeIndex, rowIndex);
     }
 
-    public void setProbability(int nodeIndex, double[][] probMatrix) {
+    public void setProbability(final int nodeIndex, final double[][] probMatrix) {
         getBayesIm().setProbability(nodeIndex, probMatrix);
     }
 
-    public void setProbability(int nodeIndex, int rowIndex, int colIndex,
-                               double value) {
+    public void setProbability(final int nodeIndex, final int rowIndex, final int colIndex,
+                               final double value) {
         getBayesIm().setProbability(nodeIndex, rowIndex, colIndex, value);
     }
 
-    public int getCorrespondingNodeIndex(int nodeIndex, BayesIm otherBayesIm) {
+    public int getCorrespondingNodeIndex(final int nodeIndex, final BayesIm otherBayesIm) {
         return getBayesIm().getCorrespondingNodeIndex(nodeIndex, otherBayesIm);
     }
 
-    public void clearRow(int nodeIndex, int rowIndex) {
+    public void clearRow(final int nodeIndex, final int rowIndex) {
         getBayesIm().clearRow(nodeIndex, rowIndex);
     }
 
-    public void randomizeRow(int nodeIndex, int rowIndex) {
+    public void randomizeRow(final int nodeIndex, final int rowIndex) {
         getBayesIm().randomizeRow(nodeIndex, rowIndex);
     }
 
-    public void randomizeIncompleteRows(int nodeIndex) {
+    public void randomizeIncompleteRows(final int nodeIndex) {
         getBayesIm().randomizeIncompleteRows(nodeIndex);
     }
 
-    public void randomizeTable(int nodeIndex) {
+    public void randomizeTable(final int nodeIndex) {
         getBayesIm().randomizeTable(nodeIndex);
     }
 
-    public void clearTable(int nodeIndex) {
+    public void clearTable(final int nodeIndex) {
         getBayesIm().clearTable(nodeIndex);
     }
 
-    public boolean isIncomplete(int nodeIndex, int rowIndex) {
+    public boolean isIncomplete(final int nodeIndex, final int rowIndex) {
         return getBayesIm().isIncomplete(nodeIndex, rowIndex);
     }
 
-    public boolean isIncomplete(int nodeIndex) {
+    public boolean isIncomplete(final int nodeIndex) {
         return getBayesIm().isIncomplete(nodeIndex);
     }
 
-    public DataSet simulateData(int sampleSize, boolean latentDataSaved) {
+    public DataSet simulateData(final int sampleSize, final boolean latentDataSaved) {
         return getBayesIm().simulateData(sampleSize, latentDataSaved);
     }
 
-    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
+    public DataSet simulateData(final int sampleSize, final long seed, final boolean latentDataSaved) {
         return getBayesIm().simulateData(sampleSize, seed, latentDataSaved);
     }
 
-    public DataSet simulateData(DataSet dataSet, boolean latentDataSaved) {
+    public DataSet simulateData(final DataSet dataSet, final boolean latentDataSaved) {
         throw new UnsupportedOperationException();
     }
 
@@ -298,7 +298,7 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
         throw new UnsupportedOperationException();
     }
 
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (o == this) {
             return true;
         }
@@ -307,14 +307,14 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
             return false;
         }
 
-        BayesIm otherIm = (BayesIm) o;
+        final BayesIm otherIm = (BayesIm) o;
 
         if (getNumNodes() != otherIm.getNumNodes()) {
             return false;
         }
 
         for (int i = 0; i < getNumNodes(); i++) {
-            int otherIndex = otherIm.getCorrespondingNodeIndex(i, otherIm);
+            final int otherIndex = otherIm.getCorrespondingNodeIndex(i, otherIm);
 
             if (otherIndex == -1) {
                 return false;
@@ -330,8 +330,8 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
 
             for (int j = 0; j < getNumRows(i); j++) {
                 for (int k = 0; k < getNumColumns(i); k++) {
-                    double prob = getProbability(i, j, k);
-                    double otherProb = otherIm.getProbability(i, j, k);
+                    final double prob = getProbability(i, j, k);
+                    final double otherProb = otherIm.getProbability(i, j, k);
 
                     if (Double.isNaN(prob) && Double.isNaN(otherProb)) {
                         continue;
@@ -351,8 +351,8 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
      * Prints out the probability table for each variable.
      */
     public String toString() {
-        StringBuilder buf = new StringBuilder();
-        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        final StringBuilder buf = new StringBuilder();
+        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
         buf.append("\nBayesIm:");
 
@@ -382,28 +382,28 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
     }
 
     public Evidence getEvidence() {
-        return new Evidence(evidence, this);
+        return new Evidence(this.evidence, this);
     }
 
     /**
      * Calculates the set of variables whose CPT's change in response to the
      * evidence provided.
      */
-    private boolean[] ancestorsOfEvidence(Evidence evidence) {
-        List<Node> variablesInEvidence = evidence.getVariablesInEvidence();
-        List<Node> nodesInEvidence = new LinkedList<>();
+    private boolean[] ancestorsOfEvidence(final Evidence evidence) {
+        final List<Node> variablesInEvidence = evidence.getVariablesInEvidence();
+        final List<Node> nodesInEvidence = new LinkedList<>();
 
-        for (Node _node : variablesInEvidence) {
-            String nodeName = _node.getName();
-            nodesInEvidence.add(bayesIm.getBayesPm().getNode(nodeName));
+        for (final Node _node : variablesInEvidence) {
+            final String nodeName = _node.getName();
+            nodesInEvidence.add(this.bayesIm.getBayesPm().getNode(nodeName));
         }
 
-        List<Node> nodesInGraph = getBayesIm().getDag().getNodes();
-        boolean[] ancestorsOfEvidence = new boolean[getBayesIm().getNumNodes()];
+        final List<Node> nodesInGraph = getBayesIm().getDag().getNodes();
+        final boolean[] ancestorsOfEvidence = new boolean[getBayesIm().getNumNodes()];
 
         for (int i = 0; i < nodesInGraph.size(); i++) {
-            for (Node node2 : nodesInEvidence) {
-                Node node1 = nodesInGraph.get(i);
+            for (final Node node2 : nodesInEvidence) {
+                final Node node1 = nodesInGraph.get(i);
 
                 if (getBayesIm().getDag().isAncestorOf(node1, node2)
                         || getBayesIm().getDag().isChildOf(node1, node2)) {
@@ -415,20 +415,20 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
         return ancestorsOfEvidence;
     }
 
-    private double calcUpdatedProb(int nodeIndex, int rowIndex, int colIndex) {
-        if (!affectedVars[nodeIndex]) {
+    private double calcUpdatedProb(final int nodeIndex, final int rowIndex, final int colIndex) {
+        if (!this.affectedVars[nodeIndex]) {
             throw new IllegalStateException("Should not be calculating a "
                     + "probability for a table that's not an ancestor of "
                     + "evidence.");
         }
 
-        Proposition assertion = Proposition.tautology(getBayesIm());
-        Proposition condition = new Proposition(evidence.getProposition());
+        final Proposition assertion = Proposition.tautology(getBayesIm());
+        final Proposition condition = new Proposition(this.evidence.getProposition());
 
-        boolean[] relevantVars = calcRelevantVars(nodeIndex);
+        final boolean[] relevantVars = calcRelevantVars(nodeIndex);
         assertion.setCategory(nodeIndex, colIndex);
-        int[] parents = getBayesIm().getParents(nodeIndex);
-        int[] parentValues = getBayesIm().getParentValues(nodeIndex, rowIndex);
+        final int[] parents = getBayesIm().getParents(nodeIndex);
+        final int[] parentValues = getBayesIm().getParentValues(nodeIndex, rowIndex);
 
         for (int k = 0; k < parents.length; k++) {
             condition.disallowComplement(parents[k], parentValues[k]);
@@ -441,8 +441,8 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
         }
     }
 
-    private double getConditionalProb(Proposition assertion,
-                                      Proposition condition, boolean[] relevantVars) {
+    private double getConditionalProb(final Proposition assertion,
+                                      final Proposition condition, final boolean[] relevantVars) {
         if (assertion.getVariableSource() != condition.getVariableSource()) {
             throw new IllegalArgumentException(
                     "Assertion and condition must be "
@@ -455,7 +455,7 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
             }
         }
 
-        int[] variableValues = new int[condition.getNumVariables()];
+        final int[] variableValues = new int[condition.getNumVariables()];
 
         for (int i = 0; i < condition.getNumVariables(); i++) {
             variableValues[i] = nextValue(condition, i, -1);
@@ -480,7 +480,7 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
                         variableValues[j] = nextValue(condition, j, -1);
                     }
 
-                    double cellProb = getCellProb(variableValues);
+                    final double cellProb = getCellProb(variableValues);
 
                     if (!Double.isNaN(cellProb)) {
                         conditionTrue += cellProb;
@@ -500,13 +500,13 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
         return assertionTrue / conditionTrue;
     }
 
-    private static boolean hasNextValue(Proposition proposition, int variable,
-                                        int curIndex) {
+    private static boolean hasNextValue(final Proposition proposition, final int variable,
+                                        final int curIndex) {
         return nextValue(proposition, variable, curIndex) != -1;
     }
 
-    private static int nextValue(Proposition proposition, int variable,
-                                 int curIndex) {
+    private static int nextValue(final Proposition proposition, final int variable,
+                                 final int curIndex) {
         for (int i = curIndex + 1;
              i < proposition.getNumCategories(variable); i++) {
             if (proposition.isAllowed(variable, i)) {
@@ -523,20 +523,20 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
      * each variable takes on the value it does given that the other variables
      * take on the values they do in that cell.
      */
-    private double getCellProb(int[] variableValues) {
+    private double getCellProb(final int[] variableValues) {
         double p = 1.0;
 
         for (int node = 0; node < variableValues.length; node++) {
-            int[] parents = getBayesIm().getParents(node);
-            int[] parentValues = new int[parents.length];
+            final int[] parents = getBayesIm().getParents(node);
+            final int[] parentValues = new int[parents.length];
             for (int parentIndex = 0;
                  parentIndex < parentValues.length; parentIndex++) {
                 parentValues[parentIndex]
                         = variableValues[parents[parentIndex]];
             }
 
-            int rowIndex = getBayesIm().getRowIndex(node, parentValues);
-            int colIndex = variableValues[node];
+            final int rowIndex = getBayesIm().getRowIndex(node, parentValues);
+            final int colIndex = variableValues[node];
 
             p *= getBayesIm().getProbability(node, rowIndex, colIndex);
         }
@@ -548,29 +548,29 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
      * Calculates the set of descendants of the given node that are d-connected
      * to the node given its parents and all evidence variables.
      */
-    private boolean[] calcRelevantVars(int nodeIndex) {
-        boolean[] relevantVars = new boolean[evidence.getNumNodes()];
+    private boolean[] calcRelevantVars(final int nodeIndex) {
+        final boolean[] relevantVars = new boolean[this.evidence.getNumNodes()];
 
-        Node node = bayesIm.getNode(nodeIndex);
+        final Node node = this.bayesIm.getNode(nodeIndex);
 
-        List<Node> variablesInEvidence = evidence.getVariablesInEvidence();
+        final List<Node> variablesInEvidence = this.evidence.getVariablesInEvidence();
 
-        List<Node> nodesInEvidence = new LinkedList<>();
+        final List<Node> nodesInEvidence = new LinkedList<>();
 
-        for (Node _node : variablesInEvidence) {
-            nodesInEvidence.add(bayesIm.getBayesPm().getNode(_node.getName()));
+        for (final Node _node : variablesInEvidence) {
+            nodesInEvidence.add(this.bayesIm.getBayesPm().getNode(_node.getName()));
         }
 
-        List<Node> conditionedNodes
+        final List<Node> conditionedNodes
                 = new LinkedList<>(nodesInEvidence);
-        conditionedNodes.addAll(bayesIm.getDag().getParents(node));
+        conditionedNodes.addAll(this.bayesIm.getDag().getParents(node));
 
-        for (int i = 0; i < bayesIm.getNumNodes(); i++) {
-            Node node2 = bayesIm.getNode(i);
+        for (int i = 0; i < this.bayesIm.getNumNodes(); i++) {
+            final Node node2 = this.bayesIm.getNode(i);
 
             // Added the condition node == node2 since the updater was corrected to exclude this.
             // jdramsey 12.13.2014
-            if (node == node2 || bayesIm.getDag().isDConnectedTo(node, node2, conditionedNodes)) {
+            if (node == node2 || this.bayesIm.getDag().isDConnectedTo(node, node2, conditionedNodes)) {
                 relevantVars[i] = true;
             }
         }
@@ -588,7 +588,7 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }

@@ -36,43 +36,43 @@ public class PcStableMaxConcatenated implements MultiDataSetAlgorithm, HasKnowle
     private final Algorithm externalGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
-    public PcStableMaxConcatenated(IndependenceWrapper test, boolean compareToTrue) {
+    public PcStableMaxConcatenated(final IndependenceWrapper test, final boolean compareToTrue) {
         this.test = test;
         this.compareToTrue = compareToTrue;
     }
 
-    public PcStableMaxConcatenated(IndependenceWrapper test) {
+    public PcStableMaxConcatenated(final IndependenceWrapper test) {
         this.test = test;
     }
 
     @Override
-    public Graph search(List<DataModel> dataModels, Parameters parameters) {
+    public Graph search(final List<DataModel> dataModels, final Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            List<DataSet> dataSets = new ArrayList<>();
+            final List<DataSet> dataSets = new ArrayList<>();
 
-            for (DataModel dataModel : dataModels) {
+            for (final DataModel dataModel : dataModels) {
                 dataSets.add((DataSet) dataModel);
             }
 
-            DataSet dataSet = DataUtils.concatenate(dataSets);
-            PcStableMax search = new PcStableMax(
-                    test.getTest(dataSet, parameters));
+            final DataSet dataSet = DataUtils.concatenate(dataSets);
+            final PcStableMax search = new PcStableMax(
+                    this.test.getTest(dataSet, parameters));
             search.setUseHeuristic(parameters.getBoolean(Params.USE_MAX_P_ORIENTATION_HEURISTIC));
             search.setMaxPathLength(parameters.getInt(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH));
-            search.setKnowledge(knowledge);
+            search.setKnowledge(this.knowledge);
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         } else {
-            PcStableMaxConcatenated pcStableMaxConcatenated = new PcStableMaxConcatenated(test, compareToTrue);
+            final PcStableMaxConcatenated pcStableMaxConcatenated = new PcStableMaxConcatenated(this.test, this.compareToTrue);
 
-            List<DataSet> datasets = new ArrayList<>();
+            final List<DataSet> datasets = new ArrayList<>();
 
-            for (DataModel dataModel : dataModels) {
+            for (final DataModel dataModel : dataModels) {
                 datasets.add((DataSet) dataModel);
             }
-            GeneralResamplingTest search = new GeneralResamplingTest(datasets, pcStableMaxConcatenated, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(knowledge);
+            final GeneralResamplingTest search = new GeneralResamplingTest(datasets, pcStableMaxConcatenated, parameters.getInt(Params.NUMBER_RESAMPLING));
+            search.setKnowledge(this.knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -98,15 +98,15 @@ public class PcStableMaxConcatenated implements MultiDataSetAlgorithm, HasKnowle
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(final DataModel dataSet, final Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
         } else {
-            PcStableMaxConcatenated pcStableMaxConcatenated = new PcStableMaxConcatenated(test, compareToTrue);
+            final PcStableMaxConcatenated pcStableMaxConcatenated = new PcStableMaxConcatenated(this.test, this.compareToTrue);
 
-            List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
-            GeneralResamplingTest search = new GeneralResamplingTest(dataSets, pcStableMaxConcatenated, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(knowledge);
+            final List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
+            final GeneralResamplingTest search = new GeneralResamplingTest(dataSets, pcStableMaxConcatenated, parameters.getInt(Params.NUMBER_RESAMPLING));
+            search.setKnowledge(this.knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -132,8 +132,8 @@ public class PcStableMaxConcatenated implements MultiDataSetAlgorithm, HasKnowle
     }
 
     @Override
-    public Graph getComparisonGraph(Graph graph) {
-        if (compareToTrue) {
+    public Graph getComparisonGraph(final Graph graph) {
+        if (this.compareToTrue) {
             return new EdgeListGraph(graph);
         } else {
             return SearchGraphUtils.cpdagForDag(new EdgeListGraph(graph));
@@ -142,9 +142,9 @@ public class PcStableMaxConcatenated implements MultiDataSetAlgorithm, HasKnowle
 
     @Override
     public String getDescription() {
-        return "PC-Max (\"Peter and Clark\") on concatenating datasets using " + test.getDescription()
-                + (externalGraph != null ? " with initial graph from "
-                + externalGraph.getDescription() : "");
+        return "PC-Max (\"Peter and Clark\") on concatenating datasets using " + this.test.getDescription()
+                + (this.externalGraph != null ? " with initial graph from "
+                + this.externalGraph.getDescription() : "");
     }
 
     @Override
@@ -154,9 +154,9 @@ public class PcStableMaxConcatenated implements MultiDataSetAlgorithm, HasKnowle
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new LinkedList<>();
-        if (test != null) {
-            parameters.addAll(test.getParameters());
+        final List<String> parameters = new LinkedList<>();
+        if (this.test != null) {
+            parameters.addAll(this.test.getParameters());
         }
         parameters.add(Params.DEPTH);
         parameters.add(Params.USE_MAX_P_ORIENTATION_HEURISTIC);
@@ -172,15 +172,15 @@ public class PcStableMaxConcatenated implements MultiDataSetAlgorithm, HasKnowle
 
     @Override
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(final IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
-    public void setCompareToTrue(boolean compareToTrue) {
+    public void setCompareToTrue(final boolean compareToTrue) {
         this.compareToTrue = compareToTrue;
     }
 }

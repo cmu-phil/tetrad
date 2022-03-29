@@ -83,7 +83,7 @@ public class Lofs2 {
 
     //===============================CONSTRUCTOR============================//
 
-    public Lofs2(Graph CPDAG, List<DataSet> dataSets)
+    public Lofs2(final Graph CPDAG, final List<DataSet> dataSets)
             throws IllegalArgumentException {
 
         if (dataSets == null) {
@@ -108,10 +108,10 @@ public class Lofs2 {
         this.variables = dataSets.get(0).getVariables();
         this.varnames = dataSets.get(0).getVariableNames();
 
-        List<DataSet> dataSets2 = new ArrayList<>();
+        final List<DataSet> dataSets2 = new ArrayList<>();
 
         for (int i = 0; i < dataSets.size(); i++) {
-            DataSet dataSet = new BoxDataSet(new DoubleDataBox(dataSets.get(i).getDoubleData().toArray()), variables);
+            final DataSet dataSet = new BoxDataSet(new DoubleDataBox(dataSets.get(i).getDoubleData().toArray()), this.variables);
             dataSets2.add(dataSet);
         }
 
@@ -120,23 +120,23 @@ public class Lofs2 {
 
     //==========================PUBLIC=========================================//
 
-    public void setRule(Rule rule) {
+    public void setRule(final Rule rule) {
         this.rule = rule;
     }
 
     public boolean isEdgeCorrected() {
-        return edgeCorrected;
+        return this.edgeCorrected;
     }
 
-    public void setEdgeCorrected(boolean C) {
+    public void setEdgeCorrected(final boolean C) {
         this.edgeCorrected = C;
     }
 
     public double getSelfLoopStrength() {
-        return selfLoopStrength;
+        return this.selfLoopStrength;
     }
 
-    public void setSelfLoopStrength(double selfLoopStrength) {
+    public void setSelfLoopStrength(final double selfLoopStrength) {
         this.selfLoopStrength = selfLoopStrength;
     }
 
@@ -148,10 +148,10 @@ public class Lofs2 {
 
     public Graph orient() {
 
-        Graph skeleton = GraphUtils.undirectedGraph(getCPDAG());
+        final Graph skeleton = GraphUtils.undirectedGraph(getCPDAG());
         Graph graph = new EdgeListGraph(skeleton.getNodes());
 
-        List<Node> nodes = skeleton.getNodes();
+        final List<Node> nodes = skeleton.getNodes();
 
         if (this.rule == Rule.R1TimeLag) {
             ruleR1TimeLag(skeleton, graph);
@@ -206,9 +206,9 @@ public class Lofs2 {
             graph = GraphUtils.undirectedGraph(skeleton);
             return patelTauOrientation(graph, 0.90);
         } else if (this.rule == Rule.FastICA) {
-            FastIca fastIca = new FastIca(dataSets.get(0).getDoubleData(),
-                    dataSets.get(0).getNumColumns());
-            FastIca.IcaResult result = fastIca.findComponents();
+            final FastIca fastIca = new FastIca(this.dataSets.get(0).getDoubleData(),
+                    this.dataSets.get(0).getNumColumns());
+            final FastIca.IcaResult result = fastIca.findComponents();
             System.out.println(result.getW());
             return new EdgeListGraph();
         }
@@ -217,10 +217,10 @@ public class Lofs2 {
     }
 
     public double getAlpha() {
-        return alpha;
+        return this.alpha;
     }
 
-    public void setAlpha(double alpha) {
+    public void setAlpha(final double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
             throw new IllegalArgumentException("Alpha is in range [0, 1]");
         }
@@ -229,26 +229,26 @@ public class Lofs2 {
     }
 
     public boolean isOrientStrongerDirection() {
-        return orientStrongerDirection;
+        return this.orientStrongerDirection;
     }
 
-    public void setOrientStrongerDirection(boolean orientStrongerDirection) {
+    public void setOrientStrongerDirection(final boolean orientStrongerDirection) {
         this.orientStrongerDirection = orientStrongerDirection;
     }
 
-    public void setR2Orient2Cycles(boolean r2Orient2Cycles) {
+    public void setR2Orient2Cycles(final boolean r2Orient2Cycles) {
         this.r2Orient2Cycles = r2Orient2Cycles;
     }
 
     public boolean isR2Orient2Cycles() {
-        return r2Orient2Cycles;
+        return this.r2Orient2Cycles;
     }
 
     public Lofs.Score getScore() {
-        return score;
+        return this.score;
     }
 
-    public void setScore(Lofs.Score score) {
+    public void setScore(final Lofs.Score score) {
         if (score == null) {
             throw new NullPointerException();
         }
@@ -260,10 +260,10 @@ public class Lofs2 {
 
     private List<Regression> getRegressions() {
         if (this.regressions == null) {
-            List<Regression> regressions = new ArrayList<>();
-            this.variables = dataSets.get(0).getVariables();
+            final List<Regression> regressions = new ArrayList<>();
+            this.variables = this.dataSets.get(0).getVariables();
 
-            for (DataSet dataSet : dataSets) {
+            for (final DataSet dataSet : this.dataSets) {
                 regressions.add(new RegressionDataset(dataSet));
             }
 
@@ -273,28 +273,28 @@ public class Lofs2 {
         return this.regressions;
     }
 
-    private void setDataSets(List<DataSet> dataSets) {
+    private void setDataSets(final List<DataSet> dataSets) {
         this.dataSets = dataSets;
 
-        matrices = new ArrayList<>();
+        this.matrices = new ArrayList<>();
 
-        for (DataSet dataSet : dataSets) {
-            matrices.add(dataSet.getDoubleData());
+        for (final DataSet dataSet : dataSets) {
+            this.matrices.add(dataSet.getDoubleData());
         }
     }
 
-    private void ruleR1TimeLag(Graph skeleton, Graph graph) {
-        List<DataSet> timeSeriesDataSets = new ArrayList<>();
+    private void ruleR1TimeLag(final Graph skeleton, final Graph graph) {
+        final List<DataSet> timeSeriesDataSets = new ArrayList<>();
         IKnowledge knowledge = null;
         List<Node> dataNodes = null;
 
-        for (DataModel dataModel : dataSets) {
+        for (final DataModel dataModel : this.dataSets) {
             if (!(dataModel instanceof DataSet)) {
                 throw new IllegalArgumentException("Only tabular data sets can be converted to time lagged form.");
             }
 
-            DataSet dataSet = (DataSet) dataModel;
-            DataSet lags = TimeSeriesUtils.createLagData(dataSet, 1);
+            final DataSet dataSet = (DataSet) dataModel;
+            final DataSet lags = TimeSeriesUtils.createLagData(dataSet, 1);
             if (dataSet.getName() != null) {
                 lags.setName(dataSet.getName());
             }
@@ -309,95 +309,95 @@ public class Lofs2 {
             }
         }
 
-        Graph laggedSkeleton = new EdgeListGraph(dataNodes);
+        final Graph laggedSkeleton = new EdgeListGraph(dataNodes);
 
-        for (Edge edge : skeleton.getEdges()) {
+        for (final Edge edge : skeleton.getEdges()) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            String node1 = edge.getNode1().getName();
-            String node2 = edge.getNode2().getName();
+            final String node1 = edge.getNode1().getName();
+            final String node2 = edge.getNode2().getName();
 
-            Node node10 = laggedSkeleton.getNode(node1 + ":0");
-            Node node20 = laggedSkeleton.getNode(node2 + ":0");
+            final Node node10 = laggedSkeleton.getNode(node1 + ":0");
+            final Node node20 = laggedSkeleton.getNode(node2 + ":0");
 
             laggedSkeleton.addUndirectedEdge(node10, node20);
 
-            Node node11 = laggedSkeleton.getNode(node1 + ":1");
-            Node node21 = laggedSkeleton.getNode(node2 + ":1");
+            final Node node11 = laggedSkeleton.getNode(node1 + ":1");
+            final Node node21 = laggedSkeleton.getNode(node2 + ":1");
 
             laggedSkeleton.addUndirectedEdge(node11, node21);
         }
 
-        for (Node node : skeleton.getNodes()) {
+        for (final Node node : skeleton.getNodes()) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            String _node = node.getName();
+            final String _node = node.getName();
 
-            Node node0 = laggedSkeleton.getNode(_node + ":0");
-            Node node1 = laggedSkeleton.getNode(_node + ":1");
+            final Node node0 = laggedSkeleton.getNode(_node + ":0");
+            final Node node1 = laggedSkeleton.getNode(_node + ":1");
 
             laggedSkeleton.addUndirectedEdge(node0, node1);
         }
 
-        Lofs2 lofs = new Lofs2(laggedSkeleton, timeSeriesDataSets);
+        final Lofs2 lofs = new Lofs2(laggedSkeleton, timeSeriesDataSets);
         lofs.setKnowledge(knowledge);
         lofs.setRule(Rule.R1);
-        Graph _graph = lofs.orient();
+        final Graph _graph = lofs.orient();
 
         graph.removeEdges(new ArrayList<>(graph.getEdges()));
 
-        for (Edge edge : _graph.getEdges()) {
+        for (final Edge edge : _graph.getEdges()) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            Node node1 = edge.getNode1();
-            Node node2 = edge.getNode2();
-            Endpoint end1 = edge.getEndpoint1();
-            Endpoint end2 = edge.getEndpoint2();
+            final Node node1 = edge.getNode1();
+            final Node node2 = edge.getNode2();
+            final Endpoint end1 = edge.getEndpoint1();
+            final Endpoint end2 = edge.getEndpoint2();
 
-            String index1 = node1.getName().split(":")[1];
-            String index2 = node2.getName().split(":")[1];
+            final String index1 = node1.getName().split(":")[1];
+            final String index2 = node2.getName().split(":")[1];
 
             if ("1".equals(index1) || "1".equals(index2)) continue;
 
-            String name1 = node1.getName().split(":")[0];
-            String name2 = node2.getName().split(":")[0];
+            final String name1 = node1.getName().split(":")[0];
+            final String name2 = node2.getName().split(":")[0];
 
-            Node _node1 = graph.getNode(name1);
-            Node _node2 = graph.getNode(name2);
+            final Node _node1 = graph.getNode(name1);
+            final Node _node2 = graph.getNode(name2);
 
-            Edge _edge = new Edge(_node1, _node2, end1, end2);
+            final Edge _edge = new Edge(_node1, _node2, end1, end2);
             graph.addEdge(_edge);
         }
     }
 
-    private void ruleR1(Graph skeleton, Graph graph, List<Node> nodes) {
-        List<DataSet> centeredData = DataUtils.center(this.dataSets);
+    private void ruleR1(final Graph skeleton, final Graph graph, final List<Node> nodes) {
+        final List<DataSet> centeredData = DataUtils.center(this.dataSets);
         setDataSets(centeredData);
 
-        for (Node node : nodes) {
+        for (final Node node : nodes) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            SortedMap<Double, String> scoreReports = new TreeMap<>();
+            final SortedMap<Double, String> scoreReports = new TreeMap<>();
 
-            List<Node> adj = new ArrayList<>();
+            final List<Node> adj = new ArrayList<>();
 
-            for (Node _node : skeleton.getAdjacentNodes(node)) {
-                if (knowledge.isForbidden(_node.getName(), node.getName())) {
+            for (final Node _node : skeleton.getAdjacentNodes(node)) {
+                if (this.knowledge.isForbidden(_node.getName(), node.getName())) {
                     continue;
                 }
 
                 adj.add(_node);
             }
 
-            DepthChoiceGenerator gen = new DepthChoiceGenerator(adj.size(), adj.size());
+            final DepthChoiceGenerator gen = new DepthChoiceGenerator(adj.size(), adj.size());
             int[] choice;
             double maxScore = Double.NEGATIVE_INFINITY;
             List<Node> parents = null;
@@ -407,9 +407,9 @@ public class Lofs2 {
                     break;
                 }
 
-                List<Node> _parents = GraphUtils.asList(choice, adj);
+                final List<Node> _parents = GraphUtils.asList(choice, adj);
 
-                double score = score(node, _parents);
+                final double score = score(node, _parents);
                 scoreReports.put(-score, _parents.toString());
 
                 if (score > maxScore) {
@@ -424,7 +424,7 @@ public class Lofs2 {
 //                continue;
 //            }
 
-            for (double score : scoreReports.keySet()) {
+            for (final double score : scoreReports.keySet()) {
                 TetradLogger.getInstance().log("score", "For " + node + " parents = " + scoreReports.get(score) + " score = " + -score);
             }
 
@@ -434,13 +434,13 @@ public class Lofs2 {
                 continue;
             }
 
-            for (Node _node : adj) {
+            for (final Node _node : adj) {
                 if (Thread.currentThread().isInterrupted()) {
                     break;
                 }
 
                 if (parents.contains(_node)) {
-                    Edge parentEdge = Edges.directedEdge(_node, node);
+                    final Edge parentEdge = Edges.directedEdge(_node, node);
 
                     if (!graph.containsEdge(parentEdge)) {
                         graph.addEdge(parentEdge);
@@ -449,7 +449,7 @@ public class Lofs2 {
             }
         }
 
-        for (Edge edge : skeleton.getEdges()) {
+        for (final Edge edge : skeleton.getEdges()) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
@@ -460,19 +460,19 @@ public class Lofs2 {
         }
     }
 
-    private void ruleR2(Graph skeleton, Graph graph) {
-        List<DataSet> standardized = DataUtils.standardizeData(this.dataSets);
+    private void ruleR2(final Graph skeleton, final Graph graph) {
+        final List<DataSet> standardized = DataUtils.standardizeData(this.dataSets);
         setDataSets(standardized);
 
-        Set<Edge> edgeList1 = skeleton.getEdges();
+        final Set<Edge> edgeList1 = skeleton.getEdges();
 
-        for (Edge adj : edgeList1) {
+        for (final Edge adj : edgeList1) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            Node x = adj.getNode1();
-            Node y = adj.getNode2();
+            final Node x = adj.getNode1();
+            final Node y = adj.getNode2();
 
             if (!isR2Orient2Cycles() && isTwoCycle(graph, x, y)) {
                 continue;
@@ -486,19 +486,19 @@ public class Lofs2 {
         }
     }
 
-    private void resolveOneEdgeMax2(Graph graph, Node x, Node y, boolean strong) {
+    private void resolveOneEdgeMax2(final Graph graph, final Node x, final Node y, final boolean strong) {
         TetradLogger.getInstance().log("info", "\nEDGE " + x + " --- " + y);
 
-        SortedMap<Double, String> scoreReports = new TreeMap<>();
+        final SortedMap<Double, String> scoreReports = new TreeMap<>();
 
-        List<Node> neighborsx = new ArrayList<>();
+        final List<Node> neighborsx = new ArrayList<>();
 
-        for (Node _node : graph.getAdjacentNodes(x)) {
+        for (final Node _node : graph.getAdjacentNodes(x)) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            if (!knowledge.isForbidden(_node.getName(), x.getName())) {
+            if (!this.knowledge.isForbidden(_node.getName(), x.getName())) {
 //                if (!knowledge.edgeForbidden(x.getNode(), _node.getNode())) {
                 neighborsx.add(_node);
             }
@@ -510,7 +510,7 @@ public class Lofs2 {
         boolean left = false;
         boolean right = false;
 
-        DepthChoiceGenerator genx = new DepthChoiceGenerator(neighborsx.size(), neighborsx.size());
+        final DepthChoiceGenerator genx = new DepthChoiceGenerator(neighborsx.size(), neighborsx.size());
         int[] choicex;
 
         while ((choicex = genx.next()) != null) {
@@ -518,42 +518,42 @@ public class Lofs2 {
                 break;
             }
 
-            List<Node> condxMinus = GraphUtils.asList(choicex, neighborsx);
+            final List<Node> condxMinus = GraphUtils.asList(choicex, neighborsx);
 
             if (condxMinus.contains(y)) continue;
 
-            List<Node> condxPlus = new ArrayList<>(condxMinus);
+            final List<Node> condxPlus = new ArrayList<>(condxMinus);
 
             condxPlus.add(y);
 
-            double xPlus = score(x, condxPlus);
-            double xMinus = score(x, condxMinus);
+            final double xPlus = score(x, condxPlus);
+            final double xMinus = score(x, condxMinus);
 
-            double p = pValue(x, condxPlus);
+            final double p = pValue(x, condxPlus);
 
-            if (p > alpha) {
+            if (p > this.alpha) {
                 continue;
             }
 
-            double p2 = pValue(x, condxMinus);
+            final double p2 = pValue(x, condxMinus);
 
-            if (p2 > alpha) {
+            if (p2 > this.alpha) {
                 continue;
             }
 
-            List<Node> neighborsy = new ArrayList<>();
+            final List<Node> neighborsy = new ArrayList<>();
 
-            for (Node _node : graph.getAdjacentNodes(y)) {
+            for (final Node _node : graph.getAdjacentNodes(y)) {
                 if (Thread.currentThread().isInterrupted()) {
                     break;
                 }
 
-                if (!knowledge.isForbidden(_node.getName(), y.getName())) {
+                if (!this.knowledge.isForbidden(_node.getName(), y.getName())) {
                     neighborsy.add(_node);
                 }
             }
 
-            DepthChoiceGenerator geny = new DepthChoiceGenerator(neighborsy.size(), neighborsy.size());
+            final DepthChoiceGenerator geny = new DepthChoiceGenerator(neighborsy.size(), neighborsy.size());
             int[] choicey;
 
             while ((choicey = geny.next()) != null) {
@@ -561,39 +561,39 @@ public class Lofs2 {
                     break;
                 }
 
-                List<Node> condyMinus = GraphUtils.asList(choicey, neighborsy);
+                final List<Node> condyMinus = GraphUtils.asList(choicey, neighborsy);
 
                 if (condyMinus.contains(x)) continue;
 
-                List<Node> condyPlus = new ArrayList<>(condyMinus);
+                final List<Node> condyPlus = new ArrayList<>(condyMinus);
                 condyPlus.add(x);
 
-                double yPlus = score(y, condyPlus);
-                double yMinus = score(y, condyMinus);
+                final double yPlus = score(y, condyPlus);
+                final double yMinus = score(y, condyMinus);
 
-                double p3 = pValue(y, condyPlus);
+                final double p3 = pValue(y, condyPlus);
 
 //                if (p3 > alpha) {
 //                    continue;
 //                }
 
-                double p4 = pValue(y, condyMinus);
+                final double p4 = pValue(y, condyMinus);
 
 //                if (p4 > alpha) {
 //                    continue;
 //                }
 
-                boolean forbiddenLeft = knowledge.isForbidden(y.getName(), x.getName());
-                boolean forbiddenRight = knowledge.isForbidden(x.getName(), y.getName());
+                final boolean forbiddenLeft = this.knowledge.isForbidden(y.getName(), x.getName());
+                final boolean forbiddenRight = this.knowledge.isForbidden(x.getName(), y.getName());
 
-                double delta = 0.0;
+                final double delta = 0.0;
 
                 if (strong) {
                     if (yPlus <= xPlus + delta && xMinus <= yMinus + delta) {
-                        double score = combinedScore(xPlus, yMinus);
+                        final double score = combinedScore(xPlus, yMinus);
 
                         if ((yPlus <= yMinus + delta && xMinus <= xPlus + delta) || forbiddenRight) {
-                            StringBuilder builder = new StringBuilder();
+                            final StringBuilder builder = new StringBuilder();
 
                             builder.append("\nStrong ").append(y).append("->").append(x).append(" ").append(score);
                             builder.append("\n   Parents(").append(x).append(") = ").append(condxMinus);
@@ -607,7 +607,7 @@ public class Lofs2 {
                                 right = false;
                             }
                         } else {
-                            StringBuilder builder = new StringBuilder();
+                            final StringBuilder builder = new StringBuilder();
 
                             builder.append("\nNo directed edge ").append(x).append("--").append(y).append(" ").append(score);
                             builder.append("\n   Parents(").append(x).append(") = ").append(condxMinus);
@@ -616,10 +616,10 @@ public class Lofs2 {
                             scoreReports.put(-score, builder.toString());
                         }
                     } else if ((xPlus <= yPlus + delta && yMinus <= xMinus + delta) || forbiddenLeft) {
-                        double score = combinedScore(yPlus, xMinus);
+                        final double score = combinedScore(yPlus, xMinus);
 
                         if (yMinus <= yPlus + delta && xPlus <= xMinus + delta) {
-                            StringBuilder builder = new StringBuilder();
+                            final StringBuilder builder = new StringBuilder();
 
                             builder.append("\nStrong ").append(x).append("->").append(y).append(" ").append(score);
                             builder.append("\n   Parents(").append(x).append(") = ").append(condxMinus);
@@ -633,7 +633,7 @@ public class Lofs2 {
                                 right = true;
                             }
                         } else {
-                            StringBuilder builder = new StringBuilder();
+                            final StringBuilder builder = new StringBuilder();
 
                             builder.append("\nNo directed edge ").append(x).append("--").append(y).append(" ").append(score);
                             builder.append("\n   Parents(").append(x).append(") = ").append(condxMinus);
@@ -642,9 +642,9 @@ public class Lofs2 {
                             scoreReports.put(-score, builder.toString());
                         }
                     } else if (yPlus <= xPlus + delta && yMinus <= xMinus + delta) {
-                        double score = combinedScore(yPlus, xMinus);
+                        final double score = combinedScore(yPlus, xMinus);
 
-                        StringBuilder builder = new StringBuilder();
+                        final StringBuilder builder = new StringBuilder();
 
                         builder.append("\nNo directed edge ").append(x).append("--").append(y).append(" ").append(score);
                         builder.append("\n   Parents(").append(x).append(") = ").append(condxMinus);
@@ -652,9 +652,9 @@ public class Lofs2 {
 
                         scoreReports.put(-score, builder.toString());
                     } else if (xPlus <= yPlus + delta && xMinus <= yMinus + delta) {
-                        double score = combinedScore(yPlus, xMinus);
+                        final double score = combinedScore(yPlus, xMinus);
 
-                        StringBuilder builder = new StringBuilder();
+                        final StringBuilder builder = new StringBuilder();
 
                         builder.append("\nNo directed edge ").append(x).append("--").append(y).append(" ").append(score);
                         builder.append("\n   Parents(").append(x).append(") = ").append(condxMinus);
@@ -664,9 +664,9 @@ public class Lofs2 {
                     }
                 } else {
                     if ((yPlus <= xPlus + delta && xMinus <= yMinus + delta) || forbiddenRight) {
-                        double score = combinedScore(xPlus, yMinus);
+                        final double score = combinedScore(xPlus, yMinus);
 
-                        StringBuilder builder = new StringBuilder();
+                        final StringBuilder builder = new StringBuilder();
 
                         builder.append("\nWeak ").append(y).append("->").append(x).append(" ").append(score);
                         builder.append("\n   Parents(").append(x).append(") = ").append(condxMinus);
@@ -680,9 +680,9 @@ public class Lofs2 {
                             right = false;
                         }
                     } else if ((xPlus <= yPlus + delta && yMinus <= xMinus + delta) || forbiddenLeft) {
-                        double score = combinedScore(yPlus, xMinus);
+                        final double score = combinedScore(yPlus, xMinus);
 
-                        StringBuilder builder = new StringBuilder();
+                        final StringBuilder builder = new StringBuilder();
 
                         builder.append("\nWeak ").append(x).append("->").append(y).append(" ").append(score);
                         builder.append("\n   Parents(").append(x).append(") = ").append(condxMinus);
@@ -696,9 +696,9 @@ public class Lofs2 {
                             right = true;
                         }
                     } else if (yPlus <= xPlus + delta && yMinus <= xMinus + delta) {
-                        double score = combinedScore(yPlus, xMinus);
+                        final double score = combinedScore(yPlus, xMinus);
 
-                        StringBuilder builder = new StringBuilder();
+                        final StringBuilder builder = new StringBuilder();
 
                         builder.append("\nNo directed edge ").append(x).append("--").append(y).append(" ").append(score);
                         builder.append("\n   Parents(").append(x).append(") = ").append(condxMinus);
@@ -706,9 +706,9 @@ public class Lofs2 {
 
                         scoreReports.put(-score, builder.toString());
                     } else if (xPlus <= yPlus + delta && xMinus <= yMinus + delta) {
-                        double score = combinedScore(yPlus, xMinus);
+                        final double score = combinedScore(yPlus, xMinus);
 
-                        StringBuilder builder = new StringBuilder();
+                        final StringBuilder builder = new StringBuilder();
 
                         builder.append("\nNo directed edge ").append(x).append("--").append(y).append(" ").append(score);
                         builder.append("\n   Parents(").append(x).append(") = ").append(condxMinus);
@@ -720,7 +720,7 @@ public class Lofs2 {
             }
         }
 
-        for (double score : scoreReports.keySet()) {
+        for (final double score : scoreReports.keySet()) {
             TetradLogger.getInstance().log("info", scoreReports.get(score));
         }
 
@@ -740,19 +740,19 @@ public class Lofs2 {
     }
 
 
-    private Graph ruleR3(Graph graph) {
-        List<DataSet> standardized = DataUtils.standardizeData(this.dataSets);
+    private Graph ruleR3(final Graph graph) {
+        final List<DataSet> standardized = DataUtils.standardizeData(this.dataSets);
         setDataSets(standardized);
 
-        Set<Edge> edgeList1 = graph.getEdges();
+        final Set<Edge> edgeList1 = graph.getEdges();
 
-        for (Edge adj : edgeList1) {
+        for (final Edge adj : edgeList1) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            Node x = adj.getNode1();
-            Node y = adj.getNode2();
+            final Node x = adj.getNode1();
+            final Node y = adj.getNode2();
 
             resolveOneEdgeMaxR3(graph, x, y);
         }
@@ -761,15 +761,15 @@ public class Lofs2 {
 
     }
 
-    private void resolveOneEdgeMaxR3(Graph graph, Node x, Node y) {
-        String xname = x.getName();
-        String yname = y.getName();
+    private void resolveOneEdgeMaxR3(final Graph graph, final Node x, final Node y) {
+        final String xname = x.getName();
+        final String yname = y.getName();
 
-        if (knowledge.isForbidden(yname, xname) || knowledge.isRequired(xname, yname)) {
+        if (this.knowledge.isForbidden(yname, xname) || this.knowledge.isRequired(xname, yname)) {
             graph.removeEdge(x, y);
             graph.addDirectedEdge(x, y);
             return;
-        } else if (knowledge.isForbidden(xname, yname) || knowledge.isRequired(yname, xname)) {
+        } else if (this.knowledge.isForbidden(xname, yname) || this.knowledge.isRequired(yname, xname)) {
             graph.removeEdge(y, x);
             graph.addDirectedEdge(y, x);
             return;
@@ -777,10 +777,10 @@ public class Lofs2 {
 
 //        TetradLogger.getInstance().log("info", "\nEDGE " + x + " --- " + y);
 
-        List<Node> condxMinus = Collections.emptyList();
-        List<Node> condxPlus = Collections.singletonList(y);
-        List<Node> condyMinus = Collections.emptyList();
-        List<Node> condyPlus = Collections.singletonList(x);
+        final List<Node> condxMinus = Collections.emptyList();
+        final List<Node> condxPlus = Collections.singletonList(y);
+        final List<Node> condyMinus = Collections.emptyList();
+        final List<Node> condyPlus = Collections.singletonList(x);
 
 //        double px = pValue(x, condxMinus);
 //        double py = pValue(y, condyMinus);
@@ -789,16 +789,16 @@ public class Lofs2 {
 //            return;
 //        }
 
-        double xPlus = score(x, condxPlus);
-        double xMinus = score(x, condxMinus);
+        final double xPlus = score(x, condxPlus);
+        final double xMinus = score(x, condxMinus);
 
-        double yPlus = score(y, condyPlus);
-        double yMinus = score(y, condyMinus);
+        final double yPlus = score(y, condyPlus);
+        final double yMinus = score(y, condyMinus);
 
 //        if (!(xPlus > 0.8 && xMinus > 0.8 && yPlus > 0.8 && yMinus > 0.8)) return;
 
-        double deltaX = xPlus - xMinus;
-        double deltaY = yPlus - yMinus;
+        final double deltaX = xPlus - xMinus;
+        final double deltaY = yPlus - yMinus;
 
         graph.removeEdges(x, y);
 //        double epsilon = 0;
@@ -811,40 +811,40 @@ public class Lofs2 {
     }
 
     public Graph ruleR4(Graph graph) {
-        List<Node> nodes = dataSets.get(0).getVariables();
+        final List<Node> nodes = this.dataSets.get(0).getVariables();
         graph = GraphUtils.replaceNodes(graph, nodes);
 
         // For each row, list the columns of W in that row that are parameters. Note that the diagonal
         // is fixed to 1, so diagonal elements aren't parameters.
-        List<List<Integer>> rows = new ArrayList<>();
-        List<List<List<Double>>> paramsforDataSets = new ArrayList<>();
-        List<List<Double>> avgParams = new ArrayList<>();
+        final List<List<Integer>> rows = new ArrayList<>();
+        final List<List<List<Double>>> paramsforDataSets = new ArrayList<>();
+        final List<List<Double>> avgParams = new ArrayList<>();
 
         for (int k = 0; k < nodes.size(); k++) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            List<Node> adj = graph.getAdjacentNodes(nodes.get(k));
-            List<Integer> row = new ArrayList<>();
-            List<Double> avgParam = new ArrayList<>();
-            List<Node> nodesInRow = new ArrayList<>();
+            final List<Node> adj = graph.getAdjacentNodes(nodes.get(k));
+            final List<Integer> row = new ArrayList<>();
+            final List<Double> avgParam = new ArrayList<>();
+            final List<Node> nodesInRow = new ArrayList<>();
 
-            for (Node node : adj) {
-                if (knowledge.isForbidden(node.getName(), nodes.get(k).getName())) {
+            for (final Node node : adj) {
+                if (this.knowledge.isForbidden(node.getName(), nodes.get(k).getName())) {
                     continue;
                 }
 
-                int j = nodes.indexOf(node);
+                final int j = nodes.indexOf(node);
                 row.add(j);
                 avgParam.add(0.0);
                 nodesInRow.add(node);
             }
 
-            for (Node node : nodes) {
-                if (knowledge.isRequired(node.getName(), nodes.get(k).getName())) {
+            for (final Node node : nodes) {
+                if (this.knowledge.isRequired(node.getName(), nodes.get(k).getName())) {
                     if (!nodesInRow.contains(node)) {
-                        int j = nodes.indexOf(node);
+                        final int j = nodes.indexOf(node);
                         row.add(j);
                         avgParam.add(0.0);
                         nodesInRow.add(node);
@@ -860,13 +860,13 @@ public class Lofs2 {
         }
 
         // Estimate parameters for each data set.
-        for (int i = 0; i < dataSets.size(); i++) {
+        for (int i = 0; i < this.dataSets.size(); i++) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            Matrix data = dataSets.get(i).getDoubleData();
-            List<List<Double>> parameters = new ArrayList<>();
+            final Matrix data = this.dataSets.get(i).getDoubleData();
+            final List<List<Double>> parameters = new ArrayList<>();
 
             // Note that the 1's along the diagonal of W are hard coded into the code for calculating scores.
             // Otherwise list doubles to correspond to each parameter.
@@ -875,16 +875,16 @@ public class Lofs2 {
                     break;
                 }
 
-                List<Double> params = new ArrayList<>();
+                final List<Double> params = new ArrayList<>();
 
-                for (int j : rows.get(k)) {
+                for (final int j : rows.get(k)) {
                     params.add(0.0);
                 }
 
                 parameters.add(params);
             }
 
-            double range = zeta;
+            final double range = this.zeta;
 
             // Estimate the parameters.
             optimizeAllRows(data, range, rows, parameters);
@@ -899,7 +899,7 @@ public class Lofs2 {
         // Note that the average of each parameter across data sets will be used. If there is just one
         // data set, this is just the parameter.
         if (!isOrientStrongerDirection()) {
-            Graph _graph = new EdgeListGraph(nodes);
+            final Graph _graph = new EdgeListGraph(nodes);
 
             for (int i = 0; i < rows.size(); i++) {
                 if (Thread.currentThread().isInterrupted()) {
@@ -911,18 +911,18 @@ public class Lofs2 {
                         break;
                     }
 
-                    double param = avg(paramsforDataSets, i, _j);
+                    final double param = avg(paramsforDataSets, i, _j);
                     avgParams.get(i).set(_j, param);
-                    int j = rows.get(i).get(_j);
+                    final int j = rows.get(i).get(_j);
 
                     if (i == j) continue;
 
-                    Node node1 = nodes.get(j);
-                    Node node2 = nodes.get(i);
+                    final Node node1 = nodes.get(j);
+                    final Node node2 = nodes.get(i);
 
-                    Edge edge1 = Edges.directedEdge(node1, node2);
+                    final Edge edge1 = Edges.directedEdge(node1, node2);
 
-                    if (Math.abs(param) >= epsilon) {
+                    if (Math.abs(param) >= this.epsilon) {
                         _graph.addEdge(edge1);
                     }
                 }
@@ -930,7 +930,7 @@ public class Lofs2 {
 
             return _graph;
         } else {
-            Graph _graph = new EdgeListGraph(nodes);
+            final Graph _graph = new EdgeListGraph(nodes);
 
             for (int i = 0; i < rows.size(); i++) {
                 if (Thread.currentThread().isInterrupted()) {
@@ -942,11 +942,11 @@ public class Lofs2 {
                         break;
                     }
 
-                    int j = rows.get(i).get(_j);
+                    final int j = rows.get(i).get(_j);
 
                     if (j > i) continue;
 
-                    double param1 = avg(paramsforDataSets, i, _j);
+                    final double param1 = avg(paramsforDataSets, i, _j);
                     avgParams.get(i).set(_j, param1);
 
                     double param2 = 0.0;
@@ -956,7 +956,7 @@ public class Lofs2 {
                             break;
                         }
 
-                        int i2 = rows.get(j).get(_i);
+                        final int i2 = rows.get(j).get(_i);
 
                         if (i2 == i) {
                             param2 = avg(paramsforDataSets, j, _i);
@@ -971,10 +971,10 @@ public class Lofs2 {
 
                     if (i == j) continue;
 
-                    Node node1 = nodes.get(j);
-                    Node node2 = nodes.get(i);
-                    Edge edge1 = Edges.directedEdge(node1, node2);
-                    Edge edge2 = Edges.directedEdge(node2, node1);
+                    final Node node1 = nodes.get(j);
+                    final Node node2 = nodes.get(i);
+                    final Edge edge1 = Edges.directedEdge(node1, node2);
+                    final Edge edge2 = Edges.directedEdge(node2, node1);
 
                     if (Math.abs(param1) > Math.abs(param2)) {
                         _graph.addEdge(edge1);
@@ -993,8 +993,8 @@ public class Lofs2 {
         }
     }
 
-    private void printEstimatedCoefs(List<Node> nodes, List<List<Integer>> rows, List<List<Double>> parameters) {
-        NumberFormat nf = new DecimalFormat("0.0000");
+    private void printEstimatedCoefs(final List<Node> nodes, final List<List<Integer>> rows, final List<List<Double>> parameters) {
+        final NumberFormat nf = new DecimalFormat("0.0000");
 
         for (int g = 0; g < rows.size(); g++) {
             System.out.print(nodes.get(g) + "\t");
@@ -1006,14 +1006,14 @@ public class Lofs2 {
         }
     }
 
-    private double avg(List<List<List<Double>>> paramsforDataSets, int i, int j) {
+    private double avg(final List<List<List<Double>>> paramsforDataSets, final int i, final int j) {
 
         // The average of non-missing coefficients.
         double sum = 0.0;
         int count = 0;
 
-        for (List<List<Double>> params : paramsforDataSets) {
-            Double coef = params.get(i).get(j);
+        for (final List<List<Double>> params : paramsforDataSets) {
+            final Double coef = params.get(i).get(j);
 
             if (!isNaN(coef)) {
                 sum += coef;
@@ -1024,15 +1024,15 @@ public class Lofs2 {
         return sum / count;
     }
 
-    private void optimizeAllRows(Matrix data, final double range,
-                                 List<List<Integer>> rows, List<List<Double>> parameters) {
+    private void optimizeAllRows(final Matrix data, final double range,
+                                 final List<List<Integer>> rows, final List<List<Double>> parameters) {
 
         for (int i = 0; i < rows.size(); i++) {
             System.out.println("Optimizing row = " + i);
 
             try {
                 optimizeRow(i, data, range, rows, parameters);
-            } catch (IllegalStateException e) {
+            } catch (final IllegalStateException e) {
                 e.printStackTrace();
             }
         }
@@ -1049,18 +1049,18 @@ public class Lofs2 {
         final double[] dRightMin = new double[numParams];
 
         double[] values = new double[numParams];
-        double delta = 0.1;
+        final double delta = 0.1;
 
         if (false) { //isEdgeCorrected()) {
-            double min = -2;
-            double max = 2;
+            final double min = -2;
+            final double max = 2;
 
-            int[] dims = new int[values.length];
+            final int[] dims = new int[values.length];
 
-            int numBins = 5;
+            final int numBins = 5;
             for (int i = 0; i < values.length; i++) dims[i] = numBins;
 
-            CombinationGenerator gen = new CombinationGenerator(dims);
+            final CombinationGenerator gen = new CombinationGenerator(dims);
             int[] comb;
             List<Double> maxParams = new ArrayList<>();
 
@@ -1073,7 +1073,7 @@ public class Lofs2 {
                     break;
                 }
 
-                List<Double> params = new ArrayList<>();
+                final List<Double> params = new ArrayList<>();
 
                 for (int i = 0; i < values.length; i++) {
                     params.add(min + (max - min) * (comb[i] / (double) numBins));
@@ -1081,7 +1081,7 @@ public class Lofs2 {
 
                 parameters.set(rowIndex, params);
 
-                double v = scoreRow(rowIndex, data, rows, parameters);
+                final double v = scoreRow(rowIndex, data, rows, parameters);
 
                 if (v > maxV) {
                     maxV = v;
@@ -1115,7 +1115,7 @@ public class Lofs2 {
                     }
 
                     parameters.get(rowIndex).set(i, d);
-                    double v = scoreRow(rowIndex, data, rows, parameters);
+                    final double v = scoreRow(rowIndex, data, rows, parameters);
                     if (isNaN(v)) continue;
                     if (v > vLeft) break;
                     vLeft = v;
@@ -1134,7 +1134,7 @@ public class Lofs2 {
                     }
 
                     parameters.get(rowIndex).set(i, d);
-                    double v = scoreRow(rowIndex, data, rows, parameters);
+                    final double v = scoreRow(rowIndex, data, rows, parameters);
                     if (isNaN(v)) continue;
                     if (v > vRight) break;
                     vRight = v;
@@ -1143,7 +1143,7 @@ public class Lofs2 {
 
                 // If dleft dright ended up reversed, re-reverse them.
                 if (dLeft > dRight) {
-                    double temp = dRight;
+                    final double temp = dRight;
                     dLeft = dRight;
                     dRight = temp;
                 }
@@ -1170,8 +1170,8 @@ public class Lofs2 {
             }
         }
 
-        MultivariateFunction function = new MultivariateFunction() {
-            public double value(double[] values) {
+        final MultivariateFunction function = new MultivariateFunction() {
+            public double value(final double[] values) {
                 System.out.println(Arrays.toString(values));
 
                 for (int i = 0; i < values.length; i++) {
@@ -1182,7 +1182,7 @@ public class Lofs2 {
                     parameters.get(rowIndex).set(i, values[i]);
                 }
 
-                double v = scoreRow(rowIndex, data, rows, parameters);
+                final double v = scoreRow(rowIndex, data, rows, parameters);
 
                 if (isNaN(v)) {
                     return Double.POSITIVE_INFINITY; // was 10000
@@ -1193,16 +1193,16 @@ public class Lofs2 {
         };
 
         try {
-            MultivariateOptimizer search = new PowellOptimizer(1e-7, 1e-7);
+            final MultivariateOptimizer search = new PowellOptimizer(1e-7, 1e-7);
 
-            PointValuePair pair = search.optimize(
+            final PointValuePair pair = search.optimize(
                     new InitialGuess(values),
                     new ObjectiveFunction(function),
                     GoalType.MINIMIZE,
                     new MaxEval(100000));
 
             values = pair.getPoint();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             e.printStackTrace();
 
             for (int i = 0; i < values.length; i++) {
@@ -1214,12 +1214,12 @@ public class Lofs2 {
     private double[] col;
 
     // rowIndex is for the W matrix, not for the data.
-    public double scoreRow(int rowIndex, Matrix data, List<List<Integer>> rows, List<List<Double>> parameters) {
-        if (col == null) {
-            col = new double[data.rows()];
+    public double scoreRow(final int rowIndex, final Matrix data, final List<List<Integer>> rows, final List<List<Double>> parameters) {
+        if (this.col == null) {
+            this.col = new double[data.rows()];
         }
 
-        List<Integer> cols = rows.get(rowIndex);
+        final List<Integer> cols = rows.get(rowIndex);
 
         for (int i = 0; i < data.rows(); i++) {
             if (Thread.currentThread().isInterrupted()) {
@@ -1233,27 +1233,27 @@ public class Lofs2 {
                     break;
                 }
 
-                int _j = cols.get(j);
-                double coef = parameters.get(rowIndex).get(j);
-                double value = data.get(i, _j);
+                final int _j = cols.get(j);
+                final double coef = parameters.get(rowIndex).get(j);
+                final double value = data.get(i, _j);
                 d += coef * value;
             }
 
             // Add in the diagonal, assumed to consist entirely of 1's, indicating no self loop.
             d += (1.0 - getSelfLoopStrength()) * data.get(i, rowIndex);
 
-            col[i] = d;
+            this.col[i] = d;
         }
 
-        return score(col);
+        return score(this.col);
     }
 
-    public double rowPValue(int rowIndex, Matrix data, List<List<Integer>> rows, List<List<Double>> parameters) {
-        if (col == null) {
-            col = new double[data.rows()];
+    public double rowPValue(final int rowIndex, final Matrix data, final List<List<Integer>> rows, final List<List<Double>> parameters) {
+        if (this.col == null) {
+            this.col = new double[data.rows()];
         }
 
-        List<Integer> cols = rows.get(rowIndex);
+        final List<Integer> cols = rows.get(rowIndex);
 
         for (int i = 0; i < data.rows(); i++) {
             if (Thread.currentThread().isInterrupted()) {
@@ -1267,53 +1267,53 @@ public class Lofs2 {
                     break;
                 }
 
-                int _j = cols.get(j);
-                double coef = parameters.get(rowIndex).get(j);
-                double value = data.get(i, _j);
+                final int _j = cols.get(j);
+                final double coef = parameters.get(rowIndex).get(j);
+                final double value = data.get(i, _j);
                 d += coef * value;
             }
 
             // Add in the diagonal, assumed to consist entirely of 1's.
             d += 1.0 * data.get(i, rowIndex);
 
-            col[i] = d;
+            this.col[i] = d;
         }
 
-        return aSquaredP(col);
+        return aSquaredP(this.col);
     }
 
-    private Graph entropyBased(Graph graph) {
-        DataSet dataSet = DataUtils.concatenate(dataSets);
+    private Graph entropyBased(final Graph graph) {
+        DataSet dataSet = DataUtils.concatenate(this.dataSets);
         dataSet = DataUtils.standardizeData(dataSet);
-        Graph _graph = new EdgeListGraph(graph.getNodes());
+        final Graph _graph = new EdgeListGraph(graph.getNodes());
 
-        for (Edge edge : graph.getEdges()) {
+        for (final Edge edge : graph.getEdges()) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
+            final Node x = edge.getNode1();
+            final Node y = edge.getNode2();
 
-            Node _x = dataSet.getVariable(x.getName());
-            Node _y = dataSet.getVariable(y.getName());
+            final Node _x = dataSet.getVariable(x.getName());
+            final Node _y = dataSet.getVariable(y.getName());
 
-            List<double[]> ret = extractData(dataSet, _x, _y);
+            final List<double[]> ret = extractData(dataSet, _x, _y);
 
-            double[] xData = ret.get(0);
-            double[] yData = ret.get(1);
+            final double[] xData = ret.get(0);
+            final double[] yData = ret.get(1);
 
-            double[] d = new double[xData.length];
-            double[] e = new double[xData.length];
+            final double[] d = new double[xData.length];
+            final double[] e = new double[xData.length];
 
-            double cov = StatUtils.covariance(xData, yData);
+            final double cov = StatUtils.covariance(xData, yData);
 
             for (int i = 0; i < xData.length; i++) {
                 d[i] = yData[i] - cov * xData[i];  // y regressed on x
                 e[i] = xData[i] - cov * yData[i];  // x regressed on y
             }
 
-            double R = -StatUtils.maxEntApprox(xData) - StatUtils.maxEntApprox(d)
+            final double R = -StatUtils.maxEntApprox(xData) - StatUtils.maxEntApprox(d)
                     + StatUtils.maxEntApprox(yData) + StatUtils.maxEntApprox(e);
 
             if (R > 0) {
@@ -1327,13 +1327,13 @@ public class Lofs2 {
     }
 
     private Graph tanhGraph(Graph graph) {
-        DataSet dataSet = DataUtils.concatenate(dataSets);
+        DataSet dataSet = DataUtils.concatenate(this.dataSets);
         graph = GraphUtils.replaceNodes(graph, dataSet.getVariables());
         dataSet = DataUtils.standardizeData(dataSet);
-        double[][] data = dataSet.getDoubleData().transpose().toArray();
-        Graph _graph = new EdgeListGraph(graph.getNodes());
-        List<Node> nodes = dataSet.getVariables();
-        Map<Node, Integer> nodesHash = new HashMap<>();
+        final double[][] data = dataSet.getDoubleData().transpose().toArray();
+        final Graph _graph = new EdgeListGraph(graph.getNodes());
+        final List<Node> nodes = dataSet.getVariables();
+        final Map<Node, Integer> nodesHash = new HashMap<>();
 
         for (int i = 0; i < nodes.size(); i++) {
             if (Thread.currentThread().isInterrupted()) {
@@ -1343,29 +1343,29 @@ public class Lofs2 {
             nodesHash.put(nodes.get(i), i);
         }
 
-        for (Edge edge : graph.getEdges()) {
+        for (final Edge edge : graph.getEdges()) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
+            final Node x = edge.getNode1();
+            final Node y = edge.getNode2();
 
             double sumX = 0.0;
             int countX = 0;
 
-            double[] xData = data[nodesHash.get(edge.getNode1())];
-            double[] yData = data[nodesHash.get(edge.getNode2())];
+            final double[] xData = data[nodesHash.get(edge.getNode1())];
+            final double[] yData = data[nodesHash.get(edge.getNode2())];
 
             for (int i = 0; i < xData.length; i++) {
                 if (Thread.currentThread().isInterrupted()) {
                     break;
                 }
 
-                double x0 = xData[i];
-                double y0 = yData[i];
+                final double x0 = xData[i];
+                final double y0 = yData[i];
 
-                double termX = (x0 * Math.tanh(y0) - Math.tanh(x0) * y0);
+                final double termX = (x0 * Math.tanh(y0) - Math.tanh(x0) * y0);
 
                 sumX += termX;
                 countX++;
@@ -1373,7 +1373,7 @@ public class Lofs2 {
 
             double R = sumX / countX;
 
-            double rhoX = regressionCoef(xData, yData);
+            final double rhoX = regressionCoef(xData, yData);
             R *= rhoX;
 
             if (R > 0) {
@@ -1388,32 +1388,32 @@ public class Lofs2 {
 
 
     // @param empirical True if the skew signs are estimated empirically.
-    private Graph skewGraph(Graph graph, boolean empirical) {
-        DataSet dataSet = DataUtils.concatenate(dataSets);
+    private Graph skewGraph(Graph graph, final boolean empirical) {
+        DataSet dataSet = DataUtils.concatenate(this.dataSets);
         graph = GraphUtils.replaceNodes(graph, dataSet.getVariables());
         dataSet = DataUtils.standardizeData(dataSet);
-        double[][] data = dataSet.getDoubleData().transpose().toArray();
-        Graph _graph = new EdgeListGraph(graph.getNodes());
-        List<Node> nodes = dataSet.getVariables();
-        Map<Node, Integer> nodesHash = new HashMap<>();
+        final double[][] data = dataSet.getDoubleData().transpose().toArray();
+        final Graph _graph = new EdgeListGraph(graph.getNodes());
+        final List<Node> nodes = dataSet.getVariables();
+        final Map<Node, Integer> nodesHash = new HashMap<>();
 
         for (int i = 0; i < nodes.size(); i++) {
             nodesHash.put(nodes.get(i), i);
         }
 
-        for (Edge edge : graph.getEdges()) {
+        for (final Edge edge : graph.getEdges()) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
+            final Node x = edge.getNode1();
+            final Node y = edge.getNode2();
 
             double sumX = 0.0;
             int countX = 0;
 
-            int _i = nodesHash.get(edge.getNode1());
-            int _j = nodesHash.get(edge.getNode2());
+            final int _i = nodesHash.get(edge.getNode1());
+            final int _j = nodesHash.get(edge.getNode2());
 
             double[] xData = data[_i];
             double[] yData = data[_j];
@@ -1428,10 +1428,10 @@ public class Lofs2 {
                     break;
                 }
 
-                double x0 = xData[i];
-                double y0 = yData[i];
+                final double x0 = xData[i];
+                final double y0 = yData[i];
 
-                double termX = x0 * x0 * y0 - x0 * y0 * y0;
+                final double termX = x0 * x0 * y0 - x0 * y0 * y0;
 
                 sumX += termX;
                 countX++;
@@ -1439,7 +1439,7 @@ public class Lofs2 {
 
             double R = sumX / countX;
 
-            double rhoX = regressionCoef(xData, yData);
+            final double rhoX = regressionCoef(xData, yData);
 
             R *= rhoX;
 
@@ -1455,27 +1455,27 @@ public class Lofs2 {
     }
 
     // @param empirical True if the skew signs are estimated empirically.
-    private Graph robustSkewGraph(Graph graph, boolean empirical) {
-        List<DataSet> _dataSets = new ArrayList<>();
-        for (DataSet dataSet : dataSets) _dataSets.add(dataSet);// DataUtils.standardizeData(dataSet));
+    private Graph robustSkewGraph(Graph graph, final boolean empirical) {
+        final List<DataSet> _dataSets = new ArrayList<>();
+        for (final DataSet dataSet : this.dataSets) _dataSets.add(dataSet);// DataUtils.standardizeData(dataSet));
         DataSet dataSet = DataUtils.concatenate(_dataSets);
         graph = GraphUtils.replaceNodes(graph, dataSet.getVariables());
         dataSet = DataUtils.standardizeData(dataSet);
-        double[][] data = dataSet.getDoubleData().transpose().toArray();
-        List<Node> nodes = dataSet.getVariables();
-        Map<Node, Integer> nodesHash = new HashMap<>();
+        final double[][] data = dataSet.getDoubleData().transpose().toArray();
+        final List<Node> nodes = dataSet.getVariables();
+        final Map<Node, Integer> nodesHash = new HashMap<>();
 
         for (int i = 0; i < nodes.size(); i++) {
             nodesHash.put(nodes.get(i), i);
         }
 
-        for (Edge edge : graph.getEdges()) {
+        for (final Edge edge : graph.getEdges()) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
+            final Node x = edge.getNode1();
+            final Node y = edge.getNode2();
 
             double[] xData = data[nodesHash.get(edge.getNode1())];
             double[] yData = data[nodesHash.get(edge.getNode2())];
@@ -1485,26 +1485,26 @@ public class Lofs2 {
                 yData = correctSkewnesses(yData);
             }
 
-            double[] xx = new double[xData.length];
-            double[] yy = new double[yData.length];
+            final double[] xx = new double[xData.length];
+            final double[] yy = new double[yData.length];
 
             for (int i = 0; i < xData.length; i++) {
                 if (Thread.currentThread().isInterrupted()) {
                     break;
                 }
 
-                double xi = xData[i];
-                double yi = yData[i];
+                final double xi = xData[i];
+                final double yi = yData[i];
 
-                double s1 = g(xi) * yi;
-                double s2 = xi * g(yi);
+                final double s1 = g(xi) * yi;
+                final double s2 = xi * g(yi);
 
                 xx[i] = s1;
                 yy[i] = s2;
             }
 
-            double mxx = mean(xx);
-            double myy = mean(yy);
+            final double mxx = mean(xx);
+            final double myy = mean(yy);
 
             graph.removeEdge(edge);
 
@@ -1520,38 +1520,38 @@ public class Lofs2 {
         return graph;
     }
 
-    private double g(double x) {
+    private double g(final double x) {
         return Math.log(Math.cosh(Math.max(x, 0)));
     }
 
-    private double g2(double x) {
+    private double g2(final double x) {
         return Math.log(Math.cosh(Math.max(-x, 0)));
     }
 
     // cutoff is NaN if no thresholding is to be done, otherwise a threshold between 0 and 1.
-    private Graph patelTauOrientation(Graph graph, double cutoff) {
-        List<DataSet> centered = DataUtils.center(dataSets);
-        DataSet concat = DataUtils.concatenate(centered);
-        DataSet dataSet = DataUtils.standardizeData(concat);
+    private Graph patelTauOrientation(final Graph graph, final double cutoff) {
+        final List<DataSet> centered = DataUtils.center(this.dataSets);
+        final DataSet concat = DataUtils.concatenate(centered);
+        final DataSet dataSet = DataUtils.standardizeData(concat);
 
-        Graph _graph = new EdgeListGraph(graph.getNodes());
+        final Graph _graph = new EdgeListGraph(graph.getNodes());
 
-        for (Edge edge : graph.getEdges()) {
+        for (final Edge edge : graph.getEdges()) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
+            final Node x = edge.getNode1();
+            final Node y = edge.getNode2();
 
-            Node _x = dataSet.getVariable(x.getName());
-            Node _y = dataSet.getVariable(y.getName());
+            final Node _x = dataSet.getVariable(x.getName());
+            final Node _y = dataSet.getVariable(y.getName());
 
-            List<double[]> ret = prepareData(dataSet, _x, _y, false, false);
-            double[] xData = ret.get(0);
-            double[] yData = ret.get(1);
+            final List<double[]> ret = prepareData(dataSet, _x, _y, false, false);
+            final double[] xData = ret.get(0);
+            final double[] yData = ret.get(1);
 
-            double R = patelTau(xData, yData, cutoff);
+            final double R = patelTau(xData, yData, cutoff);
 
             if (R > 0) {
                 _graph.addDirectedEdge(x, y);
@@ -1566,18 +1566,18 @@ public class Lofs2 {
     }
 
     // cutoff is NaN if no thresholding is to be done, otherwise a threshold between 0 and 1.
-    private double patelTau(double[] d1in, double[] d2in, double cutoff) {
+    private double patelTau(final double[] d1in, final double[] d2in, final double cutoff) {
         double grotMIN = percentile(d1in, 10);
         double grotMAX = percentile(d1in, 90);
 
-        double XT = .25; // Cancels out, don't know why this is here.
+        final double XT = .25; // Cancels out, don't know why this is here.
 
-        double[] d1b = new double[d1in.length];
+        final double[] d1b = new double[d1in.length];
 
         for (int i = 0; i < d1b.length; i++) {
-            double y1 = (d1in[i] - grotMIN) / (grotMAX - grotMIN);
-            double y2 = Math.min(y1, 1.0);
-            double y3 = Math.max(y2, 0.0);
+            final double y1 = (d1in[i] - grotMIN) / (grotMAX - grotMIN);
+            final double y2 = Math.min(y1, 1.0);
+            final double y3 = Math.max(y2, 0.0);
             d1b[i] = y3;
         }
 
@@ -1591,12 +1591,12 @@ public class Lofs2 {
         grotMIN = percentile(d2in, 10);
         grotMAX = percentile(d2in, 90);
 
-        double[] d2b = new double[d2in.length];
+        final double[] d2b = new double[d2in.length];
 
         for (int i = 0; i < d2b.length; i++) {
-            double y1 = (d2in[i] - grotMIN) / (grotMAX - grotMIN);
-            double y2 = Math.min(y1, 1.0);
-            double y3 = Math.max(y2, 0.0);
+            final double y1 = (d2in[i] - grotMIN) / (grotMAX - grotMIN);
+            final double y2 = Math.min(y1, 1.0);
+            final double y3 = Math.max(y2, 0.0);
             d2b[i] = y3;
         }
 
@@ -1607,12 +1607,12 @@ public class Lofs2 {
             }
         }
 
-        double theta1 = dotProduct(d1b, d2b) / XT;
-        double theta2 = dotProduct(d1b, minus(1, d2b)) / XT;
-        double theta3 = dotProduct(d2b, minus(1, d1b)) / XT;
+        final double theta1 = dotProduct(d1b, d2b) / XT;
+        final double theta2 = dotProduct(d1b, minus(1, d2b)) / XT;
+        final double theta3 = dotProduct(d2b, minus(1, d1b)) / XT;
 //        double theta4= dotProduct(minus(1, d1b), minus(1, d2b))/XT;
 
-        double tau_12;
+        final double tau_12;
 
         if (theta2 > theta3) tau_12 = 1 - (theta1 + theta3) / (theta1 + theta2);
         else tau_12 = (theta1 + theta2) / (theta1 + theta3) - 1;
@@ -1620,7 +1620,7 @@ public class Lofs2 {
         return -tau_12;
     }
 
-    private double dotProduct(double[] x, double[] y) {
+    private double dotProduct(final double[] x, final double[] y) {
         double p = 0.0;
 
         for (int i = 0; i < x.length; i++) {
@@ -1630,8 +1630,8 @@ public class Lofs2 {
         return p;
     }
 
-    private double[] minus(int s, double[] x) {
-        double[] y = new double[x.length];
+    private double[] minus(final int s, final double[] x) {
+        final double[] y = new double[x.length];
 
         for (int i = 0; i < x.length; i++) {
             y[i] = s - x[i];
@@ -1640,17 +1640,17 @@ public class Lofs2 {
         return y;
     }
 
-    private double percentile(double[] x, double percent) {
-        double[] _x = Arrays.copyOf(x, x.length);
+    private double percentile(final double[] x, final double percent) {
+        final double[] _x = Arrays.copyOf(x, x.length);
         Arrays.sort(_x);
         return _x[(int) (x.length * (percent / 100.0))];
     }
 
-    private List<double[]> extractData(DataSet data, Node _x, Node _y) {
-        int xIndex = data.getColumn(_x);
-        int yIndex = data.getColumn(_y);
+    private List<double[]> extractData(final DataSet data, final Node _x, final Node _y) {
+        final int xIndex = data.getColumn(_x);
+        final int yIndex = data.getColumn(_y);
 
-        double[][] _data = data.getDoubleData().transpose().toArray();
+        final double[][] _data = data.getDoubleData().transpose().toArray();
 
 //        double[] xData = _data.viewColumn(xIndex).toArray();
 //        double[] yData = _data.viewColumn(yIndex).toArray();
@@ -1658,8 +1658,8 @@ public class Lofs2 {
         double[] xData = _data[xIndex];
         double[] yData = _data[yIndex];
 
-        List<Double> xValues = new ArrayList<>();
-        List<Double> yValues = new ArrayList<>();
+        final List<Double> xValues = new ArrayList<>();
+        final List<Double> yValues = new ArrayList<>();
 
         for (int i = 0; i < data.getNumRows(); i++) {
             if (!isNaN(xData[i]) && !isNaN(yData[i])) {
@@ -1676,29 +1676,29 @@ public class Lofs2 {
             yData[i] = yValues.get(i);
         }
 
-        List<double[]> ret = new ArrayList<>();
+        final List<double[]> ret = new ArrayList<>();
         ret.add(xData);
         ret.add(yData);
 
         return ret;
     }
 
-    private double[] correctSkewnesses(double[] data) {
-        double skewness = StatUtils.skewness(data);
-        double[] data2 = new double[data.length];
+    private double[] correctSkewnesses(final double[] data) {
+        final double skewness = StatUtils.skewness(data);
+        final double[] data2 = new double[data.length];
         for (int i = 0; i < data.length; i++) data2[i] = data[i] * Math.signum(skewness);
         return data2;
     }
 
-    private List<double[]> prepareData(DataSet concatData, Node _x, Node _y, boolean skewCorrection, boolean coefCorrection) {
-        int xIndex = concatData.getColumn(_x);
-        int yIndex = concatData.getColumn(_y);
+    private List<double[]> prepareData(final DataSet concatData, final Node _x, final Node _y, final boolean skewCorrection, final boolean coefCorrection) {
+        final int xIndex = concatData.getColumn(_x);
+        final int yIndex = concatData.getColumn(_y);
 
         double[] xData = concatData.getDoubleData().getColumn(xIndex).toArray();
         double[] yData = concatData.getDoubleData().getColumn(yIndex).toArray();
 
-        List<Double> xValues = new ArrayList<>();
-        List<Double> yValues = new ArrayList<>();
+        final List<Double> xValues = new ArrayList<>();
+        final List<Double> yValues = new ArrayList<>();
 
         for (int i = 0; i < concatData.getNumRows(); i++) {
             if (!isNaN(xData[i]) && !isNaN(yData[i])) {
@@ -1716,8 +1716,8 @@ public class Lofs2 {
         }
 
         if (skewCorrection) {
-            double xSkew = StatUtils.skewness(xData);
-            double ySkew = StatUtils.skewness(yData);
+            final double xSkew = StatUtils.skewness(xData);
+            final double ySkew = StatUtils.skewness(yData);
 
             for (int i = 0; i < xData.length; i++) xData[i] *= Math.signum(xSkew);
             for (int i = 0; i < yData.length; i++) yData[i] *= Math.signum(ySkew);
@@ -1727,7 +1727,7 @@ public class Lofs2 {
             double coefX;
             try {
                 coefX = regressionCoef(xData, yData);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 coefX = Double.NaN;
             }
 
@@ -1735,7 +1735,7 @@ public class Lofs2 {
 
             try {
                 coefY = regressionCoef(yData, xData);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 coefY = Double.NaN;
             }
 
@@ -1744,61 +1744,61 @@ public class Lofs2 {
 
         }
 
-        List<double[]> ret = new ArrayList<>();
+        final List<double[]> ret = new ArrayList<>();
         ret.add(xData);
         ret.add(yData);
 
         return ret;
     }
 
-    private double regressionCoef(double[] xValues, double[] yValues) {
-        List<Node> v = new ArrayList<>();
+    private double regressionCoef(final double[] xValues, final double[] yValues) {
+        final List<Node> v = new ArrayList<>();
         v.add(new GraphNode("x"));
         v.add(new GraphNode("y"));
 
-        Matrix bothData = new Matrix(xValues.length, 2);
+        final Matrix bothData = new Matrix(xValues.length, 2);
 
         for (int i = 0; i < xValues.length; i++) {
             bothData.set(i, 0, xValues[i]);
             bothData.set(i, 1, yValues[i]);
         }
 
-        Regression regression2 = new RegressionDataset(bothData, v);
-        RegressionResult result;
+        final Regression regression2 = new RegressionDataset(bothData, v);
+        final RegressionResult result;
 
         try {
             result = regression2.regress(v.get(0), v.get(1));
-        } catch (Exception e) {
+        } catch (final Exception e) {
             return Double.NaN;
         }
 
         return result.getCoef()[1];
     }
 
-    private boolean isTwoCycle(Graph graph, Node x, Node y) {
-        List<Edge> edges = graph.getEdges(x, y);
+    private boolean isTwoCycle(final Graph graph, final Node x, final Node y) {
+        final List<Edge> edges = graph.getEdges(x, y);
         return edges.size() == 2;
     }
 
-    private boolean isUndirected(Graph graph, Node x, Node y) {
-        List<Edge> edges = graph.getEdges(x, y);
+    private boolean isUndirected(final Graph graph, final Node x, final Node y) {
+        final List<Edge> edges = graph.getEdges(x, y);
         if (edges.size() == 1) {
-            Edge edge = graph.getEdge(x, y);
+            final Edge edge = graph.getEdge(x, y);
             return Edges.isUndirectedEdge(edge);
         }
 
         return false;
     }
 
-    public void setEpsilon(double epsilon) {
+    public void setEpsilon(final double epsilon) {
         this.epsilon = epsilon;
     }
 
-    public void setZeta(double zeta) {
+    public void setZeta(final double zeta) {
         this.zeta = zeta;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(final IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -1806,18 +1806,18 @@ public class Lofs2 {
         this.knowledge = knowledge;
     }
 
-    private double aSquared(double[] x) {
+    private double aSquared(final double[] x) {
         return new AndersonDarlingTest(x).getASquaredStar();
     }
 
-    private double aSquaredP(double[] x) {
+    private double aSquaredP(final double[] x) {
         return new AndersonDarlingTest(x).getP();
     }
 
     /**
      * @return the probability associated with the most recently computed independence test.
      */
-    public double getPValue(double fisherZ) {
+    public double getPValue(final double fisherZ) {
         return 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, Math.abs(fisherZ)));
     }
 
@@ -1825,48 +1825,48 @@ public class Lofs2 {
         int index;
         double value;
 
-        public Pair(int index, double value) {
+        public Pair(final int index, final double value) {
             this.index = index;
             this.value = value;
         }
 
         public String toString() {
-            return "<" + index + ", " + value + ">";
+            return "<" + this.index + ", " + this.value + ">";
         }
     }
 
-    private Graph igci(Graph graph) {
-        if (dataSets.size() > 1) throw new IllegalArgumentException("Expecting exactly one data set for IGCI.");
+    private Graph igci(final Graph graph) {
+        if (this.dataSets.size() > 1) throw new IllegalArgumentException("Expecting exactly one data set for IGCI.");
 
-        DataSet dataSet = dataSets.get(0);
-        Matrix matrix = dataSet.getDoubleData();
+        final DataSet dataSet = this.dataSets.get(0);
+        final Matrix matrix = dataSet.getDoubleData();
 
-        Graph _graph = new EdgeListGraph(graph.getNodes());
+        final Graph _graph = new EdgeListGraph(graph.getNodes());
 
-        for (Edge edge : graph.getEdges()) {
+        for (final Edge edge : graph.getEdges()) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
+            final Node x = edge.getNode1();
+            final Node y = edge.getNode2();
 
-            Node _x = dataSet.getVariable(x.getName());
-            Node _y = dataSet.getVariable(y.getName());
+            final Node _x = dataSet.getVariable(x.getName());
+            final Node _y = dataSet.getVariable(y.getName());
 
-            int xIndex = dataSet.getVariables().indexOf(_x);
-            int yIndex = dataSet.getVariables().indexOf(_y);
+            final int xIndex = dataSet.getVariables().indexOf(_x);
+            final int yIndex = dataSet.getVariables().indexOf(_y);
 
-            double[] xCol = matrix.getColumn(xIndex).toArray();
-            double[] yCol = matrix.getColumn(yIndex).toArray();
+            final double[] xCol = matrix.getColumn(xIndex).toArray();
+            final double[] yCol = matrix.getColumn(yIndex).toArray();
 
-            double f = igci(xCol, yCol, 2, 1);
+            final double f = igci(xCol, yCol, 2, 1);
 
             graph.removeEdges(x, y);
 
-            if (f < -epsilon) {
+            if (f < -this.epsilon) {
                 _graph.addDirectedEdge(x, y);
-            } else if (f > epsilon) {
+            } else if (f > this.epsilon) {
                 _graph.addDirectedEdge(y, x);
             } else {
                 if (resolveOneEdgeMaxR3(xCol, yCol) < 0) {
@@ -1881,8 +1881,8 @@ public class Lofs2 {
         return _graph;
     }
 
-    private double igci(double[] x, double[] y, int refMeasure, int estimator) {
-        int m = x.length;
+    private double igci(double[] x, double[] y, final int refMeasure, final int estimator) {
+        final int m = x.length;
 
         if (m != y.length) {
             throw new IllegalArgumentException("Vectors must be the same length.");
@@ -1892,10 +1892,10 @@ public class Lofs2 {
             case 1:
                 // uniform reference measure
 
-                double minx = min(x);
-                double maxx = max(x);
-                double miny = min(y);
-                double maxy = max(y);
+                final double minx = min(x);
+                final double maxx = max(x);
+                final double miny = min(y);
+                final double maxy = max(y);
 
                 for (int i = 0; i < x.length; i++) {
                     x[i] = (x[i] - minx) / (maxx - minx);
@@ -1905,10 +1905,10 @@ public class Lofs2 {
                 break;
 
             case 2:
-                double meanx = mean(x);
-                double stdx = sd(x);
-                double meany = mean(y);
-                double stdy = sd(y);
+                final double meanx = mean(x);
+                final double stdx = sd(x);
+                final double meany = mean(y);
+                final double stdy = sd(y);
 
                 // Gaussian reference measure
                 for (int i = 0; i < x.length; i++) {
@@ -1923,7 +1923,7 @@ public class Lofs2 {
         }
 
 
-        double f;
+        final double f;
 
         if (estimator == 1) {
             // difference of entropies
@@ -1938,10 +1938,10 @@ public class Lofs2 {
 
             y1 = removeNaN(y1);
 
-            int n1 = x1.length;
+            final int n1 = x1.length;
             double hx = 0.0;
             for (int i = 0; i < n1 - 1; i++) {
-                double delta = x1[i + 1] - x1[i];
+                final double delta = x1[i + 1] - x1[i];
                 if (delta != 0) {
                     hx = hx + log(abs(delta));
                 }
@@ -1949,10 +1949,10 @@ public class Lofs2 {
 
             hx = hx / (n1 - 1) + psi(n1) - psi(1);
 
-            int n2 = y1.length;
+            final int n2 = y1.length;
             double hy = 0.0;
             for (int i = 0; i < n2 - 1; i++) {
-                double delta = y1[i + 1] - y1[i];
+                final double delta = y1[i + 1] - y1[i];
 
                 if (delta != 0) {
                     if (isNaN(delta)) {
@@ -1971,26 +1971,26 @@ public class Lofs2 {
             double a = 0;
             double b = 0;
 
-            List<Pair> _x = new ArrayList<>();
+            final List<Pair> _x = new ArrayList<>();
 
             for (int i = 0; i < x.length; i++) {
                 _x.add(new Pair(i, x[i]));
             }
 
             Collections.sort(_x, new Comparator<Pair>() {
-                public int compare(Pair pair1, Pair pair2) {
+                public int compare(final Pair pair1, final Pair pair2) {
                     return new Double(pair1.value).compareTo(pair2.value);
                 }
             });
 
-            List<Pair> _y = new ArrayList<>();
+            final List<Pair> _y = new ArrayList<>();
 
             for (int i = 0; i < y.length; i++) {
                 _y.add(new Pair(i, y[i]));
             }
 
             Collections.sort(_y, new Comparator<Pair>() {
-                public int compare(Pair pair1, Pair pair2) {
+                public int compare(final Pair pair1, final Pair pair2) {
                     return new Double(pair1.value).compareTo(pair2.value);
                 }
             });
@@ -2035,10 +2035,10 @@ public class Lofs2 {
                     break;
                 }
 
-                double X1 = x[i];
-                double X2 = x[i + 1];
-                double Y1 = y[i];
-                double Y2 = y[i + 1];
+                final double X1 = x[i];
+                final double X2 = x[i + 1];
+                final double Y1 = y[i];
+                final double Y2 = y[i + 1];
 
                 if (X2 != X1 && Y2 != Y1) {
                     a = a + log((Y2 - Y1) / (X2 - X1));
@@ -2062,10 +2062,10 @@ public class Lofs2 {
                     break;
                 }
 
-                double X1 = x[i];
-                double X2 = x[i + 1];
-                double Y1 = y[i];
-                double Y2 = y[i + 1];
+                final double X1 = x[i];
+                final double X2 = x[i + 1];
+                final double Y1 = y[i];
+                final double Y2 = y[i + 1];
 
                 if (X2 != X1 && Y2 != Y1) {
                     a = a + log((Y2 - Y1) / (X2 - X1));
@@ -2091,10 +2091,10 @@ public class Lofs2 {
                     break;
                 }
 
-                double X1 = x[i];
-                double X2 = x[i + 1];
-                double Y1 = y[i] - y[0];
-                double Y2 = y[i + 1] - y[0];
+                final double X1 = x[i];
+                final double X2 = x[i + 1];
+                final double Y1 = y[i] - y[0];
+                final double Y2 = y[i + 1] - y[0];
 
                 if (X2 != X1 && Y2 != Y1) {
                     a += ((Y2 + Y1) / 2.0) * (X2 - X1);
@@ -2116,8 +2116,8 @@ public class Lofs2 {
 
     }
 
-    private double[] removeNaN(double[] data) {
-        List<Double> _leaveOutMissing = new ArrayList<>();
+    private double[] removeNaN(final double[] data) {
+        final List<Double> _leaveOutMissing = new ArrayList<>();
 
         for (int i = 0; i < data.length; i++) {
             if (!isNaN(data[i])) {
@@ -2125,7 +2125,7 @@ public class Lofs2 {
             }
         }
 
-        double[] _data = new double[_leaveOutMissing.size()];
+        final double[] _data = new double[_leaveOutMissing.size()];
 
         for (int i = 0; i < _leaveOutMissing.size(); i++) _data[i] = _leaveOutMissing.get(i);
 
@@ -2136,7 +2136,10 @@ public class Lofs2 {
     // digamma
 
     double psi(double x) {
-        double result = 0, xx, xx2, xx4;
+        double result = 0;
+        double xx;
+        double xx2;
+        final double xx4;
         assert (x > 0);
         for (; x < 7; ++x)
             result -= 1 / x;
@@ -2148,20 +2151,20 @@ public class Lofs2 {
         return result;
     }
 
-    private double min(double[] x) {
+    private double min(final double[] x) {
         double min = Double.POSITIVE_INFINITY;
 
-        for (double _x : x) {
+        for (final double _x : x) {
             if (_x < min) min = _x;
         }
 
         return min;
     }
 
-    private double max(double[] x) {
+    private double max(final double[] x) {
         double max = Double.NEGATIVE_INFINITY;
 
-        for (double _x : x) {
+        for (final double _x : x) {
             if (_x > max) max = _x;
         }
 
@@ -2169,29 +2172,29 @@ public class Lofs2 {
     }
 
 
-    private double combinedScore(double score1, double score2) {
+    private double combinedScore(final double score1, final double score2) {
         return score1 + score2;
     }
 
-    private double score(Node y, List<Node> parents) {
-        if (score == Lofs.Score.andersonDarling) {
+    private double score(final Node y, final List<Node> parents) {
+        if (this.score == Lofs.Score.andersonDarling) {
             return andersonDarlingPASquare(y, parents);
-        } else if (score == Lofs.Score.kurtosis) {
+        } else if (this.score == Lofs.Score.kurtosis) {
             return Math.abs(StatUtils.kurtosis(residuals(y, parents, true, true)));
-        } else if (score == Lofs.Score.entropy) {
+        } else if (this.score == Lofs.Score.entropy) {
             return entropy(y, parents);
-        } else if (score == Lofs.Score.skew) {
+        } else if (this.score == Lofs.Score.skew) {
             return Math.abs(StatUtils.skewness(residuals(y, parents, true, true)));
-        } else if (score == Lofs.Score.fifthMoment) {
+        } else if (this.score == Lofs.Score.fifthMoment) {
             return Math.abs(StatUtils.standardizedFifthMoment(residuals(y, parents, true, true)));
-        } else if (score == Lofs.Score.absoluteValue) {
+        } else if (this.score == Lofs.Score.absoluteValue) {
             return meanAbsolute(y, parents);
-        } else if (score == Lofs.Score.exp) {
+        } else if (this.score == Lofs.Score.exp) {
             return expScoreUnstandardized(y, parents);
-        } else if (score == Lofs.Score.other) {
-            double[] _f = residuals(y, parents, true, true);
+        } else if (this.score == Lofs.Score.other) {
+            final double[] _f = residuals(y, parents, true, true);
             return score(_f);
-        } else if (score == Lofs.Score.logcosh) {
+        } else if (this.score == Lofs.Score.logcosh) {
             return logCoshScore(y, parents);
         }
 
@@ -2199,80 +2202,80 @@ public class Lofs2 {
     }
 
     private double score(double[] col) {
-        if (score == Lofs.Score.andersonDarling) {
+        if (this.score == Lofs.Score.andersonDarling) {
             return new AndersonDarlingTest(col).getASquaredStar();
-        } else if (score == Lofs.Score.entropy) {
+        } else if (this.score == Lofs.Score.entropy) {
             return StatUtils.maxEntApprox(col);
-        } else if (score == Lofs.Score.kurtosis) {
+        } else if (this.score == Lofs.Score.kurtosis) {
             col = DataUtils.standardizeData(col);
             return -Math.abs(StatUtils.kurtosis(col));
-        } else if (score == Lofs.Score.skew) {
+        } else if (this.score == Lofs.Score.skew) {
             return Math.abs(StatUtils.skewness(col));
-        } else if (score == Lofs.Score.fifthMoment) {
+        } else if (this.score == Lofs.Score.fifthMoment) {
             return Math.abs(StatUtils.standardizedFifthMoment(col));
-        } else if (score == Lofs.Score.absoluteValue) {
+        } else if (this.score == Lofs.Score.absoluteValue) {
             return StatUtils.meanAbsolute(col);
-        } else if (score == Lofs.Score.exp) {
+        } else if (this.score == Lofs.Score.exp) {
             return expScoreUnstandardized(col);
-        } else if (score == Lofs.Score.other) {
+        } else if (this.score == Lofs.Score.other) {
             return Math.abs(StatUtils.kurtosis(col));
-        } else if (score == Lofs.Score.logcosh) {
+        } else if (this.score == Lofs.Score.logcosh) {
             return StatUtils.logCoshScore(col);
         }
 
-        throw new IllegalStateException("Unrecognized score: " + score);
+        throw new IllegalStateException("Unrecognized score: " + this.score);
     }
 
     //=============================PRIVATE METHODS=========================//
 
-    private double meanAbsolute(Node node, List<Node> parents) {
-        double[] _f = residuals(node, parents, false, true);
+    private double meanAbsolute(final Node node, final List<Node> parents) {
+        final double[] _f = residuals(node, parents, false, true);
 
         return StatUtils.meanAbsolute(_f);
     }
 
-    private double expScoreUnstandardized(Node node, List<Node> parents) {
-        double[] _f = residuals(node, parents, false, true);
+    private double expScoreUnstandardized(final Node node, final List<Node> parents) {
+        final double[] _f = residuals(node, parents, false, true);
 
         return expScoreUnstandardized(_f);
     }
 
-    private double expScoreUnstandardized(double[] _f) {
+    private double expScoreUnstandardized(final double[] _f) {
         double sum = 0.0;
 
         for (int k = 0; k < _f.length; k++) {
             sum += Math.exp(_f[k]);
         }
 
-        double expected = sum / _f.length;
+        final double expected = sum / _f.length;
         return -Math.abs(Math.log(expected));
     }
 
-    private double logCoshScore(Node node, List<Node> parents) {
-        double[] _f = residuals(node, parents, true, true);
+    private double logCoshScore(final Node node, final List<Node> parents) {
+        final double[] _f = residuals(node, parents, true, true);
         return StatUtils.logCoshScore(_f);
     }
 
-    private double[] residuals(Node node, List<Node> parents, boolean standardize, boolean removeNaN) {
-        List<Double> _residuals = new ArrayList<>();
+    private double[] residuals(final Node node, final List<Node> parents, final boolean standardize, final boolean removeNaN) {
+        final List<Double> _residuals = new ArrayList<>();
 
-        Node target = getVariable(variables, node.getName());
-        List<Node> regressors = new ArrayList<>();
+        final Node target = getVariable(this.variables, node.getName());
+        final List<Node> regressors = new ArrayList<>();
 
-        for (Node _regressor : parents) {
-            Node variable = getVariable(variables, _regressor.getName());
+        for (final Node _regressor : parents) {
+            final Node variable = getVariable(this.variables, _regressor.getName());
             regressors.add(variable);
         }
 
         DATASET:
-        for (int m = 0; m < dataSets.size(); m++) {
+        for (int m = 0; m < this.dataSets.size(); m++) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            DataSet dataSet = dataSets.get(m);
+            final DataSet dataSet = this.dataSets.get(m);
 
-            int targetCol = dataSet.getColumn(target);
+            final int targetCol = dataSet.getColumn(target);
 
             for (int i = 0; i < dataSet.getNumRows(); i++) {
                 if (isNaN(dataSet.getDouble(i, targetCol))) {
@@ -2280,12 +2283,12 @@ public class Lofs2 {
                 }
             }
 
-            for (Node regressor : regressors) {
+            for (final Node regressor : regressors) {
                 if (Thread.currentThread().isInterrupted()) {
                     break;
                 }
 
-                int regressorCol = dataSet.getColumn(regressor);
+                final int regressorCol = dataSet.getColumn(regressor);
 
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
                     if (isNaN(dataSet.getDouble(i, regressorCol))) {
@@ -2294,18 +2297,18 @@ public class Lofs2 {
                 }
             }
 
-            RegressionResult result = getRegressions().get(m).regress(target, regressors);
-            double[] residualsSingleDataset = result.getResiduals().toArray();
+            final RegressionResult result = getRegressions().get(m).regress(target, regressors);
+            final double[] residualsSingleDataset = result.getResiduals().toArray();
 
             if (result.getCoef().length > 0) {
-                double intercept = result.getCoef()[0];
+                final double intercept = result.getCoef()[0];
 
                 for (int i2 = 0; i2 < residualsSingleDataset.length; i2++) {
                     residualsSingleDataset[i2] = residualsSingleDataset[i2] + intercept;
                 }
             }
 
-            for (double _x : residualsSingleDataset) {
+            for (final double _x : residualsSingleDataset) {
                 if (removeNaN && isNaN(_x)) continue;
                 _residuals.add(_x);
             }
@@ -2324,37 +2327,37 @@ public class Lofs2 {
         return _f;
     }
 
-    private double andersonDarlingPASquare(Node node, List<Node> parents) {
-        double[] _f = residuals(node, parents, true, true);
+    private double andersonDarlingPASquare(final Node node, final List<Node> parents) {
+        final double[] _f = residuals(node, parents, true, true);
 //        return new AndersonDarlingTest(_f).getASquaredStar();
         return new AndersonDarlingTest(_f).getASquared();
     }
 
-    private double entropy(Node node, List<Node> parents) {
-        double[] _f = residuals(node, parents, true, true);
+    private double entropy(final Node node, final List<Node> parents) {
+        final double[] _f = residuals(node, parents, true, true);
         return StatUtils.maxEntApprox(_f);
     }
 
-    private double pValue(Node node, List<Node> parents) {
-        List<Double> _residuals = new ArrayList<>();
+    private double pValue(final Node node, final List<Node> parents) {
+        final List<Double> _residuals = new ArrayList<>();
 
-        Node target = getVariable(variables, node.getName());
-        List<Node> regressors = new ArrayList<>();
+        final Node target = getVariable(this.variables, node.getName());
+        final List<Node> regressors = new ArrayList<>();
 
-        for (Node _regressor : parents) {
-            Node variable = getVariable(variables, _regressor.getName());
+        for (final Node _regressor : parents) {
+            final Node variable = getVariable(this.variables, _regressor.getName());
             regressors.add(variable);
         }
 
         DATASET:
-        for (int m = 0; m < dataSets.size(); m++) {
+        for (int m = 0; m < this.dataSets.size(); m++) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            DataSet dataSet = dataSets.get(m);
+            final DataSet dataSet = this.dataSets.get(m);
 
-            int targetCol = dataSet.getColumn(target);
+            final int targetCol = dataSet.getColumn(target);
 
             for (int i = 0; i < dataSet.getNumRows(); i++) {
                 if (isNaN(dataSet.getDouble(i, targetCol))) {
@@ -2367,7 +2370,7 @@ public class Lofs2 {
                     break;
                 }
 
-                int regressorCol = dataSet.getColumn(regressors.get(g));
+                final int regressorCol = dataSet.getColumn(regressors.get(g));
 
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
                     if (isNaN(dataSet.getDouble(i, regressorCol))) {
@@ -2376,8 +2379,8 @@ public class Lofs2 {
                 }
             }
 
-            RegressionResult result = getRegressions().get(m).regress(target, regressors);
-            Vector residualsSingleDataset = result.getResiduals();
+            final RegressionResult result = getRegressions().get(m).regress(target, regressors);
+            final Vector residualsSingleDataset = result.getResiduals();
 
             for (int h = 0; h < residualsSingleDataset.size(); h++) {
                 if (isNaN(residualsSingleDataset.get(h))) {
@@ -2385,14 +2388,14 @@ public class Lofs2 {
                 }
             }
 
-            Vector _residualsSingleDataset = new Vector(residualsSingleDataset.toArray());
+            final Vector _residualsSingleDataset = new Vector(residualsSingleDataset.toArray());
 
             for (int k = 0; k < _residualsSingleDataset.size(); k++) {
                 _residuals.add(_residualsSingleDataset.get(k));
             }
         }
 
-        double[] _f = new double[_residuals.size()];
+        final double[] _f = new double[_residuals.size()];
 
         for (int k = 0; k < _residuals.size(); k++) {
             _f[k] = _residuals.get(k);
@@ -2406,11 +2409,11 @@ public class Lofs2 {
     }
 
     private Graph getCPDAG() {
-        return CPDAG;
+        return this.CPDAG;
     }
 
-    private Node getVariable(List<Node> variables, String name) {
-        for (Node node : variables) {
+    private Node getVariable(final List<Node> variables, final String name) {
+        for (final Node node : variables) {
             if (name.equals(node.getName())) {
                 return node;
             }
@@ -2419,15 +2422,15 @@ public class Lofs2 {
         return null;
     }
 
-    private Graph resolveEdgeConditional(Graph graph) {
-        setDataSets(dataSets);
+    private Graph resolveEdgeConditional(final Graph graph) {
+        setDataSets(this.dataSets);
 
-        Set<Edge> edgeList1 = graph.getEdges();
+        final Set<Edge> edgeList1 = graph.getEdges();
 //        Collections.shuffle(edgeList1);
 
-        for (Edge adj : edgeList1) {
-            Node x = adj.getNode1();
-            Node y = adj.getNode2();
+        for (final Edge adj : edgeList1) {
+            final Node x = adj.getNode1();
+            final Node y = adj.getNode2();
 
             resolveEdgeConditional(graph, x, y);
         }
@@ -2437,46 +2440,46 @@ public class Lofs2 {
 
     Matrix _data = null;
 
-    private void resolveEdgeConditional(Graph graph, Node x, Node y) {
-        if (_data == null) {
-            _data = DataUtils.centerData(matrices.get(0));
+    private void resolveEdgeConditional(final Graph graph, final Node x, final Node y) {
+        if (this._data == null) {
+            this._data = DataUtils.centerData(this.matrices.get(0));
         }
-        int xIndex = dataSets.get(0).getColumn(dataSets.get(0).getVariable(x.getName()));
-        int yIndex = dataSets.get(0).getColumn(dataSets.get(0).getVariable(y.getName()));
-        double[] xCol = _data.getColumn(xIndex).toArray();
-        double[] yCol = _data.getColumn(yIndex).toArray();
-        int N = xCol.length;
+        final int xIndex = this.dataSets.get(0).getColumn(this.dataSets.get(0).getVariable(x.getName()));
+        final int yIndex = this.dataSets.get(0).getColumn(this.dataSets.get(0).getVariable(y.getName()));
+        final double[] xCol = this._data.getColumn(xIndex).toArray();
+        final double[] yCol = this._data.getColumn(yIndex).toArray();
+        final int N = xCol.length;
 
-        double[][] yCols = new double[1][N];
+        final double[][] yCols = new double[1][N];
         yCols[0] = yCol;
 
-        double[][] xCols = new double[1][N];
+        final double[][] xCols = new double[1][N];
         xCols[0] = xCol;
 
-        double[][] empty = new double[0][N];
+        final double[][] empty = new double[0][N];
 
-        double[] resX = conditionalResiduals(xCol, empty);
-        double[] resY = conditionalResiduals(yCol, empty);
-        double[] resXY = conditionalResiduals(xCol, yCols);
-        double[] resYX = conditionalResiduals(yCol, xCols);
+        final double[] resX = conditionalResiduals(xCol, empty);
+        final double[] resY = conditionalResiduals(yCol, empty);
+        final double[] resXY = conditionalResiduals(xCol, yCols);
+        final double[] resYX = conditionalResiduals(yCol, xCols);
 
-        double ngX = new AndersonDarlingTest(xCol).getASquared();
-        double ngY = new AndersonDarlingTest(yCol).getASquared();
+        final double ngX = new AndersonDarlingTest(xCol).getASquared();
+        final double ngY = new AndersonDarlingTest(yCol).getASquared();
 
         graph.removeEdges(x, y);
 
-        double sdX = sd(resX);
-        double sdXY = sd(resXY);
-        double sdY = sd(resY);
-        double sdYX = sd(resYX);
+        final double sdX = sd(resX);
+        final double sdXY = sd(resXY);
+        final double sdY = sd(resY);
+        final double sdYX = sd(resYX);
 
-        double abs1 = abs(sdX - sdXY);
-        double abs2 = abs(sdY - sdYX);
+        final double abs1 = abs(sdX - sdXY);
+        final double abs2 = abs(sdY - sdYX);
 
-        if (abs(abs1 - abs2) < epsilon) {
-            System.out.println("Orienting by non-Gaussianity " + abs(abs1 - abs2) + " epsilon = " + epsilon);
+        if (abs(abs1 - abs2) < this.epsilon) {
+            System.out.println("Orienting by non-Gaussianity " + abs(abs1 - abs2) + " epsilon = " + this.epsilon);
             System.out.println(x + "===" + y);
-            double v = resolveOneEdgeMaxR3b(xCol, yCol);
+            final double v = resolveOneEdgeMaxR3b(xCol, yCol);
 
             if (v < 0) {
                 graph.addDirectedEdge(x, y);
@@ -2499,9 +2502,9 @@ public class Lofs2 {
         }
     }
 
-    private double[] conditionalResiduals(double[] x, double[][] y) {
-        int N = x.length;
-        double[] residuals = new double[N];
+    private double[] conditionalResiduals(final double[] x, final double[][] y) {
+        final int N = x.length;
+        final double[] residuals = new double[N];
 
         double _h = 1.0;
 
@@ -2512,16 +2515,16 @@ public class Lofs2 {
         _h = (y.length == 0) ? 1.0 : pow(_h, 1.0 / (y.length));
 
         for (int i = 0; i < N; i++) {
-            double xi = x[i];
+            final double xi = x[i];
 
             double sum = 0.0;
             double kTot = 0.0;
 
             for (int j = 0; j < N; j++) {
-                double d = distance(y, i, j);
-                double k = kernel(d / _h) / _h;
+                final double d = distance(y, i, j);
+                final double k = kernel(d / _h) / _h;
                 if (k < 1e-5) continue;
-                double xj = x[j];
+                final double xj = x[j];
                 sum += k * xj;
                 kTot += k;
             }
@@ -2532,76 +2535,76 @@ public class Lofs2 {
         return residuals;
     }
 
-    private double h(double[] xCol) {
+    private double h(final double[] xCol) {
 //        % optimal bandwidth suggested by Bowman and Azzalini (1997) p.31 (rks code Matlab)
 //        h *= median(abs(x-median(x)))/0.6745*(4/3/r.h)^0.2, geometric mean across variables.
 
-        double[] g = new double[xCol.length];
-        double median = median(xCol);
+        final double[] g = new double[xCol.length];
+        final double median = median(xCol);
         for (int j = 0; j < xCol.length; j++) g[j] = abs(xCol[j] - median);
         return median(g) / 0.6745 * pow((4.0 / 3.0) / xCol.length, 0.2);
 //        return median(g) * pow((4.0 / 3.0) / xCol.length, 0.2);
 //        return sd(xCol) * pow((4.0 / 3.0) / xCol.length, 0.2);
     }
 
-    public double kernel(double z) {
+    public double kernel(final double z) {
         return kernel1(z);
     }
 
     private final double SQRT = sqrt(2. * PI);
 
     // Gaussian
-    public double kernel1(double z) {
-        return exp(-(z * z) / 2.) / SQRT; //(sqrt(2. * PI));
+    public double kernel1(final double z) {
+        return exp(-(z * z) / 2.) / this.SQRT; //(sqrt(2. * PI));
     }
 
     // Uniform
-    public double kernel2(double z) {
+    public double kernel2(final double z) {
         if (abs(z) > 1) return 0;
         else return .5;
     }
 
     // Triangular
-    public double kernel3(double z) {
+    public double kernel3(final double z) {
         if (abs(z) > 1) return 0;
         else return 1 - abs(z);
     }
 
     // Epanechnikov
-    public double kernel4(double z) {
+    public double kernel4(final double z) {
         if (abs(z) > 1) return 0;
         else return (3. / 4.) * (1. - z * z);
     }
 
     // Quartic
-    public double kernel5(double z) {
+    public double kernel5(final double z) {
         if (abs(z) > 1) return 0;
         else return 15. / 16. * pow(1. - z * z, 2.);
     }
 
     // Triweight
-    public double kernel6(double z) {
+    public double kernel6(final double z) {
         if (abs(z) > 1) return 0;
         else return 35. / 32. * pow(1. - z * z, 3.);
     }
 
     // Tricube
-    public double kernel7(double z) {
+    public double kernel7(final double z) {
         if (abs(z) > 1) return 0;
         else return 70. / 81. * pow(1. - z * z * z, 3.);
     }
 
     // Cosine
-    public double kernel8(double z) {
+    public double kernel8(final double z) {
         if (abs(z) > 1) return 0;
         else return (PI / 4.) * cos((PI / 2.) * z);
     }
 
-    private double distance(double[][] yCols, int i, int j) {
+    private double distance(final double[][] yCols, final int i, final int j) {
         double sum = 0.0;
 
         for (int m = 0; m < yCols.length; m++) {
-            double d = yCols[m][i] - yCols[m][j];
+            final double d = yCols[m][i] - yCols[m][j];
             sum += d * d;
         }
 
@@ -2609,57 +2612,57 @@ public class Lofs2 {
     }
 
 
-    private double resolveOneEdgeMaxR3(double[] x, double[] y) {
+    private double resolveOneEdgeMaxR3(final double[] x, final double[] y) {
         TetradLogger.getInstance().log("info", "\nEDGE " + x + " --- " + y);
 
-        OLSMultipleLinearRegression regression = new OLSMultipleLinearRegression();
-        double[][] _x = new double[1][];
+        final OLSMultipleLinearRegression regression = new OLSMultipleLinearRegression();
+        final double[][] _x = new double[1][];
         _x[0] = x;
-        double[][] _y = new double[1][];
+        final double[][] _y = new double[1][];
         _y[0] = y;
 
         regression.newSampleData(x, transpose(_y));
-        double[] rXY = regression.estimateResiduals();
+        final double[] rXY = regression.estimateResiduals();
 
         regression.newSampleData(y, transpose(_x));
-        double[] rYX = regression.estimateResiduals();
+        final double[] rYX = regression.estimateResiduals();
 
-        double xPlus = new AndersonDarlingTest(rXY).getASquared();
-        double xMinus = new AndersonDarlingTest(x).getASquared();
-        double yPlus = new AndersonDarlingTest(rYX).getASquared();
-        double yMinus = new AndersonDarlingTest(y).getASquared();
+        final double xPlus = new AndersonDarlingTest(rXY).getASquared();
+        final double xMinus = new AndersonDarlingTest(x).getASquared();
+        final double yPlus = new AndersonDarlingTest(rYX).getASquared();
+        final double yMinus = new AndersonDarlingTest(y).getASquared();
 
-        double deltaX = xPlus - xMinus;
-        double deltaY = yPlus - yMinus;
+        final double deltaX = xPlus - xMinus;
+        final double deltaY = yPlus - yMinus;
 
         return deltaX - deltaY;
     }
 
-    private double resolveOneEdgeMaxR3b(double[] x, double[] y) {
+    private double resolveOneEdgeMaxR3b(final double[] x, final double[] y) {
         TetradLogger.getInstance().log("info", "\nEDGE " + x + " --- " + y);
 
-        int N = x.length;
+        final int N = x.length;
 
-        double[][] yCols = new double[1][N];
+        final double[][] yCols = new double[1][N];
         yCols[0] = y;
 
-        double[][] xCols = new double[1][N];
+        final double[][] xCols = new double[1][N];
         xCols[0] = x;
 
-        double[][] empty = new double[0][N];
+        final double[][] empty = new double[0][N];
 
-        double[] rX = conditionalResiduals(x, empty);
-        double[] rY = conditionalResiduals(y, empty);
-        double[] rXY = conditionalResiduals(x, yCols);
-        double[] rYX = conditionalResiduals(y, xCols);
+        final double[] rX = conditionalResiduals(x, empty);
+        final double[] rY = conditionalResiduals(y, empty);
+        final double[] rXY = conditionalResiduals(x, yCols);
+        final double[] rYX = conditionalResiduals(y, xCols);
 
-        double xPlus = new AndersonDarlingTest(rXY).getASquared();
-        double xMinus = new AndersonDarlingTest(rX).getASquared();
-        double yPlus = new AndersonDarlingTest(rYX).getASquared();
-        double yMinus = new AndersonDarlingTest(rY).getASquared();
+        final double xPlus = new AndersonDarlingTest(rXY).getASquared();
+        final double xMinus = new AndersonDarlingTest(rX).getASquared();
+        final double yPlus = new AndersonDarlingTest(rYX).getASquared();
+        final double yMinus = new AndersonDarlingTest(rY).getASquared();
 
-        double deltaX = xPlus - xMinus;
-        double deltaY = yPlus - yMinus;
+        final double deltaX = xPlus - xMinus;
+        final double deltaY = yPlus - yMinus;
 
         return deltaX - deltaY;
     }

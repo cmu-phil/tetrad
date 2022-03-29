@@ -32,9 +32,9 @@ public class BCCausalInferenceTest {
      */
     @Test
     public void testProbConstraint() throws IOException {
-        Path casFile = Paths.get(getClass().getResource("/cooper.data/small_data.cas").getFile());
-        int[] nodeDimension = readInNodeDimension(casFile);
-        int[][] dataset = readInDataset(casFile);
+        final Path casFile = Paths.get(getClass().getResource("/cooper.data/small_data.cas").getFile());
+        final int[] nodeDimension = readInNodeDimension(casFile);
+        final int[][] dataset = readInDataset(casFile);
 
         float expected = 0.7650975f;
         float result = (float) (new BCCausalInference(nodeDimension, dataset))
@@ -52,20 +52,20 @@ public class BCCausalInferenceTest {
         Assert.assertEquals(expected, result, 0);
     }
 
-    private static int[][] readInDataset(Path casFile) throws IOException {
-        try (BufferedReader reader = Files.newBufferedReader(casFile)) {
-            int numOfNodes = Integer.parseInt(reader.readLine().trim());
+    private static int[][] readInDataset(final Path casFile) throws IOException {
+        try (final BufferedReader reader = Files.newBufferedReader(casFile)) {
+            final int numOfNodes = Integer.parseInt(reader.readLine().trim());
 
             // skip node dimesion
             reader.readLine();
 
-            int numOfCases = Integer.parseInt(reader.readLine().trim());
-            int[][] dataset = new int[numOfCases + 1][numOfNodes + 2];
-            Pattern spaceDelim = Pattern.compile("\\s+");
+            final int numOfCases = Integer.parseInt(reader.readLine().trim());
+            final int[][] dataset = new int[numOfCases + 1][numOfNodes + 2];
+            final Pattern spaceDelim = Pattern.compile("\\s+");
             for (int i = 1; i <= numOfCases; i++) {
-                String[] data = spaceDelim.split(reader.readLine().trim());
+                final String[] data = spaceDelim.split(reader.readLine().trim());
                 int j = 0;
-                for (String d : data) {
+                for (final String d : data) {
                     dataset[i][++j] = Integer.parseInt(d);
                 }
             }
@@ -74,12 +74,12 @@ public class BCCausalInferenceTest {
         }
     }
 
-    private static int[] readInNodeDimension(Path casFile) throws IOException {
-        try (BufferedReader reader = Files.newBufferedReader(casFile)) {
-            int numOfNodes = Integer.parseInt(reader.readLine().trim());
-            String[] data = reader.readLine().trim().split("\\s+");
+    private static int[] readInNodeDimension(final Path casFile) throws IOException {
+        try (final BufferedReader reader = Files.newBufferedReader(casFile)) {
+            final int numOfNodes = Integer.parseInt(reader.readLine().trim());
+            final String[] data = reader.readLine().trim().split("\\s+");
 
-            int[] nodeDimension = new int[numOfNodes + 2];
+            final int[] nodeDimension = new int[numOfNodes + 2];
             for (int i = 0; i < data.length; i++) {
                 nodeDimension[i + 1] = Integer.parseInt(data[i].trim());
             }

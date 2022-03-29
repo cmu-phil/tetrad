@@ -51,7 +51,7 @@ public final class DiscreteVariableType implements TetradSerializable {
      * Protected constructor for the types; this allows for extension in case
      * anyone wants to add formula types.
      */
-    private DiscreteVariableType(String name) {
+    private DiscreteVariableType(final String name) {
         this.name = name;
     }
 
@@ -66,7 +66,7 @@ public final class DiscreteVariableType implements TetradSerializable {
      * Prints out the name of the type.
      */
     public final String toString() {
-        return name;
+        return this.name;
     }
 
     // Declarations required for serialization.
@@ -75,7 +75,7 @@ public final class DiscreteVariableType implements TetradSerializable {
     private static final DiscreteVariableType[] TYPES = {NOMINAL, ORDINAL};
 
     final Object readResolve() throws ObjectStreamException {
-        return TYPES[ordinal]; // Canonicalize.
+        return TYPES[this.ordinal]; // Canonicalize.
     }
 }
 

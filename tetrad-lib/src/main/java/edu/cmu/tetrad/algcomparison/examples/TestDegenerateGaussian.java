@@ -41,8 +41,8 @@ import edu.cmu.tetrad.util.Parameters;
  * @author bandrews
  */
 public class TestDegenerateGaussian {
-    public static void main(String... args) {
-        Parameters parameters = new Parameters();
+    public static void main(final String... args) {
+        final Parameters parameters = new Parameters();
         parameters.set("numRuns", 3);
         parameters.set("numMeasures", 100);
         parameters.set("avgDegree", 2, 4);
@@ -70,7 +70,7 @@ public class TestDegenerateGaussian {
 
         parameters.set("verbose", false);
 
-        Statistics statistics = new Statistics();
+        final Statistics statistics = new Statistics();
 
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
@@ -79,19 +79,19 @@ public class TestDegenerateGaussian {
         statistics.add(new ElapsedTime());
 
 
-        Algorithms algorithms = new Algorithms();
+        final Algorithms algorithms = new Algorithms();
         algorithms.add(new Fges(new ConditionalGaussianBicScore()));
         algorithms.add(new Fges(new DegenerateGaussianBicScore()));
         algorithms.add(new PcStable(new DegenerateGaussianLRT()));
 //        algorithms.add(new CpcStable(new MultinomialLogisticRegressionWald(), new Mgm()));
 //        algorithms.add(new Fges(new BdeuScore()));
 
-        Simulations simulations = new Simulations();
+        final Simulations simulations = new Simulations();
         simulations.add(new ConditionalGaussianSimulation(new RandomForward()));
         simulations.add(new LeeHastieSimulation(new RandomForward()));
 //        simulations.add(new BayesNetSimulation(new RandomForward()));
 
-        Comparison comparison = new Comparison();
+        final Comparison comparison = new Comparison();
 
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);

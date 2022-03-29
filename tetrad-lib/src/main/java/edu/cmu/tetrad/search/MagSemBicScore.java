@@ -84,7 +84,7 @@ public class MagSemBicScore implements Score {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public MagSemBicScore(ICovarianceMatrix covariances) {
+    public MagSemBicScore(final ICovarianceMatrix covariances) {
         if (covariances == null) {
             throw new NullPointerException();
         }
@@ -98,7 +98,7 @@ public class MagSemBicScore implements Score {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public MagSemBicScore(DataSet dataSet) {
+    public MagSemBicScore(final DataSet dataSet) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
@@ -108,8 +108,8 @@ public class MagSemBicScore implements Score {
 
         if (!dataSet.existsMissingValue()) {
             setCovariances(new CovarianceMatrix(dataSet, false));
-            this.variables = covariances.getVariables();
-            this.sampleSize = covariances.getSampleSize();
+            this.variables = this.covariances.getVariables();
+            this.sampleSize = this.covariances.getSampleSize();
             this.indexMap = indexMap(this.variables);
             this.calculateRowSubsets = false;
             return;
@@ -121,59 +121,59 @@ public class MagSemBicScore implements Score {
         this.calculateRowSubsets = true;
     }
 
-    public static double getVarRy(int i, int[] parents, Matrix data, ICovarianceMatrix covariances, boolean calculateRowSubsets) {
+    public static double getVarRy(final int i, final int[] parents, final Matrix data, final ICovarianceMatrix covariances, final boolean calculateRowSubsets) {
         try {
-            int[] all = concat(i, parents);
-            Matrix cov = getCov(getRows(i, parents, data, calculateRowSubsets), all, all, data, covariances);
-            int[] pp = indexedParents(parents);
-            Matrix covxx = cov.getSelection(pp, pp);
-            Matrix covxy = cov.getSelection(pp, new int[]{0});
-            Matrix b = (covxx.inverse().times(covxy));
-            Matrix bStar = bStar(b);
+            final int[] all = concat(i, parents);
+            final Matrix cov = getCov(getRows(i, parents, data, calculateRowSubsets), all, all, data, covariances);
+            final int[] pp = indexedParents(parents);
+            final Matrix covxx = cov.getSelection(pp, pp);
+            final Matrix covxy = cov.getSelection(pp, new int[]{0});
+            final Matrix b = (covxx.inverse().times(covxy));
+            final Matrix bStar = bStar(b);
             return (bStar.transpose().times(cov).times(bStar).get(0, 0));
-        } catch (SingularMatrixException e) {
-            List<Node> variables = covariances.getVariables();
-            List<Node> p = new ArrayList<>();
-            for (int _p : parents) p.add(variables.get(_p));
+        } catch (final SingularMatrixException e) {
+            final List<Node> variables = covariances.getVariables();
+            final List<Node> p = new ArrayList<>();
+            for (final int _p : parents) p.add(variables.get(_p));
             System.out.println("Singularity " + variables.get(i) + " | " + p);
             return NEGATIVE_INFINITY;
         }
     }
 
     @NotNull
-    public static Matrix bStar(Matrix b) {
-        Matrix byx = new Matrix(b.rows() + 1, 1);
+    public static Matrix bStar(final Matrix b) {
+        final Matrix byx = new Matrix(b.rows() + 1, 1);
         byx.set(0, 0, 1);
         for (int j = 0; j < b.rows(); j++) byx.set(j + 1, 0, -b.get(j, 0));
         return byx;
     }
 
-    private static int[] indexedParents(int[] parents) {
-        int[] pp = new int[parents.length];
+    private static int[] indexedParents(final int[] parents) {
+        final int[] pp = new int[parents.length];
         for (int j = 0; j < pp.length; j++) pp[j] = j + 1;
         return pp;
     }
 
-    private static int[] concat(int i, int[] parents) {
-        int[] all = new int[parents.length + 1];
+    private static int[] concat(final int i, final int[] parents) {
+        final int[] all = new int[parents.length + 1];
         all[0] = i;
         System.arraycopy(parents, 0, all, 1, parents.length);
         return all;
     }
 
-    private static Matrix getCov(List<Integer> rows, int[] _rows, int[] cols, Matrix data, ICovarianceMatrix covarianceMatrix) {
+    private static Matrix getCov(final List<Integer> rows, final int[] _rows, final int[] cols, final Matrix data, final ICovarianceMatrix covarianceMatrix) {
         if (rows == null) {
             return covarianceMatrix.getSelection(_rows, cols);
         }
 
-        Matrix cov = new Matrix(_rows.length, cols.length);
+        final Matrix cov = new Matrix(_rows.length, cols.length);
 
         for (int i = 0; i < _rows.length; i++) {
             for (int j = 0; j < cols.length; j++) {
                 double mui = 0.0;
                 double muj = 0.0;
 
-                for (int k : rows) {
+                for (final int k : rows) {
                     mui += data.get(k, _rows[i]);
                     muj += data.get(k, cols[j]);
                 }
@@ -183,11 +183,11 @@ public class MagSemBicScore implements Score {
 
                 double _cov = 0.0;
 
-                for (int k : rows) {
+                for (final int k : rows) {
                     _cov += (data.get(k, _rows[i]) - mui) * (data.get(k, cols[j]) - muj);
                 }
 
-                double mean = _cov / (rows.size());
+                final double mean = _cov / (rows.size());
                 cov.set(i, j, mean);
             }
         }
@@ -195,18 +195,18 @@ public class MagSemBicScore implements Score {
         return cov;
     }
 
-    private static List<Integer> getRows(int i, int[] parents, Matrix data, boolean calculateRowSubsets) {
+    private static List<Integer> getRows(final int i, final int[] parents, final Matrix data, final boolean calculateRowSubsets) {
         if (!calculateRowSubsets) {
             return null;
         }
 
-        List<Integer> rows = new ArrayList<>();
+        final List<Integer> rows = new ArrayList<>();
 
         K:
         for (int k = 0; k < data.rows(); k++) {
             if (Double.isNaN(data.get(k, i))) continue;
 
-            for (int p : parents) {
+            for (final int p : parents) {
                 if (Double.isNaN(data.get(k, p))) continue K;
             }
 
@@ -217,59 +217,59 @@ public class MagSemBicScore implements Score {
     }
 
     @Override
-    public double localScoreDiff(int x, int y, int[] z) {
-        if (ruleType == RuleType.NANDY) {
+    public double localScoreDiff(final int x, final int y, final int[] z) {
+        if (this.ruleType == RuleType.NANDY) {
             return nandyBic(x, y, z);
         } else {
             return localScore(y, append(z, x)) - localScore(y, z);
         }
     }
 
-    public double nandyBic(int x, int y, int[] z) {
-        double sp1 = getStructurePrior(z.length + 1);
-        double sp2 = getStructurePrior(z.length);
+    public double nandyBic(final int x, final int y, final int[] z) {
+        final double sp1 = getStructurePrior(z.length + 1);
+        final double sp2 = getStructurePrior(z.length);
 
-        Node _x = variables.get(x);
-        Node _y = variables.get(y);
-        List<Node> _z = getVariableList(z);
+        final Node _x = this.variables.get(x);
+        final Node _y = this.variables.get(y);
+        final List<Node> _z = getVariableList(z);
 
-        List<Integer> rows = getRows(x, z);
+        final List<Integer> rows = getRows(x, z);
 
         if (rows != null) {
             rows.retainAll(Objects.requireNonNull(getRows(y, z)));
         }
 
-        double r = partialCorrelation(_x, _y, _z, rows);
+        final double r = partialCorrelation(_x, _y, _z, rows);
 
-        double c = getPenaltyDiscount();
+        final double c = getPenaltyDiscount();
 
-        return -sampleSize * log(1.0 - r * r) - c * log(sampleSize)
+        return -this.sampleSize * log(1.0 - r * r) - c * log(this.sampleSize)
                 - 2.0 * (sp1 - sp2);
     }
 
     @Override
-    public double localScoreDiff(int x, int y) {
+    public double localScoreDiff(final int x, final int y) {
         return localScoreDiff(x, y, new int[0]);
     }
 
-    public double localScore(int i, int... parents) {
+    public double localScore(final int i, final int... parents) {
         final int k = parents.length;
 
         // Only do this once.
-        double n = sampleSize;
+        final double n = this.sampleSize;
 
-        double varey;
+        final double varey;
 
-        varey = getVarRy(i, parents, data, covariances, calculateRowSubsets);
+        varey = getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
 
-        double c = getPenaltyDiscount();
+        final double c = getPenaltyDiscount();
 
-        if (ruleType == RuleType.CHICKERING || ruleType == RuleType.NANDY) {
+        if (this.ruleType == RuleType.CHICKERING || this.ruleType == RuleType.NANDY) {
 
             // Standard BIC, with penalty discount and structure prior.
             return -c * k * log(n) - n * log(varey);// - 2 * getStructurePrior(k);
         } else {
-            throw new IllegalStateException("That rule type is not implemented: " + ruleType);
+            throw new IllegalStateException("That rule type is not implemented: " + this.ruleType);
         }
     }
 
@@ -277,74 +277,74 @@ public class MagSemBicScore implements Score {
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
-    public double localScore(int i, int parent) {
+    public double localScore(final int i, final int parent) {
         return localScore(i, new int[]{parent});
     }
 
     /**
      * Specialized scoring method for no parents. Used to speed up the effect edges search.
      */
-    public double localScore(int i) {
+    public double localScore(final int i) {
         return localScore(i, new int[0]);
     }
 
     public double getPenaltyDiscount() {
-        return penaltyDiscount;
+        return this.penaltyDiscount;
     }
 
     public double getStructurePrior() {
-        return structurePrior;
+        return this.structurePrior;
     }
 
     public ICovarianceMatrix getCovariances() {
-        return covariances;
+        return this.covariances;
     }
 
     public int getSampleSize() {
-        return sampleSize;
+        return this.sampleSize;
     }
 
     @Override
-    public boolean isEffectEdge(double bump) {
+    public boolean isEffectEdge(final double bump) {
         return bump > 0;
     }
 
     public DataModel getDataModel() {
-        return dataModel;
+        return this.dataModel;
     }
 
-    public void setPenaltyDiscount(double penaltyDiscount) {
+    public void setPenaltyDiscount(final double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
     }
 
-    public void setStructurePrior(double structurePrior) {
+    public void setStructurePrior(final double structurePrior) {
         this.structurePrior = structurePrior;
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 
     @Override
     public List<Node> getVariables() {
-        return new ArrayList<>(variables);
+        return new ArrayList<>(this.variables);
     }
 
-    public void setVariables(List<Node> variables) {
-        if (covariances != null) {
-            covariances.setVariables(variables);
+    public void setVariables(final List<Node> variables) {
+        if (this.covariances != null) {
+            this.covariances.setVariables(variables);
         }
 
         this.variables = variables;
     }
 
     @Override
-    public Node getVariable(String targetName) {
-        for (Node node : variables) {
+    public Node getVariable(final String targetName) {
+        for (final Node node : this.variables) {
             if (node.getName().equals(targetName)) {
                 return node;
             }
@@ -355,30 +355,30 @@ public class MagSemBicScore implements Score {
 
     @Override
     public int getMaxDegree() {
-        return (int) Math.ceil(log(sampleSize));
+        return (int) Math.ceil(log(this.sampleSize));
     }
 
     @Override
-    public boolean determines(List<Node> z, Node y) {
-        int i = variables.indexOf(y);
+    public boolean determines(final List<Node> z, final Node y) {
+        final int i = this.variables.indexOf(y);
 
-        int[] k = new int[z.size()];
+        final int[] k = new int[z.size()];
 
         for (int t = 0; t < z.size(); t++) {
-            k[t] = variables.indexOf(z.get(t));
+            k[t] = this.variables.indexOf(z.get(t));
         }
 
-        double v = localScore(i, k);
+        final double v = localScore(i, k);
 
         return Double.isNaN(v);
     }
 
 //    @Override
     public DataModel getData() {
-        return dataModel;
+        return this.dataModel;
     }
 
-    private void setCovariances(ICovarianceMatrix covariances) {
+    private void setCovariances(final ICovarianceMatrix covariances) {
         this.covariances = covariances;
         this.matrix = this.covariances.getMatrix();
 
@@ -390,31 +390,31 @@ public class MagSemBicScore implements Score {
 //        System.out.println("n = " + n + " ess = " + ess);
     }
 
-    private static int[] append(int[] z, int x) {
-        int[] _z = Arrays.copyOf(z, z.length + 1);
+    private static int[] append(final int[] z, final int x) {
+        final int[] _z = Arrays.copyOf(z, z.length + 1);
         _z[z.length] = x;
         return _z;
     }
 
-    private double getStructurePrior(int parents) {
+    private double getStructurePrior(final int parents) {
         if (abs(getStructurePrior()) <= 0) {
             return 0;
         } else {
-            double p = (getStructurePrior()) / (variables.size());
-            return -((parents) * Math.log(p) + (variables.size() - (parents)) * Math.log(1.0 - p));
+            final double p = (getStructurePrior()) / (this.variables.size());
+            return -((parents) * Math.log(p) + (this.variables.size() - (parents)) * Math.log(1.0 - p));
         }
     }
 
-    private List<Node> getVariableList(int[] indices) {
-        List<Node> variables = new ArrayList<>();
-        for (int i : indices) {
+    private List<Node> getVariableList(final int[] indices) {
+        final List<Node> variables = new ArrayList<>();
+        for (final int i : indices) {
             variables.add(this.variables.get(i));
         }
         return variables;
     }
 
-    private Map<Node, Integer> indexMap(List<Node> variables) {
-        Map<Node, Integer> indexMap = new HashMap<>();
+    private Map<Node, Integer> indexMap(final List<Node> variables) {
+        final Map<Node, Integer> indexMap = new HashMap<>();
 
         for (int i = 0; variables.size() > i; i++) {
             indexMap.put(variables.get(i), i);
@@ -423,20 +423,20 @@ public class MagSemBicScore implements Score {
         return indexMap;
     }
 
-    private List<Integer> getRows(int i, int[] parents) {
-        if (dataModel == null) {
+    private List<Integer> getRows(final int i, final int[] parents) {
+        if (this.dataModel == null) {
             return null;
         }
 
-        List<Integer> rows = new ArrayList<>();
+        final List<Integer> rows = new ArrayList<>();
 
-        DataSet dataSet = (DataSet) dataModel;
+        final DataSet dataSet = (DataSet) this.dataModel;
 
         K:
         for (int k = 0; k < dataSet.getNumRows(); k++) {
             if (Double.isNaN(dataSet.getDouble(k, i))) continue;
 
-            for (int p : parents) {
+            for (final int p : parents) {
                 if (Double.isNaN(dataSet.getDouble(k, p))) continue K;
             }
 
@@ -446,37 +446,37 @@ public class MagSemBicScore implements Score {
         return rows;
     }
 
-    private double partialCorrelation(Node x, Node y, List<Node> z, List<Integer> rows) {
+    private double partialCorrelation(final Node x, final Node y, final List<Node> z, final List<Integer> rows) {
         try {
             return StatUtils.partialCorrelation(convertCovToCorr(getCov(rows, indices(x, y, z))));
-        } catch (Exception e) {
+        } catch (final Exception e) {
             return NaN;
         }
     }
 
-    private int[] indices(Node x, Node y, List<Node> z) {
-        int[] indices = new int[z.size() + 2];
-        indices[0] = indexMap.get(x);
-        indices[1] = indexMap.get(y);
-        for (int i = 0; i < z.size(); i++) indices[i + 2] = indexMap.get(z.get(i));
+    private int[] indices(final Node x, final Node y, final List<Node> z) {
+        final int[] indices = new int[z.size() + 2];
+        indices[0] = this.indexMap.get(x);
+        indices[1] = this.indexMap.get(y);
+        for (int i = 0; i < z.size(); i++) indices[i + 2] = this.indexMap.get(z.get(i));
         return indices;
     }
 
-    private Matrix getCov(List<Integer> rows, int[] cols) {
-        if (dataModel == null) {
-            return matrix.getSelection(cols, cols);
+    private Matrix getCov(final List<Integer> rows, final int[] cols) {
+        if (this.dataModel == null) {
+            return this.matrix.getSelection(cols, cols);
         }
 
-        DataSet dataSet = (DataSet) dataModel;
+        final DataSet dataSet = (DataSet) this.dataModel;
 
-        Matrix cov = new Matrix(cols.length, cols.length);
+        final Matrix cov = new Matrix(cols.length, cols.length);
 
         for (int i = 0; i < cols.length; i++) {
             for (int j = i + 1; j < cols.length; j++) {
                 double mui = 0.0;
                 double muj = 0.0;
 
-                for (int k : rows) {
+                for (final int k : rows) {
                     mui += dataSet.getDouble(k, cols[i]);
                     muj += dataSet.getDouble(k, cols[j]);
                 }
@@ -486,11 +486,11 @@ public class MagSemBicScore implements Score {
 
                 double _cov = 0.0;
 
-                for (int k : rows) {
+                for (final int k : rows) {
                     _cov += (dataSet.getDouble(k, cols[i]) - mui) * (dataSet.getDouble(k, cols[j]) - muj);
                 }
 
-                double mean = _cov / (rows.size());
+                final double mean = _cov / (rows.size());
                 cov.set(i, j, mean);
                 cov.set(j, i, mean);
             }
@@ -499,7 +499,7 @@ public class MagSemBicScore implements Score {
         for (int i = 0; i < cols.length; i++) {
             double mui = 0.0;
 
-            for (int k : rows) {
+            for (final int k : rows) {
                 mui += dataSet.getDouble(k, cols[i]);
             }
 
@@ -507,18 +507,18 @@ public class MagSemBicScore implements Score {
 
             double _cov = 0.0;
 
-            for (int k : rows) {
+            for (final int k : rows) {
                 _cov += (dataSet.getDouble(k, cols[i]) - mui) * (dataSet.getDouble(k, cols[i]) - mui);
             }
 
-            double mean = _cov / (rows.size());
+            final double mean = _cov / (rows.size());
             cov.set(i, i, mean);
         }
 
         return cov;
     }
 
-    public void setRuleType(RuleType ruleType) {
+    public void setRuleType(final RuleType ruleType) {
         this.ruleType = ruleType;
     }
 

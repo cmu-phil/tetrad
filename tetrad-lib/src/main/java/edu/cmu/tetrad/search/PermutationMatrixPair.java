@@ -32,32 +32,32 @@ public class PermutationMatrixPair {
     private DataSet matrixBhat;
     private final List<Integer> permutation;
 
-    public PermutationMatrixPair(List<Integer> permutation, Matrix matrixW) {
+    public PermutationMatrixPair(final List<Integer> permutation, final Matrix matrixW) {
         this.permutation = permutation;
         this.matrixW = matrixW;
     }
 
     public Matrix getMatrixW() {
-        return matrixW;
+        return this.matrixW;
     }
 
     public DataSet getMatrixBhat() {
-        return matrixBhat;
+        return this.matrixBhat;
     }
 
-    public void setMatrixBhat(DataSet matrixBhat) {
+    public void setMatrixBhat(final DataSet matrixBhat) {
         this.matrixBhat = matrixBhat;
     }
 
     public List<Integer> getPermutation() {
-        return permutation;
+        return this.permutation;
     }
 
     public String toString() {
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
 
-        buf.append("Permutation: " + permutation);
-        buf.append("matrix W : " + matrixW);
+        buf.append("Permutation: " + this.permutation);
+        buf.append("matrix W : " + this.matrixW);
 
         return buf.toString();
     }

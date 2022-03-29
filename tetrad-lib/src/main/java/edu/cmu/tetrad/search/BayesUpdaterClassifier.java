@@ -128,8 +128,8 @@ public final class BayesUpdaterClassifier
      * The constructor sets the values of the private member variables.
      */
 
-    public BayesUpdaterClassifier(BayesIm bayesIm,
-                                  DataSet testData) {
+    public BayesUpdaterClassifier(final BayesIm bayesIm,
+                                  final DataSet testData) {
         if (bayesIm == null) {
             throw new IllegalArgumentException("BayesIm must not be null.");
         }
@@ -154,13 +154,13 @@ public final class BayesUpdaterClassifier
 
     //==========================PUBLIC METHODS========================//
 
-    public void setTarget(String target, int targetCategory) {
+    public void setTarget(final String target, final int targetCategory) {
 
         //Find the target variable using its name.
         DiscreteVariable targetVariable = null;
 
         for (int j = 0; j < getBayesImVars().size(); j++) {
-            DiscreteVariable dv = (DiscreteVariable) getBayesImVars().get(j);
+            final DiscreteVariable dv = (DiscreteVariable) getBayesImVars().get(j);
 
             if (dv.getName().equals(target)) {
                 targetVariable = dv;
@@ -181,27 +181,27 @@ public final class BayesUpdaterClassifier
      * values of the target variable as described above.
      */
     public int[] classify() {
-        if (targetVariable == null) {
+        if (this.targetVariable == null) {
             throw new NullPointerException("Target not set.");
         }
 
         //Create an updater for the instantiated Bayes net.
-        BayesUpdater bayesUpdater = new RowSummingExactUpdater(getBayesIm());
+        final BayesUpdater bayesUpdater = new RowSummingExactUpdater(getBayesIm());
 
         //Get the raw data from the dataset to be classified, the number
         //of variables and the number of cases.
-        int nvars = getBayesImVars().size();
-        int ncases = testData.getNumRows();
+        final int nvars = getBayesImVars().size();
+        final int ncases = this.testData.getNumRows();
 
-        int[] varIndices = new int[nvars];
-        List<Node> dataVars = testData.getVariables();
+        final int[] varIndices = new int[nvars];
+        final List<Node> dataVars = this.testData.getVariables();
 
         for (int i = 0; i < nvars; i++) {
-            DiscreteVariable variable =
+            final DiscreteVariable variable =
                     (DiscreteVariable) getBayesImVars().get(i);
 
 
-            if (variable == targetVariable) {
+            if (variable == this.targetVariable) {
                 continue;
             }
 
@@ -215,13 +215,13 @@ public final class BayesUpdaterClassifier
             }
         }
 
-        DataSet selectedData = testData.subsetColumns(varIndices);
+        final DataSet selectedData = this.testData.subsetColumns(varIndices);
 
         this.numCases = ncases;
 
-        int[] estimatedValues = new int[ncases];
-        int numTargetCategories = targetVariable.getNumCategories();
-        double[][] probOfClassifiedValues =
+        final int[] estimatedValues = new int[ncases];
+        final int numTargetCategories = this.targetVariable.getNumCategories();
+        final double[][] probOfClassifiedValues =
                 new double[numTargetCategories][ncases];
         Arrays.fill(estimatedValues, -1);
 
@@ -234,10 +234,10 @@ public final class BayesUpdaterClassifier
 
             //Create an Evidence instance for the instantiated Bayes net
             //which will allow that updating.
-            Evidence evidence = Evidence.tautology(getBayesIm());
+            final Evidence evidence = Evidence.tautology(getBayesIm());
 
             //Let the target variable range over all its values.
-            int itarget = evidence.getNodeIndex(targetVariable.getName());
+            final int itarget = evidence.getNodeIndex(this.targetVariable.getName());
             evidence.getProposition().setVariable(itarget, true);
 
             this.missingValueCaseFound = false;
@@ -245,19 +245,19 @@ public final class BayesUpdaterClassifier
             //Restrict all other variables to their observed values in
             //this case.
             for (int j = 0; j < getBayesImVars().size(); j++) {
-                if (j == getBayesImVars().indexOf(targetVariable)) {
+                if (j == getBayesImVars().indexOf(this.targetVariable)) {
                     continue;
                 }
 
-                int observedValue = selectedData.getInt(i, j);
+                final int observedValue = selectedData.getInt(i, j);
 
                 if (observedValue == DiscreteVariable.MISSING_VALUE) {
                     this.missingValueCaseFound = true;
                     continue;
                 }
 
-                String jName = getBayesImVars().get(j).getName();
-                int jIndex = evidence.getNodeIndex(jName);
+                final String jName = getBayesImVars().get(j).getName();
+                final int jIndex = evidence.getNodeIndex(jName);
                 evidence.getProposition().setCategory(jIndex, observedValue);
             }
 
@@ -267,8 +267,8 @@ public final class BayesUpdaterClassifier
             //for each possible value of target compute its probability in
             //the updated Bayes net.  Select the value with the highest
             //probability as the estimated value.
-            Node targetNode = getBayesIm().getNode(targetVariable.getName());
-            int indexTargetBN = getBayesIm().getNodeIndex(targetNode);
+            final Node targetNode = getBayesIm().getNode(this.targetVariable.getName());
+            final int indexTargetBN = getBayesIm().getNodeIndex(targetNode);
 
             //Straw man values--to be replaced.
             int estimatedValue = -1;
@@ -295,7 +295,7 @@ public final class BayesUpdaterClassifier
                 double highestProb = -0.1;
 
                 for (int j = 0; j < numTargetCategories; j++) {
-                    double marginal =
+                    final double marginal =
                             bayesUpdater.getMarginal(indexTargetBN, j);
                     probOfClassifiedValues[j][i] = marginal;
 
@@ -341,23 +341,23 @@ public final class BayesUpdaterClassifier
      * variable is not in the test data.
      */
     public int[][] crossTabulation() {
-        int[] estimatedValues = classify();
+        final int[] estimatedValues = classify();
 
         // Retrieve the column for the test variable from the test data; these
         // will be the observed values.
-        Node variable = testData.getVariable(targetVariable.getName());
-        int varIndex = testData.getVariables().indexOf(variable);
+        final Node variable = this.testData.getVariable(this.targetVariable.getName());
+        final int varIndex = this.testData.getVariables().indexOf(variable);
 
         if (variable == null) {
             return null;
         }
 
-        int ncases = testData.getNumRows();
+        final int ncases = this.testData.getNumRows();
 
         // Create a cross-tabulation table to store the coefs of observed
         // versus estimated occurrences of each value of the target variable.
-        int nvalues = targetVariable.getNumCategories();
-        int[][] crosstabs = new int[nvalues][nvalues];
+        final int nvalues = this.targetVariable.getNumCategories();
+        final int[][] crosstabs = new int[nvalues][nvalues];
         for (int i = 0; i < nvalues; i++) {
             for (int j = 0; j < nvalues; j++) {
                 crosstabs[i][j] = 0;
@@ -370,8 +370,8 @@ public final class BayesUpdaterClassifier
         int ntot = 0;
 
         for (int i = 0; i < ncases; i++) {
-            int estimatedValue = estimatedValues[i];
-            int observedValue = testData.getInt(i, varIndex);
+            final int estimatedValue = estimatedValues[i];
+            final int observedValue = this.testData.getInt(i, varIndex);
 
             if (estimatedValue < 0) {
                 continue;
@@ -398,52 +398,52 @@ public final class BayesUpdaterClassifier
      * classified.
      */
     public double getPercentCorrect() {
-        if (Double.isNaN(percentCorrect)) {
+        if (Double.isNaN(this.percentCorrect)) {
             crossTabulation();
         }
-        return percentCorrect;
+        return this.percentCorrect;
     }
 
     /**
      * @return the DiscreteVariable which is the target variable.
      */
     public DiscreteVariable getTargetVariable() {
-        return targetVariable;
+        return this.targetVariable;
     }
 
     public BayesIm getBayesIm() {
-        return bayesIm;
+        return this.bayesIm;
     }
 
     public DataSet getTestData() {
-        return testData;
+        return this.testData;
     }
 
     public int[] getClassifications() {
-        return classifications;
+        return this.classifications;
     }
 
     public double[][] getMarginals() {
-        return marginals;
+        return this.marginals;
     }
 
     public int getNumCases() {
-        return numCases;
+        return this.numCases;
     }
 
     public int getTotalUsableCases() {
-        return totalUsableCases;
+        return this.totalUsableCases;
     }
 
     public boolean isMissingValueCaseFound() {
-        return missingValueCaseFound;
+        return this.missingValueCaseFound;
     }
 
     public double getBinaryCutoff() {
-        return binaryCutoff;
+        return this.binaryCutoff;
     }
 
-    public void setBinaryCutoff(double binaryCutoff) {
+    public void setBinaryCutoff(final double binaryCutoff) {
         if (binaryCutoff < 0.0 || binaryCutoff > 1.0) {
             throw new IllegalArgumentException();
         }
@@ -452,7 +452,7 @@ public final class BayesUpdaterClassifier
     }
 
     public List<Node> getBayesImVars() {
-        return bayesImVars;
+        return this.bayesImVars;
     }
 
     /**
@@ -468,15 +468,15 @@ public final class BayesUpdaterClassifier
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (bayesIm == null) {
+        if (this.bayesIm == null) {
             throw new NullPointerException();
         }
 
-        if (testData == null) {
+        if (this.testData == null) {
             throw new NullPointerException();
         }
 
@@ -485,7 +485,7 @@ public final class BayesUpdaterClassifier
             throw new NullPointerException();
         }
 
-        if (binaryCutoff < 0.0 || binaryCutoff > 1.0) {
+        if (this.binaryCutoff < 0.0 || this.binaryCutoff > 1.0) {
             throw new IllegalStateException();
         }
     }

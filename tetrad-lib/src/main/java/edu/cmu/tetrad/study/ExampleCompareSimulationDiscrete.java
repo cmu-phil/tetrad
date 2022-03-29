@@ -42,9 +42,9 @@ import edu.cmu.tetrad.util.Parameters;
  * @author jdramsey
  */
 public class ExampleCompareSimulationDiscrete {
-    public static void main(String... args) {
-        Parameters parameters = new Parameters();
-        int sampleSize = 5000;
+    public static void main(final String... args) {
+        final Parameters parameters = new Parameters();
+        final int sampleSize = 5000;
 
         parameters.set("numRuns", 10);
         parameters.set("numMeasures", 10, 20);
@@ -65,7 +65,7 @@ public class ExampleCompareSimulationDiscrete {
 //        parameters.set("penaltyDiscount", 1, 2, 3, 4);
         parameters.set("discretize", true);
 
-        Statistics statistics = new Statistics();
+        final Statistics statistics = new Statistics();
 
         statistics.add(new ParameterColumn("numMeasures"));
         statistics.add(new ParameterColumn("avgDegree"));
@@ -95,7 +95,7 @@ public class ExampleCompareSimulationDiscrete {
 //        statistics.setWeight("AHR", 1.0);
         statistics.setWeight("SHD", 1.0);
 
-        Algorithms algorithms = new Algorithms();
+        final Algorithms algorithms = new Algorithms();
 
         algorithms.add(new PcAll(new ChiSquare()));
         algorithms.add(new PcAll(new GSquare()));
@@ -104,11 +104,11 @@ public class ExampleCompareSimulationDiscrete {
         algorithms.add(new Fges(new DiscreteBicScore()));
         algorithms.add(new Fges(new ConditionalGaussianBicScore()));
 
-        Simulations simulations = new Simulations();
+        final Simulations simulations = new Simulations();
 
         simulations.add(new BayesNetSimulation(new RandomForward()));
 
-        Comparison comparison = new Comparison();
+        final Comparison comparison = new Comparison();
 
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);

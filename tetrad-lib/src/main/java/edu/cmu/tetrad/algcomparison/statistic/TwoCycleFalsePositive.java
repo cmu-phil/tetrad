@@ -26,14 +26,14 @@ public class TwoCycleFalsePositive implements Statistic {
     }
 
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        ArrowConfusion adjConfusion = new ArrowConfusion(trueGraph, estGraph);
+    public double getValue(final Graph trueGraph, final Graph estGraph, final DataModel dataModel) {
+        final ArrowConfusion adjConfusion = new ArrowConfusion(trueGraph, estGraph);
         return (double) adjConfusion.getTwoCycleFp();
 
     }
 
     @Override
-    public double getNormValue(double value) {
+    public double getNormValue(final double value) {
         return 1.0 - Math.tanh(value);
     }
 }

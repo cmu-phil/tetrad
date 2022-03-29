@@ -67,19 +67,19 @@ public final class FactoredBayesStructuralEM {
 
     private final int[] ncategories;
 
-    public FactoredBayesStructuralEM(DataSet dataSet,
-                                     BayesPm bayesPmM0) {
+    public FactoredBayesStructuralEM(final DataSet dataSet,
+                                     final BayesPm bayesPmM0) {
 
         this.dataSet = dataSet;
         this.bayesPmM0 = bayesPmM0;
 
-        List<Node> datasetVars = dataSet.getVariables();
+        final List<Node> datasetVars = dataSet.getVariables();
         this.ncategories = new int[datasetVars.size()];
 
         // Store the number of categories for each variable in an array which will be used
         // to define the Bayes nets searched over in the iterative procedure.
-        for (int i = 0; i < ncategories.length; i++) {
-            ncategories[i] =
+        for (int i = 0; i < this.ncategories.length; i++) {
+            this.ncategories[i] =
                     ((DiscreteVariable) datasetVars.get(i)).getNumCategories();
         }
 
@@ -89,7 +89,7 @@ public final class FactoredBayesStructuralEM {
      * This method allows specification of the tolerance parameter used in Bayes
      * EM estimation.
      */
-    public BayesIm maximization(double tolerance) {
+    public BayesIm maximization(final double tolerance) {
         TetradLogger.getInstance().log("details", "FactoredBayesStructuralEM.maximization()");
         this.tolerance = tolerance;
         return iterate();
@@ -107,31 +107,31 @@ public final class FactoredBayesStructuralEM {
      */
     public BayesIm iterate() {
 
-        double start = System.currentTimeMillis();
+        final double start = System.currentTimeMillis();
 
-        BdeMetricCache bdeMetricCache = new BdeMetricCache(dataSet, bayesPmM0);
+        final BdeMetricCache bdeMetricCache = new BdeMetricCache(this.dataSet, this.bayesPmM0);
 
-        BayesPm bayesPmMnplus1 = bayesPmM0;
+        BayesPm bayesPmMnplus1 = this.bayesPmM0;
 
-        BayesPm bayesPmMn;
-        double oldBestScore = Double.NEGATIVE_INFINITY;
-        int iteration = 0;
+        final BayesPm bayesPmMn;
+        final double oldBestScore = Double.NEGATIVE_INFINITY;
+        final int iteration = 0;
 
         //Loop for n = 0,1,... until convergence or timeout has been exceeded
-        TimedIterate ti = new TimedIterate(bdeMetricCache, bayesPmMnplus1, oldBestScore, iteration, start);
-        Thread tithread = new Thread(ti);
+        final TimedIterate ti = new TimedIterate(bdeMetricCache, bayesPmMnplus1, oldBestScore, iteration, start);
+        final Thread tithread = new Thread(ti);
         tithread.start();
         try {
             tithread.join();
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException e) {
             e.printStackTrace();
         }
 
         bayesPmMnplus1 = ti.bayesPmMnplus1;
         bayesPmMn = bayesPmMnplus1;
 
-        EmBayesEstimator emBayesEst = new EmBayesEstimator(bayesPmMn, dataSet);
-        return emBayesEst.maximization(tolerance);
+        final EmBayesEstimator emBayesEst = new EmBayesEstimator(bayesPmMn, this.dataSet);
+        return emBayesEst.maximization(this.tolerance);
 
     }
 
@@ -140,23 +140,23 @@ public final class FactoredBayesStructuralEM {
         //System.out.println(bayesPmM0.getGraph());
         BdeMetricCache bdeMetricCache;
 
-        BayesPm bayesPmMn = bayesPmM0;
-        EmBayesEstimator emBayesEst = new EmBayesEstimator(bayesPmMn, dataSet);
+        final BayesPm bayesPmMn = this.bayesPmM0;
+        final EmBayesEstimator emBayesEst = new EmBayesEstimator(bayesPmMn, this.dataSet);
         emBayesEst.maximization(0.0001);
 
-        Dag dag0 = new Dag(bayesPmMn.getDag());
+        final Dag dag0 = new Dag(bayesPmMn.getDag());
 
-        Node L1 = dag0.getNode("L1");
-        Node X1 = dag0.getNode("X1");
+        final Node L1 = dag0.getNode("L1");
+        final Node X1 = dag0.getNode("X1");
 
-        Dag dag1 = new Dag(dag0);
+        final Dag dag1 = new Dag(dag0);
         dag1.addDirectedEdge(X1, L1);
 
-        BayesPm bayesPm0 = new BayesPm(dag0);
-        EmBayesEstimator emBayesEst0 = new EmBayesEstimator(bayesPm0, dataSet);
-        BayesIm bayesImMn0 = emBayesEst0.maximization(0.0001);
+        final BayesPm bayesPm0 = new BayesPm(dag0);
+        final EmBayesEstimator emBayesEst0 = new EmBayesEstimator(bayesPm0, this.dataSet);
+        final BayesIm bayesImMn0 = emBayesEst0.maximization(0.0001);
 
-        BayesPm bayesPmTest0 = new BayesPm(dag0);
+        final BayesPm bayesPmTest0 = new BayesPm(dag0);
 
         TetradLogger.getInstance().log("details", "Observed conts for nodes of L1,X1,X2,X3 (no edges) " +
                 "using the MAP parameters based on that same graph");
@@ -167,14 +167,14 @@ public final class FactoredBayesStructuralEM {
         TetradLogger.getInstance().log("details", "Graph of IM:  ");
         TetradLogger.getInstance().log("details", "" + bayesImMn0.getBayesPm().getDag());
 
-        bdeMetricCache = new BdeMetricCache(dataSet, bayesPmTest0);
+        bdeMetricCache = new BdeMetricCache(this.dataSet, bayesPmTest0);
 
-        List<Node> nodes0 = dag0.getNodes();
+        final List<Node> nodes0 = dag0.getNodes();
 
-        for (Node aNodes0 : nodes0) {
-            double[][] counts0 = bdeMetricCache.getObservedCounts(aNodes0,
+        for (final Node aNodes0 : nodes0) {
+            final double[][] counts0 = bdeMetricCache.getObservedCounts(aNodes0,
                     bayesPmTest0, bayesImMn0);
-            for (double[] aCounts0 : counts0) {
+            for (final double[] aCounts0 : counts0) {
                 for (int j = 0; j < counts0[0].length; j++) {
                     System.out.print(" " + aCounts0[j]);
                 }
@@ -183,7 +183,7 @@ public final class FactoredBayesStructuralEM {
             TetradLogger.getInstance().log("details", "\n");
         }
 
-        double score0 =
+        final double score0 =
                 factorScoreMD(dag0, bdeMetricCache, bayesPmTest0, bayesImMn0);
 
         TetradLogger.getInstance().log("details", "Score of L1,X1,X2,X3 (no edges) for itself = " + score0);
@@ -193,7 +193,7 @@ public final class FactoredBayesStructuralEM {
         TetradLogger.getInstance().log("details", "Score of X1-->L1 for L1,X1,X2,X3 (no edges) = " + score0);
 
 
-        BayesPm bayesPmTest1 = new BayesPm(dag1);
+        final BayesPm bayesPmTest1 = new BayesPm(dag1);
 
         TetradLogger.getInstance().log("details", "Observed counts for nodes of X1-->L1 for L1,X1,X2,X3 (no edges)");
 
@@ -203,15 +203,15 @@ public final class FactoredBayesStructuralEM {
         TetradLogger.getInstance().log("details", "Graph of IM:  ");
         TetradLogger.getInstance().log("details", "" + bayesImMn0.getBayesPm().getDag());
 
-        bdeMetricCache = new BdeMetricCache(dataSet, bayesPmTest1);
+        bdeMetricCache = new BdeMetricCache(this.dataSet, bayesPmTest1);
 
-        List<Node> nodes1 = dag0.getNodes();
+        final List<Node> nodes1 = dag0.getNodes();
 
-        for (Node aNodes1 : nodes1) {
+        for (final Node aNodes1 : nodes1) {
 
-            double[][] counts1 = bdeMetricCache.getObservedCounts(aNodes1,
+            final double[][] counts1 = bdeMetricCache.getObservedCounts(aNodes1,
                     bayesPmTest1, bayesImMn0);
-            for (double[] aCounts1 : counts1) {
+            for (final double[] aCounts1 : counts1) {
                 for (int j = 0; j < counts1[0].length; j++) {
                     TetradLogger.getInstance().log("details", " " + aCounts1[j]);
                 }
@@ -220,7 +220,7 @@ public final class FactoredBayesStructuralEM {
             TetradLogger.getInstance().log("details", "\n");
         }
 
-        double score1 =
+        final double score1 =
                 factorScoreMD(dag1, bdeMetricCache, bayesPmTest1, bayesImMn0);
 
         TetradLogger.getInstance().log("details", "Score of X1-->L1 for L1,X1,X2,X3 (no edges) = " + score1);
@@ -234,16 +234,16 @@ public final class FactoredBayesStructuralEM {
      * indicates which variables are latent.
      */
 
-    private static double factorScoreMD(Dag dag, BdeMetricCache bdeMetricCache,
-                                        BayesPm bayesPm, BayesIm bayesIm) {
-        List<Node> nodes = dag.getNodes();
+    private static double factorScoreMD(final Dag dag, final BdeMetricCache bdeMetricCache,
+                                        final BayesPm bayesPm, final BayesIm bayesIm) {
+        final List<Node> nodes = dag.getNodes();
 
         double score = 0.0;   //Fast test 11/29/04
 
-        for (Node node1 : nodes) {
-            List<Node> parents = dag.getParents(node1);
-            Set<Node> parentsSet = new HashSet<>(parents);
-            double fScore = bdeMetricCache.scoreLnGam(node1, parentsSet,
+        for (final Node node1 : nodes) {
+            final List<Node> parents = dag.getParents(node1);
+            final Set<Node> parentsSet = new HashSet<>(parents);
+            final double fScore = bdeMetricCache.scoreLnGam(node1, parentsSet,
                     bayesPm, bayesIm);
 
             TetradLogger.getInstance().log("details", "Score for factor " + node1.getName() + " = " + fScore);
@@ -266,7 +266,7 @@ public final class FactoredBayesStructuralEM {
         int iteration;
         final double start;
 
-        public TimedIterate(BdeMetricCache bdeMetricCache, BayesPm bayesPmMnplus1, double oldBestScore, int iteration, double start) {
+        public TimedIterate(final BdeMetricCache bdeMetricCache, final BayesPm bayesPmMnplus1, final double oldBestScore, final int iteration, final double start) {
             this.bdeMetricCache = bdeMetricCache;
             this.bayesPmMnplus1 = bayesPmMnplus1;
             this.bayesPmMn = null;
@@ -276,51 +276,51 @@ public final class FactoredBayesStructuralEM {
         }
 
         public void run() {
-            while (!bayesPmMnplus1.equals(bayesPmMn)) {
+            while (!this.bayesPmMnplus1.equals(this.bayesPmMn)) {
 
-                iteration++;
+                this.iteration++;
 
-                bayesPmMn = bayesPmMnplus1;
+                this.bayesPmMn = this.bayesPmMnplus1;
                 TetradLogger.getInstance().log("details", "In Factored Bayes Struct EM Iteration number " +
-                        iteration);
+                        this.iteration);
 
                 //Compute the MAP parameters for Mn given o.
                 TetradLogger.getInstance().log("details", "Starting EM Bayes estimator to get MAP parameters of Mn");
-                EmBayesEstimator emBayesEst =
-                        new EmBayesEstimator(bayesPmMn, dataSet);
-                BayesIm bayesImMn = emBayesEst.maximization(tolerance);
+                final EmBayesEstimator emBayesEst =
+                        new EmBayesEstimator(this.bayesPmMn, FactoredBayesStructuralEM.this.dataSet);
+                final BayesIm bayesImMn = emBayesEst.maximization(FactoredBayesStructuralEM.this.tolerance);
                 TetradLogger.getInstance().log("details", "Estimation of MAP parameters of Mn complete. \n\n");
 
                 //Perform search over models...
-                Graph graphMn = bayesPmMn.getDag();
-                Dag dagMn = new Dag(graphMn);
-                List<Graph> models = ModelGenerator.generate(graphMn);
+                final Graph graphMn = this.bayesPmMn.getDag();
+                final Dag dagMn = new Dag(graphMn);
+                final List<Graph> models = ModelGenerator.generate(graphMn);
 
                 double bestScore =
-                        factorScoreMD(dagMn, bdeMetricCache, bayesPmMn, bayesImMn);
+                        factorScoreMD(dagMn, this.bdeMetricCache, this.bayesPmMn, bayesImMn);
 
-                EdgeListGraph edges = new EdgeListGraph(dagMn);
+                final EdgeListGraph edges = new EdgeListGraph(dagMn);
 
                 TetradLogger.getInstance().log("details", "Initial graph Mn = ");
                 TetradLogger.getInstance().log("details", edges.toString());
                 TetradLogger.getInstance().log("details", "Its score = " + bestScore);
 
-                for (Graph model : models) {
-                    Dag dag = new Dag(model);
+                for (final Graph model : models) {
+                    final Dag dag = new Dag(model);
 
-                    BayesPm bayesPmTest = new BayesPm(dag);
+                    final BayesPm bayesPmTest = new BayesPm(dag);
 
                     //Having instantiated the BayesPm, set the number of categories correctly.
-                    for (int i = 0; i < dataSet.getVariables().size(); i++) {
-                        String varName = dataSet.getVariableNames().get(i);
-                        Node node = dag.getNode(varName);
-                        bayesPmTest.setNumCategories(node, ncategories[i]);
+                    for (int i = 0; i < FactoredBayesStructuralEM.this.dataSet.getVariables().size(); i++) {
+                        final String varName = FactoredBayesStructuralEM.this.dataSet.getVariableNames().get(i);
+                        final Node node = dag.getNode(varName);
+                        bayesPmTest.setNumCategories(node, FactoredBayesStructuralEM.this.ncategories[i]);
                     }
 
-                    double score = factorScoreMD(dag, bdeMetricCache, bayesPmTest,
+                    final double score = factorScoreMD(dag, this.bdeMetricCache, bayesPmTest,
                             bayesImMn);
 
-                    EdgeListGraph edgesTest = new EdgeListGraph(dag);
+                    final EdgeListGraph edgesTest = new EdgeListGraph(dag);
                     TetradLogger.getInstance().log("details", "For the model with graph \n" + edgesTest);
                     TetradLogger.getInstance().log("details", "Model Score = " + score);
 
@@ -331,17 +331,17 @@ public final class FactoredBayesStructuralEM {
 
                     //Let M sub n+1 be the model with the highest score amonth those encountered
                     //during the search.
-                    bayesPmMnplus1 = bayesPmTest;
+                    this.bayesPmMnplus1 = bayesPmTest;
                 }
 
-                TetradLogger.getInstance().log("details", "In iteration:  " + iteration);
+                TetradLogger.getInstance().log("details", "In iteration:  " + this.iteration);
                 TetradLogger.getInstance().log("details", "bestScore, oldBestScore " + bestScore + " " +
-                        oldBestScore);
-                EdgeListGraph edgesBest =
-                        new EdgeListGraph(bayesPmMnplus1.getDag());
+                        this.oldBestScore);
+                final EdgeListGraph edgesBest =
+                        new EdgeListGraph(this.bayesPmMnplus1.getDag());
                 TetradLogger.getInstance().log("details", "Graph of model:  \n" + edgesBest);
                 TetradLogger.getInstance().log("details", "====================================");
-                oldBestScore = bestScore;
+                this.oldBestScore = bestScore;
 
             }
         }

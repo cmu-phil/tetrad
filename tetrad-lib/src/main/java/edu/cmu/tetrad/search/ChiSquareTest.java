@@ -65,7 +65,7 @@ public class ChiSquareTest {
      * @param dataSet A data set consisting entirely of discrete variables.
      * @param alpha   The significance level, usually 0.05.
      */
-    public ChiSquareTest(DataSet dataSet, double alpha) {
+    public ChiSquareTest(final DataSet dataSet, final double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
             throw new IllegalArgumentException("Significance level must be in " +
                     "[0, 1]: " + alpha);
@@ -74,7 +74,7 @@ public class ChiSquareTest {
         this.dims = new int[dataSet.getNumColumns()];
 
         for (int i = 0; i < getDims().length; i++) {
-            DiscreteVariable variable =
+            final DiscreteVariable variable =
                     (DiscreteVariable) dataSet.getVariable(i);
             this.getDims()[i] = variable.getNumCategories();
         }
@@ -90,7 +90,7 @@ public class ChiSquareTest {
      * by summing up chi square and degrees of freedom for each conditional table in turn, where rows or columns that
      * consist entirely of zeros have been removed.
      */
-    public synchronized ChiSquareTest.Result calcChiSquare(int[] testIndices) {
+    public synchronized ChiSquareTest.Result calcChiSquare(final int[] testIndices) {
 
         // Reset the cell table for the columns referred to in
         // 'testIndices.' Do cell coefs for those columns.
@@ -100,38 +100,38 @@ public class ChiSquareTest {
         // to calculate. For x _||_ y | z1, z2, ..., we want to
         // calculate the margin for x, the margin for y, and the
         // margin for x and y. (These will be used later.)
-        int[] firstVar = new int[]{0};
-        int[] secondVar = new int[]{1};
-        int[] bothVars = new int[]{0, 1};
+        final int[] firstVar = new int[]{0};
+        final int[] secondVar = new int[]{1};
+        final int[] bothVars = new int[]{0, 1};
 
         double xSquare = 0.0;
         int df = 0;
 
-        int[] condDims = new int[testIndices.length - 2];
+        final int[] condDims = new int[testIndices.length - 2];
         System.arraycopy(selectFromArray(getDims(), testIndices), 2, condDims, 0,
                 condDims.length);
 
-        int[] coords = new int[testIndices.length];
-        int numRows = this.getCellTable().getNumValues(0);
-        int numCols = this.getCellTable().getNumValues(1);
+        final int[] coords = new int[testIndices.length];
+        final int numRows = this.getCellTable().getNumValues(0);
+        final int numCols = this.getCellTable().getNumValues(1);
 
-        CombinationIterator combinationIterator =
+        final CombinationIterator combinationIterator =
                 new CombinationIterator(condDims);
 
         // Make a chi square table for each condition combination, strike zero rows and columns and calculate
         // chi square and degrees of freedom for the remaining rows and columns in the table. See Friedman.
         while (combinationIterator.hasNext()) {
-            boolean[] attestedRows = new boolean[numRows];
-            boolean[] attestedCols = new boolean[numCols];
+            final boolean[] attestedRows = new boolean[numRows];
+            final boolean[] attestedCols = new boolean[numCols];
 
             Arrays.fill(attestedRows, true);
             Arrays.fill(attestedCols, true);
 
-            int[] combination = combinationIterator.next();
+            final int[] combination = combinationIterator.next();
 
             System.arraycopy(combination, 0, coords, 2, combination.length);
 
-            long total = getCellTable().calcMargin(coords, bothVars);
+            final long total = getCellTable().calcMargin(coords, bothVars);
 
             if (total == 0) continue;
 
@@ -142,9 +142,9 @@ public class ChiSquareTest {
                     coords[0] = i;
                     coords[1] = j;
 
-                    long sumRow = getCellTable().calcMargin(coords, firstVar);
-                    long sumCol = getCellTable().calcMargin(coords, secondVar);
-                    long observed = getCellTable().getValue(coords);
+                    final long sumRow = getCellTable().calcMargin(coords, firstVar);
+                    final long sumCol = getCellTable().calcMargin(coords, secondVar);
+                    final long observed = getCellTable().getValue(coords);
 
                     if (sumRow == 0L) {
                         attestedRows[i] = false;
@@ -156,7 +156,7 @@ public class ChiSquareTest {
                         continue;
                     }
 
-                    double expected = (sumRow * sumCol) / (double) total;
+                    final double expected = (sumRow * sumCol) / (double) total;
                     _xSquare += Math.pow(observed - expected, 2.0) / expected;
                 }
             }
@@ -164,13 +164,13 @@ public class ChiSquareTest {
             int numAttestedRows = 0;
             int numAttestedCols = 0;
 
-            for (boolean attestedRow : attestedRows) {
+            for (final boolean attestedRow : attestedRows) {
                 if (attestedRow) {
                     numAttestedRows++;
                 }
             }
 
-            for (boolean attestedCol : attestedCols) {
+            for (final boolean attestedCol : attestedCols) {
                 if (attestedCol) {
                     numAttestedCols++;
                 }
@@ -184,12 +184,12 @@ public class ChiSquareTest {
 
         // If df == 0, this is definitely an indepedent table.
         if (df == 0) {
-            double pValue = 1.0;
+            final double pValue = 1.0;
             return new ChiSquareTest.Result(xSquare, pValue, df, true);
         }
 
-        double pValue = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(xSquare);
-        boolean indep = (pValue > getAlpha());
+        final double pValue = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(xSquare);
+        final boolean indep = (pValue > getAlpha());
         return new ChiSquareTest.Result(xSquare, pValue, df, indep);
     }
 
@@ -198,7 +198,7 @@ public class ChiSquareTest {
      * @param p           The probability that some marginal for some table dominates. A good value is 0.99.
      * @return True if the variable at index 0 is determined by the variables at the other indices.
      */
-    public boolean isDetermined(int[] testIndices, double p) {
+    public boolean isDetermined(final int[] testIndices, final double p) {
 
         // Reset the cell table for the columns referred to in
         // 'testIndices.' Do cell coefs for those columns.
@@ -208,23 +208,23 @@ public class ChiSquareTest {
         // to calculate. For x _||_ y | z1, z2, ..., we want to
         // calculate the margin for x, the margin for y, and the
         // margin for x and y. (These will be used later.)
-        int[] firstVar = new int[]{0};
+        final int[] firstVar = new int[]{0};
 
-        int[] condDims = new int[testIndices.length - 1];
+        final int[] condDims = new int[testIndices.length - 1];
         System.arraycopy(selectFromArray(getDims(), testIndices), 1, condDims, 0,
                 condDims.length);
 
-        int[] coords = new int[testIndices.length];
-        int numValues = this.getCellTable().getNumValues(0);
+        final int[] coords = new int[testIndices.length];
+        final int numValues = this.getCellTable().getNumValues(0);
 
-        CombinationIterator combinationIterator =
+        final CombinationIterator combinationIterator =
                 new CombinationIterator(condDims);
 
         while (combinationIterator.hasNext()) {
-            int[] combination = combinationIterator.next();
+            final int[] combination = combinationIterator.next();
             System.arraycopy(combination, 0, coords, 1, combination.length);
 
-            long total = this.getCellTable().calcMargin(coords, firstVar);
+            final long total = this.getCellTable().calcMargin(coords, firstVar);
 
             if (total == 0) {
                 continue;
@@ -235,7 +235,7 @@ public class ChiSquareTest {
             for (int i = 0; i < numValues; i++) {
                 coords[0] = i;
 
-                long numi = this.getCellTable().getValue(coords);
+                final long numi = this.getCellTable().getValue(coords);
 
                 if ((double) numi / total >= p) {
                     dominates = true;
@@ -260,7 +260,7 @@ public class ChiSquareTest {
     /**
      * Sets the significance level to be used for tests.
      */
-    public void setAlpha(double alpha) {
+    public void setAlpha(final double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
             throw new IllegalArgumentException("Significance level must be in " +
                     "[0, 1]: " + alpha);
@@ -271,8 +271,8 @@ public class ChiSquareTest {
 
     //================================PRIVATE==============================//
 
-    public int[] selectFromArray(int[] arr, int[] indices) {
-        int[] retArr = new int[indices.length];
+    public int[] selectFromArray(final int[] arr, final int[] indices) {
+        final int[] retArr = new int[indices.length];
 
         for (int i = 0; i < indices.length; i++) {
             retArr[i] = arr[indices[i]];
@@ -282,15 +282,15 @@ public class ChiSquareTest {
     }
 
     public DataSet getDataSet() {
-        return dataSet;
+        return this.dataSet;
     }
 
     public int[] getDims() {
-        return dims;
+        return this.dims;
     }
 
     public CellTable getCellTable() {
-        return cellTable;
+        return this.cellTable;
     }
 
     //===============================CLASSES==============================//
@@ -325,7 +325,7 @@ public class ChiSquareTest {
         /**
          * Constructs a new g square result using the given parameters.
          */
-        public Result(double chiSquare, double pValue, int df, boolean isIndep) {
+        public Result(final double chiSquare, final double pValue, final int df, final boolean isIndep) {
             this.chiSquare = chiSquare;
             this.pValue = pValue;
             this.df = df;
@@ -333,19 +333,19 @@ public class ChiSquareTest {
         }
 
         public double getXSquare() {
-            return chiSquare;
+            return this.chiSquare;
         }
 
         public double getPValue() {
-            return pValue;
+            return this.pValue;
         }
 
         public int getDf() {
-            return df;
+            return this.df;
         }
 
         public boolean isIndep() {
-            return isIndep;
+            return this.isIndep;
         }
     }
 }

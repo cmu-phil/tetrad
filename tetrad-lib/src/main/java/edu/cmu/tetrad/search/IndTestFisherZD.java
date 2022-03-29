@@ -94,7 +94,7 @@ public final class IndTestFisherZD implements IndependenceTest {
      * @param dataSet A data set containing only continuous columns.
      * @param alpha   The alpha level of the test.
      */
-    public IndTestFisherZD(DataSet dataSet, double alpha) {
+    public IndTestFisherZD(final DataSet dataSet, final double alpha) {
         if (!(dataSet.isContinuous())) {
             throw new IllegalArgumentException("Data set must be continuous.");
         }
@@ -104,11 +104,11 @@ public final class IndTestFisherZD implements IndependenceTest {
         }
 
         this.covMatrix = new CovarianceMatrix(dataSet);
-        List<Node> nodes = covMatrix.getVariables();
+        final List<Node> nodes = this.covMatrix.getVariables();
 
         this.variables = Collections.unmodifiableList(nodes);
-        this.indexMap = indexMap(variables);
-        this.nameMap = nameMap(variables);
+        this.indexMap = indexMap(this.variables);
+        this.nameMap = nameMap(this.variables);
         setAlpha(alpha);
 
         this.dataSet = dataSet;
@@ -121,9 +121,9 @@ public final class IndTestFisherZD implements IndependenceTest {
      * @param variables A list of variables, a subset of the variables of <code>data</code>.
      * @param alpha     The significance cutoff level. p values less than alpha will be reported as dependent.
      */
-    public IndTestFisherZD(Matrix data, List<Node> variables, double alpha) {
+    public IndTestFisherZD(final Matrix data, final List<Node> variables, final double alpha) {
         this.dataSet = new BoxDataSet(new VerticalDoubleDataBox(data.toArray()), variables);
-        this.covMatrix = new CovarianceMatrix(dataSet);
+        this.covMatrix = new CovarianceMatrix(this.dataSet);
         this.variables = Collections.unmodifiableList(variables);
         this.indexMap = indexMap(variables);
         this.nameMap = nameMap(variables);
@@ -134,11 +134,11 @@ public final class IndTestFisherZD implements IndependenceTest {
      * Constructs a new independence test that will determine conditional independence facts using the given correlation
      * matrix and the given significance level.
      */
-    public IndTestFisherZD(ICovarianceMatrix covMatrix, double alpha) {
+    public IndTestFisherZD(final ICovarianceMatrix covMatrix, final double alpha) {
         this.covMatrix = covMatrix;
         this.variables = covMatrix.getVariables();
-        this.indexMap = indexMap(variables);
-        this.nameMap = nameMap(variables);
+        this.indexMap = indexMap(this.variables);
+        this.nameMap = nameMap(this.variables);
         setAlpha(alpha);
     }
 
@@ -147,27 +147,27 @@ public final class IndTestFisherZD implements IndependenceTest {
     /**
      * Creates a new independence test instance for a subset of the variables.
      */
-    public IndependenceTest indTestSubset(List<Node> vars) {
+    public IndependenceTest indTestSubset(final List<Node> vars) {
         if (vars.isEmpty()) {
             throw new IllegalArgumentException("Subset may not be empty.");
         }
 
-        for (Node var : vars) {
-            if (!variables.contains(var)) {
+        for (final Node var : vars) {
+            if (!this.variables.contains(var)) {
                 throw new IllegalArgumentException(
                         "All vars must be original vars");
             }
         }
 
-        int[] indices = new int[vars.size()];
+        final int[] indices = new int[vars.size()];
 
         for (int i = 0; i < indices.length; i++) {
-            indices[i] = indexMap.get(vars.get(i));
+            indices[i] = this.indexMap.get(vars.get(i));
         }
 
-        ICovarianceMatrix newCovMatrix = covMatrix.getSubmatrix(indices);
+        final ICovarianceMatrix newCovMatrix = this.covMatrix.getSubmatrix(indices);
 
-        double alphaNew = getAlpha();
+        final double alphaNew = getAlpha();
         return new IndTestFisherZD(newCovMatrix, alphaNew);
     }
 
@@ -180,53 +180,53 @@ public final class IndTestFisherZD implements IndependenceTest {
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
-        int n = sampleSize();
-        double r;
+    public boolean isIndependent(final Node x, final Node y, final List<Node> z) {
+        final int n = sampleSize();
+        final double r;
 
         try {
             r = partialCorrelation(x, y, z);
-        } catch (SingularMatrixException e) {
+        } catch (final SingularMatrixException e) {
 //            System.out.println(SearchLogUtils.determinismDetected(z, x));
             return true;
         }
 
 
-        double fisherZ = Math.sqrt(n - 3 - z.size()) * 0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
+        final double fisherZ = Math.sqrt(n - 3 - z.size()) * 0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
         this.fisherZ = fisherZ;
 
-        return Math.abs(fisherZ) < cutoff;
+        return Math.abs(fisherZ) < this.cutoff;
     }
 
-    private double partialCorrelation(Node x, Node y, List<Node> z) throws SingularMatrixException {
+    private double partialCorrelation(final Node x, final Node y, final List<Node> z) throws SingularMatrixException {
         if (z.isEmpty()) {
-            double a = covMatrix.getValue(indexMap.get(x), indexMap.get(y));
-            double b = covMatrix.getValue(indexMap.get(x), indexMap.get(x));
-            double c = covMatrix.getValue(indexMap.get(y), indexMap.get(y));
+            final double a = this.covMatrix.getValue(this.indexMap.get(x), this.indexMap.get(y));
+            final double b = this.covMatrix.getValue(this.indexMap.get(x), this.indexMap.get(x));
+            final double c = this.covMatrix.getValue(this.indexMap.get(y), this.indexMap.get(y));
 
             if (b * c == 0) throw new SingularMatrixException();
 
             return -a / Math.sqrt(b * c);
         } else {
-            int[] indices = new int[z.size() + 2];
-            indices[0] = indexMap.get(x);
-            indices[1] = indexMap.get(y);
-            for (int i = 0; i < z.size(); i++) indices[i + 2] = indexMap.get(z.get(i));
-            Matrix submatrix = covMatrix.getSubmatrix(indices).getMatrix();
+            final int[] indices = new int[z.size() + 2];
+            indices[0] = this.indexMap.get(x);
+            indices[1] = this.indexMap.get(y);
+            for (int i = 0; i < z.size(); i++) indices[i + 2] = this.indexMap.get(z.get(i));
+            final Matrix submatrix = this.covMatrix.getSubmatrix(indices).getMatrix();
             return StatUtils.partialCorrelation(submatrix);
         }
     }
 
-    public boolean isIndependent(Node x, Node y, Node... z) {
+    public boolean isIndependent(final Node x, final Node y, final Node... z) {
         return isIndependent(x, y, Arrays.asList(z));
     }
 
-    public boolean isDependent(Node x, Node y, List<Node> z) {
+    public boolean isDependent(final Node x, final Node y, final List<Node> z) {
         return !isIndependent(x, y, z);
     }
 
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
+    public boolean isDependent(final Node x, final Node y, final Node... z) {
+        final List<Node> zList = Arrays.asList(z);
         return isDependent(x, y, zList);
     }
 
@@ -234,14 +234,14 @@ public final class IndTestFisherZD implements IndependenceTest {
      * @return the probability associated with the most recently computed independence test.
      */
     public double getPValue() {
-        return pValue;
+        return this.pValue;
     }
 
     /**
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
-    public void setAlpha(double alpha) {
+    public void setAlpha(final double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
             throw new IllegalArgumentException("Significance out of range: " + alpha);
         }
@@ -268,17 +268,17 @@ public final class IndTestFisherZD implements IndependenceTest {
     /**
      * @return the variable with the given name.
      */
-    public Node getVariable(String name) {
-        return nameMap.get(name);
+    public Node getVariable(final String name) {
+        return this.nameMap.get(name);
     }
 
     /**
      * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
-        List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<>();
-        for (Node variable1 : variables) {
+        final List<Node> variables = getVariables();
+        final List<String> variableNames = new ArrayList<>();
+        for (final Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }
         return variableNames;
@@ -288,11 +288,11 @@ public final class IndTestFisherZD implements IndependenceTest {
      * If <code>isDeterminismAllowed()</code>, deters to IndTestFisherZD; otherwise throws
      * UnsupportedOperationException.
      */
-    public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
-        int[] parents = new int[z.size()];
+    public boolean determines(final List<Node> z, final Node x) throws UnsupportedOperationException {
+        final int[] parents = new int[z.size()];
 
         for (int j = 0; j < parents.length; j++) {
-            parents[j] = covMatrix.getVariables().indexOf(z.get(j));
+            parents[j] = this.covMatrix.getVariables().indexOf(z.get(j));
         }
 
 //        int i = covMatrix.getVariable().indexOf(x);
@@ -302,13 +302,13 @@ public final class IndTestFisherZD implements IndependenceTest {
         if (parents.length > 0) {
 
             // Regress z onto i, yielding regression coefficients b.
-            Matrix Czz = covMatrix.getSelection(parents, parents);
+            final Matrix Czz = this.covMatrix.getSelection(parents, parents);
 //            TetradMatrix inverse;
 
             try {
 //                inverse =
                 Czz.inverse();
-            } catch (SingularMatrixException e) {
+            } catch (final SingularMatrixException e) {
 //                System.out.println(SearchLogUtils.determinismDetected(z, x));
 
                 return true;
@@ -329,11 +329,11 @@ public final class IndTestFisherZD implements IndependenceTest {
      * @return the data set being analyzed.
      */
     public DataSet getData() {
-        return dataSet;
+        return this.dataSet;
     }
 
     public void shuffleVariables() {
-        ArrayList<Node> nodes = new ArrayList<>(this.variables);
+        final ArrayList<Node> nodes = new ArrayList<>(this.variables);
         Collections.shuffle(nodes);
         this.variables = Collections.unmodifiableList(nodes);
     }
@@ -345,7 +345,7 @@ public final class IndTestFisherZD implements IndependenceTest {
         return "Fisher Z ZD, alpha = " + new DecimalFormat("0.0E0").format(getAlpha());
     }
 
-    public void setPValueLogger(PrintStream pValueLogger) {
+    public void setPValueLogger(final PrintStream pValueLogger) {
         this.pValueLogger = pValueLogger;
     }
 
@@ -356,21 +356,21 @@ public final class IndTestFisherZD implements IndependenceTest {
     }
 
     private ICovarianceMatrix covMatrix() {
-        return covMatrix;
+        return this.covMatrix;
     }
 
-    private Map<String, Node> nameMap(List<Node> variables) {
-        Map<String, Node> nameMap = new ConcurrentHashMap<>();
+    private Map<String, Node> nameMap(final List<Node> variables) {
+        final Map<String, Node> nameMap = new ConcurrentHashMap<>();
 
-        for (Node node : variables) {
+        for (final Node node : variables) {
             nameMap.put(node.getName(), node);
         }
 
         return nameMap;
     }
 
-    private Map<Node, Integer> indexMap(List<Node> variables) {
-        Map<Node, Integer> indexMap = new ConcurrentHashMap<>();
+    private Map<Node, Integer> indexMap(final List<Node> variables) {
+        final Map<Node, Integer> indexMap = new ConcurrentHashMap<>();
 
         for (int i = 0; i < variables.size(); i++) {
             indexMap.put(variables.get(i), i);
@@ -379,29 +379,29 @@ public final class IndTestFisherZD implements IndependenceTest {
         return indexMap;
     }
 
-    public void setVariables(List<Node> variables) {
+    public void setVariables(final List<Node> variables) {
         if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");
         this.variables = new ArrayList<>(variables);
-        covMatrix.setVariables(variables);
+        this.covMatrix.setVariables(variables);
     }
 
     public ICovarianceMatrix getCov() {
-        return covMatrix;
+        return this.covMatrix;
     }
 
     @Override
     public List<DataSet> getDataSets() {
 
-        List<DataSet> dataSets = new ArrayList<>();
+        final List<DataSet> dataSets = new ArrayList<>();
 
-        dataSets.add(dataSet);
+        dataSets.add(this.dataSet);
 
         return dataSets;
     }
 
     @Override
     public int getSampleSize() {
-        return covMatrix.getSampleSize();
+        return this.covMatrix.getSampleSize();
     }
 
     @Override
@@ -411,14 +411,14 @@ public final class IndTestFisherZD implements IndependenceTest {
 
     @Override
     public double getScore() {
-        return Math.abs(fisherZ) - cutoff;
+        return Math.abs(this.fisherZ) - this.cutoff;
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 }

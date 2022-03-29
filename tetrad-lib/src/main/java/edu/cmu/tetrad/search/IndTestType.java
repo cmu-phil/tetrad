@@ -78,7 +78,7 @@ public final class IndTestType implements TetradSerializable {
     /**
      * Protected constructor for the types; this allows for extension in case anyone wants to add formula types.
      */
-    protected IndTestType(String name, DataType type) {
+    protected IndTestType(final String name, final DataType type) {
         this.name = name;
         this.dataType = type;
     }
@@ -94,7 +94,7 @@ public final class IndTestType implements TetradSerializable {
      * Prints out the name of the dataType.
      */
     public String toString() {
-        return name;
+        return this.name;
     }
 
     // Declarations required for serialization.
@@ -112,11 +112,11 @@ public final class IndTestType implements TetradSerializable {
     };
 
     Object readResolve() throws ObjectStreamException {
-        return TYPES[ordinal]; // Canonicalize.
+        return TYPES[this.ordinal]; // Canonicalize.
     }
 
     public DataType getDataType() {
-        return dataType;
+        return this.dataType;
     }
 }
 

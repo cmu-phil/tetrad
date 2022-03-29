@@ -123,7 +123,7 @@ public class DagToCPDAG {
     /**
      * Constructs a new PC search using the given independence test as oracle.
      */
-    public DagToCPDAG(Graph dag) {
+    public DagToCPDAG(final Graph dag) {
         this.dag = new EdgeListGraph(dag);
     }
 
@@ -139,7 +139,7 @@ public class DagToCPDAG {
     /**
      * @param aggressivelyPreventCycles Set to true just in case edges will not be addeds if they would create cycles.
      */
-    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
+    public void setAggressivelyPreventCycles(final boolean aggressivelyPreventCycles) {
         this.aggressivelyPreventCycles = aggressivelyPreventCycles;
     }
 
@@ -147,13 +147,13 @@ public class DagToCPDAG {
      * @return the knowledge specification used in the search. Non-null.
      */
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     /**
      * Sets the knowledge specification to be used in the search. May not be null.
      */
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(final IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -173,7 +173,7 @@ public class DagToCPDAG {
      * independence checked.
      */
     public int getDepth() {
-        return depth;
+        return this.depth;
     }
 
     /**
@@ -184,7 +184,7 @@ public class DagToCPDAG {
      *              should be high (1000). A value of Integer.MAX_VALUE may not be used, due to a bug on multi-core
      *              machines.
      */
-    public void setDepth(int depth) {
+    public void setDepth(final int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException("Depth must be -1 or >= 0: " + depth);
         }
@@ -209,60 +209,60 @@ public class DagToCPDAG {
 
 //        this.logger.log("info", "Variables " + independenceTest.getVariable());
 
-        long startTime = System.currentTimeMillis();
+        final long startTime = System.currentTimeMillis();
 
         this.sepsets = new SepsetMap();
 
 
-        List<Node> allNodes = dag.getNodes();
+        final List<Node> allNodes = this.dag.getNodes();
 
-        List<Node> measured = new ArrayList<>();
+        final List<Node> measured = new ArrayList<>();
 
-        for (Node node : allNodes) {
+        for (final Node node : allNodes) {
             if (node.getNodeType() == NodeType.MEASURED) {
                 measured.add(node);
             }
         }
 
-        graph = new EdgeListGraph(measured);
-        graph.fullyConnect(Endpoint.CIRCLE);
+        this.graph = new EdgeListGraph(measured);
+        this.graph.fullyConnect(Endpoint.CIRCLE);
 
         for (int i = 0; i < measured.size(); i++) {
             for (int j = i + 1; j < measured.size(); j++) {
-                Node n1 = measured.get(i);
-                Node n2 = measured.get(j);
-                List<Node> sepset = dag.getSepset(n1, n2);
+                final Node n1 = measured.get(i);
+                final Node n2 = measured.get(j);
+                final List<Node> sepset = this.dag.getSepset(n1, n2);
                 getSepsets().set(n1, n2, sepset);
-                if (sepset != null) graph.removeEdge(n1, n2);
+                if (sepset != null) this.graph.removeEdge(n1, n2);
             }
         }
 
         enumerateTriples();
 
-        SearchGraphUtils.pcOrientbk(knowledge, graph, measured);
-        SearchGraphUtils.orientCollidersUsingSepsets(this.sepsets, knowledge, graph, verbose, true);
+        SearchGraphUtils.pcOrientbk(this.knowledge, this.graph, measured);
+        SearchGraphUtils.orientCollidersUsingSepsets(this.sepsets, this.knowledge, this.graph, this.verbose, true);
 
-        MeekRules rules = new MeekRules();
+        final MeekRules rules = new MeekRules();
         rules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
-        rules.setKnowledge(knowledge);
-        rules.orientImplied(graph);
+        rules.setKnowledge(this.knowledge);
+        rules.orientImplied(this.graph);
 
-        this.logger.log("graph", "\nReturning this graph: " + graph);
+        this.logger.log("graph", "\nReturning this graph: " + this.graph);
 
         this.elapsedTime = System.currentTimeMillis() - startTime;
 
-        this.logger.log("info", "Elapsed time = " + (elapsedTime) / 1000. + " s");
+        this.logger.log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
         this.logger.log("info", "Finishing PC Algorithm.");
         this.logger.flush();
 
-        return graph;
+        return this.graph;
     }
 
     /**
      * @return the elapsed time of the search, in milliseconds.
      */
     public long getElapsedTime() {
-        return elapsedTime;
+        return this.elapsedTime;
     }
 
     /**
@@ -270,7 +270,7 @@ public class DagToCPDAG {
      * <code>search</code> is called.
      */
     public Set<Triple> getUnshieldedColliders() {
-        return unshieldedColliders;
+        return this.unshieldedColliders;
     }
 
     /**
@@ -278,21 +278,21 @@ public class DagToCPDAG {
      * <code>search</code> is called.
      */
     public Set<Triple> getUnshieldedNoncolliders() {
-        return unshieldedNoncolliders;
+        return this.unshieldedNoncolliders;
     }
 
     public Set<Edge> getAdjacencies() {
-        Set<Edge> adjacencies = new HashSet<>();
-        for (Edge edge : graph.getEdges()) {
+        final Set<Edge> adjacencies = new HashSet<>();
+        for (final Edge edge : this.graph.getEdges()) {
             adjacencies.add(edge);
         }
         return adjacencies;
     }
 
     public Set<Edge> getNonadjacencies() {
-        Graph complete = GraphUtils.completeGraph(graph);
-        Set<Edge> nonAdjacencies = complete.getEdges();
-        Graph undirected = GraphUtils.undirectedGraph(graph);
+        final Graph complete = GraphUtils.completeGraph(this.graph);
+        final Set<Edge> nonAdjacencies = complete.getEdges();
+        final Graph undirected = GraphUtils.undirectedGraph(this.graph);
         nonAdjacencies.removeAll(undirected.getEdges());
         return new HashSet<>(nonAdjacencies);
     }
@@ -303,21 +303,21 @@ public class DagToCPDAG {
         this.unshieldedColliders = new HashSet<>();
         this.unshieldedNoncolliders = new HashSet<>();
 
-        for (Node y : graph.getNodes()) {
-            List<Node> adj = graph.getAdjacentNodes(y);
+        for (final Node y : this.graph.getNodes()) {
+            final List<Node> adj = this.graph.getAdjacentNodes(y);
 
             if (adj.size() < 2) {
                 continue;
             }
 
-            ChoiceGenerator gen = new ChoiceGenerator(adj.size(), 2);
+            final ChoiceGenerator gen = new ChoiceGenerator(adj.size(), 2);
             int[] choice;
 
             while ((choice = gen.next()) != null) {
-                Node x = adj.get(choice[0]);
-                Node z = adj.get(choice[1]);
+                final Node x = adj.get(choice[0]);
+                final Node z = adj.get(choice[1]);
 
-                List<Node> nodes = this.sepsets.get(x, z);
+                final List<Node> nodes = this.sepsets.get(x, z);
 
                 // Note that checking adj(x, z) does not suffice when knowledge
                 // has been specified.
@@ -335,54 +335,54 @@ public class DagToCPDAG {
     }
 
     public int getNumIndependenceTests() {
-        return numIndependenceTests;
+        return this.numIndependenceTests;
     }
 
-    public void setTrueGraph(Graph trueGraph) {
+    public void setTrueGraph(final Graph trueGraph) {
         this.trueGraph = trueGraph;
     }
 
     public int getNumFalseDependenceJudgements() {
-        return numFalseDependenceJudgements;
+        return this.numFalseDependenceJudgements;
     }
 
     public int getNumDependenceJudgements() {
-        return numDependenceJudgements;
+        return this.numDependenceJudgements;
     }
 
     public List<Node> getNodes() {
-        return graph.getNodes();
+        return this.graph.getNodes();
     }
 
-    public List<Triple> getColliders(Node node) {
+    public List<Triple> getColliders(final Node node) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public List<Triple> getNoncolliders(Node node) {
+    public List<Triple> getNoncolliders(final Node node) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public List<Triple> getAmbiguousTriples(Node node) {
+    public List<Triple> getAmbiguousTriples(final Node node) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public List<Triple> getUnderlineTriples(Node node) {
+    public List<Triple> getUnderlineTriples(final Node node) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public List<Triple> getDottedUnderlineTriples(Node node) {
+    public List<Triple> getDottedUnderlineTriples(final Node node) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public void setExternalGraph(Graph externalGraph) {
+    public void setExternalGraph(final Graph externalGraph) {
         this.externalGraph = externalGraph;
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 
@@ -390,10 +390,10 @@ public class DagToCPDAG {
      * True iff the algorithm should be run with False Discovery Rate tests.
      */
     public boolean isFdr() {
-        return fdr;
+        return this.fdr;
     }
 
-    public void setFdr(boolean fdr) {
+    public void setFdr(final boolean fdr) {
         this.fdr = fdr;
     }
 }

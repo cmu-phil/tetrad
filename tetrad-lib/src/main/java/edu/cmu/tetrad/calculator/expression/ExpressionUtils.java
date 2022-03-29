@@ -28,19 +28,19 @@ import java.util.List;
  */
 class ExpressionUtils {
 
-    public static String renderExpression(Expression expression, ExpressionDescriptor.Position position, String token) {
+    public static String renderExpression(final Expression expression, final ExpressionDescriptor.Position position, final String token) {
 
-        List<Expression> expressions = expression.getExpressions();
+        final List<Expression> expressions = expression.getExpressions();
 
         if (position == ExpressionDescriptor.Position.INFIX
                 || (position == ExpressionDescriptor.Position.BOTH && expressions.size() == 2)) {
-            Expression expression1 = expressions.get(0);
-            Expression expression2 = expressions.get(1);
+            final Expression expression1 = expressions.get(0);
+            final Expression expression2 = expressions.get(1);
 
-            ExpressionDescriptor.Position position1 = expression1.getPosition();
-            ExpressionDescriptor.Position position2 = expression2.getPosition();
+            final ExpressionDescriptor.Position position1 = expression1.getPosition();
+            final ExpressionDescriptor.Position position2 = expression2.getPosition();
 
-            StringBuilder buf = new StringBuilder();
+            final StringBuilder buf = new StringBuilder();
 
             if (position1 == ExpressionDescriptor.Position.INFIX && !expression1.getToken().equals(token)) {
                 buf.append("(");
@@ -66,7 +66,7 @@ class ExpressionUtils {
 //            return "(" + expression1 + middleToken +
 //                    expression2 + ")";
         } else {
-            StringBuilder buf = new StringBuilder();
+            final StringBuilder buf = new StringBuilder();
             buf.append(token);
             buf.append("(");
 

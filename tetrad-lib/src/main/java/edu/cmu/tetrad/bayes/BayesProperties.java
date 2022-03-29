@@ -46,7 +46,7 @@ public final class BayesProperties {
     private final int sampleSize;
     private final int[] numCategories;
 
-    public BayesProperties(DataSet dataSet) {
+    public BayesProperties(final DataSet dataSet) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
@@ -54,23 +54,23 @@ public final class BayesProperties {
         this.dataSet = dataSet;
 
         if (dataSet instanceof BoxDataSet) {
-            DataBox dataBox = ((BoxDataSet) dataSet).getDataBox();
+            final DataBox dataBox = ((BoxDataSet) dataSet).getDataBox();
 
             this.variables = dataSet.getVariables();
 
-            VerticalIntDataBox box = new VerticalIntDataBox(dataBox);
+            final VerticalIntDataBox box = new VerticalIntDataBox(dataBox);
 
-            data = box.getVariableVectors();
+            this.data = box.getVariableVectors();
             this.sampleSize = dataSet.getNumRows();
         } else {
-            data = new int[dataSet.getNumColumns()][];
+            this.data = new int[dataSet.getNumColumns()][];
             this.variables = dataSet.getVariables();
 
             for (int j = 0; j < dataSet.getNumColumns(); j++) {
-                data[j] = new int[dataSet.getNumRows()];
+                this.data[j] = new int[dataSet.getNumRows()];
 
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
-                    data[j][i] = dataSet.getInt(i, j);
+                    this.data[j][i] = dataSet.getInt(i, j);
                 }
             }
 
@@ -78,12 +78,12 @@ public final class BayesProperties {
         }
 
         final List<Node> variables = dataSet.getVariables();
-        numCategories = new int[variables.size()];
+        this.numCategories = new int[variables.size()];
         for (int i = 0; i < variables.size(); i++) {
-            DiscreteVariable variable = getVariable(i);
+            final DiscreteVariable variable = getVariable(i);
 
             if (variable != null) {
-                numCategories[i] = variable.getNumCategories();
+                this.numCategories[i] = variable.getNumCategories();
             }
         }
 
@@ -92,43 +92,43 @@ public final class BayesProperties {
     /**
      * Calculates the p-value of the graph with respect to the given data.
      */
-    public final double getLikelihoodRatioP(Graph graph) {
+    public final double getLikelihoodRatioP(final Graph graph) {
 
         // Null hypothesis = complete graph.
-        List<Node> nodes = graph.getNodes();
+        final List<Node> nodes = graph.getNodes();
 
-        Graph graph0 = new EdgeListGraph(nodes);
+        final Graph graph0 = new EdgeListGraph(nodes);
 
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = i + 1; j < nodes.size(); j++)
                 graph0.addDirectedEdge(nodes.get(i), nodes.get(j));
         }
 
-        Ret r0 = getLikelihood2(graph0);
-        Ret r1 = getLikelihood2(graph);
+        final Ret r0 = getLikelihood2(graph0);
+        final Ret r1 = getLikelihood2(graph);
 
         this.likelihood = r1.getLik();
 
-        double lDiff = r0.getLik() - r1.getLik();
+        final double lDiff = r0.getLik() - r1.getLik();
         System.out.println("lDiff = " + lDiff);
 
-        int nDiff = r0.getDof() - r1.getDof();
+        final int nDiff = r0.getDof() - r1.getDof();
         System.out.println("nDiff = " + nDiff);
 
-        double chisq = 2.0 * lDiff;
-        double dof = nDiff;
+        final double chisq = 2.0 * lDiff;
+        final double dof = nDiff;
 
         this.chisq = chisq;
         this.dof = dof;
 
-        int N = dataSet.getNumRows();
+        final int N = this.dataSet.getNumRows();
         this.bic = 2 * r1.getLik() - r1.getDof() * Math.log(N);
-        System.out.println("bic = " + bic);
+        System.out.println("bic = " + this.bic);
 
         System.out.println("chisq = " + chisq);
         System.out.println("dof = " + dof);
 
-        double p = 1.0 - new ChiSquaredDistribution(dof).cumulativeProbability(chisq);
+        final double p = 1.0 - new ChiSquaredDistribution(dof).cumulativeProbability(chisq);
 
         System.out.println("p = " + p);
 
@@ -140,40 +140,40 @@ public final class BayesProperties {
      * Call after calling getLikelihoodP().
      */
     public double getChisq() {
-        return chisq;
+        return this.chisq;
     }
 
     /**
      * Call after calling getLikelihoodP().
      */
     public double getDof() {
-        return dof;
+        return this.dof;
     }
 
     /**
      * Call after calling getLikelihoodP().
      */
     public double getBic() {
-        return bic;
+        return this.bic;
     }
 
     /**
      * Call after calling getLikelihoodP().
      */
     public double getLikelihood() {
-        return likelihood;
+        return this.likelihood;
     }
 
     private int getDof(Graph graph) {
-        graph = GraphUtils.replaceNodes(graph, dataSet.getVariables());
-        BayesPm pm = new BayesPm(graph);
-        BayesIm im = new MlBayesEstimator().estimate(pm, dataSet);
+        graph = GraphUtils.replaceNodes(graph, this.dataSet.getVariables());
+        final BayesPm pm = new BayesPm(graph);
+        final BayesIm im = new MlBayesEstimator().estimate(pm, this.dataSet);
 
         int numParams = 0;
 
         for (int j = 0; j < im.getNumNodes(); j++) {
-            int numColumns = im.getNumColumns(j);
-            int numRows = im.getNumRows(j);
+            final int numColumns = im.getNumColumns(j);
+            final int numRows = im.getNumRows(j);
             numParams += (numColumns - 1) * numRows;
         }
 
@@ -181,25 +181,25 @@ public final class BayesProperties {
     }
 
     private double getLikelihood(Graph graph) {
-        graph = GraphUtils.replaceNodes(graph, dataSet.getVariables());
-        BayesPm pm = new BayesPm(graph);
-        BayesIm im = new MlBayesEstimator().estimate(pm, dataSet);
+        graph = GraphUtils.replaceNodes(graph, this.dataSet.getVariables());
+        final BayesPm pm = new BayesPm(graph);
+        final BayesIm im = new MlBayesEstimator().estimate(pm, this.dataSet);
         double lik = 0.0;
 
         ROW:
-        for (int i = 0; i < dataSet.getNumRows(); i++) {
+        for (int i = 0; i < this.dataSet.getNumRows(); i++) {
             double lik0 = 0.0;
 
-            for (int j = 0; j < dataSet.getNumColumns(); j++) {
-                int[] parents = im.getParents(j);
-                int[] parentValues = new int[parents.length];
+            for (int j = 0; j < this.dataSet.getNumColumns(); j++) {
+                final int[] parents = im.getParents(j);
+                final int[] parentValues = new int[parents.length];
 
                 for (int k = 0; k < parents.length; k++) {
-                    parentValues[k] = dataSet.getInt(i, parents[k]);
+                    parentValues[k] = this.dataSet.getInt(i, parents[k]);
                 }
 
-                int dataValue = dataSet.getInt(i, j);
-                double p = im.getProbability(j, im.getRowIndex(j, parentValues), dataValue);
+                final int dataValue = this.dataSet.getInt(i, j);
+                final double p = im.getProbability(j, im.getRowIndex(j, parentValues), dataValue);
 
                 if (p == 0) continue ROW;
 
@@ -212,22 +212,22 @@ public final class BayesProperties {
         return lik;
     }
 
-    private Ret getLikelihood2(Graph graph) {
+    private Ret getLikelihood2(final Graph graph) {
         double lik = 0.0;
         int dof = 0;
 
-        for (Node node : graph.getNodes()) {
-            List<Node> parents = graph.getParents(node);
+        for (final Node node : graph.getNodes()) {
+            final List<Node> parents = graph.getParents(node);
 
-            int i = variables.indexOf(getVariable(node.getName()));
+            final int i = this.variables.indexOf(getVariable(node.getName()));
 
-            int[] z = new int[parents.size()];
+            final int[] z = new int[parents.size()];
 
             for (int j = 0; j < parents.size(); j++) {
-                z[j] = variables.indexOf(getVariable(parents.get(j).getName()));
+                z[j] = this.variables.indexOf(getVariable(parents.get(j).getName()));
             }
 
-            Ret ret = getLikelihoodNode(i, z);
+            final Ret ret = getLikelihoodNode(i, z);
             lik += ret.getLik();
             dof += ret.getDof();
         }
@@ -235,18 +235,18 @@ public final class BayesProperties {
         return new Ret(lik, dof);
     }
 
-    private int getDof2(Graph graph) {
+    private int getDof2(final Graph graph) {
         int dof = 0;
 
-        for (Node node : graph.getNodes()) {
-            List<Node> parents = graph.getParents(node);
+        for (final Node node : graph.getNodes()) {
+            final List<Node> parents = graph.getParents(node);
 
-            int i = variables.indexOf(getVariable(node.getName()));
+            final int i = this.variables.indexOf(getVariable(node.getName()));
 
-            int[] z = new int[parents.size()];
+            final int[] z = new int[parents.size()];
 
             for (int j = 0; j < parents.size(); j++) {
-                z[j] = variables.indexOf(getVariable(parents.get(j).getName()));
+                z[j] = this.variables.indexOf(getVariable(parents.get(j).getName()));
             }
 
             dof += getDofNode(i, z);
@@ -255,16 +255,16 @@ public final class BayesProperties {
         return dof;
     }
 
-    private Ret getLikelihoodNode(int node, int parents[]) {
+    private Ret getLikelihoodNode(final int node, final int[] parents) {
 
         // Number of categories for node.
-        int c = numCategories[node];
+        final int c = this.numCategories[node];
 
         // Numbers of categories of parents.
-        int[] dims = new int[parents.length];
+        final int[] dims = new int[parents.length];
 
         for (int p = 0; p < parents.length; p++) {
-            dims[p] = numCategories[parents[p]];
+            dims[p] = this.numCategories[parents[p]];
         }
 
         // Number of parent states.
@@ -275,31 +275,31 @@ public final class BayesProperties {
         }
 
         // Conditional cell coefs of data for node given parents(node).
-        int n_jk[][] = new int[r][c];
-        int n_j[] = new int[r];
+        final int[][] n_jk = new int[r][c];
+        final int[] n_j = new int[r];
 
-        int[] parentValues = new int[parents.length];
+        final int[] parentValues = new int[parents.length];
 
-        int[][] myParents = new int[parents.length][];
+        final int[][] myParents = new int[parents.length][];
         for (int i = 0; i < parents.length; i++) {
-            myParents[i] = data[parents[i]];
+            myParents[i] = this.data[parents[i]];
         }
 
-        int[] myChild = data[node];
+        final int[] myChild = this.data[node];
 
-        for (int i = 0; i < sampleSize; i++) {
+        for (int i = 0; i < this.sampleSize; i++) {
             for (int p = 0; p < parents.length; p++) {
                 parentValues[p] = myParents[p][i];
             }
 
-            int childValue = myChild[i];
+            final int childValue = myChild[i];
 
             if (childValue == -99) {
                 throw new IllegalStateException("Please remove or impute missing " +
                         "values (record " + i + " column " + i + ")");
             }
 
-            int rowIndex = getRowIndex(dims, parentValues);
+            final int rowIndex = getRowIndex(dims, parentValues);
 
             n_jk[rowIndex][childValue]++;
             n_j[rowIndex]++;
@@ -313,8 +313,8 @@ public final class BayesProperties {
             int d = 0;
 
             for (int childValue = 0; childValue < c; childValue++) {
-                int cellCount = n_jk[rowIndex][childValue];
-                int rowCount = n_j[rowIndex];
+                final int cellCount = n_jk[rowIndex][childValue];
+                final int rowCount = n_j[rowIndex];
 
                 if (cellCount == 0) continue;
                 lik += cellCount * Math.log(cellCount / (double) rowCount);
@@ -331,30 +331,30 @@ public final class BayesProperties {
         private final double lik;
         private final int dof;
 
-        public Ret(double lik, int dof) {
+        public Ret(final double lik, final int dof) {
             this.lik = lik;
             this.dof = dof;
         }
 
         public double getLik() {
-            return lik;
+            return this.lik;
         }
 
         public int getDof() {
-            return dof;
+            return this.dof;
         }
     }
 
-    private double getDofNode(int node, int parents[]) {
+    private double getDofNode(final int node, final int[] parents) {
 
         // Number of categories for node.
-        int c = numCategories[node];
+        final int c = this.numCategories[node];
 
         // Numbers of categories of parents.
-        int[] dims = new int[parents.length];
+        final int[] dims = new int[parents.length];
 
         for (int p = 0; p < parents.length; p++) {
-            dims[p] = numCategories[parents[p]];
+            dims[p] = this.numCategories[parents[p]];
         }
 
         // Number of parent states.
@@ -368,7 +368,7 @@ public final class BayesProperties {
     }
 
 
-    private static int getRowIndex(int[] dim, int[] values) {
+    private static int getRowIndex(final int[] dim, final int[] values) {
         int rowIndex = 0;
         for (int i = 0; i < dim.length; i++) {
             rowIndex *= dim[i];
@@ -378,11 +378,11 @@ public final class BayesProperties {
     }
 
     public int getSampleSize() {
-        return sampleSize;
+        return this.sampleSize;
     }
 
-    public Node getVariable(String targetName) {
-        for (Node node : variables) {
+    public Node getVariable(final String targetName) {
+        for (final Node node : this.variables) {
             if (node.getName().equals(targetName)) {
                 return node;
             }
@@ -391,9 +391,9 @@ public final class BayesProperties {
         return null;
     }
 
-    private DiscreteVariable getVariable(int i) {
-        if (variables.get(i) instanceof DiscreteVariable) {
-            return (DiscreteVariable) variables.get(i);
+    private DiscreteVariable getVariable(final int i) {
+        if (this.variables.get(i) instanceof DiscreteVariable) {
+            return (DiscreteVariable) this.variables.get(i);
         } else {
             return null;
         }

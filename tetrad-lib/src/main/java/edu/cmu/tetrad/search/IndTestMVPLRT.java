@@ -52,16 +52,16 @@ public class IndTestMVPLRT implements IndependenceTest {
     // P Values
     private double pValue = Double.NaN;
 
-    public IndTestMVPLRT(DataSet data, double alpha, int fDegree, boolean discretize) {
+    public IndTestMVPLRT(final DataSet data, final double alpha, final int fDegree, final boolean discretize) {
         this.data = data;
         this.likelihood = new MVPLikelihood(data, -1, fDegree, discretize);
 
-        nodesHash = new HashedMap<>();
+        this.nodesHash = new HashedMap<>();
 
-        List<Node> variables = data.getVariables();
+        final List<Node> variables = data.getVariables();
 
         for (int i = 0; i < variables.size(); i++) {
-            nodesHash.put(variables.get(i), i);
+            this.nodesHash.put(variables.get(i), i);
         }
 
         this.alpha = alpha;
@@ -70,7 +70,7 @@ public class IndTestMVPLRT implements IndependenceTest {
     /**
      * @return an Independence test for a subset of the searchVariables.
      */
-    public IndependenceTest indTestSubset(List<Node> vars) {
+    public IndependenceTest indTestSubset(final List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
@@ -79,32 +79,32 @@ public class IndTestMVPLRT implements IndependenceTest {
      * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are searchVariables in the list returned by
      * getVariableNames().
      */
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
+    public boolean isIndependent(final Node x, final Node y, final List<Node> z) {
 
-        int _x = nodesHash.get(x);
-        int _y = nodesHash.get(y);
-        int[] list0 = new int[z.size() + 1];
-        int[] list1 = new int[z.size() + 1];
-        int[] list2 = new int[z.size()];
+        final int _x = this.nodesHash.get(x);
+        final int _y = this.nodesHash.get(y);
+        final int[] list0 = new int[z.size() + 1];
+        final int[] list1 = new int[z.size() + 1];
+        final int[] list2 = new int[z.size()];
         list0[0] = _x;
         list1[0] = _y;
         for (int i = 0; i < z.size(); i++) {
-            int _z = nodesHash.get(z.get(i));
+            final int _z = this.nodesHash.get(z.get(i));
             list0[i + 1] = _z;
             list1[i + 1] = _z;
             list2[i] = _z;
         }
 
-        double lik_0;
+        final double lik_0;
         double dof_0;
-        double lik_1;
+        final double lik_1;
         double dof_1;
 
-        lik_0 = likelihood.getLik(_y, list0) - likelihood.getLik(_y, list2);
-        dof_0 = likelihood.getLik(_y, list0) - likelihood.getLik(_y, list2);
+        lik_0 = this.likelihood.getLik(_y, list0) - this.likelihood.getLik(_y, list2);
+        dof_0 = this.likelihood.getLik(_y, list0) - this.likelihood.getLik(_y, list2);
 
-        lik_1 = likelihood.getLik(_x, list1) - likelihood.getLik(_x, list2);
-        dof_1 = likelihood.getLik(_x, list1) - likelihood.getLik(_x, list2);
+        lik_1 = this.likelihood.getLik(_x, list1) - this.likelihood.getLik(_x, list2);
+        dof_1 = this.likelihood.getLik(_x, list1) - this.likelihood.getLik(_x, list2);
 
 
         if (dof_0 <= 0) {
@@ -117,21 +117,21 @@ public class IndTestMVPLRT implements IndependenceTest {
         double p_1 = 0;
         try {
             p_0 = 1.0 - new ChiSquaredDistribution(dof_0).cumulativeProbability(2.0 * lik_0);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             e.printStackTrace();
         }
         try {
             p_1 = 1.0 - new ChiSquaredDistribution(dof_1).cumulativeProbability(2.0 * lik_1);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             e.printStackTrace();
         }
         this.pValue = Math.min(p_0, p_1);
 
-        return this.pValue > alpha;
+        return this.pValue > this.alpha;
     }
 
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
+    public boolean isIndependent(final Node x, final Node y, final Node... z) {
+        final List<Node> zList = Arrays.asList(z);
         return isIndependent(x, y, zList);
     }
 
@@ -140,12 +140,12 @@ public class IndTestMVPLRT implements IndependenceTest {
      * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are searchVariables in the list returned by
      * getVariableNames().
      */
-    public boolean isDependent(Node x, Node y, List<Node> z) {
+    public boolean isDependent(final Node x, final Node y, final List<Node> z) {
         return !this.isIndependent(x, y, z);
     }
 
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
+    public boolean isDependent(final Node x, final Node y, final Node... z) {
+        final List<Node> zList = Arrays.asList(z);
         return isDependent(x, y, zList);
     }
 
@@ -162,24 +162,24 @@ public class IndTestMVPLRT implements IndependenceTest {
      * relations.
      */
     public List<Node> getVariables() {
-        return data.getVariables();
+        return this.data.getVariables();
     }
 
     /**
      * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
-        List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<>();
-        for (Node variable1 : variables) {
+        final List<Node> variables = getVariables();
+        final List<String> variableNames = new ArrayList<>();
+        for (final Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }
         return variableNames;
     }
 
-    public Node getVariable(String name) {
+    public Node getVariable(final String name) {
         for (int i = 0; i < getVariables().size(); i++) {
-            Node variable = getVariables().get(i);
+            final Node variable = getVariables().get(i);
             if (variable.getName().equals(name)) {
                 return variable;
             }
@@ -191,7 +191,7 @@ public class IndTestMVPLRT implements IndependenceTest {
     /**
      * @return true if y is determined the variable in z.
      */
-    public boolean determines(List<Node> z, Node y) {
+    public boolean determines(final List<Node> z, final Node y) {
         return false; //stub
     }
 
@@ -200,18 +200,18 @@ public class IndTestMVPLRT implements IndependenceTest {
      * @throws UnsupportedOperationException if there is no significance level.
      */
     public double getAlpha() {
-        return alpha;
+        return this.alpha;
     }
 
     /**
      * Sets the significance level.
      */
-    public void setAlpha(double alpha) {
+    public void setAlpha(final double alpha) {
         this.alpha = alpha;
     }
 
     public DataSet getData() {
-        return data;
+        return this.data;
     }
 
     @Override
@@ -242,11 +242,11 @@ public class IndTestMVPLRT implements IndependenceTest {
 
     @Override
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     @Override
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 }

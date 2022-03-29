@@ -62,7 +62,7 @@ public class HitonVariant implements MbSearch {
      *
      * @param test The source of conditional independence information for the search.
      */
-    public HitonVariant(IndependenceTest test, int depth) {
+    public HitonVariant(final IndependenceTest test, final int depth) {
         if (test == null) {
             throw new NullPointerException();
         }
@@ -72,20 +72,20 @@ public class HitonVariant implements MbSearch {
         this.depth = depth;
     }
 
-    public List<Node> findMb(String targetName) {
+    public List<Node> findMb(final String targetName) {
         TetradLogger.getInstance().log("info", "target = " + targetName);
         //        numIndTests = 0;
-        long time = System.currentTimeMillis();
+        final long time = System.currentTimeMillis();
 
         final Node t = getVariableForName(targetName);
 
         // Sort variables by decreasing association with the target.
-        sortedVariables = new LinkedList<>(variables);
+        this.sortedVariables = new LinkedList<>(this.variables);
 
-        Collections.sort(sortedVariables, new Comparator<Node>() {
-            public int compare(Node o1, Node o2) {
-                double score1 = o1 == t ? 1.0 : association(o1, t);
-                double score2 = o2 == t ? 1.0 : association(o2, t);
+        Collections.sort(this.sortedVariables, new Comparator<Node>() {
+            public int compare(final Node o1, final Node o2) {
+                final double score1 = o1 == t ? 1.0 : association(o1, t);
+                final double score2 = o2 == t ? 1.0 : association(o2, t);
 
                 if (score1 < score2) {
                     return 1;
@@ -97,9 +97,9 @@ public class HitonVariant implements MbSearch {
             }
         });
 
-        List<Node> nodes = hitonMb(t);
+        final List<Node> nodes = hitonMb(t);
 
-        long time2 = System.currentTimeMillis() - time;
+        final long time2 = System.currentTimeMillis() - time;
         TetradLogger.getInstance().log("info", "Number of seconds: " + (time2 / 1000.0));
         //        LogUtils.getInstance().info("Number of independence tests performed: " +
 //            numIndTests);
@@ -108,48 +108,48 @@ public class HitonVariant implements MbSearch {
     }
 
 
-    private List<Node> hitonMb(Node t) {
+    private List<Node> hitonMb(final Node t) {
         // MB <- {}
-        Set<Node> mb = new HashSet<>();
-        Map<Node, List<Node>> pcSets = new HashMap<>();
+        final Set<Node> mb = new HashSet<>();
+        final Map<Node, List<Node>> pcSets = new HashMap<>();
 
-        List<Node> pc = hitonPc(t);
+        final List<Node> pc = hitonPc(t);
         pcSets.put(t, pc);
-        Set<Node> _pcpc = new HashSet<>();
+        final Set<Node> _pcpc = new HashSet<>();
 
-        for (Node node : pc) {
-            List<Node> f = hitonPc(node);
+        for (final Node node : pc) {
+            final List<Node> f = hitonPc(node);
             pcSets.put(node, f);
             _pcpc.addAll(f);
         }
 
-        List<Node> pcpc = new LinkedList<>(_pcpc);
+        final List<Node> pcpc = new LinkedList<>(_pcpc);
 
-        Set<Node> currentMb = new HashSet<>(pc);
+        final Set<Node> currentMb = new HashSet<>(pc);
         currentMb.addAll(pcpc);
         currentMb.remove(t);
 
-        HashSet<Node> diff = new HashSet<>(currentMb);
+        final HashSet<Node> diff = new HashSet<>(currentMb);
         diff.removeAll(pc);
         diff.remove(t);
 
         //for each x in PCPC \ PC
-        for (Node x : diff) {
+        for (final Node x : diff) {
             List<Node> s = null;
 
             // Find an S such PC such that x _||_ t | S
-            DepthChoiceGenerator generator =
-                    new DepthChoiceGenerator(pcpc.size(), depth);
+            final DepthChoiceGenerator generator =
+                    new DepthChoiceGenerator(pcpc.size(), this.depth);
             int[] choice;
 
             while ((choice = generator.next()) != null) {
-                List<Node> _s = new LinkedList<>();
+                final List<Node> _s = new LinkedList<>();
 
-                for (int index : choice) {
+                for (final int index : choice) {
                     _s.add(pcpc.get(index));
                 }
 
-                if (independenceTest.isIndependent(t, x, _s)) {
+                if (this.independenceTest.isIndependent(t, x, _s)) {
                     s = _s;
                     break;
                 }
@@ -162,22 +162,22 @@ public class HitonVariant implements MbSearch {
             }
 
             // y_set <- {y in PC(t) : x in PC(y)}
-            Set<Node> ySet = new HashSet<>();
-            for (Node y : pc) {
+            final Set<Node> ySet = new HashSet<>();
+            for (final Node y : pc) {
                 if (pcSets.get(y).contains(x)) {
                     ySet.add(y);
                 }
             }
 
             //  For each y in y_set
-            for (Node y : ySet) {
+            for (final Node y : ySet) {
                 if (x == y) continue;
 
-                List<Node> _s = new LinkedList<>(s);
+                final List<Node> _s = new LinkedList<>(s);
                 _s.add(y);
 
                 // If x NOT _||_ t | S U {y}
-                if (!independenceTest.isIndependent(t, x, _s)) {
+                if (!this.independenceTest.isIndependent(t, x, _s)) {
                     mb.add(x);
                     break;
                 }
@@ -270,30 +270,30 @@ public class HitonVariant implements MbSearch {
 //        return new ArrayList<Node>(currentMb);
 //    }
 
-    private List<Node> hitonPc(Node t) {
-        LinkedList<Node> variables = new LinkedList<>(sortedVariables);
+    private List<Node> hitonPc(final Node t) {
+        final LinkedList<Node> variables = new LinkedList<>(this.sortedVariables);
 
         variables.remove(t);
 
-        List<Node> currentPc = new ArrayList<>();
+        final List<Node> currentPc = new ArrayList<>();
 
         while (!variables.isEmpty()) {
-            Node vi = variables.removeFirst();
+            final Node vi = variables.removeFirst();
             currentPc.add(vi);
 
             VARS:
-            for (Node x : new LinkedList<>(currentPc)) {
+            for (final Node x : new LinkedList<>(currentPc)) {
                 currentPc.remove(x);
 
-                for (int d = 0; d <= Math.min(currentPc.size(), depth); d++) {
-                    ChoiceGenerator generator =
+                for (int d = 0; d <= Math.min(currentPc.size(), this.depth); d++) {
+                    final ChoiceGenerator generator =
                             new ChoiceGenerator(currentPc.size(), d);
                     int[] choice;
 
                     while ((choice = generator.next()) != null) {
-                        List<Node> s = new LinkedList<>();
+                        final List<Node> s = new LinkedList<>();
 
-                        for (int index : choice) {
+                        for (final int index : choice) {
                             s.add(currentPc.get(index));
                         }
 
@@ -304,7 +304,7 @@ public class HitonVariant implements MbSearch {
 
                         // If it's independent of the target given this
                         // subset...
-                        if (independenceTest.isIndependent(x, t, s)) {
+                        if (this.independenceTest.isIndependent(x, t, s)) {
 
                             // Leave it removed.
                             continue VARS;
@@ -323,9 +323,9 @@ public class HitonVariant implements MbSearch {
     /**
      * A measure of strength of association.
      */
-    private double association(Node x, Node y) {
-        independenceTest.isIndependent(x, y, new LinkedList<Node>());
-        return 1.0 - independenceTest.getPValue();
+    private double association(final Node x, final Node y) {
+        this.independenceTest.isIndependent(x, y, new LinkedList<Node>());
+        return 1.0 - this.independenceTest.getPValue();
     }
 
     public String getAlgorithmName() {
@@ -336,10 +336,10 @@ public class HitonVariant implements MbSearch {
         return 0;
     }
 
-    private Node getVariableForName(String targetName) {
+    private Node getVariableForName(final String targetName) {
         Node target = null;
 
-        for (Node V : variables) {
+        for (final Node V : this.variables) {
             if (V.getName().equals(targetName)) {
                 target = V;
                 break;

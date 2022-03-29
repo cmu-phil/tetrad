@@ -17,14 +17,11 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TextTable;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import static java.lang.StrictMath.abs;
 
 public class TestFisherZCalibration {
 
@@ -38,38 +35,38 @@ public class TestFisherZCalibration {
         toTest(0.05);
     }
 
-    private void toTest(double alpha) {
-        Parameters parameters = new Parameters();
+    private void toTest(final double alpha) {
+        final Parameters parameters = new Parameters();
         parameters.set(Params.ALPHA, alpha);
         parameters.set(Params.DEPTH, 2);
         parameters.set(Params.PENALTY_DISCOUNT, 1);
         parameters.set(Params.STRUCTURE_PRIOR, 0);
         parameters.set(Params.COEF_LOW, .2);
         parameters.set(Params.COEF_HIGH, .7);
-        int numDraws = 2000;
-        int sampleSize = 2000;
+        final int numDraws = 2000;
+        final int sampleSize = 2000;
 
         Graph graph = GraphUtils.randomDag(20, 0, 40, 100,
                 100, 100, false);
-        SemPm pm = new SemPm(graph);
-        SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(sampleSize, false);
+        final SemPm pm = new SemPm(graph);
+        final SemIm im = new SemIm(pm);
+        final DataSet data = im.simulateData(sampleSize, false);
 
 
-        IndependenceTest test1 = new FisherZ().getTest(data, parameters);
-        IndependenceTest test2 = new SemBicTest().getTest(data, parameters);
+        final IndependenceTest test1 = new FisherZ().getTest(data, parameters);
+        final IndependenceTest test2 = new SemBicTest().getTest(data, parameters);
 
-        List<Node> variables = data.getVariables();
+        final List<Node> variables = data.getVariables();
         graph = GraphUtils.replaceNodes(graph, variables);
 
-        IndependenceTest dsep = new IndTestDSep(graph);
+        final IndependenceTest dsep = new IndTestDSep(graph);
 
-        for (int depth : new int[]{0, 1}) {
+        for (final int depth : new int[]{0, 1}) {
             testOneDepth(parameters, numDraws, test1, test2, variables, dsep, depth);
         }
     }
 
-    private void testOneDepth(Parameters parameters, int numDraws, IndependenceTest test1, IndependenceTest test2, List<Node> variables, IndependenceTest dsep, int depth) {
+    private void testOneDepth(final Parameters parameters, final int numDraws, final IndependenceTest test1, final IndependenceTest test2, final List<Node> variables, final IndependenceTest dsep, final int depth) {
         int countSame = 0;
         int fn1 = 0;
         int fn2 = 0;
@@ -82,17 +79,17 @@ public class TestFisherZCalibration {
             Collections.shuffle(variables);
             Collections.shuffle(variables);
 
-            Node x = variables.get(0);
-            Node y = variables.get(1);
+            final Node x = variables.get(0);
+            final Node y = variables.get(1);
 
-            List<Node> z = new ArrayList<>();
+            final List<Node> z = new ArrayList<>();
             for (int j = 0; j < depth; j++) {
                 z.add(variables.get(j + 2));
             }
 
-            boolean fzInd = test1.isIndependent(x, y, z);
-            boolean sembInd = test2.isIndependent(x, y, z);
-            boolean _dsep = dsep.isIndependent(x, y, z);
+            final boolean fzInd = test1.isIndependent(x, y, z);
+            final boolean sembInd = test2.isIndependent(x, y, z);
+            final boolean _dsep = dsep.isIndependent(x, y, z);
 
             if (fzInd == sembInd) countSame++;
 
@@ -103,7 +100,7 @@ public class TestFisherZCalibration {
             if (_dsep) ds++;
         }
 
-        TextTable table = new TextTable(3, 3);
+        final TextTable table = new TextTable(3, 3);
         table.setToken(0, 1, "FP");
         table.setToken(0, 2, "FN");
         table.setToken(1, 0, "Fisher Z");
@@ -123,9 +120,9 @@ public class TestFisherZCalibration {
 
         System.out.println();
 
-        double alpha = parameters.getDouble(Params.ALPHA);
+        final double alpha = parameters.getDouble(Params.ALPHA);
         System.out.println("alpha = " + alpha);
-        double alphaHat = fp1 / (double) ds;
+        final double alphaHat = fp1 / (double) ds;
         System.out.println("alpha^ = " + alphaHat);
 
 //        Assert.assertTrue(abs(alpha - alphaHat) < alpha);
@@ -341,45 +338,45 @@ public class TestFisherZCalibration {
 //        }
 //    }
 
-    private double getRandom(double delta) {
+    private double getRandom(final double delta) {
         return 3 * (RandomUtil.getInstance().nextDouble() - 0.5) * delta;
     }
 
-    private double tryThis(StandardizedSemIm sem3, int sampleSize, Node x1, Node x2, Node x3, Node x4,
-                           double d1, double d2, double d3, double d4, DataSet[] _dataSet, Graph gStar,
-                           Parameters parameters) {
+    private double tryThis(final StandardizedSemIm sem3, final int sampleSize, final Node x1, final Node x2, final Node x3, final Node x4,
+                           final double d1, final double d2, final double d3, final double d4, final DataSet[] _dataSet, final Graph gStar,
+                           final Parameters parameters) {
         try {
-            SemPm semPm = new SemPm(gStar);
-            SemIm semIm = new SemIm(semPm);
+            final SemPm semPm = new SemPm(gStar);
+            final SemIm semIm = new SemIm(semPm);
 
             semIm.setEdgeCoef(x1, x2, d1);
             semIm.setEdgeCoef(x2, x3, d2);
             semIm.setEdgeCoef(x3, x4, d3);
             semIm.setEdgeCoef(x1, x4, d4);
 
-            StandardizedSemIm sem = new StandardizedSemIm(semIm, parameters);
+            final StandardizedSemIm sem = new StandardizedSemIm(semIm, parameters);
 
 
 //            assertTrue(sem.setEdgeCoefficient(x1, x2, d1));
 //            assertTrue(sem.setEdgeCoefficient(x2, x3, d2));
 //            assertTrue(sem.setEdgeCoefficient(x3, x4, d3));
 //            assertTrue(sem.setEdgeCoefficient(x1, x4, d4));
-            DataSet dataSet = sem.simulateDataReducedForm(sampleSize,
+            final DataSet dataSet = sem.simulateDataReducedForm(sampleSize,
                     false);
 
             _dataSet[0] = dataSet;
 
-            CovarianceMatrix covarianceMatrix = new CovarianceMatrix(dataSet);
-            IndependenceTest test = new IndTestFisherZ(covarianceMatrix, 0.0001);
+            final CovarianceMatrix covarianceMatrix = new CovarianceMatrix(dataSet);
+            final IndependenceTest test = new IndTestFisherZ(covarianceMatrix, 0.0001);
 
-            Node _x1 = dataSet.getVariable("X1");
-            Node _x2 = dataSet.getVariable("X2");
-            Node _x3 = dataSet.getVariable("X3");
-            Node _x4 = dataSet.getVariable("X4");
+            final Node _x1 = dataSet.getVariable("X1");
+            final Node _x2 = dataSet.getVariable("X2");
+            final Node _x3 = dataSet.getVariable("X3");
+            final Node _x4 = dataSet.getVariable("X4");
 
             test.isIndependent(_x1, _x2, Collections.singletonList(_x4));
             return test.getScore();
-        } catch (AssertionError e) {
+        } catch (final AssertionError e) {
             return Double.NaN;
         }
     }

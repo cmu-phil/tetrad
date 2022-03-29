@@ -33,14 +33,14 @@ public class DSeparationTest implements IndependenceWrapper {
 
     }
 
-    public DSeparationTest(Graph graph) {
+    public DSeparationTest(final Graph graph) {
         this.graph = graph;
     }
 
     @Override
-    public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+    public IndependenceTest getTest(final DataModel dataSet, final Parameters parameters) {
         if (dataSet == null) {
-            return new IndTestDSep(graph);
+            return new IndTestDSep(this.graph);
         } else {
             throw new IllegalArgumentException("Expecting no data for a d-separation test.");
         }
@@ -61,7 +61,7 @@ public class DSeparationTest implements IndependenceWrapper {
         return new ArrayList<>();
     }
 
-    public void setGraph(Graph graph) {
+    public void setGraph(final Graph graph) {
         this.graph = graph;
     }
 

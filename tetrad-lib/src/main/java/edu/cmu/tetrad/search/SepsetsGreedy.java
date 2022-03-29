@@ -40,7 +40,7 @@ public class SepsetsGreedy implements SepsetProducer {
     private boolean verbose = false;
     private Graph dag;
 
-    public SepsetsGreedy(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth) {
+    public SepsetsGreedy(final Graph graph, final IndependenceTest independenceTest, final SepsetMap extraSepsets, final int depth) {
         this.graph = graph;
         this.independenceTest = independenceTest;
         this.extraSepsets = extraSepsets;
@@ -50,41 +50,41 @@ public class SepsetsGreedy implements SepsetProducer {
     /**
      * Pick out the sepset from among adj(i) or adj(k) with the highest score value.
      */
-    public List<Node> getSepset(Node i, Node k) {
+    public List<Node> getSepset(final Node i, final Node k) {
         return getSepsetGreedy(i, k);
     }
 
-    public boolean isCollider(Node i, Node j, Node k) {
-        List<Node> set = getSepsetGreedy(i, k);
+    public boolean isCollider(final Node i, final Node j, final Node k) {
+        final List<Node> set = getSepsetGreedy(i, k);
         return set != null && !set.contains(j);
     }
 
-    public boolean isNoncollider(Node i, Node j, Node k) {
-        List<Node> set = getSepsetGreedy(i, k);
+    public boolean isNoncollider(final Node i, final Node j, final Node k) {
+        final List<Node> set = getSepsetGreedy(i, k);
         return set != null && set.contains(j);
     }
 
-    private List<Node> getSepsetGreedy(Node i, Node k) {
-        if (extraSepsets != null) {
-            final List<Node> v = extraSepsets.get(i, k);
+    private List<Node> getSepsetGreedy(final Node i, final Node k) {
+        if (this.extraSepsets != null) {
+            final List<Node> v = this.extraSepsets.get(i, k);
 
             if (v != null) {
                 return v;
             }
         }
 
-        List<Node> adji = graph.getAdjacentNodes(i);
-        List<Node> adjk = graph.getAdjacentNodes(k);
+        final List<Node> adji = this.graph.getAdjacentNodes(i);
+        final List<Node> adjk = this.graph.getAdjacentNodes(k);
         adji.remove(k);
         adjk.remove(i);
 
-        for (int d = 0; d <= Math.min((depth == -1 ? 1000 : depth), Math.max(adji.size(), adjk.size())); d++) {
+        for (int d = 0; d <= Math.min((this.depth == -1 ? 1000 : this.depth), Math.max(adji.size(), adjk.size())); d++) {
             if (d <= adji.size()) {
-                ChoiceGenerator gen = new ChoiceGenerator(adji.size(), d);
+                final ChoiceGenerator gen = new ChoiceGenerator(adji.size(), d);
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
-                    List<Node> v = GraphUtils.asList(choice, adji);
+                    final List<Node> v = GraphUtils.asList(choice, adji);
 
                     if (getIndependenceTest().isIndependent(i, k, v)) {
                         return v;
@@ -93,11 +93,11 @@ public class SepsetsGreedy implements SepsetProducer {
             }
 
             if (d <= adjk.size()) {
-                ChoiceGenerator gen = new ChoiceGenerator(adjk.size(), d);
+                final ChoiceGenerator gen = new ChoiceGenerator(adjk.size(), d);
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
-                    List<Node> v = GraphUtils.asList(choice, adjk);
+                    final List<Node> v = GraphUtils.asList(choice, adjk);
 
                     if (getIndependenceTest().isIndependent(i, k, v)) {
                         return v;
@@ -110,47 +110,47 @@ public class SepsetsGreedy implements SepsetProducer {
     }
 
     @Override
-    public boolean isIndependent(Node a, Node b, List<Node> c) {
-        return independenceTest.isIndependent(a, b, c);
+    public boolean isIndependent(final Node a, final Node b, final List<Node> c) {
+        return this.independenceTest.isIndependent(a, b, c);
     }
 
     @Override
     public double getPValue() {
-        return independenceTest.getPValue();
+        return this.independenceTest.getPValue();
     }
 
     @Override
     public double getScore() {
-        return -(independenceTest.getPValue() - independenceTest.getAlpha());
+        return -(this.independenceTest.getPValue() - this.independenceTest.getAlpha());
     }
 
     @Override
     public List<Node> getVariables() {
-        return independenceTest.getVariables();
+        return this.independenceTest.getVariables();
     }
 
     private IndependenceTest getIndependenceTest() {
-        return independenceTest;
+        return this.independenceTest;
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     @Override
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 
     public Graph getDag() {
-        if (independenceTest instanceof IndTestDSep) {
-            return ((IndTestDSep) independenceTest).getGraph();
+        if (this.independenceTest instanceof IndTestDSep) {
+            return ((IndTestDSep) this.independenceTest).getGraph();
         } else {
             return null;
         }
     }
 
-    public void setDepth(int depth) {
+    public void setDepth(final int depth) {
         this.depth = depth;
     }
 }

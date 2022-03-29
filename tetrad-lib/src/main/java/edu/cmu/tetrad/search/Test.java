@@ -35,21 +35,21 @@ public class Test {
 
     @org.junit.Test
     public void test() {
-        double[] a = {.3, .03, .01};
+        final double[] a = {.3, .03, .01};
 
-        List<Double> logs = new ArrayList<>();
+        final List<Double> logs = new ArrayList<>();
 
-        for (double _a : a) {
+        for (final double _a : a) {
             logs.add(Math.log(_a));
         }
 
         double sum = 0.0;
 
-        for (double _a : a) {
+        for (final double _a : a) {
             sum += _a;
         }
 
-        double logsum = StatUtils.logsum(logs);
+        final double logsum = StatUtils.logsum(logs);
 
         System.out.println(Math.exp(logsum) + " " + sum);
     }

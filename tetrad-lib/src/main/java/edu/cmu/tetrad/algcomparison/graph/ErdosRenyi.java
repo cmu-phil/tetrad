@@ -17,13 +17,13 @@ public class ErdosRenyi implements RandomGraph {
     static final long serialVersionUID = 23L;
 
     @Override
-    public Graph createGraph(Parameters parameters) {
-        double p = parameters.getDouble(Params.PROBABILITY_OF_EDGE);
-        int m = parameters.getInt(Params.NUM_MEASURES);
-        int l = parameters.getInt(Params.NUM_LATENTS);
-        int t = (m + l) * (m + l - 1) / 2;
-        int max = Integer.MAX_VALUE;
-        int e = (int) (p * t);
+    public Graph createGraph(final Parameters parameters) {
+        final double p = parameters.getDouble(Params.PROBABILITY_OF_EDGE);
+        final int m = parameters.getInt(Params.NUM_MEASURES);
+        final int l = parameters.getInt(Params.NUM_LATENTS);
+        final int t = (m + l) * (m + l - 1) / 2;
+        final int max = Integer.MAX_VALUE;
+        final int e = (int) (p * t);
 
         return GraphUtils.randomGraphRandomForwardEdges(
                 m + l, l, e, max, max, max, false);
@@ -36,7 +36,7 @@ public class ErdosRenyi implements RandomGraph {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
+        final List<String> parameters = new ArrayList<>();
         parameters.add(Params.NUM_MEASURES);
         parameters.add(Params.NUM_LATENTS);
         parameters.add(Params.PROBABILITY_OF_EDGE);

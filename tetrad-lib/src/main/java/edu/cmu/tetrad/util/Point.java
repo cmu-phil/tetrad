@@ -38,7 +38,7 @@ public class Point implements Comparable {
      *
      * @param vector a vector representing the point coordinates, in order.
      */
-    public Point(Vector vector) {
+    public Point(final Vector vector) {
         this.vector = vector.copy();
     }
 
@@ -46,15 +46,15 @@ public class Point implements Comparable {
      * @param index Ibid.
      * @return Ibid.
      */
-    public double getValue(int index) {
-        return vector.get(index);
+    public double getValue(final int index) {
+        return this.vector.get(index);
     }
 
     /**
      * @return Ibid.
      */
     public int getSize() {
-        return vector.size();
+        return this.vector.size();
     }
 
     /**
@@ -64,12 +64,12 @@ public class Point implements Comparable {
      * @param o Ibid.
      * @return Ibid.
      */
-    public int compareTo(Object o) {
+    public int compareTo(final Object o) {
         if (o == this) {
             return 0;
         }
 
-        Point p = (Point) o;
+        final Point p = (Point) o;
 
         for (int i = 0; i < getSize(); i++) {
             if (getValue(i) != p.getValue(i)) {
@@ -84,7 +84,7 @@ public class Point implements Comparable {
      * @return Ibid.
      */
     public String toString() {
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
 
         buf.append("<");
 

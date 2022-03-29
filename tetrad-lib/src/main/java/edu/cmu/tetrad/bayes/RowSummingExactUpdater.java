@@ -80,7 +80,7 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
     /**
      * Constructs a new updater for the given Bayes net.
      */
-    public RowSummingExactUpdater(BayesIm bayesIm) {
+    public RowSummingExactUpdater(final BayesIm bayesIm) {
         if (bayesIm == null) {
             throw new NullPointerException();
         }
@@ -92,7 +92,7 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
     /**
      * Constructs a new updater for the given Bayes net.
      */
-    public RowSummingExactUpdater(BayesIm bayesIm, Evidence evidence) {
+    public RowSummingExactUpdater(final BayesIm bayesIm, final Evidence evidence) {
         if (bayesIm == null) {
             throw new NullPointerException();
         }
@@ -115,7 +115,7 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
      * modified; rather, a new BayesIm is created and updated.
      */
     public BayesIm getBayesIm() {
-        return bayesIm;
+        return this.bayesIm;
     }
 
     /**
@@ -135,11 +135,11 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
      * @see #getBayesIm
      */
     public BayesIm getUpdatedBayesIm() {
-        if (updatedBayesIm == null) {
+        if (this.updatedBayesIm == null) {
             updateAll();
         }
 
-        return updatedBayesIm;
+        return this.updatedBayesIm;
     }
 
     /**
@@ -149,12 +149,12 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
         return new Evidence(this.evidence);
     }
 
-    public void setEvidence(Evidence evidence) {
+    public void setEvidence(final Evidence evidence) {
         if (evidence == null) {
             throw new NullPointerException();
         }
 
-        if (evidence.isIncompatibleWith(bayesIm)) {
+        if (evidence.isIncompatibleWith(this.bayesIm)) {
             throw new IllegalArgumentException("The variable list for the " +
                     "given bayesIm must be compatible with the variable list " +
                     "for this evidence.");
@@ -162,9 +162,9 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
 
         this.evidence = evidence;
 
-        Graph graph = bayesIm.getBayesPm().getDag();
-        Dag manipulatedGraph = createManipulatedGraph(graph);
-        BayesPm manipulatedPm = createUpdatedBayesPm(manipulatedGraph);
+        final Graph graph = this.bayesIm.getBayesPm().getDag();
+        final Dag manipulatedGraph = createManipulatedGraph(graph);
+        final BayesPm manipulatedPm = createUpdatedBayesPm(manipulatedGraph);
 
         this.manipulatedBayesIm = createdUpdatedBayesIm(manipulatedPm);
 
@@ -172,16 +172,16 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
             if (evidence.isManipulated(i)) {
                 for (int j = 0; j < evidence.getNumCategories(i); j++) {
                     if (evidence.getProposition().isAllowed(i, j)) {
-                        manipulatedBayesIm.setProbability(i, 0, j, 1.0);
+                        this.manipulatedBayesIm.setProbability(i, 0, j, 1.0);
                     } else {
-                        manipulatedBayesIm.setProbability(i, 0, j, 0.0);
+                        this.manipulatedBayesIm.setProbability(i, 0, j, 0.0);
                     }
                 }
             }
         }
 
 
-        this.bayesImProbs = new BayesImProbs(manipulatedBayesIm);
+        this.bayesImProbs = new BayesImProbs(this.manipulatedBayesIm);
         this.updatedBayesIm = null;
     }
 
@@ -189,21 +189,21 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
         return true;
     }
 
-    public double getJointMarginal(int[] variables, int[] values) {
+    public double getJointMarginal(final int[] variables, final int[] values) {
         if (variables.length != values.length) {
             throw new IllegalArgumentException("Values must match variables.");
         }
 
-        Proposition assertion = Proposition.tautology(manipulatedBayesIm);
-        Proposition condition =
-                new Proposition(manipulatedBayesIm, evidence.getProposition());
+        final Proposition assertion = Proposition.tautology(this.manipulatedBayesIm);
+        final Proposition condition =
+                new Proposition(this.manipulatedBayesIm, this.evidence.getProposition());
 
         for (int i = 0; i < variables.length; i++) {
             assertion.setCategory(variables[i], values[i]);
         }
 
         if (condition.existsCombination()) {
-            return bayesImProbs.getConditionalProb(assertion, condition);
+            return this.bayesImProbs.getConditionalProb(assertion, condition);
         } else {
             return Double.NaN;
         }
@@ -212,24 +212,24 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
     /**
      * @return P&lpar;variable&equals;value &vbar; evidence&rpar; where evidence is getEvidence().
      */
-    public double getMarginal(int variable, int value) {
-        Proposition assertion = Proposition.tautology(manipulatedBayesIm);
-        Proposition condition =
-                new Proposition(manipulatedBayesIm, evidence.getProposition());
+    public double getMarginal(final int variable, final int value) {
+        final Proposition assertion = Proposition.tautology(this.manipulatedBayesIm);
+        final Proposition condition =
+                new Proposition(this.manipulatedBayesIm, this.evidence.getProposition());
         assertion.setCategory(variable, value);
 
         if (condition.existsCombination()) {
-            return bayesImProbs.getConditionalProb(assertion, condition);
+            return this.bayesImProbs.getConditionalProb(assertion, condition);
         } else {
             return Double.NaN;
         }
     }
 
-    public double[] calculatePriorMarginals(int nodeIndex) {
-        Evidence evidence = getEvidence();
+    public double[] calculatePriorMarginals(final int nodeIndex) {
+        final Evidence evidence = getEvidence();
         setEvidence(Evidence.tautology(evidence.getVariableSource()));
 
-        double[] marginals = new double[evidence.getNumCategories(nodeIndex)];
+        final double[] marginals = new double[evidence.getNumCategories(nodeIndex)];
 
         for (int i = 0; i < getBayesIm().getNumColumns(nodeIndex); i++) {
             marginals[i] = getMarginal(nodeIndex, i);
@@ -239,8 +239,8 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
         return marginals;
     }
 
-    public double[] calculateUpdatedMarginals(int nodeIndex) {
-        double[] marginals = new double[evidence.getNumCategories(nodeIndex)];
+    public double[] calculateUpdatedMarginals(final int nodeIndex) {
+        final double[] marginals = new double[this.evidence.getNumCategories(nodeIndex)];
 
         for (int i = 0; i < getBayesIm().getNumColumns(nodeIndex); i++) {
             marginals[i] = getMarginal(nodeIndex, i);
@@ -253,27 +253,27 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
      * Prints out the most recent marginal.
      */
     public String toString() {
-        return "Row summing exact updater, evidence = " + evidence;
+        return "Row summing exact updater, evidence = " + this.evidence;
     }
 
     //==============================PRIVATE METHODS=======================//
 
     private void updateAll() {
-        BayesIm updatedBayesIm = new MlBayesIm(manipulatedBayesIm);
-        int numNodes = manipulatedBayesIm.getNumNodes();
+        final BayesIm updatedBayesIm = new MlBayesIm(this.manipulatedBayesIm);
+        final int numNodes = this.manipulatedBayesIm.getNumNodes();
 
-        Proposition assertion = Proposition.tautology(manipulatedBayesIm);
-        Proposition condition = Proposition.tautology(manipulatedBayesIm);
-        Evidence evidence2 = new Evidence(evidence, manipulatedBayesIm);
+        final Proposition assertion = Proposition.tautology(this.manipulatedBayesIm);
+        final Proposition condition = Proposition.tautology(this.manipulatedBayesIm);
+        final Evidence evidence2 = new Evidence(this.evidence, this.manipulatedBayesIm);
 
         for (int node = 0; node < numNodes; node++) {
-            int numRows = manipulatedBayesIm.getNumRows(node);
-            int numCols = manipulatedBayesIm.getNumColumns(node);
-            int[] parents = manipulatedBayesIm.getParents(node);
+            final int numRows = this.manipulatedBayesIm.getNumRows(node);
+            final int numCols = this.manipulatedBayesIm.getNumColumns(node);
+            final int[] parents = this.manipulatedBayesIm.getParents(node);
 
             for (int row = 0; row < numRows; row++) {
-                int[] parentValues =
-                        manipulatedBayesIm.getParentValues(node, row);
+                final int[] parentValues =
+                        this.manipulatedBayesIm.getParentValues(node, row);
 
                 for (int col = 0; col < numCols; col++) {
                     assertion.setToTautology();
@@ -295,7 +295,7 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
                     }
 
                     if (condition.existsCombination()) {
-                        double p = bayesImProbs.getConditionalProb(assertion,
+                        final double p = this.bayesImProbs.getConditionalProb(assertion,
                                 condition);
                         updatedBayesIm.setProbability(node, row, col, p);
                     } else {
@@ -309,26 +309,26 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
         this.updatedBayesIm = updatedBayesIm;
     }
 
-    private BayesIm createdUpdatedBayesIm(BayesPm updatedBayesPm) {
+    private BayesIm createdUpdatedBayesIm(final BayesPm updatedBayesPm) {
 
         // Switching this to MANUAL since the initial values don't matter.
-        return new MlBayesIm(updatedBayesPm, bayesIm, MlBayesIm.MANUAL);
+        return new MlBayesIm(updatedBayesPm, this.bayesIm, MlBayesIm.MANUAL);
     }
 
-    private BayesPm createUpdatedBayesPm(Dag updatedGraph) {
-        return new BayesPm(updatedGraph, bayesIm.getBayesPm());
+    private BayesPm createUpdatedBayesPm(final Dag updatedGraph) {
+        return new BayesPm(updatedGraph, this.bayesIm.getBayesPm());
     }
 
-    private Dag createManipulatedGraph(Graph graph) {
-        Dag updatedGraph = new Dag(graph);
+    private Dag createManipulatedGraph(final Graph graph) {
+        final Dag updatedGraph = new Dag(graph);
 
         // alters graph for manipulated evidenceItems
-        for (int i = 0; i < evidence.getNumNodes(); ++i) {
-            if (evidence.isManipulated(i)) {
-                Node node = updatedGraph.getNode(evidence.getNode(i).getName());
-                List<Node> parents = updatedGraph.getParents(node);
+        for (int i = 0; i < this.evidence.getNumNodes(); ++i) {
+            if (this.evidence.isManipulated(i)) {
+                final Node node = updatedGraph.getNode(this.evidence.getNode(i).getName());
+                final List<Node> parents = updatedGraph.getParents(node);
 
-                for (Node parent1 : parents) {
+                for (final Node parent1 : parents) {
                     updatedGraph.removeEdge(node, parent1);
                 }
             }
@@ -347,15 +347,15 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (bayesIm == null) {
+        if (this.bayesIm == null) {
             throw new NullPointerException();
         }
 
-        if (evidence == null) {
+        if (this.evidence == null) {
             throw new NullPointerException();
         }
     }

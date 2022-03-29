@@ -91,18 +91,18 @@ public final class IndTestDrton implements IndependenceTest {
      * @param dataSet A data set containing only continuous columns.
      * @param alpha   The alpha level of the test.
      */
-    public IndTestDrton(DataSet dataSet, double alpha) {
+    public IndTestDrton(final DataSet dataSet, final double alpha) {
         if (!(dataSet.isContinuous())) {
             throw new IllegalArgumentException("Data set must be continuous.");
         }
 
         this.covMatrix = DataUtils.covarianceNonparanormalDrton(dataSet);
-        this._covMatrix = covMatrix.getMatrix();
-        List<Node> nodes = covMatrix.getVariables();
+        this._covMatrix = this.covMatrix.getMatrix();
+        final List<Node> nodes = this.covMatrix.getVariables();
 
         this.variables = Collections.unmodifiableList(nodes);
-        this.indexMap = indexMap(variables);
-        this.nameMap = mapNames(variables);
+        this.indexMap = indexMap(this.variables);
+        this.nameMap = mapNames(this.variables);
         setAlpha(alpha);
 
         this.dataSet = DataUtils.center(this.dataSet);
@@ -114,7 +114,7 @@ public final class IndTestDrton implements IndependenceTest {
      * Creates a new independence test instance for a subset of the variables.
      */
 
-    public IndependenceTest indTestSubset(List<Node> vars) {
+    public IndependenceTest indTestSubset(final List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
@@ -127,30 +127,30 @@ public final class IndTestDrton implements IndependenceTest {
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
+    public boolean isIndependent(final Node x, final Node y, final List<Node> z) {
         double r;
-        int n = sampleSize();
+        final int n = sampleSize();
 
         if (z.isEmpty()) {
-            Integer xi = indexMap.get(x);
-            Integer yi = indexMap.get(y);
+            Integer xi = this.indexMap.get(x);
+            Integer yi = this.indexMap.get(y);
 
             if (xi == null || yi == null) {
-                xi = indexMap.get(nameMap.get(x.getName()));
-                yi = indexMap.get(nameMap.get(y.getName()));
+                xi = this.indexMap.get(this.nameMap.get(x.getName()));
+                yi = this.indexMap.get(this.nameMap.get(y.getName()));
 
                 if (xi == null || yi == null) {
                     throw new IllegalArgumentException("Node not in map");
                 }
             }
 
-            double a = _covMatrix.get(xi, xi);
-            double b = _covMatrix.get(xi, yi);
-            double d = _covMatrix.get(yi, yi);
+            final double a = this._covMatrix.get(xi, xi);
+            final double b = this._covMatrix.get(xi, yi);
+            final double d = this._covMatrix.get(yi, yi);
 
             r = -b / Math.sqrt(a * d);
         } else {
-            Matrix submatrix = DataUtils.subMatrix(_covMatrix, indexMap, x, y, z);
+            final Matrix submatrix = DataUtils.subMatrix(this._covMatrix, this.indexMap, x, y, z);
             r = StatUtils.partialCorrelation(submatrix);
         }
 
@@ -186,7 +186,7 @@ public final class IndTestDrton implements IndependenceTest {
         if (r > 1.) r = 1.;
         if (r < -1.) r = -1.;
 
-        double fisherZ = Math.sqrt(n - z.size() - 3.0) *
+        final double fisherZ = Math.sqrt(n - z.size() - 3.0) *
                 0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
 
         this.fisherZ = fisherZ;
@@ -195,21 +195,21 @@ public final class IndTestDrton implements IndependenceTest {
             return true;
         }
 
-        double pValue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, Math.abs(fisherZ)));
+        final double pValue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, Math.abs(fisherZ)));
 
-        return pValue > alpha;
+        return pValue > this.alpha;
     }
 
-    public boolean isIndependent(Node x, Node y, Node... z) {
+    public boolean isIndependent(final Node x, final Node y, final Node... z) {
         return isIndependent(x, y, Arrays.asList(z));
     }
 
-    public boolean isDependent(Node x, Node y, List<Node> z) {
+    public boolean isDependent(final Node x, final Node y, final List<Node> z) {
         return !isIndependent(x, y, z);
     }
 
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
+    public boolean isDependent(final Node x, final Node y, final Node... z) {
+        final List<Node> zList = Arrays.asList(z);
         return isDependent(x, y, zList);
     }
 
@@ -217,14 +217,14 @@ public final class IndTestDrton implements IndependenceTest {
      * @return the probability associated with the most recently computed independence test.
      */
     public double getPValue() {
-        return 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, Math.abs(fisherZ)));
+        return 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, Math.abs(this.fisherZ)));
     }
 
     /**
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
-    public void setAlpha(double alpha) {
+    public void setAlpha(final double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
             throw new IllegalArgumentException("Significance out of range.");
         }
@@ -250,17 +250,17 @@ public final class IndTestDrton implements IndependenceTest {
     /**
      * @return the variable with the given name.
      */
-    public Node getVariable(String name) {
-        return nameMap.get(name);
+    public Node getVariable(final String name) {
+        return this.nameMap.get(name);
     }
 
     /**
      * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
-        List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<>();
-        for (Node variable1 : variables) {
+        final List<Node> variables = getVariables();
+        final List<String> variableNames = new ArrayList<>();
+        for (final Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }
         return variableNames;
@@ -270,33 +270,33 @@ public final class IndTestDrton implements IndependenceTest {
      * If <code>isDeterminismAllowed()</code>, deters to IndTestFisherZD; otherwise throws
      * UnsupportedOperationException.
      */
-    public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
-        int[] parents = new int[z.size()];
+    public boolean determines(final List<Node> z, final Node x) throws UnsupportedOperationException {
+        final int[] parents = new int[z.size()];
 
         for (int j = 0; j < parents.length; j++) {
-            parents[j] = covMatrix.getVariables().indexOf(z.get(j));
+            parents[j] = this.covMatrix.getVariables().indexOf(z.get(j));
         }
 
-        int i = covMatrix.getVariables().indexOf(x);
+        final int i = this.covMatrix.getVariables().indexOf(x);
 
-        Matrix matrix2D = covMatrix.getMatrix();
+        final Matrix matrix2D = this.covMatrix.getMatrix();
         double variance = matrix2D.get(i, i);
 
         if (parents.length > 0) {
 
             // Regress z onto i, yielding regression coefficients b.
-            Matrix Czz = matrix2D.getSelection(parents, parents);
-            Matrix inverse;
+            final Matrix Czz = matrix2D.getSelection(parents, parents);
+            final Matrix inverse;
 
             try {
                 inverse = Czz.inverse();
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 return true;
             }
 
             Vector Cyz = matrix2D.getColumn(i);
             Cyz = Cyz.viewSelection(parents);
-            Vector b = inverse.times(Cyz);
+            final Vector b = inverse.times(Cyz);
 
             variance -= Cyz.dotProduct(b);
         }
@@ -308,7 +308,7 @@ public final class IndTestDrton implements IndependenceTest {
      * @return the data set being analyzed.
      */
     public DataSet getData() {
-        return dataSet;
+        return this.dataSet;
     }
 
     @Override
@@ -337,7 +337,7 @@ public final class IndTestDrton implements IndependenceTest {
     }
 
     public void shuffleVariables() {
-        ArrayList<Node> nodes = new ArrayList<>(this.variables);
+        final ArrayList<Node> nodes = new ArrayList<>(this.variables);
         Collections.shuffle(nodes);
         this.variables = Collections.unmodifiableList(nodes);
     }
@@ -349,7 +349,7 @@ public final class IndTestDrton implements IndependenceTest {
         return "Drton, alpha = " + nf.format(getAlpha());
     }
 
-    public void setPValueLogger(PrintStream pValueLogger) {
+    public void setPValueLogger(final PrintStream pValueLogger) {
         this.pValueLogger = pValueLogger;
     }
 
@@ -360,21 +360,21 @@ public final class IndTestDrton implements IndependenceTest {
     }
 
     private ICovarianceMatrix covMatrix() {
-        return covMatrix;
+        return this.covMatrix;
     }
 
-    private Map<String, Node> mapNames(List<Node> variables) {
-        Map<String, Node> nameMap = new ConcurrentHashMap<>();
+    private Map<String, Node> mapNames(final List<Node> variables) {
+        final Map<String, Node> nameMap = new ConcurrentHashMap<>();
 
-        for (Node node : variables) {
+        for (final Node node : variables) {
             nameMap.put(node.getName(), node);
         }
 
         return nameMap;
     }
 
-    private Map<Node, Integer> indexMap(List<Node> variables) {
-        Map<Node, Integer> indexMap = new ConcurrentHashMap<>();
+    private Map<Node, Integer> indexMap(final List<Node> variables) {
+        final Map<Node, Integer> indexMap = new ConcurrentHashMap<>();
 
         for (int i = 0; i < variables.size(); i++) {
             indexMap.put(variables.get(i), i);
@@ -385,11 +385,11 @@ public final class IndTestDrton implements IndependenceTest {
 
     @Override
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     @Override
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 }

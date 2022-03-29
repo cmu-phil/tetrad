@@ -55,7 +55,7 @@ public final class SimulationStudy {
     /**
      * Constructs a new simulation edu.cmu.tetrad.study for the given session.
      */
-    public SimulationStudy(Session session) {
+    public SimulationStudy(final Session session) {
         if (session == null) {
             throw new NullPointerException();
         }
@@ -65,8 +65,8 @@ public final class SimulationStudy {
         // Cleanup: when session nodes are removed from the session,
         // remove their repetition numbers from the repetitions map.
         session.addSessionListener(new SessionAdapter() {
-            public void nodeRemoved(SessionEvent e) {
-                SessionNode node = e.getNode();
+            public void nodeRemoved(final SessionEvent e) {
+                final SessionNode node = e.getNode();
                 removeRepetition(node);
             }
         });
@@ -81,7 +81,7 @@ public final class SimulationStudy {
      *
      * @param repetition the repetition, an integer > 0.
      */
-    public void setRepetition(SessionNode node, int repetition) {
+    public void setRepetition(final SessionNode node, final int repetition) {
         if (node == null) {
             throw new NullPointerException();
         }
@@ -101,7 +101,7 @@ public final class SimulationStudy {
      *
      * @see #setRepetition
      */
-    public static int getRepetition(SessionNode node) {
+    public static int getRepetition(final SessionNode node) {
         if (node.getRepetition() < 1) {
             node.setRepetition(1);
         }
@@ -114,7 +114,7 @@ public final class SimulationStudy {
      *
      * @see #getRepetition
      */
-    public void execute(SessionNode sessionNode, boolean overwrite) {
+    public void execute(final SessionNode sessionNode, final boolean overwrite) {
         if (!this.session.contains(sessionNode)) {
             throw new IllegalArgumentException("Session node not in the " +
                     "session: " + sessionNode.getDisplayName());
@@ -125,25 +125,25 @@ public final class SimulationStudy {
 
         // Begin the execution, making sure that each node's children are
         // executed in the order of the given tier ordering.
-        LinkedList<SessionNode> tierOrdering = new LinkedList<>(getTierOrdering(sessionNode));
+        final LinkedList<SessionNode> tierOrdering = new LinkedList<>(getTierOrdering(sessionNode));
         notifyDownstreamOfStart(sessionNode);
 
-        boolean doRepetition = true;
-        boolean simulation = true;
+        final boolean doRepetition = true;
+        final boolean simulation = true;
 
         TetradLogger.getInstance().forceLogMessage("\n\n===STARTING SIMULATION STUDY===");
-        long time1 = System.currentTimeMillis();
+        final long time1 = System.currentTimeMillis();
 
         execute(tierOrdering, doRepetition, simulation, overwrite);
 
         TetradLogger.getInstance().forceLogMessage("\n\n===FINISHING SIMULATION STUDY===");
-        long time2 = System.currentTimeMillis();
+        final long time2 = System.currentTimeMillis();
         TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (time2 - time1) / 1000. + " s");
     }
 
     public boolean createDescendantModels(final SessionNode sessionNode,
-                                          boolean overwrite) {
-        if (!session.contains(sessionNode)) {
+                                          final boolean overwrite) {
+        if (!this.session.contains(sessionNode)) {
             throw new IllegalArgumentException("Session node not in the " +
                     "session: " + sessionNode.getDisplayName());
         }
@@ -152,31 +152,31 @@ public final class SimulationStudy {
 
         // Begin the execution, making sure that each node's children are
         // executed in the order of the given tier ordering.
-        LinkedList<SessionNode> tierOrdering = getTierOrdering(sessionNode);
+        final LinkedList<SessionNode> tierOrdering = getTierOrdering(sessionNode);
 
         if (sessionNode.getModel() != null) {
             tierOrdering.remove(sessionNode);
         }
 
         notifyDownstreamOfStart(sessionNode);
-        boolean doRepetition = false;
-        boolean simulation = true;
+        final boolean doRepetition = false;
+        final boolean simulation = true;
         return execute(tierOrdering, doRepetition, simulation, overwrite);
     }
 
     /**
      * Adds a session listener.
      */
-    public void addSessionListener(SessionListener l) {
+    public void addSessionListener(final SessionListener l) {
         getSessionSupport().addSessionListener(l);
     }
 
     //===========================PRIVATE METHODS===========================//
 
     private HashSet<SessionNode> nodesWithModels() {
-        HashSet<SessionNode> nodesWithModels = new HashSet<>();
+        final HashSet<SessionNode> nodesWithModels = new HashSet<>();
 
-        for (SessionNode node : session.getNodes()) {
+        for (final SessionNode node : this.session.getNodes()) {
             if (node.getModel() != null) {
                 nodesWithModels.add(node);
             }
@@ -190,7 +190,7 @@ public final class SimulationStudy {
      * execution has begun of a simulation edu.cmu.tetrad.study.
      */
     private void notifyDownstreamOfStart(final SessionNode sessionNode) {
-        SessionSupport sessionSupport = new SessionSupport(this);
+        final SessionSupport sessionSupport = new SessionSupport(this);
         sessionSupport.addSessionListener(sessionNode.getSessionHandler());
         sessionSupport.fireExecutionStarted();
     }
@@ -203,21 +203,21 @@ public final class SimulationStudy {
      *
      * @see #getRepetition
      */
-    private boolean execute(LinkedList<SessionNode> tierOrdering, boolean doRepetition,
-                            boolean simulation, boolean overwrite) {
+    private boolean execute(final LinkedList<SessionNode> tierOrdering, final boolean doRepetition,
+                            final boolean simulation, final boolean overwrite) {
         if (tierOrdering.isEmpty()) {
             return true;
         }
 
-        SessionNode sessionNode = tierOrdering.getFirst();
+        final SessionNode sessionNode = tierOrdering.getFirst();
 
-        if (!session.contains(sessionNode)) {
+        if (!this.session.contains(sessionNode)) {
             throw new IllegalArgumentException("Session node not in the " +
                     "session: " + sessionNode.getDisplayName());
         }
 
         // Only fill in nodes that were already filled in.
-        if (!nodesToExecute.contains(sessionNode)) {
+        if (!this.nodesToExecute.contains(sessionNode)) {
             return false;
         }
 
@@ -231,7 +231,7 @@ public final class SimulationStudy {
         // the model for a particular node already exists, in which
         // cases it is not created again. (This avoids repetition.)
         // jdramsey 1/11/01
-        int repetition = doRepetition ? getRepetition(sessionNode) : 1;
+        final int repetition = doRepetition ? getRepetition(sessionNode) : 1;
 
         Preferences.userRoot().putBoolean("errorFound", false);
 
@@ -254,11 +254,11 @@ public final class SimulationStudy {
                             + sessionNode.getDisplayName() + "\n");
                 }
 
-                boolean created = sessionNode.createModel(simulation);
+                final boolean created = sessionNode.createModel(simulation);
 
                 if (created) {
-                    SessionModel source = sessionNode.getModel();
-                    Map<String, String> paramSettings = new LinkedHashMap<>();
+                    final SessionModel source = sessionNode.getModel();
+                    final Map<String, String> paramSettings = new LinkedHashMap<>();
                     collectParentParamSettings(sessionNode, paramSettings);
 
                     if (source instanceof SimulationParamsSource) {
@@ -269,14 +269,14 @@ public final class SimulationStudy {
                 if (!created) {
                     return false;
                 }
-            } catch (RuntimeException e) {
+            } catch (final RuntimeException e) {
                 e.printStackTrace();
                 return false;
             }
 
-            LinkedList<SessionNode> _tierOrdering = new LinkedList<>(tierOrdering);
+            final LinkedList<SessionNode> _tierOrdering = new LinkedList<>(tierOrdering);
             _tierOrdering.removeFirst();
-            boolean success =
+            final boolean success =
                     execute(_tierOrdering, doRepetition, simulation, overwrite);
 
             if (!success) {
@@ -287,9 +287,9 @@ public final class SimulationStudy {
         return true;
     }
 
-    private void collectParentParamSettings(SessionNode sessionNode,
-                                            Map<String, String> paramSettings) {
-        for (SessionNode parent : sessionNode.getParents()) {
+    private void collectParentParamSettings(final SessionNode sessionNode,
+                                            final Map<String, String> paramSettings) {
+        for (final SessionNode parent : sessionNode.getParents()) {
             collectParentParamSettings(parent, paramSettings);
         }
 
@@ -302,7 +302,7 @@ public final class SimulationStudy {
      * Removes the repetition number for the given node. If it's still in the
      * graph, its repetition will be 1.
      */
-    private static void removeRepetition(SessionNode sessionNode) {
+    private static void removeRepetition(final SessionNode sessionNode) {
         sessionNode.setRepetition(1);
     }
 
@@ -313,20 +313,20 @@ public final class SimulationStudy {
      *
      * @return a tier ordering for the nodes in this graph.
      */
-    private LinkedList<SessionNode> getTierOrdering(SessionNode node) {
-        Session session = this.session;
-        Set<SessionNode> sessionNodes = session.getNodes();
+    private LinkedList<SessionNode> getTierOrdering(final SessionNode node) {
+        final Session session = this.session;
+        final Set<SessionNode> sessionNodes = session.getNodes();
 
-        LinkedList<SessionNode> found = new LinkedList<>();
-        Set<SessionNode> notFound = new HashSet<>();
+        final LinkedList<SessionNode> found = new LinkedList<>();
+        final Set<SessionNode> notFound = new HashSet<>();
 
         // The getVariableNodes() method already returns a copy, so there's no
         // need to make a new copy.
         notFound.addAll(sessionNodes);
 
         while (!notFound.isEmpty()) {
-            for (Iterator<SessionNode> it = notFound.iterator(); it.hasNext(); ) {
-                SessionNode sessionNode = it.next();
+            for (final Iterator<SessionNode> it = notFound.iterator(); it.hasNext(); ) {
+                final SessionNode sessionNode = it.next();
 
                 if (found.containsAll(sessionNode.getParents())) {
                     found.add(sessionNode);
@@ -339,8 +339,8 @@ public final class SimulationStudy {
         return found;
     }
 
-    public static Set getDescendants(SessionNode node) {
-        HashSet<SessionNode> descendants = new HashSet<>();
+    public static Set getDescendants(final SessionNode node) {
+        final HashSet<SessionNode> descendants = new HashSet<>();
         doChildClosureVisit(node, descendants);
         return descendants;
     }
@@ -348,12 +348,12 @@ public final class SimulationStudy {
     /**
      * closure under the child relation
      */
-    private static void doChildClosureVisit(SessionNode node, Set<SessionNode> closure) {
+    private static void doChildClosureVisit(final SessionNode node, final Set<SessionNode> closure) {
         if (!closure.contains(node)) {
             closure.add(node);
-            Collection<SessionNode> children = node.getChildren();
+            final Collection<SessionNode> children = node.getChildren();
 
-            for (SessionNode child : children) {
+            for (final SessionNode child : children) {
                 doChildClosureVisit(child, closure);
             }
         }
@@ -367,7 +367,7 @@ public final class SimulationStudy {
     }
 
     public Session getSession() {
-        return session;
+        return this.session;
     }
 }
 

@@ -67,14 +67,14 @@ public class MultiGeneralAndersonDarlingTest {
     /**
      * Constructs an Anderson-Darling test for the given column of data.
      */
-    public MultiGeneralAndersonDarlingTest(List<List<Double>> data, List<RealDistribution> distributions) {
+    public MultiGeneralAndersonDarlingTest(final List<List<Double>> data, final List<RealDistribution> distributions) {
         if (distributions == null) {
             throw new NullPointerException();
         }
 
         this.distributions = distributions;
 
-        for (List<Double> _data : data) {
+        for (final List<Double> _data : data) {
             Collections.sort(_data);
         }
 
@@ -89,7 +89,7 @@ public class MultiGeneralAndersonDarlingTest {
      * @return the A^2 statistic.
      */
     public double getASquared() {
-        return aSquared;
+        return this.aSquared;
     }
 
     /**
@@ -97,7 +97,7 @@ public class MultiGeneralAndersonDarlingTest {
      * heuristically for sample size.
      */
     public double getASquaredStar() {
-        return aSquaredStar;
+        return this.aSquaredStar;
     }
 
     /**
@@ -105,28 +105,28 @@ public class MultiGeneralAndersonDarlingTest {
      * exponential functions.
      */
     public double getP() {
-        return p;
+        return this.p;
     }
 
     //============================PRIVATE METHODS========================//
 
     private void runTest() {
-        int n = data.get(0).size();
+        final int n = this.data.get(0).size();
         double h = 0.0;
 
         int numSummed = 0;
 
-        for (int g = 0; g < data.size(); g++) {
-            List<Double> _data = data.get(g);
+        for (int g = 0; g < this.data.size(); g++) {
+            final List<Double> _data = this.data.get(g);
 
             for (int i = 1; i <= n; i++) {
-                double x1 = _data.get(i - 1);
-                double a1 = Math.log(distributions.get(g).cumulativeProbability(x1));
+                final double x1 = _data.get(i - 1);
+                final double a1 = Math.log(this.distributions.get(g).cumulativeProbability(x1));
 
-                double x2 = _data.get(n + 1 - i - 1);
-                double a2 = Math.log(1.0 - distributions.get(g).cumulativeProbability(x2));
+                final double x2 = _data.get(n + 1 - i - 1);
+                final double a2 = Math.log(1.0 - this.distributions.get(g).cumulativeProbability(x2));
 
-                double k = (2 * i - 1) * (a1 + a2);
+                final double k = (2 * i - 1) * (a1 + a2);
 
                 if (!(Double.isNaN(a1) || Double.isNaN(a2) || Double.isInfinite(a1) || Double.isInfinite(a2))) {
                     h += k;
@@ -135,9 +135,9 @@ public class MultiGeneralAndersonDarlingTest {
             }
         }
 
-        double a = -n - (1.0 / numSummed) * h;
-        double aa = (1 + 0.75 / numSummed + 2.25 / Math.pow(numSummed, 2)) * a;
-        double p;
+        final double a = -n - (1.0 / numSummed) * h;
+        final double aa = (1 + 0.75 / numSummed + 2.25 / Math.pow(numSummed, 2)) * a;
+        final double p;
 
         if (aa < 0.2) {
             p = 1 - Math.exp(-13.436 + 101.14 * aa - 223.73 * aa * aa);

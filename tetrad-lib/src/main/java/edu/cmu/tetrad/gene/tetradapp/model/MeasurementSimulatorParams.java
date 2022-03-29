@@ -53,15 +53,15 @@ public class MeasurementSimulatorParams implements TetradSerializable {
      *
      * @throws NullPointerException if the history argument is null.
      */
-    public MeasurementSimulatorParams(Parameters parameters) {
-        simulator = new MeasurementSimulator(parameters);
+    public MeasurementSimulatorParams(final Parameters parameters) {
+        this.simulator = new MeasurementSimulator(parameters);
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
     public static MeasurementSimulatorParams serializableInstance() {
-        MeasurementSimulatorParams params = new MeasurementSimulatorParams(new Parameters());
+        final MeasurementSimulatorParams params = new MeasurementSimulatorParams(new Parameters());
         params.setHistory(new GeneHistory(
                 BasalInitializer.serializableInstance(),
                 BooleanGlassFunction.serializableInstance()));
@@ -70,7 +70,7 @@ public class MeasurementSimulatorParams implements TetradSerializable {
 
     //==============================PUBLIC METHODS======================//
 
-    public void setHistory(GeneHistory history) {
+    public void setHistory(final GeneHistory history) {
         getSimulator().setHistory(history);
     }
 
@@ -78,7 +78,7 @@ public class MeasurementSimulatorParams implements TetradSerializable {
         return getSimulator().getDishDishVariability();
     }
 
-    public void setDishDishVariability(double value) {
+    public void setDishDishVariability(final double value) {
         getSimulator().setDishDishVariability(value);
     }
 
@@ -86,7 +86,7 @@ public class MeasurementSimulatorParams implements TetradSerializable {
         return getSimulator().getSampleSampleVariability();
     }
 
-    public void setSampleSampleVariability(double value) {
+    public void setSampleSampleVariability(final double value) {
         getSimulator().setSampleSampleVariability(value);
     }
 
@@ -94,7 +94,7 @@ public class MeasurementSimulatorParams implements TetradSerializable {
         return getSimulator().getChipChipVariability();
     }
 
-    public void setChipChipVariability(double value) {
+    public void setChipChipVariability(final double value) {
         getSimulator().setChipChipVariability(value);
     }
 
@@ -102,7 +102,7 @@ public class MeasurementSimulatorParams implements TetradSerializable {
         return getSimulator().getPixelDigitalization();
     }
 
-    public void setPixelDigitalization(double value) {
+    public void setPixelDigitalization(final double value) {
         getSimulator().setPixelDigitalization(value);
     }
 
@@ -110,7 +110,7 @@ public class MeasurementSimulatorParams implements TetradSerializable {
         return getSimulator().getNumDishes();
     }
 
-    public void setNumDishes(int value) {
+    public void setNumDishes(final int value) {
         getSimulator().setNumDishes(value);
     }
 
@@ -118,7 +118,7 @@ public class MeasurementSimulatorParams implements TetradSerializable {
         return getSimulator().getNumCellsPerDish();
     }
 
-    public void setNumCellsPerDish(int value) {
+    public void setNumCellsPerDish(final int value) {
         getSimulator().setNumCellsPerDish(value);
     }
 
@@ -126,7 +126,7 @@ public class MeasurementSimulatorParams implements TetradSerializable {
         return getSimulator().getNumSamplesPerDish();
     }
 
-    public void setNumSamplesPerDish(int value) {
+    public void setNumSamplesPerDish(final int value) {
         getSimulator().setNumSamplesPerDish(value);
     }
 
@@ -134,7 +134,7 @@ public class MeasurementSimulatorParams implements TetradSerializable {
         return getSimulator().getStepsGenerated();
     }
 
-    public void setStepsGenerated(int value) {
+    public void setStepsGenerated(final int value) {
         getSimulator().setStepsGenerated(value);
     }
 
@@ -142,7 +142,7 @@ public class MeasurementSimulatorParams implements TetradSerializable {
         return getSimulator().getFirstStepStored();
     }
 
-    public void setFirstStepStored(int value) {
+    public void setFirstStepStored(final int value) {
         getSimulator().setFirstStepStored(value);
     }
 
@@ -150,7 +150,7 @@ public class MeasurementSimulatorParams implements TetradSerializable {
         return getSimulator().getInterval();
     }
 
-    public void setInterval(int value) {
+    public void setInterval(final int value) {
         getSimulator().setInterval(value);
     }
 
@@ -158,7 +158,7 @@ public class MeasurementSimulatorParams implements TetradSerializable {
         return getSimulator().isInitSync();
     }
 
-    public void setInitSync(boolean selected) {
+    public void setInitSync(final boolean selected) {
         getSimulator().setInitSync(selected);
     }
 
@@ -166,7 +166,7 @@ public class MeasurementSimulatorParams implements TetradSerializable {
         return getSimulator().isRawDataSaved();
     }
 
-    public void setRawDataSaved(boolean selected) {
+    public void setRawDataSaved(final boolean selected) {
         getSimulator().setRawDataSaved(selected);
     }
 
@@ -174,15 +174,15 @@ public class MeasurementSimulatorParams implements TetradSerializable {
         return getSimulator().isAntilogCalculated();
     }
 
-    public void setAntilogCalculated(boolean selected) {
+    public void setAntilogCalculated(final boolean selected) {
         getSimulator().setAntilogCalculated(selected);
     }
 
     public MeasurementSimulator getSimulator() {
-        return simulator;
+        return this.simulator;
     }
 
-    public void simulate(GeneHistory history) {
+    public void simulate(final GeneHistory history) {
         getSimulator().simulate(history);
     }
 
@@ -211,11 +211,11 @@ public class MeasurementSimulatorParams implements TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (simulator == null) {
+        if (this.simulator == null) {
             throw new NullPointerException();
         }
     }
@@ -224,7 +224,7 @@ public class MeasurementSimulatorParams implements TetradSerializable {
         return getSimulator().isIncludeDishAndChipColumns();
     }
 
-    public void setIncludeDishAndChipVariables(boolean includeDishAndChipVariables) {
+    public void setIncludeDishAndChipVariables(final boolean includeDishAndChipVariables) {
         getSimulator().setIncludeDishAndChipColumns(includeDishAndChipVariables);
     }
 }

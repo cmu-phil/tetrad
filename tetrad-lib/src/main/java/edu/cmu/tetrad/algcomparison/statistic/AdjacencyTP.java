@@ -24,13 +24,13 @@ public class AdjacencyTP implements Statistic {
     }
 
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        AdjacencyConfusion adjConfusion = new AdjacencyConfusion(trueGraph, estGraph);
+    public double getValue(final Graph trueGraph, final Graph estGraph, final DataModel dataModel) {
+        final AdjacencyConfusion adjConfusion = new AdjacencyConfusion(trueGraph, estGraph);
         return adjConfusion.getAdjTp();
     }
 
     @Override
-    public double getNormValue(double value) {
+    public double getNormValue(final double value) {
         return value;
     }
 }

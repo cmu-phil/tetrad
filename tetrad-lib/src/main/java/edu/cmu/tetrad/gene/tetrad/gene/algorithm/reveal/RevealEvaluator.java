@@ -36,9 +36,9 @@ public class RevealEvaluator {
     private int ngenes;   //The number of genes
     private int ntimes;   //The number of time steps
 
-    private int[][] cases = new int[ntimes][ngenes];
+    private int[][] cases = new int[this.ntimes][this.ngenes];
 
-    public RevealEvaluator(int[][] cases) {
+    public RevealEvaluator(final int[][] cases) {
 
         this.ntimes = cases.length;
         this.ngenes = cases[0].length;
@@ -52,8 +52,8 @@ public class RevealEvaluator {
      * related by a canalyzing function.  The third argument is the time lag
      * between cause and effect, as usual.
      */
-    public int[][] crossTab(int child, int parent, int lag) {
-        int[][] ns = new int[2][2];
+    public int[][] crossTab(final int child, final int parent, final int lag) {
+        final int[][] ns = new int[2][2];
         //        int n = ntimes - lag;
 
         ns[0][0] = 0;
@@ -62,9 +62,9 @@ public class RevealEvaluator {
         ns[1][1] = 0;
 
         int j;
-        for (int i = lag; i < ntimes; i++) {
+        for (int i = lag; i < this.ntimes; i++) {
             j = i - lag;
-            ns[cases[i][child]][cases[j][parent]]++;
+            ns[this.cases[i][child]][this.cases[j][parent]]++;
         }
 
         return ns;
@@ -76,34 +76,34 @@ public class RevealEvaluator {
      * there may be only one.  The third argument is the time lag between the
      * cause(s) and the effect.  See Fig. 5 in the Liang et al. paper.
      */
-    public double mutualInformation(int child, int[] parents, int lag) {
+    public double mutualInformation(final int child, final int[] parents, final int lag) {
 
         //make sure child is not in parents etc.
 
         double M = 0.0;
 
         //H(child)
-        int[] c = new int[ntimes - lag];
-        for (int i = lag; i < ntimes; i++) {
-            c[i - lag] = cases[i][child];
+        final int[] c = new int[this.ntimes - lag];
+        for (int i = lag; i < this.ntimes; i++) {
+            c[i - lag] = this.cases[i][child];
         }
-        double hchild = entropy(c);
+        final double hchild = entropy(c);
 
-        int[] p1 = new int[ntimes - lag];  //1 parent
-        int[][] pm = new int[parents.length][ntimes - lag];  //multiple parents
+        final int[] p1 = new int[this.ntimes - lag];  //1 parent
+        final int[][] pm = new int[parents.length][this.ntimes - lag];  //multiple parents
 
         //H(parents)
         double hparents = 0.0;
 
-        for (int i = 0; i < ntimes - lag; i++) {
-            p1[i] = cases[i][parents[0]];
+        for (int i = 0; i < this.ntimes - lag; i++) {
+            p1[i] = this.cases[i][parents[0]];
         }
         hparents = entropy(p1);
 
         if (parents.length > 1) {
-            for (int i = 0; i < ntimes - lag; i++) {
+            for (int i = 0; i < this.ntimes - lag; i++) {
                 for (int j = 1; j < parents.length; j++) {
-                    pm[j - 1][i] = cases[i][parents[j]];
+                    pm[j - 1][i] = this.cases[i][parents[j]];
                 }
             }
             hparents = jointEntropy(p1, pm);
@@ -114,8 +114,8 @@ public class RevealEvaluator {
         if (parents.length == 1) {
             hjoint = jointEntropy(c, p1);
         } else {
-            int[][] p1pm = new int[parents.length][ntimes - lag];
-            for (int i = 0; i < ntimes - lag; i++) {
+            final int[][] p1pm = new int[parents.length][this.ntimes - lag];
+            for (int i = 0; i < this.ntimes - lag; i++) {
                 p1pm[0][i] = p1[i];
                 for (int j = 0; j < parents.length - 1; j++) {
                     p1pm[j + 1][i] = pm[j][i];
@@ -134,10 +134,10 @@ public class RevealEvaluator {
      * 1's may be replaced by any nonzero value)  See page 20 of the Liang
      * paper.
      */
-    public double entropy(int[] x) {
+    public double entropy(final int[] x) {
         double h = 0.0;
-        int n = x.length;
-        double ln2 = Math.log(2.0);
+        final int n = x.length;
+        final double ln2 = Math.log(2.0);
 
         int n0 = 0;
         for (int i = 0; i < n; i++) {
@@ -146,7 +146,7 @@ public class RevealEvaluator {
             }
         }
 
-        double p;
+        final double p;
         if (n0 == 0 || n0 == n) {
             return h;
         } else {
@@ -163,20 +163,20 @@ public class RevealEvaluator {
      * expressions from a point in time until the end of the data signal.  This
      * is useful in the normalization of the mutual information.
      */
-    public double entropy(int g, int lag) {
+    public double entropy(final int g, final int lag) {
         double h = 0.0;
-        int n = cases.length - lag;
+        final int n = this.cases.length - lag;
 
-        double ln2 = Math.log(2.0);  //TODO:  move outside
+        final double ln2 = Math.log(2.0);  //TODO:  move outside
 
         int n0 = 0;
         for (int i = 0; i < n; i++) {
-            if (cases[i + lag][g] == 0) {
+            if (this.cases[i + lag][g] == 0) {
                 n0++;
             }
         }
 
-        double p;
+        final double p;
         if (n0 == 0 || n0 == n) {
             return h;
         } else {
@@ -190,11 +190,11 @@ public class RevealEvaluator {
      * This method computes the joint entropy of two arrays. The values stored
      * in those arrays are assumed to be restricted to {0,1}.
      */
-    public double jointEntropy(int[] x, int[] y) {
+    public double jointEntropy(final int[] x, final int[] y) {
         double h = 0.0;
-        int[][] ns = new int[2][2];
-        int n = x.length;
-        double ln2 = Math.log(2.0);
+        final int[][] ns = new int[2][2];
+        final int n = x.length;
+        final double ln2 = Math.log(2.0);
 
         ns[0][0] = 0;
         ns[0][1] = 0;
@@ -206,10 +206,13 @@ public class RevealEvaluator {
         }
 
         //int ntot = ns[0][0] + ns[0][1] + ns[1][0] + ns[1][1];
-        int ntot = n;
+        final int ntot = n;
 
-        double[][] p = new double[2][2];
-        double lp00, lp01, lp10, lp11;
+        final double[][] p = new double[2][2];
+        final double lp00;
+        double lp01;
+        double lp10;
+        final double lp11;
 
         p[0][0] = (double) ns[0][0] / (double) ntot;
         p[0][1] = (double) ns[0][1] / (double) ntot;
@@ -242,12 +245,12 @@ public class RevealEvaluator {
         return h;
     }
 
-    public double jointEntropy(int[] x, int[][] y) {
+    public double jointEntropy(final int[] x, final int[][] y) {
         double h = 0.0;
-        int m = y.length;
+        final int m = y.length;
         //System.out.println("m = " + m);
-        int n = x.length;
-        double ln2 = Math.log(2.0);
+        final int n = x.length;
+        final double ln2 = Math.log(2.0);
 
         if (y[0].length != n) {
             System.out.println("x and rows of y and must have same length");
@@ -259,10 +262,10 @@ public class RevealEvaluator {
             nyconfigs *= 2;              //number of configurations of ys
         }
 
-        int nconfigs = 2 * nyconfigs;        //x also makes a config
+        final int nconfigs = 2 * nyconfigs;        //x also makes a config
 
         //System.out.println("nconfigs = " + nconfigs);
-        int[] counts = new int[nconfigs];
+        final int[] counts = new int[nconfigs];
         for (int i = 0; i < nconfigs; i++) {
             counts[i] = 0;
         }
@@ -300,15 +303,15 @@ public class RevealEvaluator {
      * Computes a byte vector which corresponds to the argument ind.  rep[0] is
      * the high order bit. E.g.  if n=3 and ind=6 the vector will be (1, 1, 0).
      */
-    public byte[] booleanRepresentation(int ind, int n) {
-        byte[] rep = new byte[n];
+    public byte[] booleanRepresentation(int ind, final int n) {
+        final byte[] rep = new byte[n];
 
         for (int i = 0; i < n; i++) {
             rep[i] = (byte) 0;
         }
 
         for (int i = 0; i < n; i++) {
-            int rem = ind % 2;
+            final int rem = ind % 2;
             if (rem == 1) {
                 rep[n - i - 1] = (byte) 1;
                 ind -= 1;

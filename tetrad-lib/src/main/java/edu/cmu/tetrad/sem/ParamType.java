@@ -71,7 +71,7 @@ public class ParamType implements TetradSerializable {
      * Protected constructor for the types; this allows for extension in case
      * anyone wants to add formula types.
      */
-    private ParamType(String name) {
+    private ParamType(final String name) {
         this.name = name;
     }
 
@@ -86,7 +86,7 @@ public class ParamType implements TetradSerializable {
      * Prints out the name of the type.
      */
     public String toString() {
-        return name;
+        return this.name;
     }
 
     // Declarations required for serialization.
@@ -95,7 +95,7 @@ public class ParamType implements TetradSerializable {
     private static final ParamType[] TYPES = {COEF, MEAN, VAR, COVAR, DIST};
 
     Object readResolve() throws ObjectStreamException {
-        return TYPES[ordinal]; // Canonicalize.
+        return TYPES[this.ordinal]; // Canonicalize.
     }
 }
 

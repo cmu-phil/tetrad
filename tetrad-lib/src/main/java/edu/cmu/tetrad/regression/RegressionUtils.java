@@ -39,30 +39,30 @@ import java.util.Set;
  */
 public class RegressionUtils {
 
-    public static DataSet residuals(DataSet dataSet, Graph graph) {
-        Regression regression = new RegressionDataset(dataSet);
-        Matrix residuals = new Matrix(dataSet.getNumRows(), dataSet.getNumColumns());
+    public static DataSet residuals(final DataSet dataSet, final Graph graph) {
+        final Regression regression = new RegressionDataset(dataSet);
+        final Matrix residuals = new Matrix(dataSet.getNumRows(), dataSet.getNumColumns());
 
         for (int i = 0; i < dataSet.getNumColumns(); i++) {
-            Node target = dataSet.getVariable(i);
-            Node _target = graph.getNode(target.getName());
+            final Node target = dataSet.getVariable(i);
+            final Node _target = graph.getNode(target.getName());
 
             if (_target == null) {
                 throw new IllegalArgumentException("Data variable not in graph: " + target);
             }
 
-            Set<Node> _regressors = new HashSet<>(graph.getParents(_target));
+            final Set<Node> _regressors = new HashSet<>(graph.getParents(_target));
 
             System.out.println("For " + target + " regressors are " + _regressors);
 
-            List<Node> regressors = new LinkedList<>();
+            final List<Node> regressors = new LinkedList<>();
 
-            for (Node node : _regressors) {
+            for (final Node node : _regressors) {
                 regressors.add(dataSet.getVariable(node.getName()));
             }
 
-            RegressionResult result = regression.regress(target, regressors);
-            Vector residualsColumn = result.getResiduals();
+            final RegressionResult result = regression.regress(target, regressors);
+            final Vector residualsColumn = result.getResiduals();
 //            residuals.viewColumn(i).assign(residualsColumn);
             residuals.assignColumn(i, residualsColumn);
         }

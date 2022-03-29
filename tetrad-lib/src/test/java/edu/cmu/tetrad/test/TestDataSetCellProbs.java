@@ -38,26 +38,26 @@ public final class TestDataSetCellProbs {
 
     @Test
     public void testCreateUsingBayesIm() {
-        Graph graph = GraphConverter.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
-        Dag dag = new Dag(graph);
-        BayesPm bayesPm = new BayesPm(dag);
-        BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+        final Graph graph = GraphConverter.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
+        final Dag dag = new Dag(graph);
+        final BayesPm bayesPm = new BayesPm(dag);
+        final BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
 
-        BayesImProbs bayesImProbs = new BayesImProbs(bayesIm);
+        final BayesImProbs bayesImProbs = new BayesImProbs(bayesIm);
 
-        DataSet dataSet = bayesIm.simulateData(1000, false);
+        final DataSet dataSet = bayesIm.simulateData(1000, false);
 
-        CellTableProbs dataSetProbs = new CellTableProbs(dataSet);
+        final CellTableProbs dataSetProbs = new CellTableProbs(dataSet);
 
-        int[] cell = new int[4];
+        final int[] cell = new int[4];
 
         for (int i = 0; i < 200; i++) {
             for (int j = 0; j < 4; j++) {
                 cell[j] = RandomUtil.getInstance().nextInt(bayesIm.getNumColumns(j));
             }
 
-            double count1 = bayesImProbs.getCellProb(cell);
-            double count2 = dataSetProbs.getCellProb(cell);
+            final double count1 = bayesImProbs.getCellProb(cell);
+            final double count2 = dataSetProbs.getCellProb(cell);
 
             assertEquals(count1, count2, .05);
         }

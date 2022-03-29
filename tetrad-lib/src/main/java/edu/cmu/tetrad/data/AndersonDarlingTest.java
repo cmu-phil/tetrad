@@ -64,7 +64,7 @@ public class AndersonDarlingTest {
     /**
      * Constructs an Anderson-Darling test for the given column of data.
      */
-    public AndersonDarlingTest(double[] data) {
+    public AndersonDarlingTest(final double[] data) {
         this.data = data;
         runTest();
     }
@@ -75,7 +75,7 @@ public class AndersonDarlingTest {
      * @return the A^2 statistic.
      */
     public double getASquared() {
-        return aSquared;
+        return this.aSquared;
     }
 
     /**
@@ -83,7 +83,7 @@ public class AndersonDarlingTest {
      * heuristically for sample size.
      */
     public double getASquaredStar() {
-        return aSquaredStar;
+        return this.aSquaredStar;
     }
 
     /**
@@ -91,19 +91,19 @@ public class AndersonDarlingTest {
      * exponential functions.
      */
     public double getP() {
-        return p;
+        return this.p;
     }
 
     //============================PRIVATE METHODS========================//
 
     private void runTest() {
-        double[] x = leaveOutNaN(data);
-        int n = x.length;
+        final double[] x = leaveOutNaN(this.data);
+        final int n = x.length;
 
         Arrays.sort(x);
 
-        double mean = StatUtils.mean(x);
-        double sd = StatUtils.sd(x);
+        final double mean = StatUtils.mean(x);
+        final double sd = StatUtils.sd(x);
 
         for (int i = 0; i < n; i++) {
             x[i] = (x[i] - mean) / sd;
@@ -115,13 +115,13 @@ public class AndersonDarlingTest {
         int numSummed = 0;
 
         for (int i = 1; i <= n; i++) {
-            double x1 = x[i - 1];
-            double a1 = Math.log(RandomUtil.getInstance().normalCdf(0, 1, x1));
+            final double x1 = x[i - 1];
+            final double a1 = Math.log(RandomUtil.getInstance().normalCdf(0, 1, x1));
 
-            double x2 = x[n + 1 - i - 1];
-            double a2 = Math.log(1.0 - RandomUtil.getInstance().normalCdf(0, 1, x2));
+            final double x2 = x[n + 1 - i - 1];
+            final double a2 = Math.log(1.0 - RandomUtil.getInstance().normalCdf(0, 1, x2));
 
-            double k = (2 * i - 1) * (a1 + a2);
+            final double k = (2 * i - 1) * (a1 + a2);
 
             if (!(Double.isNaN(a1) || Double.isNaN(a2) || Double.isInfinite(a1) || Double.isInfinite(a2))) {
                 h += k;
@@ -129,9 +129,9 @@ public class AndersonDarlingTest {
             }
         }
 
-        double a = -numSummed - (1.0 / numSummed) * h;
-        double aa = (1 + 0.75 / numSummed + 2.25 / Math.pow(numSummed, 2)) * a;
-        double p;
+        final double a = -numSummed - (1.0 / numSummed) * h;
+        final double aa = (1 + 0.75 / numSummed + 2.25 / Math.pow(numSummed, 2)) * a;
+        final double p;
 
         if (aa < 0.2) {
             p = 1 - Math.exp(-13.436 + 101.14 * aa - 223.73 * aa * aa);
@@ -148,29 +148,29 @@ public class AndersonDarlingTest {
         this.p = p;
     }
 
-    private double[] leaveOutNaN(double[] data) {
+    private double[] leaveOutNaN(final double[] data) {
         int numPresent = 0;
 
-        for (double aData1 : data) {
+        for (final double aData1 : data) {
             if (!Double.isNaN(aData1)) {
                 numPresent++;
             }
         }
 
         if (numPresent == data.length) {
-            double[] _data = new double[data.length];
+            final double[] _data = new double[data.length];
             System.arraycopy(data, 0, _data, 0, data.length);
             return _data;
         } else {
-            List<Double> _leaveOutMissing = new ArrayList<>();
+            final List<Double> _leaveOutMissing = new ArrayList<>();
 
-            for (double aData : data) {
+            for (final double aData : data) {
                 if (!Double.isNaN(aData)) {
                     _leaveOutMissing.add(aData);
                 }
             }
 
-            double[] _data = new double[_leaveOutMissing.size()];
+            final double[] _data = new double[_leaveOutMissing.size()];
             for (int i = 0; i < _leaveOutMissing.size(); i++) _data[i] = _leaveOutMissing.get(i);
             return _data;
         }

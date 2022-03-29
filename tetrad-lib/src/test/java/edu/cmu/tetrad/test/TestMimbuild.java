@@ -57,32 +57,32 @@ public class TestMimbuild {
         RandomUtil.getInstance().setSeed(49283494L);
 
         for (int r = 0; r < 1; r++) {
-            Graph mim = DataGraphUtils.randomSingleFactorModel(5, 5, 6, 0, 0, 0);
+            final Graph mim = DataGraphUtils.randomSingleFactorModel(5, 5, 6, 0, 0, 0);
 
-            Graph mimStructure = structure(mim);
+            final Graph mimStructure = structure(mim);
 
-            Parameters params = new Parameters();
+            final Parameters params = new Parameters();
             params.set("coefLow", 0.0);
             params.set("coefHigh", 1.0);
 
-            SemPm pm = new SemPm(mim);
-            SemIm im = new SemIm(pm, params);
-            DataSet data = im.simulateData(300, false);
+            final SemPm pm = new SemPm(mim);
+            final SemIm im = new SemIm(pm, params);
+            final DataSet data = im.simulateData(300, false);
 
-            String algorithm = "FOFC";
-            Graph searchGraph;
-            List<List<Node>> partition;
+            final String algorithm = "FOFC";
+            final Graph searchGraph;
+            final List<List<Node>> partition;
 
             if (algorithm.equals("FOFC")) {
-                FindOneFactorClusters fofc = new FindOneFactorClusters(data, TestType.TETRAD_WISHART,
+                final FindOneFactorClusters fofc = new FindOneFactorClusters(data, TestType.TETRAD_WISHART,
                         FindOneFactorClusters.Algorithm.GAP, 0.001);
                 searchGraph = fofc.search();
                 partition = fofc.getClusters();
             } else if (algorithm.equals("BPC")) {
-                TestType testType = TestType.TETRAD_WISHART;
-                TestType purifyType = TestType.TETRAD_BASED;
+                final TestType testType = TestType.TETRAD_WISHART;
+                final TestType purifyType = TestType.TETRAD_BASED;
 
-                BuildPureClusters bpc = new BuildPureClusters(
+                final BuildPureClusters bpc = new BuildPureClusters(
                         data, 0.001,
                         testType
                 );
@@ -93,7 +93,7 @@ public class TestMimbuild {
                 throw new IllegalStateException();
             }
 
-            List<String> latentVarList = reidentifyVariables(mim, data, partition, 2);
+            final List<String> latentVarList = reidentifyVariables(mim, data, partition, 2);
 
 //            System.out.println(partition);
 //            System.out.println(latentVarList);
@@ -102,17 +102,17 @@ public class TestMimbuild {
 
             Graph mimbuildStructure;
 
-            for (int mimbuildMethod : new int[]{2}) {
+            for (final int mimbuildMethod : new int[]{2}) {
                 if (mimbuildMethod == 2) {
-                    Mimbuild mimbuild = new Mimbuild();
+                    final Mimbuild mimbuild = new Mimbuild();
                     mimbuild.setPenaltyDiscount(1);
                     mimbuild.setMinClusterSize(3);
                     mimbuildStructure = mimbuild.search(partition, latentVarList, new CovarianceMatrix(data));
-                    int shd = SearchGraphUtils.structuralHammingDistance(mimStructure, mimbuildStructure);
+                    final int shd = SearchGraphUtils.structuralHammingDistance(mimStructure, mimbuildStructure);
                     assertEquals(7, shd);
                 } else if (mimbuildMethod == 3) {
 //                    System.out.println("Mimbuild Trek\n");
-                    MimbuildTrek mimbuild = new MimbuildTrek();
+                    final MimbuildTrek mimbuild = new MimbuildTrek();
                     mimbuild.setAlpha(0.1);
                     mimbuild.setMinClusterSize(3);
                     mimbuildStructure = mimbuild.search(partition, latentVarList, new CovarianceMatrix(data));
@@ -120,7 +120,7 @@ public class TestMimbuild {
 //                    System.out.println("\nCovariance over the latents");
 //                    System.out.println(latentcov);
 //                    System.out.println("Estimated\n" + mimbuildStructure);
-                    int shd = SearchGraphUtils.structuralHammingDistance(mimStructure, mimbuildStructure);
+                    final int shd = SearchGraphUtils.structuralHammingDistance(mimStructure, mimbuildStructure);
 //                    System.out.println("SHD = " + shd);
 //                    System.out.println();
                     assertEquals(3, shd);
@@ -559,31 +559,31 @@ public class TestMimbuild {
 //    }
 
 
-    private Graph changeLatentNames(Graph full, Clusters measurements, List<String> latentVarList) {
+    private Graph changeLatentNames(final Graph full, final Clusters measurements, final List<String> latentVarList) {
         Graph g2 = null;
 
         try {
             g2 = (Graph) new MarshalledObject(full).get();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
-        } catch (ClassNotFoundException e) {
+        } catch (final ClassNotFoundException e) {
             e.printStackTrace();
         }
 
         for (int i = 0; i < measurements.getNumClusters(); i++) {
-            List<String> d = measurements.getCluster(i);
-            String latentName = latentVarList.get(i);
+            final List<String> d = measurements.getCluster(i);
+            final String latentName = latentVarList.get(i);
 
-            for (Node node : full.getNodes()) {
+            for (final Node node : full.getNodes()) {
                 if (!(node.getNodeType() == NodeType.LATENT)) {
                     continue;
                 }
 
-                List<Node> _children = full.getChildren(node);
+                final List<Node> _children = full.getChildren(node);
 
                 _children.removeAll(ReidentifyVariables.getLatents(full));
 
-                List<String> childNames = getNames(_children);
+                final List<String> childNames = getNames(_children);
 
                 if (new HashSet<>(childNames).equals(new HashSet<>(d))) {
                     g2.getNode(node.getName()).setName(latentName);
@@ -594,16 +594,16 @@ public class TestMimbuild {
         return g2;
     }
 
-    private List<String> getNames(List<Node> nodes) {
-        List<String> names = new ArrayList<>();
-        for (Node node : nodes) {
+    private List<String> getNames(final List<Node> nodes) {
+        final List<String> names = new ArrayList<>();
+        for (final Node node : nodes) {
             names.add(node.getName());
         }
         return names;
     }
 
 
-    private List<String> reidentifyVariables(Graph mim, DataSet data, List<List<Node>> partition, int method) {
+    private List<String> reidentifyVariables(final Graph mim, final DataSet data, final List<List<Node>> partition, final int method) {
         List<String> latentVarList = null;
 
         if (method == 1) {
@@ -617,10 +617,10 @@ public class TestMimbuild {
         return latentVarList;
     }
 
-    private Graph structure(Graph mim) {
-        List<Node> latents = new ArrayList<>();
+    private Graph structure(final Graph mim) {
+        final List<Node> latents = new ArrayList<>();
 
-        for (Node node : mim.getNodes()) {
+        for (final Node node : mim.getNodes()) {
             if (node.getNodeType() == NodeType.LATENT) {
                 latents.add(node);
             }

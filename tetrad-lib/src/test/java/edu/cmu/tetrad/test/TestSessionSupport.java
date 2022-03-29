@@ -73,7 +73,7 @@ public class TestSessionSupport {
         this.node1 = new SessionNode(Type1.class);
         this.node2 = new SessionNode(Type2.class);
         this.session = new Session("Test");
-        this.sessionSupport = new SessionSupport(session);
+        this.sessionSupport = new SessionSupport(this.session);
     }
 
     /**
@@ -83,12 +83,12 @@ public class TestSessionSupport {
     public void testSingleListener() {
         setUp();
 
-        SessionListener l1 = new SessionListener() {
+        final SessionListener l1 = new SessionListener() {
 
             /**
              * This method is called when a node is added.
              */
-            public void nodeAdded(SessionEvent event) {
+            public void nodeAdded(final SessionEvent event) {
 
                 assertTrue(event.getType() == SessionEvent.NODE_ADDED);
                 assertTrue(getNode1() == event.getNode());
@@ -99,7 +99,7 @@ public class TestSessionSupport {
             /**
              * This method is called when a node is removed.
              */
-            public void nodeRemoved(SessionEvent event) {
+            public void nodeRemoved(final SessionEvent event) {
 
                 assertTrue(event.getType() == SessionEvent.NODE_REMOVED);
                 assertTrue(getNode1() == event.getNode());
@@ -110,7 +110,7 @@ public class TestSessionSupport {
             /**
              * This method is called when an edge is added.
              */
-            public void parentAdded(SessionEvent event) {
+            public void parentAdded(final SessionEvent event) {
 
                 assertTrue(event.getType() == SessionEvent.PARENT_ADDED);
                 assertTrue(getNode1() == event.getParent());
@@ -121,7 +121,7 @@ public class TestSessionSupport {
             /**
              * This method is called when an edge is removed.
              */
-            public void parentRemoved(SessionEvent event) {
+            public void parentRemoved(final SessionEvent event) {
 
                 assertTrue(event.getType() == SessionEvent.PARENT_REMOVED);
                 assertTrue(getNode1() == event.getParent());
@@ -132,7 +132,7 @@ public class TestSessionSupport {
             /**
              * This method is called when a model is created for a node.
              */
-            public void modelCreated(SessionEvent event) {
+            public void modelCreated(final SessionEvent event) {
 
                 assertTrue(event.getType() == SessionEvent.MODEL_CREATED);
                 assertTrue(getNode1() == event.getNode());
@@ -143,7 +143,7 @@ public class TestSessionSupport {
             /**
              * This method is called when a model is destroyed for a node.
              */
-            public void modelDestroyed(SessionEvent event) {
+            public void modelDestroyed(final SessionEvent event) {
 
                 assertTrue(event.getType() == SessionEvent.MODEL_DESTROYED);
                 assertTrue(getNode1() == event.getNode());
@@ -155,7 +155,7 @@ public class TestSessionSupport {
              * This method is called when createModel() is called but the model
              * type is ambiguous.
              */
-            public void modelUnclear(SessionEvent event) {
+            public void modelUnclear(final SessionEvent event) {
 
                 assertTrue(event.getType() == SessionEvent.MODEL_UNCLEAR);
                 assertTrue(getNode1() == event.getNode());
@@ -166,7 +166,7 @@ public class TestSessionSupport {
             /**
              * This method is called when a node is executed manually.
              */
-            public void executionStarted(SessionEvent event) {
+            public void executionStarted(final SessionEvent event) {
                 assertTrue(event.getType() == SessionEvent.EXECUTION_STARTED);
                 assertNull(event.getParent());
                 setEvent1Received(true);
@@ -175,7 +175,7 @@ public class TestSessionSupport {
             /**
              * This method is called when a node is executed manually.
              */
-            public void repetitionChanged(SessionEvent event) {
+            public void repetitionChanged(final SessionEvent event) {
                 assertTrue(event.getType() == SessionEvent.REPETITION_CHANGED);
                 assertNull(event.getParent());
                 setEvent1Received(true);
@@ -184,7 +184,7 @@ public class TestSessionSupport {
             /**
              * This method is called when a node is executed manually.
              */
-            public void addingEdge(SessionEvent event) {
+            public void addingEdge(final SessionEvent event) {
                 assertTrue(event.getType() == SessionEvent.ADDING_EDGE);
                 assertNull(event.getParent());
                 setEvent1Received(true);
@@ -196,38 +196,38 @@ public class TestSessionSupport {
 
         // Test node added event.
         setEvent1Received(false);
-        this.sessionSupport.fireNodeAdded(node1);
+        this.sessionSupport.fireNodeAdded(this.node1);
         assertTrue(isEvent1Received());
 
         // Test node removed event.
         setEvent1Received(false);
-        this.sessionSupport.fireNodeRemoved(node1);
+        this.sessionSupport.fireNodeRemoved(this.node1);
         assertTrue(isEvent1Received());
 
         // Test parent added event.
         setEvent1Received(false);
-        this.sessionSupport.fireParentAdded(node1, node2);
+        this.sessionSupport.fireParentAdded(this.node1, this.node2);
         assertTrue(isEvent1Received());
 
         // Test parent removed event.
         setEvent1Received(false);
-        this.sessionSupport.fireParentRemoved(node1, node2);
+        this.sessionSupport.fireParentRemoved(this.node1, this.node2);
         assertTrue(isEvent1Received());
 
         // Test model created event.
         setEvent1Received(false);
-        this.sessionSupport.fireModelCreated(node1);
+        this.sessionSupport.fireModelCreated(this.node1);
         assertTrue(isEvent1Received());
 
         // Test model destroyed event.
         setEvent1Received(false);
-        this.sessionSupport.fireModelDestroyed(node1);
+        this.sessionSupport.fireModelDestroyed(this.node1);
         assertTrue(isEvent1Received());
 
         // Remove the listener and make sure it's removed.
         this.sessionSupport.removeSessionListener(l1);
         setEvent1Received(false);
-        this.sessionSupport.fireNodeAdded(node1);
+        this.sessionSupport.fireNodeAdded(this.node1);
         assertTrue(!isEvent1Received());
     }
 
@@ -238,21 +238,21 @@ public class TestSessionSupport {
     public void testMultipleListeners() {
         setUp();
 
-        SessionListener l1 = new SessionAdapter() {
+        final SessionListener l1 = new SessionAdapter() {
 
             /**
              * This method is called when a node is added.
              */
-            public void nodeAdded(SessionEvent event) {
+            public void nodeAdded(final SessionEvent event) {
                 setEvent1Received(true);
             }
         };
-        SessionListener l2 = new SessionAdapter() {
+        final SessionListener l2 = new SessionAdapter() {
 
             /**
              * This method is called when a node is added.
              */
-            public void nodeAdded(SessionEvent event) {
+            public void nodeAdded(final SessionEvent event) {
                 setEvent2Received(true);
             }
         };
@@ -262,7 +262,7 @@ public class TestSessionSupport {
         this.sessionSupport.addSessionListener(l2);
         setEvent1Received(false);
         setEvent2Received(false);
-        this.sessionSupport.fireNodeAdded(node1);
+        this.sessionSupport.fireNodeAdded(this.node1);
         assertTrue(isEvent1Received());
         assertTrue(isEvent2Received());
 
@@ -271,7 +271,7 @@ public class TestSessionSupport {
         this.sessionSupport.removeSessionListener(l1);
         setEvent1Received(false);
         setEvent2Received(false);
-        this.sessionSupport.fireNodeAdded(node1);
+        this.sessionSupport.fireNodeAdded(this.node1);
         assertTrue(!isEvent1Received());
         assertTrue(isEvent2Received());
     }
@@ -280,14 +280,14 @@ public class TestSessionSupport {
      * Helps to determine whether an event was received.
      */
     public boolean isEvent1Received() {
-        return event1Received;
+        return this.event1Received;
     }
 
     /**
      * Set in the test adapater to help determine whether an event was
      * received.
      */
-    public void setEvent1Received(boolean event1Received) {
+    public void setEvent1Received(final boolean event1Received) {
         this.event1Received = event1Received;
     }
 
@@ -295,14 +295,14 @@ public class TestSessionSupport {
      * Helps to determine whether an event was received.
      */
     public boolean isEvent2Received() {
-        return event2Received;
+        return this.event2Received;
     }
 
     /**
      * Set in the test adapater to help determine whether an event was
      * received.
      */
-    public void setEvent2Received(boolean event2Received) {
+    public void setEvent2Received(final boolean event2Received) {
         this.event2Received = event2Received;
     }
 

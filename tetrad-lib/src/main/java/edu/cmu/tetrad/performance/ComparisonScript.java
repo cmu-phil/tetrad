@@ -15,7 +15,7 @@ import java.util.List;
 public class ComparisonScript {
 
     private void runFromSimulation() {
-        ComparisonParameters params = new ComparisonParameters();
+        final ComparisonParameters params = new ComparisonParameters();
         params.setDataType(ComparisonParameters.DataType.Continuous); // Continuous or Discrete
         params.setNumVars(12); // number of variables
         params.setNumEdges(12); // number of edges
@@ -26,8 +26,8 @@ public class ComparisonScript {
 
         /** If you want to run data sets from file instead of generating random graphs **/
         params.setDataFromFile(false); // set this to true
-        int maxGraphs = 2; // how many true graphs are in your directory?
-        int dataSetsPerGraph = 3; // how many data sets are there in your directory for each true graph?
+        final int maxGraphs = 2; // how many true graphs are in your directory?
+        final int dataSetsPerGraph = 3; // how many data sets are there in your directory for each true graph?
         // remember the path to the data directory is set in Comparison2.java
         /** ******************** **/
 
@@ -40,7 +40,7 @@ public class ComparisonScript {
             throw new IllegalArgumentException("Cannot have setDataFromFile and setNoData both be true!");
         }
 
-        ArrayList<Comparison2.TableColumn> tableColumns = new ArrayList<>();
+        final ArrayList<Comparison2.TableColumn> tableColumns = new ArrayList<>();
         tableColumns.add(Comparison2.TableColumn.AdjPrec);
         tableColumns.add(Comparison2.TableColumn.AdjRec);
         tableColumns.add(Comparison2.TableColumn.AhdPrec);
@@ -48,7 +48,7 @@ public class ComparisonScript {
         tableColumns.add(Comparison2.TableColumn.SHD);
         tableColumns.add(Comparison2.TableColumn.Elapsed);
 
-        List<ComparisonParameters.Algorithm> algList = new ArrayList<>();
+        final List<ComparisonParameters.Algorithm> algList = new ArrayList<>();
 
         /** add algorithm to compare to the list algList. comment out those you don't want to consider. **/
         //algList.add(ComparisonParameters.Algorithm.PC);
@@ -75,7 +75,7 @@ public class ComparisonScript {
         }
 
         int count = 0;
-        TextTable avgTable = new TextTable((((maxSample - minSample) / increment) + 1) * algList.size() + 2, tableColumns.size() + 1);
+        final TextTable avgTable = new TextTable((((maxSample - minSample) / increment) + 1) * algList.size() + 2, tableColumns.size() + 1);
         for (int sampleSize = minSample; sampleSize <= maxSample; sampleSize += increment) {
             params.setSampleSize(sampleSize);
             if (params.isDataFromFile()) {
@@ -84,14 +84,14 @@ public class ComparisonScript {
             } else System.out.println("sample size = " + sampleSize);
 
 
-            for (ComparisonParameters.Algorithm alg : algList) {
+            for (final ComparisonParameters.Algorithm alg : algList) {
                 count++;
                 params.setAlgorithm(alg);
                 params.setIndependenceTest(ComparisonParameters.IndependenceTestType.FisherZ);
                 params.setScore(ScoreType.SemBic);
                 // params.setOneEdgeFaithfulnessAssumed(false);
 
-                List<ComparisonResult> resultsTrials = new ArrayList<>();
+                final List<ComparisonResult> resultsTrials = new ArrayList<>();
                 for (int trial = 1; trial <= numTrials; trial++) {
                     params.setTrial(trial);
                     resultsTrials.add(Comparison2.compare(params));
@@ -121,7 +121,7 @@ public class ComparisonScript {
         System.out.println(avgTable);
     }
 
-    public static void main(String... args) {
+    public static void main(final String... args) {
         new ComparisonScript().runFromSimulation();
     }
 }

@@ -37,28 +37,28 @@ public class LTestRevealSearch {
 
     static int[][] cases = new int[ntimes][ngenes];
 
-    public static void main(String[] argv) {
+    public static void main(final String[] argv) {
 
-        String fileName = argv[0];
+        final String fileName = argv[0];
 
-        InputStream s;
+        final InputStream s;
         StringTokenizer st;
 
         try {
             s = new FileInputStream(fileName);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             System.out.println("Cannot open file " + fileName);
             return;
         }
 
-        BufferedReader in = new BufferedReader(new InputStreamReader(s));
+        final BufferedReader in = new BufferedReader(new InputStreamReader(s));
         for (int k = 0; k < ntimes; k++) {
             try {
                 st = new StringTokenizer(in.readLine());
                 for (int j = 0; j < ngenes; j++) {
                     cases[k][j] = Integer.parseInt(st.nextToken("\t"));
                 }
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 System.out.println("Read error in " + fileName);
                 return;
             }
@@ -72,16 +72,16 @@ public class LTestRevealSearch {
             }
         }
 
-        String[] names = {"Gene 0", "Gene 1", "Gene 2", "Gene 3", "Gene 4"};
+        final String[] names = {"Gene 0", "Gene 1", "Gene 2", "Gene 3", "Gene 4"};
 
-        RevealSearch rs = new RevealSearch(cases, names);
+        final RevealSearch rs = new RevealSearch(cases, names);
 
-        int lag = 1;
+        final int lag = 1;
         rs.exhaustiveSearch(lag);
 
         System.out.println("Result for multiple lag search");
-        int lag1 = 1;
-        int lag2 = 2;
+        final int lag1 = 1;
+        final int lag2 = 2;
         rs.exhaustiveSearch(lag1, lag2);
 
     }

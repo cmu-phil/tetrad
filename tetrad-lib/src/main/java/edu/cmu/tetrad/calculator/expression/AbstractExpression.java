@@ -51,7 +51,7 @@ abstract class AbstractExpression implements Expression {
      */
     private final String token;
 
-    public AbstractExpression(String token, ExpressionDescriptor.Position position, Expression... expressions) {
+    public AbstractExpression(final String token, final ExpressionDescriptor.Position position, final Expression... expressions) {
         this.position = position;
         this.token = token;
         this.expressions = Collections.unmodifiableList(Arrays.asList(expressions));
@@ -74,18 +74,18 @@ abstract class AbstractExpression implements Expression {
     }
 
     @Override
-    public RealDistribution getRealDistribution(Context context) {
-        if (expressions.size() == 1) {
-            return expressions.get(0).getRealDistribution(context);
+    public RealDistribution getRealDistribution(final Context context) {
+        if (this.expressions.size() == 1) {
+            return this.expressions.get(0).getRealDistribution(context);
         }
 
         return null;
 
     }
 
-    public IntegerDistribution getIntegerDistribution(Context context) {
-        if (expressions.size() == 1) {
-            return expressions.get(0).getIntegerDistribution(context);
+    public IntegerDistribution getIntegerDistribution(final Context context) {
+        if (this.expressions.size() == 1) {
+            return this.expressions.get(0).getIntegerDistribution(context);
         }
 
         return null;

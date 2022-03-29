@@ -102,7 +102,7 @@ public final class IndTestPositiveCorr implements IndependenceTest {
      * @param dataSet A data set containing only continuous columns.
      * @param alpha   The alpha level of the test.
      */
-    public IndTestPositiveCorr(DataSet dataSet, double alpha) {
+    public IndTestPositiveCorr(final DataSet dataSet, final double alpha) {
         if (!(dataSet.isContinuous())) {
             throw new IllegalArgumentException("Data set must be continuous.");
         }
@@ -112,16 +112,16 @@ public final class IndTestPositiveCorr implements IndependenceTest {
         }
 
         this.covMatrix = new CovarianceMatrix(dataSet);
-        List<Node> nodes = covMatrix.getVariables();
+        final List<Node> nodes = this.covMatrix.getVariables();
 
         this.variables = Collections.unmodifiableList(nodes);
-        this.indexMap = indexMap(variables);
-        this.nameMap = nameMap(variables);
+        this.indexMap = indexMap(this.variables);
+        this.nameMap = nameMap(this.variables);
         setAlpha(alpha);
 
         this.dataSet = dataSet;
 
-        data = dataSet.getDoubleData().transpose().toArray();
+        this.data = dataSet.getDoubleData().transpose().toArray();
 
     }
 
@@ -130,7 +130,7 @@ public final class IndTestPositiveCorr implements IndependenceTest {
     /**
      * Creates a new independence test instance for a subset of the variables.
      */
-    public IndependenceTest indTestSubset(List<Node> vars) {
+    public IndependenceTest indTestSubset(final List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
@@ -143,42 +143,42 @@ public final class IndTestPositiveCorr implements IndependenceTest {
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public boolean isIndependent(Node x0, Node y0, List<Node> z0) {
+    public boolean isIndependent(final Node x0, final Node y0, final List<Node> z0) {
 
         System.out.println(SearchLogUtils.independenceFact(x0, y0, z0));
 
 
-        double[] x = data[dataSet.getColumn(x0)];
-        double[] y = data[dataSet.getColumn(y0)];
+        final double[] x = this.data[this.dataSet.getColumn(x0)];
+        final double[] y = this.data[this.dataSet.getColumn(y0)];
 
-        double[][] _Z = new double[z0.size()][];
+        final double[][] _Z = new double[z0.size()][];
 
         for (int f = 0; f < z0.size(); f++) {
-            Node _z = z0.get(f);
-            int column = dataSet.getColumn(_z);
-            _Z[f] = data[column];
+            final Node _z = z0.get(f);
+            final int column = this.dataSet.getColumn(_z);
+            _Z[f] = this.data[column];
         }
 
-        double pc = partialCorrelation(x, y, _Z, x, Double.NEGATIVE_INFINITY, +1);
-        double pc1 = partialCorrelation(x, y, _Z, x, 0, +1);
-        double pc2 = partialCorrelation(x, y, _Z, y, 0, +1);
+        final double pc = partialCorrelation(x, y, _Z, x, Double.NEGATIVE_INFINITY, +1);
+        final double pc1 = partialCorrelation(x, y, _Z, x, 0, +1);
+        final double pc2 = partialCorrelation(x, y, _Z, y, 0, +1);
 
-        int nc = StatUtils.getRows(x, Double.NEGATIVE_INFINITY, +1).size();
-        int nc1 = StatUtils.getRows(x, 0, +1).size();
-        int nc2 = StatUtils.getRows(y, 0, +1).size();
+        final int nc = StatUtils.getRows(x, Double.NEGATIVE_INFINITY, +1).size();
+        final int nc1 = StatUtils.getRows(x, 0, +1).size();
+        final int nc2 = StatUtils.getRows(y, 0, +1).size();
 
-        double z = 0.5 * (log(1.0 + pc) - log(1.0 - pc));
-        double z1 = 0.5 * (log(1.0 + pc1) - log(1.0 - pc1));
-        double z2 = 0.5 * (log(1.0 + pc2) - log(1.0 - pc2));
+        final double z = 0.5 * (log(1.0 + pc) - log(1.0 - pc));
+        final double z1 = 0.5 * (log(1.0 + pc1) - log(1.0 - pc1));
+        final double z2 = 0.5 * (log(1.0 + pc2) - log(1.0 - pc2));
 
-        double zv1 = (z - z1) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc1 - 3)));
-        double zv2 = (z - z2) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc2 - 3)));
+        final double zv1 = (z - z1) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc1 - 3)));
+        final double zv2 = (z - z2) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc2 - 3)));
 
-        double p1 = (1.0 - new NormalDistribution(0, 1).cumulativeProbability(abs(zv1)));
-        double p2 = (1.0 - new NormalDistribution(0, 1).cumulativeProbability(abs(zv2)));
+        final double p1 = (1.0 - new NormalDistribution(0, 1).cumulativeProbability(abs(zv1)));
+        final double p2 = (1.0 - new NormalDistribution(0, 1).cumulativeProbability(abs(zv2)));
 
-        boolean rejected1 = p1 < alpha;
-        boolean rejected2 = p2 < alpha;
+        final boolean rejected1 = p1 < this.alpha;
+        final boolean rejected2 = p2 < this.alpha;
 
         boolean possibleEdge = false;
 
@@ -197,16 +197,16 @@ public final class IndTestPositiveCorr implements IndependenceTest {
         return !possibleEdge;
     }
 
-    public boolean isIndependent(Node x, Node y, Node... z) {
+    public boolean isIndependent(final Node x, final Node y, final Node... z) {
         return isIndependent(x, y, Arrays.asList(z));
     }
 
-    public boolean isDependent(Node x, Node y, List<Node> z) {
+    public boolean isDependent(final Node x, final Node y, final List<Node> z) {
         return !isIndependent(x, y, z);
     }
 
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
+    public boolean isDependent(final Node x, final Node y, final Node... z) {
+        final List<Node> zList = Arrays.asList(z);
         return isDependent(x, y, zList);
     }
 
@@ -214,14 +214,14 @@ public final class IndTestPositiveCorr implements IndependenceTest {
      * @return the probability associated with the most recently computed independence test.
      */
     public double getPValue() {
-        return 2.0 * (1.0 - normal.cumulativeProbability(abs(fisherZ)));
+        return 2.0 * (1.0 - this.normal.cumulativeProbability(abs(this.fisherZ)));
     }
 
     /**
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
-    public void setAlpha(double alpha) {
+    public void setAlpha(final double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
             throw new IllegalArgumentException("Significance out of range: " + alpha);
         }
@@ -248,17 +248,17 @@ public final class IndTestPositiveCorr implements IndependenceTest {
     /**
      * @return the variable with the given name.
      */
-    public Node getVariable(String name) {
-        return nameMap.get(name);
+    public Node getVariable(final String name) {
+        return this.nameMap.get(name);
     }
 
     /**
      * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
-        List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<>();
-        for (Node variable1 : variables) {
+        final List<Node> variables = getVariables();
+        final List<String> variableNames = new ArrayList<>();
+        for (final Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }
         return variableNames;
@@ -268,11 +268,11 @@ public final class IndTestPositiveCorr implements IndependenceTest {
      * If <code>isDeterminismAllowed()</code>, deters to IndTestFisherZD; otherwise throws
      * UnsupportedOperationException.
      */
-    public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
-        int[] parents = new int[z.size()];
+    public boolean determines(final List<Node> z, final Node x) throws UnsupportedOperationException {
+        final int[] parents = new int[z.size()];
 
         for (int j = 0; j < parents.length; j++) {
-            parents[j] = covMatrix.getVariables().indexOf(z.get(j));
+            parents[j] = this.covMatrix.getVariables().indexOf(z.get(j));
         }
 
 //        int i = covMatrix.getVariable().indexOf(x);
@@ -282,13 +282,13 @@ public final class IndTestPositiveCorr implements IndependenceTest {
         if (parents.length > 0) {
 
             // Regress z onto i, yielding regression coefficients b.
-            Matrix Czz = covMatrix.getSelection(parents, parents);
+            final Matrix Czz = this.covMatrix.getSelection(parents, parents);
 //            TetradMatrix inverse;
 
             try {
 //                inverse =
                 Czz.inverse();
-            } catch (SingularMatrixException e) {
+            } catch (final SingularMatrixException e) {
 //                System.out.println(SearchLogUtils.determinismDetected(z, x));
 
                 return true;
@@ -309,11 +309,11 @@ public final class IndTestPositiveCorr implements IndependenceTest {
      * @return the data set being analyzed.
      */
     public DataSet getData() {
-        return dataSet;
+        return this.dataSet;
     }
 
     public void shuffleVariables() {
-        ArrayList<Node> nodes = new ArrayList<>(this.variables);
+        final ArrayList<Node> nodes = new ArrayList<>(this.variables);
         Collections.shuffle(nodes);
         this.variables = Collections.unmodifiableList(nodes);
     }
@@ -325,7 +325,7 @@ public final class IndTestPositiveCorr implements IndependenceTest {
         return "Fisher Z, alpha = " + new DecimalFormat("0.0E0").format(getAlpha());
     }
 
-    public void setPValueLogger(PrintStream pValueLogger) {
+    public void setPValueLogger(final PrintStream pValueLogger) {
         this.pValueLogger = pValueLogger;
     }
 
@@ -336,21 +336,21 @@ public final class IndTestPositiveCorr implements IndependenceTest {
     }
 
     private ICovarianceMatrix covMatrix() {
-        return covMatrix;
+        return this.covMatrix;
     }
 
-    private Map<String, Node> nameMap(List<Node> variables) {
-        Map<String, Node> nameMap = new ConcurrentHashMap<>();
+    private Map<String, Node> nameMap(final List<Node> variables) {
+        final Map<String, Node> nameMap = new ConcurrentHashMap<>();
 
-        for (Node node : variables) {
+        for (final Node node : variables) {
             nameMap.put(node.getName(), node);
         }
 
         return nameMap;
     }
 
-    private Map<Node, Integer> indexMap(List<Node> variables) {
-        Map<Node, Integer> indexMap = new ConcurrentHashMap<>();
+    private Map<Node, Integer> indexMap(final List<Node> variables) {
+        final Map<Node, Integer> indexMap = new ConcurrentHashMap<>();
 
         for (int i = 0; i < variables.size(); i++) {
             indexMap.put(variables.get(i), i);
@@ -359,29 +359,29 @@ public final class IndTestPositiveCorr implements IndependenceTest {
         return indexMap;
     }
 
-    public void setVariables(List<Node> variables) {
+    public void setVariables(final List<Node> variables) {
         if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");
         this.variables = new ArrayList<>(variables);
-        covMatrix.setVariables(variables);
+        this.covMatrix.setVariables(variables);
     }
 
     public ICovarianceMatrix getCov() {
-        return covMatrix;
+        return this.covMatrix;
     }
 
     @Override
     public List<DataSet> getDataSets() {
 
-        List<DataSet> dataSets = new ArrayList<>();
+        final List<DataSet> dataSets = new ArrayList<>();
 
-        dataSets.add(dataSet);
+        dataSets.add(this.dataSet);
 
         return dataSets;
     }
 
     @Override
     public int getSampleSize() {
-        return covMatrix.getSampleSize();
+        return this.covMatrix.getSampleSize();
     }
 
     @Override
@@ -391,24 +391,24 @@ public final class IndTestPositiveCorr implements IndependenceTest {
 
     @Override
     public double getScore() {
-        return Math.abs(fisherZ) - cutoff;
+        return Math.abs(this.fisherZ) - this.cutoff;
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 
     public double getRho() {
-        return rho;
+        return this.rho;
     }
 
-    private double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition, double threshold, double direction) throws SingularMatrixException {
-        double[][] cv = StatUtils.covMatrix(x, y, z, condition, threshold, direction);
-        Matrix m = new Matrix(cv).transpose();
+    private double partialCorrelation(final double[] x, final double[] y, final double[][] z, final double[] condition, final double threshold, final double direction) throws SingularMatrixException {
+        final double[][] cv = StatUtils.covMatrix(x, y, z, condition, threshold, direction);
+        final Matrix m = new Matrix(cv).transpose();
         return StatUtils.partialCorrelation(m);
     }
 }

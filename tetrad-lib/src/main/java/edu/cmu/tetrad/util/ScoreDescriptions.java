@@ -48,19 +48,19 @@ public final class ScoreDescriptions {
     private final Map<String, String> descriptions = new HashMap<>();
 
     private ScoreDescriptions() {
-        try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("manual/index.html")) {
+        try (final InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("manual/index.html")) {
             final Document doc = Jsoup.parse(inputStream, StandardCharsets.UTF_8.name(), "");
             getShortNames().forEach(shortName -> {
-                Element element = doc.getElementById(shortName);
+                final Element element = doc.getElementById(shortName);
                 if (element != null) {
-                    Elements paragraphs = element.children();
-                    String desc = paragraphs.stream()
+                    final Elements paragraphs = element.children();
+                    final String desc = paragraphs.stream()
                             .map(p -> p.text().trim())
                             .collect(Collectors.joining("\n"));
-                    descriptions.put(shortName, desc);
+                    this.descriptions.put(shortName, desc);
                 }
             });
-        } catch (IOException ex) {
+        } catch (final IOException ex) {
             LOGGER.error("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.", ex);
         }
     }
@@ -69,8 +69,8 @@ public final class ScoreDescriptions {
         return INSTANCE;
     }
 
-    public String get(String shortName) {
-        String description = descriptions.get(shortName);
+    public String get(final String shortName) {
+        final String description = this.descriptions.get(shortName);
 
         return (description == null)
                 ? String.format("Please add a description for %s.", shortName)

@@ -27,22 +27,22 @@ public class SemThenDiscretize implements Simulation {
     private DataType dataType;
     private List<Node> shuffledOrder;
 
-    public SemThenDiscretize(RandomGraph randomGraph) {
+    public SemThenDiscretize(final RandomGraph randomGraph) {
         this.randomGraph = randomGraph;
         this.dataType = DataType.Mixed;
     }
 
-    public SemThenDiscretize(RandomGraph randomGraph, DataType dataType) {
+    public SemThenDiscretize(final RandomGraph randomGraph, final DataType dataType) {
         this.randomGraph = randomGraph;
         this.dataType = dataType;
     }
 
     @Override
-    public void createData(Parameters parameters, boolean newModel) {
-        double percentDiscrete = parameters.getDouble(Params.PERCENT_DISCRETE);
+    public void createData(final Parameters parameters, final boolean newModel) {
+        final double percentDiscrete = parameters.getDouble(Params.PERCENT_DISCRETE);
 
-        boolean discrete = parameters.getString("dataType").equals("discrete");
-        boolean continuous = parameters.getString("dataType").equals("continuous");
+        final boolean discrete = parameters.getString("dataType").equals("discrete");
+        final boolean continuous = parameters.getString("dataType").equals("continuous");
 
         if (discrete && percentDiscrete != 100.0) {
             throw new IllegalArgumentException("To simulate discrete data, 'percentDiscrete' must be set to 0.0.");
@@ -53,43 +53,43 @@ public class SemThenDiscretize implements Simulation {
         if (discrete) this.dataType = DataType.Discrete;
         if (continuous) this.dataType = DataType.Continuous;
 
-        dataSets = new ArrayList<>();
-        shuffledOrder = null;
+        this.dataSets = new ArrayList<>();
+        this.shuffledOrder = null;
 
-        Graph graph = randomGraph.createGraph(parameters);
+        Graph graph = this.randomGraph.createGraph(parameters);
 
-        dataSets = new ArrayList<>();
-        graphs = new ArrayList<>();
+        this.dataSets = new ArrayList<>();
+        this.graphs = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt(Params.NUM_RUNS); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
 
             if (parameters.getBoolean(Params.DIFFERENT_GRAPHS) && i > 0) {
-                graph = randomGraph.createGraph(parameters);
+                graph = this.randomGraph.createGraph(parameters);
             }
 
-            graphs.add(graph);
+            this.graphs.add(graph);
 
-            DataSet dataSet = simulate(graph, parameters);
+            final DataSet dataSet = simulate(graph, parameters);
             dataSet.setName("" + (i + 1));
-            dataSets.add(dataSet);
+            this.dataSets.add(dataSet);
         }
     }
 
     @Override
-    public Graph getTrueGraph(int index) {
-        return graphs.get(index);
+    public Graph getTrueGraph(final int index) {
+        return this.graphs.get(index);
     }
 
     @Override
     public String getDescription() {
         return "Simulation SEM data then discretizing some variables, using " +
-                randomGraph.getDescription();
+                this.randomGraph.getDescription();
     }
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = randomGraph.getParameters();
+        final List<String> parameters = this.randomGraph.getParameters();
         parameters.add(Params.NUM_CATEGORIES);
         parameters.add(Params.PERCENT_DISCRETE);
         parameters.add(Params.NUM_RUNS);
@@ -100,34 +100,34 @@ public class SemThenDiscretize implements Simulation {
 
     @Override
     public int getNumDataModels() {
-        return dataSets.size();
+        return this.dataSets.size();
     }
 
     @Override
-    public DataModel getDataModel(int index) {
-        return dataSets.get(index);
+    public DataModel getDataModel(final int index) {
+        return this.dataSets.get(index);
     }
 
     @Override
     public DataType getDataType() {
-        return dataType;
+        return this.dataType;
     }
 
-    private DataSet simulate(Graph graph, Parameters parameters) {
-        SemPm pm = new SemPm(graph);
-        SemIm im = new SemIm(pm);
-        DataSet continuousData = im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), false);
+    private DataSet simulate(final Graph graph, final Parameters parameters) {
+        final SemPm pm = new SemPm(graph);
+        final SemIm im = new SemIm(pm);
+        final DataSet continuousData = im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), false);
 
         if (this.shuffledOrder == null) {
-            List<Node> shuffledNodes = new ArrayList<>(continuousData.getVariables());
+            final List<Node> shuffledNodes = new ArrayList<>(continuousData.getVariables());
             Collections.shuffle(shuffledNodes);
             this.shuffledOrder = shuffledNodes;
         }
 
-        Discretizer discretizer = new Discretizer(continuousData);
+        final Discretizer discretizer = new Discretizer(continuousData);
 
-        for (int i = 0; i < shuffledOrder.size() * parameters.getDouble(Params.PERCENT_DISCRETE) * 0.01; i++) {
-            discretizer.equalIntervals(continuousData.getVariable(shuffledOrder.get(i).getName()),
+        for (int i = 0; i < this.shuffledOrder.size() * parameters.getDouble(Params.PERCENT_DISCRETE) * 0.01; i++) {
+            discretizer.equalIntervals(continuousData.getVariable(this.shuffledOrder.get(i).getName()),
                     parameters.getInt(Params.NUM_CATEGORIES));
         }
 

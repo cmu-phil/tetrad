@@ -34,7 +34,7 @@ import java.util.List;
 public class BDeScore implements LocalDiscreteScore {
     private final DataSet dataSet;
 
-    public BDeScore(DataSet dataSet) {
+    public BDeScore(final DataSet dataSet) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
@@ -46,13 +46,13 @@ public class BDeScore implements LocalDiscreteScore {
         this.dataSet = dataSet;
     }
 
-    public double localScore(int i, int parents[]) {
+    public double localScore(final int i, final int[] parents) {
 
         // Number of categories for i.
-        int r = numCategories(i);
+        final int r = numCategories(i);
 
         // Numbers of categories of parents.
-        int dims[] = new int[parents.length];
+        final int[] dims = new int[parents.length];
 
         for (int p = 0; p < parents.length; p++) {
             dims[p] = numCategories(parents[p]);
@@ -65,14 +65,14 @@ public class BDeScore implements LocalDiscreteScore {
         }
 
         // Conditional cell coefs of data for i given parents(i).
-        int n_ijk[][] = new int[q][r];
-        int n_ij[] = new int[q];
+        final int[][] n_ijk = new int[q][r];
+        final int[] n_ij = new int[q];
 
-        int values[] = new int[parents.length];
+        final int[] values = new int[parents.length];
 
         for (int n = 0; n < sampleSize(); n++) {
             for (int p = 0; p < parents.length; p++) {
-                int parentValue = dataSet().getInt(n, parents[p]);
+                final int parentValue = dataSet().getInt(n, parents[p]);
 
                 if (parentValue == -99) {
                     throw new IllegalStateException("Please remove or impute " +
@@ -82,7 +82,7 @@ public class BDeScore implements LocalDiscreteScore {
                 values[p] = parentValue;
             }
 
-            int childValue = dataSet().getInt(n, i);
+            final int childValue = dataSet().getInt(n, i);
 
             if (childValue == -99) {
                 throw new IllegalStateException("Please remove or impute missing " +
@@ -90,7 +90,7 @@ public class BDeScore implements LocalDiscreteScore {
 
             }
 
-            int rowIndex = getRowIndex(dims, values);
+            final int rowIndex = getRowIndex(dims, values);
 
 //            for (int m = 0; m < dataSet().getMultiplier(n); m++) {
             n_ijk[rowIndex][childValue]++;
@@ -109,12 +109,12 @@ public class BDeScore implements LocalDiscreteScore {
 
         for (int j = 0; j < q; j++) {
             for (int k = 0; k < r; k++) {
-                double nPrimeijk = 1. / (r * q);
+                final double nPrimeijk = 1. / (r * q);
                 score += ProbUtils.lngamma(n_ijk[j][k] + nPrimeijk);
                 score -= ProbUtils.lngamma(nPrimeijk);
             }
 
-            double nPrimeij = 1. / q;
+            final double nPrimeij = 1. / q;
 
             score += ProbUtils.lngamma(nPrimeij);
             score -= ProbUtils.lngamma(n_ij[j] + nPrimeij);
@@ -124,37 +124,37 @@ public class BDeScore implements LocalDiscreteScore {
     }
 
     @Override
-    public double localScoreDiff(int x, int y, int[] z) {
+    public double localScoreDiff(final int x, final int y, final int[] z) {
         return localScore(y, append(z, x)) - localScore(y, z);
     }
 
     @Override
-    public double localScoreDiff(int x, int y) {
+    public double localScoreDiff(final int x, final int y) {
         return localScore(y, x) - localScore(y);
     }
 
-    int[] append(int[] parents, int extra) {
-        int[] all = new int[parents.length + 1];
+    int[] append(final int[] parents, final int extra) {
+        final int[] all = new int[parents.length + 1];
         System.arraycopy(parents, 0, all, 0, parents.length);
         all[parents.length] = extra;
         return all;
     }
 
     @Override
-    public double localScore(int i, int parent) {
+    public double localScore(final int i, final int parent) {
         return localScore(i, new int[]{parent});
     }
 
     @Override
-    public double localScore(int i) {
+    public double localScore(final int i) {
         return localScore(i, new int[0]);
     }
 
     public DataSet getDataSet() {
-        return dataSet;
+        return this.dataSet;
     }
 
-    private int getRowIndex(int[] dim, int[] values) {
+    private int getRowIndex(final int[] dim, final int[] values) {
         int rowIndex = 0;
         for (int i = 0; i < dim.length; i++) {
             rowIndex *= dim[i];
@@ -167,37 +167,37 @@ public class BDeScore implements LocalDiscreteScore {
         return dataSet().getNumRows();
     }
 
-    private int numCategories(int i) {
+    private int numCategories(final int i) {
         return ((DiscreteVariable) dataSet().getVariable(i)).getNumCategories();
     }
 
     private DataSet dataSet() {
-        return dataSet;
+        return this.dataSet;
     }
 
-    public void setStructurePrior(double structurePrior) {
+    public void setStructurePrior(final double structurePrior) {
     }
 
-    public void setSamplePrior(double samplePrior) {
+    public void setSamplePrior(final double samplePrior) {
     }
 
     @Override
     public List<Node> getVariables() {
-        return dataSet.getVariables();
+        return this.dataSet.getVariables();
     }
 
     public int getSampleSize() {
-        return dataSet.getNumRows();
+        return this.dataSet.getNumRows();
     }
 
     @Override
-    public boolean isEffectEdge(double bump) {
+    public boolean isEffectEdge(final double bump) {
         return bump > -20;
     }
 
     @Override
-    public Node getVariable(String targetName) {
-        for (Node node : dataSet.getVariables()) {
+    public Node getVariable(final String targetName) {
+        for (final Node node : this.dataSet.getVariables()) {
             if (node.getName().equals(targetName)) {
                 return node;
             }
@@ -212,7 +212,7 @@ public class BDeScore implements LocalDiscreteScore {
     }
 
     @Override
-    public boolean determines(List<Node> z, Node y) {
+    public boolean determines(final List<Node> z, final Node y) {
         return false;
     }
 

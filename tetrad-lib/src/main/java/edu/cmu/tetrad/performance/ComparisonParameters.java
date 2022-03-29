@@ -30,7 +30,7 @@ public class ComparisonParameters {
 
     }
 
-    public ComparisonParameters(ComparisonParameters params) {
+    public ComparisonParameters(final ComparisonParameters params) {
         this.dataType = params.dataType;
         this.resultType = params.resultType;
         this.numVars = params.numVars;
@@ -47,7 +47,7 @@ public class ComparisonParameters {
         this.dataFromFile = params.dataFromFile;
     }
 
-    public void setDataType(DataType dataType) {
+    public void setDataType(final DataType dataType) {
         if (this.dataType != null && this.dataType != dataType) {
             throw new IllegalArgumentException("Data type conflicts with previous data type.");
         }
@@ -55,7 +55,7 @@ public class ComparisonParameters {
         this.dataType = dataType;
     }
 
-    public void setResultType(ResultType resultType) {
+    public void setResultType(final ResultType resultType) {
         if (this.resultType != null && this.resultType != resultType) {
             throw new IllegalArgumentException("Result type conflicts with previous result type.");
         }
@@ -63,7 +63,7 @@ public class ComparisonParameters {
         this.resultType = resultType;
     }
 
-    public void setNumVars(int numVars) {
+    public void setNumVars(final int numVars) {
         if (numVars < 1) {
             throw new IllegalArgumentException("Number of variables must be >= 1.");
         }
@@ -71,7 +71,7 @@ public class ComparisonParameters {
         this.numVars = numVars;
     }
 
-    public void setNumEdges(int numEdges) {
+    public void setNumEdges(final int numEdges) {
         if (numEdges < 1) {
             throw new IllegalArgumentException("Number of edges must be >= 1.");
         }
@@ -79,7 +79,7 @@ public class ComparisonParameters {
         this.numEdges = numEdges;
     }
 
-    public void setSampleSize(int sampleSize) {
+    public void setSampleSize(final int sampleSize) {
         if (sampleSize < 1) {
             throw new IllegalArgumentException("Sample size must be >= 1.");
         }
@@ -87,11 +87,11 @@ public class ComparisonParameters {
         this.sampleSize = sampleSize;
     }
 
-    public void setIndependenceTest(IndependenceTestType independenceTest) {
+    public void setIndependenceTest(final IndependenceTestType independenceTest) {
         this.independenceTest = independenceTest;
     }
 
-    public void setAlpha(double alpha) {
+    public void setAlpha(final double alpha) {
         if (alpha < 0 || alpha > 1) {
             throw new IllegalArgumentException("Alpha must be in [0, 1]");
         }
@@ -100,11 +100,11 @@ public class ComparisonParameters {
     }
 
 
-    public void setPenaltyDiscount(double penaltyDiscount) {
+    public void setPenaltyDiscount(final double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
     }
 
-    public void setScore(ScoreType score) {
+    public void setScore(final ScoreType score) {
         if (score == null) {
             throw new NullPointerException("Score not provided.");
         }
@@ -124,7 +124,7 @@ public class ComparisonParameters {
         this.score = score;
     }
 
-    public void setAlgorithm(Algorithm algorithm) {
+    public void setAlgorithm(final Algorithm algorithm) {
         this.algorithm = algorithm;
 
         ResultType resultType = null;
@@ -157,94 +157,94 @@ public class ComparisonParameters {
     }
 
     public DataType getDataType() {
-        return dataType;
+        return this.dataType;
     }
 
     public ResultType getResultType() {
-        return resultType;
+        return this.resultType;
     }
 
     public int getNumVars() {
-        return numVars;
+        return this.numVars;
     }
 
     public int getNumEdges() {
-        return numEdges;
+        return this.numEdges;
     }
 
     public int getSampleSize() {
-        return sampleSize;
+        return this.sampleSize;
     }
 
     public IndependenceTestType getIndependenceTest() {
-        return independenceTest;
+        return this.independenceTest;
     }
 
     public double getPenaltyDiscount() {
-        return penaltyDiscount;
+        return this.penaltyDiscount;
     }
 
     public double getAlpha() {
-        return alpha;
+        return this.alpha;
     }
 
     public ScoreType getScore() {
-        return score;
+        return this.score;
     }
 
     public Algorithm getAlgorithm() {
-        return algorithm;
+        return this.algorithm;
     }
 
     public String getDataFile() {
-        return dataFile;
+        return this.dataFile;
     }
 
-    public void setDataFile(String dataFile) {
+    public void setDataFile(final String dataFile) {
         this.dataFile = dataFile;
     }
 
     public String getGraphFile() {
-        return graphFile;
+        return this.graphFile;
     }
 
     public String toString() {
-        StringBuilder b = new StringBuilder();
+        final StringBuilder b = new StringBuilder();
 
-        if (dataType != null) {
-            b.append("\nData Type = " + dataType);
+        if (this.dataType != null) {
+            b.append("\nData Type = " + this.dataType);
         }
 
-        if (resultType != null) {
-            b.append("\nResult Type = " + resultType);
+        if (this.resultType != null) {
+            b.append("\nResult Type = " + this.resultType);
         }
 
-        if (numVars != -1) {
-            b.append("\nNum Vars = " + numVars);
+        if (this.numVars != -1) {
+            b.append("\nNum Vars = " + this.numVars);
         }
 
-        if (numEdges != -1) {
-            b.append("\nNum Edges = " + numEdges);
+        if (this.numEdges != -1) {
+            b.append("\nNum Edges = " + this.numEdges);
         }
 
-        if (numEdges != -1) {
-            b.append("\nSample Size = " + sampleSize);
+        if (this.numEdges != -1) {
+            b.append("\nSample Size = " + this.sampleSize);
         }
 
-        if (independenceTest != null) {
-            b.append("\nIndependence Test = " + independenceTest);
+        if (this.independenceTest != null) {
+            b.append("\nIndependence Test = " + this.independenceTest);
         }
 
-        if (!Double.isNaN(alpha)) {
-            b.append("\nAlpha = " + alpha);
+        if (!Double.isNaN(this.alpha)) {
+            b.append("\nAlpha = " + this.alpha);
         }
 
-        if (score != null) {
-            b.append("\nScore = " + score);
+        if (this.score != null) {
+            b.append("\nScore = " + this.score);
         }
 
-        if (algorithm != null) {
-            b.append("\nAlgorithm = " + algorithm);
+        if (this.algorithm != null) {
+            b.append("\nAlgorithm = " + this.algorithm);
         }
 
 
@@ -257,7 +257,7 @@ public class ComparisonParameters {
 //            b.append("\nGraph File = " + graphFile);
 //        }
 
-        if (oneEdgeFaithfulnessAssumed) {
+        if (this.oneEdgeFaithfulnessAssumed) {
             b.append("\nOne Edge Faithfulnes = true");
         }
 
@@ -265,64 +265,64 @@ public class ComparisonParameters {
     }
 
     public double getSamplePrior() {
-        return samplePrior;
+        return this.samplePrior;
     }
 
-    public void setSamplePrior(double samplePrior) {
+    public void setSamplePrior(final double samplePrior) {
         this.samplePrior = samplePrior;
     }
 
     public double getStructurePrior() {
-        return structurePrior;
+        return this.structurePrior;
     }
 
-    public void setStructurePrior(double structurePrior) {
+    public void setStructurePrior(final double structurePrior) {
         this.structurePrior = structurePrior;
     }
 
-    public void setOneEdgeFaithfulnessAssumed(boolean oneEdgeFaithfulnessAssumed) {
+    public void setOneEdgeFaithfulnessAssumed(final boolean oneEdgeFaithfulnessAssumed) {
         this.oneEdgeFaithfulnessAssumed = oneEdgeFaithfulnessAssumed;
     }
 
     public boolean isOneEdgeFaithfulnessAssumed() {
-        return oneEdgeFaithfulnessAssumed;
+        return this.oneEdgeFaithfulnessAssumed;
     }
 
 
-    public void setNoData(boolean noData) {
+    public void setNoData(final boolean noData) {
         this.noData = noData;
     }
 
     public boolean isNoData() {
-        return noData;
+        return this.noData;
     }
 
     public boolean isDataFromFile() {
-        return dataFromFile;
+        return this.dataFromFile;
     }
 
-    public void setDataFromFile(boolean dataFromFile) {
+    public void setDataFromFile(final boolean dataFromFile) {
         this.dataFromFile = dataFromFile;
     }
 
-    public void setGraphFile(String graphFile) {
+    public void setGraphFile(final String graphFile) {
         this.graphFile = graphFile;
     }
 
-    public void setGraphNum(int graphNum) {
+    public void setGraphNum(final int graphNum) {
         this.graphNum = graphNum;
     }
 
     public int getGraphNum() {
-        return graphNum;
+        return this.graphNum;
     }
 
-    public void setTrial(int trial) {
+    public void setTrial(final int trial) {
         this.trial = trial;
     }
 
     public int getTrial() {
-        return trial;
+        return this.trial;
     }
 
     public enum DataType {Continuous, Discrete}

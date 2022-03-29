@@ -69,13 +69,13 @@ public final class ContinuousDiscretizationSpec implements TetradSerializable, D
 
     //============================CONSTRUCTORS==========================//
 
-    public ContinuousDiscretizationSpec(double[] breakpoints, List<String> categories) {
+    public ContinuousDiscretizationSpec(final double[] breakpoints, final List<String> categories) {
         this(breakpoints, categories, EVENLY_DISTRIBUTED_INTERVALS);
     }
 
 
     @SuppressWarnings({"SameParameterValue"})
-    public ContinuousDiscretizationSpec(double[] breakpoints, List<String> categories, int method) {
+    public ContinuousDiscretizationSpec(final double[] breakpoints, final List<String> categories, final int method) {
         if (breakpoints == null) {
             throw new NullPointerException();
         }
@@ -103,7 +103,7 @@ public final class ContinuousDiscretizationSpec implements TetradSerializable, D
         return this.method;
     }
 
-    public void setMethod(int method) {
+    public void setMethod(final int method) {
         if (method != EVENLY_DISTRIBUTED_VALUES && method != EVENLY_DISTRIBUTED_INTERVALS && method != NONE) {
             throw new IllegalArgumentException();
         }
@@ -111,11 +111,11 @@ public final class ContinuousDiscretizationSpec implements TetradSerializable, D
     }
 
     public List<String> getCategories() {
-        return categories;
+        return this.categories;
     }
 
     public double[] getBreakpoints() {
-        return breakpoints;
+        return this.breakpoints;
     }
 
     /**
@@ -131,19 +131,19 @@ public final class ContinuousDiscretizationSpec implements TetradSerializable, D
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (breakpoints == null) {
+        if (this.breakpoints == null) {
             throw new NullPointerException();
         }
 
-        if (categories == null) {
+        if (this.categories == null) {
             throw new NullPointerException();
         }
 
-        if (method != EVENLY_DISTRIBUTED_VALUES && method != EVENLY_DISTRIBUTED_INTERVALS) {
+        if (this.method != EVENLY_DISTRIBUTED_VALUES && this.method != EVENLY_DISTRIBUTED_INTERVALS) {
             this.method = EVENLY_DISTRIBUTED_INTERVALS;
         }
     }

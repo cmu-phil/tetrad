@@ -30,10 +30,10 @@ public class SemBicScore implements ScoreWrapper {
     private DataModel dataSet;
 
     @Override
-    public Score getScore(DataModel dataSet, Parameters parameters) {
+    public Score getScore(final DataModel dataSet, final Parameters parameters) {
         this.dataSet = dataSet;
 
-        edu.cmu.tetrad.search.SemBicScore semBicScore;
+        final edu.cmu.tetrad.search.SemBicScore semBicScore;
 
         if (dataSet instanceof DataSet) {
             semBicScore = new edu.cmu.tetrad.search.SemBicScore((DataSet) this.dataSet);
@@ -72,7 +72,7 @@ public class SemBicScore implements ScoreWrapper {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
+        final List<String> parameters = new ArrayList<>();
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.SEM_BIC_STRUCTURE_PRIOR);
         parameters.add(Params.SEM_BIC_RULE);
@@ -80,8 +80,8 @@ public class SemBicScore implements ScoreWrapper {
     }
 
     @Override
-    public Node getVariable(String name) {
-        return dataSet.getVariable(name);
+    public Node getVariable(final String name) {
+        return this.dataSet.getVariable(name);
     }
 
 }

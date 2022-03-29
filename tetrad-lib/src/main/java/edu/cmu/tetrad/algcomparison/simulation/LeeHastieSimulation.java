@@ -35,18 +35,18 @@ public class LeeHastieSimulation implements Simulation, HasParameters {
     private DataType dataType;
     private List<Node> shuffledOrder;
 
-    public LeeHastieSimulation(RandomGraph graph) {
+    public LeeHastieSimulation(final RandomGraph graph) {
         this.randomGraph = graph;
     }
 
     @Override
-    public void createData(Parameters parameters, boolean newModel) {
+    public void createData(final Parameters parameters, final boolean newModel) {
 //        if (!newModel && !dataSets.isEmpty()) return;
 
-        double percentDiscrete = parameters.getDouble(Params.PERCENT_DISCRETE);
+        final double percentDiscrete = parameters.getDouble(Params.PERCENT_DISCRETE);
 
-        boolean discrete = parameters.getString(Params.DATA_TYPE).equals("discrete");
-        boolean continuous = parameters.getString(Params.DATA_TYPE).equals("continuous");
+        final boolean discrete = parameters.getString(Params.DATA_TYPE).equals("discrete");
+        final boolean continuous = parameters.getString(Params.DATA_TYPE).equals("continuous");
 
         if (discrete && percentDiscrete != 100.0) {
             throw new IllegalArgumentException("To simulate discrete data, 'percentDiscrete' must be set to 0.0.");
@@ -63,19 +63,19 @@ public class LeeHastieSimulation implements Simulation, HasParameters {
 
         this.shuffledOrder = null;
 
-        Graph graph = randomGraph.createGraph(parameters);
+        Graph graph = this.randomGraph.createGraph(parameters);
 
-        dataSets = new ArrayList<>();
-        graphs = new ArrayList<>();
+        this.dataSets = new ArrayList<>();
+        this.graphs = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt(Params.NUM_RUNS); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
 
             if (parameters.getBoolean(Params.DIFFERENT_GRAPHS) && i > 0) {
-                graph = randomGraph.createGraph(parameters);
+                graph = this.randomGraph.createGraph(parameters);
             }
 
-            graphs.add(graph);
+            this.graphs.add(graph);
 
             DataSet dataSet = simulate(graph, parameters);
             dataSet.setName("" + (i + 1));
@@ -84,28 +84,28 @@ public class LeeHastieSimulation implements Simulation, HasParameters {
                 dataSet = DataUtils.shuffleColumns(dataSet);
             }
 
-            dataSets.add(dataSet);
+            this.dataSets.add(dataSet);
         }
     }
 
     @Override
-    public Graph getTrueGraph(int index) {
-        return graphs.get(index);
+    public Graph getTrueGraph(final int index) {
+        return this.graphs.get(index);
     }
 
     @Override
-    public DataModel getDataModel(int index) {
-        return dataSets.get(index);
+    public DataModel getDataModel(final int index) {
+        return this.dataSets.get(index);
     }
 
     @Override
     public String getDescription() {
-        return "Lee & Hastie simulation using " + randomGraph.getDescription();
+        return "Lee & Hastie simulation using " + this.randomGraph.getDescription();
     }
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = randomGraph.getParameters();
+        final List<String> parameters = this.randomGraph.getParameters();
         parameters.add(Params.MIN_CATEGORIES);
         parameters.add(Params.MAX_CATEGORIES);
         parameters.add(Params.PERCENT_DISCRETE);
@@ -122,23 +122,23 @@ public class LeeHastieSimulation implements Simulation, HasParameters {
 
     @Override
     public int getNumDataModels() {
-        return dataSets.size();
+        return this.dataSets.size();
     }
 
     @Override
     public DataType getDataType() {
-        return dataType;
+        return this.dataType;
     }
 
-    private DataSet simulate(Graph dag, Parameters parameters) {
-        HashMap<String, Integer> nd = new HashMap<>();
+    private DataSet simulate(final Graph dag, final Parameters parameters) {
+        final HashMap<String, Integer> nd = new HashMap<>();
 
-        List<Node> nodes = dag.getNodes();
+        final List<Node> nodes = dag.getNodes();
 
         Collections.shuffle(nodes);
 
         if (this.shuffledOrder == null) {
-            List<Node> shuffledNodes = new ArrayList<>(nodes);
+            final List<Node> shuffledNodes = new ArrayList<>(nodes);
             Collections.shuffle(shuffledNodes);
             this.shuffledOrder = shuffledNodes;
         }
@@ -148,24 +148,24 @@ public class LeeHastieSimulation implements Simulation, HasParameters {
                 final int minNumCategories = parameters.getInt(Params.MIN_CATEGORIES);
                 final int maxNumCategories = parameters.getInt(Params.MAX_CATEGORIES);
                 final int value = pickNumCategories(minNumCategories, maxNumCategories);
-                nd.put(shuffledOrder.get(i).getName(), value);
+                nd.put(this.shuffledOrder.get(i).getName(), value);
             } else {
-                nd.put(shuffledOrder.get(i).getName(), 0);
+                nd.put(this.shuffledOrder.get(i).getName(), 0);
             }
         }
 
-        Graph graph = MixedUtils.makeMixedGraph(dag, nd);
+        final Graph graph = MixedUtils.makeMixedGraph(dag, nd);
 
-        GeneralizedSemPm pm = MixedUtils.GaussianCategoricalPm(graph, "Split(-1.0,-.0,.0,1.0)");
-        GeneralizedSemIm im = MixedUtils.GaussianCategoricalIm(pm);
+        final GeneralizedSemPm pm = MixedUtils.GaussianCategoricalPm(graph, "Split(-1.0,-.0,.0,1.0)");
+        final GeneralizedSemIm im = MixedUtils.GaussianCategoricalIm(pm);
 
-        boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
-        DataSet ds = im.simulateDataAvoidInfinity(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
+        final boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
+        final DataSet ds = im.simulateDataAvoidInfinity(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
 
         return MixedUtils.makeMixedData(ds, nd);
     }
 
-    private int pickNumCategories(int min, int max) {
+    private int pickNumCategories(final int min, final int max) {
         return RandomUtils.nextInt(min, max + 1);
     }
 }

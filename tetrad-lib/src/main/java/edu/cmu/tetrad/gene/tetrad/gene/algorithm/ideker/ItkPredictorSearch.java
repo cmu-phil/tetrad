@@ -42,16 +42,16 @@ public class ItkPredictorSearch {
     public class Gene implements Comparable {
         int gene;
 
-        public Gene(int gene) {
+        public Gene(final int gene) {
             this.gene = gene;
         }
 
         public int getIndex() {
-            return gene;
+            return this.gene;
         }
 
-        public int compareTo(Object o) {
-            int ret;
+        public int compareTo(final Object o) {
+            final int ret;
             if (this.gene < ((Gene) o).getIndex()) {
                 ret = -1;
             } else if (this.gene == ((Gene) o).getIndex()) {
@@ -63,7 +63,7 @@ public class ItkPredictorSearch {
         }
     }
 
-    public ItkPredictorSearch(int ngenes, int[][] expression, String[] names) {
+    public ItkPredictorSearch(final int ngenes, final int[][] expression, final String[] names) {
 
         this.ngenes = ngenes;
         this.expression = expression;
@@ -72,34 +72,34 @@ public class ItkPredictorSearch {
 
     }
 
-    public void predictor(int gene) {
+    public void predictor(final int gene) {
 
-        SortedSet[][] S = new TreeSet[nrows][nrows];
-        Gene[] G = new Gene[ngenes];
+        final SortedSet[][] S = new TreeSet[this.nrows][this.nrows];
+        final Gene[] G = new Gene[this.ngenes];
 
-        System.out.println("For gene " + names[gene] + ":");
+        System.out.println("For gene " + this.names[gene] + ":");
 
-        for (int i = 0; i < nrows; i++) {
-            for (int j = 0; j < nrows; j++) {
+        for (int i = 0; i < this.nrows; i++) {
+            for (int j = 0; j < this.nrows; j++) {
                 S[i][j] = new TreeSet();
             }
         }
 
-        for (int k = 0; k < ngenes; k++) {
+        for (int k = 0; k < this.ngenes; k++) {
             G[k] = new Gene(k);
         }
 
         //Consider all pairs of rows of the expression matrix.
-        ChoiceGenerator cg = new ChoiceGenerator(ngenes, 2);
+        final ChoiceGenerator cg = new ChoiceGenerator(this.ngenes, 2);
         int[] rows;
 
         while ((rows = cg.next()) != null) {
 
             //Exclude row pairs in which the given gene was perturbed.
-            if (expression[rows[0]][gene] == -1 ||
-                    expression[rows[0]][gene] == 2 ||
-                    expression[rows[1]][gene] == -1 ||
-                    expression[rows[1]][gene] == 2) {
+            if (this.expression[rows[0]][gene] == -1 ||
+                    this.expression[rows[0]][gene] == 2 ||
+                    this.expression[rows[1]][gene] == -1 ||
+                    this.expression[rows[1]][gene] == 2) {
                 continue;
             }
 
@@ -111,7 +111,7 @@ public class ItkPredictorSearch {
 
             //Find the set of other genes whose expression level differs
             //between the two perturbations.
-            for (int gother = 0; gother < ngenes; gother++) {
+            for (int gother = 0; gother < this.ngenes; gother++) {
                 if (gother == gene) {
                     continue;  //Don't test this gene
                 }
@@ -123,7 +123,7 @@ public class ItkPredictorSearch {
             }
 
             System.out.print("sem" + rows[0] + rows[1] + " = ");
-            for (Iterator it = S[rows[0]][rows[1]].iterator(); it.hasNext(); ) {
+            for (final Iterator it = S[rows[0]][rows[1]].iterator(); it.hasNext(); ) {
                 System.out.print(((Gene) it.next()).getIndex());
             }
             System.out.println();
@@ -131,35 +131,35 @@ public class ItkPredictorSearch {
         }
 
         int sum = 0;
-        for (int i = 0; i < nrows; i++) {
-            for (int j = 0; j < nrows; j++) {
+        for (int i = 0; i < this.nrows; i++) {
+            for (int j = 0; j < this.nrows; j++) {
                 sum += S[i][j].size();
             }
         }
 
         if (sum == 0) {
             System.out.println(
-                    "Insufficient perturbations for gene " + names[gene]);
+                    "Insufficient perturbations for gene " + this.names[gene]);
             System.out.println();
             return;
         }
 
         System.out.println("Smin:");
-        SortedSet[] minCover;
+        final SortedSet[] minCover;
         minCover = minCoveringSet(S);
-        for (SortedSet<Gene> aMinCover : minCover) {
+        for (final SortedSet<Gene> aMinCover : minCover) {
             display(aMinCover);
             inferFunction(gene, aMinCover);
         }
         System.out.println();
     }
 
-    public SortedSet[] minCoveringSet(SortedSet[][] sets) {
+    public SortedSet[] minCoveringSet(final SortedSet[][] sets) {
 
-        SortedSet<Gene> union = new TreeSet<>();
+        final SortedSet<Gene> union = new TreeSet<>();
 
         //Compute the union of all input sets
-        for (SortedSet<Gene>[] set : sets) {
+        for (final SortedSet<Gene>[] set : sets) {
             for (int j = 0; j < sets[0].length; j++) {
                 union.addAll(set[j]);
             }
@@ -169,7 +169,7 @@ public class ItkPredictorSearch {
         //display(union);
 
         //Compute the power set of the union
-        int total = union.size();
+        final int total = union.size();
         int sizePowerSet = 1;
         for (int i = 0; i < total; i++) {
             sizePowerSet *= 2;
@@ -177,29 +177,29 @@ public class ItkPredictorSearch {
 
         //System.out.println("Size of power set= " + sizePowerSet);
 
-        Gene[] geneArray = new Gene[total];
+        final Gene[] geneArray = new Gene[total];
         int k = 0;
-        for (Gene anUnion : union) {
+        for (final Gene anUnion : union) {
             geneArray[k] = anUnion;
             k++;
         }
         //geneArray = (Gene[]) union.toArray();
 
-        int[] indexArray = new int[total];
+        final int[] indexArray = new int[total];
         for (int i = 0; i < total; i++) {
             indexArray[i] = geneArray[i].getIndex();
         }
 
-        int[] sizes = new int[sizePowerSet];
-        boolean[] covers = new boolean[sizePowerSet];
+        final int[] sizes = new int[sizePowerSet];
+        final boolean[] covers = new boolean[sizePowerSet];
         sizes[0] = 0;
         covers[0] = false;
         int minSize = 100;
 
         for (int subSetIndex = 1; subSetIndex < sizePowerSet; subSetIndex++) {
-            byte[] bool = booleanRepresentation(subSetIndex, total);
+            final byte[] bool = booleanRepresentation(subSetIndex, total);
             //System.out.println("bool = " + bool[0] + bool[1] + bool[2]);
-            SortedSet<Gene> subSet = new TreeSet<>();
+            final SortedSet<Gene> subSet = new TreeSet<>();
             for (int i = 0; i < total; i++) {
                 if (bool[i] == 1) {
                     subSet.add(geneArray[i]);
@@ -215,7 +215,7 @@ public class ItkPredictorSearch {
             }
 
             covers[subSetIndex] = true;
-            for (SortedSet[] set : sets) {
+            for (final SortedSet[] set : sets) {
                 for (int j = 0; j < sets[0].length; j++) {
                     if (set[j].isEmpty()) {
                         continue;
@@ -244,12 +244,12 @@ public class ItkPredictorSearch {
             }
         }
 
-        SortedSet[] coveringSets = new SortedSet[numCoveringSets];
+        final SortedSet[] coveringSets = new SortedSet[numCoveringSets];
         int number = 0;
         for (int i = 0; i < sizePowerSet; i++) {
             if (sizes[i] == minSize && covers[i]) {
-                byte[] bool = booleanRepresentation(i, total);
-                SortedSet<Gene> subSet = new TreeSet<>();
+                final byte[] bool = booleanRepresentation(i, total);
+                final SortedSet<Gene> subSet = new TreeSet<>();
                 for (int j = 0; j < total; j++) {
                     if (bool[j] == 1) {
                         subSet.add(geneArray[j]);
@@ -266,13 +266,13 @@ public class ItkPredictorSearch {
         return coveringSets;
     }
 
-    public void inferFunction(int g, SortedSet<Gene> s) {
+    public void inferFunction(final int g, final SortedSet<Gene> s) {
 
-        int n = s.size();
-        int[] ss = new int[n];
+        final int n = s.size();
+        final int[] ss = new int[n];
 
         int c = 0;
-        for (Gene value : s) {
+        for (final Gene value : s) {
             ss[c] = value.getIndex();
             c++;
         }
@@ -282,31 +282,31 @@ public class ItkPredictorSearch {
             twoToN *= 2;
         }
 
-        int[] f = new int[twoToN];
+        final int[] f = new int[twoToN];
         for (int i = 0; i < twoToN; i++) {
             f[i] = 9;
         }
 
-        for (Gene value1 : s) {
-            System.out.print(names[value1.getIndex()] + " ");
+        for (final Gene value1 : s) {
+            System.out.print(this.names[value1.getIndex()] + " ");
         }
         System.out.println("f");
 
         for (int i = twoToN - 1; i >= 0; i--) {
-            byte[] b = booleanRepresentation(i, n);
+            final byte[] b = booleanRepresentation(i, n);
 
             row:
-            for (int j = 0; j < nrows; j++) {
-                if (expression[j][g] == -1 || expression[j][g] == 2) {
+            for (int j = 0; j < this.nrows; j++) {
+                if (this.expression[j][g] == -1 || this.expression[j][g] == 2) {
                     continue;
                 }
                 for (int k = 0; k < n; k++) {
                     //if(expression[j][ss[k]] != b[k]) continue row;
-                    if (differExpressions(expression[j][ss[k]], (int) b[k])) {
+                    if (differExpressions(this.expression[j][ss[k]], (int) b[k])) {
                         continue row;
                     }
                 }
-                f[i] = expression[j][g];
+                f[i] = this.expression[j][g];
             }
 
             for (int k = 0; k < n; k++) {
@@ -317,9 +317,9 @@ public class ItkPredictorSearch {
     }
 
     //Returns true of b covers a, false otherwise
-    public boolean covered(SortedSet<Gene> a, SortedSet<Gene> b) {
+    public boolean covered(final SortedSet<Gene> a, final SortedSet<Gene> b) {
         boolean result = false;
-        for (Gene anA : a) {
+        for (final Gene anA : a) {
             if (b.contains(anA)) {
                 result = true;
                 return result;
@@ -328,8 +328,8 @@ public class ItkPredictorSearch {
         return result;
     }
 
-    public void display(SortedSet<Gene> s) {
-        for (Gene value : s) {
+    public void display(final SortedSet<Gene> s) {
+        for (final Gene value : s) {
             System.out.print(value.getIndex() + " ");
         }
         System.out.println();
@@ -340,14 +340,14 @@ public class ItkPredictorSearch {
      * two perturbations p0 and p1 (rows of the perturbation matrix).  It
      * returns true if they do differ and false otherwise.
      */
-    public boolean differByPerturbation(int gene, int p0, int p1) {
-        return !(expression[p0][gene] == expression[p1][gene] ||
-                (expression[p0][gene] == -1 && expression[p1][gene] == 0) ||
-                (expression[p1][gene] == -1 && expression[p0][gene] == 0) ||
-                (expression[p0][gene] * expression[p1][gene] == 2));
+    public boolean differByPerturbation(final int gene, final int p0, final int p1) {
+        return !(this.expression[p0][gene] == this.expression[p1][gene] ||
+                (this.expression[p0][gene] == -1 && this.expression[p1][gene] == 0) ||
+                (this.expression[p1][gene] == -1 && this.expression[p0][gene] == 0) ||
+                (this.expression[p0][gene] * this.expression[p1][gene] == 2));
     }
 
-    public boolean differExpressions(int e1, int e2) {
+    public boolean differExpressions(final int e1, final int e2) {
 //        return !((e1 == e2) || (e1 == -1 && e2 == 0) || (e2 == -1 && e2 == 0) ||
 //                (e1 * e2 == 2));
         return true;
@@ -357,15 +357,15 @@ public class ItkPredictorSearch {
      * Computes a byte vector which corresponds to the argument ind.  rep[0] is
      * the high order bit. E.g.  if n=3 and ind=6 the vector will be (1, 1, 0).
      */
-    public byte[] booleanRepresentation(int ind, int n) {
-        byte[] rep = new byte[n];
+    public byte[] booleanRepresentation(int ind, final int n) {
+        final byte[] rep = new byte[n];
 
         for (int i = 0; i < n; i++) {
             rep[i] = (byte) 0;
         }
 
         for (int i = 0; i < n; i++) {
-            int rem = ind % 2;
+            final int rem = ind % 2;
             if (rem == 1) {
                 rep[n - i - 1] = (byte) 1;
                 ind -= 1;

@@ -37,7 +37,7 @@ import edu.cmu.tetrad.util.Params;
 public class TestSimulatedFmri2 {
 
     public void TestCycles_Data_fMRI_FASK() {
-        Parameters parameters = new Parameters();
+        final Parameters parameters = new Parameters();
         parameters.set(Params.PENALTY_DISCOUNT, 8);
         parameters.set(Params.DEPTH, -1);
         parameters.set(Params.TWO_CYCLE_ALPHA, 1e-15);
@@ -47,7 +47,7 @@ public class TestSimulatedFmri2 {
 
         parameters.set("Structure", "Placeholder");
 
-        Statistics statistics = new Statistics();
+        final Statistics statistics = new Statistics();
 
         statistics.add(new ParameterColumn("Structure"));
         statistics.add(new AdjacencyPrecision());
@@ -66,10 +66,10 @@ public class TestSimulatedFmri2 {
         statistics.setWeight("2CR", 1.0);
         statistics.setWeight("2CFP", 1.0);
 
-        Simulations simulations = new Simulations();
+        final Simulations simulations = new Simulations();
 
-        String dir = "/Users/user/Downloads/CyclesTestingData/";
-        String subdir = "data_fslfilter_concat";
+        final String dir = "/Users/user/Downloads/CyclesTestingData/";
+        final String subdir = "data_fslfilter_concat";
 
         simulations.add(new LoadContinuousDataAndSingleGraph(
                 dir + "Network1_amp", subdir));
@@ -112,11 +112,11 @@ public class TestSimulatedFmri2 {
         simulations.add(new LoadContinuousDataAndSingleGraph(
                 dir + "Markov_Complex_1", subdir));
 
-        Algorithms algorithms = new Algorithms();
+        final Algorithms algorithms = new Algorithms();
 
         algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.multi.Fask(new FisherZ()));
 //
-        Comparison comparison = new Comparison();
+        final Comparison comparison = new Comparison();
 
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
@@ -126,12 +126,12 @@ public class TestSimulatedFmri2 {
         comparison.setTabDelimitedTables(false);
         comparison.setSaveGraphs(true);
 
-        String directory = "comparison_testing_nonconcat";
+        final String directory = "comparison_testing_nonconcat";
 
         comparison.compareFromSimulations(directory, simulations, algorithms, statistics, parameters);
     }
 
-    public static void main(String... args) {
+    public static void main(final String... args) {
         new TestSimulatedFmri2().TestCycles_Data_fMRI_FASK();
     }
 }

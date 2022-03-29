@@ -71,7 +71,7 @@ public class GaussianProcess {
      *
      * @param covFunction - the covariance function
      */
-    public GaussianProcess(CovarianceFunction covFunction) {
+    public GaussianProcess(final CovarianceFunction covFunction) {
         this.covFunction = covFunction;
     }
 
@@ -83,7 +83,7 @@ public class GaussianProcess {
      * @param y         - the target data points
      * @param logtheta0 - the initial hyperparameters of the covariance function
      */
-    public void train(Matrix X, Matrix y, Matrix logtheta0) {
+    public void train(final Matrix X, final Matrix y, final Matrix logtheta0) {
         train(X, y, logtheta0, -100);
     }
 
@@ -95,10 +95,10 @@ public class GaussianProcess {
      * @param logtheta0  - the initial hyperparameters of the covariance function
      * @param iterations - number of iterations performed by the minimization algorithm
      */
-    public void train(Matrix X, Matrix y, Matrix logtheta0, int iterations) {
+    public void train(final Matrix X, final Matrix y, final Matrix logtheta0, final int iterations) {
         System.out.println("training started...");
         this.X = X;
-        logtheta = minimize(logtheta0, iterations, X, y);
+        this.logtheta = minimize(logtheta0, iterations, X, y);
     }
 
 
@@ -111,20 +111,20 @@ public class GaussianProcess {
      * @param df0      returned partial derivatives with respect to the hyperparameters
      * @return lml minus log marginal likelihood
      */
-    public double negativeLogLikelihood(Matrix logtheta, Matrix x, Matrix y, Matrix df0) {
+    public double negativeLogLikelihood(final Matrix logtheta, final Matrix x, final Matrix y, final Matrix df0) {
 
-        int n = x.getRowDimension();
+        final int n = x.getRowDimension();
 
-        Matrix K = covFunction.compute(logtheta, x);    // compute training set covariance matrix
+        final Matrix K = this.covFunction.compute(logtheta, x);    // compute training set covariance matrix
 
-        CholeskyDecomposition cd = K.chol();
+        final CholeskyDecomposition cd = K.chol();
         if (!cd.isSPD()) {
             throw new RuntimeException("The covariance Matrix is not SDP, check your covariance function (maybe you mess the noise term..)");
         } else {
-            L = cd.getL();                // cholesky factorization of the covariance
+            this.L = cd.getL();                // cholesky factorization of the covariance
 
             // alpha = L'\(L\y);
-            alpha = bSubstitutionWithTranspose(L, fSubstitution(L, y));
+            this.alpha = bSubstitutionWithTranspose(this.L, fSubstitution(this.L, y));
 
 //            double[][] yarr = y.getArray();
 //            double[][] alphaarr = alpha.getArray();
@@ -136,15 +136,15 @@ public class GaussianProcess {
 //
 
             // compute the negative log marginal likelihood
-            double lml = (y.transpose().times(alpha).times(0.5)).get(0, 0);
+            double lml = (y.transpose().times(this.alpha).times(0.5)).get(0, 0);
 
-            for (int i = 0; i < L.getRowDimension(); i++) lml += Math.log(L.get(i, i));
+            for (int i = 0; i < this.L.getRowDimension(); i++) lml += Math.log(this.L.get(i, i));
             lml += 0.5 * n * Math.log(2 * Math.PI);
 
 
-            Matrix W = bSubstitutionWithTranspose(L, (fSubstitution(L, Matrix.identity(n, n)))).minus(alpha.times(alpha.transpose()));     // precompute for convenience
+            final Matrix W = bSubstitutionWithTranspose(this.L, (fSubstitution(this.L, Matrix.identity(n, n)))).minus(this.alpha.times(this.alpha.transpose()));     // precompute for convenience
             for (int i = 0; i < df0.getRowDimension(); i++) {
-                df0.set(i, 0, sum(W.arrayTimes(covFunction.computeDerivatives(logtheta, x, i))) / 2);
+                df0.set(i, 0, sum(W.arrayTimes(this.covFunction.computeDerivatives(logtheta, x, i))) / 2);
             }
 
             return lml;
@@ -162,26 +162,26 @@ public class GaussianProcess {
      * @return [ystar Sstar] predicted mean and covariance
      */
 
-    public Matrix[] predict(Matrix xstar) {
+    public Matrix[] predict(final Matrix xstar) {
 
-        if (alpha == null || L == null) {
+        if (this.alpha == null || this.L == null) {
             System.out.println("GP needs to be trained first..");
             System.exit(-1);
         }
-        if (xstar.getColumnDimension() != X.getColumnDimension())
-            throw new IllegalArgumentException("Wrong size of the input " + xstar.getColumnDimension() + " instead of " + X.getColumnDimension());
-        Matrix[] star = covFunction.compute(logtheta, X, xstar);
+        if (xstar.getColumnDimension() != this.X.getColumnDimension())
+            throw new IllegalArgumentException("Wrong size of the input " + xstar.getColumnDimension() + " instead of " + this.X.getColumnDimension());
+        final Matrix[] star = this.covFunction.compute(this.logtheta, this.X, xstar);
 
-        Matrix Kstar = star[1];
-        Matrix Kss = star[0];
+        final Matrix Kstar = star[1];
+        final Matrix Kss = star[0];
 
-        Matrix ystar = Kstar.transpose().times(alpha);
+        final Matrix ystar = Kstar.transpose().times(this.alpha);
 
-        Matrix v = fSubstitution(L, Kstar);
+        final Matrix v = fSubstitution(this.L, Kstar);
 
         v.arrayTimesEquals(v);
 
-        Matrix Sstar = Kss.minus(sumColumns(v).transpose());
+        final Matrix Sstar = Kss.minus(sumColumns(v).transpose());
 
         return new Matrix[]{ystar, Sstar};
     }
@@ -197,33 +197,33 @@ public class GaussianProcess {
      * @return [ystar Sstar] predicted mean and covariance
      */
 
-    public Matrix predictMean(Matrix xstar) {
+    public Matrix predictMean(final Matrix xstar) {
 
-        if (alpha == null || L == null) {
+        if (this.alpha == null || this.L == null) {
             System.out.println("GP needs to be trained first..");
             System.exit(-1);
         }
-        if (xstar.getColumnDimension() != X.getColumnDimension())
-            throw new IllegalArgumentException("Wrong size of the input" + xstar.getColumnDimension() + " instead of " + X.getColumnDimension());
+        if (xstar.getColumnDimension() != this.X.getColumnDimension())
+            throw new IllegalArgumentException("Wrong size of the input" + xstar.getColumnDimension() + " instead of " + this.X.getColumnDimension());
 
-        Matrix[] star = covFunction.compute(logtheta, X, xstar);
+        final Matrix[] star = this.covFunction.compute(this.logtheta, this.X, xstar);
 
-        Matrix Kstar = star[1];
+        final Matrix Kstar = star[1];
 
-        Matrix ystar = Kstar.transpose().times(alpha);
+        final Matrix ystar = Kstar.transpose().times(this.alpha);
 
         return ystar;
     }
 
-    private static Matrix sumColumns(Matrix a) {
-        Matrix sum = new Matrix(1, a.getColumnDimension());
+    private static Matrix sumColumns(final Matrix a) {
+        final Matrix sum = new Matrix(1, a.getColumnDimension());
         for (int i = 0; i < a.getRowDimension(); i++)
             sum.plusEquals(a.getMatrix(i, i, 0, a.getColumnDimension() - 1));
         return sum;
     }
 
 
-    private static double sum(Matrix a) {
+    private static double sum(final Matrix a) {
         double sum = 0;
         for (int i = 0; i < a.getRowDimension(); i++)
             for (int j = 0; j < a.getColumnDimension(); j++)
@@ -232,7 +232,7 @@ public class GaussianProcess {
     }
 
 
-    private static Matrix fSubstitution(Matrix L, Matrix B) {
+    private static Matrix fSubstitution(final Matrix L, final Matrix B) {
 
         final double[][] l = L.getArray();
         final double[][] b = B.getArray();
@@ -253,7 +253,7 @@ public class GaussianProcess {
     }
 
 
-    private static Matrix bSubstitution(Matrix L, Matrix B) {
+    private static Matrix bSubstitution(final Matrix L, final Matrix B) {
 
         final double[][] l = L.getArray();
         final double[][] b = B.getArray();
@@ -274,7 +274,7 @@ public class GaussianProcess {
 
     }
 
-    private static Matrix bSubstitutionWithTranspose(Matrix L, Matrix B) {
+    private static Matrix bSubstitutionWithTranspose(final Matrix L, final Matrix B) {
 
         final double[][] l = L.getArray();
         final double[][] b = B.getArray();
@@ -313,7 +313,7 @@ public class GaussianProcess {
     // speed up the minimization; it is probably not worth playing much with RHO.
 
 
-    private Matrix minimize(Matrix params, int length, Matrix in, Matrix out) {
+    private Matrix minimize(Matrix params, final int length, final Matrix in, final Matrix out) {
 
         double A, B;
         double x1, x2, x3, x4;
@@ -322,12 +322,12 @@ public class GaussianProcess {
         Matrix df0, df3;
         Matrix fX;
 
-        double red = 1.0;
+        final double red = 1.0;
 
         int i = 0;
         int ls_failed = 0;
 
-        int sizeX = params.getRowDimension();
+        final int sizeX = params.getRowDimension();
 
         df0 = new Matrix(sizeX, 1);
         f0 = negativeLogLikelihood(params, in, out, df0);
@@ -374,7 +374,7 @@ public class GaussianProcess {
                     M = M - 1;
                     i = (length < 0) ? i + 1 : i;    // count iterations?!
 
-                    Matrix m1 = params.plus(s.times(x3));
+                    final Matrix m1 = params.plus(s.times(x3));
                     //f3 = f.evaluate(m1,cf, in, out, df3);
                     f3 = negativeLogLikelihood(m1, in, out, df3);
 
@@ -450,7 +450,7 @@ public class GaussianProcess {
 
                 x3 = Math.max(Math.min(x3, x4 - INT * (x4 - x2)), x2 + INT * (x4 - x2));  // don't accept too close
 
-                Matrix m1 = s.times(x3).plus(params);
+                final Matrix m1 = s.times(x3).plus(params);
                 //f3 = f.evaluate(m1,cf, in, out, df3);
                 f3 = negativeLogLikelihood(m1, in, out, df3);
 
@@ -471,8 +471,8 @@ public class GaussianProcess {
                 params = s.times(x3).plus(params);
                 f0 = f3;
 
-                double[] elem = fX.getColumnPackedCopy();
-                double[] newfX = new double[elem.length + 1];
+                final double[] elem = fX.getColumnPackedCopy();
+                final double[] newfX = new double[elem.length + 1];
 
                 System.arraycopy(elem, 0, newfX, 0, elem.length);
                 newfX[elem.length - 1] = f0;
@@ -482,8 +482,8 @@ public class GaussianProcess {
                 System.out.println("Function evaluation " + i + " Value " + f0);
 
 
-                double tmp1 = df3.transpose().times(df3).minus(df0.transpose().times(df3)).get(0, 0);
-                double tmp2 = df0.transpose().times(df0).get(0, 0);
+                final double tmp1 = df3.transpose().times(df3).minus(df0.transpose().times(df3)).get(0, 0);
+                final double tmp2 = df0.transpose().times(df0).get(0, 0);
 
                 s = s.times(tmp1 / tmp2).minus(df3);
 
@@ -522,9 +522,9 @@ public class GaussianProcess {
     }
 
 
-    private static boolean hasInvalidNumbers(double[] array) {
+    private static boolean hasInvalidNumbers(final double[] array) {
 
-        for (double a : array) {
+        for (final double a : array) {
             if (Double.isInfinite(a) || Double.isNaN(a)) {
                 return true;
             }
@@ -539,13 +539,13 @@ public class GaussianProcess {
      *
      * @param args
      */
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
 
 
-        CovarianceFunction covFunc = new CovSum(6, new CovLINone(), new CovNoise());
-        GaussianProcess gp = new GaussianProcess(covFunc);
+        final CovarianceFunction covFunc = new CovSum(6, new CovLINone(), new CovNoise());
+        final GaussianProcess gp = new GaussianProcess(covFunc);
 
-        double[][] logtheta0 = new double[][]{
+        final double[][] logtheta0 = new double[][]{
                 {0.1},
                 {Math.log(0.1)}
         };
@@ -561,11 +561,11 @@ public class GaussianProcess {
                       {Math.log(0.1)}};
         */
 
-        Matrix params0 = new Matrix(logtheta0);
+        final Matrix params0 = new Matrix(logtheta0);
 
-        Matrix[] data = CSVtoMatrix.load("../armdata.csv", 6, 1);
-        Matrix X = data[0];
-        Matrix Y = data[1];
+        final Matrix[] data = CSVtoMatrix.load("../armdata.csv", 6, 1);
+        final Matrix X = data[0];
+        final Matrix Y = data[1];
 
         gp.train(X, Y, params0, -20);
 
@@ -614,11 +614,11 @@ public class GaussianProcess {
 //            plot.fillPlot();
 //        }
 
-        Matrix[] datastar = CSVtoMatrix.load("../armdatastar.csv", 6, 1);
-        Matrix Xstar = datastar[0];
-        Matrix Ystar = datastar[1];
+        final Matrix[] datastar = CSVtoMatrix.load("../armdatastar.csv", 6, 1);
+        final Matrix Xstar = datastar[0];
+        final Matrix Ystar = datastar[1];
 
-        Matrix[] res = gp.predict(Xstar);
+        final Matrix[] res = gp.predict(Xstar);
 
         res[0].print(res[0].getColumnDimension(), 16);
         res[1].print(res[1].getColumnDimension(), 16);

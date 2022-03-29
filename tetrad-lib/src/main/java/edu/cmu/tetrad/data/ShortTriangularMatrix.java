@@ -36,110 +36,110 @@ import java.io.IOException;
  */
 public class ShortTriangularMatrix implements TriangularMatrix {
 
-    private short matrix[][];
+    private short[][] matrix;
 
     private ShortTriangularMatrix() {
     }
 
-    public ShortTriangularMatrix(int size) {
+    public ShortTriangularMatrix(final int size) {
         create(size);
     }
 
     //testing sandbox
-    public static void main(String[] args) {
-        ShortTriangularMatrix test = new ShortTriangularMatrix();
-        File file = new File("C:/data1.txt");
+    public static void main(final String[] args) {
+        final ShortTriangularMatrix test = new ShortTriangularMatrix();
+        final File file = new File("C:/data1.txt");
         try {
-            DataSet data = DataUtils.loadContinuousData(file, "//", '\"' ,
+            final DataSet data = DataUtils.loadContinuousData(file, "//", '\"' ,
                     "*", true, Delimiter.TAB);
             test.becomeCorrelationMatrix(data);
             System.out.println(test);
-            CorrelationMatrix m = new CorrelationMatrix(data);
+            final CorrelationMatrix m = new CorrelationMatrix(data);
             System.out.println(m);
             System.out.println(test.getDouble(1, 3));
             System.out.println(test.getDouble(3, 1));
-        } catch (IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void becomeCorrelationMatrix(DataSet dataSet) {
+    public void becomeCorrelationMatrix(final DataSet dataSet) {
         for (int i = 0; i < dataSet.getNumColumns(); i++)
-            matrix[i][i] = 10000;
+            this.matrix[i][i] = 10000;
 
-        Matrix doubleData = dataSet.getDoubleData();
-        Vector[] views = new Vector[dataSet.getNumColumns()];
+        final Matrix doubleData = dataSet.getDoubleData();
+        final Vector[] views = new Vector[dataSet.getNumColumns()];
         for (int i = 0; i < views.length; i++)
             views[i] = doubleData.getColumn(i);
 
         for (int i = 0; i < dataSet.getNumColumns() - 1; i++)
             for (int j = i + 1; j < dataSet.getNumColumns(); j++)
-                matrix[j][i] = StatUtils.compressedCorrelation(views[i], views[j]);
+                this.matrix[j][i] = StatUtils.compressedCorrelation(views[i], views[j]);
     }
 
-    public void create(int size) {
-        matrix = new short[size][];
+    public void create(final int size) {
+        this.matrix = new short[size][];
         for (int i = 0; i < size; i++) {
-            matrix[i] = new short[i + 1];
+            this.matrix[i] = new short[i + 1];
 
             for (int j = 0; j < i + 1; j++)
-                matrix[i][j] = (short) i;
+                this.matrix[i][j] = (short) i;
         }
     }
 
     public short getShort(int row, int col) {
         if (col > row) {
-            int temp = col;
+            final int temp = col;
             col = row;
             row = temp;
         }
-        return matrix[row][col];
+        return this.matrix[row][col];
     }
 
     public double getDouble(int row, int col) {
         if (col > row) {
-            int temp = col;
+            final int temp = col;
             col = row;
             row = temp;
         }
 
-        return ((double) matrix[row][col]) / 10000;
+        return ((double) this.matrix[row][col]) / 10000;
     }
 
-    public boolean set(int row, int col, long value) {
+    public boolean set(final int row, final int col, final long value) {
         return set(row, col, (short) value);
     }
 
-    public boolean set(int row, int col, int value) {
+    public boolean set(final int row, final int col, final int value) {
         return set(row, col, (short) value);
     }
 
-    public boolean set(int row, int col, short value) {
+    public boolean set(int row, int col, final short value) {
         if (col > row) {
-            int temp = col;
+            final int temp = col;
             col = row;
             row = temp;
         }
 
-        matrix[row][col] = value;
+        this.matrix[row][col] = value;
         return true;
     }
 
-    public boolean set(int row, int col, double value) {
+    public boolean set(int row, int col, final double value) {
         if (col > row) {
-            int temp = col;
+            final int temp = col;
             col = row;
             row = temp;
         }
 
-        matrix[row][col] = (short) (value * 10000);
+        this.matrix[row][col] = (short) (value * 10000);
         return true;
     }
 
     public String toString() {
-        StringBuilder out = new StringBuilder();
-        for (int i = 0; i < matrix.length; i++) {
-            for (int j = 0; j < matrix[i].length; j++) {
+        final StringBuilder out = new StringBuilder();
+        for (int i = 0; i < this.matrix.length; i++) {
+            for (int j = 0; j < this.matrix[i].length; j++) {
                 out.append(getDouble(i, j)).append("\t\t");
             }
             out.append("\n");

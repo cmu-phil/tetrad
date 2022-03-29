@@ -40,7 +40,7 @@ public class BoolSearch {
     private final int ntimes;
     String[] names;
 
-    public BoolSearch(int[][] cases, String[] names) {
+    public BoolSearch(final int[][] cases, final String[] names) {
         this.cases = cases;
         this.names = names;
         this.ntimes = cases.length;
@@ -53,14 +53,14 @@ public class BoolSearch {
      * Networks". </p> The int k is the number of number of regulators of a
      * given gene and corresponds to K in the paper.
      */
-    public RevealOutputGraph bool2(int k) {
+    public RevealOutputGraph bool2(final int k) {
 
-        int[][] parents = new int[ngenes][];
-        int[][] lags = new int[ngenes][];
-        int[] f = new int[ngenes];
+        final int[][] parents = new int[this.ngenes][];
+        final int[][] lags = new int[this.ngenes][];
+        final int[] f = new int[this.ngenes];
 
         int numberTotalInputs = 1;
-        for (int i = 0; i < ngenes; i++) {
+        for (int i = 0; i < this.ngenes; i++) {
             numberTotalInputs *= 2;
         }
 
@@ -69,7 +69,7 @@ public class BoolSearch {
             numberInputCombinations *= 2;
         }
 
-        double theta0 =
+        final double theta0 =
                 1.0 / (2.0 * numberInputCombinations * numberInputCombinations);
         //theta = 0.1;
         double theta = theta0;
@@ -84,14 +84,14 @@ public class BoolSearch {
                 " number functions = " + numberBooleanFunctions);
 
         //for i = 1 to n do...
-        for (int gchild = 0; gchild < ngenes; gchild++) {
+        for (int gchild = 0; gchild < this.ngenes; gchild++) {
             System.out.println("Child gene " + gchild);
             TH:
             for (int m = 1; m <= 60; m++) {
                 theta = theta0 * m;
                 System.out.println("Theta = " + theta);
                 int count = 0;
-                int[] pars = new int[k];
+                final int[] pars = new int[k];
                 pars[0] = -1;
                 pars[1] = -1;
                 pars[2] = -1;
@@ -99,10 +99,10 @@ public class BoolSearch {
                 //For all combinations of k nodes do...
                 //The array inputs has a 1 in position i if inputs[i] is a parent
                 for (int input = 0; input < numberTotalInputs; input++) {
-                    byte[] inputs = booleanRepresentation(input, ngenes);
+                    final byte[] inputs = booleanRepresentation(input, this.ngenes);
                     if (sumBits(inputs) == k) {
                         int j = 0;
-                        for (int i = 0; i < ngenes; i++) {
+                        for (int i = 0; i < this.ngenes; i++) {
                             if (inputs[i] == 1) {
                                 pars[j] = i;
                                 j++;
@@ -120,28 +120,28 @@ public class BoolSearch {
                     //For every boolean function with k inputs do...
                     for (int function = 0;
                          function < numberBooleanFunctions; function++) {
-                        byte[] fi = booleanRepresentation(function,
+                        final byte[] fi = booleanRepresentation(function,
                                 numberInputCombinations);
                         int mismatch = 0;
                         //for j = 1 to m do ...
-                        for (int j = 0; j < ntimes - 1; j++) {
+                        for (int j = 0; j < this.ntimes - 1; j++) {
                             //input = values of k genes at time j - 1
-                            boolean match = true;
+                            final boolean match = true;
                             int argument = 0;
                             int power = 1;
                             for (int i = 0; i < k; i++) {
-                                argument += power * cases[j][pars[k - i - 1]];
+                                argument += power * this.cases[j][pars[k - i - 1]];
                                 //argument += power*cases[j][pars[i]];
                                 power *= 2;
                             }
-                            int finput = fi[argument];
+                            final int finput = fi[argument];
                             //if Oj(vi) != f(Ij(vi1),...,Ij(vik)) then...
-                            if (finput != cases[j + 1][gchild]) {
+                            if (finput != this.cases[j + 1][gchild]) {
                                 mismatch++;
                             }
                         }
 
-                        if (mismatch < theta * ntimes) {
+                        if (mismatch < theta * this.ntimes) {
                             System.out.println("update parents");
                             parents[gchild] = new int[k];
                             lags[gchild] = new int[k];
@@ -192,15 +192,15 @@ public class BoolSearch {
      * Computes a byte vector which corresponds to the argument ind.  rep[0] is
      * the high order bit. E.g.  if n=3 and ind=6 the vector will be (1, 1, 0).
      */
-    public byte[] booleanRepresentation(int ind, int n) {
-        byte[] rep = new byte[n];
+    public byte[] booleanRepresentation(int ind, final int n) {
+        final byte[] rep = new byte[n];
 
         for (int i = 0; i < n; i++) {
             rep[i] = (byte) 0;
         }
 
         for (int i = 0; i < n; i++) {
-            int rem = ind % 2;
+            final int rem = ind % 2;
             if (rem == 1) {
                 rep[n - i - 1] = (byte) 1;
                 ind -= 1;
@@ -211,7 +211,7 @@ public class BoolSearch {
         return rep;
     }
 
-    public int sumBits(byte[] b) {
+    public int sumBits(final byte[] b) {
         int sum = 0;
 
         for (int i = 0; i < b.length; i++) {

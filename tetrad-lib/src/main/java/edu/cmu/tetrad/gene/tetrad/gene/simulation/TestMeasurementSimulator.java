@@ -69,7 +69,7 @@ public class TestMeasurementSimulator extends TestCase {
     /**
      * Standard constructor for JUnit test cases.
      */
-    public TestMeasurementSimulator(String name) {
+    public TestMeasurementSimulator(final String name) {
         super(name);
     }
 
@@ -89,14 +89,14 @@ public class TestMeasurementSimulator extends TestCase {
     public void setUp() {
 
         // Make an lag graph.
-        LagGraph lagGraph = new BasicLagGraph();
+        final LagGraph lagGraph = new BasicLagGraph();
 
         lagGraph.addFactor("G1");
         lagGraph.addFactor("G2");
         lagGraph.addFactor("G3");
 
         // Initialize graph.
-        GraphInitializer graphInitializer = new PreviousStepOnly();
+        final GraphInitializer graphInitializer = new PreviousStepOnly();
 
         graphInitializer.initialize(lagGraph);
         lagGraph.addEdge("G2", new LaggedFactor("G1", 1));
@@ -107,8 +107,8 @@ public class TestMeasurementSimulator extends TestCase {
         this.updateFunction = new BooleanGlassFunction(lagGraph);
 
         // Create a new BasalInitializer.
-        BasalInitializer historyInitializer =
-                new BasalInitializer(updateFunction, 0.0, 1.0);
+        final BasalInitializer historyInitializer =
+                new BasalInitializer(this.updateFunction, 0.0, 1.0);
 
         //glassFunction.initialize();
 
@@ -116,7 +116,7 @@ public class TestMeasurementSimulator extends TestCase {
         // function.
         //this.history = new GlassHistory(glassFunction);
 
-        this.history = new GeneHistory(historyInitializer, updateFunction);
+        this.history = new GeneHistory(historyInitializer, this.updateFunction);
 
         // Create simulator.
         this.simulator = new MeasurementSimulator(new Parameters());
@@ -170,7 +170,7 @@ public class TestMeasurementSimulator extends TestCase {
         assertEquals(true, this.simulator.isInitSync());
 
         // Make sure the time steps are 1, 2, 3, 4.
-        int[] timeSteps = this.simulator.getTimeSteps();
+        final int[] timeSteps = this.simulator.getTimeSteps();
 
         assertEquals(4, timeSteps.length);
 
@@ -194,7 +194,7 @@ public class TestMeasurementSimulator extends TestCase {
         // Simulate the data.
         this.simulator.simulate(this.history);
 
-        double[][][] rawData = this.simulator.getRawData();
+        final double[][][] rawData = this.simulator.getRawData();
 
         // (Test the dimensions.)
         assertEquals(3, rawData.length);              // # variables.
@@ -204,10 +204,10 @@ public class TestMeasurementSimulator extends TestCase {
         // The test is to see whether Gene 1 at time step 2 has a
         // standard deviation of 0.05. Of course the gene and time
         // step numbers need to be 0-indexed.
-        DoubleArrayList doubleArrayList = new DoubleArrayList(rawData[0][1]);
-        double sum = Descriptive.sum(doubleArrayList);
-        double sumOfSquares = Descriptive.sumOfSquares(doubleArrayList);
-        double stdev = Descriptive.standardDeviation(
+        final DoubleArrayList doubleArrayList = new DoubleArrayList(rawData[0][1]);
+        final double sum = Descriptive.sum(doubleArrayList);
+        final double sumOfSquares = Descriptive.sumOfSquares(doubleArrayList);
+        final double stdev = Descriptive.standardDeviation(
                 Descriptive.variance(rawData[0][1].length, sum, sumOfSquares));
 
         assertEquals(0.05, stdev, 0.01);
@@ -236,26 +236,26 @@ public class TestMeasurementSimulator extends TestCase {
         // Simulate the data.
         this.simulator.simulate(this.history);
 
-        double[][][] measuredData = this.simulator.getMeasuredData();
+        final double[][][] measuredData = this.simulator.getMeasuredData();
 
         // Do the test.
-        DoubleArrayList doubleArrayList =
+        final DoubleArrayList doubleArrayList =
                 new DoubleArrayList(measuredData[1][0]);
-        double sum = Descriptive.sum(doubleArrayList);
-        double sumOfSquares = Descriptive.sumOfSquares(doubleArrayList);
-        double gene2time1sd = Descriptive.standardDeviation(
+        final double sum = Descriptive.sum(doubleArrayList);
+        final double sumOfSquares = Descriptive.sumOfSquares(doubleArrayList);
+        final double gene2time1sd = Descriptive.standardDeviation(
                 Descriptive.variance(measuredData[1][0].length, sum,
                         sumOfSquares));
-        DoubleArrayList doubleArrayList1 =
+        final DoubleArrayList doubleArrayList1 =
                 new DoubleArrayList(measuredData[2][0]);
-        double sum1 = Descriptive.sum(doubleArrayList1);
-        double sumOfSquares1 = Descriptive.sumOfSquares(doubleArrayList1);
-        double gene3time1sd = Descriptive.standardDeviation(
+        final double sum1 = Descriptive.sum(doubleArrayList1);
+        final double sumOfSquares1 = Descriptive.sumOfSquares(doubleArrayList1);
+        final double gene3time1sd = Descriptive.standardDeviation(
                 Descriptive.variance(measuredData[2][0].length, sum1,
                         sumOfSquares1));
-        double gene2time1mean =
+        final double gene2time1mean =
                 Descriptive.mean(new DoubleArrayList(measuredData[1][0]));
-        double gene3time1mean =
+        final double gene3time1mean =
                 Descriptive.mean(new DoubleArrayList(measuredData[2][0]));
 
         assertEquals(Math.abs(0.1 * gene2time1mean), gene2time1sd, 0.03);
@@ -284,21 +284,21 @@ public class TestMeasurementSimulator extends TestCase {
         // Simulate the data.
         this.simulator.simulate(this.history);
 
-        double[][][] measuredData = this.simulator.getMeasuredData();
+        final double[][][] measuredData = this.simulator.getMeasuredData();
 
         // Do the test.
-        DoubleArrayList doubleArrayList =
+        final DoubleArrayList doubleArrayList =
                 new DoubleArrayList(measuredData[1][0]);
-        double sum = Descriptive.sum(doubleArrayList);
-        double sumOfSquares = Descriptive.sumOfSquares(doubleArrayList);
-        double gene2time1sd = Descriptive.standardDeviation(
+        final double sum = Descriptive.sum(doubleArrayList);
+        final double sumOfSquares = Descriptive.sumOfSquares(doubleArrayList);
+        final double gene2time1sd = Descriptive.standardDeviation(
                 Descriptive.variance(measuredData[1][0].length, sum,
                         sumOfSquares));
-        DoubleArrayList doubleArrayList1 =
+        final DoubleArrayList doubleArrayList1 =
                 new DoubleArrayList(measuredData[2][0]);
-        double sum1 = Descriptive.sum(doubleArrayList1);
-        double sumOfSquares1 = Descriptive.sumOfSquares(doubleArrayList1);
-        double gene3time1sd = Descriptive.standardDeviation(
+        final double sum1 = Descriptive.sum(doubleArrayList1);
+        final double sumOfSquares1 = Descriptive.sumOfSquares(doubleArrayList1);
+        final double gene3time1sd = Descriptive.standardDeviation(
                 Descriptive.variance(measuredData[2][0].length, sum1,
                         sumOfSquares1));
 
@@ -329,28 +329,28 @@ public class TestMeasurementSimulator extends TestCase {
         // Simulate the data.
         this.simulator.simulate(this.history);
 
-        double[][][] measuredData = this.simulator.getMeasuredData();
+        final double[][][] measuredData = this.simulator.getMeasuredData();
 
         // Do the test.
-        DoubleArrayList doubleArrayList =
+        final DoubleArrayList doubleArrayList =
                 new DoubleArrayList(measuredData[1][0]);
-        double sum = Descriptive.sum(doubleArrayList);
-        double sumOfSquares = Descriptive.sumOfSquares(doubleArrayList);
-        double gene2time1sd = Descriptive.standardDeviation(
+        final double sum = Descriptive.sum(doubleArrayList);
+        final double sumOfSquares = Descriptive.sumOfSquares(doubleArrayList);
+        final double gene2time1sd = Descriptive.standardDeviation(
                 Descriptive.variance(measuredData[1][0].length, sum,
                         sumOfSquares));
-        DoubleArrayList doubleArrayList1 =
+        final DoubleArrayList doubleArrayList1 =
                 new DoubleArrayList(measuredData[2][0]);
-        double sum1 = Descriptive.sum(doubleArrayList1);
-        double sumOfSquares1 = Descriptive.sumOfSquares(doubleArrayList1);
-        double gene3time1sd = Descriptive.standardDeviation(
+        final double sum1 = Descriptive.sum(doubleArrayList1);
+        final double sumOfSquares1 = Descriptive.sumOfSquares(doubleArrayList1);
+        final double gene3time1sd = Descriptive.standardDeviation(
                 Descriptive.variance(measuredData[2][0].length, sum1,
                         sumOfSquares1));
-        DoubleArrayList doubleArrayList2 =
+        final DoubleArrayList doubleArrayList2 =
                 new DoubleArrayList(measuredData[1][1]);
-        double sum2 = Descriptive.sum(doubleArrayList2);
-        double sumOfSquares2 = Descriptive.sumOfSquares(doubleArrayList2);
-        double gene1time2sd = Descriptive.standardDeviation(
+        final double sum2 = Descriptive.sum(doubleArrayList2);
+        final double sumOfSquares2 = Descriptive.sumOfSquares(doubleArrayList2);
+        final double gene1time2sd = Descriptive.standardDeviation(
                 Descriptive.variance(measuredData[1][1].length, sum2,
                         sumOfSquares2));
 
@@ -382,28 +382,28 @@ public class TestMeasurementSimulator extends TestCase {
         // Simulate the data.
         this.simulator.simulate(this.history);
 
-        double[][][] measuredData = this.simulator.getMeasuredData();
+        final double[][][] measuredData = this.simulator.getMeasuredData();
 
         // Do the test.
-        DoubleArrayList doubleArrayList =
+        final DoubleArrayList doubleArrayList =
                 new DoubleArrayList(measuredData[1][0]);
-        double sum = Descriptive.sum(doubleArrayList);
-        double sumOfSquares = Descriptive.sumOfSquares(doubleArrayList);
-        double gene2time1sd = Descriptive.standardDeviation(
+        final double sum = Descriptive.sum(doubleArrayList);
+        final double sumOfSquares = Descriptive.sumOfSquares(doubleArrayList);
+        final double gene2time1sd = Descriptive.standardDeviation(
                 Descriptive.variance(measuredData[1][0].length, sum,
                         sumOfSquares));
-        DoubleArrayList doubleArrayList1 =
+        final DoubleArrayList doubleArrayList1 =
                 new DoubleArrayList(measuredData[2][0]);
-        double sum1 = Descriptive.sum(doubleArrayList1);
-        double sumOfSquares1 = Descriptive.sumOfSquares(doubleArrayList1);
-        double gene3time1sd = Descriptive.standardDeviation(
+        final double sum1 = Descriptive.sum(doubleArrayList1);
+        final double sumOfSquares1 = Descriptive.sumOfSquares(doubleArrayList1);
+        final double gene3time1sd = Descriptive.standardDeviation(
                 Descriptive.variance(measuredData[2][0].length, sum1,
                         sumOfSquares1));
-        DoubleArrayList doubleArrayList2 =
+        final DoubleArrayList doubleArrayList2 =
                 new DoubleArrayList(measuredData[1][1]);
-        double sum2 = Descriptive.sum(doubleArrayList2);
-        double sumOfSquares2 = Descriptive.sumOfSquares(doubleArrayList2);
-        double gene1time2sd = Descriptive.standardDeviation(
+        final double sum2 = Descriptive.sum(doubleArrayList2);
+        final double sumOfSquares2 = Descriptive.sumOfSquares(doubleArrayList2);
+        final double gene1time2sd = Descriptive.standardDeviation(
                 Descriptive.variance(measuredData[1][1].length, sum2,
                         sumOfSquares2));
 

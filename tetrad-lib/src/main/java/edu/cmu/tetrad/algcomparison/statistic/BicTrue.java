@@ -26,14 +26,14 @@ public class BicTrue implements Statistic {
     }
 
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        double _true = SemBicScorer.scoreDag(SearchGraphUtils.dagFromCPDAG(trueGraph), dataModel);
+    public double getValue(final Graph trueGraph, final Graph estGraph, final DataModel dataModel) {
+        final double _true = SemBicScorer.scoreDag(SearchGraphUtils.dagFromCPDAG(trueGraph), dataModel);
 //        double est = SemBicScorer.scoreDag(SearchGraphUtils.dagFromCPDAG(estGraph), dataModel);
         return _true;
     }
 
     @Override
-    public double getNormValue(double value) {
+    public double getNormValue(final double value) {
         return tanh(value);
     }
 }

@@ -49,7 +49,7 @@ public final class Polynomial implements TetradSerializable {
     /**
      * Constructs a polynomial from a list of terms.
      */
-    public Polynomial(List<PolynomialTerm> terms) {
+    public Polynomial(final List<PolynomialTerm> terms) {
 
         if (terms == null) {
             throw new NullPointerException("Terms list cannot be null.");
@@ -80,15 +80,15 @@ public final class Polynomial implements TetradSerializable {
     /**
      * Returns the coefficient.
      */
-    public PolynomialTerm getTerm(int index) {
+    public PolynomialTerm getTerm(final int index) {
         return this.terms.get(index);
     }
 
     /**
      * Finds the first term matching the given profile.
      */
-    public PolynomialTerm findTerm(int[] variables) {
-        for (PolynomialTerm term1 : this.terms) {
+    public PolynomialTerm findTerm(final int[] variables) {
+        for (final PolynomialTerm term1 : this.terms) {
             if (term1.isVariableListEqual(variables)) {
                 return term1;
             }
@@ -102,8 +102,8 @@ public final class Polynomial implements TetradSerializable {
      */
     public int getMaxIndex() {
         int max = 0;
-        for (PolynomialTerm term1 : this.terms) {
-            int termMax = term1.getMaxIndex();
+        for (final PolynomialTerm term1 : this.terms) {
+            final int termMax = term1.getMaxIndex();
             if (termMax > max) {
                 max = termMax;
             }
@@ -114,9 +114,9 @@ public final class Polynomial implements TetradSerializable {
     /**
      * Evaluates the term.
      */
-    public double evaluate(double[] values) {
+    public double evaluate(final double[] values) {
         double sum = 0.0;
-        for (PolynomialTerm term1 : this.terms) {
+        for (final PolynomialTerm term1 : this.terms) {
             sum += term1.evaluate(values);
         }
         return sum;
@@ -126,7 +126,7 @@ public final class Polynomial implements TetradSerializable {
      * Prints out a representation of the term.
      */
     public String toString() {
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
         for (int i = 0; i < this.terms.size(); i++) {
             buf.append(this.terms.get(i));
             if (i < this.terms.size() - 1) {
@@ -149,11 +149,11 @@ public final class Polynomial implements TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (terms == null) {
+        if (this.terms == null) {
             throw new NullPointerException();
         }
     }

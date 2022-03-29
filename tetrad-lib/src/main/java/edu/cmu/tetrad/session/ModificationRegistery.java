@@ -44,7 +44,7 @@ public final class ModificationRegistery {
     /**
      * Registers an editor which could modify model.
      */
-    public static void registerEditor(SessionNode sessionNode,
+    public static void registerEditor(final SessionNode sessionNode,
                                       JComponent editor) {
         if (editor == null) {
             throw new NullPointerException();
@@ -60,11 +60,11 @@ public final class ModificationRegistery {
 
         EDITORS_TO_SESSION_NODES.put(editor, sessionNode);
 
-        PropertyChangeListener listener = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
+        final PropertyChangeListener listener = new PropertyChangeListener() {
+            public void propertyChange(final PropertyChangeEvent evt) {
                 if ("modelChanged".equals(evt.getPropertyName())) {
-                    JComponent editor = (JComponent) evt.getSource();
-                    Object sessionNode = EDITORS_TO_SESSION_NODES.get(editor);
+                    final JComponent editor = (JComponent) evt.getSource();
+                    final Object sessionNode = EDITORS_TO_SESSION_NODES.get(editor);
                     if (sessionNode != null) {
                         EDITED_MODELS.add(sessionNode);
                     }
@@ -79,7 +79,7 @@ public final class ModificationRegistery {
     /**
      * @return true if an editor has registered that model has changed.
      */
-    public static boolean modelHasChanged(SessionNode sessionNode) {
+    public static boolean modelHasChanged(final SessionNode sessionNode) {
         return EDITED_MODELS.contains(sessionNode);
     }
 
@@ -89,7 +89,7 @@ public final class ModificationRegistery {
         }
 
         EDITORS_TO_SESSION_NODES.remove(editor);
-        PropertyChangeListener listener =
+        final PropertyChangeListener listener =
                 EDITORS_TO_LISTENERS.get(editor);
         editor.removePropertyChangeListener(listener);
         EDITORS_TO_LISTENERS.remove(editor);
@@ -99,7 +99,7 @@ public final class ModificationRegistery {
      * Removes the given session node from the list of sessions nodes for which
      * changes have been made.
      */
-    public static void unregisterSessionNode(SessionNode sessionNode) {
+    public static void unregisterSessionNode(final SessionNode sessionNode) {
         EDITED_MODELS.remove(sessionNode);
     }
 }

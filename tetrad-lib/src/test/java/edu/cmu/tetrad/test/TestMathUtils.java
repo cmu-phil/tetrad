@@ -44,7 +44,7 @@ public class TestMathUtils {
 
     @Test
     public void testExpSums() {
-        double d = 100.0;
+        final double d = 100.0;
 
         assertEquals(7.22E86, Math.exp(d + d), 1E86);
         assertEquals(7.22E86, Math.exp(d) * Math.exp(d), 1E86);
