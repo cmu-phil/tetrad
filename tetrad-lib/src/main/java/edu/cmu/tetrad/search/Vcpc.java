@@ -42,12 +42,12 @@ import java.util.concurrent.TimeUnit;
  */
 public final class Vcpc implements GraphSearch {
 
-    private int NTHREDS = Runtime.getRuntime().availableProcessors() * 5;
+    private final int NTHREDS = Runtime.getRuntime().availableProcessors() * 5;
 
     /**
      * The independence test used for the PC search.
      */
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
 
     /**
      * Forbidden and required edges for the search.
@@ -104,7 +104,7 @@ public final class Vcpc implements GraphSearch {
     /**
      * The logger for this class. The config needs to be set.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
     /**
      * The sepsets.

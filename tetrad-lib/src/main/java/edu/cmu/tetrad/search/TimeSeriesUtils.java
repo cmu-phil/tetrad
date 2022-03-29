@@ -262,8 +262,8 @@ public class TimeSeriesUtils {
 
     public static class VarResult {
 
-        private DataSet residuals;
-        private Graph collapsedVarGraph;
+        private final DataSet residuals;
+        private final Graph collapsedVarGraph;
 
         public VarResult(DataSet dataSet, Graph collapsedVarGraph) {
             this.residuals = dataSet;

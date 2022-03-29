@@ -25,8 +25,8 @@ public class StARS2 implements Algorithm, TakesExternalGraph {
     private final double high;
     private final String parameter;
     private final double initialGuess;
-    private Algorithm algorithm;
-    private IKnowledge knowledge = new Knowledge2();
+    private final Algorithm algorithm;
+    private final IKnowledge knowledge = new Knowledge2();
     private DataSet _dataSet;
     Map<Double, Double> archive;
 

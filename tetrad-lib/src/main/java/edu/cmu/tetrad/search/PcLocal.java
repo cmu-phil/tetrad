@@ -41,7 +41,7 @@ public class PcLocal implements GraphSearch {
     /**
      * The independence test used for the PC search.
      */
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
 
     /**
      * Forbidden and required edges for the search.
@@ -57,7 +57,7 @@ public class PcLocal implements GraphSearch {
     /**
      * The logger for this class. The config needs to be set.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
     /**
      * Elapsed time of the most recent search.
@@ -67,7 +67,7 @@ public class PcLocal implements GraphSearch {
     private Graph graph;
     private MeekRules meekRules;
     private boolean recordSepsets = true;
-    private SepsetMap sepsetMap = new SepsetMap();
+    private final SepsetMap sepsetMap = new SepsetMap();
     private SepsetProducer sepsetProducer;
     private SemBicScore score;
     private ConcurrentMap<Node, Integer> hashIndices;

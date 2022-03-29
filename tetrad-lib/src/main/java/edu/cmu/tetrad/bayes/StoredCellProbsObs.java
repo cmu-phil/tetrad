@@ -45,9 +45,9 @@ import java.util.*;
 public final class StoredCellProbsObs implements TetradSerializable, DiscreteProbs {
     static final long serialVersionUID = 23L;
 
-    private List<Node> variables;
-    private int[] parentDims;
-    private double[] probs;
+    private final List<Node> variables;
+    private final int[] parentDims;
+    private final double[] probs;
 
 
     //============================CONSTRUCTORS============================//
@@ -69,7 +69,7 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
         }
 
         this.variables = Collections.unmodifiableList(variables);
-        Set<Object> variableSet = new HashSet<Object>(this.variables);
+        Set<Object> variableSet = new HashSet<>(this.variables);
         if (variableSet.size() < this.variables.size()) {
             throw new IllegalArgumentException("Duplicate variable.");
         }
@@ -101,32 +101,12 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
      * Generates a simple exemplar of this class to test serialization.
      */
     public static StoredCellProbsObs serializableInstance() {
-        return new StoredCellProbsObs(new ArrayList<Node>());
+        return new StoredCellProbsObs(new ArrayList<>());
     }
-
-
-    // randomize the probability table
-    /*
-    public void createRandomCellTable() {
-        double sum = 0.0;
-
-        for (int i = 0; i < probs.length; i++) {
-            double value = RandomUtil.getInstance().nextDouble();
-            probs[i] = value;
-            sum += value;
-        }
-
-        for (int i = 0; i < probs.length; i++) {
-            probs[i] /= sum;
-        }
-    }
-	 */
 
     // clear the probability table
     public void clearCellTable() {
-        for (int i = 0; i < probs.length; i++) {
-            probs[i] = Double.NaN;
-        }
+        Arrays.fill(probs, Double.NaN);
     }
 
     // get vaues by marginalizing probabilities from allowUnfaithfulness bayesIm
@@ -150,8 +130,6 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
 
             probs[i] = cellProbsOnTheFly.getProb(targetProp);
         }
-
-        //return cellProbs;
     }
 
     // copy from another MlBayesImObs
@@ -294,10 +272,6 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
         }
 
         return assertionTrue / conditionTrue;
-    }
-
-    public boolean isMissingValueCaseFound() {
-        return false;
     }
 
     public List<Node> getVariables() {

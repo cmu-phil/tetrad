@@ -39,13 +39,13 @@ class PossibleGraphicalChangeFinder {
     /**
      * The pag that the undirectedPaths are relative to.
      */
-    private Graph pag;
+    private final Graph pag;
 
 
     /**
      * The separation sets.
      */
-    private List<List<Node>> separations;
+    private final List<List<Node>> separations;
 
     /**
      * Constructs the finder given the undirectedPaths that must be blocked.

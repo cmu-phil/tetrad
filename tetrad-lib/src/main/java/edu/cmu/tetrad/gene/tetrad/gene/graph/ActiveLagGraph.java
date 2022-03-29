@@ -52,7 +52,7 @@ public class ActiveLagGraph implements LagGraph {
      *
      * @serial
      */
-    private LagGraph lagGraph = new BasicLagGraph();
+    private final LagGraph lagGraph = new BasicLagGraph();
 
     /**
      * Fires property changes.

@@ -25,9 +25,9 @@ import edu.cmu.tetrad.gene.tetrad.gene.algorithm.util.OutputGraph;
 
 public class RevealOutputGraph implements OutputGraph {
 
-    private int ngenes;
-    private int[][] parents;
-    private int[][] lags;
+    private final int ngenes;
+    private final int[][] parents;
+    private final int[][] lags;
     String[] names;
     String graphName;
 

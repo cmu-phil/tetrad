@@ -49,22 +49,22 @@ public final class IndTestGSquare implements IndependenceTest {
     /**
      * The G Square tester.
      */
-    private GSquareTest gSquareTest;
+    private final GSquareTest gSquareTest;
 
     /**
      * The variables in the discrete data sets or which conditional independence judgements are desired.
      */
-    private List<Node> variables;
+    private final List<Node> variables;
 
     /**
      * The dataset of discrete variables.
      */
-    private DataSet dataSet;
+    private final DataSet dataSet;
 
     /**
      * The significance level for the test.
      */
-    private double alpha;
+    private final double alpha;
 
     /**
      * The G Square value associted with a particular call of isIndependent. Set in that method and not in the
@@ -86,7 +86,7 @@ public final class IndTestGSquare implements IndependenceTest {
     /**
      * The standard number formatter for Tetrad.
      */
-    private static NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
 
     private boolean verbose = false;

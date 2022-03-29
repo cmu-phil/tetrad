@@ -117,12 +117,12 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     /**
      * The logger for this class. The config needs to be set.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
     /**
      * The top n graphs found by the algorithm, where n is numCPDAGsToStore.
      */
-    private SortedSet<ScoredGraph> topGraphs = new TreeSet<>();
+    private final SortedSet<ScoredGraph> topGraphs = new TreeSet<>();
 
     /**
      * The number of top CPDAGs to store.
@@ -140,7 +140,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     private boolean verbose = false;
 
     // Potential arrows sorted by bump high to low. The first one is a candidate for adding to the graph.
-    private SortedSet<Arrow> sortedArrows = new ConcurrentSkipListSet<>();
+    private final SortedSet<Arrow> sortedArrows = new ConcurrentSkipListSet<>();
 
     // Arrows added to sortedArrows for each <i, j>.
     private Map<OrderedPair<Node>, Set<Arrow>> lookupArrows;
@@ -149,7 +149,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     private ConcurrentMap<Node, Integer> hashIndices;
 
     // The static ForkJoinPool instance.
-    private ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
+    private final ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
 
     // A running tally of the total BIC score.
     private double score;
@@ -170,7 +170,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     private boolean faithfulnessAssumed = true;
 
     // A utility map to help with orientation.
-    private WeakHashMap<Node, Set<Node>> neighbors = new WeakHashMap<>();
+    private final WeakHashMap<Node, Set<Node>> neighbors = new WeakHashMap<>();
 
     // Graph input by user as super-structure to search over
     private Graph graphToOrient = null;
@@ -545,9 +545,9 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
         final int[] count = new int[1];
 
         class EffectTask extends RecursiveTask<Boolean> {
-            private int chunk;
-            private int from;
-            private int to;
+            private final int chunk;
+            private final int from;
+            private final int to;
 
             public EffectTask(int chunk, int from, int to) {
                 this.chunk = chunk;
@@ -800,8 +800,8 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
 
         class AdjTask extends RecursiveTask<Boolean> {
             private final List<OrderedPair<Node>> pairs;
-            private int from;
-            private int to;
+            private final int from;
+            private final int to;
 
             public AdjTask(List<OrderedPair<Node>> pairs, int from, int to) {
                 this.pairs = pairs;
@@ -906,11 +906,11 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     // Reevaluates arrows after removing an edge from the graph.
     private void reevaluateBackward(final Graph graph, final Node x, final Node y) {
         class BackwardTask extends RecursiveTask<Boolean> {
-            private List<Node> nodes;
-            private Map<Node, Integer> hashIndices;
-            private int chunk;
-            private int from;
-            private int to;
+            private final List<Node> nodes;
+            private final Map<Node, Integer> hashIndices;
+            private final int chunk;
+            private final int from;
+            private final int to;
 
             public BackwardTask(List<Node> nodes, int chunk, int from, int to,
                                 Map<Node, Integer> hashIndices) {
@@ -1017,11 +1017,11 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     // See Chickering (2002). The score difference resulting from added in the edge (hypothetically) is recorded
     // as the "bump".
     private static class Arrow implements Comparable<Arrow> {
-        private double bump;
-        private Node a;
-        private Node b;
-        private Set<Node> hOrT;
-        private Set<Node> naYX;
+        private final double bump;
+        private final Node a;
+        private final Node b;
+        private final Set<Node> hOrT;
+        private final Set<Node> naYX;
 
         public Arrow(double bump, Node a, Node b, Set<Node> hOrT, Set<Node> naYX) {
             this.bump = bump;

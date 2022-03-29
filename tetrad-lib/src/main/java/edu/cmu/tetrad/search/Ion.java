@@ -47,22 +47,22 @@ public class Ion {
     /**
      * The input PAGs being to be intergrated, possibly FCI outputs.
      */
-    private List<Graph> input = new ArrayList<>();
+    private final List<Graph> input = new ArrayList<>();
 
     /**
      * The output PAGs over all variables consistent with the input PAGs
      */
-    private List<Graph> output = new ArrayList<>();
+    private final List<Graph> output = new ArrayList<>();
 
     /**
      * All the variables being integrated from the input PAGs
      */
-    private List<String> variables = new ArrayList<>();
+    private final List<String> variables = new ArrayList<>();
 
     /**
      * Definite noncolliders
      */
-    private Set<Triple> definiteNoncolliders = new HashSet<>();
+    private final Set<Triple> definiteNoncolliders = new HashSet<>();
 
     /**
      * separations and associations found in the input PAGs
@@ -74,12 +74,12 @@ public class Ion {
      * tracks changes for final orientations orientation methods
      */
     private boolean changeFlag = true;
-    private Set<Graph> discrimGraphs = new HashSet<>();
-    private Set<Graph> finalResult = new HashSet<>();
+    private final Set<Graph> discrimGraphs = new HashSet<>();
+    private final Set<Graph> finalResult = new HashSet<>();
 
     // running runtime and time and size information for hitting sets
-    private List<Integer> recGraphs = new ArrayList<>();
-    private List<Double> recHitTimes = new ArrayList<>();
+    private final List<Integer> recGraphs = new ArrayList<>();
+    private final List<Double> recHitTimes = new ArrayList<>();
     private double runtime;
 
     // maximum memory usage
@@ -1432,9 +1432,9 @@ public class Ion {
      * the ION search.
      */
     private final class IonIndependenceFacts {
-        private Node x;
-        private Node y;
-        private Collection<List<Node>> z;
+        private final Node x;
+        private final Node y;
+        private final Collection<List<Node>> z;
 
         /**
          * Constructs a triple of nodes.

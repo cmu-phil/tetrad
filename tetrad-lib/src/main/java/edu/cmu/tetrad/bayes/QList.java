@@ -162,8 +162,6 @@ final class QList {
         double resultNextTerm = 1.0;
 
         // updater with no evidence
-        //ManipulatingBayesUpdater rowSumUpdater = 
-        //	new RowSummingExactUpdater(bayesIm, Evidence.tautology(bayesIm));
 
         int nNodes = bayesIm.getNumNodes();
 

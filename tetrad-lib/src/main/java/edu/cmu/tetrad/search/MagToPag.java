@@ -66,7 +66,7 @@ public final class MagToPag {
     /**
      * The variables to search over (optional)
      */
-    private List<Node> variables = new ArrayList<>();
+    private final List<Node> variables = new ArrayList<>();
 
     /**
      * flag for complete rule set, true if should use complete rule set, false otherwise.
@@ -86,7 +86,7 @@ public final class MagToPag {
     /**
      * The logger to use.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
     /**
      * True iff verbose output should be printed.

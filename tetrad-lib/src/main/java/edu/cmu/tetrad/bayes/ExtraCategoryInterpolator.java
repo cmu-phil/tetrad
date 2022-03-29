@@ -35,14 +35,11 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 public final class ExtraCategoryInterpolator implements DataFilter {
-    public final DataSet filter(DataSet dataSet) {
+    public DataSet filter(DataSet dataSet) {
 
         // Why does it have to be discrete? Why can't we simply expand
         // whatever discrete columns are there and leave the continuous
         // ones untouched? jdramsey 7/4/2005
-//        if (!(dataSet.isDiscrete())) {
-//            throw new IllegalArgumentException("Data set must be discrete.");
-//        }
 
         List<Node> variables = new LinkedList<>();
 

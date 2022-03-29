@@ -53,7 +53,7 @@ public class GraphWithParameters {
         return generatingMethodName;
     }
 
-    private HashMap<Edge, Double> weightHash;
+    private final HashMap<Edge, Double> weightHash;
 
 //	public Dag patDag = null; //only non-null when graph is a CPDAG
 

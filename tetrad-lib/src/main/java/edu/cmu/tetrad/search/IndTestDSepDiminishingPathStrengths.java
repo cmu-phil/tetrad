@@ -45,7 +45,7 @@ public class IndTestDSepDiminishingPathStrengths implements IndependenceTest {
     /**
      * The graph for which this is a variable map.
      */
-    private SemGraph graph;
+    private final SemGraph graph;
 
     /**
      * The list of observed variables (i.e. variables for observed nodes).

@@ -54,7 +54,7 @@ public final class SepsetMapDci {
     private Map<Set<Node>, List<List<Node>>> sepsetSets =
             new HashMap<>();
 
-    private Map<Node, LinkedHashSet<Node>> parents = new HashMap<>();
+    private final Map<Node, LinkedHashSet<Node>> parents = new HashMap<>();
 
     //=============================CONSTRUCTORS===========================//
 

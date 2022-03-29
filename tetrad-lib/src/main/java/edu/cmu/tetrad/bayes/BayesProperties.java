@@ -24,6 +24,7 @@ package edu.cmu.tetrad.bayes;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
@@ -60,6 +61,7 @@ public final class BayesProperties {
             VerticalIntDataBox box = new VerticalIntDataBox(dataBox);
 
             data = box.getVariableVectors();
+            this.sampleSize = dataSet.getNumRows();
         } else {
             data = new int[dataSet.getNumColumns()][];
             this.variables = dataSet.getVariables();
@@ -72,8 +74,8 @@ public final class BayesProperties {
                 }
             }
 
+            this.sampleSize = dataSet.getNumRows();
         }
-        this.sampleSize = dataSet.getNumRows();
 
         final List<Node> variables = dataSet.getVariables();
         numCategories = new int[variables.size()];
@@ -90,7 +92,7 @@ public final class BayesProperties {
     /**
      * Calculates the p-value of the graph with respect to the given data.
      */
-    public double getLikelihoodRatioP(Graph graph) {
+    public final double getLikelihoodRatioP(Graph graph) {
 
         // Null hypothesis = complete graph.
         List<Node> nodes = graph.getNodes();
@@ -114,18 +116,19 @@ public final class BayesProperties {
         System.out.println("nDiff = " + nDiff);
 
         double chisq = 2.0 * lDiff;
+        double dof = nDiff;
 
         this.chisq = chisq;
-        this.dof = nDiff;
+        this.dof = dof;
 
         int N = dataSet.getNumRows();
         this.bic = 2 * r1.getLik() - r1.getDof() * Math.log(N);
         System.out.println("bic = " + bic);
 
         System.out.println("chisq = " + chisq);
-        System.out.println("dof = " + (double) nDiff);
+        System.out.println("dof = " + dof);
 
-        double p = 1.0 - new ChiSquaredDistribution(nDiff).cumulativeProbability(chisq);
+        double p = 1.0 - new ChiSquaredDistribution(dof).cumulativeProbability(chisq);
 
         System.out.println("p = " + p);
 
@@ -161,6 +164,54 @@ public final class BayesProperties {
         return likelihood;
     }
 
+    private int getDof(Graph graph) {
+        graph = GraphUtils.replaceNodes(graph, dataSet.getVariables());
+        BayesPm pm = new BayesPm(graph);
+        BayesIm im = new MlBayesEstimator().estimate(pm, dataSet);
+
+        int numParams = 0;
+
+        for (int j = 0; j < im.getNumNodes(); j++) {
+            int numColumns = im.getNumColumns(j);
+            int numRows = im.getNumRows(j);
+            numParams += (numColumns - 1) * numRows;
+        }
+
+        return numParams;
+    }
+
+    private double getLikelihood(Graph graph) {
+        graph = GraphUtils.replaceNodes(graph, dataSet.getVariables());
+        BayesPm pm = new BayesPm(graph);
+        BayesIm im = new MlBayesEstimator().estimate(pm, dataSet);
+        double lik = 0.0;
+
+        ROW:
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            double lik0 = 0.0;
+
+            for (int j = 0; j < dataSet.getNumColumns(); j++) {
+                int[] parents = im.getParents(j);
+                int[] parentValues = new int[parents.length];
+
+                for (int k = 0; k < parents.length; k++) {
+                    parentValues[k] = dataSet.getInt(i, parents[k]);
+                }
+
+                int dataValue = dataSet.getInt(i, j);
+                double p = im.getProbability(j, im.getRowIndex(j, parentValues), dataValue);
+
+                if (p == 0) continue ROW;
+
+                lik0 += Math.log(p);
+            }
+
+            lik += lik0;
+        }
+
+        return lik;
+    }
+
     private Ret getLikelihood2(Graph graph) {
         double lik = 0.0;
         int dof = 0;
@@ -184,7 +235,27 @@ public final class BayesProperties {
         return new Ret(lik, dof);
     }
 
-    private Ret getLikelihoodNode(int node, int[] parents) {
+    private int getDof2(Graph graph) {
+        int dof = 0;
+
+        for (Node node : graph.getNodes()) {
+            List<Node> parents = graph.getParents(node);
+
+            int i = variables.indexOf(getVariable(node.getName()));
+
+            int[] z = new int[parents.size()];
+
+            for (int j = 0; j < parents.size(); j++) {
+                z[j] = variables.indexOf(getVariable(parents.get(j).getName()));
+            }
+
+            dof += getDofNode(i, z);
+        }
+
+        return dof;
+    }
+
+    private Ret getLikelihoodNode(int node, int parents[]) {
 
         // Number of categories for node.
         int c = numCategories[node];
@@ -204,8 +275,8 @@ public final class BayesProperties {
         }
 
         // Conditional cell coefs of data for node given parents(node).
-        int[][] n_jk = new int[r][c];
-        int[] n_j = new int[r];
+        int n_jk[][] = new int[r][c];
+        int n_j[] = new int[r];
 
         int[] parentValues = new int[parents.length];
 
@@ -256,7 +327,7 @@ public final class BayesProperties {
         return new Ret(lik, dof);
     }
 
-    private static class Ret {
+    private class Ret {
         private final double lik;
         private final int dof;
 
@@ -273,6 +344,29 @@ public final class BayesProperties {
             return dof;
         }
     }
+
+    private double getDofNode(int node, int parents[]) {
+
+        // Number of categories for node.
+        int c = numCategories[node];
+
+        // Numbers of categories of parents.
+        int[] dims = new int[parents.length];
+
+        for (int p = 0; p < parents.length; p++) {
+            dims[p] = numCategories[parents[p]];
+        }
+
+        // Number of parent states.
+        int r = 1;
+
+        for (int p = 0; p < parents.length; p++) {
+            r *= dims[p];
+        }
+
+        return r * c;
+    }
+
 
     private static int getRowIndex(int[] dim, int[] values) {
         int rowIndex = 0;

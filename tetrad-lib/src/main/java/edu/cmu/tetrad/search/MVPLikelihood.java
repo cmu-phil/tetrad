@@ -44,42 +44,42 @@ import static edu.cmu.tetrad.data.Discretizer.getEqualFrequencyBreakPoints;
 
 public class MVPLikelihood {
 
-    private DataSet dataSet;
+    private final DataSet dataSet;
 
     private DataSet discreteDataSet;
 
     // The variables of the dataset.
-    private List<Node> variables;
+    private final List<Node> variables;
 
     // The variables of the discrete dataset.
     private List<Node> discreteVariables;
 
     // Indices of variables.
-    private Map<Node, Integer> nodesHash;
+    private final Map<Node, Integer> nodesHash;
 
     // Continuous data only.
-    private double[][] continuousData;
+    private final double[][] continuousData;
 
     // Discrete data only.
-    private int[][] discreteData;
+    private final int[][] discreteData;
 
     // All discrete data
     private int[][] allDiscrete;
 
     // Partitions
-    private AdLeafTree adTree;
+    private final AdLeafTree adTree;
 
     // Fix degree
-    private int fDegree;
+    private final int fDegree;
 
     // Structure Prior
-    private double structurePrior;
+    private final double structurePrior;
 
     // Discretize
-    private boolean discretize;
+    private final boolean discretize;
 
     // Number of categories to use to discretize continuous mixedVariables.
-    private int numCategoriesToDiscretize = 3;
+    private final int numCategoriesToDiscretize = 3;
 
     public MVPLikelihood(DataSet dataSet, double structurePrior, int fDegree, boolean discretize) {
 

@@ -90,7 +90,7 @@ public final class Session implements TetradSerializable {
      *
      * @serial Can't be null.
      */
-    private List<SessionNode> nodes = new LinkedList<>();
+    private final List<SessionNode> nodes = new LinkedList<>();
 
     /**
      * Notes when the model has changed. Should be false at time of

@@ -39,7 +39,7 @@ class FciDsepLegalPairs implements LegalPairs {
     /**
      * Graph with respect to which graph properties are tested.
      */
-    private Graph graph;
+    private final Graph graph;
 
     /**
      * Constructs a new legal pairs object. See class level doc.

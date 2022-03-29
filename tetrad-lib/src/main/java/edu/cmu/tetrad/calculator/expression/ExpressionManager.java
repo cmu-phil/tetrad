@@ -39,13 +39,13 @@ public class ExpressionManager {
     /**
      * A mapping from tokens to their descriptors.
      */
-    private Map<String, ExpressionDescriptor> tokenMap = new HashMap<>();
+    private final Map<String, ExpressionDescriptor> tokenMap = new HashMap<>();
 
 
     /**
      * List of all the descriptors.
      */
-    private List<ExpressionDescriptor> descriptors;
+    private final List<ExpressionDescriptor> descriptors;
 
 //    private static RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
 

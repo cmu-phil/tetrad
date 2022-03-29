@@ -22,10 +22,10 @@ import java.util.Set;
  * @author jdramsey
  */
 public class FaskGraphs {
-    private List<String> filenames = new ArrayList<>();
+    private final List<String> filenames = new ArrayList<>();
     private List<DataSet> datasets = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();
-    private List<Boolean> types = new ArrayList<>();
+    private final List<Boolean> types = new ArrayList<>();
 
     /**
      * @param path       The path to the directory containing the files.

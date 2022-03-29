@@ -57,7 +57,7 @@ public final class SvarFciOrient {
     /**
      * The SepsetMap being constructed.
      */
-    private SepsetProducer sepsets;
+    private final SepsetProducer sepsets;
 
     private IKnowledge knowledge = new Knowledge2();
 
@@ -81,7 +81,7 @@ public final class SvarFciOrient {
     /**
      * The logger to use.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
     /**
      * True iff verbose output should be printed.
@@ -90,7 +90,7 @@ public final class SvarFciOrient {
 
     private Graph truePag;
 
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
 
     //============================CONSTRUCTORS============================//
 

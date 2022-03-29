@@ -46,7 +46,7 @@ public final class DepthChoiceGenerator {
     /**
      * The number of objects being selected from.
      */
-    private int a;
+    private final int a;
 
     /**
      * The number of objects in the desired selection.
@@ -78,7 +78,7 @@ public final class DepthChoiceGenerator {
     /**
      * Maximum a.
      */
-    private int depth;
+    private final int depth;
 
     /**
      * Effective maximum a.

@@ -40,12 +40,12 @@ public class HitonVariant implements MbSearch {
     /**
      * The independence test used to perform the search.
      */
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
 
     /**
      * The list of variables being searched over. Must contain the target.
      */
-    private List<Node> variables;
+    private final List<Node> variables;
 
     /**
      * Variables sorted by decreasing association with the target.
@@ -55,7 +55,7 @@ public class HitonVariant implements MbSearch {
     /**
      * The maximum number of conditioning variables.
      */
-    private int depth;
+    private final int depth;
 
     /**
      * Constructs a new search.

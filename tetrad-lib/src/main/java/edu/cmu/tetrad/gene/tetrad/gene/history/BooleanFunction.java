@@ -41,7 +41,7 @@ public class BooleanFunction implements TetradSerializable {
      *
      * @serial
      */
-    private IndexedParent[] parents;
+    private final IndexedParent[] parents;
 
     /**
      * The stored boolean function.  The order of the rows (for the given
@@ -50,7 +50,7 @@ public class BooleanFunction implements TetradSerializable {
      *
      * @serial
      */
-    private boolean[] lookupTable;
+    private final boolean[] lookupTable;
 
     //==============================CONSTRUCTORS=========================//
 

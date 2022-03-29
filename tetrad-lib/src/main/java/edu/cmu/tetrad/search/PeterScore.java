@@ -41,7 +41,7 @@ public class PeterScore implements Score {
     private final DataSet dataSet;
 
     // The variables of the covariance matrix.
-    private List<Node> variables;
+    private final List<Node> variables;
 
     // True if verbose output should be sent to out.
     private boolean verbose = false;

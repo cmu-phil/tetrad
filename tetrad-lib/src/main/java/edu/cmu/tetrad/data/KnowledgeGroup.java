@@ -44,7 +44,7 @@ public final class KnowledgeGroup implements TetradSerializable {
      *
      * @serial - not null
      */
-    private Set<String> fromGroup;
+    private final Set<String> fromGroup;
 
 
     /**
@@ -52,13 +52,13 @@ public final class KnowledgeGroup implements TetradSerializable {
      *
      * @serial - not null
      */
-    private Set<String> toGroup;
+    private final Set<String> toGroup;
 
 
     /**
      * The type of group that this is (currently either required or forbidden).
      */
-    private int type;
+    private final int type;
 
 
     /**

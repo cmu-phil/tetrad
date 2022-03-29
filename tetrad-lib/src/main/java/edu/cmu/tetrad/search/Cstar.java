@@ -44,10 +44,10 @@ public class Cstar {
     private Graph trueDag;
 
     private class Tuple {
-        private Node cause;
-        private Node effect;
-        private double pi;
-        private double minBeta;
+        private final Node cause;
+        private final Node effect;
+        private final double pi;
+        private final double minBeta;
 
         private Tuple(Node cause, Node effect, double pi, double minBeta) {
             this.cause = cause;
@@ -77,12 +77,12 @@ public class Cstar {
     public static class Record implements TetradSerializable {
         static final long serialVersionUID = 23L;
 
-        private Node causeNode;
-        private Node target;
-        private double pi;
-        private double effect;
-        private int q;
-        private int p;
+        private final Node causeNode;
+        private final Node target;
+        private final double pi;
+        private final double effect;
+        private final int q;
+        private final int p;
 
         Record(Node predictor, Node target, double pi, double minEffect, int q, int p) {
             this.causeNode = predictor;
@@ -223,7 +223,7 @@ public class Cstar {
             private final List<Node> possibleCauses;
             private final List<Node> possibleEffects;
             private final int k;
-            private DataSet _dataSet;
+            private final DataSet _dataSet;
 
             private Task(int k, List<Node> possibleCauses, List<Node> possibleEffects, DataSet _dataSet) {
                 this.k = k;
@@ -349,9 +349,9 @@ public class Cstar {
         }
 
         class Task2 implements Callable<Boolean> {
-            private List<Node> possibleCauses;
-            private List<Node> possibleEffects;
-            private int q;
+            private final List<Node> possibleCauses;
+            private final List<Node> possibleEffects;
+            private final int q;
 
             private Task2(List<Node> possibleCauses, List<Node> possibleEffects, int q) {
                 this.possibleCauses = possibleCauses;
@@ -493,7 +493,6 @@ public class Cstar {
             }
 
             out.flush();
-            ;
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

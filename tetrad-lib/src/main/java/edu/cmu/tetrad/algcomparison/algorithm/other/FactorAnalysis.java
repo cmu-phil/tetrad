@@ -148,7 +148,7 @@ public class FactorAnalysis implements Algorithm {
             }
         }
 
-        return "\n" + table.toString();
+        return "\n" + table;
 
     }
 

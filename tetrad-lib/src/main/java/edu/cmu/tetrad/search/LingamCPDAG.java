@@ -52,20 +52,20 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 public class LingamCPDAG {
-    private Graph CPDAG;
-    private DataSet dataSet;
+    private final Graph CPDAG;
+    private final DataSet dataSet;
     private IKnowledge knowledge = new Knowledge2();
     private Graph bestDag;
     private Graph ngDagCPDAG;
     private double[] pValues;
     private double alpha = 0.05;
     private long timeLimit = -1;
-    private int numSamples = 200;
+    private final int numSamples = 200;
 
     /**
      * The logger for this class. The config needs to be set.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
     //===============================CONSTRUCTOR============================//
 

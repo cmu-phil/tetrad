@@ -30,7 +30,6 @@ package edu.cmu.tetrad.gene.tetrad.gene.algorithm.biolingua;
 
 import edu.cmu.tetrad.gene.tetrad.gene.algorithm.util.OutputGraph;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 public class BiolinguaDigraph extends Digraph implements OutputGraph {
@@ -47,7 +46,7 @@ public class BiolinguaDigraph extends Digraph implements OutputGraph {
      * Creates a BiolinguaDigraph reading it from file <code>fname</code>.
      */
     public BiolinguaDigraph(String fname)
-            throws FileNotFoundException, IOException {
+            throws IOException {
         super(fname);
     }
 

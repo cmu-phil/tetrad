@@ -39,7 +39,7 @@ public class CovSum implements CovarianceFunction {
 
     CovarianceFunction[] f;
     int[] idx;
-    private int D;
+    private final int D;
 
     /**
      * Create a new <code>CovarianceFunction</code> as sum of the

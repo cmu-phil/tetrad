@@ -62,13 +62,13 @@ public class Lofs2 {
         exp, expUnstandardized, expUnstandardizedInverted, other, logcosh, entropy
     }
 
-    private Graph CPDAG;
+    private final Graph CPDAG;
     private List<DataSet> dataSets;
     private List<Matrix> matrices;
     private double alpha = 1.1;
     private List<Regression> regressions;
     private List<Node> variables;
-    private List<String> varnames;
+    private final List<String> varnames;
     private boolean orientStrongerDirection = false;
     private boolean r2Orient2Cycles = true;
 
@@ -76,7 +76,7 @@ public class Lofs2 {
     private double epsilon = 1.0;
     private IKnowledge knowledge = new Knowledge2();
     private Rule rule = Rule.R1;
-    private double delta = 0.0;
+    private final double delta = 0.0;
     private double zeta = 0.0;
     private boolean edgeCorrected = false;
     private double selfLoopStrength;
@@ -2548,7 +2548,7 @@ public class Lofs2 {
         return kernel1(z);
     }
 
-    private double SQRT = sqrt(2. * PI);
+    private final double SQRT = sqrt(2. * PI);
 
     // Gaussian
     public double kernel1(double z) {

@@ -61,7 +61,7 @@ public class DishModel implements TetradSerializable {
      *
      * @serial
      */
-    private double[] dishBumps;
+    private final double[] dishBumps;
 
     //===============================CONSTRUCTORS========================//
 

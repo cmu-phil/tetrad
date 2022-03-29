@@ -32,7 +32,7 @@ import java.util.Set;
  * @author Joseph Ramsey
  */
 public class LocalScoreCache {
-    private MultiKeyMap map;
+    private final MultiKeyMap map;
 
     public LocalScoreCache() {
         map = new MultiKeyMap();

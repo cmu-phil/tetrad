@@ -42,7 +42,7 @@ public class MeasurementSimulatorParams implements TetradSerializable {
     /**
      * @serial Cannot be null.
      */
-    private MeasurementSimulator simulator;
+    private final MeasurementSimulator simulator;
     private boolean includeDishAndChipVariables;
 
     //==============================CONSTRUCTORS=========================//

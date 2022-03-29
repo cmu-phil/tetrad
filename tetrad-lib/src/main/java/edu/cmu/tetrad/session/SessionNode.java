@@ -133,7 +133,7 @@ public class SessionNode implements Node, TetradSerializable {
      *
      * @serial Cannot be null.
      */
-    private Map<Class, Parameters> paramMap = new HashMap<>();
+    private final Map<Class, Parameters> paramMap = new HashMap<>();
 
     /**
      * The set of parents of this node--a Set of SessionNodes. Must be kept in
@@ -179,7 +179,7 @@ public class SessionNode implements Node, TetradSerializable {
      */
     private transient SessionHandler sessionHandler;
     private TetradLoggerConfig loggerConfig = null;
-    private Parameters parameters = new Parameters();
+    private final Parameters parameters = new Parameters();
 
     /**
      * Node variable type (domain, interventional status, interventional
@@ -187,7 +187,7 @@ public class SessionNode implements Node, TetradSerializable {
      */
     private NodeVariableType nodeVariableType = NodeVariableType.DOMAIN;
 
-    private Map<String, Object> attributes = new HashMap<>();
+    private final Map<String, Object> attributes = new HashMap<>();
 
     //==========================CONSTRUCTORS===========================//
 

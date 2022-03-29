@@ -24,7 +24,7 @@ import java.util.List;
 public class SemSimulation implements Simulation {
 
     static final long serialVersionUID = 23L;
-    private RandomGraph randomGraph;
+    private final RandomGraph randomGraph;
     private SemPm pm;
     private SemIm im;
     private List<DataSet> dataSets = new ArrayList<>();

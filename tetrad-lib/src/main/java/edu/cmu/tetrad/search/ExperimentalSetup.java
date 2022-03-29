@@ -39,14 +39,14 @@ public class ExperimentalSetup {
 
     private enum EsType {simpleSurgical, simpleSoft, fullExperimental, counterfactualExperimental}
 
-    private PmType pmType;
+    private final PmType pmType;
     private EsType esType = EsType.simpleSurgical;
     private BayesPm bayesPm = null;
     private SemPm semPm = null;
     private GeneralizedSemPm generalizedSemPm = null;
 
-    private Graph gNat;
-    private Graph gManip;
+    private final Graph gNat;
+    private final Graph gManip;
 
     public ExperimentalSetup(BayesPm pm) {
         this.bayesPm = pm;

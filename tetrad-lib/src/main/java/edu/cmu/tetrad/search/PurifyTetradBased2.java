@@ -36,10 +36,10 @@ import java.util.*;
  * @author Joe Ramsey
  */
 public class PurifyTetradBased2 implements IPurify {
-    private boolean outputMessage = true;
-    private TetradTest tetradTest;
+    private final boolean outputMessage = true;
+    private final TetradTest tetradTest;
 
-    private List<Node> nodes;
+    private final List<Node> nodes;
     private Graph mim;
 
     public PurifyTetradBased2(TetradTest tetradTest) {

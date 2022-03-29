@@ -41,9 +41,9 @@ import java.util.*;
 public final class StoredCellProbs implements TetradSerializable, DiscreteProbs {
     static final long serialVersionUID = 23L;
 
-    private List<Node> variables;
-    private int[] parentDims;
-    private double[] probs;
+    private final List<Node> variables;
+    private final int[] parentDims;
+    private final double[] probs;
 
     //============================CONSTRUCTORS============================//
 
@@ -64,7 +64,7 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
         }
 
         this.variables = Collections.unmodifiableList(variables);
-        Set<Object> variableSet = new HashSet<Object>(this.variables);
+        Set<Object> variableSet = new HashSet<>(this.variables);
         if (variableSet.size() < this.variables.size()) {
             throw new IllegalArgumentException("Duplicate variable.");
         }
@@ -125,7 +125,7 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
      * Generates a simple exemplar of this class to test serialization.
      */
     public static StoredCellProbs serializableInstance() {
-        return new StoredCellProbs(new ArrayList<Node>());
+        return new StoredCellProbs(new ArrayList<>());
     }
 
     //=============================PUBLIC METHODS=========================//
@@ -251,10 +251,6 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
         }
 
         return assertionTrue / conditionTrue;
-    }
-
-    public boolean isMissingValueCaseFound() {
-        return false;
     }
 
     public List<Node> getVariables() {

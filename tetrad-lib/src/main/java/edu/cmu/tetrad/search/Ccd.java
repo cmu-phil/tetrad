@@ -40,10 +40,10 @@ import java.util.*;
  * @author Joseph Ramsey
  */
 public final class Ccd implements GraphSearch {
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
     private int depth = -1;
     private IKnowledge knowledge;
-    private List<Node> nodes;
+    private final List<Node> nodes;
     private boolean applyR1 = false;
 
     public Ccd(IndependenceTest test) {

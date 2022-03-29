@@ -44,12 +44,12 @@ public final class PermutationGenerator {
     /**
      * The number of objects being permuted.
      */
-    private int numObjects;
+    private final int numObjects;
 
     /**
      * The internally stored choice.
      */
-    private int[] choiceLocal;
+    private final int[] choiceLocal;
 
     /**
      * The choice that is returned. Used, since the returned array can be

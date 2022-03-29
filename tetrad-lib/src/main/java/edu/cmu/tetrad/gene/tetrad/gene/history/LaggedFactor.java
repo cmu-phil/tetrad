@@ -46,7 +46,7 @@ public class LaggedFactor implements Comparable, TetradSerializable {
      *
      * @serial
      */
-    private int lag;
+    private final int lag;
 
     //=============================CONSTRUCTORS==========================//
 

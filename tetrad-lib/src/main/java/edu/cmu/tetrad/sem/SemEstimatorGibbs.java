@@ -44,18 +44,18 @@ import java.util.List;
 public final class SemEstimatorGibbs {
     static final long serialVersionUID = 23L;
 
-    private int numIterations;
-    private double stretch1;
-    private double stretch2;
-    private double tolerance;
-    private double priorVariance;
+    private final int numIterations;
+    private final double stretch1;
+    private final double stretch2;
+    private final double tolerance;
+    private final double priorVariance;
 
     /**
      * The SemPm containing the graph and the freeParameters to be estimated.
      *
      * @serial Cannot be null.
      */
-    private SemPm semPm;
+    private final SemPm semPm;
 
     /**
      * The freeParameters of the SEM (i.e. edge coeffs, error cov, etc.
@@ -67,7 +67,7 @@ public final class SemEstimatorGibbs {
     /**
      * The initial semIm, obtained via params.
      */
-    private SemIm startIm;
+    private final SemIm startIm;
 
     private Matrix priorCov;
 
@@ -79,7 +79,7 @@ public final class SemEstimatorGibbs {
      */
     private SemIm estimatedSem;
 
-    private boolean flatPrior;
+    private final boolean flatPrior;
 
     private Matrix dataSet;
 

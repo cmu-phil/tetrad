@@ -50,7 +50,7 @@ public class MixedBicScore implements Score {
     private List<Node> variables;
 
     // The sample size of the covariance matrix.
-    private int sampleSize;
+    private final int sampleSize;
 
     // The penalty penaltyDiscount.
     private double penaltyDiscount = 2.0;
@@ -64,7 +64,7 @@ public class MixedBicScore implements Score {
 
     // True if verbose output should be sent to out.
     private boolean verbose = false;
-    private Set<Integer> forbidden = new HashSet<>();
+    private final Set<Integer> forbidden = new HashSet<>();
     private final double logn;
     private boolean[] isDiscrete;
     private int[] numValues;

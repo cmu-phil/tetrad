@@ -28,7 +28,6 @@ package edu.cmu.tetrad.gene.tetrad.gene.algorithm.util;
  * (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
  */
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 public class Matrix extends BasicMatrix {
@@ -60,7 +59,7 @@ public class Matrix extends BasicMatrix {
      * the total needed to fill the matrix.  If it has more elements an illegal
      * argument exception will be generated.
      */
-    public Matrix(String fname) throws FileNotFoundException, IOException {
+    public Matrix(String fname) throws IOException {
         super(fname);
     }
 

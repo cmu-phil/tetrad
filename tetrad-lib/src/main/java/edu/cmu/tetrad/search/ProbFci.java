@@ -66,12 +66,12 @@ public final class ProbFci implements GraphSearch {
     /**
      * The variables to search over (optional)
      */
-    private List<Node> variables = new ArrayList<>();
+    private final List<Node> variables = new ArrayList<>();
 
     /**
      * The independence test.
      */
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
 
     /**
      * change flag for repeat rules
@@ -106,7 +106,7 @@ public final class ProbFci implements GraphSearch {
     /**
      * The logger to use.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
     /******
      * use RFCI

@@ -70,7 +70,7 @@ public class BooleanGlassFunction implements UpdateFunction {
      *
      * @serial
      */
-    private IndexedLagGraph connectivity;
+    private final IndexedLagGraph connectivity;
 
     /**
      * Stores a boolean function for each factor from a preselected set of
@@ -78,14 +78,14 @@ public class BooleanGlassFunction implements UpdateFunction {
      *
      * @serial
      */
-    private BooleanFunction[] booleanFunctions;
+    private final BooleanFunction[] booleanFunctions;
 
     /**
      * Error distributions from which errors are drawn for each of the factors.
      *
      * @serial
      */
-    private Distribution[] errorDistributions;
+    private final Distribution[] errorDistributions;
 
     /**
      * The lower bound for expression levels. Expression levels that wander
@@ -110,7 +110,7 @@ public class BooleanGlassFunction implements UpdateFunction {
      *
      * @serial
      */
-    private double trueValue = +1.0;
+    private final double trueValue = +1.0;
 
     /**
      * The real number that is returned if the value from the Boolean lookup
@@ -118,7 +118,7 @@ public class BooleanGlassFunction implements UpdateFunction {
      *
      * @serial
      */
-    private double falseValue = -1.0;
+    private final double falseValue = -1.0;
 
     /**
      * The rate at which expression levels for a gene tend to return to basal

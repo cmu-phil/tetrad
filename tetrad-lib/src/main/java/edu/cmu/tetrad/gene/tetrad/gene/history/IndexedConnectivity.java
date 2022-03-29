@@ -46,14 +46,14 @@ public class IndexedConnectivity implements TetradSerializable {
      *
      * @serial
      */
-    private List<String> factors;
+    private final List<String> factors;
 
     /**
      * The graph that this "snapshot" of indexedConnectivity was taken from.
      *
      * @serial
      */
-    private IndexedParent[][] parents;
+    private final IndexedParent[][] parents;
 
     //=============================CONSTRUCTORS===========================//
 

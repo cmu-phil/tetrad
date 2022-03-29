@@ -81,9 +81,9 @@ public class StabilityUtils {
         final ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
 
         class StabilityAction extends RecursiveAction {
-            private int chunk;
-            private int from;
-            private int to;
+            private final int chunk;
+            private final int from;
+            private final int to;
 
             public StabilityAction(int chunk, int from, int to) {
                 this.chunk = chunk;

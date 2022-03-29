@@ -38,15 +38,15 @@ import java.util.*;
 public class DeltaTetradTest {
     private DataSet dataSet;
     private double[][] data;
-    private int N;
-    private ICovarianceMatrix cov;
+    private final int N;
+    private final ICovarianceMatrix cov;
     private int df;
     private double chisq;
     //    private double[][][][] fourthMoment;
 //    private int numVars;
 //    private double[] means;
-    private List<Node> variables;
-    private Map<Node, Integer> variablesHash;
+    private final List<Node> variables;
+    private final Map<Node, Integer> variablesHash;
 //    private boolean cacheFourthMoments = false;
 
 
@@ -369,8 +369,8 @@ public class DeltaTetradTest {
 //    }
 
     private static class Sigma {
-        private Node a;
-        private Node b;
+        private final Node a;
+        private final Node b;
 
         public Sigma(Node a, Node b) {
             this.a = a;

@@ -40,18 +40,18 @@ public final class SelectionGenerator {
     /**
      * The number of objects being selected from.
      */
-    private int a;
+    private final int a;
 
     /**
      * The internally stored choice.
      */
-    private int[] selectionLocal;
+    private final int[] selectionLocal;
 
     /**
      * The selection that is returned. Used, since the returned array can be
      * modified by the user.
      */
-    private int[] selectionReturned;
+    private final int[] selectionReturned;
 
     /**
      * Indicates whether the next() method has been called since the last

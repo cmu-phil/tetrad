@@ -53,13 +53,13 @@ public class Hungarian {
         int seconds = (int) round(time % 60);
 
         if (days > 0)
-            timeElapsed = Integer.toString(days) + "d:";
+            timeElapsed = days + "d:";
         if (hours > 0)
-            timeElapsed = timeElapsed + Integer.toString(hours) + "h:";
+            timeElapsed = timeElapsed + hours + "h:";
         if (minutes > 0)
-            timeElapsed = timeElapsed + Integer.toString(minutes) + "m:";
+            timeElapsed = timeElapsed + minutes + "m:";
 
-        timeElapsed = timeElapsed + Integer.toString(seconds) + "s";
+        timeElapsed = timeElapsed + seconds + "s";
         System.out.print("\nTotal time required: " + timeElapsed + "\n\n");
     }
 

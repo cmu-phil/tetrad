@@ -61,7 +61,7 @@ public final class GFci implements GraphSearch {
     private int maxDegree = -1;
 
     // The logger to use.
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
     // True iff verbose output should be printed.
     private boolean verbose = false;
@@ -79,7 +79,7 @@ public final class GFci implements GraphSearch {
     private boolean faithfulnessAssumed = true;
 
     // The score.
-    private Score score;
+    private final Score score;
 
     private SepsetProducer sepsets;
     private long elapsedTime;

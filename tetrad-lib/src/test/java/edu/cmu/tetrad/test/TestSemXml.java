@@ -60,7 +60,7 @@ public final class TestSemXml extends TestCase {
         Element element = SemXmlRenderer.getElement(semIm);
 
         SemXmlParser parser = new SemXmlParser();
-        SemIm semIm2 = parser.getSemIm(element);
+        SemIm semIm2 = SemXmlParser.getSemIm(element);
     }
 
     public void testRoundtrip2() {
@@ -68,7 +68,7 @@ public final class TestSemXml extends TestCase {
         Element element = SemXmlRenderer.getElement(semIm);
 
         SemXmlParser parser = new SemXmlParser();
-        SemIm semIm2 = parser.getSemIm(element);
+        SemIm semIm2 = SemXmlParser.getSemIm(element);
     }
 
     public void testRoundtrip3() {
@@ -76,7 +76,7 @@ public final class TestSemXml extends TestCase {
         Element element = SemXmlRenderer.getElement(semIm);
 
         SemXmlParser parser = new SemXmlParser();
-        SemIm semIm2 = parser.getSemIm(element);
+        SemIm semIm2 = SemXmlParser.getSemIm(element);
     }
 
     private static SemIm sampleSemIm1() {

@@ -41,10 +41,10 @@ import java.util.List;
 public class BdeuScoreImages implements IBDeuScore {
 
     // The covariance matrix.
-    private List<BDeuScore> scores;
+    private final List<BDeuScore> scores;
 
     // The variables of the covariance matrix.
-    private List<Node> variables;
+    private final List<Node> variables;
 
     // The sample size of the covariance matrix.
     private int sampleSize;

@@ -47,7 +47,7 @@ final class Lineizer {
     /**
      * The comment marker.
      */
-    private String commentMarker;
+    private final String commentMarker;
 
     /**
      * The line number of the line most recently read.

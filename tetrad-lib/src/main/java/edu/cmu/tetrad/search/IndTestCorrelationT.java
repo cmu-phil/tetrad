@@ -72,7 +72,7 @@ public final class IndTestCorrelationT implements IndependenceTest {
     /**
      * Formats as 0.0000.
      */
-    private static NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
     /**
      * Stores a reference to the dataset being analyzed.
@@ -80,8 +80,8 @@ public final class IndTestCorrelationT implements IndependenceTest {
     private DataSet dataSet;
 
     private PrintStream pValueLogger;
-    private Map<Node, Integer> indexMap;
-    private Map<String, Node> nameMap;
+    private final Map<Node, Integer> indexMap;
+    private final Map<String, Node> nameMap;
     private TDistribution tDistribution;
     private boolean verbose = false;
 

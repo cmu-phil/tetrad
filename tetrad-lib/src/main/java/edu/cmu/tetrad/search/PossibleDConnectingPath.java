@@ -38,19 +38,19 @@ public class PossibleDConnectingPath {
     /**
      * The pag we are searching in.
      */
-    private Graph pag;
+    private final Graph pag;
 
 
     /**
      * The conditions.
      */
-    private Set<Node> conditions;
+    private final Set<Node> conditions;
 
 
     /**
      * The path.
      */
-    private List<Node> path;
+    private final List<Node> path;
 
 
     private PossibleDConnectingPath(Graph p, Set<Node> conditions, List<Node> path) {

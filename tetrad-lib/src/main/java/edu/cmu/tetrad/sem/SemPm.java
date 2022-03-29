@@ -51,7 +51,7 @@ public final class SemPm implements PM, TetradSerializable {
      *
      * @serial Cannot be null.
      */
-    private SemGraph graph;
+    private final SemGraph graph;
 
     /**
      * The list of all nodes (unmodifiable).

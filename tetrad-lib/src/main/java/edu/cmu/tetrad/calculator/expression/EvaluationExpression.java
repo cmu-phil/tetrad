@@ -38,13 +38,13 @@ public class EvaluationExpression implements Expression {
     /**
      * The variable part of the expression.
      */
-    private VariableExpression variable;
+    private final VariableExpression variable;
 
 
     /**
      * The string you are testing the variable against.
      */
-    private String string;
+    private final String string;
 
 
     public EvaluationExpression(VariableExpression exp, String s) {

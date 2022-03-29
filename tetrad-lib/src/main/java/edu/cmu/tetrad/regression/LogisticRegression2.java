@@ -109,8 +109,8 @@ public class LogisticRegression2 implements TetradSerializable {
      */
     private static class FittingFunction implements MultivariateFunction {
 
-        private int[] target;
-        private double[][] regressors;
+        private final int[] target;
+        private final double[][] regressors;
 
         /**
          * Constructs a new CoefFittingFunction for the given Sem.

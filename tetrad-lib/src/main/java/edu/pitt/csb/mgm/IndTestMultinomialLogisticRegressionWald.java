@@ -50,15 +50,15 @@ import java.util.*;
  * @author Augustus Mayo.
  */
 public class IndTestMultinomialLogisticRegressionWald implements IndependenceTest {
-    private DataSet originalData;
-    private List<Node> searchVariables;
-    private DataSet internalData;
+    private final DataSet originalData;
+    private final List<Node> searchVariables;
+    private final DataSet internalData;
     private double alpha;
     private double lastP;
-    private Map<Node, List<Node>> variablesPerNode = new HashMap<>();
-    private LogisticRegression logisticRegression;
-    private RegressionDataset regression;
-    private boolean preferLinear;
+    private final Map<Node, List<Node>> variablesPerNode = new HashMap<>();
+    private final LogisticRegression logisticRegression;
+    private final RegressionDataset regression;
+    private final boolean preferLinear;
     private boolean verbose = false;
 
     public IndTestMultinomialLogisticRegressionWald(DataSet data, double alpha, boolean preferLinear) {

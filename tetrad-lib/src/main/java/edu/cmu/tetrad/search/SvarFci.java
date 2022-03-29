@@ -68,9 +68,9 @@ public final class SvarFci implements GraphSearch {
     /**
      * The variables to search over (optional)
      */
-    private List<Node> variables = new ArrayList<>();
+    private final List<Node> variables = new ArrayList<>();
 
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
 
     /**
      * flag for complete rule set, true if should use complete rule set, false otherwise.
@@ -100,7 +100,7 @@ public final class SvarFci implements GraphSearch {
     /**
      * The logger to use.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
     /**
      * True iff verbose output should be printed.
@@ -110,10 +110,10 @@ public final class SvarFci implements GraphSearch {
     private ConcurrentMap<Node, Integer> hashIndices;
     private ICovarianceMatrix covarianceMatrix;
     private double penaltyDiscount = 2;
-    private SepsetMap possibleDsepSepsets = new SepsetMap();
+    private final SepsetMap possibleDsepSepsets = new SepsetMap();
     private Graph externalGraph;
     private int possibleDsepDepth = -1;
-    private CorrelationMatrix corr;
+    private final CorrelationMatrix corr;
 
 
     //============================CONSTRUCTORS============================//

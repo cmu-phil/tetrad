@@ -53,7 +53,7 @@ public class PolynomialTerm implements TetradSerializable {
      *
      * @serial
      */
-    private int[] variables;
+    private final int[] variables;
 
     //=================================CONSTRUCTORS========================//
 

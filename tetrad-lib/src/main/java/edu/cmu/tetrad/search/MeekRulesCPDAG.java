@@ -55,7 +55,7 @@ public class MeekRulesCPDAG implements ImpliedOrientation {
     /**
      * The logger to use.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
 
     /**

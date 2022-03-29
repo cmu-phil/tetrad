@@ -767,7 +767,7 @@ public final class MatrixUtils {
                 }
             }
 
-            result = "\n" + textTable.toString();
+            result = "\n" + textTable;
         } else {
             result = nullMessage();
         }
@@ -811,7 +811,7 @@ public final class MatrixUtils {
                 }
             }
 
-            result = "\n" + textTable.toString();
+            result = "\n" + textTable;
         }
         return result;
     }
@@ -852,7 +852,7 @@ public final class MatrixUtils {
                 }
             }
 
-            result = "\n" + textTable.toString();
+            result = "\n" + textTable;
         }
 
         return result;
@@ -886,7 +886,7 @@ public final class MatrixUtils {
                 }
             }
 
-            result = "\n" + textTable.toString();
+            result = "\n" + textTable;
         }
         return result;
     }
@@ -920,7 +920,7 @@ public final class MatrixUtils {
             }
         }
 
-        return "\n" + textTable.toString();
+        return "\n" + textTable;
     }
 
     /**
@@ -940,7 +940,7 @@ public final class MatrixUtils {
                 }
             }
 
-            result = "\n" + textTable.toString();
+            result = "\n" + textTable;
         }
         return result;
     }

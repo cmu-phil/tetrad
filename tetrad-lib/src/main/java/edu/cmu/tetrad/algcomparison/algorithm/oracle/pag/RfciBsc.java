@@ -38,7 +38,7 @@ import java.util.List;
 public class RfciBsc implements Algorithm, HasKnowledge {
 
     static final long serialVersionUID = 23L;
-    private IndependenceWrapper test = new ProbabilisticTest();
+    private final IndependenceWrapper test = new ProbabilisticTest();
     private IKnowledge knowledge = new Knowledge2();
 
     @Override

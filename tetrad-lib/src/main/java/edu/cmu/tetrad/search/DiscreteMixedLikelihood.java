@@ -47,25 +47,25 @@ import static java.lang.Math.log;
 public class DiscreteMixedLikelihood {
 
     // The data set. May contain continuous and/or discrete mixedVariables.
-    private DataSet mixedDataSet;
+    private final DataSet mixedDataSet;
 
     // The data set with all continuous mixedVariables discretized.
-    private DataSet dataSet;
+    private final DataSet dataSet;
 
     // Number of categories to use to discretize continuous mixedVariables.
     private int numCategoriesToDiscretize = 3;
 
     // The mixedVariables of the mixed data set.
-    private List<Node> mixedVariables;
+    private final List<Node> mixedVariables;
 
     // Indices of mixedVariables.
-    private Map<Node, Integer> nodesHash;
+    private final Map<Node, Integer> nodesHash;
 
     // Continuous data only.
-    private double[][] continuousData;
+    private final double[][] continuousData;
 
     // The AD Tree used to count discrete cells.
-    private AdLeafTree adTree;
+    private final AdLeafTree adTree;
 
     // Multiplier on degrees of freedom for the continuous portion of those degrees.
     private double penaltyDiscount = 1;
@@ -74,7 +74,7 @@ public class DiscreteMixedLikelihood {
     private final ArrayList<Integer> all;
 
     // A constant.
-    private static double LOG2PI = log(2.0 * Math.PI);
+    private static final double LOG2PI = log(2.0 * Math.PI);
 
     private List<List<Integer>> partition(List<DiscreteVariable> discrete_parents) {
         List<List<Integer>> cells = new ArrayList<>();
@@ -99,8 +99,8 @@ public class DiscreteMixedLikelihood {
      * for it.
      */
     public class Ret {
-        private double lik;
-        private int dof;
+        private final double lik;
+        private final int dof;
 
         private Ret(double lik, int dof) {
             this.lik = lik;

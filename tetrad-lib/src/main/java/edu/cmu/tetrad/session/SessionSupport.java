@@ -34,13 +34,13 @@ public class SessionSupport {
     /**
      * The source of the events.
      */
-    private Object source;
+    private final Object source;
 
     /**
      * The list of session listener--for instance, GUI editors displaying this
      * session and allowing it to be edited.
      */
-    private List sessionListeners = new ArrayList();
+    private final List sessionListeners = new ArrayList();
 
     /**
      * Constructs a new session support object for the given source object. The

@@ -28,9 +28,9 @@ import java.util.List;
 
 public class PermutationMatrixPair {
 
-    private Matrix matrixW;
+    private final Matrix matrixW;
     private DataSet matrixBhat;
-    private List<Integer> permutation;
+    private final List<Integer> permutation;
 
     public PermutationMatrixPair(List<Integer> permutation, Matrix matrixW) {
         this.permutation = permutation;

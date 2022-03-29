@@ -47,7 +47,7 @@ public class PcStableMax implements GraphSearch {
     /**
      * The independence test used for the PC search. This can  be a test based on a score.
      */
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
 
     /**
      * Forbidden and required edges for the search.
@@ -72,7 +72,7 @@ public class PcStableMax implements GraphSearch {
     /**
      * The logger for this class. The config needs to be set.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
     /**
      * The initial graph for the Fast Adjacency Search, or null if there is none.

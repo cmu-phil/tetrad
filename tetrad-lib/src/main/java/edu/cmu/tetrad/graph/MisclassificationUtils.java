@@ -193,7 +193,7 @@ public class MisclassificationUtils {
             }
         }
 
-        builder.append("\n").append(table2.toString());
+        builder.append("\n").append(table2);
 //
 //        TextTable table3 = new TextTable(3, 3);
 //

@@ -37,11 +37,11 @@ public class ParamConstraint implements TetradSerializable {
     static final long serialVersionUID = 23L;
 
 
-    private double number;
-    private Parameter param1;
-    private Parameter param2;
+    private final double number;
+    private final Parameter param1;
+    private final Parameter param2;
     private ParamConstraintType type;
-    private SemIm semIm;
+    private final SemIm semIm;
 
     /**
      * The first constructor specifies the parameter and a number and the type

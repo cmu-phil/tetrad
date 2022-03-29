@@ -35,7 +35,7 @@ public final class FruchtermanReingoldLayout {
     /**
      * The graph being laid out.
      */
-    private Graph graph;
+    private final Graph graph;
 
     /**
      * Array of e for the graph. The ith edge is e[i][0]-->e[i][[1].

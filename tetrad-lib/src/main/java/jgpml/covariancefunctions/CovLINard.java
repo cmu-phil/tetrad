@@ -50,7 +50,7 @@ import static jgpml.covariancefunctions.MatrixOperations.sumRows;
 
 public class CovLINard implements CovarianceFunction {
 
-    private int D;
+    private final int D;
 
     /**
      * Creates a new <code>CovSEard CovarianceFunction<code>

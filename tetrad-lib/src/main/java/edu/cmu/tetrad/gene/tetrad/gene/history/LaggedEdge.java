@@ -37,12 +37,12 @@ public class LaggedEdge implements TetradSerializable {
     /**
      * @serial
      */
-    private String factor;
+    private final String factor;
 
     /**
      * @serial
      */
-    private LaggedFactor laggedFactor;
+    private final LaggedFactor laggedFactor;
 
     //==============================CONSTRUCTORS========================//
 

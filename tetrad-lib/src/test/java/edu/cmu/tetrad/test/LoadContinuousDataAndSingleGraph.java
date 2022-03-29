@@ -2,7 +2,10 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.utils.HasParameterValues;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -17,12 +20,12 @@ import java.util.List;
  */
 public class LoadContinuousDataAndSingleGraph implements Simulation, HasParameterValues {
     static final long serialVersionUID = 23L;
-    private String path;
-    private String subdir;
+    private final String path;
+    private final String subdir;
     private Graph graph = null;
     private List<DataSet> dataSets = new ArrayList<>();
-    private List<String> usedParameters = new ArrayList<>();
-    private Parameters parametersValues = new Parameters();
+    private final List<String> usedParameters = new ArrayList<>();
+    private final Parameters parametersValues = new Parameters();
 
     public LoadContinuousDataAndSingleGraph(String path, String subdir) {
         this.path = path;

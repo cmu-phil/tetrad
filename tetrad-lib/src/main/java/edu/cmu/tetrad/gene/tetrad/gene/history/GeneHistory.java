@@ -39,14 +39,14 @@ public class GeneHistory implements TetradSerializable {
      *
      * @serial
      */
-    private Initializer initializer;
+    private final Initializer initializer;
 
     /**
      * The update function for the history.
      *
      * @serial
      */
-    private UpdateFunction updateFunction;
+    private final UpdateFunction updateFunction;
 
     /**
      * To simulate asynchronous updating, update periods for each factor are
@@ -55,7 +55,7 @@ public class GeneHistory implements TetradSerializable {
      *
      * @serial
      */
-    private int[] updatePeriods;
+    private final int[] updatePeriods;
 
     /**
      * The getModel time step, which is the number of steps <i>after</i> the

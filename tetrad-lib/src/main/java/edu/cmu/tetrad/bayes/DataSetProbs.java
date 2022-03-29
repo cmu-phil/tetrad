@@ -219,9 +219,6 @@ public final class DataSetProbs implements DiscreteProbs {
         return null;
     }
 
-    public boolean isMissingValueCaseFound() {
-        return missingValueCaseFound;
-    }
 }
 
 

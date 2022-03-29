@@ -35,7 +35,6 @@ package edu.cmu.tetrad.gene.tetrad.gene.algorithm.biolingua;
 import edu.cmu.tetrad.gene.tetrad.gene.algorithm.util.BasicGraph;
 import edu.cmu.tetrad.gene.tetrad.gene.algorithm.util.MatrixF;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 public class Digraph extends BasicGraph {
@@ -61,7 +60,7 @@ public class Digraph extends BasicGraph {
     /**
      * Creates a OldDigraph reading it from file <code>fname</code>.
      */
-    public Digraph(String fname) throws FileNotFoundException, IOException {
+    public Digraph(String fname) throws IOException {
         super(fname);
     }
 

@@ -58,17 +58,17 @@ import java.util.List;
  * Created by ajsedgewick on 7/15/15.
  */
 public class MGM extends ConvexProximal implements GraphSearch {
-    private DoubleFactory2D factory2D = DoubleFactory2D.dense;
-    private DoubleFactory1D factory1D = DoubleFactory1D.dense;
+    private final DoubleFactory2D factory2D = DoubleFactory2D.dense;
+    private final DoubleFactory1D factory1D = DoubleFactory1D.dense;
 
     //private DoubleFactory2D factory2D = DoubleFactory2D.sparse;
     //private DoubleFactory1D factory1D = DoubleFactory1D.sparse;
 
     //Continuous Data
-    private DoubleMatrix2D xDat;
+    private final DoubleMatrix2D xDat;
 
     //Discrete Data coded as integers, no IntMatrix2D apparently...
-    private DoubleMatrix2D yDat;
+    private final DoubleMatrix2D yDat;
 
     private List<Node> variables;
     private List<Node> initVariables = null;
@@ -77,13 +77,13 @@ public class MGM extends ConvexProximal implements GraphSearch {
     private DoubleMatrix2D dDat;
 
 
-    private DoubleMatrix1D lambda;
-    private Algebra alg = new Algebra();
+    private final DoubleMatrix1D lambda;
+    private final Algebra alg = new Algebra();
 
     private long elapsedTime = 0;
 
     //Levels of Discrete variables
-    private int[] l;
+    private final int[] l;
     private int lsum;
     private int[] lcumsum;
     int p;
@@ -344,7 +344,7 @@ public class MGM extends ConvexProximal implements GraphSearch {
         DoubleMatrix2D beta = factory2D.make(xDat.columns(), xDat.columns()); //continuous-continuous
         DoubleMatrix1D betad = factory1D.make(xDat.columns(), 1.0); //cont squared node pot
         DoubleMatrix2D theta = factory2D.make(lsum, xDat.columns());
-        ; //continuous-discrete
+        //continuous-discrete
         DoubleMatrix2D phi = factory2D.make(lsum, lsum); //discrete-discrete
         DoubleMatrix1D alpha1 = factory1D.make(xDat.columns()); //cont linear node pot
         DoubleMatrix1D alpha2 = factory1D.make(lsum); //disc node potbeta =

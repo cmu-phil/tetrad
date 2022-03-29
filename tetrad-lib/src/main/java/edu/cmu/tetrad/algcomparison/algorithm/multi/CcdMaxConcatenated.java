@@ -28,7 +28,7 @@ import java.util.List;
 public class CcdMaxConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private IKnowledge knowledge = new Knowledge2();
-    private IndependenceWrapper test;
+    private final IndependenceWrapper test;
 
     public CcdMaxConcatenated(IndependenceWrapper test) {
         this.test = test;

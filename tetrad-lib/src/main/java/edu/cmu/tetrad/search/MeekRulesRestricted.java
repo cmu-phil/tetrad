@@ -57,12 +57,12 @@ public class MeekRulesRestricted implements ImpliedOrientation {
      * The logger to use.
      */
     private ArrayList<OrderedPair<Edge>> changedEdges = new ArrayList<>();
-    private Set<Node> visitedNodes = new HashSet<>();
+    private final Set<Node> visitedNodes = new HashSet<>();
 
-    private Queue<Node> rule1Queue = new LinkedList<>();
-    private Queue<Node> rule2Queue = new LinkedList<>();
-    private Queue<Node> rule3Queue = new LinkedList<>();
-    private Queue<Node> rule4Queue = new LinkedList<>();
+    private final Queue<Node> rule1Queue = new LinkedList<>();
+    private final Queue<Node> rule2Queue = new LinkedList<>();
+    private final Queue<Node> rule3Queue = new LinkedList<>();
+    private final Queue<Node> rule4Queue = new LinkedList<>();
     private boolean orientInPlace = false;
 
     // Restricted to these nodes.

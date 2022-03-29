@@ -38,7 +38,7 @@ public class RocCalculator {
     private int direction = ASCENDING;
 
     private int[][] points;
-    private ScoreCategoryPair[] scoreCatPairs;
+    private final ScoreCategoryPair[] scoreCatPairs;
 
     /**
      * Constructs a calculator using the parameter information below.

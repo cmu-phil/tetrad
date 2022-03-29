@@ -41,18 +41,18 @@ public class RegressionDatasetGeneralized implements Regression {
     /**
      * The number formatter used for all numbers.
      */
-    private NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
     /**
      * The data set.
      */
-    private Matrix data;
+    private final Matrix data;
 
     /**
      * The variables.
      */
 
-    private List<Node> variables;
+    private final List<Node> variables;
 
     /**
      * The significance level for determining which regressors are significant
@@ -63,7 +63,7 @@ public class RegressionDatasetGeneralized implements Regression {
     /**
      * The graph of significant regressors into the target.
      */
-    private Graph graph = null;
+    private final Graph graph = null;
 
     //============================CONSTRUCTORS==========================//
 

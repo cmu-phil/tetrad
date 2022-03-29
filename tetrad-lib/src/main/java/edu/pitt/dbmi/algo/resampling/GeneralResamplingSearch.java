@@ -41,7 +41,7 @@ public class GeneralResamplingSearch {
 
     private boolean verbose = false;
 
-    private List<Graph> PAGs = Collections.synchronizedList(new ArrayList<>());
+    private final List<Graph> PAGs = Collections.synchronizedList(new ArrayList<>());
 
     // private ForkJoinPool pool = null;
 

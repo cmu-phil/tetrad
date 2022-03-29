@@ -45,7 +45,7 @@ public final class IndTestTrekSep implements IndependenceTest {
      * The covariance matrix.
      */
     private final ICovarianceMatrix covMatrix;
-    private List<Node> latents;
+    private final List<Node> latents;
 
     private boolean verbose = false;
 
@@ -53,7 +53,7 @@ public final class IndTestTrekSep implements IndependenceTest {
     /**
      * The variables of the covariance matrix, in order. (Unmodifiable list.)
      */
-    private List<List<Node>> clustering;
+    private final List<List<Node>> clustering;
 
 //    /**
 //     * The matrix out of the cov matrix.
@@ -78,7 +78,7 @@ public final class IndTestTrekSep implements IndependenceTest {
     /**
      * Formats as 0.0000.
      */
-    private static NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
     /**
      * Stores a reference to the dataset being analyzed.
@@ -86,8 +86,8 @@ public final class IndTestTrekSep implements IndependenceTest {
     private DataSet dataSet;
 
     private PrintStream pValueLogger;
-    private Map<Node, Integer> indexMap;
-    private Map<String, Node> nameMap;
+    private final Map<Node, Integer> indexMap;
+    private final Map<String, Node> nameMap;
     private TDistribution tDistribution;
 
     //==========================CONSTRUCTORS=============================//

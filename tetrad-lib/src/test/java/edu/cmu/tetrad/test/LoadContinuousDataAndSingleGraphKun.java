@@ -17,12 +17,12 @@ import java.util.List;
  */
 public class LoadContinuousDataAndSingleGraphKun implements Simulation, HasParameterValues {
     static final long serialVersionUID = 23L;
-    private String path;
-    private String prefix;
+    private final String path;
+    private final String prefix;
     private Graph graph = null;
     private List<ICovarianceMatrix> covs = new ArrayList<>();
-    private List<String> usedParameters = new ArrayList<>();
-    private Parameters parametersValues = new Parameters();
+    private final List<String> usedParameters = new ArrayList<>();
+    private final Parameters parametersValues = new Parameters();
 
     public LoadContinuousDataAndSingleGraphKun(String path, String prefix) {
         this.path = path;

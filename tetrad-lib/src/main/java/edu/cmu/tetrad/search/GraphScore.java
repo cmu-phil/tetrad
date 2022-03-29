@@ -39,7 +39,7 @@ public class GraphScore implements Score {
     private final Graph dag;
 
     // The variables of the covariance matrix.
-    private List<Node> variables;
+    private final List<Node> variables;
 
     // True if verbose output should be sent to out.
     private boolean verbose = false;

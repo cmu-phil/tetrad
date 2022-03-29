@@ -26,7 +26,7 @@ import java.util.concurrent.RecursiveAction;
 public class StabilitySelection implements Algorithm, TakesExternalGraph {
 
     static final long serialVersionUID = 23L;
-    private Algorithm algorithm;
+    private final Algorithm algorithm;
     private Graph externalGraph = null;
 
     public StabilitySelection(Algorithm algorithm) {
@@ -48,9 +48,9 @@ public class StabilitySelection implements Algorithm, TakesExternalGraph {
 
         class StabilityAction extends RecursiveAction {
 
-            private int chunk;
-            private int from;
-            private int to;
+            private final int chunk;
+            private final int from;
+            private final int to;
 
             private StabilityAction(int chunk, int from, int to) {
                 this.chunk = chunk;

@@ -77,7 +77,7 @@ public class Comparison {
     private boolean sortByUtility = false;
     private String dataPath = null;
     private String resultsPath = null;
-    private boolean parallelized = false;
+    private final boolean parallelized = false;
     private boolean saveCPDAGs = false;
     private boolean saveData = true;
     private boolean savePags = false;
@@ -979,7 +979,7 @@ public class Comparison {
         } else {
             class Task extends RecursiveTask<Boolean> {
 
-                List<AlgorithmTask> tasks;
+                final List<AlgorithmTask> tasks;
 
                 public Task(List<AlgorithmTask> tasks) {
                     this.tasks = tasks;
@@ -1195,12 +1195,12 @@ public class Comparison {
 
     private class AlgorithmTask extends RecursiveTask<Boolean> {
 
-        private List<AlgorithmSimulationWrapper> algorithmSimulationWrappers;
-        private List<AlgorithmWrapper> algorithmWrappers;
-        private List<SimulationWrapper> simulationWrappers;
-        private Statistics statistics;
-        private int numGraphTypes;
-        private double[][][][] allStats;
+        private final List<AlgorithmSimulationWrapper> algorithmSimulationWrappers;
+        private final List<AlgorithmWrapper> algorithmWrappers;
+        private final List<SimulationWrapper> simulationWrappers;
+        private final Statistics statistics;
+        private final int numGraphTypes;
+        private final double[][][][] allStats;
         private final Run run;
         private final PrintStream stdout;
 
@@ -1811,9 +1811,9 @@ public class Comparison {
     private class AlgorithmWrapper implements Algorithm {
 
         static final long serialVersionUID = 23L;
-        private Algorithm algorithm;
-        private Parameters parameters;
-        private List<String> overriddenParameters = new ArrayList<>();
+        private final Algorithm algorithm;
+        private final Parameters parameters;
+        private final List<String> overriddenParameters = new ArrayList<>();
 
         public AlgorithmWrapper(Algorithm algorithm, Parameters parameters) {
             this.algorithm = algorithm;
@@ -1875,8 +1875,8 @@ public class Comparison {
     private class AlgorithmSimulationWrapper implements Algorithm {
 
         static final long serialVersionUID = 23L;
-        private SimulationWrapper simulationWrapper;
-        private AlgorithmWrapper algorithmWrapper;
+        private final SimulationWrapper simulationWrapper;
+        private final AlgorithmWrapper algorithmWrapper;
         List<String> parameters = new ArrayList<>();
 
         public AlgorithmSimulationWrapper(AlgorithmWrapper algorithm, SimulationWrapper simulation) {
@@ -1924,7 +1924,7 @@ public class Comparison {
 
     private class SimulationWrapper implements Simulation {
         static final long serialVersionUID = 23L;
-        private Simulation simulation;
+        private final Simulation simulation;
         private List<Graph> graphs;
         private List<DataModel> dataModels;
         private Parameters parameters;

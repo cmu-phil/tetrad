@@ -555,7 +555,6 @@ public final class ExploreAutisticsNeurotypicals {
 
     public static void main(String... args) {
         new ExploreAutisticsNeurotypicals().printDegreeData();
-        ;
     }
 }
 

@@ -41,7 +41,7 @@ public final class TimeSeriesData implements DataModel {
     /**
      * @serial
      */
-    private Matrix data2;
+    private final Matrix data2;
 
     /**
      * @serial
@@ -51,7 +51,7 @@ public final class TimeSeriesData implements DataModel {
     /**
      * @serial
      */
-    private List<String> varNames;
+    private final List<String> varNames;
 
     /**
      * @serial

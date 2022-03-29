@@ -37,9 +37,9 @@ import java.util.List;
  * @author Joe Ramsey
  */
 public class PurifyTetradBased implements IPurify {
-    private boolean outputMessage = true;
-    private TetradTest tetradTest;
-    private int numVars;
+    private final boolean outputMessage = true;
+    private final TetradTest tetradTest;
+    private final int numVars;
     boolean doFdr = false;
     boolean listTetrads = false;
 

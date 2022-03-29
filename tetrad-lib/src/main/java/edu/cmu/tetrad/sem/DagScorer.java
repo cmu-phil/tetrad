@@ -50,14 +50,14 @@ import java.util.TreeSet;
 public final class DagScorer implements TetradSerializable, Scorer {
     static final long serialVersionUID = 23L;
 
-    private ICovarianceMatrix covMatrix;
+    private final ICovarianceMatrix covMatrix;
     private DataSet dataSet = null;
-    private Matrix edgeCoef;
-    private Matrix errorCovar;
+    private final Matrix edgeCoef;
+    private final Matrix errorCovar;
     private Graph dag = null;
-    private List<Node> variables;
+    private final List<Node> variables;
     private Matrix implCovarMeasC;
-    private Matrix sampleCovar;
+    private final Matrix sampleCovar;
     private double logDetSample;
     private double fml = Double.NaN;
 

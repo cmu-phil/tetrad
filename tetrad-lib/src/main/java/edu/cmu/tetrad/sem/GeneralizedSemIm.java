@@ -56,13 +56,13 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
     /**
      * The wrapped PM, that holds all of the expressions and structure for the model.
      */
-    private GeneralizedSemPm pm;
+    private final GeneralizedSemPm pm;
 
     /**
      * A map from freeParameters names to their values--these form the context for evaluating expressions.
      * Variables do not appear in this list. All freeParameters are double-valued.
      */
-    private Map<String, Double> parameterValues;
+    private final Map<String, Double> parameterValues;
 
     /**
      * True iff only positive data should be simulated.
@@ -72,7 +72,7 @@ public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
     /**
      * The coefficient of a (linear) self-loop for each variable, or NaN if there is none.
      */
-    private double selfLoopCoef = Double.NaN;
+    private final double selfLoopCoef = Double.NaN;
 
 
     /**

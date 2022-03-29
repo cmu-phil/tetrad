@@ -63,7 +63,7 @@ public final class GFciMax implements GraphSearch {
     private int maxDegree = -1;
 
     // The logger to use.
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
     // True iff verbose output should be printed.
     private boolean verbose = false;
@@ -81,7 +81,7 @@ public final class GFciMax implements GraphSearch {
     private boolean faithfulnessAssumed = true;
 
     // The score.
-    private Score score;
+    private final Score score;
 
     private SepsetProducer sepsets;
     private long elapsedTime;
@@ -380,11 +380,11 @@ public final class GFciMax implements GraphSearch {
 
         class Task extends RecursiveTask<Boolean> {
 
-            int from;
-            int to;
+            final int from;
+            final int to;
             int chunk = 20;
-            List<Node> nodes;
-            Graph graph;
+            final List<Node> nodes;
+            final Graph graph;
 
             public Task(List<Node> nodes, Graph graph, int from, int to) {
                 this.nodes = nodes;

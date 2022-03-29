@@ -35,7 +35,7 @@ import java.util.*;
  * @author Joseph Ramsey
  */
 public final class CcdMax implements GraphSearch {
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
     private int depth = -1;
     private boolean applyOrientAwayFromCollider = false;
     private long elapsed = 0;
@@ -433,8 +433,8 @@ public final class CcdMax implements GraphSearch {
     }
 
     private class Pair {
-        private List<Node> cond;
-        private double score;
+        private final List<Node> cond;
+        private final double score;
 
         Pair(List<Node> cond, double score) {
             this.cond = cond;

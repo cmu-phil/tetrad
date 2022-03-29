@@ -62,14 +62,14 @@ public final class IndTestPartialCorrelation implements IndependenceTest {
     /**
      * Formats as 0.0000.
      */
-    private static NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
     /**
      * Stores a reference to the dataset being analyzed.
      */
-    private DataSet dataSet;
+    private final DataSet dataSet;
 
-    private int sampleSize;
+    private final int sampleSize;
 
     CovarianceMatrix cov;
 

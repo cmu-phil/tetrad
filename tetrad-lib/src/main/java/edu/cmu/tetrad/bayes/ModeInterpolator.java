@@ -70,9 +70,6 @@ public final class ModeInterpolator implements DataFilter {
                     if (dataSet.getInt(i, j) == DiscreteVariable.MISSING_VALUE) {
                         newDataSet.setInt(i, j, mode);
                     }
-//                    else {
-//                        newDataSet.setInt(i, j, dataSet.getInt(i, j));
-//                    }
                 }
             } else if (dataSet.getVariable(j) instanceof ContinuousVariable) {
                 double[] data = new double[dataSet.getNumRows()];
@@ -96,9 +93,6 @@ public final class ModeInterpolator implements DataFilter {
                     if (Double.isNaN(dataSet.getDouble(i, j))) {
                         newDataSet.setDouble(i, j, mode);
                     }
-//                    else {
-//                        newDataSet.setDouble(i, j, dataSet.getDouble(i, j));
-//                    }
                 }
             }
         }

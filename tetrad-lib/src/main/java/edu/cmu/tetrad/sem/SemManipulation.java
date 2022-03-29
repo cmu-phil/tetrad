@@ -43,14 +43,14 @@ public final class SemManipulation implements TetradSerializable {
      *
      * @serial Cannot be null.
      */
-    private SemIm semIm;
+    private final SemIm semIm;
 
     /**
      * An array indicating whether each variable in turn is manipulated.
      *
      * @serial Cannot be null.
      */
-    private boolean[] manipulated;
+    private final boolean[] manipulated;
 
     //===========================CONSTRUCTORS============================//
 

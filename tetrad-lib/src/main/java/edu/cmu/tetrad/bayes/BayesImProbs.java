@@ -235,10 +235,6 @@ public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
         return assertionTrue / conditionTrue;
     }
 
-    public boolean isMissingValueCaseFound() {
-        return false;
-    }
-
     public List<Node> getVariables() {
         return this.variables;
     }

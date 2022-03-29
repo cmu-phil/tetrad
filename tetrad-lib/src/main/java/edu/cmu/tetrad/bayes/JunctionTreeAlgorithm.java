@@ -37,7 +37,6 @@ import java.util.stream.Collectors;
  * @see <a href="https://raw.githubusercontent.com/Waikato/weka-3.8/master/weka/src/main/java/weka/classifiers/bayes/net/MarginCalculator.java">MarginCalculator.java</a>
  */
 public class JunctionTreeAlgorithm implements TetradSerializable {
-
     static final long serialVersionUID = 23L;
 
     private final TreeNode root;
@@ -155,7 +154,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
                 if (!numbered.contains(v)) {
                     // count the number of times node v is adjacent to numbered node w
                     int cardinality = (int) graph.getAdjacentNodes(v).stream()
-                            .filter(u -> numbered.contains(u))
+                            .filter(numbered::contains)
                             .count();
 
                     // find the maximum cardinality
@@ -416,12 +415,6 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
      * Get the joint probability of the nodes given their parents. Example:
      * given x <-- z --> y, we can find P(x,y|z). Another example: given x
      * <-- z --> y <-- w, we can find P(x,y|z,w)
-     *
-     * @param nodes
-     * @param values
-     * @param parents
-     * @param parentValues
-     * @return
      */
     public double getConditionalProbabilities(int[] nodes, int[] values, int[] parents, int[] parentValues) {
         validate(nodes, values);
@@ -450,11 +443,6 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
 
     /**
      * Get the conditional probability of a node for all of its values.
-     *
-     * @param iNode
-     * @param parents
-     * @param parentValues
-     * @return
      */
     public double[] getConditionalProbabilities(int iNode, int[] parents, int[] parentValues) {
         validate(iNode);
@@ -490,7 +478,6 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
      * value(X2),...,nodeValues[n-1] = value(Xn).
      *
      * @param nodeValues an array of values for each node
-     * @return
      */
     public double getJointProbabilityAll(int[] nodeValues) {
         validateAll(nodeValues);
@@ -566,7 +553,6 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         private final double[] childPotentials;
 
         private final Node[] nodes;
-        private final int cardinality;
 
         private final TreeNode childNode;
         private final TreeNode parentNode;
@@ -576,7 +562,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
             this.parentNode = parentNode;
 
             this.nodes = toArray(separator);
-            this.cardinality = getCardinality(separator);
+            int cardinality = getCardinality(separator);
 
             this.parentPotentials = new double[cardinality];
             this.childPotentials = new double[cardinality];
@@ -706,9 +692,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         }
 
         public void initializeDown(boolean recursively) {
-            if (parentSeparator == null) {
-                calculateMarginalProbabilities();
-            } else {
+            if (parentSeparator != null) {
                 parentSeparator.updateFromParent();
 
                 int size = nodes.length;
@@ -727,8 +711,8 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
                 }
 
                 parentSeparator.updateFromChild();
-                calculateMarginalProbabilities();
             }
+            calculateMarginalProbabilities();
 
             if (recursively) {
                 children.forEach(childNode -> childNode.initializeDown(true));
@@ -765,8 +749,8 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
             int index = 0;
 
             int[] parents = bayesIm.getParents(nodeIndex);
-            for (int i = 0; i < parents.length; i++) {
-                Node node = bayesIm.getNode(parents[i]);
+            for (int parent : parents) {
+                Node node = bayesIm.getNode(parent);
                 index *= bayesPm.getNumCategories(node);
                 for (int j = 0; j < nodes.length; j++) {
                     if (node == nodes[j]) {
@@ -857,7 +841,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
 
             logJointPotentials = children.stream()
                     .map(child -> child.getLogJointSeparatorPotentials(nodeValues))
-                    .reduce(logJointPotentials, (accumulator, value) -> accumulator + value);
+                    .reduce(logJointPotentials, Double::sum);
 
             return logJointPotentials;
         }
@@ -872,7 +856,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
             double logJointPotentials = Math.log(prob[getIndexOfCPT(nodes, values)]);
             logJointPotentials = children.stream()
                     .map(child -> child.getLogJointClusterPotentials(nodeValues))
-                    .reduce(logJointPotentials, (accumulator, value) -> accumulator + value);
+                    .reduce(logJointPotentials, Double::sum);
 
             return logJointPotentials;
         }
@@ -892,8 +876,6 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         /**
          * Check if the clique contains the given node.
          *
-         * @param node
-         * @return
          */
         public boolean contains(Node node) {
             return clique.contains(node);

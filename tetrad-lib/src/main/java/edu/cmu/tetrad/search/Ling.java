@@ -477,7 +477,6 @@ public class Ling {
             }
 
             Matrix sqrt = cov.sqrt();
-            ;
 
             Matrix I = Matrix.identity(rows);
             Matrix AI = I.copy();
@@ -1045,18 +1044,18 @@ public class Ling {
         /**
          * Graph permutations are stored here.
          */
-        private List<Graph> graphs = new ArrayList<>();
+        private final List<Graph> graphs = new ArrayList<>();
 
         /**
          * Store data for each graph in case the data is needed later
          */
-        private List<DataSet> dataSet = new ArrayList<>();
+        private final List<DataSet> dataSet = new ArrayList<>();
 
         /**
          * Boolean valued vector that contains the stability information for its corresponding graph. stable = true
          * means the graph has all eigenvalues with modulus < 1.
          */
-        private List<Boolean> stable = new ArrayList<>();
+        private final List<Boolean> stable = new ArrayList<>();
 
         /**
          * Gets the number of graphs stored by the class.

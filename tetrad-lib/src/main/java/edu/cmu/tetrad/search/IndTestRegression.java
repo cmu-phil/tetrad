@@ -71,12 +71,12 @@ public final class IndTestRegression implements IndependenceTest {
     /**
      * The cutoff value for 'alpha' area in the two tails of the partial correlation distribution function.
      */
-    private double thresh = Double.NaN;
+    private final double thresh = Double.NaN;
 
     /**
      * The last calculated partial correlation, needed to calculate relative strength.
      */
-    private double storedR = 0.;
+    private final double storedR = 0.;
 
     /**
      * The value of the Fisher's Z statistic associated with the las calculated partial correlation.
@@ -86,8 +86,8 @@ public final class IndTestRegression implements IndependenceTest {
     /**
      * The standard number formatter for Tetrad.
      */
-    private static NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-    private DataSet dataSet;
+    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    private final DataSet dataSet;
     private boolean verbose = false;
 
     //==========================CONSTRUCTORS=============================//

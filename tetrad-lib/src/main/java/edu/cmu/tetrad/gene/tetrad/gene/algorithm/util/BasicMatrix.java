@@ -101,7 +101,7 @@ public abstract class BasicMatrix {
      * the total needed to fill the matrix.  If it has more elements an illegal
      * argument exception will be generated.
      */
-    public BasicMatrix(String fname) throws FileNotFoundException, IOException {
+    public BasicMatrix(String fname) throws IOException {
         // Create and prepare stream tokenizer
         File f = new File(fname);
         BufferedReader in = new BufferedReader(new FileReader(f));
@@ -123,7 +123,7 @@ public abstract class BasicMatrix {
 
         // Read from file # of rows in the matrix
         nt = strmTok.nextToken();
-        if (nt != strmTok.TT_NUMBER) {
+        if (nt != StreamTokenizer.TT_NUMBER) {
             throw new IllegalArgumentException(
                     "Error parsing # of rows: " + strmTok.sval);
         }
@@ -144,10 +144,10 @@ public abstract class BasicMatrix {
             } catch (IOException e) {
                 break;
             }
-            if (nt == strmTok.TT_EOF) {
+            if (nt == StreamTokenizer.TT_EOF) {
                 break;
             }
-            if (nt == strmTok.TT_NUMBER) {
+            if (nt == StreamTokenizer.TT_NUMBER) {
                 this.setDoubleValue(row, col, strmTok.nval);
                 col++;
                 if (col == vnrows) {

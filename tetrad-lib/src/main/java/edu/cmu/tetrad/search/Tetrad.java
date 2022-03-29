@@ -32,11 +32,11 @@ import java.util.Set;
  * Represents a tetrad of variables.
  */
 public class Tetrad {
-    private Node i;
-    private Node j;
-    private Node k;
-    private Node l;
-    private double pValue;
+    private final Node i;
+    private final Node j;
+    private final Node k;
+    private final Node l;
+    private final double pValue;
 
     public Tetrad(Node i, Node j, Node k, Node l) {
 //        testDistinctness(i, j, k, l);

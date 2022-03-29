@@ -647,7 +647,7 @@ public final class DirichletBayesIm implements BayesIm {
         }
 
         if (total != 0.0) {
-            for (int colIndex = 0; colIndex < getNumColumns(nodeIndex); colIndex++) {
+            for (int colIndex = 0; colIndex < numColumns; colIndex++) {
                 double probability = getProbability(nodeIndex, rowIndex, colIndex);
                 double prob = probability / total;
                 setProbability(nodeIndex, rowIndex, colIndex, prob);

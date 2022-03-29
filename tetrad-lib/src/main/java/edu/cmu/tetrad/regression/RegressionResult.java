@@ -43,80 +43,80 @@ public class RegressionResult implements TetradSerializable {
      *
      * @see #RegressionResult
      */
-    private boolean zeroInterceptAssumed;
+    private final boolean zeroInterceptAssumed;
 
     /**
      * Regressor names.
      *
      * @see #RegressionResult
      */
-    private String[] regressorNames;
+    private final String[] regressorNames;
 
     /**
      * The number of data points.
      *
      * @see #RegressionResult
      */
-    private int n;
+    private final int n;
 
     /**
      * The array of regression coefficients.
      *
      * @see #RegressionResult
      */
-    private double[] b;
+    private final double[] b;
 
     /**
      * The array of t-statistics for the regression coefficients.
      *
      * @see #RegressionResult
      */
-    private double[] t;
+    private final double[] t;
 
     /**
      * The array of p-values for the regression coefficients.
      *
      * @see #RegressionResult
      */
-    private double[] p;
+    private final double[] p;
 
     /**
      * Standard errors of the coefficients
      *
      * @see #RegressionResult
      */
-    private double[] se;
+    private final double[] se;
 
     /**
      * R square value.
      *
      * @see #RegressionResult
      */
-    private double r2;
+    private final double r2;
 
     /**
      * Residual sums of squares.
      *
      * @see #RegressionResult
      */
-    private double rss;
+    private final double rss;
 
     /**
      * Alpha value to determine significance.
      *
      * @see #RegressionResult
      */
-    private double alpha;
+    private final double alpha;
 
     /**
      * Teh predicted values.
      */
-    private Vector yHat;
+    private final Vector yHat;
 
     /**
      * The residuals.
      */
-    private Vector res;
+    private final Vector res;
 
     /**
      * A result for a variety of regression algorithm.

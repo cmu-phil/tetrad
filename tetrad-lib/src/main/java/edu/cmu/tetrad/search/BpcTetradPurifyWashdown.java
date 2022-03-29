@@ -38,12 +38,12 @@ import java.util.List;
 public class BpcTetradPurifyWashdown {
     private DataSet dataSet;
     private ICovarianceMatrix cov;
-    private List<Node> variables;
-    private TetradTest test;
+    private final List<Node> variables;
+    private final TetradTest test;
     private double alpha;
     private static final int MAX_CLIQUE_TRIALS = 50;
-    private IndependenceTest indTest;
-    private boolean depthOne = false;
+    private final IndependenceTest indTest;
+    private final boolean depthOne = false;
     private EdgeListGraph depthOneGraph;
 
     public BpcTetradPurifyWashdown(ICovarianceMatrix cov, TestType testType, double alpha) {

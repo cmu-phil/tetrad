@@ -43,17 +43,17 @@ import static java.lang.Math.*;
 public final class IndTestFisherZFisherPValue implements IndependenceTest {
     private final List<Node> variables;
     private final int sampleSize;
-    private List<DataSet> dataSets;
+    private final List<DataSet> dataSets;
     private double alpha;
     private double pValue = Double.NaN;
-    private int[] rows;
+    private final int[] rows;
     //    private List<TetradMatrix> data;
-    private List<ICovarianceMatrix> ncov;
-    private Map<Node, Integer> variablesMap;
+    private final List<ICovarianceMatrix> ncov;
+    private final Map<Node, Integer> variablesMap;
     private double percent = .5;
-    private List<DataSet> allLagged;
+    private final List<DataSet> allLagged;
 
-    private List<IndependenceTest> tests = new ArrayList<>();
+    private final List<IndependenceTest> tests = new ArrayList<>();
     private boolean verbose = false;
 
     //==========================CONSTRUCTORS=============================//

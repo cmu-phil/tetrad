@@ -36,9 +36,9 @@ import java.util.*;
 public final class IndependenceFact implements Comparable, TetradSerializable {
     static final long serialVersionUID = 23L;
 
-    private Node x;
-    private Node y;
-    private Set<Node> _z;
+    private final Node x;
+    private final Node y;
+    private final Set<Node> _z;
 
     /**
      * Constructs a triple of nodes.

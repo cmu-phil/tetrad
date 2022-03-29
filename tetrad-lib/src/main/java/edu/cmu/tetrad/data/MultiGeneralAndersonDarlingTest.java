@@ -40,7 +40,7 @@ public class MultiGeneralAndersonDarlingTest {
     /**
      * The column of data being analyzed.
      */
-    private List<List<Double>> data;
+    private final List<List<Double>> data;
 
     /**
      * The A^2 statistic for <code>data</code>
@@ -60,7 +60,7 @@ public class MultiGeneralAndersonDarlingTest {
     /**
      * The reference CDF.
      */
-    private List<RealDistribution> distributions;
+    private final List<RealDistribution> distributions;
 
     //============================CONSTRUCTOR===========================//
 

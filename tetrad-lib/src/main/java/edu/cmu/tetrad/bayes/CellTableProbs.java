@@ -324,9 +324,6 @@ public final class CellTableProbs implements DiscreteProbs {
         return -1;
     }
 
-    public boolean isMissingValueCaseFound() {
-        return missingValueCaseFound;
-    }
 }
 
 

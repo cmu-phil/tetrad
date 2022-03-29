@@ -42,7 +42,7 @@ public final class Polynomial implements TetradSerializable {
      *
      * @serial
      */
-    private List<PolynomialTerm> terms;
+    private final List<PolynomialTerm> terms;
 
     //==============================CONSTRUCTOR===========================//
 

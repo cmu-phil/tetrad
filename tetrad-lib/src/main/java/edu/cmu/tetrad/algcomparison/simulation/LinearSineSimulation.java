@@ -21,7 +21,7 @@ import java.util.*;
 @Experimental
 public class LinearSineSimulation implements Simulation {
     static final long serialVersionUID = 23L;
-    private RandomGraph randomGraph;
+    private final RandomGraph randomGraph;
     private List<DataSet> dataSets = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();
     private DataType dataType;

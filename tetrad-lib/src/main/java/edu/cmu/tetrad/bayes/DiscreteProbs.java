@@ -67,11 +67,6 @@ interface DiscreteProbs {
      */
     double getConditionalProb(Proposition assertion, Proposition condition);
 
-    /**
-     * @return true if a missing values case was encountered during the last
-     * method call.
-     */
-    boolean isMissingValueCaseFound();
 }
 
 

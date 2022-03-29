@@ -47,16 +47,16 @@ import java.util.Set;
  */
 final class PossibleDsepCfci {
 
-    private Graph graph;
-    private IndependenceTest test;
-    private List<Node> nodes;
+    private final Graph graph;
+    private final IndependenceTest test;
+    private final List<Node> nodes;
 
     /**
      * This sepset collects up only the sepsets discovered by this search.
      */
-    private SepsetMap sepset;
+    private final SepsetMap sepset;
     private int depth = -1;
-    private LegalPairs legalPairs;
+    private final LegalPairs legalPairs;
 
     /**
      * The background knowledge.

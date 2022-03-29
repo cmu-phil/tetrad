@@ -75,8 +75,8 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
     /**
      * Formats as 0.0000.
      */
-    private static NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-    private DataSet dataSet;
+    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    private final DataSet dataSet;
     private boolean verbose = false;
 
     //==========================CONSTRUCTORS=============================//

@@ -41,8 +41,8 @@ class FciDsepLegalPairsCfci implements LegalPairs {
     /**
      * Graph with respect to which graph properties are tested.
      */
-    private Graph graph;
-    private Set<Triple> ambiguousTriples;
+    private final Graph graph;
+    private final Set<Triple> ambiguousTriples;
 
     /**
      * Constructs a new legal pairs object. See class level doc.

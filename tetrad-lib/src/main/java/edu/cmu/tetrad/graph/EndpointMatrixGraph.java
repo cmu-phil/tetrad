@@ -91,7 +91,7 @@ public class EndpointMatrixGraph implements Graph {
     private boolean pag;
     private boolean CPDAG;
 
-    private Map<String, Object> attributes = new HashMap<>();
+    private final Map<String, Object> attributes = new HashMap<>();
 
     //==============================CONSTUCTORS===========================//
 
@@ -747,8 +747,8 @@ public class EndpointMatrixGraph implements Graph {
     }
 
     private static class Pair {
-        private Node x;
-        private Node y;
+        private final Node x;
+        private final Node y;
 
         public Pair(Node x, Node y) {
             this.x = x;

@@ -38,7 +38,7 @@ public class BinaryFunctionUtils {
     /**
      * The number of arguments of the binary function.
      */
-    private int numArgs;
+    private final int numArgs;
 
     public BinaryFunctionUtils(int numArgs) {
         this.numArgs = numArgs;

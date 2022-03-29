@@ -198,10 +198,6 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
         return count2 / count1;
     }
 
-    public boolean isMissingValueCaseFound() {
-        return false;
-    }
-
     /**
      * @return the dataset that this is estimating probabilities for.
      */

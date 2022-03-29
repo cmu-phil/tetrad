@@ -47,12 +47,12 @@ public final class MmmbGraphRestricted implements MbSearch {
     /**
      * The independence test used to perform the search.
      */
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
 
     /**
      * The list of variables being searched over. Must contain the target.
      */
-    private List<Node> variables;
+    private final List<Node> variables;
 
     /**
      * The maximum number of variables conditioned on.
@@ -73,7 +73,7 @@ public final class MmmbGraphRestricted implements MbSearch {
      * Set of trimmed nodes (for the symmetric implementation).
      */
     private Set<Node> trimmed;
-    private Graph graph;
+    private final Graph graph;
 
     //=============================CONSTRUCTOR=============================//
 
@@ -400,8 +400,8 @@ public final class MmmbGraphRestricted implements MbSearch {
     }
 
     private static class MaxMinAssocResult {
-        private Node node;
-        private List<Node> assocSet;
+        private final Node node;
+        private final List<Node> assocSet;
 
         public MaxMinAssocResult(Node node, List<Node> assocSet) {
             this.node = node;

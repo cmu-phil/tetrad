@@ -35,13 +35,13 @@ public class LagGraph implements Graph {
     static final long serialVersionUID = 23L;
 
     private Dag graph = new Dag();
-    private List<String> variables = new ArrayList<>();
-    private int numLags = 0;
-    private Map<String, List<Node>> laggedVariables = new HashMap<>();
+    private final List<String> variables = new ArrayList<>();
+    private final int numLags = 0;
+    private final Map<String, List<Node>> laggedVariables = new HashMap<>();
     private boolean pag;
     private boolean CPDAG;
 
-    private Map<String, Object> attributes = new HashMap<>();
+    private final Map<String, Object> attributes = new HashMap<>();
 
     // New methods.
     public boolean addVariable(String variable) {

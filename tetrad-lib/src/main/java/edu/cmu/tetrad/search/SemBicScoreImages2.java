@@ -44,13 +44,13 @@ import java.util.Set;
 public class SemBicScoreImages2 implements Score {
 
     // The covariance matrix.
-    private List<ICovarianceMatrix> covariances;
+    private final List<ICovarianceMatrix> covariances;
 
     // The variables of the covariance matrix.
     private List<Node> variables;
 
     // The sample size of the covariance matrix.
-    private int sampleSize;
+    private final int sampleSize;
 
     // The penalty penaltyDiscount.
     private double penaltyDiscount = 2.0;
@@ -64,7 +64,7 @@ public class SemBicScoreImages2 implements Score {
 
     // True if verbose output should be sent to out.
     private boolean verbose = false;
-    private Set<Integer> forbidden = new HashSet<>();
+    private final Set<Integer> forbidden = new HashSet<>();
 
     /**
      * Constructs the score using a covariance matrix.

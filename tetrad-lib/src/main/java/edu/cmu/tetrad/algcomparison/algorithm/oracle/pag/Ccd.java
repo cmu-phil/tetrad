@@ -24,7 +24,7 @@ import java.util.List;
 public class Ccd implements Algorithm {
 
     static final long serialVersionUID = 23L;
-    private IndependenceWrapper test;
+    private final IndependenceWrapper test;
 
     public Ccd(IndependenceWrapper test) {
         this.test = test;

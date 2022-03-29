@@ -36,8 +36,8 @@ import edu.cmu.tetrad.util.RandomUtil;
  */
 public class InverseCorrelation {
 
-    private DataSet data;
-    private double threshold;
+    private final DataSet data;
+    private final double threshold;
 
     public InverseCorrelation(DataSet dataSet, double threshold) {
         this.data = dataSet;

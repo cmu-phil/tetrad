@@ -20,7 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.algcomparison.statistic.BicEst;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.data.KnowledgeEdge;
@@ -85,7 +84,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     GraphScore graphScore = null;
     private boolean turning = false;
     private boolean faithfulnessAssumed = true;
-    private int depth = 10000;
+    private final int depth = 10000;
     /**
      * Specification of forbidden and required edges.
      */

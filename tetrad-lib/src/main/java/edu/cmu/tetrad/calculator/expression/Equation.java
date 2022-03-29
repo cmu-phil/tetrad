@@ -32,19 +32,19 @@ public class Equation {
     /**
      * The string value of the variable.
      */
-    private String variable;
+    private final String variable;
 
 
     /**
      * The expression that should be used to evaluate the variables new value.
      */
-    private Expression expression;
+    private final Expression expression;
 
 
     /**
      * The unparsed expression.
      */
-    private String unparsedExpression;
+    private final String unparsedExpression;
 
 
     public Equation(String variable, Expression expression, String unparsed) {

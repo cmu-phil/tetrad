@@ -39,7 +39,7 @@ import java.util.regex.Pattern;
  * @author Joseph Ramsey
  */
 public class TemplateExpander {
-    private static TemplateExpander INSTANCE = new TemplateExpander();
+    private static final TemplateExpander INSTANCE = new TemplateExpander();
 
     private TemplateExpander() {
     }

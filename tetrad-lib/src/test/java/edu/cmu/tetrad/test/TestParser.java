@@ -201,8 +201,8 @@ public final class TestParser {
 
     private static class TestingContext implements Context {
 
-        private Map<String, Double> doubleVars = new HashMap<>();
-        private Map<String, Object> vars = new HashMap<>();
+        private final Map<String, Double> doubleVars = new HashMap<>();
+        private final Map<String, Object> vars = new HashMap<>();
 
         public void assign(String v, double d) {
             doubleVars.put(v, d);

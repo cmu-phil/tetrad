@@ -58,18 +58,18 @@ public class ExpressionParser {
     /**
      * The expressin manager used to get the actual expressions from.
      */
-    private ExpressionManager expressions = ExpressionManager.getInstance();
+    private final ExpressionManager expressions = ExpressionManager.getInstance();
 
     /**
      * The parameters read from the string.
      */
-    private Set<String> parameters;
+    private final Set<String> parameters;
 
 
     /**
      * The parameters that are allowed in an expression.
      */
-    private Set<String> restrictionParameters;
+    private final Set<String> restrictionParameters;
 
     /**
      * The type of restribution on parameters.

@@ -41,7 +41,7 @@ public class LinearSimExp1 {
     /**
      * The measurement simulator.
      */
-    private MeasurementSimulator simulator;
+    private final MeasurementSimulator simulator;
 
     public LinearSimExp1(String stub) {
         this.simulator = new MeasurementSimulator(new Parameters());

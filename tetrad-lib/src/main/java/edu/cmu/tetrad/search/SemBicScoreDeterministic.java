@@ -51,7 +51,7 @@ public class SemBicScoreDeterministic implements Score {
     private List<Node> variables;
 
     // The sample size of the covariance matrix.
-    private int sampleSize;
+    private final int sampleSize;
 
     // The penalty penaltyDiscount.
     private double penaltyDiscount = 1.0;
@@ -67,7 +67,7 @@ public class SemBicScoreDeterministic implements Score {
     private boolean verbose = false;
 
     // Variables that caused computational problems and so are to be avoided.
-    private Set<Integer> forbidden = new HashSet<>();
+    private final Set<Integer> forbidden = new HashSet<>();
     private double determinismThreshold = 0.1;
 
     /**

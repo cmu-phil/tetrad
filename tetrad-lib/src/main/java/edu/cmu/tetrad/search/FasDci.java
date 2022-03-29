@@ -50,17 +50,17 @@ public class FasDci {
      * adjacencies of x are in this graph for every node x. It is hoped (i.e. true in the large sample limit) that true
      * adjacencies are never removed.
      */
-    private Graph graph;
+    private final Graph graph;
 
     /**
      * The variables in the dataset.
      */
-    private Set<Node> variables = new HashSet<>();
+    private final Set<Node> variables = new HashSet<>();
 
     /**
      * The independence tests for each dataset. This should be appropriate to the data.
      */
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
 
     /**
      * Specification of which edges are forbidden or required. NOTE: to be implemented later
@@ -106,7 +106,7 @@ public class FasDci {
     /**
      * The logger, by default the empty logger.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
 //    private List<Double> pValues = new ArrayList<Double>();
 

@@ -53,9 +53,9 @@ public class ShortTriangularMatrix implements TriangularMatrix {
             DataSet data = DataUtils.loadContinuousData(file, "//", '\"' ,
                     "*", true, Delimiter.TAB);
             test.becomeCorrelationMatrix(data);
-            System.out.println(test.toString());
+            System.out.println(test);
             CorrelationMatrix m = new CorrelationMatrix(data);
-            System.out.println(m.toString());
+            System.out.println(m);
             System.out.println(test.getDouble(1, 3));
             System.out.println(test.getDouble(3, 1));
         } catch (IOException e) {

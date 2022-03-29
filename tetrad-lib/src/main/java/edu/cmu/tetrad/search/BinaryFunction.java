@@ -36,7 +36,7 @@ public class BinaryFunction {
     /**
      * The number of arguments to the function.
      */
-    private int numArgs;
+    private final int numArgs;
 
     /**
      * Represents the function column of the truth table.

@@ -3,7 +3,10 @@ package edu.cmu.tetrad.data.simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.statistic.utils.SimulationPath;
 import edu.cmu.tetrad.algcomparison.utils.ParameterValues;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.data.reader.Delimiter;
@@ -21,9 +24,9 @@ import java.util.Map;
 public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath, ParameterValues {
     static final long serialVersionUID = 23L;
     private DataSet dataSet;
-    private int numDataSets = 1;
-    private String path;
-    private Map<String, Object> parameterValues = new HashMap<>();
+    private final int numDataSets = 1;
+    private final String path;
+    private final Map<String, Object> parameterValues = new HashMap<>();
 
     public LoadDataFromFileWithoutGraph(String path) {
         this.dataSet = null;

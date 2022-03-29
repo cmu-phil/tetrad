@@ -19,9 +19,9 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
 import edu.cmu.tetrad.algcomparison.independence.BDeuTest;
 import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
@@ -84,7 +84,7 @@ public class TestGeneralResamplingTest {
         Graph dag = makeContinuousDAG(numVars, numLatentConfounders, edgesPerNode);
 
         System.out.println("Truth Graph:");
-        System.out.println(dag.toString());
+        System.out.println(dag);
 
         int[] causalOrdering = new int[numVars];
 

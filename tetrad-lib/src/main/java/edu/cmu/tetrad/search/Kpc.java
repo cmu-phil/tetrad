@@ -43,7 +43,7 @@ public class Kpc implements GraphSearch {
     /**
      * The independence test used for the PC search.
      */
-    private IndTestHsic independenceTest;
+    private final IndTestHsic independenceTest;
 
     /**
      * Forbidden and required edges for the search.
@@ -79,7 +79,7 @@ public class Kpc implements GraphSearch {
     /**
      * The logger to use.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
     /**
      * In an enumeration of triple types, these are the collider triples.

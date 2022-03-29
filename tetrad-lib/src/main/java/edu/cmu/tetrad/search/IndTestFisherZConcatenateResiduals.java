@@ -47,9 +47,9 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
     /**
      * The variables of the covariance matrix, in order. (Unmodifiable list.)
      */
-    private List<Node> variables;
+    private final List<Node> variables;
 
-    private ArrayList<Regression> regressions;
+    private final ArrayList<Regression> regressions;
 
     private List<DataSet> dataSets;
 

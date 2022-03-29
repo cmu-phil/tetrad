@@ -48,15 +48,15 @@ public class TestAutisticClassification {
     enum Type {LEAVE_ONE_OUT, TRAIN_TEST}
 
     // Parameters.
-    private double penaltyDiscount = 2;
-    private int depth = 3;
-    private int cutoffPresent = 10;
-    private int cutoffAbsent = 10;
+    private final double penaltyDiscount = 2;
+    private final int depth = 3;
+    private final int cutoffPresent = 10;
+    private final int cutoffAbsent = 10;
 
-    private int trainIndex = 2;
-    private int testIndex = 0;
+    private final int trainIndex = 2;
+    private final int testIndex = 0;
 
-    private Type type = Type.LEAVE_ONE_OUT;
+    private final Type type = Type.LEAVE_ONE_OUT;
 
     public void testAutistic() {
         Parameters parameters = new Parameters();

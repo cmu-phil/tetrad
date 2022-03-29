@@ -45,7 +45,7 @@ import static org.junit.Assert.assertTrue;
 @Ignore
 public class TestGeneralizedSem {
 
-    private boolean printStuff = false;
+    private final boolean printStuff = false;
 
     @Test
     public void test1() {

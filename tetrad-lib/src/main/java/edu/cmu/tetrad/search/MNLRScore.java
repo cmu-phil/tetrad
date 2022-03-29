@@ -33,16 +33,16 @@ import java.util.List;
  */
 public class MNLRScore implements Score {
 
-    private DataSet dataSet;
+    private final DataSet dataSet;
 
     // The variables of the continuousData set.
-    private List<Node> variables;
+    private final List<Node> variables;
 
     // Likelihood function
-    private MNLRLikelihood likelihood;
+    private final MNLRLikelihood likelihood;
 
     // Log number of instances
-    private double logn;
+    private final double logn;
 
     public MNLRScore(DataSet dataSet, double structurePrior, int fDegree) {
 

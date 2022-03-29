@@ -57,7 +57,6 @@ public class BCCausalInference {
         this.numberOfCases = cases.length - 1;
         this.maximumNodes = numberOfNodes;
         this.maximumCases = cases.length - 1;
-        ;
         this.maximumValues = Arrays.stream(nodeDimension).max().getAsInt();
         this.maximumParents = maximumNodes - 2;
         this.maximumCells = maximumParents * maximumValues * maximumValues * maximumCases;

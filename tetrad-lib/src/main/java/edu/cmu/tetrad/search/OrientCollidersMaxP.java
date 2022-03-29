@@ -39,7 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class OrientCollidersMaxP {
     private final IndependenceTest independenceTest;
     private int depth = -1;
-    private long elapsed = 0;
+    private final long elapsed = 0;
     private IKnowledge knowledge = new Knowledge2();
     private boolean useHeuristic = false;
     private int maxPathLength = 3;

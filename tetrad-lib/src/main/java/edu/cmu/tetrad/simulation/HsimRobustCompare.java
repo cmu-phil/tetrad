@@ -79,7 +79,7 @@ public class HsimRobustCompare {
         BayesPm simBayesPm = new BayesPm(fgesdag2, bayesPm);
         DirichletBayesIm simIM = DirichletBayesIm.symmetricDirichletIm(simBayesPm, 1.0);
         DirichletEstimator simEstimator = new DirichletEstimator();
-        DirichletBayesIm fittedIM = simEstimator.estimate(simIM, oData);
+        DirichletBayesIm fittedIM = DirichletEstimator.estimate(simIM, oData);
         DataSet simData = fittedIM.simulateData(numCases, false);
 
         ////next let's do a schedule of small hsims

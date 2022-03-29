@@ -43,12 +43,12 @@ public final class Cefs {
     /**
      * The independence test used to perform the search.
      */
-    private IndependenceTest test;
+    private final IndependenceTest test;
 
     /**
      * The list of variables being searched over. Must contain the target.
      */
-    private List<Node> variables;
+    private final List<Node> variables;
 
     /**
      * The target variable.
@@ -59,7 +59,7 @@ public final class Cefs {
      * The depth to which independence tests should be performed--i.e. the maximum number of conditioning variables for
      * any independence test.
      */
-    private int depth;
+    private final int depth;
 
     /**
      * The CPDAG output by the most recent search. This is saved in case the user wants to generate the list of MB
@@ -138,7 +138,7 @@ public final class Cefs {
     /**
      * The logger for this class. The config needs to be set.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
 
     //==============================CONSTRUCTORS==========================//

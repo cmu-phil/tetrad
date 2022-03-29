@@ -1047,7 +1047,6 @@ public class TestDM {
                     String[] adjInfoString = currentLine.split("\\s+");
 
                     for (int i = 0; i < nVar; i++) {
-                        ;
                         if (Integer.parseInt(adjInfoString[i]) > 1) {
                             print(adjInfoString[i]);
                         } else if (Integer.parseInt(adjInfoString[i]) < 0) {

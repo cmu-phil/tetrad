@@ -23,7 +23,7 @@ import java.util.List;
 @Bootstrapping
 public class MixedFgesDiscretingContinuousVariables implements Algorithm {
     static final long serialVersionUID = 23L;
-    private ScoreWrapper score;
+    private final ScoreWrapper score;
 
     public MixedFgesDiscretingContinuousVariables(ScoreWrapper score) {
         this.score = score;

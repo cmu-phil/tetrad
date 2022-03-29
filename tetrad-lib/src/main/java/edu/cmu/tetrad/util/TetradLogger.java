@@ -76,7 +76,7 @@ public class TetradLogger {
     private final Map<Object, TetradLoggerConfig> nodeConfigMap = new ConcurrentHashMap<>();
 
 
-    private Map<Object, Object> nodeModelMap = new ConcurrentHashMap<>();
+    private final Map<Object, Object> nodeModelMap = new ConcurrentHashMap<>();
 
     /**
      * The configuration to use to determine which events to log.

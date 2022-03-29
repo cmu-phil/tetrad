@@ -609,7 +609,7 @@ public class MimbuildTrek {
     private class Function2 implements MultivariateFunction {
         private final int[][] indicatorIndices;
         private final Matrix measurescov;
-        private Matrix measuresCovInverse;
+        private final Matrix measuresCovInverse;
         private final double[][] loadings;
         private final Matrix latentscov;
         private final int numParams;
@@ -673,7 +673,7 @@ public class MimbuildTrek {
     private class Function3 implements MultivariateFunction {
         private final int[][] indicatorIndices;
         private final Matrix measurescov;
-        private Matrix measuresCovInverse;
+        private final Matrix measuresCovInverse;
         private final double[][] loadings;
         private final Matrix latentscov;
         private final int numParams;
@@ -718,7 +718,7 @@ public class MimbuildTrek {
     private class Function4 implements MultivariateFunction {
         private final int[][] indicatorIndices;
         private final Matrix measurescov;
-        private Matrix measuresCovInverse;
+        private final Matrix measuresCovInverse;
         private final double[][] loadings;
         private final Matrix latentscov;
         private final int numParams;

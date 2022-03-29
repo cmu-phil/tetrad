@@ -29,11 +29,11 @@ public class GeneralResamplingSearchRunnable implements Runnable {
 
     private MultiDataSetAlgorithm multiDataSetAlgorithm = null;
 
-    private Parameters parameters;
+    private final Parameters parameters;
 
     private final GeneralResamplingSearch resamplingAlgorithmSearch;
 
-    private boolean verbose;
+    private final boolean verbose;
 
     /**
      * An initial graph to start from.

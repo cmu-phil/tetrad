@@ -49,9 +49,9 @@ public class IndTestFisherZBootstrap implements IndependenceTest {
      */
     private double alpha = 0.05;
 
-    private DataSet dataSet;
-    private int numBootstrapSamples;
-    private IndependenceTest[] tests;
+    private final DataSet dataSet;
+    private final int numBootstrapSamples;
+    private final IndependenceTest[] tests;
     private boolean verbose = false;
 
     public IndTestFisherZBootstrap(DataSet dataSet, double alpha, int numBootstrapSamples, int bootstrapSampleSize) {

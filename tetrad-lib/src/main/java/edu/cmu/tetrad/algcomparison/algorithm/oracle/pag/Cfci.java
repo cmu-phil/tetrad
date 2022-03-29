@@ -25,7 +25,7 @@ import java.util.List;
 public class Cfci implements Algorithm, HasKnowledge {
 
     static final long serialVersionUID = 23L;
-    private IndependenceWrapper test;
+    private final IndependenceWrapper test;
     private IKnowledge knowledge = new Knowledge2();
 
     public Cfci(IndependenceWrapper test) {

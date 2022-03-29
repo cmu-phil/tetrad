@@ -65,9 +65,9 @@ public final class Rfci implements GraphSearch {
     /**
      * The variables to search over (optional)
      */
-    private List<Node> variables = new ArrayList<>();
+    private final List<Node> variables = new ArrayList<>();
 
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
 
     /**
      * change flag for repeat rules
@@ -82,7 +82,7 @@ public final class Rfci implements GraphSearch {
     /**
      * True iff the possible dsep search is done.
      */
-    private boolean possibleDsepSearchDone = true;
+    private final boolean possibleDsepSearchDone = true;
 
     /**
      * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
@@ -102,7 +102,7 @@ public final class Rfci implements GraphSearch {
     /**
      * The logger to use.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
     /**
      * True iff verbose output should be printed.
