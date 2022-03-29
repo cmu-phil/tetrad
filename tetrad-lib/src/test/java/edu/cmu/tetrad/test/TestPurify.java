@@ -297,8 +297,8 @@ public class TestPurify {
             latentsNames.add(latents.get(i).getName());
         }
 
-        Mimbuild2 mimbuild = new Mimbuild2();
-        mimbuild.setAlpha(0.0001);
+        Mimbuild mimbuild = new Mimbuild();
+        mimbuild.setPenaltyDiscount(1);
         Graph _graph = mimbuild.search(purifiedClustering, latentsNames, new CovarianceMatrix(data));
 
         List<Node> _latents = new ArrayList<>();

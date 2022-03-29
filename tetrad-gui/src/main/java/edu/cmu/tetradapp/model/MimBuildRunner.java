@@ -27,10 +27,11 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.ClusterUtils;
 import edu.cmu.tetrad.search.MimUtils;
-import edu.cmu.tetrad.search.Mimbuild2;
+import edu.cmu.tetrad.search.Mimbuild;
 import edu.cmu.tetrad.sem.ReidentifyVariables;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -214,8 +215,8 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
     public void execute() throws Exception {
         DataSet data = this.dataSet;
 
-        Mimbuild2 mimbuild = new Mimbuild2();
-        mimbuild.setAlpha(getParams().getDouble("alpha", 0.001));
+        Mimbuild mimbuild = new Mimbuild();
+        mimbuild.setPenaltyDiscount(getParams().getDouble(Params.PENALTY_DISCOUNT));
         mimbuild.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
 
         if (getParams().getBoolean("includeThreeClusters", true)) {

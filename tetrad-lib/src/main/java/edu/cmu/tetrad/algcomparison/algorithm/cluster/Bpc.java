@@ -53,8 +53,6 @@ public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
                 testType = TestType.TETRAD_DELTA;
             }
 
-            TestType purifyType = TestType.TETRAD_BASED;
-
             BuildPureClusters bpc = new BuildPureClusters(cov, alpha, testType);
             bpc.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
@@ -66,8 +64,8 @@ public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
                 Clusters clusters = ClusterUtils.mimClusters(graph);
 
-                Mimbuild2 mimbuild = new Mimbuild2();
-                mimbuild.setAlpha(parameters.getDouble(Params.ALPHA));
+                Mimbuild mimbuild = new Mimbuild();
+                mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
                 mimbuild.setKnowledge((IKnowledge) parameters.get("knowledge", new Knowledge2()));
 
                 if (parameters.getBoolean("includeThreeClusters", true)) {
@@ -144,7 +142,7 @@ public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add(Params.ALPHA);
+        parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.USE_WISHART);
         parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
         parameters.add(Params.VERBOSE);

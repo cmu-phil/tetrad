@@ -50,7 +50,7 @@ import static org.junit.Assert.assertEquals;
  * @author Joseph Ramsey
  */
 @Ignore
-public class TestMimbuild2 {
+public class TestMimbuild {
 
     @Test
     public void test1() {
@@ -75,7 +75,7 @@ public class TestMimbuild2 {
 
             if (algorithm.equals("FOFC")) {
                 FindOneFactorClusters fofc = new FindOneFactorClusters(data, TestType.TETRAD_WISHART,
-                        FindOneFactorClusters.Algorithm.GAP, 0.001, null);
+                        FindOneFactorClusters.Algorithm.GAP, 0.001);
                 searchGraph = fofc.search();
                 partition = fofc.getClusters();
             } else if (algorithm.equals("BPC")) {
@@ -104,8 +104,8 @@ public class TestMimbuild2 {
 
             for (int mimbuildMethod : new int[]{2}) {
                 if (mimbuildMethod == 2) {
-                    Mimbuild2 mimbuild = new Mimbuild2();
-                    mimbuild.setAlpha(0.001);
+                    Mimbuild mimbuild = new Mimbuild();
+                    mimbuild.setPenaltyDiscount(1);
                     mimbuild.setMinClusterSize(3);
                     mimbuildStructure = mimbuild.search(partition, latentVarList, new CovarianceMatrix(data));
                     int shd = SearchGraphUtils.structuralHammingDistance(mimStructure, mimbuildStructure);

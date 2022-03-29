@@ -51,7 +51,7 @@ import static java.lang.Math.sqrt;
  *
  * @author Joseph Ramsey
  */
-public class Mimbuild2 {
+public class Mimbuild {
 
     /**
      * The clustering from BPC or equivalent. Small clusters are removed.
@@ -63,10 +63,10 @@ public class Mimbuild2 {
      */
     private Graph structureGraph;
 
-    /**
-     * The alpha level used for CPC
-     */
-    private double alpha = 0.001;
+//    /**
+//     * The alpha level used for CPC
+//     */
+//    private double alpha = 0.001;
 
     /**
      * Background knowledge for CPC.
@@ -90,10 +90,10 @@ public class Mimbuild2 {
     private int numParams;
     private List<Node> latents;
     private double epsilon = 1e-4;
-    private int penaltyDiscount = 1;
+    private double penaltyDiscount = 1;
     private int minClusterSize = 3;
 
-    public Mimbuild2() {
+    public Mimbuild() {
     }
 
     //=================================== PUBLIC METHODS =========================================//
@@ -143,7 +143,9 @@ public class Mimbuild2 {
         this.latentsCov = latentscov;
         Graph graph;
 
-        Grasp search = new Grasp(new IndTestFisherZ(latentscov, alpha));
+        SemBicScore score = new SemBicScore(latentscov);
+        score.setPenaltyDiscount(penaltyDiscount);
+        Grasp search = new Grasp(score);
         search.setKnowledge(knowledge);
         search.bestOrder(latentscov.getVariables());
         graph = search.getGraph(true);
@@ -170,13 +172,13 @@ public class Mimbuild2 {
         return clustering;
     }
 
-    public double getAlpha() {
-        return alpha;
-    }
+//    public double getAlpha() {
+//        return alpha;
+//    }
 
-    public void setAlpha(double alpha) {
-        this.alpha = alpha;
-    }
+//    public void setAlpha(double alpha) {
+//        this.alpha = alpha;
+//    }
 
     public IKnowledge getKnowledge() {
         return knowledge;
@@ -242,7 +244,7 @@ public class Mimbuild2 {
         this.epsilon = epsilon;
     }
 
-    public void setPenaltyDiscount(int penaltyDiscount) {
+    public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
     }
 

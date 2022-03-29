@@ -107,13 +107,11 @@ public class FofcRunner extends AbstractMimRunner
 
         if (source instanceof DataSet) {
             fofc = new FindOneFactorClusters((DataSet) source, tetradTestType, algorithm,
-                    getParams().getDouble("alpha", 0.001),
-                    null);
+                    getParams().getDouble("alpha", 0.001));
             searchGraph = fofc.search();
         } else if (source instanceof CovarianceMatrix) {
             fofc = new FindOneFactorClusters((CovarianceMatrix) source, tetradTestType, algorithm,
-                    getParams().getDouble("alpha", 0.001),
-                    null);
+                    getParams().getDouble("alpha", 0.001));
             searchGraph = fofc.search();
         } else {
             throw new IllegalArgumentException("Unrecognized data type.");
