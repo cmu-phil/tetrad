@@ -113,7 +113,7 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
 
         point:
         for (int i = 0; i < numRows; i++) {
-            for (int j = 0; j < dims.length; j++) {
+            for (int j = 0; j < dims[i]; j++) {
                 point[j] = dataSet.getInt(i, j);
 
                 if (point[j] == DiscreteVariable.MISSING_VALUE) {

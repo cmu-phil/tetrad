@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
@@ -76,12 +75,7 @@ public final class IndTestChiSquare implements IndependenceTest {
      */
     private double pValue;
 
-    /**
-     * The lower bound of percentages of observation of some category in the data, given some particular combination of
-     * values of conditioning variables, that coefs as 'determining."
-     */
-    private double determinationP = 0.99;
-    private HashSet<IndependenceFact> facts;
+    private final HashSet<IndependenceFact> facts = new HashSet<>();
 
     private boolean verbose = false;
 
@@ -108,14 +102,6 @@ public final class IndTestChiSquare implements IndependenceTest {
         this.dataSet = dataSet;
 
         this.variables = new ArrayList<>(dataSet.getVariables());
-
-        int[] numVals = new int[this.variables.size()];
-
-        for (int i = 0; i < this.variables.size(); i++) {
-            DiscreteVariable v = (DiscreteVariable) (this.variables.get(i));
-            numVals[i] = v.getNumCategories();
-        }
-
         this.chiSquareTest = new ChiSquareTest(dataSet, alpha);
     }
 
@@ -226,9 +212,7 @@ public final class IndTestChiSquare implements IndependenceTest {
             TetradLogger.getInstance().log("independencies", sb);
         }
 
-        if (facts != null) {
-            this.facts.add(new IndependenceFact(x, y, z));
-        }
+        this.facts.add(new IndependenceFact(x, y, z));
 
         return result.isIndep();
     }
@@ -357,11 +341,11 @@ public final class IndTestChiSquare implements IndependenceTest {
     }
 
     private double getDeterminationP() {
-        return determinationP;
-    }
-
-    public void setDeterminationP(double determinationP) {
-        this.determinationP = determinationP;
+        /*
+         * The lower bound of percentages of observation of some category in the data, given some particular combination of
+         * values of conditioning variables, that coefs as 'determining."
+         */
+        return 0.99;
     }
 
     public DataSet getData() {
@@ -391,11 +375,6 @@ public final class IndTestChiSquare implements IndependenceTest {
     @Override
     public double getScore() {
         return -(getPValue() - getAlpha());
-    }
-
-    public void startRecordingFacts() {
-        this.facts = new HashSet<>();
-
     }
 
     public HashSet<IndependenceFact> getFacts() {

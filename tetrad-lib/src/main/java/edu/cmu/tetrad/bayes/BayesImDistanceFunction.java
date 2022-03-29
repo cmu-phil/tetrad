@@ -22,9 +22,6 @@
 package edu.cmu.tetrad.bayes;
 
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
-
-import java.util.Iterator;
 
 /**
  * <p>Provides a static method for finding the Euclidean distance between a pair
@@ -47,30 +44,20 @@ final class BayesImDistanceFunction {
         }
 
         Graph graph = firstBn.getBayesPm().getDag();
-        Node[] nodes = new Node[graph.getNumNodes()];
-        Iterator<Node> it = graph.getNodes().iterator();
-
-        for (int i = 0; i < nodes.length; i++) {
-            nodes[i] = it.next();
-            //System.out.println("node " + i + " " + nodes[i]);
-        }
+        int numNodes = graph.getNumNodes();
 
         double sum = 0.0;
 
-        for (int i = 0; i < nodes.length; i++) {
-            //int numRows = bayesImMixed.getNumRows(i);
+        for (int i = 0; i < numNodes; i++) {
             int numRows = firstBn.getNumRows(i);
 
-            //for(int j = 0; j < bayesImMixed.getNumRows(i); j++) {
             for (int j = 0; j < numRows; j++) {
                 int numCols = firstBn.getNumColumns(i);
 
                 for (int k = 0; k < numCols; k++) {
                     double diff = firstBn.getProbability(i, j, k) -
                             secondBn.getProbability(i, j, k);
-//                    if (!Double.isNaN(diff)) {
                     sum += diff * diff;
-//                    }
                 }
             }
         }

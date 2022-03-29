@@ -44,12 +44,12 @@ public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
     /**
      * @serial Cannot be null.
      */
-    private BayesIm bayesIm;
+    private final BayesIm bayesIm;
 
     /**
      * @serial Cannot be null.
      */
-    private List<Node> variables;
+    private final List<Node> variables;
 
     //===========================CONSTRUCTORS==========================//
 
@@ -103,12 +103,6 @@ public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
 
         VALUES:
         for (int node = 0; node < variableValues.length; node++) {
-
-            // If a value is missing, count its probability as 1.0.
-            if (Double.isNaN(variableValues[node])) {
-                continue;
-            }
-
             int[] parents = bayesIm.getParents(node);
             int[] parentValues = new int[parents.length];
             for (int parentIndex = 0;
@@ -275,9 +269,6 @@ public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

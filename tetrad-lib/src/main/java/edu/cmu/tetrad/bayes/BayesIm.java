@@ -264,7 +264,7 @@ public interface BayesIm extends VariableSource, IM, Simulator {
      * @param probMatrix a matrix containing probabilities of a node along with
      *                   its parents
      */
-    public void setProbability(int nodeIndex, double[][] probMatrix);
+    void setProbability(int nodeIndex, double[][] probMatrix);
 
     /**
      * @return the index of the node with the given name in the specified

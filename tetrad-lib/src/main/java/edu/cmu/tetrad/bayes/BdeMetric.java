@@ -118,13 +118,6 @@ final class BdeMetric {
 
         double product = 1.0;
 
-        //Debug print
-        //System.out.println("counts and priors");
-        //for(int i = 0; i < n; i++)
-        //    for(int j = 0; j < bayesIm.getNumRows(i); j++) {
-        //        System.out.println(observedCountsRowSum[i][j] + " " + priorProbsRowSum[i][j]);
-        //    }
-
         for (int i = 0; i < n; i++) {
 
             int qi = bayesIm.getNumRows(i);
@@ -161,117 +154,6 @@ final class BdeMetric {
         return product;
     }
 
-//    public double scoreLnGam() {
-//
-//        double[][][] priorProbs;
-//        double[][] priorProbsRowSum;
-//
-//        Graph graph = bayesPm.getDag();
-//
-//        int n = graph.getNumNodes();
-//
-//        observedCounts = new int[n][][];
-//        priorProbs = new double[n][][];
-//
-//        int[][] observedCountsRowSum = new int[n][];
-//        priorProbsRowSum = new double[n][];
-//
-//        bayesIm = new MlBayesIm(bayesPm);
-//
-//        for (int i = 0; i < n; i++) {
-//            //int numRows = bayesImMixed.getNumRows(i);
-//            int numRows = bayesIm.getNumRows(i);
-//            observedCounts[i] = new int[numRows][];
-//            priorProbs[i] = new double[numRows][];
-//
-//            observedCountsRowSum[i] = new int[numRows];
-//            priorProbsRowSum[i] = new double[numRows];
-//
-//            //for(int j = 0; j < bayesImMixed.getNumRows(i); j++) {
-//            for (int j = 0; j < numRows; j++) {
-//
-//                observedCountsRowSum[i][j] = 0;
-//                priorProbsRowSum[i][j] = 0;
-//
-//                //int numCols = bayesImMixed.getNumColumns(i);
-//                int numCols = bayesIm.getNumColumns(i);
-//                observedCounts[i][j] = new int[numCols];
-//                priorProbs[i][j] = new double[numCols];
-//            }
-//        }
-//
-//        //At this point set values in both observedCounts and priorProbs
-//        computeObservedCounts();
-//        //Set all priorProbs (i.e. estimated counts) to 1.0.  Eventually they may be
-//        //supplied as a parameter of the constructor of this class.
-//        for (int i = 0; i < n; i++) {
-//            for (int j = 0; j < bayesIm.getNumRows(i); j++) {
-//                for (int k = 0; k < bayesIm.getNumColumns(i); k++) {
-//                    priorProbs[i][j][k] = 1.0;
-//                }
-//            }
-//        }
-//
-//
-//        for (int i = 0; i < n; i++) {
-//            for (int j = 0; j < bayesIm.getNumRows(i); j++) {
-//                for (int k = 0; k < bayesIm.getNumColumns(i); k++) {
-//                    observedCountsRowSum[i][j] += observedCounts[i][j][k];
-//                    priorProbsRowSum[i][j] += priorProbs[i][j][k];
-//                }
-//            }
-//        }
-//
-//        //double outerProduct = 1.0;
-//        double sum = 0.0;
-//
-//        //Debug print
-//        //System.out.println("counts and priors");
-//        //for(int i = 0; i < n; i++)
-//        //    for(int j = 0; j < bayesIm.getNumRows(i); j++) {
-//        //        System.out.println(observedCountsRowSum[i][j] + " " + priorProbsRowSum[i][j]);
-//        //    }
-//
-//        for (int i = 0; i < n; i++) {
-//
-//            int qi = bayesIm.getNumRows(i);
-//            //double prodj = 1.0;
-//            double sumj = 0.0;
-//            for (int j = 0; j < qi; j++) {
-//
-//                try {
-//                    double numerator =
-//                            ProbUtils.lngamma(priorProbsRowSum[i][j]);
-//                    double denom = ProbUtils.lngamma(priorProbsRowSum[i][j] +
-//                            observedCountsRowSum[i][j]);
-//                    //System.out.println("num = " + numerator + " denom = " + denom);
-//                    sumj += (numerator - denom);
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//
-//                int ri = bayesIm.getNumColumns(i);
-//
-//                //double prodk = 1.0;
-//                double sumk = 0.0;
-//                for (int k = 0; k < ri; k++) {
-//                    try {
-//                        sumk += ProbUtils.lngamma(
-//                                priorProbs[i][j][k] + observedCounts[i][j][k]) -
-//                                ProbUtils.lngamma(priorProbs[i][j][k]);
-//                    } catch (Exception e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//
-//                sumj += sumk;
-//            }
-//            sum += sumj;
-//        }
-//
-//        return sum;
-//    }
-
     private void computeObservedCounts() {
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             DiscreteVariable var = (DiscreteVariable) dataSet.getVariables()
@@ -296,23 +178,8 @@ final class BdeMetric {
 
 
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
-                    //System.out.println("Case " + i);
-                    //If this case has a value for ar
-
                     observedCounts[j][0][dataSet.getInt(i, j)] += 1.0;
-                    //System.out.println("Adding 1.0 to " + varName +
-                    //        " row 0 category " + mixedData[j][i]);
-
-
                 }
-
-                //Print estimated counts:
-                //System.out.println("Estimated counts:  ");
-
-                //Print counts for each value of this variable with no parents.
-                //for(int m = 0; m < ar.getNumSplits(); m++)
-                //    System.out.print("    " + m + " " + observedCounts[j][0][m]);
-                //System.out.println();
             } else {    //For variables with parents:
                 int numRows = bayesIm.getNumRows(varIndex);
 
@@ -342,27 +209,10 @@ final class BdeMetric {
 
                         observedCounts[j][row][dataSet.getInt(i, j)] += 1;
                     }
-
-                    //}
-
-                    //Print estimated counts:
-                    //System.out.println("Estimated counts:  ");
-                    //System.out.println("    Parent values:  ");
-                    //for (int i = 0; i < parentVarIndices.length; i++) {
-                    //    Variable par = (Variable) dataSet.getVariableNames().get(parentVarIndices[i]);
-                    //    System.out.print("    " + par.getNode() + " " + parValues[i] + "    ");
-                    //}
-                    //System.out.println();
-
-                    //for(int m = 0; m < ar.getNumSplits(); m++)
-                    //    System.out.print("    " + m + " " + observedCounts[j][row][m]);
-                    //System.out.println();
                 }
 
             }
-
-
-        }        //else
+        }
     }
 
 

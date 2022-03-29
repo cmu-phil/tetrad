@@ -54,14 +54,14 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
      *
      * @serial Cannot be null.
      */
-    private Graph dag;
+    private final Graph dag;
 
     /**
      * The map from nodes to variables.
      *
      * @serial Cannot be null.
      */
-    private Map<Node, DiscreteVariable> nodesToVariables;
+    private final Map<Node, DiscreteVariable> nodesToVariables;
 
     //=========================CONSTRUCTORS=============================//
 
@@ -112,11 +112,6 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
         if (graph == null) {
             throw new NullPointerException("The graph must not be null.");
         }
-
-//        if (graph.getNumNodes() == 0) {
-//            throw new IllegalArgumentException(
-//                    "The graph must have at least " + "one node in it.");
-//        }
 
         this.dag = new EdgeListGraph(graph);
         this.nodesToVariables = new HashMap<>();
@@ -507,9 +502,6 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

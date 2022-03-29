@@ -41,7 +41,7 @@ public final class CptInvariantMarginalCalculator
     /**
      * @serial Cannot be null.
      */
-    private BayesIm bayesIm;
+    private final BayesIm bayesIm;
 
     /**
      * @serial Cannot be null.
@@ -51,12 +51,12 @@ public final class CptInvariantMarginalCalculator
     /**
      * @serial Cannot be null.
      */
-    private Evidence evidence;
+    private final Evidence evidence;
 
     /**
      * @serial Cannot be null.
      */
-    private UpdatedBayesIm updatedBayesIm;
+    private final UpdatedBayesIm updatedBayesIm;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -212,9 +212,6 @@ public final class CptInvariantMarginalCalculator
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
