@@ -42,7 +42,7 @@ public final class LayeredDrawing {
 
     //==============================CONSTRUCTORS===========================//
 
-    public LayeredDrawing(Graph graph) {
+    public LayeredDrawing(final Graph graph) {
         if (graph == null) {
             throw new NullPointerException();
         }
@@ -54,15 +54,15 @@ public final class LayeredDrawing {
 
     public void doLayout() {
         //                List tiers = DataGraphUtils.getTiers(graph);
-        List<List<Node>> tiers = this.placeInTiers(graph);
+        final List<List<Node>> tiers = placeInTiers(this.graph);
 
         int y = 0;
 
-        for (List<Node> tier1 : tiers) {
+        for (final List<Node> tier1 : tiers) {
             y += 60;
             int x = 0;
 
-            for (Node aTier : tier1) {
+            for (final Node aTier : tier1) {
                 x += 90;
                 aTier.setCenterX(x);
                 aTier.setCenterY(y);
@@ -72,30 +72,30 @@ public final class LayeredDrawing {
 
     //============================PRIVATE METHODS=========================//
 
-    private List<List<Node>> placeInTiers(Graph graph) {
-        List<List<Node>> connectedComponents =
+    private List<List<Node>> placeInTiers(final Graph graph) {
+        final List<List<Node>> connectedComponents =
                 GraphUtils.connectedComponents(graph);
-        List<List<Node>> tiers = new ArrayList<>();
+        final List<List<Node>> tiers = new ArrayList<>();
 
-        for (List<Node> component : connectedComponents) {
+        for (final List<Node> component : connectedComponents) {
 
             // Recursively map each node to its tier inside the component,
             // starting with the first node. These tiers are relative and
             // can be negative.
-            Node firstNode = component.get(0);
-            Map<Node, Integer> componentTiers = new HashMap<>();
-            this.placeNodes(firstNode, componentTiers, graph);
+            final Node firstNode = component.get(0);
+            final Map<Node, Integer> componentTiers = new HashMap<>();
+            placeNodes(firstNode, componentTiers, graph);
 
             // Reverse the map. The domain of this map is now possibly negative
             // tiers.
-            Map reversedMap = new MultiKeyMap();
+            final Map reversedMap = new MultiKeyMap();
 
-            for (Node _node : component) {
-                Integer _tier = componentTiers.get(_node);
+            for (final Node _node : component) {
+                final Integer _tier = componentTiers.get(_node);
                 reversedMap.put(_tier, _node);
             }
 
-            List<Integer> indices = new ArrayList<>(reversedMap.keySet());
+            final List<Integer> indices = new ArrayList<>(reversedMap.keySet());
             Collections.sort(indices);
 
             // Add these tiers low to high to the list of all tiers. Note that
@@ -103,20 +103,20 @@ public final class LayeredDrawing {
             // tiers.
 //            int start = tiers.size();
 
-            for (int i : indices) {
-                Collection<Node> collection = (Collection<Node>) reversedMap.get(i);
+            for (final int i : indices) {
+                final Collection<Node> collection = (Collection<Node>) reversedMap.get(i);
                 tiers.add(new ArrayList<>(collection));
             }
 
             // Do some heuristic uncrossing of edges in successive tiers.
             for (int i = 0; i < tiers.size() - 1; i++) {
-                List<Node> tier1 = tiers.get(i);
-                List<Node> tier2 = tiers.get(i + 1);
+                final List<Node> tier1 = tiers.get(i);
+                final List<Node> tier2 = tiers.get(i + 1);
 
-                List<Node> reorderTier2 = new ArrayList<>();
+                final List<Node> reorderTier2 = new ArrayList<>();
 
-                for (Node node : tier1) {
-                    List<Node> adj = graph.getAdjacentNodes(node);
+                for (final Node node : tier1) {
+                    final List<Node> adj = graph.getAdjacentNodes(node);
                     adj.retainAll(tier2);
                     adj.removeAll(reorderTier2);
                     reorderTier2.addAll(adj);
@@ -143,24 +143,24 @@ public final class LayeredDrawing {
         return tiers;
     }
 
-    private int numCrossings(List<Node> tier1, List<Node> tier2, Graph graph) {
+    private int numCrossings(final List<Node> tier1, final List<Node> tier2, final Graph graph) {
         if (tier2.size() < 2) {
             return 0;
         }
 
-        ChoiceGenerator cg = new ChoiceGenerator(tier2.size(), 2);
+        final ChoiceGenerator cg = new ChoiceGenerator(tier2.size(), 2);
         int[] choice;
         int numCrossings = 0;
 
         while ((choice = cg.next()) != null) {
-            List<Node> list1 = graph.getAdjacentNodes(tier2.get(choice[0]));
-            List<Node> list2 = graph.getAdjacentNodes(tier2.get(choice[1]));
+            final List<Node> list1 = graph.getAdjacentNodes(tier2.get(choice[0]));
+            final List<Node> list2 = graph.getAdjacentNodes(tier2.get(choice[1]));
 
             list1.retainAll(tier1);
             list2.retainAll(tier1);
 
-            for (Node node0 : list1) {
-                for (Node node1 : list2) {
+            for (final Node node0 : list1) {
+                for (final Node node1 : list2) {
                     if (list1.indexOf(node0) > list1.indexOf(node1)) {
                         numCrossings++;
                     }
@@ -171,62 +171,62 @@ public final class LayeredDrawing {
         return numCrossings;
     }
 
-    private void placeNodes(Node node, Map<Node, Integer> tiers, Graph graph) {
+    private void placeNodes(final Node node, final Map<Node, Integer> tiers, final Graph graph) {
         if (tiers.containsKey(node)) {
             return;
         }
 
-        Set<Node> keySet = tiers.keySet();
-        List<Node> parents = graph.getParents(node);
+        final Set<Node> keySet = tiers.keySet();
+        final List<Node> parents = graph.getParents(node);
         parents.retainAll(keySet);
 
-        List<Node> children = graph.getChildren(node);
+        final List<Node> children = graph.getChildren(node);
         children.retainAll(keySet);
 
         if (parents.isEmpty() && children.isEmpty()) {
             tiers.put(node, 0);
         } else if (parents.isEmpty()) {
-            int cMin = this.getCMin(children, tiers);
+            final int cMin = getCMin(children, tiers);
             tiers.put(node, cMin - 1);
-            this.placeChildren(node, tiers, graph);
+            placeChildren(node, tiers, graph);
             return;
         } else {
-            int pMax = this.getPMax(parents, tiers);
-            int cMin = this.getCMin(children, tiers);
+            final int pMax = getPMax(parents, tiers);
+            final int cMin = getCMin(children, tiers);
             tiers.put(node, pMax + 1);
 
             if (!children.isEmpty() && cMin < pMax + 2) {
-                int diff = (pMax + 2) - cMin;
-                List<Node> descendants =
+                final int diff = (pMax + 2) - cMin;
+                final List<Node> descendants =
                         graph.getDescendants(Collections.singletonList(node));
                 descendants.retainAll(keySet);
                 descendants.remove(node);
 
-                for (Node descendant : descendants) {
-                    Integer index = tiers.get(descendant);
+                for (final Node descendant : descendants) {
+                    final Integer index = tiers.get(descendant);
                     tiers.put(descendant, index + diff);
                 }
             }
         }
 
-        this.placeChildren(node, tiers, graph);
+        placeChildren(node, tiers, graph);
     }
 
-    private void placeChildren(Node node, Map<Node, Integer> tiers,
-                               Graph graph) {
+    private void placeChildren(final Node node, final Map<Node, Integer> tiers,
+                               final Graph graph) {
         // Recurse.
-        List<Node> adj = graph.getAdjacentNodes(node);
+        final List<Node> adj = graph.getAdjacentNodes(node);
 
-        for (Node _node : adj) {
-            this.placeNodes(_node, tiers, graph);
+        for (final Node _node : adj) {
+            placeNodes(_node, tiers, graph);
         }
     }
 
-    private int getPMax(List<Node> parents, Map<Node, Integer> tiers) {
+    private int getPMax(final List<Node> parents, final Map<Node, Integer> tiers) {
         int pMax = Integer.MIN_VALUE;
 
-        for (Node parent : parents) {
-            Integer index = tiers.get(parent);
+        for (final Node parent : parents) {
+            final Integer index = tiers.get(parent);
             if (index > pMax) {
                 pMax = index;
             }
@@ -234,11 +234,11 @@ public final class LayeredDrawing {
         return pMax;
     }
 
-    private int getCMin(List<Node> children, Map<Node, Integer> tiers) {
+    private int getCMin(final List<Node> children, final Map<Node, Integer> tiers) {
         int cMin = Integer.MAX_VALUE;
 
-        for (Node child : children) {
-            Integer index = tiers.get(child);
+        for (final Node child : children) {
+            final Integer index = tiers.get(child);
             if (index < cMin) {
                 cMin = index;
             }

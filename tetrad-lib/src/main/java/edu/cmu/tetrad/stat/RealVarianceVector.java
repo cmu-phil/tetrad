@@ -31,41 +31,41 @@ public class RealVarianceVector implements RealVariance {
 
     private final int numOfCols;
 
-    public RealVarianceVector(double[][] data) {
+    public RealVarianceVector(final double[][] data) {
         this.data = data;
-        numOfRows = data.length;
-        numOfCols = data[0].length;
+        this.numOfRows = data.length;
+        this.numOfCols = data[0].length;
     }
 
     private double[] computeMeans() {
-        double[] mean = new double[numOfCols];
-        for (int col = 0; col < numOfCols; col++) {
+        final double[] mean = new double[this.numOfCols];
+        for (int col = 0; col < this.numOfCols; col++) {
             double sum = 0;
-            for (int row = 0; row < numOfRows; row++) {
-                sum += data[row][col];
+            for (int row = 0; row < this.numOfRows; row++) {
+                sum += this.data[row][col];
             }
-            mean[col] = sum / numOfRows;
+            mean[col] = sum / this.numOfRows;
         }
 
         return mean;
     }
 
     @Override
-    public double[] compute(boolean biasCorrected) {
-        double[] meanVariance = this.computeMeans();
+    public double[] compute(final boolean biasCorrected) {
+        final double[] meanVariance = computeMeans();
 
-        for (int col = 0; col < numOfCols; col++) {
-            double mean = meanVariance[col];
+        for (int col = 0; col < this.numOfCols; col++) {
+            final double mean = meanVariance[col];
             double value = 0;
             double squareValue = 0;
-            for (int row = 0; row < numOfRows; row++) {
-                double val = data[row][col] - mean;
+            for (int row = 0; row < this.numOfRows; row++) {
+                final double val = this.data[row][col] - mean;
                 squareValue += val * val;
                 value += val;
             }
             meanVariance[col] = (biasCorrected)
-                    ? (squareValue - (value * value / numOfRows)) / (numOfRows - 1.0f)
-                    : (squareValue - (value * value / numOfRows)) / numOfRows;
+                    ? (squareValue - (value * value / this.numOfRows)) / (this.numOfRows - 1.0f)
+                    : (squareValue - (value * value / this.numOfRows)) / this.numOfRows;
         }
 
         return meanVariance;

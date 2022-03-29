@@ -65,7 +65,7 @@ public class DishModel implements TetradSerializable {
 
     //===============================CONSTRUCTORS========================//
 
-    public DishModel(int numDishes, double dishBumpStDev) {
+    public DishModel(final int numDishes, final double dishBumpStDev) {
 
         if (numDishes < 1) {
             throw new IllegalArgumentException(
@@ -79,14 +79,14 @@ public class DishModel implements TetradSerializable {
 
         // numDishes is not stored at the class level, because the
         // length of dishBumps[] already contains that information.
-        dishBumps = new double[numDishes];
-        setDishBumpStDev(dishBumpStDev);
+        this.dishBumps = new double[numDishes];
+        this.setDishBumpStDev(dishBumpStDev);
 
-        Distribution distribution =
+        final Distribution distribution =
                 new Normal(100.0, dishBumpStDev);
 
         for (int i = 0; i < numDishes; i++) {
-            dishBumps[i] = distribution.nextRandom();
+            this.dishBumps[i] = distribution.nextRandom();
         }
     }
 
@@ -103,15 +103,15 @@ public class DishModel implements TetradSerializable {
      * Returns the number of the getModel dish.
      */
     public int getDishNumber() {
-        return dishNumber;
+        return this.dishNumber;
     }
 
     /**
      * Sets the number of the getModel dish.
      */
-    public void setDishNumber(int dishNumber) {
+    public void setDishNumber(final int dishNumber) {
 
-        if ((dishNumber >= 0) && (dishNumber < dishBumps.length)) {
+        if ((dishNumber >= 0) && (dishNumber < this.dishBumps.length)) {
             this.dishNumber = dishNumber;
         } else {
             throw new IllegalArgumentException(
@@ -123,17 +123,17 @@ public class DishModel implements TetradSerializable {
      * Bumps the given expression value in the manner prescribed for the
      * getModel dish.
      */
-    public double bumpInitialization(double expressionLevel) {
+    public double bumpInitialization(final double expressionLevel) {
 
         //System.out.println(this.dishBumps[this.dishNumber]);
-        return expressionLevel * dishBumps[dishNumber] / 100.0;
+        return expressionLevel * this.dishBumps[this.dishNumber] / 100.0;
     }
 
     public double getDishBumpStDev() {
-        return dishBumpStDev;
+        return this.dishBumpStDev;
     }
 
-    public void setDishBumpStDev(double dishBumpStDev) {
+    public void setDishBumpStDev(final double dishBumpStDev) {
         this.dishBumpStDev = dishBumpStDev;
     }
 
@@ -150,19 +150,19 @@ public class DishModel implements TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (dishBumps == null) {
+        if (this.dishBumps == null) {
             throw new NullPointerException();
         }
 
-        if (dishBumpStDev < 0.0) {
+        if (this.dishBumpStDev < 0.0) {
             throw new IllegalStateException();
         }
 
-        if (dishNumber < 0 || dishNumber >= dishBumps.length) {
+        if (this.dishNumber < 0 || this.dishNumber >= this.dishBumps.length) {
             throw new IllegalStateException();
         }
     }

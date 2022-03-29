@@ -42,23 +42,23 @@ public class TestSemEvidence {
 
     @Test
     public void testSemEvidence() {
-        Graph graph = this.constructGraph1();
-        SemPm semPm = new SemPm(graph);
-        SemIm semIm = new SemIm(semPm);
-        SemEvidence evidence = new SemEvidence(semIm);
+        final Graph graph = constructGraph1();
+        final SemPm semPm = new SemPm(graph);
+        final SemIm semIm = new SemIm(semPm);
+        final SemEvidence evidence = new SemEvidence(semIm);
 
         evidence.setManipulated(1, true);
         assertTrue(evidence.isManipulated(1));
     }
 
     private Graph constructGraph1() {
-        Graph graph = new EdgeListGraph();
+        final Graph graph = new EdgeListGraph();
 
-        Node x1 = new GraphNode("X1");
-        Node x2 = new GraphNode("X2");
-        Node x3 = new GraphNode("X3");
-        Node x4 = new GraphNode("X4");
-        Node x5 = new GraphNode("X5");
+        final Node x1 = new GraphNode("X1");
+        final Node x2 = new GraphNode("X2");
+        final Node x3 = new GraphNode("X3");
+        final Node x4 = new GraphNode("X4");
+        final Node x5 = new GraphNode("X5");
 
         graph.addNode(x1);
         graph.addNode(x2);

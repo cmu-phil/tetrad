@@ -38,7 +38,7 @@ public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(final DataModel dataSet, final Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             ICovarianceMatrix cov = null;
 
@@ -50,10 +50,10 @@ public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
                 throw new IllegalArgumentException("Expected a dataset or a covariance matrix.");
             }
 
-            double alpha = parameters.getDouble(Params.ALPHA);
+            final double alpha = parameters.getDouble(Params.ALPHA);
 
-            boolean gap = parameters.getBoolean(Params.USE_GAP, true);
-            FindTwoFactorClusters.Algorithm algorithm;
+            final boolean gap = parameters.getBoolean(Params.USE_GAP, true);
+            final FindTwoFactorClusters.Algorithm algorithm;
 
             if (gap) {
                 algorithm = FindTwoFactorClusters.Algorithm.GAP;
@@ -61,21 +61,21 @@ public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
                 algorithm = FindTwoFactorClusters.Algorithm.SAG;
             }
 
-            FindTwoFactorClusters search
+            final FindTwoFactorClusters search
                     = new FindTwoFactorClusters(cov, algorithm, alpha);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             return search.search();
         } else {
-            Ftfc algorithm = new Ftfc();
+            final Ftfc algorithm = new Ftfc();
 
             //algorithm.setKnowledge(knowledge);
 //          if (externalGraph != null) {
 //      		algorithm.setExternalGraph(externalGraph);
 //  		}
-            DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(knowledge);
+            final DataSet data = (DataSet) dataSet;
+            final GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
+            search.setKnowledge(this.knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -101,7 +101,7 @@ public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
     }
 
     @Override
-    public Graph getComparisonGraph(Graph graph) {
+    public Graph getComparisonGraph(final Graph graph) {
         return SearchGraphUtils.cpdagForDag(new EdgeListGraph(graph));
     }
 
@@ -117,7 +117,7 @@ public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
+        final List<String> parameters = new ArrayList<>();
         parameters.add(Params.ALPHA);
         parameters.add(Params.USE_WISHART);
         parameters.add(Params.USE_GAP);
@@ -128,11 +128,11 @@ public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
     @Override
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(final IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 

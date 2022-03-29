@@ -71,7 +71,7 @@ final class ConstructTemplateAction extends AbstractAction {
     /**
      * Constucts an action for adding a new template to the frontmost session.
      */
-    public ConstructTemplateAction(String templateName) {
+    public ConstructTemplateAction(final String templateName) {
         super(templateName);
 
         if (templateName == null) {
@@ -88,9 +88,9 @@ final class ConstructTemplateAction extends AbstractAction {
      * @return a copy of the template names. Must be public.
      */
     public static String[] getTemplateNames() {
-        String[] templateNamesCopy = new String[TEMPLATE_NAMES.length];
-        System.arraycopy(TEMPLATE_NAMES, 0, templateNamesCopy, 0,
-                TEMPLATE_NAMES.length);
+        final String[] templateNamesCopy = new String[ConstructTemplateAction.TEMPLATE_NAMES.length];
+        System.arraycopy(ConstructTemplateAction.TEMPLATE_NAMES, 0, templateNamesCopy, 0,
+                ConstructTemplateAction.TEMPLATE_NAMES.length);
         return templateNamesCopy;
     }
 
@@ -100,50 +100,50 @@ final class ConstructTemplateAction extends AbstractAction {
      * directory "example_sessions".
      */
     @Override
-    public void actionPerformed(ActionEvent e) {
-        int leftX = this.getLeftX();
+    public void actionPerformed(final ActionEvent e) {
+        final int leftX = getLeftX();
 
-        if (templateName.equals(getTemplateNames()[0])) {
-            this.simulateDataFixedIM(leftX);
-        } else if (templateName.equals(getTemplateNames()[1])) {
-            this.searchFromSimulatedDataWithCompare(leftX);
-        } else if (templateName.equals(getTemplateNames()[2])) {
-            this.searchFromLoadedOrSimulatedData(leftX);
-        } else if (templateName.equals(getTemplateNames()[3])) {
-            this.estimateFromSimulatedData(leftX);
-        } else if (templateName.equals(getTemplateNames()[4])) {
-            this.estimateThenUpdateUsingSearchResult(leftX);
+        if (this.templateName.equals(ConstructTemplateAction.getTemplateNames()[0])) {
+            simulateDataFixedIM(leftX);
+        } else if (this.templateName.equals(ConstructTemplateAction.getTemplateNames()[1])) {
+            searchFromSimulatedDataWithCompare(leftX);
+        } else if (this.templateName.equals(ConstructTemplateAction.getTemplateNames()[2])) {
+            searchFromLoadedOrSimulatedData(leftX);
+        } else if (this.templateName.equals(ConstructTemplateAction.getTemplateNames()[3])) {
+            estimateFromSimulatedData(leftX);
+        } else if (this.templateName.equals(ConstructTemplateAction.getTemplateNames()[4])) {
+            estimateThenUpdateUsingSearchResult(leftX);
         }
         // Removed 4/9/2019 Folded into FOFC
 //        else if (this.templateName.equals(getTemplateNames()[5])) {
 //            mimbuild(leftX);
 //        }
         else {
-            throw new IllegalStateException("Unrecognized template name: " + templateName);
+            throw new IllegalStateException("Unrecognized template name: " + this.templateName);
         }
     }
 
-    public void addParent(SessionEditorNode thisNode, String type) {
-        String name = nextName(type);
-        this.addNode(type, name, thisNode.getX() - 50, thisNode.getY() - 50);
-        this.addEdge(name, thisNode.getName());
+    public void addParent(final SessionEditorNode thisNode, final String type) {
+        final String name = ConstructTemplateAction.nextName(type);
+        addNode(type, name, thisNode.getX() - 50, thisNode.getY() - 50);
+        addEdge(name, thisNode.getName());
     }
 
     //=============================PRIVATE METHODS========================//
     private int getLeftX() {
-        SessionEditorIndirectRef sessionEditorRef
+        final SessionEditorIndirectRef sessionEditorRef
                 = DesktopController.getInstance().getFrontmostSessionEditor();
-        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        SessionEditorWorkbench sessionWorkbench
+        final SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
+        final SessionEditorWorkbench sessionWorkbench
                 = sessionEditor.getSessionWorkbench();
         sessionWorkbench.deselectAll();
 
-        Component[] components = sessionWorkbench.getComponents();
+        final Component[] components = sessionWorkbench.getComponents();
         int leftX = 0;
 
-        for (Component component : components) {
-            Rectangle bounds = component.getBounds();
-            int rightmost = bounds.x + bounds.width;
+        for (final Component component : components) {
+            final Rectangle bounds = component.getBounds();
+            final int rightmost = bounds.x + bounds.width;
             if (rightmost > leftX) {
                 leftX = rightmost;
             }
@@ -153,167 +153,167 @@ final class ConstructTemplateAction extends AbstractAction {
         return leftX;
     }
 
-    private void searchFromLoadedOrSimulatedData(int leftX) {
-        SessionEditorIndirectRef sessionEditorRef
+    private void searchFromLoadedOrSimulatedData(final int leftX) {
+        final SessionEditorIndirectRef sessionEditorRef
                 = DesktopController.getInstance().getFrontmostSessionEditor();
-        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        SessionEditorWorkbench sessionWorkbench
+        final SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
+        final SessionEditorWorkbench sessionWorkbench
                 = sessionEditor.getSessionWorkbench();
         sessionWorkbench.deselectAll();
 
-        List<Node> nodes = new LinkedList<>();
+        final List<Node> nodes = new LinkedList<>();
 
-        String data = nextName("Data");
-        String search = nextName("Search");
+        final String data = ConstructTemplateAction.nextName("Data");
+        final String search = ConstructTemplateAction.nextName("Search");
 
-        nodes.add(this.addNode("Data", data, leftX, 100));
-        nodes.add(this.addNode("Search", search, 125 + leftX, 100));
+        nodes.add(addNode("Data", data, leftX, 100));
+        nodes.add(addNode("Search", search, 125 + leftX, 100));
 
-        this.addEdge(data, search);
+        addEdge(data, search);
 
-        selectSubgraph(nodes);
+        ConstructTemplateAction.selectSubgraph(nodes);
     }
 
-    private void simulateDataFixedIM(int leftX) {
-        this.getSessionWorkbench().deselectAll();
+    private void simulateDataFixedIM(final int leftX) {
+        getSessionWorkbench().deselectAll();
 
-        List<Node> nodes = new LinkedList<>();
+        final List<Node> nodes = new LinkedList<>();
 
-        String graph = nextName("Graph");
-        String pm = nextName("PM");
-        String im = nextName("IM");
-        String data = nextName("Simulation");
-        String search = nextName("Search");
+        final String graph = ConstructTemplateAction.nextName("Graph");
+        final String pm = ConstructTemplateAction.nextName("PM");
+        final String im = ConstructTemplateAction.nextName("IM");
+        final String data = ConstructTemplateAction.nextName("Simulation");
+        final String search = ConstructTemplateAction.nextName("Search");
 
-        nodes.add(this.addNode("Graph", graph, leftX, 100));
-        nodes.add(this.addNode("PM", pm, leftX, 200));
-        nodes.add(this.addNode("IM", im, leftX, 300));
-        nodes.add(this.addNode("Simulation", data, leftX, 400));
-        nodes.add(this.addNode("Search", search, 125 + leftX, 400));
+        nodes.add(addNode("Graph", graph, leftX, 100));
+        nodes.add(addNode("PM", pm, leftX, 200));
+        nodes.add(addNode("IM", im, leftX, 300));
+        nodes.add(addNode("Simulation", data, leftX, 400));
+        nodes.add(addNode("Search", search, 125 + leftX, 400));
 
-        this.addEdge(graph, pm);
-        this.addEdge(pm, im);
-        this.addEdge(im, data);
-        this.addEdge(data, search);
+        addEdge(graph, pm);
+        addEdge(pm, im);
+        addEdge(im, data);
+        addEdge(data, search);
 
-        selectSubgraph(nodes);
+        ConstructTemplateAction.selectSubgraph(nodes);
     }
 
-    private void searchFromSimulatedDataWithCompare(int leftX) {
-        SessionEditorIndirectRef sessionEditorRef
+    private void searchFromSimulatedDataWithCompare(final int leftX) {
+        final SessionEditorIndirectRef sessionEditorRef
                 = DesktopController.getInstance().getFrontmostSessionEditor();
-        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        SessionEditorWorkbench sessionWorkbench
+        final SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
+        final SessionEditorWorkbench sessionWorkbench
                 = sessionEditor.getSessionWorkbench();
         sessionWorkbench.deselectAll();
 
-        List<Node> nodes = new LinkedList<>();
+        final List<Node> nodes = new LinkedList<>();
 
-        String data = nextName("Simulation");
-        String search = nextName("Search");
-        String compare = nextName("Compare");
+        final String data = ConstructTemplateAction.nextName("Simulation");
+        final String search = ConstructTemplateAction.nextName("Search");
+        final String compare = ConstructTemplateAction.nextName("Compare");
 
-        nodes.add(this.addNode("Simulation", data, leftX, 100));
-        nodes.add(this.addNode("Search", search, 150 + leftX, 100));
-        nodes.add(this.addNode("Compare", compare, 80 + leftX, 200));
+        nodes.add(addNode("Simulation", data, leftX, 100));
+        nodes.add(addNode("Search", search, 150 + leftX, 100));
+        nodes.add(addNode("Compare", compare, 80 + leftX, 200));
 
-        this.addEdge(data, search);
-        this.addEdge(data, compare);
-        this.addEdge(search, compare);
+        addEdge(data, search);
+        addEdge(data, compare);
+        addEdge(search, compare);
 
-        selectSubgraph(nodes);
+        ConstructTemplateAction.selectSubgraph(nodes);
     }
 
-    private void estimateFromSimulatedData(int leftX) {
-        SessionEditorIndirectRef sessionEditorRef
+    private void estimateFromSimulatedData(final int leftX) {
+        final SessionEditorIndirectRef sessionEditorRef
                 = DesktopController.getInstance().getFrontmostSessionEditor();
-        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        SessionEditorWorkbench sessionWorkbench
+        final SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
+        final SessionEditorWorkbench sessionWorkbench
                 = sessionEditor.getSessionWorkbench();
         sessionWorkbench.deselectAll();
 
-        List<Node> nodes = new LinkedList<>();
+        final List<Node> nodes = new LinkedList<>();
 
-        String data = nextName("Data");
-        String search = nextName("Search");
+        final String data = ConstructTemplateAction.nextName("Data");
+        final String search = ConstructTemplateAction.nextName("Search");
 
-        nodes.add(this.addNode("Data", data, leftX, 100));
-        nodes.add(this.addNode("Search", search, leftX + 150, 100));
+        nodes.add(addNode("Data", data, leftX, 100));
+        nodes.add(addNode("Search", search, leftX + 150, 100));
 
-        String graph = nextName("Graph");
-        nodes.add(this.addNode("Graph", graph, leftX + 150, 200));
+        final String graph = ConstructTemplateAction.nextName("Graph");
+        nodes.add(addNode("Graph", graph, leftX + 150, 200));
 
-        String pm = nextName("PM");
-        nodes.add(this.addNode("PM", pm, leftX + 150, 300));
+        final String pm = ConstructTemplateAction.nextName("PM");
+        nodes.add(addNode("PM", pm, leftX + 150, 300));
 
-        String estimator = nextName("Estimator");
-        nodes.add(this.addNode("Estimator", estimator, leftX, 300));
+        final String estimator = ConstructTemplateAction.nextName("Estimator");
+        nodes.add(addNode("Estimator", estimator, leftX, 300));
 
-        this.addEdge(data, search);
-        this.addEdge(search, graph);
-        this.addEdge(graph, pm);
-        this.addEdge(data, estimator);
-        this.addEdge(data, pm);
-        this.addEdge(pm, estimator);
+        addEdge(data, search);
+        addEdge(search, graph);
+        addEdge(graph, pm);
+        addEdge(data, estimator);
+        addEdge(data, pm);
+        addEdge(pm, estimator);
 
-        selectSubgraph(nodes);
+        ConstructTemplateAction.selectSubgraph(nodes);
     }
 
-    private void estimateThenUpdateUsingSearchResult(int leftX) {
-        SessionEditorIndirectRef sessionEditorRef
+    private void estimateThenUpdateUsingSearchResult(final int leftX) {
+        final SessionEditorIndirectRef sessionEditorRef
                 = DesktopController.getInstance().getFrontmostSessionEditor();
-        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        SessionEditorWorkbench sessionWorkbench
+        final SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
+        final SessionEditorWorkbench sessionWorkbench
                 = sessionEditor.getSessionWorkbench();
         sessionWorkbench.deselectAll();
 
-        List<Node> nodes = new LinkedList<>();
+        final List<Node> nodes = new LinkedList<>();
 
-        String data = nextName("Data");
-        String search = nextName("Search");
+        final String data = ConstructTemplateAction.nextName("Data");
+        final String search = ConstructTemplateAction.nextName("Search");
 
-        nodes.add(this.addNode("Data", data, leftX, 100));
-        nodes.add(this.addNode("Search", search, leftX + 150, 100));
+        nodes.add(addNode("Data", data, leftX, 100));
+        nodes.add(addNode("Search", search, leftX + 150, 100));
 
-        String graph = nextName("Graph");
-        nodes.add(this.addNode("Graph", graph, leftX + 150, 200));
+        final String graph = ConstructTemplateAction.nextName("Graph");
+        nodes.add(addNode("Graph", graph, leftX + 150, 200));
 
-        String pm = nextName("PM");
-        nodes.add(this.addNode("PM", pm, leftX + 150, 300));
+        final String pm = ConstructTemplateAction.nextName("PM");
+        nodes.add(addNode("PM", pm, leftX + 150, 300));
 
-        String estimator = nextName("Estimator");
-        nodes.add(this.addNode("Estimator", estimator, leftX, 300));
+        final String estimator = ConstructTemplateAction.nextName("Estimator");
+        nodes.add(addNode("Estimator", estimator, leftX, 300));
 
-        String updater = nextName("Updater");
-        nodes.add(this.addNode("Updater", updater, leftX, 400));
+        final String updater = ConstructTemplateAction.nextName("Updater");
+        nodes.add(addNode("Updater", updater, leftX, 400));
 
-        this.addEdge(data, search);
-        this.addEdge(search, graph);
-        this.addEdge(graph, pm);
-        this.addEdge(data, estimator);
-        this.addEdge(data, pm);
-        this.addEdge(pm, estimator);
-        this.addEdge(estimator, updater);
+        addEdge(data, search);
+        addEdge(search, graph);
+        addEdge(graph, pm);
+        addEdge(data, estimator);
+        addEdge(data, pm);
+        addEdge(pm, estimator);
+        addEdge(estimator, updater);
 
-        selectSubgraph(nodes);
+        ConstructTemplateAction.selectSubgraph(nodes);
     }
 
-    private static void selectSubgraph(List<Node> nodes) {
-        SessionEditorIndirectRef sessionEditorRef
+    private static void selectSubgraph(final List<Node> nodes) {
+        final SessionEditorIndirectRef sessionEditorRef
                 = DesktopController.getInstance().getFrontmostSessionEditor();
-        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        SessionEditorWorkbench sessionWorkbench
+        final SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
+        final SessionEditorWorkbench sessionWorkbench
                 = sessionEditor.getSessionWorkbench();
 
-        for (Node node : nodes) {
+        for (final Node node : nodes) {
             sessionWorkbench.selectNode(node);
         }
 
-        Set<Edge> edges = sessionWorkbench.getGraph().getEdges();
+        final Set<Edge> edges = sessionWorkbench.getGraph().getEdges();
 
-        for (Edge edge : edges) {
-            Node node1 = edge.getNode1();
-            Node node2 = edge.getNode2();
+        for (final Edge edge : edges) {
+            final Node node1 = edge.getNode1();
+            final Node node2 = edge.getNode2();
             if (nodes.contains(node1) && nodes.contains(node2)) {
                 sessionWorkbench.selectEdge(edge);
             }
@@ -328,13 +328,13 @@ final class ConstructTemplateAction extends AbstractAction {
      * @param base the string base of the name--for example, "Graph".
      * @return the next string in the sequence--for example, "Graph1".
      */
-    private static String nextName(String base) {
-        SessionEditorIndirectRef sessionEditorRef
+    private static String nextName(final String base) {
+        final SessionEditorIndirectRef sessionEditorRef
                 = DesktopController.getInstance().getFrontmostSessionEditor();
-        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        SessionEditorWorkbench sessionWorkbench
+        final SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
+        final SessionEditorWorkbench sessionWorkbench
                 = sessionEditor.getSessionWorkbench();
-        SessionWrapper graph = sessionWorkbench.getSessionWrapper();
+        final SessionWrapper graph = sessionWorkbench.getSessionWrapper();
 
         if (base == null) {
             throw new NullPointerException("Base name must be non-null.");
@@ -345,9 +345,9 @@ final class ConstructTemplateAction extends AbstractAction {
         loop:
         while (true) {
             i++;
-            String name = base + i;
+            final String name = base + i;
 
-            for (Node o : graph.getNodes()) {
+            for (final Node o : graph.getNodes()) {
                 if (o.getName().equals(name)) {
                     continue loop;
                 }
@@ -360,17 +360,17 @@ final class ConstructTemplateAction extends AbstractAction {
     }
 
     private SessionWrapper getSessionWrapper() {
-        SessionEditorIndirectRef sessionEditorRef
+        final SessionEditorIndirectRef sessionEditorRef
                 = DesktopController.getInstance().getFrontmostSessionEditor();
-        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        SessionEditorWorkbench sessionWorkbench
+        final SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
+        final SessionEditorWorkbench sessionWorkbench
                 = sessionEditor.getSessionWorkbench();
         sessionWorkbench.deselectAll();
         return sessionWorkbench.getSessionWrapper();
     }
 
     private SessionEditorWorkbench getSessionWorkbench() {
-        if (sessionWorkbench == null) {
+        if (this.sessionWorkbench == null) {
             SessionEditorIndirectRef sessionEditorRef
                     = DesktopController.getInstance().getFrontmostSessionEditor();
             SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
@@ -382,24 +382,24 @@ final class ConstructTemplateAction extends AbstractAction {
                 sessionEditor = (SessionEditor) sessionEditorRef;
             }
 
-            sessionWorkbench = sessionEditor.getSessionWorkbench();
+            this.sessionWorkbench = sessionEditor.getSessionWorkbench();
         }
-        return sessionWorkbench;
+        return this.sessionWorkbench;
     }
 
-    private Node addNode(String nodeType, String nodeName, int centerX,
-                         int centerY) {
-        SessionNodeWrapper node = getNewModelNode(nodeType, nodeName);
+    private Node addNode(final String nodeType, final String nodeName, final int centerX,
+                         final int centerY) {
+        final SessionNodeWrapper node = ConstructTemplateAction.getNewModelNode(nodeType, nodeName);
         node.setCenter(centerX, centerY);
-        this.getSessionWrapper().addNode(node);
+        getSessionWrapper().addNode(node);
         return node;
     }
 
-    public void addEdge(String nodeName1, String nodeName2) {
+    public void addEdge(final String nodeName1, final String nodeName2) {
 
         // Retrieve the nodes from the session wrapper.
-        Node node1 = this.getSessionWrapper().getNode(nodeName1);
-        Node node2 = this.getSessionWrapper().getNode(nodeName2);
+        final Node node1 = getSessionWrapper().getNode(nodeName1);
+        final Node node2 = getSessionWrapper().getNode(nodeName2);
 
         // Make sure nodes existed in the session wrapper by these names.
         if (node1 == null) {
@@ -415,28 +415,28 @@ final class ConstructTemplateAction extends AbstractAction {
         }
 
         // Construct an edge.
-        SessionNodeWrapper nodeWrapper1 = (SessionNodeWrapper) node1;
-        SessionNodeWrapper nodeWrapper2 = (SessionNodeWrapper) node2;
-        Edge edge = new Edge(nodeWrapper1, nodeWrapper2, Endpoint.TAIL,
+        final SessionNodeWrapper nodeWrapper1 = (SessionNodeWrapper) node1;
+        final SessionNodeWrapper nodeWrapper2 = (SessionNodeWrapper) node2;
+        final Edge edge = new Edge(nodeWrapper1, nodeWrapper2, Endpoint.TAIL,
                 Endpoint.ARROW);
 
         // Add the edge.
-        this.getSessionWrapper().addEdge(edge);
-        this.getSessionWorkbench().revalidate();
-        this.getSessionWorkbench().repaint();
+        getSessionWrapper().addEdge(edge);
+        getSessionWorkbench().revalidate();
+        getSessionWorkbench().repaint();
     }
 
-    private static SessionNodeWrapper getNewModelNode(String nextButtonType,
-                                                      String name) {
+    private static SessionNodeWrapper getNewModelNode(final String nextButtonType,
+                                                      final String name) {
         if (nextButtonType == null) {
             throw new NullPointerException(
                     "Next button type must be a " + "non-null string.");
         }
 
-        Class[] modelClasses = getModelClasses(nextButtonType);
-        SessionNode newNode
+        final Class[] modelClasses = ConstructTemplateAction.getModelClasses(nextButtonType);
+        final SessionNode newNode
                 = new SessionNode(nextButtonType, name, modelClasses);
-        SessionNodeWrapper nodeWrapper = new SessionNodeWrapper(newNode);
+        final SessionNodeWrapper nodeWrapper = new SessionNodeWrapper(newNode);
         nodeWrapper.setButtonType(nextButtonType);
         return nodeWrapper;
     }
@@ -445,9 +445,9 @@ final class ConstructTemplateAction extends AbstractAction {
      * @return the model classes associated with the given button type.
      * @throws NullPointerException if no classes are stored for the given type.
      */
-    private static Class[] getModelClasses(String nextButtonType) {
-        TetradApplicationConfig tetradConfig = TetradApplicationConfig.getInstance();
-        SessionNodeConfig config = tetradConfig.getSessionNodeConfig(nextButtonType);
+    private static Class[] getModelClasses(final String nextButtonType) {
+        final TetradApplicationConfig tetradConfig = TetradApplicationConfig.getInstance();
+        final SessionNodeConfig config = tetradConfig.getSessionNodeConfig(nextButtonType);
         if (config == null) {
             throw new NullPointerException("There is no configuration for button: " + nextButtonType);
         }

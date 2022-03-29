@@ -39,7 +39,7 @@ import edu.cmu.tetrad.util.Parameters;
 public class TestImagesSimulation {
 
     public void test1() {
-        Parameters parameters = new Parameters();
+        final Parameters parameters = new Parameters();
 
         parameters.set("numRuns", 1);
         parameters.set("numMeasures", 100);
@@ -74,7 +74,7 @@ public class TestImagesSimulation {
         parameters.set("numRuns", 1);
         parameters.set("randomSelectionSize", 3);
 
-        Statistics statistics = new Statistics();
+        final Statistics statistics = new Statistics();
 
 //        statistics.add(new ParameterColumn("numCategories"));
         statistics.add(new AdjacencyPrecision());
@@ -86,16 +86,16 @@ public class TestImagesSimulation {
         statistics.setWeight("AP", 1.0);
         statistics.setWeight("AR", 0.5);
 
-        Algorithms algorithms = new Algorithms();
+        final Algorithms algorithms = new Algorithms();
 
         algorithms.add(new ImagesSemBic());
         algorithms.add(new ImagesPcStableMax());
 
-        Simulations simulations = new Simulations();
+        final Simulations simulations = new Simulations();
 
         simulations.add(new LinearFisherModel(new RandomForward()));
 
-        Comparison comparison = new Comparison();
+        final Comparison comparison = new Comparison();
 
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(false);
@@ -108,7 +108,7 @@ public class TestImagesSimulation {
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
     }
 
-    public static void main(String... args) {
+    public static void main(final String... args) {
         new TestImagesSimulation().test1();
     }
 }

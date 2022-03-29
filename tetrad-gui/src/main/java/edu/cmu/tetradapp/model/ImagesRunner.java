@@ -29,7 +29,6 @@ import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-import edu.cmu.tetradapp.model.FgesRunner.Type;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -46,7 +45,7 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner
         PropertyChangeListener, IGesRunner, Indexable {
     static final long serialVersionUID = 23L;
 
-    public Type getType() {
+    public FgesRunner.Type getType() {
         return type;
     }
 
@@ -55,7 +54,7 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner
     private int index;
     private transient Fges fges;
     private Graph graph;
-    private Type type;
+    private FgesRunner.Type type;
 
     //============================CONSTRUCTORS============================//
 
@@ -227,7 +226,7 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner
      * Executes the algorithm, producing (at least) a result workbench. Must be
      * implemented in the extending class.
      */
-    private Type computeType() {
+    private FgesRunner.Type computeType() {
         Object model = this.getDataModel();
 
         if (model == null && this.getSourceGraph() != null) {
@@ -242,36 +241,36 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner
         }
 
         if (model instanceof Graph) {
-            type = Type.GRAPH;
+            type = FgesRunner.Type.GRAPH;
         } else if (model instanceof DataSet) {
             DataSet dataSet = (DataSet) model;
 
             if (dataSet.isContinuous()) {
-                type = Type.CONTINUOUS;
+                type = FgesRunner.Type.CONTINUOUS;
             } else if (dataSet.isDiscrete()) {
-                type = Type.DISCRETE;
+                type = FgesRunner.Type.DISCRETE;
             } else {
                 throw new IllegalStateException("Data set must either be continuous or discrete.");
             }
         } else if (model instanceof ICovarianceMatrix) {
-            type = Type.CONTINUOUS;
+            type = FgesRunner.Type.CONTINUOUS;
         } else if (model instanceof DataModelList) {
             DataModelList list = (DataModelList) model;
 
             if (this.allContinuous(list)) {
-                type = Type.CONTINUOUS;
+                type = FgesRunner.Type.CONTINUOUS;
             } else if (this.allDiscrete(list)) {
-                type = Type.DISCRETE;
+                type = FgesRunner.Type.DISCRETE;
             } else {
                 throw new IllegalArgumentException("Data must be either all discrete or all continuous.");
             }
         }
 
-        return type;
+        return this.type;
     }
 
-    private boolean allContinuous(List<DataModel> dataModels) {
-        for (DataModel dataModel : dataModels) {
+    private boolean allContinuous(final List<DataModel> dataModels) {
+        for (final DataModel dataModel : dataModels) {
             if (dataModel instanceof DataSet) {
                 if (!dataModel.isContinuous() || dataModel instanceof ICovarianceMatrix) {
                     return false;
@@ -282,8 +281,8 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner
         return true;
     }
 
-    private boolean allDiscrete(List<DataModel> dataModels) {
-        for (DataModel dataModel : dataModels) {
+    private boolean allDiscrete(final List<DataModel> dataModels) {
+        for (final DataModel dataModel : dataModels) {
             if (dataModel instanceof DataSet) {
                 if (!dataModel.isDiscrete()) {
                     return false;
@@ -294,7 +293,7 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner
         return true;
     }
 
-    public void setIndex(int index) {
+    public void setIndex(final int index) {
         if (index < -1) {
             throw new IllegalArgumentException("Must be in >= -1: " + index);
         }
@@ -303,11 +302,11 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner
     }
 
     public int getIndex() {
-        return index;
+        return this.index;
     }
 
     public Graph getGraph() {
-        return this.getTopGraphs().get(this.getIndex()).getGraph();
+        return getTopGraphs().get(getIndex()).getGraph();
     }
 
 
@@ -321,7 +320,7 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner
     /**
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
-    public List<List<Triple>> getTriplesLists(Node node) {
+    public List<List<Triple>> getTriplesLists(final Node node) {
         return new ArrayList<>();
     }
 
@@ -330,8 +329,8 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner
     }
 
     public ImpliedOrientation getMeekRules() {
-        MeekRules rules = new MeekRules();
-        rules.setKnowledge((IKnowledge) this.getParams().get("knowledge", new Knowledge2()));
+        final MeekRules rules = new MeekRules();
+        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
 
@@ -340,41 +339,41 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner
         return "IMaGES";
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        this.firePropertyChange(evt);
+    public void propertyChange(final PropertyChangeEvent evt) {
+        firePropertyChange(evt);
     }
 
-    private void firePropertyChange(PropertyChangeEvent evt) {
-        for (PropertyChangeListener l : this.getListeners()) {
+    private void firePropertyChange(final PropertyChangeEvent evt) {
+        for (final PropertyChangeListener l : getListeners()) {
             l.propertyChange(evt);
         }
     }
 
     private List<PropertyChangeListener> getListeners() {
-        if (listeners == null) {
-            listeners = new ArrayList<>();
+        if (this.listeners == null) {
+            this.listeners = new ArrayList<>();
         }
-        return listeners;
+        return this.listeners;
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        if (!this.getListeners().contains(l)) this.getListeners().add(l);
+    public void addPropertyChangeListener(final PropertyChangeListener l) {
+        if (!getListeners().contains(l)) getListeners().add(l);
     }
 
     public List<ScoredGraph> getTopGraphs() {
-        return topGraphs;
+        return this.topGraphs;
     }
 
-    public String getBayesFactorsReport(Graph dag) {
-        if (fges == null) {
+    public String getBayesFactorsReport(final Graph dag) {
+        if (this.fges == null) {
             return "Please re-run IMaGES.";
         } else {
-            return fges.logEdgeBayesFactorsString(dag);
+            return this.fges.logEdgeBayesFactorsString(dag);
         }
     }
 
     public GraphScorer getGraphScorer() {
-        return fges;
+        return this.fges;
     }
 
 }

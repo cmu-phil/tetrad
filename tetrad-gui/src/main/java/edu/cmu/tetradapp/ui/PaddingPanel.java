@@ -19,7 +19,6 @@
 package edu.cmu.tetradapp.ui;
 
 import javax.swing.*;
-import javax.swing.GroupLayout.Alignment;
 
 /**
  * This a wrapper panel that puts gaps around the wrapped panel.
@@ -35,25 +34,25 @@ public class PaddingPanel extends JPanel {
     private final JComponent innerComponent;
     private final JLayeredPane layeredPane;
 
-    public PaddingPanel(JComponent innerComponent) {
+    public PaddingPanel(final JComponent innerComponent) {
         this.innerComponent = (innerComponent == null) ? new JPanel() : innerComponent;
-        layeredPane = new JLayeredPane();
+        this.layeredPane = new JLayeredPane();
 
-        this.initComponents();
+        initComponents();
     }
 
     private void initComponents() {
-        layeredPane.setLayer(innerComponent, JLayeredPane.DEFAULT_LAYER);
+        this.layeredPane.setLayer(this.innerComponent, JLayeredPane.DEFAULT_LAYER);
 
-        GroupLayout layeredPaneLayout = new GroupLayout(layeredPane);
-        layeredPane.setLayout(layeredPaneLayout);
-        layeredPaneLayout.setHorizontalGroup(layeredPaneLayout.createParallelGroup(Alignment.LEADING)
+        final GroupLayout layeredPaneLayout = new GroupLayout(this.layeredPane);
+        this.layeredPane.setLayout(layeredPaneLayout);
+        layeredPaneLayout.setHorizontalGroup(layeredPaneLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
                 .addGroup(layeredPaneLayout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(innerComponent, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addContainerGap())
         );
-        layeredPaneLayout.setVerticalGroup(layeredPaneLayout.createParallelGroup(Alignment.LEADING)
+        layeredPaneLayout.setVerticalGroup(layeredPaneLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
                 .addGroup(layeredPaneLayout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(innerComponent, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -63,12 +62,12 @@ public class PaddingPanel extends JPanel {
         GroupLayout layout = new GroupLayout(this);
         setLayout(layout);
         layout.setHorizontalGroup(
-                layout.createParallelGroup(Alignment.LEADING)
-                        .addComponent(layeredPane, Alignment.TRAILING)
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addComponent(layeredPane, GroupLayout.Alignment.TRAILING)
         );
         layout.setVerticalGroup(
-                layout.createParallelGroup(Alignment.LEADING)
-                        .addComponent(layeredPane, Alignment.TRAILING)
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addComponent(layeredPane, GroupLayout.Alignment.TRAILING)
         );
     }
 

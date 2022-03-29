@@ -24,7 +24,6 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.SearchGraphUtils.CpcTripleType;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.CombinationGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -125,7 +124,7 @@ public final class VcpcAlt implements GraphSearch {
      * Constructs a CPC algorithm that uses the given independence test as oracle. This does not make a copy of the
      * independence test, for fear of duplicating the data set!
      */
-    public VcpcAlt(IndependenceTest independenceTest) {
+    public VcpcAlt(final IndependenceTest independenceTest) {
         if (independenceTest == null) {
             throw new NullPointerException();
         }
@@ -139,13 +138,13 @@ public final class VcpcAlt implements GraphSearch {
      * @return true just in case edges will not be added if they would create cycles.
      */
     public boolean isAggressivelyPreventCycles() {
-        return aggressivelyPreventCycles;
+        return this.aggressivelyPreventCycles;
     }
 
     /**
      * Sets to true just in case edges will not be added if they would create cycles.
      */
-    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
+    public void setAggressivelyPreventCycles(final boolean aggressivelyPreventCycles) {
         this.aggressivelyPreventCycles = aggressivelyPreventCycles;
     }
 
@@ -153,7 +152,7 @@ public final class VcpcAlt implements GraphSearch {
      * Sets the maximum number of variables conditioned on in any conditional independence test. If set to -1, the value
      * of 1000 will be used. May not be set to Integer.MAX_VALUE, due to a Java bug on multi-core systems.
      */
-    public final void setDepth(int depth) {
+    public final void setDepth(final int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException("Depth must be -1 or >= 0: " + depth);
         }
@@ -170,20 +169,20 @@ public final class VcpcAlt implements GraphSearch {
      * @return the elapsed time of search in milliseconds, after <code>search()</code> has been run.
      */
     public final long getElapsedTime() {
-        return elapsedTime;
+        return this.elapsedTime;
     }
 
     /**
      * @return the knowledge specification used in the search. Non-null.
      */
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     /**
      * Sets the knowledge specification used in the search. Non-null.
      */
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(final IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
@@ -192,7 +191,7 @@ public final class VcpcAlt implements GraphSearch {
      * of duplicating the data set!
      */
     public IndependenceTest getIndependenceTest() {
-        return independenceTest;
+        return this.independenceTest;
     }
 
     /**
@@ -200,7 +199,7 @@ public final class VcpcAlt implements GraphSearch {
      * independence test.
      */
     public int getDepth() {
-        return depth;
+        return this.depth;
     }
 
     /**
@@ -208,7 +207,7 @@ public final class VcpcAlt implements GraphSearch {
      * <code>search()</code>.
      */
     public Set<Triple> getAmbiguousTriples() {
-        return new HashSet<>(ambiguousTriples);
+        return new HashSet<>(this.ambiguousTriples);
     }
 
     /**
@@ -216,7 +215,7 @@ public final class VcpcAlt implements GraphSearch {
      * <code>search()</code>.
      */
     public Set<Triple> getColliderTriples() {
-        return new HashSet<>(colliderTriples);
+        return new HashSet<>(this.colliderTriples);
     }
 
     /**
@@ -224,7 +223,7 @@ public final class VcpcAlt implements GraphSearch {
      * to <code>search()</code>.
      */
     public Set<Triple> getNoncolliderTriples() {
-        return new HashSet<>(noncolliderTriples);
+        return new HashSet<>(this.noncolliderTriples);
     }
 
     /**
@@ -232,7 +231,7 @@ public final class VcpcAlt implements GraphSearch {
      * <code>search()</code>.
      */
     public Set<Triple> getAllTriples() {
-        return new HashSet<>(allTriples);
+        return new HashSet<>(this.allTriples);
     }
 
     /**
@@ -253,25 +252,25 @@ public final class VcpcAlt implements GraphSearch {
 
 //  modified FAS into VCFAS; added in definitelyNonadjacencies set of edges.
     public Graph search() {
-        logger.log("info", "Starting VCCPC algorithm");
-        logger.log("info", "Independence test = " + this.getIndependenceTest() + ".");
-        allTriples = new HashSet<>();
-        ambiguousTriples = new HashSet<>();
-        colliderTriples = new HashSet<>();
-        noncolliderTriples = new HashSet<>();
-        Vcfas fas = new Vcfas(this.getIndependenceTest());
-        definitelyNonadjacencies = new HashSet<>();
-        markovInAllCPDAGs = new HashSet<>();
+        this.logger.log("info", "Starting VCCPC algorithm");
+        this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
+        this.allTriples = new HashSet<>();
+        this.ambiguousTriples = new HashSet<>();
+        this.colliderTriples = new HashSet<>();
+        this.noncolliderTriples = new HashSet<>();
+        final Vcfas fas = new Vcfas(getIndependenceTest());
+        this.definitelyNonadjacencies = new HashSet<>();
+        this.markovInAllCPDAGs = new HashSet<>();
 
 //        this.logger.log("info", "Variables " + independenceTest.getVariable());
 
-        long startTime = System.currentTimeMillis();
+        final long startTime = System.currentTimeMillis();
 
-        if (this.getIndependenceTest() == null) {
+        if (getIndependenceTest() == null) {
             throw new NullPointerException();
         }
 
-        List<Node> allNodes = this.getIndependenceTest().getVariables();
+        final List<Node> allNodes = getIndependenceTest().getVariables();
 
 //        if (!allNodes.containsAll(nodes)) {
 //            throw new IllegalArgumentException("All of the given nodes must " +
@@ -283,71 +282,71 @@ public final class VcpcAlt implements GraphSearch {
 //        Fas6 fas = new Fas6(graph, getIndependenceTest());
 //        fas = new FasICov(graph, (IndTestFisherZ) getIndependenceTest());
 
-        fas.setKnowledge(this.getKnowledge());
-        fas.setDepth(this.getDepth());
-        fas.setVerbose(verbose);
+        fas.setKnowledge(getKnowledge());
+        fas.setDepth(getDepth());
+        fas.setVerbose(this.verbose);
 
         // Note that we are ignoring the sepset map returned by this method
         // on purpose; it is not used in this search.
-        graph = fas.search();
+        this.graph = fas.search();
 
-        apparentlyNonadjacencies = fas.getApparentlyNonadjacencies();
+        this.apparentlyNonadjacencies = fas.getApparentlyNonadjacencies();
 
-        if (this.isDoOrientation()) {
-            if (verbose) {
+        if (isDoOrientation()) {
+            if (this.verbose) {
                 System.out.println("CPC orientation...");
             }
-            SearchGraphUtils.pcOrientbk(knowledge, graph, allNodes);
-            this.orientUnshieldedTriples(knowledge, this.getIndependenceTest(), this.getDepth());
+            SearchGraphUtils.pcOrientbk(this.knowledge, this.graph, allNodes);
+            orientUnshieldedTriples(this.knowledge, getIndependenceTest(), getDepth());
 //            orientUnshieldedTriplesConcurrent(knowledge, getIndependenceTest(), getMaxIndegree());
-            MeekRules meekRules = new MeekRules();
+            final MeekRules meekRules = new MeekRules();
 
-            meekRules.setAggressivelyPreventCycles(aggressivelyPreventCycles);
-            meekRules.setKnowledge(knowledge);
+            meekRules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
+            meekRules.setKnowledge(this.knowledge);
 
-            meekRules.orientImplied(graph);
+            meekRules.orientImplied(this.graph);
         }
 
 
-        List<Triple> ambiguousTriples = new ArrayList(graph.getAmbiguousTriples());
+        final List<Triple> ambiguousTriples = new ArrayList(this.graph.getAmbiguousTriples());
 
-        int[] dims = new int[ambiguousTriples.size()];
+        final int[] dims = new int[ambiguousTriples.size()];
 
         for (int i = 0; i < ambiguousTriples.size(); i++) {
             dims[i] = 2;
         }
 
-        List<Graph> patterns = new ArrayList<>();
-        Map<Graph, List<Triple>> newColliders = new IdentityHashMap<>();
-        Map<Graph, List<Triple>> newNonColliders = new IdentityHashMap<>();
+        final List<Graph> patterns = new ArrayList<>();
+        final Map<Graph, List<Triple>> newColliders = new IdentityHashMap<>();
+        final Map<Graph, List<Triple>> newNonColliders = new IdentityHashMap<>();
 
 //      Using combination generator to generate a list of combinations of ambiguous triples dismabiguated into colliders
 //      and non-colliders. The combinations are added as graphs to the list patterns. The graphs are then subject to
 //      basic rules to ensure consistent patterns.
 
 
-        CombinationGenerator generator = new CombinationGenerator(dims);
+        final CombinationGenerator generator = new CombinationGenerator(dims);
         int[] combination;
 
         while ((combination = generator.next()) != null) {
-            Graph _graph = new EdgeListGraph(graph);
+            final Graph _graph = new EdgeListGraph(this.graph);
             newColliders.put(_graph, new ArrayList<Triple>());
             newNonColliders.put(_graph, new ArrayList<Triple>());
-            for (Graph graph : newColliders.keySet()) {
+            for (final Graph graph : newColliders.keySet()) {
 //                System.out.println("$$$ " + newColliders.get(graph));
             }
             for (int k = 0; k < combination.length; k++) {
 //                System.out.println("k = " + combination[k]);
-                Triple triple = ambiguousTriples.get(k);
+                final Triple triple = ambiguousTriples.get(k);
                 _graph.removeAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
 
 
                 if (combination[k] == 0) {
                     newColliders.get(_graph).add(triple);
 //                    System.out.println(newColliders.get(_graph));
-                    Node x = triple.getX();
-                    Node y = triple.getY();
-                    Node z = triple.getZ();
+                    final Node x = triple.getX();
+                    final Node y = triple.getY();
+                    final Node z = triple.getZ();
 
                     _graph.setEndpoint(x, y, Endpoint.ARROW);
                     _graph.setEndpoint(z, y, Endpoint.ARROW);
@@ -360,26 +359,26 @@ public final class VcpcAlt implements GraphSearch {
             patterns.add(_graph);
         }
 
-        List<Graph> _patterns = new ArrayList<>(patterns);
+        final List<Graph> _patterns = new ArrayList<>(patterns);
 
 
         ///    Takes patterns and runs them through basic constraints to ensure consistent patterns (e.g. no cycles, no bidirected edges).
 
         GRAPH:
 
-        for (Graph graph : new ArrayList<>(patterns)) {
+        for (final Graph graph : new ArrayList<>(patterns)) {
 //            _graph = new EdgeListGraph(graph);
 
 //            System.out.println("graph = " + graph + " in keyset? " + newColliders.containsKey(graph));
 //
-            List<Triple> colliders = newColliders.get(graph);
-            List<Triple> nonColliders = newNonColliders.get(graph);
+            final List<Triple> colliders = newColliders.get(graph);
+            final List<Triple> nonColliders = newNonColliders.get(graph);
 
 
-            for (Triple triple : colliders) {
-                Node x = triple.getX();
-                Node y = triple.getY();
-                Node z = triple.getZ();
+            for (final Triple triple : colliders) {
+                final Node x = triple.getX();
+                final Node y = triple.getY();
+                final Node z = triple.getZ();
 
                 if (graph.getEdge(x, y).pointsTowards(x) || (graph.getEdge(y, z).pointsTowards(z))) {
                     patterns.remove(graph);
@@ -387,19 +386,19 @@ public final class VcpcAlt implements GraphSearch {
                 }
             }
 
-            for (Triple triple : colliders) {
-                Node x = triple.getX();
-                Node y = triple.getY();
-                Node z = triple.getZ();
+            for (final Triple triple : colliders) {
+                final Node x = triple.getX();
+                final Node y = triple.getY();
+                final Node z = triple.getZ();
 
                 graph.setEndpoint(x, y, Endpoint.ARROW);
                 graph.setEndpoint(z, y, Endpoint.ARROW);
             }
 
-            for (Triple triple : nonColliders) {
-                Node x = triple.getX();
-                Node y = triple.getY();
-                Node z = triple.getZ();
+            for (final Triple triple : nonColliders) {
+                final Node x = triple.getX();
+                final Node y = triple.getY();
+                final Node z = triple.getZ();
 
                 if (graph.getEdge(x, y).pointsTowards(y)) {
                     graph.removeEdge(y, z);
@@ -411,14 +410,14 @@ public final class VcpcAlt implements GraphSearch {
                 }
             }
 
-            for (Edge edge : graph.getEdges()) {
+            for (final Edge edge : graph.getEdges()) {
                 if (Edges.isBidirectedEdge(edge)) {
                     patterns.remove(graph);
                     continue GRAPH;
                 }
             }
 
-            MeekRules rules = new MeekRules();
+            final MeekRules rules = new MeekRules();
             rules.orientImplied(graph);
             if (graph.existsDirectedCycle()) {
                 patterns.remove(graph);
@@ -466,16 +465,16 @@ public final class VcpcAlt implements GraphSearch {
 
         MARKOV:
 
-        for (Edge edge : apparentlyNonadjacencies.keySet()) {
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
+        for (final Edge edge : this.apparentlyNonadjacencies.keySet()) {
+            final Node x = edge.getNode1();
+            final Node y = edge.getNode2();
 
-            for (Graph _graph : new ArrayList<>(patterns)) {
+            for (final Graph _graph : new ArrayList<>(patterns)) {
 
-                List<Node> boundaryX = new ArrayList<>(this.boundary(x, _graph));
-                List<Node> boundaryY = new ArrayList<>(this.boundary(y, _graph));
-                List<Node> futureX = new ArrayList<>(this.future(x, _graph));
-                List<Node> futureY = new ArrayList<>(this.future(y, _graph));
+                final List<Node> boundaryX = new ArrayList<>(boundary(x, _graph));
+                final List<Node> boundaryY = new ArrayList<>(boundary(y, _graph));
+                final List<Node> futureX = new ArrayList<>(future(x, _graph));
+                final List<Node> futureY = new ArrayList<>(future(y, _graph));
 
                 if (y == x) {
                     continue;
@@ -483,13 +482,13 @@ public final class VcpcAlt implements GraphSearch {
                 if (boundaryX.contains(y) || boundaryY.contains(x)) {
                     continue;
                 }
-                IndependenceTest test = independenceTest;
+                final IndependenceTest test = this.independenceTest;
 
                 if (!futureX.contains(y)) {
                     if (test.isIndependent(x, y, boundaryX)) {
                         if (!futureY.contains(x)) {
                             if (test.isIndependent(y, x, boundaryY)) {
-                                definitelyNonadjacencies.add(edge);
+                                this.definitelyNonadjacencies.add(edge);
                                 continue MARKOV;
                             }
                         }
@@ -498,9 +497,9 @@ public final class VcpcAlt implements GraphSearch {
             }
         }
 
-        for (Edge edge : definitelyNonadjacencies) {
-            if (apparentlyNonadjacencies.containsKey(edge)) {
-                apparentlyNonadjacencies.keySet().remove(edge);
+        for (final Edge edge : this.definitelyNonadjacencies) {
+            if (this.apparentlyNonadjacencies.containsKey(edge)) {
+                this.apparentlyNonadjacencies.keySet().remove(edge);
             }
         }
 
@@ -590,69 +589,69 @@ public final class VcpcAlt implements GraphSearch {
 
         System.out.println("Definitely Nonadjacencies:");
 
-        for (Edge edge : definitelyNonadjacencies) {
+        for (final Edge edge : this.definitelyNonadjacencies) {
             System.out.println(edge);
         }
 
-        System.out.println("markov in all CPDAGs:" + markovInAllCPDAGs);
+        System.out.println("markov in all CPDAGs:" + this.markovInAllCPDAGs);
         System.out.println("patterns:" + patterns);
         System.out.println("Apparently Nonadjacencies:");
 
 
-        for (Edge edge : apparentlyNonadjacencies.keySet()) {
+        for (final Edge edge : this.apparentlyNonadjacencies.keySet()) {
             System.out.println(edge);
         }
         System.out.println("Definitely Nonadjacencies:");
 
 
-        for (Edge edge : definitelyNonadjacencies) {
+        for (final Edge edge : this.definitelyNonadjacencies) {
             System.out.println(edge);
         }
 
-        TetradLogger.getInstance().log("apparentlyNonadjacencies", "\n Apparent Non-adjacencies" + apparentlyNonadjacencies);
+        TetradLogger.getInstance().log("apparentlyNonadjacencies", "\n Apparent Non-adjacencies" + this.apparentlyNonadjacencies);
 
-        TetradLogger.getInstance().log("definitelyNonadjacencies", "\n Definite Non-adjacencies" + definitelyNonadjacencies);
+        TetradLogger.getInstance().log("definitelyNonadjacencies", "\n Definite Non-adjacencies" + this.definitelyNonadjacencies);
 
         TetradLogger.getInstance().log("patterns", "Disambiguated Patterns: " + patterns);
 
 
-        TetradLogger.getInstance().log("graph", "\nReturning this graph: " + graph);
+        TetradLogger.getInstance().log("graph", "\nReturning this graph: " + this.graph);
 
-        long endTime = System.currentTimeMillis();
-        elapsedTime = endTime - startTime;
+        final long endTime = System.currentTimeMillis();
+        this.elapsedTime = endTime - startTime;
 
-        TetradLogger.getInstance().log("info", "Elapsed time = " + (elapsedTime) / 1000. + " s");
+        TetradLogger.getInstance().log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
         TetradLogger.getInstance().log("info", "Finishing CPC algorithm.");
 
-        this.logTriples();
+        logTriples();
 
         TetradLogger.getInstance().flush();
 //        SearchGraphUtils.verifySepsetIntegrity(Map<Edge, List<Node>>, graph);
-        return graph;
+        return this.graph;
     }
 
     /**
      * Orients the given graph using CPC orientation with the conditional independence test provided in the
      * constructor.
      */
-    public final Graph orientationForGraph(Dag trueGraph) {
-        Graph graph = new EdgeListGraph(independenceTest.getVariables());
+    public final Graph orientationForGraph(final Dag trueGraph) {
+        final Graph graph = new EdgeListGraph(this.independenceTest.getVariables());
 
-        for (Edge edge : trueGraph.getEdges()) {
-            Node nodeA = edge.getNode1();
-            Node nodeB = edge.getNode2();
+        for (final Edge edge : trueGraph.getEdges()) {
+            final Node nodeA = edge.getNode1();
+            final Node nodeB = edge.getNode2();
 
-            Node _nodeA = independenceTest.getVariable(nodeA.getName());
-            Node _nodeB = independenceTest.getVariable(nodeB.getName());
+            final Node _nodeA = this.independenceTest.getVariable(nodeA.getName());
+            final Node _nodeB = this.independenceTest.getVariable(nodeB.getName());
 
             graph.addUndirectedEdge(_nodeA, _nodeB);
         }
 
-        SearchGraphUtils.pcOrientbk(knowledge, graph, graph.getNodes());
-        this.orientUnshieldedTriples(knowledge, this.getIndependenceTest(), depth);
-        MeekRules meekRules = new MeekRules();
-        meekRules.setAggressivelyPreventCycles(aggressivelyPreventCycles);
-        meekRules.setKnowledge(knowledge);
+        SearchGraphUtils.pcOrientbk(this.knowledge, graph, graph.getNodes());
+        orientUnshieldedTriples(this.knowledge, getIndependenceTest(), this.depth);
+        final MeekRules meekRules = new MeekRules();
+        meekRules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
+        meekRules.setKnowledge(this.knowledge);
         meekRules.orientImplied(graph);
 
         return graph;
@@ -667,18 +666,18 @@ public final class VcpcAlt implements GraphSearch {
 //    not in its boundary conditional on its boundary and if x is independent of variables not in its future
 //    conditional on its boundary.
 
-    private boolean isMarkov(Node node, Graph graph) {
+    private boolean isMarkov(final Node node, final Graph graph) {
 //        Graph dag = SearchGraphUtils.dagFromPattern(graph);
         System.out.println(graph);
-        IndependenceTest test = new IndTestDSep(graph);
+        final IndependenceTest test = new IndTestDSep(graph);
 
-        Node x = node;
+        final Node x = node;
 
 //        for (Node x : graph.getNodes()) {
-        List<Node> future = new ArrayList<>(this.future(x, graph));
-        List<Node> boundary = new ArrayList<>(this.boundary(x, graph));
+        final List<Node> future = new ArrayList<>(future(x, graph));
+        final List<Node> boundary = new ArrayList<>(boundary(x, graph));
 
-        for (Node y : graph.getNodes()) {
+        for (final Node y : graph.getNodes()) {
             if (y == x) {
                 continue;
             }
@@ -699,10 +698,10 @@ public final class VcpcAlt implements GraphSearch {
     }
 
     //    For a node x, adds nodes y such that either y-x or y->x to the boundary of x
-    private Set<Node> boundary(Node x, Graph graph) {
-        Set<Node> boundary = new HashSet<>();
-        List<Node> adj = graph.getAdjacentNodes(x);
-        for (Node y : adj) {
+    private Set<Node> boundary(final Node x, final Graph graph) {
+        final Set<Node> boundary = new HashSet<>();
+        final List<Node> adj = graph.getAdjacentNodes(x);
+        for (final Node y : adj) {
             if (graph.isParentOf(y, x) || Edges.isUndirectedEdge(graph.getEdge(x, y))) {
                 boundary.add(y);
             }
@@ -711,13 +710,13 @@ public final class VcpcAlt implements GraphSearch {
     }
 
     //      For a node x, adds nodes y such that either x->..->y or x-..-..->..->y to the future of x
-    private Set<Node> future(Node x, Graph graph) {
-        Set<Node> futureNodes = new HashSet<>();
-        LinkedList path = new LinkedList<>();
-        futureNodeVisit(graph, x, path, futureNodes);
+    private Set<Node> future(final Node x, final Graph graph) {
+        final Set<Node> futureNodes = new HashSet<>();
+        final LinkedList path = new LinkedList<>();
+        VcpcAlt.futureNodeVisit(graph, x, path, futureNodes);
         futureNodes.remove(x);
-        List<Node> adj = graph.getAdjacentNodes(x);
-        for (Node y : adj) {
+        final List<Node> adj = graph.getAdjacentNodes(x);
+        for (final Node y : adj) {
             if (graph.isParentOf(y, x) || Edges.isUndirectedEdge(graph.getEdge(x, y))) {
                 futureNodes.remove(y);
             }
@@ -727,11 +726,11 @@ public final class VcpcAlt implements GraphSearch {
 
     //    Constraints to guarantee future path conditions met. After traversing the entire path,
 //    returns last node on path when satisfied, stops otherwise.
-    private static Node traverseFuturePath(Node node, Edge edge1, Edge edge2) {
-        Endpoint E1 = edge1.getProximalEndpoint(node);
-        Endpoint E2 = edge2.getProximalEndpoint(node);
-        Endpoint E3 = edge2.getDistalEndpoint(node);
-        Endpoint E4 = edge1.getDistalEndpoint(node);
+    private static Node traverseFuturePath(final Node node, final Edge edge1, final Edge edge2) {
+        final Endpoint E1 = edge1.getProximalEndpoint(node);
+        final Endpoint E2 = edge2.getProximalEndpoint(node);
+        final Endpoint E3 = edge2.getDistalEndpoint(node);
+        final Endpoint E4 = edge1.getDistalEndpoint(node);
 //        if (E1 == Endpoint.ARROW && E2 == Endpoint.TAIL && E3 == Endpoint.TAIL) {
 //            return null;
 //        }
@@ -749,13 +748,13 @@ public final class VcpcAlt implements GraphSearch {
 
     //    Takes a triple n1-n2-child and adds child to futureNodes set if satisfies constraints for future.
 //    Uses traverseFuturePath to add nodes to set.
-    public static void futureNodeVisit(Graph graph, Node b, LinkedList<Node> path, Set<Node> futureNodes) {
+    public static void futureNodeVisit(final Graph graph, final Node b, final LinkedList<Node> path, final Set<Node> futureNodes) {
         path.addLast(b);
         futureNodes.add(b);
-        for (Edge edge2 : graph.getEdges(b)) {
-            Node c;
+        for (final Edge edge2 : graph.getEdges(b)) {
+            final Node c;
 
-            int size = path.size();
+            final int size = path.size();
             if (path.size() < 2) {
                 c = edge2.getDistalNode(b);
                 if (c == null) {
@@ -765,9 +764,9 @@ public final class VcpcAlt implements GraphSearch {
                     continue;
                 }
             } else {
-                Node a = path.get(size - 2);
-                Edge edge1 = graph.getEdge(a, b);
-                c = traverseFuturePath(b, edge1, edge2);
+                final Node a = path.get(size - 2);
+                final Edge edge1 = graph.getEdge(a, b);
+                c = VcpcAlt.traverseFuturePath(b, edge1, edge2);
                 if (c == null) {
                     continue;
                 }
@@ -775,7 +774,7 @@ public final class VcpcAlt implements GraphSearch {
                     continue;
                 }
             }
-            futureNodeVisit(graph, c, path, futureNodes);
+            VcpcAlt.futureNodeVisit(graph, c, path, futureNodes);
         }
         path.removeLast();
     }
@@ -784,58 +783,58 @@ public final class VcpcAlt implements GraphSearch {
     private void logTriples() {
         TetradLogger.getInstance().log("info", "\nCollider triples:");
 
-        for (Triple triple : colliderTriples) {
+        for (final Triple triple : this.colliderTriples) {
             TetradLogger.getInstance().log("info", "Collider: " + triple);
         }
 
         TetradLogger.getInstance().log("info", "\nNoncollider triples:");
 
-        for (Triple triple : noncolliderTriples) {
+        for (final Triple triple : this.noncolliderTriples) {
             TetradLogger.getInstance().log("info", "Noncollider: " + triple);
         }
 
         TetradLogger.getInstance().log("info", "\nAmbiguous triples (i.e. list of triples for which " +
                 "\nthere is ambiguous data about whether they are colliders or not):");
 
-        for (Triple triple : this.getAmbiguousTriples()) {
+        for (final Triple triple : getAmbiguousTriples()) {
             TetradLogger.getInstance().log("info", "Ambiguous: " + triple);
         }
     }
 
-    private void orientUnshieldedTriples(IKnowledge knowledge,
-                                         IndependenceTest test, int depth) {
+    private void orientUnshieldedTriples(final IKnowledge knowledge,
+                                         final IndependenceTest test, final int depth) {
         TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
 
 //        System.out.println("orientUnshieldedTriples 1");
 
-        colliderTriples = new HashSet<>();
-        noncolliderTriples = new HashSet<>();
-        ambiguousTriples = new HashSet<>();
-        List<Node> nodes = graph.getNodes();
+        this.colliderTriples = new HashSet<>();
+        this.noncolliderTriples = new HashSet<>();
+        this.ambiguousTriples = new HashSet<>();
+        final List<Node> nodes = this.graph.getNodes();
 
-        for (Node y : nodes) {
-            List<Node> adjacentNodes = graph.getAdjacentNodes(y);
+        for (final Node y : nodes) {
+            final List<Node> adjacentNodes = this.graph.getAdjacentNodes(y);
 
             if (adjacentNodes.size() < 2) {
                 continue;
             }
 
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            final ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
             int[] combination;
 
             while ((combination = cg.next()) != null) {
-                Node x = adjacentNodes.get(combination[0]);
-                Node z = adjacentNodes.get(combination[1]);
+                final Node x = adjacentNodes.get(combination[0]);
+                final Node z = adjacentNodes.get(combination[1]);
 
-                if (graph.isAdjacentTo(x, z)) {
+                if (this.graph.isAdjacentTo(x, z)) {
                     continue;
                 }
 
-                this.getAllTriples().add(new Triple(x, y, z));
-                CpcTripleType type = SearchGraphUtils.getCpcTripleType(x, y, z, test, depth, graph, verbose);
+                getAllTriples().add(new Triple(x, y, z));
+                SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType(x, y, z, test, depth, graph, verbose);
 //                SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType2(x, y, z, test, depth, graph);
 
-                if (type == CpcTripleType.COLLIDER) {
+                if (type == SearchGraphUtils.CpcTripleType.COLLIDER) {
                     if (this.colliderAllowed(x, y, z, knowledge)) {
                         graph.setEndpoint(x, y, Endpoint.ARROW);
                         graph.setEndpoint(z, y, Endpoint.ARROW);
@@ -844,7 +843,7 @@ public final class VcpcAlt implements GraphSearch {
                     }
 
                     colliderTriples.add(new Triple(x, y, z));
-                } else if (type == CpcTripleType.AMBIGUOUS) {
+                } else if (type == SearchGraphUtils.CpcTripleType.AMBIGUOUS) {
                     Triple triple = new Triple(x, y, z);
                     ambiguousTriples.add(triple);
                     graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
@@ -899,11 +898,11 @@ public final class VcpcAlt implements GraphSearch {
                     public void run() {
 
                         VcpcAlt.this.getAllTriples().add(new Triple(x, y, z));
-                        CpcTripleType type = SearchGraphUtils.getCpcTripleType(x, y, z, test, depth, VcpcAlt.this.getGraph(), verbose);
+                        SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType(x, y, z, test, depth, VcpcAlt.this.getGraph(), verbose);
 //                        SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType2(x, y, z, test, depth, getGraph());
 //                        SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType4(x, y, z, test, depth, getGraph());
 //
-                        if (type == CpcTripleType.COLLIDER) {
+                        if (type == SearchGraphUtils.CpcTripleType.COLLIDER) {
                             if (VcpcAlt.this.colliderAllowed(x, y, z, knowledge)) {
                                 VcpcAlt.this.getGraph().setEndpoint(x, y, Endpoint.ARROW);
                                 VcpcAlt.this.getGraph().setEndpoint(z, y, Endpoint.ARROW);
@@ -912,12 +911,12 @@ public final class VcpcAlt implements GraphSearch {
                             }
 
                             colliderTriples.add(new Triple(x, y, z));
-                        } else if (type == CpcTripleType.AMBIGUOUS) {
-                            Triple triple = new Triple(x, y, z);
-                            ambiguousTriples.add(triple);
-                            VcpcAlt.this.getGraph().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                        } else if (type == SearchGraphUtils.CpcTripleType.AMBIGUOUS) {
+                            final Triple triple = new Triple(x, y, z);
+                            VcpcAlt.this.ambiguousTriples.add(triple);
+                            getGraph().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                         } else {
-                            noncolliderTriples.add(new Triple(x, y, z));
+                            VcpcAlt.this.noncolliderTriples.add(new Triple(x, y, z));
                         }
                     }
                 };
@@ -933,33 +932,33 @@ public final class VcpcAlt implements GraphSearch {
             // Wait until all threads are finish
             executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
             System.out.println("Finished all threads");
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException e) {
             e.printStackTrace();
         }
 
         TetradLogger.getInstance().log("info", "Finishing Collider Orientation.");
     }
 
-    private boolean colliderAllowed(Node x, Node y, Node z, IKnowledge knowledge) {
-        return isArrowpointAllowed1(x, y, knowledge) &&
-                isArrowpointAllowed1(z, y, knowledge);
+    private boolean colliderAllowed(final Node x, final Node y, final Node z, final IKnowledge knowledge) {
+        return VcpcAlt.isArrowpointAllowed1(x, y, knowledge) &&
+                VcpcAlt.isArrowpointAllowed1(z, y, knowledge);
     }
 
-    public static boolean isArrowpointAllowed1(Node from, Node to,
-                                               IKnowledge knowledge) {
+    public static boolean isArrowpointAllowed1(final Node from, final Node to,
+                                               final IKnowledge knowledge) {
         return knowledge == null || !knowledge.isRequired(to.toString(), from.toString()) &&
                 !knowledge.isForbidden(from.toString(), to.toString());
     }
 
     public Map<Edge, List<Node>> getApparentlyNonadjacencies() {
-        return apparentlyNonadjacencies;
+        return this.apparentlyNonadjacencies;
     }
 
     public boolean isDoOrientation() {
-        return doOrientation;
+        return this.doOrientation;
     }
 
-    public void setDoOrientation(boolean doOrientation) {
+    public void setDoOrientation(final boolean doOrientation) {
         this.doOrientation = doOrientation;
     }
 
@@ -967,14 +966,14 @@ public final class VcpcAlt implements GraphSearch {
      * The graph that's constructed during the search.
      */
     public Graph getGraph() {
-        return graph;
+        return this.graph;
     }
 
-    public void setGraph(Graph graph) {
+    public void setGraph(final Graph graph) {
         this.graph = graph;
     }
 
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 

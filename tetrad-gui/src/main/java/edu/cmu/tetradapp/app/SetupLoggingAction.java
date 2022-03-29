@@ -50,8 +50,8 @@ public class SetupLoggingAction extends AbstractAction {
     //========================= Public Methods =================================//
 
 
-    public void actionPerformed(ActionEvent e) {
-        JComponent comp = buildSetupLoggingComponent();
+    public void actionPerformed(final ActionEvent e) {
+        final JComponent comp = SetupLoggingAction.buildSetupLoggingComponent();
         JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), comp,
                 "File Logging Setup", JOptionPane.PLAIN_MESSAGE);
     }
@@ -64,42 +64,42 @@ public class SetupLoggingAction extends AbstractAction {
 
 
         // build yes/no combo box.
-        JComboBox activateCombo = new JComboBox(new String[]{"No", "Yes"});
+        final JComboBox activateCombo = new JComboBox(new String[]{"No", "Yes"});
         activateCombo.setMaximumSize(activateCombo.getPreferredSize());
         activateCombo.setSelectedItem(TetradLogger.getInstance().isLogging() ? "Yes" : "No");
         activateCombo.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JComboBox combo = (JComboBox) e.getSource();
+            public void actionPerformed(final ActionEvent e) {
+                final JComboBox combo = (JComboBox) e.getSource();
                 TetradLogger.getInstance().setLogging("Yes".equals(combo.getSelectedItem()));
             }
         });
 
-        String saveLocation = TetradLogger.getInstance().getLoggingDirectory();
-        JTextField saveField = new JTextField(saveLocation);
+        final String saveLocation = TetradLogger.getInstance().getLoggingDirectory();
+        final JTextField saveField = new JTextField(saveLocation);
         saveField.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JTextField field = (JTextField) e.getSource();
+            public void actionPerformed(final ActionEvent e) {
+                final JTextField field = (JTextField) e.getSource();
                 try {
                     TetradLogger.getInstance().setLoggingDirectory(field.getText());
-                } catch (IllegalArgumentException ex) {
+                } catch (final IllegalArgumentException ex) {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), ex.getMessage());
                 }
             }
         });
 
-        JButton chooseButton = new JButton(" ... ");
+        final JButton chooseButton = new JButton(" ... ");
         chooseButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                String saveLocation = TetradLogger.getInstance().getLoggingDirectory();
+            public void actionPerformed(final ActionEvent e) {
+                final String saveLocation = TetradLogger.getInstance().getLoggingDirectory();
 
-                JFileChooser chooser = new JFileChooser();
+                final JFileChooser chooser = new JFileChooser();
                 chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                 chooser.setCurrentDirectory(new File(saveLocation));
 
-                int ret = chooser.showOpenDialog(JOptionUtils.centeringComp());
+                final int ret = chooser.showOpenDialog(JOptionUtils.centeringComp());
 
                 if (ret == JFileChooser.APPROVE_OPTION) {
-                    File selectedFile = chooser.getSelectedFile();
+                    final File selectedFile = chooser.getSelectedFile();
                     Preferences.userRoot().put("loggingDirectory", selectedFile.getAbsolutePath());
                     saveField.setText(selectedFile.getAbsolutePath());
                 }
@@ -107,12 +107,12 @@ public class SetupLoggingAction extends AbstractAction {
         });
 
         chooseButton.setBorder(new EtchedBorder());
-        JTextField prefixField = new JTextField(TetradLogger.getInstance().getLoggingFilePrefix());
+        final JTextField prefixField = new JTextField(TetradLogger.getInstance().getLoggingFilePrefix());
 
         prefixField.addCaretListener(new CaretListener() {
-            public void caretUpdate(CaretEvent e) {
-                JTextField field = (JTextField) e.getSource();
-                String text = field.getText();
+            public void caretUpdate(final CaretEvent e) {
+                final JTextField field = (JTextField) e.getSource();
+                final String text = field.getText();
 
                 if (!text.matches("[a-zA-Z_]*")) {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
@@ -142,7 +142,7 @@ public class SetupLoggingAction extends AbstractAction {
 //        automaticBox.add(Box.createHorizontalGlue());
 
         // Do Layout.
-        Box b1 = Box.createVerticalBox();
+        final Box b1 = Box.createVerticalBox();
 
 //        Box b2 = Box.createHorizontalBox();
 //        b2.add(new JLabel("Activate Logging: "));
@@ -153,33 +153,33 @@ public class SetupLoggingAction extends AbstractAction {
 //        b1.add(b2);
 //        b1.add(Box.createVerticalStrut(5));
 
-        b1.add(createLogToBox());
+        b1.add(SetupLoggingAction.createLogToBox());
         b1.add(Box.createVerticalStrut(5));
 //        b1.add(automaticBox);
 //        b1.add(Box.createVerticalStrut(10));
 
-        Box b4 = Box.createHorizontalBox();
+        final Box b4 = Box.createHorizontalBox();
         b4.add(new JLabel("Output Directory:"));
         b4.add(Box.createHorizontalGlue());
         b1.add(b4);
 
-        Box b5 = Box.createHorizontalBox();
+        final Box b5 = Box.createHorizontalBox();
         b5.add(saveField);
         b5.add(chooseButton);
         b1.add(b5);
         b1.add(Box.createVerticalStrut(5));
 
-        Box b6 = Box.createHorizontalBox();
+        final Box b6 = Box.createHorizontalBox();
         b6.add(new JLabel("File Prefix:"));
         b6.add(Box.createHorizontalGlue());
         b1.add(b6);
 
-        Box b7 = Box.createHorizontalBox();
+        final Box b7 = Box.createHorizontalBox();
         b7.add(prefixField);
         b1.add(b7);
         b1.add(Box.createVerticalStrut(5));
 
-        Box b8 = Box.createHorizontalBox();
+        final Box b8 = Box.createHorizontalBox();
         b8.add(new JLabel("<html>" +
                 "Output will be written to sequentially numbered files, using the<br>" +
                 "given file prefix, in the given directory, with one output file<br>" +
@@ -196,26 +196,26 @@ public class SetupLoggingAction extends AbstractAction {
      * Builds the output selection boxes.
      */
     private static Box createLogToBox() {
-        Box box = Box.createHorizontalBox();
+        final Box box = Box.createHorizontalBox();
         box.add(new JLabel("Log output to: "));
         box.add(Box.createHorizontalStrut(5));
 
-        JCheckBox fileCheckBox = new JCheckBox(" File ");
+        final JCheckBox fileCheckBox = new JCheckBox(" File ");
         fileCheckBox.setSelected(TetradLogger.getInstance().isFileLoggingEnabled());
         fileCheckBox.setHorizontalTextPosition(SwingConstants.LEFT);
         fileCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JCheckBox box = (JCheckBox) e.getSource();
+            public void actionPerformed(final ActionEvent e) {
+                final JCheckBox box = (JCheckBox) e.getSource();
                 TetradLogger.getInstance().setFileLoggingEnabled(box.isSelected());
             }
         });
 
-        JCheckBox textareaCheckBox = new JCheckBox(" Log Display ");
+        final JCheckBox textareaCheckBox = new JCheckBox(" Log Display ");
         textareaCheckBox.setSelected(TetradLogger.getInstance().isDisplayLogEnabled());
         textareaCheckBox.setHorizontalTextPosition(SwingConstants.LEFT);
         textareaCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JCheckBox box = (JCheckBox) e.getSource();
+            public void actionPerformed(final ActionEvent e) {
+                final JCheckBox box = (JCheckBox) e.getSource();
                 TetradLogger.getInstance().setDisplayLogEnabled(box.isSelected());
             }
         });

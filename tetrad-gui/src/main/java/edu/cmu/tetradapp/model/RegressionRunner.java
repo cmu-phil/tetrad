@@ -68,7 +68,7 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public RegressionRunner(DataWrapper dataWrapper, Parameters params) {
+    public RegressionRunner(final DataWrapper dataWrapper, final Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -78,35 +78,35 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
         }
 
         if (dataWrapper instanceof Simulation) {
-            Simulation simulation = (Simulation) dataWrapper;
-            numModels = dataWrapper.getDataModelList().size();
-            modelIndex = 0;
-            modelSourceName = simulation.getName();
+            final Simulation simulation = (Simulation) dataWrapper;
+            this.numModels = dataWrapper.getDataModelList().size();
+            this.modelIndex = 0;
+            this.modelSourceName = simulation.getName();
         }
 
         this.params = params;
 
-        DataModel dataModel = dataWrapper.getSelectedDataModel();
+        final DataModel dataModel = dataWrapper.getSelectedDataModel();
 
         if (dataModel instanceof DataSet) {
-            DataSet _dataSet = (DataSet) dataModel;
+            final DataSet _dataSet = (DataSet) dataModel;
             if (!_dataSet.isContinuous()) {
                 throw new IllegalArgumentException("Data set must be continuous.");
             }
         }
 
-        dataModels = dataWrapper.getDataModelList();
+        this.dataModels = dataWrapper.getDataModelList();
 
-        variableNames = dataModel.getVariableNames();
-        targetName = null;
-        regressorNames = new ArrayList<>();
+        this.variableNames = dataModel.getVariableNames();
+        this.targetName = null;
+        this.regressorNames = new ArrayList<>();
 
         TetradLogger.getInstance().log("info", "Linear Regression");
 
-        if (result == null) {
+        if (this.result == null) {
             TetradLogger.getInstance().log("info", "Please double click this regression node to run the regession.");
         } else {
-            TetradLogger.getInstance().log("result", "\n" + result.getResultsTable().toString());
+            TetradLogger.getInstance().log("result", "\n" + this.result.getResultsTable().toString());
         }
     }
 
@@ -116,22 +116,22 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
      * @see TetradSerializableUtils
      */
     public static RegressionRunner serializableInstance() {
-        List<Node> variables = new LinkedList<>();
-        ContinuousVariable var1 = new ContinuousVariable("X");
-        ContinuousVariable var2 = new ContinuousVariable("Y");
+        final List<Node> variables = new LinkedList<>();
+        final ContinuousVariable var1 = new ContinuousVariable("X");
+        final ContinuousVariable var2 = new ContinuousVariable("Y");
 
         variables.add(var1);
         variables.add(var2);
-        DataSet _dataSet = new BoxDataSet(new DoubleDataBox(3, variables.size()), variables);
-        double[] col1data = {0.0, 1.0, 2.0};
-        double[] col2data = {2.3, 4.3, 2.5};
+        final DataSet _dataSet = new BoxDataSet(new DoubleDataBox(3, variables.size()), variables);
+        final double[] col1data = {0.0, 1.0, 2.0};
+        final double[] col2data = {2.3, 4.3, 2.5};
 
         for (int i = 0; i < 3; i++) {
             _dataSet.setDouble(i, 0, col1data[i]);
             _dataSet.setDouble(i, 1, col2data[i]);
         }
 
-        DataWrapper dataWrapper = new DataWrapper(_dataSet);
+        final DataWrapper dataWrapper = new DataWrapper(_dataSet);
         return new RegressionRunner(dataWrapper, new Parameters());
     }
 
@@ -139,19 +139,19 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
 
     public DataModel getDataModel() {
         //return (DataModel) this.dataWrapper.getDataModelList().get(0);
-        return dataModels.get(this.getModelIndex());
+        return this.dataModels.get(getModelIndex());
     }
 
     public Parameters getParams() {
-        return params;
+        return this.params;
     }
 
     public Graph getResultGraph() {
-        return outGraph;
+        return this.outGraph;
     }
 
-    private void setResultGraph(Graph graph) {
-        outGraph = graph;
+    private void setResultGraph(final Graph graph) {
+        this.outGraph = graph;
     }
 
     public Graph getSourceGraph() {
@@ -164,53 +164,53 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
      * implemented in the extending class.
      */
     public void execute() {
-        if (regressorNames.size() == 0 || targetName == null) {
-            outGraph = new EdgeListGraph();
+        if (this.regressorNames.size() == 0 || this.targetName == null) {
+            this.outGraph = new EdgeListGraph();
             return;
         }
 
-        if (regressorNames.contains(targetName)) {
-            outGraph = new EdgeListGraph();
+        if (this.regressorNames.contains(this.targetName)) {
+            this.outGraph = new EdgeListGraph();
             return;
         }
 
-        Regression regression;
-        Node target;
-        List<Node> regressors;
+        final Regression regression;
+        final Node target;
+        final List<Node> regressors;
 
-        if (this.getDataModel() instanceof DataSet) {
-            DataSet _dataSet = (DataSet) this.getDataModel();
+        if (getDataModel() instanceof DataSet) {
+            final DataSet _dataSet = (DataSet) getDataModel();
             regression = new RegressionDataset(_dataSet);
-            target = _dataSet.getVariable(targetName);
+            target = _dataSet.getVariable(this.targetName);
             regressors = new LinkedList<>();
 
-            for (String regressorName : regressorNames) {
+            for (final String regressorName : this.regressorNames) {
                 regressors.add(_dataSet.getVariable(regressorName));
             }
 
-            double alpha = params.getDouble("alpha", 0.001);
+            final double alpha = this.params.getDouble("alpha", 0.001);
             regression.setAlpha(alpha);
 
-            result = regression.regress(target, regressors);
-            outGraph = regression.getGraph();
-        } else if (this.getDataModel() instanceof ICovarianceMatrix) {
-            ICovarianceMatrix covariances = (ICovarianceMatrix) this.getDataModel();
+            this.result = regression.regress(target, regressors);
+            this.outGraph = regression.getGraph();
+        } else if (getDataModel() instanceof ICovarianceMatrix) {
+            final ICovarianceMatrix covariances = (ICovarianceMatrix) getDataModel();
             regression = new RegressionCovariance(covariances);
-            target = covariances.getVariable(targetName);
+            target = covariances.getVariable(this.targetName);
             regressors = new LinkedList<>();
 
-            for (String regressorName : regressorNames) {
+            for (final String regressorName : this.regressorNames) {
                 regressors.add(covariances.getVariable(regressorName));
             }
 
-            double alpha = params.getDouble("alpha", 0.001);
+            final double alpha = this.params.getDouble("alpha", 0.001);
             regression.setAlpha(alpha);
 
-            result = regression.regress(target, regressors);
-            outGraph = regression.getGraph();
+            this.result = regression.regress(target, regressors);
+            this.outGraph = regression.getGraph();
         }
 
-        this.setResultGraph(outGraph);
+        setResultGraph(this.outGraph);
     }
 
     public boolean supportsKnowledge() {
@@ -221,7 +221,7 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
         throw new UnsupportedOperationException();
     }
 
-    public void setExternalGraph(Graph graph) {
+    public void setExternalGraph(final Graph graph) {
     }
 
     public Graph getExternalGraph() {
@@ -234,35 +234,35 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
     }
 
     public RegressionResult getResult() {
-        return result;
+        return this.result;
     }
 
     public Graph getOutGraph() {
-        return outGraph;
+        return this.outGraph;
     }
 
     @Override
     public List<String> getVariableNames() {
-        return variableNames;
+        return this.variableNames;
     }
 
     @Override
     public List<String> getRegressorNames() {
-        return regressorNames;
+        return this.regressorNames;
     }
 
     @Override
-    public void setRegressorName(List<String> predictors) {
-        regressorNames = predictors;
+    public void setRegressorName(final List<String> predictors) {
+        this.regressorNames = predictors;
     }
 
     public String getTargetName() {
-        return targetName;
+        return this.targetName;
     }
 
     @Override
-    public void setTargetName(String target) {
-        targetName = target;
+    public void setTargetName(final String target) {
+        this.targetName = target;
     }
 
     /**
@@ -278,26 +278,26 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (params == null) {
+        if (this.params == null) {
             throw new NullPointerException();
         }
 
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
     public Graph getGraph() {
-        return outGraph;
+        return this.outGraph;
     }
 
     /**
@@ -313,41 +313,41 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>
      * for the given node.
      */
-    public List<List<Triple>> getTriplesLists(Node node) {
+    public List<List<Triple>> getTriplesLists(final Node node) {
         return new LinkedList<>();
     }
 
     @Override
     public Map<String, String> getParamSettings() {
-        Map<String, String> paramSettings = new HashMap<>();
+        final Map<String, String> paramSettings = new HashMap<>();
         paramSettings.put("Algorithm", "Regression");
         return paramSettings;
     }
 
 
     @Override
-    public void setAllParamSettings(Map<String, String> paramSettings) {
-        allParamsSettings = paramSettings;
+    public void setAllParamSettings(final Map<String, String> paramSettings) {
+        this.allParamsSettings = paramSettings;
     }
 
     @Override
     public Map<String, String> getAllParamSettings() {
-        return allParamsSettings;
+        return this.allParamsSettings;
     }
 
     public int getNumModels() {
-        return numModels;
+        return this.numModels;
     }
 
     public int getModelIndex() {
-        return modelIndex;
+        return this.modelIndex;
     }
 
     public String getModelSourceName() {
-        return modelSourceName;
+        return this.modelSourceName;
     }
 
-    public void setModelIndex(int modelIndex) {
+    public void setModelIndex(final int modelIndex) {
         this.modelIndex = modelIndex;
     }
 

@@ -48,14 +48,14 @@ public final class TestBoxDataSet {
     public final void testContinuous() {
         final int rows = 10;
         final int cols = 5;
-        List<Node> _variables = new LinkedList<>();
+        final List<Node> _variables = new LinkedList<>();
 
         for (int i = 0; i < cols; i++) {
             _variables.add(new ContinuousVariable("X" + i));
         }
 
-        DataSet dataSet = new BoxDataSet(new DoubleDataBox(rows, _variables.size()), _variables);
-        RandomUtil randomUtil = RandomUtil.getInstance();
+        final DataSet dataSet = new BoxDataSet(new DoubleDataBox(rows, _variables.size()), _variables);
+        final RandomUtil randomUtil = RandomUtil.getInstance();
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
@@ -63,12 +63,12 @@ public final class TestBoxDataSet {
             }
         }
 
-        List<Node> variables = dataSet.getVariables();
-        List<Node> newVars = new LinkedList<>();
+        final List<Node> variables = dataSet.getVariables();
+        final List<Node> newVars = new LinkedList<>();
         newVars.add(variables.get(2));
         newVars.add(variables.get(4));
 
-        DataSet _dataSet = dataSet.subsetColumns(newVars);
+        final DataSet _dataSet = dataSet.subsetColumns(newVars);
 
         assertEquals(dataSet.getDoubleData().getColumn(2).get(0), _dataSet.getDoubleData().getColumn(0).get(0), .001);
         assertEquals(dataSet.getDoubleData().getColumn(4).get(0), _dataSet.getDoubleData().getColumn(1).get(0), .001);
@@ -79,15 +79,15 @@ public final class TestBoxDataSet {
         final int rows = 10;
         final int cols = 5;
 
-        List<Node> variables = new LinkedList<>();
+        final List<Node> variables = new LinkedList<>();
 
         for (int i = 0; i < cols; i++) {
-            DiscreteVariable variable = new DiscreteVariable("X" + (i + 1), 3);
+            final DiscreteVariable variable = new DiscreteVariable("X" + (i + 1), 3);
             variables.add(variable);
         }
 
-        DataSet dataSet = new BoxDataSet(new DoubleDataBox(rows, variables.size()), variables);
-        RandomUtil randomUtil = RandomUtil.getInstance();
+        final DataSet dataSet = new BoxDataSet(new DoubleDataBox(rows, variables.size()), variables);
+        final RandomUtil randomUtil = RandomUtil.getInstance();
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
@@ -95,7 +95,7 @@ public final class TestBoxDataSet {
             }
         }
 
-        BoxDataSet _dataSet = new BoxDataSet((BoxDataSet) dataSet);
+        final BoxDataSet _dataSet = new BoxDataSet((BoxDataSet) dataSet);
 
         assertEquals(dataSet, _dataSet);
     }
@@ -125,15 +125,15 @@ public final class TestBoxDataSet {
 
     @Test
     public void testMixed() {
-        List<Node> variables = new LinkedList<>();
+        final List<Node> variables = new LinkedList<>();
 
-        DiscreteVariable x1 = new DiscreteVariable("X1");
+        final DiscreteVariable x1 = new DiscreteVariable("X1");
         variables.add(x1);
 
-        ContinuousVariable x2 = new ContinuousVariable("X2");
+        final ContinuousVariable x2 = new ContinuousVariable("X2");
         variables.add(x2);
 
-        DataSet dataSet = new BoxDataSet(new DoubleDataBox(5, variables.size()), variables);
+        final DataSet dataSet = new BoxDataSet(new DoubleDataBox(5, variables.size()), variables);
 
         assertTrue(dataSet.getVariables().get(0) instanceof DiscreteVariable);
         assertTrue(dataSet.getVariables().get(1) instanceof ContinuousVariable);
@@ -146,14 +146,14 @@ public final class TestBoxDataSet {
         final int rows = 10;
         final int cols = 5;
 
-        List<Node> variables = new LinkedList<>();
+        final List<Node> variables = new LinkedList<>();
 
         for (int i = 0; i < cols; i++) {
             variables.add(new ContinuousVariable("X" + i));
         }
 
-        DataSet dataSet = new BoxDataSet(new DoubleDataBox(rows, variables.size()), variables);
-        RandomUtil randomUtil = RandomUtil.getInstance();
+        final DataSet dataSet = new BoxDataSet(new DoubleDataBox(rows, variables.size()), variables);
+        final RandomUtil randomUtil = RandomUtil.getInstance();
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
@@ -161,13 +161,13 @@ public final class TestBoxDataSet {
             }
         }
 
-        int[] _cols = new int[2];
+        final int[] _cols = new int[2];
         _cols[0] = 1;
         _cols[1] = 2;
 
         dataSet.removeCols(_cols);
 
-        List<Node> _variables = new LinkedList<>(variables);
+        final List<Node> _variables = new LinkedList<>(variables);
         _variables.remove(2);
         _variables.remove(1);
 
@@ -179,14 +179,14 @@ public final class TestBoxDataSet {
         final int rows = 10;
         final int cols = 5;
 
-        List<Node> variables = new LinkedList<>();
+        final List<Node> variables = new LinkedList<>();
 
         for (int i = 0; i < cols; i++) {
             variables.add(new ContinuousVariable("X" + i));
         }
 
-        DataSet dataSet = new BoxDataSet(new DoubleDataBox(rows, variables.size()), variables);
-        RandomUtil randomUtil = RandomUtil.getInstance();
+        final DataSet dataSet = new BoxDataSet(new DoubleDataBox(rows, variables.size()), variables);
+        final RandomUtil randomUtil = RandomUtil.getInstance();
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
@@ -194,10 +194,10 @@ public final class TestBoxDataSet {
             }
         }
 
-        int numRows = dataSet.getNumRows();
-        double d = dataSet.getDouble(3, 0);
+        final int numRows = dataSet.getNumRows();
+        final double d = dataSet.getDouble(3, 0);
 
-        int[] _rows = new int[2];
+        final int[] _rows = new int[2];
         _rows[0] = 1;
         _rows[1] = 2;
 
@@ -212,14 +212,14 @@ public final class TestBoxDataSet {
         final int rows = 10;
         final int cols = 5;
 
-        List<Node> variables = new LinkedList<>();
+        final List<Node> variables = new LinkedList<>();
 
         for (int i = 0; i < cols; i++) {
             variables.add(new ContinuousVariable("X" + i));
         }
 
-        DataSet dataSet = new BoxDataSet(new DoubleDataBox(rows, variables.size()), variables);
-        RandomUtil randomUtil = RandomUtil.getInstance();
+        final DataSet dataSet = new BoxDataSet(new DoubleDataBox(rows, variables.size()), variables);
+        final RandomUtil randomUtil = RandomUtil.getInstance();
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
@@ -227,9 +227,9 @@ public final class TestBoxDataSet {
             }
         }
 
-        double d = dataSet.getDouble(2, 0);
+        final double d = dataSet.getDouble(2, 0);
 
-        DataSet _dataSet = dataSet.subsetRows(new int[]{2, 3, 4});
+        final DataSet _dataSet = dataSet.subsetRows(new int[]{2, 3, 4});
 
         assertEquals(3, _dataSet.getNumRows());
         assertEquals(d, _dataSet.getDouble(0, 0), 0.001);
@@ -237,15 +237,15 @@ public final class TestBoxDataSet {
 
     @Test
     public void testPermuteRows() {
-        ContinuousVariable x1 = new ContinuousVariable("X1");
-        ContinuousVariable x2 = new ContinuousVariable("X2");
+        final ContinuousVariable x1 = new ContinuousVariable("X1");
+        final ContinuousVariable x2 = new ContinuousVariable("X2");
 
-        List<Node> nodes = new ArrayList<>();
+        final List<Node> nodes = new ArrayList<>();
         nodes.add(x1);
         nodes.add(x2);
 
-        DataSet dataSet = new BoxDataSet(new DoubleDataBox(3, nodes.size()), nodes);
-        RandomUtil randomUtil = RandomUtil.getInstance();
+        final DataSet dataSet = new BoxDataSet(new DoubleDataBox(3, nodes.size()), nodes);
+        final RandomUtil randomUtil = RandomUtil.getInstance();
 
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 2; j++) {
@@ -253,16 +253,16 @@ public final class TestBoxDataSet {
             }
         }
 
-        BoxDataSet _dataSet = new BoxDataSet((BoxDataSet) dataSet);
+        final BoxDataSet _dataSet = new BoxDataSet((BoxDataSet) dataSet);
 
         dataSet.permuteRows();
 
         I:
         for (int i = 0; i < dataSet.getNumRows(); i++) {
-            Vector v = _dataSet.getDoubleData().getRow(i);
+            final Vector v = _dataSet.getDoubleData().getRow(i);
 
             for (int j = 0; j < dataSet.getNumRows(); j++) {
-                Vector w = dataSet.getDoubleData().getRow(j);
+                final Vector w = dataSet.getDoubleData().getRow(j);
 
                 if (v.equals(w)) {
                     continue I;

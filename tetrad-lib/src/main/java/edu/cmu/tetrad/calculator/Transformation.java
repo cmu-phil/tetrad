@@ -23,7 +23,6 @@ package edu.cmu.tetrad.calculator;
 
 import edu.cmu.tetrad.calculator.expression.*;
 import edu.cmu.tetrad.calculator.parser.ExpressionParser;
-import edu.cmu.tetrad.calculator.parser.ExpressionParser.RestrictionType;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
@@ -61,12 +60,12 @@ public class Transformation {
      * @throws ParseException - Throws a parse exception if any of the given equations isn't
      *                        "valid".
      */
-    public static void transform(DataSet data, String... equations) throws ParseException {
+    public static void transform(final DataSet data, final String... equations) throws ParseException {
         if (equations.length == 0) {
             return;
         }
-        for (String equation : equations) {
-            transformEquation(data, equation);
+        for (final String equation : equations) {
+            Transformation.transformEquation(data, equation);
         }
     }
 
@@ -75,26 +74,26 @@ public class Transformation {
     /**
      * Transforms the given dataset using the given equation.
      */
-    private static void transformEquation(DataSet data, String eq) throws ParseException {
-        ExpressionParser parser = new ExpressionParser(data.getVariableNames(), RestrictionType.MAY_ONLY_CONTAIN);
-        Equation equation = parser.parseEquation(eq);
+    private static void transformEquation(final DataSet data, final String eq) throws ParseException {
+        final ExpressionParser parser = new ExpressionParser(data.getVariableNames(), ExpressionParser.RestrictionType.MAY_ONLY_CONTAIN);
+        final Equation equation = parser.parseEquation(eq);
 
-        addVariableIfRequired(data, equation.getVariable());
-        Expression expression = equation.getExpression();
-        Node variable = data.getVariable(equation.getVariable());
+        Transformation.addVariableIfRequired(data, equation.getVariable());
+        final Expression expression = equation.getExpression();
+        final Node variable = data.getVariable(equation.getVariable());
         if (variable == null) {
             throw new IllegalStateException("Unknown variable " + equation.getVariable());
         }
-        int column = data.getColumn(variable);
+        final int column = data.getColumn(variable);
         // build the context pairs.
-        List<String> contextVars = getContextVariables(expression);
+        final List<String> contextVars = Transformation.getContextVariables(expression);
         // now do the transformation row by row.
-        DataBackedContext context = new DataBackedContext(data, contextVars);
-        int rows = data.getNumRows();
+        final DataBackedContext context = new DataBackedContext(data, contextVars);
+        final int rows = data.getNumRows();
         for (int row = 0; row < rows; row++) {
             // build the context
             context.setRow(row);
-            double newValue = expression.evaluate(context);
+            final double newValue = expression.evaluate(context);
             data.setDouble(row, column, newValue);
         }
     }
@@ -102,8 +101,8 @@ public class Transformation {
     /**
      * Adds a column for the given varible if required.
      */
-    private static void addVariableIfRequired(DataSet data, String var) {
-        List<String> nodes = data.getVariableNames();
+    private static void addVariableIfRequired(final DataSet data, final String var) {
+        final List<String> nodes = data.getVariableNames();
         if (!nodes.contains(var)) {
             data.addVariable(new ContinuousVariable(var));
         }
@@ -113,14 +112,14 @@ public class Transformation {
     /**
      * @return the variables used in the expression.
      */
-    private static List<String> getContextVariables(Expression exp) {
-        List<String> variables = new ArrayList<>();
+    private static List<String> getContextVariables(final Expression exp) {
+        final List<String> variables = new ArrayList<>();
 
-        for (Expression sub : exp.getExpressions()) {
+        for (final Expression sub : exp.getExpressions()) {
             if (sub instanceof VariableExpression) {
                 variables.add(((VariableExpression) sub).getVariable());
             } else if (!(sub instanceof ConstantExpression)) {
-                variables.addAll(getContextVariables(sub));
+                variables.addAll(Transformation.getContextVariables(sub));
             }
         }
 
@@ -150,22 +149,22 @@ public class Transformation {
         private int row;
 
 
-        public DataBackedContext(DataSet data, List<String> vars) {
+        public DataBackedContext(final DataSet data, final List<String> vars) {
             this.data = data;
-            for (String v : vars) {
-                Node n = data.getVariable(v);
-                indexes.put(v, data.getColumn(n));
+            for (final String v : vars) {
+                final Node n = data.getVariable(v);
+                this.indexes.put(v, data.getColumn(n));
             }
         }
 
-        public void setRow(int row) {
+        public void setRow(final int row) {
             this.row = row;
         }
 
-        public Double getValue(String var) {
-            Integer i = indexes.get(var);
+        public Double getValue(final String var) {
+            final Integer i = this.indexes.get(var);
             if (i != null) {
-                return data.getDouble(row, i);
+                return this.data.getDouble(this.row, i);
             }
             return null;
         }

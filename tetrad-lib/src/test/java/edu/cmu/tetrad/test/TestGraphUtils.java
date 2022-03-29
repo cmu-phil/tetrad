@@ -23,7 +23,6 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.graph.GraphUtils.TwoCycleErrors;
 import edu.cmu.tetrad.search.DagToPag2;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
@@ -45,13 +44,13 @@ public final class TestGraphUtils {
 
     @Test
     public void testCreateRandomDag() {
-        List<Node> nodes = new ArrayList<>();
+        final List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < 50; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Dag dag = new Dag(GraphUtils.randomGraph(nodes, 0, 50,
+        final Dag dag = new Dag(GraphUtils.randomGraph(nodes, 0, 50,
                 4, 3, 3, false));
 
         assertEquals(50, dag.getNumNodes());
@@ -60,23 +59,23 @@ public final class TestGraphUtils {
 
     @Test
     public void testDirectedPaths() {
-        List<Node> nodes = new ArrayList<>();
+        final List<Node> nodes = new ArrayList<>();
 
         for (int i1 = 0; i1 < 6; i1++) {
             nodes.add(new ContinuousVariable("X" + (i1 + 1)));
         }
 
-        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 6,
+        final Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 6,
                 3, 3, 3, false));
 
         for (int i = 0; i < graph.getNodes().size(); i++) {
             for (int j = 0; j < graph.getNodes().size(); j++) {
-                Node node1 = graph.getNodes().get(i);
-                Node node2 = graph.getNodes().get(j);
+                final Node node1 = graph.getNodes().get(i);
+                final Node node2 = graph.getNodes().get(j);
 
-                List<List<Node>> directedPaths = GraphUtils.directedPathsFromTo(graph, node1, node2, -1);
+                final List<List<Node>> directedPaths = GraphUtils.directedPathsFromTo(graph, node1, node2, -1);
 
-                for (List<Node> path : directedPaths) {
+                for (final List<Node> path : directedPaths) {
                     assertTrue(graph.isAncestorOf(path.get(0), path.get(path.size() - 1)));
                 }
             }
@@ -85,30 +84,30 @@ public final class TestGraphUtils {
 
     @Test
     public void testTreks() {
-        List<Node> nodes = new ArrayList<>();
+        final List<Node> nodes = new ArrayList<>();
 
         for (int i1 = 0; i1 < 10; i1++) {
             nodes.add(new ContinuousVariable("X" + (i1 + 1)));
         }
 
-        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 15,
+        final Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 15,
                 3, 3, 3, false));
 
         for (int i = 0; i < graph.getNodes().size(); i++) {
             for (int j = 0; j < graph.getNodes().size(); j++) {
-                Node node1 = graph.getNodes().get(i);
-                Node node2 = graph.getNodes().get(j);
+                final Node node1 = graph.getNodes().get(i);
+                final Node node2 = graph.getNodes().get(j);
 
-                List<List<Node>> treks = GraphUtils.treks(graph, node1, node2, -1);
+                final List<List<Node>> treks = GraphUtils.treks(graph, node1, node2, -1);
 
                 TREKS:
                 for (int k = 0; k < treks.size(); k++) {
-                    List<Node> trek = treks.get(k);
+                    final List<Node> trek = treks.get(k);
 
-                    Node m0 = trek.get(0);
-                    Node m1 = trek.get(trek.size() - 1);
+                    final Node m0 = trek.get(0);
+                    final Node m1 = trek.get(trek.size() - 1);
 
-                    for (Node n : trek) {
+                    for (final Node n : trek) {
 
                         // Not quite it but good enough for a test.
                         if (graph.isAncestorOf(n, m0) && graph.isAncestorOf(n, m1)) {
@@ -127,36 +126,36 @@ public final class TestGraphUtils {
         final long seed = 28583848283L;
         RandomUtil.getInstance().setSeed(seed);
 
-        List<Node> nodes = new ArrayList<>();
+        final List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < 5; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph g = new Dag(GraphUtils.randomGraph(nodes, 0, 5,
+        final Graph g = new Dag(GraphUtils.randomGraph(nodes, 0, 5,
                 30, 15, 15, false));
 
-        String x = GraphUtils.graphToDot(g);
-        String[] tokens = x.split("\n");
-        int length = tokens.length;
+        final String x = GraphUtils.graphToDot(g);
+        final String[] tokens = x.split("\n");
+        final int length = tokens.length;
         assertEquals(7, length);
 
     }
 
     @Test
     public void testTwoCycleErrors() {
-        Node x1 = new GraphNode("X1");
-        Node x2 = new GraphNode("X2");
-        Node x3 = new GraphNode("X3");
-        Node x4 = new GraphNode("X4");
+        final Node x1 = new GraphNode("X1");
+        final Node x2 = new GraphNode("X2");
+        final Node x3 = new GraphNode("X3");
+        final Node x4 = new GraphNode("X4");
 
-        Graph trueGraph = new EdgeListGraph();
+        final Graph trueGraph = new EdgeListGraph();
         trueGraph.addNode(x1);
         trueGraph.addNode(x2);
         trueGraph.addNode(x3);
         trueGraph.addNode(x4);
 
-        Graph estGraph = new EdgeListGraph();
+        final Graph estGraph = new EdgeListGraph();
         estGraph.addNode(x1);
         estGraph.addNode(x2);
         estGraph.addNode(x3);
@@ -174,7 +173,7 @@ public final class TestGraphUtils {
         estGraph.addDirectedEdge(x4, x1);
         estGraph.addDirectedEdge(x1, x4);
 
-        TwoCycleErrors errors = GraphUtils.getTwoCycleErrors(trueGraph, estGraph);
+        final GraphUtils.TwoCycleErrors errors = GraphUtils.getTwoCycleErrors(trueGraph, estGraph);
 
         assertEquals(1, errors.twoCycCor);
         assertEquals(2, errors.twoCycFp);
@@ -183,12 +182,12 @@ public final class TestGraphUtils {
 
     @Test
     public void testDsep() {
-        Node a = new ContinuousVariable("A");
-        Node b = new ContinuousVariable("B");
-        Node x = new ContinuousVariable("X");
-        Node y = new ContinuousVariable("Y");
+        final Node a = new ContinuousVariable("A");
+        final Node b = new ContinuousVariable("B");
+        final Node x = new ContinuousVariable("X");
+        final Node y = new ContinuousVariable("Y");
 
-        Graph graph = new EdgeListGraph();
+        final Graph graph = new EdgeListGraph();
 
         graph.addNode(a);
         graph.addNode(b);
@@ -232,11 +231,11 @@ public final class TestGraphUtils {
 
     @Test
     public void testDsep2() {
-        Node a = new ContinuousVariable("A");
-        Node b = new ContinuousVariable("B");
-        Node c = new ContinuousVariable("C");
+        final Node a = new ContinuousVariable("A");
+        final Node b = new ContinuousVariable("B");
+        final Node c = new ContinuousVariable("C");
 
-        Graph graph = new EdgeListGraph();
+        final Graph graph = new EdgeListGraph();
 
         graph.addNode(a);
         graph.addNode(b);
@@ -261,16 +260,16 @@ public final class TestGraphUtils {
         final int numNodes = 5;
 
         for (int i = 0; i < 100000; i++) {
-            Graph graph = GraphUtils.randomGraphRandomForwardEdges(numNodes, 0, numNodes, 10, 10, 10, true);
+            final Graph graph = GraphUtils.randomGraphRandomForwardEdges(numNodes, 0, numNodes, 10, 10, 10, true);
 
-            List<Node> nodes = graph.getNodes();
-            Node x = nodes.get(RandomUtil.getInstance().nextInt(numNodes));
-            Node y = nodes.get(RandomUtil.getInstance().nextInt(numNodes));
-            Node z1 = nodes.get(RandomUtil.getInstance().nextInt(numNodes));
-            Node z2 = nodes.get(RandomUtil.getInstance().nextInt(numNodes));
+            final List<Node> nodes = graph.getNodes();
+            final Node x = nodes.get(RandomUtil.getInstance().nextInt(numNodes));
+            final Node y = nodes.get(RandomUtil.getInstance().nextInt(numNodes));
+            final Node z1 = nodes.get(RandomUtil.getInstance().nextInt(numNodes));
+            final Node z2 = nodes.get(RandomUtil.getInstance().nextInt(numNodes));
 
-            if (graph.isDSeparatedFrom(x, y, this.list(z1)) && graph.isDSeparatedFrom(x, y, this.list(z2)) &&
-                    !graph.isDSeparatedFrom(x, y, this.list(z1, z2))) {
+            if (graph.isDSeparatedFrom(x, y, list(z1)) && graph.isDSeparatedFrom(x, y, list(z2)) &&
+                    !graph.isDSeparatedFrom(x, y, list(z1, z2))) {
                 System.out.println("x = " + x);
                 System.out.println("y = " + y);
                 System.out.println("z1 = " + z1);
@@ -283,23 +282,23 @@ public final class TestGraphUtils {
 
     @Test
     public void testPagColoring() {
-        Graph dag = GraphUtils.randomGraph(30, 5, 50, 10, 10, 10, false);
-        Graph pag = new DagToPag2(dag).convert();
+        final Graph dag = GraphUtils.randomGraph(30, 5, 50, 10, 10, 10, false);
+        final Graph pag = new DagToPag2(dag).convert();
 
         GraphUtils.addPagColoring(pag);
 
-        for (Edge edge : pag.getEdges()) {
-            Node x1 = edge.getNode1();
-            Node x2 = edge.getNode2();
+        for (final Edge edge : pag.getEdges()) {
+            final Node x1 = edge.getNode1();
+            final Node x2 = edge.getNode2();
 
             if (edge.getLineColor() == Color.green) {
                 System.out.println("Green");
 
-                for (Node L : pag.getNodes()) {
+                for (final Node L : pag.getNodes()) {
                     if (L == x1 || L == x2) continue;
 
                     if (L.getNodeType() == NodeType.LATENT) {
-                        if (existsLatentPath(dag, L, x1) && existsLatentPath(dag, L, x2)) {
+                        if (TestGraphUtils.existsLatentPath(dag, L, x1) && TestGraphUtils.existsLatentPath(dag, L, x2)) {
                             System.out.println("Edge " + edge + " falsely colored green.");
                         }
                     }
@@ -309,33 +308,33 @@ public final class TestGraphUtils {
             if (edge.isBold()) {
                 System.out.println("Bold");
 
-                if (!existsLatentPath(dag, x1, x2)) {
+                if (!TestGraphUtils.existsLatentPath(dag, x1, x2)) {
                     System.out.println("Edge " + edge + " is falsely bold.");
                 }
             }
         }
     }
 
-    public static boolean existsLatentPath(Graph graph, Node b, Node y) {
+    public static boolean existsLatentPath(final Graph graph, final Node b, final Node y) {
         if (b == y) return false;
-        return existsLatentPath(graph, b, y, new LinkedList<Node>());
+        return TestGraphUtils.existsLatentPath(graph, b, y, new LinkedList<Node>());
     }
 
-    public static boolean existsLatentPath(Graph graph, Node b, Node y, LinkedList<Node> path) {
+    public static boolean existsLatentPath(final Graph graph, final Node b, final Node y, final LinkedList<Node> path) {
         if (path.contains(b)) {
             return false;
         }
 
         path.addLast(b);
 
-        for (Node c : graph.getChildren(b)) {
+        for (final Node c : graph.getChildren(b)) {
             if (c == y) return true;
 
             if (c.getNodeType() != NodeType.LATENT) {
                 continue;
             }
 
-            if (!existsLatentPath(graph, c, y, path)) {
+            if (!TestGraphUtils.existsLatentPath(graph, c, y, path)) {
                 return false;
             }
         }
@@ -344,8 +343,8 @@ public final class TestGraphUtils {
         return true;
     }
 
-    private List<Node> list(Node... z) {
-        List<Node> list = new ArrayList<>();
+    private List<Node> list(final Node... z) {
+        final List<Node> list = new ArrayList<>();
         Collections.addAll(list, z);
         return list;
     }

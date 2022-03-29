@@ -40,8 +40,8 @@ public class Integrator {
      *                     x2] into for integrating.
      * @return the area.
      */
-    public static double getArea(Function f, double x1, double x2,
-                                 int numIntervals) {
+    public static double getArea(final Function f, final double x1, final double x2,
+                                 final int numIntervals) {
         if (f == null) {
             throw new IllegalArgumentException("Function not specified.");
         }
@@ -53,11 +53,11 @@ public class Integrator {
                     " is not less than " + x2 + ".");
         }
 
-        double deltaX = x2 - x1;
+        final double deltaX = x2 - x1;
         double area = 0.0;
 
         for (int n = 0; n <= numIntervals; n++) {
-            double xValue = x1 + ((double) n / (double) numIntervals) * deltaX;
+            final double xValue = x1 + ((double) n / (double) numIntervals) * deltaX;
 
             if (n == 0) {
                 area += f.valueAt(x1);

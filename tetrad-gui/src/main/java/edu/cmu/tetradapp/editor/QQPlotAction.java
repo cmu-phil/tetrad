@@ -52,16 +52,16 @@ class QQPlotAction extends AbstractAction {
      * Constructs the <code>QQPlotAction</code> given the <code>DataEditor</code>
      * that its attached to.
      */
-    public QQPlotAction(DataEditor editor) {
+    public QQPlotAction(final DataEditor editor) {
         super("Q-Q Plots...");
-        dataEditor = editor;
+        this.dataEditor = editor;
     }
 
 
-    public void actionPerformed(ActionEvent e) {
-        DataSet dataSet = (DataSet) dataEditor.getSelectedDataModel();
+    public void actionPerformed(final ActionEvent e) {
+        final DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
         if (dataSet == null || dataSet.getNumColumns() == 0) {
-            JOptionPane.showMessageDialog(this.findOwner(), "Cannot display a Q-Q plot for an empty data set.");
+            JOptionPane.showMessageDialog(findOwner(), "Cannot display a Q-Q plot for an empty data set.");
             return;
         }
         // if there are missing values warn and don't display q-q plot.
@@ -72,23 +72,23 @@ class QQPlotAction extends AbstractAction {
 //            return;
 //        }
 
-        int[] selected = dataSet.getSelectedIndices();
+        final int[] selected = dataSet.getSelectedIndices();
         // if more then one column is selected then open up more than one histogram
         if (selected != null && 0 < selected.length) {
             // warn user if they selected more than 10
             if (10 < selected.length) {
-                int option = JOptionPane.showConfirmDialog(this.findOwner(), "You are about to open " + selected.length +
+                final int option = JOptionPane.showConfirmDialog(findOwner(), "You are about to open " + selected.length +
                         " Q-Q plots, are you sure you want to proceed?", "Q-Q Plot Warning", JOptionPane.YES_NO_OPTION);
                 // if selected no, return
                 if (option == JOptionPane.NO_OPTION) {
                     return;
                 }
             }
-            for (int index : selected) {
-                JPanel dialog = this.createQQPlotDialog(dataSet.getVariable(index));
+            for (final int index : selected) {
+                final JPanel dialog = createQQPlotDialog(dataSet.getVariable(index));
 
-                EditorWindow editorWindow =
-                        new EditorWindow(dialog, "QQPlot", "Save", true, dataEditor);
+                final EditorWindow editorWindow =
+                        new EditorWindow(dialog, "QQPlot", "Save", true, this.dataEditor);
 
                 DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
                 editorWindow.pack();
@@ -100,10 +100,10 @@ class QQPlotAction extends AbstractAction {
 //                dialog.setVisible(true);
             }
         } else {
-            JPanel dialog = this.createQQPlotDialog(null);
+            final JPanel dialog = createQQPlotDialog(null);
 
-            EditorWindow editorWindow =
-                    new EditorWindow(dialog, "QQPlot", "Save", true, dataEditor);
+            final EditorWindow editorWindow =
+                    new EditorWindow(dialog, "QQPlot", "Save", true, this.dataEditor);
 
             DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
             editorWindow.pack();
@@ -122,10 +122,10 @@ class QQPlotAction extends AbstractAction {
     /**
      * Sets the location on the given dialog for the given index.
      */
-    private void setLocation(JDialog dialog, int index) {
-        Rectangle bounds = dialog.getBounds();
-        JFrame frame = this.findOwner();
-        Dimension dim;
+    private void setLocation(final JDialog dialog, final int index) {
+        final Rectangle bounds = dialog.getBounds();
+        final JFrame frame = findOwner();
+        final Dimension dim;
         if (frame == null) {
             dim = Toolkit.getDefaultToolkit().getScreenSize();
         } else {
@@ -144,26 +144,26 @@ class QQPlotAction extends AbstractAction {
      * Creates a dialog that is showing the histogram for the given node (if null
      * one is selected for you)
      */
-    private JPanel createQQPlotDialog(Node selected) {
+    private JPanel createQQPlotDialog(final Node selected) {
         final String dialogTitle = "Q-Q Plots";
-        JPanel panel = new JPanel(); //new JPanel(findOwner(), dialogTitle, false);
+        final JPanel panel = new JPanel(); //new JPanel(findOwner(), dialogTitle, false);
         panel.setLayout(new BorderLayout());
 
 //        dialog.setResizable(false);
 //        dialog.getContentPane().setLayout(new BorderLayout());
-        DataSet dataSet = (DataSet) dataEditor.getSelectedDataModel();
+        final DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
 
-        QQPlot qqPlot = new QQPlot(dataSet, selected);
-        QQPlotEditorPanel editorPanel = new QQPlotEditorPanel(qqPlot, dataSet);
-        QQPlotDisplayPanel display = new QQPlotDisplayPanel(qqPlot);
+        final QQPlot qqPlot = new QQPlot(dataSet, selected);
+        final QQPlotEditorPanel editorPanel = new QQPlotEditorPanel(qqPlot, dataSet);
+        final QQPlotDisplayPanel display = new QQPlotDisplayPanel(qqPlot);
         editorPanel.addPropertyChangeListener(new QQPlotListener(display));
 
-        JMenuBar bar = new JMenuBar();
-        JMenu menu = new JMenu("File");
+        final JMenuBar bar = new JMenuBar();
+        final JMenu menu = new JMenu("File");
         menu.add(new JMenuItem(new SaveComponentImage(display, "Save Q-Q Plot")));
         bar.add(menu);
 
-        Box box = Box.createHorizontalBox();
+        final Box box = Box.createHorizontalBox();
         box.add(display);
 
         box.add(Box.createHorizontalStrut(3));
@@ -171,7 +171,7 @@ class QQPlotAction extends AbstractAction {
         box.add(Box.createHorizontalStrut(5));
         box.add(Box.createHorizontalGlue());
 
-        Box vBox = Box.createVerticalBox();
+        final Box vBox = Box.createVerticalBox();
         vBox.add(Box.createVerticalStrut(15));
         vBox.add(box);
         vBox.add(Box.createVerticalStrut(5));
@@ -188,7 +188,7 @@ class QQPlotAction extends AbstractAction {
 
     private JFrame findOwner() {
         return (JFrame) SwingUtilities.getAncestorOfClass(
-                JFrame.class, dataEditor);
+                JFrame.class, this.dataEditor);
     }
 
     //================================= Inner Class ======================================//
@@ -202,14 +202,14 @@ class QQPlotAction extends AbstractAction {
         private final QQPlotDisplayPanel display;
 
 
-        public QQPlotListener(QQPlotDisplayPanel display) {
+        public QQPlotListener(final QQPlotDisplayPanel display) {
             this.display = display;
         }
 
 
-        public void propertyChange(PropertyChangeEvent evt) {
+        public void propertyChange(final PropertyChangeEvent evt) {
             if ("histogramChange".equals(evt.getPropertyName())) {
-                display.updateQQPlot((QQPlot) evt.getNewValue());
+                this.display.updateQQPlot((QQPlot) evt.getNewValue());
             }
         }
     }

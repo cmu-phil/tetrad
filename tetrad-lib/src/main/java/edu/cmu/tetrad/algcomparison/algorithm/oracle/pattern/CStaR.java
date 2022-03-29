@@ -13,7 +13,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Cstar;
 import edu.cmu.tetrad.search.Cstar.PatternAlgorithm;
-import edu.cmu.tetrad.search.Cstar.Record;
 import edu.cmu.tetrad.search.Cstar.SampleStyle;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -31,7 +30,7 @@ import java.util.List;
 public class CStaR implements Algorithm, TakesIndependenceWrapper {
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
-    private LinkedList<Record> records;
+    private LinkedList<Cstar.Record> records;
 
     public CStaR() {
     }
@@ -70,7 +69,7 @@ public class CStaR implements Algorithm, TakesIndependenceWrapper {
 
         List<Node> possibleCauses = new ArrayList<>(dataSet.getVariables());
 
-        LinkedList<LinkedList<Record>> allRecords
+        LinkedList<LinkedList<Cstar.Record>> allRecords
                 = cStaR.getRecords((DataSet) dataSet, possibleCauses, possibleEffects, test.getTest(dataSet, parameters));
 
         if (allRecords.isEmpty()) {
@@ -111,17 +110,17 @@ public class CStaR implements Algorithm, TakesIndependenceWrapper {
         return parameters;
     }
 
-    public LinkedList<Record> getRecords() {
-        return records;
+    public LinkedList<Cstar.Record> getRecords() {
+        return this.records;
     }
 
     @Override
-    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
-        test = independenceWrapper;
+    public void setIndependenceWrapper(final IndependenceWrapper independenceWrapper) {
+        this.test = independenceWrapper;
     }
 
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
-        return test;
+        return this.test;
     }
 }

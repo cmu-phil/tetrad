@@ -51,26 +51,26 @@ public class DirectedGraphIterator {
     public DirectedGraphIterator(Graph graph) {
         graph = new EdgeListGraph(graph);
 //        graph = DataGraphUtils.undirectedGraph(graph);
-        List<Edge> undirectedEdges = new ArrayList<>();
+        final List<Edge> undirectedEdges = new ArrayList<>();
 
-        for (Edge edge : graph.getEdges()) {
+        for (final Edge edge : graph.getEdges()) {
             if (Edges.isUndirectedEdge(edge)) {
                 undirectedEdges.add(edge);
             }
         }
 
-        int[] dims = new int[undirectedEdges.size()];
+        final int[] dims = new int[undirectedEdges.size()];
 
         for (int i = 0; i < undirectedEdges.size(); i++) {
             dims[i] = 2;
         }
 
-        CombinationGenerator generator = new CombinationGenerator(dims);
+        final CombinationGenerator generator = new CombinationGenerator(dims);
         int[] combination;
 
         while ((combination = generator.next()) != null) {
             for (int k = 0; k < combination.length; k++) {
-                Edge edge = undirectedEdges.get(k);
+                final Edge edge = undirectedEdges.get(k);
                 graph.removeEdge(edge.getNode1(), edge.getNode2());
 
                 if (combination[k] == 0) {
@@ -81,11 +81,11 @@ public class DirectedGraphIterator {
             }
 
 //            if (!graph.existsDirectedCycle()) {
-            graphs.add(new EdgeListGraph(graph));
+            this.graphs.add(new EdgeListGraph(graph));
 //            }
         }
 
-        System.out.println("# directed graphs = " + graphs.size());
+        System.out.println("# directed graphs = " + this.graphs.size());
     }
 
     /**
@@ -100,10 +100,10 @@ public class DirectedGraphIterator {
      * an exception.
      */
     public Graph next() {
-        ++index;
+        ++this.index;
 
-        if (index < graphs.size()) {
-            return graphs.get(index);
+        if (this.index < this.graphs.size()) {
+            return this.graphs.get(this.index);
         } else {
             return null;
         }
@@ -113,7 +113,7 @@ public class DirectedGraphIterator {
      * @return true just in case there is still a DAG remaining in the enumeration of DAGs for this CPDAG.
      */
     public boolean hasNext() {
-        return index + 1 < graphs.size();
+        return this.index + 1 < this.graphs.size();
     }
 }
 

@@ -78,12 +78,12 @@ public final class IndTestPartialCorrelation implements IndependenceTest {
 
     //==========================CONSTRUCTORS=============================//
 
-    public IndTestPartialCorrelation(DataSet data, double alpha) {
-        dataSet = data;
+    public IndTestPartialCorrelation(final DataSet data, final double alpha) {
+        this.dataSet = data;
         this.alpha = alpha;
-        sampleSize = data.getNumRows();
-        variables = new ArrayList<>(data.getVariables());
-        cov = new CovarianceMatrix(data);
+        this.sampleSize = data.getNumRows();
+        this.variables = new ArrayList<>(data.getVariables());
+        this.cov = new CovarianceMatrix(data);
     }
 
     //==========================PUBLIC METHODS=============================//
@@ -91,45 +91,45 @@ public final class IndTestPartialCorrelation implements IndependenceTest {
     /**
      * Creates a new independence test instance for a subset of the variables.
      */
-    public IndependenceTest indTestSubset(List<Node> vars) {
+    public IndependenceTest indTestSubset(final List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
-        return this.indepCollection(x, y, alpha);
+    public boolean isIndependent(final Node x, final Node y, final List<Node> z) {
+        return indepCollection(x, y, this.alpha);
     }
 
-    private boolean indepCollection(Node x, Node y, double alpha) {
-        Matrix submatrix = cov.getMatrix();
+    private boolean indepCollection(final Node x, final Node y, final double alpha) {
+        final Matrix submatrix = this.cov.getMatrix();
 
-        Matrix inverse;
+        final Matrix inverse;
 
         try {
             inverse = submatrix.inverse();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new IllegalArgumentException();
         }
 
-        int i = variables.indexOf(x);
-        int j = variables.indexOf(y);
+        final int i = this.variables.indexOf(x);
+        final int j = this.variables.indexOf(y);
 
-        double a = -1.0 * inverse.get(i, j);
-        double v0 = inverse.get(i, i);
-        double v1 = inverse.get(j, j);
-        double b = Math.sqrt(v0 * v1);
+        final double a = -1.0 * inverse.get(i, j);
+        final double v0 = inverse.get(i, i);
+        final double v1 = inverse.get(j, j);
+        final double b = Math.sqrt(v0 * v1);
 
-        double r = a / b;
+        final double r = a / b;
 
-        double fisherZ = Math.sqrt(cov.getSampleSize() - 3 - (variables.size() - 2)) * 0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
-        double p = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, abs(fisherZ)));
+        final double fisherZ = Math.sqrt(this.cov.getSampleSize() - 3 - (this.variables.size() - 2)) * 0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
+        final double p = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, abs(fisherZ)));
         return p > alpha;
 
     }
 
-    private List<Node> listVars(int[] indices, List<Node> vars) {
-        List<Node> nodes = new ArrayList<>();
+    private List<Node> listVars(final int[] indices, final List<Node> vars) {
+        final List<Node> nodes = new ArrayList<>();
 
-        for (int i : indices) {
+        for (final int i : indices) {
             nodes.add(vars.get(i));
         }
 
@@ -139,12 +139,12 @@ public final class IndTestPartialCorrelation implements IndependenceTest {
     /**
      * @return the submatrix of m with variables in the order of the x variables.
      */
-    public static Matrix subMatrix(ICovarianceMatrix m, List<Node> x, List<Node> y, List<Node> z) {
-        List<Node> variables = m.getVariables();
-        Matrix _covMatrix = m.getMatrix();
+    public static Matrix subMatrix(final ICovarianceMatrix m, final List<Node> x, final List<Node> y, final List<Node> z) {
+        final List<Node> variables = m.getVariables();
+        final Matrix _covMatrix = m.getMatrix();
 
         // Create index array for the given variables.
-        int[] indices = new int[x.size() + y.size() + z.size()];
+        final int[] indices = new int[x.size() + y.size() + z.size()];
 
         for (int i = 0; i < x.size(); i++) {
             indices[i] = variables.indexOf(x.get(i));
@@ -161,36 +161,36 @@ public final class IndTestPartialCorrelation implements IndependenceTest {
 //        System.out.println(Arrays.toString(indices));
 
         // Extract submatrix of correlation matrix using this index array.
-        Matrix submatrix = _covMatrix.getSelection(indices, indices);
+        final Matrix submatrix = _covMatrix.getSelection(indices, indices);
 
         return submatrix;
     }
 
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        return this.isIndependent(x, y, Arrays.asList(z));
+    public boolean isIndependent(final Node x, final Node y, final Node... z) {
+        return isIndependent(x, y, Arrays.asList(z));
     }
 
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        return !this.isIndependent(x, y, z);
+    public boolean isDependent(final Node x, final Node y, final List<Node> z) {
+        return !isIndependent(x, y, z);
     }
 
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return this.isDependent(x, y, zList);
+    public boolean isDependent(final Node x, final Node y, final Node... z) {
+        final List<Node> zList = Arrays.asList(z);
+        return isDependent(x, y, zList);
     }
 
     /**
      * @return the probability associated with the most recently computed independence test.
      */
     public double getPValue() {
-        return pValue;
+        return this.pValue;
     }
 
     /**
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
-    public void setAlpha(double alpha) {
+    public void setAlpha(final double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
             throw new IllegalArgumentException("Significance out of range.");
         }
@@ -202,7 +202,7 @@ public final class IndTestPartialCorrelation implements IndependenceTest {
      * Gets the getModel significance level.
      */
     public double getAlpha() {
-        return alpha;
+        return this.alpha;
     }
 
     /**
@@ -210,13 +210,13 @@ public final class IndTestPartialCorrelation implements IndependenceTest {
      * relations-- that is, all the variables in the given graph or the given data set.
      */
     public List<Node> getVariables() {
-        return variables;
+        return this.variables;
     }
 
     /**
      * @return the variable with the given name.
      */
-    public Node getVariable(String name) {
+    public Node getVariable(final String name) {
         throw new UnsupportedOperationException();
     }
 
@@ -224,9 +224,9 @@ public final class IndTestPartialCorrelation implements IndependenceTest {
      * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
-        List<Node> variables = this.getVariables();
-        List<String> variableNames = new ArrayList<>();
-        for (Node variable1 : variables) {
+        final List<Node> variables = getVariables();
+        final List<String> variableNames = new ArrayList<>();
+        for (final Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }
         return variableNames;
@@ -236,7 +236,7 @@ public final class IndTestPartialCorrelation implements IndependenceTest {
      * If <code>isDeterminismAllowed()</code>, deters to IndTestFisherZD; otherwise throws
      * UnsupportedOperationException.
      */
-    public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
+    public boolean determines(final List<Node> z, final Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
 
@@ -244,36 +244,36 @@ public final class IndTestPartialCorrelation implements IndependenceTest {
      * @return the data set being analyzed.
      */
     public DataSet getData() {
-        return dataSet;
+        return this.dataSet;
     }
 
     public void shuffleVariables() {
-        ArrayList<Node> nodes = new ArrayList<>(variables);
+        final ArrayList<Node> nodes = new ArrayList<>(this.variables);
         Collections.shuffle(nodes);
-        variables = Collections.unmodifiableList(nodes);
+        this.variables = Collections.unmodifiableList(nodes);
     }
 
     /**
      * @return a string representation of this test.
      */
     public String toString() {
-        return "Fisher's Z, alpha = " + nf.format(this.getAlpha());
+        return "Fisher's Z, alpha = " + IndTestPartialCorrelation.nf.format(getAlpha());
     }
 
     //==========================PRIVATE METHODS============================//
 
-    private Map<String, Node> mapNames(List<Node> variables) {
-        Map<String, Node> nameMap = new ConcurrentHashMap<>();
+    private Map<String, Node> mapNames(final List<Node> variables) {
+        final Map<String, Node> nameMap = new ConcurrentHashMap<>();
 
-        for (Node node : variables) {
+        for (final Node node : variables) {
             nameMap.put(node.getName(), node);
         }
 
         return nameMap;
     }
 
-    private Map<Node, Integer> indexMap(List<Node> variables) {
-        Map<Node, Integer> indexMap = new ConcurrentHashMap<>();
+    private Map<Node, Integer> indexMap(final List<Node> variables) {
+        final Map<Node, Integer> indexMap = new ConcurrentHashMap<>();
 
         for (int i = 0; i < variables.size(); i++) {
             indexMap.put(variables.get(i), i);
@@ -289,16 +289,16 @@ public final class IndTestPartialCorrelation implements IndependenceTest {
     @Override
     public List<DataSet> getDataSets() {
 
-        List<DataSet> dataSets = new ArrayList<>();
+        final List<DataSet> dataSets = new ArrayList<>();
 
-        dataSets.add(dataSet);
+        dataSets.add(this.dataSet);
 
         return dataSets;
     }
 
     @Override
     public int getSampleSize() {
-        return sampleSize;
+        return this.sampleSize;
     }
 
     @Override
@@ -308,17 +308,17 @@ public final class IndTestPartialCorrelation implements IndependenceTest {
 
     @Override
     public double getScore() {
-        return this.getPValue();
+        return getPValue();
     }
 
 
     @Override
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     @Override
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 }

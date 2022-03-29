@@ -46,7 +46,7 @@ public class ChiSquare implements Distribution {
      * Constructs a new Chi Square distribution.
      */
     private ChiSquare() {
-        df = 5.0;
+        this.df = 5.0;
     }
 
     /**
@@ -54,28 +54,28 @@ public class ChiSquare implements Distribution {
      *
      * @return the exemplar.
      */
-    @SuppressWarnings({"UnusedDeclaration"})
+    @SuppressWarnings("UnusedDeclaration")
     public static ChiSquare serializableInstance() {
         return new ChiSquare();
     }
 
-    public void setParameter(int index, double value) {
+    public void setParameter(final int index, final double value) {
         if (index == 0 && value >= 0.0) {
-            df = value;
+            this.df = value;
         } else {
             throw new IllegalArgumentException("Illegal value: " + index + " = " + value);
         }
     }
 
-    public double getParameter(int index) {
+    public double getParameter(final int index) {
         if (index == 0) {
-            return df;
+            return this.df;
         } else {
             throw new IllegalArgumentException("Illegal index: " + index);
         }
     }
 
-    public String getParameterName(int index) {
+    public String getParameterName(final int index) {
         if (index == 0) {
             return "DF";
         } else {
@@ -92,11 +92,11 @@ public class ChiSquare implements Distribution {
     }
 
     public double nextRandom() {
-        return RandomUtil.getInstance().nextChiSquare(df);
+        return RandomUtil.getInstance().nextChiSquare(this.df);
     }
 
     public String toString() {
-        return "ChiSquare(" + df + ")";
+        return "ChiSquare(" + this.df + ")";
     }
 
     /**
@@ -114,7 +114,7 @@ public class ChiSquare implements Distribution {
      * @throws ClassNotFoundException If the class of an object in the stream
      *                                is not in the project.
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }

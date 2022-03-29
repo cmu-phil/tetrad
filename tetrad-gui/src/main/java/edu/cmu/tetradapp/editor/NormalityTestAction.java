@@ -53,15 +53,15 @@ class NormalityTestAction extends AbstractAction {
      * Constructs the <code>QQPlotAction</code> given the <code>DataEditor</code>
      * that its attached to.
      */
-    public NormalityTestAction(DataEditor editor) {
+    public NormalityTestAction(final DataEditor editor) {
         super("Normality Tests...");
-        dataEditor = editor;
+        this.dataEditor = editor;
     }
 
-    public void actionPerformed(ActionEvent e) {
-        DataSet dataSet = (DataSet) dataEditor.getSelectedDataModel();
+    public void actionPerformed(final ActionEvent e) {
+        final DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
         if (dataSet == null || dataSet.getNumColumns() == 0) {
-            JOptionPane.showMessageDialog(this.findOwner(), "Cannot run normality tests on an empty data set.");
+            JOptionPane.showMessageDialog(findOwner(), "Cannot run normality tests on an empty data set.");
             return;
         }
         // if there are missing values warn and don't display q-q plot.
@@ -72,10 +72,10 @@ class NormalityTestAction extends AbstractAction {
 //            return;
 //        }
 
-        JPanel panel = this.createNormalityTestDialog(null);
+        final JPanel panel = createNormalityTestDialog(null);
 
-        EditorWindow window = new EditorWindow(panel,
-                "Normality Tests", "Close", false, dataEditor);
+        final EditorWindow window = new EditorWindow(panel,
+                "Normality Tests", "Close", false, this.dataEditor);
         DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
         window.setVisible(true);
 
@@ -87,10 +87,10 @@ class NormalityTestAction extends AbstractAction {
     /**
      * Sets the location on the given dialog for the given index.
      */
-    private void setLocation(JDialog dialog, int index) {
-        Rectangle bounds = dialog.getBounds();
-        JFrame frame = this.findOwner();
-        Dimension dim;
+    private void setLocation(final JDialog dialog, final int index) {
+        final Rectangle bounds = dialog.getBounds();
+        final JFrame frame = findOwner();
+        final Dimension dim;
         if (frame == null) {
             dim = Toolkit.getDefaultToolkit().getScreenSize();
         } else {
@@ -109,18 +109,18 @@ class NormalityTestAction extends AbstractAction {
      * Creates a dialog that is showing the histogram for the given node (if null
      * one is selected for you)
      */
-    private JPanel createNormalityTestDialog(Node selected) {
-        DataSet dataSet = (DataSet) dataEditor.getSelectedDataModel();
+    private JPanel createNormalityTestDialog(final Node selected) {
+        final DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
 
-        QQPlot qqPlot = new QQPlot(dataSet, selected);
-        NormalityTestEditorPanel editorPanel = new NormalityTestEditorPanel(qqPlot, dataSet);
+        final QQPlot qqPlot = new QQPlot(dataSet, selected);
+        final NormalityTestEditorPanel editorPanel = new NormalityTestEditorPanel(qqPlot, dataSet);
 
-        JTextArea display = new JTextArea(NormalityTests.runNormalityTests(dataSet,
+        final JTextArea display = new JTextArea(NormalityTests.runNormalityTests(dataSet,
                 (ContinuousVariable) qqPlot.getSelectedVariable()), 20, 65);
         display.setEditable(false);
         editorPanel.addPropertyChangeListener(new NormalityTestListener(display));
 
-        Box box = Box.createHorizontalBox();
+        final Box box = Box.createHorizontalBox();
         box.add(display);
 
         box.add(Box.createHorizontalStrut(3));
@@ -128,12 +128,12 @@ class NormalityTestAction extends AbstractAction {
         box.add(Box.createHorizontalStrut(5));
         box.add(Box.createHorizontalGlue());
 
-        Box vBox = Box.createVerticalBox();
+        final Box vBox = Box.createVerticalBox();
         vBox.add(Box.createVerticalStrut(15));
         vBox.add(box);
         vBox.add(Box.createVerticalStrut(5));
 
-        JPanel panel = new JPanel();
+        final JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.add(vBox, BorderLayout.CENTER);
 
@@ -143,7 +143,7 @@ class NormalityTestAction extends AbstractAction {
 
     private JFrame findOwner() {
         return (JFrame) SwingUtilities.getAncestorOfClass(
-                JFrame.class, dataEditor);
+                JFrame.class, this.dataEditor);
     }
 
     //================================= Inner Class ======================================//
@@ -157,14 +157,14 @@ class NormalityTestAction extends AbstractAction {
         private final JTextArea display;
 
 
-        public NormalityTestListener(JTextArea display) {
+        public NormalityTestListener(final JTextArea display) {
             this.display = display;
         }
 
 
-        public void propertyChange(PropertyChangeEvent evt) {
+        public void propertyChange(final PropertyChangeEvent evt) {
             if ("histogramChange".equals(evt.getPropertyName())) {
-                display.setText((String) evt.getNewValue());
+                this.display.setText((String) evt.getNewValue());
             }
         }
     }

@@ -41,7 +41,7 @@ public final class ModelGenerator {
      * deleted, added or reversed.  Edges are not added or reversed if a cycle
      * would result.
      */
-    public static List<Graph> generate(Graph graph) {
+    public static List<Graph> generate(final Graph graph) {
 
         //Make sure the argument contains no cycles.
         if (graph.existsDirectedCycle()) {
@@ -49,29 +49,29 @@ public final class ModelGenerator {
                     "Input must not contain cycles.");
         }
 
-        List<Graph> graphs = new LinkedList<>();
+        final List<Graph> graphs = new LinkedList<>();
 
-        Set<Edge> allEdges = graph.getEdges();
-        List<Node> allNodes = graph.getNodes();
+        final Set<Edge> allEdges = graph.getEdges();
+        final List<Node> allNodes = graph.getNodes();
 
         //Add those graphs in which each edge is removed in turn.
-        for (Edge allEdge1 : allEdges) {
-            Graph toAdd = new EdgeListGraph(graph);
+        for (final Edge allEdge1 : allEdges) {
+            final Graph toAdd = new EdgeListGraph(graph);
             toAdd.removeEdge(allEdge1);
             graphs.add(toAdd);
         }
 
         //Add those graphs in which each edge is reversed
-        for (Edge allEdge : allEdges) {
-            Graph toAdd = new EdgeListGraph(graph);
+        for (final Edge allEdge : allEdges) {
+            final Graph toAdd = new EdgeListGraph(graph);
 
-            Endpoint e1 = allEdge.getEndpoint1();
-            Endpoint e2 = allEdge.getEndpoint2();
+            final Endpoint e1 = allEdge.getEndpoint1();
+            final Endpoint e2 = allEdge.getEndpoint2();
 
-            Node n1 = allEdge.getNode1();
-            Node n2 = allEdge.getNode2();
+            final Node n1 = allEdge.getNode1();
+            final Node n2 = allEdge.getNode2();
 
-            Edge newEdge = new Edge(n1, n2, e2, e1);
+            final Edge newEdge = new Edge(n1, n2, e2, e1);
 
             toAdd.removeEdge(allEdge);
             if (!toAdd.existsDirectedPathFromTo(n1, n2)) {
@@ -87,12 +87,12 @@ public final class ModelGenerator {
         //    Node node1 = (Node) itn1.next();
 
         for (int i = 0; i < allNodes.size(); i++) {
-            Node node1 = allNodes.get(i);
+            final Node node1 = allNodes.get(i);
 
             //for(Iterator itn2 = allNodes.iterator(); itn2.hasNext(); ) {
             //    Node node2 = (Node) itn2.next();
             for (int j = i + 1; j < allNodes.size(); j++) {
-                Node node2 = allNodes.get(j);
+                final Node node2 = allNodes.get(j);
 
                 //if(node1 == node2) continue;
 
@@ -100,20 +100,20 @@ public final class ModelGenerator {
                 if (!graph.isParentOf(node1, node2) &&
                         !graph.isParentOf(node2, node1)) {
 
-                    Graph toAdd1 = new EdgeListGraph(graph);
+                    final Graph toAdd1 = new EdgeListGraph(graph);
                     //Make sure adding this edge won't introduce a cycle.
                     if (!toAdd1.existsDirectedPathFromTo(node1, node2)) {  //
-                        Edge newN2N1 = new Edge(node2, node1, Endpoint.TAIL,
+                        final Edge newN2N1 = new Edge(node2, node1, Endpoint.TAIL,
                                 Endpoint.ARROW);
                         toAdd1.addEdge(newN2N1);
                         graphs.add(toAdd1);
                     }
 
                     //Now create the graph with the edge added in the other direction
-                    Graph toAdd2 = new EdgeListGraph(graph);
+                    final Graph toAdd2 = new EdgeListGraph(graph);
                     //Make sure adding this edge won't introduce a cycle.
                     if (!toAdd2.existsDirectedPathFromTo(node2, node1)) {
-                        Edge newN1N2 = new Edge(node1, node2, Endpoint.TAIL,
+                        final Edge newN1N2 = new Edge(node1, node2, Endpoint.TAIL,
                                 Endpoint.ARROW);
                         toAdd2.addEdge(newN1N2);
                         graphs.add(toAdd2);

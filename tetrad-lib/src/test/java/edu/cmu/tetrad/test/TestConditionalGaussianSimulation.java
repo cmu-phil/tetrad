@@ -38,8 +38,8 @@ import edu.cmu.tetrad.util.Parameters;
  */
 public class TestConditionalGaussianSimulation {
 
-    public void testBryan(String... args) {
-        Parameters parameters = new Parameters();
+    public void testBryan(final String... args) {
+        final Parameters parameters = new Parameters();
 
         parameters.set("numCategoriesToDiscretize", 5);
 
@@ -61,7 +61,7 @@ public class TestConditionalGaussianSimulation {
         parameters.set("discretize", true);
 //        parameters.set("discretize", true, false);
 
-        Statistics statistics = new Statistics();
+        final Statistics statistics = new Statistics();
 
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
@@ -72,15 +72,15 @@ public class TestConditionalGaussianSimulation {
         statistics.setWeight("AHP", 1.0);
         statistics.setWeight("AHR", 1.0);
 
-        Algorithms algorithms = new Algorithms();
+        final Algorithms algorithms = new Algorithms();
 
         algorithms.add(new Fges(new ConditionalGaussianBicScore()));
 
-        Simulations simulations = new Simulations();
+        final Simulations simulations = new Simulations();
 
         simulations.add(new ConditionalGaussianSimulation(new RandomForward()));
 
-        Comparison comparison = new Comparison();
+        final Comparison comparison = new Comparison();
 
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
@@ -90,7 +90,7 @@ public class TestConditionalGaussianSimulation {
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
     }
 
-    public static void main(String... args) {
+    public static void main(final String... args) {
         new TestConditionalGaussianSimulation().testBryan();
     }
 }

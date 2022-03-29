@@ -38,8 +38,8 @@ public class KnowledgeWrapper implements SessionModel {
     private final List<IKnowledge> knowledgeList;
 
     private KnowledgeWrapper() {
-        knowledgeList = new ArrayList<>();
-        knowledgeList.add(new Knowledge2());
+        this.knowledgeList = new ArrayList<>();
+        this.knowledgeList.add(new Knowledge2());
     }
 
     public static KnowledgeWrapper serializableInstance() {
@@ -47,15 +47,15 @@ public class KnowledgeWrapper implements SessionModel {
     }
 
     public IKnowledge getKnowledge() {
-        return knowledgeList.get(0);
+        return this.knowledgeList.get(0);
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 }
 

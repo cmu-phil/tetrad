@@ -36,29 +36,29 @@ public class InterventionalColumn {
     public InterventionalColumn() {
     }
 
-    public InterventionalColumn(ColumnMetadata valueColumn, ColumnMetadata statusColumn) {
+    public InterventionalColumn(final ColumnMetadata valueColumn, final ColumnMetadata statusColumn) {
         this.valueColumn = valueColumn;
         this.statusColumn = statusColumn;
     }
 
     @Override
     public String toString() {
-        return "InterventionalColumn{" + "valueColumn=" + valueColumn + ", statusColumn=" + statusColumn + '}';
+        return "InterventionalColumn{" + "valueColumn=" + this.valueColumn + ", statusColumn=" + this.statusColumn + '}';
     }
 
     public ColumnMetadata getValueColumn() {
-        return valueColumn;
+        return this.valueColumn;
     }
 
-    public void setValueColumn(ColumnMetadata valueColumn) {
+    public void setValueColumn(final ColumnMetadata valueColumn) {
         this.valueColumn = valueColumn;
     }
 
     public ColumnMetadata getStatusColumn() {
-        return statusColumn;
+        return this.statusColumn;
     }
 
-    public void setStatusColumn(ColumnMetadata statusColumn) {
+    public void setStatusColumn(final ColumnMetadata statusColumn) {
         this.statusColumn = statusColumn;
     }
 

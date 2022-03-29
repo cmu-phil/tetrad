@@ -39,21 +39,21 @@ public class RemoveConstantColumnsWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
 
 
-    public RemoveConstantColumnsWrapper(DataWrapper data, Parameters params) {
+    public RemoveConstantColumnsWrapper(final DataWrapper data, final Parameters params) {
         if (data == null) {
             throw new NullPointerException("The givan data must not be null");
         }
-        DataModel model = data.getSelectedDataModel();
+        final DataModel model = data.getSelectedDataModel();
         if ((!(model instanceof DataSet))) {
             throw new IllegalArgumentException("Data must be tabular");
         }
 
 
-        DataFilter interpolator = new RemoveConstantColumnsDataFilter();
-        setDataModel(interpolator.filter((DataSet) model));
-        setSourceGraph(data.getSourceGraph());
+        final DataFilter interpolator = new RemoveConstantColumnsDataFilter();
+        this.setDataModel(interpolator.filter((DataSet) model));
+        this.setSourceGraph(data.getSourceGraph());
 
-        LogDataUtils.logDataModelList("Parent data in which constant columns have been removed.", this.getDataModelList());
+        LogDataUtils.logDataModelList("Parent data in which constant columns have been removed.", getDataModelList());
 
     }
 

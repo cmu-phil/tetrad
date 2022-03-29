@@ -43,22 +43,22 @@ public class FactorAnalysisEditor extends AbstractSearchEditor {
     /**
      * Opens up an editor to let the user view the given PcRunner.
      */
-    public FactorAnalysisEditor(FactorAnalysisRunner runner) {
+    public FactorAnalysisEditor(final FactorAnalysisRunner runner) {
         super(runner, "Factor Analysis");
     }
 
     //=============================== Public Methods ==================================//
 
     public Graph getGraph() {
-        return this.getWorkbench().getGraph();
+        return getWorkbench().getGraph();
     }
 
-    public void layoutByGraph(Graph graph) {
-        this.getWorkbench().layoutByGraph(graph);
+    public void layoutByGraph(final Graph graph) {
+        getWorkbench().layoutByGraph(graph);
     }
 
     public Rectangle getVisibleRect() {
-        return this.getWorkbench().getVisibleRect();
+        return getWorkbench().getVisibleRect();
     }
 
     //==========================PROTECTED METHODS============================//
@@ -67,13 +67,13 @@ public class FactorAnalysisEditor extends AbstractSearchEditor {
     /**
      * Sets up the editor, does the layout, and so on.
      */
-    protected void setup(String resultLabel) {
-        FactorAnalysisRunner runner = (FactorAnalysisRunner) this.getAlgorithmRunner();
-        Graph graph = runner.getGraph();
+    protected void setup(final String resultLabel) {
+        final FactorAnalysisRunner runner = (FactorAnalysisRunner) getAlgorithmRunner();
+        final Graph graph = runner.getGraph();
 
 
-        JTextArea display = new JTextArea(runner.getOutput());
-        JScrollPane scrollPane = new JScrollPane(display);
+        final JTextArea display = new JTextArea(runner.getOutput());
+        final JScrollPane scrollPane = new JScrollPane(display);
         scrollPane.setPreferredSize(new Dimension(500, 400));
         display.setEditable(false);
         display.setFont(new Font("Monospaced", Font.PLAIN, 12));
@@ -81,47 +81,47 @@ public class FactorAnalysisEditor extends AbstractSearchEditor {
         GraphUtils.circleLayout(graph, 225, 200, 150);
         GraphUtils.fruchtermanReingoldLayout(graph);
 
-        GraphWorkbench workbench = new GraphWorkbench(graph);
+        final GraphWorkbench workbench = new GraphWorkbench(graph);
 
-        JScrollPane graphPane = new JScrollPane(workbench);
+        final JScrollPane graphPane = new JScrollPane(workbench);
         graphPane.setPreferredSize(new Dimension(500, 400));
 
-        Box box = Box.createHorizontalBox();
+        final Box box = Box.createHorizontalBox();
         box.add(scrollPane);
 
         box.add(Box.createHorizontalStrut(3));
         box.add(Box.createHorizontalStrut(5));
         box.add(Box.createHorizontalGlue());
 
-        Box vBox = Box.createVerticalBox();
+        final Box vBox = Box.createVerticalBox();
         vBox.add(Box.createVerticalStrut(15));
         vBox.add(box);
         vBox.add(Box.createVerticalStrut(5));
         box.add(graphPane);
 
-        JPanel panel = new JPanel();
+        final JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.add(vBox, BorderLayout.CENTER);
 
-        this.add(panel);
+        add(panel);
     }
 
-    protected void addSpecialMenus(JMenuBar menuBar) {
+    protected void addSpecialMenus(final JMenuBar menuBar) {
 
     }
 
     public Graph getSourceGraph() {
-        Graph sourceGraph = this.getWorkbench().getGraph();
+        Graph sourceGraph = getWorkbench().getGraph();
 
         if (sourceGraph == null) {
-            sourceGraph = this.getAlgorithmRunner().getSourceGraph();
+            sourceGraph = getAlgorithmRunner().getSourceGraph();
         }
 
         return sourceGraph;
     }
 
     public List<String> getVarNames() {
-        return (List<String>) this.getAlgorithmRunner().getParams().get("varNames", null);
+        return (List<String>) getAlgorithmRunner().getParams().get("varNames", null);
     }
 
     public JPanel getToolbar() {
@@ -131,41 +131,41 @@ public class FactorAnalysisEditor extends AbstractSearchEditor {
     //================================PRIVATE METHODS====================//
 
     private JComponent getIndTestParamBox() {
-        Parameters params = this.getAlgorithmRunner().getParams();
-        return this.getIndTestParamBox(params);
+        final Parameters params = getAlgorithmRunner().getParams();
+        return getIndTestParamBox(params);
     }
 
     /**
      * Factory to return the correct param editor for independence test params.
      * This will go in a little box in the search editor.
      */
-    private JComponent getIndTestParamBox(Parameters params) {
+    private JComponent getIndTestParamBox(final Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
 
         if (params instanceof Parameters) {
-            if (this.getAlgorithmRunner() instanceof IFgesRunner) {
-                IFgesRunner gesRunner = ((IFgesRunner) this.getAlgorithmRunner());
+            if (getAlgorithmRunner() instanceof IFgesRunner) {
+                final IFgesRunner gesRunner = ((IFgesRunner) getAlgorithmRunner());
                 return new FgesIndTestParamsEditor(params, gesRunner.getType());
             }
         }
 
-        if (this.getAlgorithmRunner().getSourceGraph() instanceof TimeLagGraph) {
-            return new TimeSeriesIndTestParamsEditor(this.getAlgorithmRunner().getParams());
+        if (getAlgorithmRunner().getSourceGraph() instanceof TimeLagGraph) {
+            return new TimeSeriesIndTestParamsEditor(getAlgorithmRunner().getParams());
         }
 
-        if (this.getAlgorithmRunner().getSourceGraph() instanceof Graph) {
+        if (getAlgorithmRunner().getSourceGraph() instanceof Graph) {
             return new IndTestParamsEditor(params);
         }
 
         return new PcIndTestParamsEditor(params);
     }
 
-    protected void doDefaultArrangement(Graph resultGraph) {
-        if (this.getLatestWorkbenchGraph() != null) {   //(alreadyLaidOut) {
+    protected void doDefaultArrangement(final Graph resultGraph) {
+        if (getLatestWorkbenchGraph() != null) {   //(alreadyLaidOut) {
             GraphUtils.arrangeBySourceGraph(resultGraph,
-                    this.getLatestWorkbenchGraph());
+                    getLatestWorkbenchGraph());
 //        } else if (getKnowledge().isDefaultToKnowledgeLayout()) {
 //            SearchGraphUtils.arrangeByKnowledgeTiers(resultGraph,
 //                    getKnowledge());

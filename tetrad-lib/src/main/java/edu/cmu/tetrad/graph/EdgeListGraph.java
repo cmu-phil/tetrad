@@ -113,10 +113,10 @@ public class EdgeListGraph implements Graph {
      * Constructs a new (empty) EdgeListGraph.
      */
     public EdgeListGraph() {
-        edgeLists = new HashMap<>();
-        nodes = new ArrayList<>();
-        edgesSet = new HashSet<>();
-        namesHash = new HashMap<>();
+        this.edgeLists = new HashMap<>();
+        this.nodes = new ArrayList<>();
+        this.edgesSet = new HashSet<>();
+        this.namesHash = new HashMap<>();
     }
 
     /**
@@ -128,55 +128,55 @@ public class EdgeListGraph implements Graph {
      * @param graph the graph from which nodes and edges are is to be extracted.
      * @throws IllegalArgumentException if a duplicate edge is added.
      */
-    public EdgeListGraph(Graph graph) throws IllegalArgumentException {
+    public EdgeListGraph(final Graph graph) throws IllegalArgumentException {
         this();
 
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");
         }
 
-        this.transferNodesAndEdges(graph);
+        transferNodesAndEdges(graph);
 
         // Keep attributes from the original graph
-        this.transferAttributes(graph);
+        transferAttributes(graph);
 
-        ambiguousTriples = graph.getAmbiguousTriples();
-        underLineTriples = graph.getUnderLines();
-        dottedUnderLineTriples = graph.getDottedUnderlines();
+        this.ambiguousTriples = graph.getAmbiguousTriples();
+        this.underLineTriples = graph.getUnderLines();
+        this.dottedUnderLineTriples = graph.getDottedUnderlines();
 
-        for (Edge edge : graph.getEdges()) {
+        for (final Edge edge : graph.getEdges()) {
             if (graph.isHighlighted(edge)) {
-                this.setHighlighted(edge, true);
+                setHighlighted(edge, true);
             }
         }
 
-        for (Node node : nodes) {
-            namesHash.put(node.getName(), node);
+        for (final Node node : this.nodes) {
+            this.namesHash.put(node.getName(), node);
         }
 
-        pag = graph.isPag();
-        cpdag = graph.isCPDAG();
+        this.pag = graph.isPag();
+        this.cpdag = graph.isCPDAG();
     }
 
     /**
      * Constructs a new graph, with no edges, using the the given variable
      * names.
      */
-    public EdgeListGraph(List<Node> nodes) {
+    public EdgeListGraph(final List<Node> nodes) {
         this();
 
         if (nodes == null) {
             throw new NullPointerException();
         }
 
-        for (Node variable : nodes) {
-            if (!this.addNode(variable)) {
+        for (final Node variable : nodes) {
+            if (!addNode(variable)) {
                 throw new IllegalArgumentException();
             }
         }
 
-        for (Node node : nodes) {
-            namesHash.put(node.getName(), node);
+        for (final Node node : nodes) {
+            this.namesHash.put(node.getName(), node);
         }
     }
 
@@ -187,7 +187,7 @@ public class EdgeListGraph implements Graph {
         return new EdgeListGraph();
     }
 
-    private static boolean visibleEdgeHelper(Node A, Node B, Graph graph) {
+    private static boolean visibleEdgeHelper(final Node A, final Node B, final Graph graph) {
         if (A.getNodeType() != NodeType.MEASURED) {
             return false;
         }
@@ -195,15 +195,15 @@ public class EdgeListGraph implements Graph {
             return false;
         }
 
-        LinkedList<Node> path = new LinkedList<>();
+        final LinkedList<Node> path = new LinkedList<>();
         path.add(A);
 
-        for (Node C : graph.getNodesInTo(A, Endpoint.ARROW)) {
+        for (final Node C : graph.getNodesInTo(A, Endpoint.ARROW)) {
             if (graph.isParentOf(C, A)) {
                 return true;
             }
 
-            if (visibleEdgeHelperVisit(graph, C, A, B, path)) {
+            if (EdgeListGraph.visibleEdgeHelperVisit(graph, C, A, B, path)) {
                 return true;
             }
         }
@@ -211,8 +211,8 @@ public class EdgeListGraph implements Graph {
         return false;
     }
 
-    private static boolean visibleEdgeHelperVisit(Graph graph, Node c, Node a, Node b,
-                                                  LinkedList<Node> path) {
+    private static boolean visibleEdgeHelperVisit(final Graph graph, final Node c, final Node a, final Node b,
+                                                  final LinkedList<Node> path) {
         if (path.contains(a)) {
             return false;
         }
@@ -223,7 +223,7 @@ public class EdgeListGraph implements Graph {
             return true;
         }
 
-        for (Node D : graph.getNodesInTo(a, Endpoint.ARROW)) {
+        for (final Node D : graph.getNodesInTo(a, Endpoint.ARROW)) {
             if (graph.isParentOf(D, c)) {
                 return true;
             }
@@ -240,7 +240,7 @@ public class EdgeListGraph implements Graph {
                 }
             }
 
-            if (visibleEdgeHelperVisit(graph, D, c, b, path)) {
+            if (EdgeListGraph.visibleEdgeHelperVisit(graph, D, c, b, path)) {
                 return true;
             }
         }
@@ -256,8 +256,8 @@ public class EdgeListGraph implements Graph {
      * @param node2 the "to" node.
      */
     @Override
-    public boolean addDirectedEdge(Node node1, Node node2) {
-        return this.addEdge(directedEdge(node1, node2));
+    public boolean addDirectedEdge(final Node node1, final Node node2) {
+        return addEdge(directedEdge(node1, node2));
     }
 
     /**
@@ -267,8 +267,8 @@ public class EdgeListGraph implements Graph {
      * @param node2 the "to" node.
      */
     @Override
-    public boolean addUndirectedEdge(Node node1, Node node2) {
-        return this.addEdge(Edges.undirectedEdge(node1, node2));
+    public boolean addUndirectedEdge(final Node node1, final Node node2) {
+        return addEdge(Edges.undirectedEdge(node1, node2));
     }
 
     /**
@@ -278,8 +278,8 @@ public class EdgeListGraph implements Graph {
      * @param node2 the "to" node.
      */
     @Override
-    public boolean addNondirectedEdge(Node node1, Node node2) {
-        return this.addEdge(Edges.nondirectedEdge(node1, node2));
+    public boolean addNondirectedEdge(final Node node1, final Node node2) {
+        return addEdge(Edges.nondirectedEdge(node1, node2));
     }
 
     /**
@@ -289,8 +289,8 @@ public class EdgeListGraph implements Graph {
      * @param node2 the "to" node.
      */
     @Override
-    public boolean addPartiallyOrientedEdge(Node node1, Node node2) {
-        return this.addEdge(Edges.partiallyOrientedEdge(node1, node2));
+    public boolean addPartiallyOrientedEdge(final Node node1, final Node node2) {
+        return addEdge(Edges.partiallyOrientedEdge(node1, node2));
     }
 
     /**
@@ -300,31 +300,31 @@ public class EdgeListGraph implements Graph {
      * @param node2 the "to" node.
      */
     @Override
-    public boolean addBidirectedEdge(Node node1, Node node2) {
-        return this.addEdge(Edges.bidirectedEdge(node1, node2));
+    public boolean addBidirectedEdge(final Node node1, final Node node2) {
+        return addEdge(Edges.bidirectedEdge(node1, node2));
     }
 
     @Override
     public boolean existsDirectedCycle() {
-        for (Node node : this.getNodes()) {
-            if (this.existsDirectedPathFromTo(node, node)) return true;
+        for (final Node node : getNodes()) {
+            if (existsDirectedPathFromTo(node, node)) return true;
         }
         return false;
     }
 
     @Override
-    public boolean isDirectedFromTo(Node node1, Node node2) {
-        List<Edge> edges = this.getEdges(node1, node2);
+    public boolean isDirectedFromTo(final Node node1, final Node node2) {
+        final List<Edge> edges = getEdges(node1, node2);
         if (edges.size() != 1) {
             return false;
         }
-        Edge edge = edges.get(0);
+        final Edge edge = edges.get(0);
         return edge.pointsTowards(node2);
     }
 
     @Override
-    public boolean isUndirectedFromTo(Node node1, Node node2) {
-        Edge edge = this.getEdge(node1, node2);
+    public boolean isUndirectedFromTo(final Node node1, final Node node2) {
+        final Edge edge = getEdge(node1, node2);
         return edge != null && edge.getEndpoint1() == Endpoint.TAIL && edge.getEndpoint2() == Endpoint.TAIL;
     }
 
@@ -336,15 +336,15 @@ public class EdgeListGraph implements Graph {
      *                                  in the graph
      */
     @Override
-    public boolean defVisible(Edge edge) {
-        if (this.containsEdge(edge)) {
+    public boolean defVisible(final Edge edge) {
+        if (containsEdge(edge)) {
 
-            Node A = Edges.getDirectedEdgeTail(edge);
-            Node B = Edges.getDirectedEdgeHead(edge);
+            final Node A = Edges.getDirectedEdgeTail(edge);
+            final Node B = Edges.getDirectedEdgeHead(edge);
 
-            for (Node C : this.getAdjacentNodes(A)) {
-                if (C != B && !this.isAdjacentTo(C, B)) {
-                    Edge e = this.getEdge(C, A);
+            for (final Node C : getAdjacentNodes(A)) {
+                if (C != B && !isAdjacentTo(C, B)) {
+                    final Edge e = getEdge(C, A);
 
                     if (e.getProximalEndpoint(A) == Endpoint.ARROW) {
                         return true;
@@ -352,7 +352,7 @@ public class EdgeListGraph implements Graph {
                 }
             }
 
-            return visibleEdgeHelper(A, B, this);
+            return EdgeListGraph.visibleEdgeHelper(A, B, this);
         } else {
             throw new IllegalArgumentException(
                     "Given edge is not in the graph.");
@@ -364,14 +364,14 @@ public class EdgeListGraph implements Graph {
      * getEdge) if there are multiple edges between any of the node pairs.
      */
     @Override
-    public boolean isDefNoncollider(Node node1, Node node2, Node node3) {
-        List<Edge> edges = this.getEdges(node2);
+    public boolean isDefNoncollider(final Node node1, final Node node2, final Node node3) {
+        final List<Edge> edges = getEdges(node2);
         boolean circle12 = false;
         boolean circle32 = false;
 
-        for (Edge edge : edges) {
-            boolean _node1 = edge.getDistalNode(node2) == node1;
-            boolean _node3 = edge.getDistalNode(node2) == node3;
+        for (final Edge edge : edges) {
+            final boolean _node1 = edge.getDistalNode(node2) == node1;
+            final boolean _node3 = edge.getDistalNode(node2) == node3;
 
             if (_node1 && edge.pointsTowards(node1)) {
                 return true;
@@ -386,7 +386,7 @@ public class EdgeListGraph implements Graph {
             if (_node3 && edge.getProximalEndpoint(node2) == Endpoint.CIRCLE) {
                 circle32 = true;
             }
-            if (circle12 && circle32 && !this.isAdjacentTo(node1, node2)) {
+            if (circle12 && circle32 && !isAdjacentTo(node1, node2)) {
                 return true;
             }
         }
@@ -395,9 +395,9 @@ public class EdgeListGraph implements Graph {
     }
 
     @Override
-    public boolean isDefCollider(Node node1, Node node2, Node node3) {
-        Edge edge1 = this.getEdge(node1, node2);
-        Edge edge2 = this.getEdge(node2, node3);
+    public boolean isDefCollider(final Node node1, final Node node2, final Node node3) {
+        final Edge edge1 = getEdge(node1, node2);
+        final Edge edge2 = getEdge(node2, node3);
 
         if (edge1 == null || edge2 == null) return false;
 
@@ -409,9 +409,9 @@ public class EdgeListGraph implements Graph {
      * @return true iff there is a directed path from node1 to node2. a
      */
     @Override
-    public boolean existsDirectedPathFromTo(Node node1, Node node2) {
-        Queue<Node> Q = new LinkedList<>();
-        Set<Node> V = new HashSet<>();
+    public boolean existsDirectedPathFromTo(final Node node1, final Node node2) {
+        final Queue<Node> Q = new LinkedList<>();
+        final Set<Node> V = new HashSet<>();
 
         Q.add(node1);
         V.add(node1);
@@ -419,7 +419,7 @@ public class EdgeListGraph implements Graph {
         boolean started = false;
 
         while (!Q.isEmpty()) {
-            Node t = Q.remove();
+            final Node t = Q.remove();
 
             if (started && t == node2) {
                 return true;
@@ -427,7 +427,7 @@ public class EdgeListGraph implements Graph {
 
             started = true;
 
-            for (Node c : this.getChildren(t)) {
+            for (final Node c : getChildren(t)) {
                 if (!V.contains(c)) {
                     V.add(c);
                     Q.offer(c);
@@ -440,8 +440,8 @@ public class EdgeListGraph implements Graph {
 
     @Override
     public List<Node> findCycle() {
-        for (Node a : this.getNodes()) {
-            List<Node> path = this.findDirectedPath(a, a);
+        for (final Node a : getNodes()) {
+            final List<Node> path = findDirectedPath(a, a);
             if (!path.isEmpty()) {
                 return path;
             }
@@ -450,11 +450,11 @@ public class EdgeListGraph implements Graph {
         return new LinkedList<>();
     }
 
-    public List<Node> findDirectedPath(Node from, Node to) {
-        LinkedList<Node> path = new LinkedList<>();
+    public List<Node> findDirectedPath(final Node from, final Node to) {
+        final LinkedList<Node> path = new LinkedList<>();
 
-        for (Node d : this.getChildren(from)) {
-            if (this.findDirectedPathVisit(from, d, to, path)) {
+        for (final Node d : getChildren(from)) {
+            if (findDirectedPathVisit(from, d, to, path)) {
                 path.addFirst(from);
                 return path;
             }
@@ -463,14 +463,14 @@ public class EdgeListGraph implements Graph {
         return path;
     }
 
-    private boolean findDirectedPathVisit(Node prev, Node next, Node to, LinkedList<Node> path) {
+    private boolean findDirectedPathVisit(final Node prev, final Node next, final Node to, final LinkedList<Node> path) {
         if (path.contains(next)) return false;
         path.addLast(next);
-        if (!this.getEdge(prev, next).pointsTowards(next)) throw new IllegalArgumentException();
+        if (!getEdge(prev, next).pointsTowards(next)) throw new IllegalArgumentException();
         if (next == to) return true;
 
-        for (Node d : this.getChildren(next)) {
-            if (this.findDirectedPathVisit(next, d, to, path)) return true;
+        for (final Node d : getChildren(next)) {
+            if (findDirectedPathVisit(next, d, to, path)) return true;
         }
 
         path.removeLast();
@@ -478,13 +478,13 @@ public class EdgeListGraph implements Graph {
     }
 
     @Override
-    public boolean existsUndirectedPathFromTo(Node node1, Node node2) {
-        return this.existsUndirectedPathVisit(node1, node2, new TreeSet<>());
+    public boolean existsUndirectedPathFromTo(final Node node1, final Node node2) {
+        return existsUndirectedPathVisit(node1, node2, new TreeSet<>());
     }
 
     @Override
-    public boolean existsSemiDirectedPathFromTo(Node node1, Set<Node> nodes) {
-        return this.existsSemiDirectedPathVisit(node1, nodes,
+    public boolean existsSemiDirectedPathFromTo(final Node node1, final Set<Node> nodes) {
+        return existsSemiDirectedPathVisit(node1, nodes,
                 new LinkedList<>());
     }
 
@@ -495,9 +495,9 @@ public class EdgeListGraph implements Graph {
      * question.
      */
     @Override
-    public boolean existsTrek(Node node1, Node node2) {
-        for (Node node : this.getNodes()) {
-            if (this.isAncestorOf((node), node1) && this.isAncestorOf((node), node2)) {
+    public boolean existsTrek(final Node node1, final Node node2) {
+        for (final Node node : getNodes()) {
+            if (isAncestorOf((node), node1) && isAncestorOf((node), node2)) {
                 return true;
             }
         }
@@ -509,12 +509,12 @@ public class EdgeListGraph implements Graph {
      * @return the list of children for a node.
      */
     @Override
-    public List<Node> getChildren(Node node) {
-        List<Node> children = new ArrayList<>();
+    public List<Node> getChildren(final Node node) {
+        final List<Node> children = new ArrayList<>();
 
-        for (Edge edge : this.getEdges(node)) {
+        for (final Edge edge : getEdges(node)) {
             if (Edges.isDirectedEdge(edge)) {
-                Node sub = Edges.traverseDirected(node, edge);
+                final Node sub = Edges.traverseDirected(node, edge);
 
                 if (sub != null) {
                     children.add(sub);
@@ -529,10 +529,10 @@ public class EdgeListGraph implements Graph {
     public int getConnectivity() {
         int connectivity = 0;
 
-        List<Node> nodes = this.getNodes();
+        final List<Node> nodes = getNodes();
 
-        for (Node node : nodes) {
-            int n = this.getNumEdges(node);
+        for (final Node node : nodes) {
+            final int n = getNumEdges(node);
             if (n > connectivity) {
                 connectivity = n;
             }
@@ -542,11 +542,11 @@ public class EdgeListGraph implements Graph {
     }
 
     @Override
-    public List<Node> getDescendants(List<Node> nodes) {
-        Set<Node> descendants = new HashSet<>();
+    public List<Node> getDescendants(final List<Node> nodes) {
+        final Set<Node> descendants = new HashSet<>();
 
-        for (Node node : nodes) {
-            this.collectDescendantsVisit(node, descendants);
+        for (final Node node : nodes) {
+            collectDescendantsVisit(node, descendants);
         }
 
         return new LinkedList<>(descendants);
@@ -557,14 +557,14 @@ public class EdgeListGraph implements Graph {
      * exists.
      */
     @Override
-    public Edge getEdge(Node node1, Node node2) {
-        Set<Edge> edges = edgeLists.get(node1);
+    public Edge getEdge(final Node node1, final Node node2) {
+        final Set<Edge> edges = this.edgeLists.get(node1);
 
         if (edges == null) {
             return null;
         }
 
-        for (Edge edge : edges) {
+        for (final Edge edge : edges) {
             if (edge.getNode1() == node1 && edge.getNode2() == node2) {
                 return edge;
             } else if (edge.getNode1() == node2 && edge.getNode2() == node1) {
@@ -576,8 +576,8 @@ public class EdgeListGraph implements Graph {
     }
 
     @Override
-    public Edge getDirectedEdge(Node node1, Node node2) {
-        List<Edge> edges = this.getEdges(node1, node2);
+    public Edge getDirectedEdge(final Node node1, final Node node2) {
+        final List<Edge> edges = getEdges(node1, node2);
 
         if (edges == null) {
             return null;
@@ -587,7 +587,7 @@ public class EdgeListGraph implements Graph {
             return null;
         }
 
-        for (Edge edge : edges) {
+        for (final Edge edge : edges) {
             if (Edges.isDirectedEdge(edge) && edge.getProximalEndpoint(node2) == Endpoint.ARROW) {
                 return edge;
             }
@@ -600,15 +600,15 @@ public class EdgeListGraph implements Graph {
      * @return the list of parents for a node.
      */
     @Override
-    public List<Node> getParents(Node node) {
-        List<Node> parents = new ArrayList<>();
-        Set<Edge> edges = edgeLists.get(node);
+    public List<Node> getParents(final Node node) {
+        final List<Node> parents = new ArrayList<>();
+        final Set<Edge> edges = this.edgeLists.get(node);
 
-        for (Edge edge : edges) {
+        for (final Edge edge : edges) {
             if (edge == null) continue;
 
-            Endpoint endpoint1 = edge.getDistalEndpoint(node);
-            Endpoint endpoint2 = edge.getProximalEndpoint(node);
+            final Endpoint endpoint1 = edge.getDistalEndpoint(node);
+            final Endpoint endpoint2 = edge.getProximalEndpoint(node);
 
             if (endpoint1 == Endpoint.TAIL && endpoint2 == Endpoint.ARROW) {
                 parents.add(edge.getDistalNode(node));
@@ -622,33 +622,33 @@ public class EdgeListGraph implements Graph {
      * @return the number of edges into the given node.
      */
     @Override
-    public int getIndegree(Node node) {
-        return this.getParents(node).size();
+    public int getIndegree(final Node node) {
+        return getParents(node).size();
     }
 
     @Override
-    public int getDegree(Node node) {
-        return edgeLists.get(node).size();
+    public int getDegree(final Node node) {
+        return this.edgeLists.get(node).size();
     }
 
     /**
      * @return the number of edges out of the given node.
      */
     @Override
-    public int getOutdegree(Node node) {
-        return this.getChildren(node).size();
+    public int getOutdegree(final Node node) {
+        return getChildren(node).size();
     }
 
     /**
      * Determines whether some edge or other exists between two nodes.
      */
     @Override
-    public boolean isAdjacentTo(Node node1, Node node2) {
-        if (node1 == null || node2 == null || edgeLists.get(node1) == null || edgeLists.get(node2) == null) {
+    public boolean isAdjacentTo(final Node node1, final Node node2) {
+        if (node1 == null || node2 == null || this.edgeLists.get(node1) == null || this.edgeLists.get(node2) == null) {
             return false;
         }
 
-        for (Edge edge : edgeLists.get(node1)) {
+        for (final Edge edge : this.edgeLists.get(node1)) {
             if (Edges.traverse(node1, edge) == node2 && Edges.traverse(node2, edge) == node1) {
                 return true;
             }
@@ -661,13 +661,13 @@ public class EdgeListGraph implements Graph {
      * Determines whether one node is an ancestor of another.
      */
     @Override
-    public boolean isAncestorOf(Node node1, Node node2) {
-        return this.getAncestors(Collections.singletonList(node2)).contains(node1);
+    public boolean isAncestorOf(final Node node1, final Node node2) {
+        return getAncestors(Collections.singletonList(node2)).contains(node1);
     }
 
     @Override
-    public boolean possibleAncestor(Node node1, Node node2) {
-        return this.existsSemiDirectedPathFromTo(node1,
+    public boolean possibleAncestor(final Node node1, final Node node2) {
+        return existsSemiDirectedPathFromTo(node1,
                 Collections.singleton(node2));
     }
 
@@ -675,9 +675,9 @@ public class EdgeListGraph implements Graph {
      * @return true iff node1 is a possible ancestor of at least one member of
      * nodes2
      */
-    protected boolean possibleAncestorSet(Node node1, List<Node> nodes2) {
-        for (Node node2 : nodes2) {
-            if (this.possibleAncestor(node1, node2)) {
+    protected boolean possibleAncestorSet(final Node node1, final List<Node> nodes2) {
+        for (final Node node2 : nodes2) {
+            if (possibleAncestor(node1, node2)) {
                 return true;
             }
         }
@@ -685,11 +685,11 @@ public class EdgeListGraph implements Graph {
     }
 
     @Override
-    public List<Node> getAncestors(List<Node> nodes) {
-        Set<Node> ancestors = new HashSet<>();
+    public List<Node> getAncestors(final List<Node> nodes) {
+        final Set<Node> ancestors = new HashSet<>();
 
-        for (Node node : nodes) {
-            this.collectAncestorsVisit(node, ancestors);
+        for (final Node node : nodes) {
+            collectAncestorsVisit(node, ancestors);
         }
 
         return new ArrayList<>(ancestors);
@@ -699,9 +699,9 @@ public class EdgeListGraph implements Graph {
      * Determines whether one node is a child of another.
      */
     @Override
-    public boolean isChildOf(Node node1, Node node2) {
-        for (Edge edge : this.getEdges(node2)) {
-            Node sub = Edges.traverseDirected(node2, edge);
+    public boolean isChildOf(final Node node1, final Node node2) {
+        for (final Edge edge : getEdges(node2)) {
+            final Node sub = Edges.traverseDirected(node2, edge);
 
             if (sub == node1) {
                 return true;
@@ -714,7 +714,7 @@ public class EdgeListGraph implements Graph {
      * Determines whether one node is a descendent of another.
      */
     @Override
-    public boolean isDescendentOf(Node node1, Node node2) {
+    public boolean isDescendentOf(final Node node1, final Node node2) {
         return node1 == node2 || GraphUtils.existsDirectedPathFromTo(node2, node1, this);
     }
 
@@ -724,38 +724,38 @@ public class EdgeListGraph implements Graph {
      * @return true iff node2 is a definite nondecendent of node1
      */
     @Override
-    public boolean defNonDescendent(Node node1, Node node2) {
-        return !(this.possibleAncestor(node1, node2));
+    public boolean defNonDescendent(final Node node1, final Node node2) {
+        return !(possibleAncestor(node1, node2));
     }
 
     @Override
-    public boolean isDConnectedTo(Node x, Node y, List<Node> z) {
+    public boolean isDConnectedTo(final Node x, final Node y, final List<Node> z) {
         return GraphUtils.isDConnectedTo(x, y, z, this);
     }
 
-    public boolean isDConnectedTo(List<Node> x, List<Node> y, List<Node> z) {
+    public boolean isDConnectedTo(final List<Node> x, final List<Node> y, final List<Node> z) {
         return GraphUtils.isDConnectedTo(x, y, z, this);
     }
 
 
     @Override
-    public List<Node> getSepset(Node x, Node y) {
+    public List<Node> getSepset(final Node x, final Node y) {
         return GraphUtils.getSepset(x, y, this);
     }
 
-    public Set<Node> zAncestors(List<Node> z) {
-        Queue<Node> Q = new ArrayDeque<>();
-        Set<Node> V = new HashSet<>();
+    public Set<Node> zAncestors(final List<Node> z) {
+        final Queue<Node> Q = new ArrayDeque<>();
+        final Set<Node> V = new HashSet<>();
 
-        for (Node node : z) {
+        for (final Node node : z) {
             Q.offer(node);
             V.add(node);
         }
 
         while (!Q.isEmpty()) {
-            Node t = Q.poll();
+            final Node t = Q.poll();
 
-            for (Node c : this.getParents(t)) {
+            for (final Node c : getParents(t)) {
 //                if (c == t) continue;
                 if (V.contains(c)) {
                     continue;
@@ -768,8 +768,8 @@ public class EdgeListGraph implements Graph {
         return V;
     }
 
-    public boolean isDSeparatedFrom(List<Node> x, List<Node> y, List<Node> z) {
-        return !this.isDConnectedTo(x, y, z);
+    public boolean isDSeparatedFrom(final List<Node> x, final List<Node> y, final List<Node> z) {
+        return !isDConnectedTo(x, y, z);
     }
 
     /**
@@ -778,11 +778,11 @@ public class EdgeListGraph implements Graph {
      */
     @Override
     public boolean isCPDAG() {
-        return cpdag;
+        return this.cpdag;
     }
 
     @Override
-    public void setCPDAG(boolean cpdag) {
+    public void setCPDAG(final boolean cpdag) {
         this.cpdag = cpdag;
     }
 
@@ -792,11 +792,11 @@ public class EdgeListGraph implements Graph {
      */
     @Override
     public boolean isPag() {
-        return pag;
+        return this.pag;
     }
 
     @Override
-    public void setPag(boolean pag) {
+    public void setPag(final boolean pag) {
         this.pag = pag;
     }
 
@@ -818,21 +818,21 @@ public class EdgeListGraph implements Graph {
      * @see #isDConnectedTo
      */
     @Override
-    public boolean isDSeparatedFrom(Node node1, Node node2, List<Node> z) {
-        return !this.isDConnectedTo(node1, node2, z);
+    public boolean isDSeparatedFrom(final Node node1, final Node node2, final List<Node> z) {
+        return !isDConnectedTo(node1, node2, z);
     }
 
     //added by ekorber, June 2004
     @Override
-    public boolean possDConnectedTo(Node node1, Node node2,
-                                    List<Node> condNodes) {
-        LinkedList<Node> allNodes = new LinkedList<>(this.getNodes());
-        int sz = allNodes.size();
-        int[][] edgeStage = new int[sz][sz];
+    public boolean possDConnectedTo(final Node node1, final Node node2,
+                                    final List<Node> condNodes) {
+        final LinkedList<Node> allNodes = new LinkedList<>(getNodes());
+        final int sz = allNodes.size();
+        final int[][] edgeStage = new int[sz][sz];
         int stage = 1;
 
-        int n1x = allNodes.indexOf(node1);
-        int n2x = allNodes.indexOf(node2);
+        final int n1x = allNodes.indexOf(node1);
+        final int n2x = allNodes.indexOf(node2);
 
         edgeStage[n1x][n1x] = 1;
         edgeStage[n2x][n2x] = 1;
@@ -840,12 +840,12 @@ public class EdgeListGraph implements Graph {
         List<int[]> currEdges;
         List<int[]> nextEdges = new LinkedList<>();
 
-        int[] temp1 = new int[2];
+        final int[] temp1 = new int[2];
         temp1[0] = n1x;
         temp1[1] = n1x;
         nextEdges.add(temp1);
 
-        int[] temp2 = new int[2];
+        final int[] temp2 = new int[2];
         temp2[0] = n2x;
         temp2[1] = n2x;
         nextEdges.add(temp2);
@@ -853,26 +853,26 @@ public class EdgeListGraph implements Graph {
         while (true) {
             currEdges = nextEdges;
             nextEdges = new LinkedList<>();
-            for (int[] edge : currEdges) {
-                Node center = allNodes.get(edge[1]);
-                List<Node> adj = new LinkedList<>(this.getAdjacentNodes(center));
+            for (final int[] edge : currEdges) {
+                final Node center = allNodes.get(edge[1]);
+                final List<Node> adj = new LinkedList<>(getAdjacentNodes(center));
 
-                for (Node anAdj : adj) {
+                for (final Node anAdj : adj) {
                     // check if we've hit this edge before
-                    int testIndex = allNodes.indexOf(anAdj);
+                    final int testIndex = allNodes.indexOf(anAdj);
                     if (edgeStage[edge[1]][testIndex] != 0) {
                         continue;
                     }
 
                     // if the edge pair violates possible d-connection,
                     // then go to the next adjacent node.
-                    Node X = allNodes.get(edge[0]);
-                    Node Y = allNodes.get(edge[1]);
-                    Node Z = allNodes.get(testIndex);
+                    final Node X = allNodes.get(edge[0]);
+                    final Node Y = allNodes.get(edge[1]);
+                    final Node Z = allNodes.get(testIndex);
 
-                    if (!((this.isDefNoncollider(X, Y, Z)
-                            && !(condNodes.contains(Y))) || (this.isDefCollider(X, Y, Z)
-                            && this.possibleAncestorSet(Y, condNodes)))) {
+                    if (!((isDefNoncollider(X, Y, Z)
+                            && !(condNodes.contains(Y))) || (isDefCollider(X, Y, Z)
+                            && possibleAncestorSet(Y, condNodes)))) {
                         continue;
                     }
 
@@ -884,7 +884,7 @@ public class EdgeListGraph implements Graph {
 
                     // (ii) if we need to keep going,
                     // add the edge to the nextEdges list
-                    int[] nextEdge = new int[2];
+                    final int[] nextEdge = new int[2];
                     nextEdge[0] = edge[1];
                     nextEdge[1] = testIndex;
                     nextEdges.add(nextEdge);
@@ -915,7 +915,7 @@ public class EdgeListGraph implements Graph {
      * @return true if an inducing path exists, false if not.
      */
     @Override
-    public boolean existsInducingPath(Node node1, Node node2) {
+    public boolean existsInducingPath(final Node node1, final Node node2) {
         return node1 == node2 || GraphUtils.existsDirectedPathFromTo(node2, node1, this);
     }
 
@@ -930,9 +930,9 @@ public class EdgeListGraph implements Graph {
      * @see #getChildren
      */
     @Override
-    public boolean isParentOf(Node node1, Node node2) {
-        for (Edge edge : this.getEdges(node1)) {
-            Node sub = Edges.traverseDirected(node1, (edge));
+    public boolean isParentOf(final Node node1, final Node node2) {
+        for (final Edge edge : getEdges(node1)) {
+            final Node sub = Edges.traverseDirected(node1, (edge));
 
             if (sub == node2) {
                 return true;
@@ -946,16 +946,16 @@ public class EdgeListGraph implements Graph {
      * Determines whether one node is a proper ancestor of another.
      */
     @Override
-    public boolean isProperAncestorOf(Node node1, Node node2) {
-        return node1 != node2 && this.isAncestorOf(node1, node2);
+    public boolean isProperAncestorOf(final Node node1, final Node node2) {
+        return node1 != node2 && isAncestorOf(node1, node2);
     }
 
     /**
      * Determines whether one node is a proper decendent of another
      */
     @Override
-    public boolean isProperDescendentOf(Node node1, Node node2) {
-        return node1 != node2 && this.isDescendentOf(node1, node2);
+    public boolean isProperDescendentOf(final Node node1, final Node node2) {
+        return node1 != node2 && isDescendentOf(node1, node2);
     }
 
     /**
@@ -969,45 +969,45 @@ public class EdgeListGraph implements Graph {
      *                                  node or edge violates one of the basicConstraints of this graph.
      */
     @Override
-    public void transferNodesAndEdges(Graph graph)
+    public void transferNodesAndEdges(final Graph graph)
             throws IllegalArgumentException {
         if (graph == null) {
             throw new NullPointerException("No graph was provided.");
         }
 
 //        System.out.println("TANSFER BEFORE " + graph.getEdges());
-        for (Node node : graph.getNodes()) {
-            if (!this.addNode(node)) {
+        for (final Node node : graph.getNodes()) {
+            if (!addNode(node)) {
                 throw new IllegalArgumentException();
             }
         }
 
-        for (Edge edge : graph.getEdges()) {
-            if (!this.addEdge(edge)) {
+        for (final Edge edge : graph.getEdges()) {
+            if (!addEdge(edge)) {
                 throw new IllegalArgumentException();
             }
         }
 
-        ancestors = null;
+        this.ancestors = null;
 //        System.out.println("TANSFER AFTER " + getEdges());
     }
 
     @Override
-    public void transferAttributes(Graph graph)
+    public void transferAttributes(final Graph graph)
             throws IllegalArgumentException {
         if (graph == null) {
             throw new NullPointerException("No graph was provided.");
         }
 
-        attributes.putAll(graph.getAllAttributes());
+        this.attributes.putAll(graph.getAllAttributes());
     }
 
     /**
      * Determines whether a node in a graph is exogenous.
      */
     @Override
-    public boolean isExogenous(Node node) {
-        return this.getIndegree(node) == 0;
+    public boolean isExogenous(final Node node) {
+        return getIndegree(node) == 0;
     }
 
     /**
@@ -1017,15 +1017,15 @@ public class EdgeListGraph implements Graph {
      * these to eliminate the duplication.
      */
     @Override
-    public List<Node> getAdjacentNodes(Node node) {
-        Set<Edge> edges = edgeLists.get(node);
-        List<Node> adj = new ArrayList<>();
+    public List<Node> getAdjacentNodes(final Node node) {
+        final Set<Edge> edges = this.edgeLists.get(node);
+        final List<Node> adj = new ArrayList<>();
 
-        for (Edge edge : edges) {
+        for (final Edge edge : edges) {
             if (edge == null) {
                 continue;
             }
-            Node z = edge.getDistalNode(node);
+            final Node z = edge.getDistalNode(node);
 
             if (!adj.contains(z)) {
                 adj.add(z);
@@ -1039,8 +1039,8 @@ public class EdgeListGraph implements Graph {
      * Removes the edge connecting the two given nodes.
      */
     @Override
-    public boolean removeEdge(Node node1, Node node2) {
-        List<Edge> edges = this.getEdges(node1, node2);
+    public boolean removeEdge(final Node node1, final Node node2) {
+        final List<Edge> edges = getEdges(node1, node2);
 
         if (edges.size() > 1) {
             throw new IllegalStateException(
@@ -1048,17 +1048,17 @@ public class EdgeListGraph implements Graph {
                             + node2);
         }
 
-        return this.removeEdges(edges);
+        return removeEdges(edges);
     }
 
     /**
      * @return the endpoint along the edge from node to node2 at the node2 end.
      */
     @Override
-    public Endpoint getEndpoint(Node node1, Node node2) {
-        List<Edge> edges = this.getEdges(node2);
+    public Endpoint getEndpoint(final Node node1, final Node node2) {
+        final List<Edge> edges = getEdges(node2);
 
-        for (Edge edge : edges) {
+        for (final Edge edge : edges) {
             if (edge.getDistalNode(node2) == node1) {
                 return edge.getProximalEndpoint(node2);
             }
@@ -1078,18 +1078,18 @@ public class EdgeListGraph implements Graph {
      *                                  cannot be added to the graph.
      */
     @Override
-    public boolean setEndpoint(Node from, Node to, Endpoint endPoint)
+    public boolean setEndpoint(final Node from, final Node to, final Endpoint endPoint)
             throws IllegalArgumentException {
-        if (!this.isAdjacentTo(from, to)) return false;
+        if (!isAdjacentTo(from, to)) return false;
 
-        Edge edge = this.getEdge(from, to);
-        ancestors = null;
+        final Edge edge = getEdge(from, to);
+        this.ancestors = null;
 
-        this.removeEdge(edge);
+        removeEdge(edge);
 
-        Edge newEdge = new Edge(from, to,
+        final Edge newEdge = new Edge(from, to,
                 edge.getProximalEndpoint(from), endPoint);
-        this.addEdge(newEdge);
+        addEdge(newEdge);
         return true;
     }
 
@@ -1097,11 +1097,11 @@ public class EdgeListGraph implements Graph {
      * Nodes adjacent to the given node with the given proximal endpoint.
      */
     @Override
-    public List<Node> getNodesInTo(Node node, Endpoint endpoint) {
-        List<Node> nodes = new ArrayList<>(4);
-        List<Edge> edges = this.getEdges(node);
+    public List<Node> getNodesInTo(final Node node, final Endpoint endpoint) {
+        final List<Node> nodes = new ArrayList<>(4);
+        final List<Edge> edges = getEdges(node);
 
-        for (Edge edge : edges) {
+        for (final Edge edge : edges) {
             if (edge.getProximalEndpoint(node) == endpoint) {
                 nodes.add(edge.getDistalNode(node));
             }
@@ -1114,11 +1114,11 @@ public class EdgeListGraph implements Graph {
      * Nodes adjacent to the given node with the given distal endpoint.
      */
     @Override
-    public List<Node> getNodesOutTo(Node node, Endpoint endpoint) {
-        List<Node> nodes = new ArrayList<>(4);
-        List<Edge> edges = this.getEdges(node);
+    public List<Node> getNodesOutTo(final Node node, final Endpoint endpoint) {
+        final List<Node> nodes = new ArrayList<>(4);
+        final List<Edge> edges = getEdges(node);
 
-        for (Edge edge : edges) {
+        for (final Edge edge : edges) {
             if (edge.getDistalEndpoint(node) == endpoint) {
                 nodes.add(edge.getDistalNode(node));
             }
@@ -1133,8 +1133,8 @@ public class EdgeListGraph implements Graph {
      */
     @Override
     public Endpoint[][] getEndpointMatrix() {
-        int size = nodes.size();
-        Endpoint[][] endpoints = new Endpoint[size][size];
+        final int size = this.nodes.size();
+        final Endpoint[][] endpoints = new Endpoint[size][size];
 
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
@@ -1142,10 +1142,10 @@ public class EdgeListGraph implements Graph {
                     continue;
                 }
 
-                Node nodei = nodes.get(i);
-                Node nodej = nodes.get(j);
+                final Node nodei = this.nodes.get(i);
+                final Node nodej = this.nodes.get(j);
 
-                endpoints[i][j] = this.getEndpoint(nodei, nodej);
+                endpoints[i][j] = getEndpoint(nodei, nodej);
             }
         }
 
@@ -1159,29 +1159,29 @@ public class EdgeListGraph implements Graph {
      * @return true if the edge was added, false if not.
      */
     @Override
-    public boolean addEdge(Edge edge) {
-        synchronized (edgeLists) {
+    public boolean addEdge(final Edge edge) {
+        synchronized (this.edgeLists) {
             if (edge == null) {
                 throw new NullPointerException();
             }
 
-            Set<Edge> edgeList1 = edgeLists.get(edge.getNode1());
-            Set<Edge> edgeList2 = edgeLists.get(edge.getNode2());
+            final Set<Edge> edgeList1 = this.edgeLists.get(edge.getNode1());
+            final Set<Edge> edgeList2 = this.edgeLists.get(edge.getNode2());
 
             edgeList1.add(edge);
             edgeList2.add(edge);
-            edgesSet.add(edge);
+            this.edgesSet.add(edge);
 
             if (Edges.isDirectedEdge(edge)) {
-                Node node = Edges.getDirectedEdgeTail(edge);
+                final Node node = Edges.getDirectedEdgeTail(edge);
 
                 if (node.getNodeType() == NodeType.ERROR) {
-                    this.getPcs().firePropertyChange("nodeAdded", null, node);
+                    getPcs().firePropertyChange("nodeAdded", null, node);
                 }
             }
 
-            ancestors = null;
-            this.getPcs().firePropertyChange("edgeAdded", null, edge);
+            this.ancestors = null;
+            getPcs().firePropertyChange("edgeAdded", null, edge);
             return true;
         }
 
@@ -1193,8 +1193,8 @@ public class EdgeListGraph implements Graph {
      * @param l the property change listener.
      */
     @Override
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        this.getPcs().addPropertyChangeListener(l);
+    public void addPropertyChangeListener(final PropertyChangeListener l) {
+        getPcs().addPropertyChangeListener(l);
     }
 
     /**
@@ -1205,8 +1205,8 @@ public class EdgeListGraph implements Graph {
      * @return true if the the node was added, false if not.
      */
     @Override
-    public boolean addNode(Node node) {
-        if (nodes.contains(node)) {
+    public boolean addNode(final Node node) {
+        if (this.nodes.contains(node)) {
             return true;
         }
 
@@ -1214,22 +1214,22 @@ public class EdgeListGraph implements Graph {
             throw new NullPointerException();
         }
 
-        if (!(this.getNode(node.getName()) == null)) {
-            if (nodes.contains(node)) {
-                namesHash.put(node.getName(), node);
+        if (!(getNode(node.getName()) == null)) {
+            if (this.nodes.contains(node)) {
+                this.namesHash.put(node.getName(), node);
             }
         }
 
-        if (edgeLists.containsKey(node)) {
+        if (this.edgeLists.containsKey(node)) {
             return false;
         }
 
-        edgeLists.put(node, new HashSet<>());
-        nodes.add(node);
-        namesHash.put(node.getName(), node);
+        this.edgeLists.put(node, new HashSet<>());
+        this.nodes.add(node);
+        this.namesHash.put(node.getName(), node);
 
         if (node.getNodeType() != NodeType.ERROR) {
-            this.getPcs().firePropertyChange("nodeAdded", null, node);
+            getPcs().firePropertyChange("nodeAdded", null, node);
         }
 
         return true;
@@ -1241,23 +1241,23 @@ public class EdgeListGraph implements Graph {
      */
     @Override
     public Set<Edge> getEdges() {
-        return new TreeSet<>(edgesSet);
+        return new TreeSet<>(this.edgesSet);
     }
 
     /**
      * Determines if the graph contains a particular edge.
      */
     @Override
-    public boolean containsEdge(Edge edge) {
-        return edgesSet.contains(edge);
+    public boolean containsEdge(final Edge edge) {
+        return this.edgesSet.contains(edge);
     }
 
     /**
      * Determines whether the graph contains a particular node.
      */
     @Override
-    public boolean containsNode(Node node) {
-        return nodes.contains(node);
+    public boolean containsNode(final Node node) {
+        return this.nodes.contains(node);
     }
 
     /**
@@ -1265,8 +1265,8 @@ public class EdgeListGraph implements Graph {
      * ordering of the edges in the list is guaranteed.
      */
     @Override
-    public List<Edge> getEdges(Node node) {
-        Set<Edge> list = edgeLists.get(node);
+    public List<Edge> getEdges(final Node node) {
+        final Set<Edge> list = this.edgeLists.get(node);
         if (list == null) {
             return new ArrayList<>();
         }
@@ -1277,11 +1277,11 @@ public class EdgeListGraph implements Graph {
     public int hashCode() {
         int hashCode = 0;
 
-        for (Edge edge : this.getEdges()) {
+        for (final Edge edge : getEdges()) {
             hashCode += edge.hashCode();
         }
 
-        return (new HashSet<>(nodes)).hashCode() + hashCode;
+        return (new HashSet<>(this.nodes)).hashCode() + hashCode;
     }
 
     /**
@@ -1290,20 +1290,20 @@ public class EdgeListGraph implements Graph {
      * isomorphic.
      */
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (o == null) {
             return false;
         }
 
         if (o instanceof EdgeListGraph) {
-            EdgeListGraph _o = (EdgeListGraph) o;
-            boolean nodesEqual = new HashSet<>(_o.nodes).equals(new HashSet<>(nodes));
-            boolean edgesEqual = new HashSet<>(_o.edgesSet).equals(new HashSet<>(edgesSet));
+            final EdgeListGraph _o = (EdgeListGraph) o;
+            final boolean nodesEqual = new HashSet<>(_o.nodes).equals(new HashSet<>(this.nodes));
+            final boolean edgesEqual = new HashSet<>(_o.edgesSet).equals(new HashSet<>(this.edgesSet));
             return (nodesEqual && edgesEqual);
         } else {
-            Graph graph = (Graph) o;
-            return new HashSet<>(graph.getNodeNames()).equals(new HashSet<>(this.getNodeNames()))
-                    && new HashSet<>(graph.getEdges()).equals(new HashSet<>(this.getEdges()));
+            final Graph graph = (Graph) o;
+            return new HashSet<>(graph.getNodeNames()).equals(new HashSet<>(getNodeNames()))
+                    && new HashSet<>(graph.getEdges()).equals(new HashSet<>(getEdges()));
 
         }
     }
@@ -1313,33 +1313,33 @@ public class EdgeListGraph implements Graph {
      * is the given endpoint.
      */
     @Override
-    public void fullyConnect(Endpoint endpoint) {
-        edgesSet.clear();
-        edgeLists.clear();
+    public void fullyConnect(final Endpoint endpoint) {
+        this.edgesSet.clear();
+        this.edgeLists.clear();
 
-        for (Node node : nodes) {
-            edgeLists.put(node, new HashSet<>());
+        for (final Node node : this.nodes) {
+            this.edgeLists.put(node, new HashSet<>());
         }
 
-        for (int i = 0; i < nodes.size(); i++) {
-            for (int j = i + 1; j < nodes.size(); j++) {
-                Node node1 = nodes.get(i);
-                Node node2 = nodes.get(j);
+        for (int i = 0; i < this.nodes.size(); i++) {
+            for (int j = i + 1; j < this.nodes.size(); j++) {
+                final Node node1 = this.nodes.get(i);
+                final Node node2 = this.nodes.get(j);
 
-                Edge edge = new Edge(node1, node2, endpoint, endpoint);
-                this.addEdge(edge);
+                final Edge edge = new Edge(node1, node2, endpoint, endpoint);
+                addEdge(edge);
             }
         }
     }
 
     @Override
-    public void reorientAllWith(Endpoint endpoint) {
-        for (Edge edge : new ArrayList<>(edgesSet)) {
-            Node a = edge.getNode1();
-            Node b = edge.getNode2();
+    public void reorientAllWith(final Endpoint endpoint) {
+        for (final Edge edge : new ArrayList<>(this.edgesSet)) {
+            final Node a = edge.getNode1();
+            final Node b = edge.getNode2();
 
-            this.setEndpoint(a, b, endpoint);
-            this.setEndpoint(b, a, endpoint);
+            setEndpoint(a, b, endpoint);
+            setEndpoint(b, a, endpoint);
         }
     }
 
@@ -1347,8 +1347,8 @@ public class EdgeListGraph implements Graph {
      * @return the node with the given name, or null if no such node exists.
      */
     @Override
-    public Node getNode(String name) {
-        return namesHash.get(name);
+    public Node getNode(final String name) {
+        return this.namesHash.get(name);
     }
 
     /**
@@ -1356,7 +1356,7 @@ public class EdgeListGraph implements Graph {
      */
     @Override
     public int getNumNodes() {
-        return nodes.size();
+        return this.nodes.size();
     }
 
     /**
@@ -1364,25 +1364,25 @@ public class EdgeListGraph implements Graph {
      */
     @Override
     public int getNumEdges() {
-        return edgesSet.size();
+        return this.edgesSet.size();
     }
 
     /**
      * @return the number of edges connected to a particular node in the graph.
      */
     @Override
-    public int getNumEdges(Node node) {
-        Set<Edge> list = edgeLists.get(node);
+    public int getNumEdges(final Node node) {
+        final Set<Edge> list = this.edgeLists.get(node);
         return (list == null) ? 0 : list.size();
     }
 
     @Override
     public List<Node> getNodes() {
-        return new ArrayList<>(nodes);
+        return new ArrayList<>(this.nodes);
     }
 
     @Override
-    public void setNodes(List<Node> nodes) {
+    public void setNodes(final List<Node> nodes) {
         if (nodes.size() != this.nodes.size()) {
             throw new IllegalArgumentException("Sorry, there is a mismatch in the number of variables "
                     + "you are trying to set.");
@@ -1397,24 +1397,24 @@ public class EdgeListGraph implements Graph {
      */
     @Override
     public void clear() {
-        Iterator<Edge> it = this.getEdges().iterator();
+        final Iterator<Edge> it = getEdges().iterator();
 
         while (it.hasNext()) {
-            Edge edge = it.next();
+            final Edge edge = it.next();
             it.remove();
-            this.getPcs().firePropertyChange("edgeRemoved", edge, null);
+            getPcs().firePropertyChange("edgeRemoved", edge, null);
         }
 
-        Iterator<Node> it2 = nodes.iterator();
+        final Iterator<Node> it2 = this.nodes.iterator();
 
         while (it2.hasNext()) {
-            Node node = it2.next();
+            final Node node = it2.next();
             it2.remove();
-            namesHash.remove(node.getName());
-            this.getPcs().firePropertyChange("nodeRemoved", node, null);
+            this.namesHash.remove(node.getName());
+            getPcs().firePropertyChange("nodeRemoved", node, null);
         }
 
-        edgeLists.clear();
+        this.edgeLists.clear();
     }
 
     /**
@@ -1429,30 +1429,30 @@ public class EdgeListGraph implements Graph {
      * @return true if the edge was removed, false if not.
      */
     @Override
-    public boolean removeEdge(Edge edge) {
-        synchronized (edgeLists) {
-            if (!edgesSet.contains(edge)) {
+    public boolean removeEdge(final Edge edge) {
+        synchronized (this.edgeLists) {
+            if (!this.edgesSet.contains(edge)) {
                 return false;
             }
 
-            Set<Edge> edgeList1 = edgeLists.get(edge.getNode1());
-            Set<Edge> edgeList2 = edgeLists.get(edge.getNode2());
+            Set<Edge> edgeList1 = this.edgeLists.get(edge.getNode1());
+            Set<Edge> edgeList2 = this.edgeLists.get(edge.getNode2());
 
             edgeList1 = new HashSet<>(edgeList1);
             edgeList2 = new HashSet<>(edgeList2);
 
-            edgesSet.remove(edge);
+            this.edgesSet.remove(edge);
             edgeList1.remove(edge);
             edgeList2.remove(edge);
 
-            edgeLists.put(edge.getNode1(), edgeList1);
-            edgeLists.put(edge.getNode2(), edgeList2);
+            this.edgeLists.put(edge.getNode1(), edgeList1);
+            this.edgeLists.put(edge.getNode2(), edgeList2);
 
-            highlightedEdges.remove(edge);
-            stuffRemovedSinceLastTripleAccess = true;
+            this.highlightedEdges.remove(edge);
+            this.stuffRemovedSinceLastTripleAccess = true;
 
-            ancestors = null;
-            this.getPcs().firePropertyChange("edgeRemoved", edge, null);
+            this.ancestors = null;
+            getPcs().firePropertyChange("edgeRemoved", edge, null);
             return true;
         }
     }
@@ -1464,11 +1464,11 @@ public class EdgeListGraph implements Graph {
      * @return true if any edges in the collection were removed, false if not.
      */
     @Override
-    public boolean removeEdges(Collection<Edge> edges) {
+    public boolean removeEdges(final Collection<Edge> edges) {
         boolean change = false;
 
-        for (Edge edge : edges) {
-            boolean _change = this.removeEdge(edge);
+        for (final Edge edge : edges) {
+            final boolean _change = removeEdge(edge);
             change = change || _change;
         }
 
@@ -1483,43 +1483,43 @@ public class EdgeListGraph implements Graph {
      * @return true if edges were removed between A and B, false if not.
      */
     @Override
-    public boolean removeEdges(Node node1, Node node2) {
-        return this.removeEdges(this.getEdges(node1, node2));
+    public boolean removeEdges(final Node node1, final Node node2) {
+        return removeEdges(getEdges(node1, node2));
     }
 
     /**
      * Removes a node from the graph.
      */
     @Override
-    public boolean removeNode(Node node) {
-        if (!nodes.contains(node)) {
+    public boolean removeNode(final Node node) {
+        if (!this.nodes.contains(node)) {
             return false;
         }
 
         boolean changed = false;
-        Set<Edge> edgeList1 = edgeLists.get(node);    //list of edges connected to that node
+        final Set<Edge> edgeList1 = this.edgeLists.get(node);    //list of edges connected to that node
 
-        for (Iterator<Edge> i = edgeList1.iterator(); i.hasNext(); ) {
-            Edge edge = (i.next());
-            Node node2 = edge.getDistalNode(node);
+        for (final Iterator<Edge> i = edgeList1.iterator(); i.hasNext(); ) {
+            final Edge edge = (i.next());
+            final Node node2 = edge.getDistalNode(node);
 
             if (node2 != node) {
-                Set<Edge> edgeList2 = edgeLists.get(node2);
+                final Set<Edge> edgeList2 = this.edgeLists.get(node2);
                 edgeList2.remove(edge);
-                edgesSet.remove(edge);
+                this.edgesSet.remove(edge);
                 changed = true;
             }
 
             i.remove();
-            this.getPcs().firePropertyChange("edgeRemoved", edge, null);
+            getPcs().firePropertyChange("edgeRemoved", edge, null);
         }
 
-        edgeLists.remove(node);
-        nodes.remove(node);
-        namesHash.remove(node.getName());
-        stuffRemovedSinceLastTripleAccess = true;
+        this.edgeLists.remove(node);
+        this.nodes.remove(node);
+        this.namesHash.remove(node.getName());
+        this.stuffRemovedSinceLastTripleAccess = true;
 
-        this.getPcs().firePropertyChange("nodeRemoved", node, null);
+        getPcs().firePropertyChange("nodeRemoved", node, null);
         return changed;
     }
 
@@ -1530,11 +1530,11 @@ public class EdgeListGraph implements Graph {
      * @return true if nodes from the collection were removed, false if not.
      */
     @Override
-    public boolean removeNodes(List<Node> newNodes) {
+    public boolean removeNodes(final List<Node> newNodes) {
         boolean changed = false;
 
-        for (Node node : newNodes) {
-            boolean _changed = this.removeNode(node);
+        for (final Node node : newNodes) {
+            final boolean _changed = removeNode(node);
             changed = changed || _changed;
         }
 
@@ -1550,18 +1550,18 @@ public class EdgeListGraph implements Graph {
     }
 
     @Override
-    public Graph subgraph(List<Node> nodes) {
-        Graph graph = new EdgeListGraph(nodes);
-        Set<Edge> edges = this.getEdges();
+    public Graph subgraph(final List<Node> nodes) {
+        final Graph graph = new EdgeListGraph(nodes);
+        final Set<Edge> edges = getEdges();
 
-        for (Edge edge : edges) {
+        for (final Edge edge : edges) {
             if (nodes.contains(edge.getNode1())
                     && nodes.contains(edge.getNode2())) {
                 graph.addEdge(edge);
             }
         }
 
-        this.setPag(graph.isPag());
+        setPag(graph.isPag());
 
         return graph;
     }
@@ -1570,15 +1570,15 @@ public class EdgeListGraph implements Graph {
      * @return the edges connecting node1 and node2.
      */
     @Override
-    public List<Edge> getEdges(Node node1, Node node2) {
-        Set<Edge> edges = edgeLists.get(node1);
+    public List<Edge> getEdges(final Node node1, final Node node2) {
+        final Set<Edge> edges = this.edgeLists.get(node1);
         if (edges == null) {
             return new ArrayList<>();
         }
 
-        List<Edge> _edges = new ArrayList<>();
+        final List<Edge> _edges = new ArrayList<>();
 
-        for (Edge edge : edges) {
+        for (final Edge edge : edges) {
             if (edge.getDistalNode(node1) == node2) {
                 _edges.add(edge);
             }
@@ -1589,120 +1589,120 @@ public class EdgeListGraph implements Graph {
 
     @Override
     public Set<Triple> getAmbiguousTriples() {
-        return new HashSet<>(ambiguousTriples);
+        return new HashSet<>(this.ambiguousTriples);
     }
 
     @Override
-    public void setAmbiguousTriples(Set<Triple> triples) {
-        ambiguousTriples.clear();
+    public void setAmbiguousTriples(final Set<Triple> triples) {
+        this.ambiguousTriples.clear();
 
-        for (Triple triple : triples) {
-            this.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+        for (final Triple triple : triples) {
+            addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
         }
     }
 
     @Override
     public Set<Triple> getUnderLines() {
-        return new HashSet<>(underLineTriples);
+        return new HashSet<>(this.underLineTriples);
     }
 
     @Override
     public Set<Triple> getDottedUnderlines() {
 //        removeTriplesNotInGraph();
-        return new HashSet<>(dottedUnderLineTriples);
+        return new HashSet<>(this.dottedUnderLineTriples);
     }
 
     /**
      * States whether r-s-r is an underline triple or not.
      */
     @Override
-    public boolean isAmbiguousTriple(Node x, Node y, Node z) {
-        return ambiguousTriples.contains(new Triple(x, y, z));
+    public boolean isAmbiguousTriple(final Node x, final Node y, final Node z) {
+        return this.ambiguousTriples.contains(new Triple(x, y, z));
     }
 
     /**
      * States whether r-s-r is an underline triple or not.
      */
     @Override
-    public boolean isUnderlineTriple(Node x, Node y, Node z) {
-        return underLineTriples.contains(new Triple(x, y, z));
+    public boolean isUnderlineTriple(final Node x, final Node y, final Node z) {
+        return this.underLineTriples.contains(new Triple(x, y, z));
     }
 
     /**
      * States whether r-s-r is an underline triple or not.
      */
     @Override
-    public boolean isDottedUnderlineTriple(Node x, Node y, Node z) {
-        return dottedUnderLineTriples.contains(new Triple(x, y, z));
+    public boolean isDottedUnderlineTriple(final Node x, final Node y, final Node z) {
+        return this.dottedUnderLineTriples.contains(new Triple(x, y, z));
     }
 
     @Override
-    public void addAmbiguousTriple(Node x, Node y, Node z) {
-        ambiguousTriples.add(new Triple(x, y, z));
+    public void addAmbiguousTriple(final Node x, final Node y, final Node z) {
+        this.ambiguousTriples.add(new Triple(x, y, z));
     }
 
     @Override
-    public void addUnderlineTriple(Node x, Node y, Node z) {
-        Triple triple = new Triple(x, y, z);
+    public void addUnderlineTriple(final Node x, final Node y, final Node z) {
+        final Triple triple = new Triple(x, y, z);
 
         if (!triple.alongPathIn(this)) {
             return;
 //            throw new IllegalArgumentException("<" + x + ", " + y + ", " + z + "> must lie along a path in the graph.");
         }
 
-        underLineTriples.add(new Triple(x, y, z));
+        this.underLineTriples.add(new Triple(x, y, z));
     }
 
     @Override
-    public void addDottedUnderlineTriple(Node x, Node y, Node z) {
-        Triple triple = new Triple(x, y, z);
+    public void addDottedUnderlineTriple(final Node x, final Node y, final Node z) {
+        final Triple triple = new Triple(x, y, z);
 
         if (!triple.alongPathIn(this)) {
             return;
 //            throw new IllegalArgumentException("<" + x + ", " + y + ", " + z + "> must lie along a path in the graph.");
         }
 
-        dottedUnderLineTriples.add(triple);
+        this.dottedUnderLineTriples.add(triple);
     }
 
     @Override
-    public void removeAmbiguousTriple(Node x, Node y, Node z) {
-        ambiguousTriples.remove(new Triple(x, y, z));
+    public void removeAmbiguousTriple(final Node x, final Node y, final Node z) {
+        this.ambiguousTriples.remove(new Triple(x, y, z));
     }
 
     @Override
-    public void removeUnderlineTriple(Node x, Node y, Node z) {
-        underLineTriples.remove(new Triple(x, y, z));
+    public void removeUnderlineTriple(final Node x, final Node y, final Node z) {
+        this.underLineTriples.remove(new Triple(x, y, z));
     }
 
     @Override
-    public void removeDottedUnderlineTriple(Node x, Node y, Node z) {
-        dottedUnderLineTriples.remove(new Triple(x, y, z));
+    public void removeDottedUnderlineTriple(final Node x, final Node y, final Node z) {
+        this.dottedUnderLineTriples.remove(new Triple(x, y, z));
     }
 
     @Override
-    public void setUnderLineTriples(Set<Triple> triples) {
-        underLineTriples.clear();
+    public void setUnderLineTriples(final Set<Triple> triples) {
+        this.underLineTriples.clear();
 
-        for (Triple triple : triples) {
-            this.addUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
+        for (final Triple triple : triples) {
+            addUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
         }
     }
 
     @Override
-    public void setDottedUnderLineTriples(Set<Triple> triples) {
-        dottedUnderLineTriples.clear();
+    public void setDottedUnderLineTriples(final Set<Triple> triples) {
+        this.dottedUnderLineTriples.clear();
 
-        for (Triple triple : triples) {
-            this.addDottedUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
+        for (final Triple triple : triples) {
+            addDottedUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
         }
     }
 
     @Override
     public List<String> getNodeNames() {
-        List<String> names = new ArrayList<>();
+        final List<String> names = new ArrayList<>();
 
-        for (Node node : this.getNodes()) {
+        for (final Node node : getNodes()) {
             names.add(node.getName());
         }
 
@@ -1714,64 +1714,64 @@ public class EdgeListGraph implements Graph {
     public void removeTriplesNotInGraph() {
 //        if (!stuffRemovedSinceLastTripleAccess) return;
 
-        for (Triple triple : new HashSet<>(ambiguousTriples)) {
-            if (!this.containsNode(triple.getX()) || !this.containsNode(triple.getY()) || !this.containsNode(triple.getZ())) {
-                ambiguousTriples.remove(triple);
+        for (final Triple triple : new HashSet<>(this.ambiguousTriples)) {
+            if (!containsNode(triple.getX()) || !containsNode(triple.getY()) || !containsNode(triple.getZ())) {
+                this.ambiguousTriples.remove(triple);
                 continue;
             }
 
-            if (!this.isAdjacentTo(triple.getX(), triple.getY()) || !this.isAdjacentTo(triple.getY(), triple.getZ())) {
-                ambiguousTriples.remove(triple);
+            if (!isAdjacentTo(triple.getX(), triple.getY()) || !isAdjacentTo(triple.getY(), triple.getZ())) {
+                this.ambiguousTriples.remove(triple);
             }
         }
 
-        for (Triple triple : new HashSet<>(underLineTriples)) {
-            if (!this.containsNode(triple.getX()) || !this.containsNode(triple.getY()) || !this.containsNode(triple.getZ())) {
-                underLineTriples.remove(triple);
+        for (final Triple triple : new HashSet<>(this.underLineTriples)) {
+            if (!containsNode(triple.getX()) || !containsNode(triple.getY()) || !containsNode(triple.getZ())) {
+                this.underLineTriples.remove(triple);
                 continue;
             }
 
-            if (!this.isAdjacentTo(triple.getX(), triple.getY()) || !this.isAdjacentTo(triple.getY(), triple.getZ())) {
-                underLineTriples.remove(triple);
+            if (!isAdjacentTo(triple.getX(), triple.getY()) || !isAdjacentTo(triple.getY(), triple.getZ())) {
+                this.underLineTriples.remove(triple);
             }
         }
 
-        for (Triple triple : new HashSet<>(dottedUnderLineTriples)) {
-            if (!this.containsNode(triple.getX()) || !this.containsNode(triple.getY()) || !this.containsNode(triple.getZ())) {
-                dottedUnderLineTriples.remove(triple);
+        for (final Triple triple : new HashSet<>(this.dottedUnderLineTriples)) {
+            if (!containsNode(triple.getX()) || !containsNode(triple.getY()) || !containsNode(triple.getZ())) {
+                this.dottedUnderLineTriples.remove(triple);
                 continue;
             }
 
-            if (!this.isAdjacentTo(triple.getX(), triple.getY()) || !this.isAdjacentTo(triple.getY(), triple.getZ())) {
-                dottedUnderLineTriples.remove(triple);
+            if (!isAdjacentTo(triple.getX(), triple.getY()) || !isAdjacentTo(triple.getY(), triple.getZ())) {
+                this.dottedUnderLineTriples.remove(triple);
             }
         }
 
-        stuffRemovedSinceLastTripleAccess = false;
+        this.stuffRemovedSinceLastTripleAccess = false;
     }
 
-    private void collectAncestorsVisit(Node node, Set<Node> ancestors) {
+    private void collectAncestorsVisit(final Node node, final Set<Node> ancestors) {
         if (ancestors.contains(node)) {
             return;
         }
 
         ancestors.add(node);
-        List<Node> parents = this.getParents(node);
+        final List<Node> parents = getParents(node);
 
         if (!parents.isEmpty()) {
-            for (Node parent : parents) {
-                this.collectAncestorsVisit(parent, ancestors);
+            for (final Node parent : parents) {
+                collectAncestorsVisit(parent, ancestors);
             }
         }
     }
 
-    private void collectDescendantsVisit(Node node, Set<Node> descendants) {
+    private void collectDescendantsVisit(final Node node, final Set<Node> descendants) {
         descendants.add(node);
-        List<Node> children = this.getChildren(node);
+        final List<Node> children = getChildren(node);
 
         if (!children.isEmpty()) {
-            for (Node child : children) {
-                this.doChildClosureVisit(child, descendants);
+            for (final Node child : children) {
+                doChildClosureVisit(child, descendants);
             }
         }
     }
@@ -1779,18 +1779,18 @@ public class EdgeListGraph implements Graph {
     /**
      * closure under the child relation
      */
-    private void doChildClosureVisit(Node node, Set<Node> closure) {
+    private void doChildClosureVisit(final Node node, final Set<Node> closure) {
         if (!closure.contains(node)) {
             closure.add(node);
 
-            for (Edge edge1 : this.getEdges(node)) {
-                Node sub = Edges.traverseDirected(node, edge1);
+            for (final Edge edge1 : getEdges(node)) {
+                final Node sub = Edges.traverseDirected(node, edge1);
 
                 if (sub == null) {
                     continue;
                 }
 
-                this.doChildClosureVisit(sub, closure);
+                doChildClosureVisit(sub, closure);
             }
         }
     }
@@ -1799,20 +1799,20 @@ public class EdgeListGraph implements Graph {
      * @return this object.
      */
     protected PropertyChangeSupport getPcs() {
-        if (pcs == null) {
-            pcs = new PropertyChangeSupport(this);
+        if (this.pcs == null) {
+            this.pcs = new PropertyChangeSupport(this);
         }
-        return pcs;
+        return this.pcs;
     }
 
     /**
      * @return true iff there is a directed path from node1 to node2.
      */
-    boolean existsUndirectedPathVisit(Node node1, Node node2, Set<Node> path) {
+    boolean existsUndirectedPathVisit(final Node node1, final Node node2, final Set<Node> path) {
         path.add(node1);
 
-        for (Edge edge : this.getEdges(node1)) {
-            Node child = Edges.traverse(node1, edge);
+        for (final Edge edge : getEdges(node1)) {
+            final Node child = Edges.traverse(node1, edge);
 
             if (child == null) {
                 continue;
@@ -1826,7 +1826,7 @@ public class EdgeListGraph implements Graph {
                 continue;
             }
 
-            if (this.existsUndirectedPathVisit(child, node2, path)) {
+            if (existsUndirectedPathVisit(child, node2, path)) {
                 return true;
             }
         }
@@ -1838,12 +1838,12 @@ public class EdgeListGraph implements Graph {
     /**
      * @return true iff there is a semi-directed path from node1 to node2
      */
-    private boolean existsSemiDirectedPathVisit(Node node1, Set<Node> nodes2,
-                                                LinkedList<Node> path) {
+    private boolean existsSemiDirectedPathVisit(final Node node1, final Set<Node> nodes2,
+                                                final LinkedList<Node> path) {
         path.addLast(node1);
 
-        for (Edge edge : this.getEdges(node1)) {
-            Node child = Edges.traverseSemiDirected(node1, edge);
+        for (final Edge edge : getEdges(node1)) {
+            final Node child = Edges.traverseSemiDirected(node1, edge);
 
             if (child == null) {
                 continue;
@@ -1857,7 +1857,7 @@ public class EdgeListGraph implements Graph {
                 continue;
             }
 
-            if (this.existsSemiDirectedPathVisit(child, nodes2, path)) {
+            if (existsSemiDirectedPathVisit(child, nodes2, path)) {
                 return true;
             }
         }
@@ -1872,17 +1872,17 @@ public class EdgeListGraph implements Graph {
     }
 
     @Override
-    public void setHighlighted(Edge edge, boolean highlighted) {
-        highlightedEdges.add(edge);
+    public void setHighlighted(final Edge edge, final boolean highlighted) {
+        this.highlightedEdges.add(edge);
     }
 
     @Override
-    public boolean isHighlighted(Edge edge) {
-        return highlightedEdges != null && highlightedEdges.contains(edge);
+    public boolean isHighlighted(final Edge edge) {
+        return this.highlightedEdges != null && this.highlightedEdges.contains(edge);
     }
 
     @Override
-    public boolean isParameterizable(Node node) {
+    public boolean isParameterizable(final Node node) {
         return true;
     }
 
@@ -1906,44 +1906,44 @@ public class EdgeListGraph implements Graph {
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (nodes == null) {
+        if (this.nodes == null) {
             throw new NullPointerException();
         }
 
-        if (edgesSet == null) {
+        if (this.edgesSet == null) {
             throw new NullPointerException();
         }
 
-        if (edgeLists == null) {
+        if (this.edgeLists == null) {
             throw new NullPointerException();
         }
 
-        if (ambiguousTriples == null) {
-            ambiguousTriples = new HashSet<>();
+        if (this.ambiguousTriples == null) {
+            this.ambiguousTriples = new HashSet<>();
         }
 
-        if (highlightedEdges == null) {
-            highlightedEdges = new HashSet<>();
+        if (this.highlightedEdges == null) {
+            this.highlightedEdges = new HashSet<>();
         }
 
-        if (underLineTriples == null) {
-            underLineTriples = new HashSet<>();
+        if (this.underLineTriples == null) {
+            this.underLineTriples = new HashSet<>();
         }
 
-        if (dottedUnderLineTriples == null) {
-            dottedUnderLineTriples = new HashSet<>();
+        if (this.dottedUnderLineTriples == null) {
+            this.dottedUnderLineTriples = new HashSet<>();
         }
     }
 
-    public void changeName(String name, String newName) {
-        Node node = namesHash.get(name);
-        namesHash.remove(name);
+    public void changeName(final String name, final String newName) {
+        final Node node = this.namesHash.get(name);
+        this.namesHash.remove(name);
         node.setName(newName);
-        namesHash.put(newName, node);
+        this.namesHash.put(newName, node);
     }
 
     /**
@@ -1952,7 +1952,7 @@ public class EdgeListGraph implements Graph {
      */
     @Override
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<>();
+        final List<String> names = new ArrayList<>();
         names.add("Underlines");
         names.add("Dotted Underlines");
         names.add("Ambiguous Triples");
@@ -1964,8 +1964,8 @@ public class EdgeListGraph implements Graph {
      * <code>getTripleClassificationNames</code> for the given node.
      */
     @Override
-    public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<>();
+    public List<List<Triple>> getTriplesLists(final Node node) {
+        final List<List<Triple>> triplesList = new ArrayList<>();
         triplesList.add(GraphUtils.getUnderlinedTriplesFromGraph(node, this));
         triplesList.add(GraphUtils.getDottedUnderlinedTriplesFromGraph(node, this));
         triplesList.add(GraphUtils.getAmbiguousTriplesFromGraph(node, this));
@@ -1973,27 +1973,27 @@ public class EdgeListGraph implements Graph {
     }
 
     public void setStuffRemovedSinceLastTripleAccess(
-            boolean stuffRemovedSinceLastTripleAccess) {
+            final boolean stuffRemovedSinceLastTripleAccess) {
         this.stuffRemovedSinceLastTripleAccess = stuffRemovedSinceLastTripleAccess;
     }
 
     @Override
     public Map<String, Object> getAllAttributes() {
-        return attributes;
+        return this.attributes;
     }
 
     @Override
-    public Object getAttribute(String key) {
-        return attributes.get(key);
+    public Object getAttribute(final String key) {
+        return this.attributes.get(key);
     }
 
     @Override
-    public void removeAttribute(String key) {
-        attributes.remove(key);
+    public void removeAttribute(final String key) {
+        this.attributes.remove(key);
     }
 
     @Override
-    public void addAttribute(String key, Object value) {
-        attributes.put(key, value);
+    public void addAttribute(final String key, final Object value) {
+        this.attributes.put(key, value);
     }
 }

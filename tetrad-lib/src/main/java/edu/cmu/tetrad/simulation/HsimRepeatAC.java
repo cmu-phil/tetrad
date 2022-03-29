@@ -24,37 +24,37 @@ public class HsimRepeatAC {
     private char delimiter = ',';
 
     //*********Constructors*************//
-    public HsimRepeatAC(DataSet indata) {
-        data = indata;
+    public HsimRepeatAC(final DataSet indata) {
+        this.data = indata;
         //may need to make this part more complicated if CovarianceMatrix method is finicky
     }
 
-    public HsimRepeatAC(String readfilename, char delim) {
-        String workingDirectory = System.getProperty("user.dir");
+    public HsimRepeatAC(final String readfilename, final char delim) {
+        final String workingDirectory = System.getProperty("user.dir");
         System.out.println(workingDirectory);
-        Set<String> eVars = new HashSet<String>();
+        final Set<String> eVars = new HashSet<String>();
         eVars.add("MULT");
-        Path dataFile = Paths.get(readfilename);
+        final Path dataFile = Paths.get(readfilename);
 
-        ContinuousTabularDatasetFileReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, DelimiterUtils.toDelimiter(delim));
+        final ContinuousTabularDatasetFileReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, DelimiterUtils.toDelimiter(delim));
         try {
-            data = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData(eVars));
-        } catch (Exception IOException) {
+            this.data = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData(eVars));
+        } catch (final Exception IOException) {
             IOException.printStackTrace();
         }
     }
 
     //***************PUBLIC METHODS********************//
-    public double[] run(int resimSize, int repeat) {
+    public double[] run(final int resimSize, final int repeat) {
         //parameter: set of positive integers, which are resimSize values.
-        List<Integer> schedule = new ArrayList<Integer>();
+        final List<Integer> schedule = new ArrayList<Integer>();
 
         for (int i = 0; i < repeat; i++) {
             schedule.add(resimSize);
         }
 
         //Arrays.asList(5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5);
-        double[] evalTotal;
+        final double[] evalTotal;
         evalTotal = new double[5];
         evalTotal[0] = 0;
         evalTotal[1] = 0;
@@ -71,17 +71,17 @@ public class HsimRepeatAC {
         Integer count3 = 0;
         Integer count4 = 0;
 
-        for (Integer i : schedule) {
+        for (final Integer i : schedule) {
             //count++;
-            HsimAutoC study = new HsimAutoC(data);
+            final HsimAutoC study = new HsimAutoC(this.data);
             //this is done differently if write is true. in that case, HsimAutoC will be used differently
-            if (write) {
+            if (this.write) {
                 study.setWrite(true);
-                study.setFilenameOut(filenameOut);
-                study.setDelimiter(delimiter);
+                study.setFilenameOut(this.filenameOut);
+                study.setDelimiter(this.delimiter);
             }
             //pass verbose on to the lower level as well
-            if (verbose) {
+            if (this.verbose) {
                 study.setVerbose(true);
             }
 
@@ -115,7 +115,7 @@ public class HsimRepeatAC {
         evalTotal[3] = evalTotal[3] / (double) (count3);
         evalTotal[4] = evalTotal[4] / (double) (count4);
 
-        if (verbose) {
+        if (this.verbose) {
             System.out.println("Average eval scores: " + evalTotal[0] + " " + evalTotal[1]
                     + " " + evalTotal[2] + " " + evalTotal[3] + " " + evalTotal[4]);
         }
@@ -123,19 +123,19 @@ public class HsimRepeatAC {
     }
 
     //*************************Methods for setting private variables***********//
-    public void setVerbose(boolean verbosity) {
-        verbose = verbosity;
+    public void setVerbose(final boolean verbosity) {
+        this.verbose = verbosity;
     }
 
-    public void setWrite(boolean setwrite) {
-        write = setwrite;
+    public void setWrite(final boolean setwrite) {
+        this.write = setwrite;
     }
 
-    public void setFilenameOut(String filename) {
-        filenameOut = filename;
+    public void setFilenameOut(final String filename) {
+        this.filenameOut = filename;
     }
 
-    public void setDelimiter(char delim) {
-        delimiter = delim;
+    public void setDelimiter(final char delim) {
+        this.delimiter = delim;
     }
 }

@@ -49,29 +49,29 @@ public final class MeasuredLatentOnly implements GraphConstraint {
     /**
      * @return true.
      */
-    public boolean isEdgeAddable(Edge edge, Graph graph) {
+    public boolean isEdgeAddable(final Edge edge, final Graph graph) {
         return true;
     }
 
     /**
      * @return true iff the given node is either an observed or a latent node.
      */
-    public boolean isNodeAddable(Node node, Graph graph) {
-        NodeType type = node.getNodeType();
+    public boolean isNodeAddable(final Node node, final Graph graph) {
+        final NodeType type = node.getNodeType();
         return type == NodeType.MEASURED || type == NodeType.LATENT;
     }
 
     /**
      * @return true;
      */
-    public boolean isEdgeRemovable(Edge edge, Graph graph) {
+    public boolean isEdgeRemovable(final Edge edge, final Graph graph) {
         return true;
     }
 
     /**
      * @return true.
      */
-    public boolean isNodeRemovable(Node node, Graph graph) {
+    public boolean isNodeRemovable(final Node node, final Graph graph) {
         return true;
     }
 

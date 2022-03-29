@@ -33,15 +33,15 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 public class CaseExpanderWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
 
-    private CaseExpanderWrapper(DataWrapper wrapper) {
-        DataFilter filter = new CaseExpander();
-        DataSet columnDataModel =
+    private CaseExpanderWrapper(final DataWrapper wrapper) {
+        final DataFilter filter = new CaseExpander();
+        final DataSet columnDataModel =
                 (DataSet) wrapper.getSelectedDataModel();
-        this.setDataModel(filter.filter(columnDataModel));
-        this.setSourceGraph(wrapper.getSourceGraph());
+        setDataModel(filter.filter(columnDataModel));
+        setSourceGraph(wrapper.getSourceGraph());
 
         LogDataUtils.logDataModelList("Data in which case multipliers of parent node data have been multiplied out.",
-                this.getDataModelList());
+                getDataModelList());
 
     }
 

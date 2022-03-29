@@ -63,149 +63,149 @@ public class BayesEstimatorEditor extends JPanel {
     /**
      * Constructs a new instantiated model editor from a Bayes IM.
      */
-    public BayesEstimatorEditor(BayesIm bayesIm, DataSet dataSet) {
+    public BayesEstimatorEditor(final BayesIm bayesIm, final DataSet dataSet) {
         this(new BayesEstimatorWrapper(new DataWrapper(dataSet), new BayesImWrapper(bayesIm)));
     }
 
     /**
      * Constructs a new Bayes IM Editor from a Bayes estimator wrapper.
      */
-    public BayesEstimatorEditor(BayesEstimatorWrapper bayesEstWrapper) {
-        wrapper = bayesEstWrapper;
+    public BayesEstimatorEditor(final BayesEstimatorWrapper bayesEstWrapper) {
+        this.wrapper = bayesEstWrapper;
 
-        this.setLayout(new BorderLayout());
+        setLayout(new BorderLayout());
 
-        targetPanel = new JPanel();
-        targetPanel.setLayout(new BorderLayout());
+        this.targetPanel = new JPanel();
+        this.targetPanel.setLayout(new BorderLayout());
 
-        this.resetBayesImEditor();
+        resetBayesImEditor();
 
-        this.add(targetPanel, BorderLayout.CENTER);
-        this.validate();
+        add(this.targetPanel, BorderLayout.CENTER);
+        validate();
 
-        if (wrapper.getNumModels() > 1) {
-            JComboBox<Integer> comp = new JComboBox<>();
+        if (this.wrapper.getNumModels() > 1) {
+            final JComboBox<Integer> comp = new JComboBox<>();
 
-            for (int i = 0; i < wrapper.getNumModels(); i++) {
+            for (int i = 0; i < this.wrapper.getNumModels(); i++) {
                 comp.addItem(i + 1);
             }
 
             comp.addActionListener(new ActionListener() {
                 @Override
-                public void actionPerformed(ActionEvent e) {
-                    wrapper.setModelIndex(((Integer) comp.getSelectedItem()).intValue() - 1);
-                    BayesEstimatorEditor.this.resetBayesImEditor();
-                    BayesEstimatorEditor.this.validate();
+                public void actionPerformed(final ActionEvent e) {
+                    BayesEstimatorEditor.this.wrapper.setModelIndex(((Integer) comp.getSelectedItem()).intValue() - 1);
+                    resetBayesImEditor();
+                    validate();
                 }
             });
 
             comp.setMaximumSize(comp.getPreferredSize());
 
-            Box b = Box.createHorizontalBox();
+            final Box b = Box.createHorizontalBox();
             b.add(new JLabel("Using model"));
             b.add(comp);
             b.add(new JLabel("from "));
-            b.add(new JLabel(wrapper.getName()));
+            b.add(new JLabel(this.wrapper.getName()));
             b.add(Box.createHorizontalGlue());
 
-            this.add(b, BorderLayout.NORTH);
+            add(b, BorderLayout.NORTH);
         }
     }
 
     /**
      * Sets the name of this editor.
      */
-    public void setName(String name) {
-        String oldName = this.getName();
+    public void setName(final String name) {
+        final String oldName = getName();
         super.setName(name);
-        firePropertyChange("name", oldName, this.getName());
+        this.firePropertyChange("name", oldName, getName());
     }
 
     /**
      * @return a reference to this editor.
      */
     private BayesEstimatorEditorWizard getWizard() {
-        return wizard;
+        return this.wizard;
     }
 
     private void resetBayesImEditor() {
-        JPanel panel = new JPanel();
+        final JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
 
         // Rest of setup
-        BayesIm bayesIm = wrapper.getEstimatedBayesIm();
-        BayesPm bayesPm = bayesIm.getBayesPm();
-        Graph graph = bayesPm.getDag();
+        final BayesIm bayesIm = this.wrapper.getEstimatedBayesIm();
+        final BayesPm bayesPm = bayesIm.getBayesPm();
+        final Graph graph = bayesPm.getDag();
 
-        GraphWorkbench workbench = new GraphWorkbench(graph);
-        wizard = new BayesEstimatorEditorWizard(bayesIm, workbench);
-        wizard.enableEditing(false);
+        final GraphWorkbench workbench = new GraphWorkbench(graph);
+        this.wizard = new BayesEstimatorEditorWizard(bayesIm, workbench);
+        this.wizard.enableEditing(false);
 
-        wizard.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
+        this.wizard.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(final PropertyChangeEvent evt) {
                 if ("editorValueChanged".equals(evt.getPropertyName())) {
-                    BayesEstimatorEditor.this.firePropertyChange("modelChanged", null, null);
+                    firePropertyChange("modelChanged", null, null);
                 }
             }
         });
 
-        JScrollPane workbenchScroll = new JScrollPane(workbench);
+        final JScrollPane workbenchScroll = new JScrollPane(workbench);
         workbenchScroll.setPreferredSize(new Dimension(400, 400));
 
-        JScrollPane wizardScroll = new JScrollPane(this.getWizard());
+        final JScrollPane wizardScroll = new JScrollPane(getWizard());
 
-        BayesProperties properties = new BayesProperties(wrapper.getDataSet());
+        final BayesProperties properties = new BayesProperties(this.wrapper.getDataSet());
 
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
         buf.append("\nP-value = ").append(properties.getLikelihoodRatioP(graph));
 //        buf.append("\nP-value = ").append(properties.getVuongP());
         buf.append("\nDf = ").append(properties.getDof());
         /*
       Formats numbers.
          */
-        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         buf.append("\nChi square = ")
                 .append(nf.format(properties.getChisq()));
         buf.append("\nBIC score = ").append(nf.format(properties.getBic()));
         buf.append("\n\nH0: Complete graph.");
 
-        JTextArea modelParametersText = new JTextArea();
+        final JTextArea modelParametersText = new JTextArea();
         modelParametersText.setText(buf.toString());
 
-        JTabbedPane tabbedPane = new JTabbedPane();
+        final JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.add("Model", wizardScroll);
         tabbedPane.add("Model Statistics", modelParametersText);
 
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+        final JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                 workbenchScroll, tabbedPane);
         splitPane.setOneTouchExpandable(true);
         splitPane.setDividerLocation(workbenchScroll.getPreferredSize().width);
 
-        this.setLayout(new BorderLayout());
+        setLayout(new BorderLayout());
         panel.add(splitPane, BorderLayout.CENTER);
 
-        this.setName("Bayes IM Editor");
-        this.getWizard().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
+        setName("Bayes IM Editor");
+        getWizard().addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(final PropertyChangeEvent evt) {
                 if ("editorClosing".equals(evt.getPropertyName())) {
-                    BayesEstimatorEditor.this.firePropertyChange("editorClosing", null, BayesEstimatorEditor.this.getName());
+                    firePropertyChange("editorClosing", null, getName());
                 }
 
                 if ("closeFrame".equals(evt.getPropertyName())) {
-                    BayesEstimatorEditor.this.firePropertyChange("closeFrame", null, null);
-                    BayesEstimatorEditor.this.firePropertyChange("editorClosing", true, true);
+                    firePropertyChange("closeFrame", null, null);
+                    firePropertyChange("editorClosing", true, true);
                 }
             }
         });
 
-        JMenuBar menuBar = new JMenuBar();
-        JMenu file = new JMenu("File");
+        final JMenuBar menuBar = new JMenuBar();
+        final JMenu file = new JMenu("File");
         menuBar.add(file);
 //        file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
         file.add(new SaveComponentImage(workbench, "Save Graph Image..."));
         panel.add(menuBar, BorderLayout.NORTH);
 
-        targetPanel.add(panel, BorderLayout.CENTER);
-        this.validate();
+        this.targetPanel.add(panel, BorderLayout.CENTER);
+        validate();
     }
 }

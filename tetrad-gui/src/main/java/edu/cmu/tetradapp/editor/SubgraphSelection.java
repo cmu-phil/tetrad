@@ -54,13 +54,13 @@ class SubgraphSelection implements Transferable {
     /**
      * Constructs a new selection with the given list of graph nodes.
      */
-    public SubgraphSelection(List graphElements) {
+    public SubgraphSelection(final List graphElements) {
         if (graphElements == null) {
             throw new NullPointerException(
                     "List of graph elements must " + "not be null.");
         }
 
-        for (Object graphElement : graphElements) {
+        for (final Object graphElement : graphElements) {
             if (!(graphElement instanceof Node ||
                     graphElement instanceof Edge)) {
                 throw new IllegalArgumentException("Model node list contains " +
@@ -69,10 +69,10 @@ class SubgraphSelection implements Transferable {
             }
         }
 
-        Object result;
+        final Object result;
         try {
             result = new MarshalledObject(graphElements).get();
-        } catch (Exception e1) {
+        } catch (final Exception e1) {
             e1.printStackTrace();
             throw new IllegalStateException("Could not clone.");
         }
@@ -90,14 +90,14 @@ class SubgraphSelection implements Transferable {
      *                                    supported.
      * @see DataFlavor#getRepresentationClass
      */
-    public Object getTransferData(DataFlavor flavor)
+    public Object getTransferData(final DataFlavor flavor)
             throws UnsupportedFlavorException, IOException {
-        if (!this.isDataFlavorSupported(flavor)) {
+        if (!isDataFlavorSupported(flavor)) {
             throw new UnsupportedFlavorException(flavor);
         }
 
-        List returnList = graphElements;
-        graphElements = null;
+        final List returnList = this.graphElements;
+        this.graphElements = null;
         return returnList;
     }
 
@@ -106,8 +106,8 @@ class SubgraphSelection implements Transferable {
      * @return whether or not the specified data flavor is supported for this
      * object.
      */
-    public boolean isDataFlavorSupported(DataFlavor flavor) {
-        return flavor.equals(this.getTransferDataFlavors()[0]);
+    public boolean isDataFlavorSupported(final DataFlavor flavor) {
+        return flavor.equals(getTransferDataFlavors()[0]);
     }
 
     /**
@@ -117,7 +117,7 @@ class SubgraphSelection implements Transferable {
      * descriptive).
      */
     public DataFlavor[] getTransferDataFlavors() {
-        return dataFlavors;
+        return this.dataFlavors;
     }
 }
 

@@ -66,14 +66,14 @@ public class CovNoise implements CovarianceFunction {
      * @param X        input dataset
      * @return K covariance <code>Matrix</code>
      */
-    public Matrix compute(Matrix loghyper, Matrix X) {
+    public Matrix compute(final Matrix loghyper, final Matrix X) {
 
-        if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != this.numParameters())
-            throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + this.numParameters());
+        if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != numParameters())
+            throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + numParameters());
 
-        double s2 = Math.exp(2 * loghyper.get(0, 0));                             // noise variance
+        final double s2 = Math.exp(2 * loghyper.get(0, 0));                             // noise variance
 
-        Matrix K = Matrix.identity(X.getRowDimension(), X.getRowDimension()).times(s2);
+        final Matrix K = Matrix.identity(X.getRowDimension(), X.getRowDimension()).times(s2);
 
         return K;
 
@@ -87,18 +87,18 @@ public class CovNoise implements CovarianceFunction {
      * @param Xstar    test set
      * @return [K(Xstar, Xstar) K(X,Xstar)]
      */
-    public Matrix[] compute(Matrix loghyper, Matrix X, Matrix Xstar) {
+    public Matrix[] compute(final Matrix loghyper, final Matrix X, final Matrix Xstar) {
 
-        if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != this.numParameters())
-            throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + this.numParameters());
+        if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != numParameters())
+            throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + numParameters());
 
-        double s2 = Math.exp(2 * loghyper.get(0, 0));                             // noise variance
+        final double s2 = Math.exp(2 * loghyper.get(0, 0));                             // noise variance
 
-        double[] a = new double[Xstar.getRowDimension()];
+        final double[] a = new double[Xstar.getRowDimension()];
         Arrays.fill(a, s2);
-        Matrix A = new Matrix(a, Xstar.getRowDimension());   // adding Gaussian
+        final Matrix A = new Matrix(a, Xstar.getRowDimension());   // adding Gaussian
 
-        Matrix B = new Matrix(X.getRowDimension(), Xstar.getRowDimension());
+        final Matrix B = new Matrix(X.getRowDimension(), Xstar.getRowDimension());
 
         return new Matrix[]{A, B};
     }
@@ -112,16 +112,16 @@ public class CovNoise implements CovarianceFunction {
      * @param index    hyperparameter index
      * @return <code>Matrix</code> of derivatives
      */
-    public Matrix computeDerivatives(Matrix loghyper, Matrix X, int index) {
+    public Matrix computeDerivatives(final Matrix loghyper, final Matrix X, final int index) {
 
-        if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != this.numParameters())
-            throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + this.numParameters());
-        if (index > this.numParameters() - 1)
-            throw new IllegalArgumentException("Wrong hyperparameters index " + index + " it should be smaller or equal to " + (this.numParameters() - 1));
+        if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != numParameters())
+            throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + numParameters());
+        if (index > numParameters() - 1)
+            throw new IllegalArgumentException("Wrong hyperparameters index " + index + " it should be smaller or equal to " + (numParameters() - 1));
 
         //noise parameter
-        double s2 = Math.exp(2 * loghyper.get(0, 0));
-        Matrix A = Matrix.identity(X.getRowDimension(), X.getRowDimension()).times(2 * s2);
+        final double s2 = Math.exp(2 * loghyper.get(0, 0));
+        final Matrix A = Matrix.identity(X.getRowDimension(), X.getRowDimension()).times(2 * s2);
 
         return A;
     }

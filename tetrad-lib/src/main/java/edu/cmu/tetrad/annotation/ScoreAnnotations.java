@@ -34,11 +34,11 @@ public class ScoreAnnotations extends AbstractAnnotations<Score> {
     }
 
     public static ScoreAnnotations getInstance() {
-        return INSTANCE;
+        return ScoreAnnotations.INSTANCE;
     }
 
-    public List<AnnotatedClass<Score>> filterOutExperimental(List<AnnotatedClass<Score>> list) {
-        return this.filterOutByAnnotation(list, Experimental.class);
+    public List<AnnotatedClass<Score>> filterOutExperimental(final List<AnnotatedClass<Score>> list) {
+        return filterOutByAnnotation(list, Experimental.class);
     }
 
 }

@@ -52,84 +52,84 @@ public class DirichletBayesImEditor extends JPanel {
     /**
      * Constructs a new instanted model editor from a Bayes IM.
      */
-    private DirichletBayesImEditor(DirichletBayesIm dirichletBayesIm) {
+    private DirichletBayesImEditor(final DirichletBayesIm dirichletBayesIm) {
         if (dirichletBayesIm == null) {
             throw new NullPointerException("Bayes IM must not be null.");
         }
 
         // Add a menu item to allow the BayesIm to be saved out in
         // causality lab format.
-        this.setLayout(new BorderLayout());
-        BayesPm bayesPm = dirichletBayesIm.getBayesPm();
-        Graph graph = bayesPm.getDag();
-        GraphWorkbench workbench = new GraphWorkbench(graph);
+        setLayout(new BorderLayout());
+        final BayesPm bayesPm = dirichletBayesIm.getBayesPm();
+        final Graph graph = bayesPm.getDag();
+        final GraphWorkbench workbench = new GraphWorkbench(graph);
 
-        JMenuBar menuBar = new JMenuBar();
-        JMenu file = new JMenu("File");
+        final JMenuBar menuBar = new JMenuBar();
+        final JMenu file = new JMenu("File");
         menuBar.add(file);
 //        file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
         file.add(new SaveComponentImage(workbench, "Save Graph Image..."));
-        this.setLayout(new BorderLayout());
-        this.add(menuBar, BorderLayout.NORTH);
+        setLayout(new BorderLayout());
+        add(menuBar, BorderLayout.NORTH);
 
         // Rest of setup.
-        probsWizard = new DirichletBayesImProbsWizard(dirichletBayesIm, workbench);
-        probsWizard.enableEditing(false);
+        this.probsWizard = new DirichletBayesImProbsWizard(dirichletBayesIm, workbench);
+        this.probsWizard.enableEditing(false);
 
-        countsWizard = new DirichletBayesImCountsWizard(dirichletBayesIm, workbench);
+        this.countsWizard = new DirichletBayesImCountsWizard(dirichletBayesIm, workbench);
 
-        probsWizard.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
+        this.probsWizard.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(final PropertyChangeEvent evt) {
                 if ("editorValueChanged".equals(evt.getPropertyName())) {
-                    DirichletBayesImEditor.this.firePropertyChange("modelChanged", null, null);
+                    firePropertyChange("modelChanged", null, null);
                 }
             }
         });
 
-        countsWizard.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
+        this.countsWizard.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(final PropertyChangeEvent evt) {
                 if ("editorValueChanged".equals(evt.getPropertyName())) {
-                    DirichletBayesImEditor.this.firePropertyChange("modelChanged", null, null);
+                    firePropertyChange("modelChanged", null, null);
                 }
             }
         });
 
-        JScrollPane workbenchScroll = new JScrollPane(workbench);
-        JScrollPane probsScroll = new JScrollPane(this.getProbsWizard());
-        JScrollPane countsScroll = new JScrollPane(this.getCountsWizard());
+        final JScrollPane workbenchScroll = new JScrollPane(workbench);
+        final JScrollPane probsScroll = new JScrollPane(getProbsWizard());
+        final JScrollPane countsScroll = new JScrollPane(getCountsWizard());
 
-        JTabbedPane tabbedPane = new JTabbedPane();
+        final JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.add("Probabilities", probsScroll);
         tabbedPane.add("Pseudocounts", countsScroll);
 
         tabbedPane.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                JTabbedPane tabbedPane = (JTabbedPane) e.getSource();
+            public void stateChanged(final ChangeEvent e) {
+                final JTabbedPane tabbedPane = (JTabbedPane) e.getSource();
                 tabbedPane.getSelectedComponent().requestFocus();
             }
         });
 
         workbenchScroll.setPreferredSize(new Dimension(400, 400));
 
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+        final JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                 workbenchScroll, tabbedPane);
         splitPane.setOneTouchExpandable(true);
         splitPane.setDividerLocation(workbenchScroll.getPreferredSize().width);
 
-        this.add(splitPane, BorderLayout.CENTER);
+        add(splitPane, BorderLayout.CENTER);
 
-        this.setName("Dirichlet Bayes IM Editor");
-        this.getProbsWizard().addPropertyChangeListener(
+        setName("Dirichlet Bayes IM Editor");
+        getProbsWizard().addPropertyChangeListener(
                 new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent evt) {
+                    public void propertyChange(final PropertyChangeEvent evt) {
                         if ("editorClosing".equals(evt.getPropertyName())) {
-                            DirichletBayesImEditor.this.firePropertyChange("editorClosing", null,
-                                    DirichletBayesImEditor.this.getName());
+                            firePropertyChange("editorClosing", null,
+                                    getName());
                         }
 
                         if ("closeFrame".equals(evt.getPropertyName())) {
-                            DirichletBayesImEditor.this.firePropertyChange("closeFrame", null, null);
-                            DirichletBayesImEditor.this.firePropertyChange("editorClosing", true, true);
+                            firePropertyChange("closeFrame", null, null);
+                            firePropertyChange("editorClosing", true, true);
                         }
                     }
                 });
@@ -139,7 +139,7 @@ public class DirichletBayesImEditor extends JPanel {
      * Constructs a new instanted model editor from a Bayes IM wrapper.
      */
     public DirichletBayesImEditor(
-            DirichletBayesImWrapper dirichletBayesImWrapper) {
+            final DirichletBayesImWrapper dirichletBayesImWrapper) {
         this(dirichletBayesImWrapper.getDirichletBayesIm());
     }
 
@@ -147,30 +147,30 @@ public class DirichletBayesImEditor extends JPanel {
      * Constructs a new Bayes IM Editor from a Dirichlet Prior.
      */
     public DirichletBayesImEditor(
-            DirichletEstimatorWrapper dirichletEstWrapper) {
+            final DirichletEstimatorWrapper dirichletEstWrapper) {
         this(dirichletEstWrapper.getEstimatedBayesIm());
     }
 
     /**
      * Sets the name of this editor.
      */
-    public void setName(String name) {
-        String oldName = this.getName();
+    public void setName(final String name) {
+        final String oldName = getName();
         super.setName(name);
-        firePropertyChange("name", oldName, this.getName());
+        this.firePropertyChange("name", oldName, getName());
     }
 
     /**
      * @return a reference to this editor.
      */
     private DirichletBayesImProbsWizard getProbsWizard() {
-        return probsWizard;
+        return this.probsWizard;
     }
 
     /**
      * @return a reference to this editor.
      */
     private DirichletBayesImCountsWizard getCountsWizard() {
-        return countsWizard;
+        return this.countsWizard;
     }
 }

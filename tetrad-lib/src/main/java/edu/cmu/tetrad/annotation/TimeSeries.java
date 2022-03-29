@@ -7,7 +7,7 @@ import java.lang.annotation.*;
  *
  * @author Chirayu (Kong) Wongchokprasitti, PhD
  */
-@Target({ElementType.TYPE})
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface TimeSeries {

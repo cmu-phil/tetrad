@@ -42,24 +42,24 @@ final class ConvertToCovMatixAction extends AbstractAction {
     /**
      * Creates a new action to split by collinear columns.
      */
-    public ConvertToCovMatixAction(DataEditor editor) {
+    public ConvertToCovMatixAction(final DataEditor editor) {
         super("Covariance Matrix");
 
         if (editor == null) {
             throw new NullPointerException();
         }
 
-        dataEditor = editor;
+        this.dataEditor = editor;
     }
 
     /**
      * Performs the action of loading a session from a file.
      */
-    public void actionPerformed(ActionEvent e) {
-        DataModel dataModel = this.getDataEditor().getSelectedDataModel();
+    public void actionPerformed(final ActionEvent e) {
+        final DataModel dataModel = getDataEditor().getSelectedDataModel();
 
         if (dataModel instanceof DataSet) {
-            DataSet dataSet = (DataSet) dataModel;
+            final DataSet dataSet = (DataSet) dataModel;
 
             if (!(dataSet.isContinuous())) {
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
@@ -68,20 +68,20 @@ final class ConvertToCovMatixAction extends AbstractAction {
                 return;
             }
 
-            CovarianceMatrix corrMatrix = new CovarianceMatrix(dataSet);
+            final CovarianceMatrix corrMatrix = new CovarianceMatrix(dataSet);
 
-            DataModelList list = new DataModelList();
+            final DataModelList list = new DataModelList();
             list.add(corrMatrix);
-            this.getDataEditor().reset(list);
-            this.getDataEditor().selectFirstTab();
+            getDataEditor().reset(list);
+            getDataEditor().selectFirstTab();
         } else if (dataModel instanceof ICovarianceMatrix) {
-            CovarianceMatrix covMatrix1 = (CovarianceMatrix) dataModel;
-            CovarianceMatrix covMatrix2 = new CovarianceMatrix(covMatrix1);
+            final CovarianceMatrix covMatrix1 = (CovarianceMatrix) dataModel;
+            final CovarianceMatrix covMatrix2 = new CovarianceMatrix(covMatrix1);
 
-            DataModelList list = new DataModelList();
+            final DataModelList list = new DataModelList();
             list.add(covMatrix2);
-            this.getDataEditor().reset(list);
-            this.getDataEditor().selectFirstTab();
+            getDataEditor().reset(list);
+            getDataEditor().selectFirstTab();
         } else {
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     "Must be a continuous data set " +
@@ -90,7 +90,7 @@ final class ConvertToCovMatixAction extends AbstractAction {
     }
 
     private DataEditor getDataEditor() {
-        return dataEditor;
+        return this.dataEditor;
     }
 }
 

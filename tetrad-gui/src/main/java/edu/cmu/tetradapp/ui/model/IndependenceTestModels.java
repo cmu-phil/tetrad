@@ -43,75 +43,75 @@ public final class IndependenceTestModels {
     private final Map<DataType, IndependenceTestModel> defaultModelMap = new EnumMap<>(DataType.class);
 
     private IndependenceTestModels() {
-        TestOfIndependenceAnnotations indTestAnno = TestOfIndependenceAnnotations.getInstance();
-        List<AnnotatedClass<TestOfIndependence>> list = Tetrad.enableExperimental
+        final TestOfIndependenceAnnotations indTestAnno = TestOfIndependenceAnnotations.getInstance();
+        final List<AnnotatedClass<TestOfIndependence>> list = Tetrad.enableExperimental
                 ? indTestAnno.getAnnotatedClasses()
                 : indTestAnno.filterOutExperimental(indTestAnno.getAnnotatedClasses());
-        models = Collections.unmodifiableList(
+        this.models = Collections.unmodifiableList(
                 list.stream()
                         .map(e -> new IndependenceTestModel(e))
                         .sorted()
                         .collect(Collectors.toList()));
 
-        this.initModelMap();
-        this.initDefaultModelMap();
+        initModelMap();
+        initDefaultModelMap();
     }
 
     private void initModelMap() {
         // initialize enum map
-        DataType[] dataTypes = DataType.values();
-        for (DataType dataType : dataTypes) {
-            modelMap.put(dataType, new LinkedList<>());
+        final DataType[] dataTypes = DataType.values();
+        for (final DataType dataType : dataTypes) {
+            this.modelMap.put(dataType, new LinkedList<>());
         }
 
         // group by datatype
-        models.stream().forEach(e -> {
-            DataType[] types = e.getIndependenceTest().getAnnotation().dataType();
-            for (DataType dataType : types) {
-                modelMap.get(dataType).add(e);
+        this.models.stream().forEach(e -> {
+            final DataType[] types = e.getIndependenceTest().getAnnotation().dataType();
+            for (final DataType dataType : types) {
+                this.modelMap.get(dataType).add(e);
             }
         });
 
         // merge continuous datatype with mixed datatype
-        List<IndependenceTestModel> mergedModels = Stream.concat(modelMap.get(DataType.Continuous).stream(), modelMap.get(DataType.Mixed).stream())
+        List<IndependenceTestModel> mergedModels = Stream.concat(this.modelMap.get(DataType.Continuous).stream(), this.modelMap.get(DataType.Mixed).stream())
                 .sorted()
                 .collect(Collectors.toList());
-        modelMap.put(DataType.Continuous, mergedModels);
+        this.modelMap.put(DataType.Continuous, mergedModels);
 
         // merge discrete datatype with mixed datatype
-        mergedModels = Stream.concat(modelMap.get(DataType.Discrete).stream(), modelMap.get(DataType.Mixed).stream())
+        mergedModels = Stream.concat(this.modelMap.get(DataType.Discrete).stream(), this.modelMap.get(DataType.Mixed).stream())
                 .sorted()
                 .collect(Collectors.toList());
-        modelMap.put(DataType.Discrete, mergedModels);
+        this.modelMap.put(DataType.Discrete, mergedModels);
 
         // make map values unmodifiable
-        modelMap.forEach((k, v) -> modelMap.put(k, Collections.unmodifiableList(v)));
+        this.modelMap.forEach((k, v) -> this.modelMap.put(k, Collections.unmodifiableList(v)));
     }
 
     private void initDefaultModelMap() {
-        DataType[] dataTypes = DataType.values();
-        for (DataType dataType : dataTypes) {
-            List<IndependenceTestModel> list = this.getModels(dataType);
+        final DataType[] dataTypes = DataType.values();
+        for (final DataType dataType : dataTypes) {
+            final List<IndependenceTestModel> list = getModels(dataType);
             if (!list.isEmpty()) {
-                String property = this.getProperty(dataType);
+                final String property = getProperty(dataType);
                 if (property == null) {
-                    defaultModelMap.put(dataType, list.get(0));
+                    this.defaultModelMap.put(dataType, list.get(0));
                 } else {
-                    String value = TetradProperties.getInstance().getValue(property);
+                    final String value = TetradProperties.getInstance().getValue(property);
                     if (value == null) {
-                        defaultModelMap.put(dataType, list.get(0));
+                        this.defaultModelMap.put(dataType, list.get(0));
                     } else {
-                        Optional<IndependenceTestModel> result = list.stream()
+                        final Optional<IndependenceTestModel> result = list.stream()
                                 .filter(e -> e.getIndependenceTest().getClazz().getName().equals(value))
                                 .findFirst();
-                        defaultModelMap.put(dataType, result.isPresent() ? result.get() : list.get(0));
+                        this.defaultModelMap.put(dataType, result.isPresent() ? result.get() : list.get(0));
                     }
                 }
             }
         }
     }
 
-    private String getProperty(DataType dataType) {
+    private String getProperty(final DataType dataType) {
         switch (dataType) {
             case Continuous:
                 return "datatype.continuous.test.default";
@@ -125,21 +125,21 @@ public final class IndependenceTestModels {
     }
 
     public static IndependenceTestModels getInstance() {
-        return INSTANCE;
+        return IndependenceTestModels.INSTANCE;
     }
 
     public List<IndependenceTestModel> getModels() {
-        return models;
+        return this.models;
     }
 
-    public List<IndependenceTestModel> getModels(DataType dataType) {
-        return modelMap.containsKey(dataType)
-                ? modelMap.get(dataType)
+    public List<IndependenceTestModel> getModels(final DataType dataType) {
+        return this.modelMap.containsKey(dataType)
+                ? this.modelMap.get(dataType)
                 : Collections.EMPTY_LIST;
     }
 
-    public IndependenceTestModel getDefaultModel(DataType dataType) {
-        return defaultModelMap.get(dataType);
+    public IndependenceTestModel getDefaultModel(final DataType dataType) {
+        return this.defaultModelMap.get(dataType);
     }
 
 }

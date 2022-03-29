@@ -18,19 +18,19 @@ import java.util.List;
  */
 public class GdistanceApply {
 
-    public static void main(String... args) {
+    public static void main(final String... args) {
         final double xdist = 2.4;
         final double ydist = 2.4;
         final double zdist = 2;
-        long timestart = System.nanoTime();
+        final long timestart = System.nanoTime();
         System.out.println("Loading first graph");
-        Graph graph1 = GraphUtils.loadGraphTxt(new File("Motion_Corrected_Graphs/singlesub_motion_graph_025_04.txt"));
-        long timegraph1 = System.nanoTime();
+        final Graph graph1 = GraphUtils.loadGraphTxt(new File("Motion_Corrected_Graphs/singlesub_motion_graph_025_04.txt"));
+        final long timegraph1 = System.nanoTime();
         //System.out.println(graph1);
         System.out.println("Done loading first graph. Elapsed time: " + (timegraph1 - timestart) / 1000000000 + "s");
         System.out.println("Loading second graph");
-        Graph graph2 = GraphUtils.loadGraphTxt(new File("Motion_Corrected_Graphs/singlesub_motion_graph_027_04.txt"));
-        long timegraph2 = System.nanoTime();
+        final Graph graph2 = GraphUtils.loadGraphTxt(new File("Motion_Corrected_Graphs/singlesub_motion_graph_027_04.txt"));
+        final long timegraph2 = System.nanoTime();
         System.out.println("Done loading second graph. Elapsed time: " + (timegraph2 - timegraph1) / 1000000000 + "s");
 
         //+++++++++ these steps are specifically for the motion corrected fMRI graphs ++++++++++++
@@ -49,28 +49,28 @@ public class GdistanceApply {
         graph2.removeNode(graph2.getNode("Motion_6"));
 
         //load the location map
-        String workingDirectory = System.getProperty("user.dir");
+        final String workingDirectory = System.getProperty("user.dir");
         System.out.println(workingDirectory);
-        Path mapPath = Paths.get("coords.txt");
+        final Path mapPath = Paths.get("coords.txt");
         System.out.println(mapPath);
-        ContinuousTabularDatasetFileReader dataReaderMap = new ContinuousTabularDatasetFileReader(mapPath, Delimiter.COMMA);
+        final ContinuousTabularDatasetFileReader dataReaderMap = new ContinuousTabularDatasetFileReader(mapPath, Delimiter.COMMA);
         try {
-            DataSet locationMap = (DataSet) DataConvertUtils.toDataModel(dataReaderMap.readInData());
-            long timegraph3 = System.nanoTime();
+            final DataSet locationMap = (DataSet) DataConvertUtils.toDataModel(dataReaderMap.readInData());
+            final long timegraph3 = System.nanoTime();
             System.out.println("Done loading location map. Elapsed time: " + (timegraph3 - timegraph2) / 1000000000 + "s");
 
             System.out.println("Running Gdistance");
 
-            Gdistance gdist = new Gdistance(locationMap, xdist, ydist, zdist);
-            List<Double> distance = gdist.distances(graph1, graph2);
+            final Gdistance gdist = new Gdistance(locationMap, xdist, ydist, zdist);
+            final List<Double> distance = gdist.distances(graph1, graph2);
             System.out.println(distance);
             System.out.println("Done running Distance. Elapsed time: " + (System.nanoTime() - timegraph3) / 1000000000 + "s");
             System.out.println("Total elapsed time: " + (System.nanoTime() - timestart) / 1000000000 + "s");
 
-            PrintWriter writer = new PrintWriter("Gdistances.txt", "UTF-8");
+            final PrintWriter writer = new PrintWriter("Gdistances.txt", "UTF-8");
             writer.println(distance);
             writer.close();
-        } catch (Exception IOException) {
+        } catch (final Exception IOException) {
             IOException.printStackTrace();
         }
     }

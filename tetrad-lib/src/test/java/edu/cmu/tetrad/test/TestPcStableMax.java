@@ -45,7 +45,7 @@ public class TestPcStableMax {
      */
     @Test
     public void testSearch1() {
-        this.checkSearch("X1-->X2,X1-->X3,X2-->X4,X3-->X4",
+        checkSearch("X1-->X2,X1-->X3,X2-->X4,X3-->X4",
                 "X1---X2,X1---X3,X2-->X4,X3-->X4");
     }
 
@@ -55,7 +55,7 @@ public class TestPcStableMax {
      */
     @Test
     public void testSearch2() {
-        this.checkSearch("X1-->X2,X1-->X3,X2-->X4,X3-->X4",
+        checkSearch("X1-->X2,X1-->X3,X2-->X4,X3-->X4",
                 "X1---X2,X1---X3,X2-->X4,X3-->X4");
     }
 
@@ -64,7 +64,7 @@ public class TestPcStableMax {
      */
     @Test
     public void testSearch3() {
-        this.checkSearch("A-->D,A-->B,B-->D,C-->D,D-->E",
+        checkSearch("A-->D,A-->B,B-->D,C-->D,D-->E",
                 "A-->D,A---B,B-->D,C-->D,D-->E");
     }
 
@@ -73,14 +73,14 @@ public class TestPcStableMax {
      */
     @Test
     public void testSearch4() {
-        IKnowledge knowledge = new Knowledge2();
+        final IKnowledge knowledge = new Knowledge2();
         knowledge.setForbidden("B", "D");
         knowledge.setForbidden("D", "B");
         knowledge.setForbidden("C", "B");
 
         System.out.println(knowledge);
 
-        this.checkWithKnowledge("A-->B,C-->B,B-->D", "A---B,B-->C,D", /*"A---B,B-->C,A-->D,C-->D", */
+        checkWithKnowledge("A-->B,C-->B,B-->D", "A---B,B-->C,D", /*"A---B,B-->C,A-->D,C-->D", */
                 knowledge);
     }
 
@@ -96,11 +96,11 @@ public class TestPcStableMax {
                 ".29\t.25\t.34\t.37\t.13\t1.0\n" +
                 ".18\t.15\t.19\t.41\t.43\t.55\t1.0";
 
-        char[] citesChars = citesString.toCharArray();
-        ICovarianceMatrix dataSet = DataUtils.parseCovariance(citesChars, "//", DelimiterType.WHITESPACE,
+        final char[] citesChars = citesString.toCharArray();
+        final ICovarianceMatrix dataSet = DataUtils.parseCovariance(citesChars, "//", DelimiterType.WHITESPACE,
                 '\"', "*");
 
-        IKnowledge knowledge = new Knowledge2();
+        final IKnowledge knowledge = new Knowledge2();
 
         knowledge.addToTier(1, "ABILITY");
         knowledge.addToTier(2, "GPQ");
@@ -110,12 +110,12 @@ public class TestPcStableMax {
         knowledge.addToTier(5, "PUBS");
         knowledge.addToTier(6, "CITES");
 
-        PcStableMax pc = new PcStableMax(new IndTestFisherZ(dataSet, 0.11));
+        final PcStableMax pc = new PcStableMax(new IndTestFisherZ(dataSet, 0.11));
         pc.setKnowledge(knowledge);
 
-        Graph CPDAG = pc.search();
+        final Graph CPDAG = pc.search();
 
-        Graph _true = new EdgeListGraph(CPDAG.getNodes());
+        final Graph _true = new EdgeListGraph(CPDAG.getNodes());
 
         _true.addDirectedEdge(CPDAG.getNode("ABILITY"), CPDAG.getNode("CITES"));
         _true.addDirectedEdge(CPDAG.getNode("ABILITY"), CPDAG.getNode("GPQ"));
@@ -137,21 +137,21 @@ public class TestPcStableMax {
      * Presents the input graph to FCI and checks to make sure the output of FCI is equivalent to the given output
      * graph.
      */
-    private void checkSearch(String inputGraph, String outputGraph) {
+    private void checkSearch(final String inputGraph, final String outputGraph) {
 
         // Set up graph and node objects.
-        Graph graph = GraphConverter.convert(inputGraph);
+        final Graph graph = GraphConverter.convert(inputGraph);
 
         // Set up search.
-        IndependenceTest independence = new IndTestDSep(graph);
-        Pc pc = new Pc(independence);
+        final IndependenceTest independence = new IndTestDSep(graph);
+        final Pc pc = new Pc(independence);
 
         // Run search
 //        Graph resultGraph = pc.search();
         Graph resultGraph = pc.search(new Fas(independence), independence.getVariables());
 
         // Build comparison graph.
-        Graph trueGraph = GraphConverter.convert(outputGraph);
+        final Graph trueGraph = GraphConverter.convert(outputGraph);
 
         resultGraph = GraphUtils.replaceNodes(resultGraph, trueGraph.getNodes());
 
@@ -163,23 +163,23 @@ public class TestPcStableMax {
      * Presents the input graph to FCI and checks to make sure the output of FCI is equivalent to the given output
      * graph.
      */
-    private void checkWithKnowledge(String inputGraph, String outputGraph,
-                                    IKnowledge knowledge) {
+    private void checkWithKnowledge(final String inputGraph, final String outputGraph,
+                                    final IKnowledge knowledge) {
         // Set up graph and node objects.
-        Graph graph = GraphConverter.convert(inputGraph);
+        final Graph graph = GraphConverter.convert(inputGraph);
 
         // Set up search.
-        IndependenceTest independence = new IndTestDSep(graph);
-        PcStableMax pc = new PcStableMax(independence);
+        final IndependenceTest independence = new IndTestDSep(graph);
+        final PcStableMax pc = new PcStableMax(independence);
 
         // Set up search.
         pc.setKnowledge(knowledge);
 
         // Run search
-        Graph resultGraph = pc.search();
+        final Graph resultGraph = pc.search();
 
         // Build comparison graph.
-        Graph trueGraph = GraphConverter.convert(outputGraph);
+        final Graph trueGraph = GraphConverter.convert(outputGraph);
 
         // Do test.
         assertEquals(trueGraph, resultGraph);

@@ -31,7 +31,7 @@ public class GaussianPower implements Distribution {
     private final String name;
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     /**
@@ -43,31 +43,31 @@ public class GaussianPower implements Distribution {
         return new GaussianPower(2);
     }
 
-    public GaussianPower(double power) {
-        sd = 1;
+    public GaussianPower(final double power) {
+        this.sd = 1;
         this.power = power;
-        name = "N^" + power + "(" + 0 + "," + (double) 1 + ")";
+        this.name = "N^" + power + "(" + 0 + "," + (double) 1 + ")";
     }
 
-    public void setParameter(int index, double value) {
+    public void setParameter(final int index, final double value) {
         if (index == 0) {
-            power = value;
+            this.power = value;
         }
 
         throw new IllegalArgumentException();
     }
 
-    public double getParameter(int index) {
+    public double getParameter(final int index) {
         if (index == 0) {
-            return sd;
+            return this.sd;
         } else if (index == 1) {
-            return power;
+            return this.power;
         }
 
         throw new IllegalArgumentException();
     }
 
-    public String getParameterName(int index) {
+    public String getParameterName(final int index) {
         if (index == 0) {
             return "Standard Deviation";
         } else if (index == 1) {
@@ -82,8 +82,8 @@ public class GaussianPower implements Distribution {
     }
 
     public double nextRandom() {
-        double value = RandomUtil.getInstance().nextNormal(0, 1);
-        double poweredValue = java.lang.Math.pow(java.lang.Math.abs(value), power);
+        final double value = RandomUtil.getInstance().nextNormal(0, 1);
+        final double poweredValue = java.lang.Math.pow(java.lang.Math.abs(value), this.power);
         return (value >= 0) ? poweredValue : -poweredValue;
     }
 }

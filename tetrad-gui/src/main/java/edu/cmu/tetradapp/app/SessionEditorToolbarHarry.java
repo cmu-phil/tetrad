@@ -83,7 +83,7 @@ final class SessionEditorToolbarHarry extends JPanel {
      *
      * @param workbench the workbench this toolbar controls.
      */
-    public SessionEditorToolbarHarry(SessionEditorWorkbench workbench) {
+    public SessionEditorToolbarHarry(final SessionEditorWorkbench workbench) {
         if (workbench == null) {
             throw new NullPointerException("Workbench must not be null.");
         }
@@ -91,7 +91,7 @@ final class SessionEditorToolbarHarry extends JPanel {
         this.workbench = workbench;
 
         // Set up panel.
-        Box buttonsPanel = Box.createVerticalBox();
+        final Box buttonsPanel = Box.createVerticalBox();
 //        buttonsPanel.setBackground(new Color(198, 232, 252));
         buttonsPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 
@@ -99,7 +99,7 @@ final class SessionEditorToolbarHarry extends JPanel {
         /*
       Node infos for all of the nodes.
      */
-        ButtonInfo[] buttonInfos = {
+        final ButtonInfo[] buttonInfos = {
                 new ButtonInfo("Select", "Select and Move", "move",
                         "<html>Select and move nodes or groups of nodes " +
                                 "<br>on the workbench.</html>"),
@@ -136,14 +136,14 @@ final class SessionEditorToolbarHarry extends JPanel {
                 new ButtonInfo("Note", "Note", "note",
                         "<html>Add a note to the session.</html>")
         };
-        JToggleButton[] buttons = new JToggleButton[buttonInfos.length];
+        final JToggleButton[] buttons = new JToggleButton[buttonInfos.length];
 
         for (int i = 0; i < buttonInfos.length; i++) {
-            buttons[i] = this.constructButton(buttonInfos[i]);
+            buttons[i] = constructButton(buttonInfos[i]);
         }
 
         // Add all buttons to a button group.
-        ButtonGroup buttonGroup = new ButtonGroup();
+        final ButtonGroup buttonGroup = new ButtonGroup();
 
         for (int i = 0; i < buttonInfos.length; i++) {
             buttonGroup.add(buttons[i]);
@@ -165,12 +165,12 @@ final class SessionEditorToolbarHarry extends JPanel {
 
         // Add an action listener to help send messages to the
         // workbench.
-        ChangeListener changeListener = new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                JToggleButton _button = (JToggleButton) e.getSource();
+        final ChangeListener changeListener = new ChangeListener() {
+            public void stateChanged(final ChangeEvent e) {
+                final JToggleButton _button = (JToggleButton) e.getSource();
 
                 if (_button.getModel().isSelected()) {
-                    SessionEditorToolbarHarry.this.setWorkbenchMode(_button);
+                    setWorkbenchMode(_button);
 //                    setCursor(workbench.getCursor());
                 }
             }
@@ -181,7 +181,7 @@ final class SessionEditorToolbarHarry extends JPanel {
         }
 
         // Select the Select button.
-        JToggleButton button = this.getButtonForType(selectType);
+        final JToggleButton button = getButtonForType(this.selectType);
 
         button.getModel().setSelected(true);
 
@@ -194,24 +194,24 @@ final class SessionEditorToolbarHarry extends JPanel {
         }
 
         // Put the panel in a scrollpane.
-        setLayout(new BorderLayout());
-        JScrollPane scroll = new JScrollPane(buttonsPanel);
+        this.setLayout(new BorderLayout());
+        final JScrollPane scroll = new JScrollPane(buttonsPanel);
         scroll.setPreferredSize(new Dimension(130, 1000));
-        this.add(scroll, BorderLayout.CENTER);
+        add(scroll, BorderLayout.CENTER);
 
         // Add property change listener so that selection can be moved
         // back to "SELECT_MOVE" after an action.
         workbench.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent e) {
-                if (!SessionEditorToolbarHarry.this.isRespondingToEvents()) {
+            public void propertyChange(final PropertyChangeEvent e) {
+                if (!isRespondingToEvents()) {
                     return;
                 }
 
-                String propertyName = e.getPropertyName();
+                final String propertyName = e.getPropertyName();
 
                 if ("nodeAdded".equals(propertyName)) {
-                    if (!SessionEditorToolbarHarry.this.isShiftDown()) {
-                        SessionEditorToolbarHarry.this.resetSelectMove();
+                    if (!isShiftDown()) {
+                        resetSelectMove();
                     }
                 }
             }
@@ -219,16 +219,16 @@ final class SessionEditorToolbarHarry extends JPanel {
 
         KeyboardFocusManager.getCurrentKeyboardFocusManager()
                 .addKeyEventDispatcher(new KeyEventDispatcher() {
-                    public boolean dispatchKeyEvent(KeyEvent e) {
-                        int keyCode = e.getKeyCode();
-                        int id = e.getID();
+                    public boolean dispatchKeyEvent(final KeyEvent e) {
+                        final int keyCode = e.getKeyCode();
+                        final int id = e.getID();
 
                         if (keyCode == KeyEvent.VK_SHIFT) {
                             if (id == KeyEvent.KEY_PRESSED) {
-                                SessionEditorToolbarHarry.this.setShiftDown(true);
+                                setShiftDown(true);
                             } else if (id == KeyEvent.KEY_RELEASED) {
-                                SessionEditorToolbarHarry.this.setShiftDown(false);
-                                SessionEditorToolbarHarry.this.resetSelectMove();
+                                setShiftDown(false);
+                                resetSelectMove();
                             }
                         }
 
@@ -236,14 +236,14 @@ final class SessionEditorToolbarHarry extends JPanel {
                     }
                 });
 
-        this.resetSelectMove();
+        resetSelectMove();
     }
 
     /**
      * Sets the selection back to move/select.
      */
     private void resetSelectMove() {
-        JToggleButton selectButton = this.getButtonForType(selectType);
+        final JToggleButton selectButton = getButtonForType(this.selectType);
         if (!(selectButton.isSelected())) {
             selectButton.doClick();
             selectButton.requestFocus();
@@ -264,18 +264,18 @@ final class SessionEditorToolbarHarry extends JPanel {
      * off temporarily.
      */
     private boolean isRespondingToEvents() {
-        return respondingToEvents;
+        return this.respondingToEvents;
     }
 
     /**
      * Sets whether the toolbar should react to events. This may need to be
      * turned off temporarily.
      */
-    public void setRespondingToEvents(boolean respondingToEvents) {
+    public void setRespondingToEvents(final boolean respondingToEvents) {
         this.respondingToEvents = respondingToEvents;
     }
 
-    protected void processKeyEvent(KeyEvent e) {
+    protected void processKeyEvent(final KeyEvent e) {
         System.out.println("process key event " + e);
         super.processKeyEvent(e);
     }
@@ -297,19 +297,19 @@ final class SessionEditorToolbarHarry extends JPanel {
      *
      * @param buttonInfo contains the info needed to construct the button.
      */
-    private JToggleButton constructButton(ButtonInfo buttonInfo) {
-        String imagePrefix = buttonInfo.getImagePrefix();
+    private JToggleButton constructButton(final ButtonInfo buttonInfo) {
+        final String imagePrefix = buttonInfo.getImagePrefix();
 
         if (imagePrefix == null) {
             throw new NullPointerException("Image prefix must not be null.");
         }
 
-        JToggleButton button = new JToggleButton();
+        final JToggleButton button = new JToggleButton();
 
         button.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
+            public void mouseClicked(final MouseEvent e) {
                 super.mouseClicked(e);
-                SessionEditorToolbarHarry.this.setShiftDown(e.isShiftDown());
+                setShiftDown(e.isShiftDown());
 //                setControlDown(e.isControlDown());
             }
         });
@@ -327,7 +327,7 @@ final class SessionEditorToolbarHarry extends JPanel {
 
         button.setMaximumSize(new Dimension(110, 40)); // For a vertical box.
         button.setToolTipText(buttonInfo.getToolTipText());
-        nodeTypes.put(button, buttonInfo.getNodeTypeName());
+        this.nodeTypes.put(button, buttonInfo.getNodeTypeName());
 
         return button;
     }
@@ -337,21 +337,21 @@ final class SessionEditorToolbarHarry extends JPanel {
      *
      * @param button the JToggleButton whose workbench state is to be set.
      */
-    private void setWorkbenchMode(JToggleButton button) {
-        String nodeType = nodeTypes.get(button);
+    private void setWorkbenchMode(final JToggleButton button) {
+        final String nodeType = this.nodeTypes.get(button);
 
         /*
       The node type of the button that is used for the edge-drawing tool.
      */
         final String edgeType = "Edge";
-        if (selectType.equals(nodeType)) {
-            workbench.setWorkbenchMode(AbstractWorkbench.SELECT_MOVE);
-            workbench.setNextButtonType(null);
-            this.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            workbench.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        if (this.selectType.equals(nodeType)) {
+            this.workbench.setWorkbenchMode(AbstractWorkbench.SELECT_MOVE);
+            this.workbench.setNextButtonType(null);
+            setCursor(new Cursor(Cursor.HAND_CURSOR));
+            this.workbench.setCursor(new Cursor(Cursor.HAND_CURSOR));
         } else if (edgeType.equals(nodeType)) {
-            workbench.setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
-            workbench.setNextButtonType(null);
+            this.workbench.setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
+            this.workbench.setNextButtonType(null);
 //            setCursor(workbench.getCursor());
 
 //            Toolkit toolkit = Toolkit.getDefaultToolkit();
@@ -360,11 +360,11 @@ final class SessionEditorToolbarHarry extends JPanel {
 //            setCursor(c);
 //            workbench.setCursor(c);
 
-            this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-            workbench.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            this.workbench.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         } else {
-            workbench.setWorkbenchMode(AbstractWorkbench.ADD_NODE);
-            workbench.setNextButtonType(nodeType);
+            this.workbench.setWorkbenchMode(AbstractWorkbench.ADD_NODE);
+            this.workbench.setNextButtonType(nodeType);
 
 //            Toolkit toolkit = Toolkit.getDefaultToolkit();
 //            Image image = ImageUtils.getImage(this, "cursorImage.png");
@@ -374,8 +374,8 @@ final class SessionEditorToolbarHarry extends JPanel {
 
 //            setCursor(workbench.getCursor());
 
-            this.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
-            workbench.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+            setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+            this.workbench.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
 
         }
     }
@@ -384,11 +384,11 @@ final class SessionEditorToolbarHarry extends JPanel {
      * @return the JToggleButton for the given node type, or null if no such
      * button exists.
      */
-    private JToggleButton getButtonForType(String nodeType) {
-        for (Object o : nodeTypes.keySet()) {
-            JToggleButton button = (JToggleButton) o;
+    private JToggleButton getButtonForType(final String nodeType) {
+        for (final Object o : this.nodeTypes.keySet()) {
+            final JToggleButton button = (JToggleButton) o;
 
-            if (nodeType.equals(nodeTypes.get(button))) {
+            if (nodeType.equals(this.nodeTypes.get(button))) {
                 return button;
             }
         }
@@ -397,10 +397,10 @@ final class SessionEditorToolbarHarry extends JPanel {
     }
 
     private boolean isShiftDown() {
-        return shiftDown;
+        return this.shiftDown;
     }
 
-    private void setShiftDown(boolean shiftDown) {
+    private void setShiftDown(final boolean shiftDown) {
         this.shiftDown = shiftDown;
     }
 
@@ -441,8 +441,8 @@ final class SessionEditorToolbarHarry extends JPanel {
          */
         private final String toolTipText;
 
-        public ButtonInfo(String nodeTypeName, String displayName,
-                          String imagePrefix, String toolTipText) {
+        public ButtonInfo(final String nodeTypeName, final String displayName,
+                          final String imagePrefix, final String toolTipText) {
             this.nodeTypeName = nodeTypeName;
             this.displayName = displayName;
             this.imagePrefix = imagePrefix;
@@ -450,23 +450,23 @@ final class SessionEditorToolbarHarry extends JPanel {
         }
 
         public String getNodeTypeName() {
-            return nodeTypeName;
+            return this.nodeTypeName;
         }
 
         public String getDisplayName() {
-            return displayName;
+            return this.displayName;
         }
 
-        public void setNodeTypeName(String nodeTypeName) {
+        public void setNodeTypeName(final String nodeTypeName) {
             this.nodeTypeName = nodeTypeName;
         }
 
         public String getImagePrefix() {
-            return imagePrefix;
+            return this.imagePrefix;
         }
 
         public String getToolTipText() {
-            return toolTipText;
+            return this.toolTipText;
         }
     }
 }

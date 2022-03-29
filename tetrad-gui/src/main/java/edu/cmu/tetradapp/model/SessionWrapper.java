@@ -90,12 +90,12 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     /**
      * Constructs a new session with the given name.
      */
-    public SessionWrapper(Session session) {
+    public SessionWrapper(final Session session) {
         if (session == null) {
             throw new NullPointerException("Session must not be null.");
         }
         this.session = session;
-        this.session.addSessionListener(this.getSessionHandler());
+        this.session.addSessionListener(getSessionHandler());
     }
 
     /**
@@ -118,20 +118,20 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * @param edge the edge to be added.
      * @return true if the edge was added, false if not.
      */
-    public boolean addEdge(Edge edge) {
-        SessionNodeWrapper from =
+    public boolean addEdge(final Edge edge) {
+        final SessionNodeWrapper from =
                 (SessionNodeWrapper) Edges.getDirectedEdgeTail(edge);
-        SessionNodeWrapper to =
+        final SessionNodeWrapper to =
                 (SessionNodeWrapper) Edges.getDirectedEdgeHead(edge);
-        SessionNode parent = from.getSessionNode();
-        SessionNode child = to.getSessionNode();
+        final SessionNode parent = from.getSessionNode();
+        final SessionNode child = to.getSessionNode();
 
-        boolean added = child.addParent2(parent);
+        final boolean added = child.addParent2(parent);
 //        boolean added = child.addParent(parent);
 
         if (added) {
-            sessionEdges.add(edge);
-            this.getPropertyChangeSupport().firePropertyChange("edgeAdded", null,
+            this.sessionEdges.add(edge);
+            getPropertyChangeSupport().firePropertyChange("edgeAdded", null,
                     edge);
             return true;
         } else {
@@ -144,8 +144,8 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      *
      * @param e the property change listener.
      */
-    public void addPropertyChangeListener(PropertyChangeListener e) {
-        this.getPropertyChangeSupport().addPropertyChangeListener(e);
+    public void addPropertyChangeListener(final PropertyChangeListener e) {
+        getPropertyChangeSupport().addPropertyChangeListener(e);
     }
 
     /**
@@ -155,17 +155,17 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * @param node the node to be added.
      * @return true if nodes were added, false if not.
      */
-    public boolean addNode(Node node) {
-        SessionNodeWrapper wrapper = (SessionNodeWrapper) node;
-        SessionNode sessionNode = wrapper.getSessionNode();
+    public boolean addNode(final Node node) {
+        final SessionNodeWrapper wrapper = (SessionNodeWrapper) node;
+        final SessionNode sessionNode = wrapper.getSessionNode();
 
         try {
-            session.addNode(sessionNode);
-            sessionNodeWrappers.add(node);
-            this.getPropertyChangeSupport().firePropertyChange("nodeAdded", null,
+            this.session.addNode(sessionNode);
+            this.sessionNodeWrappers.add(node);
+            getPropertyChangeSupport().firePropertyChange("nodeAdded", null,
                     node);
             return true;
-        } catch (IllegalArgumentException e) {
+        } catch (final IllegalArgumentException e) {
             e.printStackTrace();
             return false;
         }
@@ -175,28 +175,28 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * Pastes a list of session elements (SessionNodeWrappers and SessionEdges)
      * into the workbench.
      */
-    public void pasteSubsession(List sessionElements, Point upperLeft) {
+    public void pasteSubsession(final List sessionElements, final Point upperLeft) {
 
         // Extract the SessionNodes from the SessionNodeWrappers
         // and pass the list of them to the Session.  Choose a unique
         // name for each of the session wrappers.
-        List<SessionNode> sessionNodes = new ArrayList<>();
-        List<SessionNodeWrapper> sessionNodeWrappers =
+        final List<SessionNode> sessionNodes = new ArrayList<>();
+        final List<SessionNodeWrapper> sessionNodeWrappers =
                 new ArrayList<>();
-        List<Edge> sessionEdges = new ArrayList<>();
+        final List<Edge> sessionEdges = new ArrayList<>();
 
-        Point oldUpperLeft = EditorUtils.getTopLeftPoint(sessionElements);
-        int deltaX = upperLeft.x - oldUpperLeft.x;
-        int deltaY = upperLeft.y - oldUpperLeft.y;
+        final Point oldUpperLeft = EditorUtils.getTopLeftPoint(sessionElements);
+        final int deltaX = upperLeft.x - oldUpperLeft.x;
+        final int deltaY = upperLeft.y - oldUpperLeft.y;
 
-        for (Object sessionElement : sessionElements) {
+        for (final Object sessionElement : sessionElements) {
             if (sessionElement instanceof SessionNodeWrapper) {
-                SessionNodeWrapper wrapper =
+                final SessionNodeWrapper wrapper =
                         (SessionNodeWrapper) sessionElement;
                 sessionNodeWrappers.add(wrapper);
-                this.adjustNameAndPosition(wrapper, sessionNodeWrappers, deltaX,
+                adjustNameAndPosition(wrapper, sessionNodeWrappers, deltaX,
                         deltaY);
-                SessionNode sessionNode = wrapper.getSessionNode();
+                final SessionNode sessionNode = wrapper.getSessionNode();
                 sessionNodes.add(sessionNode);
             } else if (sessionElement instanceof Edge) {
                 sessionEdges.add((Edge) sessionElement);
@@ -209,8 +209,8 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
 
         // KEY STEP: Add the session nodes to the session.
         try {
-            session.addNodeList(sessionNodes);
-        } catch (Exception e) {
+            this.session.addNodeList(sessionNodes);
+        } catch (final Exception e) {
             throw new RuntimeException("There was an error when trying to " +
                     "add session nodes to the session.", e);
         }
@@ -221,15 +221,15 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
         this.sessionNodeWrappers.addAll(sessionNodeWrappers);
         this.sessionEdges.addAll(sessionEdges);
 
-        for (Object sessionNodeWrapper : sessionNodeWrappers) {
-            Node node = (Node) sessionNodeWrapper;
-            this.getPropertyChangeSupport().firePropertyChange("nodeAdded", null,
+        for (final Object sessionNodeWrapper : sessionNodeWrappers) {
+            final Node node = (Node) sessionNodeWrapper;
+            getPropertyChangeSupport().firePropertyChange("nodeAdded", null,
                     node);
         }
 
-        for (Object sessionEdge : sessionEdges) {
-            Edge edge = (Edge) sessionEdge;
-            this.getPropertyChangeSupport().firePropertyChange("edgeAdded", null,
+        for (final Object sessionEdge : sessionEdges) {
+            final Edge edge = (Edge) sessionEdge;
+            getPropertyChangeSupport().firePropertyChange("edgeAdded", null,
                     edge);
         }
     }
@@ -239,11 +239,11 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * during serialization.
      */
     private SessionHandler getSessionHandler() {
-        if (sessionHandler == null) {
-            sessionHandler = new SessionHandler();
+        if (this.sessionHandler == null) {
+            this.sessionHandler = new SessionHandler();
         }
 
-        return sessionHandler;
+        return this.sessionHandler;
     }
 
     /**
@@ -256,11 +256,11 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * @param deltaX              the shift in x
      * @param deltaY              the shift in y.
      */
-    private void adjustNameAndPosition(SessionNodeWrapper wrapper,
-                                       List sessionNodeWrappers, int deltaX, int deltaY) {
-        String originalName = wrapper.getSessionName();
-        String base = this.extractBase(originalName);
-        String uniqueName = this.nextUniqueName(base, sessionNodeWrappers);
+    private void adjustNameAndPosition(final SessionNodeWrapper wrapper,
+                                       final List sessionNodeWrappers, final int deltaX, final int deltaY) {
+        final String originalName = wrapper.getSessionName();
+        final String base = extractBase(originalName);
+        final String uniqueName = nextUniqueName(base, sessionNodeWrappers);
 
         if (!uniqueName.equals(originalName)) {
             wrapper.setSessionName(uniqueName);
@@ -273,13 +273,13 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * @return the substring of <code>name</code> up to but not including a
      * contiguous string of digits at the end. For example, given "Graph123"
      */
-    private String extractBase(String name) {
+    private String extractBase(final String name) {
 
         if (name == null) {
             throw new NullPointerException("Name must not be null.");
         }
 
-        StringBuilder buffer = new StringBuilder(name);
+        final StringBuilder buffer = new StringBuilder(name);
 
         for (int i = buffer.length() - 1; i >= 0; i--) {
             if (!Character.isDigit(buffer.charAt(i))) {
@@ -297,7 +297,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      *                            next string in the sequence.
      * @return the next string in the sequence--for example, "Graph1".
      */
-    private String nextUniqueName(String base, List sessionNodeWrappers) {
+    private String nextUniqueName(final String base, final List sessionNodeWrappers) {
 
         if (base == null) {
             throw new NullPointerException("Base name must be non-null.");
@@ -313,8 +313,8 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
             name = base + i;
 
             Iterator iterator = this.sessionNodeWrappers.iterator();
-            for (Iterator j = iterator; j.hasNext(); ) {
-                SessionNodeWrapper wrapper = (SessionNodeWrapper) j.next();
+            for (final Iterator j = iterator; j.hasNext(); ) {
+                final SessionNodeWrapper wrapper = (SessionNodeWrapper) j.next();
 
                 if (wrapper.getSessionName().equals(name)) {
                     continue loop;
@@ -322,8 +322,8 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
             }
 
             iterator = sessionNodeWrappers.iterator();
-            for (Iterator j = iterator; j.hasNext(); ) {
-                SessionNodeWrapper wrapper = (SessionNodeWrapper) j.next();
+            for (final Iterator j = iterator; j.hasNext(); ) {
+                final SessionNodeWrapper wrapper = (SessionNodeWrapper) j.next();
 
                 if (wrapper.getSessionName().equals(name)) {
                     continue loop;
@@ -338,7 +338,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     /**
      * @return true just in case the given object is this object.
      */
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (o == null) {
             return false;
         }
@@ -351,14 +351,14 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * the edges in the list is guaranteed.
      */
     public Set<Edge> getEdges() {
-        return new HashSet<>(sessionEdges);
+        return new HashSet<>(this.sessionEdges);
     }
 
-    public Edge getEdge(Node node1, Node node2) {
+    public Edge getEdge(final Node node1, final Node node2) {
         return null;
     }
 
-    public Edge getDirectedEdge(Node node1, Node node2) {
+    public Edge getDirectedEdge(final Node node1, final Node node2) {
         return null;
     }
 
@@ -368,25 +368,25 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * @param edge the edge to check.
      * @return true iff the workbench contain 'edge'.
      */
-    public boolean containsEdge(Edge edge) {
-        return sessionEdges.contains(edge);
+    public boolean containsEdge(final Edge edge) {
+        return this.sessionEdges.contains(edge);
     }
 
     /**
      * Determines whether this workbench contains the given node.
      */
-    public boolean containsNode(Node node) {
-        return sessionNodeWrappers.contains(node);
+    public boolean containsNode(final Node node) {
+        return this.sessionNodeWrappers.contains(node);
     }
 
     /**
      * @return the list of edges connected to a particular node. No particular
      * ordering of the edges in the list is guaranteed.
      */
-    public List<Edge> getEdges(Node node) {
-        List<Edge> edgeList = new LinkedList<>();
+    public List<Edge> getEdges(final Node node) {
+        final List<Edge> edgeList = new LinkedList<>();
 
-        for (Edge edge : sessionEdges) {
+        for (final Edge edge : this.sessionEdges) {
             if ((edge.getNode1() == node) || (edge.getNode2() == node)) {
                 edgeList.add(edge);
             }
@@ -400,9 +400,9 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * duplicates, the first node encountered with the given name is returned.
      * In case no node exists with the given name, null is returned.
      */
-    public Node getNode(String name) {
-        for (Node sessionNodeWrapper : sessionNodeWrappers) {
-            SessionNodeWrapper wrapper =
+    public Node getNode(final String name) {
+        for (final Node sessionNodeWrapper : this.sessionNodeWrappers) {
+            final SessionNodeWrapper wrapper =
                     (SessionNodeWrapper) sessionNodeWrapper;
 
             if (wrapper.getSessionName().equals(name)) {
@@ -417,14 +417,14 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * @return the number of nodes in the workbench.
      */
     public int getNumNodes() {
-        return sessionNodeWrappers.size();
+        return this.sessionNodeWrappers.size();
     }
 
     /**
      * @return the number of edges in the (entire) workbench.
      */
     public int getNumEdges() {
-        return sessionEdges.size();
+        return this.sessionEdges.size();
     }
 
     /**
@@ -432,11 +432,11 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * @return the number of edges in the workbench which are connected to a
      * particular node.
      */
-    public int getNumEdges(Node node) {
+    public int getNumEdges(final Node node) {
 
-        Set<Edge> edgeSet = new HashSet<>();
+        final Set<Edge> edgeSet = new HashSet<>();
 
-        for (Edge edge : sessionEdges) {
+        for (final Edge edge : this.sessionEdges) {
             if ((edge.getNode1() == node) || (edge.getNode2() == node)) {
                 edgeSet.add(edge);
             }
@@ -446,25 +446,25 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     }
 
     public List<Node> getNodes() {
-        return new ArrayList<>(sessionNodeWrappers);
+        return new ArrayList<>(this.sessionNodeWrappers);
     }
 
     /**
      * Removes an edge from the workbench.
      */
-    public boolean removeEdge(Edge edge) {
-        if (sessionEdges.contains(edge)) {
-            SessionNodeWrapper nodeAWrapper =
+    public boolean removeEdge(final Edge edge) {
+        if (this.sessionEdges.contains(edge)) {
+            final SessionNodeWrapper nodeAWrapper =
                     (SessionNodeWrapper) edge.getNode1();
-            SessionNodeWrapper nodeBWrapper =
+            final SessionNodeWrapper nodeBWrapper =
                     (SessionNodeWrapper) edge.getNode2();
-            SessionNode nodeA = nodeAWrapper.getSessionNode();
-            SessionNode nodeB = nodeBWrapper.getSessionNode();
-            boolean removed = nodeB.removeParent(nodeA);
+            final SessionNode nodeA = nodeAWrapper.getSessionNode();
+            final SessionNode nodeB = nodeBWrapper.getSessionNode();
+            final boolean removed = nodeB.removeParent(nodeA);
 
             if (removed) {
-                sessionEdges.remove(edge);
-                this.getPropertyChangeSupport().firePropertyChange("edgeRemoved",
+                this.sessionEdges.remove(edge);
+                getPropertyChangeSupport().firePropertyChange("edgeRemoved",
                         edge, null);
 
                 return true;
@@ -478,7 +478,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * Removes the edge connecting the two given nodes, provided there is
      * exactly one such edge.
      */
-    public boolean removeEdge(Node node1, Node node2) {
+    public boolean removeEdge(final Node node1, final Node node2) {
         return false;
     }
 
@@ -494,8 +494,8 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      *
      * @param e the property change listener.
      */
-    public void removePropertyChangeListener(PropertyChangeListener e) {
-        this.getPropertyChangeSupport().removePropertyChangeListener(e);
+    public void removePropertyChangeListener(final PropertyChangeListener e) {
+        getPropertyChangeSupport().removePropertyChangeListener(e);
     }
 
     /**
@@ -504,23 +504,23 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * @param node the node to be removed.
      * @return true if the node was removed, false if not.
      */
-    public boolean removeNode(Node node) {
-        if (sessionNodeWrappers.contains(node)) {
-            for (Edge edge : this.getEdges(node)) {
-                this.removeEdge(edge);
+    public boolean removeNode(final Node node) {
+        if (this.sessionNodeWrappers.contains(node)) {
+            for (final Edge edge : getEdges(node)) {
+                removeEdge(edge);
             }
 
-            SessionNodeWrapper wrapper = (SessionNodeWrapper) node;
-            SessionNode sessionNode = wrapper.getSessionNode();
+            final SessionNodeWrapper wrapper = (SessionNodeWrapper) node;
+            final SessionNode sessionNode = wrapper.getSessionNode();
 
             try {
-                session.removeNode(sessionNode);
-                sessionNodeWrappers.remove(wrapper);
-                this.getPropertyChangeSupport().firePropertyChange("nodeRemoved",
+                this.session.removeNode(sessionNode);
+                this.sessionNodeWrappers.remove(wrapper);
+                getPropertyChangeSupport().firePropertyChange("nodeRemoved",
                         node, null);
 
                 return true;
-            } catch (IllegalArgumentException e) {
+            } catch (final IllegalArgumentException e) {
                 return false;
             }
         }
@@ -536,7 +536,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * @param newNodes the Collection of nodes.
      * @return true if nodes were added, false if not.
      */
-    public boolean removeNodes(List newNodes) {
+    public boolean removeNodes(final List newNodes) {
         throw new UnsupportedOperationException();
     }
 
@@ -548,12 +548,12 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * @param edges the Collection of edges.
      * @return true if edges were added, false if not.
      */
-    public boolean removeEdges(Collection<Edge> edges) {
+    public boolean removeEdges(final Collection<Edge> edges) {
 
         boolean removed = false;
 
-        for (Edge edge : edges) {
-            removed = removed || this.removeEdge(edge);
+        for (final Edge edge : edges) {
+            removed = removed || removeEdge(edge);
         }
 
         return removed;
@@ -565,12 +565,12 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * workbench implementations, the number will in some cases be greater than
      * one.
      */
-    public boolean removeEdges(Node nodeA, Node nodeB) {
+    public boolean removeEdges(final Node nodeA, final Node nodeB) {
         boolean removed = false;
 
-        for (Edge edge : this.getEdges()) {
+        for (final Edge edge : getEdges()) {
             if ((edge.getNode1() == nodeA) && (edge.getNode2() == nodeB)) {
-                removed = removed || this.removeEdge(edge);
+                removed = removed || removeEdge(edge);
             }
         }
 
@@ -580,8 +580,8 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     /**
      * @return the endpoint along the edge from node to node2 at the node2 end.
      */
-    public Endpoint getEndpoint(Node node1, Node node2) {
-        return this.getEdge(node1, node2).getProximalEndpoint(node2);
+    public Endpoint getEndpoint(final Node node1, final Node node2) {
+        return getEdge(node1, node2).getProximalEndpoint(node2);
     }
 
     /**
@@ -591,7 +591,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * @throws UnsupportedOperationException since this graph may contains only
      *                                       directed edges.
      */
-    public boolean setEndpoint(Node from, Node to, Endpoint endPoint) {
+    public boolean setEndpoint(final Node from, final Node to, final Endpoint endPoint) {
         throw new UnsupportedOperationException();
     }
 
@@ -599,10 +599,10 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * @return a string representation of the workbench.
      */
     public String toString() {
-        return "Wrapper for " + session.toString();
+        return "Wrapper for " + this.session.toString();
     }
 
-    public void transferNodesAndEdges(Graph graph)
+    public void transferNodesAndEdges(final Graph graph)
             throws IllegalArgumentException {
         throw new UnsupportedOperationException();
     }
@@ -622,59 +622,59 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     /**
      * States whether x-y-x is an underline triple or not.
      */
-    public boolean isAmbiguousTriple(Node x, Node y, Node z) {
+    public boolean isAmbiguousTriple(final Node x, final Node y, final Node z) {
         throw new UnsupportedOperationException();
     }
 
     /**
      * States whether x-y-x is an underline triple or not.
      */
-    public boolean isUnderlineTriple(Node x, Node y, Node z) {
+    public boolean isUnderlineTriple(final Node x, final Node y, final Node z) {
         throw new UnsupportedOperationException();
     }
 
     /**
      * States whether x-y-x is an underline triple or not.
      */
-    public boolean isDottedUnderlineTriple(Node x, Node y, Node z) {
+    public boolean isDottedUnderlineTriple(final Node x, final Node y, final Node z) {
         throw new UnsupportedOperationException();
     }
 
-    public void addAmbiguousTriple(Node x, Node y, Node z) {
+    public void addAmbiguousTriple(final Node x, final Node y, final Node z) {
         throw new UnsupportedOperationException();
     }
 
-    public void addUnderlineTriple(Node x, Node y, Node z) {
+    public void addUnderlineTriple(final Node x, final Node y, final Node z) {
         throw new UnsupportedOperationException();
     }
 
-    public void addDottedUnderlineTriple(Node x, Node y, Node z) {
+    public void addDottedUnderlineTriple(final Node x, final Node y, final Node z) {
         throw new UnsupportedOperationException();
     }
 
-    public void removeAmbiguousTriple(Node x, Node y, Node z) {
+    public void removeAmbiguousTriple(final Node x, final Node y, final Node z) {
         throw new UnsupportedOperationException();
     }
 
-    public void removeUnderlineTriple(Node x, Node y, Node z) {
+    public void removeUnderlineTriple(final Node x, final Node y, final Node z) {
         throw new UnsupportedOperationException();
     }
 
-    public void removeDottedUnderlineTriple(Node x, Node y, Node z) {
-        throw new UnsupportedOperationException();
-    }
-
-
-    public void setAmbiguousTriples(Set<Triple> triples) {
-        throw new UnsupportedOperationException();
-    }
-
-    public void setUnderLineTriples(Set<Triple> triples) {
+    public void removeDottedUnderlineTriple(final Node x, final Node y, final Node z) {
         throw new UnsupportedOperationException();
     }
 
 
-    public void setDottedUnderLineTriples(Set<Triple> triples) {
+    public void setAmbiguousTriples(final Set<Triple> triples) {
+        throw new UnsupportedOperationException();
+    }
+
+    public void setUnderLineTriples(final Set<Triple> triples) {
+        throw new UnsupportedOperationException();
+    }
+
+
+    public void setDottedUnderLineTriples(final Set<Triple> triples) {
         throw new UnsupportedOperationException();
     }
 
@@ -686,11 +686,11 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
         throw new UnsupportedOperationException();
     }
 
-    public boolean existsInducingPath(Node node1, Node node2) {
+    public boolean existsInducingPath(final Node node1, final Node node2) {
         throw new UnsupportedOperationException();
     }
 
-    public Graph subgraph(List nodes) {
+    public Graph subgraph(final List nodes) {
         throw new UnsupportedOperationException();
     }
 
@@ -700,24 +700,24 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * @return a reference to the session being edited.
      */
     public Session getSession() {
-        return session;
+        return this.session;
     }
 
     /**
      * @return the name of the session. The name cannot be null.
      */
     public String getName() {
-        return session.getName();
+        return this.session.getName();
     }
 
     /**
      * Sets the name of the session. The name cannot be null.
      */
-    public void setName(String name) {
-        String oldName = session.getName();
-        session.setName(name);
-        propertyChangeSupport.firePropertyChange("name", oldName,
-                session.getName());
+    public void setName(final String name) {
+        final String oldName = this.session.getName();
+        this.session.setName(name);
+        this.propertyChangeSupport.firePropertyChange("name", oldName,
+                this.session.getName());
     }
 
     //======================PRIVATE METHODS=========================//
@@ -726,11 +726,11 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * @return the property change support.
      */
     private PropertyChangeSupport getPropertyChangeSupport() {
-        if (propertyChangeSupport == null) {
-            propertyChangeSupport = new PropertyChangeSupport(this);
+        if (this.propertyChangeSupport == null) {
+            this.propertyChangeSupport = new PropertyChangeSupport(this);
         }
 
-        return propertyChangeSupport;
+        return this.propertyChangeSupport;
     }
 
     @Override
@@ -739,27 +739,27 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     }
 
     @Override
-    public List<List<Triple>> getTriplesLists(Node node) {
+    public List<List<Triple>> getTriplesLists(final Node node) {
         return null;
     }
 
     @Override
     public boolean isPag() {
-        return pag;
+        return this.pag;
     }
 
     @Override
-    public void setPag(boolean pag) {
+    public void setPag(final boolean pag) {
         this.pag = pag;
     }
 
     @Override
     public boolean isCPDAG() {
-        return CPDAG;
+        return this.CPDAG;
     }
 
     @Override
-    public void setCPDAG(boolean CPDAG) {
+    public void setCPDAG(final boolean CPDAG) {
         this.CPDAG = CPDAG;
     }
 
@@ -773,18 +773,18 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
          * Allows the user to verify that an edge added to a node that already
          * has a model in it is OK.
          */
-        public void addingEdge(SessionEvent event) {
+        public void addingEdge(final SessionEvent event) {
             final String message =
                     "Child node already created. If you add this edge,\n" +
                             "the content of the child node will be made\n" +
                             "consistent with the parent.";
 
-            int ret = JOptionPane.showConfirmDialog(
+            final int ret = JOptionPane.showConfirmDialog(
                     JOptionUtils.centeringComp(), message, "Warning",
                     JOptionPane.OK_CANCEL_OPTION);
 
             if (ret == JOptionPane.CANCEL_OPTION) {
-                SessionNode sessionNode = (SessionNode) event.getSource();
+                final SessionNode sessionNode = (SessionNode) event.getSource();
                 sessionNode.setNextEdgeAddAllowed(false);
             }
         }
@@ -793,7 +793,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     /**
      * @return the edges connecting node1 and node2.
      */
-    public List<Edge> getEdges(Node node1, Node node2) {
+    public List<Edge> getEdges(final Node node1, final Node node2) {
         throw new UnsupportedOperationException();
     }
 //
@@ -943,7 +943,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     /**
      * @return the list of parents for a node.
      */
-    public List<Node> getParents(Node node) {
+    public List<Node> getParents(final Node node) {
         return new ArrayList<Node>(((SessionNode) node).getParents());
     }
 //
@@ -1113,19 +1113,19 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
 //    }
 
     public boolean isSessionChanged() {
-        return session.isSessionChanged();
+        return this.session.isSessionChanged();
     }
 
-    public void setSessionChanged(boolean sessionChanged) {
-        session.setSessionChanged(sessionChanged);
+    public void setSessionChanged(final boolean sessionChanged) {
+        this.session.setSessionChanged(sessionChanged);
     }
 
     public boolean isNewSession() {
-        return session.isNewSession();
+        return this.session.isNewSession();
     }
 
-    public void setNewSession(boolean newSession) {
-        session.setNewSession(newSession);
+    public void setNewSession(final boolean newSession) {
+        this.session.setNewSession(newSession);
     }
 
     /**
@@ -1141,19 +1141,19 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (session == null) {
+        if (this.session == null) {
             throw new NullPointerException();
         }
 
-        if (sessionNodeWrappers == null) {
+        if (this.sessionNodeWrappers == null) {
             throw new NullPointerException();
         }
 
-        if (sessionEdges == null) {
+        if (this.sessionEdges == null) {
             throw new NullPointerException();
         }
     }

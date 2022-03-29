@@ -118,7 +118,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
      * @param vars The variables over which the data is (repeatedly) measured. The number of variables must equal the
      *             number of columns in the data-- that is, vars.size() == data[i].length for each i.
      */
-    public IndTestTimeSeries(Matrix data, List<Node> vars) {
+    public IndTestTimeSeries(final Matrix data, final List<Node> vars) {
         if (data == null) {
             throw new NullPointerException("Data must not be null.");
         }
@@ -135,11 +135,11 @@ public final class IndTestTimeSeries implements IndependenceTest {
         }
 
         this.data = data;
-        numTimeSteps = this.data.rows();
-        numVars = this.data.columns();
+        this.numTimeSteps = this.data.rows();
+        this.numVars = this.data.columns();
         this.vars = Collections.unmodifiableList(vars);
-        setNumLags(1);
-        setAlpha(0.05);
+        this.setNumLags(1);
+        this.setAlpha(0.05);
     }
 
     //===========================PUBLIC METHODS============================//
@@ -147,7 +147,7 @@ public final class IndTestTimeSeries implements IndependenceTest {
     /**
      * Required by IndependenceTest.
      */
-    public IndependenceTest indTestSubset(List vars) {
+    public IndependenceTest indTestSubset(final List vars) {
         throw new UnsupportedOperationException();
     }
 
@@ -160,43 +160,43 @@ public final class IndTestTimeSeries implements IndependenceTest {
      * @param z the list of conditioning vars.
      * @return true iff x _||_ data | z.
      */
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
+    public boolean isIndependent(final Node x, final Node y, final List<Node> z) {
         if (z == null) {
             throw new NullPointerException();
         }
 
-        for (Node node : z) {
+        for (final Node node : z) {
             if (node == null) {
                 throw new NullPointerException();
             }
         }
 
-        int[] indices = this.createIndexArray(z, x, y);
-        return this.isIndependent(indices);
+        final int[] indices = createIndexArray(z, x, y);
+        return isIndependent(indices);
     }
 
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return this.isIndependent(x, y, zList);
+    public boolean isIndependent(final Node x, final Node y, final Node... z) {
+        final List<Node> zList = Arrays.asList(z);
+        return isIndependent(x, y, zList);
     }
 
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        return !this.isIndependent(x, y, z);
+    public boolean isDependent(final Node x, final Node y, final List<Node> z) {
+        return !isIndependent(x, y, z);
     }
 
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return this.isDependent(x, y, zList);
+    public boolean isDependent(final Node x, final Node y, final Node... z) {
+        final List<Node> zList = Arrays.asList(z);
+        return isDependent(x, y, zList);
     }
 
     /**
      * @return true iff according to the test var(indices[0]) _||_ var(indices[1] | var(indices[2], ...,
      * var(indices[indices.length - 1]).
      */
-    public boolean isIndependent(int[] indices) {
+    public boolean isIndependent(final int[] indices) {
 
         // Tests whether the given index array is legal.
-        this.setIndices(indices);
+        setIndices(indices);
 
         // We only test independence up to 4 conditioning vars.
         if (indices.length > 6) {
@@ -209,29 +209,29 @@ public final class IndTestTimeSeries implements IndependenceTest {
         //        System.out.println("---->" + getNumReps());
 
         // Calculate chi square value.
-        double temp = Math.pow(this.tau(), 2.0);
-        double numerator = this.getNumReps() * temp;
+        final double temp = Math.pow(tau(), 2.0);
+        final double numerator = getNumReps() * temp;
 
         //        System.out.println("Numerator = " + numerator);
-        double[][] gradTau = this.gradTau();
-        double[][] gradTauPrime = MatrixUtils.transpose(gradTau);
-        double[][] prod1 = MatrixUtils.product(gradTauPrime, this.omega());
-        double[][] prod2 = MatrixUtils.product(prod1, gradTau);
+        final double[][] gradTau = gradTau();
+        final double[][] gradTauPrime = MatrixUtils.transpose(gradTau);
+        final double[][] prod1 = MatrixUtils.product(gradTauPrime, omega());
+        final double[][] prod2 = MatrixUtils.product(prod1, gradTau);
         assert (MatrixUtils.hasDimensions(prod2, 1, 1));
-        double denominator = prod2[0][0];
+        final double denominator = prod2[0][0];
 
         System.out.println("ratio w/o T = " + temp / denominator);
 
         //        System.out.println("Denominator = " + denominator);
-        double chiSquare = numerator / denominator;
+        final double chiSquare = numerator / denominator;
 
         this.chiSquare = chiSquare;
 
         //        System.out.println("chi square = " + chiSquare);
 
         // Compare chi square value to cutoff.
-        double pValue = 1.0 - ProbUtils.chisqCdf(chiSquare, 1);
-        return pValue > alpha;
+        final double pValue = 1.0 - ProbUtils.chisqCdf(chiSquare, 1);
+        return pValue > this.alpha;
     }
 //
 //    private void testPrint(String message, double[][] arr) {
@@ -250,29 +250,29 @@ public final class IndTestTimeSeries implements IndependenceTest {
      * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
-        List<Node> variables = this.getVariables();
-        List<String> variableNames = new ArrayList<>();
+        final List<Node> variables = getVariables();
+        final List<String> variableNames = new ArrayList<>();
 
-        for (Node variable : variables) {
+        for (final Node variable : variables) {
             variableNames.add(variable.getName());
         }
 
         return variableNames;
     }
 
-    public boolean determines(List<Node> z, Node x1) {
+    public boolean determines(final List<Node> z, final Node x1) {
         throw new UnsupportedOperationException(
                 "This independence test does not " +
                         "test whether Z determines X for list Z of variable and variable X.");
     }
 
     public double getAlpha() {
-        return alpha;
+        return this.alpha;
     }
 
-    public Node getVariable(String name) {
-        for (int i = 0; i < this.getVariables().size(); i++) {
-            Node variable = this.getVariables().get(i);
+    public Node getVariable(final String name) {
+        for (int i = 0; i < getVariables().size(); i++) {
+            final Node variable = getVariables().get(i);
             if (variable.getName().equals(name)) {
                 return variable;
             }
@@ -285,13 +285,13 @@ public final class IndTestTimeSeries implements IndependenceTest {
      * @return the (unmodifiable) list of vars.
      */
     public List<Node> getVariables() {
-        return vars;
+        return this.vars;
     }
 
     /**
      * Sets the significance level for statistical tests. By default, this is 0.05.
      */
-    public void setAlpha(double alpha) {
+    public void setAlpha(final double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
             throw new IllegalArgumentException(
                     "Alpha must be in [0.0, 1.0]: " + alpha);
@@ -304,63 +304,63 @@ public final class IndTestTimeSeries implements IndependenceTest {
      * numLags().
      */
     public int getNumReps() {
-        return numReps;
+        return this.numReps;
     }
 
     /**
      * @return the number of lags.
      */
     public int getNumLags() {
-        return numLags;
+        return this.numLags;
     }
 
     /**
      * Sets the number of lags; the number of reps is 1 - numLags.
      */
-    public void setNumLags(int numLags) {
-        if (numLags < 1 || numLags > this.getNumTimeSteps() - 1) {
+    public void setNumLags(final int numLags) {
+        if (numLags < 1 || numLags > getNumTimeSteps() - 1) {
             throw new IllegalArgumentException("numLags must be in [1, " +
                     "numTimePoints - 1]: " + numLags);
         }
         this.numLags = numLags;
-        numReps = this.getNumTimeSteps() - numLags;
-        this.reset();
+        this.numReps = getNumTimeSteps() - numLags;
+        reset();
     }
 
     /**
      * Sets the number of lags. Note that the number of lags plus the lag size must be <= the number of times.
      */
-    public void setDataView(int numReps, int numLags) {
+    public void setDataView(final int numReps, final int numLags) {
         if (numLags < 1) {
             throw new IllegalArgumentException("numLags must be > 0.");
         }
-        if (numLags + numReps > this.getNumTimeSteps()) {
+        if (numLags + numReps > getNumTimeSteps()) {
             throw new IllegalArgumentException(
                     "NumLags + numReps must be " + "<= numTimeSteps.");
         }
         this.numLags = numLags;
         this.numReps = numReps;
-        this.reset();
+        reset();
     }
 
     /**
      * @return the number of time steps in the data.
      */
     public int getNumTimeSteps() {
-        return numTimeSteps;
+        return this.numTimeSteps;
     }
 
     /**
      * True if the stationary algorithm is to be used; false if the non- stationary algorithm is to be used.
      */
     public boolean isStationary() {
-        return stationary;
+        return this.stationary;
     }
 
     /**
      * True if the stationary algorithm is to be used; false if the non- stationary algorithm is to be used.
      */
-    public void setStationary(boolean stationary) {
+    public void setStationary(final boolean stationary) {
         this.stationary = stationary;
     }
 
@@ -374,41 +374,41 @@ public final class IndTestTimeSeries implements IndependenceTest {
     //==========================PRIVATE METHODS============================//
 
     private void reset() {
-        sigmaU = null;
-        omega = null;
-        indexedCorr = null;
+        this.sigmaU = null;
+        this.omega = null;
+        this.indexedCorr = null;
     }
 
     private IndexedMatrix indexedCorr() {
-        if (indexedCorr == null) {
-            indexedCorr = new IndexedMatrix(this.sigmaU());
+        if (this.indexedCorr == null) {
+            this.indexedCorr = new IndexedMatrix(sigmaU());
         }
-        return indexedCorr;
+        return this.indexedCorr;
     }
 
-    private void setIndices(int[] indices) {
+    private void setIndices(final int[] indices) {
 
         // The indices are stored in the IndexedMatrix. (No need to duplicate.)
-        this.indexedCorr().setIndices(indices);
+        indexedCorr().setIndices(indices);
     }
 
     private int[] getIndices() {
 
         // The indices are stored in the IndexedMatrix. (No need to duplicate.)
-        return this.indexedCorr().getIndices();
+        return indexedCorr().getIndices();
     }
 
-    private int[] createIndexArray(List<Node> z, Node x, Node y) {
-        int[] indices = new int[z.size() + 2];
+    private int[] createIndexArray(final List<Node> z, final Node x, final Node y) {
+        final int[] indices = new int[z.size() + 2];
 
-        indices[0] = this.getVariables().indexOf(x);
-        indices[1] = this.getVariables().indexOf(y);
+        indices[0] = getVariables().indexOf(x);
+        indices[1] = getVariables().indexOf(y);
 
         for (int i = 0; i < z.size(); i++) {
-            indices[i + 2] = this.getVariables().indexOf(z.get(i));
+            indices[i + 2] = getVariables().indexOf(z.get(i));
         }
 
-        for (int index : indices) {
+        for (final int index : indices) {
             if (index < 0) {
                 throw new IllegalArgumentException("Some variable was no in " +
                         "the constructed list of vars.");
@@ -423,13 +423,13 @@ public final class IndTestTimeSeries implements IndependenceTest {
      * @return the row of the data indexed so that the last row has index numReps and the first row has index numReps -
      * numTimeSteps + 1.
      */
-    private double[][] yPrime(int tIndex) {
+    private double[][] yPrime(final int tIndex) {
 
 //        double[][] yPrime = new double[1][numVars];
-        int transformedIndex = this.getNumTimeSteps() - this.getNumReps() + tIndex - 1;
+        final int transformedIndex = getNumTimeSteps() - getNumReps() + tIndex - 1;
         //        System.out.println("tIndex = " + tIndex + ", transformed index = " + transformedIndex);
 
-        return data.getPart(transformedIndex, 0, 1, data.columns()).toArray();
+        return this.data.getPart(transformedIndex, 0, 1, this.data.columns()).toArray();
 
 //        System.arraycopy(data[transformedIndex], 0, yPrime[0], 0, numVars);
 //        return yPrime;
@@ -438,112 +438,112 @@ public final class IndTestTimeSeries implements IndependenceTest {
     /**
      * Constructs the x(t) vector.
      */
-    private double[][] xPrime(int t) {
-        double[][] x = new double[1][this.getNumLags() * numVars];
+    private double[][] xPrime(final int t) {
+        final double[][] x = new double[1][getNumLags() * this.numVars];
 
-        for (int i = 0; i < this.getNumLags(); i++) {
-            double[][] yPrime = this.yPrime(t - i - 1);
-            System.arraycopy(yPrime[0], 0, x[0], i * numVars, numVars);
+        for (int i = 0; i < getNumLags(); i++) {
+            final double[][] yPrime = yPrime(t - i - 1);
+            System.arraycopy(yPrime[0], 0, x[0], i * this.numVars, this.numVars);
         }
 
         return x;
     }
 
     private double[][] piPrime() {
-        double[][] ma = MatrixUtils.zeros(numVars, numVars * numLags);
-        for (int t = 1; t <= this.getNumReps(); t++) {
-            double[][] summand = MatrixUtils.product(this.y(t), this.xPrime(t));
+        double[][] ma = MatrixUtils.zeros(this.numVars, this.numVars * this.numLags);
+        for (int t = 1; t <= getNumReps(); t++) {
+            final double[][] summand = MatrixUtils.product(y(t), xPrime(t));
             ma = MatrixUtils.sum(ma, summand);
         }
-        double[][] mb = MatrixUtils.zeros(numVars * numLags, numVars * numLags);
-        for (int t = 1; t <= this.getNumReps(); t++) {
-            double[][] summand = MatrixUtils.product(this.x(t), this.xPrime(t));
+        double[][] mb = MatrixUtils.zeros(this.numVars * this.numLags, this.numVars * this.numLags);
+        for (int t = 1; t <= getNumReps(); t++) {
+            final double[][] summand = MatrixUtils.product(x(t), xPrime(t));
             mb = MatrixUtils.sum(mb, summand);
         }
 
-        double[][] mbinv = MatrixUtils.inverse(mb);
+        final double[][] mbinv = MatrixUtils.inverse(mb);
         //        double[][] a = MatrixUtils.outerProduct(mb, mbinv);
         //        testPrint("a", a);
 
-        double[][] prod = MatrixUtils.product(ma, mbinv);
-        assert MatrixUtils.hasDimensions(prod, numVars, numVars * numLags);
+        final double[][] prod = MatrixUtils.product(ma, mbinv);
+        assert MatrixUtils.hasDimensions(prod, this.numVars, this.numVars * this.numLags);
 
         //        testPrint("piprime", prod);
         return prod;
     }
 
-    private double[][] y(int t) {
-        return MatrixUtils.transpose(this.yPrime(t));
+    private double[][] y(final int t) {
+        return MatrixUtils.transpose(yPrime(t));
     }
 
-    private double[][] x(int t) {
-        return MatrixUtils.transpose(this.xPrime(t));
+    private double[][] x(final int t) {
+        return MatrixUtils.transpose(xPrime(t));
     }
 
-    private double[][] u(double[][] piPrime, int t) {
-        return MatrixUtils.subtract(this.y(t), MatrixUtils.product(piPrime, this.x(t)));
+    private double[][] u(final double[][] piPrime, final int t) {
+        return MatrixUtils.subtract(y(t), MatrixUtils.product(piPrime, x(t)));
     }
 
     /**
      * @return Sigma_u.
      */
     private double[][] sigmaU() {
-        if (sigmaU == null) {
-            return this.isStationary() ? this.sigmaUStationary() : this.sigmaUNonStationary();
+        if (this.sigmaU == null) {
+            return isStationary() ? sigmaUStationary() : sigmaUNonStationary();
         }
-        return sigmaU;
+        return this.sigmaU;
     }
 
     private double[][] sigmaUStationary() {
         // Precalculate to avoid inverting the same huge matrix ad nauseum.
-        double[][] piPrime = this.piPrime();
-        double[][] sum = MatrixUtils.zeros(numVars, numVars);
+        final double[][] piPrime = piPrime();
+        double[][] sum = MatrixUtils.zeros(this.numVars, this.numVars);
 
-        for (int t = 1; t <= this.getNumReps(); t++) {
-            double[][] u = this.u(piPrime, t);
-            double[][] uPrime = MatrixUtils.transpose(u);
-            double[][] product = MatrixUtils.product(u, uPrime);
+        for (int t = 1; t <= getNumReps(); t++) {
+            final double[][] u = u(piPrime, t);
+            final double[][] uPrime = MatrixUtils.transpose(u);
+            final double[][] product = MatrixUtils.product(u, uPrime);
             sum = MatrixUtils.sum(sum, product);
         }
 
-        return MatrixUtils.scalarProduct(1.0 / this.getNumReps(), sum);
+        return MatrixUtils.scalarProduct(1.0 / getNumReps(), sum);
     }
 
     private double[][] dkPlus() {
-        double[][] dk = MatrixUtils.vechToVecLeft(numVars);
-        double[][] dkPrime = MatrixUtils.transpose(dk);
-        double[][] ma = MatrixUtils.product(dkPrime, dk);
-        double[][] mainv = MatrixUtils.inverse(ma);
+        final double[][] dk = MatrixUtils.vechToVecLeft(this.numVars);
+        final double[][] dkPrime = MatrixUtils.transpose(dk);
+        final double[][] ma = MatrixUtils.product(dkPrime, dk);
+        final double[][] mainv = MatrixUtils.inverse(ma);
         return MatrixUtils.product(mainv, dkPrime);
     }
 
     private double[][] omega() {
-        if (omega == null) {
-            double[][] dkPlus = this.dkPlus();
-            double[][] dkPlusPrime = MatrixUtils.transpose(dkPlus);
-            double[][] prod1 = MatrixUtils.directProduct(this.sigmaU(), this.sigmaU());
-            double[][] prod2 = MatrixUtils.scalarProduct(2.0, dkPlus);
-            double[][] prod3 = MatrixUtils.product(prod2, prod1);
-            omega = MatrixUtils.product(prod3, dkPlusPrime);
+        if (this.omega == null) {
+            final double[][] dkPlus = dkPlus();
+            final double[][] dkPlusPrime = MatrixUtils.transpose(dkPlus);
+            final double[][] prod1 = MatrixUtils.directProduct(sigmaU(), sigmaU());
+            final double[][] prod2 = MatrixUtils.scalarProduct(2.0, dkPlus);
+            final double[][] prod3 = MatrixUtils.product(prod2, prod1);
+            this.omega = MatrixUtils.product(prod3, dkPlusPrime);
         }
-        return omega;
+        return this.omega;
     }
 
     // The following methods are for calculating nonstationary SigmaU.
 
     private double[][] sigmaUNonStationary() {
         // Precalculate to avoid inverting the same huge matrix ad nauseum.
-        double[][] piPrime = this.piPrime();
-        double[][] sum = MatrixUtils.zeros(numVars, numVars);
+        final double[][] piPrime = piPrime();
+        double[][] sum = MatrixUtils.zeros(this.numVars, this.numVars);
 
-        for (int t = 1; t <= this.getNumReps(); t++) {
-            double[][] u = this.u(piPrime, t);
-            double[][] uPrime = MatrixUtils.transpose(u);
-            double[][] product = MatrixUtils.product(u, uPrime);
+        for (int t = 1; t <= getNumReps(); t++) {
+            final double[][] u = u(piPrime, t);
+            final double[][] uPrime = MatrixUtils.transpose(u);
+            final double[][] product = MatrixUtils.product(u, uPrime);
             sum = MatrixUtils.sum(sum, product);
         }
 
-        return MatrixUtils.scalarProduct(1.0 / this.getNumReps(), sum);
+        return MatrixUtils.scalarProduct(1.0 / getNumReps(), sum);
     }
 
 //    private double[][] deltaY(int t) {
@@ -623,10 +623,10 @@ public final class IndTestTimeSeries implements IndependenceTest {
     public double chiSquareCutoff() {
         double d = 0.0;
         for (int mantissa = 0; mantissa >= -15; mantissa--) {
-            double increment = Math.pow(10, mantissa);
+            final double increment = Math.pow(10, mantissa);
             while (d < 1000.0) {
                 d += increment;
-                if (ProbUtils.chisqCdf(d, 1.0) > 1.0 - this.getAlpha()) {
+                if (ProbUtils.chisqCdf(d, 1.0) > 1.0 - getAlpha()) {
                     d -= increment;
                     break;
                 }
@@ -639,19 +639,19 @@ public final class IndTestTimeSeries implements IndependenceTest {
      * Calculates the gradient of tau for the given indices array (for up to 4 conditioning vars).
      */
     private double tau() {
-        int numCondVars = this.getIndices().length - 2;
+        final int numCondVars = getIndices().length - 2;
 
         switch (numCondVars) {
             case 0:
-                return this.tau0();
+                return tau0();
             case 1:
-                return this.tau1();
+                return tau1();
             case 2:
-                return this.tau2();
+                return tau2();
             case 3:
-                return this.tau3();
+                return tau3();
             case 4:
-                return this.tau4();
+                return tau4();
             default:
                 throw new IllegalStateException("Only taus for up to " +
                         "four conditioning variables were hardcoded: " +
@@ -663,186 +663,186 @@ public final class IndTestTimeSeries implements IndependenceTest {
      * @return tau for indArr = [1 2] (one-indexed). From Mathematica.
      */
     private double tau0() {
-        return this.s(1, 2);
+        return s(1, 2);
     }
 
     /**
      * @return tau for indArr = [1 2 3] (one-indexed). From Mathematica.
      */
     private double tau1() {
-        return -this.s(1, 3) * this.s(2, 3) + this.s(1, 2) * this.s(3, 3);
+        return -s(1, 3) * s(2, 3) + s(1, 2) * s(3, 3);
     }
 
     /**
      * @return tau for indArr = [1 2 3 4] (one-indexed). From Mathematica.
      */
     private double tau2() {
-        return -this.s(1, 4) * this.s(2, 4) * this.s(3, 3) + this.s(1, 4) * this.s(2, 3) * this.s(3, 4) +
-                this.s(1, 3) * this.s(2, 4) * this.s(3, 4) - this.s(1, 2) * this.s(3, 4) * this.s(3, 4) -
-                this.s(1, 3) * this.s(2, 3) * this.s(4, 4) + this.s(1, 2) * this.s(3, 3) * this.s(4, 4);
+        return -s(1, 4) * s(2, 4) * s(3, 3) + s(1, 4) * s(2, 3) * s(3, 4) +
+                s(1, 3) * s(2, 4) * s(3, 4) - s(1, 2) * s(3, 4) * s(3, 4) -
+                s(1, 3) * s(2, 3) * s(4, 4) + s(1, 2) * s(3, 3) * s(4, 4);
     }
 
     /**
      * @return tau for indArr = [1 2 3 4 5] (one-indexed). From Mathematica.
      */
     private double tau3() {
-        return this.s(1, 5) * this.s(2, 5) * this.s(3, 4) * this.s(3, 4) -
-                this.s(1, 5) * this.s(2, 4) * this.s(3, 4) * this.s(3, 5) -
-                this.s(1, 4) * this.s(2, 5) * this.s(3, 4) * this.s(3, 5) +
-                this.s(1, 4) * this.s(2, 4) * this.s(3, 5) * this.s(3, 5) -
-                this.s(1, 5) * this.s(2, 5) * this.s(3, 3) * this.s(4, 4) +
-                this.s(1, 5) * this.s(2, 3) * this.s(3, 5) * this.s(4, 4) +
-                this.s(1, 3) * this.s(2, 5) * this.s(3, 5) * this.s(4, 4) -
-                this.s(1, 2) * this.s(3, 5) * this.s(3, 5) * this.s(4, 4) +
-                this.s(1, 5) * this.s(2, 4) * this.s(3, 3) * this.s(4, 5) +
-                this.s(1, 4) * this.s(2, 5) * this.s(3, 3) * this.s(4, 5) -
-                this.s(1, 5) * this.s(2, 3) * this.s(3, 4) * this.s(4, 5) -
-                this.s(1, 3) * this.s(2, 5) * this.s(3, 4) * this.s(4, 5) -
-                this.s(1, 4) * this.s(2, 3) * this.s(3, 5) * this.s(4, 5) -
-                this.s(1, 3) * this.s(2, 4) * this.s(3, 5) * this.s(4, 5) +
-                2 * this.s(1, 2) * this.s(3, 4) * this.s(3, 5) * this.s(4, 5) +
-                this.s(1, 3) * this.s(2, 3) * this.s(4, 5) * this.s(4, 5) -
-                this.s(1, 2) * this.s(3, 3) * this.s(4, 5) * this.s(4, 5) -
-                this.s(1, 4) * this.s(2, 4) * this.s(3, 3) * this.s(5, 5) +
-                this.s(1, 4) * this.s(2, 3) * this.s(3, 4) * this.s(5, 5) +
-                this.s(1, 3) * this.s(2, 4) * this.s(3, 4) * this.s(5, 5) -
-                this.s(1, 2) * this.s(3, 4) * this.s(3, 4) * this.s(5, 5) -
-                this.s(1, 3) * this.s(2, 3) * this.s(4, 4) * this.s(5, 5) +
-                this.s(1, 2) * this.s(3, 3) * this.s(4, 4) * this.s(5, 5);
+        return s(1, 5) * s(2, 5) * s(3, 4) * s(3, 4) -
+                s(1, 5) * s(2, 4) * s(3, 4) * s(3, 5) -
+                s(1, 4) * s(2, 5) * s(3, 4) * s(3, 5) +
+                s(1, 4) * s(2, 4) * s(3, 5) * s(3, 5) -
+                s(1, 5) * s(2, 5) * s(3, 3) * s(4, 4) +
+                s(1, 5) * s(2, 3) * s(3, 5) * s(4, 4) +
+                s(1, 3) * s(2, 5) * s(3, 5) * s(4, 4) -
+                s(1, 2) * s(3, 5) * s(3, 5) * s(4, 4) +
+                s(1, 5) * s(2, 4) * s(3, 3) * s(4, 5) +
+                s(1, 4) * s(2, 5) * s(3, 3) * s(4, 5) -
+                s(1, 5) * s(2, 3) * s(3, 4) * s(4, 5) -
+                s(1, 3) * s(2, 5) * s(3, 4) * s(4, 5) -
+                s(1, 4) * s(2, 3) * s(3, 5) * s(4, 5) -
+                s(1, 3) * s(2, 4) * s(3, 5) * s(4, 5) +
+                2 * s(1, 2) * s(3, 4) * s(3, 5) * s(4, 5) +
+                s(1, 3) * s(2, 3) * s(4, 5) * s(4, 5) -
+                s(1, 2) * s(3, 3) * s(4, 5) * s(4, 5) -
+                s(1, 4) * s(2, 4) * s(3, 3) * s(5, 5) +
+                s(1, 4) * s(2, 3) * s(3, 4) * s(5, 5) +
+                s(1, 3) * s(2, 4) * s(3, 4) * s(5, 5) -
+                s(1, 2) * s(3, 4) * s(3, 4) * s(5, 5) -
+                s(1, 3) * s(2, 3) * s(4, 4) * s(5, 5) +
+                s(1, 2) * s(3, 3) * s(4, 4) * s(5, 5);
     }
 
     /**
      * @return tau for indArr = [1 2 3 4 5 6] (one-indexed). From Mathematica.
      */
     private double tau4() {
-        return this.s(1, 6) * this.s(2, 6) * this.s(3, 5) * this.s(3, 5) * this.s(4, 4) -
-                this.s(1, 6) * this.s(2, 5) * this.s(3, 5) * this.s(3, 6) * this.s(4, 4) -
-                this.s(1, 5) * this.s(2, 6) * this.s(3, 5) * this.s(3, 6) * this.s(4, 4) +
-                this.s(1, 5) * this.s(2, 5) * this.s(3, 6) * this.s(3, 6) * this.s(4, 4) -
-                2 * this.s(1, 6) * this.s(2, 6) * this.s(3, 4) * this.s(3, 5) * this.s(4, 5) +
-                this.s(1, 6) * this.s(2, 5) * this.s(3, 4) * this.s(3, 6) * this.s(4, 5) +
-                this.s(1, 5) * this.s(2, 6) * this.s(3, 4) * this.s(3, 6) * this.s(4, 5) +
-                this.s(1, 6) * this.s(2, 4) * this.s(3, 5) * this.s(3, 6) * this.s(4, 5) +
-                this.s(1, 4) * this.s(2, 6) * this.s(3, 5) * this.s(3, 6) * this.s(4, 5) -
-                this.s(1, 5) * this.s(2, 4) * this.s(3, 6) * this.s(3, 6) * this.s(4, 5) -
-                this.s(1, 4) * this.s(2, 5) * this.s(3, 6) * this.s(3, 6) * this.s(4, 5) +
-                this.s(1, 6) * this.s(2, 6) * this.s(3, 3) * this.s(4, 5) * this.s(4, 5) -
-                this.s(1, 6) * this.s(2, 3) * this.s(3, 6) * this.s(4, 5) * this.s(4, 5) -
-                this.s(1, 3) * this.s(2, 6) * this.s(3, 6) * this.s(4, 5) * this.s(4, 5) +
-                this.s(1, 2) * this.s(3, 6) * this.s(3, 6) * this.s(4, 5) * this.s(4, 5) +
-                this.s(1, 6) * this.s(2, 5) * this.s(3, 4) * this.s(3, 5) * this.s(4, 6) +
-                this.s(1, 5) * this.s(2, 6) * this.s(3, 4) * this.s(3, 5) * this.s(4, 6) -
-                this.s(1, 6) * this.s(2, 4) * this.s(3, 5) * this.s(3, 5) * this.s(4, 6) -
-                this.s(1, 4) * this.s(2, 6) * this.s(3, 5) * this.s(3, 5) * this.s(4, 6) -
-                2 * this.s(1, 5) * this.s(2, 5) * this.s(3, 4) * this.s(3, 6) * this.s(4, 6) +
-                this.s(1, 5) * this.s(2, 4) * this.s(3, 5) * this.s(3, 6) * this.s(4, 6) +
-                this.s(1, 4) * this.s(2, 5) * this.s(3, 5) * this.s(3, 6) * this.s(4, 6) -
-                this.s(1, 6) * this.s(2, 5) * this.s(3, 3) * this.s(4, 5) * this.s(4, 6) -
-                this.s(1, 5) * this.s(2, 6) * this.s(3, 3) * this.s(4, 5) * this.s(4, 6) +
-                this.s(1, 6) * this.s(2, 3) * this.s(3, 5) * this.s(4, 5) * this.s(4, 6) +
-                this.s(1, 3) * this.s(2, 6) * this.s(3, 5) * this.s(4, 5) * this.s(4, 6) +
-                this.s(1, 5) * this.s(2, 3) * this.s(3, 6) * this.s(4, 5) * this.s(4, 6) +
-                this.s(1, 3) * this.s(2, 5) * this.s(3, 6) * this.s(4, 5) * this.s(4, 6) -
-                2 * this.s(1, 2) * this.s(3, 5) * this.s(3, 6) * this.s(4, 5) * this.s(4, 6) +
-                this.s(1, 5) * this.s(2, 5) * this.s(3, 3) * this.s(4, 6) * this.s(4, 6) -
-                this.s(1, 5) * this.s(2, 3) * this.s(3, 5) * this.s(4, 6) * this.s(4, 6) -
-                this.s(1, 3) * this.s(2, 5) * this.s(3, 5) * this.s(4, 6) * this.s(4, 6) +
-                this.s(1, 2) * this.s(3, 5) * this.s(3, 5) * this.s(4, 6) * this.s(4, 6) +
-                this.s(1, 6) * this.s(2, 6) * this.s(3, 4) * this.s(3, 4) * this.s(5, 5) -
-                this.s(1, 6) * this.s(2, 4) * this.s(3, 4) * this.s(3, 6) * this.s(5, 5) -
-                this.s(1, 4) * this.s(2, 6) * this.s(3, 4) * this.s(3, 6) * this.s(5, 5) +
-                this.s(1, 4) * this.s(2, 4) * this.s(3, 6) * this.s(3, 6) * this.s(5, 5) -
-                this.s(1, 6) * this.s(2, 6) * this.s(3, 3) * this.s(4, 4) * this.s(5, 5) +
-                this.s(1, 6) * this.s(2, 3) * this.s(3, 6) * this.s(4, 4) * this.s(5, 5) +
-                this.s(1, 3) * this.s(2, 6) * this.s(3, 6) * this.s(4, 4) * this.s(5, 5) -
-                this.s(1, 2) * this.s(3, 6) * this.s(3, 6) * this.s(4, 4) * this.s(5, 5) +
-                this.s(1, 6) * this.s(2, 4) * this.s(3, 3) * this.s(4, 6) * this.s(5, 5) +
-                this.s(1, 4) * this.s(2, 6) * this.s(3, 3) * this.s(4, 6) * this.s(5, 5) -
-                this.s(1, 6) * this.s(2, 3) * this.s(3, 4) * this.s(4, 6) * this.s(5, 5) -
-                this.s(1, 3) * this.s(2, 6) * this.s(3, 4) * this.s(4, 6) * this.s(5, 5) -
-                this.s(1, 4) * this.s(2, 3) * this.s(3, 6) * this.s(4, 6) * this.s(5, 5) -
-                this.s(1, 3) * this.s(2, 4) * this.s(3, 6) * this.s(4, 6) * this.s(5, 5) +
-                2 * this.s(1, 2) * this.s(3, 4) * this.s(3, 6) * this.s(4, 6) * this.s(5, 5) +
-                this.s(1, 3) * this.s(2, 3) * this.s(4, 6) * this.s(4, 6) * this.s(5, 5) -
-                this.s(1, 2) * this.s(3, 3) * this.s(4, 6) * this.s(4, 6) * this.s(5, 5) -
-                this.s(1, 6) * this.s(2, 5) * this.s(3, 4) * this.s(3, 4) * this.s(5, 6) -
-                this.s(1, 5) * this.s(2, 6) * this.s(3, 4) * this.s(3, 4) * this.s(5, 6) +
-                this.s(1, 6) * this.s(2, 4) * this.s(3, 4) * this.s(3, 5) * this.s(5, 6) +
-                this.s(1, 4) * this.s(2, 6) * this.s(3, 4) * this.s(3, 5) * this.s(5, 6) +
-                this.s(1, 5) * this.s(2, 4) * this.s(3, 4) * this.s(3, 6) * this.s(5, 6) +
-                this.s(1, 4) * this.s(2, 5) * this.s(3, 4) * this.s(3, 6) * this.s(5, 6) -
-                2 * this.s(1, 4) * this.s(2, 4) * this.s(3, 5) * this.s(3, 6) * this.s(5, 6) +
-                this.s(1, 6) * this.s(2, 5) * this.s(3, 3) * this.s(4, 4) * this.s(5, 6) +
-                this.s(1, 5) * this.s(2, 6) * this.s(3, 3) * this.s(4, 4) * this.s(5, 6) -
-                this.s(1, 6) * this.s(2, 3) * this.s(3, 5) * this.s(4, 4) * this.s(5, 6) -
-                this.s(1, 3) * this.s(2, 6) * this.s(3, 5) * this.s(4, 4) * this.s(5, 6) -
-                this.s(1, 5) * this.s(2, 3) * this.s(3, 6) * this.s(4, 4) * this.s(5, 6) -
-                this.s(1, 3) * this.s(2, 5) * this.s(3, 6) * this.s(4, 4) * this.s(5, 6) +
-                2 * this.s(1, 2) * this.s(3, 5) * this.s(3, 6) * this.s(4, 4) * this.s(5, 6) -
-                this.s(1, 6) * this.s(2, 4) * this.s(3, 3) * this.s(4, 5) * this.s(5, 6) -
-                this.s(1, 4) * this.s(2, 6) * this.s(3, 3) * this.s(4, 5) * this.s(5, 6) +
-                this.s(1, 6) * this.s(2, 3) * this.s(3, 4) * this.s(4, 5) * this.s(5, 6) +
-                this.s(1, 3) * this.s(2, 6) * this.s(3, 4) * this.s(4, 5) * this.s(5, 6) +
-                this.s(1, 4) * this.s(2, 3) * this.s(3, 6) * this.s(4, 5) * this.s(5, 6) +
-                this.s(1, 3) * this.s(2, 4) * this.s(3, 6) * this.s(4, 5) * this.s(5, 6) -
-                2 * this.s(1, 2) * this.s(3, 4) * this.s(3, 6) * this.s(4, 5) * this.s(5, 6) -
-                this.s(1, 5) * this.s(2, 4) * this.s(3, 3) * this.s(4, 6) * this.s(5, 6) -
-                this.s(1, 4) * this.s(2, 5) * this.s(3, 3) * this.s(4, 6) * this.s(5, 6) +
-                this.s(1, 5) * this.s(2, 3) * this.s(3, 4) * this.s(4, 6) * this.s(5, 6) +
-                this.s(1, 3) * this.s(2, 5) * this.s(3, 4) * this.s(4, 6) * this.s(5, 6) +
-                this.s(1, 4) * this.s(2, 3) * this.s(3, 5) * this.s(4, 6) * this.s(5, 6) +
-                this.s(1, 3) * this.s(2, 4) * this.s(3, 5) * this.s(4, 6) * this.s(5, 6) -
-                2 * this.s(1, 2) * this.s(3, 4) * this.s(3, 5) * this.s(4, 6) * this.s(5, 6) -
-                2 * this.s(1, 3) * this.s(2, 3) * this.s(4, 5) * this.s(4, 6) * this.s(5, 6) +
-                2 * this.s(1, 2) * this.s(3, 3) * this.s(4, 5) * this.s(4, 6) * this.s(5, 6) +
-                this.s(1, 4) * this.s(2, 4) * this.s(3, 3) * this.s(5, 6) * this.s(5, 6) -
-                this.s(1, 4) * this.s(2, 3) * this.s(3, 4) * this.s(5, 6) * this.s(5, 6) -
-                this.s(1, 3) * this.s(2, 4) * this.s(3, 4) * this.s(5, 6) * this.s(5, 6) +
-                this.s(1, 2) * this.s(3, 4) * this.s(3, 4) * this.s(5, 6) * this.s(5, 6) +
-                this.s(1, 3) * this.s(2, 3) * this.s(4, 4) * this.s(5, 6) * this.s(5, 6) -
-                this.s(1, 2) * this.s(3, 3) * this.s(4, 4) * this.s(5, 6) * this.s(5, 6) +
-                this.s(1, 5) * this.s(2, 5) * this.s(3, 4) * this.s(3, 4) * this.s(6, 6) -
-                this.s(1, 5) * this.s(2, 4) * this.s(3, 4) * this.s(3, 5) * this.s(6, 6) -
-                this.s(1, 4) * this.s(2, 5) * this.s(3, 4) * this.s(3, 5) * this.s(6, 6) +
-                this.s(1, 4) * this.s(2, 4) * this.s(3, 5) * this.s(3, 5) * this.s(6, 6) -
-                this.s(1, 5) * this.s(2, 5) * this.s(3, 3) * this.s(4, 4) * this.s(6, 6) +
-                this.s(1, 5) * this.s(2, 3) * this.s(3, 5) * this.s(4, 4) * this.s(6, 6) +
-                this.s(1, 3) * this.s(2, 5) * this.s(3, 5) * this.s(4, 4) * this.s(6, 6) -
-                this.s(1, 2) * this.s(3, 5) * this.s(3, 5) * this.s(4, 4) * this.s(6, 6) +
-                this.s(1, 5) * this.s(2, 4) * this.s(3, 3) * this.s(4, 5) * this.s(6, 6) +
-                this.s(1, 4) * this.s(2, 5) * this.s(3, 3) * this.s(4, 5) * this.s(6, 6) -
-                this.s(1, 5) * this.s(2, 3) * this.s(3, 4) * this.s(4, 5) * this.s(6, 6) -
-                this.s(1, 3) * this.s(2, 5) * this.s(3, 4) * this.s(4, 5) * this.s(6, 6) -
-                this.s(1, 4) * this.s(2, 3) * this.s(3, 5) * this.s(4, 5) * this.s(6, 6) -
-                this.s(1, 3) * this.s(2, 4) * this.s(3, 5) * this.s(4, 5) * this.s(6, 6) +
-                2 * this.s(1, 2) * this.s(3, 4) * this.s(3, 5) * this.s(4, 5) * this.s(6, 6) +
-                this.s(1, 3) * this.s(2, 3) * this.s(4, 5) * this.s(4, 5) * this.s(6, 6) -
-                this.s(1, 2) * this.s(3, 3) * this.s(4, 5) * this.s(4, 5) * this.s(6, 6) -
-                this.s(1, 4) * this.s(2, 4) * this.s(3, 3) * this.s(5, 5) * this.s(6, 6) +
-                this.s(1, 4) * this.s(2, 3) * this.s(3, 4) * this.s(5, 5) * this.s(6, 6) +
-                this.s(1, 3) * this.s(2, 4) * this.s(3, 4) * this.s(5, 5) * this.s(6, 6) -
-                this.s(1, 2) * this.s(3, 4) * this.s(3, 4) * this.s(5, 5) * this.s(6, 6) -
-                this.s(1, 3) * this.s(2, 3) * this.s(4, 4) * this.s(5, 5) * this.s(6, 6) +
-                this.s(1, 2) * this.s(3, 3) * this.s(4, 4) * this.s(5, 5) * this.s(6, 6);
+        return s(1, 6) * s(2, 6) * s(3, 5) * s(3, 5) * s(4, 4) -
+                s(1, 6) * s(2, 5) * s(3, 5) * s(3, 6) * s(4, 4) -
+                s(1, 5) * s(2, 6) * s(3, 5) * s(3, 6) * s(4, 4) +
+                s(1, 5) * s(2, 5) * s(3, 6) * s(3, 6) * s(4, 4) -
+                2 * s(1, 6) * s(2, 6) * s(3, 4) * s(3, 5) * s(4, 5) +
+                s(1, 6) * s(2, 5) * s(3, 4) * s(3, 6) * s(4, 5) +
+                s(1, 5) * s(2, 6) * s(3, 4) * s(3, 6) * s(4, 5) +
+                s(1, 6) * s(2, 4) * s(3, 5) * s(3, 6) * s(4, 5) +
+                s(1, 4) * s(2, 6) * s(3, 5) * s(3, 6) * s(4, 5) -
+                s(1, 5) * s(2, 4) * s(3, 6) * s(3, 6) * s(4, 5) -
+                s(1, 4) * s(2, 5) * s(3, 6) * s(3, 6) * s(4, 5) +
+                s(1, 6) * s(2, 6) * s(3, 3) * s(4, 5) * s(4, 5) -
+                s(1, 6) * s(2, 3) * s(3, 6) * s(4, 5) * s(4, 5) -
+                s(1, 3) * s(2, 6) * s(3, 6) * s(4, 5) * s(4, 5) +
+                s(1, 2) * s(3, 6) * s(3, 6) * s(4, 5) * s(4, 5) +
+                s(1, 6) * s(2, 5) * s(3, 4) * s(3, 5) * s(4, 6) +
+                s(1, 5) * s(2, 6) * s(3, 4) * s(3, 5) * s(4, 6) -
+                s(1, 6) * s(2, 4) * s(3, 5) * s(3, 5) * s(4, 6) -
+                s(1, 4) * s(2, 6) * s(3, 5) * s(3, 5) * s(4, 6) -
+                2 * s(1, 5) * s(2, 5) * s(3, 4) * s(3, 6) * s(4, 6) +
+                s(1, 5) * s(2, 4) * s(3, 5) * s(3, 6) * s(4, 6) +
+                s(1, 4) * s(2, 5) * s(3, 5) * s(3, 6) * s(4, 6) -
+                s(1, 6) * s(2, 5) * s(3, 3) * s(4, 5) * s(4, 6) -
+                s(1, 5) * s(2, 6) * s(3, 3) * s(4, 5) * s(4, 6) +
+                s(1, 6) * s(2, 3) * s(3, 5) * s(4, 5) * s(4, 6) +
+                s(1, 3) * s(2, 6) * s(3, 5) * s(4, 5) * s(4, 6) +
+                s(1, 5) * s(2, 3) * s(3, 6) * s(4, 5) * s(4, 6) +
+                s(1, 3) * s(2, 5) * s(3, 6) * s(4, 5) * s(4, 6) -
+                2 * s(1, 2) * s(3, 5) * s(3, 6) * s(4, 5) * s(4, 6) +
+                s(1, 5) * s(2, 5) * s(3, 3) * s(4, 6) * s(4, 6) -
+                s(1, 5) * s(2, 3) * s(3, 5) * s(4, 6) * s(4, 6) -
+                s(1, 3) * s(2, 5) * s(3, 5) * s(4, 6) * s(4, 6) +
+                s(1, 2) * s(3, 5) * s(3, 5) * s(4, 6) * s(4, 6) +
+                s(1, 6) * s(2, 6) * s(3, 4) * s(3, 4) * s(5, 5) -
+                s(1, 6) * s(2, 4) * s(3, 4) * s(3, 6) * s(5, 5) -
+                s(1, 4) * s(2, 6) * s(3, 4) * s(3, 6) * s(5, 5) +
+                s(1, 4) * s(2, 4) * s(3, 6) * s(3, 6) * s(5, 5) -
+                s(1, 6) * s(2, 6) * s(3, 3) * s(4, 4) * s(5, 5) +
+                s(1, 6) * s(2, 3) * s(3, 6) * s(4, 4) * s(5, 5) +
+                s(1, 3) * s(2, 6) * s(3, 6) * s(4, 4) * s(5, 5) -
+                s(1, 2) * s(3, 6) * s(3, 6) * s(4, 4) * s(5, 5) +
+                s(1, 6) * s(2, 4) * s(3, 3) * s(4, 6) * s(5, 5) +
+                s(1, 4) * s(2, 6) * s(3, 3) * s(4, 6) * s(5, 5) -
+                s(1, 6) * s(2, 3) * s(3, 4) * s(4, 6) * s(5, 5) -
+                s(1, 3) * s(2, 6) * s(3, 4) * s(4, 6) * s(5, 5) -
+                s(1, 4) * s(2, 3) * s(3, 6) * s(4, 6) * s(5, 5) -
+                s(1, 3) * s(2, 4) * s(3, 6) * s(4, 6) * s(5, 5) +
+                2 * s(1, 2) * s(3, 4) * s(3, 6) * s(4, 6) * s(5, 5) +
+                s(1, 3) * s(2, 3) * s(4, 6) * s(4, 6) * s(5, 5) -
+                s(1, 2) * s(3, 3) * s(4, 6) * s(4, 6) * s(5, 5) -
+                s(1, 6) * s(2, 5) * s(3, 4) * s(3, 4) * s(5, 6) -
+                s(1, 5) * s(2, 6) * s(3, 4) * s(3, 4) * s(5, 6) +
+                s(1, 6) * s(2, 4) * s(3, 4) * s(3, 5) * s(5, 6) +
+                s(1, 4) * s(2, 6) * s(3, 4) * s(3, 5) * s(5, 6) +
+                s(1, 5) * s(2, 4) * s(3, 4) * s(3, 6) * s(5, 6) +
+                s(1, 4) * s(2, 5) * s(3, 4) * s(3, 6) * s(5, 6) -
+                2 * s(1, 4) * s(2, 4) * s(3, 5) * s(3, 6) * s(5, 6) +
+                s(1, 6) * s(2, 5) * s(3, 3) * s(4, 4) * s(5, 6) +
+                s(1, 5) * s(2, 6) * s(3, 3) * s(4, 4) * s(5, 6) -
+                s(1, 6) * s(2, 3) * s(3, 5) * s(4, 4) * s(5, 6) -
+                s(1, 3) * s(2, 6) * s(3, 5) * s(4, 4) * s(5, 6) -
+                s(1, 5) * s(2, 3) * s(3, 6) * s(4, 4) * s(5, 6) -
+                s(1, 3) * s(2, 5) * s(3, 6) * s(4, 4) * s(5, 6) +
+                2 * s(1, 2) * s(3, 5) * s(3, 6) * s(4, 4) * s(5, 6) -
+                s(1, 6) * s(2, 4) * s(3, 3) * s(4, 5) * s(5, 6) -
+                s(1, 4) * s(2, 6) * s(3, 3) * s(4, 5) * s(5, 6) +
+                s(1, 6) * s(2, 3) * s(3, 4) * s(4, 5) * s(5, 6) +
+                s(1, 3) * s(2, 6) * s(3, 4) * s(4, 5) * s(5, 6) +
+                s(1, 4) * s(2, 3) * s(3, 6) * s(4, 5) * s(5, 6) +
+                s(1, 3) * s(2, 4) * s(3, 6) * s(4, 5) * s(5, 6) -
+                2 * s(1, 2) * s(3, 4) * s(3, 6) * s(4, 5) * s(5, 6) -
+                s(1, 5) * s(2, 4) * s(3, 3) * s(4, 6) * s(5, 6) -
+                s(1, 4) * s(2, 5) * s(3, 3) * s(4, 6) * s(5, 6) +
+                s(1, 5) * s(2, 3) * s(3, 4) * s(4, 6) * s(5, 6) +
+                s(1, 3) * s(2, 5) * s(3, 4) * s(4, 6) * s(5, 6) +
+                s(1, 4) * s(2, 3) * s(3, 5) * s(4, 6) * s(5, 6) +
+                s(1, 3) * s(2, 4) * s(3, 5) * s(4, 6) * s(5, 6) -
+                2 * s(1, 2) * s(3, 4) * s(3, 5) * s(4, 6) * s(5, 6) -
+                2 * s(1, 3) * s(2, 3) * s(4, 5) * s(4, 6) * s(5, 6) +
+                2 * s(1, 2) * s(3, 3) * s(4, 5) * s(4, 6) * s(5, 6) +
+                s(1, 4) * s(2, 4) * s(3, 3) * s(5, 6) * s(5, 6) -
+                s(1, 4) * s(2, 3) * s(3, 4) * s(5, 6) * s(5, 6) -
+                s(1, 3) * s(2, 4) * s(3, 4) * s(5, 6) * s(5, 6) +
+                s(1, 2) * s(3, 4) * s(3, 4) * s(5, 6) * s(5, 6) +
+                s(1, 3) * s(2, 3) * s(4, 4) * s(5, 6) * s(5, 6) -
+                s(1, 2) * s(3, 3) * s(4, 4) * s(5, 6) * s(5, 6) +
+                s(1, 5) * s(2, 5) * s(3, 4) * s(3, 4) * s(6, 6) -
+                s(1, 5) * s(2, 4) * s(3, 4) * s(3, 5) * s(6, 6) -
+                s(1, 4) * s(2, 5) * s(3, 4) * s(3, 5) * s(6, 6) +
+                s(1, 4) * s(2, 4) * s(3, 5) * s(3, 5) * s(6, 6) -
+                s(1, 5) * s(2, 5) * s(3, 3) * s(4, 4) * s(6, 6) +
+                s(1, 5) * s(2, 3) * s(3, 5) * s(4, 4) * s(6, 6) +
+                s(1, 3) * s(2, 5) * s(3, 5) * s(4, 4) * s(6, 6) -
+                s(1, 2) * s(3, 5) * s(3, 5) * s(4, 4) * s(6, 6) +
+                s(1, 5) * s(2, 4) * s(3, 3) * s(4, 5) * s(6, 6) +
+                s(1, 4) * s(2, 5) * s(3, 3) * s(4, 5) * s(6, 6) -
+                s(1, 5) * s(2, 3) * s(3, 4) * s(4, 5) * s(6, 6) -
+                s(1, 3) * s(2, 5) * s(3, 4) * s(4, 5) * s(6, 6) -
+                s(1, 4) * s(2, 3) * s(3, 5) * s(4, 5) * s(6, 6) -
+                s(1, 3) * s(2, 4) * s(3, 5) * s(4, 5) * s(6, 6) +
+                2 * s(1, 2) * s(3, 4) * s(3, 5) * s(4, 5) * s(6, 6) +
+                s(1, 3) * s(2, 3) * s(4, 5) * s(4, 5) * s(6, 6) -
+                s(1, 2) * s(3, 3) * s(4, 5) * s(4, 5) * s(6, 6) -
+                s(1, 4) * s(2, 4) * s(3, 3) * s(5, 5) * s(6, 6) +
+                s(1, 4) * s(2, 3) * s(3, 4) * s(5, 5) * s(6, 6) +
+                s(1, 3) * s(2, 4) * s(3, 4) * s(5, 5) * s(6, 6) -
+                s(1, 2) * s(3, 4) * s(3, 4) * s(5, 5) * s(6, 6) -
+                s(1, 3) * s(2, 3) * s(4, 4) * s(5, 5) * s(6, 6) +
+                s(1, 2) * s(3, 3) * s(4, 4) * s(5, 5) * s(6, 6);
     }
 
     /**
      * Calculates the gradient of tau for the given indices array (for up to 4 conditioning vars).
      */
     private double[][] gradTau() {
-        int numCondVars = this.getIndices().length - 2;
+        final int numCondVars = getIndices().length - 2;
 
         switch (numCondVars) {
             case 0:
-                return this.convertGradTau(this.gradTau0());
+                return convertGradTau(gradTau0());
             case 1:
-                return this.convertGradTau(this.gradTau1());
+                return convertGradTau(gradTau1());
             case 2:
-                return this.convertGradTau(this.gradTau2());
+                return convertGradTau(gradTau2());
             case 3:
-                return this.convertGradTau(this.gradTau3());
+                return convertGradTau(gradTau3());
             case 4:
-                return this.convertGradTau(this.gradTau4());
+                return convertGradTau(gradTau4());
             default:
                 throw new IllegalStateException("Only gradients for up to " +
                         "four conditioning variables were hardcoded: " +
@@ -853,13 +853,13 @@ public final class IndTestTimeSeries implements IndependenceTest {
     /**
      * Takes a gradTau for a basic case and transforms it into a gradTau for the case at hand.
      */
-    private double[][] convertGradTau(double[] basicGradTau) {
-        double[][] m = MatrixUtils.invVech(basicGradTau);
-        double[][] m2 = new double[numVars][numVars];
+    private double[][] convertGradTau(final double[] basicGradTau) {
+        final double[][] m = MatrixUtils.invVech(basicGradTau);
+        final double[][] m2 = new double[this.numVars][this.numVars];
 
         for (int i = 0; i < m.length; i++) {
             for (int j = 0; j < m.length; j++) {
-                m2[this.getIndices()[i]][this.getIndices()[j]] = m[i][j];
+                m2[getIndices()[i]][getIndices()[j]] = m[i][j];
             }
         }
 
@@ -901,583 +901,583 @@ public final class IndTestTimeSeries implements IndependenceTest {
      * @return grad(tau) for numTimeSteps = 3, indArr = [1 2 3] (one-indexed). From Mathematica.
      */
     private double[] gradTau1() {
-        return new double[]{0, this.s(3, 3), -this.s(2, 3), 0, -this.s(1, 3), this.s(1, 2)};
+        return new double[]{0, s(3, 3), -s(2, 3), 0, -s(1, 3), s(1, 2)};
     }
 
     /**
      * @return grad(tau) for numTimeSteps = 4, indArr = [1 2 3 4] (one-indexed). From Mathematica.
      */
     private double[] gradTau2() {
-        return new double[]{0, -this.s(3, 4) * this.s(3, 4) + this.s(3, 3) * this.s(4, 4),
-                this.s(2, 4) * this.s(3, 4) - this.s(2, 3) * this.s(4, 4),
-                -this.s(2, 4) * this.s(3, 3) + this.s(2, 3) * this.s(3, 4), 0,
-                this.s(1, 4) * this.s(3, 4) - this.s(1, 3) * this.s(4, 4),
-                -this.s(1, 4) * this.s(3, 3) + this.s(1, 3) * this.s(3, 4),
-                -this.s(1, 4) * this.s(2, 4) + this.s(1, 2) * this.s(4, 4),
-                this.s(1, 4) * this.s(2, 3) + this.s(1, 3) * this.s(2, 4) - 2 * this.s(1, 2) * this.s(3, 4),
-                -this.s(1, 3) * this.s(2, 3) + this.s(1, 2) * this.s(3, 3)};
+        return new double[]{0, -s(3, 4) * s(3, 4) + s(3, 3) * s(4, 4),
+                s(2, 4) * s(3, 4) - s(2, 3) * s(4, 4),
+                -s(2, 4) * s(3, 3) + s(2, 3) * s(3, 4), 0,
+                s(1, 4) * s(3, 4) - s(1, 3) * s(4, 4),
+                -s(1, 4) * s(3, 3) + s(1, 3) * s(3, 4),
+                -s(1, 4) * s(2, 4) + s(1, 2) * s(4, 4),
+                s(1, 4) * s(2, 3) + s(1, 3) * s(2, 4) - 2 * s(1, 2) * s(3, 4),
+                -s(1, 3) * s(2, 3) + s(1, 2) * s(3, 3)};
     }
 
     /**
      * @return grad(tau) for numTimeSteps = 5, indArr = [1 2 3 4 5] (one-indexed). From Mathematica.
      */
     private double[] gradTau3() {
-        return new double[]{0, -this.s(3, 5) * this.s(3, 5) * this.s(4, 4) +
-                2 * this.s(3, 4) * this.s(3, 5) * this.s(4, 5) - this.s(3, 3) * this.s(4, 5) * this.s(4, 5) -
-                this.s(3, 4) * this.s(3, 4) * this.s(5, 5) + this.s(3, 3) * this.s(4, 4) * this.s(5, 5), this.s(2,
-                5) * this.s(3, 5) * this.s(4, 4) - this.s(2, 5) * this.s(3, 4) * this.s(4, 5) -
-                this.s(2, 4) * this.s(3, 5) * this.s(4, 5) + this.s(2, 3) * this.s(4, 5) * this.s(4, 5) +
-                this.s(2, 4) * this.s(3, 4) * this.s(5, 5) - this.s(2, 3) * this.s(4, 4) * this.s(5, 5), -this.s(2,
-                5) * this.s(3, 4) * this.s(3, 5) + this.s(2, 4) * this.s(3, 5) * this.s(3, 5) +
-                this.s(2, 5) * this.s(3, 3) * this.s(4, 5) - this.s(2, 3) * this.s(3, 5) * this.s(4, 5) -
-                this.s(2, 4) * this.s(3, 3) * this.s(5, 5) + this.s(2, 3) * this.s(3, 4) * this.s(5, 5), this.s(2,
-                5) * this.s(3, 4) * this.s(3, 4) - this.s(2, 4) * this.s(3, 4) * this.s(3, 5) -
-                this.s(2, 5) * this.s(3, 3) * this.s(4, 4) + this.s(2, 3) * this.s(3, 5) * this.s(4, 4) +
-                this.s(2, 4) * this.s(3, 3) * this.s(4, 5) - this.s(2, 3) * this.s(3, 4) * this.s(4, 5), 0, this.s(
-                1, 5) * this.s(3, 5) * this.s(4, 4) - this.s(1, 5) * this.s(3, 4) * this.s(4, 5) -
-                this.s(1, 4) * this.s(3, 5) * this.s(4, 5) + this.s(1, 3) * this.s(4, 5) * this.s(4, 5) +
-                this.s(1, 4) * this.s(3, 4) * this.s(5, 5) - this.s(1, 3) * this.s(4, 4) * this.s(5, 5), -this.s(1,
-                5) * this.s(3, 4) * this.s(3, 5) + this.s(1, 4) * this.s(3, 5) * this.s(3, 5) +
-                this.s(1, 5) * this.s(3, 3) * this.s(4, 5) - this.s(1, 3) * this.s(3, 5) * this.s(4, 5) -
-                this.s(1, 4) * this.s(3, 3) * this.s(5, 5) + this.s(1, 3) * this.s(3, 4) * this.s(5, 5), this.s(1,
-                5) * this.s(3, 4) * this.s(3, 4) - this.s(1, 4) * this.s(3, 4) * this.s(3, 5) -
-                this.s(1, 5) * this.s(3, 3) * this.s(4, 4) + this.s(1, 3) * this.s(3, 5) * this.s(4, 4) +
-                this.s(1, 4) * this.s(3, 3) * this.s(4, 5) - this.s(1, 3) * this.s(3, 4) * this.s(4, 5), -this.s(1,
-                5) * this.s(2, 5) * this.s(4, 4) + this.s(1, 5) * this.s(2, 4) * this.s(4, 5) +
-                this.s(1, 4) * this.s(2, 5) * this.s(4, 5) - this.s(1, 2) * this.s(4, 5) * this.s(4, 5) -
-                this.s(1, 4) * this.s(2, 4) * this.s(5, 5) + this.s(1, 2) * this.s(4, 4) * this.s(5, 5), 2 *
-                this.s(1, 5) * this.s(2, 5) * this.s(3, 4) - this.s(1, 5) * this.s(2, 4) * this.s(3, 5) -
-                this.s(1, 4) * this.s(2, 5) * this.s(3, 5) - this.s(1, 5) * this.s(2, 3) * this.s(4, 5) -
-                this.s(1, 3) * this.s(2, 5) * this.s(4, 5) + 2 * this.s(1, 2) * this.s(3, 5) * this.s(4, 5) +
-                this.s(1, 4) * this.s(2, 3) * this.s(5, 5) + this.s(1, 3) * this.s(2, 4) * this.s(5, 5) -
-                2 * this.s(1, 2) * this.s(3, 4) * this.s(5, 5), -this.s(1, 5) * this.s(2, 4) * this.s(3, 4) -
-                this.s(1, 4) * this.s(2, 5) * this.s(3, 4) + 2 * this.s(1, 4) * this.s(2, 4) * this.s(3, 5) +
-                this.s(1, 5) * this.s(2, 3) * this.s(4, 4) + this.s(1, 3) * this.s(2, 5) * this.s(4, 4) -
-                2 * this.s(1, 2) * this.s(3, 5) * this.s(4, 4) - this.s(1, 4) * this.s(2, 3) * this.s(4, 5) -
-                this.s(1, 3) * this.s(2, 4) * this.s(4, 5) + 2 * this.s(1, 2) * this.s(3, 4) * this.s(4, 5),
-                -this.s(1, 5) * this.s(2, 5) * this.s(3, 3) + this.s(1, 5) * this.s(2, 3) * this.s(3, 5) +
-                        this.s(1, 3) * this.s(2, 5) * this.s(3, 5) -
-                        this.s(1, 2) * this.s(3, 5) * this.s(3, 5) -
-                        this.s(1, 3) * this.s(2, 3) * this.s(5, 5) +
-                        this.s(1, 2) * this.s(3, 3) * this.s(5, 5), this.s(1, 5) * this.s(2, 4) *
-                this.s(3, 3) + this.s(1, 4) * this.s(2, 5) * this.s(3, 3) -
-                this.s(1, 5) * this.s(2, 3) * this.s(3, 4) - this.s(1, 3) * this.s(2, 5) * this.s(3, 4) -
-                this.s(1, 4) * this.s(2, 3) * this.s(3, 5) - this.s(1, 3) * this.s(2, 4) * this.s(3, 5) +
-                2 * this.s(1, 2) * this.s(3, 4) * this.s(3, 5) +
-                2 * this.s(1, 3) * this.s(2, 3) * this.s(4, 5) -
-                2 * this.s(1, 2) * this.s(3, 3) * this.s(4, 5), -this.s(1, 4) * this.s(2, 4) * this.s(3, 3) +
-                this.s(1, 4) * this.s(2, 3) * this.s(3, 4) + this.s(1, 3) * this.s(2, 4) * this.s(3, 4) -
-                this.s(1, 2) * this.s(3, 4) * this.s(3, 4) - this.s(1, 3) * this.s(2, 3) * this.s(4, 4) +
-                this.s(1, 2) * this.s(3, 3) * this.s(4, 4)};
+        return new double[]{0, -s(3, 5) * s(3, 5) * s(4, 4) +
+                2 * s(3, 4) * s(3, 5) * s(4, 5) - s(3, 3) * s(4, 5) * s(4, 5) -
+                s(3, 4) * s(3, 4) * s(5, 5) + s(3, 3) * s(4, 4) * s(5, 5), s(2,
+                5) * s(3, 5) * s(4, 4) - s(2, 5) * s(3, 4) * s(4, 5) -
+                s(2, 4) * s(3, 5) * s(4, 5) + s(2, 3) * s(4, 5) * s(4, 5) +
+                s(2, 4) * s(3, 4) * s(5, 5) - s(2, 3) * s(4, 4) * s(5, 5), -s(2,
+                5) * s(3, 4) * s(3, 5) + s(2, 4) * s(3, 5) * s(3, 5) +
+                s(2, 5) * s(3, 3) * s(4, 5) - s(2, 3) * s(3, 5) * s(4, 5) -
+                s(2, 4) * s(3, 3) * s(5, 5) + s(2, 3) * s(3, 4) * s(5, 5), s(2,
+                5) * s(3, 4) * s(3, 4) - s(2, 4) * s(3, 4) * s(3, 5) -
+                s(2, 5) * s(3, 3) * s(4, 4) + s(2, 3) * s(3, 5) * s(4, 4) +
+                s(2, 4) * s(3, 3) * s(4, 5) - s(2, 3) * s(3, 4) * s(4, 5), 0, s(
+                1, 5) * s(3, 5) * s(4, 4) - s(1, 5) * s(3, 4) * s(4, 5) -
+                s(1, 4) * s(3, 5) * s(4, 5) + s(1, 3) * s(4, 5) * s(4, 5) +
+                s(1, 4) * s(3, 4) * s(5, 5) - s(1, 3) * s(4, 4) * s(5, 5), -s(1,
+                5) * s(3, 4) * s(3, 5) + s(1, 4) * s(3, 5) * s(3, 5) +
+                s(1, 5) * s(3, 3) * s(4, 5) - s(1, 3) * s(3, 5) * s(4, 5) -
+                s(1, 4) * s(3, 3) * s(5, 5) + s(1, 3) * s(3, 4) * s(5, 5), s(1,
+                5) * s(3, 4) * s(3, 4) - s(1, 4) * s(3, 4) * s(3, 5) -
+                s(1, 5) * s(3, 3) * s(4, 4) + s(1, 3) * s(3, 5) * s(4, 4) +
+                s(1, 4) * s(3, 3) * s(4, 5) - s(1, 3) * s(3, 4) * s(4, 5), -s(1,
+                5) * s(2, 5) * s(4, 4) + s(1, 5) * s(2, 4) * s(4, 5) +
+                s(1, 4) * s(2, 5) * s(4, 5) - s(1, 2) * s(4, 5) * s(4, 5) -
+                s(1, 4) * s(2, 4) * s(5, 5) + s(1, 2) * s(4, 4) * s(5, 5), 2 *
+                s(1, 5) * s(2, 5) * s(3, 4) - s(1, 5) * s(2, 4) * s(3, 5) -
+                s(1, 4) * s(2, 5) * s(3, 5) - s(1, 5) * s(2, 3) * s(4, 5) -
+                s(1, 3) * s(2, 5) * s(4, 5) + 2 * s(1, 2) * s(3, 5) * s(4, 5) +
+                s(1, 4) * s(2, 3) * s(5, 5) + s(1, 3) * s(2, 4) * s(5, 5) -
+                2 * s(1, 2) * s(3, 4) * s(5, 5), -s(1, 5) * s(2, 4) * s(3, 4) -
+                s(1, 4) * s(2, 5) * s(3, 4) + 2 * s(1, 4) * s(2, 4) * s(3, 5) +
+                s(1, 5) * s(2, 3) * s(4, 4) + s(1, 3) * s(2, 5) * s(4, 4) -
+                2 * s(1, 2) * s(3, 5) * s(4, 4) - s(1, 4) * s(2, 3) * s(4, 5) -
+                s(1, 3) * s(2, 4) * s(4, 5) + 2 * s(1, 2) * s(3, 4) * s(4, 5),
+                -s(1, 5) * s(2, 5) * s(3, 3) + s(1, 5) * s(2, 3) * s(3, 5) +
+                        s(1, 3) * s(2, 5) * s(3, 5) -
+                        s(1, 2) * s(3, 5) * s(3, 5) -
+                        s(1, 3) * s(2, 3) * s(5, 5) +
+                        s(1, 2) * s(3, 3) * s(5, 5), s(1, 5) * s(2, 4) *
+                s(3, 3) + s(1, 4) * s(2, 5) * s(3, 3) -
+                s(1, 5) * s(2, 3) * s(3, 4) - s(1, 3) * s(2, 5) * s(3, 4) -
+                s(1, 4) * s(2, 3) * s(3, 5) - s(1, 3) * s(2, 4) * s(3, 5) +
+                2 * s(1, 2) * s(3, 4) * s(3, 5) +
+                2 * s(1, 3) * s(2, 3) * s(4, 5) -
+                2 * s(1, 2) * s(3, 3) * s(4, 5), -s(1, 4) * s(2, 4) * s(3, 3) +
+                s(1, 4) * s(2, 3) * s(3, 4) + s(1, 3) * s(2, 4) * s(3, 4) -
+                s(1, 2) * s(3, 4) * s(3, 4) - s(1, 3) * s(2, 3) * s(4, 4) +
+                s(1, 2) * s(3, 3) * s(4, 4)};
     }
 
     /**
      * @return grad(tau) for numTimeSteps = 6, indArr = [1 2 3 4 5 6] (one-indexed). From Mathematica.
      */
     private double[] gradTau4() {
-        return new double[]{0, this.s(3, 6) * this.s(3, 6) * this.s(4, 5) * this.s(4, 5) -
-                2 * this.s(3, 5) * this.s(3, 6) * this.s(4, 5) * this.s(4, 6) +
-                this.s(3, 5) * this.s(3, 5) * this.s(4, 6) * this.s(4, 6) -
-                this.s(3, 6) * this.s(3, 6) * this.s(4, 4) * this.s(5, 5) +
-                2 * this.s(3, 4) * this.s(3, 6) * this.s(4, 6) * this.s(5, 5) -
-                this.s(3, 3) * this.s(4, 6) * this.s(4, 6) * this.s(5, 5) +
-                2 * this.s(3, 5) * this.s(3, 6) * this.s(4, 4) * this.s(5, 6) -
-                2 * this.s(3, 4) * this.s(3, 6) * this.s(4, 5) * this.s(5, 6) -
-                2 * this.s(3, 4) * this.s(3, 5) * this.s(4, 6) * this.s(5, 6) +
-                2 * this.s(3, 3) * this.s(4, 5) * this.s(4, 6) * this.s(5, 6) +
-                this.s(3, 4) * this.s(3, 4) * this.s(5, 6) * this.s(5, 6) -
-                this.s(3, 3) * this.s(4, 4) * this.s(5, 6) * this.s(5, 6) -
-                this.s(3, 5) * this.s(3, 5) * this.s(4, 4) * this.s(6, 6) +
-                2 * this.s(3, 4) * this.s(3, 5) * this.s(4, 5) * this.s(6, 6) -
-                this.s(3, 3) * this.s(4, 5) * this.s(4, 5) * this.s(6, 6) -
-                this.s(3, 4) * this.s(3, 4) * this.s(5, 5) * this.s(6, 6) +
-                this.s(3, 3) * this.s(4, 4) * this.s(5, 5) * this.s(6, 6), -this.s(2, 6) * this.s(3, 6) *
-                this.s(4, 5) * this.s(4, 5) + this.s(2, 6) * this.s(3, 5) * this.s(4, 5) * this.s(4, 6) +
-                this.s(2, 5) * this.s(3, 6) * this.s(4, 5) * this.s(4, 6) -
-                this.s(2, 5) * this.s(3, 5) * this.s(4, 6) * this.s(4, 6) +
-                this.s(2, 6) * this.s(3, 6) * this.s(4, 4) * this.s(5, 5) -
-                this.s(2, 6) * this.s(3, 4) * this.s(4, 6) * this.s(5, 5) -
-                this.s(2, 4) * this.s(3, 6) * this.s(4, 6) * this.s(5, 5) +
-                this.s(2, 3) * this.s(4, 6) * this.s(4, 6) * this.s(5, 5) -
-                this.s(2, 6) * this.s(3, 5) * this.s(4, 4) * this.s(5, 6) -
-                this.s(2, 5) * this.s(3, 6) * this.s(4, 4) * this.s(5, 6) +
-                this.s(2, 6) * this.s(3, 4) * this.s(4, 5) * this.s(5, 6) +
-                this.s(2, 4) * this.s(3, 6) * this.s(4, 5) * this.s(5, 6) +
-                this.s(2, 5) * this.s(3, 4) * this.s(4, 6) * this.s(5, 6) +
-                this.s(2, 4) * this.s(3, 5) * this.s(4, 6) * this.s(5, 6) -
-                2 * this.s(2, 3) * this.s(4, 5) * this.s(4, 6) * this.s(5, 6) -
-                this.s(2, 4) * this.s(3, 4) * this.s(5, 6) * this.s(5, 6) +
-                this.s(2, 3) * this.s(4, 4) * this.s(5, 6) * this.s(5, 6) +
-                this.s(2, 5) * this.s(3, 5) * this.s(4, 4) * this.s(6, 6) -
-                this.s(2, 5) * this.s(3, 4) * this.s(4, 5) * this.s(6, 6) -
-                this.s(2, 4) * this.s(3, 5) * this.s(4, 5) * this.s(6, 6) +
-                this.s(2, 3) * this.s(4, 5) * this.s(4, 5) * this.s(6, 6) +
-                this.s(2, 4) * this.s(3, 4) * this.s(5, 5) * this.s(6, 6) -
-                this.s(2, 3) * this.s(4, 4) * this.s(5, 5) * this.s(6, 6), this.s(2, 6) * this.s(3, 5) *
-                this.s(3, 6) * this.s(4, 5) - this.s(2, 5) * this.s(3, 6) * this.s(3, 6) * this.s(4, 5) -
-                this.s(2, 6) * this.s(3, 5) * this.s(3, 5) * this.s(4, 6) +
-                this.s(2, 5) * this.s(3, 5) * this.s(3, 6) * this.s(4, 6) -
-                this.s(2, 6) * this.s(3, 4) * this.s(3, 6) * this.s(5, 5) +
-                this.s(2, 4) * this.s(3, 6) * this.s(3, 6) * this.s(5, 5) +
-                this.s(2, 6) * this.s(3, 3) * this.s(4, 6) * this.s(5, 5) -
-                this.s(2, 3) * this.s(3, 6) * this.s(4, 6) * this.s(5, 5) +
-                this.s(2, 6) * this.s(3, 4) * this.s(3, 5) * this.s(5, 6) +
-                this.s(2, 5) * this.s(3, 4) * this.s(3, 6) * this.s(5, 6) -
-                2 * this.s(2, 4) * this.s(3, 5) * this.s(3, 6) * this.s(5, 6) -
-                this.s(2, 6) * this.s(3, 3) * this.s(4, 5) * this.s(5, 6) +
-                this.s(2, 3) * this.s(3, 6) * this.s(4, 5) * this.s(5, 6) -
-                this.s(2, 5) * this.s(3, 3) * this.s(4, 6) * this.s(5, 6) +
-                this.s(2, 3) * this.s(3, 5) * this.s(4, 6) * this.s(5, 6) +
-                this.s(2, 4) * this.s(3, 3) * this.s(5, 6) * this.s(5, 6) -
-                this.s(2, 3) * this.s(3, 4) * this.s(5, 6) * this.s(5, 6) -
-                this.s(2, 5) * this.s(3, 4) * this.s(3, 5) * this.s(6, 6) +
-                this.s(2, 4) * this.s(3, 5) * this.s(3, 5) * this.s(6, 6) +
-                this.s(2, 5) * this.s(3, 3) * this.s(4, 5) * this.s(6, 6) -
-                this.s(2, 3) * this.s(3, 5) * this.s(4, 5) * this.s(6, 6) -
-                this.s(2, 4) * this.s(3, 3) * this.s(5, 5) * this.s(6, 6) +
-                this.s(2, 3) * this.s(3, 4) * this.s(5, 5) * this.s(6, 6), -this.s(2, 6) * this.s(3, 5) *
-                this.s(3, 6) * this.s(4, 4) + this.s(2, 5) * this.s(3, 6) * this.s(3, 6) * this.s(4, 4) +
-                this.s(2, 6) * this.s(3, 4) * this.s(3, 6) * this.s(4, 5) -
-                this.s(2, 4) * this.s(3, 6) * this.s(3, 6) * this.s(4, 5) +
-                this.s(2, 6) * this.s(3, 4) * this.s(3, 5) * this.s(4, 6) -
-                2 * this.s(2, 5) * this.s(3, 4) * this.s(3, 6) * this.s(4, 6) +
-                this.s(2, 4) * this.s(3, 5) * this.s(3, 6) * this.s(4, 6) -
-                this.s(2, 6) * this.s(3, 3) * this.s(4, 5) * this.s(4, 6) +
-                this.s(2, 3) * this.s(3, 6) * this.s(4, 5) * this.s(4, 6) +
-                this.s(2, 5) * this.s(3, 3) * this.s(4, 6) * this.s(4, 6) -
-                this.s(2, 3) * this.s(3, 5) * this.s(4, 6) * this.s(4, 6) -
-                this.s(2, 6) * this.s(3, 4) * this.s(3, 4) * this.s(5, 6) +
-                this.s(2, 4) * this.s(3, 4) * this.s(3, 6) * this.s(5, 6) +
-                this.s(2, 6) * this.s(3, 3) * this.s(4, 4) * this.s(5, 6) -
-                this.s(2, 3) * this.s(3, 6) * this.s(4, 4) * this.s(5, 6) -
-                this.s(2, 4) * this.s(3, 3) * this.s(4, 6) * this.s(5, 6) +
-                this.s(2, 3) * this.s(3, 4) * this.s(4, 6) * this.s(5, 6) +
-                this.s(2, 5) * this.s(3, 4) * this.s(3, 4) * this.s(6, 6) -
-                this.s(2, 4) * this.s(3, 4) * this.s(3, 5) * this.s(6, 6) -
-                this.s(2, 5) * this.s(3, 3) * this.s(4, 4) * this.s(6, 6) +
-                this.s(2, 3) * this.s(3, 5) * this.s(4, 4) * this.s(6, 6) +
-                this.s(2, 4) * this.s(3, 3) * this.s(4, 5) * this.s(6, 6) -
-                this.s(2, 3) * this.s(3, 4) * this.s(4, 5) * this.s(6, 6), this.s(2, 6) * this.s(3, 5) *
-                this.s(3, 5) * this.s(4, 4) - this.s(2, 5) * this.s(3, 5) * this.s(3, 6) * this.s(4, 4) -
-                2 * this.s(2, 6) * this.s(3, 4) * this.s(3, 5) * this.s(4, 5) +
-                this.s(2, 5) * this.s(3, 4) * this.s(3, 6) * this.s(4, 5) +
-                this.s(2, 4) * this.s(3, 5) * this.s(3, 6) * this.s(4, 5) +
-                this.s(2, 6) * this.s(3, 3) * this.s(4, 5) * this.s(4, 5) -
-                this.s(2, 3) * this.s(3, 6) * this.s(4, 5) * this.s(4, 5) +
-                this.s(2, 5) * this.s(3, 4) * this.s(3, 5) * this.s(4, 6) -
-                this.s(2, 4) * this.s(3, 5) * this.s(3, 5) * this.s(4, 6) -
-                this.s(2, 5) * this.s(3, 3) * this.s(4, 5) * this.s(4, 6) +
-                this.s(2, 3) * this.s(3, 5) * this.s(4, 5) * this.s(4, 6) +
-                this.s(2, 6) * this.s(3, 4) * this.s(3, 4) * this.s(5, 5) -
-                this.s(2, 4) * this.s(3, 4) * this.s(3, 6) * this.s(5, 5) -
-                this.s(2, 6) * this.s(3, 3) * this.s(4, 4) * this.s(5, 5) +
-                this.s(2, 3) * this.s(3, 6) * this.s(4, 4) * this.s(5, 5) +
-                this.s(2, 4) * this.s(3, 3) * this.s(4, 6) * this.s(5, 5) -
-                this.s(2, 3) * this.s(3, 4) * this.s(4, 6) * this.s(5, 5) -
-                this.s(2, 5) * this.s(3, 4) * this.s(3, 4) * this.s(5, 6) +
-                this.s(2, 4) * this.s(3, 4) * this.s(3, 5) * this.s(5, 6) +
-                this.s(2, 5) * this.s(3, 3) * this.s(4, 4) * this.s(5, 6) -
-                this.s(2, 3) * this.s(3, 5) * this.s(4, 4) * this.s(5, 6) -
-                this.s(2, 4) * this.s(3, 3) * this.s(4, 5) * this.s(5, 6) +
-                this.s(2, 3) * this.s(3, 4) * this.s(4, 5) * this.s(5, 6), 0, -this.s(1, 6) * this.s(3, 6) *
-                this.s(4, 5) * this.s(4, 5) + this.s(1, 6) * this.s(3, 5) * this.s(4, 5) * this.s(4, 6) +
-                this.s(1, 5) * this.s(3, 6) * this.s(4, 5) * this.s(4, 6) -
-                this.s(1, 5) * this.s(3, 5) * this.s(4, 6) * this.s(4, 6) +
-                this.s(1, 6) * this.s(3, 6) * this.s(4, 4) * this.s(5, 5) -
-                this.s(1, 6) * this.s(3, 4) * this.s(4, 6) * this.s(5, 5) -
-                this.s(1, 4) * this.s(3, 6) * this.s(4, 6) * this.s(5, 5) +
-                this.s(1, 3) * this.s(4, 6) * this.s(4, 6) * this.s(5, 5) -
-                this.s(1, 6) * this.s(3, 5) * this.s(4, 4) * this.s(5, 6) -
-                this.s(1, 5) * this.s(3, 6) * this.s(4, 4) * this.s(5, 6) +
-                this.s(1, 6) * this.s(3, 4) * this.s(4, 5) * this.s(5, 6) +
-                this.s(1, 4) * this.s(3, 6) * this.s(4, 5) * this.s(5, 6) +
-                this.s(1, 5) * this.s(3, 4) * this.s(4, 6) * this.s(5, 6) +
-                this.s(1, 4) * this.s(3, 5) * this.s(4, 6) * this.s(5, 6) -
-                2 * this.s(1, 3) * this.s(4, 5) * this.s(4, 6) * this.s(5, 6) -
-                this.s(1, 4) * this.s(3, 4) * this.s(5, 6) * this.s(5, 6) +
-                this.s(1, 3) * this.s(4, 4) * this.s(5, 6) * this.s(5, 6) +
-                this.s(1, 5) * this.s(3, 5) * this.s(4, 4) * this.s(6, 6) -
-                this.s(1, 5) * this.s(3, 4) * this.s(4, 5) * this.s(6, 6) -
-                this.s(1, 4) * this.s(3, 5) * this.s(4, 5) * this.s(6, 6) +
-                this.s(1, 3) * this.s(4, 5) * this.s(4, 5) * this.s(6, 6) +
-                this.s(1, 4) * this.s(3, 4) * this.s(5, 5) * this.s(6, 6) -
-                this.s(1, 3) * this.s(4, 4) * this.s(5, 5) * this.s(6, 6), this.s(1, 6) * this.s(3, 5) *
-                this.s(3, 6) * this.s(4, 5) - this.s(1, 5) * this.s(3, 6) * this.s(3, 6) * this.s(4, 5) -
-                this.s(1, 6) * this.s(3, 5) * this.s(3, 5) * this.s(4, 6) +
-                this.s(1, 5) * this.s(3, 5) * this.s(3, 6) * this.s(4, 6) -
-                this.s(1, 6) * this.s(3, 4) * this.s(3, 6) * this.s(5, 5) +
-                this.s(1, 4) * this.s(3, 6) * this.s(3, 6) * this.s(5, 5) +
-                this.s(1, 6) * this.s(3, 3) * this.s(4, 6) * this.s(5, 5) -
-                this.s(1, 3) * this.s(3, 6) * this.s(4, 6) * this.s(5, 5) +
-                this.s(1, 6) * this.s(3, 4) * this.s(3, 5) * this.s(5, 6) +
-                this.s(1, 5) * this.s(3, 4) * this.s(3, 6) * this.s(5, 6) -
-                2 * this.s(1, 4) * this.s(3, 5) * this.s(3, 6) * this.s(5, 6) -
-                this.s(1, 6) * this.s(3, 3) * this.s(4, 5) * this.s(5, 6) +
-                this.s(1, 3) * this.s(3, 6) * this.s(4, 5) * this.s(5, 6) -
-                this.s(1, 5) * this.s(3, 3) * this.s(4, 6) * this.s(5, 6) +
-                this.s(1, 3) * this.s(3, 5) * this.s(4, 6) * this.s(5, 6) +
-                this.s(1, 4) * this.s(3, 3) * this.s(5, 6) * this.s(5, 6) -
-                this.s(1, 3) * this.s(3, 4) * this.s(5, 6) * this.s(5, 6) -
-                this.s(1, 5) * this.s(3, 4) * this.s(3, 5) * this.s(6, 6) +
-                this.s(1, 4) * this.s(3, 5) * this.s(3, 5) * this.s(6, 6) +
-                this.s(1, 5) * this.s(3, 3) * this.s(4, 5) * this.s(6, 6) -
-                this.s(1, 3) * this.s(3, 5) * this.s(4, 5) * this.s(6, 6) -
-                this.s(1, 4) * this.s(3, 3) * this.s(5, 5) * this.s(6, 6) +
-                this.s(1, 3) * this.s(3, 4) * this.s(5, 5) * this.s(6, 6), -this.s(1, 6) * this.s(3, 5) *
-                this.s(3, 6) * this.s(4, 4) + this.s(1, 5) * this.s(3, 6) * this.s(3, 6) * this.s(4, 4) +
-                this.s(1, 6) * this.s(3, 4) * this.s(3, 6) * this.s(4, 5) -
-                this.s(1, 4) * this.s(3, 6) * this.s(3, 6) * this.s(4, 5) +
-                this.s(1, 6) * this.s(3, 4) * this.s(3, 5) * this.s(4, 6) -
-                2 * this.s(1, 5) * this.s(3, 4) * this.s(3, 6) * this.s(4, 6) +
-                this.s(1, 4) * this.s(3, 5) * this.s(3, 6) * this.s(4, 6) -
-                this.s(1, 6) * this.s(3, 3) * this.s(4, 5) * this.s(4, 6) +
-                this.s(1, 3) * this.s(3, 6) * this.s(4, 5) * this.s(4, 6) +
-                this.s(1, 5) * this.s(3, 3) * this.s(4, 6) * this.s(4, 6) -
-                this.s(1, 3) * this.s(3, 5) * this.s(4, 6) * this.s(4, 6) -
-                this.s(1, 6) * this.s(3, 4) * this.s(3, 4) * this.s(5, 6) +
-                this.s(1, 4) * this.s(3, 4) * this.s(3, 6) * this.s(5, 6) +
-                this.s(1, 6) * this.s(3, 3) * this.s(4, 4) * this.s(5, 6) -
-                this.s(1, 3) * this.s(3, 6) * this.s(4, 4) * this.s(5, 6) -
-                this.s(1, 4) * this.s(3, 3) * this.s(4, 6) * this.s(5, 6) +
-                this.s(1, 3) * this.s(3, 4) * this.s(4, 6) * this.s(5, 6) +
-                this.s(1, 5) * this.s(3, 4) * this.s(3, 4) * this.s(6, 6) -
-                this.s(1, 4) * this.s(3, 4) * this.s(3, 5) * this.s(6, 6) -
-                this.s(1, 5) * this.s(3, 3) * this.s(4, 4) * this.s(6, 6) +
-                this.s(1, 3) * this.s(3, 5) * this.s(4, 4) * this.s(6, 6) +
-                this.s(1, 4) * this.s(3, 3) * this.s(4, 5) * this.s(6, 6) -
-                this.s(1, 3) * this.s(3, 4) * this.s(4, 5) * this.s(6, 6), this.s(1, 6) * this.s(3, 5) *
-                this.s(3, 5) * this.s(4, 4) - this.s(1, 5) * this.s(3, 5) * this.s(3, 6) * this.s(4, 4) -
-                2 * this.s(1, 6) * this.s(3, 4) * this.s(3, 5) * this.s(4, 5) +
-                this.s(1, 5) * this.s(3, 4) * this.s(3, 6) * this.s(4, 5) +
-                this.s(1, 4) * this.s(3, 5) * this.s(3, 6) * this.s(4, 5) +
-                this.s(1, 6) * this.s(3, 3) * this.s(4, 5) * this.s(4, 5) -
-                this.s(1, 3) * this.s(3, 6) * this.s(4, 5) * this.s(4, 5) +
-                this.s(1, 5) * this.s(3, 4) * this.s(3, 5) * this.s(4, 6) -
-                this.s(1, 4) * this.s(3, 5) * this.s(3, 5) * this.s(4, 6) -
-                this.s(1, 5) * this.s(3, 3) * this.s(4, 5) * this.s(4, 6) +
-                this.s(1, 3) * this.s(3, 5) * this.s(4, 5) * this.s(4, 6) +
-                this.s(1, 6) * this.s(3, 4) * this.s(3, 4) * this.s(5, 5) -
-                this.s(1, 4) * this.s(3, 4) * this.s(3, 6) * this.s(5, 5) -
-                this.s(1, 6) * this.s(3, 3) * this.s(4, 4) * this.s(5, 5) +
-                this.s(1, 3) * this.s(3, 6) * this.s(4, 4) * this.s(5, 5) +
-                this.s(1, 4) * this.s(3, 3) * this.s(4, 6) * this.s(5, 5) -
-                this.s(1, 3) * this.s(3, 4) * this.s(4, 6) * this.s(5, 5) -
-                this.s(1, 5) * this.s(3, 4) * this.s(3, 4) * this.s(5, 6) +
-                this.s(1, 4) * this.s(3, 4) * this.s(3, 5) * this.s(5, 6) +
-                this.s(1, 5) * this.s(3, 3) * this.s(4, 4) * this.s(5, 6) -
-                this.s(1, 3) * this.s(3, 5) * this.s(4, 4) * this.s(5, 6) -
-                this.s(1, 4) * this.s(3, 3) * this.s(4, 5) * this.s(5, 6) +
-                this.s(1, 3) * this.s(3, 4) * this.s(4, 5) * this.s(5, 6), this.s(1, 6) * this.s(2, 6) *
-                this.s(4, 5) * this.s(4, 5) - this.s(1, 6) * this.s(2, 5) * this.s(4, 5) * this.s(4, 6) -
-                this.s(1, 5) * this.s(2, 6) * this.s(4, 5) * this.s(4, 6) +
-                this.s(1, 5) * this.s(2, 5) * this.s(4, 6) * this.s(4, 6) -
-                this.s(1, 6) * this.s(2, 6) * this.s(4, 4) * this.s(5, 5) +
-                this.s(1, 6) * this.s(2, 4) * this.s(4, 6) * this.s(5, 5) +
-                this.s(1, 4) * this.s(2, 6) * this.s(4, 6) * this.s(5, 5) -
-                this.s(1, 2) * this.s(4, 6) * this.s(4, 6) * this.s(5, 5) +
-                this.s(1, 6) * this.s(2, 5) * this.s(4, 4) * this.s(5, 6) +
-                this.s(1, 5) * this.s(2, 6) * this.s(4, 4) * this.s(5, 6) -
-                this.s(1, 6) * this.s(2, 4) * this.s(4, 5) * this.s(5, 6) -
-                this.s(1, 4) * this.s(2, 6) * this.s(4, 5) * this.s(5, 6) -
-                this.s(1, 5) * this.s(2, 4) * this.s(4, 6) * this.s(5, 6) -
-                this.s(1, 4) * this.s(2, 5) * this.s(4, 6) * this.s(5, 6) +
-                2 * this.s(1, 2) * this.s(4, 5) * this.s(4, 6) * this.s(5, 6) +
-                this.s(1, 4) * this.s(2, 4) * this.s(5, 6) * this.s(5, 6) -
-                this.s(1, 2) * this.s(4, 4) * this.s(5, 6) * this.s(5, 6) -
-                this.s(1, 5) * this.s(2, 5) * this.s(4, 4) * this.s(6, 6) +
-                this.s(1, 5) * this.s(2, 4) * this.s(4, 5) * this.s(6, 6) +
-                this.s(1, 4) * this.s(2, 5) * this.s(4, 5) * this.s(6, 6) -
-                this.s(1, 2) * this.s(4, 5) * this.s(4, 5) * this.s(6, 6) -
-                this.s(1, 4) * this.s(2, 4) * this.s(5, 5) * this.s(6, 6) +
-                this.s(1, 2) * this.s(4, 4) * this.s(5, 5) * this.s(6, 6), -2 * this.s(1, 6) * this.s(2, 6) *
-                this.s(3, 5) * this.s(4, 5) + this.s(1, 6) * this.s(2, 5) * this.s(3, 6) * this.s(4, 5) +
-                this.s(1, 5) * this.s(2, 6) * this.s(3, 6) * this.s(4, 5) +
-                this.s(1, 6) * this.s(2, 5) * this.s(3, 5) * this.s(4, 6) +
-                this.s(1, 5) * this.s(2, 6) * this.s(3, 5) * this.s(4, 6) -
-                2 * this.s(1, 5) * this.s(2, 5) * this.s(3, 6) * this.s(4, 6) +
-                2 * this.s(1, 6) * this.s(2, 6) * this.s(3, 4) * this.s(5, 5) -
-                this.s(1, 6) * this.s(2, 4) * this.s(3, 6) * this.s(5, 5) -
-                this.s(1, 4) * this.s(2, 6) * this.s(3, 6) * this.s(5, 5) -
-                this.s(1, 6) * this.s(2, 3) * this.s(4, 6) * this.s(5, 5) -
-                this.s(1, 3) * this.s(2, 6) * this.s(4, 6) * this.s(5, 5) +
-                2 * this.s(1, 2) * this.s(3, 6) * this.s(4, 6) * this.s(5, 5) -
-                2 * this.s(1, 6) * this.s(2, 5) * this.s(3, 4) * this.s(5, 6) -
-                2 * this.s(1, 5) * this.s(2, 6) * this.s(3, 4) * this.s(5, 6) +
-                this.s(1, 6) * this.s(2, 4) * this.s(3, 5) * this.s(5, 6) +
-                this.s(1, 4) * this.s(2, 6) * this.s(3, 5) * this.s(5, 6) +
-                this.s(1, 5) * this.s(2, 4) * this.s(3, 6) * this.s(5, 6) +
-                this.s(1, 4) * this.s(2, 5) * this.s(3, 6) * this.s(5, 6) +
-                this.s(1, 6) * this.s(2, 3) * this.s(4, 5) * this.s(5, 6) +
-                this.s(1, 3) * this.s(2, 6) * this.s(4, 5) * this.s(5, 6) -
-                2 * this.s(1, 2) * this.s(3, 6) * this.s(4, 5) * this.s(5, 6) +
-                this.s(1, 5) * this.s(2, 3) * this.s(4, 6) * this.s(5, 6) +
-                this.s(1, 3) * this.s(2, 5) * this.s(4, 6) * this.s(5, 6) -
-                2 * this.s(1, 2) * this.s(3, 5) * this.s(4, 6) * this.s(5, 6) -
-                this.s(1, 4) * this.s(2, 3) * this.s(5, 6) * this.s(5, 6) -
-                this.s(1, 3) * this.s(2, 4) * this.s(5, 6) * this.s(5, 6) +
-                2 * this.s(1, 2) * this.s(3, 4) * this.s(5, 6) * this.s(5, 6) +
-                2 * this.s(1, 5) * this.s(2, 5) * this.s(3, 4) * this.s(6, 6) -
-                this.s(1, 5) * this.s(2, 4) * this.s(3, 5) * this.s(6, 6) -
-                this.s(1, 4) * this.s(2, 5) * this.s(3, 5) * this.s(6, 6) -
-                this.s(1, 5) * this.s(2, 3) * this.s(4, 5) * this.s(6, 6) -
-                this.s(1, 3) * this.s(2, 5) * this.s(4, 5) * this.s(6, 6) +
-                2 * this.s(1, 2) * this.s(3, 5) * this.s(4, 5) * this.s(6, 6) +
-                this.s(1, 4) * this.s(2, 3) * this.s(5, 5) * this.s(6, 6) +
-                this.s(1, 3) * this.s(2, 4) * this.s(5, 5) * this.s(6, 6) -
-                2 * this.s(1, 2) * this.s(3, 4) * this.s(5, 5) * this.s(6, 6), 2 * this.s(1, 6) *
-                this.s(2, 6) * this.s(3, 5) * this.s(4, 4) -
-                this.s(1, 6) * this.s(2, 5) * this.s(3, 6) * this.s(4, 4) -
-                this.s(1, 5) * this.s(2, 6) * this.s(3, 6) * this.s(4, 4) -
-                2 * this.s(1, 6) * this.s(2, 6) * this.s(3, 4) * this.s(4, 5) +
-                this.s(1, 6) * this.s(2, 4) * this.s(3, 6) * this.s(4, 5) +
-                this.s(1, 4) * this.s(2, 6) * this.s(3, 6) * this.s(4, 5) +
-                this.s(1, 6) * this.s(2, 5) * this.s(3, 4) * this.s(4, 6) +
-                this.s(1, 5) * this.s(2, 6) * this.s(3, 4) * this.s(4, 6) -
-                2 * this.s(1, 6) * this.s(2, 4) * this.s(3, 5) * this.s(4, 6) -
-                2 * this.s(1, 4) * this.s(2, 6) * this.s(3, 5) * this.s(4, 6) +
-                this.s(1, 5) * this.s(2, 4) * this.s(3, 6) * this.s(4, 6) +
-                this.s(1, 4) * this.s(2, 5) * this.s(3, 6) * this.s(4, 6) +
-                this.s(1, 6) * this.s(2, 3) * this.s(4, 5) * this.s(4, 6) +
-                this.s(1, 3) * this.s(2, 6) * this.s(4, 5) * this.s(4, 6) -
-                2 * this.s(1, 2) * this.s(3, 6) * this.s(4, 5) * this.s(4, 6) -
-                this.s(1, 5) * this.s(2, 3) * this.s(4, 6) * this.s(4, 6) -
-                this.s(1, 3) * this.s(2, 5) * this.s(4, 6) * this.s(4, 6) +
-                2 * this.s(1, 2) * this.s(3, 5) * this.s(4, 6) * this.s(4, 6) +
-                this.s(1, 6) * this.s(2, 4) * this.s(3, 4) * this.s(5, 6) +
-                this.s(1, 4) * this.s(2, 6) * this.s(3, 4) * this.s(5, 6) -
-                2 * this.s(1, 4) * this.s(2, 4) * this.s(3, 6) * this.s(5, 6) -
-                this.s(1, 6) * this.s(2, 3) * this.s(4, 4) * this.s(5, 6) -
-                this.s(1, 3) * this.s(2, 6) * this.s(4, 4) * this.s(5, 6) +
-                2 * this.s(1, 2) * this.s(3, 6) * this.s(4, 4) * this.s(5, 6) +
-                this.s(1, 4) * this.s(2, 3) * this.s(4, 6) * this.s(5, 6) +
-                this.s(1, 3) * this.s(2, 4) * this.s(4, 6) * this.s(5, 6) -
-                2 * this.s(1, 2) * this.s(3, 4) * this.s(4, 6) * this.s(5, 6) -
-                this.s(1, 5) * this.s(2, 4) * this.s(3, 4) * this.s(6, 6) -
-                this.s(1, 4) * this.s(2, 5) * this.s(3, 4) * this.s(6, 6) +
-                2 * this.s(1, 4) * this.s(2, 4) * this.s(3, 5) * this.s(6, 6) +
-                this.s(1, 5) * this.s(2, 3) * this.s(4, 4) * this.s(6, 6) +
-                this.s(1, 3) * this.s(2, 5) * this.s(4, 4) * this.s(6, 6) -
-                2 * this.s(1, 2) * this.s(3, 5) * this.s(4, 4) * this.s(6, 6) -
-                this.s(1, 4) * this.s(2, 3) * this.s(4, 5) * this.s(6, 6) -
-                this.s(1, 3) * this.s(2, 4) * this.s(4, 5) * this.s(6, 6) +
-                2 * this.s(1, 2) * this.s(3, 4) * this.s(4, 5) * this.s(6, 6), -this.s(1, 6) * this.s(2, 5) *
-                this.s(3, 5) * this.s(4, 4) - this.s(1, 5) * this.s(2, 6) * this.s(3, 5) * this.s(4, 4) +
-                2 * this.s(1, 5) * this.s(2, 5) * this.s(3, 6) * this.s(4, 4) +
-                this.s(1, 6) * this.s(2, 5) * this.s(3, 4) * this.s(4, 5) +
-                this.s(1, 5) * this.s(2, 6) * this.s(3, 4) * this.s(4, 5) +
-                this.s(1, 6) * this.s(2, 4) * this.s(3, 5) * this.s(4, 5) +
-                this.s(1, 4) * this.s(2, 6) * this.s(3, 5) * this.s(4, 5) -
-                2 * this.s(1, 5) * this.s(2, 4) * this.s(3, 6) * this.s(4, 5) -
-                2 * this.s(1, 4) * this.s(2, 5) * this.s(3, 6) * this.s(4, 5) -
-                this.s(1, 6) * this.s(2, 3) * this.s(4, 5) * this.s(4, 5) -
-                this.s(1, 3) * this.s(2, 6) * this.s(4, 5) * this.s(4, 5) +
-                2 * this.s(1, 2) * this.s(3, 6) * this.s(4, 5) * this.s(4, 5) -
-                2 * this.s(1, 5) * this.s(2, 5) * this.s(3, 4) * this.s(4, 6) +
-                this.s(1, 5) * this.s(2, 4) * this.s(3, 5) * this.s(4, 6) +
-                this.s(1, 4) * this.s(2, 5) * this.s(3, 5) * this.s(4, 6) +
-                this.s(1, 5) * this.s(2, 3) * this.s(4, 5) * this.s(4, 6) +
-                this.s(1, 3) * this.s(2, 5) * this.s(4, 5) * this.s(4, 6) -
-                2 * this.s(1, 2) * this.s(3, 5) * this.s(4, 5) * this.s(4, 6) -
-                this.s(1, 6) * this.s(2, 4) * this.s(3, 4) * this.s(5, 5) -
-                this.s(1, 4) * this.s(2, 6) * this.s(3, 4) * this.s(5, 5) +
-                2 * this.s(1, 4) * this.s(2, 4) * this.s(3, 6) * this.s(5, 5) +
-                this.s(1, 6) * this.s(2, 3) * this.s(4, 4) * this.s(5, 5) +
-                this.s(1, 3) * this.s(2, 6) * this.s(4, 4) * this.s(5, 5) -
-                2 * this.s(1, 2) * this.s(3, 6) * this.s(4, 4) * this.s(5, 5) -
-                this.s(1, 4) * this.s(2, 3) * this.s(4, 6) * this.s(5, 5) -
-                this.s(1, 3) * this.s(2, 4) * this.s(4, 6) * this.s(5, 5) +
-                2 * this.s(1, 2) * this.s(3, 4) * this.s(4, 6) * this.s(5, 5) +
-                this.s(1, 5) * this.s(2, 4) * this.s(3, 4) * this.s(5, 6) +
-                this.s(1, 4) * this.s(2, 5) * this.s(3, 4) * this.s(5, 6) -
-                2 * this.s(1, 4) * this.s(2, 4) * this.s(3, 5) * this.s(5, 6) -
-                this.s(1, 5) * this.s(2, 3) * this.s(4, 4) * this.s(5, 6) -
-                this.s(1, 3) * this.s(2, 5) * this.s(4, 4) * this.s(5, 6) +
-                2 * this.s(1, 2) * this.s(3, 5) * this.s(4, 4) * this.s(5, 6) +
-                this.s(1, 4) * this.s(2, 3) * this.s(4, 5) * this.s(5, 6) +
-                this.s(1, 3) * this.s(2, 4) * this.s(4, 5) * this.s(5, 6) -
-                2 * this.s(1, 2) * this.s(3, 4) * this.s(4, 5) * this.s(5, 6), this.s(1, 6) * this.s(2, 6) *
-                this.s(3, 5) * this.s(3, 5) - this.s(1, 6) * this.s(2, 5) * this.s(3, 5) * this.s(3, 6) -
-                this.s(1, 5) * this.s(2, 6) * this.s(3, 5) * this.s(3, 6) +
-                this.s(1, 5) * this.s(2, 5) * this.s(3, 6) * this.s(3, 6) -
-                this.s(1, 6) * this.s(2, 6) * this.s(3, 3) * this.s(5, 5) +
-                this.s(1, 6) * this.s(2, 3) * this.s(3, 6) * this.s(5, 5) +
-                this.s(1, 3) * this.s(2, 6) * this.s(3, 6) * this.s(5, 5) -
-                this.s(1, 2) * this.s(3, 6) * this.s(3, 6) * this.s(5, 5) +
-                this.s(1, 6) * this.s(2, 5) * this.s(3, 3) * this.s(5, 6) +
-                this.s(1, 5) * this.s(2, 6) * this.s(3, 3) * this.s(5, 6) -
-                this.s(1, 6) * this.s(2, 3) * this.s(3, 5) * this.s(5, 6) -
-                this.s(1, 3) * this.s(2, 6) * this.s(3, 5) * this.s(5, 6) -
-                this.s(1, 5) * this.s(2, 3) * this.s(3, 6) * this.s(5, 6) -
-                this.s(1, 3) * this.s(2, 5) * this.s(3, 6) * this.s(5, 6) +
-                2 * this.s(1, 2) * this.s(3, 5) * this.s(3, 6) * this.s(5, 6) +
-                this.s(1, 3) * this.s(2, 3) * this.s(5, 6) * this.s(5, 6) -
-                this.s(1, 2) * this.s(3, 3) * this.s(5, 6) * this.s(5, 6) -
-                this.s(1, 5) * this.s(2, 5) * this.s(3, 3) * this.s(6, 6) +
-                this.s(1, 5) * this.s(2, 3) * this.s(3, 5) * this.s(6, 6) +
-                this.s(1, 3) * this.s(2, 5) * this.s(3, 5) * this.s(6, 6) -
-                this.s(1, 2) * this.s(3, 5) * this.s(3, 5) * this.s(6, 6) -
-                this.s(1, 3) * this.s(2, 3) * this.s(5, 5) * this.s(6, 6) +
-                this.s(1, 2) * this.s(3, 3) * this.s(5, 5) * this.s(6, 6), -2 * this.s(1, 6) * this.s(2, 6) *
-                this.s(3, 4) * this.s(3, 5) + this.s(1, 6) * this.s(2, 5) * this.s(3, 4) * this.s(3, 6) +
-                this.s(1, 5) * this.s(2, 6) * this.s(3, 4) * this.s(3, 6) +
-                this.s(1, 6) * this.s(2, 4) * this.s(3, 5) * this.s(3, 6) +
-                this.s(1, 4) * this.s(2, 6) * this.s(3, 5) * this.s(3, 6) -
-                this.s(1, 5) * this.s(2, 4) * this.s(3, 6) * this.s(3, 6) -
-                this.s(1, 4) * this.s(2, 5) * this.s(3, 6) * this.s(3, 6) +
-                2 * this.s(1, 6) * this.s(2, 6) * this.s(3, 3) * this.s(4, 5) -
-                2 * this.s(1, 6) * this.s(2, 3) * this.s(3, 6) * this.s(4, 5) -
-                2 * this.s(1, 3) * this.s(2, 6) * this.s(3, 6) * this.s(4, 5) +
-                2 * this.s(1, 2) * this.s(3, 6) * this.s(3, 6) * this.s(4, 5) -
-                this.s(1, 6) * this.s(2, 5) * this.s(3, 3) * this.s(4, 6) -
-                this.s(1, 5) * this.s(2, 6) * this.s(3, 3) * this.s(4, 6) +
-                this.s(1, 6) * this.s(2, 3) * this.s(3, 5) * this.s(4, 6) +
-                this.s(1, 3) * this.s(2, 6) * this.s(3, 5) * this.s(4, 6) +
-                this.s(1, 5) * this.s(2, 3) * this.s(3, 6) * this.s(4, 6) +
-                this.s(1, 3) * this.s(2, 5) * this.s(3, 6) * this.s(4, 6) -
-                2 * this.s(1, 2) * this.s(3, 5) * this.s(3, 6) * this.s(4, 6) -
-                this.s(1, 6) * this.s(2, 4) * this.s(3, 3) * this.s(5, 6) -
-                this.s(1, 4) * this.s(2, 6) * this.s(3, 3) * this.s(5, 6) +
-                this.s(1, 6) * this.s(2, 3) * this.s(3, 4) * this.s(5, 6) +
-                this.s(1, 3) * this.s(2, 6) * this.s(3, 4) * this.s(5, 6) +
-                this.s(1, 4) * this.s(2, 3) * this.s(3, 6) * this.s(5, 6) +
-                this.s(1, 3) * this.s(2, 4) * this.s(3, 6) * this.s(5, 6) -
-                2 * this.s(1, 2) * this.s(3, 4) * this.s(3, 6) * this.s(5, 6) -
-                2 * this.s(1, 3) * this.s(2, 3) * this.s(4, 6) * this.s(5, 6) +
-                2 * this.s(1, 2) * this.s(3, 3) * this.s(4, 6) * this.s(5, 6) +
-                this.s(1, 5) * this.s(2, 4) * this.s(3, 3) * this.s(6, 6) +
-                this.s(1, 4) * this.s(2, 5) * this.s(3, 3) * this.s(6, 6) -
-                this.s(1, 5) * this.s(2, 3) * this.s(3, 4) * this.s(6, 6) -
-                this.s(1, 3) * this.s(2, 5) * this.s(3, 4) * this.s(6, 6) -
-                this.s(1, 4) * this.s(2, 3) * this.s(3, 5) * this.s(6, 6) -
-                this.s(1, 3) * this.s(2, 4) * this.s(3, 5) * this.s(6, 6) +
-                2 * this.s(1, 2) * this.s(3, 4) * this.s(3, 5) * this.s(6, 6) +
-                2 * this.s(1, 3) * this.s(2, 3) * this.s(4, 5) * this.s(6, 6) -
-                2 * this.s(1, 2) * this.s(3, 3) * this.s(4, 5) * this.s(6, 6), this.s(1, 6) * this.s(2, 5) *
-                this.s(3, 4) * this.s(3, 5) + this.s(1, 5) * this.s(2, 6) * this.s(3, 4) * this.s(3, 5) -
-                this.s(1, 6) * this.s(2, 4) * this.s(3, 5) * this.s(3, 5) -
-                this.s(1, 4) * this.s(2, 6) * this.s(3, 5) * this.s(3, 5) -
-                2 * this.s(1, 5) * this.s(2, 5) * this.s(3, 4) * this.s(3, 6) +
-                this.s(1, 5) * this.s(2, 4) * this.s(3, 5) * this.s(3, 6) +
-                this.s(1, 4) * this.s(2, 5) * this.s(3, 5) * this.s(3, 6) -
-                this.s(1, 6) * this.s(2, 5) * this.s(3, 3) * this.s(4, 5) -
-                this.s(1, 5) * this.s(2, 6) * this.s(3, 3) * this.s(4, 5) +
-                this.s(1, 6) * this.s(2, 3) * this.s(3, 5) * this.s(4, 5) +
-                this.s(1, 3) * this.s(2, 6) * this.s(3, 5) * this.s(4, 5) +
-                this.s(1, 5) * this.s(2, 3) * this.s(3, 6) * this.s(4, 5) +
-                this.s(1, 3) * this.s(2, 5) * this.s(3, 6) * this.s(4, 5) -
-                2 * this.s(1, 2) * this.s(3, 5) * this.s(3, 6) * this.s(4, 5) +
-                2 * this.s(1, 5) * this.s(2, 5) * this.s(3, 3) * this.s(4, 6) -
-                2 * this.s(1, 5) * this.s(2, 3) * this.s(3, 5) * this.s(4, 6) -
-                2 * this.s(1, 3) * this.s(2, 5) * this.s(3, 5) * this.s(4, 6) +
-                2 * this.s(1, 2) * this.s(3, 5) * this.s(3, 5) * this.s(4, 6) +
-                this.s(1, 6) * this.s(2, 4) * this.s(3, 3) * this.s(5, 5) +
-                this.s(1, 4) * this.s(2, 6) * this.s(3, 3) * this.s(5, 5) -
-                this.s(1, 6) * this.s(2, 3) * this.s(3, 4) * this.s(5, 5) -
-                this.s(1, 3) * this.s(2, 6) * this.s(3, 4) * this.s(5, 5) -
-                this.s(1, 4) * this.s(2, 3) * this.s(3, 6) * this.s(5, 5) -
-                this.s(1, 3) * this.s(2, 4) * this.s(3, 6) * this.s(5, 5) +
-                2 * this.s(1, 2) * this.s(3, 4) * this.s(3, 6) * this.s(5, 5) +
-                2 * this.s(1, 3) * this.s(2, 3) * this.s(4, 6) * this.s(5, 5) -
-                2 * this.s(1, 2) * this.s(3, 3) * this.s(4, 6) * this.s(5, 5) -
-                this.s(1, 5) * this.s(2, 4) * this.s(3, 3) * this.s(5, 6) -
-                this.s(1, 4) * this.s(2, 5) * this.s(3, 3) * this.s(5, 6) +
-                this.s(1, 5) * this.s(2, 3) * this.s(3, 4) * this.s(5, 6) +
-                this.s(1, 3) * this.s(2, 5) * this.s(3, 4) * this.s(5, 6) +
-                this.s(1, 4) * this.s(2, 3) * this.s(3, 5) * this.s(5, 6) +
-                this.s(1, 3) * this.s(2, 4) * this.s(3, 5) * this.s(5, 6) -
-                2 * this.s(1, 2) * this.s(3, 4) * this.s(3, 5) * this.s(5, 6) -
-                2 * this.s(1, 3) * this.s(2, 3) * this.s(4, 5) * this.s(5, 6) +
-                2 * this.s(1, 2) * this.s(3, 3) * this.s(4, 5) * this.s(5, 6), this.s(1, 6) * this.s(2, 6) *
-                this.s(3, 4) * this.s(3, 4) - this.s(1, 6) * this.s(2, 4) * this.s(3, 4) * this.s(3, 6) -
-                this.s(1, 4) * this.s(2, 6) * this.s(3, 4) * this.s(3, 6) +
-                this.s(1, 4) * this.s(2, 4) * this.s(3, 6) * this.s(3, 6) -
-                this.s(1, 6) * this.s(2, 6) * this.s(3, 3) * this.s(4, 4) +
-                this.s(1, 6) * this.s(2, 3) * this.s(3, 6) * this.s(4, 4) +
-                this.s(1, 3) * this.s(2, 6) * this.s(3, 6) * this.s(4, 4) -
-                this.s(1, 2) * this.s(3, 6) * this.s(3, 6) * this.s(4, 4) +
-                this.s(1, 6) * this.s(2, 4) * this.s(3, 3) * this.s(4, 6) +
-                this.s(1, 4) * this.s(2, 6) * this.s(3, 3) * this.s(4, 6) -
-                this.s(1, 6) * this.s(2, 3) * this.s(3, 4) * this.s(4, 6) -
-                this.s(1, 3) * this.s(2, 6) * this.s(3, 4) * this.s(4, 6) -
-                this.s(1, 4) * this.s(2, 3) * this.s(3, 6) * this.s(4, 6) -
-                this.s(1, 3) * this.s(2, 4) * this.s(3, 6) * this.s(4, 6) +
-                2 * this.s(1, 2) * this.s(3, 4) * this.s(3, 6) * this.s(4, 6) +
-                this.s(1, 3) * this.s(2, 3) * this.s(4, 6) * this.s(4, 6) -
-                this.s(1, 2) * this.s(3, 3) * this.s(4, 6) * this.s(4, 6) -
-                this.s(1, 4) * this.s(2, 4) * this.s(3, 3) * this.s(6, 6) +
-                this.s(1, 4) * this.s(2, 3) * this.s(3, 4) * this.s(6, 6) +
-                this.s(1, 3) * this.s(2, 4) * this.s(3, 4) * this.s(6, 6) -
-                this.s(1, 2) * this.s(3, 4) * this.s(3, 4) * this.s(6, 6) -
-                this.s(1, 3) * this.s(2, 3) * this.s(4, 4) * this.s(6, 6) +
-                this.s(1, 2) * this.s(3, 3) * this.s(4, 4) * this.s(6, 6), -this.s(1, 6) * this.s(2, 5) *
-                this.s(3, 4) * this.s(3, 4) - this.s(1, 5) * this.s(2, 6) * this.s(3, 4) * this.s(3, 4) +
-                this.s(1, 6) * this.s(2, 4) * this.s(3, 4) * this.s(3, 5) +
-                this.s(1, 4) * this.s(2, 6) * this.s(3, 4) * this.s(3, 5) +
-                this.s(1, 5) * this.s(2, 4) * this.s(3, 4) * this.s(3, 6) +
-                this.s(1, 4) * this.s(2, 5) * this.s(3, 4) * this.s(3, 6) -
-                2 * this.s(1, 4) * this.s(2, 4) * this.s(3, 5) * this.s(3, 6) +
-                this.s(1, 6) * this.s(2, 5) * this.s(3, 3) * this.s(4, 4) +
-                this.s(1, 5) * this.s(2, 6) * this.s(3, 3) * this.s(4, 4) -
-                this.s(1, 6) * this.s(2, 3) * this.s(3, 5) * this.s(4, 4) -
-                this.s(1, 3) * this.s(2, 6) * this.s(3, 5) * this.s(4, 4) -
-                this.s(1, 5) * this.s(2, 3) * this.s(3, 6) * this.s(4, 4) -
-                this.s(1, 3) * this.s(2, 5) * this.s(3, 6) * this.s(4, 4) +
-                2 * this.s(1, 2) * this.s(3, 5) * this.s(3, 6) * this.s(4, 4) -
-                this.s(1, 6) * this.s(2, 4) * this.s(3, 3) * this.s(4, 5) -
-                this.s(1, 4) * this.s(2, 6) * this.s(3, 3) * this.s(4, 5) +
-                this.s(1, 6) * this.s(2, 3) * this.s(3, 4) * this.s(4, 5) +
-                this.s(1, 3) * this.s(2, 6) * this.s(3, 4) * this.s(4, 5) +
-                this.s(1, 4) * this.s(2, 3) * this.s(3, 6) * this.s(4, 5) +
-                this.s(1, 3) * this.s(2, 4) * this.s(3, 6) * this.s(4, 5) -
-                2 * this.s(1, 2) * this.s(3, 4) * this.s(3, 6) * this.s(4, 5) -
-                this.s(1, 5) * this.s(2, 4) * this.s(3, 3) * this.s(4, 6) -
-                this.s(1, 4) * this.s(2, 5) * this.s(3, 3) * this.s(4, 6) +
-                this.s(1, 5) * this.s(2, 3) * this.s(3, 4) * this.s(4, 6) +
-                this.s(1, 3) * this.s(2, 5) * this.s(3, 4) * this.s(4, 6) +
-                this.s(1, 4) * this.s(2, 3) * this.s(3, 5) * this.s(4, 6) +
-                this.s(1, 3) * this.s(2, 4) * this.s(3, 5) * this.s(4, 6) -
-                2 * this.s(1, 2) * this.s(3, 4) * this.s(3, 5) * this.s(4, 6) -
-                2 * this.s(1, 3) * this.s(2, 3) * this.s(4, 5) * this.s(4, 6) +
-                2 * this.s(1, 2) * this.s(3, 3) * this.s(4, 5) * this.s(4, 6) +
-                2 * this.s(1, 4) * this.s(2, 4) * this.s(3, 3) * this.s(5, 6) -
-                2 * this.s(1, 4) * this.s(2, 3) * this.s(3, 4) * this.s(5, 6) -
-                2 * this.s(1, 3) * this.s(2, 4) * this.s(3, 4) * this.s(5, 6) +
-                2 * this.s(1, 2) * this.s(3, 4) * this.s(3, 4) * this.s(5, 6) +
-                2 * this.s(1, 3) * this.s(2, 3) * this.s(4, 4) * this.s(5, 6) -
-                2 * this.s(1, 2) * this.s(3, 3) * this.s(4, 4) * this.s(5, 6), this.s(1, 5) * this.s(2, 5) *
-                this.s(3, 4) * this.s(3, 4) - this.s(1, 5) * this.s(2, 4) * this.s(3, 4) * this.s(3, 5) -
-                this.s(1, 4) * this.s(2, 5) * this.s(3, 4) * this.s(3, 5) +
-                this.s(1, 4) * this.s(2, 4) * this.s(3, 5) * this.s(3, 5) -
-                this.s(1, 5) * this.s(2, 5) * this.s(3, 3) * this.s(4, 4) +
-                this.s(1, 5) * this.s(2, 3) * this.s(3, 5) * this.s(4, 4) +
-                this.s(1, 3) * this.s(2, 5) * this.s(3, 5) * this.s(4, 4) -
-                this.s(1, 2) * this.s(3, 5) * this.s(3, 5) * this.s(4, 4) +
-                this.s(1, 5) * this.s(2, 4) * this.s(3, 3) * this.s(4, 5) +
-                this.s(1, 4) * this.s(2, 5) * this.s(3, 3) * this.s(4, 5) -
-                this.s(1, 5) * this.s(2, 3) * this.s(3, 4) * this.s(4, 5) -
-                this.s(1, 3) * this.s(2, 5) * this.s(3, 4) * this.s(4, 5) -
-                this.s(1, 4) * this.s(2, 3) * this.s(3, 5) * this.s(4, 5) -
-                this.s(1, 3) * this.s(2, 4) * this.s(3, 5) * this.s(4, 5) +
-                2 * this.s(1, 2) * this.s(3, 4) * this.s(3, 5) * this.s(4, 5) +
-                this.s(1, 3) * this.s(2, 3) * this.s(4, 5) * this.s(4, 5) -
-                this.s(1, 2) * this.s(3, 3) * this.s(4, 5) * this.s(4, 5) -
-                this.s(1, 4) * this.s(2, 4) * this.s(3, 3) * this.s(5, 5) +
-                this.s(1, 4) * this.s(2, 3) * this.s(3, 4) * this.s(5, 5) +
-                this.s(1, 3) * this.s(2, 4) * this.s(3, 4) * this.s(5, 5) -
-                this.s(1, 2) * this.s(3, 4) * this.s(3, 4) * this.s(5, 5) -
-                this.s(1, 3) * this.s(2, 3) * this.s(4, 4) * this.s(5, 5) +
-                this.s(1, 2) * this.s(3, 3) * this.s(4, 4) * this.s(5, 5)};
+        return new double[]{0, s(3, 6) * s(3, 6) * s(4, 5) * s(4, 5) -
+                2 * s(3, 5) * s(3, 6) * s(4, 5) * s(4, 6) +
+                s(3, 5) * s(3, 5) * s(4, 6) * s(4, 6) -
+                s(3, 6) * s(3, 6) * s(4, 4) * s(5, 5) +
+                2 * s(3, 4) * s(3, 6) * s(4, 6) * s(5, 5) -
+                s(3, 3) * s(4, 6) * s(4, 6) * s(5, 5) +
+                2 * s(3, 5) * s(3, 6) * s(4, 4) * s(5, 6) -
+                2 * s(3, 4) * s(3, 6) * s(4, 5) * s(5, 6) -
+                2 * s(3, 4) * s(3, 5) * s(4, 6) * s(5, 6) +
+                2 * s(3, 3) * s(4, 5) * s(4, 6) * s(5, 6) +
+                s(3, 4) * s(3, 4) * s(5, 6) * s(5, 6) -
+                s(3, 3) * s(4, 4) * s(5, 6) * s(5, 6) -
+                s(3, 5) * s(3, 5) * s(4, 4) * s(6, 6) +
+                2 * s(3, 4) * s(3, 5) * s(4, 5) * s(6, 6) -
+                s(3, 3) * s(4, 5) * s(4, 5) * s(6, 6) -
+                s(3, 4) * s(3, 4) * s(5, 5) * s(6, 6) +
+                s(3, 3) * s(4, 4) * s(5, 5) * s(6, 6), -s(2, 6) * s(3, 6) *
+                s(4, 5) * s(4, 5) + s(2, 6) * s(3, 5) * s(4, 5) * s(4, 6) +
+                s(2, 5) * s(3, 6) * s(4, 5) * s(4, 6) -
+                s(2, 5) * s(3, 5) * s(4, 6) * s(4, 6) +
+                s(2, 6) * s(3, 6) * s(4, 4) * s(5, 5) -
+                s(2, 6) * s(3, 4) * s(4, 6) * s(5, 5) -
+                s(2, 4) * s(3, 6) * s(4, 6) * s(5, 5) +
+                s(2, 3) * s(4, 6) * s(4, 6) * s(5, 5) -
+                s(2, 6) * s(3, 5) * s(4, 4) * s(5, 6) -
+                s(2, 5) * s(3, 6) * s(4, 4) * s(5, 6) +
+                s(2, 6) * s(3, 4) * s(4, 5) * s(5, 6) +
+                s(2, 4) * s(3, 6) * s(4, 5) * s(5, 6) +
+                s(2, 5) * s(3, 4) * s(4, 6) * s(5, 6) +
+                s(2, 4) * s(3, 5) * s(4, 6) * s(5, 6) -
+                2 * s(2, 3) * s(4, 5) * s(4, 6) * s(5, 6) -
+                s(2, 4) * s(3, 4) * s(5, 6) * s(5, 6) +
+                s(2, 3) * s(4, 4) * s(5, 6) * s(5, 6) +
+                s(2, 5) * s(3, 5) * s(4, 4) * s(6, 6) -
+                s(2, 5) * s(3, 4) * s(4, 5) * s(6, 6) -
+                s(2, 4) * s(3, 5) * s(4, 5) * s(6, 6) +
+                s(2, 3) * s(4, 5) * s(4, 5) * s(6, 6) +
+                s(2, 4) * s(3, 4) * s(5, 5) * s(6, 6) -
+                s(2, 3) * s(4, 4) * s(5, 5) * s(6, 6), s(2, 6) * s(3, 5) *
+                s(3, 6) * s(4, 5) - s(2, 5) * s(3, 6) * s(3, 6) * s(4, 5) -
+                s(2, 6) * s(3, 5) * s(3, 5) * s(4, 6) +
+                s(2, 5) * s(3, 5) * s(3, 6) * s(4, 6) -
+                s(2, 6) * s(3, 4) * s(3, 6) * s(5, 5) +
+                s(2, 4) * s(3, 6) * s(3, 6) * s(5, 5) +
+                s(2, 6) * s(3, 3) * s(4, 6) * s(5, 5) -
+                s(2, 3) * s(3, 6) * s(4, 6) * s(5, 5) +
+                s(2, 6) * s(3, 4) * s(3, 5) * s(5, 6) +
+                s(2, 5) * s(3, 4) * s(3, 6) * s(5, 6) -
+                2 * s(2, 4) * s(3, 5) * s(3, 6) * s(5, 6) -
+                s(2, 6) * s(3, 3) * s(4, 5) * s(5, 6) +
+                s(2, 3) * s(3, 6) * s(4, 5) * s(5, 6) -
+                s(2, 5) * s(3, 3) * s(4, 6) * s(5, 6) +
+                s(2, 3) * s(3, 5) * s(4, 6) * s(5, 6) +
+                s(2, 4) * s(3, 3) * s(5, 6) * s(5, 6) -
+                s(2, 3) * s(3, 4) * s(5, 6) * s(5, 6) -
+                s(2, 5) * s(3, 4) * s(3, 5) * s(6, 6) +
+                s(2, 4) * s(3, 5) * s(3, 5) * s(6, 6) +
+                s(2, 5) * s(3, 3) * s(4, 5) * s(6, 6) -
+                s(2, 3) * s(3, 5) * s(4, 5) * s(6, 6) -
+                s(2, 4) * s(3, 3) * s(5, 5) * s(6, 6) +
+                s(2, 3) * s(3, 4) * s(5, 5) * s(6, 6), -s(2, 6) * s(3, 5) *
+                s(3, 6) * s(4, 4) + s(2, 5) * s(3, 6) * s(3, 6) * s(4, 4) +
+                s(2, 6) * s(3, 4) * s(3, 6) * s(4, 5) -
+                s(2, 4) * s(3, 6) * s(3, 6) * s(4, 5) +
+                s(2, 6) * s(3, 4) * s(3, 5) * s(4, 6) -
+                2 * s(2, 5) * s(3, 4) * s(3, 6) * s(4, 6) +
+                s(2, 4) * s(3, 5) * s(3, 6) * s(4, 6) -
+                s(2, 6) * s(3, 3) * s(4, 5) * s(4, 6) +
+                s(2, 3) * s(3, 6) * s(4, 5) * s(4, 6) +
+                s(2, 5) * s(3, 3) * s(4, 6) * s(4, 6) -
+                s(2, 3) * s(3, 5) * s(4, 6) * s(4, 6) -
+                s(2, 6) * s(3, 4) * s(3, 4) * s(5, 6) +
+                s(2, 4) * s(3, 4) * s(3, 6) * s(5, 6) +
+                s(2, 6) * s(3, 3) * s(4, 4) * s(5, 6) -
+                s(2, 3) * s(3, 6) * s(4, 4) * s(5, 6) -
+                s(2, 4) * s(3, 3) * s(4, 6) * s(5, 6) +
+                s(2, 3) * s(3, 4) * s(4, 6) * s(5, 6) +
+                s(2, 5) * s(3, 4) * s(3, 4) * s(6, 6) -
+                s(2, 4) * s(3, 4) * s(3, 5) * s(6, 6) -
+                s(2, 5) * s(3, 3) * s(4, 4) * s(6, 6) +
+                s(2, 3) * s(3, 5) * s(4, 4) * s(6, 6) +
+                s(2, 4) * s(3, 3) * s(4, 5) * s(6, 6) -
+                s(2, 3) * s(3, 4) * s(4, 5) * s(6, 6), s(2, 6) * s(3, 5) *
+                s(3, 5) * s(4, 4) - s(2, 5) * s(3, 5) * s(3, 6) * s(4, 4) -
+                2 * s(2, 6) * s(3, 4) * s(3, 5) * s(4, 5) +
+                s(2, 5) * s(3, 4) * s(3, 6) * s(4, 5) +
+                s(2, 4) * s(3, 5) * s(3, 6) * s(4, 5) +
+                s(2, 6) * s(3, 3) * s(4, 5) * s(4, 5) -
+                s(2, 3) * s(3, 6) * s(4, 5) * s(4, 5) +
+                s(2, 5) * s(3, 4) * s(3, 5) * s(4, 6) -
+                s(2, 4) * s(3, 5) * s(3, 5) * s(4, 6) -
+                s(2, 5) * s(3, 3) * s(4, 5) * s(4, 6) +
+                s(2, 3) * s(3, 5) * s(4, 5) * s(4, 6) +
+                s(2, 6) * s(3, 4) * s(3, 4) * s(5, 5) -
+                s(2, 4) * s(3, 4) * s(3, 6) * s(5, 5) -
+                s(2, 6) * s(3, 3) * s(4, 4) * s(5, 5) +
+                s(2, 3) * s(3, 6) * s(4, 4) * s(5, 5) +
+                s(2, 4) * s(3, 3) * s(4, 6) * s(5, 5) -
+                s(2, 3) * s(3, 4) * s(4, 6) * s(5, 5) -
+                s(2, 5) * s(3, 4) * s(3, 4) * s(5, 6) +
+                s(2, 4) * s(3, 4) * s(3, 5) * s(5, 6) +
+                s(2, 5) * s(3, 3) * s(4, 4) * s(5, 6) -
+                s(2, 3) * s(3, 5) * s(4, 4) * s(5, 6) -
+                s(2, 4) * s(3, 3) * s(4, 5) * s(5, 6) +
+                s(2, 3) * s(3, 4) * s(4, 5) * s(5, 6), 0, -s(1, 6) * s(3, 6) *
+                s(4, 5) * s(4, 5) + s(1, 6) * s(3, 5) * s(4, 5) * s(4, 6) +
+                s(1, 5) * s(3, 6) * s(4, 5) * s(4, 6) -
+                s(1, 5) * s(3, 5) * s(4, 6) * s(4, 6) +
+                s(1, 6) * s(3, 6) * s(4, 4) * s(5, 5) -
+                s(1, 6) * s(3, 4) * s(4, 6) * s(5, 5) -
+                s(1, 4) * s(3, 6) * s(4, 6) * s(5, 5) +
+                s(1, 3) * s(4, 6) * s(4, 6) * s(5, 5) -
+                s(1, 6) * s(3, 5) * s(4, 4) * s(5, 6) -
+                s(1, 5) * s(3, 6) * s(4, 4) * s(5, 6) +
+                s(1, 6) * s(3, 4) * s(4, 5) * s(5, 6) +
+                s(1, 4) * s(3, 6) * s(4, 5) * s(5, 6) +
+                s(1, 5) * s(3, 4) * s(4, 6) * s(5, 6) +
+                s(1, 4) * s(3, 5) * s(4, 6) * s(5, 6) -
+                2 * s(1, 3) * s(4, 5) * s(4, 6) * s(5, 6) -
+                s(1, 4) * s(3, 4) * s(5, 6) * s(5, 6) +
+                s(1, 3) * s(4, 4) * s(5, 6) * s(5, 6) +
+                s(1, 5) * s(3, 5) * s(4, 4) * s(6, 6) -
+                s(1, 5) * s(3, 4) * s(4, 5) * s(6, 6) -
+                s(1, 4) * s(3, 5) * s(4, 5) * s(6, 6) +
+                s(1, 3) * s(4, 5) * s(4, 5) * s(6, 6) +
+                s(1, 4) * s(3, 4) * s(5, 5) * s(6, 6) -
+                s(1, 3) * s(4, 4) * s(5, 5) * s(6, 6), s(1, 6) * s(3, 5) *
+                s(3, 6) * s(4, 5) - s(1, 5) * s(3, 6) * s(3, 6) * s(4, 5) -
+                s(1, 6) * s(3, 5) * s(3, 5) * s(4, 6) +
+                s(1, 5) * s(3, 5) * s(3, 6) * s(4, 6) -
+                s(1, 6) * s(3, 4) * s(3, 6) * s(5, 5) +
+                s(1, 4) * s(3, 6) * s(3, 6) * s(5, 5) +
+                s(1, 6) * s(3, 3) * s(4, 6) * s(5, 5) -
+                s(1, 3) * s(3, 6) * s(4, 6) * s(5, 5) +
+                s(1, 6) * s(3, 4) * s(3, 5) * s(5, 6) +
+                s(1, 5) * s(3, 4) * s(3, 6) * s(5, 6) -
+                2 * s(1, 4) * s(3, 5) * s(3, 6) * s(5, 6) -
+                s(1, 6) * s(3, 3) * s(4, 5) * s(5, 6) +
+                s(1, 3) * s(3, 6) * s(4, 5) * s(5, 6) -
+                s(1, 5) * s(3, 3) * s(4, 6) * s(5, 6) +
+                s(1, 3) * s(3, 5) * s(4, 6) * s(5, 6) +
+                s(1, 4) * s(3, 3) * s(5, 6) * s(5, 6) -
+                s(1, 3) * s(3, 4) * s(5, 6) * s(5, 6) -
+                s(1, 5) * s(3, 4) * s(3, 5) * s(6, 6) +
+                s(1, 4) * s(3, 5) * s(3, 5) * s(6, 6) +
+                s(1, 5) * s(3, 3) * s(4, 5) * s(6, 6) -
+                s(1, 3) * s(3, 5) * s(4, 5) * s(6, 6) -
+                s(1, 4) * s(3, 3) * s(5, 5) * s(6, 6) +
+                s(1, 3) * s(3, 4) * s(5, 5) * s(6, 6), -s(1, 6) * s(3, 5) *
+                s(3, 6) * s(4, 4) + s(1, 5) * s(3, 6) * s(3, 6) * s(4, 4) +
+                s(1, 6) * s(3, 4) * s(3, 6) * s(4, 5) -
+                s(1, 4) * s(3, 6) * s(3, 6) * s(4, 5) +
+                s(1, 6) * s(3, 4) * s(3, 5) * s(4, 6) -
+                2 * s(1, 5) * s(3, 4) * s(3, 6) * s(4, 6) +
+                s(1, 4) * s(3, 5) * s(3, 6) * s(4, 6) -
+                s(1, 6) * s(3, 3) * s(4, 5) * s(4, 6) +
+                s(1, 3) * s(3, 6) * s(4, 5) * s(4, 6) +
+                s(1, 5) * s(3, 3) * s(4, 6) * s(4, 6) -
+                s(1, 3) * s(3, 5) * s(4, 6) * s(4, 6) -
+                s(1, 6) * s(3, 4) * s(3, 4) * s(5, 6) +
+                s(1, 4) * s(3, 4) * s(3, 6) * s(5, 6) +
+                s(1, 6) * s(3, 3) * s(4, 4) * s(5, 6) -
+                s(1, 3) * s(3, 6) * s(4, 4) * s(5, 6) -
+                s(1, 4) * s(3, 3) * s(4, 6) * s(5, 6) +
+                s(1, 3) * s(3, 4) * s(4, 6) * s(5, 6) +
+                s(1, 5) * s(3, 4) * s(3, 4) * s(6, 6) -
+                s(1, 4) * s(3, 4) * s(3, 5) * s(6, 6) -
+                s(1, 5) * s(3, 3) * s(4, 4) * s(6, 6) +
+                s(1, 3) * s(3, 5) * s(4, 4) * s(6, 6) +
+                s(1, 4) * s(3, 3) * s(4, 5) * s(6, 6) -
+                s(1, 3) * s(3, 4) * s(4, 5) * s(6, 6), s(1, 6) * s(3, 5) *
+                s(3, 5) * s(4, 4) - s(1, 5) * s(3, 5) * s(3, 6) * s(4, 4) -
+                2 * s(1, 6) * s(3, 4) * s(3, 5) * s(4, 5) +
+                s(1, 5) * s(3, 4) * s(3, 6) * s(4, 5) +
+                s(1, 4) * s(3, 5) * s(3, 6) * s(4, 5) +
+                s(1, 6) * s(3, 3) * s(4, 5) * s(4, 5) -
+                s(1, 3) * s(3, 6) * s(4, 5) * s(4, 5) +
+                s(1, 5) * s(3, 4) * s(3, 5) * s(4, 6) -
+                s(1, 4) * s(3, 5) * s(3, 5) * s(4, 6) -
+                s(1, 5) * s(3, 3) * s(4, 5) * s(4, 6) +
+                s(1, 3) * s(3, 5) * s(4, 5) * s(4, 6) +
+                s(1, 6) * s(3, 4) * s(3, 4) * s(5, 5) -
+                s(1, 4) * s(3, 4) * s(3, 6) * s(5, 5) -
+                s(1, 6) * s(3, 3) * s(4, 4) * s(5, 5) +
+                s(1, 3) * s(3, 6) * s(4, 4) * s(5, 5) +
+                s(1, 4) * s(3, 3) * s(4, 6) * s(5, 5) -
+                s(1, 3) * s(3, 4) * s(4, 6) * s(5, 5) -
+                s(1, 5) * s(3, 4) * s(3, 4) * s(5, 6) +
+                s(1, 4) * s(3, 4) * s(3, 5) * s(5, 6) +
+                s(1, 5) * s(3, 3) * s(4, 4) * s(5, 6) -
+                s(1, 3) * s(3, 5) * s(4, 4) * s(5, 6) -
+                s(1, 4) * s(3, 3) * s(4, 5) * s(5, 6) +
+                s(1, 3) * s(3, 4) * s(4, 5) * s(5, 6), s(1, 6) * s(2, 6) *
+                s(4, 5) * s(4, 5) - s(1, 6) * s(2, 5) * s(4, 5) * s(4, 6) -
+                s(1, 5) * s(2, 6) * s(4, 5) * s(4, 6) +
+                s(1, 5) * s(2, 5) * s(4, 6) * s(4, 6) -
+                s(1, 6) * s(2, 6) * s(4, 4) * s(5, 5) +
+                s(1, 6) * s(2, 4) * s(4, 6) * s(5, 5) +
+                s(1, 4) * s(2, 6) * s(4, 6) * s(5, 5) -
+                s(1, 2) * s(4, 6) * s(4, 6) * s(5, 5) +
+                s(1, 6) * s(2, 5) * s(4, 4) * s(5, 6) +
+                s(1, 5) * s(2, 6) * s(4, 4) * s(5, 6) -
+                s(1, 6) * s(2, 4) * s(4, 5) * s(5, 6) -
+                s(1, 4) * s(2, 6) * s(4, 5) * s(5, 6) -
+                s(1, 5) * s(2, 4) * s(4, 6) * s(5, 6) -
+                s(1, 4) * s(2, 5) * s(4, 6) * s(5, 6) +
+                2 * s(1, 2) * s(4, 5) * s(4, 6) * s(5, 6) +
+                s(1, 4) * s(2, 4) * s(5, 6) * s(5, 6) -
+                s(1, 2) * s(4, 4) * s(5, 6) * s(5, 6) -
+                s(1, 5) * s(2, 5) * s(4, 4) * s(6, 6) +
+                s(1, 5) * s(2, 4) * s(4, 5) * s(6, 6) +
+                s(1, 4) * s(2, 5) * s(4, 5) * s(6, 6) -
+                s(1, 2) * s(4, 5) * s(4, 5) * s(6, 6) -
+                s(1, 4) * s(2, 4) * s(5, 5) * s(6, 6) +
+                s(1, 2) * s(4, 4) * s(5, 5) * s(6, 6), -2 * s(1, 6) * s(2, 6) *
+                s(3, 5) * s(4, 5) + s(1, 6) * s(2, 5) * s(3, 6) * s(4, 5) +
+                s(1, 5) * s(2, 6) * s(3, 6) * s(4, 5) +
+                s(1, 6) * s(2, 5) * s(3, 5) * s(4, 6) +
+                s(1, 5) * s(2, 6) * s(3, 5) * s(4, 6) -
+                2 * s(1, 5) * s(2, 5) * s(3, 6) * s(4, 6) +
+                2 * s(1, 6) * s(2, 6) * s(3, 4) * s(5, 5) -
+                s(1, 6) * s(2, 4) * s(3, 6) * s(5, 5) -
+                s(1, 4) * s(2, 6) * s(3, 6) * s(5, 5) -
+                s(1, 6) * s(2, 3) * s(4, 6) * s(5, 5) -
+                s(1, 3) * s(2, 6) * s(4, 6) * s(5, 5) +
+                2 * s(1, 2) * s(3, 6) * s(4, 6) * s(5, 5) -
+                2 * s(1, 6) * s(2, 5) * s(3, 4) * s(5, 6) -
+                2 * s(1, 5) * s(2, 6) * s(3, 4) * s(5, 6) +
+                s(1, 6) * s(2, 4) * s(3, 5) * s(5, 6) +
+                s(1, 4) * s(2, 6) * s(3, 5) * s(5, 6) +
+                s(1, 5) * s(2, 4) * s(3, 6) * s(5, 6) +
+                s(1, 4) * s(2, 5) * s(3, 6) * s(5, 6) +
+                s(1, 6) * s(2, 3) * s(4, 5) * s(5, 6) +
+                s(1, 3) * s(2, 6) * s(4, 5) * s(5, 6) -
+                2 * s(1, 2) * s(3, 6) * s(4, 5) * s(5, 6) +
+                s(1, 5) * s(2, 3) * s(4, 6) * s(5, 6) +
+                s(1, 3) * s(2, 5) * s(4, 6) * s(5, 6) -
+                2 * s(1, 2) * s(3, 5) * s(4, 6) * s(5, 6) -
+                s(1, 4) * s(2, 3) * s(5, 6) * s(5, 6) -
+                s(1, 3) * s(2, 4) * s(5, 6) * s(5, 6) +
+                2 * s(1, 2) * s(3, 4) * s(5, 6) * s(5, 6) +
+                2 * s(1, 5) * s(2, 5) * s(3, 4) * s(6, 6) -
+                s(1, 5) * s(2, 4) * s(3, 5) * s(6, 6) -
+                s(1, 4) * s(2, 5) * s(3, 5) * s(6, 6) -
+                s(1, 5) * s(2, 3) * s(4, 5) * s(6, 6) -
+                s(1, 3) * s(2, 5) * s(4, 5) * s(6, 6) +
+                2 * s(1, 2) * s(3, 5) * s(4, 5) * s(6, 6) +
+                s(1, 4) * s(2, 3) * s(5, 5) * s(6, 6) +
+                s(1, 3) * s(2, 4) * s(5, 5) * s(6, 6) -
+                2 * s(1, 2) * s(3, 4) * s(5, 5) * s(6, 6), 2 * s(1, 6) *
+                s(2, 6) * s(3, 5) * s(4, 4) -
+                s(1, 6) * s(2, 5) * s(3, 6) * s(4, 4) -
+                s(1, 5) * s(2, 6) * s(3, 6) * s(4, 4) -
+                2 * s(1, 6) * s(2, 6) * s(3, 4) * s(4, 5) +
+                s(1, 6) * s(2, 4) * s(3, 6) * s(4, 5) +
+                s(1, 4) * s(2, 6) * s(3, 6) * s(4, 5) +
+                s(1, 6) * s(2, 5) * s(3, 4) * s(4, 6) +
+                s(1, 5) * s(2, 6) * s(3, 4) * s(4, 6) -
+                2 * s(1, 6) * s(2, 4) * s(3, 5) * s(4, 6) -
+                2 * s(1, 4) * s(2, 6) * s(3, 5) * s(4, 6) +
+                s(1, 5) * s(2, 4) * s(3, 6) * s(4, 6) +
+                s(1, 4) * s(2, 5) * s(3, 6) * s(4, 6) +
+                s(1, 6) * s(2, 3) * s(4, 5) * s(4, 6) +
+                s(1, 3) * s(2, 6) * s(4, 5) * s(4, 6) -
+                2 * s(1, 2) * s(3, 6) * s(4, 5) * s(4, 6) -
+                s(1, 5) * s(2, 3) * s(4, 6) * s(4, 6) -
+                s(1, 3) * s(2, 5) * s(4, 6) * s(4, 6) +
+                2 * s(1, 2) * s(3, 5) * s(4, 6) * s(4, 6) +
+                s(1, 6) * s(2, 4) * s(3, 4) * s(5, 6) +
+                s(1, 4) * s(2, 6) * s(3, 4) * s(5, 6) -
+                2 * s(1, 4) * s(2, 4) * s(3, 6) * s(5, 6) -
+                s(1, 6) * s(2, 3) * s(4, 4) * s(5, 6) -
+                s(1, 3) * s(2, 6) * s(4, 4) * s(5, 6) +
+                2 * s(1, 2) * s(3, 6) * s(4, 4) * s(5, 6) +
+                s(1, 4) * s(2, 3) * s(4, 6) * s(5, 6) +
+                s(1, 3) * s(2, 4) * s(4, 6) * s(5, 6) -
+                2 * s(1, 2) * s(3, 4) * s(4, 6) * s(5, 6) -
+                s(1, 5) * s(2, 4) * s(3, 4) * s(6, 6) -
+                s(1, 4) * s(2, 5) * s(3, 4) * s(6, 6) +
+                2 * s(1, 4) * s(2, 4) * s(3, 5) * s(6, 6) +
+                s(1, 5) * s(2, 3) * s(4, 4) * s(6, 6) +
+                s(1, 3) * s(2, 5) * s(4, 4) * s(6, 6) -
+                2 * s(1, 2) * s(3, 5) * s(4, 4) * s(6, 6) -
+                s(1, 4) * s(2, 3) * s(4, 5) * s(6, 6) -
+                s(1, 3) * s(2, 4) * s(4, 5) * s(6, 6) +
+                2 * s(1, 2) * s(3, 4) * s(4, 5) * s(6, 6), -s(1, 6) * s(2, 5) *
+                s(3, 5) * s(4, 4) - s(1, 5) * s(2, 6) * s(3, 5) * s(4, 4) +
+                2 * s(1, 5) * s(2, 5) * s(3, 6) * s(4, 4) +
+                s(1, 6) * s(2, 5) * s(3, 4) * s(4, 5) +
+                s(1, 5) * s(2, 6) * s(3, 4) * s(4, 5) +
+                s(1, 6) * s(2, 4) * s(3, 5) * s(4, 5) +
+                s(1, 4) * s(2, 6) * s(3, 5) * s(4, 5) -
+                2 * s(1, 5) * s(2, 4) * s(3, 6) * s(4, 5) -
+                2 * s(1, 4) * s(2, 5) * s(3, 6) * s(4, 5) -
+                s(1, 6) * s(2, 3) * s(4, 5) * s(4, 5) -
+                s(1, 3) * s(2, 6) * s(4, 5) * s(4, 5) +
+                2 * s(1, 2) * s(3, 6) * s(4, 5) * s(4, 5) -
+                2 * s(1, 5) * s(2, 5) * s(3, 4) * s(4, 6) +
+                s(1, 5) * s(2, 4) * s(3, 5) * s(4, 6) +
+                s(1, 4) * s(2, 5) * s(3, 5) * s(4, 6) +
+                s(1, 5) * s(2, 3) * s(4, 5) * s(4, 6) +
+                s(1, 3) * s(2, 5) * s(4, 5) * s(4, 6) -
+                2 * s(1, 2) * s(3, 5) * s(4, 5) * s(4, 6) -
+                s(1, 6) * s(2, 4) * s(3, 4) * s(5, 5) -
+                s(1, 4) * s(2, 6) * s(3, 4) * s(5, 5) +
+                2 * s(1, 4) * s(2, 4) * s(3, 6) * s(5, 5) +
+                s(1, 6) * s(2, 3) * s(4, 4) * s(5, 5) +
+                s(1, 3) * s(2, 6) * s(4, 4) * s(5, 5) -
+                2 * s(1, 2) * s(3, 6) * s(4, 4) * s(5, 5) -
+                s(1, 4) * s(2, 3) * s(4, 6) * s(5, 5) -
+                s(1, 3) * s(2, 4) * s(4, 6) * s(5, 5) +
+                2 * s(1, 2) * s(3, 4) * s(4, 6) * s(5, 5) +
+                s(1, 5) * s(2, 4) * s(3, 4) * s(5, 6) +
+                s(1, 4) * s(2, 5) * s(3, 4) * s(5, 6) -
+                2 * s(1, 4) * s(2, 4) * s(3, 5) * s(5, 6) -
+                s(1, 5) * s(2, 3) * s(4, 4) * s(5, 6) -
+                s(1, 3) * s(2, 5) * s(4, 4) * s(5, 6) +
+                2 * s(1, 2) * s(3, 5) * s(4, 4) * s(5, 6) +
+                s(1, 4) * s(2, 3) * s(4, 5) * s(5, 6) +
+                s(1, 3) * s(2, 4) * s(4, 5) * s(5, 6) -
+                2 * s(1, 2) * s(3, 4) * s(4, 5) * s(5, 6), s(1, 6) * s(2, 6) *
+                s(3, 5) * s(3, 5) - s(1, 6) * s(2, 5) * s(3, 5) * s(3, 6) -
+                s(1, 5) * s(2, 6) * s(3, 5) * s(3, 6) +
+                s(1, 5) * s(2, 5) * s(3, 6) * s(3, 6) -
+                s(1, 6) * s(2, 6) * s(3, 3) * s(5, 5) +
+                s(1, 6) * s(2, 3) * s(3, 6) * s(5, 5) +
+                s(1, 3) * s(2, 6) * s(3, 6) * s(5, 5) -
+                s(1, 2) * s(3, 6) * s(3, 6) * s(5, 5) +
+                s(1, 6) * s(2, 5) * s(3, 3) * s(5, 6) +
+                s(1, 5) * s(2, 6) * s(3, 3) * s(5, 6) -
+                s(1, 6) * s(2, 3) * s(3, 5) * s(5, 6) -
+                s(1, 3) * s(2, 6) * s(3, 5) * s(5, 6) -
+                s(1, 5) * s(2, 3) * s(3, 6) * s(5, 6) -
+                s(1, 3) * s(2, 5) * s(3, 6) * s(5, 6) +
+                2 * s(1, 2) * s(3, 5) * s(3, 6) * s(5, 6) +
+                s(1, 3) * s(2, 3) * s(5, 6) * s(5, 6) -
+                s(1, 2) * s(3, 3) * s(5, 6) * s(5, 6) -
+                s(1, 5) * s(2, 5) * s(3, 3) * s(6, 6) +
+                s(1, 5) * s(2, 3) * s(3, 5) * s(6, 6) +
+                s(1, 3) * s(2, 5) * s(3, 5) * s(6, 6) -
+                s(1, 2) * s(3, 5) * s(3, 5) * s(6, 6) -
+                s(1, 3) * s(2, 3) * s(5, 5) * s(6, 6) +
+                s(1, 2) * s(3, 3) * s(5, 5) * s(6, 6), -2 * s(1, 6) * s(2, 6) *
+                s(3, 4) * s(3, 5) + s(1, 6) * s(2, 5) * s(3, 4) * s(3, 6) +
+                s(1, 5) * s(2, 6) * s(3, 4) * s(3, 6) +
+                s(1, 6) * s(2, 4) * s(3, 5) * s(3, 6) +
+                s(1, 4) * s(2, 6) * s(3, 5) * s(3, 6) -
+                s(1, 5) * s(2, 4) * s(3, 6) * s(3, 6) -
+                s(1, 4) * s(2, 5) * s(3, 6) * s(3, 6) +
+                2 * s(1, 6) * s(2, 6) * s(3, 3) * s(4, 5) -
+                2 * s(1, 6) * s(2, 3) * s(3, 6) * s(4, 5) -
+                2 * s(1, 3) * s(2, 6) * s(3, 6) * s(4, 5) +
+                2 * s(1, 2) * s(3, 6) * s(3, 6) * s(4, 5) -
+                s(1, 6) * s(2, 5) * s(3, 3) * s(4, 6) -
+                s(1, 5) * s(2, 6) * s(3, 3) * s(4, 6) +
+                s(1, 6) * s(2, 3) * s(3, 5) * s(4, 6) +
+                s(1, 3) * s(2, 6) * s(3, 5) * s(4, 6) +
+                s(1, 5) * s(2, 3) * s(3, 6) * s(4, 6) +
+                s(1, 3) * s(2, 5) * s(3, 6) * s(4, 6) -
+                2 * s(1, 2) * s(3, 5) * s(3, 6) * s(4, 6) -
+                s(1, 6) * s(2, 4) * s(3, 3) * s(5, 6) -
+                s(1, 4) * s(2, 6) * s(3, 3) * s(5, 6) +
+                s(1, 6) * s(2, 3) * s(3, 4) * s(5, 6) +
+                s(1, 3) * s(2, 6) * s(3, 4) * s(5, 6) +
+                s(1, 4) * s(2, 3) * s(3, 6) * s(5, 6) +
+                s(1, 3) * s(2, 4) * s(3, 6) * s(5, 6) -
+                2 * s(1, 2) * s(3, 4) * s(3, 6) * s(5, 6) -
+                2 * s(1, 3) * s(2, 3) * s(4, 6) * s(5, 6) +
+                2 * s(1, 2) * s(3, 3) * s(4, 6) * s(5, 6) +
+                s(1, 5) * s(2, 4) * s(3, 3) * s(6, 6) +
+                s(1, 4) * s(2, 5) * s(3, 3) * s(6, 6) -
+                s(1, 5) * s(2, 3) * s(3, 4) * s(6, 6) -
+                s(1, 3) * s(2, 5) * s(3, 4) * s(6, 6) -
+                s(1, 4) * s(2, 3) * s(3, 5) * s(6, 6) -
+                s(1, 3) * s(2, 4) * s(3, 5) * s(6, 6) +
+                2 * s(1, 2) * s(3, 4) * s(3, 5) * s(6, 6) +
+                2 * s(1, 3) * s(2, 3) * s(4, 5) * s(6, 6) -
+                2 * s(1, 2) * s(3, 3) * s(4, 5) * s(6, 6), s(1, 6) * s(2, 5) *
+                s(3, 4) * s(3, 5) + s(1, 5) * s(2, 6) * s(3, 4) * s(3, 5) -
+                s(1, 6) * s(2, 4) * s(3, 5) * s(3, 5) -
+                s(1, 4) * s(2, 6) * s(3, 5) * s(3, 5) -
+                2 * s(1, 5) * s(2, 5) * s(3, 4) * s(3, 6) +
+                s(1, 5) * s(2, 4) * s(3, 5) * s(3, 6) +
+                s(1, 4) * s(2, 5) * s(3, 5) * s(3, 6) -
+                s(1, 6) * s(2, 5) * s(3, 3) * s(4, 5) -
+                s(1, 5) * s(2, 6) * s(3, 3) * s(4, 5) +
+                s(1, 6) * s(2, 3) * s(3, 5) * s(4, 5) +
+                s(1, 3) * s(2, 6) * s(3, 5) * s(4, 5) +
+                s(1, 5) * s(2, 3) * s(3, 6) * s(4, 5) +
+                s(1, 3) * s(2, 5) * s(3, 6) * s(4, 5) -
+                2 * s(1, 2) * s(3, 5) * s(3, 6) * s(4, 5) +
+                2 * s(1, 5) * s(2, 5) * s(3, 3) * s(4, 6) -
+                2 * s(1, 5) * s(2, 3) * s(3, 5) * s(4, 6) -
+                2 * s(1, 3) * s(2, 5) * s(3, 5) * s(4, 6) +
+                2 * s(1, 2) * s(3, 5) * s(3, 5) * s(4, 6) +
+                s(1, 6) * s(2, 4) * s(3, 3) * s(5, 5) +
+                s(1, 4) * s(2, 6) * s(3, 3) * s(5, 5) -
+                s(1, 6) * s(2, 3) * s(3, 4) * s(5, 5) -
+                s(1, 3) * s(2, 6) * s(3, 4) * s(5, 5) -
+                s(1, 4) * s(2, 3) * s(3, 6) * s(5, 5) -
+                s(1, 3) * s(2, 4) * s(3, 6) * s(5, 5) +
+                2 * s(1, 2) * s(3, 4) * s(3, 6) * s(5, 5) +
+                2 * s(1, 3) * s(2, 3) * s(4, 6) * s(5, 5) -
+                2 * s(1, 2) * s(3, 3) * s(4, 6) * s(5, 5) -
+                s(1, 5) * s(2, 4) * s(3, 3) * s(5, 6) -
+                s(1, 4) * s(2, 5) * s(3, 3) * s(5, 6) +
+                s(1, 5) * s(2, 3) * s(3, 4) * s(5, 6) +
+                s(1, 3) * s(2, 5) * s(3, 4) * s(5, 6) +
+                s(1, 4) * s(2, 3) * s(3, 5) * s(5, 6) +
+                s(1, 3) * s(2, 4) * s(3, 5) * s(5, 6) -
+                2 * s(1, 2) * s(3, 4) * s(3, 5) * s(5, 6) -
+                2 * s(1, 3) * s(2, 3) * s(4, 5) * s(5, 6) +
+                2 * s(1, 2) * s(3, 3) * s(4, 5) * s(5, 6), s(1, 6) * s(2, 6) *
+                s(3, 4) * s(3, 4) - s(1, 6) * s(2, 4) * s(3, 4) * s(3, 6) -
+                s(1, 4) * s(2, 6) * s(3, 4) * s(3, 6) +
+                s(1, 4) * s(2, 4) * s(3, 6) * s(3, 6) -
+                s(1, 6) * s(2, 6) * s(3, 3) * s(4, 4) +
+                s(1, 6) * s(2, 3) * s(3, 6) * s(4, 4) +
+                s(1, 3) * s(2, 6) * s(3, 6) * s(4, 4) -
+                s(1, 2) * s(3, 6) * s(3, 6) * s(4, 4) +
+                s(1, 6) * s(2, 4) * s(3, 3) * s(4, 6) +
+                s(1, 4) * s(2, 6) * s(3, 3) * s(4, 6) -
+                s(1, 6) * s(2, 3) * s(3, 4) * s(4, 6) -
+                s(1, 3) * s(2, 6) * s(3, 4) * s(4, 6) -
+                s(1, 4) * s(2, 3) * s(3, 6) * s(4, 6) -
+                s(1, 3) * s(2, 4) * s(3, 6) * s(4, 6) +
+                2 * s(1, 2) * s(3, 4) * s(3, 6) * s(4, 6) +
+                s(1, 3) * s(2, 3) * s(4, 6) * s(4, 6) -
+                s(1, 2) * s(3, 3) * s(4, 6) * s(4, 6) -
+                s(1, 4) * s(2, 4) * s(3, 3) * s(6, 6) +
+                s(1, 4) * s(2, 3) * s(3, 4) * s(6, 6) +
+                s(1, 3) * s(2, 4) * s(3, 4) * s(6, 6) -
+                s(1, 2) * s(3, 4) * s(3, 4) * s(6, 6) -
+                s(1, 3) * s(2, 3) * s(4, 4) * s(6, 6) +
+                s(1, 2) * s(3, 3) * s(4, 4) * s(6, 6), -s(1, 6) * s(2, 5) *
+                s(3, 4) * s(3, 4) - s(1, 5) * s(2, 6) * s(3, 4) * s(3, 4) +
+                s(1, 6) * s(2, 4) * s(3, 4) * s(3, 5) +
+                s(1, 4) * s(2, 6) * s(3, 4) * s(3, 5) +
+                s(1, 5) * s(2, 4) * s(3, 4) * s(3, 6) +
+                s(1, 4) * s(2, 5) * s(3, 4) * s(3, 6) -
+                2 * s(1, 4) * s(2, 4) * s(3, 5) * s(3, 6) +
+                s(1, 6) * s(2, 5) * s(3, 3) * s(4, 4) +
+                s(1, 5) * s(2, 6) * s(3, 3) * s(4, 4) -
+                s(1, 6) * s(2, 3) * s(3, 5) * s(4, 4) -
+                s(1, 3) * s(2, 6) * s(3, 5) * s(4, 4) -
+                s(1, 5) * s(2, 3) * s(3, 6) * s(4, 4) -
+                s(1, 3) * s(2, 5) * s(3, 6) * s(4, 4) +
+                2 * s(1, 2) * s(3, 5) * s(3, 6) * s(4, 4) -
+                s(1, 6) * s(2, 4) * s(3, 3) * s(4, 5) -
+                s(1, 4) * s(2, 6) * s(3, 3) * s(4, 5) +
+                s(1, 6) * s(2, 3) * s(3, 4) * s(4, 5) +
+                s(1, 3) * s(2, 6) * s(3, 4) * s(4, 5) +
+                s(1, 4) * s(2, 3) * s(3, 6) * s(4, 5) +
+                s(1, 3) * s(2, 4) * s(3, 6) * s(4, 5) -
+                2 * s(1, 2) * s(3, 4) * s(3, 6) * s(4, 5) -
+                s(1, 5) * s(2, 4) * s(3, 3) * s(4, 6) -
+                s(1, 4) * s(2, 5) * s(3, 3) * s(4, 6) +
+                s(1, 5) * s(2, 3) * s(3, 4) * s(4, 6) +
+                s(1, 3) * s(2, 5) * s(3, 4) * s(4, 6) +
+                s(1, 4) * s(2, 3) * s(3, 5) * s(4, 6) +
+                s(1, 3) * s(2, 4) * s(3, 5) * s(4, 6) -
+                2 * s(1, 2) * s(3, 4) * s(3, 5) * s(4, 6) -
+                2 * s(1, 3) * s(2, 3) * s(4, 5) * s(4, 6) +
+                2 * s(1, 2) * s(3, 3) * s(4, 5) * s(4, 6) +
+                2 * s(1, 4) * s(2, 4) * s(3, 3) * s(5, 6) -
+                2 * s(1, 4) * s(2, 3) * s(3, 4) * s(5, 6) -
+                2 * s(1, 3) * s(2, 4) * s(3, 4) * s(5, 6) +
+                2 * s(1, 2) * s(3, 4) * s(3, 4) * s(5, 6) +
+                2 * s(1, 3) * s(2, 3) * s(4, 4) * s(5, 6) -
+                2 * s(1, 2) * s(3, 3) * s(4, 4) * s(5, 6), s(1, 5) * s(2, 5) *
+                s(3, 4) * s(3, 4) - s(1, 5) * s(2, 4) * s(3, 4) * s(3, 5) -
+                s(1, 4) * s(2, 5) * s(3, 4) * s(3, 5) +
+                s(1, 4) * s(2, 4) * s(3, 5) * s(3, 5) -
+                s(1, 5) * s(2, 5) * s(3, 3) * s(4, 4) +
+                s(1, 5) * s(2, 3) * s(3, 5) * s(4, 4) +
+                s(1, 3) * s(2, 5) * s(3, 5) * s(4, 4) -
+                s(1, 2) * s(3, 5) * s(3, 5) * s(4, 4) +
+                s(1, 5) * s(2, 4) * s(3, 3) * s(4, 5) +
+                s(1, 4) * s(2, 5) * s(3, 3) * s(4, 5) -
+                s(1, 5) * s(2, 3) * s(3, 4) * s(4, 5) -
+                s(1, 3) * s(2, 5) * s(3, 4) * s(4, 5) -
+                s(1, 4) * s(2, 3) * s(3, 5) * s(4, 5) -
+                s(1, 3) * s(2, 4) * s(3, 5) * s(4, 5) +
+                2 * s(1, 2) * s(3, 4) * s(3, 5) * s(4, 5) +
+                s(1, 3) * s(2, 3) * s(4, 5) * s(4, 5) -
+                s(1, 2) * s(3, 3) * s(4, 5) * s(4, 5) -
+                s(1, 4) * s(2, 4) * s(3, 3) * s(5, 5) +
+                s(1, 4) * s(2, 3) * s(3, 4) * s(5, 5) +
+                s(1, 3) * s(2, 4) * s(3, 4) * s(5, 5) -
+                s(1, 2) * s(3, 4) * s(3, 4) * s(5, 5) -
+                s(1, 3) * s(2, 3) * s(4, 4) * s(5, 5) +
+                s(1, 2) * s(3, 3) * s(4, 4) * s(5, 5)};
     }
 
     /**
      * @return the sample correlation of var(i) with var(j) (one-indexed).
      */
-    private double s(int i, int j) {
-        return this.indexedCorr().getValue(i - 1, j - 1);
+    private double s(final int i, final int j) {
+        return indexedCorr().getValue(i - 1, j - 1);
     }
 
     public double getChiSquare() {
-        return chiSquare;
+        return this.chiSquare;
     }
 
     public String toString() {
@@ -1510,16 +1510,16 @@ public final class IndTestTimeSeries implements IndependenceTest {
 
     @Override
     public double getScore() {
-        return this.getPValue();
+        return getPValue();
     }
 
     @Override
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     @Override
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 }

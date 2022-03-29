@@ -24,17 +24,17 @@ public class ArrowheadFPR implements Statistic {
     }
 
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        ArrowConfusion adjConfusion = new ArrowConfusion(trueGraph, estGraph);
-        int adjTp = adjConfusion.getArrowsTp();
-        int adjFp = adjConfusion.getArrowsFp();
-        int adjFn = adjConfusion.getArrowsFn();
-        int adjTn = adjConfusion.getArrowsTn();
+    public double getValue(final Graph trueGraph, final Graph estGraph, final DataModel dataModel) {
+        final ArrowConfusion adjConfusion = new ArrowConfusion(trueGraph, estGraph);
+        final int adjTp = adjConfusion.getArrowsTp();
+        final int adjFp = adjConfusion.getArrowsFp();
+        final int adjFn = adjConfusion.getArrowsFn();
+        final int adjTn = adjConfusion.getArrowsTn();
         return adjFp / (double) (adjFp + adjTn);
     }
 
     @Override
-    public double getNormValue(double value) {
+    public double getNormValue(final double value) {
         return value;
     }
 }

@@ -54,8 +54,8 @@ final class DirichletBayesImCountsWizard extends JPanel {
     private final JPanel tablePanel;
     private boolean showProbs = true;
 
-    public DirichletBayesImCountsWizard(DirichletBayesIm bayesIm,
-                                        GraphWorkbench workbench) {
+    public DirichletBayesImCountsWizard(final DirichletBayesIm bayesIm,
+                                        final GraphWorkbench workbench) {
         if (bayesIm == null) {
             throw new NullPointerException();
         }
@@ -65,70 +65,70 @@ final class DirichletBayesImCountsWizard extends JPanel {
         }
 
         workbench.setAllowDoubleClickActions(false);
-        this.setBorder(new MatteBorder(10, 10, 10, 10, this.getBackground()));
-        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        this.setFont(new Font("SanSerif", Font.BOLD, 12));
+        setBorder(new MatteBorder(10, 10, 10, 10, getBackground()));
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setFont(new Font("SanSerif", Font.BOLD, 12));
 
         // Set up components.
-        varNamesComboBox = this.createVarNamesComboBox(bayesIm);
-        workbench.scrollWorkbenchToNode((Node) varNamesComboBox.getSelectedItem());
+        this.varNamesComboBox = createVarNamesComboBox(bayesIm);
+        workbench.scrollWorkbenchToNode((Node) this.varNamesComboBox.getSelectedItem());
 
-        JButton nextButton = new JButton("Next");
+        final JButton nextButton = new JButton("Next");
         nextButton.setMnemonic('N');
 
-        Node node = (Node) (varNamesComboBox.getSelectedItem());
-        editingTable = new DirichletBayesImNodeCountsTable(node, bayesIm);
-        editingTable.addPropertyChangeListener((evt) -> {
+        final Node node = (Node) (this.varNamesComboBox.getSelectedItem());
+        this.editingTable = new DirichletBayesImNodeCountsTable(node, bayesIm);
+        this.editingTable.addPropertyChangeListener((evt) -> {
             if ("editorValueChanged".equals(evt.getPropertyName())) {
-                this.firePropertyChange("editorValueChanged", null, null);
+                firePropertyChange("editorValueChanged", null, null);
             }
         });
 
-        JScrollPane scroll = new JScrollPane(editingTable);
+        final JScrollPane scroll = new JScrollPane(this.editingTable);
         scroll.setPreferredSize(new Dimension(0, 150));
-        tablePanel = new JPanel();
-        tablePanel.setLayout(new BorderLayout());
-        tablePanel.add(scroll, BorderLayout.CENTER);
-        editingTable.grabFocus();
+        this.tablePanel = new JPanel();
+        this.tablePanel.setLayout(new BorderLayout());
+        this.tablePanel.add(scroll, BorderLayout.CENTER);
+        this.editingTable.grabFocus();
 
         // Do Layout.
-        Box b1 = Box.createHorizontalBox();
+        final Box b1 = Box.createHorizontalBox();
 
         b1.add(new JLabel("Table of Dirichlet parameters (pseudocounts) for "));
-        b1.add(varNamesComboBox);
+        b1.add(this.varNamesComboBox);
         b1.add(new JLabel(" conditional"));
         b1.add(Box.createHorizontalGlue());
-        this.add(b1);
-        this.add(Box.createVerticalStrut(1));
+        add(b1);
+        add(Box.createVerticalStrut(1));
 
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel(
                 "on combinations of its parent values (with total pseudocount"));
         b2.add(Box.createHorizontalGlue());
-        this.add(b2);
-        this.add(Box.createVerticalStrut(5));
+        add(b2);
+        add(Box.createVerticalStrut(5));
 
-        Box b3 = Box.createHorizontalBox();
+        final Box b3 = Box.createHorizontalBox();
         b3.add(new JLabel("in row shown):"));
         b3.add(Box.createHorizontalGlue());
-        this.add(b3);
-        this.add(Box.createVerticalStrut(10));
+        add(b3);
+        add(Box.createVerticalStrut(10));
 
-        Box b4 = Box.createHorizontalBox();
-        b4.add(tablePanel, BorderLayout.CENTER);
+        final Box b4 = Box.createHorizontalBox();
+        b4.add(this.tablePanel, BorderLayout.CENTER);
 
-        this.add(b4);
+        add(b4);
 
         // Add listeners.
-        varNamesComboBox.addActionListener((e) -> {
-            Node n = (Node) varNamesComboBox.getSelectedItem();
-            this.getWorkbench().scrollWorkbenchToNode(n);
-            this.setCurrentNode(n);
+        this.varNamesComboBox.addActionListener((e) -> {
+            final Node n = (Node) this.varNamesComboBox.getSelectedItem();
+            getWorkbench().scrollWorkbenchToNode(n);
+            setCurrentNode(n);
         });
 
         nextButton.addActionListener((e) -> {
-            int current = varNamesComboBox.getSelectedIndex();
-            int max = varNamesComboBox.getItemCount();
+            int current = this.varNamesComboBox.getSelectedIndex();
+            final int max = this.varNamesComboBox.getItemCount();
 
             ++current;
 
@@ -138,17 +138,17 @@ final class DirichletBayesImCountsWizard extends JPanel {
                         "There are no more variables.");
             }
 
-            int set = (current < max) ? current : 0;
+            final int set = (current < max) ? current : 0;
 
-            varNamesComboBox.setSelectedIndex(set);
+            this.varNamesComboBox.setSelectedIndex(set);
         });
 
         workbench.addPropertyChangeListener((evt) -> {
             if (evt.getPropertyName().equals("selectedNodes")) {
-                List selection = (List) (evt.getNewValue());
+                final List selection = (List) (evt.getNewValue());
 
                 if (selection.size() == 1) {
-                    varNamesComboBox.setSelectedItem(selection.get(0));
+                    this.varNamesComboBox.setSelectedItem(selection.get(0));
                 }
             }
         });
@@ -157,13 +157,13 @@ final class DirichletBayesImCountsWizard extends JPanel {
         this.workbench = workbench;
     }
 
-    private JComboBox<Node> createVarNamesComboBox(DirichletBayesIm bayesIm) {
-        JComboBox<Node> varNameComboBox = new JComboBox<>();
+    private JComboBox<Node> createVarNamesComboBox(final DirichletBayesIm bayesIm) {
+        final JComboBox<Node> varNameComboBox = new JComboBox<>();
         varNameComboBox.setBackground(Color.white);
 
-        Graph graph = bayesIm.getBayesPm().getDag();
+        final Graph graph = bayesIm.getBayesPm().getDag();
 
-        List<Node> nodes = graph.getNodes().stream().collect(Collectors.toList());
+        final List<Node> nodes = graph.getNodes().stream().collect(Collectors.toList());
         Collections.sort(nodes);
         nodes.forEach(varNameComboBox::addItem);
 
@@ -178,44 +178,44 @@ final class DirichletBayesImCountsWizard extends JPanel {
      * Sets the getModel display to reflect the stored values of the getModel
      * node.
      */
-    private void setCurrentNode(Node node) {
-        TableCellEditor cellEditor = editingTable.getCellEditor();
+    private void setCurrentNode(final Node node) {
+        final TableCellEditor cellEditor = this.editingTable.getCellEditor();
 
         if (cellEditor != null) {
             cellEditor.cancelCellEditing();
         }
 
-        editingTable = new DirichletBayesImNodeCountsTable(node, this.getBayesIm());
-        editingTable.addPropertyChangeListener((evt) -> {
+        this.editingTable = new DirichletBayesImNodeCountsTable(node, getBayesIm());
+        this.editingTable.addPropertyChangeListener((evt) -> {
             if ("editorValueChanged".equals(evt.getPropertyName())) {
-                this.firePropertyChange("editorValueChanged", null, null);
+                firePropertyChange("editorValueChanged", null, null);
             }
         });
 
-        JScrollPane scroll = new JScrollPane(editingTable);
+        final JScrollPane scroll = new JScrollPane(this.editingTable);
         scroll.setPreferredSize(new Dimension(0, 150));
 
-        tablePanel.removeAll();
-        tablePanel.add(scroll, BorderLayout.CENTER);
-        tablePanel.revalidate();
-        tablePanel.repaint();
+        this.tablePanel.removeAll();
+        this.tablePanel.add(scroll, BorderLayout.CENTER);
+        this.tablePanel.revalidate();
+        this.tablePanel.repaint();
 
-        editingTable.grabFocus();
+        this.editingTable.grabFocus();
     }
 
     private DirichletBayesIm getBayesIm() {
-        return bayesIm;
+        return this.bayesIm;
     }
 
     private GraphWorkbench getWorkbench() {
-        return workbench;
+        return this.workbench;
     }
 
     public boolean isShowProbs() {
-        return showProbs;
+        return this.showProbs;
     }
 
-    public void setShowProbs(boolean showProbs) {
+    public void setShowProbs(final boolean showProbs) {
         this.showProbs = showProbs;
     }
 }

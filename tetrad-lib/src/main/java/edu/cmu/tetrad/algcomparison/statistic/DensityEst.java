@@ -23,13 +23,13 @@ public class DensityEst implements Statistic {
     }
 
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+    public double getValue(final Graph trueGraph, final Graph estGraph, final DataModel dataModel) {
         return new AverageDegreeEst().getValue(trueGraph, estGraph, dataModel)
                 / (double) (estGraph.getNumNodes() - 1);
     }
 
     @Override
-    public double getNormValue(double value) {
+    public double getNormValue(final double value) {
         return value;
     }
 }

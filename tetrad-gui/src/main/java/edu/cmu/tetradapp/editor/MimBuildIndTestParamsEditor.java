@@ -27,7 +27,6 @@ import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
-import edu.cmu.tetradapp.util.DoubleTextField.Filter;
 
 import javax.swing.*;
 import java.text.DecimalFormat;
@@ -43,19 +42,19 @@ import java.util.List;
 class MimBuildIndTestParamsEditor extends JComponent {
     private final Parameters params;
 
-    public MimBuildIndTestParamsEditor(Parameters params) {
+    public MimBuildIndTestParamsEditor(final Parameters params) {
         this.params = params;
 
-        NumberFormat smallNumberFormat = new DecimalFormat("0E00");
-        DoubleTextField alphaField = new DoubleTextField(this.getParams().getDouble("alpha", 0.001), 8,
+        final NumberFormat smallNumberFormat = new DecimalFormat("0E00");
+        final DoubleTextField alphaField = new DoubleTextField(getParams().getDouble("alpha", 0.001), 8,
                 new DecimalFormat("0.0########"), smallNumberFormat, 1e-4);
 
-        alphaField.setFilter(new Filter() {
-            public double filter(double value, double oldValue) {
+        alphaField.setFilter(new DoubleTextField.Filter() {
+            public double filter(final double value, final double oldValue) {
                 try {
-                    MimBuildIndTestParamsEditor.this.getParams().set("alpha", 0.001);
+                    getParams().set("alpha", 0.001);
                     return value;
-                } catch (IllegalArgumentException e) {
+                } catch (final IllegalArgumentException e) {
                     return oldValue;
                 }
             }
@@ -133,7 +132,7 @@ class MimBuildIndTestParamsEditor extends JComponent {
 //            }
 //        });
 
-        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
 //        Box b1 = Box.createHorizontalBox();
 //        b1.add(new JLabel("Clusters:"));
@@ -159,32 +158,32 @@ class MimBuildIndTestParamsEditor extends JComponent {
 //        add(b3);
 //        add(Box.createVerticalStrut(2));
 
-        Box b4 = Box.createHorizontalBox();
+        final Box b4 = Box.createHorizontalBox();
         b4.add(new JLabel("Alpha:"));
         b4.add(Box.createHorizontalStrut(10));
         b4.add(Box.createHorizontalGlue());
         b4.add(alphaField);
-        this.add(b4);
+        add(b4);
     }
 
     private Graph getSourceGraph() {
-        return (Graph) params.get("sourceGraph", null);
+        return (Graph) this.params.get("sourceGraph", null);
     }
 
     private IKnowledge getKnowledge() {
-        return (IKnowledge) params.get("knowledge", new Knowledge2());
+        return (IKnowledge) this.params.get("knowledge", new Knowledge2());
     }
 
     private Clusters getClusters() {
-        return (Clusters) params.get("clusters", null);
+        return (Clusters) this.params.get("clusters", null);
     }
 
     private List getVarNames() {
-        return (List<String>) params.get("varNames", null);
+        return (List<String>) this.params.get("varNames", null);
     }
 
     private Parameters getParams() {
-        return params;
+        return this.params;
     }
 }
 

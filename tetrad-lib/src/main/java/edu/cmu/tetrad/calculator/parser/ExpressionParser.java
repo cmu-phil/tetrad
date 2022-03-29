@@ -81,15 +81,15 @@ public class ExpressionParser {
      * Constructrs a parser that has no allowable parameters.
      */
     public ExpressionParser() {
-        restrictionParameters = Collections.emptySet();
-        parameters = new LinkedHashSet<>();
+        this.restrictionParameters = Collections.emptySet();
+        this.parameters = new LinkedHashSet<>();
     }
 
 
     /**
      * Constructs the parser given a collection of allowable parameters.
      */
-    public ExpressionParser(Collection<String> parameters, RestrictionType type) {
+    public ExpressionParser(final Collection<String> parameters, final RestrictionType type) {
         if (parameters == null) {
             throw new NullPointerException("Parameters null.");
         }
@@ -99,10 +99,10 @@ public class ExpressionParser {
                     "contain the wildcard '$'.");
         }
 
-        restrictionParameters = new LinkedHashSet<>(parameters);
-        restrictionParameters.add("$");
+        this.restrictionParameters = new LinkedHashSet<>(parameters);
+        this.restrictionParameters.add("$");
         this.parameters = new LinkedHashSet<>();
-        restrictionType = type;
+        this.restrictionType = type;
     }
 
     //================================ Public methods ===================================//
@@ -111,11 +111,11 @@ public class ExpressionParser {
     /**
      * Parses the given expression, or throws an exception if its not possible.
      */
-    public Expression parseExpression(String expression) throws ParseException {
-        lexer = new ExpressionLexer(expression);
-        this.nextToken();
-        Expression exp = this.parseExpression();
-        this.expect(Token.EOF);
+    public Expression parseExpression(final String expression) throws ParseException {
+        this.lexer = new ExpressionLexer(expression);
+        nextToken();
+        final Expression exp = parseExpression();
+        expect(Token.EOF);
         return exp;
     }
 
@@ -123,21 +123,21 @@ public class ExpressionParser {
     /**
      * Parses an equation of the form Variable = Expression.
      */
-    public Equation parseEquation(String equation) throws ParseException {
-        int index = equation.indexOf("=");
+    public Equation parseEquation(final String equation) throws ParseException {
+        final int index = equation.indexOf("=");
         if (index < 1) {
             throw new ParseException("Equations must be of the form Var = Exp", 0);
         }
-        String variable = equation.substring(0, index).trim();
+        final String variable = equation.substring(0, index).trim();
         if (!variable.matches("[^0-9]?[^ \t]*")) {
             throw new ParseException("Invalid variable name.", 1);
         }
 
-        return new Equation(variable, this.parseExpression(equation.substring(index + 1).trim()), equation);
+        return new Equation(variable, parseExpression(equation.substring(index + 1).trim()), equation);
     }
 
     public int getNextOffset() {
-        return lexer.getNextOffset();
+        return this.lexer.getNextOffset();
     }
 
     //================================ Private Methods =================================//
@@ -147,10 +147,10 @@ public class ExpressionParser {
      * Moves to the next token.
      */
     private void nextToken() throws ParseException {
-        token = lexer.nextToken();
+        this.token = this.lexer.nextToken();
 
-        if (token == Token.UNKNOWN) {
-            throw new ParseException("Unrecognized token,", lexer.getCurrentOffset());
+        if (this.token == Token.UNKNOWN) {
+            throw new ParseException("Unrecognized token,", this.lexer.getCurrentOffset());
         }
     }
 
@@ -159,22 +159,22 @@ public class ExpressionParser {
      */
     private Expression parseExpression() throws ParseException {
 //        return parsePlusExpression();
-        return this.parseAndExpression();
+        return parseAndExpression();
     }
 
     private Expression parseAndExpression() throws ParseException {
-        Expression expression = this.parseOrExpression();
+        Expression expression = parseOrExpression();
 
-        while (token == Token.OPERATOR && "AND".equals(lexer.getTokenString())) {
-            int offset = lexer.getCurrentOffset();
+        while (this.token == Token.OPERATOR && "AND".equals(this.lexer.getTokenString())) {
+            final int offset = this.lexer.getCurrentOffset();
 
-            ExpressionDescriptor descriptor = this.getDescriptor();
-            this.nextToken();
-            Expression expression2 = this.parseOrExpression();
+            final ExpressionDescriptor descriptor = getDescriptor();
+            nextToken();
+            final Expression expression2 = parseOrExpression();
 
             try {
                 expression = descriptor.createExpression(expression, expression2);
-            } catch (ExpressionInitializationException e) {
+            } catch (final ExpressionInitializationException e) {
                 // Should never be thrown.
                 throw new ParseException("Wrong number of arguments for expression " + descriptor.getName(),
                         offset);
@@ -185,18 +185,18 @@ public class ExpressionParser {
     }
 
     private Expression parseOrExpression() throws ParseException {
-        Expression expression = this.parseXorExpression();
+        Expression expression = parseXorExpression();
 
-        while (token == Token.OPERATOR && "OR".equals(lexer.getTokenString())) {
-            int offset = lexer.getCurrentOffset();
+        while (this.token == Token.OPERATOR && "OR".equals(this.lexer.getTokenString())) {
+            final int offset = this.lexer.getCurrentOffset();
 
-            ExpressionDescriptor descriptor = this.getDescriptor();
-            this.nextToken();
-            Expression expression2 = this.parseXorExpression();
+            final ExpressionDescriptor descriptor = getDescriptor();
+            nextToken();
+            final Expression expression2 = parseXorExpression();
 
             try {
                 expression = descriptor.createExpression(expression, expression2);
-            } catch (ExpressionInitializationException e) {
+            } catch (final ExpressionInitializationException e) {
                 // Should never be thrown.
                 throw new ParseException("Wrong number of arguments for expression " + descriptor.getName(),
                         offset);
@@ -207,18 +207,18 @@ public class ExpressionParser {
     }
 
     private Expression parseXorExpression() throws ParseException {
-        Expression expression = this.parseComparisonExpression();
+        Expression expression = parseComparisonExpression();
 
-        while (token == Token.OPERATOR && "XOR".equals(lexer.getTokenString())) {
-            int offset = lexer.getCurrentOffset();
+        while (this.token == Token.OPERATOR && "XOR".equals(this.lexer.getTokenString())) {
+            final int offset = this.lexer.getCurrentOffset();
 
-            ExpressionDescriptor descriptor = this.getDescriptor();
-            this.nextToken();
-            Expression expression2 = this.parsePlusExpression();
+            final ExpressionDescriptor descriptor = getDescriptor();
+            nextToken();
+            final Expression expression2 = parsePlusExpression();
 
             try {
                 expression = descriptor.createExpression(expression, expression2);
-            } catch (ExpressionInitializationException e) {
+            } catch (final ExpressionInitializationException e) {
                 // Should never be thrown.
                 throw new ParseException("Wrong number of arguments for expression " + descriptor.getName(),
                         offset);
@@ -229,24 +229,24 @@ public class ExpressionParser {
     }
 
     private Expression parseComparisonExpression() throws ParseException {
-        Expression expression = this.parsePlusExpression();
-        Set<String> comparisonOperators = new HashSet<>();
+        Expression expression = parsePlusExpression();
+        final Set<String> comparisonOperators = new HashSet<>();
         comparisonOperators.add("<");
         comparisonOperators.add("<=");
         comparisonOperators.add("=");
         comparisonOperators.add(">");
         comparisonOperators.add(">=");
 
-        while (token == Token.OPERATOR && comparisonOperators.contains(lexer.getTokenString())) {
-            int offset = lexer.getCurrentOffset();
+        while (this.token == Token.OPERATOR && comparisonOperators.contains(this.lexer.getTokenString())) {
+            final int offset = this.lexer.getCurrentOffset();
 
-            ExpressionDescriptor descriptor = this.getDescriptor();
-            this.nextToken();
-            Expression expression2 = this.parsePlusExpression();
+            final ExpressionDescriptor descriptor = getDescriptor();
+            nextToken();
+            final Expression expression2 = parsePlusExpression();
 
             try {
                 expression = descriptor.createExpression(expression, expression2);
-            } catch (ExpressionInitializationException e) {
+            } catch (final ExpressionInitializationException e) {
                 // Should never be thrown.
                 throw new ParseException("Wrong number of arguments for expression " + descriptor.getName(),
                         offset);
@@ -258,18 +258,18 @@ public class ExpressionParser {
 
 
     private Expression parsePlusExpression() throws ParseException {
-        Expression expression = this.parseMultDivExpression();
+        Expression expression = parseMultDivExpression();
 
-        while (token == Token.OPERATOR && "+".equals(lexer.getTokenString()) || "-".equals(lexer.getTokenString())) {
-            int offset = lexer.getCurrentOffset();
+        while (this.token == Token.OPERATOR && "+".equals(this.lexer.getTokenString()) || "-".equals(this.lexer.getTokenString())) {
+            final int offset = this.lexer.getCurrentOffset();
 
-            ExpressionDescriptor descriptor = this.getDescriptor();
-            this.nextToken();
-            Expression expression2 = this.parseMultDivExpression();
+            final ExpressionDescriptor descriptor = getDescriptor();
+            nextToken();
+            final Expression expression2 = parseMultDivExpression();
 
             try {
                 expression = descriptor.createExpression(expression, expression2);
-            } catch (ExpressionInitializationException e) {
+            } catch (final ExpressionInitializationException e) {
                 // Should never be thrown.
                 throw new ParseException("Wrong number of arguments for expression " + descriptor.getName(),
                         offset);
@@ -280,18 +280,18 @@ public class ExpressionParser {
     }
 
     private Expression parseMultDivExpression() throws ParseException {
-        Expression expression = this.parsePowerExpression();
+        Expression expression = parsePowerExpression();
 
-        while (token == Token.OPERATOR && "*".equals(lexer.getTokenString()) || "/".equals(lexer.getTokenString())) {
-            int offset = lexer.getCurrentOffset();
+        while (this.token == Token.OPERATOR && "*".equals(this.lexer.getTokenString()) || "/".equals(this.lexer.getTokenString())) {
+            final int offset = this.lexer.getCurrentOffset();
 
-            ExpressionDescriptor descriptor = this.getDescriptor();
-            this.nextToken();
-            Expression expression2 = this.parsePowerExpression();
+            final ExpressionDescriptor descriptor = getDescriptor();
+            nextToken();
+            final Expression expression2 = parsePowerExpression();
 
             try {
                 expression = descriptor.createExpression(expression, expression2);
-            } catch (ExpressionInitializationException e) {
+            } catch (final ExpressionInitializationException e) {
                 // Should never be thrown.
                 throw new ParseException("Wrong number of arguments for expression " + descriptor.getName(),
                         offset);
@@ -302,18 +302,18 @@ public class ExpressionParser {
     }
 
     private Expression parsePowerExpression() throws ParseException {
-        Expression expression = this.parseChompExpression();
+        Expression expression = parseChompExpression();
 
-        while (token == Token.OPERATOR && "^".equals(lexer.getTokenString())) {
-            int offset = lexer.getCurrentOffset();
+        while (this.token == Token.OPERATOR && "^".equals(this.lexer.getTokenString())) {
+            final int offset = this.lexer.getCurrentOffset();
 
-            ExpressionDescriptor descriptor = this.getDescriptor();
-            this.nextToken();
-            Expression expression2 = this.parseChompExpression();
+            final ExpressionDescriptor descriptor = getDescriptor();
+            nextToken();
+            final Expression expression2 = parseChompExpression();
 
             try {
                 expression = descriptor.createExpression(expression, expression2);
-            } catch (ExpressionInitializationException e) {
+            } catch (final ExpressionInitializationException e) {
                 // Should never be thrown.
                 throw new ParseException("Wrong number of arguments for expression " + descriptor.getName(),
                         offset);
@@ -328,70 +328,70 @@ public class ExpressionParser {
      * Chomps an expression.
      */
     private Expression parseChompExpression() throws ParseException {
-        int chompOffset = lexer.getCurrentOffset();
-        String chompTokenString = lexer.getTokenString();
+        final int chompOffset = this.lexer.getCurrentOffset();
+        final String chompTokenString = this.lexer.getTokenString();
 
         // parse a number.
-        if (token == Token.NUMBER) {
-            String numberString = lexer.getTokenString();
+        if (this.token == Token.NUMBER) {
+            final String numberString = this.lexer.getTokenString();
 
             // The parseNumber will throw a parse exception.
-            Expression exp = new ConstantExpression(this.convertNumber(numberString));
-            this.nextToken();
+            final Expression exp = new ConstantExpression(convertNumber(numberString));
+            nextToken();
             return exp;
         }
 
         // parse a variable.
-        if (token == Token.PARAMETER) {
-            if (lexer.getTokenString().equals("pi") || lexer.getTokenString().equals("PI")) {
-                this.nextToken();
+        if (this.token == Token.PARAMETER) {
+            if (this.lexer.getTokenString().equals("pi") || this.lexer.getTokenString().equals("PI")) {
+                nextToken();
                 return ConstantExpression.PI;
             }
 
-            if (lexer.getTokenString().equals("e") || lexer.getTokenString().equals("E")) {
-                this.nextToken();
+            if (this.lexer.getTokenString().equals("e") || this.lexer.getTokenString().equals("E")) {
+                nextToken();
                 return ConstantExpression.E;
             }
 
-            String stringToken = lexer.getTokenString();
-            if (this.getRestrictionType() == RestrictionType.MAY_ONLY_CONTAIN) {
-                if (!restrictionParameters.contains(stringToken)) {
+            final String stringToken = this.lexer.getTokenString();
+            if (getRestrictionType() == RestrictionType.MAY_ONLY_CONTAIN) {
+                if (!this.restrictionParameters.contains(stringToken)) {
                     throw new ParseException("Variable " + stringToken + " is not known.", chompOffset);
                 }
-            } else if (this.getRestrictionType() == RestrictionType.MAY_NOT_CONTAIN) {
-                if (restrictionParameters.contains(stringToken)) {
+            } else if (getRestrictionType() == RestrictionType.MAY_NOT_CONTAIN) {
+                if (this.restrictionParameters.contains(stringToken)) {
                     throw new ParseException("Variable " + stringToken + " may not be used in this expression.", chompOffset);
                 }
             }
 
-            parameters.add(stringToken);
-            VariableExpression exp = new VariableExpression(stringToken);
-            this.nextToken();
-            if (token == Token.EQUATION) {
-                return this.parseEvaluation(exp);
+            this.parameters.add(stringToken);
+            final VariableExpression exp = new VariableExpression(stringToken);
+            nextToken();
+            if (this.token == Token.EQUATION) {
+                return parseEvaluation(exp);
             }
 
             return exp;
         }
 
         // deal with prefix operator.
-        if (token == Token.OPERATOR) {
-            ExpressionDescriptor descriptor = this.getDescriptor();
-            this.nextToken();
-            Expression[] expressions;
+        if (this.token == Token.OPERATOR) {
+            final ExpressionDescriptor descriptor = getDescriptor();
+            nextToken();
+            final Expression[] expressions;
 
-            if (token == Token.LPAREN) {
-                this.nextToken();
-                if (token == Token.RPAREN) {
-                    this.nextToken();
+            if (this.token == Token.LPAREN) {
+                nextToken();
+                if (this.token == Token.RPAREN) {
+                    nextToken();
                     expressions = new Expression[0];
                 } else {
-                    List<Expression> expressionList = this.parseExpressionList();
-                    this.expect(Token.RPAREN);
+                    final List<Expression> expressionList = parseExpressionList();
+                    expect(Token.RPAREN);
                     expressions = expressionList.toArray(new Expression[expressionList.size()]);
                 }
             } else if ("+".equals(chompTokenString) || "-".equals(chompTokenString)) {
-                List<Expression> expressionList = this.parseSingleExpression();
+                final List<Expression> expressionList = parseSingleExpression();
                 expressions = expressionList.toArray(new Expression[expressionList.size()]);
             } else {
                 throw new ParseException("Expecting a parenthesized list of arguments.", chompOffset);
@@ -399,34 +399,34 @@ public class ExpressionParser {
 
             try {
                 return descriptor.createExpression(expressions);
-            } catch (ExpressionInitializationException e) {
-                throw new ParseException("Wrong number of arguments: " + expressions.length + " " + token, chompOffset);
+            } catch (final ExpressionInitializationException e) {
+                throw new ParseException("Wrong number of arguments: " + expressions.length + " " + this.token, chompOffset);
             }
 
         }
 
         // deal with parens.
-        if (token == Token.LPAREN) {
-            this.nextToken();
-            Expression exp = this.parseExpression();
-            this.expect(Token.RPAREN);
+        if (this.token == Token.LPAREN) {
+            nextToken();
+            final Expression exp = parseExpression();
+            expect(Token.RPAREN);
             return exp;
         }
 
-        throw new ParseException("Unexpected token: " + lexer.getTokenString(), lexer.getCurrentOffset());
+        throw new ParseException("Unexpected token: " + this.lexer.getTokenString(), this.lexer.getCurrentOffset());
     }
 
 
     /**
      * Creates an evaluation expression.
      */
-    private Expression parseEvaluation(VariableExpression variable) throws ParseException {
-        this.expect(Token.EQUATION);
-        if (token != Token.STRING) {
-            throw new ParseException("Evaluations must be of the form Var = String", lexer.getCurrentOffset());
+    private Expression parseEvaluation(final VariableExpression variable) throws ParseException {
+        expect(Token.EQUATION);
+        if (this.token != Token.STRING) {
+            throw new ParseException("Evaluations must be of the form Var = String", this.lexer.getCurrentOffset());
         }
-        String s = lexer.getTokenString();
-        this.nextToken();
+        final String s = this.lexer.getTokenString();
+        nextToken();
         return new EvaluationExpression(variable, s.replace("\"", ""));
     }
 
@@ -435,12 +435,12 @@ public class ExpressionParser {
      * Pareses a comma seperated list of expressions.
      */
     private List<Expression> parseExpressionList() throws ParseException {
-        List<Expression> expressions = new LinkedList<>();
+        final List<Expression> expressions = new LinkedList<>();
 
-        expressions.add(this.parseExpression());
-        while (token == Token.COMMA) {
-            this.nextToken();
-            expressions.add(this.parseExpression());
+        expressions.add(parseExpression());
+        while (this.token == Token.COMMA) {
+            nextToken();
+            expressions.add(parseExpression());
         }
 
         return expressions;
@@ -450,16 +450,16 @@ public class ExpressionParser {
      * Pareses a comma seperated list of expressions.
      */
     private List<Expression> parseSingleExpression() throws ParseException {
-        List<Expression> expressions = new LinkedList<>();
-        expressions.add(this.parseExpression());
+        final List<Expression> expressions = new LinkedList<>();
+        expressions.add(parseExpression());
         return expressions;
     }
 
-    private double convertNumber(String number) throws ParseException {
+    private double convertNumber(final String number) throws ParseException {
         try {
             return Double.parseDouble(number);
-        } catch (Exception ex) {
-            throw new ParseException("Not a number: " + number + ".", lexer.getCurrentOffset());
+        } catch (final Exception ex) {
+            throw new ParseException("Not a number: " + number + ".", this.lexer.getCurrentOffset());
         }
     }
 
@@ -468,10 +468,10 @@ public class ExpressionParser {
      * @return the descriptor represented by the getModel token or throws an exception if there isn't one.
      */
     private ExpressionDescriptor getDescriptor() throws ParseException {
-        String tokenString = lexer.getTokenString();
-        ExpressionDescriptor descriptor = expressions.getDescriptorFromToken(tokenString);
+        final String tokenString = this.lexer.getTokenString();
+        final ExpressionDescriptor descriptor = this.expressions.getDescriptorFromToken(tokenString);
         if (descriptor == null) {
-            throw new ParseException("Not a function name: " + tokenString, lexer.getCurrentOffset());
+            throw new ParseException("Not a function name: " + tokenString, this.lexer.getCurrentOffset());
         }
         return descriptor;
     }
@@ -480,24 +480,24 @@ public class ExpressionParser {
     /**
      * Expects the given token and then reads the next token.
      */
-    private void expect(Token token) throws ParseException {
+    private void expect(final Token token) throws ParseException {
         if (token != this.token) {
-            throw new ParseException("Unexpected token: " + this.getTokenString(), lexer.getCurrentOffset());
+            throw new ParseException("Unexpected token: " + getTokenString(), this.lexer.getCurrentOffset());
         }
-        this.nextToken();
+        nextToken();
     }
 
 
     private RestrictionType getRestrictionType() {
-        return restrictionType;
+        return this.restrictionType;
     }
 
     public List<String> getParameters() {
-        return new LinkedList<>(parameters);
+        return new LinkedList<>(this.parameters);
     }
 
     private String getTokenString() {
-        return lexer.getTokenString();
+        return this.lexer.getTokenString();
     }
 }
 

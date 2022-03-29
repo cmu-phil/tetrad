@@ -84,8 +84,8 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
      * @param source - The source data the search is acting on.
      * @param params - The params for the search.
      */
-    AbstractMBSearchRunner(DataModel source, Parameters params) {
-        super(castData(source));
+    AbstractMBSearchRunner(final DataModel source, final Parameters params) {
+        super(AbstractMBSearchRunner.castData(source));
         if (source == null) {
             throw new NullPointerException("The source data was null.");
         }
@@ -101,7 +101,7 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
      * @return the parameters for the search.
      */
     public Parameters getParams() {
-        return params;
+        return this.params;
     }
 
 
@@ -110,7 +110,7 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
      * the runner has not executed yet.
      */
     public DataSet getDataModelForMarkovBlanket() {
-        return dataModel;
+        return this.dataModel;
     }
 
 
@@ -118,7 +118,7 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
      * @return the variables in the MB searhc.
      */
     public List<Node> getMarkovBlanket() {
-        return variables;
+        return this.variables;
     }
 
 
@@ -126,22 +126,22 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
      * @return the source of the search.
      */
     public DataSet getSource() {
-        return source;
+        return this.source;
     }
 
 
-    public void setSearchName(String n) {
-        searchName = n;
+    public void setSearchName(final String n) {
+        this.searchName = n;
     }
 
     /**
      * @return the search name, or "Markov Blanket Search" by default.
      */
     public String getSearchName() {
-        if (searchName == null) {
+        if (this.searchName == null) {
             return "Markov Blanket Search";
         }
-        return searchName;
+        return this.searchName;
     }
 
     //============== Protected methods ===============================//
@@ -151,7 +151,7 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
      * Makes sure the data is not empty.
      */
     void validate() {
-        if (source.getNumColumns() == 0 || source.getNumRows() == 0) {
+        if (this.source.getNumColumns() == 0 || this.source.getNumRows() == 0) {
             throw new IllegalStateException("Cannot run algorithm on an empty data set.");
         }
     }
@@ -160,17 +160,17 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
     /**
      * Sets the results of the search.
      */
-    void setSearchResults(List<Node> nodes) {
+    void setSearchResults(final List<Node> nodes) {
         if (nodes == null) {
             throw new NullPointerException("nodes were null.");
         }
-        variables = new ArrayList<>(nodes);
+        this.variables = new ArrayList<>(nodes);
         if (nodes.isEmpty()) {
-            dataModel = new BoxDataSet(new DoubleDataBox(source.getNumRows(), nodes.size()), nodes);
+            this.dataModel = new BoxDataSet(new DoubleDataBox(this.source.getNumRows(), nodes.size()), nodes);
         } else {
-            dataModel = source.subsetColumns(nodes);
+            this.dataModel = this.source.subsetColumns(nodes);
         }
-        setDataModel(dataModel);
+        this.setDataModel(this.dataModel);
     }
 
 
@@ -179,36 +179,36 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
      * in the params.
      */
     IndependenceTest getIndependenceTest() {
-        IndTestType type = (IndTestType) params.get("indTestType", IndTestType.FISHER_Z);
-        if (source.isContinuous() || source.getNumColumns() == 0) {
+        final IndTestType type = (IndTestType) this.params.get("indTestType", IndTestType.FISHER_Z);
+        if (this.source.isContinuous() || this.source.getNumColumns() == 0) {
 //            if (IndTestType.CORRELATION_T == type) {
 //                return new IndTestCramerT(this.source, params.getAlternativePenalty());
 //            }
             if (IndTestType.FISHER_Z == type) {
-                return new IndTestFisherZ(source, params.getDouble("alpha", 0.001));
+                return new IndTestFisherZ(this.source, this.params.getDouble("alpha", 0.001));
             }
             if (IndTestType.FISHER_ZD == type) {
-                return new IndTestFisherZGeneralizedInverse(source, params.getDouble("alpha", 0.001));
+                return new IndTestFisherZGeneralizedInverse(this.source, this.params.getDouble("alpha", 0.001));
             }
             if (IndTestType.FISHER_Z_BOOTSTRAP == type) {
-                return new IndTestFisherZBootstrap(source, params.getDouble("alpha", 0.001), 15, source.getNumRows() / 2);
+                return new IndTestFisherZBootstrap(this.source, this.params.getDouble("alpha", 0.001), 15, this.source.getNumRows() / 2);
             }
             if (IndTestType.LINEAR_REGRESSION == type) {
-                return new IndTestRegression(source, params.getDouble("alpha", 0.001));
+                return new IndTestRegression(this.source, this.params.getDouble("alpha", 0.001));
             } else {
-                params.set("indTestType", IndTestType.FISHER_Z);
-                return new IndTestFisherZ(source, params.getDouble("alpha", 0.001));
+                this.params.set("indTestType", IndTestType.FISHER_Z);
+                return new IndTestFisherZ(this.source, this.params.getDouble("alpha", 0.001));
             }
         }
-        if (source.isDiscrete()) {
+        if (this.source.isDiscrete()) {
             if (IndTestType.G_SQUARE == type) {
-                return new IndTestGSquare(source, params.getDouble("alpha", 0.001));
+                return new IndTestGSquare(this.source, this.params.getDouble("alpha", 0.001));
             }
             if (IndTestType.CHI_SQUARE == type) {
-                return new IndTestChiSquare(source, params.getDouble("alpha", 0.001));
+                return new IndTestChiSquare(this.source, this.params.getDouble("alpha", 0.001));
             } else {
-                params.set("indTestType", IndTestType.CHI_SQUARE);
-                return new IndTestChiSquare(source, params.getDouble("alpha", 0.001));
+                this.params.set("indTestType", IndTestType.CHI_SQUARE);
+                return new IndTestChiSquare(this.source, this.params.getDouble("alpha", 0.001));
             }
         }
 
@@ -218,7 +218,7 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
     //==================== Private Methods ===========================//
 
 
-    private static DataSet castData(DataModel model) {
+    private static DataSet castData(final DataModel model) {
         if (model instanceof DataSet) {
             return (DataSet) model;
         }
@@ -239,15 +239,15 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    @SuppressWarnings({"UnusedDeclaration"})
-    private void readObject(ObjectInputStream s)
+    @SuppressWarnings("UnusedDeclaration")
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (params == null) {
+        if (this.params == null) {
             throw new NullPointerException();
         }
-        if (source == null) {
+        if (this.source == null) {
             throw new NullPointerException();
         }
     }

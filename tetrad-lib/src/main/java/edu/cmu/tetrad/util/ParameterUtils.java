@@ -39,11 +39,11 @@ public final class ParameterUtils {
      * @return Parameters object containing parameters from the given parameter
      * name list
      */
-    public static Parameters create(List<String> names) {
-        Parameters parameters = new Parameters();
-        ParamDescriptions paramDescs = ParamDescriptions.getInstance();
+    public static Parameters create(final List<String> names) {
+        final Parameters parameters = new Parameters();
+        final ParamDescriptions paramDescs = ParamDescriptions.getInstance();
         names.forEach(name -> {
-            ParamDescription paramDesc = paramDescs.get(name);
+            final ParamDescription paramDesc = paramDescs.get(name);
             parameters.set(name, paramDesc.getDefaultValue());
         });
 

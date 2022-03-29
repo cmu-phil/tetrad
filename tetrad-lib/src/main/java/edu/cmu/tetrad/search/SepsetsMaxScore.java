@@ -42,7 +42,7 @@ public class SepsetsMaxScore implements SepsetProducer {
     //    private IndependenceTest dsep = null;
     private boolean verbose;
 
-    public SepsetsMaxScore(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth) {
+    public SepsetsMaxScore(final Graph graph, final IndependenceTest independenceTest, final SepsetMap extraSepsets, final int depth) {
         this.graph = graph;
         this.independenceTest = independenceTest;
         this.extraSepsets = extraSepsets;
@@ -52,29 +52,29 @@ public class SepsetsMaxScore implements SepsetProducer {
     /**
      * Pick out the sepset from among adj(i) or adj(k) with the highest p value.
      */
-    public List<Node> getSepset(Node i, Node k) {
-        return this.getMaxScoreSet(i, k);
+    public List<Node> getSepset(final Node i, final Node k) {
+        return getMaxScoreSet(i, k);
     }
 
-    public boolean isCollider(Node i, Node j, Node k) {
-        List<Node> set = this.getMaxScoreSet(i, k);
+    public boolean isCollider(final Node i, final Node j, final Node k) {
+        final List<Node> set = getMaxScoreSet(i, k);
         return set != null && !set.contains(j);
     }
 
-    public boolean isNoncollider(Node i, Node j, Node k) {
-        List<Node> set = this.getMaxScoreSet(i, k);
+    public boolean isNoncollider(final Node i, final Node j, final Node k) {
+        final List<Node> set = getMaxScoreSet(i, k);
         return set != null && set.contains(j);
     }
 
-    private List<Node> getMaxScoreSet(Node i, Node k) {
+    private List<Node> getMaxScoreSet(final Node i, final Node k) {
         double _p = 0.0;
         List<Node> _v = null;
 
-        if (extraSepsets != null) {
-            List<Node> v = extraSepsets.get(i, k);
+        if (this.extraSepsets != null) {
+            final List<Node> v = this.extraSepsets.get(i, k);
             if (v != null) {
-                independenceTest.isIndependent(i, k, v);
-                double p = independenceTest.getScore();
+                this.independenceTest.isIndependent(i, k, v);
+                final double p = this.independenceTest.getScore();
 
                 if (p > _p) {
                     _p = p;
@@ -83,20 +83,20 @@ public class SepsetsMaxScore implements SepsetProducer {
             }
         }
 
-        List<Node> adji = graph.getAdjacentNodes(i);
-        List<Node> adjk = graph.getAdjacentNodes(k);
+        final List<Node> adji = this.graph.getAdjacentNodes(i);
+        final List<Node> adjk = this.graph.getAdjacentNodes(k);
         adji.remove(k);
         adjk.remove(i);
 
-        for (int d = 0; d <= Math.min((depth == -1 ? 1000 : depth), adji.size()); d++) {
-            ChoiceGenerator gen = new ChoiceGenerator(adji.size(), d);
+        for (int d = 0; d <= Math.min((this.depth == -1 ? 1000 : this.depth), adji.size()); d++) {
+            final ChoiceGenerator gen = new ChoiceGenerator(adji.size(), d);
             int[] choice;
 
             while ((choice = gen.next()) != null) {
-                List<Node> v = GraphUtils.asList(choice, adji);
+                final List<Node> v = GraphUtils.asList(choice, adji);
 
-                this.getIndependenceTest().isIndependent(i, k, v);
-                double p = this.getIndependenceTest().getScore();
+                getIndependenceTest().isIndependent(i, k, v);
+                final double p = getIndependenceTest().getScore();
 
                 if (p > _p) {
                     _p = p;
@@ -105,15 +105,15 @@ public class SepsetsMaxScore implements SepsetProducer {
             }
         }
 
-        for (int d = 0; d <= Math.min((depth == -1 ? 1000 : depth), adjk.size()); d++) {
-            ChoiceGenerator gen = new ChoiceGenerator(adjk.size(), d);
+        for (int d = 0; d <= Math.min((this.depth == -1 ? 1000 : this.depth), adjk.size()); d++) {
+            final ChoiceGenerator gen = new ChoiceGenerator(adjk.size(), d);
             int[] choice;
 
             while ((choice = gen.next()) != null) {
-                List<Node> v = GraphUtils.asList(choice, adjk);
+                final List<Node> v = GraphUtils.asList(choice, adjk);
 
-                this.getIndependenceTest().isIndependent(i, k, v);
-                double p = this.getIndependenceTest().getScore();
+                getIndependenceTest().isIndependent(i, k, v);
+                final double p = getIndependenceTest().getScore();
 
                 if (p > _p) {
                     _p = p;
@@ -122,40 +122,40 @@ public class SepsetsMaxScore implements SepsetProducer {
             }
         }
 
-        p = _p;
+        this.p = _p;
         return _v;
     }
 
     @Override
-    public boolean isIndependent(Node a, Node b, List<Node> c) {
-        return independenceTest.isIndependent(a, b, c);
+    public boolean isIndependent(final Node a, final Node b, final List<Node> c) {
+        return this.independenceTest.isIndependent(a, b, c);
     }
 
     @Override
     public double getPValue() {
-        return p;
+        return this.p;
     }
 
     @Override
     public double getScore() {
-        return -(p - independenceTest.getAlpha());
+        return -(this.p - this.independenceTest.getAlpha());
     }
 
     @Override
     public List<Node> getVariables() {
-        return independenceTest.getVariables();
+        return this.independenceTest.getVariables();
     }
 
     private IndependenceTest getIndependenceTest() {
-        return independenceTest;
+        return this.independenceTest;
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     @Override
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 

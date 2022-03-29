@@ -43,12 +43,12 @@ import edu.cmu.tetrad.util.Parameters;
  * @author jdramsey
  */
 public class CompareExternalAlgorithms {
-    public static void main(String... args) {
-        Parameters parameters = new Parameters();
+    public static void main(final String... args) {
+        final Parameters parameters = new Parameters();
 
         parameters.set("numRuns", 10);
 
-        Statistics statistics = new Statistics();
+        final Statistics statistics = new Statistics();
 
         statistics.add(new ParameterColumn("numMeasures"));
         statistics.add(new ParameterColumn("avgDegree"));
@@ -67,13 +67,13 @@ public class CompareExternalAlgorithms {
         statistics.setWeight("AHP", 1.0);
         statistics.setWeight("AHR", 0.5);
 
-        Algorithms algorithms = new Algorithms();
+        final Algorithms algorithms = new Algorithms();
 
         algorithms.add(new ExternalAlgorithmTetrad("PC_(\"Peter_and_Clark\"),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.001"));
         algorithms.add(new ExternalAlgorithmPcalgPc("PC_pcalg_defaults_alpha_=_0.001"));
         algorithms.add(new ExternalAlgorithmBNTPc("learn_struct_pdag_pc_alpha_=_0.001"));
 
-        Comparison comparison = new Comparison();
+        final Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);

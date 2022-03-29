@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.calculator.expression;
 
-import edu.cmu.tetrad.calculator.expression.ExpressionDescriptor.Position;
 import org.apache.commons.math3.distribution.IntegerDistribution;
 import org.apache.commons.math3.distribution.RealDistribution;
 
@@ -48,15 +47,15 @@ public class EvaluationExpression implements Expression {
     private final String string;
 
 
-    public EvaluationExpression(VariableExpression exp, String s) {
+    public EvaluationExpression(final VariableExpression exp, final String s) {
         if (exp == null) {
             throw new NullPointerException("Variable must not be null.");
         }
         if (s == null) {
             throw new NullPointerException("String must not be null.");
         }
-        variable = exp;
-        string = s;
+        this.variable = exp;
+        this.string = s;
     }
 
     public static EvaluationExpression serializableInstance() {
@@ -67,9 +66,9 @@ public class EvaluationExpression implements Expression {
         return super.toString();
     }
 
-    public double evaluate(Context context) {
-        Object o = variable.evaluateGeneric(context);
-        if (o != null && string.equals(o.toString())) {
+    public double evaluate(final Context context) {
+        final Object o = this.variable.evaluateGeneric(context);
+        if (o != null && this.string.equals(o.toString())) {
             return 1.0;
         }
         return 0.0;
@@ -79,20 +78,20 @@ public class EvaluationExpression implements Expression {
         return "Eval";
     }
 
-    public Position getPosition() {
-        return Position.NEITHER;
+    public ExpressionDescriptor.Position getPosition() {
+        return ExpressionDescriptor.Position.NEITHER;
     }
 
     public List<Expression> getExpressions() {
-        return Collections.singletonList(variable);
+        return Collections.singletonList(this.variable);
     }
 
     @Override
-    public RealDistribution getRealDistribution(Context context) {
+    public RealDistribution getRealDistribution(final Context context) {
         return null;
     }
 
-    public IntegerDistribution getIntegerDistribution(Context context) {
+    public IntegerDistribution getIntegerDistribution(final Context context) {
         return null;
     }
 }

@@ -28,22 +28,22 @@ public class MathewsCorrAdj implements Statistic {
     }
 
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        AdjacencyConfusion adjConfusion = new AdjacencyConfusion(trueGraph, estGraph);
-        int adjTp = adjConfusion.getAdjTp();
-        int adjFp = adjConfusion.getAdjFp();
-        int adjFn = adjConfusion.getAdjFn();
-        int adjTn = adjConfusion.getAdjTn();
-        return this.mcc(adjTp, adjFp, adjTn, adjFn);
+    public double getValue(final Graph trueGraph, final Graph estGraph, final DataModel dataModel) {
+        final AdjacencyConfusion adjConfusion = new AdjacencyConfusion(trueGraph, estGraph);
+        final int adjTp = adjConfusion.getAdjTp();
+        final int adjFp = adjConfusion.getAdjFp();
+        final int adjFn = adjConfusion.getAdjFn();
+        final int adjTn = adjConfusion.getAdjTn();
+        return mcc(adjTp, adjFp, adjTn, adjFn);
     }
 
     @Override
-    public double getNormValue(double value) {
+    public double getNormValue(final double value) {
         return 0.5 + 0.5 * value;
     }
 
-    private double mcc(double adjTp, double adjFp, double adjTn, double adjFn) {
-        double a = adjTp * adjTn - adjFp * adjFn;
+    private double mcc(final double adjTp, final double adjFp, final double adjTn, final double adjFn) {
+        final double a = adjTp * adjTn - adjFp * adjFn;
         double b = (adjTp + adjFp) * (adjTp + adjFn) * (adjTn + adjFp) * (adjTn + adjFn);
 
         if (b == 0) b = 1;

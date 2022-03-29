@@ -43,32 +43,32 @@ final class ModeInterpolatorAction extends AbstractAction {
     /**
      * Creates a new action to split by collinear columns.
      */
-    public ModeInterpolatorAction(DataEditor editor) {
+    public ModeInterpolatorAction(final DataEditor editor) {
         super("Replace Missing Values with Column Mode");
 
         if (editor == null) {
             throw new NullPointerException();
         }
 
-        dataEditor = editor;
+        this.dataEditor = editor;
     }
 
     /**
      * Performs the action of loading a session from a file.
      */
-    public void actionPerformed(ActionEvent e) {
-        DataModel dataModel = this.getDataEditor().getSelectedDataModel();
+    public void actionPerformed(final ActionEvent e) {
+        final DataModel dataModel = getDataEditor().getSelectedDataModel();
 
         if (dataModel instanceof DataSet) {
-            DataSet dataSet = (DataSet) dataModel;
+            final DataSet dataSet = (DataSet) dataModel;
 
-            DataFilter interpolator = new ModeInterpolator();
-            DataSet newDataSet = interpolator.filter(dataSet);
+            final DataFilter interpolator = new ModeInterpolator();
+            final DataSet newDataSet = interpolator.filter(dataSet);
 
-            DataModelList list = new DataModelList();
+            final DataModelList list = new DataModelList();
             list.add(newDataSet);
-            this.getDataEditor().reset(list);
-            this.getDataEditor().selectFirstTab();
+            getDataEditor().reset(list);
+            getDataEditor().selectFirstTab();
         } else if (dataModel instanceof ICovarianceMatrix) {
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     "Must be a tabular data set.");
@@ -76,7 +76,7 @@ final class ModeInterpolatorAction extends AbstractAction {
     }
 
     private DataEditor getDataEditor() {
-        return dataEditor;
+        return this.dataEditor;
     }
 }
 

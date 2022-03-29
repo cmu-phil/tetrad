@@ -24,7 +24,6 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
-import edu.cmu.tetradapp.util.DoubleTextField.Filter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -46,11 +45,11 @@ public class EMBayesEstimatorParamsEditor extends JPanel implements ParameterEdi
 
     }
 
-    public void setParams(Parameters params) {
+    public void setParams(final Parameters params) {
         this.params = params;
     }
 
-    public void setParentModels(Object[] parentModels) {
+    public void setParentModels(final Object[] parentModels) {
         // Ignore.
     }
 
@@ -64,33 +63,33 @@ public class EMBayesEstimatorParamsEditor extends JPanel implements ParameterEdi
      * appropriate listeners.
      */
     public void setup() {
-        this.setLayout(new BorderLayout());
+        setLayout(new BorderLayout());
 
-        DoubleTextField toleranceField =
+        final DoubleTextField toleranceField =
                 new DoubleTextField(
-                        params.getDouble("tolerance", 0.0001), 8, NumberFormatUtil.getInstance().getNumberFormat());
-        toleranceField.setFilter(new Filter() {
-            public double filter(double value, double oldValue) {
+                        this.params.getDouble("tolerance", 0.0001), 8, NumberFormatUtil.getInstance().getNumberFormat());
+        toleranceField.setFilter(new DoubleTextField.Filter() {
+            public double filter(final double value, final double oldValue) {
                 try {
-                    params.set("tolerance", value);
+                    EMBayesEstimatorParamsEditor.this.params.set("tolerance", value);
                     return value;
-                } catch (IllegalArgumentException e) {
+                } catch (final IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
         // continue workbench construction.
-        Box b1 = Box.createVerticalBox();
+        final Box b1 = Box.createVerticalBox();
 
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("<html>" +
                 "The dataset will be used to iteratively estmate the parameters " +
                 "<br>of a Bayes IM until the distance between the vectors of parameters" +
                 "<br>of successive iterates is less than a tolerance set by the user" +
                 "</html>"));
 
-        Box b7 = Box.createHorizontalBox();
+        final Box b7 = Box.createHorizontalBox();
         b7.add(Box.createHorizontalGlue());
         b7.add(new JLabel("<html>" + "<i>The default value is 0.0001</i>" +
                 "</html>"));
@@ -100,7 +99,7 @@ public class EMBayesEstimatorParamsEditor extends JPanel implements ParameterEdi
         b1.add(Box.createVerticalStrut(5));
         b1.add(b7);
         b1.add(Box.createHorizontalGlue());
-        this.add(b1, BorderLayout.CENTER);
+        add(b1, BorderLayout.CENTER);
     }
 
     /**
@@ -108,7 +107,7 @@ public class EMBayesEstimatorParamsEditor extends JPanel implements ParameterEdi
      * public, but it is needed so that the textfields can edit the model.)
      */
     protected synchronized Parameters getParams() {
-        return params;
+        return this.params;
     }
 }
 

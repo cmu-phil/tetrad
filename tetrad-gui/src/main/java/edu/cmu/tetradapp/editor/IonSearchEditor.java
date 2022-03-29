@@ -66,39 +66,39 @@ public class IonSearchEditor extends AbstractSearchEditor
 
     //=========================CONSTRUCTORS============================//
 
-    public IonSearchEditor(IonRunner runner) {
+    public IonSearchEditor(final IonRunner runner) {
         super(runner, "Result Graph");
     }
 
     //=============================== Public Methods ==================================//
 
     public Graph getGraph() {
-        return this.getWorkbench().getGraph();
+        return getWorkbench().getGraph();
     }
 
     @Override
     public Map getModelEdgesToDisplay() {
-        return this.getWorkbench().getModelEdgesToDisplay();
+        return getWorkbench().getModelEdgesToDisplay();
     }
 
     public Map getModelNodesToDisplay() {
-        return this.getWorkbench().getModelNodesToDisplay();
+        return getWorkbench().getModelNodesToDisplay();
     }
 
-    public void layoutByGraph(Graph graph) {
-        this.getWorkbench().layoutByGraph(graph);
+    public void layoutByGraph(final Graph graph) {
+        getWorkbench().layoutByGraph(graph);
     }
 
     public void layoutByKnowledge() {
-        GraphWorkbench resultWorkbench = this.getWorkbench();
-        Graph graph = resultWorkbench.getGraph();
-        IKnowledge knowledge = (IKnowledge) this.getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
+        final GraphWorkbench resultWorkbench = getWorkbench();
+        final Graph graph = resultWorkbench.getGraph();
+        final IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
         SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
 //        resultWorkbench.setGraph(graph);
     }
 
     public Rectangle getVisibleRect() {
-        return this.getWorkbench().getVisibleRect();
+        return getWorkbench().getVisibleRect();
     }
 
     //==========================PROTECTED METHODS============================//
@@ -107,12 +107,12 @@ public class IonSearchEditor extends AbstractSearchEditor
     /**
      * Sets up the editor, does the layout, and so on.
      */
-    protected void setup(String resultLabel) {
-        this.setLayout(new BorderLayout());
-        this.add(this.getToolbar(), BorderLayout.WEST);
+    protected void setup(final String resultLabel) {
+        setLayout(new BorderLayout());
+        add(getToolbar(), BorderLayout.WEST);
         //JTabbedPane tabbedPane = new JTabbedPane();
 //        tabbedPane = new JTabbedPane();
-        ionDisplay = this.ionDisplay();
+        this.ionDisplay = ionDisplay();
 //        tabbedPane.add("Result", lingDisplay);
 
         /*if (getAlgorithmRunner().getSelectedDataModel() instanceof DataSet) {
@@ -120,37 +120,37 @@ public class IonSearchEditor extends AbstractSearchEditor
             tabbedPane.add("DAG in CPDAG", dagWorkbench);
         }*/
 
-        this.add(ionDisplay, BorderLayout.CENTER);
+        add(this.ionDisplay, BorderLayout.CENTER);
 //        add(tabbedPane, BorderLayout.CENTER);
-        this.add(this.menuBar(), BorderLayout.NORTH);
+        add(menuBar(), BorderLayout.NORTH);
     }
 
     private IonDisplay ionDisplay() {
-        Graph resultGraph = this.resultGraph();
-        List<Graph> storedGraphs = this.arrangeGraphs();
-        IonDisplay display = new IonDisplay(storedGraphs, (IonRunner) this.getAlgorithmRunner());
+        final Graph resultGraph = resultGraph();
+        final List<Graph> storedGraphs = arrangeGraphs();
+        final IonDisplay display = new IonDisplay(storedGraphs, (IonRunner) getAlgorithmRunner());
 
         // Superfluous?
-        this.getGraphHistory().clear();
-        this.getGraphHistory().add(resultGraph);
+        getGraphHistory().clear();
+        getGraphHistory().add(resultGraph);
 
-        this.setWorkbench(display.getWorkbench());
-        this.getWorkbench().setAllowDoubleClickActions(false);
-        this.getWorkbench().setAllowNodeEdgeSelection(true);
+        setWorkbench(display.getWorkbench());
+        getWorkbench().setAllowDoubleClickActions(false);
+        getWorkbench().setAllowNodeEdgeSelection(true);
 
-        this.setWorkbenchScroll(new JScrollPane(display));
-        this.getWorkbenchScroll().setPreferredSize(new Dimension(450, 450));
-        this.getWorkbenchScroll().setBorder(new TitledBorder(""));
+        setWorkbenchScroll(new JScrollPane(display));
+        getWorkbenchScroll().setPreferredSize(new Dimension(450, 450));
+        getWorkbenchScroll().setBorder(new TitledBorder(""));
 
-        this.getWorkbench().addMouseListener(new MouseAdapter() {
-            public void mouseExited(MouseEvent e) {
-                IonSearchEditor.this.storeLatestWorkbenchGraph();
+        getWorkbench().addMouseListener(new MouseAdapter() {
+            public void mouseExited(final MouseEvent e) {
+                storeLatestWorkbenchGraph();
             }
         });
 
         display.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
-                IonSearchEditor.this.firePropertyChange(propertyChangeEvent.getPropertyName(), null, null);
+            public void propertyChange(final PropertyChangeEvent propertyChangeEvent) {
+                firePropertyChange(propertyChangeEvent.getPropertyName(), null, null);
             }
         });
 
@@ -159,12 +159,12 @@ public class IonSearchEditor extends AbstractSearchEditor
     }
 
     private List<Graph> arrangeGraphs() {
-        IonRunner runner = (IonRunner) this.getAlgorithmRunner();
+        final IonRunner runner = (IonRunner) getAlgorithmRunner();
 
         List<Graph> storedGraphs = runner.getStoredGraphs();
         if (storedGraphs == null) storedGraphs = new ArrayList<>();
 
-        for (Graph storedGraph : storedGraphs) {
+        for (final Graph storedGraph : storedGraphs) {
             GraphUtils.circleLayout(storedGraph, 200, 200, 150);
         }
 
@@ -172,7 +172,7 @@ public class IonSearchEditor extends AbstractSearchEditor
     }
 
     private Graph resultGraph() {
-        Graph resultGraph = this.getAlgorithmRunner().getGraph();
+        Graph resultGraph = getAlgorithmRunner().getGraph();
 
         if (resultGraph == null) {
             resultGraph = new EdgeListGraph();
@@ -187,39 +187,39 @@ public class IonSearchEditor extends AbstractSearchEditor
      * cannot count on a result graph having been found when the method
      */
     public void execute() {
-        Window owner = (Window) this.getTopLevelAncestor();
+        final Window owner = (Window) getTopLevelAncestor();
 
-        WatchedProcess process = new WatchedProcess(owner) {
+        final WatchedProcess process = new WatchedProcess(owner) {
             public void watch() {
-                IonSearchEditor.this.getExecuteButton().setEnabled(false);
-                this.setErrorMessage(null);
+                getExecuteButton().setEnabled(false);
+                setErrorMessage(null);
 
-                if (!knowledgeMessageShown) {
-                    Parameters searchParams = IonSearchEditor.this.getAlgorithmRunner().getParams();
+                if (!IonSearchEditor.this.knowledgeMessageShown) {
+                    final Parameters searchParams = getAlgorithmRunner().getParams();
 
                     if (searchParams != null) {
-                        IKnowledge knowledge = (IKnowledge) searchParams.get("knowledge", new Knowledge2());
+                        final IKnowledge knowledge = (IKnowledge) searchParams.get("knowledge", new Knowledge2());
                         if (!knowledge.isEmpty()) {
                             JOptionPane.showMessageDialog(
                                     JOptionUtils.centeringComp(),
                                     "Using previously set knowledge. (To edit, use " +
                                             "the Knowledge menu.)");
-                            knowledgeMessageShown = true;
+                            IonSearchEditor.this.knowledgeMessageShown = true;
                         }
                     }
                 }
 
                 try {
-                    IonSearchEditor.this.storeLatestWorkbenchGraph();
-                    IonSearchEditor.this.getAlgorithmRunner().execute();
-                    IonRunner runner = (IonRunner) IonSearchEditor.this.getAlgorithmRunner();
-                    IonSearchEditor.this.arrangeGraphs();
-                    ionDisplay.resetGraphs(runner.getStoredGraphs());
-                } catch (Exception e) {
-                    CharArrayWriter writer1 = new CharArrayWriter();
-                    PrintWriter writer2 = new PrintWriter(writer1);
+                    storeLatestWorkbenchGraph();
+                    getAlgorithmRunner().execute();
+                    final IonRunner runner = (IonRunner) getAlgorithmRunner();
+                    arrangeGraphs();
+                    IonSearchEditor.this.ionDisplay.resetGraphs(runner.getStoredGraphs());
+                } catch (final Exception e) {
+                    final CharArrayWriter writer1 = new CharArrayWriter();
+                    final PrintWriter writer2 = new PrintWriter(writer1);
                     e.printStackTrace(writer2);
-                    String message = writer1.toString();
+                    final String message = writer1.toString();
                     writer2.close();
 
                     e.printStackTrace(System.out);
@@ -235,44 +235,44 @@ public class IonSearchEditor extends AbstractSearchEditor
                     if (messageString == null) {
                         messageString = message;
                     }
-                    this.setErrorMessage(messageString);
+                    setErrorMessage(messageString);
 
                     TetradLogger.getInstance().error("************Algorithm stopped!");
 
-                    IonSearchEditor.this.getExecuteButton().setEnabled(true);
+                    getExecuteButton().setEnabled(true);
                     throw new RuntimeException(e);
                 }
 
-                IonSearchEditor.this.getWorkbenchScroll().setBorder(
-                        new TitledBorder(IonSearchEditor.this.getResultLabel()));
-                Graph resultGraph = IonSearchEditor.this.resultGraph();
+                getWorkbenchScroll().setBorder(
+                        new TitledBorder(getResultLabel()));
+                final Graph resultGraph = resultGraph();
 
-                IonSearchEditor.this.doDefaultArrangement(resultGraph);
-                IonSearchEditor.this.getWorkbench().setBackground(Color.WHITE);
-                IonSearchEditor.this.getWorkbench().setGraph(resultGraph);
-                IonSearchEditor.this.getGraphHistory().clear();
-                IonSearchEditor.this.getGraphHistory().add(resultGraph);
-                IonSearchEditor.this.getWorkbench().repaint();
+                doDefaultArrangement(resultGraph);
+                getWorkbench().setBackground(Color.WHITE);
+                getWorkbench().setGraph(resultGraph);
+                getGraphHistory().clear();
+                getGraphHistory().add(resultGraph);
+                getWorkbench().repaint();
 
                 // For Mimbuild, e.g., that need to do a second stage.
-                IonSearchEditor.this.firePropertyChange("algorithmFinished", null, null);
-                IonSearchEditor.this.getExecuteButton().setEnabled(true);
-                IonSearchEditor.this.firePropertyChange("modelChanged", null, null);
+                firePropertyChange("algorithmFinished", null, null);
+                getExecuteButton().setEnabled(true);
+                firePropertyChange("modelChanged", null, null);
             }
         };
 
-        Thread watcher = new Thread() {
+        final Thread watcher = new Thread() {
             public void run() {
                 while (true) {
                     try {
                         Thread.sleep(300);
 
                         if (!process.isAlive()) {
-                            IonSearchEditor.this.getExecuteButton().setEnabled(true);
+                            getExecuteButton().setEnabled(true);
                             return;
                         }
-                    } catch (InterruptedException e) {
-                        IonSearchEditor.this.getExecuteButton().setEnabled(true);
+                    } catch (final InterruptedException e) {
+                        getExecuteButton().setEnabled(true);
                         return;
                     }
                 }
@@ -287,48 +287,48 @@ public class IonSearchEditor extends AbstractSearchEditor
      * Construct the toolbar panel.
      */
     protected JPanel getToolbar() {
-        JPanel toolbar = new JPanel();
+        final JPanel toolbar = new JPanel();
 
-        this.getExecuteButton().setText("Execute*");
-        this.getExecuteButton().addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                IonSearchEditor.this.execute();
+        getExecuteButton().setText("Execute*");
+        getExecuteButton().addActionListener(new ActionListener() {
+            public void actionPerformed(final ActionEvent e) {
+                execute();
             }
         });
 
-        Box b1 = Box.createVerticalBox();
+        final Box b1 = Box.createVerticalBox();
 
-        Parameters params = this.getAlgorithmRunner().getParams();
+        final Parameters params = getAlgorithmRunner().getParams();
 
-        JCheckBox pruneByAdjacenciesBox = new JCheckBox("Prune by Adjacencies");
+        final JCheckBox pruneByAdjacenciesBox = new JCheckBox("Prune by Adjacencies");
         pruneByAdjacenciesBox.setSelected(params.getBoolean("pruneByAdjacencies", true));
 
-        JCheckBox pruneByPathLengthBox = new JCheckBox("Prune by Path Length");
+        final JCheckBox pruneByPathLengthBox = new JCheckBox("Prune by Path Length");
         pruneByPathLengthBox.setSelected(params.getBoolean("pruneByPathLength", true));
 
         pruneByAdjacenciesBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JCheckBox checkBox = (JCheckBox) e.getSource();
+            public void actionPerformed(final ActionEvent e) {
+                final JCheckBox checkBox = (JCheckBox) e.getSource();
                 params.set("pruneByAdjacencies", checkBox.isSelected());
             }
         });
 
         pruneByPathLengthBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JCheckBox checkBox = (JCheckBox) e.getSource();
+            public void actionPerformed(final ActionEvent e) {
+                final JCheckBox checkBox = (JCheckBox) e.getSource();
                 params.set("pruneByPathLength", checkBox.isSelected());
             }
         });
 
-        Box paramsPanel = Box.createVerticalBox();
+        final Box paramsPanel = Box.createVerticalBox();
         paramsPanel.setBorder(new TitledBorder("Parameters"));
 
-        Box b3a = Box.createHorizontalBox();
+        final Box b3a = Box.createHorizontalBox();
         b3a.add(pruneByAdjacenciesBox);
         b3a.add(Box.createHorizontalGlue());
         paramsPanel.add(b3a);
 
-        Box b3b = Box.createHorizontalBox();
+        final Box b3b = Box.createHorizontalBox();
         b3b.add(pruneByPathLengthBox);
         b3b.add(Box.createHorizontalGlue());
         paramsPanel.add(b3b);
@@ -336,28 +336,28 @@ public class IonSearchEditor extends AbstractSearchEditor
         b1.add(paramsPanel);
         b1.add(Box.createVerticalStrut(10));
 
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(Box.createGlue());
-        b2.add(this.getExecuteButton());
+        b2.add(getExecuteButton());
         b1.add(b2);
         b1.add(Box.createVerticalStrut(10));
 
-        if (this.getAlgorithmRunner().getDataModel() instanceof DataSet) {
-            Box b3 = Box.createHorizontalBox();
+        if (getAlgorithmRunner().getDataModel() instanceof DataSet) {
+            final Box b3 = Box.createHorizontalBox();
             b3.add(Box.createGlue());
             b1.add(b3);
         }
 
-        if (this.getAlgorithmRunner().getParams() instanceof Parameters) {
+        if (getAlgorithmRunner().getParams() instanceof Parameters) {
             b1.add(Box.createVerticalStrut(5));
-            Box hBox = Box.createHorizontalBox();
+            final Box hBox = Box.createHorizontalBox();
             hBox.add(Box.createHorizontalGlue());
             b1.add(hBox);
             b1.add(Box.createVerticalStrut(5));
         }
 
-        Box b4 = Box.createHorizontalBox();
-        JLabel label = new JLabel("<html>" + "*Please note that some" +
+        final Box b4 = Box.createHorizontalBox();
+        final JLabel label = new JLabel("<html>" + "*Please note that some" +
                 "<br>searches may take a" + "<br>long time to complete." +
                 "</html>");
         label.setHorizontalAlignment(SwingConstants.CENTER);
@@ -377,9 +377,9 @@ public class IonSearchEditor extends AbstractSearchEditor
         System.out.println("Post execution.");
     }
 
-    protected void addSpecialMenus(JMenuBar menuBar) {
-        if (!(this.getAlgorithmRunner() instanceof IGesRunner)) {
-            JMenu test = new JMenu("Independence");
+    protected void addSpecialMenus(final JMenuBar menuBar) {
+        if (!(getAlgorithmRunner() instanceof IGesRunner)) {
+            final JMenu test = new JMenu("Independence");
             menuBar.add(test);
 
             IndTestMenuItems.addIndependenceTestChoices(test, this);
@@ -396,22 +396,22 @@ public class IonSearchEditor extends AbstractSearchEditor
 //            }
         }
 
-        JMenu graph = new JMenu("Graph");
-        JMenuItem showDags = new JMenuItem("Show DAGs in forbid_latent_common_causes");
+        final JMenu graph = new JMenu("Graph");
+        final JMenuItem showDags = new JMenuItem("Show DAGs in forbid_latent_common_causes");
 //        JMenuItem meekOrient = new JMenuItem("Meek Orientation");
-        JMenuItem dagInCPDAG = new JMenuItem("Choose DAG in forbid_latent_common_causes");
-        JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
-        JMenuItem nextGraph = new JMenuItem("Next Graph");
-        JMenuItem previousGraph = new JMenuItem("Previous Graph");
+        final JMenuItem dagInCPDAG = new JMenuItem("Choose DAG in forbid_latent_common_causes");
+        final JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
+        final JMenuItem nextGraph = new JMenuItem("Next Graph");
+        final JMenuItem previousGraph = new JMenuItem("Previous Graph");
 
 //        graph.add(new LayoutMenu(this));
-        graph.add(new GraphPropertiesAction(this.getWorkbench()));
-        graph.add(new PathsAction(this.getWorkbench()));
+        graph.add(new GraphPropertiesAction(getWorkbench()));
+        graph.add(new PathsAction(getWorkbench()));
 //        graph.add(new DirectedPathsAction(getWorkbench()));
 //        graph.add(new TreksAction(getWorkbench()));
 //        graph.add(new AllPathsAction(getWorkbench()));
 //        graph.add(new NeighborhoodsAction(getWorkbench()));
-        graph.add(new TriplesAction(this.getWorkbench().getGraph(), this.getAlgorithmRunner()));
+        graph.add(new TriplesAction(getWorkbench().getGraph(), getAlgorithmRunner()));
         graph.addSeparator();
 
 //        graph.add(meekOrient);
@@ -426,14 +426,14 @@ public class IonSearchEditor extends AbstractSearchEditor
         graph.add(showDags);
 
         graph.addSeparator();
-        graph.add(new JMenuItem(new SelectBidirectedAction(this.getWorkbench())));
-        graph.add(new JMenuItem(new SelectUndirectedAction(this.getWorkbench())));
+        graph.add(new JMenuItem(new SelectBidirectedAction(getWorkbench())));
+        graph.add(new JMenuItem(new SelectUndirectedAction(getWorkbench())));
 
         menuBar.add(graph);
 
         showDags.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Window owner = (Window) IonSearchEditor.this.getTopLevelAncestor();
+            public void actionPerformed(final ActionEvent e) {
+                final Window owner = (Window) getTopLevelAncestor();
 
                 new WatchedProcess(owner) {
                     public void watch() {
@@ -441,8 +441,8 @@ public class IonSearchEditor extends AbstractSearchEditor
                         // Needs to be a CPDAG search; this isn't checked
                         // before running the algorithm because of allowable
                         // "slop"--e.g. bidirected edges.
-                        AlgorithmRunner runner = IonSearchEditor.this.getAlgorithmRunner();
-                        Graph graph = runner.getGraph();
+                        final AlgorithmRunner runner = getAlgorithmRunner();
+                        final Graph graph = runner.getGraph();
 
 
                         if (graph == null) {
@@ -466,10 +466,10 @@ public class IonSearchEditor extends AbstractSearchEditor
 //                            editorWindow.setVisible(true);
 //                        }
 //                        else {
-                        CPDAGDisplay display = new CPDAGDisplay(graph);
-                        GraphWorkbench workbench = IonSearchEditor.this.getWorkbench();
+                        final CPDAGDisplay display = new CPDAGDisplay(graph);
+                        final GraphWorkbench workbench = getWorkbench();
 
-                        EditorWindow editorWindow =
+                        final EditorWindow editorWindow =
                                 new EditorWindow(display, "Independence Facts",
                                         "Close", false, workbench);
                         DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
@@ -492,54 +492,54 @@ public class IonSearchEditor extends AbstractSearchEditor
 //        });
 
         dagInCPDAG.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Graph graph = new EdgeListGraph(IonSearchEditor.this.getGraph());
+            public void actionPerformed(final ActionEvent e) {
+                final Graph graph = new EdgeListGraph(getGraph());
 
                 // Removing bidirected edges from the CPDAG before selecting a DAG.                                   4
-                for (Edge edge : graph.getEdges()) {
+                for (final Edge edge : graph.getEdges()) {
                     if (Edges.isBidirectedEdge(edge)) {
                         graph.removeEdge(edge);
                     }
                 }
 
-                Graph dag = SearchGraphUtils.dagFromCPDAG(graph);
+                final Graph dag = SearchGraphUtils.dagFromCPDAG(graph);
 
-                IonSearchEditor.this.getGraphHistory().add(dag);
-                IonSearchEditor.this.getWorkbench().setGraph(dag);
+                getGraphHistory().add(dag);
+                getWorkbench().setGraph(dag);
 
-                ((AbstractAlgorithmRunner) IonSearchEditor.this.getAlgorithmRunner()).setResultGraph(dag);
-                IonSearchEditor.this.firePropertyChange("modelChanged", null, null);
+                ((AbstractAlgorithmRunner) getAlgorithmRunner()).setResultGraph(dag);
+                firePropertyChange("modelChanged", null, null);
             }
         });
 
         gesOrient.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                DataModel dataModel = IonSearchEditor.this.getAlgorithmRunner().getDataModel();
+            public void actionPerformed(final ActionEvent e) {
+                final DataModel dataModel = getAlgorithmRunner().getDataModel();
 
-                Graph graph = SearchGraphUtils.reorient(IonSearchEditor.this.getGraph(), dataModel, IonSearchEditor.this.getKnowledge());
+                final Graph graph = SearchGraphUtils.reorient(getGraph(), dataModel, getKnowledge());
 
-                IonSearchEditor.this.getGraphHistory().add(graph);
-                IonSearchEditor.this.getWorkbench().setGraph(graph);
-                IonSearchEditor.this.firePropertyChange("modelChanged", null, null);
+                getGraphHistory().add(graph);
+                getWorkbench().setGraph(graph);
+                firePropertyChange("modelChanged", null, null);
             }
 
         });
 
         nextGraph.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Graph next = IonSearchEditor.this.getGraphHistory().next();
-                IonSearchEditor.this.getWorkbench().setGraph(next);
-                ((AbstractAlgorithmRunner) IonSearchEditor.this.getAlgorithmRunner()).setResultGraph(next);
-                IonSearchEditor.this.firePropertyChange("modelChanged", null, null);
+            public void actionPerformed(final ActionEvent e) {
+                final Graph next = getGraphHistory().next();
+                getWorkbench().setGraph(next);
+                ((AbstractAlgorithmRunner) getAlgorithmRunner()).setResultGraph(next);
+                firePropertyChange("modelChanged", null, null);
             }
         });
 
         previousGraph.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Graph previous = IonSearchEditor.this.getGraphHistory().previous();
-                IonSearchEditor.this.getWorkbench().setGraph(previous);
-                ((AbstractAlgorithmRunner) IonSearchEditor.this.getAlgorithmRunner()).setResultGraph(previous);
-                IonSearchEditor.this.firePropertyChange("modelChanged", null, null);
+            public void actionPerformed(final ActionEvent e) {
+                final Graph previous = getGraphHistory().previous();
+                getWorkbench().setGraph(previous);
+                ((AbstractAlgorithmRunner) getAlgorithmRunner()).setResultGraph(previous);
+                firePropertyChange("modelChanged", null, null);
             }
         });
 
@@ -551,16 +551,16 @@ public class IonSearchEditor extends AbstractSearchEditor
     }
 
     public Graph getSourceGraph() {
-        Graph sourceGraph = this.getWorkbench().getGraph();
+        Graph sourceGraph = getWorkbench().getGraph();
 
         if (sourceGraph == null) {
-            sourceGraph = this.getAlgorithmRunner().getSourceGraph();
+            sourceGraph = getAlgorithmRunner().getSourceGraph();
         }
         return sourceGraph;
     }
 
     public List<String> getVarNames() {
-        Parameters params = this.getAlgorithmRunner().getParams();
+        final Parameters params = getAlgorithmRunner().getParams();
         return (List<String>) params.get("varNames", null);
     }
 
@@ -568,12 +568,12 @@ public class IonSearchEditor extends AbstractSearchEditor
         return super.getTestType();
     }
 
-    public void setTestType(IndTestType testType) {
+    public void setTestType(final IndTestType testType) {
         super.setTestType(testType);
     }
 
     public IKnowledge getKnowledge() {
-        Parameters searchParams = this.getAlgorithmRunner().getParams();
+        final Parameters searchParams = getAlgorithmRunner().getParams();
 
         if (searchParams == null) {
             return null;
@@ -582,8 +582,8 @@ public class IonSearchEditor extends AbstractSearchEditor
         return (IKnowledge) searchParams.get("knowledge", new Knowledge2());
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
-        Parameters searchParams = this.getAlgorithmRunner().getParams();
+    public void setKnowledge(final IKnowledge knowledge) {
+        final Parameters searchParams = getAlgorithmRunner().getParams();
 
         if (searchParams != null) {
             searchParams.set("knowledge", knowledge);
@@ -592,13 +592,13 @@ public class IonSearchEditor extends AbstractSearchEditor
 
     //================================PRIVATE METHODS====================//
 
-    protected void doDefaultArrangement(Graph resultGraph) {
-        if (this.getKnowledge() != null && this.getKnowledge().isDefaultToKnowledgeLayout()) {
+    protected void doDefaultArrangement(final Graph resultGraph) {
+        if (getKnowledge() != null && getKnowledge().isDefaultToKnowledgeLayout()) {
             SearchGraphUtils.arrangeByKnowledgeTiers(resultGraph,
-                    this.getKnowledge());
+                    getKnowledge());
         } else {
             GraphUtils.arrangeBySourceGraph(resultGraph,
-                    this.getLatestWorkbenchGraph());
+                    getLatestWorkbenchGraph());
         }
     }
 }

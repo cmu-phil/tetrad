@@ -49,12 +49,12 @@ import java.text.ParseException;
  */
 public class TestSimulatedFmri {
 
-    public static void main(String... args) {
+    public static void main(final String... args) {
         new TestSimulatedFmri().task(false);
     }
 
-    private void task(boolean testing) {
-        Parameters parameters = new Parameters();
+    private void task(final boolean testing) {
+        final Parameters parameters = new Parameters();
         parameters.set(Params.PENALTY_DISCOUNT, 4);
         parameters.set(Params.DEPTH, -1);
         parameters.set(Params.TWO_CYCLE_ALPHA, 1e-10);
@@ -66,7 +66,7 @@ public class TestSimulatedFmri {
 
         parameters.set("Structure", "Placeholder");
 
-        Statistics statistics = new Statistics();
+        final Statistics statistics = new Statistics();
 
         statistics.add(new ParameterColumn("Structure"));
         statistics.add(new AdjacencyPrecision());
@@ -85,7 +85,7 @@ public class TestSimulatedFmri {
         statistics.setWeight("2CR", 1.0);
         statistics.setWeight("2CFP", 1.0);
 
-        Simulations simulations = new Simulations();
+        final Simulations simulations = new Simulations();
 
         if (!testing) {
             final String dir = "/Users/user/Downloads/Cycles_Data_fMRI/";
@@ -178,14 +178,14 @@ public class TestSimulatedFmri {
                     dir + "Markov_Complex_1", subdir));
         }
 
-        Algorithms algorithms = new Algorithms();
+        final Algorithms algorithms = new Algorithms();
 
         algorithms.add(new FaskConcatenated(new SemBicScore(), new FisherZ()));
 //        algorithms.add(new FaskGfciConcatenated(new SemBicTest()));
 
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.RSkew));
 
-        Comparison comparison = new Comparison();
+        final Comparison comparison = new Comparison();
 
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
@@ -195,7 +195,7 @@ public class TestSimulatedFmri {
         comparison.setTabDelimitedTables(false);
         comparison.setSaveGraphs(true);
 
-        String directory;
+        final String directory;
 
         if (!testing) {
             directory = "comparison_training";
@@ -208,7 +208,7 @@ public class TestSimulatedFmri {
 
     //    @Test
     public void task2() {
-        Parameters parameters = new Parameters();
+        final Parameters parameters = new Parameters();
         parameters.set(Params.PENALTY_DISCOUNT, 1);
         parameters.set(Params.DEPTH, -1);
         parameters.set(Params.TWO_CYCLE_ALPHA, 0);
@@ -218,7 +218,7 @@ public class TestSimulatedFmri {
 
         parameters.set("Structure", "Placeholder");
 
-        Statistics statistics = new Statistics();
+        final Statistics statistics = new Statistics();
 
         statistics.add(new ParameterColumn("Structure"));
         statistics.add(new AdjacencyPrecision());
@@ -237,9 +237,9 @@ public class TestSimulatedFmri {
         statistics.setWeight("2CR", 1.0);
         statistics.setWeight("2CFP", 1.0);
 
-        Simulations simulations = new Simulations();
+        final Simulations simulations = new Simulations();
 
-        Algorithms algorithms = new Algorithms();
+        final Algorithms algorithms = new Algorithms();
 
         for (int i = 1; i <= 28; i++) {
 //            if (i == 21) continue;
@@ -269,7 +269,7 @@ public class TestSimulatedFmri {
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.SkewE));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.Patel));
 
-        Comparison comparison = new Comparison();
+        final Comparison comparison = new Comparison();
 
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
@@ -286,7 +286,7 @@ public class TestSimulatedFmri {
 
     //    @Test
     public void testTough() {
-        Parameters parameters = new Parameters();
+        final Parameters parameters = new Parameters();
 
         parameters.set(Params.PENALTY_DISCOUNT, 2);
         parameters.set(Params.DEPTH, 5);
@@ -297,7 +297,7 @@ public class TestSimulatedFmri {
 
         parameters.set("Structure", "Placeholder");
 
-        Statistics statistics = new Statistics();
+        final Statistics statistics = new Statistics();
 
         statistics.add(new ParameterColumn("Structure"));
         statistics.add(new AdjacencyPrecision());
@@ -320,7 +320,7 @@ public class TestSimulatedFmri {
         statistics.setWeight("2CR", 1.0);
         statistics.setWeight("2CFP", 1.0);
 
-        Simulations simulations = new Simulations();
+        final Simulations simulations = new Simulations();
 
         final String dir = "/Users/jdramsey/Downloads/";
         final String subdir = "data_fslfilter";
@@ -328,7 +328,7 @@ public class TestSimulatedFmri {
         simulations.add(new LoadContinuousDataAndSingleGraph(
                 dir + "Markov_dist_thresh36", subdir));
 
-        Algorithms algorithms = new Algorithms();
+        final Algorithms algorithms = new Algorithms();
 
 //        algorithms.add(new FasLofs(Lofs2.Rule.R1));
 //        algorithms.add(new FasLofs(Lofs2.Rule.R2));
@@ -349,7 +349,7 @@ public class TestSimulatedFmri {
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.Skew));
 //        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.RSkew));
 
-        Comparison comparison = new Comparison();
+        final Comparison comparison = new Comparison();
 
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
@@ -371,11 +371,11 @@ public class TestSimulatedFmri {
 
         for (int i = 0; i < 100; i++) {
             {
-                Node x = new ContinuousVariable("X");
-                Node y = new ContinuousVariable("Y");
-                Node z = new ContinuousVariable("Z");
+                final Node x = new ContinuousVariable("X");
+                final Node y = new ContinuousVariable("Y");
+                final Node z = new ContinuousVariable("Z");
 
-                Graph g = new EdgeListGraph();
+                final Graph g = new EdgeListGraph();
                 g.addNode(x);
                 g.addNode(y);
                 g.addNode(z);
@@ -384,7 +384,7 @@ public class TestSimulatedFmri {
                 g.addDirectedEdge(z, x);
                 g.addDirectedEdge(z, y);
 
-                GeneralizedSemPm pm = new GeneralizedSemPm(g);
+                final GeneralizedSemPm pm = new GeneralizedSemPm(g);
 
                 try {
                     pm.setNodeExpression(g.getNode("X"), "0.5 * Z + E_X");
@@ -395,28 +395,28 @@ public class TestSimulatedFmri {
                     pm.setNodeExpression(pm.getErrorNode(g.getNode("X")), error);
                     pm.setNodeExpression(pm.getErrorNode(g.getNode("Y")), error);
                     pm.setNodeExpression(pm.getErrorNode(g.getNode("Z")), error);
-                } catch (ParseException e) {
+                } catch (final ParseException e) {
                     System.out.println(e);
                 }
 
-                GeneralizedSemIm im = new GeneralizedSemIm(pm);
-                DataSet data = im.simulateData(N, false);
+                final GeneralizedSemIm im = new GeneralizedSemIm(pm);
+                final DataSet data = im.simulateData(N, false);
 
 
-                Fask fask = new Fask(data,
+                final Fask fask = new Fask(data,
                         new edu.cmu.tetrad.search.SemBicScore(data),
-                new IndTestFisherZ(data, 0.001));
-                Graph out = fask.search();
+                        new IndTestFisherZ(data, 0.001));
+                final Graph out = fask.search();
 
                 System.out.println(out);
             }
 
             {
-                Node x = new ContinuousVariable("X");
-                Node y = new ContinuousVariable("Y");
-                Node z = new ContinuousVariable("Z");
+                final Node x = new ContinuousVariable("X");
+                final Node y = new ContinuousVariable("Y");
+                final Node z = new ContinuousVariable("Z");
 
-                Graph g = new EdgeListGraph();
+                final Graph g = new EdgeListGraph();
                 g.addNode(x);
                 g.addNode(y);
                 g.addNode(z);
@@ -425,7 +425,7 @@ public class TestSimulatedFmri {
                 g.addDirectedEdge(x, z);
                 g.addDirectedEdge(y, z);
 
-                GeneralizedSemPm pm = new GeneralizedSemPm(g);
+                final GeneralizedSemPm pm = new GeneralizedSemPm(g);
 
                 try {
                     pm.setNodeExpression(g.getNode("X"), "E_X");
@@ -436,17 +436,17 @@ public class TestSimulatedFmri {
                     pm.setNodeExpression(pm.getErrorNode(g.getNode("X")), error);
                     pm.setNodeExpression(pm.getErrorNode(g.getNode("Y")), error);
                     pm.setNodeExpression(pm.getErrorNode(g.getNode("Z")), error);
-                } catch (ParseException e) {
+                } catch (final ParseException e) {
                     System.out.println(e);
                 }
 
-                GeneralizedSemIm im = new GeneralizedSemIm(pm);
-                DataSet data = im.simulateData(N, false);
+                final GeneralizedSemIm im = new GeneralizedSemIm(pm);
+                final DataSet data = im.simulateData(N, false);
 
-                Fask fask = new Fask(data,
+                final Fask fask = new Fask(data,
                         new edu.cmu.tetrad.search.SemBicScore(data),
                         new IndTestFisherZ(data, 0.001));
-                Graph out = fask.search();
+                final Graph out = fask.search();
 
                 System.out.println(out);
 
@@ -457,11 +457,11 @@ public class TestSimulatedFmri {
     //    @Test
     public void testClark2() {
 
-        Node x = new ContinuousVariable("X");
-        Node y = new ContinuousVariable("Y");
-        Node z = new ContinuousVariable("Z");
+        final Node x = new ContinuousVariable("X");
+        final Node y = new ContinuousVariable("Y");
+        final Node z = new ContinuousVariable("Z");
 
-        Graph g = new EdgeListGraph();
+        final Graph g = new EdgeListGraph();
         g.addNode(x);
         g.addNode(y);
         g.addNode(z);
@@ -470,7 +470,7 @@ public class TestSimulatedFmri {
         g.addDirectedEdge(x, z);
         g.addDirectedEdge(y, z);
 
-        GeneralizedSemPm pm = new GeneralizedSemPm(g);
+        final GeneralizedSemPm pm = new GeneralizedSemPm(g);
 
         try {
             pm.setNodeExpression(g.getNode("X"), "E_X");
@@ -481,18 +481,18 @@ public class TestSimulatedFmri {
             pm.setNodeExpression(pm.getErrorNode(g.getNode("X")), error);
             pm.setNodeExpression(pm.getErrorNode(g.getNode("Y")), error);
             pm.setNodeExpression(pm.getErrorNode(g.getNode("Z")), error);
-        } catch (ParseException e) {
+        } catch (final ParseException e) {
             System.out.println(e);
         }
 
 
-        GeneralizedSemIm im = new GeneralizedSemIm(pm);
-        DataSet data = im.simulateData(1000, false);
+        final GeneralizedSemIm im = new GeneralizedSemIm(pm);
+        final DataSet data = im.simulateData(1000, false);
 
-        Fask fask = new Fask(data,
+        final Fask fask = new Fask(data,
                 new edu.cmu.tetrad.search.SemBicScore(data),
                 new IndTestFisherZ(data, 0.001));
-        Graph out = fask.search();
+        final Graph out = fask.search();
 
         System.out.println(out);
     }

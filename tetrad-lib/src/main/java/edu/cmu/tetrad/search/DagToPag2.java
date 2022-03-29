@@ -77,38 +77,38 @@ public final class DagToPag2 {
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
      */
-    public DagToPag2(Graph dag) {
+    public DagToPag2(final Graph dag) {
         this.dag = dag;
     }
 
     //========================PUBLIC METHODS==========================//
 
     public Graph convert() {
-        logger.log("info", "Starting DAG to PAG_of_the_true_DAG.");
+        this.logger.log("info", "Starting DAG to PAG_of_the_true_DAG.");
 
-        if (verbose) {
+        if (this.verbose) {
             System.out.println("DAG to PAG_of_the_true_DAG: Starting adjacency search");
         }
 
-        Graph graph = this.calcAdjacencyGraph();
+        final Graph graph = calcAdjacencyGraph();
 
-        if (verbose) {
+        if (this.verbose) {
             System.out.println("DAG to PAG_of_the_true_DAG: Starting collider orientation");
         }
 
-        this.orientUnshieldedColliders(graph, dag);
+        orientUnshieldedColliders(graph, this.dag);
 
-        if (verbose) {
+        if (this.verbose) {
             System.out.println("DAG to PAG_of_the_true_DAG: Starting final orientation");
         }
 
-        FciOrient fciOrient = new FciOrient(new DagSepsets(dag));
-        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        final FciOrient fciOrient = new FciOrient(new DagSepsets(this.dag));
+        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setChangeFlag(false);
-        fciOrient.setMaxPathLength(maxPathLength);
+        fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.doFinalOrientation(graph);
 
-        if (verbose) {
+        if (this.verbose) {
             System.out.println("Finishing final orientation");
         }
 
@@ -116,25 +116,25 @@ public final class DagToPag2 {
     }
 
     private Graph calcAdjacencyGraph() {
-        List<Node> allNodes = dag.getNodes();
-        List<Node> measured = new ArrayList<Node>();
+        final List<Node> allNodes = this.dag.getNodes();
+        final List<Node> measured = new ArrayList<Node>();
 
-        for (Node node : allNodes) {
+        for (final Node node : allNodes) {
             if (node.getNodeType() == NodeType.MEASURED) {
                 measured.add(node);
             }
         }
 
-        Graph graph = new EdgeListGraph(measured);
+        final Graph graph = new EdgeListGraph(measured);
 
         for (int i = 0; i < measured.size(); i++) {
             for (int j = i + 1; j < measured.size(); j++) {
-                Node n1 = measured.get(i);
-                Node n2 = measured.get(j);
+                final Node n1 = measured.get(i);
+                final Node n2 = measured.get(j);
 
-                List<Node> inducingPath = GraphUtils.getInducingPath(n1, n2, dag);
+                final List<Node> inducingPath = GraphUtils.getInducingPath(n1, n2, this.dag);
 
-                boolean exists = inducingPath != null;
+                final boolean exists = inducingPath != null;
 
                 if (exists) {
                     graph.addEdge(Edges.nondirectedEdge(n1, n2));
@@ -145,27 +145,27 @@ public final class DagToPag2 {
         return graph;
     }
 
-    private void orientUnshieldedColliders(Graph graph, Graph dag) {
+    private void orientUnshieldedColliders(final Graph graph, final Graph dag) {
         graph.reorientAllWith(Endpoint.CIRCLE);
 
-        List<Node> allNodes = dag.getNodes();
-        List<Node> measured = new ArrayList<Node>();
+        final List<Node> allNodes = dag.getNodes();
+        final List<Node> measured = new ArrayList<Node>();
 
-        for (Node node : allNodes) {
+        for (final Node node : allNodes) {
             if (node.getNodeType() == NodeType.MEASURED) {
                 measured.add(node);
             }
         }
 
-        for (Node b : measured) {
-            List<Node> adjb = graph.getAdjacentNodes(b);
+        for (final Node b : measured) {
+            final List<Node> adjb = graph.getAdjacentNodes(b);
 
             if (adjb.size() < 2) continue;
 
             for (int i = 0; i < adjb.size(); i++) {
                 for (int j = i + 1; j < adjb.size(); j++) {
-                    Node a = adjb.get(i);
-                    Node c = adjb.get(j);
+                    final Node a = adjb.get(i);
+                    final Node c = adjb.get(j);
 
                     if (graph.isDefCollider(a, b, c)) {
                         continue;
@@ -175,11 +175,11 @@ public final class DagToPag2 {
                         continue;
                     }
 
-                    boolean found = this.foundCollider(dag, a, b, c);
+                    final boolean found = foundCollider(dag, a, b, c);
 
                     if (found) {
 
-                        if (verbose) {
+                        if (this.verbose) {
                             System.out.println("Orienting collider " + a + "*->" + b + "<-*" + c);
                         }
 
@@ -191,25 +191,25 @@ public final class DagToPag2 {
         }
     }
 
-    private boolean foundCollider(Graph dag, Node a, Node b, Node c) {
-        boolean ipba = existsInducingPathInto(b, a, dag);
-        boolean ipbc = existsInducingPathInto(b, c, dag);
+    private boolean foundCollider(final Graph dag, final Node a, final Node b, final Node c) {
+        final boolean ipba = DagToPag2.existsInducingPathInto(b, a, dag);
+        final boolean ipbc = DagToPag2.existsInducingPathInto(b, c, dag);
 
         if (!(ipba && ipbc)) {
-            this.printTrueDefCollider(a, b, c, false);
+            printTrueDefCollider(a, b, c, false);
             return false;
         }
 
-        this.printTrueDefCollider(a, b, c, true);
+        printTrueDefCollider(a, b, c, true);
 
         return true;
     }
 
-    private void printTrueDefCollider(Node a, Node b, Node c, boolean found) {
-        if (truePag != null) {
-            boolean defCollider = truePag.isDefCollider(a, b, c);
+    private void printTrueDefCollider(final Node a, final Node b, final Node c, final boolean found) {
+        if (this.truePag != null) {
+            final boolean defCollider = this.truePag.isDefCollider(a, b, c);
 
-            if (verbose) {
+            if (this.verbose) {
                 if (!found && defCollider) {
                     System.out.println("FOUND COLLIDER FCI");
                 } else if (found && !defCollider) {
@@ -219,15 +219,15 @@ public final class DagToPag2 {
         }
     }
 
-    public static boolean existsInducingPathInto(Node x, Node y, Graph graph) {
+    public static boolean existsInducingPathInto(final Node x, final Node y, final Graph graph) {
         if (x.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
         if (y.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
 
-        LinkedList<Node> path = new LinkedList<Node>();
+        final LinkedList<Node> path = new LinkedList<Node>();
         path.add(x);
 
-        for (Node b : graph.getAdjacentNodes(x)) {
-            Edge edge = graph.getEdge(x, b);
+        for (final Node b : graph.getAdjacentNodes(x)) {
+            final Edge edge = graph.getEdge(x, b);
             if (!edge.pointsTowards(x)) continue;
 
             if (GraphUtils.existsInducingPathVisit(graph, x, b, x, y, path)) {
@@ -273,10 +273,10 @@ public final class DagToPag2 {
 
 
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(final IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -289,14 +289,14 @@ public final class DagToPag2 {
      * should be used. False by default.
      */
     public boolean isCompleteRuleSetUsed() {
-        return completeRuleSetUsed;
+        return this.completeRuleSetUsed;
     }
 
     /**
      * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
      *                            set of the original FCI) should be used. False by default.
      */
-    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
+    public void setCompleteRuleSetUsed(final boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
@@ -304,26 +304,26 @@ public final class DagToPag2 {
      * True iff verbose output should be printed.
      */
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 
     public int getMaxPathLength() {
-        return maxPathLength;
+        return this.maxPathLength;
     }
 
-    public void setMaxPathLength(int maxPathLength) {
+    public void setMaxPathLength(final int maxPathLength) {
         this.maxPathLength = maxPathLength;
     }
 
     public Graph getTruePag() {
-        return truePag;
+        return this.truePag;
     }
 
-    public void setTruePag(Graph truePag) {
+    public void setTruePag(final Graph truePag) {
         this.truePag = truePag;
     }
 }

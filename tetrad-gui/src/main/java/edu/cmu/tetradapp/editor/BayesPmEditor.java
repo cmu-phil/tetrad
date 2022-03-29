@@ -63,20 +63,20 @@ public class BayesPmEditor extends JPanel
      * Constructs a new editor for parameterized models (for now only for Bayes
      * net parameterized models).
      */
-    public BayesPmEditor(BayesPmWrapper wrapper) {
+    public BayesPmEditor(final BayesPmWrapper wrapper) {
         this.wrapper = wrapper;
-        this.setLayout(new BorderLayout());
+        setLayout(new BorderLayout());
 
-        targetPanel = new JPanel();
-        targetPanel.setLayout(new BorderLayout());
+        this.targetPanel = new JPanel();
+        this.targetPanel.setLayout(new BorderLayout());
 
-        this.setEditorPanel();
+        setEditorPanel();
 
-        this.add(targetPanel, BorderLayout.CENTER);
-        this.validate();
+        add(this.targetPanel, BorderLayout.CENTER);
+        validate();
 
         if (wrapper.getNumModels() > 1) {
-            JComboBox<Integer> comp = new JComboBox<>();
+            final JComboBox<Integer> comp = new JComboBox<>();
 
             for (int i = 0; i < wrapper.getNumModels(); i++) {
                 comp.addItem(i + 1);
@@ -84,85 +84,85 @@ public class BayesPmEditor extends JPanel
 
             comp.addActionListener(new ActionListener() {
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                public void actionPerformed(final ActionEvent e) {
                     wrapper.setModelIndex(((Integer) comp.getSelectedItem()).intValue() - 1);
-                    BayesPmEditor.this.setEditorPanel();
-                    BayesPmEditor.this.validate();
+                    setEditorPanel();
+                    validate();
                 }
             });
 
             comp.setMaximumSize(comp.getPreferredSize());
 
-            Box b = Box.createHorizontalBox();
+            final Box b = Box.createHorizontalBox();
             b.add(new JLabel("Using model"));
             b.add(comp);
             b.add(new JLabel("from "));
             b.add(new JLabel(wrapper.getModelSourceName()));
             b.add(Box.createHorizontalGlue());
 
-            this.add(b, BorderLayout.NORTH);
+            add(b, BorderLayout.NORTH);
         }
     }
 
     private void setEditorPanel() {
-        JPanel panel = new JPanel();
+        final JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
 
-        if (wrapper.getBayesPm().getDag().getNumNodes() == 0) {
+        if (this.wrapper.getBayesPm().getDag().getNumNodes() == 0) {
             throw new IllegalArgumentException("There are no nodes in that Bayes PM.");
         }
 
-        this.setLayout(new BorderLayout());
+        setLayout(new BorderLayout());
 
-        Graph graph = wrapper.getBayesPm().getDag();
-        GraphWorkbench workbench = new GraphWorkbench(graph);
+        final Graph graph = this.wrapper.getBayesPm().getDag();
+        final GraphWorkbench workbench = new GraphWorkbench(graph);
         workbench.enableEditing(false);
-        BayesPmEditorWizard wizard = new BayesPmEditorWizard(wrapper.getBayesPm(), workbench);
+        final BayesPmEditorWizard wizard = new BayesPmEditorWizard(this.wrapper.getBayesPm(), workbench);
 
-        JScrollPane workbenchScroll = new JScrollPane(workbench);
-        JScrollPane wizardScroll = new JScrollPane(wizard);
+        final JScrollPane workbenchScroll = new JScrollPane(workbench);
+        final JScrollPane wizardScroll = new JScrollPane(wizard);
 
         workbenchScroll.setPreferredSize(new Dimension(450, 450));
         wizardScroll.setPreferredSize(new Dimension(450, 450));
 
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+        final JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                 workbenchScroll, wizardScroll);
         splitPane.setOneTouchExpandable(true);
         splitPane.setDividerLocation(workbenchScroll.getPreferredSize().width);
         panel.add(splitPane, BorderLayout.CENTER);
 
-        JMenuBar menuBar = new JMenuBar();
-        JMenu file = new JMenu("File");
+        final JMenuBar menuBar = new JMenuBar();
+        final JMenu file = new JMenu("File");
         menuBar.add(file);
 //        file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
         file.add(new SaveComponentImage(workbench, "Save Graph Image..."));
         panel.add(menuBar, BorderLayout.NORTH);
 
-        this.setName("Bayes PM Editor");
+        setName("Bayes PM Editor");
         wizard.addPropertyChangeListener(this);
 
-        wizard.setEditingLatentVariablesAllowed(this.isEditingLatentVariablesAllowed());
-        wizard.setEditingMeasuredVariablesAllowed(this.isEditingMeasuredVariablesAllowed());
+        wizard.setEditingLatentVariablesAllowed(isEditingLatentVariablesAllowed());
+        wizard.setEditingMeasuredVariablesAllowed(isEditingMeasuredVariablesAllowed());
         this.wizard = wizard;
 
-        targetPanel.add(panel, BorderLayout.CENTER);
+        this.targetPanel.add(panel, BorderLayout.CENTER);
     }
 
     /**
      * G
      * Reacts to property change events.
      */
-    public void propertyChange(PropertyChangeEvent e) {
+    public void propertyChange(final PropertyChangeEvent e) {
         if ("editorClosing".equals(e.getPropertyName())) {
-            this.firePropertyChange("editorClosing", null, this.getName());
+            firePropertyChange("editorClosing", null, getName());
         }
 
         if ("closeFrame".equals(e.getPropertyName())) {
-            this.firePropertyChange("closeFrame", null, null);
+            firePropertyChange("closeFrame", null, null);
         }
 
         if ("modelChanged".equals(e.getPropertyName())) {
-            this.firePropertyChange("modelChanged", e.getOldValue(),
+            firePropertyChange("modelChanged", e.getOldValue(),
                     e.getNewValue());
         }
 
@@ -171,44 +171,44 @@ public class BayesPmEditor extends JPanel
     /**
      * Sets the name fo the Bayes PM.
      */
-    public void setName(String name) {
-        String oldName = this.getName();
+    public void setName(final String name) {
+        final String oldName = getName();
         super.setName(name);
-        this.firePropertyChange("name", oldName, this.getName());
+        firePropertyChange("name", oldName, getName());
     }
 
     public JComponent getEditDelegate() {
-        return wizard;
+        return this.wizard;
     }
 
     /**
      * True iff the editing of measured variables is allowed.
      */
     private boolean isEditingMeasuredVariablesAllowed() {
-        return editingMeasuredVariablesAllowed;
+        return this.editingMeasuredVariablesAllowed;
     }
 
     /**
      * True iff the editing of measured variables is allowed.
      */
-    public void setEditingMeasuredVariablesAllowed(boolean editingMeasuredVariablesAllowed) {
+    public void setEditingMeasuredVariablesAllowed(final boolean editingMeasuredVariablesAllowed) {
         this.editingMeasuredVariablesAllowed = editingMeasuredVariablesAllowed;
-        wizard.setEditingMeasuredVariablesAllowed(this.isEditingMeasuredVariablesAllowed());
+        this.wizard.setEditingMeasuredVariablesAllowed(isEditingMeasuredVariablesAllowed());
     }
 
     /**
      * True iff the editing of latent variables is allowed.
      */
     private boolean isEditingLatentVariablesAllowed() {
-        return editingLatentVariablesAllowed;
+        return this.editingLatentVariablesAllowed;
     }
 
     /**
      * True iff the editing of latent variables is allowed.
      */
-    public void setEditingLatentVariablesAllowed(boolean editingLatentVariablesAllowed) {
+    public void setEditingLatentVariablesAllowed(final boolean editingLatentVariablesAllowed) {
         this.editingLatentVariablesAllowed = editingLatentVariablesAllowed;
-        wizard.setEditingLatentVariablesAllowed(this.isEditingLatentVariablesAllowed());
+        this.wizard.setEditingLatentVariablesAllowed(isEditingLatentVariablesAllowed());
     }
 
 }

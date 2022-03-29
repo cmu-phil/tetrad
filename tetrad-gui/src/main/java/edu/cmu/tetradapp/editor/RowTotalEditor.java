@@ -43,32 +43,32 @@ class RowTotalEditor extends JPanel {
      * Constructs a dialog to input a row total for randomly generating
      * Dirichlet Bayes Im rows.
      */
-    public RowTotalEditor(double initialRowTotal) {
-        rowTotalField = new DoubleTextField(initialRowTotal, 4, NumberFormatUtil.getInstance().getNumberFormat());
-        this.buildGui();
+    public RowTotalEditor(final double initialRowTotal) {
+        this.rowTotalField = new DoubleTextField(initialRowTotal, 4, NumberFormatUtil.getInstance().getNumberFormat());
+        buildGui();
     }
 
     public double getRowTotal() {
-        return rowTotalField.getValue();
+        return this.rowTotalField.getValue();
     }
 
     private void buildGui() {
-        this.setLayout(new BorderLayout());
+        setLayout(new BorderLayout());
 
         // continue workbench construction.
-        Box b1 = Box.createVerticalBox();
+        final Box b1 = Box.createVerticalBox();
 
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(Box.createHorizontalStrut(25));
         b2.add(new JLabel("Enter row total:"));
         b2.add(Box.createRigidArea(new Dimension(10, 0)));
         b2.add(Box.createHorizontalGlue());
-        b2.add(rowTotalField);
+        b2.add(this.rowTotalField);
 
         b1.add(b2);
 
         b1.add(Box.createHorizontalGlue());
-        this.add(b1, BorderLayout.CENTER);
+        add(b1, BorderLayout.CENTER);
     }
 }
 

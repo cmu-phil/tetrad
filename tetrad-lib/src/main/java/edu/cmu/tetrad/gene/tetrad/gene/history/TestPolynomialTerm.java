@@ -35,7 +35,7 @@ public class TestPolynomialTerm extends TestCase {
     /**
      * Standard constructor for JUnit test cases.
      */
-    public TestPolynomialTerm(String name) {
+    public TestPolynomialTerm(final String name) {
         super(name);
     }
 
@@ -43,7 +43,7 @@ public class TestPolynomialTerm extends TestCase {
      * Tests to make sure that null parent throw an exception.
      */
     public void testConstruction() {
-        PolynomialTerm term = new PolynomialTerm(0.5, new int[]{1, 2, 0});
+        final PolynomialTerm term = new PolynomialTerm(0.5, new int[]{1, 2, 0});
 
         TestCase.assertEquals(0.5, term.getCoefficient(), 0.00001);
         TestCase.assertEquals(1, term.getVariable(0));
@@ -56,8 +56,8 @@ public class TestPolynomialTerm extends TestCase {
      * Test the evaluation of terms.
      */
     public void testEvaluation() {
-        PolynomialTerm term = new PolynomialTerm(0.5, new int[]{0, 1, 1, 2});
-        double[] values = {1.0, 2.0, 3.0};
+        final PolynomialTerm term = new PolynomialTerm(0.5, new int[]{0, 1, 1, 2});
+        final double[] values = {1.0, 2.0, 3.0};
         TestCase.assertEquals(6.0, term.evaluate(values), 0.00001);
     }
 

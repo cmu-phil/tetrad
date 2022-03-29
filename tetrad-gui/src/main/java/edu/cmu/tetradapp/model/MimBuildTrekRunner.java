@@ -52,59 +52,59 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
 
     //============================CONSTRUCTORS===========================//
 
-    public MimBuildTrekRunner(DataWrapper dataWrapper,
-                              MeasurementModelWrapper mmWrapper,
-                              Parameters params) {
+    public MimBuildTrekRunner(final DataWrapper dataWrapper,
+                              final MeasurementModelWrapper mmWrapper,
+                              final Parameters params) {
         super(dataWrapper, mmWrapper.getClusters(), params);
-        dataSet = (DataSet) this.getData();
-        this.setClusters(mmWrapper.getClusters());
+        this.dataSet = (DataSet) getData();
+        setClusters(mmWrapper.getClusters());
         params.set("clusters", mmWrapper.getClusters());
     }
 
-    public MimBuildTrekRunner(DataWrapper dataWrapper,
-                              BuildPureClustersRunner mmWrapper,
-                              Parameters params) {
+    public MimBuildTrekRunner(final DataWrapper dataWrapper,
+                              final BuildPureClustersRunner mmWrapper,
+                              final Parameters params) {
         super(dataWrapper, mmWrapper.getClusters(), params);
-        dataSet = (DataSet) this.getData();
-        this.setClusters(mmWrapper.getClusters());
+        this.dataSet = (DataSet) getData();
+        setClusters(mmWrapper.getClusters());
         params.set("clusters", mmWrapper.getClusters());
     }
 
-    public MimBuildTrekRunner(DataWrapper dataWrapper,
-                              MeasurementModelWrapper mmWrapper,
-                              Parameters params,
-                              KnowledgeBoxModel knowledgeBoxModel) {
+    public MimBuildTrekRunner(final DataWrapper dataWrapper,
+                              final MeasurementModelWrapper mmWrapper,
+                              final Parameters params,
+                              final KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, mmWrapper.getClusters(), params);
-        dataSet = (DataSet) this.getData();
-        this.setClusters(mmWrapper.getClusters());
+        this.dataSet = (DataSet) getData();
+        setClusters(mmWrapper.getClusters());
         params.set("clusters", mmWrapper.getClusters());
         params.set("knowledge", knowledgeBoxModel.getKnowledge());
     }
 
-    public MimBuildTrekRunner(MeasurementModelWrapper mmWrapper,
-                              DataWrapper dataWrapper,
-                              Parameters params) {
+    public MimBuildTrekRunner(final MeasurementModelWrapper mmWrapper,
+                              final DataWrapper dataWrapper,
+                              final Parameters params) {
         super(mmWrapper, mmWrapper.getClusters(), params);
-        dataSet = (DataSet) dataWrapper.getDataModelList().get(0);
-        this.setClusters(mmWrapper.getClusters());
+        this.dataSet = (DataSet) dataWrapper.getDataModelList().get(0);
+        setClusters(mmWrapper.getClusters());
         params.set("clusters", mmWrapper.getClusters());
     }
 
-    public MimBuildTrekRunner(MimBuildTrekRunner runner, Parameters params) {
+    public MimBuildTrekRunner(final MimBuildTrekRunner runner, final Parameters params) {
         super(runner, params);
-        dataSet = (DataSet) this.getData();
-        this.setClusters((Clusters) params.get("clusters", null));
+        this.dataSet = (DataSet) getData();
+        setClusters((Clusters) params.get("clusters", null));
     }
 
-    public MimBuildTrekRunner(MimBuildTrekRunner runner, KnowledgeBoxModel knowledgeBox, Parameters params) {
+    public MimBuildTrekRunner(final MimBuildTrekRunner runner, final KnowledgeBoxModel knowledgeBox, final Parameters params) {
         super(runner, params);
-        dataSet = (DataSet) this.getData();
-        this.setClusters((Clusters) params.get("clusters", null));
+        this.dataSet = (DataSet) getData();
+        setClusters((Clusters) params.get("clusters", null));
         params.set("knowledge", knowledgeBox.getKnowledge());
     }
 
     public ICovarianceMatrix getCovMatrix() {
-        return covMatrix;
+        return this.covMatrix;
     }
 
     /**
@@ -123,90 +123,90 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
      * implemented in the extending class.
      */
     public void execute() throws Exception {
-        DataSet data = dataSet;
+        final DataSet data = this.dataSet;
 
-        MimbuildTrek mimbuild = new MimbuildTrek();
-        mimbuild.setAlpha(this.getParams().getDouble("alpha", 0.001));
-        mimbuild.setKnowledge((IKnowledge) this.getParams().get("knowledge", new Knowledge2()));
+        final MimbuildTrek mimbuild = new MimbuildTrek();
+        mimbuild.setAlpha(getParams().getDouble("alpha", 0.001));
+        mimbuild.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
 
-        if (this.getParams().getBoolean("includeThreeClusters", true)) {
+        if (getParams().getBoolean("includeThreeClusters", true)) {
             mimbuild.setMinClusterSize(3);
         } else {
             mimbuild.setMinClusterSize(4);
         }
 
-        Clusters clusters = (Clusters) this.getParams().get("clusters", null);
+        final Clusters clusters = (Clusters) getParams().get("clusters", null);
 
-        List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters, data.getVariables());
-        List<String> latentNames = new ArrayList<>();
+        final List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters, data.getVariables());
+        final List<String> latentNames = new ArrayList<>();
 
         for (int i = 0; i < clusters.getNumClusters(); i++) {
             latentNames.add(clusters.getClusterName(i));
         }
 
-        CovarianceMatrix cov = new CovarianceMatrix(data);
+        final CovarianceMatrix cov = new CovarianceMatrix(data);
 
-        Graph structureGraph = mimbuild.search(partition, latentNames, cov);
+        final Graph structureGraph = mimbuild.search(partition, latentNames, cov);
         GraphUtils.circleLayout(structureGraph, 200, 200, 150);
         GraphUtils.fruchtermanReingoldLayout(structureGraph);
 
-        ICovarianceMatrix latentsCov = mimbuild.getLatentsCov();
+        final ICovarianceMatrix latentsCov = mimbuild.getLatentsCov();
 
         TetradLogger.getInstance().log("details", "Latent covs = \n" + latentsCov);
 
-        Graph fullGraph = mimbuild.getFullGraph();
+        final Graph fullGraph = mimbuild.getFullGraph();
         GraphUtils.circleLayout(fullGraph, 200, 200, 150);
         GraphUtils.fruchtermanReingoldLayout(fullGraph);
 
-        this.setResultGraph(fullGraph);
-        this.setFullGraph(fullGraph);
-        this.setClusters(MimUtils.convertToClusters(structureGraph));
+        setResultGraph(fullGraph);
+        setFullGraph(fullGraph);
+        setClusters(MimUtils.convertToClusters(structureGraph));
 
-        this.setClusters(ClusterUtils.partitionToClusters(mimbuild.getClustering()));
+        setClusters(ClusterUtils.partitionToClusters(mimbuild.getClustering()));
 
-        this.setStructureGraph(structureGraph);
+        setStructureGraph(structureGraph);
 
-        this.getParams().set("latentVariableNames", new ArrayList<>(latentNames));
+        getParams().set("latentVariableNames", new ArrayList<>(latentNames));
 
-        covMatrix = latentsCov;
+        this.covMatrix = latentsCov;
 
-        double p = mimbuild.getpValue();
+        final double p = mimbuild.getpValue();
 
         TetradLogger.getInstance().log("details", "\nStructure graph = " + structureGraph);
-        TetradLogger.getInstance().log("details", this.getLatentClustersString(fullGraph).toString());
+        TetradLogger.getInstance().log("details", getLatentClustersString(fullGraph).toString());
         TetradLogger.getInstance().log("details", "P = " + p);
 
-        if (this.getParams().getBoolean("showMaxP", false)) {
-            if (p > this.getParams().getDouble("maxP", 1.0)) {
-                this.getParams().set("maxP", p);
-                this.getParams().set("maxStructureGraph", structureGraph);
-                this.getParams().set("maxClusters", this.getClusters());
-                this.getParams().set("maxFullGraph", fullGraph);
-                this.getParams().set("maxAlpha", this.getParams().getDouble("alpha", 0.001));
+        if (getParams().getBoolean("showMaxP", false)) {
+            if (p > getParams().getDouble("maxP", 1.0)) {
+                getParams().set("maxP", p);
+                getParams().set("maxStructureGraph", structureGraph);
+                getParams().set("maxClusters", getClusters());
+                getParams().set("maxFullGraph", fullGraph);
+                getParams().set("maxAlpha", getParams().getDouble("alpha", 0.001));
             }
 
-            this.setStructureGraph((Graph) this.getParams().get("maxStructureGraph", null));
-            this.setFullGraph((Graph) this.getParams().get("maxFullGraph", null));
-            if (this.getParams().get("maxClusters", null) != null) {
-                this.setClusters((Clusters) this.getParams().get("maxClusters", null));
+            setStructureGraph((Graph) getParams().get("maxStructureGraph", null));
+            setFullGraph((Graph) getParams().get("maxFullGraph", null));
+            if (getParams().get("maxClusters", null) != null) {
+                setClusters((Clusters) getParams().get("maxClusters", null));
             }
-            this.setResultGraph((Graph) this.getParams().get("maxFullGraph", null));
+            setResultGraph((Graph) getParams().get("maxFullGraph", null));
 
-            TetradLogger.getInstance().log("maxmodel", "\nMAX Graph = " + this.getParams().get("maxStructureGraph", null));
-            TetradLogger.getInstance().log("maxmodel", this.getLatentClustersString((Graph) this.getParams().get("maxFullGraph", null)).toString());
-            TetradLogger.getInstance().log("maxmodel", "MAX P = " + this.getParams().getDouble("maxP", 1.0));
+            TetradLogger.getInstance().log("maxmodel", "\nMAX Graph = " + getParams().get("maxStructureGraph", null));
+            TetradLogger.getInstance().log("maxmodel", getLatentClustersString((Graph) getParams().get("maxFullGraph", null)).toString());
+            TetradLogger.getInstance().log("maxmodel", "MAX P = " + getParams().getDouble("maxP", 1.0));
         }
     }
 
-    private StringBuilder getLatentClustersString(Graph graph) {
-        StringBuilder builder = new StringBuilder();
+    private StringBuilder getLatentClustersString(final Graph graph) {
+        final StringBuilder builder = new StringBuilder();
         builder.append("Latent Clusters:\n");
 
-        List<Node> latents = ReidentifyVariables.getLatents(graph);
+        final List<Node> latents = ReidentifyVariables.getLatents(graph);
         Collections.sort(latents);
 
-        for (Node latent : latents) {
-            List<Node> children = graph.getChildren(latent);
+        for (final Node latent : latents) {
+            final List<Node> children = graph.getChildren(latent);
             children.removeAll(latents);
             Collections.sort(children);
 
@@ -222,23 +222,23 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
         return builder;
     }
 
-    private void setFullGraph(Graph fullGraph) {
+    private void setFullGraph(final Graph fullGraph) {
         this.fullGraph = fullGraph;
     }
 
     //===========================PRIVATE METHODS==========================//
 
     public Graph getGraph() {
-        return this.getResultGraph();
+        return getResultGraph();
     }
 
     public SemPm getSemPm() {
-        Graph graph = this.getResultGraph();
+        final Graph graph = getResultGraph();
         return new SemPm(graph);
     }
 
     public Graph getFullGraph() {
-        return fullGraph;
+        return this.fullGraph;
     }
 }
 

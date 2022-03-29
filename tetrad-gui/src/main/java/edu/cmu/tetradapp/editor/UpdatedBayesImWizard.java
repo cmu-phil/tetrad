@@ -76,8 +76,8 @@ public final class UpdatedBayesImWizard extends JPanel {
     private JPanel tablePanel;
     private final JPanel marginalsPanel;
 
-    public UpdatedBayesImWizard(UpdaterWrapper updaterWrapper,
-                                GraphWorkbench workbench, int tab, Node selectedNode) {
+    public UpdatedBayesImWizard(final UpdaterWrapper updaterWrapper,
+                                final GraphWorkbench workbench, int tab, Node selectedNode) {
         if (updaterWrapper == null) {
             throw new NullPointerException();
         }
@@ -85,73 +85,73 @@ public final class UpdatedBayesImWizard extends JPanel {
         this.updaterWrapper = updaterWrapper;
         this.selectedNode = selectedNode;
 
-        evidence = updaterWrapper.getBayesUpdater().getEvidence();
+        this.evidence = updaterWrapper.getBayesUpdater().getEvidence();
         this.workbench = workbench;
         this.workbench.setAllowDoubleClickActions(false);
 
-        this.setLayout(new BorderLayout());
+        setLayout(new BorderLayout());
 
         // Set up components.
-        varNamesComboBox = this.makeVarNamesDropdown();
-        varNamesComboBox2 = this.makeVarNamesDropdown();
+        this.varNamesComboBox = makeVarNamesDropdown();
+        this.varNamesComboBox2 = makeVarNamesDropdown();
 
-        Node modelNode = (Node) (varNamesComboBox.getSelectedItem());
+        final Node modelNode = (Node) (this.varNamesComboBox.getSelectedItem());
         workbench.deselectAll();
         workbench.selectNode(modelNode);
-        selectedNode = (Node) (varNamesComboBox.getSelectedItem());
+        selectedNode = (Node) (this.varNamesComboBox.getSelectedItem());
 
-        marginalsPanel = new JPanel();
-        marginalsPanel.setLayout(new BorderLayout());
-        JComponent marginalDisplay = this.createMarginalDisplay(selectedNode);
+        this.marginalsPanel = new JPanel();
+        this.marginalsPanel.setLayout(new BorderLayout());
+        final JComponent marginalDisplay = createMarginalDisplay(selectedNode);
 
-        marginalsPanel.add(marginalDisplay,
+        this.marginalsPanel.add(marginalDisplay,
                 BorderLayout.CENTER);
 
-        JTabbedPane probsPane = new JTabbedPane(SwingConstants.TOP);
+        final JTabbedPane probsPane = new JTabbedPane(SwingConstants.TOP);
 
-        this.setupMarginalsDisplay(probsPane);
+        setupMarginalsDisplay(probsPane);
 
         if (updaterWrapper.getBayesUpdater().getUpdatedBayesIm() != null) {
-            this.setupConditionalProbabilitiesDisplay(selectedNode, updaterWrapper,
+            setupConditionalProbabilitiesDisplay(selectedNode, updaterWrapper,
                     probsPane);
         }
 
         tab = tab < probsPane.getTabCount() ? tab : 0;
         probsPane.setSelectedIndex(tab);
 
-        this.add(new JScrollPane(probsPane), BorderLayout.CENTER);
+        add(new JScrollPane(probsPane), BorderLayout.CENTER);
 
         // Add listeners.
-        varNamesComboBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Node node = (Node) (varNamesComboBox.getSelectedItem());
-                UpdatedBayesImWizard.this.setCurrentNode(node);
+        this.varNamesComboBox.addActionListener(new ActionListener() {
+            public void actionPerformed(final ActionEvent e) {
+                final Node node = (Node) (UpdatedBayesImWizard.this.varNamesComboBox.getSelectedItem());
+                setCurrentNode(node);
             }
         });
 
-        varNamesComboBox2.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Node node = (Node) (varNamesComboBox2.getSelectedItem());
-                UpdatedBayesImWizard.this.setCurrentNode(node);
+        this.varNamesComboBox2.addActionListener(new ActionListener() {
+            public void actionPerformed(final ActionEvent e) {
+                final Node node = (Node) (UpdatedBayesImWizard.this.varNamesComboBox2.getSelectedItem());
+                setCurrentNode(node);
             }
         });
 
         workbench.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent e) {
+            public void propertyChange(final PropertyChangeEvent e) {
                 if (e.getPropertyName().equals("selectedNodes")) {
-                    List selection = (List) (e.getNewValue());
+                    final List selection = (List) (e.getNewValue());
 
                     if (selection.size() == 1) {
-                        Node node = (Node) (selection.get(0));
-                        varNamesComboBox.setSelectedItem(node);
+                        final Node node = (Node) (selection.get(0));
+                        UpdatedBayesImWizard.this.varNamesComboBox.setSelectedItem(node);
 
-                        DisplayNode graphNode = UpdatedBayesImWizard.this.getWorkbench().getSelectedNode();
+                        final DisplayNode graphNode = getWorkbench().getSelectedNode();
 
                         if (graphNode == null) {
                             return;
                         }
 
-                        Node tetradNode = graphNode.getModelNode();
+                        final Node tetradNode = graphNode.getModelNode();
                         updaterWrapper.getParams().set("variable", updaterWrapper.getBayesUpdater().getBayesIm().getBayesPm().getVariable(tetradNode));
                     }
                 }
@@ -159,70 +159,70 @@ public final class UpdatedBayesImWizard extends JPanel {
         });
     }
 
-    private void setupMarginalsDisplay(JTabbedPane probsPane) {
-        probsPane.add("Marginal Probabilities", marginalsPanel);
+    private void setupMarginalsDisplay(final JTabbedPane probsPane) {
+        probsPane.add("Marginal Probabilities", this.marginalsPanel);
         probsPane.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                JTabbedPane tabbedPane = (JTabbedPane) e.getSource();
-                int tab = tabbedPane.getSelectedIndex();
-                UpdatedBayesImWizard.this.firePropertyChange("updatedBayesImWizardTab", null, tab);
+            public void stateChanged(final ChangeEvent e) {
+                final JTabbedPane tabbedPane = (JTabbedPane) e.getSource();
+                final int tab = tabbedPane.getSelectedIndex();
+                firePropertyChange("updatedBayesImWizardTab", null, tab);
             }
         });
     }
 
-    private void setupConditionalProbabilitiesDisplay(Node selectedNode,
-                                                      UpdaterWrapper updaterWrapper, JTabbedPane probsPane) {
-        UpdaterEditingTableModel editingTableModel =
+    private void setupConditionalProbabilitiesDisplay(final Node selectedNode,
+                                                      final UpdaterWrapper updaterWrapper, final JTabbedPane probsPane) {
+        final UpdaterEditingTableModel editingTableModel =
                 new UpdaterEditingTableModel(selectedNode,
                         updaterWrapper.getBayesUpdater().getUpdatedBayesIm(), this);
-        editingTable = new UpdaterEditingTable(editingTableModel);
-        JScrollPane scroll = new JScrollPane(editingTable);
+        this.editingTable = new UpdaterEditingTable(editingTableModel);
+        final JScrollPane scroll = new JScrollPane(this.editingTable);
         scroll.setPreferredSize(new Dimension(0, 150));
 
-        tablePanel = new JPanel();
-        tablePanel.setLayout(new BorderLayout());
-        tablePanel.add(scroll, BorderLayout.CENTER);
-        editingTable.grabFocus();
+        this.tablePanel = new JPanel();
+        this.tablePanel.setLayout(new BorderLayout());
+        this.tablePanel.add(scroll, BorderLayout.CENTER);
+        this.editingTable.grabFocus();
 
-        probsPane.add("Conditional Probabilities", this.createConditionalDisplay());
+        probsPane.add("Conditional Probabilities", createConditionalDisplay());
     }
 
     private JComboBox makeVarNamesDropdown() {
-        JComboBox varNamesComboBox = new SortingComboBox() {
+        final JComboBox varNamesComboBox = new SortingComboBox() {
             public Dimension getMaximumSize() {
-                return this.getPreferredSize();
+                return getPreferredSize();
             }
         };
 
         varNamesComboBox.setBackground(Color.white);
 
-        Graph graph = updaterWrapper.getBayesUpdater().getManipulatedGraph();
+        final Graph graph = this.updaterWrapper.getBayesUpdater().getManipulatedGraph();
 
-        for (Object o : graph.getNodes()) {
+        for (final Object o : graph.getNodes()) {
             varNamesComboBox.addItem(o);
         }
 
-        if (selectedNode != null) {
-            varNamesComboBox.setSelectedItem(selectedNode);
+        if (this.selectedNode != null) {
+            varNamesComboBox.setSelectedItem(this.selectedNode);
         } else {
             varNamesComboBox.setSelectedIndex(0);
-            selectedNode = (Node) varNamesComboBox.getSelectedItem();
+            this.selectedNode = (Node) varNamesComboBox.getSelectedItem();
         }
 
         return varNamesComboBox;
     }
 
     private JComponent createConditionalDisplay() {
-        Box conditionalBox = Box.createVerticalBox();
+        final Box conditionalBox = Box.createVerticalBox();
 
-        Box b1 = Box.createHorizontalBox();
+        final Box b1 = Box.createHorizontalBox();
         b1.add(new JLabel("Probabilities for values of "));
-        b1.add(varNamesComboBox);
+        b1.add(this.varNamesComboBox);
         //b1.add(new JLabel(" conditional on values"));
         b1.add(Box.createHorizontalGlue());
         conditionalBox.add(b1);
 
-        Box b0 = Box.createHorizontalBox();
+        final Box b0 = Box.createHorizontalBox();
 
 
         b0.add(new JLabel(
@@ -232,44 +232,44 @@ public final class UpdatedBayesImWizard extends JPanel {
         conditionalBox.add(b0);
         conditionalBox.add(Box.createVerticalStrut(10));
 
-        this.addListOfEvidence(conditionalBox);
+        addListOfEvidence(conditionalBox);
 
         conditionalBox.add(Box.createVerticalStrut(20));
 
-        Box b2 = Box.createHorizontalBox();
-        b2.add(tablePanel);
+        final Box b2 = Box.createHorizontalBox();
+        b2.add(this.tablePanel);
         conditionalBox.add(b2);
 
         return conditionalBox;
     }
 
-    private void addListOfEvidence(Box verticalBox) {
+    private void addListOfEvidence(final Box verticalBox) {
         boolean foundACondition = false;
 
-        for (int i = 0; i < evidence.getNumNodes(); i++) {
-            if (evidence.hasNoEvidence(i)) {
+        for (int i = 0; i < this.evidence.getNumNodes(); i++) {
+            if (this.evidence.hasNoEvidence(i)) {
                 continue;
             }
 
             foundACondition = true;
 
-            Node node = evidence.getNode(i);
-            Box c = Box.createHorizontalBox();
+            final Node node = this.evidence.getNode(i);
+            final Box c = Box.createHorizontalBox();
             c.add(Box.createRigidArea(new Dimension(30, 1)));
-            StringBuilder buf = new StringBuilder();
+            final StringBuilder buf = new StringBuilder();
 
             buf.append("<html>").append(node.getName()).append(" = ");
             boolean listedOneAlready = false;
 
-            for (int j = 0; j < evidence.getNumCategories(i); j++) {
-                if (evidence.getProposition().isAllowed(i, j)) {
+            for (int j = 0; j < this.evidence.getNumCategories(i); j++) {
+                if (this.evidence.getProposition().isAllowed(i, j)) {
                     if (listedOneAlready) {
                         buf.append(" <i>OR</i>  ");
                     }
 
-                    BayesIm manipulatedBayesIm =
-                            updaterWrapper.getBayesUpdater().getManipulatedBayesIm();
-                    String valueName = manipulatedBayesIm.getBayesPm()
+                    final BayesIm manipulatedBayesIm =
+                            this.updaterWrapper.getBayesUpdater().getManipulatedBayesIm();
+                    final String valueName = manipulatedBayesIm.getBayesPm()
                             .getCategory(node, j);
                     buf.append(valueName);
                     listedOneAlready = true;
@@ -284,7 +284,7 @@ public final class UpdatedBayesImWizard extends JPanel {
         }
 
         if (!foundACondition) {
-            Box e = Box.createHorizontalBox();
+            final Box e = Box.createHorizontalBox();
             e.add(Box.createRigidArea(new Dimension(30, 1)));
             e.add(new JLabel("--No Evidence--"));
             e.add(Box.createHorizontalGlue());
@@ -292,94 +292,94 @@ public final class UpdatedBayesImWizard extends JPanel {
         }
     }
 
-    private JComponent createMarginalDisplay(Node node) throws RuntimeException {
+    private JComponent createMarginalDisplay(final Node node) throws RuntimeException {
         if (node == null) {
             throw new NullPointerException();
         }
 
-        Box marginalBox = Box.createVerticalBox();
-        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        final Box marginalBox = Box.createVerticalBox();
+        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-        Box b1 = Box.createHorizontalBox();
+        final Box b1 = Box.createHorizontalBox();
         b1.add(new JLabel("Marginal probabilities for variable "));
-        b1.add(varNamesComboBox2);
+        b1.add(this.varNamesComboBox2);
         b1.add(new JLabel(", updated"));
         b1.add(Box.createHorizontalGlue());
         marginalBox.add(b1);
 
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("to reflect the following evidence (P = prior, U = updated):"));
         b2.add(Box.createHorizontalGlue());
         marginalBox.add(b2);
 
         marginalBox.add(Box.createRigidArea(new Dimension(1, 10)));
-        this.addListOfEvidence(marginalBox);
+        addListOfEvidence(marginalBox);
         marginalBox.add(Box.createRigidArea(new Dimension(1, 20)));
 
-        Node node1 = updaterWrapper.getBayesUpdater().getBayesIm().getNode(node.getName());
-        int nodeIndex = updaterWrapper.getBayesUpdater().getBayesIm().getNodeIndex(node1);
+        final Node node1 = this.updaterWrapper.getBayesUpdater().getBayesIm().getNode(node.getName());
+        final int nodeIndex = this.updaterWrapper.getBayesUpdater().getBayesIm().getNodeIndex(node1);
 
-        double[] priorMarginals = updaterWrapper.getBayesUpdater().calculatePriorMarginals(nodeIndex);
-        double[] updatedMarginals = updaterWrapper.getBayesUpdater().calculateUpdatedMarginals(nodeIndex);
+        final double[] priorMarginals = this.updaterWrapper.getBayesUpdater().calculatePriorMarginals(nodeIndex);
+        final double[] updatedMarginals = this.updaterWrapper.getBayesUpdater().calculateUpdatedMarginals(nodeIndex);
 
-        Font font = this.getFont();
-        FontMetrics fontMetrics = this.getFontMetrics(font);
+        final Font font = getFont();
+        final FontMetrics fontMetrics = getFontMetrics(font);
 
-        Font smallFont = new Font("Dialog", Font.BOLD, 10);
+        final Font smallFont = new Font("Dialog", Font.BOLD, 10);
         int maxWidth = 0;
 
         for (int i = 0;
-             i < updaterWrapper.getBayesUpdater().getBayesIm().getNumColumns(nodeIndex); i++) {
-            String value =
-                    updaterWrapper.getBayesUpdater().getBayesIm().getBayesPm().getCategory(node, i);
-            String label = node + " = " + value;
-            int width = fontMetrics.stringWidth(label);
+             i < this.updaterWrapper.getBayesUpdater().getBayesIm().getNumColumns(nodeIndex); i++) {
+            final String value =
+                    this.updaterWrapper.getBayesUpdater().getBayesIm().getBayesPm().getCategory(node, i);
+            final String label = node + " = " + value;
+            final int width = fontMetrics.stringWidth(label);
             if (width > maxWidth) {
                 maxWidth = width;
             }
         }
 
         for (int i = 0;
-             i < updaterWrapper.getBayesUpdater().getBayesIm().getNumColumns(nodeIndex); i++) {
-            String value =
-                    updaterWrapper.getBayesUpdater().getBayesIm().getBayesPm().getCategory(node, i);
-            Box c = Box.createHorizontalBox();
+             i < this.updaterWrapper.getBayesUpdater().getBayesIm().getNumColumns(nodeIndex); i++) {
+            final String value =
+                    this.updaterWrapper.getBayesUpdater().getBayesIm().getBayesPm().getCategory(node, i);
+            final Box c = Box.createHorizontalBox();
             c.add(Box.createRigidArea(new Dimension(10, 1)));
 
-            String label = node + " = " + value;
-            int width = fontMetrics.stringWidth(label);
+            final String label = node + " = " + value;
+            final int width = fontMetrics.stringWidth(label);
 
             c.add(Box.createRigidArea(new Dimension(maxWidth - width, 0)));
             c.add(new JLabel(label));
 
-            int priorWidth = (int) (150.0 * priorMarginals[i]);
-            int updatedWidth = (int) (150.0 * updatedMarginals[i]);
+            final int priorWidth = (int) (150.0 * priorMarginals[i]);
+            final int updatedWidth = (int) (150.0 * updatedMarginals[i]);
 
-            JPanel priorBar;
+            final JPanel priorBar;
 
             if (Double.isNaN(priorMarginals[i])) {
-                priorBar = this.makeBar(150, 3, Color.LIGHT_GRAY);
+                priorBar = makeBar(150, 3, Color.LIGHT_GRAY);
             } else {
-                priorBar = this.makeBar(priorWidth, 6, Color.BLUE.brighter());
+                priorBar = makeBar(priorWidth, 6, Color.BLUE.brighter());
             }
 
-            JPanel updatedBar;
+            final JPanel updatedBar;
 
             if (Double.isNaN(updatedMarginals[i])) {
-                updatedBar = this.makeBar(150, 3, Color.LIGHT_GRAY);
+                updatedBar = makeBar(150, 3, Color.LIGHT_GRAY);
             } else {
-                updatedBar = this.makeBar(updatedWidth, 6, Color.RED);
+                updatedBar = makeBar(updatedWidth, 6, Color.RED);
             }
 
             c.add(Box.createRigidArea(new Dimension(10, 1)));
 
-            Box d = Box.createVerticalBox();
+            final Box d = Box.createVerticalBox();
 
-            Box e1 = Box.createHorizontalBox();
+            final Box e1 = Box.createHorizontalBox();
             e1.add(priorBar);
             e1.add(Box.createHorizontalGlue());
 
-            Box e2 = Box.createHorizontalBox();
+            final Box e2 = Box.createHorizontalBox();
             e2.add(updatedBar);
             e2.add(Box.createHorizontalGlue());
 
@@ -390,20 +390,20 @@ public final class UpdatedBayesImWizard extends JPanel {
             c.add(d);
             c.add(Box.createHorizontalGlue());
 
-            Box f = Box.createVerticalBox();
-            Box g1 = Box.createHorizontalBox();
-            Box g2 = Box.createHorizontalBox();
+            final Box f = Box.createVerticalBox();
+            final Box g1 = Box.createHorizontalBox();
+            final Box g2 = Box.createHorizontalBox();
 
-            String priorText = Double.isNaN(priorMarginals[i])
+            final String priorText = Double.isNaN(priorMarginals[i])
                     ? "(P) Undefined" : "(P) " + nf.format(priorMarginals[i]);
 
-            JLabel priorValueLabel = new JLabel(priorText);
+            final JLabel priorValueLabel = new JLabel(priorText);
 
 
-            String marginalText = Double.isNaN(updatedMarginals[i])
+            final String marginalText = Double.isNaN(updatedMarginals[i])
                     ? "(U) Undefined" : "(U) " + nf.format(updatedMarginals[i]);
 
-            JLabel marginalValueLabel = new JLabel(marginalText);
+            final JLabel marginalValueLabel = new JLabel(marginalText);
             priorValueLabel.setFont(smallFont);
 
             g1.add(Box.createHorizontalGlue());
@@ -424,8 +424,8 @@ public final class UpdatedBayesImWizard extends JPanel {
         return marginalBox;
     }
 
-    private JPanel makeBar(int width, int height, Color color) {
-        JPanel bar = new JPanel() {
+    private JPanel makeBar(final int width, final int height, final Color color) {
+        final JPanel bar = new JPanel() {
             public Dimension getPreferredSize() {
                 return new Dimension(width, height);
             }
@@ -469,71 +469,71 @@ public final class UpdatedBayesImWizard extends JPanel {
      * Sets the getModel display to reflect the stored values of the getModel
      * selectedNode.
      */
-    private void setCurrentNode(Node node) {
-        Window owner = (Window) this.getTopLevelAncestor();
+    private void setCurrentNode(final Node node) {
+        final Window owner = (Window) getTopLevelAncestor();
 
         if (owner == null) {
-            this.setCurrentNodeSub(node);
+            setCurrentNodeSub(node);
         } else {
             new WatchedProcess(owner) {
                 public void watch() {
-                    UpdatedBayesImWizard.this.setCurrentNodeSub(node);
+                    setCurrentNodeSub(node);
                 }
             };
         }
     }
 
-    private void setCurrentNodeSub(Node node) {
-        if (node == selectedNode) {
+    private void setCurrentNodeSub(final Node node) {
+        if (node == this.selectedNode) {
             return;
         }
 
-        selectedNode = node;
+        this.selectedNode = node;
 
-        this.getWorkbench().deselectAll();
-        this.getWorkbench().selectNode(selectedNode);
+        getWorkbench().deselectAll();
+        getWorkbench().selectNode(this.selectedNode);
 
-        if (varNamesComboBox.getSelectedItem() != node) {
-            varNamesComboBox.setSelectedItem(node);
+        if (this.varNamesComboBox.getSelectedItem() != node) {
+            this.varNamesComboBox.setSelectedItem(node);
         }
 
-        if (varNamesComboBox2.getSelectedItem() != node) {
-            varNamesComboBox2.setSelectedItem(node);
+        if (this.varNamesComboBox2.getSelectedItem() != node) {
+            this.varNamesComboBox2.setSelectedItem(node);
         }
 
-        if (updaterWrapper.getBayesUpdater().getUpdatedBayesIm() != null) {
-            TableCellEditor cellEditor = editingTable.getCellEditor();
+        if (this.updaterWrapper.getBayesUpdater().getUpdatedBayesIm() != null) {
+            final TableCellEditor cellEditor = this.editingTable.getCellEditor();
 
             if (cellEditor != null) {
                 cellEditor.cancelCellEditing();
             }
 
-            UpdaterEditingTableModel editingTableModel =
+            final UpdaterEditingTableModel editingTableModel =
                     new UpdaterEditingTableModel(node,
-                            updaterWrapper.getBayesUpdater().getUpdatedBayesIm(), this);
-            editingTable = new UpdaterEditingTable(editingTableModel);
+                            this.updaterWrapper.getBayesUpdater().getUpdatedBayesIm(), this);
+            this.editingTable = new UpdaterEditingTable(editingTableModel);
 
-            JScrollPane scroll = new JScrollPane(editingTable);
+            final JScrollPane scroll = new JScrollPane(this.editingTable);
             scroll.setPreferredSize(new Dimension(0, 150));
 
-            tablePanel.removeAll();
-            tablePanel.add(scroll, BorderLayout.CENTER);
-            tablePanel.revalidate();
-            tablePanel.repaint();
+            this.tablePanel.removeAll();
+            this.tablePanel.add(scroll, BorderLayout.CENTER);
+            this.tablePanel.revalidate();
+            this.tablePanel.repaint();
         }
 
-        marginalsPanel.removeAll();
-        marginalsPanel.add(this.createMarginalDisplay(node), BorderLayout.CENTER);
-        marginalsPanel.revalidate();
-        marginalsPanel.repaint();
+        this.marginalsPanel.removeAll();
+        this.marginalsPanel.add(createMarginalDisplay(node), BorderLayout.CENTER);
+        this.marginalsPanel.revalidate();
+        this.marginalsPanel.repaint();
     }
 
     private GraphWorkbench getWorkbench() {
-        return workbench;
+        return this.workbench;
     }
 
     public Node getSelectedNode() {
-        return selectedNode;
+        return this.selectedNode;
     }
 }
 
@@ -553,61 +553,61 @@ final class UpdaterEditingTable extends JTable {
      *
      * @param model the table model containing the parameters to be edited.
      */
-    public UpdaterEditingTable(UpdaterEditingTableModel model) {
+    public UpdaterEditingTable(final UpdaterEditingTableModel model) {
         super(model);
 
-        NumberCellEditor editor = new NumberCellEditor();
+        final NumberCellEditor editor = new NumberCellEditor();
         editor.setEmptyString("*");
-        this.setDefaultEditor(Number.class, editor);
-        NumberCellRenderer renderer = new NumberCellRenderer();
+        setDefaultEditor(Number.class, editor);
+        final NumberCellRenderer renderer = new NumberCellRenderer();
         renderer.setEmptyString("*");
-        this.setDefaultRenderer(Number.class, renderer);
-        this.getTableHeader().setReorderingAllowed(false);
-        this.getTableHeader().setResizingAllowed(true);
-        this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        this.setCellSelectionEnabled(true);
+        setDefaultRenderer(Number.class, renderer);
+        getTableHeader().setReorderingAllowed(false);
+        getTableHeader().setResizingAllowed(true);
+        setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        setCellSelectionEnabled(true);
 
-        ListSelectionModel rowSelectionModel = this.getSelectionModel();
+        final ListSelectionModel rowSelectionModel = getSelectionModel();
 
         rowSelectionModel.addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                ListSelectionModel m = (ListSelectionModel) (e.getSource());
-                UpdaterEditingTable.this.setFocusRow(m.getAnchorSelectionIndex());
+            public void valueChanged(final ListSelectionEvent e) {
+                final ListSelectionModel m = (ListSelectionModel) (e.getSource());
+                setFocusRow(m.getAnchorSelectionIndex());
             }
         });
 
-        ListSelectionModel columnSelectionModel = this.getColumnModel()
+        final ListSelectionModel columnSelectionModel = getColumnModel()
                 .getSelectionModel();
 
         columnSelectionModel.addListSelectionListener(
                 new ListSelectionListener() {
-                    public void valueChanged(ListSelectionEvent e) {
-                        ListSelectionModel m =
+                    public void valueChanged(final ListSelectionEvent e) {
+                        final ListSelectionModel m =
                                 (ListSelectionModel) (e.getSource());
-                        UpdaterEditingTable.this.setFocusColumn(m.getAnchorSelectionIndex());
+                        setFocusColumn(m.getAnchorSelectionIndex());
                     }
                 });
 
-        this.setFocusRow(0);
-        this.setFocusColumn(0);
+        setFocusRow(0);
+        setFocusColumn(0);
     }
 
-    public void setDefaultRenderer(Class columnClass,
-                                   TableCellRenderer renderer) {
+    public void setDefaultRenderer(final Class columnClass,
+                                   final TableCellRenderer renderer) {
         super.setDefaultRenderer(columnClass, renderer);
 
-        if (this.getModel() instanceof UpdaterEditingTableModel) {
-            UpdaterEditingTableModel model =
-                    (UpdaterEditingTableModel) this.getModel();
-            FontMetrics fontMetrics = this.getFontMetrics(this.getFont());
+        if (getModel() instanceof UpdaterEditingTableModel) {
+            final UpdaterEditingTableModel model =
+                    (UpdaterEditingTableModel) getModel();
+            final FontMetrics fontMetrics = getFontMetrics(getFont());
 
             for (int i = 0; i < model.getColumnCount(); i++) {
-                TableColumn column = this.getColumnModel().getColumn(i);
-                String columnName = model.getColumnName(i);
-                int currentWidth = column.getPreferredWidth();
+                final TableColumn column = getColumnModel().getColumn(i);
+                final String columnName = model.getColumnName(i);
+                final int currentWidth = column.getPreferredWidth();
 
                 if (columnName != null) {
-                    int minimumWidth = fontMetrics.stringWidth(columnName) + 8;
+                    final int minimumWidth = fontMetrics.stringWidth(columnName) + 8;
 
                     if (minimumWidth > currentWidth) {
                         column.setPreferredWidth(minimumWidth);
@@ -621,20 +621,20 @@ final class UpdaterEditingTable extends JTable {
      * Sets the focus row to the anchor row currently being selected.
      */
     private void setFocusRow(int row) {
-        UpdaterEditingTableModel editingTableModel =
-                (UpdaterEditingTableModel) this.getModel();
-        int failedRow = editingTableModel.getFailedRow();
+        final UpdaterEditingTableModel editingTableModel =
+                (UpdaterEditingTableModel) getModel();
+        final int failedRow = editingTableModel.getFailedRow();
 
         if (failedRow != -1) {
             row = failedRow;
             editingTableModel.resetFailedRow();
         }
 
-        focusRow = row;
+        this.focusRow = row;
 
-        if (focusCol < this.getRowCount()) {
-            this.setRowSelectionInterval(focusRow, focusRow);
-            this.editCellAt(focusRow, focusCol);
+        if (this.focusCol < getRowCount()) {
+            setRowSelectionInterval(this.focusRow, this.focusRow);
+            editCellAt(this.focusRow, this.focusCol);
         }
     }
 
@@ -642,33 +642,33 @@ final class UpdaterEditingTable extends JTable {
      * Sets the focus column to the anchor column currently being selected.
      */
     private void setFocusColumn(int col) {
-        UpdaterEditingTableModel editingTableModel =
-                (UpdaterEditingTableModel) this.getModel();
-        int failedCol = editingTableModel.getFailedCol();
+        final UpdaterEditingTableModel editingTableModel =
+                (UpdaterEditingTableModel) getModel();
+        final int failedCol = editingTableModel.getFailedCol();
 
         if (failedCol != -1) {
             col = failedCol;
             editingTableModel.resetFailedCol();
         }
 
-        if (col < this.getNumParents()) {
-            col = this.getNumParents();
+        if (col < getNumParents()) {
+            col = getNumParents();
         }
 
-        focusCol = col < this.getNumParents() ? this.getNumParents() : col;
+        this.focusCol = col < getNumParents() ? getNumParents() : col;
 
-        if (focusCol >= this.getNumParents() &&
-                focusCol < this.getColumnCount()) {
-            this.setColumnSelectionInterval(focusCol, focusCol);
-            this.editCellAt(focusRow, focusCol);
+        if (this.focusCol >= getNumParents() &&
+                this.focusCol < getColumnCount()) {
+            setColumnSelectionInterval(this.focusCol, this.focusCol);
+            editCellAt(this.focusRow, this.focusCol);
         }
     }
 
     private int getNumParents() {
-        UpdaterEditingTableModel editingTableModel =
-                (UpdaterEditingTableModel) this.getModel();
-        BayesIm bayesIm = editingTableModel.getBayesIm();
-        int nodeIndex = editingTableModel.getNodeIndex();
+        final UpdaterEditingTableModel editingTableModel =
+                (UpdaterEditingTableModel) getModel();
+        final BayesIm bayesIm = editingTableModel.getBayesIm();
+        final int nodeIndex = editingTableModel.getNodeIndex();
         return bayesIm.getNumParents(nodeIndex);
     }
 }
@@ -712,8 +712,8 @@ final class UpdaterEditingTableModel extends AbstractTableModel {
      * Constructs a new editing table model for a given a node in a given
      * bayesIm.
      */
-    public UpdaterEditingTableModel(Node node, BayesIm bayesIm,
-                                    UpdatedBayesImWizard wizard) {
+    public UpdaterEditingTableModel(final Node node, final BayesIm bayesIm,
+                                    final UpdatedBayesImWizard wizard) {
         if (node == null) {
             throw new NullPointerException("Node must not be null.");
         }
@@ -727,26 +727,26 @@ final class UpdaterEditingTableModel extends AbstractTableModel {
         }
 
         this.bayesIm = bayesIm;
-        nodeIndex = bayesIm.getNodeIndex(node);
+        this.nodeIndex = bayesIm.getNodeIndex(node);
         this.wizard = wizard;
     }
 
     /**
      * @return the name of the given column.
      */
-    public String getColumnName(int col) {
-        Node node = this.getBayesIm().getNode(this.getNodeIndex());
+    public String getColumnName(final int col) {
+        final Node node = getBayesIm().getNode(getNodeIndex());
 
-        if (col < this.getBayesIm().getNumParents(this.getNodeIndex())) {
-            int parent = this.getBayesIm().getParent(this.getNodeIndex(), col);
-            return this.getBayesIm().getNode(parent).getName();
+        if (col < getBayesIm().getNumParents(getNodeIndex())) {
+            final int parent = getBayesIm().getParent(getNodeIndex(), col);
+            return getBayesIm().getNode(parent).getName();
         } else {
-            int numNodeVals = this.getBayesIm().getNumColumns(this.getNodeIndex());
-            int valIndex = col - this.getBayesIm().getNumParents(this.getNodeIndex());
+            final int numNodeVals = getBayesIm().getNumColumns(getNodeIndex());
+            final int valIndex = col - getBayesIm().getNumParents(getNodeIndex());
 
             if (valIndex < numNodeVals) {
-                String value =
-                        this.getBayesIm().getBayesPm().getCategory(node, valIndex);
+                final String value =
+                        getBayesIm().getBayesPm().getCategory(node, valIndex);
                 return node.getName() + "=" + value;
             }
 
@@ -758,7 +758,7 @@ final class UpdaterEditingTableModel extends AbstractTableModel {
      * @return the number of rows in the table.
      */
     public int getRowCount() {
-        return this.getBayesIm().getNumRows(this.getNodeIndex());
+        return getBayesIm().getNumRows(getNodeIndex());
     }
 
     /**
@@ -766,8 +766,8 @@ final class UpdaterEditingTableModel extends AbstractTableModel {
      * number of parents for the node plus the number of values for the node.
      */
     public int getColumnCount() {
-        int numParents = this.getBayesIm().getNumParents(this.getNodeIndex());
-        int numColumns = this.getBayesIm().getNumColumns(this.getNodeIndex());
+        final int numParents = getBayesIm().getNumParents(getNodeIndex());
+        final int numColumns = getBayesIm().getNumColumns(getNodeIndex());
         return numParents + numColumns;
     }
 
@@ -779,20 +779,20 @@ final class UpdaterEditingTableModel extends AbstractTableModel {
      * (row) and the next m columns have Double values representing conditional
      * probabilities of node values given parent value combinations.
      */
-    public Object getValueAt(int tableRow, int tableCol) {
-        int[] parentVals =
-                this.getBayesIm().getParentValues(this.getNodeIndex(), tableRow);
+    public Object getValueAt(final int tableRow, final int tableCol) {
+        final int[] parentVals =
+                getBayesIm().getParentValues(getNodeIndex(), tableRow);
 
         if (tableCol < parentVals.length) {
-            Node columnNode = this.getBayesIm().getNode(
-                    this.getBayesIm().getParent(this.getNodeIndex(), tableCol));
-            BayesPm bayesPm = this.getBayesIm().getBayesPm();
+            final Node columnNode = getBayesIm().getNode(
+                    getBayesIm().getParent(getNodeIndex(), tableCol));
+            final BayesPm bayesPm = getBayesIm().getBayesPm();
             return bayesPm.getCategory(columnNode, parentVals[tableCol]);
         } else {
-            int colIndex = tableCol - parentVals.length;
+            final int colIndex = tableCol - parentVals.length;
 
-            if (colIndex < this.getBayesIm().getNumColumns(this.getNodeIndex())) {
-                return this.getBayesIm().getProbability(this.getNodeIndex(), tableRow,
+            if (colIndex < getBayesIm().getNumColumns(getNodeIndex())) {
+                return getBayesIm().getProbability(getNodeIndex(), tableRow,
                         colIndex);
             }
 
@@ -803,44 +803,44 @@ final class UpdaterEditingTableModel extends AbstractTableModel {
     /**
      * Determines whether a cell is in the column range to allow for editing.
      */
-    public boolean isCellEditable(int row, int col) {
-        return !(col < this.getBayesIm().getNumParents(this.getNodeIndex()));
+    public boolean isCellEditable(final int row, final int col) {
+        return !(col < getBayesIm().getNumParents(getNodeIndex()));
     }
 
     /**
      * @return the class of the column.
      */
-    public Class getColumnClass(int col) {
-        boolean isParent = col < this.getBayesIm().getNumParents(this.getNodeIndex());
+    public Class getColumnClass(final int col) {
+        final boolean isParent = col < getBayesIm().getNumParents(getNodeIndex());
         return isParent ? Object.class : Number.class;
     }
 
     public BayesIm getBayesIm() {
-        return bayesIm;
+        return this.bayesIm;
     }
 
     public int getNodeIndex() {
-        return nodeIndex;
+        return this.nodeIndex;
     }
 
     public UpdatedBayesImWizard getWizard() {
-        return wizard;
+        return this.wizard;
     }
 
     public int getFailedRow() {
-        return failedRow;
+        return this.failedRow;
     }
 
     public int getFailedCol() {
-        return failedCol;
+        return this.failedCol;
     }
 
     public void resetFailedRow() {
-        failedRow = -1;
+        this.failedRow = -1;
     }
 
     public void resetFailedCol() {
-        failedCol = -1;
+        this.failedCol = -1;
     }
 }
 

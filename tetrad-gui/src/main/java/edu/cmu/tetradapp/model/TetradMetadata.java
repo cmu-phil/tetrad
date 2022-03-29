@@ -64,12 +64,12 @@ public class TetradMetadata
      */
     public TetradMetadata() {
         try {
-            version = Version.currentViewableVersion();
-        } catch (Exception e) {
+            this.version = Version.currentViewableVersion();
+        } catch (final Exception e) {
             throw new RuntimeException("Can't retrive the current version of this tetrad release.");
         }
 
-        date = new Date();
+        this.date = new Date();
     }
 
     /**
@@ -84,11 +84,11 @@ public class TetradMetadata
     //==========================PUBLIC METHODS===========================//
 
     public Version getVersion() {
-        return version;
+        return this.version;
     }
 
     public Date getDate() {
-        return date;
+        return this.date;
     }
 
     //============================PRIVATE METHODS=======================//
@@ -106,15 +106,15 @@ public class TetradMetadata
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (version == null) {
+        if (this.version == null) {
             throw new NullPointerException();
         }
 
-        if (date == null) {
+        if (this.date == null) {
             throw new NullPointerException();
         }
     }

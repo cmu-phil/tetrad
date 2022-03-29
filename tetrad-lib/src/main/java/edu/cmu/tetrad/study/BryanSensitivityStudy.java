@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.study;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
-import edu.cmu.tetrad.algcomparison.Comparison.ComparisonGraph;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
@@ -41,8 +40,8 @@ import edu.cmu.tetrad.util.Params;
  * @author jdramsey
  */
 public class BryanSensitivityStudy {
-    public static void main(String... args) {
-        Statistics statistics = new Statistics();
+    public static void main(final String... args) {
+        final Statistics statistics = new Statistics();
 
         statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
         statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
@@ -65,55 +64,55 @@ public class BryanSensitivityStudy {
         statistics.setWeight("AHP", 1);
         statistics.setWeight("AHR", 1);
 
-        Algorithms algorithms = new Algorithms();
+        final Algorithms algorithms = new Algorithms();
 
         algorithms.add(new Gfci(new FisherZ(), new SemBicScore()));
 //        algorithms.add(new Fci(new FisherZ()));
 
-        Comparison comparison = new Comparison();
+        final Comparison comparison = new Comparison();
 
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
-        comparison.setComparisonGraph(ComparisonGraph.PAG_of_the_true_DAG);
+        comparison.setComparisonGraph(Comparison.ComparisonGraph.PAG_of_the_true_DAG);
 
 
         {
-            Parameters parameters = getParameters();
-            Graph graph = getGraph1();
-            Simulations simulations = new Simulations();
+            final Parameters parameters = BryanSensitivityStudy.getParameters();
+            final Graph graph = BryanSensitivityStudy.getGraph1();
+            final Simulations simulations = new Simulations();
             simulations.add(new SemSimulation(new SingleGraph(graph)));
             comparison.compareFromSimulations("bryan.simulation", simulations, "graph1.txt", algorithms, statistics, parameters);
         }
 
         {
-            Parameters parameters = getParameters();
-            Graph graph = getGraph2();
-            Simulations simulations = new Simulations();
+            final Parameters parameters = BryanSensitivityStudy.getParameters();
+            final Graph graph = BryanSensitivityStudy.getGraph2();
+            final Simulations simulations = new Simulations();
             simulations.add(new SemSimulation(new SingleGraph(graph)));
             comparison.compareFromSimulations("bryan.simulation", simulations, "graph2.txt", algorithms, statistics, parameters);
         }
 
         {
-            Parameters parameters = getParameters();
-            Graph graph = getGraph3();
-            Simulations simulations = new Simulations();
+            final Parameters parameters = BryanSensitivityStudy.getParameters();
+            final Graph graph = BryanSensitivityStudy.getGraph3();
+            final Simulations simulations = new Simulations();
             simulations.add(new SemSimulation(new SingleGraph(graph)));
             comparison.compareFromSimulations("bryan.simulation", simulations, "graph3.txt", algorithms, statistics, parameters);
         }
 
         {
-            Parameters parameters = getParameters();
-            Graph graph = getGraph4();
-            Simulations simulations = new Simulations();
+            final Parameters parameters = BryanSensitivityStudy.getParameters();
+            final Graph graph = BryanSensitivityStudy.getGraph4();
+            final Simulations simulations = new Simulations();
             simulations.add(new SemSimulation(new SingleGraph(graph)));
             comparison.compareFromSimulations("bryan.simulation", simulations, "graph4.txt", algorithms, statistics, parameters);
         }
     }
 
     private static Parameters getParameters() {
-        Parameters parameters = new Parameters();
+        final Parameters parameters = new Parameters();
 
         parameters.set("thresholdAlpha", .5);
 
@@ -151,15 +150,15 @@ public class BryanSensitivityStudy {
     }
 
     private static Graph getGraph1() {
-        Node A = new GraphNode("A");
-        Node B = new GraphNode("B");
-        Node C = new GraphNode("C");
-        Node D = new GraphNode("D");
+        final Node A = new GraphNode("A");
+        final Node B = new GraphNode("B");
+        final Node C = new GraphNode("C");
+        final Node D = new GraphNode("D");
 
-        Node H1 = new GraphNode("H1");
+        final Node H1 = new GraphNode("H1");
         H1.setNodeType(NodeType.LATENT);
 
-        Graph graph = new EdgeListGraph();
+        final Graph graph = new EdgeListGraph();
         graph.addNode(A);
         graph.addNode(B);
         graph.addNode(C);
@@ -176,18 +175,18 @@ public class BryanSensitivityStudy {
     }
 
     private static Graph getGraph2() {
-        Node A = new GraphNode("A");
-        Node B = new GraphNode("B");
-        Node C = new GraphNode("C");
-        Node D = new GraphNode("D");
+        final Node A = new GraphNode("A");
+        final Node B = new GraphNode("B");
+        final Node C = new GraphNode("C");
+        final Node D = new GraphNode("D");
 
-        Node H1 = new GraphNode("H1");
+        final Node H1 = new GraphNode("H1");
         H1.setNodeType(NodeType.LATENT);
 
-        Node H2 = new GraphNode("H2");
+        final Node H2 = new GraphNode("H2");
         H2.setNodeType(NodeType.LATENT);
 
-        Graph graph = new EdgeListGraph();
+        final Graph graph = new EdgeListGraph();
         graph.addNode(A);
         graph.addNode(B);
         graph.addNode(C);
@@ -208,24 +207,24 @@ public class BryanSensitivityStudy {
     }
 
     private static Graph getGraph3() {
-        Node A = new GraphNode("A");
-        Node B = new GraphNode("B");
-        Node C = new GraphNode("C");
-        Node D = new GraphNode("D");
+        final Node A = new GraphNode("A");
+        final Node B = new GraphNode("B");
+        final Node C = new GraphNode("C");
+        final Node D = new GraphNode("D");
 
-        Node H1 = new GraphNode("H1");
+        final Node H1 = new GraphNode("H1");
         H1.setNodeType(NodeType.LATENT);
 
-        Node H2 = new GraphNode("H2");
+        final Node H2 = new GraphNode("H2");
         H2.setNodeType(NodeType.LATENT);
 
-        Node H3 = new GraphNode("H3");
+        final Node H3 = new GraphNode("H3");
         H3.setNodeType(NodeType.LATENT);
 
-        Node H4 = new GraphNode("H4");
+        final Node H4 = new GraphNode("H4");
         H4.setNodeType(NodeType.LATENT);
 
-        Graph graph = new EdgeListGraph();
+        final Graph graph = new EdgeListGraph();
         graph.addNode(A);
         graph.addNode(B);
         graph.addNode(C);
@@ -251,19 +250,19 @@ public class BryanSensitivityStudy {
     }
 
     private static Graph getGraph4() {
-        Node A = new GraphNode("A");
-        Node B = new GraphNode("B");
-        Node C = new GraphNode("C");
-        Node D = new GraphNode("D");
+        final Node A = new GraphNode("A");
+        final Node B = new GraphNode("B");
+        final Node C = new GraphNode("C");
+        final Node D = new GraphNode("D");
 
-        Node H1 = new GraphNode("H1");
+        final Node H1 = new GraphNode("H1");
         H1.setNodeType(NodeType.LATENT);
 
-        Node H2 = new GraphNode("H2");
+        final Node H2 = new GraphNode("H2");
         H2.setNodeType(NodeType.LATENT);
 
 
-        Graph graph = new EdgeListGraph();
+        final Graph graph = new EdgeListGraph();
         graph.addNode(A);
         graph.addNode(B);
         graph.addNode(C);

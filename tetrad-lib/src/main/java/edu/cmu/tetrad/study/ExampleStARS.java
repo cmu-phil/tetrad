@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.study;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
-import edu.cmu.tetrad.algcomparison.Comparison.ComparisonGraph;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.FirstInflection;
 import edu.cmu.tetrad.algcomparison.algorithm.StARS;
@@ -41,8 +40,8 @@ import edu.cmu.tetrad.util.Parameters;
  * @author jdramsey
  */
 public class ExampleStARS {
-    public static void main(String... args) {
-        Parameters parameters = new Parameters();
+    public static void main(final String... args) {
+        final Parameters parameters = new Parameters();
 
 //        parameters.set("numMeasures", 100);
 //        parameters.set("avgDegree", 2, 4);
@@ -99,7 +98,7 @@ public class ExampleStARS {
         parameters.set("percentSubsampleSize", .5);
         parameters.set("percentStability", .5);
 
-        Statistics statistics = new Statistics();
+        final Statistics statistics = new Statistics();
 
         statistics.add(new ParameterColumn("numMeasures"));
         statistics.add(new ParameterColumn("avgDegree"));
@@ -116,24 +115,24 @@ public class ExampleStARS {
         statistics.setWeight("AHP", 0.25);
         statistics.setWeight("AHR", 0.25);
 
-        Algorithms algorithms = new Algorithms();
+        final Algorithms algorithms = new Algorithms();
 
         parameters.set("logScale", false);
         algorithms.add(new StabilitySelection(new Fges(new SemBicScore())));
         algorithms.add(new StARS(new Fges(new SemBicScore()), "penaltyDiscount", 1, 5));
         algorithms.add(new FirstInflection(new Fges(new SemBicScore()), "penaltyDiscount", 1, 5, .1));
 
-        Simulations simulations = new Simulations();
+        final Simulations simulations = new Simulations();
 
         simulations.add(new LinearFisherModel(new RandomForward()));
 
-        Comparison comparison = new Comparison();
+        final Comparison comparison = new Comparison();
 
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
-        comparison.setComparisonGraph(ComparisonGraph.CPDAG_of_the_true_DAG);
+        comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
 
         comparison.compareFromSimulations("first.inflection", simulations, algorithms, statistics, parameters);
     }

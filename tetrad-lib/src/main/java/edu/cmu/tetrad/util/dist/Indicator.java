@@ -36,7 +36,7 @@ public class Indicator implements Distribution {
      * Returns 0 with probably 1 - p and 1 with probability p.
      */
     private Indicator() {
-        p = 0.5;
+        this.p = 0.5;
     }
 
     /**
@@ -56,23 +56,23 @@ public class Indicator implements Distribution {
         return "Indicator";
     }
 
-    public void setParameter(int index, double value) {
+    public void setParameter(final int index, final double value) {
         if (index == 0) {
-            p = value;
+            this.p = value;
         }
 
         throw new IllegalArgumentException();
     }
 
-    public double getParameter(int index) {
+    public double getParameter(final int index) {
         if (index == 0) {
-            return p;
+            return this.p;
         }
 
         throw new IllegalArgumentException();
     }
 
-    public String getParameterName(int index) {
+    public String getParameterName(final int index) {
         if (index == 0) {
             return "Cutuff";
         }
@@ -81,11 +81,11 @@ public class Indicator implements Distribution {
     }
 
     public double nextRandom() {
-        return RandomUtil.getInstance().nextDouble() < p ? 1 : 0;
+        return RandomUtil.getInstance().nextDouble() < this.p ? 1 : 0;
     }
 
     public String toString() {
-        return "Indicator(" + p + ")";
+        return "Indicator(" + this.p + ")";
     }
 }
 

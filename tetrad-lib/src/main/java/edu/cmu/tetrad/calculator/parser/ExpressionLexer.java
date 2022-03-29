@@ -82,15 +82,15 @@ public class ExpressionLexer {
     private static Map<Token, Pattern> PATTERNS;
 
 
-    public ExpressionLexer(CharSequence seq) {
+    public ExpressionLexer(final CharSequence seq) {
         if (seq == null) {
             throw new NullPointerException("CharSequence must not be null.");
         }
-        if (PATTERNS == null) {
-            PATTERNS = createPatterns();
+        if (ExpressionLexer.PATTERNS == null) {
+            ExpressionLexer.PATTERNS = ExpressionLexer.createPatterns();
         }
-        charSequence = seq;
-        matchers = createMatchers(PATTERNS, seq);
+        this.charSequence = seq;
+        this.matchers = ExpressionLexer.createMatchers(ExpressionLexer.PATTERNS, seq);
     }
 
     //=================================== Public Methods =====================================//
@@ -101,13 +101,13 @@ public class ExpressionLexer {
      * calling the getString method.
      */
     public final Token nextToken() {
-        this.readToken(Token.WHITESPACE);
-        for (Token token : tokens) {
-            if (this.readToken(token)) {
+        readToken(Token.WHITESPACE);
+        for (final Token token : this.tokens) {
+            if (readToken(token)) {
                 return token;
             }
         }
-        if (charSequence.length() <= nextOffset) {
+        if (this.charSequence.length() <= this.nextOffset) {
             return Token.EOF;
         }
 
@@ -115,12 +115,12 @@ public class ExpressionLexer {
     }
 
     public final Token nextTokenIncludingWhitespace() {
-        for (Token token : tokens) {
-            if (this.readToken(token)) {
+        for (final Token token : this.tokens) {
+            if (readToken(token)) {
                 return token;
             }
         }
-        if (charSequence.length() <= nextOffset) {
+        if (this.charSequence.length() <= this.nextOffset) {
             return Token.EOF;
         }
 
@@ -131,12 +131,12 @@ public class ExpressionLexer {
      * @return the string corresponding to the last token lexed.
      */
     public String getTokenString() {
-        if (lastMatcher == null) {
+        if (this.lastMatcher == null) {
             return null;
         }
         try {
-            return lastMatcher.group();
-        } catch (Exception e) {
+            return this.lastMatcher.group();
+        } catch (final Exception e) {
             return null;
         }
     }
@@ -145,36 +145,36 @@ public class ExpressionLexer {
      * @return the previous offset, before the getModel token was read (i.e. the offset of the getModel token.
      */
     public int getCurrentOffset() {
-        return currentOffset;
+        return this.currentOffset;
     }
 
     /**
      * @return the getModel offset.
      */
     public int getNextOffset() {
-        return nextOffset;
+        return this.nextOffset;
     }
 
     //=================================== Private Methods ====================================//
 
 
-    private boolean readToken(Token token) {
-        Matcher matcher = matchers.get(token);
-        boolean found = matcher.find(nextOffset);
+    private boolean readToken(final Token token) {
+        final Matcher matcher = this.matchers.get(token);
+        final boolean found = matcher.find(this.nextOffset);
         if (found) {
 
             // I hate to put a gratuitous string creation here, but I see no other way. \G doesn't force the
             // match to begin at the offset if there are nonword characters are the offset, like @$##@@!. But
             // I can't eliminate all nonword characters.
-            if (matcher.end() - matcher.group().length() != nextOffset) {
-                currentOffset = nextOffset;
-                nextOffset = matcher.end();
+            if (matcher.end() - matcher.group().length() != this.nextOffset) {
+                this.currentOffset = this.nextOffset;
+                this.nextOffset = matcher.end();
                 return false;
             }
 
-            currentOffset = nextOffset;
-            nextOffset = matcher.end();
-            lastMatcher = matcher;
+            this.currentOffset = this.nextOffset;
+            this.nextOffset = matcher.end();
+            this.lastMatcher = matcher;
 
         }
 
@@ -186,11 +186,11 @@ public class ExpressionLexer {
      * Creates a map from tokens to regex Matchers for the given CharSequence,
      * given a map from tokens to regex Patterns (and the CharSequence).
      */
-    private static Map<Token, Matcher> createMatchers(Map<Token, Pattern> patterns, CharSequence charSequence) {
-        Map<Token, Matcher> matchers = new HashMap<>();
-        for (Token token : patterns.keySet()) {
-            Pattern pattern = patterns.get(token);
-            Matcher matcher = pattern.matcher(charSequence);
+    private static Map<Token, Matcher> createMatchers(final Map<Token, Pattern> patterns, final CharSequence charSequence) {
+        final Map<Token, Matcher> matchers = new HashMap<>();
+        for (final Token token : patterns.keySet()) {
+            final Pattern pattern = patterns.get(token);
+            final Matcher matcher = pattern.matcher(charSequence);
             matchers.put(token, matcher);
         }
         return matchers;
@@ -198,21 +198,21 @@ public class ExpressionLexer {
 
 
     private static Map<Token, Pattern> createPatterns() {
-        Map<Token, Pattern> map = new HashMap<>();
-        Map<Token, String> regex = new HashMap<>();
+        final Map<Token, Pattern> map = new HashMap<>();
+        final Map<Token, String> regex = new HashMap<>();
 
         regex.put(Token.WHITESPACE, "\\s+");
         regex.put(Token.LPAREN, "\\(");
         regex.put(Token.RPAREN, "\\)");
         regex.put(Token.COMMA, ",");
         regex.put(Token.NUMBER, "-?[\\d\\.]+(e-?\\d+)?");
-        regex.put(Token.OPERATOR, getExpressionRegex());
+        regex.put(Token.OPERATOR, ExpressionLexer.getExpressionRegex());
         regex.put(Token.PARAMETER, "\\$|(([a-zA-Z]{1})([a-zA-Z0-9-_/:\\.]*))");
         regex.put(Token.EQUATION, "\\=");
         regex.put(Token.STRING, "\\\".*\\\"");
 
 
-        for (Token token : regex.keySet()) {
+        for (final Token token : regex.keySet()) {
             map.put(token, Pattern.compile("\\G" + regex.get(token)));
         }
 
@@ -225,9 +225,9 @@ public class ExpressionLexer {
      */
     private static String getExpressionRegex() {
         String str = "(";
-        List<ExpressionDescriptor> descriptors = ExpressionManager.getInstance().getDescriptors();
+        final List<ExpressionDescriptor> descriptors = ExpressionManager.getInstance().getDescriptors();
         for (int i = 0; i < descriptors.size(); i++) {
-            ExpressionDescriptor exp = descriptors.get(i);
+            final ExpressionDescriptor exp = descriptors.get(i);
             str += "(" + exp.getToken() + ")";
             if (i < descriptors.size() - 1) {
                 str += "|";

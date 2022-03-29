@@ -53,7 +53,7 @@ public class Uniform implements Distribution {
 
     //=========================CONSTRUCTORS===========================//
 
-    public Uniform(double a, double b) {
+    public Uniform(final double a, final double b) {
         if (!(a <= b)) {
             throw new IllegalArgumentException("a must be less than or equal to b.");
         }
@@ -74,11 +74,11 @@ public class Uniform implements Distribution {
     /**
      * Sets the value of the i'th parameter.
      */
-    public void setParameter(int index, double value) {
-        if (index == 0 && value < b) {
-            a = value;
-        } else if (index == 1 && value > a) {
-            b = value;
+    public void setParameter(final int index, final double value) {
+        if (index == 0 && value < this.b) {
+            this.a = value;
+        } else if (index == 1 && value > this.a) {
+            this.b = value;
         } else {
             throw new IllegalArgumentException("Illegal value for parameter " +
                     index + ": " + value);
@@ -88,17 +88,17 @@ public class Uniform implements Distribution {
     /**
      * @return the value of the ith parameter.
      */
-    public double getParameter(int index) {
+    public double getParameter(final int index) {
         if (index == 0) {
-            return a;
+            return this.a;
         } else if (index == 1) {
-            return b;
+            return this.b;
         } else {
             throw new IllegalArgumentException("Illegal index: " + index);
         }
     }
 
-    public String getParameterName(int index) {
+    public String getParameterName(final int index) {
         if (index == 0) {
             return "Lower Bound";
         } else if (index == 1) {
@@ -119,7 +119,7 @@ public class Uniform implements Distribution {
      * @return the next random sample from the distribution.
      */
     public double nextRandom() {
-        return RandomUtil.getInstance().nextUniform(a, b);
+        return RandomUtil.getInstance().nextUniform(this.a, this.b);
     }
 
 
@@ -128,8 +128,8 @@ public class Uniform implements Distribution {
     }
 
     public String toString() {
-        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-        return "U(" + nf.format(this.getParameter(0)) + ", " + nf.format(this.getParameter(1)) + ")";
+        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        return "U(" + nf.format(getParameter(0)) + ", " + nf.format(getParameter(1)) + ")";
     }
 
     //========================PRIVATE METHODS===========================//
@@ -147,11 +147,11 @@ public class Uniform implements Distribution {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (a >= b) {
+        if (this.a >= this.b) {
             throw new IllegalStateException();
         }
     }

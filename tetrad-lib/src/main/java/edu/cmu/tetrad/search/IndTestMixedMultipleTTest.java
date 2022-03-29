@@ -32,7 +32,6 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.LogisticRegression;
-import edu.cmu.tetrad.regression.LogisticRegression.Result;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.Matrix;
@@ -68,32 +67,32 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
     private boolean flipLast;
     private boolean preferLinear = true;
 
-    public IndTestMixedMultipleTTest(DataSet data, double alpha) {
-        searchVariables = data.getVariables();
-        originalData = data.copy();
-        DataSet internalData = data.copy();
+    public IndTestMixedMultipleTTest(final DataSet data, final double alpha) {
+        this.searchVariables = data.getVariables();
+        this.originalData = data.copy();
+        final DataSet internalData = data.copy();
         this.alpha = alpha;
 
-        List<Node> variables = internalData.getVariables();
+        final List<Node> variables = internalData.getVariables();
 
-        for (Node node : variables) {
-            List<Node> nodes = this.expandVariable(internalData, node);
-            variablesPerNode.put(node, nodes);
+        for (final Node node : variables) {
+            final List<Node> nodes = expandVariable(internalData, node);
+            this.variablesPerNode.put(node, nodes);
         }
 
         this.internalData = internalData;
-        logisticRegression = new LogisticRegression(internalData);
-        regression = new RegressionDataset(internalData);
+        this.logisticRegression = new LogisticRegression(internalData);
+        this.regression = new RegressionDataset(internalData);
     }
 
-    public void setPreferLinear(boolean preferLinear) {
+    public void setPreferLinear(final boolean preferLinear) {
         this.preferLinear = preferLinear;
     }
 
     /**
      * @return an Independence test for a subset of the searchVariables.
      */
-    public IndependenceTest indTestSubset(List<Node> vars) {
+    public IndependenceTest indTestSubset(final List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
@@ -102,57 +101,57 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
      * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are searchVariables in the list returned by
      * getVariableNames().
      */
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
+    public boolean isIndependent(final Node x, final Node y, final List<Node> z) {
         if (x instanceof DiscreteVariable && y instanceof DiscreteVariable) {
-            flipLast = false;
-            return this.isIndependentMultinomialLogisticRegression(x, y, z);
+            this.flipLast = false;
+            return isIndependentMultinomialLogisticRegression(x, y, z);
         } else if (x instanceof DiscreteVariable) {
-            if (preferLinear) {
-                flipLast = true;
-                return this.isIndependentRegression(y, x, z);
+            if (this.preferLinear) {
+                this.flipLast = true;
+                return isIndependentRegression(y, x, z);
             } else {
-                flipLast = false;
-                return this.isIndependentMultinomialLogisticRegression(x, y, z);
+                this.flipLast = false;
+                return isIndependentMultinomialLogisticRegression(x, y, z);
             }
         } else {
-            if (y instanceof DiscreteVariable && !preferLinear) {
-                flipLast = true;
-                return this.isIndependentMultinomialLogisticRegression(y, x, z);
+            if (y instanceof DiscreteVariable && !this.preferLinear) {
+                this.flipLast = true;
+                return isIndependentMultinomialLogisticRegression(y, x, z);
             } else {
-                flipLast = false;
-                return this.isIndependentRegression(x, y, z);
+                this.flipLast = false;
+                return isIndependentRegression(x, y, z);
             }
         }
     }
 
-    public double[] dependencePvals(Node x, Node y, List<Node> z) {
+    public double[] dependencePvals(final Node x, final Node y, final List<Node> z) {
         if (x instanceof DiscreteVariable && y instanceof DiscreteVariable) {
-            flipLast = false;
-            return this.dependencePvalsLogit(x, y, z);
+            this.flipLast = false;
+            return dependencePvalsLogit(x, y, z);
         } else if (x instanceof DiscreteVariable) {
-            if (preferLinear) {
-                flipLast = true;
-                return this.dependencePvalsLinear(y, x, z);
+            if (this.preferLinear) {
+                this.flipLast = true;
+                return dependencePvalsLinear(y, x, z);
             } else {
-                flipLast = false;
-                return this.dependencePvalsLogit(x, y, z);
+                this.flipLast = false;
+                return dependencePvalsLogit(x, y, z);
             }
         } else {
-            if (y instanceof DiscreteVariable && !preferLinear) {
-                flipLast = true;
-                return this.dependencePvalsLogit(y, x, z);
+            if (y instanceof DiscreteVariable && !this.preferLinear) {
+                this.flipLast = true;
+                return dependencePvalsLogit(y, x, z);
             } else {
-                flipLast = false;
-                return this.dependencePvalsLinear(x, y, z);
+                this.flipLast = false;
+                return dependencePvalsLinear(x, y, z);
             }
         }
     }
 
     public boolean getFlipLast() {
-        return flipLast;
+        return this.flipLast;
     }
 
-    private List<Node> expandVariable(DataSet dataSet, Node node) {
+    private List<Node> expandVariable(final DataSet dataSet, final Node node) {
         if (node instanceof ContinuousVariable) {
             return Collections.singletonList(node);
         }
@@ -165,30 +164,30 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
             throw new IllegalArgumentException();
         }
 
-        List<String> varCats = new ArrayList<>(((DiscreteVariable) node).getCategories());
+        final List<String> varCats = new ArrayList<>(((DiscreteVariable) node).getCategories());
 
         // first category is reference
         varCats.remove(0);
-        List<Node> variables = new ArrayList<>();
+        final List<Node> variables = new ArrayList<>();
 
-        for (String cat : varCats) {
+        for (final String cat : varCats) {
 
             Node newVar;
 
             do {
-                String newVarName = node.getName() + "MULTINOM" + "." + cat;
+                final String newVarName = node.getName() + "MULTINOM" + "." + cat;
                 newVar = new DiscreteVariable(newVarName, 2);
             } while (dataSet.getVariable(newVar.getName()) != null);
 
             variables.add(newVar);
 
             dataSet.addVariable(newVar);
-            int newVarIndex = dataSet.getColumn(newVar);
-            int numCases = dataSet.getNumRows();
+            final int newVarIndex = dataSet.getColumn(newVar);
+            final int numCases = dataSet.getNumRows();
 
             for (int l = 0; l < numCases; l++) {
-                Object dataCell = dataSet.getObject(l, dataSet.getColumn(node));
-                int dataCellIndex = ((DiscreteVariable) node).getIndex(dataCell.toString());
+                final Object dataCell = dataSet.getObject(l, dataSet.getColumn(node));
+                final int dataCellIndex = ((DiscreteVariable) node).getIndex(dataCell.toString());
 
                 if (dataCellIndex == ((DiscreteVariable) node).getIndex(cat))
                     dataSet.setInt(l, newVarIndex, 1);
@@ -200,64 +199,64 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
         return variables;
     }
 
-    private double[] dependencePvalsLogit(Node x, Node y, List<Node> z) {
-        if (!variablesPerNode.containsKey(x)) {
+    private double[] dependencePvalsLogit(final Node x, final Node y, final List<Node> z) {
+        if (!this.variablesPerNode.containsKey(x)) {
             throw new IllegalArgumentException("Unrecogized node: " + x);
         }
 
-        if (!variablesPerNode.containsKey(y)) {
+        if (!this.variablesPerNode.containsKey(y)) {
             throw new IllegalArgumentException("Unrecogized node: " + y);
         }
 
-        for (Node node : z) {
-            if (!variablesPerNode.containsKey(node)) {
+        for (final Node node : z) {
+            if (!this.variablesPerNode.containsKey(node)) {
                 throw new IllegalArgumentException("Unrecogized node: " + node);
             }
         }
 
-        List<Double> pValues = new ArrayList<>();
+        final List<Double> pValues = new ArrayList<>();
 
-        int[] _rows = this.getNonMissingRows(x, y, z);
-        logisticRegression.setRows(_rows);
+        final int[] _rows = getNonMissingRows(x, y, z);
+        this.logisticRegression.setRows(_rows);
 
-        List<Node> yzDumList = new ArrayList<>();
-        List<Node> yzList = new ArrayList<>();
+        final List<Node> yzDumList = new ArrayList<>();
+        final List<Node> yzList = new ArrayList<>();
         yzList.add(y);
         yzList.addAll(z);
         //List<Node> zList = new ArrayList<>();
 
-        yzDumList.addAll(variablesPerNode.get(y));
-        for (Node _z : z) {
-            yzDumList.addAll(variablesPerNode.get(_z));
+        yzDumList.addAll(this.variablesPerNode.get(y));
+        for (final Node _z : z) {
+            yzDumList.addAll(this.variablesPerNode.get(_z));
             //zList.addAll(variablesPerNode.get(_z));
         }
 
         //double[][] coeffsDep = new double[variablesPerNode.get(x).size()][];
         //DoubleMatrix2D coeffsNull = DoubleFactory2D.dense.make(zList.size(), variablesPerNode.get(x).size());
         //DoubleMatrix2D coeffsDep = DoubleFactory2D.dense.make(yzDumList.size()+1, variablesPerNode.get(x).size());
-        double[] sumLnP = new double[yzList.size()];
+        final double[] sumLnP = new double[yzList.size()];
         for (int i = 0; i < sumLnP.length; i++)
             sumLnP[i] = 0.0;
 
-        for (int i = 0; i < variablesPerNode.get(x).size(); i++) {
-            Node _x = variablesPerNode.get(x).get(i);
+        for (int i = 0; i < this.variablesPerNode.get(x).size(); i++) {
+            final Node _x = this.variablesPerNode.get(x).get(i);
 
-            Result result1 = logisticRegression.regress((DiscreteVariable) _x, yzDumList);
+            final LogisticRegression.Result result1 = this.logisticRegression.regress((DiscreteVariable) _x, yzDumList);
 
-            int n = originalData.getNumRows();
-            int k = yzDumList.size();
+            final int n = this.originalData.getNumRows();
+            final int k = yzDumList.size();
 
             //skip intercept at index 0
             int coefIndex = 1;
             for (int j = 0; j < yzList.size(); j++) {
-                for (int dum = 0; dum < variablesPerNode.get(yzList.get(j)).size(); dum++) {
+                for (int dum = 0; dum < this.variablesPerNode.get(yzList.get(j)).size(); dum++) {
 
-                    double wald = Math.abs(result1.getCoefs()[coefIndex] / result1.getStdErrs()[coefIndex]);
+                    final double wald = Math.abs(result1.getCoefs()[coefIndex] / result1.getStdErrs()[coefIndex]);
                     //double val = (1.0 - new NormalDistribution(0,1).cumulativeProbability(wald))*2;//two-tailed test
                     //double val = 1-result1.getProbs()[i+1];
 
                     //this is exactly the same test as the linear case
-                    double val = (1.0 - ProbUtils.tCdf(wald, n - k)) * 2;
+                    final double val = (1.0 - ProbUtils.tCdf(wald, n - k)) * 2;
                     //System.out.println(_x.getName() + "\t" + yzDumList.get(coefIndex-1).getName() + "\t" + val + "\t" + (n-k));
                     //if(val <= 0) System.out.println("Zero p-val t-test: p " + val + " stat " + wald + " k " + k + " n " + n);
                     sumLnP[j] += Math.log(val);
@@ -266,11 +265,11 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
             }
         }
 
-        double[] pVec = new double[sumLnP.length];
+        final double[] pVec = new double[sumLnP.length];
         for (int i = 0; i < pVec.length; i++) {
             if (sumLnP[i] == Double.NEGATIVE_INFINITY) pVec[i] = 0.0;
             else {
-                int df = 2 * variablesPerNode.get(x).size() * variablesPerNode.get(yzList.get(i)).size();
+                final int df = 2 * this.variablesPerNode.get(x).size() * this.variablesPerNode.get(yzList.get(i)).size();
                 pVec[i] = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(-2 * sumLnP[i]);
             }
         }
@@ -278,11 +277,11 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
         return pVec;
     }
 
-    private boolean isIndependentMultinomialLogisticRegression(Node x, Node y, List<Node> z) {
-        double p = this.dependencePvalsLogit(x, y, z)[0];
-        boolean indep = p > alpha;
+    private boolean isIndependentMultinomialLogisticRegression(final Node x, final Node y, final List<Node> z) {
+        final double p = dependencePvalsLogit(x, y, z)[0];
+        final boolean indep = p > this.alpha;
         //0 corresponds to y
-        lastP = p;
+        this.lastP = p;
 
         if (indep) {
             TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, p));
@@ -296,7 +295,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
     int[] _rows;
 
     // This takes an inordinate amount of time. -jdramsey 20150929
-    private int[] getNonMissingRows(Node x, Node y, List<Node> z) {
+    private int[] getNonMissingRows(final Node x, final Node y, final List<Node> z) {
 //        List<Integer> rows = new ArrayList<Integer>();
 //
 //        I:
@@ -321,19 +320,19 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
 //        int[] _rows = new int[rows.size()];
 //        for (int k = 0; k < rows.size(); k++) _rows[k] = rows.get(k);
 
-        if (_rows == null) {
-            _rows = new int[internalData.getNumRows()];
-            for (int k = 0; k < _rows.length; k++) _rows[k] = k;
+        if (this._rows == null) {
+            this._rows = new int[this.internalData.getNumRows()];
+            for (int k = 0; k < this._rows.length; k++) this._rows[k] = k;
         }
 
-        return _rows;
+        return this._rows;
     }
 
-    private boolean isMissing(Node x, int i) {
-        int j = internalData.getColumn(x);
+    private boolean isMissing(final Node x, final int i) {
+        final int j = this.internalData.getColumn(x);
 
         if (x instanceof DiscreteVariable) {
-            int v = internalData.getInt(i, j);
+            final int v = this.internalData.getInt(i, j);
 
             if (v == -99) {
                 return true;
@@ -341,7 +340,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
         }
 
         if (x instanceof ContinuousVariable) {
-            double v = internalData.getDouble(i, j);
+            final double v = this.internalData.getDouble(i, j);
 
             return Double.isNaN(v);
         }
@@ -349,72 +348,72 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
         return false;
     }
 
-    private double multiLL(DoubleMatrix2D coeffs, Node dep, List<Node> indep) {
+    private double multiLL(final DoubleMatrix2D coeffs, final Node dep, final List<Node> indep) {
 
-        DoubleMatrix2D indepData = factory2D.make(internalData.subsetColumns(indep).getDoubleData().toArray());
-        List<Node> depList = new ArrayList<>();
+        final DoubleMatrix2D indepData = this.factory2D.make(this.internalData.subsetColumns(indep).getDoubleData().toArray());
+        final List<Node> depList = new ArrayList<>();
         depList.add(dep);
-        DoubleMatrix2D depData = factory2D.make(internalData.subsetColumns(depList).getDoubleData().toArray());
+        final DoubleMatrix2D depData = this.factory2D.make(this.internalData.subsetColumns(depList).getDoubleData().toArray());
 
-        int N = indepData.rows();
-        DoubleMatrix2D probs = Algebra.DEFAULT.mult(factory2D.appendColumns(factory2D.make(N, 1, 1.0), indepData), coeffs);
+        final int N = indepData.rows();
+        DoubleMatrix2D probs = Algebra.DEFAULT.mult(this.factory2D.appendColumns(this.factory2D.make(N, 1, 1.0), indepData), coeffs);
 
-        probs = factory2D.appendColumns(factory2D.make(indepData.rows(), 1, 1.0), probs).assign(Functions.exp);
+        probs = this.factory2D.appendColumns(this.factory2D.make(indepData.rows(), 1, 1.0), probs).assign(Functions.exp);
         double ll = 0;
         for (int i = 0; i < N; i++) {
-            DoubleMatrix1D curRow = probs.viewRow(i);
+            final DoubleMatrix1D curRow = probs.viewRow(i);
             curRow.assign(Functions.div(curRow.zSum()));
             ll += Math.log(curRow.get((int) depData.get(i, 0)));
         }
         return ll;
     }
 
-    private double[] dependencePvalsLinear(Node x, Node y, List<Node> z) {
-        if (!variablesPerNode.containsKey(x)) {
+    private double[] dependencePvalsLinear(final Node x, final Node y, final List<Node> z) {
+        if (!this.variablesPerNode.containsKey(x)) {
             throw new IllegalArgumentException("Unrecogized node: " + x);
         }
 
-        if (!variablesPerNode.containsKey(y)) {
+        if (!this.variablesPerNode.containsKey(y)) {
             throw new IllegalArgumentException("Unrecogized node: " + y);
         }
 
-        for (Node node : z) {
-            if (!variablesPerNode.containsKey(node)) {
+        for (final Node node : z) {
+            if (!this.variablesPerNode.containsKey(node)) {
                 throw new IllegalArgumentException("Unrecogized node: " + node);
             }
         }
 
-        List<Node> yzDumList = new ArrayList<>();
-        List<Node> yzList = new ArrayList<>();
+        final List<Node> yzDumList = new ArrayList<>();
+        final List<Node> yzList = new ArrayList<>();
         yzList.add(y);
         yzList.addAll(z);
         //List<Node> zList = new ArrayList<>();
 
-        yzDumList.addAll(variablesPerNode.get(y));
-        for (Node _z : z) {
-            yzDumList.addAll(variablesPerNode.get(_z));
+        yzDumList.addAll(this.variablesPerNode.get(y));
+        for (final Node _z : z) {
+            yzDumList.addAll(this.variablesPerNode.get(_z));
             //zList.addAll(variablesPerNode.get(_z));
         }
 
-        int[] _rows = this.getNonMissingRows(x, y, z);
-        regression.setRows(_rows);
+        final int[] _rows = getNonMissingRows(x, y, z);
+        this.regression.setRows(_rows);
 
-        RegressionResult result;
+        final RegressionResult result;
 
         try {
-            result = regression.regress(x, yzDumList);
-        } catch (Exception e) {
+            result = this.regression.regress(x, yzDumList);
+        } catch (final Exception e) {
             return null;
         }
 
-        double[] pVec = new double[yzList.size()];
-        double[] pCoef = result.getP();
+        final double[] pVec = new double[yzList.size()];
+        final double[] pCoef = result.getP();
 
         //skip intercept at 0
         int coeffInd = 1;
 
         for (int i = 0; i < pVec.length; i++) {
-            List<Node> curDummy = variablesPerNode.get(yzList.get(i));
+            final List<Node> curDummy = this.variablesPerNode.get(yzList.get(i));
             if (curDummy.size() == 1) {
                 pVec[i] = pCoef[coeffInd];
                 coeffInd++;
@@ -423,7 +422,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
                 pVec[i] = 0;
             }
 
-            for (Node n : curDummy) {
+            for (final Node n : curDummy) {
                 pVec[i] += Math.log(pCoef[coeffInd]);
                 coeffInd++;
             }
@@ -437,14 +436,14 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
         return pVec;
     }
 
-    private boolean isIndependentRegression(Node x, Node y, List<Node> z) {
-        double p = this.dependencePvalsLinear(x, y, z)[0];
+    private boolean isIndependentRegression(final Node x, final Node y, final List<Node> z) {
+        final double p = dependencePvalsLinear(x, y, z)[0];
         //result.getP()[1];
-        lastP = p;
+        this.lastP = p;
 
-        boolean indep = p > alpha;
+        final boolean indep = p > this.alpha;
 
-        if (verbose) {
+        if (this.verbose) {
             if (indep) {
                 TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, p));
             } else {
@@ -456,9 +455,9 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
     }
 
 
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return this.isIndependent(x, y, zList);
+    public boolean isIndependent(final Node x, final Node y, final Node... z) {
+        final List<Node> zList = Arrays.asList(z);
+        return isIndependent(x, y, zList);
     }
 
     /**
@@ -466,13 +465,13 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
      * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are searchVariables in the list returned by
      * getVariableNames().
      */
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        return !isIndependent(x, y, z);
+    public boolean isDependent(final Node x, final Node y, final List<Node> z) {
+        return !this.isIndependent(x, y, z);
     }
 
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return this.isDependent(x, y, zList);
+    public boolean isDependent(final Node x, final Node y, final Node... z) {
+        final List<Node> zList = Arrays.asList(z);
+        return isDependent(x, y, zList);
     }
 
     /**
@@ -480,7 +479,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
      * not meaningful for tis test.
      */
     public double getPValue() {
-        return lastP; //STUB
+        return this.lastP; //STUB
     }
 
     /**
@@ -488,24 +487,24 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
      * relations.
      */
     public List<Node> getVariables() {
-        return searchVariables; // Make sure the variables from the ORIGINAL data set are returned, not the modified dataset!
+        return this.searchVariables; // Make sure the variables from the ORIGINAL data set are returned, not the modified dataset!
     }
 
     /**
      * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
-        List<Node> variables = this.getVariables();
-        List<String> variableNames = new ArrayList<>();
-        for (Node variable1 : variables) {
+        final List<Node> variables = getVariables();
+        final List<String> variableNames = new ArrayList<>();
+        for (final Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }
         return variableNames;
     }
 
-    public Node getVariable(String name) {
-        for (int i = 0; i < this.getVariables().size(); i++) {
-            Node variable = this.getVariables().get(i);
+    public Node getVariable(final String name) {
+        for (int i = 0; i < getVariables().size(); i++) {
+            final Node variable = getVariables().get(i);
             if (variable.getName().equals(name)) {
                 return variable;
             }
@@ -517,7 +516,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
     /**
      * @return true if y is determined the variable in z.
      */
-    public boolean determines(List<Node> z, Node y) {
+    public boolean determines(final List<Node> z, final Node y) {
         return false; //stub
     }
 
@@ -526,18 +525,18 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
      * @throws UnsupportedOperationException if there is no significance level.
      */
     public double getAlpha() {
-        return alpha; //STUB
+        return this.alpha; //STUB
     }
 
     /**
      * Sets the significance level.
      */
-    public void setAlpha(double alpha) {
+    public void setAlpha(final double alpha) {
         this.alpha = alpha;
     }
 
     public DataSet getData() {
-        return originalData;
+        return this.originalData;
     }
 
     @Override
@@ -562,22 +561,22 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
 
     @Override
     public double getScore() {
-        return this.getPValue();
+        return getPValue();
     }
 
     /**
      * @return a string representation of this test.
      */
     public String toString() {
-        NumberFormat nf = new DecimalFormat("0.0000");
-        return "Multinomial Logistic Regression, alpha = " + nf.format(this.getAlpha());
+        final NumberFormat nf = new DecimalFormat("0.0000");
+        return "Multinomial Logistic Regression, alpha = " + nf.format(getAlpha());
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 }

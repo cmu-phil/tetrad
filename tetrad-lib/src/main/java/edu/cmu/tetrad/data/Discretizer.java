@@ -46,14 +46,14 @@ public class Discretizer {
      * Constructs a new discretizer that discretizes every variable as binary,
      * using evenly distributed values.
      */
-    public Discretizer(DataSet dataSet) {
-        sourceDataSet = dataSet;
+    public Discretizer(final DataSet dataSet) {
+        this.sourceDataSet = dataSet;
 
-        specs = new HashMap<>();
+        this.specs = new HashMap<>();
     }
 
-    public Discretizer(DataSet dataSet, Map<Node, DiscretizationSpec> specs) {
-        sourceDataSet = dataSet;
+    public Discretizer(final DataSet dataSet, final Map<Node, DiscretizationSpec> specs) {
+        this.sourceDataSet = dataSet;
         this.specs = specs;
     }
 
@@ -61,67 +61,67 @@ public class Discretizer {
      * Sets the given node to discretized using evenly distributed values using the
      * given number of categories.
      */
-    public void equalCounts(Node node, int numCategories) {
+    public void equalCounts(final Node node, final int numCategories) {
         if (node instanceof DiscreteVariable) return;
 
-        String name = node.getName();
-        int i = sourceDataSet.getVariables().indexOf(node);
-        double[] data = sourceDataSet.getDoubleData().getColumn(i).toArray();
-        double[] breakpoints = getEqualFrequencyBreakPoints(data, numCategories);
-        List<String> categories = new DiscreteVariable(name, numCategories).getCategories();
+        final String name = node.getName();
+        final int i = this.sourceDataSet.getVariables().indexOf(node);
+        final double[] data = this.sourceDataSet.getDoubleData().getColumn(i).toArray();
+        final double[] breakpoints = Discretizer.getEqualFrequencyBreakPoints(data, numCategories);
+        final List<String> categories = new DiscreteVariable(name, numCategories).getCategories();
 
-        ContinuousDiscretizationSpec spec
+        final ContinuousDiscretizationSpec spec
                 = new ContinuousDiscretizationSpec(breakpoints, categories);
         spec.setMethod(ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_VALUES);
 
-        specs.put(node, spec);
+        this.specs.put(node, spec);
     }
 
     /**
      * Sets the given node to discretized using evenly spaced intervals using the
      * given number of categories.
      */
-    public void equalIntervals(Node node, int numCategories) {
+    public void equalIntervals(final Node node, final int numCategories) {
         if (node instanceof DiscreteVariable) return;
 
-        String name = node.getName();
-        int i = sourceDataSet.getVariables().indexOf(node);
-        double[] data = sourceDataSet.getDoubleData().getColumn(i).toArray();
+        final String name = node.getName();
+        final int i = this.sourceDataSet.getVariables().indexOf(node);
+        final double[] data = this.sourceDataSet.getDoubleData().getColumn(i).toArray();
 //        double[] breakpoints = Discretizer.getEqualFrequencyBreakPoints(data, numCategories);
 
-        double max = StatUtils.max(data);
-        double min = StatUtils.min(data);
+        final double max = StatUtils.max(data);
+        final double min = StatUtils.min(data);
 
-        double interval = (max - min) / numCategories;
+        final double interval = (max - min) / numCategories;
 
-        double[] breakpoints = new double[numCategories - 1];
+        final double[] breakpoints = new double[numCategories - 1];
 
         for (int g = 0; g < numCategories - 1; g++) {
             breakpoints[g] = min + (g + 1) * interval;
         }
 
-        List<String> categories = new DiscreteVariable(name, numCategories).getCategories();
+        final List<String> categories = new DiscreteVariable(name, numCategories).getCategories();
 
-        ContinuousDiscretizationSpec spec
+        final ContinuousDiscretizationSpec spec
                 = new ContinuousDiscretizationSpec(breakpoints, categories);
         spec.setMethod(ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_INTERVALS);
 
-        specs.put(node, spec);
+        this.specs.put(node, spec);
     }
 
     /**
      * Indicates that the given variable should not be discretized.
      */
-    public void notDiscretized(Node node) {
-        specs.remove(node);
+    public void notDiscretized(final Node node) {
+        this.specs.remove(node);
     }
 
-    public void setVariablesCopied(boolean unselectedVariabledCopied) {
-        variablesCopied = unselectedVariabledCopied;
+    public void setVariablesCopied(final boolean unselectedVariabledCopied) {
+        this.variablesCopied = unselectedVariabledCopied;
     }
 
     private boolean isVariablesCopied() {
-        return variablesCopied;
+        return this.variablesCopied;
     }
 
     /**
@@ -129,17 +129,17 @@ public class Discretizer {
      */
     public DataSet discretize() {
         // build list of variables
-        List<Node> variables = new LinkedList<>();
-        Map<Node, Node> replacementMapping = new HashMap<>();
-        for (int i = 0; i < sourceDataSet.getNumColumns(); i++) {
-            Node variable = sourceDataSet.getVariable(i);
+        final List<Node> variables = new LinkedList<>();
+        final Map<Node, Node> replacementMapping = new HashMap<>();
+        for (int i = 0; i < this.sourceDataSet.getNumColumns(); i++) {
+            final Node variable = this.sourceDataSet.getVariable(i);
             if (variable instanceof ContinuousVariable) {
                 ContinuousDiscretizationSpec spec = null;
                 Node _node = null;
 
-                for (Node node : specs.keySet()) {
+                for (final Node node : this.specs.keySet()) {
                     if (node.getName().equals(variable.getName())) {
-                        DiscretizationSpec _spec = specs.get(node);
+                        final DiscretizationSpec _spec = this.specs.get(node);
                         spec = (ContinuousDiscretizationSpec) _spec;
                         _node = node;
                         break;
@@ -150,21 +150,21 @@ public class Discretizer {
                     if (spec.getMethod() == ContinuousDiscretizationSpec.NONE) {
                         variables.add(variable);
                     } else {
-                        List<String> cats = spec.getCategories();
-                        DiscreteVariable var = new DiscreteVariable(variable.getName(), cats);
+                        final List<String> cats = spec.getCategories();
+                        final DiscreteVariable var = new DiscreteVariable(variable.getName(), cats);
                         replacementMapping.put(var, _node);
                         variables.add(var);
                     }
-                } else if (this.isVariablesCopied()) {
+                } else if (isVariablesCopied()) {
                     variables.add(variable);
                 }
             } else if (variable instanceof DiscreteVariable) {
                 DiscreteDiscretizationSpec spec = null;
                 Node _node = null;
 
-                for (Node node : specs.keySet()) {
+                for (final Node node : this.specs.keySet()) {
                     if (node.getName().equals(variable.getName())) {
-                        DiscretizationSpec _spec = specs.get(node);
+                        final DiscretizationSpec _spec = this.specs.get(node);
                         spec = (DiscreteDiscretizationSpec) _spec;
                         _node = node;
                         break;
@@ -173,57 +173,57 @@ public class Discretizer {
 
 //                DiscreteDiscretizationSpec spec = (DiscreteDiscretizationSpec) specs.get(variable);
                 if (spec != null) {
-                    List<String> cats = spec.getCategories();
-                    DiscreteVariable var = new DiscreteVariable(_node.getName(), cats);
+                    final List<String> cats = spec.getCategories();
+                    final DiscreteVariable var = new DiscreteVariable(_node.getName(), cats);
                     replacementMapping.put(var, _node);
                     variables.add(var);
-                } else if (this.isVariablesCopied()) {
+                } else if (isVariablesCopied()) {
                     variables.add(variable);
                 }
-            } else if (this.isVariablesCopied()) {
+            } else if (isVariablesCopied()) {
                 variables.add(variable);
             }
         }
 
         // build new dataset.
-        DataSet newDataSet = new BoxDataSet(new VerticalDoubleDataBox(sourceDataSet.getNumRows(), variables.size()), variables);
+        final DataSet newDataSet = new BoxDataSet(new VerticalDoubleDataBox(this.sourceDataSet.getNumRows(), variables.size()), variables);
         for (int i = 0; i < newDataSet.getNumColumns(); i++) {
-            Node variable = newDataSet.getVariable(i);
-            Node sourceVar = replacementMapping.get(variable);
-            if (sourceVar != null && specs.containsKey(sourceVar)) {
+            final Node variable = newDataSet.getVariable(i);
+            final Node sourceVar = replacementMapping.get(variable);
+            if (sourceVar != null && this.specs.containsKey(sourceVar)) {
                 if (sourceVar instanceof ContinuousVariable) {
-                    ContinuousDiscretizationSpec spec = (ContinuousDiscretizationSpec) specs.get(sourceVar);
-                    double[] breakpoints = spec.getBreakpoints();
-                    List<String> categories = spec.getCategories();
-                    String name = variable.getName();
+                    final ContinuousDiscretizationSpec spec = (ContinuousDiscretizationSpec) this.specs.get(sourceVar);
+                    final double[] breakpoints = spec.getBreakpoints();
+                    final List<String> categories = spec.getCategories();
+                    final String name = variable.getName();
 
-                    double[] trimmedData = new double[newDataSet.getNumRows()];
-                    int col = newDataSet.getColumn(variable);
+                    final double[] trimmedData = new double[newDataSet.getNumRows()];
+                    final int col = newDataSet.getColumn(variable);
 
-                    for (int j = 0; j < sourceDataSet.getNumRows(); j++) {
-                        trimmedData[j] = sourceDataSet.getDouble(j, col);
+                    for (int j = 0; j < this.sourceDataSet.getNumRows(); j++) {
+                        trimmedData[j] = this.sourceDataSet.getDouble(j, col);
                     }
-                    Discretization discretization = discretize(trimmedData,
+                    final Discretization discretization = Discretizer.discretize(trimmedData,
                             breakpoints, name, categories);
 
-                    int _col = newDataSet.getColumn(variable);
-                    int[] _data = discretization.getData();
+                    final int _col = newDataSet.getColumn(variable);
+                    final int[] _data = discretization.getData();
                     for (int j = 0; j < _data.length; j++) {
                         newDataSet.setInt(j, _col, _data[j]);
                     }
                 } else if (sourceVar instanceof DiscreteVariable) {
-                    DiscreteDiscretizationSpec spec = (DiscreteDiscretizationSpec) specs.get(sourceVar);
+                    final DiscreteDiscretizationSpec spec = (DiscreteDiscretizationSpec) this.specs.get(sourceVar);
 
-                    int[] remap = spec.getRemap();
+                    final int[] remap = spec.getRemap();
 
-                    int[] trimmedData = new int[newDataSet.getNumRows()];
-                    int col = newDataSet.getColumn(variable);
+                    final int[] trimmedData = new int[newDataSet.getNumRows()];
+                    final int col = newDataSet.getColumn(variable);
 
-                    for (int j = 0; j < sourceDataSet.getNumRows(); j++) {
-                        trimmedData[j] = sourceDataSet.getInt(j, col);
+                    for (int j = 0; j < this.sourceDataSet.getNumRows(); j++) {
+                        trimmedData[j] = this.sourceDataSet.getInt(j, col);
                     }
 
-                    int _col = newDataSet.getColumn(variable);
+                    final int _col = newDataSet.getColumn(variable);
 
                     for (int j = 0; j < trimmedData.length; j++) {
                         newDataSet.setInt(j, _col, remap[trimmedData[j]]);
@@ -231,21 +231,21 @@ public class Discretizer {
                 }
 
             } else {
-                DataUtils.copyColumn(variable, sourceDataSet, newDataSet);
+                DataUtils.copyColumn(variable, this.sourceDataSet, newDataSet);
             }
         }
         return newDataSet;
     }
 
-    public static double[] getEqualFrequencyBreakPoints(double[] _data, int numberOfCategories) {
-        double[] data = new double[_data.length];
+    public static double[] getEqualFrequencyBreakPoints(final double[] _data, final int numberOfCategories) {
+        final double[] data = new double[_data.length];
         System.arraycopy(_data, 0, data, 0, data.length);
 
         // first sort the data.
         Arrays.sort(data);
 
-        int n = data.length / numberOfCategories;
-        double[] breakpoints = new double[numberOfCategories - 1];
+        final int n = data.length / numberOfCategories;
+        final double[] breakpoints = new double[numberOfCategories - 1];
 
         for (int i = 0; i < breakpoints.length; i++) {
             breakpoints[i] = data[n * (i + 1)];
@@ -321,8 +321,8 @@ public class Discretizer {
      *                     for those.
      * @return The discretized column.
      */
-    public static Discretization discretize(double[] _data, double[] cutoffs,
-                                            String variableName, List<String> categories) {
+    public static Discretization discretize(final double[] _data, final double[] cutoffs,
+                                            final String variableName, final List<String> categories) {
 
         if (cutoffs == null) {
             throw new NullPointerException();
@@ -341,7 +341,7 @@ public class Discretizer {
             throw new NullPointerException();
         }
 
-        int numCategories = cutoffs.length + 1;
+        final int numCategories = cutoffs.length + 1;
 
         if (categories != null && categories.size() != numCategories) {
             throw new IllegalArgumentException("If specified, the list of " +
@@ -349,7 +349,7 @@ public class Discretizer {
                     "the cutoffs array.");
         }
 
-        DiscreteVariable variable;
+        final DiscreteVariable variable;
 
         if (categories == null) {
             variable = new DiscreteVariable(variableName, numCategories);
@@ -357,7 +357,7 @@ public class Discretizer {
             variable = new DiscreteVariable(variableName, categories);
         }
 
-        int[] discreteData = new int[_data.length];
+        final int[] discreteData = new int[_data.length];
 
         loop:
         for (int i = 0; i < _data.length; i++) {
@@ -398,7 +398,7 @@ public class Discretizer {
         /**
          * Constructs the discretization given the variable and data.
          */
-        private Discretization(DiscreteVariable variable, int[] data) {
+        private Discretization(final DiscreteVariable variable, final int[] data) {
             this.variable = variable;
             this.data = data;
         }
@@ -409,22 +409,22 @@ public class Discretizer {
          * @return - discretized variable.
          */
         public final DiscreteVariable getVariable() {
-            return variable;
+            return this.variable;
         }
 
         /**
          * @return - discretized data.
          */
         public final int[] getData() {
-            return data;
+            return this.data;
         }
 
         public final String toString() {
-            StringBuilder buf = new StringBuilder();
+            final StringBuilder buf = new StringBuilder();
             buf.append("\n\nDiscretization:");
 
-            for (int aData : data) {
-                buf.append("\n").append(variable.getCategory(aData));
+            for (final int aData : this.data) {
+                buf.append("\n").append(this.variable.getCategory(aData));
             }
 
             buf.append("\n");

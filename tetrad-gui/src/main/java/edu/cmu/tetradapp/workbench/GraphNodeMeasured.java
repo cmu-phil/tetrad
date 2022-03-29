@@ -52,14 +52,14 @@ public class GraphNodeMeasured extends DisplayNode {
     /**
      * Constructs a new measured workbench node.
      */
-    public GraphNodeMeasured(Node modelNode) {
-        this.setModelNode(modelNode);
+    public GraphNodeMeasured(final Node modelNode) {
+        setModelNode(modelNode);
         if (modelNode.getNodeType() != NodeType.MEASURED) {
             throw new IllegalArgumentException("GraphNodeMeasured requires " +
                     "a GraphNode of type NodeType.MEASURED.");
         }
 
-        this.setDisplayComp(new MeasuredDisplayComp(modelNode.getName()));
+        setDisplayComp(new MeasuredDisplayComp(modelNode.getName()));
 //        setDisplayComp(new MeasuredDisplaySmallComp(modelNode.getNode()));
     }
 
@@ -67,8 +67,8 @@ public class GraphNodeMeasured extends DisplayNode {
      * Constructs a new display node for measured variables that doesn't bind to
      * a model node, and instead has the name set manually.
      */
-    public GraphNodeMeasured(String name) {
-        this.setName(name);
+    public GraphNodeMeasured(final String name) {
+        setName(name);
     }
 
     //=============================PUBLIC METHODS==========================//
@@ -79,44 +79,44 @@ public class GraphNodeMeasured extends DisplayNode {
      *
      * @param graph Strings which are invalid names for this node.
      */
-    public void doDoubleClickAction(Graph graph) {
-        if (!this.isEditExitingMeasuredVarsAllowed()) {
+    public void doDoubleClickAction(final Graph graph) {
+        if (!isEditExitingMeasuredVarsAllowed()) {
             return;
         }
 
-        String newName;
-        List<Node> nodes = graph.getNodes();
-        JCheckBox latentCheckBox = new JCheckBox("Latent", false);
+        final String newName;
+        final List<Node> nodes = graph.getNodes();
+        final JCheckBox latentCheckBox = new JCheckBox("Latent", false);
 
-        newName = this.chooseNewVariableName(latentCheckBox, nodes);
+        newName = chooseNewVariableName(latentCheckBox, nodes);
 
         boolean changed = false;
 
-        if (getModelNode() != null &&
-                !newName.equals(getModelNode().getName())) {
-            getModelNode().setName(newName);
-            this.firePropertyChange("resetGraph", null, null);
+        if (this.getModelNode() != null &&
+                !newName.equals(this.getModelNode().getName())) {
+            this.getModelNode().setName(newName);
+            firePropertyChange("resetGraph", null, null);
             changed = true;
         }
 
         if (latentCheckBox.isSelected()) {
-            getModelNode().setNodeType(NodeType.LATENT);
-            this.firePropertyChange("resetGraph", null, null);
+            this.getModelNode().setNodeType(NodeType.LATENT);
+            firePropertyChange("resetGraph", null, null);
             changed = true;
         }
 
         if (changed) {
-            this.firePropertyChange("editingValueChanged", null, null);
+            firePropertyChange("editingValueChanged", null, null);
         }
     }
 
-    private String chooseNewVariableName(JCheckBox latentCheckBox,
-                                         List<Node> nodes) {
+    private String chooseNewVariableName(final JCheckBox latentCheckBox,
+                                         final List<Node> nodes) {
         String newName;
 
         LOOP:
         while (true) {
-            JTextField nameField = new JTextField(8);
+            final JTextField nameField = new JTextField(8);
 
             // This makes sure the name field has focus when the dialog (below)
             // is made visible, but that after this it allows other gadgets
@@ -124,28 +124,28 @@ public class GraphNodeMeasured extends DisplayNode {
             nameField.addFocusListener(new FocusAdapter() {
                 boolean alreadyLostFocus;
 
-                public void focusLost(FocusEvent e) {
-                    if (alreadyLostFocus) return;
-                    JTextField field = (JTextField) e.getSource();
+                public void focusLost(final FocusEvent e) {
+                    if (this.alreadyLostFocus) return;
+                    final JTextField field = (JTextField) e.getSource();
                     field.grabFocus();
-                    alreadyLostFocus = true;
+                    this.alreadyLostFocus = true;
                 }
             });
 
-            nameField.setText(this.getName());
+            nameField.setText(getName());
             nameField.setCaretPosition(0);
-            nameField.moveCaretPosition(this.getName().length());
+            nameField.moveCaretPosition(getName().length());
 
-            JPanel message = new JPanel();
+            final JPanel message = new JPanel();
 
             message.add(new JLabel("Name:"));
             message.add(nameField);
 
             message.add(latentCheckBox);
 
-            JOptionPane pane = new JOptionPane(message, JOptionPane.PLAIN_MESSAGE,
+            final JOptionPane pane = new JOptionPane(message, JOptionPane.PLAIN_MESSAGE,
                     JOptionPane.OK_CANCEL_OPTION);
-            JDialog dialog = pane.createDialog(this, "Node Properties");
+            final JDialog dialog = pane.createDialog(this, "Node Properties");
 
 
             dialog.pack();
@@ -161,9 +161,9 @@ public class GraphNodeMeasured extends DisplayNode {
             }
             // Tests that newName is not in the nodes list.
             else if (nodes != null) {
-                for (Node node : nodes) {
+                for (final Node node : nodes) {
                     if (newName.equals(node.toString()) &&
-                            !newName.equals(getModelNode().getName())) {
+                            !newName.equals(this.getModelNode().getName())) {
                         JOptionPane.showMessageDialog(
                                 JOptionUtils.centeringComp(), "The name '" +
                                         newName + "' is already being used." +
@@ -184,14 +184,14 @@ public class GraphNodeMeasured extends DisplayNode {
      * variable, where no constraints are placed on the name.
      */
     public void doDoubleClickAction() {
-        this.doDoubleClickAction(null);
+        doDoubleClickAction(null);
     }
 
     private boolean isEditExitingMeasuredVarsAllowed() {
-        return editExitingMeasuredVarsAllowed;
+        return this.editExitingMeasuredVarsAllowed;
     }
 
-    public void setEditExitingMeasuredVarsAllowed(boolean editExitingMeasuredVarsAllowed) {
+    public void setEditExitingMeasuredVarsAllowed(final boolean editExitingMeasuredVarsAllowed) {
         this.editExitingMeasuredVarsAllowed = editExitingMeasuredVarsAllowed;
     }
 }

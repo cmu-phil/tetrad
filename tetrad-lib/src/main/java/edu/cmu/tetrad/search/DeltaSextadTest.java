@@ -58,7 +58,7 @@ public class DeltaSextadTest {
      * Constructs a test using a given data set. If a data set is provided (that is, a tabular data set), fourth moment
      * statistics can be calculated (p. 160); otherwise, it must be assumed that the data are multivariate Gaussian.
      */
-    public DeltaSextadTest(DataSet dataSet) {
+    public DeltaSextadTest(final DataSet dataSet) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
@@ -67,26 +67,26 @@ public class DeltaSextadTest {
             throw new IllegalArgumentException();
         }
 
-        cov = new CovarianceMatrix(dataSet);
+        this.cov = new CovarianceMatrix(dataSet);
 
-        Matrix centered = DataUtils.centerData(dataSet.getDoubleData());
-        data = centered.transpose().toArray();
-        N = dataSet.getNumRows();
-        variables = dataSet.getVariables();
+        final Matrix centered = DataUtils.centerData(dataSet.getDoubleData());
+        this.data = centered.transpose().toArray();
+        this.N = dataSet.getNumRows();
+        this.variables = dataSet.getVariables();
     }
 
     /**
      * Constructs a test using the given covariance matrix. Fourth moment statistics are not caculated; it is assumed
      * that the data are distributed as multivariate Gaussian.
      */
-    public DeltaSextadTest(ICovarianceMatrix cov) {
+    public DeltaSextadTest(final ICovarianceMatrix cov) {
         if (cov == null) {
             throw new NullPointerException();
         }
 
         this.cov = cov;
-        N = cov.getSampleSize();
-        variables = cov.getVariables();
+        this.N = cov.getSampleSize();
+        this.variables = cov.getVariables();
     }
 
     /**
@@ -103,12 +103,12 @@ public class DeltaSextadTest {
      * Calculates the T statistic (Bollen and Ting, p. 161). This is significant if tests as significant using the Chi
      * Square distribution with degrees of freedom equal to the number of nonredundant tetrads tested.
      */
-    public double getPValue(IntSextad... sextads) {
+    public double getPValue(final IntSextad... sextads) {
 //        int df = sextads.length;
-        int df = this.dofHarman(sextads.length);
-        double chisq = this.calcChiSquare(sextads);
+        final int df = dofHarman(sextads.length);
+        final double chisq = calcChiSquare(sextads);
 //        double cdf = ProbUtils.chisqCdf(chisq, df);
-        double cdf = new ChiSquaredDistribution(df).cumulativeProbability(chisq);
+        final double cdf = new ChiSquaredDistribution(df).cumulativeProbability(chisq);
         return 1.0 - cdf;
     }
 
@@ -119,11 +119,11 @@ public class DeltaSextadTest {
      * Calculates the T statistic (Bollen and Ting, p. 161). This is significant if tests as significant using the Chi
      * Square distribution with degrees of freedom equal to the number of nonredundant tetrads tested.
      */
-    public double calcChiSquare(IntSextad[] sextads) {
-        Set<Sigma> boldSigmaSet = new HashSet<>();
+    public double calcChiSquare(final IntSextad[] sextads) {
+        final Set<Sigma> boldSigmaSet = new HashSet<>();
 
-        for (IntSextad sextad : sextads) {
-            List<Integer> _nodes = sextad.getNodes();
+        for (final IntSextad sextad : sextads) {
+            final List<Integer> _nodes = sextad.getNodes();
 
 //            for (int i = 0; i < _nodes.size(); i++) {
 //                for (int j = i; j < _nodes.size(); j++) {
@@ -138,48 +138,48 @@ public class DeltaSextadTest {
             }
         }
 
-        List<Sigma> boldSigma = new ArrayList<>(boldSigmaSet);
+        final List<Sigma> boldSigma = new ArrayList<>(boldSigmaSet);
 
         // Need a matrix of variances and covariances of sample covariances.
-        Matrix sigma_ss = new Matrix(boldSigma.size(), boldSigma.size());
+        final Matrix sigma_ss = new Matrix(boldSigma.size(), boldSigma.size());
 
         for (int i = 0; i < boldSigma.size(); i++) {
             for (int j = i; j < boldSigma.size(); j++) {
-                Sigma sigmaef = boldSigma.get(i);
-                Sigma sigmagh = boldSigma.get(j);
+                final Sigma sigmaef = boldSigma.get(i);
+                final Sigma sigmagh = boldSigma.get(j);
 
-                int e = sigmaef.getA();
-                int f = sigmaef.getB();
-                int g = sigmagh.getA();
-                int h = sigmagh.getB();
+                final int e = sigmaef.getA();
+                final int f = sigmaef.getB();
+                final int g = sigmagh.getA();
+                final int h = sigmagh.getB();
 
-                if (cov != null && cov instanceof CorrelationMatrix) {
+                if (this.cov != null && this.cov instanceof CorrelationMatrix) {
 
 //                Assumes multinormality. Using formula 23. (Not implementing formula 22 because that case
 //                does not come up.)
-                    double rr = 0.5 * (this.r(e, f) * this.r(g, h))
-                            * (this.r(e, g) * this.r(e, g) + this.r(e, h) * this.r(e, h) + this.r(f, g) * this.r(f, g) + this.r(f, h) * this.r(f, h))
-                            + this.r(e, g) * this.r(f, h) + this.r(e, h) * this.r(f, g)
-                            - this.r(e, f) * (this.r(f, g) * this.r(f, h) + this.r(e, g) * this.r(e, h))
-                            - this.r(g, h) * (this.r(f, g) * this.r(e, g) + this.r(f, h) * this.r(e, h));
+                    final double rr = 0.5 * (r(e, f) * r(g, h))
+                            * (r(e, g) * r(e, g) + r(e, h) * r(e, h) + r(f, g) * r(f, g) + r(f, h) * r(f, h))
+                            + r(e, g) * r(f, h) + r(e, h) * r(f, g)
+                            - r(e, f) * (r(f, g) * r(f, h) + r(e, g) * r(e, h))
+                            - r(g, h) * (r(f, g) * r(e, g) + r(f, h) * r(e, h));
 
                     // General.
-                    double rr2 = this.r(e, f, g, h) + 0.25 * this.r(e, f) * this.r(g, h) *
-                            (this.r(e, e, g, g) * this.r(f, f, g, g) + this.r(e, e, h, h) + this.r(f, f, h, h))
-                            - 0.5 * this.r(e, f) * (this.r(e, e, g, h) + this.r(f, f, g, h))
-                            - 0.5 * this.r(g, h) * (this.r(e, f, g, g) + this.r(e, f, h, h));
+                    final double rr2 = r(e, f, g, h) + 0.25 * r(e, f) * r(g, h) *
+                            (r(e, e, g, g) * r(f, f, g, g) + r(e, e, h, h) + r(f, f, h, h))
+                            - 0.5 * r(e, f) * (r(e, e, g, h) + r(f, f, g, h))
+                            - 0.5 * r(g, h) * (r(e, f, g, g) + r(e, f, h, h));
 
                     sigma_ss.set(i, j, rr);
                     sigma_ss.set(j, i, rr);
-                } else if (cov != null && data == null) {
+                } else if (this.cov != null && this.data == null) {
 
                     // Assumes multinormality--see p. 160.
 //                    double _ss = r(e, g) * r(f, h) + r(e, h) * r(f, g); // + or -? Different advise. + in the code.
-                    double _ss = this.r(e, g) * this.r(f, h) + this.r(e, h) * this.r(f, g);
+                    final double _ss = r(e, g) * r(f, h) + r(e, h) * r(f, g);
                     sigma_ss.set(i, j, _ss);
                     sigma_ss.set(j, i, _ss);
                 } else {
-                    double _ss = this.r(e, f, g, h) - this.r(e, f) * this.r(g, h);
+                    final double _ss = r(e, f, g, h) - r(e, f) * r(g, h);
                     sigma_ss.set(i, j, _ss);
                     sigma_ss.set(j, i, _ss);
                 }
@@ -188,41 +188,41 @@ public class DeltaSextadTest {
 
         // Need a matrix of of population estimates of partial derivatives of tetrads
         // with respect to covariances in boldSigma.
-        Matrix del = new Matrix(boldSigma.size(), sextads.length);
+        final Matrix del = new Matrix(boldSigma.size(), sextads.length);
 
         for (int j = 0; j < sextads.length; j++) {
-            IntSextad sextad = sextads[j];
+            final IntSextad sextad = sextads[j];
 
             for (int i = 0; i < boldSigma.size(); i++) {
-                Sigma sigma = boldSigma.get(i);
-                double derivative = this.getDerivative(sextad, sigma);
+                final Sigma sigma = boldSigma.get(i);
+                final double derivative = getDerivative(sextad, sigma);
                 del.set(i, j, derivative);
             }
         }
 
         // Need a vector of population estimates of the sextads.
-        Matrix t = new Matrix(sextads.length, 1);
+        final Matrix t = new Matrix(sextads.length, 1);
 
         for (int i = 0; i < sextads.length; i++) {
-            IntSextad sextad = sextads[i];
-            List<Integer> nodes = sextad.getNodes();
-            Matrix m = new Matrix(3, 3);
+            final IntSextad sextad = sextads[i];
+            final List<Integer> nodes = sextad.getNodes();
+            final Matrix m = new Matrix(3, 3);
 
             for (int k1 = 0; k1 < 3; k1++) {
                 for (int k2 = 0; k2 < 3; k2++) {
-                    m.set(k1, k2, this.r(nodes.get(k1), nodes.get(3 + k2)));
+                    m.set(k1, k2, r(nodes.get(k1), nodes.get(3 + k2)));
                 }
             }
 
-            double det = m.det();
+            final double det = m.det();
             t.set(i, 0, det);
         }
 
-        Matrix sigma_tt = del.transpose().times(sigma_ss).times(del);
-        double chisq;
+        final Matrix sigma_tt = del.transpose().times(sigma_ss).times(del);
+        final double chisq;
         try {
-            chisq = N * t.transpose().times(sigma_tt.inverse()).times(t).get(0, 0);
-        } catch (SingularMatrixException e) {
+            chisq = this.N * t.transpose().times(sigma_tt.inverse()).times(t).get(0, 0);
+        } catch (final SingularMatrixException e) {
             throw new RuntimeException("Singularity problem.", e);
         }
         return chisq;
@@ -232,62 +232,62 @@ public class DeltaSextadTest {
      * If using a covariance matrix or a correlation matrix, just returns the lookups. Otherwise calculates the
      * covariance.
      */
-    private double r(int i, int j) {
-        if (cov != null) {
-            return cov.getValue(i, j);
+    private double r(final int i, final int j) {
+        if (this.cov != null) {
+            return this.cov.getValue(i, j);
         } else {
-            double[] arr1 = data[i];
-            double[] arr2 = data[j];
-            return this.r(arr1, arr2, arr1.length);
+            final double[] arr1 = this.data[i];
+            final double[] arr2 = this.data[j];
+            return r(arr1, arr2, arr1.length);
         }
     }
 
-    private double getDerivative(IntSextad sextad, Sigma sigma) {
-        int a = sigma.getA();
-        int b = sigma.getB();
+    private double getDerivative(final IntSextad sextad, final Sigma sigma) {
+        final int a = sigma.getA();
+        final int b = sigma.getB();
 
-        int n1 = sextad.getI();
-        int n2 = sextad.getJ();
-        int n3 = sextad.getK();
-        int n4 = sextad.getL();
-        int n5 = sextad.getM();
-        int n6 = sextad.getN();
+        final int n1 = sextad.getI();
+        final int n2 = sextad.getJ();
+        final int n3 = sextad.getK();
+        final int n4 = sextad.getL();
+        final int n5 = sextad.getM();
+        final int n6 = sextad.getN();
 
-        double x1 = this.derivative(a, b, n1, n2, n3, n4, n5, n6);
+        final double x1 = derivative(a, b, n1, n2, n3, n4, n5, n6);
 //        double x2 = derivative(a, b, n4, n5, n6, n1, n2, n3);
-        double x2 = this.derivative(b, a, n1, n2, n3, n4, n5, n6);
+        final double x2 = derivative(b, a, n1, n2, n3, n4, n5, n6);
 
         if (x1 == 0) return x2;
         if (x2 == 0) return x1;
         throw new IllegalStateException("Both nonzero at the same time: x1 = " + x1 + " x2 = " + x2);
     }
 
-    private double derivative(int a, int b, int n1, int n2, int n3, int n4, int n5, int n6) {
+    private double derivative(final int a, final int b, final int n1, final int n2, final int n3, final int n4, final int n5, final int n6) {
         if (a == n1) {
             if (b == n4) {
-                return this.r(n2, n5) * this.r(n3, n6) - this.r(n2, n6) * this.r(n3, n5);
+                return r(n2, n5) * r(n3, n6) - r(n2, n6) * r(n3, n5);
             } else if (b == n5) {
-                return -this.r(n2, n4) * this.r(n3, n6) + this.r(n3, n4) * this.r(n2, n6);
+                return -r(n2, n4) * r(n3, n6) + r(n3, n4) * r(n2, n6);
             } else if (b == n6) {
-                return this.r(n2, n4) * this.r(n3, n5) - this.r(n3, n4) * this.r(n2, n5);
+                return r(n2, n4) * r(n3, n5) - r(n3, n4) * r(n2, n5);
             }
 
         } else if (a == n2) {
             if (b == n4) {
-                return this.r(n3, n5) * this.r(n1, n6) - this.r(n1, n5) * this.r(n3, n6);
+                return r(n3, n5) * r(n1, n6) - r(n1, n5) * r(n3, n6);
             } else if (b == n5) {
-                return this.r(n1, n4) * this.r(n3, n6) - this.r(n3, n4) * this.r(n1, n6);
+                return r(n1, n4) * r(n3, n6) - r(n3, n4) * r(n1, n6);
             } else if (b == n6) {
-                return -this.r(n1, n4) * this.r(n3, n5) + this.r(n3, n4) * this.r(n1, n5);
+                return -r(n1, n4) * r(n3, n5) + r(n3, n4) * r(n1, n5);
             }
 
         } else if (a == n3) {
             if (b == n4) {
-                return this.r(n1, n5) * this.r(n2, n6) - this.r(n2, n5) * this.r(n1, n6);
+                return r(n1, n5) * r(n2, n6) - r(n2, n5) * r(n1, n6);
             } else if (b == n5) {
-                return -this.r(n1, n4) * this.r(n2, n6) + this.r(n2, n4) * this.r(n1, n6);
+                return -r(n1, n4) * r(n2, n6) + r(n2, n4) * r(n1, n6);
             } else if (b == n6) {
-                return this.r(n1, n4) * this.r(n2, n5) - this.r(n2, n4) * this.r(n1, n5);
+                return r(n1, n4) * r(n2, n5) - r(n2, n4) * r(n1, n5);
             }
 
         }
@@ -296,7 +296,7 @@ public class DeltaSextadTest {
     }
 
     public List<Node> getVariables() {
-        return variables;
+        return this.variables;
     }
 
     // Represents a single covariance symbolically.
@@ -304,47 +304,47 @@ public class DeltaSextadTest {
         private final int a;
         private final int b;
 
-        public Sigma(int a, int b) {
+        public Sigma(final int a, final int b) {
             this.a = a;
             this.b = b;
         }
 
         public int getA() {
-            return a;
+            return this.a;
         }
 
         public int getB() {
-            return b;
+            return this.b;
         }
 
-        public boolean equals(Object o) {
+        public boolean equals(final Object o) {
             if (!(o instanceof Sigma)) {
                 throw new IllegalArgumentException();
             }
 
-            Sigma _o = (Sigma) o;
-            return (_o.getA() == (this.getA()) && _o.getB() == (this.getB())) || (_o.getB() == (this.getA()) && _o.getA() == (this.getB()));
+            final Sigma _o = (Sigma) o;
+            return (_o.getA() == (getA()) && _o.getB() == (getB())) || (_o.getB() == (getA()) && _o.getA() == (getB()));
         }
 
         public int hashCode() {
-            return a + b;
+            return this.a + this.b;
         }
 
         public String toString() {
-            return "Sigma(" + this.getA() + ", " + this.getB() + ")";
+            return "Sigma(" + getA() + ", " + getB() + ")";
         }
     }
 
     // Assumes data are mean-centered.
-    private double r(int x, int y, int z, int w) {
+    private double r(final int x, final int y, final int z, final int w) {
         double sxyzw = 0.0;
 
-        double[] _x = data[x];
-        double[] _y = data[y];
-        double[] _z = data[z];
-        double[] _w = data[w];
+        final double[] _x = this.data[x];
+        final double[] _y = this.data[y];
+        final double[] _z = this.data[z];
+        final double[] _w = this.data[w];
 
-        int N = _x.length;
+        final int N = _x.length;
 
         for (int j = 0; j < N; j++) {
             sxyzw += _x[j] * _y[j] * _z[j] * _w[j];
@@ -354,7 +354,7 @@ public class DeltaSextadTest {
     }
 
     // Assumes data are mean-centered.
-    private double r(double[] array1, double[] array2, int N) {
+    private double r(final double[] array1, final double[] array2, final int N) {
         int i;
         double sum = 0.0;
 
@@ -365,13 +365,13 @@ public class DeltaSextadTest {
         return (1.0 / N) * sum;
     }
 
-    private int dofDrton(int n) {
+    private int dofDrton(final int n) {
         int dof = ((n - 2) * (n - 3)) / 2 - 2;
         if (dof < 1) dof = 1;
         return dof;
     }
 
-    private int dofHarman(int n) {
+    private int dofHarman(final int n) {
         int dof = n * (n - 5) / 2 + 1;
         if (dof < 1) dof = 1;
         return dof;

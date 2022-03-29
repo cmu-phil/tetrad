@@ -38,14 +38,14 @@ public class BiolinguaDigraph extends Digraph implements OutputGraph {
      * Creates a BiolinguaDigraph with name <code>gName</code> and
      * <code>n</code> nodes
      */
-    public BiolinguaDigraph(String gName, int n) {
+    public BiolinguaDigraph(final String gName, final int n) {
         super(gName, n);
     }
 
     /**
      * Creates a BiolinguaDigraph reading it from file <code>fname</code>.
      */
-    public BiolinguaDigraph(String fname)
+    public BiolinguaDigraph(final String fname)
             throws IOException {
         super(fname);
     }
@@ -53,12 +53,12 @@ public class BiolinguaDigraph extends Digraph implements OutputGraph {
     /**
      * Copy constructor.
      */
-    public BiolinguaDigraph(BiolinguaDigraph digraph) {
+    public BiolinguaDigraph(final BiolinguaDigraph digraph) {
         this("Clone_of_[" + digraph + "]", digraph.nNodes);
         for (int i = 0; i < digraph.nNodes; i++) {
-            nodeNames[i] = digraph.nodeNames[i];
+            this.nodeNames[i] = digraph.nodeNames[i];
             for (int j = 0; j < i; j++) {
-                setEdge(i, j, digraph.getEdge(i, j));
+                this.setEdge(i, j, digraph.getEdge(i, j));
             }
         }
     }
@@ -67,12 +67,12 @@ public class BiolinguaDigraph extends Digraph implements OutputGraph {
      * Returns a clone of this graph
      */
     public Object clone() {
-        BiolinguaDigraph g2 = new BiolinguaDigraph(
-                "Clone_of_[" + graphName + "]", nNodes);
-        for (int i = 0; i < nNodes; i++) {
-            g2.nodeNames[i] = nodeNames[i];
+        final BiolinguaDigraph g2 = new BiolinguaDigraph(
+                "Clone_of_[" + this.graphName + "]", this.nNodes);
+        for (int i = 0; i < this.nNodes; i++) {
+            g2.nodeNames[i] = this.nodeNames[i];
             for (int j = 0; j < i; j++) {
-                g2.setEdge(i, j, getEdge(i, j));
+                g2.setEdge(i, j, this.getEdge(i, j));
             }
         }
         return g2;
@@ -81,19 +81,19 @@ public class BiolinguaDigraph extends Digraph implements OutputGraph {
     /**
      * Returns true if node p is parent of node c.<p>
      */
-    public boolean isParent(int p, int c) {
-        return (getEdges().getDoubleValue(p, c) != 0.0);
+    public boolean isParent(final int p, final int c) {
+        return (this.getEdges().getDoubleValue(p, c) != 0.0);
     }
 
     /**
      * Returns a string with the indexes of all parents of node i separated by
      * spaces (useful for printouts)
      */
-    public String strOfParents(int i) {
-        int[] ap = getParents(i);
+    public String strOfParents(final int i) {
+        final int[] ap = this.getParents(i);
         String s = "";
 
-        for (int anAp : ap) {
+        for (final int anAp : ap) {
             s = s + " " + anAp;
         }
 
@@ -103,7 +103,7 @@ public class BiolinguaDigraph extends Digraph implements OutputGraph {
     /**
      * Returns null (no lag information is stored in a BiolinguaDigraph).
      */
-    public int[] getLags(int i) {
+    public int[] getLags(final int i) {
         return null;
     }
 
@@ -113,19 +113,19 @@ public class BiolinguaDigraph extends Digraph implements OutputGraph {
      * reading the graph from a file.
      */
     public String toString() {
-        String s = getClass().getName() + " " + graphName + "\n" +
-                nNodes + "\t// <-- Total # nodes\n" + "// " +
-                getNumEdges() + "\t// <-- Total # edges\n";
+        String s = this.getClass().getName() + " " + this.graphName + "\n" +
+                this.nNodes + "\t// <-- Total # nodes\n" + "// " +
+                this.getNumEdges() + "\t// <-- Total # edges\n";
 
         s = s + "\n// Node names:\n";
-        for (int i = 0; i < nNodes; i++) {
-            s = s + getNodeName(i);
-            s = s + "\t// #" + i + " \tParents = {" + strOfParents(i) +
+        for (int i = 0; i < this.nNodes; i++) {
+            s = s + this.getNodeName(i);
+            s = s + "\t// #" + i + " \tParents = {" + this.strOfParents(i) +
                     " }\n";
         }
 
         s = s + "\n// edges:\n";
-        s = s + EdgesToString();
+        s = s + this.EdgesToString();
         return s;
     }
 }

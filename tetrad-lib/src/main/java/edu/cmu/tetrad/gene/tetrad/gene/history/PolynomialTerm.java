@@ -60,7 +60,7 @@ public class PolynomialTerm implements TetradSerializable {
     /**
      * Constructs a term.
      */
-    public PolynomialTerm(double coefficient, int[] variables) {
+    public PolynomialTerm(final double coefficient, final int[] variables) {
         if (variables == null) {
             throw new NullPointerException("Variables cannot be null.");
         }
@@ -87,13 +87,13 @@ public class PolynomialTerm implements TetradSerializable {
      * Returns the coefficient.
      */
     public double getCoefficient() {
-        return coefficient;
+        return this.coefficient;
     }
 
     /**
      * Sets the coefficient.
      */
-    public void setCoefficient(double coefficient) {
+    public void setCoefficient(final double coefficient) {
         this.coefficient = coefficient;
     }
 
@@ -101,21 +101,21 @@ public class PolynomialTerm implements TetradSerializable {
      * Returns the number of variables in this term.
      */
     public int getNumVariables() {
-        return variables.length;
+        return this.variables.length;
     }
 
     /**
      * Returns the index'th variable.
      */
-    public int getVariable(int index) {
-        return variables[index];
+    public int getVariable(final int index) {
+        return this.variables[index];
     }
 
     /**
      * Returns true iff the given variable list is equal to the variable list of
      * this term.
      */
-    public boolean isVariableListEqual(int[] variables) {
+    public boolean isVariableListEqual(final int[] variables) {
         return Arrays.equals(variables, this.variables);
     }
 
@@ -124,7 +124,7 @@ public class PolynomialTerm implements TetradSerializable {
      */
     public int getMaxIndex() {
         int max = 0;
-        for (int variable : variables) {
+        for (final int variable : this.variables) {
             if (variable > max) {
                 max = variable;
             }
@@ -135,9 +135,9 @@ public class PolynomialTerm implements TetradSerializable {
     /**
      * Evaluates the term.
      */
-    public double evaluate(double[] values) {
-        double product = coefficient;
-        for (int variable : variables) {
+    public double evaluate(final double[] values) {
+        double product = this.coefficient;
+        for (final int variable : this.variables) {
             product *= values[variable];
         }
         return product;
@@ -147,12 +147,12 @@ public class PolynomialTerm implements TetradSerializable {
      * Prints out a representation of the term.
      */
     public String toString() {
-        StringBuilder buf = new StringBuilder();
-        buf.append(coefficient);
-        if (variables.length > 0) {
+        final StringBuilder buf = new StringBuilder();
+        buf.append(this.coefficient);
+        if (this.variables.length > 0) {
             buf.append("*");
         }
-        for (int variable : variables) {
+        for (final int variable : this.variables) {
             buf.append("(V");
             buf.append(variable);
             buf.append(")");
@@ -173,11 +173,11 @@ public class PolynomialTerm implements TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (variables == null) {
+        if (this.variables == null) {
             throw new NullPointerException();
         }
     }

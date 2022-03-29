@@ -61,33 +61,33 @@ final class SaveDataAction extends AbstractAction {
     /**
      * Creates a new action to save data.
      */
-    public SaveDataAction(DataEditor editor) {
+    public SaveDataAction(final DataEditor editor) {
         super("Save Data...");
 
         if (editor == null) {
             throw new NullPointerException("Data Editor must not be null.");
         }
 
-        setDataEditor(editor);
+        this.setDataEditor(editor);
     }
 
 
-    public SaveDataAction(MarkovBlanketSearchEditor editor) {
+    public SaveDataAction(final MarkovBlanketSearchEditor editor) {
         super("Save Data...");
         if (editor == null) {
             throw new NullPointerException("Editor must not be null");
         }
-        searchEditor = editor;
+        this.searchEditor = editor;
     }
 
 
     /**
      * Performs the action of loading a session from a file.
      */
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(final ActionEvent e) {
         try {
-            this.saveData();
-        } catch (IOException e1) {
+            saveData();
+        } catch (final IOException e1) {
             e1.printStackTrace();
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     "Error in saving: " + e1.getMessage());
@@ -101,10 +101,10 @@ final class SaveDataAction extends AbstractAction {
 
 
         DataModel dataModel;
-        if (dataEditor != null) {
-            dataModel = this.getDataEditor().getDataModelList();
+        if (this.dataEditor != null) {
+            dataModel = getDataEditor().getDataModelList();
         } else {
-            dataModel = searchEditor.getDataModel();
+            dataModel = this.searchEditor.getDataModel();
         }
 
         if (dataModel == null) {
@@ -121,7 +121,7 @@ final class SaveDataAction extends AbstractAction {
         if (name == null) name = "data";
 
         if (dataModel instanceof DataSet) {
-            File file = EditorUtils.getSaveFile(name.replace(" ", "_"), "txt", this.getDataEditor(), false, "Save Data...");
+            final File file = EditorUtils.getSaveFile(name.replace(" ", "_"), "txt", getDataEditor(), false, "Save Data...");
 
             if (file == null) {
                 return;
@@ -133,16 +133,16 @@ final class SaveDataAction extends AbstractAction {
                 delimiter = ',';
             }
 
-            PrintWriter out;
+            final PrintWriter out;
 
             try {
                 out = new PrintWriter(new FileOutputStream(file));
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 throw new IllegalArgumentException(
                         "Output file could not be opened: " + file);
             }
 
-            DataSet dataSet = (DataSet) dataModel;
+            final DataSet dataSet = (DataSet) dataModel;
 
             if (dataSet.isContinuous()) {
                 DataWriter.writeRectangularData(dataSet, out, delimiter);
@@ -154,50 +154,50 @@ final class SaveDataAction extends AbstractAction {
 
             out.close();
         } else if (dataModel instanceof ICovarianceMatrix) {
-            File file = EditorUtils.getSaveFile(name.replace(" ", "_"), "txt", this.getDataEditor(), false, "Save Data...");
+            final File file = EditorUtils.getSaveFile(name.replace(" ", "_"), "txt", getDataEditor(), false, "Save Data...");
 
             if (file == null) {
                 return;
             }
 
-            PrintWriter out;
+            final PrintWriter out;
 
             try {
                 out = new PrintWriter(new FileOutputStream(file));
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 throw new IllegalArgumentException(
                         "Output file could not be opened: " + file);
             }
 
-            DataWriter.writeCovMatrix((ICovarianceMatrix) dataModel, out, nf);
+            DataWriter.writeCovMatrix((ICovarianceMatrix) dataModel, out, this.nf);
 
             out.close();
         } else if (dataModel instanceof DataModelList) {
-            File file = EditorUtils.getSaveFile(name.replace(" ", "_"), "txt", this.getDataEditor(), false, "Save Data...");
+            final File file = EditorUtils.getSaveFile(name.replace(" ", "_"), "txt", getDataEditor(), false, "Save Data...");
 
             final char delimiter = '\t';
 
-            DataModelList list = (DataModelList) dataModel;
+            final DataModelList list = (DataModelList) dataModel;
 
             for (int i = 0; i < list.size(); i++) {
 
-                DataModel _dataModel = list.get(i);
+                final DataModel _dataModel = list.get(i);
 
                 if (_dataModel == null) throw new NullPointerException("Null data model.");
 
                 if (_dataModel instanceof DataSet) {
-                    PrintWriter out;
+                    final PrintWriter out;
 
                     try {
-                        File file1 = new File(file.getParent(), file.getName() + "_" + (i + 1) + ".txt");
+                        final File file1 = new File(file.getParent(), file.getName() + "_" + (i + 1) + ".txt");
                         System.out.println(file1);
                         out = new PrintWriter(new FileOutputStream(file1));
-                    } catch (IOException e) {
+                    } catch (final IOException e) {
                         throw new IllegalArgumentException(
                                 "Output file could not be opened: " + name.replace(" ", "_") + ".txt");
                     }
 
-                    DataSet dataSet = (DataSet) ((DataModelList) dataModel).get(i);
+                    final DataSet dataSet = (DataSet) ((DataModelList) dataModel).get(i);
 
                     if (dataSet.isContinuous()) {
                         DataWriter.writeRectangularData(dataSet, out, delimiter);
@@ -209,18 +209,18 @@ final class SaveDataAction extends AbstractAction {
 
                     out.close();
                 } else if (_dataModel instanceof ICovarianceMatrix) {
-                    PrintWriter out;
+                    final PrintWriter out;
 
                     try {
-                        File file1 = new File(file.getParent(), file.getName() + "_" + (i + 1) + ".txt");
+                        final File file1 = new File(file.getParent(), file.getName() + "_" + (i + 1) + ".txt");
                         System.out.println(file1);
                         out = new PrintWriter(new FileOutputStream(file1));
-                    } catch (IOException e) {
+                    } catch (final IOException e) {
                         throw new IllegalArgumentException(
                                 "Output file could not be opened: " + name.replace(" ", "_") + ".txt");
                     }
 
-                    DataWriter.writeCovMatrix((ICovarianceMatrix) _dataModel, out, nf);
+                    DataWriter.writeCovMatrix((ICovarianceMatrix) _dataModel, out, this.nf);
                 }
             }
         } else {
@@ -230,10 +230,10 @@ final class SaveDataAction extends AbstractAction {
     }
 
     private DataEditor getDataEditor() {
-        return dataEditor;
+        return this.dataEditor;
     }
 
-    private void setDataEditor(DataEditor dataEditor) {
+    private void setDataEditor(final DataEditor dataEditor) {
         this.dataEditor = dataEditor;
     }
 }

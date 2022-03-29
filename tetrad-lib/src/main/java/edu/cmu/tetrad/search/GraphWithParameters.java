@@ -25,6 +25,9 @@ import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.GwpResult.AdjacencyEvaluationResult;
+import edu.cmu.tetrad.search.GwpResult.CoefficientEvaluationResult;
+import edu.cmu.tetrad.search.GwpResult.OrientationEvaluationResult;
 import edu.cmu.tetrad.sem.SemEstimator;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -47,7 +50,7 @@ public class GraphWithParameters {
     public String generatingMethodName;
 
     public String getGeneratingMethodName() {
-        return generatingMethodName;
+        return this.generatingMethodName;
     }
 
     private final HashMap<Edge, Double> weightHash;
@@ -59,7 +62,7 @@ public class GraphWithParameters {
      */
     //it would have been more efficient to only regression on the nodes that matter
 
-    public GraphWithParameters(SemIm semIm, Graph trueCPDAG) {
+    public GraphWithParameters(final SemIm semIm, final Graph trueCPDAG) {
 //		Graph g = (trueCPDAG==null) ? semIm.getEstIm().getGraph() : trueCPDAG;
 //		this.graph = g;
 //		weightHash = new HashMap<Edge,Double>();
@@ -68,71 +71,71 @@ public class GraphWithParameters {
         //make the SemIm
 
         //estimate the weights for the nodes that have all parents determined.
-        for (Node node : getGraph().getNodes()) {
-            if (GraphUtils.allAdjacenciesAreDirected(node, this.getGraph())) {    //if we know the set of parents of 'node'
+        for (final Node node : this.getGraph().getNodes()) {
+            if (GraphUtils.allAdjacenciesAreDirected(node, getGraph())) {    //if we know the set of parents of 'node'
 
                 //steal the coefficients from the SemIm
-                for (Edge edge : getGraph().getEdges(node)) {
-                    double semImWeight = semIm.getEdgeCoef(edge);
-                    getWeightHash().put(edge, semImWeight);
+                for (final Edge edge : this.getGraph().getEdges(node)) {
+                    final double semImWeight = semIm.getEdgeCoef(edge);
+                    this.getWeightHash().put(edge, semImWeight);
                 }
             }
         }
-        graph = this.getGraph();
+        this.graph = getGraph();
     }
 
-    public GraphWithParameters(Graph graph) {
+    public GraphWithParameters(final Graph graph) {
         this.graph = graph;
-        weightHash = new HashMap<>();
+        this.weightHash = new HashMap<>();
     }
 
 //	public CPDAGWithParameters(ColtDataSet B) {
 //		Shimizu2006Search.makeDagWithParms(B);
 //	}
 
-    public void addEdge(Node node1, Node node2, double weight) {
-        Edge edge = new Edge(node1, node2, Endpoint.TAIL, Endpoint.ARROW);
-        this.getGraph().addEdge(edge);
-        this.getWeightHash().put(edge, weight);
+    public void addEdge(final Node node1, final Node node2, final double weight) {
+        final Edge edge = new Edge(node1, node2, Endpoint.TAIL, Endpoint.ARROW);
+        getGraph().addEdge(edge);
+        getWeightHash().put(edge, weight);
     }
 
-    public void addEdge(String nodeName1, String nodeName2, double weight) {
-        Node node1 = this.getGraph().getNode(nodeName1);
-        Node node2 = this.getGraph().getNode(nodeName2);
-        this.addEdge(node1, node2, weight);
+    public void addEdge(final String nodeName1, final String nodeName2, final double weight) {
+        final Node node1 = getGraph().getNode(nodeName1);
+        final Node node2 = getGraph().getNode(nodeName2);
+        addEdge(node1, node2, weight);
     }
 
 
-    public GraphWithParameters(DataSet dataSet) {
+    public GraphWithParameters(final DataSet dataSet) {
 
-        Matrix Bmatrix = dataSet.getDoubleData();
+        final Matrix Bmatrix = dataSet.getDoubleData();
 
 //    	List<Node> variables = Bmatrix.getVariable();
 
-        graph = new EdgeListGraph();
-        weightHash = new HashMap<>();
+        this.graph = new EdgeListGraph();
+        this.weightHash = new HashMap<>();
 
-        int n = Bmatrix.rows();
+        final int n = Bmatrix.rows();
 //		System.out.println("n = " + n);
 //		n = Bmatrix.columns();
 //		System.out.println("n = " + n);
 
         //add nodes
         for (int i = 0; i < n; i++) {
-            getGraph().addNode(new GraphNode(dataSet.getVariable(i).getName()));
+            this.getGraph().addNode(new GraphNode(dataSet.getVariable(i).getName()));
         }
 
         //add edges with weights
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                double value = Bmatrix.get(i, j);
+                final double value = Bmatrix.get(i, j);
                 if (value > 1E-15 || value < -1E-15) {
                     // Switched i and j in the below. --jdrmasey 10/23/08
-                    Node node1 = this.getGraph().getNode(dataSet.getVariableNames().get(i));//"X"+(j+1)); //read as the B matrix as: from column to row
-                    Node node2 = this.getGraph().getNode(dataSet.getVariableNames().get(j));
-                    Edge edge = new Edge(node1, node2, Endpoint.TAIL, Endpoint.ARROW);
-                    this.getGraph().addEdge(edge);
-                    this.getWeightHash().put(edge, value);
+                    final Node node1 = getGraph().getNode(dataSet.getVariableNames().get(i));//"X"+(j+1)); //read as the B matrix as: from column to row
+                    final Node node2 = getGraph().getNode(dataSet.getVariableNames().get(j));
+                    final Edge edge = new Edge(node1, node2, Endpoint.TAIL, Endpoint.ARROW);
+                    getGraph().addEdge(edge);
+                    getWeightHash().put(edge, value);
                 }
             }
         }
@@ -140,9 +143,9 @@ public class GraphWithParameters {
 
     public String toString() { //iterate through the edges and print their weight too
         String str = "";
-        for (Edge edge : this.getGraph().getEdges()) {
+        for (final Edge edge : getGraph().getEdges()) {
             str += edge.toString();
-            str += "   " + this.getWeightHash().get(edge) + "\n";
+            str += "   " + getWeightHash().get(edge) + "\n";
         }
         return str;
     }
@@ -151,44 +154,44 @@ public class GraphWithParameters {
     public int errorsOfOmission;
     public int errorsOfCommission;
 
-    public GwpResult.AdjacencyEvaluationResult evalAdjacency(final Graph standardDag) {
+    public AdjacencyEvaluationResult evalAdjacency(Graph standardDag) {
         //for each edge in this DAG, check whether it is in standardDag. If it isn't, that's an error of
         //commission.
-        for (final Edge thisEdge : this.getGraph().getEdges()) {
+        for (Edge thisEdge : getGraph().getEdges()) {
             System.out.print("thisEdge = " + thisEdge);
 
             //is it in this DAG?
-            final Edge standardEdge = GraphWithParameters.getCorrespondingEdge(standardDag, thisEdge);
+            Edge standardEdge = getCorrespondingEdge(standardDag, thisEdge);
             System.out.println(", standardEdge = " + standardEdge);
 
-            final boolean adjCorrect = (standardEdge != null);
+            boolean adjCorrect = (standardEdge != null);
             if (!adjCorrect) {
-                this.errorsOfCommission++;
+                errorsOfCommission++;
             }
         }
 
         //for each edge in standardDag, check whether it is in this DAG. If it isn't, that's an error of
         //omission.
-        for (final Edge standardEdge : standardDag.getEdges()) {
+        for (Edge standardEdge : standardDag.getEdges()) {
             System.out.print("standardEdge = " + standardEdge);
 
             //is it in this DAG?
-            final Edge thisEdge = GraphWithParameters.getCorrespondingEdge(this.getGraph(), standardEdge);
+            Edge thisEdge = getCorrespondingEdge(getGraph(), standardEdge);
             System.out.println(", thisEdge = " + thisEdge);
 
-            final boolean adjCorrect = (thisEdge != null);
+            boolean adjCorrect = (thisEdge != null);
             if (!adjCorrect) {
-                this.errorsOfOmission++;
+                errorsOfOmission++;
             }
         }
-        return new GwpResult.AdjacencyEvaluationResult(errorsOfOmission, errorsOfCommission);
+        return new AdjacencyEvaluationResult(this.errorsOfOmission, this.errorsOfCommission);
     }
 
 
     public void printAdjacencyEvaluation() {
         System.out.println("== Results of evaluating adjacency ==");
-        System.out.println("errorsOfOmission = " + errorsOfOmission);
-        System.out.println("errorsOfCommission = " + errorsOfCommission);
+        System.out.println("errorsOfOmission = " + this.errorsOfOmission);
+        System.out.println("errorsOfCommission = " + this.errorsOfCommission);
     }
 
 
@@ -203,12 +206,12 @@ public class GraphWithParameters {
     //evaluating orientations
     //should only evaluate on the adjacencies that are correct
 
-    public GwpResult.OrientationEvaluationResult evalOrientations(final Graph standardGraph) {
-        this.correctDirectedOrientationEdges = new Vector();
+    public OrientationEvaluationResult evalOrientations(Graph standardGraph) {
+        correctDirectedOrientationEdges = new Vector();
 
-        for (final Edge standardEdge : standardGraph.getEdges()) { //for each edge in the "correct" graph
+        for (Edge standardEdge : standardGraph.getEdges()) { //for each edge in the "correct" graph
 
-            final Edge thisEdge = GraphWithParameters.getCorrespondingEdge(this.getGraph(), standardEdge);
+            Edge thisEdge = getCorrespondingEdge(getGraph(), standardEdge);
             System.out.print("standardEdge = " + standardEdge +
                     (standardEdge == null ? "" : " (directed = " + standardEdge.isDirected()));
             System.out.println("), thisEdge = " + thisEdge +
@@ -217,38 +220,38 @@ public class GraphWithParameters {
             if (thisEdge == null) //skip the ones that are not adjacent
                 continue;
 
-            this.oriEvaluated++;
+            oriEvaluated++;
 
             if (!standardEdge.isDirected()) {
                 if (!thisEdge.isDirected()) { //both undirected
-                    this.oriCorrect++;
+                    oriCorrect++;
                 } else {
-                    this.directedWhenShouldBeUndirected++;
+                    directedWhenShouldBeUndirected++;
                 }
             } else { //standardEdge is directed
                 if (thisEdge.isDirected()) { //estimate edge is directed: compare direction
-                    if (GraphWithParameters.getCorrespondingDirectedEdge(this.getGraph(), standardEdge) != null) { //there is a corresponding edge pointing "forward"
-                        this.oriCorrect++;
-                        this.correctDirectedOrientationEdges.add(thisEdge);
+                    if (getCorrespondingDirectedEdge(getGraph(), standardEdge) != null) { //there is a corresponding edge pointing "forward"
+                        oriCorrect++;
+                        correctDirectedOrientationEdges.add(thisEdge);
                     } else { //standardEdge is undirected, is directed
-                        this.directedWrongWay++;
+                        directedWrongWay++;
                     }
                 } else { //not directed when it should be
-                    this.undirectedWhenShouldBeDirected++;
+                    undirectedWhenShouldBeDirected++;
                 }
             }
             System.out.print("\n");
 
         } //end for
-        return new GwpResult.OrientationEvaluationResult(oriCorrect, directedWrongWay, undirectedWhenShouldBeDirected, directedWhenShouldBeUndirected);
+        return new OrientationEvaluationResult(this.oriCorrect, this.directedWrongWay, this.undirectedWhenShouldBeDirected, this.directedWhenShouldBeUndirected);
     }
 
 
     public void printOrientationEvaluation() {
         System.out.println("== Results of evaluating orientation ==");
-        System.out.println("oriCorrect = " + oriCorrect + "  directedWrongWay = " + directedWrongWay +
-                "  undirectedWhenShouldBeDirected = " + undirectedWhenShouldBeDirected + "  directedWhenShouldBeUndirected = " + directedWhenShouldBeUndirected);
-        System.out.println("oriEvaluated = " + oriEvaluated);
+        System.out.println("oriCorrect = " + this.oriCorrect + "  directedWrongWay = " + this.directedWrongWay +
+                "  undirectedWhenShouldBeDirected = " + this.undirectedWhenShouldBeDirected + "  directedWhenShouldBeUndirected = " + this.directedWhenShouldBeUndirected);
+        System.out.println("oriEvaluated = " + this.oriEvaluated);
     }
 
 
@@ -257,36 +260,36 @@ public class GraphWithParameters {
 
     //evaluate every node-pair
 
-    public GwpResult.CoefficientEvaluationResult evalCoeffs(final GraphWithParameters standardGraph) {
-        this.totalCoeffErrorSq = 0;
+    public CoefficientEvaluationResult evalCoeffs(GraphWithParameters standardGraph) {
+        totalCoeffErrorSq = 0;
 
-        final List<Node> nodes = getGraph().getNodes();
+        List<Node> nodes = this.getGraph().getNodes();
         for (int i = 0; i < nodes.size(); i++) { //iterating through each node pair
-            final Node node1 = nodes.get(i);
-            final Node realNode1 = GraphWithParameters.getCorrespondingNode(standardGraph.getGraph(), node1);
+            Node node1 = nodes.get(i);
+            Node realNode1 = getCorrespondingNode(standardGraph.getGraph(), node1);
             for (int j = 0; j < i; j++) {
-                final Node node2 = nodes.get(j);
-                final Node realNode2 = GraphWithParameters.getCorrespondingNode(standardGraph.getGraph(), node2);
+                Node node2 = nodes.get(j);
+                Node realNode2 = getCorrespondingNode(standardGraph.getGraph(), node2);
 
                 System.out.println("node1 = " + node1 + "  node2 = " + node2);
-                final double coeff12 = getDirectedEdgeCoeff(node1, node2);
-                final double realCoeff12 = standardGraph.getDirectedEdgeCoeff(realNode1, realNode2);
-                final double err12 = java.lang.Math.pow(coeff12 - realCoeff12, 2);
+                double coeff12 = this.getDirectedEdgeCoeff(node1, node2);
+                double realCoeff12 = standardGraph.getDirectedEdgeCoeff(realNode1, realNode2);
+                double err12 = java.lang.Math.pow(coeff12 - realCoeff12, 2);
                 System.out.println("err12 = " + err12);
 
-                final double coeff21 = getDirectedEdgeCoeff(node2, node1);
-                final double realCoeff21 = standardGraph.getDirectedEdgeCoeff(realNode2, realNode1);
-                final double err21 = java.lang.Math.pow(coeff21 - realCoeff21, 2);
+                double coeff21 = this.getDirectedEdgeCoeff(node2, node1);
+                double realCoeff21 = standardGraph.getDirectedEdgeCoeff(realNode2, realNode1);
+                double err21 = java.lang.Math.pow(coeff21 - realCoeff21, 2);
                 System.out.println("err21 = " + err21);
 
-                final double error = err12 + err21;
+                double error = err12 + err21;
                 System.out.println("error = " + error);
 
-                this.totalCoeffErrorSq += error;
+                totalCoeffErrorSq += error;
             }
         }
 
-        return new GwpResult.CoefficientEvaluationResult(this.totalCoeffErrorSq, null);
+        return new CoefficientEvaluationResult(totalCoeffErrorSq, null);
     }
 
 
@@ -297,53 +300,53 @@ public class GraphWithParameters {
      *
      * @param edges edges from the CPDAG returned by PC-search
      */
-    public GwpResult.CoefficientEvaluationResult evalCoeffsForNodePairs(final GraphWithParameters standardGraph, final List<Edge> edges) {
+    public CoefficientEvaluationResult evalCoeffsForNodePairs(GraphWithParameters standardGraph, List<Edge> edges) {
 
-        this.totalCoeffErrorSq = 0;
+        totalCoeffErrorSq = 0;
 
         //turn them into 'graph' edges
-        for (final Edge edge : edges) {
-            final Node node1Edges = edge.getNode1();
-            final Node node2Edges = edge.getNode2();
+        for (Edge edge : edges) {
+            Node node1Edges = edge.getNode1();
+            Node node2Edges = edge.getNode2();
 
             System.out.println("node1Edges = " + node1Edges + "  node2Edges = " + node2Edges);
-            final Node node1this = GraphWithParameters.getCorrespondingNode(this.getGraph(), node1Edges);
-            final Node node2this = GraphWithParameters.getCorrespondingNode(this.getGraph(), node2Edges);
-            final double coeff12 = getDirectedEdgeCoeff(node1this, node2this);
-            final Node node1sta = GraphWithParameters.getCorrespondingNode(standardGraph.getGraph(), node1Edges);
-            final Node node2sta = GraphWithParameters.getCorrespondingNode(standardGraph.getGraph(), node2Edges);
-            final double realCoeff12 = standardGraph.getDirectedEdgeCoeff(node1sta, node2sta);
-            final double err12 = java.lang.Math.pow(coeff12 - realCoeff12, 2);
+            Node node1this = getCorrespondingNode(getGraph(), node1Edges);
+            Node node2this = getCorrespondingNode(getGraph(), node2Edges);
+            double coeff12 = this.getDirectedEdgeCoeff(node1this, node2this);
+            Node node1sta = getCorrespondingNode(standardGraph.getGraph(), node1Edges);
+            Node node2sta = getCorrespondingNode(standardGraph.getGraph(), node2Edges);
+            double realCoeff12 = standardGraph.getDirectedEdgeCoeff(node1sta, node2sta);
+            double err12 = java.lang.Math.pow(coeff12 - realCoeff12, 2);
             System.out.println("err12 = " + err12);
 
-            final double coeff21 = getDirectedEdgeCoeff(node2this, node1this);
-            final double realCoeff21 = standardGraph.getDirectedEdgeCoeff(node2sta, node1sta);
-            final double err21 = java.lang.Math.pow(coeff21 - realCoeff21, 2);
+            double coeff21 = this.getDirectedEdgeCoeff(node2this, node1this);
+            double realCoeff21 = standardGraph.getDirectedEdgeCoeff(node2sta, node1sta);
+            double err21 = java.lang.Math.pow(coeff21 - realCoeff21, 2);
             System.out.println("err21 = " + err21);
 
-            final double error = err12 + err21;
+            double error = err12 + err21;
             System.out.println("error = " + error);
 
-            this.totalCoeffErrorSq += error;
+            totalCoeffErrorSq += error;
         }
-        return new GwpResult.CoefficientEvaluationResult(totalCoeffErrorSq, edges.size());
+        return new CoefficientEvaluationResult(this.totalCoeffErrorSq, edges.size());
     }
 
 
-    private double getDirectedEdgeCoeff(Node node1, Node node2) {
-        double result;
-        Edge edge = this.getGraph().getDirectedEdge(node1, node2);
+    private double getDirectedEdgeCoeff(final Node node1, final Node node2) {
+        final double result;
+        final Edge edge = getGraph().getDirectedEdge(node1, node2);
         if (edge == null)
             result = 0;
         else
-            result = this.getWeightHash().get(edge);  //weightHash is null!
+            result = getWeightHash().get(edge);  //weightHash is null!
         return result;
     }
 
     //should only evaluate those that are oriented correctly
 
-    public void evalCoeffsCorrectOrientation(GraphWithParameters standardGraph) {
-        List<Edge> edgesToEvaluate;
+    public void evalCoeffsCorrectOrientation(final GraphWithParameters standardGraph) {
+        final List<Edge> edgesToEvaluate;
 //		if (patDag!=null) //we use it
 //		{
 //		edgesToEvaluate = new Vector();
@@ -356,23 +359,23 @@ public class GraphWithParameters {
 //		}
 //		}
 //		else 
-        edgesToEvaluate = correctDirectedOrientationEdges;
+        edgesToEvaluate = this.correctDirectedOrientationEdges;
 
-        System.out.println("correctOrientationEdges = " + correctDirectedOrientationEdges);
-        for (Edge edge : edgesToEvaluate) {
-            double thisCoeff = getWeightHash().get(edge);
-            Edge standardEdge = getCorrespondingEdge(standardGraph.getGraph(), edge);
-            double standardCoeff = standardGraph.getWeightHash().get(standardEdge);
-            double diff = thisCoeff - standardCoeff;
+        System.out.println("correctOrientationEdges = " + this.correctDirectedOrientationEdges);
+        for (final Edge edge : edgesToEvaluate) {
+            final double thisCoeff = this.getWeightHash().get(edge);
+            final Edge standardEdge = GraphWithParameters.getCorrespondingEdge(standardGraph.getGraph(), edge);
+            final double standardCoeff = standardGraph.getWeightHash().get(standardEdge);
+            final double diff = thisCoeff - standardCoeff;
             System.out.println("thisEdge " + edge + ": " + thisCoeff + "   err = " + diff);
-            totalCoeffErrorSq += java.lang.Math.pow(diff, 2);
+            this.totalCoeffErrorSq += java.lang.Math.pow(diff, 2);
         }
 
     }
 
     //either both point to the left or both point to the right
 
-    private boolean oriAgrees(Edge edge1, Edge edge2) {
+    private boolean oriAgrees(final Edge edge1, final Edge edge2) {
         int count = 0;
         System.out.println();
         if (edge1.pointsTowards(edge1.getNode1()))
@@ -384,36 +387,36 @@ public class GraphWithParameters {
 
     public void printCoefficientEvaluation() {
         System.out.println("== Results of evaluating coefficients ==");
-        System.out.println("totalCoeffErrorSq = " + totalCoeffErrorSq);
+        System.out.println("totalCoeffErrorSq = " + this.totalCoeffErrorSq);
     }
 
-    public static Node getCorrespondingNode(Graph graph, Node node) {
-        String nodeName = node.getName();
-        Node node1 = graph.getNode(nodeName);
+    public static Node getCorrespondingNode(final Graph graph, final Node node) {
+        final String nodeName = node.getName();
+        final Node node1 = graph.getNode(nodeName);
         return node1;
     }
 
     //returns the edge of graph corresponding to edge
 
-    public static Edge getCorrespondingEdge(Graph graph, Edge edge) {
+    public static Edge getCorrespondingEdge(final Graph graph, final Edge edge) {
 //		System.out.println("entered getCorrespondingEdge: edge = " + edge);
-        Node node1 = getCorrespondingNode(graph, edge.getNode1());
-        Node node2 = getCorrespondingNode(graph, edge.getNode2());
-        Edge result = graph.getEdge(node1, node2);
+        final Node node1 = GraphWithParameters.getCorrespondingNode(graph, edge.getNode1());
+        final Node node2 = GraphWithParameters.getCorrespondingNode(graph, edge.getNode2());
+        final Edge result = graph.getEdge(node1, node2);
         return result;
     }
 
     //returns the directed edge of graph corresponding to edge
 
-    public static Edge getCorrespondingDirectedEdge(Graph graph, Edge edge) {
+    public static Edge getCorrespondingDirectedEdge(final Graph graph, final Edge edge) {
         if (edge == null)
             return null;
         else {
-            String nodeName1 = edge.getNode1().getName();
-            String nodeName2 = edge.getNode2().getName();
-            Node node1 = graph.getNode(nodeName1);
-            Node node2 = graph.getNode(nodeName2);
-            Edge result = graph.getDirectedEdge(node1, node2);
+            final String nodeName1 = edge.getNode1().getName();
+            final String nodeName2 = edge.getNode2().getName();
+            final Node node1 = graph.getNode(nodeName1);
+            final Node node2 = graph.getNode(nodeName2);
+            final Edge result = graph.getDirectedEdge(node1, node2);
             return result;
         }
     }
@@ -421,21 +424,21 @@ public class GraphWithParameters {
 
     //does the graph have an edge similar to 'edge'?
 
-    private static boolean hasCorrespondingAdjacency(Graph graph, Edge edge) {
-        Edge corrEdge = getCorrespondingEdge(graph, edge);
+    private static boolean hasCorrespondingAdjacency(final Graph graph, final Edge edge) {
+        final Edge corrEdge = GraphWithParameters.getCorrespondingEdge(graph, edge);
         return corrEdge != null;
     }
 
-    private static boolean directionAgrees(Graph graph, Edge edge) {
-        String edgeDirection = (edge.toString().indexOf(">") == -1) ? "left" : "right";
+    private static boolean directionAgrees(final Graph graph, final Edge edge) {
+        final String edgeDirection = (edge.toString().indexOf(">") == -1) ? "left" : "right";
 
-        String nodeName1 = edge.getNode1().getName();
-        String nodeName2 = edge.getNode2().getName();
-        Node node1 = graph.getNode(nodeName1);
-        Node node2 = graph.getNode(nodeName2);
-        Edge graphEdge = graph.getEdge(node1, node2);
+        final String nodeName1 = edge.getNode1().getName();
+        final String nodeName2 = edge.getNode2().getName();
+        final Node node1 = graph.getNode(nodeName1);
+        final Node node2 = graph.getNode(nodeName2);
+        final Edge graphEdge = graph.getEdge(node1, node2);
 
-        String graphEdgeDirection = (graphEdge.toString().indexOf(">") == -1) ? "left" : "right";
+        final String graphEdgeDirection = (graphEdge.toString().indexOf(">") == -1) ? "left" : "right";
 
         return edgeDirection.equals(graphEdgeDirection);
     }
@@ -443,12 +446,12 @@ public class GraphWithParameters {
     /**
      * creates a CPDAGWithParameters by running a regression, given a graph and data
      */
-    public static GraphWithParameters regress(DataSet dataSet, Graph graph) {
-        SemPm semPmEstDag = new SemPm(graph);
-        SemEstimator estimatorEstDag = new SemEstimator(dataSet, semPmEstDag);
+    public static GraphWithParameters regress(final DataSet dataSet, final Graph graph) {
+        final SemPm semPmEstDag = new SemPm(graph);
+        final SemEstimator estimatorEstDag = new SemEstimator(dataSet, semPmEstDag);
         estimatorEstDag.estimate();
-        SemIm semImEstDag = estimatorEstDag.getEstimatedSem();
-        GraphWithParameters estimatedGraph = new GraphWithParameters(semImEstDag, graph);
+        final SemIm semImEstDag = estimatorEstDag.getEstimatedSem();
+        final GraphWithParameters estimatedGraph = new GraphWithParameters(semImEstDag, graph);
         return estimatedGraph;
     }
 
@@ -459,37 +462,37 @@ public class GraphWithParameters {
     //possible difference: makeDagWithParms() uses
     //    	List<Node> variables = ltDataSet.getVariable();
     public DataSet getGraphMatrix() {
-        int n = getGraph().getNumNodes();
-        Matrix matrix = new Matrix(n, n);
-        for (Edge edge : getGraph().getEdges()) {
-            Node node1 = edge.getNode1();
-            Node node2 = edge.getNode2();
-            int node1Index = this.getGraph().getNodes().indexOf(node1);
-            int node2Index = this.getGraph().getNodes().indexOf(node2);
-            double value = this.getWeightHash().get(edge);
+        final int n = this.getGraph().getNumNodes();
+        final Matrix matrix = new Matrix(n, n);
+        for (final Edge edge : this.getGraph().getEdges()) {
+            final Node node1 = edge.getNode1();
+            final Node node2 = edge.getNode2();
+            final int node1Index = getGraph().getNodes().indexOf(node1);
+            final int node2Index = getGraph().getNodes().indexOf(node2);
+            final double value = getWeightHash().get(edge);
             matrix.set(node2Index, node1Index, value); //the B matrix is read: from column to row
         }
-        return new BoxDataSet(new DoubleDataBox(matrix.toArray()), this.getGraph().getNodes());
+        return new BoxDataSet(new DoubleDataBox(matrix.toArray()), getGraph().getNodes());
     }
 
     List<List<Integer>> cycles;
 
     public List<List<Integer>> getCycles() {
-        if (cycles == null) {
+        if (this.cycles == null) {
             //find cycles
 
 
         }
-        return cycles;
+        return this.cycles;
     }
 
 
     public Graph getGraph() {
-        return graph;
+        return this.graph;
     }
 
     public HashMap<Edge, Double> getWeightHash() {
-        return weightHash;
+        return this.weightHash;
     }
 }
 

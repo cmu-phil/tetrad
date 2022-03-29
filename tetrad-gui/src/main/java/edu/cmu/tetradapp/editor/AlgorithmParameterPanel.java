@@ -57,21 +57,21 @@ public class AlgorithmParameterPanel extends JPanel {
     protected final JPanel mainPanel = new JPanel();
 
     public AlgorithmParameterPanel() {
-        this.initComponents();
+        initComponents();
     }
 
     private void initComponents() {
-        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        this.mainPanel.setLayout(new BoxLayout(this.mainPanel, BoxLayout.Y_AXIS));
 
-        this.setLayout(new BorderLayout());
-        this.add(mainPanel, BorderLayout.NORTH);
+        setLayout(new BorderLayout());
+        add(this.mainPanel, BorderLayout.NORTH);
     }
 
-    public void addToPanel(GeneralAlgorithmRunner algorithmRunner) {
-        mainPanel.removeAll();
+    public void addToPanel(final GeneralAlgorithmRunner algorithmRunner) {
+        this.mainPanel.removeAll();
 
-        Algorithm algorithm = algorithmRunner.getAlgorithm();
-        Parameters parameters = algorithmRunner.getParameters();
+        final Algorithm algorithm = algorithmRunner.getAlgorithm();
+        final Parameters parameters = algorithmRunner.getParameters();
 
         // Hard-coded parameter groups for Rfci-Bsc
         if (algorithm instanceof RfciBsc) {
@@ -84,8 +84,8 @@ public class AlgorithmParameterPanel extends JPanel {
             params.add(Params.MAX_PATH_LENGTH);
             params.add(Params.COMPLETE_RULE_SET_USED);
             params.add(Params.VERBOSE);
-            mainPanel.add(this.createSubPanel(title, params, parameters));
-            mainPanel.add(Box.createVerticalStrut(10));
+            this.mainPanel.add(createSubPanel(title, params, parameters));
+            this.mainPanel.add(Box.createVerticalStrut(10));
 
             // Stage one: PAG and constraints candidates Searching
             title = "Stage One: PAG and constraints candidates Searching";
@@ -94,8 +94,8 @@ public class AlgorithmParameterPanel extends JPanel {
             params.add(Params.NUM_RANDOMIZED_SEARCH_MODELS);
             //params.add(Params.THRESHOLD_NO_RANDOM_DATA_SEARCH);
             //params.add(Params.CUTOFF_DATA_SEARCH);
-            mainPanel.add(this.createSubPanel(title, params, parameters));
-            mainPanel.add(Box.createVerticalStrut(10));
+            this.mainPanel.add(createSubPanel(title, params, parameters));
+            this.mainPanel.add(Box.createVerticalStrut(10));
 
             // Stage two: Bayesian Scoring of Constraints
             title = "Stage Two: Bayesian Scoring of Constraints";
@@ -106,52 +106,52 @@ public class AlgorithmParameterPanel extends JPanel {
             params.add(Params.LOWER_BOUND);
             params.add(Params.UPPER_BOUND);
             params.add(Params.OUTPUT_RBD);
-            mainPanel.add(this.createSubPanel(title, params, parameters));
-            mainPanel.add(Box.createVerticalStrut(10));
+            this.mainPanel.add(createSubPanel(title, params, parameters));
+            this.mainPanel.add(Box.createVerticalStrut(10));
 
         } else {
             // add algorithm parameters
             Set<String> params = Params.getAlgorithmParameters(algorithm);
 
             if (!params.isEmpty()) {
-                String title = algorithm
+                final String title = algorithm
                         .getClass().getAnnotation(edu.cmu.tetrad.annotation.Algorithm.class).name();
-                mainPanel.add(this.createSubPanel(title, params, parameters));
-                mainPanel.add(Box.createVerticalStrut(10));
+                this.mainPanel.add(createSubPanel(title, params, parameters));
+                this.mainPanel.add(Box.createVerticalStrut(10));
             }
 
             params = Params.getScoreParameters(algorithm);
             if (!params.isEmpty()) {
-                String title = ((UsesScoreWrapper) algorithm).getScoreWrapper()
+                final String title = ((UsesScoreWrapper) algorithm).getScoreWrapper()
                         .getClass().getAnnotation(Score.class).name();
-                mainPanel.add(this.createSubPanel(title, params, parameters));
-                mainPanel.add(Box.createVerticalStrut(10));
+                this.mainPanel.add(createSubPanel(title, params, parameters));
+                this.mainPanel.add(Box.createVerticalStrut(10));
             }
 
             params = Params.getTestParameters(algorithm);
             if (!params.isEmpty()) {
-                String title = ((TakesIndependenceWrapper) algorithm).getIndependenceWrapper()
+                final String title = ((TakesIndependenceWrapper) algorithm).getIndependenceWrapper()
                         .getClass().getAnnotation(TestOfIndependence.class).name();
-                mainPanel.add(this.createSubPanel(title, params, parameters));
-                mainPanel.add(Box.createVerticalStrut(10));
+                this.mainPanel.add(createSubPanel(title, params, parameters));
+                this.mainPanel.add(Box.createVerticalStrut(10));
             }
 
             if (algorithmRunner.getSourceGraph() == null) {
                 params = Params.getBootstrappingParameters(algorithm);
                 if (!params.isEmpty()) {
-                    mainPanel.add(this.createSubPanel("Bootstrapping", params, parameters));
-                    mainPanel.add(Box.createVerticalStrut(10));
+                    this.mainPanel.add(createSubPanel("Bootstrapping", params, parameters));
+                    this.mainPanel.add(Box.createVerticalStrut(10));
                 }
             }
         }
 
     }
 
-    protected Box[] toArray(Map<String, Box> parameterComponents) {
-        ParamDescriptions paramDescs = ParamDescriptions.getInstance();
+    protected Box[] toArray(final Map<String, Box> parameterComponents) {
+        final ParamDescriptions paramDescs = ParamDescriptions.getInstance();
 
-        List<Box> boolComps = new LinkedList<>();
-        List<Box> otherComps = new LinkedList<>();
+        final List<Box> boolComps = new LinkedList<>();
+        final List<Box> otherComps = new LinkedList<>();
         parameterComponents.forEach((k, v) -> {
             if (paramDescs.get(k).getDefaultValue() instanceof Boolean) {
                 boolComps.add(v);
@@ -164,41 +164,41 @@ public class AlgorithmParameterPanel extends JPanel {
                 .toArray(Box[]::new);
     }
 
-    protected Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters) {
-        ParamDescriptions paramDescs = ParamDescriptions.getInstance();
+    protected Map<String, Box> createParameterComponents(final Set<String> params, final Parameters parameters) {
+        final ParamDescriptions paramDescs = ParamDescriptions.getInstance();
         return params.stream()
                 .collect(Collectors.toMap(
                         Function.identity(),
-                        e -> this.createParameterComponent(e, parameters, paramDescs.get(e)),
+                        e -> createParameterComponent(e, parameters, paramDescs.get(e)),
                         (u, v) -> {
                             throw new IllegalStateException(String.format("Duplicate key %s.", u));
                         },
                         TreeMap::new));
     }
 
-    protected Box createParameterComponent(String parameter, Parameters parameters, ParamDescription paramDesc) {
-        JComponent component;
-        Object defaultValue = paramDesc.getDefaultValue();
+    protected Box createParameterComponent(final String parameter, final Parameters parameters, final ParamDescription paramDesc) {
+        final JComponent component;
+        final Object defaultValue = paramDesc.getDefaultValue();
         if (defaultValue instanceof Double) {
-            double lowerBoundDouble = paramDesc.getLowerBoundDouble();
-            double upperBoundDouble = paramDesc.getUpperBoundDouble();
-            component = this.getDoubleField(parameter, parameters, (Double) defaultValue, lowerBoundDouble, upperBoundDouble);
+            final double lowerBoundDouble = paramDesc.getLowerBoundDouble();
+            final double upperBoundDouble = paramDesc.getUpperBoundDouble();
+            component = getDoubleField(parameter, parameters, (Double) defaultValue, lowerBoundDouble, upperBoundDouble);
         } else if (defaultValue instanceof Integer) {
-            int lowerBoundInt = paramDesc.getLowerBoundInt();
-            int upperBoundInt = paramDesc.getUpperBoundInt();
-            component = this.getIntTextField(parameter, parameters, (Integer) defaultValue, lowerBoundInt, upperBoundInt);
+            final int lowerBoundInt = paramDesc.getLowerBoundInt();
+            final int upperBoundInt = paramDesc.getUpperBoundInt();
+            component = getIntTextField(parameter, parameters, (Integer) defaultValue, lowerBoundInt, upperBoundInt);
         } else if (defaultValue instanceof Boolean) {
-            component = this.getBooleanSelectionBox(parameter, parameters, (Boolean) defaultValue);
+            component = getBooleanSelectionBox(parameter, parameters, (Boolean) defaultValue);
         } else if (defaultValue instanceof String) {
-            component = this.getStringField(parameter, parameters, (String) defaultValue);
+            component = getStringField(parameter, parameters, (String) defaultValue);
         } else {
             throw new IllegalArgumentException("Unexpected type: " + defaultValue.getClass());
         }
 
-        Box paramRow = Box.createHorizontalBox();
+        final Box paramRow = Box.createHorizontalBox();
 
-        JLabel paramLabel = new JLabel(paramDesc.getShortDescription());
-        String longDescription = paramDesc.getLongDescription();
+        final JLabel paramLabel = new JLabel(paramDesc.getShortDescription());
+        final String longDescription = paramDesc.getLongDescription();
         if (longDescription != null) {
             paramLabel.setToolTipText(longDescription);
         }
@@ -209,14 +209,14 @@ public class AlgorithmParameterPanel extends JPanel {
         return paramRow;
     }
 
-    protected JPanel createSubPanel(String title, Set<String> params, Parameters parameters) {
-        JPanel panel = new JPanel(new BorderLayout());
+    protected JPanel createSubPanel(final String title, final Set<String> params, final Parameters parameters) {
+        final JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createTitledBorder(title));
 
-        Box paramsBox = Box.createVerticalBox();
+        final Box paramsBox = Box.createVerticalBox();
 
-        Box[] boxes = this.toArray(this.createParameterComponents(params, parameters));
-        int lastIndex = boxes.length - 1;
+        final Box[] boxes = toArray(createParameterComponents(params, parameters));
+        final int lastIndex = boxes.length - 1;
         for (int i = 0; i < lastIndex; i++) {
             paramsBox.add(boxes[i]);
             paramsBox.add(Box.createVerticalStrut(10));
@@ -228,9 +228,9 @@ public class AlgorithmParameterPanel extends JPanel {
         return panel;
     }
 
-    protected DoubleTextField getDoubleField(String parameter, Parameters parameters,
-                                             double defaultValue, double lowerBound, double upperBound) {
-        DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
+    protected DoubleTextField getDoubleField(final String parameter, final Parameters parameters,
+                                             final double defaultValue, final double lowerBound, final double upperBound) {
+        final DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
                 8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
 
         field.setFilter((value, oldValue) -> {
@@ -248,7 +248,7 @@ public class AlgorithmParameterPanel extends JPanel {
 
             try {
                 parameters.set(parameter, value);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 // Ignore.
             }
 
@@ -258,9 +258,9 @@ public class AlgorithmParameterPanel extends JPanel {
         return field;
     }
 
-    protected IntTextField getIntTextField(String parameter, Parameters parameters,
-                                           int defaultValue, double lowerBound, double upperBound) {
-        IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 8);
+    protected IntTextField getIntTextField(final String parameter, final Parameters parameters,
+                                           final int defaultValue, final double lowerBound, final double upperBound) {
+        final IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 8);
 
         field.setFilter((value, oldValue) -> {
             if (value == field.getValue()) {
@@ -277,7 +277,7 @@ public class AlgorithmParameterPanel extends JPanel {
 
             try {
                 parameters.set(parameter, value);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 // Ignore.
             }
 
@@ -288,10 +288,10 @@ public class AlgorithmParameterPanel extends JPanel {
     }
 
     // Joe's old implementation with dropdown yes or no
-    protected JComboBox getBooleanBox(String parameter, Parameters parameters, boolean defaultValue) {
-        JComboBox<String> box = new JComboBox<>(new String[]{"Yes", "No"});
+    protected JComboBox getBooleanBox(final String parameter, final Parameters parameters, final boolean defaultValue) {
+        final JComboBox<String> box = new JComboBox<>(new String[]{"Yes", "No"});
 
-        boolean aBoolean = parameters.getBoolean(parameter, defaultValue);
+        final boolean aBoolean = parameters.getBoolean(parameter, defaultValue);
         if (aBoolean) {
             box.setSelectedItem("Yes");
         } else {
@@ -312,18 +312,18 @@ public class AlgorithmParameterPanel extends JPanel {
     }
 
     // Zhou's new implementation with yes/no radio buttons
-    protected Box getBooleanSelectionBox(String parameter, Parameters parameters, boolean defaultValue) {
-        Box selectionBox = Box.createHorizontalBox();
+    protected Box getBooleanSelectionBox(final String parameter, final Parameters parameters, final boolean defaultValue) {
+        final Box selectionBox = Box.createHorizontalBox();
 
-        JRadioButton yesButton = new JRadioButton("Yes");
-        JRadioButton noButton = new JRadioButton("No");
+        final JRadioButton yesButton = new JRadioButton("Yes");
+        final JRadioButton noButton = new JRadioButton("No");
 
         // Button group to ensure only only one option can be selected
-        ButtonGroup selectionBtnGrp = new ButtonGroup();
+        final ButtonGroup selectionBtnGrp = new ButtonGroup();
         selectionBtnGrp.add(yesButton);
         selectionBtnGrp.add(noButton);
 
-        boolean aBoolean = parameters.getBoolean(parameter, defaultValue);
+        final boolean aBoolean = parameters.getBoolean(parameter, defaultValue);
 
         // Set default selection
         if (aBoolean) {
@@ -338,7 +338,7 @@ public class AlgorithmParameterPanel extends JPanel {
 
         // Event listener
         yesButton.addActionListener((e) -> {
-            JRadioButton button = (JRadioButton) e.getSource();
+            final JRadioButton button = (JRadioButton) e.getSource();
             if (button.isSelected()) {
                 parameters.set(parameter, true);
             }
@@ -346,7 +346,7 @@ public class AlgorithmParameterPanel extends JPanel {
 
         // Event listener
         noButton.addActionListener((e) -> {
-            JRadioButton button = (JRadioButton) e.getSource();
+            final JRadioButton button = (JRadioButton) e.getSource();
             if (button.isSelected()) {
                 parameters.set(parameter, false);
             }
@@ -355,8 +355,8 @@ public class AlgorithmParameterPanel extends JPanel {
         return selectionBox;
     }
 
-    protected StringTextField getStringField(String parameter, Parameters parameters, String defaultValue) {
-        StringTextField field = new StringTextField(parameters.getString(parameter, defaultValue), 20);
+    protected StringTextField getStringField(final String parameter, final Parameters parameters, final String defaultValue) {
+        final StringTextField field = new StringTextField(parameters.getString(parameter, defaultValue), 20);
 
         field.setFilter((value, oldValue) -> {
             if (value.equals(field.getValue().trim())) {
@@ -365,7 +365,7 @@ public class AlgorithmParameterPanel extends JPanel {
 
             try {
                 parameters.set(parameter, value);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 // Ignore.
             }
 

@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.study;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
-import edu.cmu.tetrad.algcomparison.Comparison.ComparisonGraph;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.FirstInflection;
@@ -40,8 +39,8 @@ import edu.cmu.tetrad.util.Parameters;
  * @author jdramsey
  */
 public class ExampleFirstInflection {
-    public static void main(String... args) {
-        Parameters parameters = new Parameters();
+    public static void main(final String... args) {
+        final Parameters parameters = new Parameters();
 
         parameters.set("numMeasures", 40, 100);
         parameters.set("avgDegree", 2);
@@ -88,7 +87,7 @@ public class ExampleFirstInflection {
 
 //        parameters.set("logScale", true);
 
-        Statistics statistics = new Statistics();
+        final Statistics statistics = new Statistics();
 
         statistics.add(new ParameterColumn("numMeasures"));
         statistics.add(new ParameterColumn("avgDegree"));
@@ -107,23 +106,23 @@ public class ExampleFirstInflection {
         statistics.setWeight("AHP", 0.25);
         statistics.setWeight("AHR", 0.25);
 
-        Algorithms algorithms = new Algorithms();
+        final Algorithms algorithms = new Algorithms();
 
-        Algorithm fges = new Fges(new SemBicScore());
+        final Algorithm fges = new Fges(new SemBicScore());
 //        algorithms.add(new FirstInflection(fges, "alpha", -7, -2, -.5));
         algorithms.add(new FirstInflection(fges, "penaltyDiscount", 0.7, 5, 1));
 
-        Simulations simulations = new Simulations();
+        final Simulations simulations = new Simulations();
 
         simulations.add(new LinearFisherModel(new RandomForward()));
 
-        Comparison comparison = new Comparison();
+        final Comparison comparison = new Comparison();
 
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
-        comparison.setComparisonGraph(ComparisonGraph.CPDAG_of_the_true_DAG);
+        comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
 
         comparison.compareFromSimulations("first.inflection", simulations, algorithms, statistics, parameters);
     }

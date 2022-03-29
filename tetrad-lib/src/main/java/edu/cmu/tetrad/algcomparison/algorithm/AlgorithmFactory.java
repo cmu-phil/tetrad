@@ -36,24 +36,24 @@ public class AlgorithmFactory {
     private AlgorithmFactory() {
     }
 
-    public static Algorithm create(Class<? extends Algorithm> algoClass, IndependenceWrapper test, ScoreWrapper score)
+    public static Algorithm create(final Class<? extends Algorithm> algoClass, final IndependenceWrapper test, final ScoreWrapper score)
             throws IllegalAccessException, InstantiationException {
         if (algoClass == null) {
             throw new IllegalArgumentException("Algorithm class cannot be null.");
         }
 
-        AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
-        boolean testRequired = algoAnno.requireIndependenceTest(algoClass);
+        final AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
+        final boolean testRequired = algoAnno.requireIndependenceTest(algoClass);
         if (testRequired && test == null) {
             throw new IllegalArgumentException("Test of independence is required.");
         }
 
-        boolean scoreRequired = algoAnno.requireScore(algoClass);
+        final boolean scoreRequired = algoAnno.requireScore(algoClass);
         if (scoreRequired && score == null) {
             throw new IllegalArgumentException("Score is required.");
         }
 
-        Algorithm algorithm = algoClass.newInstance();
+        final Algorithm algorithm = algoClass.newInstance();
         if (testRequired) {
             ((TakesIndependenceWrapper) algorithm).setIndependenceWrapper(test);
         }
@@ -64,9 +64,9 @@ public class AlgorithmFactory {
         return algorithm;
     }
 
-    public static Algorithm create(Class<? extends Algorithm> algoClass, IndependenceWrapper test, ScoreWrapper score, Graph externalGraph)
+    public static Algorithm create(final Class<? extends Algorithm> algoClass, final IndependenceWrapper test, final ScoreWrapper score, final Graph externalGraph)
             throws IllegalAccessException, InstantiationException {
-        Algorithm algorithm = create(algoClass, test, score);
+        final Algorithm algorithm = AlgorithmFactory.create(algoClass, test, score);
         if (externalGraph != null && algorithm instanceof TakesExternalGraph) {
             ((TakesExternalGraph) algorithm).setExternalGraph(externalGraph);
         }
@@ -74,21 +74,21 @@ public class AlgorithmFactory {
         return algorithm;
     }
 
-    public static Algorithm create(Class<? extends Algorithm> algoClass, Class<? extends IndependenceWrapper> indTestClass, Class<? extends ScoreWrapper> scoreClass)
+    public static Algorithm create(final Class<? extends Algorithm> algoClass, final Class<? extends IndependenceWrapper> indTestClass, final Class<? extends ScoreWrapper> scoreClass)
             throws IllegalAccessException, InstantiationException {
         if (algoClass == null) {
             throw new IllegalArgumentException("Algorithm class cannot be null.");
         }
 
-        IndependenceWrapper test = (indTestClass == null) ? null : indTestClass.newInstance();
-        ScoreWrapper score = (scoreClass == null) ? null : scoreClass.newInstance();
+        final IndependenceWrapper test = (indTestClass == null) ? null : indTestClass.newInstance();
+        final ScoreWrapper score = (scoreClass == null) ? null : scoreClass.newInstance();
 
-        return create(algoClass, test, score);
+        return AlgorithmFactory.create(algoClass, test, score);
     }
 
-    public static Algorithm create(Class<? extends Algorithm> algoClass, Class<? extends IndependenceWrapper> indTestClass, Class<? extends ScoreWrapper> scoreClass, Graph externalGraph)
+    public static Algorithm create(final Class<? extends Algorithm> algoClass, final Class<? extends IndependenceWrapper> indTestClass, final Class<? extends ScoreWrapper> scoreClass, final Graph externalGraph)
             throws IllegalAccessException, InstantiationException {
-        Algorithm algorithm = create(algoClass, indTestClass, scoreClass);
+        final Algorithm algorithm = AlgorithmFactory.create(algoClass, indTestClass, scoreClass);
         if (externalGraph != null && algorithm instanceof TakesExternalGraph) {
             ((TakesExternalGraph) algorithm).setExternalGraph(externalGraph);
         }

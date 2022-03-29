@@ -40,7 +40,7 @@ public final class Mmmb implements MbSearch {
     /**
      * True if the symmetric algorithm is to be used.
      */
-    private boolean symmetric;
+    private final boolean symmetric;
 
     /**
      * The independence test used to perform the search.
@@ -81,7 +81,7 @@ public final class Mmmb implements MbSearch {
      * @param depth     The maximum number of variables conditioned on.
      * @param symmetric True if the symmetric algorithm is to be used.
      */
-    public Mmmb(IndependenceTest test, int depth, boolean symmetric) {
+    public Mmmb(final IndependenceTest test, final int depth, final boolean symmetric) {
         if (test == null) {
             throw new NullPointerException();
         }
@@ -90,13 +90,13 @@ public final class Mmmb implements MbSearch {
             throw new IllegalArgumentException();
         }
 
-        independenceTest = test;
-        variables = test.getVariables();
+        this.independenceTest = test;
+        this.variables = test.getVariables();
         this.depth = depth;
         this.symmetric = symmetric;
 
-        pc = new HashMap<>();
-        trimmed = new HashSet<>();
+        this.pc = new HashMap<>();
+        this.trimmed = new HashSet<>();
     }
 
     //=============================PUBLIC METHODS=========================//
@@ -107,21 +107,21 @@ public final class Mmmb implements MbSearch {
      * @param targetName The name of the target node.
      * @return The Markov blanket of the target.
      */
-    public List<Node> findMb(String targetName) {
+    public List<Node> findMb(final String targetName) {
         TetradLogger.getInstance().log("info", "target = " + targetName);
-        numIndTests = 0;
-        long time = System.currentTimeMillis();
+        this.numIndTests = 0;
+        final long time = System.currentTimeMillis();
 
-        pc = new HashMap<>();
-        trimmed = new HashSet<>();
+        this.pc = new HashMap<>();
+        this.trimmed = new HashSet<>();
 
-        Node target = this.getVariableForName(targetName);
-        List<Node> nodes = this.mmmb(target);
+        final Node target = getVariableForName(targetName);
+        final List<Node> nodes = mmmb(target);
 
-        long time2 = System.currentTimeMillis() - time;
+        final long time2 = System.currentTimeMillis() - time;
         TetradLogger.getInstance().log("info", "Number of seconds: " + (time2 / 1000.0));
         TetradLogger.getInstance().log("info", "Number of independence tests performed: " +
-                numIndTests);
+                this.numIndTests);
         //        System.out.println("Number of calls to mmpc = " + pc.size());
 
         return nodes;
@@ -129,46 +129,46 @@ public final class Mmmb implements MbSearch {
 
     //===========================PRIVATE METHODS==========================//
 
-    private List<Node> mmmb(Node t) {
+    private List<Node> mmmb(final Node t) {
         // MB <- {}
-        Set<Node> mb = new HashSet<>();
+        final Set<Node> mb = new HashSet<>();
 
-        Set<Node> _pcpc = new HashSet<>();
+        final Set<Node> _pcpc = new HashSet<>();
 
-        for (Node node : this.getPc(t)) {
-            List<Node> f = this.getPc(node);
-            pc.put(node, f);
+        for (final Node node : getPc(t)) {
+            final List<Node> f = getPc(node);
+            this.pc.put(node, f);
             _pcpc.addAll(f);
         }
 
-        List<Node> pcpc = new LinkedList<>(_pcpc);
+        final List<Node> pcpc = new LinkedList<>(_pcpc);
 
-        Set<Node> currentMb = new HashSet<>(this.getPc(t));
+        final Set<Node> currentMb = new HashSet<>(getPc(t));
         currentMb.addAll(pcpc);
         currentMb.remove(t);
 
-        HashSet<Node> diff = new HashSet<>(currentMb);
-        diff.removeAll(this.getPc(t));
+        final HashSet<Node> diff = new HashSet<>(currentMb);
+        diff.removeAll(getPc(t));
         diff.remove(t);
 
         //for each x in PCPC \ PC
-        for (Node x : diff) {
+        for (final Node x : diff) {
             List<Node> s = null;
 
             // Find an S such PC such that x _||_ t | S
-            DepthChoiceGenerator generator =
-                    new DepthChoiceGenerator(pcpc.size(), depth);
+            final DepthChoiceGenerator generator =
+                    new DepthChoiceGenerator(pcpc.size(), this.depth);
             int[] choice;
 
             while ((choice = generator.next()) != null) {
-                List<Node> _s = new LinkedList<>();
+                final List<Node> _s = new LinkedList<>();
 
-                for (int index : choice) {
+                for (final int index : choice) {
                     _s.add(pcpc.get(index));
                 }
 
-                numIndTests++;
-                if (independenceTest.isIndependent(t, x, _s)) {
+                this.numIndTests++;
+                if (this.independenceTest.isIndependent(t, x, _s)) {
                     s = _s;
                     break;
                 }
@@ -181,63 +181,63 @@ public final class Mmmb implements MbSearch {
             }
 
             // y_set <- {y in PC(t) : x in PC(y)}
-            Set<Node> ySet = new HashSet<>();
-            for (Node y : this.getPc(t)) {
-                if (pc.get(y).contains(x)) {
+            final Set<Node> ySet = new HashSet<>();
+            for (final Node y : getPc(t)) {
+                if (this.pc.get(y).contains(x)) {
                     ySet.add(y);
                 }
             }
 
             //  For each y in y_set
-            for (Node y : ySet) {
+            for (final Node y : ySet) {
                 if (x == y) continue;
 
-                List<Node> _s = new LinkedList<>(s);
+                final List<Node> _s = new LinkedList<>(s);
                 _s.add(y);
 
                 // If x NOT _||_ t | S U {y}
-                numIndTests++;
-                if (!independenceTest.isIndependent(t, x, _s)) {
+                this.numIndTests++;
+                if (!this.independenceTest.isIndependent(t, x, _s)) {
                     mb.add(x);
                     break;
                 }
             }
         }
 
-        mb.addAll(this.getPc(t));
+        mb.addAll(getPc(t));
         return new LinkedList<>(mb);
     }
 
-    private List<Node> mmpc(Node t) {
-        List<Node> pc = new LinkedList<>();
+    private List<Node> mmpc(final Node t) {
+        final List<Node> pc = new LinkedList<>();
         boolean pcIncreased = true;
 
         // First optimization: Don't consider adding again variables that have
         // already been found independent of t.
-        List<Node> indepOfT = new LinkedList<>();
+        final List<Node> indepOfT = new LinkedList<>();
 
         // Phase 1
         while (pcIncreased) {
             pcIncreased = false;
 
-            MaxMinAssocResult ret = this.maxMinAssoc(t, pc, indepOfT);
-            Node f = ret.getNode();
-            List<Node> assocSet = ret.getAssocSet();
+            final MaxMinAssocResult ret = maxMinAssoc(t, pc, indepOfT);
+            final Node f = ret.getNode();
+            final List<Node> assocSet = ret.getAssocSet();
 
             if (f == null) {
                 break;
             }
 
-            numIndTests++;
+            this.numIndTests++;
 
-            if (!independenceTest.isIndependent(f, t, assocSet)) {
+            if (!this.independenceTest.isIndependent(f, t, assocSet)) {
                 pcIncreased = true;
                 pc.add(f);
             }
         }
 
         // Phase 2.
-        this.backwardsConditioning(pc, t);
+        backwardsConditioning(pc, t);
 
         TetradLogger.getInstance().log("details", "PC(" + t + ") = " + pc);
         //        System.out.println("PC(" + t + ") = " + pc);
@@ -248,41 +248,41 @@ public final class Mmmb implements MbSearch {
     /**
      * @return a supserset of PC, or, if the symmetric algorithm is used, PC.
      */
-    public List<Node> getPc(Node t) {
-        if (!pc.containsKey(t)) {
-            pc.put(t, this.mmpc(t));
+    public List<Node> getPc(final Node t) {
+        if (!this.pc.containsKey(t)) {
+            this.pc.put(t, mmpc(t));
         }
 
-        if (symmetric && !trimmed.contains(t)) {
-            this.trimPc(t);
-            trimmed.add(t);
+        if (this.symmetric && !this.trimmed.contains(t)) {
+            trimPc(t);
+            this.trimmed.add(t);
         }
 
-        return pc.get(t);
+        return this.pc.get(t);
     }
 
     /**
      * Trims away false positives from the given node. Used in the symmetric algorithm.
      */
-    private void trimPc(Node t) {
-        for (Node x : new LinkedList<>(pc.get(t))) {
-            if (!pc.containsKey(x)) {
-                pc.put(x, this.mmpc(x));
+    private void trimPc(final Node t) {
+        for (final Node x : new LinkedList<>(this.pc.get(t))) {
+            if (!this.pc.containsKey(x)) {
+                this.pc.put(x, mmpc(x));
             }
 
-            if (!pc.get(x).contains(t)) {
-                pc.get(t).remove(x);
+            if (!this.pc.get(x).contains(t)) {
+                this.pc.get(t).remove(x);
             }
         }
     }
 
-    private MaxMinAssocResult maxMinAssoc(Node t, List<Node> pc,
-                                          List<Node> indepOfT) {
+    private MaxMinAssocResult maxMinAssoc(final Node t, final List<Node> pc,
+                                          final List<Node> indepOfT) {
         Node f = null;
         List<Node> maxAssocSet = null;
         double maxAssoc = 0.0;
 
-        for (Node v : variables) {
+        for (final Node v : this.variables) {
             if (t == v) continue;
             if (pc.contains(v)) continue;
 
@@ -290,13 +290,13 @@ public final class Mmmb implements MbSearch {
                 continue;
             }
 
-            List<Node> minAssoc = this.minAssoc(v, t, pc);
-            double assoc = this.association(v, t, minAssoc);
+            final List<Node> minAssoc = minAssoc(v, t, pc);
+            final double assoc = association(v, t, minAssoc);
 
             // If v is conditionally independent of t, don't consider it
             // again. Note if this code is right, then we have to use the
             // association test as an independence test... ugh.
-            if (assoc < 1.0 - independenceTest.getAlpha()) {
+            if (assoc < 1.0 - this.independenceTest.getAlpha()) {
                 indepOfT.add(v);
             }
 
@@ -310,7 +310,7 @@ public final class Mmmb implements MbSearch {
         return new MaxMinAssocResult(f, maxAssocSet);
     }
 
-    private List<Node> minAssoc(Node x, Node target, List<Node> pc) {
+    private List<Node> minAssoc(final Node x, final Node target, final List<Node> pc) {
         double assoc = 1.0;
         List<Node> set = new LinkedList<>();
 
@@ -318,14 +318,14 @@ public final class Mmmb implements MbSearch {
         if (pc.contains(target)) throw new IllegalArgumentException();
         if (x == target) throw new IllegalArgumentException();
 
-        DepthChoiceGenerator generator =
-                new DepthChoiceGenerator(pc.size(), depth);
+        final DepthChoiceGenerator generator =
+                new DepthChoiceGenerator(pc.size(), this.depth);
         int[] choice;
 
         while ((choice = generator.next()) != null) {
-            List<Node> s = new LinkedList<>();
+            final List<Node> s = new LinkedList<>();
 
-            for (int index : choice) {
+            for (final int index : choice) {
                 s.add(pc.get(index));
             }
 
@@ -335,7 +335,7 @@ public final class Mmmb implements MbSearch {
                 continue;
             }
 
-            double _assoc = this.association(x, target, s);
+            final double _assoc = association(x, target, s);
 
             if (_assoc < assoc) {
                 assoc = _assoc;
@@ -346,41 +346,41 @@ public final class Mmmb implements MbSearch {
         return set;
     }
 
-    private void backwardsConditioning(List<Node> pc, Node target) {
-        for (Node x : new LinkedList<>(pc)) {
-            List<Node> _pc = new LinkedList<>(pc);
+    private void backwardsConditioning(final List<Node> pc, final Node target) {
+        for (final Node x : new LinkedList<>(pc)) {
+            final List<Node> _pc = new LinkedList<>(pc);
             _pc.remove(x);
             _pc.remove(target);
 
-            List<Node> minAssoc = this.minAssoc(x, target, _pc);
+            final List<Node> minAssoc = minAssoc(x, target, _pc);
 
-            numIndTests++;
+            this.numIndTests++;
 
-            if (independenceTest.isIndependent(x, target, minAssoc)) {
+            if (this.independenceTest.isIndependent(x, target, minAssoc)) {
                 pc.remove(x);
             }
         }
     }
 
-    private double association(Node x, Node target, List<Node> s) {
-        numIndTests++;
+    private double association(final Node x, final Node target, final List<Node> s) {
+        this.numIndTests++;
 
-        independenceTest.isIndependent(x, target, s);
-        return 1.0 - independenceTest.getPValue();
+        this.independenceTest.isIndependent(x, target, s);
+        return 1.0 - this.independenceTest.getPValue();
     }
 
     public String getAlgorithmName() {
-        return symmetric ? "MMMB-SYM" : "MMMB";
+        return this.symmetric ? "MMMB-SYM" : "MMMB";
     }
 
     public int getNumIndependenceTests() {
-        return numIndTests;
+        return this.numIndTests;
     }
 
-    private Node getVariableForName(String targetName) {
+    private Node getVariableForName(final String targetName) {
         Node target = null;
 
-        for (Node V : variables) {
+        for (final Node V : this.variables) {
             if (V.getName().equals(targetName)) {
                 target = V;
                 break;
@@ -399,17 +399,17 @@ public final class Mmmb implements MbSearch {
         private final Node node;
         private final List<Node> assocSet;
 
-        public MaxMinAssocResult(Node node, List<Node> assocSet) {
+        public MaxMinAssocResult(final Node node, final List<Node> assocSet) {
             this.node = node;
             this.assocSet = assocSet;
         }
 
         public Node getNode() {
-            return node;
+            return this.node;
         }
 
         public List<Node> getAssocSet() {
-            return assocSet;
+            return this.assocSet;
         }
     }
 }

@@ -69,7 +69,7 @@ public class TestMeasurementSimulator extends TestCase {
     /**
      * Standard constructor for JUnit test cases.
      */
-    public TestMeasurementSimulator(String name) {
+    public TestMeasurementSimulator(final String name) {
         super(name);
     }
 
@@ -89,14 +89,14 @@ public class TestMeasurementSimulator extends TestCase {
     public void setUp() {
 
         // Make an lag graph.
-        LagGraph lagGraph = new BasicLagGraph();
+        final LagGraph lagGraph = new BasicLagGraph();
 
         lagGraph.addFactor("G1");
         lagGraph.addFactor("G2");
         lagGraph.addFactor("G3");
 
         // Initialize graph.
-        GraphInitializer graphInitializer = new PreviousStepOnly();
+        final GraphInitializer graphInitializer = new PreviousStepOnly();
 
         graphInitializer.initialize(lagGraph);
         lagGraph.addEdge("G2", new LaggedFactor("G1", 1));
@@ -104,11 +104,11 @@ public class TestMeasurementSimulator extends TestCase {
         lagGraph.addEdge("G3", new LaggedFactor("G2", 1));
 
         // Create a random Boolean Glass function for this lag graph.
-        updateFunction = new BooleanGlassFunction(lagGraph);
+        this.updateFunction = new BooleanGlassFunction(lagGraph);
 
         // Create a new BasalInitializer.
-        BasalInitializer historyInitializer =
-                new BasalInitializer(updateFunction, 0.0, 1.0);
+        final BasalInitializer historyInitializer =
+                new BasalInitializer(this.updateFunction, 0.0, 1.0);
 
         //glassFunction.initialize();
 
@@ -116,10 +116,10 @@ public class TestMeasurementSimulator extends TestCase {
         // function.
         //this.history = new GlassHistory(glassFunction);
 
-        history = new GeneHistory(historyInitializer, updateFunction);
+        this.history = new GeneHistory(historyInitializer, this.updateFunction);
 
         // Create simulator.
-        simulator = new MeasurementSimulator(new Parameters());
+        this.simulator = new MeasurementSimulator(new Parameters());
 
         RandomUtil.getInstance().setSeed(-1349902993443L);
     }
@@ -133,20 +133,20 @@ public class TestMeasurementSimulator extends TestCase {
         // uniformly have SD of 0.05, even though that's a bit awkward
         // to set right now. It doesn't matter for the moment, because
         // it's set to that by default anyway. TODO JRamsey 12/01/01
-        updateFunction.setDecayRate(0.1);
-        updateFunction.setBooleanInfluenceRate(0.5);
-        simulator.setDishDishVariability(10.0);
-        simulator.setNumSamplesPerDish(4);
-        simulator.setSampleSampleVariability(0.025);
-        simulator.setChipChipVariability(0.1);
-        simulator.setPixelDigitalization(0.025);
-        simulator.setNumDishes(1);
-        simulator.setNumCellsPerDish(10000);
-        simulator.setStepsGenerated(4);
-        simulator.setFirstStepStored(1);
-        simulator.setInterval(1);
-        simulator.setRawDataSaved(false);
-        simulator.setInitSync(true);
+        this.updateFunction.setDecayRate(0.1);
+        this.updateFunction.setBooleanInfluenceRate(0.5);
+        this.simulator.setDishDishVariability(10.0);
+        this.simulator.setNumSamplesPerDish(4);
+        this.simulator.setSampleSampleVariability(0.025);
+        this.simulator.setChipChipVariability(0.1);
+        this.simulator.setPixelDigitalization(0.025);
+        this.simulator.setNumDishes(1);
+        this.simulator.setNumCellsPerDish(10000);
+        this.simulator.setStepsGenerated(4);
+        this.simulator.setFirstStepStored(1);
+        this.simulator.setInterval(1);
+        this.simulator.setRawDataSaved(false);
+        this.simulator.setInitSync(true);
     }
 
     /**
@@ -154,23 +154,23 @@ public class TestMeasurementSimulator extends TestCase {
      */
     public void testDefaultParameterSettings() {
 
-        this.setDefaultParameters();
-        TestCase.assertEquals(10.0, simulator.getDishDishVariability(), 0.0001);
-        TestCase.assertEquals(4, simulator.getNumSamplesPerDish());
-        TestCase.assertEquals(0.025, simulator.getSampleSampleVariability(),
+        setDefaultParameters();
+        TestCase.assertEquals(10.0, this.simulator.getDishDishVariability(), 0.0001);
+        TestCase.assertEquals(4, this.simulator.getNumSamplesPerDish());
+        TestCase.assertEquals(0.025, this.simulator.getSampleSampleVariability(),
                 0.0001);
-        TestCase.assertEquals(0.1, simulator.getChipChipVariability(), 0.0001);
-        TestCase.assertEquals(0.025, simulator.getPixelDigitalization(), 0.0001);
-        TestCase.assertEquals(1, simulator.getNumDishes());
-        TestCase.assertEquals(10000, simulator.getNumCellsPerDish());
-        TestCase.assertEquals(4, simulator.getStepsGenerated());
-        TestCase.assertEquals(1, simulator.getFirstStepStored());
-        TestCase.assertEquals(1, simulator.getInterval());
-        TestCase.assertEquals(false, simulator.isRawDataSaved());
-        TestCase.assertEquals(true, simulator.isInitSync());
+        TestCase.assertEquals(0.1, this.simulator.getChipChipVariability(), 0.0001);
+        TestCase.assertEquals(0.025, this.simulator.getPixelDigitalization(), 0.0001);
+        TestCase.assertEquals(1, this.simulator.getNumDishes());
+        TestCase.assertEquals(10000, this.simulator.getNumCellsPerDish());
+        TestCase.assertEquals(4, this.simulator.getStepsGenerated());
+        TestCase.assertEquals(1, this.simulator.getFirstStepStored());
+        TestCase.assertEquals(1, this.simulator.getInterval());
+        TestCase.assertEquals(false, this.simulator.isRawDataSaved());
+        TestCase.assertEquals(true, this.simulator.isInitSync());
 
         // Make sure the time steps are 1, 2, 3, 4.
-        int[] timeSteps = simulator.getTimeSteps();
+        final int[] timeSteps = this.simulator.getTimeSteps();
 
         TestCase.assertEquals(4, timeSteps.length);
 
@@ -187,14 +187,14 @@ public class TestMeasurementSimulator extends TestCase {
     public void testTranscriptionError() {
 
         // Raw data is saved for this simulation.
-        this.setDefaultParameters();
-        simulator.setRawDataSaved(true);
-        simulator.setMeasuredDataSaved(false);
+        setDefaultParameters();
+        this.simulator.setRawDataSaved(true);
+        this.simulator.setMeasuredDataSaved(false);
 
         // Simulate the data.
-        simulator.simulate(history);
+        this.simulator.simulate(this.history);
 
-        double[][][] rawData = simulator.getRawData();
+        final double[][][] rawData = this.simulator.getRawData();
 
         // (Test the dimensions.)
         TestCase.assertEquals(3, rawData.length);              // # variables.
@@ -204,10 +204,10 @@ public class TestMeasurementSimulator extends TestCase {
         // The test is to see whether Gene 1 at time step 2 has a
         // standard deviation of 0.05. Of course the gene and time
         // step numbers need to be 0-indexed.
-        DoubleArrayList doubleArrayList = new DoubleArrayList(rawData[0][1]);
-        double sum = Descriptive.sum(doubleArrayList);
-        double sumOfSquares = Descriptive.sumOfSquares(doubleArrayList);
-        double stdev = Descriptive.standardDeviation(
+        final DoubleArrayList doubleArrayList = new DoubleArrayList(rawData[0][1]);
+        final double sum = Descriptive.sum(doubleArrayList);
+        final double sumOfSquares = Descriptive.sumOfSquares(doubleArrayList);
+        final double stdev = Descriptive.standardDeviation(
                 Descriptive.variance(rawData[0][1].length, sum, sumOfSquares));
 
         TestCase.assertEquals(0.05, stdev, 0.01);
@@ -221,41 +221,41 @@ public class TestMeasurementSimulator extends TestCase {
      */
     public void testDishToDishVariability() {
 
-        this.setDefaultParameters();
+        setDefaultParameters();
 
         // The following parameters are set to non-default values for
         // this test.
-        simulator.setNumDishes(100);
-        simulator.setStepsGenerated(2);
-        simulator.setNumSamplesPerDish(1);
-        simulator.setSampleSampleVariability(0.0001);
-        simulator.setChipChipVariability(0.0001);
-        simulator.setPixelDigitalization(0.0001);
-        simulator.setNumCellsPerDish(100);
+        this.simulator.setNumDishes(100);
+        this.simulator.setStepsGenerated(2);
+        this.simulator.setNumSamplesPerDish(1);
+        this.simulator.setSampleSampleVariability(0.0001);
+        this.simulator.setChipChipVariability(0.0001);
+        this.simulator.setPixelDigitalization(0.0001);
+        this.simulator.setNumCellsPerDish(100);
 
         // Simulate the data.
-        simulator.simulate(history);
+        this.simulator.simulate(this.history);
 
-        double[][][] measuredData = simulator.getMeasuredData();
+        final double[][][] measuredData = this.simulator.getMeasuredData();
 
         // Do the test.
-        DoubleArrayList doubleArrayList =
+        final DoubleArrayList doubleArrayList =
                 new DoubleArrayList(measuredData[1][0]);
-        double sum = Descriptive.sum(doubleArrayList);
-        double sumOfSquares = Descriptive.sumOfSquares(doubleArrayList);
-        double gene2time1sd = Descriptive.standardDeviation(
+        final double sum = Descriptive.sum(doubleArrayList);
+        final double sumOfSquares = Descriptive.sumOfSquares(doubleArrayList);
+        final double gene2time1sd = Descriptive.standardDeviation(
                 Descriptive.variance(measuredData[1][0].length, sum,
                         sumOfSquares));
-        DoubleArrayList doubleArrayList1 =
+        final DoubleArrayList doubleArrayList1 =
                 new DoubleArrayList(measuredData[2][0]);
-        double sum1 = Descriptive.sum(doubleArrayList1);
-        double sumOfSquares1 = Descriptive.sumOfSquares(doubleArrayList1);
-        double gene3time1sd = Descriptive.standardDeviation(
+        final double sum1 = Descriptive.sum(doubleArrayList1);
+        final double sumOfSquares1 = Descriptive.sumOfSquares(doubleArrayList1);
+        final double gene3time1sd = Descriptive.standardDeviation(
                 Descriptive.variance(measuredData[2][0].length, sum1,
                         sumOfSquares1));
-        double gene2time1mean =
+        final double gene2time1mean =
                 Descriptive.mean(new DoubleArrayList(measuredData[1][0]));
-        double gene3time1mean =
+        final double gene3time1mean =
                 Descriptive.mean(new DoubleArrayList(measuredData[2][0]));
 
         TestCase.assertEquals(Math.abs(0.1 * gene2time1mean), gene2time1sd, 0.03);
@@ -270,35 +270,35 @@ public class TestMeasurementSimulator extends TestCase {
      */
     public void testSampleToSampleError() {
 
-        this.setDefaultParameters();
+        setDefaultParameters();
 
         // The following parameters are set to non-default values for
         // this test.
-        simulator.setNumSamplesPerDish(1000);
-        simulator.setSampleSampleVariability(0.2);
-        simulator.setChipChipVariability(0.0001);
-        simulator.setPixelDigitalization(0.0001);
-        simulator.setStepsGenerated(2);
-        simulator.setNumCellsPerDish(100);
+        this.simulator.setNumSamplesPerDish(1000);
+        this.simulator.setSampleSampleVariability(0.2);
+        this.simulator.setChipChipVariability(0.0001);
+        this.simulator.setPixelDigitalization(0.0001);
+        this.simulator.setStepsGenerated(2);
+        this.simulator.setNumCellsPerDish(100);
 
         // Simulate the data.
-        simulator.simulate(history);
+        this.simulator.simulate(this.history);
 
-        double[][][] measuredData = simulator.getMeasuredData();
+        final double[][][] measuredData = this.simulator.getMeasuredData();
 
         // Do the test.
-        DoubleArrayList doubleArrayList =
+        final DoubleArrayList doubleArrayList =
                 new DoubleArrayList(measuredData[1][0]);
-        double sum = Descriptive.sum(doubleArrayList);
-        double sumOfSquares = Descriptive.sumOfSquares(doubleArrayList);
-        double gene2time1sd = Descriptive.standardDeviation(
+        final double sum = Descriptive.sum(doubleArrayList);
+        final double sumOfSquares = Descriptive.sumOfSquares(doubleArrayList);
+        final double gene2time1sd = Descriptive.standardDeviation(
                 Descriptive.variance(measuredData[1][0].length, sum,
                         sumOfSquares));
-        DoubleArrayList doubleArrayList1 =
+        final DoubleArrayList doubleArrayList1 =
                 new DoubleArrayList(measuredData[2][0]);
-        double sum1 = Descriptive.sum(doubleArrayList1);
-        double sumOfSquares1 = Descriptive.sumOfSquares(doubleArrayList1);
-        double gene3time1sd = Descriptive.standardDeviation(
+        final double sum1 = Descriptive.sum(doubleArrayList1);
+        final double sumOfSquares1 = Descriptive.sumOfSquares(doubleArrayList1);
+        final double gene3time1sd = Descriptive.standardDeviation(
                 Descriptive.variance(measuredData[2][0].length, sum1,
                         sumOfSquares1));
 
@@ -314,43 +314,43 @@ public class TestMeasurementSimulator extends TestCase {
      */
     public void testChipToChipError() {
 
-        this.setDefaultParameters();
+        setDefaultParameters();
 
         // The following parameters are set to non-default values for
         // this test.
-        simulator.setDishDishVariability(0.0001);
-        simulator.setNumSamplesPerDish(1000);
-        simulator.setSampleSampleVariability(0.0001);
-        simulator.setChipChipVariability(0.3);
-        simulator.setPixelDigitalization(0.0001);
-        simulator.setStepsGenerated(2);
-        simulator.setNumCellsPerDish(100);
+        this.simulator.setDishDishVariability(0.0001);
+        this.simulator.setNumSamplesPerDish(1000);
+        this.simulator.setSampleSampleVariability(0.0001);
+        this.simulator.setChipChipVariability(0.3);
+        this.simulator.setPixelDigitalization(0.0001);
+        this.simulator.setStepsGenerated(2);
+        this.simulator.setNumCellsPerDish(100);
 
         // Simulate the data.
-        simulator.simulate(history);
+        this.simulator.simulate(this.history);
 
-        double[][][] measuredData = simulator.getMeasuredData();
+        final double[][][] measuredData = this.simulator.getMeasuredData();
 
         // Do the test.
-        DoubleArrayList doubleArrayList =
+        final DoubleArrayList doubleArrayList =
                 new DoubleArrayList(measuredData[1][0]);
-        double sum = Descriptive.sum(doubleArrayList);
-        double sumOfSquares = Descriptive.sumOfSquares(doubleArrayList);
-        double gene2time1sd = Descriptive.standardDeviation(
+        final double sum = Descriptive.sum(doubleArrayList);
+        final double sumOfSquares = Descriptive.sumOfSquares(doubleArrayList);
+        final double gene2time1sd = Descriptive.standardDeviation(
                 Descriptive.variance(measuredData[1][0].length, sum,
                         sumOfSquares));
-        DoubleArrayList doubleArrayList1 =
+        final DoubleArrayList doubleArrayList1 =
                 new DoubleArrayList(measuredData[2][0]);
-        double sum1 = Descriptive.sum(doubleArrayList1);
-        double sumOfSquares1 = Descriptive.sumOfSquares(doubleArrayList1);
-        double gene3time1sd = Descriptive.standardDeviation(
+        final double sum1 = Descriptive.sum(doubleArrayList1);
+        final double sumOfSquares1 = Descriptive.sumOfSquares(doubleArrayList1);
+        final double gene3time1sd = Descriptive.standardDeviation(
                 Descriptive.variance(measuredData[2][0].length, sum1,
                         sumOfSquares1));
-        DoubleArrayList doubleArrayList2 =
+        final DoubleArrayList doubleArrayList2 =
                 new DoubleArrayList(measuredData[1][1]);
-        double sum2 = Descriptive.sum(doubleArrayList2);
-        double sumOfSquares2 = Descriptive.sumOfSquares(doubleArrayList2);
-        double gene1time2sd = Descriptive.standardDeviation(
+        final double sum2 = Descriptive.sum(doubleArrayList2);
+        final double sumOfSquares2 = Descriptive.sumOfSquares(doubleArrayList2);
+        final double gene1time2sd = Descriptive.standardDeviation(
                 Descriptive.variance(measuredData[1][1].length, sum2,
                         sumOfSquares2));
 
@@ -367,43 +367,43 @@ public class TestMeasurementSimulator extends TestCase {
      */
     public void testPixelError() {
 
-        this.setDefaultParameters();
+        setDefaultParameters();
 
         // The following parameters are set to non-default values for
         // this test.
-        simulator.setDishDishVariability(0.0001);
-        simulator.setNumSamplesPerDish(1000);
-        simulator.setSampleSampleVariability(0.0001);
-        simulator.setChipChipVariability(0.0001);
-        simulator.setPixelDigitalization(0.3);
-        simulator.setStepsGenerated(2);
-        simulator.setNumCellsPerDish(100);
+        this.simulator.setDishDishVariability(0.0001);
+        this.simulator.setNumSamplesPerDish(1000);
+        this.simulator.setSampleSampleVariability(0.0001);
+        this.simulator.setChipChipVariability(0.0001);
+        this.simulator.setPixelDigitalization(0.3);
+        this.simulator.setStepsGenerated(2);
+        this.simulator.setNumCellsPerDish(100);
 
         // Simulate the data.
-        simulator.simulate(history);
+        this.simulator.simulate(this.history);
 
-        double[][][] measuredData = simulator.getMeasuredData();
+        final double[][][] measuredData = this.simulator.getMeasuredData();
 
         // Do the test.
-        DoubleArrayList doubleArrayList =
+        final DoubleArrayList doubleArrayList =
                 new DoubleArrayList(measuredData[1][0]);
-        double sum = Descriptive.sum(doubleArrayList);
-        double sumOfSquares = Descriptive.sumOfSquares(doubleArrayList);
-        double gene2time1sd = Descriptive.standardDeviation(
+        final double sum = Descriptive.sum(doubleArrayList);
+        final double sumOfSquares = Descriptive.sumOfSquares(doubleArrayList);
+        final double gene2time1sd = Descriptive.standardDeviation(
                 Descriptive.variance(measuredData[1][0].length, sum,
                         sumOfSquares));
-        DoubleArrayList doubleArrayList1 =
+        final DoubleArrayList doubleArrayList1 =
                 new DoubleArrayList(measuredData[2][0]);
-        double sum1 = Descriptive.sum(doubleArrayList1);
-        double sumOfSquares1 = Descriptive.sumOfSquares(doubleArrayList1);
-        double gene3time1sd = Descriptive.standardDeviation(
+        final double sum1 = Descriptive.sum(doubleArrayList1);
+        final double sumOfSquares1 = Descriptive.sumOfSquares(doubleArrayList1);
+        final double gene3time1sd = Descriptive.standardDeviation(
                 Descriptive.variance(measuredData[2][0].length, sum1,
                         sumOfSquares1));
-        DoubleArrayList doubleArrayList2 =
+        final DoubleArrayList doubleArrayList2 =
                 new DoubleArrayList(measuredData[1][1]);
-        double sum2 = Descriptive.sum(doubleArrayList2);
-        double sumOfSquares2 = Descriptive.sumOfSquares(doubleArrayList2);
-        double gene1time2sd = Descriptive.standardDeviation(
+        final double sum2 = Descriptive.sum(doubleArrayList2);
+        final double sumOfSquares2 = Descriptive.sumOfSquares(doubleArrayList2);
+        final double gene1time2sd = Descriptive.standardDeviation(
                 Descriptive.variance(measuredData[1][1].length, sum2,
                         sumOfSquares2));
 

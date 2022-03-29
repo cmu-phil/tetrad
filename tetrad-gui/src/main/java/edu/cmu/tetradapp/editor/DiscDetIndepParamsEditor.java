@@ -25,7 +25,6 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
-import edu.cmu.tetradapp.util.IntTextField.Filter;
 
 import javax.swing.*;
 
@@ -39,7 +38,7 @@ class DiscDetIndepParamsEditor extends JComponent {
     /**
      * The parameters object being edited.
      */
-    private Parameters params;
+    private final Parameters params;
 
     /**
      * A text field to allow the user to enter the number of dishes to
@@ -56,37 +55,37 @@ class DiscDetIndepParamsEditor extends JComponent {
     /**
      * Constructs a dialog to edit the given gene simulation parameters object.
      */
-    public DiscDetIndepParamsEditor(Parameters params) {
+    public DiscDetIndepParamsEditor(final Parameters params) {
         this.params = params;
 
         // set up text and ties them to the parameters object being edited.
-        alphaField = new DoubleTextField(params.getDouble("alpha", 0.001), 5,
+        this.alphaField = new DoubleTextField(params.getDouble("alpha", 0.001), 5,
                 NumberFormatUtil.getInstance().getNumberFormat());
 
-        alphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(double value, double oldValue) {
+        this.alphaField.setFilter(new DoubleTextField.Filter() {
+            public double filter(final double value, final double oldValue) {
                 try {
-                    DiscDetIndepParamsEditor.this.params().set("alpha", 0.001);
+                    params().set("alpha", 0.001);
                     return value;
-                } catch (IllegalArgumentException e) {
+                } catch (final IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
-        depthField = new IntTextField(params.getInt("depth", -1), 5);
-        depthField.setFilter(new Filter() {
-            public int filter(int value, int oldValue) {
+        this.depthField = new IntTextField(params.getInt("depth", -1), 5);
+        this.depthField.setFilter(new IntTextField.Filter() {
+            public int filter(final int value, final int oldValue) {
                 try {
-                    DiscDetIndepParamsEditor.this.params().set("depth", value);
+                    params().set("depth", value);
                     return value;
-                } catch (IllegalArgumentException e) {
+                } catch (final IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
-        this.buildGui();
+        buildGui();
     }
 
     /**
@@ -95,23 +94,23 @@ class DiscDetIndepParamsEditor extends JComponent {
      * appropriate listeners.
      */
     private void buildGui() {
-        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        if (alphaField != null) {
-            Box b1 = Box.createHorizontalBox();
+        if (this.alphaField != null) {
+            final Box b1 = Box.createHorizontalBox();
             b1.add(new JLabel("Alpha:"));
             b1.add(Box.createHorizontalGlue());
-            b1.add(alphaField);
-            this.add(b1);
+            b1.add(this.alphaField);
+            add(b1);
         }
 
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("Depth:"));
         b2.add(Box.createHorizontalGlue());
-        b2.add(depthField);
-        this.add(b2);
+        b2.add(this.depthField);
+        add(b2);
 
-        this.add(Box.createHorizontalGlue());
+        add(Box.createHorizontalGlue());
     }
 
     /**
@@ -119,7 +118,7 @@ class DiscDetIndepParamsEditor extends JComponent {
      * public, but it is needed so that the textfields can edit the model.)
      */
     private Parameters params() {
-        return params;
+        return this.params;
     }
 }
 

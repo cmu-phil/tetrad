@@ -22,17 +22,17 @@
 package edu.cmu.tetrad.gene.tetrad.gene.algorithm.urchin;
 
 public class NbGene extends AbstractNbComponent {
-    public NbGene(double factor, double power, NbComponent[] parents,
-                  int[] inhibitExcite, String name) {
+    public NbGene(final double factor, final double power, final NbComponent[] parents,
+                  final int[] inhibitExcite, final String name) {
 
         super(factor, power, parents, inhibitExcite, name);
     }
 
     public void update() {
-        System.out.println("Updating " + this.getName());
+        System.out.println("Updating " + getName());
         double sum = 0.0;
-        for (int i = 0; i < this.getNparents(); i++) {
-            double v = this.getParents()[i].getValue();
+        for (int i = 0; i < getNparents(); i++) {
+            final double v = getParents()[i].getValue();
             sum += v;
         }
         System.out.println("Sum = " + sum);

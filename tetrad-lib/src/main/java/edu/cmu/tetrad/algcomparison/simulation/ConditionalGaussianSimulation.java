@@ -40,26 +40,26 @@ public class ConditionalGaussianSimulation implements Simulation {
     private double meanLow = -1;
     private double meanHigh = 1;
 
-    public ConditionalGaussianSimulation(RandomGraph graph) {
-        randomGraph = graph;
+    public ConditionalGaussianSimulation(final RandomGraph graph) {
+        this.randomGraph = graph;
     }
 
     @Override
-    public void createData(Parameters parameters, boolean newModel) {
+    public void createData(final Parameters parameters, final boolean newModel) {
 //        if (!newModel && !dataSets.isEmpty()) return;
 
-        this.setVarLow(parameters.getDouble(Params.VAR_LOW));
-        this.setVarHigh(parameters.getDouble(Params.VAR_HIGH));
-        this.setCoefLow(parameters.getDouble(Params.COEF_LOW));
-        this.setCoefHigh(parameters.getDouble(Params.COEF_HIGH));
-        this.setCoefSymmetric(parameters.getBoolean(Params.COV_SYMMETRIC));
-        this.setMeanLow(parameters.getDouble(Params.MEAN_LOW));
-        this.setMeanHigh(parameters.getDouble(Params.MEAN_HIGH));
+        setVarLow(parameters.getDouble(Params.VAR_LOW));
+        setVarHigh(parameters.getDouble(Params.VAR_HIGH));
+        setCoefLow(parameters.getDouble(Params.COEF_LOW));
+        setCoefHigh(parameters.getDouble(Params.COEF_HIGH));
+        setCoefSymmetric(parameters.getBoolean(Params.COV_SYMMETRIC));
+        setMeanLow(parameters.getDouble(Params.MEAN_LOW));
+        setMeanHigh(parameters.getDouble(Params.MEAN_HIGH));
 
-        double percentDiscrete = parameters.getDouble(Params.PERCENT_DISCRETE);
+        final double percentDiscrete = parameters.getDouble(Params.PERCENT_DISCRETE);
 
-        boolean discrete = parameters.getString(Params.DATA_TYPE).equals("discrete");
-        boolean continuous = parameters.getString(Params.DATA_TYPE).equals("continuous");
+        final boolean discrete = parameters.getString(Params.DATA_TYPE).equals("discrete");
+        final boolean continuous = parameters.getString(Params.DATA_TYPE).equals("continuous");
 
         if (discrete && percentDiscrete != 100.0) {
             throw new IllegalArgumentException("To simulate discrete data, 'percentDiscrete' must be set to 0.0.");
@@ -68,57 +68,57 @@ public class ConditionalGaussianSimulation implements Simulation {
         }
 
         if (discrete) {
-            dataType = DataType.Discrete;
+            this.dataType = DataType.Discrete;
         }
         if (continuous) {
-            dataType = DataType.Continuous;
+            this.dataType = DataType.Continuous;
         }
 
-        shuffledOrder = null;
+        this.shuffledOrder = null;
 
-        Graph graph = randomGraph.createGraph(parameters);
+        Graph graph = this.randomGraph.createGraph(parameters);
 
-        dataSets = new ArrayList<>();
-        graphs = new ArrayList<>();
+        this.dataSets = new ArrayList<>();
+        this.graphs = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt(Params.NUM_RUNS); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
 
             if (parameters.getBoolean(Params.DIFFERENT_GRAPHS) && i > 0) {
-                graph = randomGraph.createGraph(parameters);
+                graph = this.randomGraph.createGraph(parameters);
             }
 
-            graphs.add(graph);
+            this.graphs.add(graph);
 
-            DataSet dataSet = this.simulate(graph, parameters);
+            DataSet dataSet = simulate(graph, parameters);
             dataSet.setName("" + (i + 1));
 
             if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
                 dataSet = DataUtils.shuffleColumns(dataSet);
             }
 
-            dataSets.add(dataSet);
+            this.dataSets.add(dataSet);
         }
     }
 
     @Override
-    public Graph getTrueGraph(int index) {
-        return graphs.get(index);
+    public Graph getTrueGraph(final int index) {
+        return this.graphs.get(index);
     }
 
     @Override
-    public DataModel getDataModel(int index) {
-        return dataSets.get(index);
+    public DataModel getDataModel(final int index) {
+        return this.dataSets.get(index);
     }
 
     @Override
     public String getDescription() {
-        return "Conditional Gaussian simulation using " + randomGraph.getDescription();
+        return "Conditional Gaussian simulation using " + this.randomGraph.getDescription();
     }
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = randomGraph.getParameters();
+        final List<String> parameters = this.randomGraph.getParameters();
         parameters.add(Params.MIN_CATEGORIES);
         parameters.add(Params.MAX_CATEGORIES);
         parameters.add(Params.PERCENT_DISCRETE);
@@ -140,47 +140,47 @@ public class ConditionalGaussianSimulation implements Simulation {
 
     @Override
     public int getNumDataModels() {
-        return dataSets.size();
+        return this.dataSets.size();
     }
 
     @Override
     public DataType getDataType() {
-        return dataType;
+        return this.dataType;
     }
 
-    private DataSet simulate(Graph G, Parameters parameters) {
-        HashMap<String, Integer> nd = new HashMap<>();
+    private DataSet simulate(Graph G, final Parameters parameters) {
+        final HashMap<String, Integer> nd = new HashMap<>();
 
         List<Node> nodes = G.getNodes();
 
         Collections.shuffle(nodes);
 
-        if (shuffledOrder == null) {
-            List<Node> shuffledNodes = new ArrayList<>(nodes);
+        if (this.shuffledOrder == null) {
+            final List<Node> shuffledNodes = new ArrayList<>(nodes);
             Collections.shuffle(shuffledNodes);
-            shuffledOrder = shuffledNodes;
+            this.shuffledOrder = shuffledNodes;
         }
 
         for (int i = 0; i < nodes.size(); i++) {
             if (i < nodes.size() * parameters.getDouble(Params.PERCENT_DISCRETE) * 0.01) {
-                int minNumCategories = parameters.getInt(Params.MIN_CATEGORIES);
-                int maxNumCategories = parameters.getInt(Params.MAX_CATEGORIES);
-                int value = this.pickNumCategories(minNumCategories, maxNumCategories);
-                nd.put(shuffledOrder.get(i).getName(), value);
+                final int minNumCategories = parameters.getInt(Params.MIN_CATEGORIES);
+                final int maxNumCategories = parameters.getInt(Params.MAX_CATEGORIES);
+                final int value = pickNumCategories(minNumCategories, maxNumCategories);
+                nd.put(this.shuffledOrder.get(i).getName(), value);
             } else {
-                nd.put(shuffledOrder.get(i).getName(), 0);
+                nd.put(this.shuffledOrder.get(i).getName(), 0);
             }
         }
 
-        G = makeMixedGraph(G, nd);
+        G = ConditionalGaussianSimulation.makeMixedGraph(G, nd);
         nodes = G.getNodes();
 
-        DataSet mixedData = new BoxDataSet(new MixedDataBox(nodes, parameters.getInt(Params.SAMPLE_SIZE)), nodes);
+        final DataSet mixedData = new BoxDataSet(new MixedDataBox(nodes, parameters.getInt(Params.SAMPLE_SIZE)), nodes);
 
-        List<Node> X = new ArrayList<>();
-        List<Node> A = new ArrayList<>();
+        final List<Node> X = new ArrayList<>();
+        final List<Node> A = new ArrayList<>();
 
-        for (Node node : G.getNodes()) {
+        for (final Node node : G.getNodes()) {
             if (node instanceof ContinuousVariable) {
                 X.add(node);
             } else {
@@ -188,14 +188,14 @@ public class ConditionalGaussianSimulation implements Simulation {
             }
         }
 
-        Graph AG = G.subgraph(A);
-        Graph XG = G.subgraph(X);
+        final Graph AG = G.subgraph(A);
+        final Graph XG = G.subgraph(X);
 
-        Map<ContinuousVariable, DiscreteVariable> erstatzNodes = new HashMap<>();
-        Map<String, ContinuousVariable> erstatzNodesReverse = new HashMap<>();
+        final Map<ContinuousVariable, DiscreteVariable> erstatzNodes = new HashMap<>();
+        final Map<String, ContinuousVariable> erstatzNodesReverse = new HashMap<>();
 
-        for (Node y : A) {
-            for (Node x : G.getParents(y)) {
+        for (final Node y : A) {
+            for (final Node x : G.getParents(y)) {
                 if (x instanceof ContinuousVariable) {
                     DiscreteVariable ersatz = erstatzNodes.get(x);
 
@@ -211,47 +211,47 @@ public class ConditionalGaussianSimulation implements Simulation {
             }
         }
 
-        BayesPm bayesPm = new BayesPm(AG);
-        BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+        final BayesPm bayesPm = new BayesPm(AG);
+        final BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
 
-        SemPm semPm = new SemPm(XG);
+        final SemPm semPm = new SemPm(XG);
 
-        Map<Combination, Double> paramValues = new HashMap<>();
+        final Map<Combination, Double> paramValues = new HashMap<>();
 
-        List<Node> tierOrdering = G.getCausalOrdering();
+        final List<Node> tierOrdering = G.getCausalOrdering();
 
-        int[] tiers = new int[tierOrdering.size()];
+        final int[] tiers = new int[tierOrdering.size()];
 
         for (int t = 0; t < tierOrdering.size(); t++) {
             tiers[t] = nodes.indexOf(tierOrdering.get(t));
         }
 
-        Map<Integer, double[]> breakpointsMap = new HashMap<>();
+        final Map<Integer, double[]> breakpointsMap = new HashMap<>();
 
-        for (int mixedIndex : tiers) {
+        for (final int mixedIndex : tiers) {
             for (int i = 0; i < parameters.getInt(Params.SAMPLE_SIZE); i++) {
                 if (nodes.get(mixedIndex) instanceof DiscreteVariable) {
-                    int bayesIndex = bayesIm.getNodeIndex(nodes.get(mixedIndex));
+                    final int bayesIndex = bayesIm.getNodeIndex(nodes.get(mixedIndex));
 
-                    int[] bayesParents = bayesIm.getParents(bayesIndex);
-                    int[] parentValues = new int[bayesParents.length];
+                    final int[] bayesParents = bayesIm.getParents(bayesIndex);
+                    final int[] parentValues = new int[bayesParents.length];
 
                     for (int k = 0; k < parentValues.length; k++) {
-                        int bayesParentColumn = bayesParents[k];
+                        final int bayesParentColumn = bayesParents[k];
 
-                        Node bayesParent = bayesIm.getVariables().get(bayesParentColumn);
-                        DiscreteVariable _parent = (DiscreteVariable) bayesParent;
+                        final Node bayesParent = bayesIm.getVariables().get(bayesParentColumn);
+                        final DiscreteVariable _parent = (DiscreteVariable) bayesParent;
                         int value;
 
-                        ContinuousVariable orig = erstatzNodesReverse.get(_parent.getName());
+                        final ContinuousVariable orig = erstatzNodesReverse.get(_parent.getName());
 
                         if (orig != null) {
-                            int mixedParentColumn = mixedData.getColumn(orig);
-                            double d = mixedData.getDouble(i, mixedParentColumn);
+                            final int mixedParentColumn = mixedData.getColumn(orig);
+                            final double d = mixedData.getDouble(i, mixedParentColumn);
                             double[] breakpoints = breakpointsMap.get(mixedParentColumn);
 
                             if (breakpoints == null) {
-                                breakpoints = this.getBreakpoints(mixedData, _parent, mixedParentColumn);
+                                breakpoints = getBreakpoints(mixedData, _parent, mixedParentColumn);
                                 breakpointsMap.put(mixedParentColumn, breakpoints);
                             }
 
@@ -264,21 +264,21 @@ public class ConditionalGaussianSimulation implements Simulation {
                                 }
                             }
                         } else {
-                            int mixedColumn = mixedData.getColumn(bayesParent);
+                            final int mixedColumn = mixedData.getColumn(bayesParent);
                             value = mixedData.getInt(i, mixedColumn);
                         }
 
                         parentValues[k] = value;
                     }
 
-                    int rowIndex = bayesIm.getRowIndex(bayesIndex, parentValues);
+                    final int rowIndex = bayesIm.getRowIndex(bayesIndex, parentValues);
                     double sum = 0.0;
 
-                    double r = RandomUtil.getInstance().nextDouble();
+                    final double r = RandomUtil.getInstance().nextDouble();
                     mixedData.setInt(i, mixedIndex, 0);
 
                     for (int k = 0; k < bayesIm.getNumColumns(bayesIndex); k++) {
-                        double probability = bayesIm.getProbability(bayesIndex, rowIndex, k);
+                        final double probability = bayesIm.getProbability(bayesIndex, rowIndex, k);
                         sum += probability;
 
                         if (sum >= r) {
@@ -287,12 +287,12 @@ public class ConditionalGaussianSimulation implements Simulation {
                         }
                     }
                 } else {
-                    Node y = nodes.get(mixedIndex);
+                    final Node y = nodes.get(mixedIndex);
 
-                    Set<DiscreteVariable> discreteParents = new HashSet<>();
-                    Set<ContinuousVariable> continuousParents = new HashSet<>();
+                    final Set<DiscreteVariable> discreteParents = new HashSet<>();
+                    final Set<ContinuousVariable> continuousParents = new HashSet<>();
 
-                    for (Node node : G.getParents(y)) {
+                    for (final Node node : G.getParents(y)) {
                         if (node instanceof DiscreteVariable) {
                             discreteParents.add((DiscreteVariable) node);
                         } else {
@@ -300,45 +300,45 @@ public class ConditionalGaussianSimulation implements Simulation {
                         }
                     }
 
-                    Parameter varParam = semPm.getParameter(y, y);
-                    Parameter muParam = semPm.getMeanParameter(y);
+                    final Parameter varParam = semPm.getParameter(y, y);
+                    final Parameter muParam = semPm.getMeanParameter(y);
 
-                    Combination varComb = new Combination(varParam);
-                    Combination muComb = new Combination(muParam);
+                    final Combination varComb = new Combination(varParam);
+                    final Combination muComb = new Combination(muParam);
 
-                    for (DiscreteVariable v : discreteParents) {
+                    for (final DiscreteVariable v : discreteParents) {
                         varComb.addParamValue(v, mixedData.getInt(i, mixedData.getColumn(v)));
                         muComb.addParamValue(v, mixedData.getInt(i, mixedData.getColumn(v)));
                     }
 
-                    double value = RandomUtil.getInstance().nextNormal(0, this.getParamValue(varComb, paramValues));
+                    double value = RandomUtil.getInstance().nextNormal(0, getParamValue(varComb, paramValues));
 
-                    for (Node x : continuousParents) {
-                        Parameter coefParam = semPm.getParameter(x, y);
-                        Combination coefComb = new Combination(coefParam);
+                    for (final Node x : continuousParents) {
+                        final Parameter coefParam = semPm.getParameter(x, y);
+                        final Combination coefComb = new Combination(coefParam);
 
-                        for (DiscreteVariable v : discreteParents) {
+                        for (final DiscreteVariable v : discreteParents) {
                             coefComb.addParamValue(v, mixedData.getInt(i, mixedData.getColumn(v)));
                         }
 
-                        int parent = nodes.indexOf(x);
-                        double parentValue = mixedData.getDouble(i, parent);
-                        double parentCoef = this.getParamValue(coefComb, paramValues);
+                        final int parent = nodes.indexOf(x);
+                        final double parentValue = mixedData.getDouble(i, parent);
+                        final double parentCoef = getParamValue(coefComb, paramValues);
                         value += parentValue * parentCoef;
                     }
 
-                    value += this.getParamValue(muComb, paramValues);
+                    value += getParamValue(muComb, paramValues);
                     mixedData.setDouble(i, mixedIndex, value);
                 }
             }
         }
 
-        boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
+        final boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
         return saveLatentVars ? mixedData : DataUtils.restrictToMeasured(mixedData);
     }
 
-    private double[] getBreakpoints(DataSet mixedData, DiscreteVariable _parent, int mixedParentColumn) {
-        double[] data = new double[mixedData.getNumRows()];
+    private double[] getBreakpoints(final DataSet mixedData, final DiscreteVariable _parent, final int mixedParentColumn) {
+        final double[] data = new double[mixedData.getNumRows()];
 
         for (int r = 0; r < mixedData.getNumRows(); r++) {
             data[r] = mixedData.getDouble(r, mixedParentColumn);
@@ -347,23 +347,23 @@ public class ConditionalGaussianSimulation implements Simulation {
         return Discretizer.getEqualFrequencyBreakPoints(data, _parent.getNumCategories());
     }
 
-    private Double getParamValue(Combination values, Map<Combination, Double> map) {
+    private Double getParamValue(final Combination values, final Map<Combination, Double> map) {
         Double d = map.get(values);
 
         if (d == null) {
-            Parameter parameter = values.getParameter();
+            final Parameter parameter = values.getParameter();
 
             if (parameter.getType() == ParamType.VAR) {
-                d = RandomUtil.getInstance().nextUniform(varLow, varHigh);
+                d = RandomUtil.getInstance().nextUniform(this.varLow, this.varHigh);
                 map.put(values, d);
             } else if (parameter.getType() == ParamType.COEF) {
-                double min = coefLow;
-                double max = coefHigh;
-                double value = RandomUtil.getInstance().nextUniform(min, max);
-                d = RandomUtil.getInstance().nextUniform(0, 1) < 0.5 && coefSymmetric ? -value : value;
+                final double min = this.coefLow;
+                final double max = this.coefHigh;
+                final double value = RandomUtil.getInstance().nextUniform(min, max);
+                d = RandomUtil.getInstance().nextUniform(0, 1) < 0.5 && this.coefSymmetric ? -value : value;
                 map.put(values, d);
             } else if (parameter.getType() == ParamType.MEAN) {
-                d = RandomUtil.getInstance().nextUniform(meanLow, meanHigh);
+                d = RandomUtil.getInstance().nextUniform(this.meanLow, this.meanHigh);
                 map.put(values, d);
             }
         }
@@ -371,31 +371,31 @@ public class ConditionalGaussianSimulation implements Simulation {
         return d;
     }
 
-    public void setVarLow(double varLow) {
+    public void setVarLow(final double varLow) {
         this.varLow = varLow;
     }
 
-    public void setVarHigh(double varHigh) {
+    public void setVarHigh(final double varHigh) {
         this.varHigh = varHigh;
     }
 
-    public void setCoefLow(double coefLow) {
+    public void setCoefLow(final double coefLow) {
         this.coefLow = coefLow;
     }
 
-    public void setCoefHigh(double coefHigh) {
+    public void setCoefHigh(final double coefHigh) {
         this.coefHigh = coefHigh;
     }
 
-    public void setCoefSymmetric(boolean coefSymmetric) {
+    public void setCoefSymmetric(final boolean coefSymmetric) {
         this.coefSymmetric = coefSymmetric;
     }
 
-    public void setMeanLow(double meanLow) {
+    public void setMeanLow(final double meanLow) {
         this.meanLow = meanLow;
     }
 
-    public void setMeanHigh(double meanHigh) {
+    public void setMeanHigh(final double meanHigh) {
         this.meanHigh = meanHigh;
     }
 
@@ -404,32 +404,32 @@ public class ConditionalGaussianSimulation implements Simulation {
         private final Parameter parameter;
         private final Set<VariableValues> paramValues;
 
-        public Combination(Parameter parameter) {
+        public Combination(final Parameter parameter) {
             this.parameter = parameter;
-            paramValues = new HashSet<>();
+            this.paramValues = new HashSet<>();
         }
 
-        public void addParamValue(DiscreteVariable variable, int value) {
-            paramValues.add(new VariableValues(variable, value));
+        public void addParamValue(final DiscreteVariable variable, final int value) {
+            this.paramValues.add(new VariableValues(variable, value));
         }
 
         public int hashCode() {
-            return parameter.hashCode() + paramValues.hashCode();
+            return this.parameter.hashCode() + this.paramValues.hashCode();
         }
 
-        public boolean equals(Object o) {
+        public boolean equals(final Object o) {
             if (o == this) {
                 return true;
             }
             if (!(o instanceof Combination)) {
                 return false;
             }
-            Combination v = (Combination) o;
-            return v.parameter == parameter && v.paramValues.equals(paramValues);
+            final Combination v = (Combination) o;
+            return v.parameter == this.parameter && v.paramValues.equals(this.paramValues);
         }
 
         public Parameter getParameter() {
-            return parameter;
+            return this.parameter;
         }
     }
 
@@ -438,65 +438,65 @@ public class ConditionalGaussianSimulation implements Simulation {
         private final DiscreteVariable variable;
         private final int value;
 
-        public VariableValues(DiscreteVariable variable, int value) {
+        public VariableValues(final DiscreteVariable variable, final int value) {
             this.variable = variable;
             this.value = value;
         }
 
         public DiscreteVariable getVariable() {
-            return variable;
+            return this.variable;
         }
 
         public int getValue() {
-            return value;
+            return this.value;
         }
 
         public int hashCode() {
-            return variable.hashCode() + value;
+            return this.variable.hashCode() + this.value;
         }
 
-        public boolean equals(Object o) {
+        public boolean equals(final Object o) {
             if (o == this) {
                 return true;
             }
             if (!(o instanceof VariableValues)) {
                 return false;
             }
-            VariableValues v = (VariableValues) o;
-            return v.variable.equals(variable) && v.value == value;
+            final VariableValues v = (VariableValues) o;
+            return v.variable.equals(this.variable) && v.value == this.value;
         }
     }
 
-    private static Graph makeMixedGraph(Graph g, Map<String, Integer> m) {
-        List<Node> nodes = g.getNodes();
+    private static Graph makeMixedGraph(final Graph g, final Map<String, Integer> m) {
+        final List<Node> nodes = g.getNodes();
         for (int i = 0; i < nodes.size(); i++) {
-            Node n = nodes.get(i);
-            int nL = m.get(n.getName());
+            final Node n = nodes.get(i);
+            final int nL = m.get(n.getName());
             if (nL > 0) {
-                Node nNew = new DiscreteVariable(n.getName(), nL);
+                final Node nNew = new DiscreteVariable(n.getName(), nL);
                 nNew.setNodeType(n.getNodeType());
                 nodes.set(i, nNew);
             } else {
-                Node nNew = new ContinuousVariable(n.getName());
+                final Node nNew = new ContinuousVariable(n.getName());
                 nNew.setNodeType(n.getNodeType());
                 nodes.set(i, nNew);
             }
 
         }
 
-        Graph outG = new EdgeListGraph(nodes);
+        final Graph outG = new EdgeListGraph(nodes);
 
-        for (Edge e : g.getEdges()) {
-            Node n1 = e.getNode1();
-            Node n2 = e.getNode2();
-            Edge eNew = new Edge(outG.getNode(n1.getName()), outG.getNode(n2.getName()), e.getEndpoint1(), e.getEndpoint2());
+        for (final Edge e : g.getEdges()) {
+            final Node n1 = e.getNode1();
+            final Node n2 = e.getNode2();
+            final Edge eNew = new Edge(outG.getNode(n1.getName()), outG.getNode(n2.getName()), e.getEndpoint1(), e.getEndpoint2());
             outG.addEdge(eNew);
         }
 
         return outG;
     }
 
-    private int pickNumCategories(int min, int max) {
+    private int pickNumCategories(final int min, final int max) {
         return RandomUtils.nextInt(min, max + 1);
     }
 }

@@ -61,56 +61,56 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
     /**
      * Constructs a new workbench for the given SessionWrapper.
      */
-    public SessionEditorWorkbench(SessionWrapper sessionWrapper) {
+    public SessionEditorWorkbench(final SessionWrapper sessionWrapper) {
         super(sessionWrapper);
 
         sessionWrapper.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent e) {
-                String propertyName = e.getPropertyName();
+            public void propertyChange(final PropertyChangeEvent e) {
+                final String propertyName = e.getPropertyName();
 
                 if ("name".equals(propertyName)) {
-                    SessionEditorWorkbench.this.firePropertyChange("name", e.getOldValue(),
+                    firePropertyChange("name", e.getOldValue(),
                             e.getNewValue());
                 }
             }
         });
 
-        addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
+        this.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(final PropertyChangeEvent evt) {
                 if ("cloneMe".equals(evt.getPropertyName())) {
-                    SessionEditorNode sessionEditorNode
+                    final SessionEditorNode sessionEditorNode
                             = (SessionEditorNode) evt.getNewValue();
-                    SessionNodeWrapper wrapper
+                    final SessionNodeWrapper wrapper
                             = (SessionNodeWrapper) sessionEditorNode.getModelNode();
-                    Object result;
+                    final Object result;
                     try {
                         result = new MarshalledObject(wrapper).get();
-                    } catch (Exception e1) {
+                    } catch (final Exception e1) {
                         e1.printStackTrace();
                         throw new IllegalStateException("Could not clone.");
                     }
-                    SessionNodeWrapper clone = (SessionNodeWrapper) result;
-                    List sessionElements = Collections.singletonList(clone);
-                    Point point = EditorUtils.getTopLeftPoint(sessionElements);
+                    final SessionNodeWrapper clone = (SessionNodeWrapper) result;
+                    final List sessionElements = Collections.singletonList(clone);
+                    final Point point = EditorUtils.getTopLeftPoint(sessionElements);
                     point.translate(50, 50);
 
-                    SessionWrapper sessionWrapper = (SessionWrapper) SessionEditorWorkbench.this.getGraph();
-                    SessionEditorWorkbench.this.deselectAll();
+                    final SessionWrapper sessionWrapper = (SessionWrapper) getGraph();
+                    deselectAll();
                     sessionWrapper.pasteSubsession(sessionElements, point);
 
-                    SessionEditorWorkbench.this.selectNode(clone);
+                    selectNode(clone);
                 }
             }
         });
 
-        List nodes = this.getGraph().getNodes();
+        final List nodes = getGraph().getNodes();
 
-        for (Object node1 : nodes) {
-            SessionNodeWrapper node = (SessionNodeWrapper) node1;
-            this.setRepetitionLabel(node.getSessionNode());
+        for (final Object node1 : nodes) {
+            final SessionNodeWrapper node = (SessionNodeWrapper) node1;
+            setRepetitionLabel(node.getSessionNode());
         }
 
-        this.setRightClickPopupAllowed(false);
+        setRightClickPopupAllowed(false);
     }
 
     //==========================PUBLIC METHODS===========================//
@@ -122,18 +122,18 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
      * @see #getNextButtonType
      */
     public Node getNewModelNode() {
-        if (nextButtonType == null) {
+        if (this.nextButtonType == null) {
             throw new NullPointerException(
                     "Next button type must be a " + "non-null string.");
         }
 
-        String name = nextUniqueName(nextButtonType, this.getGraph());
-        Class[] modelClasses = getModelClasses(nextButtonType);
-        SessionNode newNode
-                = new SessionNode(nextButtonType, name, modelClasses);
+        final String name = SessionEditorWorkbench.nextUniqueName(this.nextButtonType, getGraph());
+        final Class[] modelClasses = SessionEditorWorkbench.getModelClasses(this.nextButtonType);
+        final SessionNode newNode
+                = new SessionNode(this.nextButtonType, name, modelClasses);
 
-        SessionNodeWrapper nodeWrapper = new SessionNodeWrapper(newNode);
-        nodeWrapper.setButtonType(nextButtonType);
+        final SessionNodeWrapper nodeWrapper = new SessionNodeWrapper(newNode);
+        nodeWrapper.setButtonType(this.nextButtonType);
 
         return nodeWrapper;
     }
@@ -142,9 +142,9 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
      * @return a new SessionEditorNode for the given SessionNodeWrapper (cast as
      * indicated).
      */
-    public DisplayNode getNewDisplayNode(Node modelNode) {
-        SessionNodeWrapper wrapper = (SessionNodeWrapper) modelNode;
-        SessionEditorNode displayNode = new SessionEditorNode(wrapper, this.getSimulationStudy());
+    public DisplayNode getNewDisplayNode(final Node modelNode) {
+        final SessionNodeWrapper wrapper = (SessionNodeWrapper) modelNode;
+        final SessionEditorNode displayNode = new SessionEditorNode(wrapper, getSimulationStudy());
         displayNode.adjustToModel();
 
         return displayNode;
@@ -153,14 +153,14 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
     /**
      * @return a new edge from node1 to node2 (directed).
      */
-    public Edge getNewModelEdge(Node node1, Node node2) {
+    public Edge getNewModelEdge(final Node node1, final Node node2) {
         return new Edge(node1, node2, Endpoint.TAIL, Endpoint.ARROW);
     }
 
     /**
      * @return a new tracking edge from a node to some mouse location.
      */
-    public IDisplayEdge getNewTrackingEdge(DisplayNode node, Point mouseLoc) {
+    public IDisplayEdge getNewTrackingEdge(final DisplayNode node, final Point mouseLoc) {
         return new SessionEditorEdge((SessionEditorNode) node, mouseLoc);
     }
 
@@ -168,20 +168,20 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
      * @return a new SessionEditorEdge for the given given edge (cast as
      * indicated).
      */
-    public IDisplayEdge getNewDisplayEdge(Edge modelEdge) {
-        Node modelNodeA = modelEdge.getNode1();
-        Node modelNodeB = modelEdge.getNode2();
-        DisplayNode displayNodeA
-                = (DisplayNode) (this.getModelNodesToDisplay().get(modelNodeA));
-        DisplayNode displayNodeB
-                = (DisplayNode) (this.getModelNodesToDisplay().get(modelNodeB));
+    public IDisplayEdge getNewDisplayEdge(final Edge modelEdge) {
+        final Node modelNodeA = modelEdge.getNode1();
+        final Node modelNodeB = modelEdge.getNode2();
+        final DisplayNode displayNodeA
+                = (DisplayNode) (getModelNodesToDisplay().get(modelNodeA));
+        final DisplayNode displayNodeB
+                = (DisplayNode) (getModelNodesToDisplay().get(modelNodeB));
 
         if ((displayNodeA == null) || (displayNodeB == null)) {
             return null;
         }
 
-        SessionEditorNode sessionEditorNodeA = (SessionEditorNode) displayNodeA;
-        SessionEditorNode sessionEditorNodeB = (SessionEditorNode) displayNodeB;
+        final SessionEditorNode sessionEditorNodeA = (SessionEditorNode) displayNodeA;
+        final SessionEditorNode sessionEditorNodeB = (SessionEditorNode) displayNodeB;
 
         return new SessionEditorEdge(sessionEditorNodeA, sessionEditorNodeB,
                 SessionEditorEdge.UNRANDOMIZED);
@@ -191,18 +191,18 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
      * Resets the session wrapper that this editor is editing to the given
      * session wrapper.
      */
-    public void setSessionWrapper(SessionWrapper sessionWrapper) {
-        setGraph(sessionWrapper);
+    public void setSessionWrapper(final SessionWrapper sessionWrapper) {
+        this.setGraph(sessionWrapper);
 
         // Force simulation edu.cmu.tetrad.study to be recreated.
-        simulationStudy = null;
+        this.simulationStudy = null;
 
         sessionWrapper.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent e) {
-                String propertyName = e.getPropertyName();
+            public void propertyChange(final PropertyChangeEvent e) {
+                final String propertyName = e.getPropertyName();
 
                 if ("name".equals(propertyName)) {
-                    SessionEditorWorkbench.this.firePropertyChange("name", e.getOldValue(),
+                    firePropertyChange("name", e.getOldValue(),
                             e.getNewValue());
                 }
             }
@@ -210,18 +210,18 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
     }
 
     public SimulationStudy getSimulationStudy() {
-        if (simulationStudy == null) {
-            Session session = ((SessionWrapper) this.getGraph()).getSession();
-            simulationStudy = new SimulationStudy(session);
+        if (this.simulationStudy == null) {
+            final Session session = ((SessionWrapper) getGraph()).getSession();
+            this.simulationStudy = new SimulationStudy(session);
 
-            simulationStudy.addSessionListener(new SessionAdapter() {
-                public void repetitionChanged(SessionEvent event) {
-                    SessionEditorWorkbench.this.setRepetitionLabel(event.getNode());
+            this.simulationStudy.addSessionListener(new SessionAdapter() {
+                public void repetitionChanged(final SessionEvent event) {
+                    setRepetitionLabel(event.getNode());
                 }
             });
         }
 
-        return simulationStudy;
+        return this.simulationStudy;
     }
 
     /**
@@ -231,12 +231,12 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
      * the node.
      */
     public String getNextButtonType() {
-        if (nextButtonType == null) {
+        if (this.nextButtonType == null) {
             throw new NullPointerException("getNextButtonType() was called "
                     + "when there was no next button type set.");
         }
 
-        return nextButtonType;
+        return this.nextButtonType;
     }
 
     /**
@@ -245,34 +245,34 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
      * the <code>modelClassesMap</code> map and must be mapped there to a
      * Class[] array.
      */
-    public void setNextButtonType(String nextButtonType) {
+    public void setNextButtonType(final String nextButtonType) {
         this.nextButtonType = nextButtonType;
     }
 
     /**
      * Pastes list of session elements into the workbench.
      */
-    public void pasteSubsession(List sessionElements, Point point) {
-        SessionWrapper sessionWrapper = (SessionWrapper) this.getGraph();
+    public void pasteSubsession(final List sessionElements, final Point point) {
+        final SessionWrapper sessionWrapper = (SessionWrapper) getGraph();
         sessionWrapper.pasteSubsession(sessionElements, point);
-        this.deselectAll();
+        deselectAll();
 
-        for (Object sessionElement : sessionElements) {
+        for (final Object sessionElement : sessionElements) {
             if (sessionElement instanceof GraphNode) {
-                Node modelNode = (Node) sessionElement;
-                this.selectNode(modelNode);
+                final Node modelNode = (Node) sessionElement;
+                selectNode(modelNode);
             }
         }
 
-        this.selectConnectingEdges();
+        selectConnectingEdges();
     }
 
     public SessionWrapper getSessionWrapper() {
-        return (SessionWrapper) this.getGraph();
+        return (SessionWrapper) getGraph();
     }
 
-    public void setName(String name) {
-        this.getSimulationStudy().getSession().setName(name);
+    public void setName(final String name) {
+        getSimulationStudy().getSession().setName(name);
     }
 
     //===========================PRIVATE METHODS========================//
@@ -282,31 +282,31 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
      * indicating how many times the simulation edu.cmu.tetrad.study will run that node. If the
      * number is one, the label is removed.
      */
-    private void setRepetitionLabel(SessionNode sessionNode) {
+    private void setRepetitionLabel(final SessionNode sessionNode) {
         if (sessionNode == null) {
             throw new NullPointerException("Node must not be null.");
         }
 
-        SessionNodeWrapper sessionNodeWrapper
-                = this.getSessionNodeWrapper(sessionNode);
-        int repetitions = sessionNode.getRepetition();
+        final SessionNodeWrapper sessionNodeWrapper
+                = getSessionNodeWrapper(sessionNode);
+        final int repetitions = sessionNode.getRepetition();
 
         if (repetitions > 1) {
-            JLabel label = new JLabel("x " + repetitions);
+            final JLabel label = new JLabel("x " + repetitions);
             label.setForeground(Color.red);
-            this.setNodeLabel(sessionNodeWrapper, label, 0, 0);
+            setNodeLabel(sessionNodeWrapper, label, 0, 0);
         } else {
-            this.setNodeLabel(sessionNodeWrapper, null, 0, 0);
+            setNodeLabel(sessionNodeWrapper, null, 0, 0);
         }
     }
 
     /**
      * @return the SessionNodeWrapper for the given SessionEditorNode.
      */
-    private SessionNodeWrapper getSessionNodeWrapper(SessionNode sessionNode) {
-        for (Object key : this.getModelNodesToDisplay().keySet()) {
+    private SessionNodeWrapper getSessionNodeWrapper(final SessionNode sessionNode) {
+        for (final Object key : getModelNodesToDisplay().keySet()) {
             if (key instanceof SessionNodeWrapper) {
-                SessionNodeWrapper wrapper = (SessionNodeWrapper) key;
+                final SessionNodeWrapper wrapper = (SessionNodeWrapper) key;
 
                 if (wrapper.getSessionNode() == sessionNode) {
                     return wrapper;
@@ -330,9 +330,9 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
      * @return the model classes associated with the given button type.
      * @throws NullPointerException if no classes are stored for the given type.
      */
-    private static Class[] getModelClasses(String nextButtonType) {
-        TetradApplicationConfig config = TetradApplicationConfig.getInstance();
-        SessionNodeConfig nodeConfig = config.getSessionNodeConfig(nextButtonType);
+    private static Class[] getModelClasses(final String nextButtonType) {
+        final TetradApplicationConfig config = TetradApplicationConfig.getInstance();
+        final SessionNodeConfig nodeConfig = config.getSessionNodeConfig(nextButtonType);
 
         if (nodeConfig == null) {
             throw new NullPointerException("There is no configuration for: " + nextButtonType);
@@ -345,7 +345,7 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
      * @param base the string base of the name--for example, "Graph".
      * @return the next string in the sequence--for example, "Graph1".
      */
-    private static String nextUniqueName(String base, Graph graph) {
+    private static String nextUniqueName(final String base, final Graph graph) {
 
         if (base == null) {
             throw new NullPointerException("Base name must be non-null.");
@@ -356,10 +356,10 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
         loop:
         while (true) {
             i++;
-            String name = base + i;
+            final String name = base + i;
 
-            for (Object o : graph.getNodes()) {
-                Node node = (Node) (o);
+            for (final Object o : graph.getNodes()) {
+                final Node node = (Node) (o);
 
                 if (node.getName().equals(name)) {
                     continue loop;

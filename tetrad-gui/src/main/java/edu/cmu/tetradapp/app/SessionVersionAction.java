@@ -47,20 +47,20 @@ final class SessionVersionAction extends AbstractAction {
     /**
      * Performs the action of loading a session from a file.
      */
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(final ActionEvent e) {
 
         // Get the frontmost SessionWrapper.
-        SessionEditorIndirectRef sessionEditorRef =
+        final SessionEditorIndirectRef sessionEditorRef =
                 DesktopController.getInstance().getFrontmostSessionEditor();
-        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        SessionEditorWorkbench workbench = sessionEditor.getSessionWorkbench();
-        SessionWrapper sessionWrapper = workbench.getSessionWrapper();
-        TetradMetadataIndirectRef metadataRef =
+        final SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
+        final SessionEditorWorkbench workbench = sessionEditor.getSessionWorkbench();
+        final SessionWrapper sessionWrapper = workbench.getSessionWrapper();
+        final TetradMetadataIndirectRef metadataRef =
                 DesktopController.getInstance().getTetradMetadata(
                         sessionWrapper);
-        TetradMetadata metadata = (TetradMetadata) metadataRef;
+        final TetradMetadata metadata = (TetradMetadata) metadataRef;
 
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
 
         if (metadata == null) {
             buf.append(
@@ -73,7 +73,7 @@ final class SessionVersionAction extends AbstractAction {
             return;
         }
 
-        SimpleDateFormat df = new SimpleDateFormat("MMM dd, yyyy");
+        final SimpleDateFormat df = new SimpleDateFormat("MMM dd, yyyy");
 
         buf.append("Version information for \"");
         buf.append(sessionWrapper.getName());

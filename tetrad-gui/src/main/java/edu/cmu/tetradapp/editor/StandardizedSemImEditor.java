@@ -73,35 +73,35 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
     /**
      * Constructs a new SemImEditor from the given OldSemEstimateAdapter.
      */
-    public StandardizedSemImEditor(StandardizedSemImWrapper wrapper) {
-        StandardizedSemIm semIm = wrapper.getStandardizedSemIm();
+    public StandardizedSemImEditor(final StandardizedSemImWrapper wrapper) {
+        final StandardizedSemIm semIm = wrapper.getStandardizedSemIm();
 
         if (semIm == null) {
             throw new NullPointerException("The SEM IM has not been specified.");
         }
 
         this.semIm = semIm;
-        this.setLayout(new BorderLayout());
+        setLayout(new BorderLayout());
 
-        JTabbedPane tabbedPane = new JTabbedPane();
+        final JTabbedPane tabbedPane = new JTabbedPane();
 
-        tabbedPane.add("Graph", this.graphicalEditor());
-        tabbedPane.add("Implied Matrices", this.impliedMatricesPanel());
+        tabbedPane.add("Graph", graphicalEditor());
+        tabbedPane.add("Implied Matrices", impliedMatricesPanel());
 
-        this.add(tabbedPane, BorderLayout.CENTER);
+        add(tabbedPane, BorderLayout.CENTER);
 
-        JMenuBar menuBar = new JMenuBar();
-        JMenu file = new JMenu("File");
+        final JMenuBar menuBar = new JMenuBar();
+        final JMenu file = new JMenu("File");
         menuBar.add(file);
-        file.add(new SaveComponentImage(standardizedSemImGraphicalEditor.getWorkbench(),
+        file.add(new SaveComponentImage(this.standardizedSemImGraphicalEditor.getWorkbench(),
                 "Save Graph Image..."));
 
-        errorTerms = new JMenuItem();
+        this.errorTerms = new JMenuItem();
 
         // By default, hide the error terms.
 //        getSemGraph().setShowErrorTerms(false);
-        SemGraph graph = (SemGraph) this.graphicalEditor().getWorkbench().getGraph();
-        boolean shown = wrapper.isShowErrors();
+        final SemGraph graph = (SemGraph) graphicalEditor().getWorkbench().getGraph();
+        final boolean shown = wrapper.isShowErrors();
         graph.setShowErrorTerms(shown);
 
 //        errorTerms = new JMenuItem();
@@ -112,22 +112,22 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
 //        else {
 //            errorTerms.setText("Show Error Terms");
 //        }
-        errorTerms.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JMenuItem menuItem = (JMenuItem) e.getSource();
+        this.errorTerms.addActionListener(new ActionListener() {
+            public void actionPerformed(final ActionEvent e) {
+                final JMenuItem menuItem = (JMenuItem) e.getSource();
 
                 if ("Hide Error Terms".equals(menuItem.getText())) {
                     menuItem.setText("Show Error Terms");
-                    SemGraph graph = (SemGraph) StandardizedSemImEditor.this.graphicalEditor().getWorkbench().getGraph();
+                    final SemGraph graph = (SemGraph) graphicalEditor().getWorkbench().getGraph();
                     graph.setShowErrorTerms(false);
                     wrapper.setShowErrors(false);
-                    StandardizedSemImEditor.this.graphicalEditor().resetLabels();
+                    graphicalEditor().resetLabels();
                 } else if ("Show Error Terms".equals(menuItem.getText())) {
                     menuItem.setText("Hide Error Terms");
-                    SemGraph graph = (SemGraph) StandardizedSemImEditor.this.graphicalEditor().getWorkbench().getGraph();
+                    final SemGraph graph = (SemGraph) graphicalEditor().getWorkbench().getGraph();
                     graph.setShowErrorTerms(true);
                     wrapper.setShowErrors(true);
-                    StandardizedSemImEditor.this.graphicalEditor().resetLabels();
+                    graphicalEditor().resetLabels();
                 }
             }
         });
@@ -159,7 +159,7 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
 //        menuBar.add(params);
         menuBar.add(new LayoutMenu(this));
 
-        this.add(menuBar, BorderLayout.NORTH);
+        add(menuBar, BorderLayout.NORTH);
 
     }
 
@@ -167,16 +167,16 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
      * @return the graph currently in the workbench.
      */
     public Graph getGraph() {
-        return standardizedSemImGraphicalEditor.getWorkbench().getGraph();
+        return this.standardizedSemImGraphicalEditor.getWorkbench().getGraph();
     }
 
     @Override
     public Map getModelEdgesToDisplay() {
-        return standardizedSemImGraphicalEditor.getWorkbench().getModelEdgesToDisplay();
+        return this.standardizedSemImGraphicalEditor.getWorkbench().getModelEdgesToDisplay();
     }
 
     public Map getModelNodesToDisplay() {
-        return standardizedSemImGraphicalEditor.getWorkbench().getModelNodesToDisplay();
+        return this.standardizedSemImGraphicalEditor.getWorkbench().getModelNodesToDisplay();
     }
 
     /**
@@ -184,7 +184,7 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
      * interface.
      */
     public IKnowledge getKnowledge() {
-        return standardizedSemImGraphicalEditor.getWorkbench().getKnowledge();
+        return this.standardizedSemImGraphicalEditor.getWorkbench().getKnowledge();
     }
 
     /**
@@ -192,7 +192,7 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
      * an interface.
      */
     public Graph getSourceGraph() {
-        return standardizedSemImGraphicalEditor.getWorkbench().getSourceGraph();
+        return this.standardizedSemImGraphicalEditor.getWorkbench().getSourceGraph();
     }
 
     /**
@@ -200,59 +200,59 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
      *
      * @param graph The graph whose layout is to be mimicked.
      */
-    public void layoutByGraph(Graph graph) {
-        SemGraph _graph = (SemGraph) standardizedSemImGraphicalEditor.getWorkbench().getGraph();
+    public void layoutByGraph(final Graph graph) {
+        final SemGraph _graph = (SemGraph) this.standardizedSemImGraphicalEditor.getWorkbench().getGraph();
         _graph.setShowErrorTerms(false);
-        standardizedSemImGraphicalEditor.getWorkbench().layoutByGraph(graph);
+        this.standardizedSemImGraphicalEditor.getWorkbench().layoutByGraph(graph);
         _graph.resetErrorPositions();
 //        standardizedSemImGraphicalEditor.getWorkbench().setGraph(_graph);
-        errorTerms.setText("Show Error Terms");
+        this.errorTerms.setText("Show Error Terms");
     }
 
     /**
      * Lays the workbench graph out using knowledge tiers.
      */
     public void layoutByKnowledge() {
-        SemGraph _graph = (SemGraph) standardizedSemImGraphicalEditor.getWorkbench().getGraph();
+        final SemGraph _graph = (SemGraph) this.standardizedSemImGraphicalEditor.getWorkbench().getGraph();
         _graph.setShowErrorTerms(false);
-        standardizedSemImGraphicalEditor.getWorkbench().layoutByKnowledge();
+        this.standardizedSemImGraphicalEditor.getWorkbench().layoutByKnowledge();
         _graph.resetErrorPositions();
-        standardizedSemImGraphicalEditor.getWorkbench().setGraph(_graph);
-        errorTerms.setText("Show Error Terms");
+        this.standardizedSemImGraphicalEditor.getWorkbench().setGraph(_graph);
+        this.errorTerms.setText("Show Error Terms");
     }
 
     //========================PRIVATE METHODS===========================//
     private SemGraph getSemGraph() {
-        return semIm.getSemPm().getGraph();
+        return this.semIm.getSemPm().getGraph();
     }
 
     private StandardizedSemIm getSemIm() {
-        return semIm;
+        return this.semIm;
     }
 
     private StandardizedSemImGraphicalEditor graphicalEditor() {
-        if (standardizedSemImGraphicalEditor == null) {
-            standardizedSemImGraphicalEditor = new StandardizedSemImGraphicalEditor(this.getSemIm(), this);
-            standardizedSemImGraphicalEditor.addPropertyChangeListener(
+        if (this.standardizedSemImGraphicalEditor == null) {
+            this.standardizedSemImGraphicalEditor = new StandardizedSemImGraphicalEditor(getSemIm(), this);
+            this.standardizedSemImGraphicalEditor.addPropertyChangeListener(
                     new PropertyChangeListener() {
-                        public void propertyChange(PropertyChangeEvent evt) {
-                            StandardizedSemImEditor.this.firePropertyChange(evt.getPropertyName(), null,
+                        public void propertyChange(final PropertyChangeEvent evt) {
+                            firePropertyChange(evt.getPropertyName(), null,
                                     null);
                         }
                     });
-            standardizedSemImGraphicalEditor.enableEditing(false);
+            this.standardizedSemImGraphicalEditor.enableEditing(false);
         }
 
-        return standardizedSemImGraphicalEditor;
+        return this.standardizedSemImGraphicalEditor;
     }
 
     private StandardizedSemImImpliedMatricesPanel impliedMatricesPanel() {
-        if (impliedMatricesPanel == null) {
+        if (this.impliedMatricesPanel == null) {
             final int matrixSelection = 0;
-            impliedMatricesPanel
-                    = new StandardizedSemImImpliedMatricesPanel(this.getSemIm(), matrixSelection);
+            this.impliedMatricesPanel
+                    = new StandardizedSemImImpliedMatricesPanel(getSemIm(), matrixSelection);
         }
-        return impliedMatricesPanel;
+        return this.impliedMatricesPanel;
     }
 }
 
@@ -266,28 +266,28 @@ class StandardizedSemImImpliedMatricesPanel extends JPanel {
     private int matrixSelection;
     private JComboBox selector;
 
-    public StandardizedSemImImpliedMatricesPanel(StandardizedSemIm semIm, int matrixSelection) {
+    public StandardizedSemImImpliedMatricesPanel(final StandardizedSemIm semIm, final int matrixSelection) {
         this.semIm = semIm;
 
-        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        this.add(this.selector());
-        this.add(Box.createVerticalStrut(10));
-        this.add(new JScrollPane(this.impliedJTable()));
-        this.add(Box.createVerticalGlue());
-        this.setBorder(new TitledBorder("Select Implied Matrix to View"));
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        add(selector());
+        add(Box.createVerticalStrut(10));
+        add(new JScrollPane(impliedJTable()));
+        add(Box.createVerticalGlue());
+        setBorder(new TitledBorder("Select Implied Matrix to View"));
 
-        this.setMatrixSelection(matrixSelection);
+        setMatrixSelection(matrixSelection);
     }
 
     /**
      * @return the matrix in tab delimited form.
      */
     public String getMatrixInTabDelimitedForm() {
-        StringBuilder builder = new StringBuilder();
-        TableModel model = this.impliedJTable().getModel();
+        final StringBuilder builder = new StringBuilder();
+        final TableModel model = impliedJTable().getModel();
         for (int row = 0; row < model.getRowCount(); row++) {
             for (int col = 0; col < model.getColumnCount(); col++) {
-                Object o = model.getValueAt(row, col);
+                final Object o = model.getValueAt(row, col);
                 if (o != null) {
                     builder.append(o);
                 }
@@ -299,76 +299,76 @@ class StandardizedSemImImpliedMatricesPanel extends JPanel {
     }
 
     private JTable impliedJTable() {
-        if (impliedJTable == null) {
-            impliedJTable = new JTable();
-            impliedJTable.setTableHeader(null);
+        if (this.impliedJTable == null) {
+            this.impliedJTable = new JTable();
+            this.impliedJTable.setTableHeader(null);
         }
-        return impliedJTable;
+        return this.impliedJTable;
     }
 
     private JComboBox selector() {
-        if (selector == null) {
-            selector = new JComboBox();
-            java.util.List<String> selections = getImpliedSelections();
+        if (this.selector == null) {
+            this.selector = new JComboBox();
+            final java.util.List<String> selections = StandardizedSemImImpliedMatricesPanel.getImpliedSelections();
 
-            for (Object selection : selections) {
-                selector.addItem(selection);
+            for (final Object selection : selections) {
+                this.selector.addItem(selection);
             }
 
-            selector.addItemListener(new ItemListener() {
-                public void itemStateChanged(ItemEvent e) {
-                    String item = (String) e.getItem();
-                    StandardizedSemImImpliedMatricesPanel.this.setMatrixSelection(getImpliedSelections().indexOf(item));
+            this.selector.addItemListener(new ItemListener() {
+                public void itemStateChanged(final ItemEvent e) {
+                    final String item = (String) e.getItem();
+                    setMatrixSelection(StandardizedSemImImpliedMatricesPanel.getImpliedSelections().indexOf(item));
                 }
             });
         }
-        return selector;
+        return this.selector;
     }
 
-    private void setMatrixSelection(int index) {
-        this.selector().setSelectedIndex(index);
-        this.switchView(index);
+    private void setMatrixSelection(final int index) {
+        selector().setSelectedIndex(index);
+        switchView(index);
     }
 
-    private void switchView(int index) {
+    private void switchView(final int index) {
         if (index < 0 || index > 3) {
             throw new IllegalArgumentException(
                     "Matrix selection must be 0, 1, 2, or 3.");
         }
 
-        matrixSelection = index;
+        this.matrixSelection = index;
 
         switch (index) {
             case 0:
-                this.switchView(false, false);
+                switchView(false, false);
                 break;
             case 1:
-                this.switchView(true, false);
+                switchView(true, false);
                 break;
             case 2:
-                this.switchView(false, true);
+                switchView(false, true);
                 break;
             case 3:
-                this.switchView(true, true);
+                switchView(true, true);
                 break;
         }
     }
 
-    private void switchView(boolean a, boolean b) {
+    private void switchView(final boolean a, final boolean b) {
         try {
-            this.impliedJTable().setModel(new StandardizedSemImImpliedCovTable(this.getSemIm(), a, b));
+            impliedJTable().setModel(new StandardizedSemImImpliedCovTable(getSemIm(), a, b));
             //     impliedJTable().getTableHeader().setReorderingAllowed(false);
-            this.impliedJTable().setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-            this.impliedJTable().setRowSelectionAllowed(false);
-            this.impliedJTable().setCellSelectionEnabled(false);
-            this.impliedJTable().doLayout();
-        } catch (IllegalArgumentException e) {
+            impliedJTable().setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+            impliedJTable().setRowSelectionAllowed(false);
+            impliedJTable().setCellSelectionEnabled(false);
+            impliedJTable().doLayout();
+        } catch (final IllegalArgumentException e) {
             return;
         }
     }
 
     private static java.util.List<String> getImpliedSelections() {
-        java.util.List<String> list = new ArrayList<>();
+        final java.util.List<String> list = new ArrayList<>();
         list.add("Implied covariance matrix (all variables)");
         list.add("Implied covariance matrix (measured variables only)");
         list.add("Implied correlation matrix (all variables)");
@@ -377,10 +377,10 @@ class StandardizedSemImImpliedMatricesPanel extends JPanel {
     }
 
     private StandardizedSemIm getSemIm() {
-        return semIm;
+        return this.semIm;
     }
 
     public int getMatrixSelection() {
-        return matrixSelection;
+        return this.matrixSelection;
     }
 }

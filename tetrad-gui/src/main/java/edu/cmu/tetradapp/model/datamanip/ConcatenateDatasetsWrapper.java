@@ -41,19 +41,19 @@ public class ConcatenateDatasetsWrapper extends DataWrapper {
 
     static final long serialVersionUID = 23L;
 
-    public ConcatenateDatasetsWrapper(DataWrapper[] data, Parameters params) {
-        this.construct(data);
+    public ConcatenateDatasetsWrapper(final DataWrapper[] data, final Parameters params) {
+        construct(data);
     }
 
-    private void construct(DataWrapper... dataWrappers) {
-        for (DataWrapper wrapper : dataWrappers) {
+    private void construct(final DataWrapper... dataWrappers) {
+        for (final DataWrapper wrapper : dataWrappers) {
             if (wrapper == null) {
                 throw new NullPointerException("The given data must not be null");
             }
         }
 
-        List<DataModel> dataModels = new LinkedList<>();
-        for (DataWrapper wrapper : dataWrappers) {
+        final List<DataModel> dataModels = new LinkedList<>();
+        for (final DataWrapper wrapper : dataWrappers) {
             wrapper.getDataModelList().forEach(dataModel -> {
                 if (dataModel instanceof DataSet) {
                     dataModels.add(dataModel);
@@ -63,11 +63,11 @@ public class ConcatenateDatasetsWrapper extends DataWrapper {
             });
         }
 
-        DataModel dataModel = MultidataUtils.combineDataset(dataModels);
+        final DataModel dataModel = MultidataUtils.combineDataset(dataModels);
         dataModel.setName("Concatenated");
-        setDataModel(dataModel);
+        this.setDataModel(dataModel);
 
-        LogDataUtils.logDataModelList("Parent data in which constant columns have been removed.", this.getDataModelList());
+        LogDataUtils.logDataModelList("Parent data in which constant columns have been removed.", getDataModelList());
 
     }
 

@@ -32,8 +32,8 @@ import edu.cmu.tetrad.graph.Node;
  * @author Joseph Ramsey
  */
 public final class DirichletEstimator {
-    public static DirichletBayesIm estimate(DirichletBayesIm prior,
-                                            DataSet dataSet) {
+    public static DirichletBayesIm estimate(final DirichletBayesIm prior,
+                                            final DataSet dataSet) {
         if (prior == null) {
             throw new NullPointerException();
         }
@@ -51,24 +51,24 @@ public final class DirichletEstimator {
         BayesUtils.ensureVarsInData(prior.getVariables(), dataSet);
 
         // Create the posterior.
-        BayesPm bayesPm = prior.getBayesPm();
-        DirichletBayesIm posterior = DirichletBayesIm.blankDirichletIm(bayesPm);
+        final BayesPm bayesPm = prior.getBayesPm();
+        final DirichletBayesIm posterior = DirichletBayesIm.blankDirichletIm(bayesPm);
 
         // Number of rows of data
-        int numPoints = dataSet.getNumRows();
+        final int numPoints = dataSet.getNumRows();
 
         // Loop over all nodes in prior.
         for (int n = 0; n < prior.getNumNodes(); ++n) {
 
             // Make any easy access table of node data @ 0 and parent data @ p+1.
-            int[] varIndices = new int[prior.getNumParents(n) + 1];
+            final int[] varIndices = new int[prior.getNumParents(n) + 1];
 
-            Node node = prior.getNode(n);
+            final Node node = prior.getNode(n);
             String name = node.getName();
             varIndices[0] = dataSet.getColumn(dataSet.getVariable(name));
 
             for (int p = 0; p < prior.getNumParents(n); p++) {
-                Node parentNode = prior.getNode(prior.getParent(n, p));
+                final Node parentNode = prior.getNode(prior.getParent(n, p));
                 name = parentNode.getName();
                 varIndices[p + 1] =
                         dataSet.getColumn(dataSet.getVariable(name));
@@ -76,11 +76,11 @@ public final class DirichletEstimator {
 
             // Loop over conditioning set.
             for (int row = 0; row < prior.getNumRows(n); row++) {
-                int numCategories = bayesPm.getNumCategories(node);
+                final int numCategories = bayesPm.getNumCategories(node);
 
                 // Count occurrences of category.
-                int[] nCount = new int[numCategories];
-                int[] pVals = prior.getParentValues(n, row);
+                final int[] nCount = new int[numCategories];
+                final int[] pVals = prior.getParentValues(n, row);
 
                 // Count the occurrence of each category satisfying the
                 // various condition in the data.
@@ -117,8 +117,8 @@ public final class DirichletEstimator {
 
                 // include prior
                 for (int i = 0; i < numCategories; ++i) {
-                    double priorValue = prior.getPseudocount(n, row, i);
-                    double value = nCount[i] + priorValue;
+                    final double priorValue = prior.getPseudocount(n, row, i);
+                    final double value = nCount[i] + priorValue;
                     posterior.setPseudocount(n, row, i, value);
                 }
             }

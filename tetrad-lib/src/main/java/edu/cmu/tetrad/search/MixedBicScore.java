@@ -74,44 +74,44 @@ public class MixedBicScore implements Score {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public MixedBicScore(DataSet dataSet) {
+    public MixedBicScore(final DataSet dataSet) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
 
-        this.setDataSet(dataSet);
-        variables = dataSet.getVariables();
-        sampleSize = dataSet.getNumRows();
-        penaltyDiscount = 4;
-        logn = Math.log(sampleSize);
+        setDataSet(dataSet);
+        this.variables = dataSet.getVariables();
+        this.sampleSize = dataSet.getNumRows();
+        this.penaltyDiscount = 4;
+        this.logn = Math.log(this.sampleSize);
     }
 
     /**
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */
-    public double localScore(int i, int... parents) {
-        if (isDiscrete[i]) {
-            double bicLogistic = this.getBicLogistic(i, parents);
+    public double localScore(final int i, final int... parents) {
+        if (this.isDiscrete[i]) {
+            final double bicLogistic = getBicLogistic(i, parents);
 //            System.out.println("Bic logistic = " + bicLogistic);
             return bicLogistic;
         } else {
-            return this.getBicLinear(i, parents);
+            return getBicLinear(i, parents);
         }
     }
 
 
     @Override
-    public double localScoreDiff(int x, int y, int[] z) {
-        return this.localScore(y, this.append(z, x)) - this.localScore(y, z);
+    public double localScoreDiff(final int x, final int y, final int[] z) {
+        return localScore(y, append(z, x)) - localScore(y, z);
     }
 
     @Override
-    public double localScoreDiff(int x, int y) {
-        return this.localScore(y, x) - this.localScore(y);
+    public double localScoreDiff(final int x, final int y) {
+        return localScore(y, x) - localScore(y);
     }
 
-    private int[] append(int[] parents, int extra) {
-        int[] all = new int[parents.length + 1];
+    private int[] append(final int[] parents, final int extra) {
+        final int[] all = new int[parents.length + 1];
         System.arraycopy(parents, 0, all, 0, parents.length);
         all[parents.length] = extra;
         return all;
@@ -120,82 +120,82 @@ public class MixedBicScore implements Score {
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
-    public double localScore(int i, int parent) {
-        return this.localScore(i, new int[]{parent});
+    public double localScore(final int i, final int parent) {
+        return localScore(i, new int[]{parent});
     }
 
     /**
      * Specialized scoring method for no parents. Used to speed up the effect edges search.
      */
-    public double localScore(int i) {
-        return this.localScore(i, new int[0]);
+    public double localScore(final int i) {
+        return localScore(i, new int[0]);
     }
 
     /**
      * True iff edges that cause linear dependence are ignored.
      */
     public boolean isIgnoreLinearDependent() {
-        return ignoreLinearDependent;
+        return this.ignoreLinearDependent;
     }
 
-    public void setIgnoreLinearDependent(boolean ignoreLinearDependent) {
+    public void setIgnoreLinearDependent(final boolean ignoreLinearDependent) {
         this.ignoreLinearDependent = ignoreLinearDependent;
     }
 
-    public void setOut(PrintStream out) {
+    public void setOut(final PrintStream out) {
         this.out = out;
     }
 
     public double getPenaltyDiscount() {
-        return penaltyDiscount;
+        return this.penaltyDiscount;
     }
 
     public int getSampleSize() {
-        return sampleSize;
+        return this.sampleSize;
     }
 
     @Override
-    public boolean isEffectEdge(double bump) {
+    public boolean isEffectEdge(final double bump) {
         return bump > 0;//-0.25 * getPenaltyDiscount() * Math.log(sampleSize);
     }
 
-    public void setPenaltyDiscount(double penaltyDiscount) {
+    public void setPenaltyDiscount(final double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 
     @Override
     public List<Node> getVariables() {
-        return variables;
+        return this.variables;
     }
 
     public boolean getAlternativePenalty() {
         return false;
     }
 
-    public void setAlternativePenalty(double alpha) {
-        penaltyDiscount = alpha;
+    public void setAlternativePenalty(final double alpha) {
+        this.penaltyDiscount = alpha;
     }
 
-    private Matrix getSelection1(ICovarianceMatrix cov, int[] rows) {
+    private Matrix getSelection1(final ICovarianceMatrix cov, final int[] rows) {
         return cov.getSelection(rows, rows);
     }
 
-    private Vector getSelection2(ICovarianceMatrix cov, int[] rows, int k) {
+    private Vector getSelection2(final ICovarianceMatrix cov, final int[] rows, final int k) {
         return cov.getSelection(rows, new int[]{k}).getColumn(0);
     }
 
 
     @Override
-    public Node getVariable(String targetName) {
-        for (Node node : variables) {
+    public Node getVariable(final String targetName) {
+        for (final Node node : this.variables) {
             if (node.getName().equals(targetName)) {
                 return node;
             }
@@ -206,81 +206,81 @@ public class MixedBicScore implements Score {
 
     @Override
     public int getMaxDegree() {
-        return (int) Math.ceil(Math.log(sampleSize));
+        return (int) Math.ceil(Math.log(this.sampleSize));
     }
 
     @Override
-    public boolean determines(List<Node> z, Node y) {
+    public boolean determines(final List<Node> z, final Node y) {
         return false;
     }
 
     public ICovarianceMatrix getCovariances() {
-        return covariances;
+        return this.covariances;
     }
 
-    private double getBicLogistic(int i, int[] parents) {
-        if (!isDiscrete[i]) throw new IllegalArgumentException();
+    private double getBicLogistic(final int i, final int[] parents) {
+        if (!this.isDiscrete[i]) throw new IllegalArgumentException();
 
-        double[][] regressors = new double[parents.length][];
+        final double[][] regressors = new double[parents.length][];
         for (int j = 0; j < parents.length; j++) {
-            regressors[j] = continuousData[parents[j]];
+            regressors[j] = this.continuousData[parents[j]];
         }
 
-        LogisticRegression2 logisticRegression = new LogisticRegression2();
-        logisticRegression.regress(discreteData[i], numValues[i], regressors);
-        double ll = logisticRegression.getLikelihood();
+        final LogisticRegression2 logisticRegression = new LogisticRegression2();
+        logisticRegression.regress(this.discreteData[i], this.numValues[i], regressors);
+        final double ll = logisticRegression.getLikelihood();
 
-        int k = (numValues[i] - 1) * (parents.length + 1);
+        final int k = (this.numValues[i] - 1) * (parents.length + 1);
 
-        return 2.0 * ll - this.getPenaltyDiscount() * k * Math.log(sampleSize);
+        return 2.0 * ll - getPenaltyDiscount() * k * Math.log(this.sampleSize);
     }
 
-    private double getBicLinear(int i, int[] parents) {
-        double residualVariance = this.getCovariances().getValue(i, i);
-        int n = this.getSampleSize();
-        int p = parents.length;
-        Matrix covxx = this.getSelection1(this.getCovariances(), parents);
+    private double getBicLinear(final int i, int[] parents) {
+        double residualVariance = getCovariances().getValue(i, i);
+        final int n = getSampleSize();
+        final int p = parents.length;
+        final Matrix covxx = getSelection1(getCovariances(), parents);
 
         try {
-            Matrix covxxInv = covxx.inverse();
+            final Matrix covxxInv = covxx.inverse();
 
-            Vector covxy = this.getSelection2(this.getCovariances(), parents, i);
-            Vector b = covxxInv.times(covxy);
+            final Vector covxy = getSelection2(getCovariances(), parents, i);
+            final Vector b = covxxInv.times(covxy);
             residualVariance -= covxy.dotProduct(b);
 
             if (residualVariance <= 0) {
-                if (this.isVerbose()) {
-                    out.println("Nonpositive residual varianceY: resVar / varianceY = " + (residualVariance / this.getCovariances().getValue(i, i)));
+                if (isVerbose()) {
+                    this.out.println("Nonpositive residual varianceY: resVar / varianceY = " + (residualVariance / getCovariances().getValue(i, i)));
                 }
                 return Double.NaN;
             }
 
-            double c = this.getPenaltyDiscount();
-            return -n * Math.log(residualVariance) - c * (p + 1) * logn;
-        } catch (Exception e) {
+            final double c = getPenaltyDiscount();
+            return -n * Math.log(residualVariance) - c * (p + 1) * this.logn;
+        } catch (final Exception e) {
             boolean removedOne = true;
 
             while (removedOne) {
-                List<Integer> _parents = new ArrayList<>();
+                final List<Integer> _parents = new ArrayList<>();
                 for (int y = 0; y < parents.length; y++) _parents.add(parents[y]);
-                _parents.removeAll(forbidden);
+                _parents.removeAll(this.forbidden);
                 parents = new int[_parents.size()];
                 for (int y = 0; y < _parents.size(); y++) parents[y] = _parents.get(y);
-                removedOne = this.printMinimalLinearlyDependentSet(parents, this.getCovariances());
+                removedOne = printMinimalLinearlyDependentSet(parents, getCovariances());
             }
 
             return Double.NaN;
         }
     }
 
-    private void standardize(double[] data) {
+    private void standardize(final double[] data) {
         double sum = 0.0;
 
-        for (double d : data) {
+        for (final double d : data) {
             sum += d;
         }
 
-        double mean = sum / data.length;
+        final double mean = sum / data.length;
 
         for (int i = 0; i < data.length; i++) {
             data[i] = data[i] - mean;
@@ -288,45 +288,45 @@ public class MixedBicScore implements Score {
 
         double var = 0.0;
 
-        for (double d : data) {
+        for (final double d : data) {
             var += d * d;
         }
 
         var /= (data.length);
-        double sd = sqrt(var);
+        final double sd = sqrt(var);
 
         for (int i = 0; i < data.length; i++) {
             data[i] /= sd;
         }
     }
 
-    private void center(double[] data) {
+    private void center(final double[] data) {
         double sum = 0.0;
 
-        for (double d : data) {
+        for (final double d : data) {
             sum += d;
         }
 
-        double mean = sum / data.length;
+        final double mean = sum / data.length;
 
         for (int i = 0; i < data.length; i++) {
             data[i] = data[i] - mean;
         }
     }
 
-    private void setDataSet(DataSet dataSet) {
-        variables = dataSet.getVariables();
-        isDiscrete = new boolean[variables.size()];
-        numValues = new int[variables.size()];
+    private void setDataSet(final DataSet dataSet) {
+        this.variables = dataSet.getVariables();
+        this.isDiscrete = new boolean[this.variables.size()];
+        this.numValues = new int[this.variables.size()];
 
-        for (int i = 0; i < variables.size(); i++) {
-            if (variables.get(i) instanceof DiscreteVariable) {
-                isDiscrete[i] = true;
-                numValues[i] = ((DiscreteVariable) variables.get(i)).getNumCategories();
+        for (int i = 0; i < this.variables.size(); i++) {
+            if (this.variables.get(i) instanceof DiscreteVariable) {
+                this.isDiscrete[i] = true;
+                this.numValues[i] = ((DiscreteVariable) this.variables.get(i)).getNumCategories();
             }
         }
 
-        double[][] data = new double[dataSet.getNumColumns()][dataSet.getNumRows()];
+        final double[][] data = new double[dataSet.getNumColumns()][dataSet.getNumRows()];
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             for (int i = 0; i < dataSet.getNumRows(); i++) {
@@ -338,54 +338,54 @@ public class MixedBicScore implements Score {
 //            standardize(data[i]);
 //        }
 
-        continuousData = data;
+        this.continuousData = data;
 
-        discreteData = new int[dataSet.getNumColumns()][];
+        this.discreteData = new int[dataSet.getNumColumns()][];
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
-            discreteData[j] = new int[dataSet.getNumRows()];
+            this.discreteData[j] = new int[dataSet.getNumRows()];
 
-            if (variables.get(j) instanceof DiscreteVariable) {
+            if (this.variables.get(j) instanceof DiscreteVariable) {
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
-                    discreteData[j][i] = dataSet.getInt(i, j);
+                    this.discreteData[j][i] = dataSet.getInt(i, j);
                 }
 
-                this.center(data[j]);
+                center(data[j]);
             } else {
-                this.center(data[j]);
+                center(data[j]);
             }
         }
 
-        Matrix mTranspose = new Matrix(continuousData);
-        Matrix m = mTranspose.transpose();
-        DataSet dataSet1 = new BoxDataSet(new DoubleDataBox(m.toArray()), variables);
-        covariances = new CovarianceMatrix(dataSet1);
+        final Matrix mTranspose = new Matrix(this.continuousData);
+        final Matrix m = mTranspose.transpose();
+        final DataSet dataSet1 = new BoxDataSet(new DoubleDataBox(m.toArray()), this.variables);
+        this.covariances = new CovarianceMatrix(dataSet1);
     }
 
     // Prints a smallest subset of parents that causes a singular matrix exception.
-    private boolean printMinimalLinearlyDependentSet(int[] parents, ICovarianceMatrix cov) {
-        List<Node> _parents = new ArrayList<>();
-        for (int p : parents) _parents.add(variables.get(p));
+    private boolean printMinimalLinearlyDependentSet(final int[] parents, final ICovarianceMatrix cov) {
+        final List<Node> _parents = new ArrayList<>();
+        for (final int p : parents) _parents.add(this.variables.get(p));
 
-        DepthChoiceGenerator gen = new DepthChoiceGenerator(_parents.size(), _parents.size());
+        final DepthChoiceGenerator gen = new DepthChoiceGenerator(_parents.size(), _parents.size());
         int[] choice;
 
         while ((choice = gen.next()) != null) {
-            int[] sel = new int[choice.length];
-            List<Node> _sel = new ArrayList<>();
+            final int[] sel = new int[choice.length];
+            final List<Node> _sel = new ArrayList<>();
             for (int m = 0; m < choice.length; m++) {
                 sel[m] = parents[m];
-                _sel.add(variables.get(sel[m]));
+                _sel.add(this.variables.get(sel[m]));
             }
 
-            Matrix m = cov.getSelection(sel, sel);
+            final Matrix m = cov.getSelection(sel, sel);
 
             try {
                 m.inverse();
-            } catch (Exception e2) {
-                forbidden.add(sel[0]);
-                out.println("### Linear dependence among variables: " + _sel);
-                out.println("### Removing " + _sel.get(0));
+            } catch (final Exception e2) {
+                this.forbidden.add(sel[0]);
+                this.out.println("### Linear dependence among variables: " + _sel);
+                this.out.println("### Removing " + _sel.get(0));
                 return true;
             }
         }

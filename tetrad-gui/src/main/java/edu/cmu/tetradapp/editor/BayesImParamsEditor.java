@@ -46,7 +46,7 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
     public BayesImParamsEditor() {
     }
 
-    public void setParams(Parameters params) {
+    public void setParams(final Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
@@ -54,7 +54,7 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
         this.params = params;
     }
 
-    public void setParentModels(Object[] parentModels) {
+    public void setParentModels(final Object[] parentModels) {
         // Do nothing.
     }
 
@@ -64,19 +64,19 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
      * appropriate listeners.
      */
     public void setup() {
-        this.setLayout(new BorderLayout());
+        setLayout(new BorderLayout());
 
-        JRadioButton manually = new JRadioButton();
-        JRadioButton randomly = new JRadioButton();
+        final JRadioButton manually = new JRadioButton();
+        final JRadioButton randomly = new JRadioButton();
 
         manually.setText("Manually: Probability tables initially blank");
         randomly.setText("Randomly: Random probabilties are assigned, which can then be edited");
 
-        ButtonGroup group = new ButtonGroup();
+        final ButtonGroup group = new ButtonGroup();
         group.add(manually);
         group.add(randomly);
 
-        String string = this.getParams().getString("initializationMode", "randomOverwrite");
+        final String string = getParams().getString("initializationMode", "randomOverwrite");
 
         if ("manualRetain".equals(string)) {
             manually.setSelected(true);
@@ -86,22 +86,22 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
             throw new IllegalStateException();
         }
 
-        manually.addActionListener(e -> this.getParams().set("initializationMode", "manualRetain"));
-        randomly.addActionListener(e -> this.getParams().set("initializationMode", "randomOverwrite"));
+        manually.addActionListener(e -> getParams().set("initializationMode", "manualRetain"));
+        randomly.addActionListener(e -> getParams().set("initializationMode", "randomOverwrite"));
 
         // continue workbench construction.
-        Box b1 = Box.createVerticalBox();
+        final Box b1 = Box.createVerticalBox();
 
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel(
                 "Probability values for this Bayes IM should be filled in: "));
         b2.add(Box.createHorizontalGlue());
 
-        Box b3 = Box.createHorizontalBox();
+        final Box b3 = Box.createHorizontalBox();
         b3.add(manually);
         b3.add(Box.createHorizontalGlue());
 
-        Box b4 = Box.createHorizontalBox();
+        final Box b4 = Box.createHorizontalBox();
         b4.add(randomly);
         b4.add(Box.createHorizontalGlue());
 
@@ -110,8 +110,8 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
         b1.add(b3);
         b1.add(b4);
         b1.add(Box.createHorizontalGlue());
-        this.add(b1, BorderLayout.CENTER);
-        this.setBorder(new EmptyBorder(5, 5, 5, 5));
+        add(b1, BorderLayout.CENTER);
+        setBorder(new EmptyBorder(5, 5, 5, 5));
     }
 
     public boolean mustBeShown() {
@@ -125,7 +125,7 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
      * @return the stored simulation parameters model.
      */
     private synchronized Parameters getParams() {
-        return params;
+        return this.params;
     }
 }
 

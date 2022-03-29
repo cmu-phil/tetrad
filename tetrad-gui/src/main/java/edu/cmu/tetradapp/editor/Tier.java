@@ -48,23 +48,23 @@ class Tier extends JPanel {
     /**
      * A panel with a tier name, and all vars in that tier.
      */
-    public Tier(TierList kn, int thisTier, String[] tierNames) {
+    public Tier(final TierList kn, final int thisTier, final String[] tierNames) {
 
-        jsp = new JScrollPane(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER,
+        this.jsp = new JScrollPane(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER,
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
-        knowList = kn;
+        this.knowList = kn;
 
-        num = thisTier;
+        this.num = thisTier;
 
         this.tierNames = tierNames;
 
-        this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-        jsp.setViewportView(view);
+        setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+        this.jsp.setViewportView(this.view);
     }
 
-    public static void setKnowledge(IKnowledge k) {
-        know = k;
+    public static void setKnowledge(final IKnowledge k) {
+        Tier.know = k;
     }
 
     /**
@@ -72,78 +72,78 @@ class Tier extends JPanel {
      * updating of tiers
      */
     public void loadInfo() {
-        this.removeAll();
+        removeAll();
 
-        view.removeAll();
+        this.view.removeAll();
 
-        this.add(new JLabel("Tier " + num));
-        this.add(jsp);
+        add(new JLabel("Tier " + this.num));
+        add(this.jsp);
 
-        List t = know.getTier(num);
+        final List t = Tier.know.getTier(this.num);
 
-        view.setLayout(new BoxLayout(view, BoxLayout.X_AXIS));
+        this.view.setLayout(new BoxLayout(this.view, BoxLayout.X_AXIS));
 
-        Iterator it = t.iterator();
+        final Iterator it = t.iterator();
 
         String temp;
 
         while (it.hasNext()) {
             temp = (String) it.next();
 
-            String[] names = new String[tierNames.length + 1];
+            final String[] names = new String[this.tierNames.length + 1];
 
             names[0] = temp;
 
-            System.arraycopy(tierNames, 0, names, 1, tierNames.length);
+            System.arraycopy(this.tierNames, 0, names, 1, this.tierNames.length);
 
-            JComboBox cBox = new JComboBox(names);
+            final JComboBox cBox = new JComboBox(names);
             cBox.setMaximumSize(new Dimension(80, 50));
-            view.add(cBox);
+            this.view.add(cBox);
 
             cBox.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    JComboBox cb = (JComboBox) e.getSource();
-                    int newTier = cb.getSelectedIndex() - 2;
-                    String s = (String) cb.getItemAt(0);
+                public void actionPerformed(final ActionEvent e) {
+                    final JComboBox cb = (JComboBox) e.getSource();
+                    final int newTier = cb.getSelectedIndex() - 2;
+                    final String s = (String) cb.getItemAt(0);
 
                     if (newTier == -2) {
                         return;
                     }
 
                     //know.unspecifyTier(s);
-                    know.removeFromTiers(s);
+                    Tier.know.removeFromTiers(s);
 
                     if (newTier >= 0) {
-                        know.addToTier(newTier, s);
+                        Tier.know.addToTier(newTier, s);
                     }
 
-                    knowList.refreshInfo();
+                    Tier.this.knowList.refreshInfo();
                 }
             });
 
         }
     }
 
-    public void setUnspecified(List<String> varNames) {
-        this.removeAll();
-        view.removeAll();
+    public void setUnspecified(final List<String> varNames) {
+        removeAll();
+        this.view.removeAll();
 
-        this.add(new JLabel("Unspecified"));
-        this.add(jsp);
+        add(new JLabel("Unspecified"));
+        add(this.jsp);
 
-        List<String> vNames = new LinkedList<>(varNames);
+        final List<String> vNames = new LinkedList<>(varNames);
 
         System.out.println("edit unspecified list");
         System.out.println("vNames Contains: " + vNames);
 
-        for (int i = 0; i < know.getNumTiers(); i++) {
+        for (int i = 0; i < Tier.know.getNumTiers(); i++) {
             System.out.println("Tier " + i);
 
-            List t = know.getTier(i);
+            final List t = Tier.know.getTier(i);
 
             System.out.println("Tier contains: " + t);
 
-            Iterator it = t.iterator();
+            final Iterator it = t.iterator();
 
             String temp;
 
@@ -158,43 +158,43 @@ class Tier extends JPanel {
 
         System.out.println("vNames now Contains: " + vNames);
 
-        view.setLayout(new BoxLayout(view, BoxLayout.X_AXIS));
+        this.view.setLayout(new BoxLayout(this.view, BoxLayout.X_AXIS));
 
-        Iterator it = vNames.iterator();
+        final Iterator it = vNames.iterator();
 
         String temp;
 
         while (it.hasNext()) {
             temp = (String) it.next();
 
-            String[] names = new String[tierNames.length + 1];
+            final String[] names = new String[this.tierNames.length + 1];
 
             names[0] = temp;
 
-            System.arraycopy(tierNames, 0, names, 1, tierNames.length);
+            System.arraycopy(this.tierNames, 0, names, 1, this.tierNames.length);
 
-            JComboBox cBox = new JComboBox(names);
+            final JComboBox cBox = new JComboBox(names);
             cBox.setMaximumSize(new Dimension(80, 50));
-            view.add(cBox);
+            this.view.add(cBox);
 
             cBox.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    JComboBox cb = (JComboBox) e.getSource();
-                    int newTier = cb.getSelectedIndex() - 2;
-                    String s = (String) cb.getItemAt(0);
+                public void actionPerformed(final ActionEvent e) {
+                    final JComboBox cb = (JComboBox) e.getSource();
+                    final int newTier = cb.getSelectedIndex() - 2;
+                    final String s = (String) cb.getItemAt(0);
 
                     if (newTier == -2) {
                         return;
                     }
 
                     //know.unspecifyTier(s);
-                    know.removeFromTiers(s);
+                    Tier.know.removeFromTiers(s);
 
                     if (newTier >= 0) {
-                        know.addToTier(newTier, s);
+                        Tier.know.addToTier(newTier, s);
                     }
 
-                    knowList.refreshInfo();
+                    Tier.this.knowList.refreshInfo();
                 }
             });
 

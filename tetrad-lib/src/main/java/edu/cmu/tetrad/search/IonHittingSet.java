@@ -49,15 +49,15 @@ public class IonHittingSet {
     /**
      * takes a List of HashSets of GraphChanges, and returns a List of GraphChanges.
      */
-    public static List<GraphChange> findHittingSet(List<Set<GraphChange>> Forig) {
+    public static List<GraphChange> findHittingSet(final List<Set<GraphChange>> Forig) {
 
         LinkedList<HsNode> currentLevel = new LinkedList<>();
         LinkedList<HsNode> nextLevel = new LinkedList<>();
-        List<GraphChange> hittingSets = new ArrayList<>();
-        List<Set<GraphChange>> F;
+        final List<GraphChange> hittingSets = new ArrayList<>();
+        final List<Set<GraphChange>> F;
 
         /* Enhancement Step 3 */
-        F = precompute(Forig);
+        F = IonHittingSet.precompute(Forig);
 
         /* Revised Step 1 */
         currentLevel.addFirst(new HsNode(new GraphChange(), 0));
@@ -66,13 +66,13 @@ public class IonHittingSet {
          * starting the next. Only breaks when there are no more nodes in
          * getModel and next levels */
         while (!currentLevel.isEmpty()) {
-            HsNode n = currentLevel.removeFirst();
+            final HsNode n = currentLevel.removeFirst();
 
             /* check redundency here in case of new hitting sets since node creation */
-            if (nodeRedundant(n, hittingSets)) {
+            if (IonHittingSet.nodeRedundant(n, hittingSets)) {
             } // do nothing
             else {
-                int nextUCSigma = findNextUCSigma(F, n);
+                final int nextUCSigma = IonHittingSet.findNextUCSigma(F, n);
 
                 /* Path intersects with all elements of F, add to hittingSets */
                 if (nextUCSigma == -1)
@@ -83,12 +83,12 @@ public class IonHittingSet {
                     n.updateLabel(nextUCSigma);
 
                     /* All possible downward arcs examined; either added or ignored */
-                    for (GraphChange nextLCSigma : (F.get(nextUCSigma))) {
-                        GraphChange newPath = new GraphChange(n.getPath());
+                    for (final GraphChange nextLCSigma : (F.get(nextUCSigma))) {
+                        final GraphChange newPath = new GraphChange(n.getPath());
 
                         if (newPath.isConsistent(nextLCSigma)) {
                             newPath.union(nextLCSigma);
-                            if (pathNecessary(newPath, nextLevel))
+                            if (IonHittingSet.pathNecessary(newPath, nextLevel))
                                 nextLevel.add(new HsNode(newPath, n.getLabel()));
                         }
                     }
@@ -109,11 +109,11 @@ public class IonHittingSet {
      * Implements one of the listed enhancements, checking if there is a node on the next level which already has the
      * new path. Returns true if a new node should be created with that path and false if a new node is unnecessary.
      */
-    private static boolean pathNecessary(GraphChange path, LinkedList<HsNode> nextLevel) {
+    private static boolean pathNecessary(final GraphChange path, final LinkedList<HsNode> nextLevel) {
         boolean necessary = true;
 
         /* Enhancement Step 1 */
-        for (HsNode m : nextLevel) {
+        for (final HsNode m : nextLevel) {
             if ((m.getPath()).equals(path)) {
                 necessary = false;
                 break;
@@ -128,11 +128,11 @@ public class IonHittingSet {
      * Implements one of the listed enhancements, checking if the path for the given node n contains a known hitting
      * set. Returns true if the node is redundant and false if the node should be processed.
      */
-    private static boolean nodeRedundant(HsNode n, List<GraphChange> hittingSets) {
+    private static boolean nodeRedundant(final HsNode n, final List<GraphChange> hittingSets) {
         boolean redundant = false;
 
         /* Enhancement Step 2 */
-        for (GraphChange hs : hittingSets) {
+        for (final GraphChange hs : hittingSets) {
             if (n.getPath().contains(hs)) {
                 redundant = true;
                 break;
@@ -147,17 +147,17 @@ public class IonHittingSet {
      * Given a node and the List of HashSets returns the index of the first HashSet in F that the node does not
      * intersect or -1 if all are intersected
      */
-    private static int findNextUCSigma(List<Set<GraphChange>> F, HsNode n) {
+    private static int findNextUCSigma(final List<Set<GraphChange>> F, final HsNode n) {
         /* nodes are created with their parent's labels to make this function faster */
         int index = n.getLabel();
-        GraphChange path = n.getPath();
+        final GraphChange path = n.getPath();
 
         /* loop through elements of F */
         for (; index < F.size(); index++) {
-            Set<GraphChange> sigma = F.get(index);
+            final Set<GraphChange> sigma = F.get(index);
             boolean intersect = false;
 
-            for (GraphChange aSigma : sigma) {
+            for (final GraphChange aSigma : sigma) {
                 if (path.contains(aSigma)) {
                     intersect = true;
                     break;
@@ -175,17 +175,17 @@ public class IonHittingSet {
      * removed at the end in order to avoid the O(n) removal for each set individually. This effectively implements
      * Enhancement step 3, just not the on-the-fly way specified.
      */
-    private static List precompute(List<Set<GraphChange>> F) {
-        int size = F.size();
-        List<Set<GraphChange>> pruned = new ArrayList<>(size);
+    private static List precompute(final List<Set<GraphChange>> F) {
+        final int size = F.size();
+        final List<Set<GraphChange>> pruned = new ArrayList<>(size);
 
         for (int i = 0; i < size; i++) {
-            Set<GraphChange> setI = F.get(i);
+            final Set<GraphChange> setI = F.get(i);
 
             for (int j = (i + 1); j < size; j++) {
-                Set<GraphChange> setJ = F.get(j);
+                final Set<GraphChange> setJ = F.get(j);
                 /* if one set is already marked, the following check is unnecessary */
-                boolean notMarked = !setJ.contains(new GraphChange());
+                final boolean notMarked = !setJ.contains(new GraphChange());
 
                 if (notMarked && setI.containsAll(setJ)) {
                     setI.add(new GraphChange());
@@ -210,21 +210,21 @@ public class IonHittingSet {
         private final GraphChange path;
         private int label;
 
-        public HsNode(GraphChange path, int label) {
+        public HsNode(final GraphChange path, final int label) {
             this.path = path;
             this.label = label;
         }
 
-        public void updateLabel(int label) {
+        public void updateLabel(final int label) {
             this.label = label;
         }
 
         public GraphChange getPath() {
-            return path;
+            return this.path;
         }
 
         public int getLabel() {
-            return label;
+            return this.label;
         }
     }
 }

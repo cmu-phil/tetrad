@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.util;
 
-import edu.cmu.tetrad.util.TetradLogger.LogDisplayOutputStream;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import javax.swing.*;
 import java.io.OutputStream;
@@ -31,7 +31,7 @@ import java.io.OutputStream;
  *
  * @author Joseph Ramsey
  */
-public class TextAreaOutputStream extends OutputStream implements LogDisplayOutputStream {
+public class TextAreaOutputStream extends OutputStream implements TetradLogger.LogDisplayOutputStream {
 
     /**
      * The text area written to.
@@ -58,9 +58,9 @@ public class TextAreaOutputStream extends OutputStream implements LogDisplayOutp
      *
      * @param textArea The text area written to.
      */
-    public TextAreaOutputStream(JTextArea textArea) {
+    public TextAreaOutputStream(final JTextArea textArea) {
         this.textArea = textArea;
-        lengthWritten = textArea.getText().length();
+        this.lengthWritten = textArea.getText().length();
     }
 
     /**
@@ -68,34 +68,34 @@ public class TextAreaOutputStream extends OutputStream implements LogDisplayOutp
      *
      * @param b the byte to be written.
      */
-    public synchronized void write(int b) {
-        if (buf.length() > 5000) return;
-        buf.append((char) b);
+    public synchronized void write(final int b) {
+        if (this.buf.length() > 5000) return;
+        this.buf.append((char) b);
 
         if ((char) b == '\n') {
             final int maxSize = 50000;
 
             if (false) {//lengthWritten > maxSize) {
-                String text = textArea.getText();
-                StringBuilder buf1 = new StringBuilder(text.substring(maxSize - 10000));
-                buf1.append(buf);
-                textArea.setText(buf1.toString());
-                lengthWritten = buf1.length();
-                buf.setLength(0);
-                buf = new StringBuilder();
-                this.moveToEnd();
+                final String text = this.textArea.getText();
+                final StringBuilder buf1 = new StringBuilder(text.substring(maxSize - 10000));
+                buf1.append(this.buf);
+                this.textArea.setText(buf1.toString());
+                this.lengthWritten = buf1.length();
+                this.buf.setLength(0);
+                this.buf = new StringBuilder();
+                moveToEnd();
 
                 try {
                     Thread.sleep(100);
-                } catch (InterruptedException e) {
+                } catch (final InterruptedException e) {
                     e.printStackTrace();
                 }
             } else {
-                textArea.append(buf.toString());
+                this.textArea.append(this.buf.toString());
 //            textArea.setText(buf.toString());
-                lengthWritten = lengthWritten + buf.length();
-                buf.setLength(0);
-                this.moveToEnd();
+                this.lengthWritten = this.lengthWritten + this.buf.length();
+                this.buf.setLength(0);
+                moveToEnd();
             }
         }
     }
@@ -107,13 +107,13 @@ public class TextAreaOutputStream extends OutputStream implements LogDisplayOutp
      * @return String translated from the buffer's contents.
      */
     public String toString() {
-        return textArea.toString();
+        return this.textArea.toString();
     }
 
 
     public void reset() {
-        textArea.setText("");
-        lengthWritten = 0;
+        this.textArea.setText("");
+        this.lengthWritten = 0;
     }
 
 
@@ -123,11 +123,11 @@ public class TextAreaOutputStream extends OutputStream implements LogDisplayOutp
      * @return The total string length written to the text area.
      */
     public int getLengthWritten() {
-        return lengthWritten;
+        return this.lengthWritten;
     }
 
     public void moveToEnd() {
-        textArea.setCaretPosition(0);
+        this.textArea.setCaretPosition(0);
     }
 }
 

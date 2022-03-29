@@ -66,7 +66,7 @@ public final class TimeSeriesData implements DataModel {
      * contains a measured for each variable (in order) for a particular time.
      * The series of times is in increasing order.
      */
-    public TimeSeriesData(Matrix matrix, List<String> varNames) {
+    public TimeSeriesData(final Matrix matrix, final List<String> varNames) {
         if (matrix == null) {
             throw new NullPointerException("Data must not be null.");
         }
@@ -80,21 +80,21 @@ public final class TimeSeriesData implements DataModel {
                         "Variable at index " + i + "is null.");
             }
         }
-        data2 = matrix;
+        this.data2 = matrix;
         if (varNames.size() != matrix.columns()) {
             throw new IllegalArgumentException(
                     "Number of columns in the data " +
                             "must match the number of variables.");
         }
         this.varNames = varNames;
-        name = "Time Series Data";
+        this.name = "Time Series Data";
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
     public static TimeSeriesData serializableInstance() {
-        List<String> varNames = new ArrayList<>();
+        final List<String> varNames = new ArrayList<>();
         varNames.add("X");
         varNames.add("Y");
         return new TimeSeriesData(new Matrix(2, 2), varNames);
@@ -103,10 +103,10 @@ public final class TimeSeriesData implements DataModel {
     //=================================PUBLIC METHODS======================//
 
     public final String getName() {
-        return name;
+        return this.name;
     }
 
-    public final void setName(String name) {
+    public final void setName(final String name) {
         if (name == null) {
             throw new NullPointerException("Name must not be null.");
         }
@@ -129,7 +129,7 @@ public final class TimeSeriesData implements DataModel {
     }
 
     @Override
-    public Node getVariable(String name) {
+    public Node getVariable(final String name) {
         return null;
     }
 
@@ -139,10 +139,10 @@ public final class TimeSeriesData implements DataModel {
     }
 
     public final List<Node> getVariables() {
-        List<String> varNames = this.getVariableNames();
-        List<Node> vars = new LinkedList<>();
+        final List<String> varNames = getVariableNames();
+        final List<Node> vars = new LinkedList<>();
 
-        for (Object varName : varNames) {
+        for (final Object varName : varNames) {
             vars.add(new ContinuousVariable((String) varName));
         }
 
@@ -152,10 +152,10 @@ public final class TimeSeriesData implements DataModel {
     public final IKnowledge getKnowledge() {
         System.out.println();
 
-        return knowledge.copy();
+        return this.knowledge.copy();
     }
 
-    public final void setKnowledge(IKnowledge knowledge) {
+    public final void setKnowledge(final IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -168,23 +168,23 @@ public final class TimeSeriesData implements DataModel {
      * of their columns.
      */
     public final List<String> getVariableNames() {
-        return varNames;
+        return this.varNames;
     }
 
     public final Matrix getData() {
-        return data2.copy();
+        return this.data2.copy();
     }
 
     public final int getNumTimePoints() {
-        return this.getData().rows();
+        return getData().rows();
     }
 
     public final int getNumVars() {
-        return this.getVariableNames().size();
+        return getVariableNames().size();
     }
 
-    public final double getDatum(int row, int col) {
-        return data2.get(row, col);
+    public final double getDatum(final int row, final int col) {
+        return this.data2.get(row, col);
     }
 
     /**
@@ -200,19 +200,19 @@ public final class TimeSeriesData implements DataModel {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (name == null) {
+        if (this.name == null) {
             throw new NullPointerException();
         }
 
-        if (varNames == null) {
+        if (this.varNames == null) {
             throw new NullPointerException();
         }
 
-        if (knowledge == null) {
+        if (this.knowledge == null) {
             throw new NullPointerException();
         }
     }

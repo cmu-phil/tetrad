@@ -18,37 +18,37 @@ public abstract class ExternalAlgorithm implements Algorithm {
     protected int simIndex = -1;
     protected List<String> usedParameters = new ArrayList<>();
 
-    public void setSimulation(Simulation simulation) {
+    public void setSimulation(final Simulation simulation) {
         this.simulation = simulation;
     }
 
-    public void setPath(String path) {
+    public void setPath(final String path) {
         this.path = path;
     }
 
-    public void setSimIndex(int simIndex) {
+    public void setSimIndex(final int simIndex) {
         this.simIndex = simIndex;
     }
 
     public Simulation getSimulation() {
-        return simulation;
+        return this.simulation;
     }
 
     public abstract long getElapsedTime(DataModel dataSet, Parameters parameters);
 
     public List<String> getParameters() {
-        return usedParameters;
+        return this.usedParameters;
     }
 
     public int getNumDataModels() {
-        return simulation.getNumDataModels();
+        return this.simulation.getNumDataModels();
     }
 
-    public int getIndex(DataModel dataSet) {
+    public int getIndex(final DataModel dataSet) {
         int index = -1;
 
-        for (int i = 0; i < this.getNumDataModels(); i++) {
-            if (dataSet == simulation.getDataModel(i)) {
+        for (int i = 0; i < getNumDataModels(); i++) {
+            if (dataSet == this.simulation.getDataModel(i)) {
                 index = i + 1;
                 break;
             }

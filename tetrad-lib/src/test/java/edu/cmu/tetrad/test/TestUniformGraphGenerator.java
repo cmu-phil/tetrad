@@ -37,7 +37,7 @@ public final class TestUniformGraphGenerator {
     public void testRandomDag1() {
         RandomUtil.getInstance().setSeed(3848283L);
 
-        UniformGraphGenerator generator =
+        final UniformGraphGenerator generator =
                 new UniformGraphGenerator(UniformGraphGenerator.ANY_DAG);
         generator.setNumNodes(20);
         generator.setMaxDegree(3);
@@ -51,7 +51,7 @@ public final class TestUniformGraphGenerator {
     public void testRandomDag2() {
         RandomUtil.getInstance().setSeed(3848283L);
 
-        UniformGraphGenerator generator =
+        final UniformGraphGenerator generator =
                 new UniformGraphGenerator(UniformGraphGenerator.CONNECTED_DAG);
         generator.setNumNodes(50);
         generator.setMaxDegree(4);
@@ -65,7 +65,7 @@ public final class TestUniformGraphGenerator {
     public void testRandomDag3() {
         RandomUtil.getInstance().setSeed(3848283L);
 
-        UniformGraphGenerator generator =
+        final UniformGraphGenerator generator =
                 new UniformGraphGenerator(UniformGraphGenerator.CONNECTED_DAG);
         generator.setNumNodes(20);
         generator.setMaxDegree(3);
@@ -79,7 +79,7 @@ public final class TestUniformGraphGenerator {
     public void testRandomDag4() {
         RandomUtil.getInstance().setSeed(3848283L);
 
-        UniformGraphGenerator generator =
+        final UniformGraphGenerator generator =
                 new UniformGraphGenerator(UniformGraphGenerator.CONNECTED_DAG);
         generator.setNumNodes(20);
         generator.setMaxInDegree(1);
@@ -93,7 +93,7 @@ public final class TestUniformGraphGenerator {
     public void testRandomDag5() {
         RandomUtil.getInstance().setSeed(3848283L);
 
-        UniformGraphGenerator generator =
+        final UniformGraphGenerator generator =
                 new UniformGraphGenerator(UniformGraphGenerator.CONNECTED_DAG);
         generator.setNumNodes(20);
         generator.setMaxDegree(3);
@@ -106,7 +106,7 @@ public final class TestUniformGraphGenerator {
     public void testRandomDag6() {
         RandomUtil.getInstance().setSeed(3848283L);
 
-        UniformGraphGenerator generator =
+        final UniformGraphGenerator generator =
                 new UniformGraphGenerator(UniformGraphGenerator.ANY_DAG);
         generator.setNumNodes(40);
         generator.setMaxDegree(39);
@@ -122,7 +122,7 @@ public final class TestUniformGraphGenerator {
     public void testRandomDag7() {
         RandomUtil.getInstance().setSeed(3848283L);
 
-        UniformGraphGenerator generator =
+        final UniformGraphGenerator generator =
                 new UniformGraphGenerator(UniformGraphGenerator.CONNECTED_DAG);
         generator.setNumNodes(20);
         generator.setMaxInDegree(2);
@@ -136,7 +136,7 @@ public final class TestUniformGraphGenerator {
     public void testRandomDag8() {
         RandomUtil.getInstance().setSeed(3848283L);
 
-        UniformGraphGenerator generator =
+        final UniformGraphGenerator generator =
                 new UniformGraphGenerator(UniformGraphGenerator.CONNECTED_DAG);
         generator.setNumNodes(15);
         generator.setMaxDegree(14);
@@ -154,7 +154,7 @@ public final class TestUniformGraphGenerator {
         final int N = 25;
         final int E = N * (N - 1) / 2;
 
-        GraphGeneratorRandomNumEdges generator =
+        final GraphGeneratorRandomNumEdges generator =
                 new GraphGeneratorRandomNumEdges(UniformGraphGenerator.ANY_DAG);
         generator.setNumNodes(N);
         generator.setMaxEdges(E);

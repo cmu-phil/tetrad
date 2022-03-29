@@ -46,26 +46,26 @@ public final class TestKnowledge {
 
     @Test
     public final void test1() {
-        List<Node> nodes1 = new ArrayList<>();
+        final List<Node> nodes1 = new ArrayList<>();
 
         for (int i1 = 0; i1 < 10; i1++) {
             nodes1.add(new ContinuousVariable("X" + (i1 + 1)));
         }
 
-        Graph g = GraphUtils.randomGraph(nodes1, 0, 10,
+        final Graph g = GraphUtils.randomGraph(nodes1, 0, 10,
                 3, 3, 3, false);
         g.getNode("X1").setName("X1.1");
         g.getNode("X2").setName("X2-1");
 
-        List<Node> nodes = g.getNodes();
+        final List<Node> nodes = g.getNodes();
 
-        List<String> varNames = new ArrayList<>();
+        final List<String> varNames = new ArrayList<>();
 
-        for (Node node : nodes) {
+        for (final Node node : nodes) {
             varNames.add(node.getName());
         }
 
-        IKnowledge knowledge = new Knowledge2(varNames);
+        final IKnowledge knowledge = new Knowledge2(varNames);
 
         knowledge.addToTier(0, "X1.*1");
         knowledge.addToTier(0, "X2-1");
@@ -82,7 +82,7 @@ public final class TestKnowledge {
 
         assertTrue(knowledge.isRequired("X6", "X7"));
 
-        IKnowledge copy = knowledge.copy();
+        final IKnowledge copy = knowledge.copy();
 
         assertTrue(copy.isForbidden("X4", "X5"));
         assertFalse(copy.isForbidden("X1", "X2-1"));
@@ -96,8 +96,8 @@ public final class TestKnowledge {
 
         boolean found = false;
 
-        for (Iterator i = knowledge.forbiddenEdgesIterator(); i.hasNext(); ) {
-            KnowledgeEdge edge = (KnowledgeEdge) i.next();
+        for (final Iterator i = knowledge.forbiddenEdgesIterator(); i.hasNext(); ) {
+            final KnowledgeEdge edge = (KnowledgeEdge) i.next();
             if (edge.getFrom().equals("X1.1") && edge.getTo().equals("X2-1")) {
                 found = true;
             }
@@ -114,21 +114,21 @@ public final class TestKnowledge {
 
     @Test
     public final void test2() {
-        List<Node> nodes1 = new ArrayList<>();
+        final List<Node> nodes1 = new ArrayList<>();
 
         for (int i = 0; i < 100; i++) {
             nodes1.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph g = GraphUtils.randomGraph(nodes1, 0, 100,
+        final Graph g = GraphUtils.randomGraph(nodes1, 0, 100,
                 3, 3, 3, false);
 
-        List<Node> nodes = g.getNodes();
+        final List<Node> nodes = g.getNodes();
 
-        List<String> names = new ArrayList<>();
-        for (Node node : nodes) names.add(node.getName());
+        final List<String> names = new ArrayList<>();
+        for (final Node node : nodes) names.add(node.getName());
 
-        Knowledge2 knowledge = new Knowledge2(names);
+        final Knowledge2 knowledge = new Knowledge2(names);
 
         knowledge.addToTier(0, "X1*");
         knowledge.addToTier(1, "X2*");
@@ -142,7 +142,7 @@ public final class TestKnowledge {
 
     @Test
     public final void test3() {
-        List<String> vars = new ArrayList<>();
+        final List<String> vars = new ArrayList<>();
 
         final int numVars = 1000;
 
@@ -150,7 +150,7 @@ public final class TestKnowledge {
             vars.add("X" + i);
         }
 
-        IKnowledge knowledge = new Knowledge2(vars);
+        final IKnowledge knowledge = new Knowledge2(vars);
 
         knowledge.setForbidden("X1*", "X2*");
         knowledge.setForbidden("X3*", "X4*");

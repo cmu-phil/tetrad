@@ -85,10 +85,10 @@ public final class NumberObjectDataSet
     private Map<String, String> columnToTooltip;
 
     public Map<String, String> getColumnToTooltip() {
-        return columnToTooltip;
+        return this.columnToTooltip;
     }
 
-    public void setColumnToTooltip(Map<String, String> columnToTooltip) {
+    public void setColumnToTooltip(final Map<String, String> columnToTooltip) {
         this.columnToTooltip = columnToTooltip;
     }
 
@@ -166,19 +166,19 @@ public final class NumberObjectDataSet
      * list of variables. The number of columns will be equal to the number of
      * cases.
      */
-    private NumberObjectDataSet(int rows, List<Node> variables) {
-        data = new Number[rows][variables.size()];
+    private NumberObjectDataSet(final int rows, final List<Node> variables) {
+        this.data = new Number[rows][variables.size()];
         this.variables = new LinkedList<>(variables);
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < variables.size(); j++) {
-                data[i][j] = null;
+                this.data[i][j] = null;
             }
         }
     }
 
-    public NumberObjectDataSet(Number[][] data, List<Node> variables) {
-        for (Number[] _data : data) {
+    public NumberObjectDataSet(final Number[][] data, final List<Node> variables) {
+        for (final Number[] _data : data) {
             if (_data.length != variables.size()) {
                 throw new IllegalArgumentException("All rows must have a number " +
                         "of elements in them equal to the number of variables.");
@@ -192,19 +192,19 @@ public final class NumberObjectDataSet
     /**
      * Makes of copy of the given data set.
      */
-    private NumberObjectDataSet(NumberObjectDataSet dataSet) {
-        name = dataSet.name;
-        variables = new LinkedList<>(dataSet.variables);
+    private NumberObjectDataSet(final NumberObjectDataSet dataSet) {
+        this.name = dataSet.name;
+        this.variables = new LinkedList<>(dataSet.variables);
 
-        data = new Number[dataSet.data.length][dataSet.data[0].length];
+        this.data = new Number[dataSet.data.length][dataSet.data[0].length];
 
         for (int i = 0; i < dataSet.data.length; i++) {
-            System.arraycopy(dataSet.data[i], 0, data[i], 0, dataSet.data[0].length);
+            System.arraycopy(dataSet.data[i], 0, this.data[i], 0, dataSet.data[0].length);
         }
 
-        selection = new HashSet<>(dataSet.selection);
+        this.selection = new HashSet<>(dataSet.selection);
 //        multipliers = new HashMap<>(dataSet.multipliers);
-        knowledge = dataSet.knowledge.copy();
+        this.knowledge = dataSet.knowledge.copy();
     }
 
 
@@ -221,13 +221,13 @@ public final class NumberObjectDataSet
      * Gets the name of the data set.
      */
     public final String getName() {
-        return name;
+        return this.name;
     }
 
     /**
      * Sets the name of the data set.
      */
-    public final void setName(String name) {
+    public final void setName(final String name) {
         if (name == null) {
             throw new NullPointerException("Name must not be null.");
         }
@@ -238,7 +238,7 @@ public final class NumberObjectDataSet
      * @return the number of variables in the data set.
      */
     public final int getNumColumns() {
-        return variables.size();
+        return this.variables.size();
     }
 
     /**
@@ -246,7 +246,7 @@ public final class NumberObjectDataSet
      * maximum of the number of rows in the list of wrapped columns.
      */
     public final int getNumRows() {
-        return data.length;
+        return this.data.length;
     }
 
     /**
@@ -256,15 +256,15 @@ public final class NumberObjectDataSet
      * @param row    The index of the case.
      * @param column The index of the variable.
      */
-    public final void setInt(int row, int column, int value) {
-        Node variable = this.getVariable(column);
+    public final void setInt(final int row, final int column, final int value) {
+        final Node variable = getVariable(column);
 
         if (!(variable instanceof DiscreteVariable)) {
             throw new IllegalArgumentException(
                     "Can only set ints for discrete columns.");
         }
 
-        DiscreteVariable _variable = (DiscreteVariable) variable;
+        final DiscreteVariable _variable = (DiscreteVariable) variable;
 
         if (value < 0 && value != -99) {
             throw new IllegalArgumentException(
@@ -273,7 +273,7 @@ public final class NumberObjectDataSet
 
         if (value >= _variable.getNumCategories()) {
             if (_variable.isAccommodateNewCategories()) {
-                this.accomodateIndex(_variable, value);
+                accomodateIndex(_variable, value);
             } else {
                 throw new IllegalArgumentException(
                         "Not a value for that variable: " + value);
@@ -281,17 +281,17 @@ public final class NumberObjectDataSet
         }
 
         try {
-            this.setIntPrivate(row, column, value);
-        } catch (Exception e) {
+            setIntPrivate(row, column, value);
+        } catch (final Exception e) {
             if (row < 0 || column < 0) {
                 throw new IllegalArgumentException(
                         "Row and column must be >= 0.");
             }
 
-            int newRows = Math.max(row + 1, data.length);
-            int newCols = Math.max(column + 1, data[0].length);
-            this.resize(newRows, newCols);
-            this.setIntPrivate(row, column, value);
+            final int newRows = Math.max(row + 1, this.data.length);
+            final int newCols = Math.max(column + 1, this.data[0].length);
+            resize(newRows, newCols);
+            setIntPrivate(row, column, value);
         }
     }
 
@@ -302,24 +302,24 @@ public final class NumberObjectDataSet
      * @param row    The index of the case.
      * @param column The index of the variable.
      */
-    public final void setDouble(int row, int column, double value) {
-        if (!(this.getVariable(column) instanceof ContinuousVariable)) {
+    public final void setDouble(final int row, final int column, final double value) {
+        if (!(getVariable(column) instanceof ContinuousVariable)) {
             throw new IllegalArgumentException(
-                    "Can only set ints for discrete columns: " + this.getVariable(column));
+                    "Can only set ints for discrete columns: " + getVariable(column));
         }
 
         try {
-            data[row][column] = value;
-        } catch (Exception e) {
+            this.data[row][column] = value;
+        } catch (final Exception e) {
             if (row < 0 || column < 0) {
                 throw new IllegalArgumentException(
                         "Row and column must be >= 0.");
             }
 
-            int newRows = Math.max(row + 1, data.length);
-            int newCols = Math.max(column + 1, data[0].length);
-            this.resize(newRows, newCols);
-            data[row][column] = value;
+            final int newRows = Math.max(row + 1, this.data.length);
+            final int newCols = Math.max(column + 1, this.data[0].length);
+            resize(newRows, newCols);
+            this.data[row][column] = value;
         }
     }
 
@@ -331,18 +331,18 @@ public final class NumberObjectDataSet
      * Primitives will be returned as corresponding wrapping objects (for
      * example, doubles as Doubles).
      */
-    public final Object getObject(int row, int col) {
-        Object variable = this.getVariable(col);
+    public final Object getObject(final int row, final int col) {
+        final Object variable = getVariable(col);
 
         if (variable instanceof ContinuousVariable) {
-            return this.getDouble(row, col);
+            return getDouble(row, col);
         } else if (variable instanceof DiscreteVariable) {
-            DiscreteVariable _variable = (DiscreteVariable) variable;
+            final DiscreteVariable _variable = (DiscreteVariable) variable;
 
             if (_variable.isCategoryNamesDisplayed()) {
-                return _variable.getCategory(this.getInt(row, col));
+                return _variable.getCategory(getInt(row, col));
             } else {
-                return this.getInt(row, col);
+                return getInt(row, col);
             }
 
         }
@@ -354,13 +354,13 @@ public final class NumberObjectDataSet
      * @param row The index of the case.
      * @param col The index of the variable.
      */
-    public final void setObject(int row, int col, Object value) {
-        Object variable = this.getVariable(col);
+    public final void setObject(final int row, final int col, final Object value) {
+        final Object variable = getVariable(col);
 
         if (variable instanceof ContinuousVariable) {
-            this.setDouble(row, col, getValueFromObjectContinuous(value));
+            setDouble(row, col, NumberObjectDataSet.getValueFromObjectContinuous(value));
         } else if (variable instanceof DiscreteVariable) {
-            this.setInt(row, col, this.getValueFromObjectDiscrete(value,
+            setInt(row, col, getValueFromObjectDiscrete(value,
                     (DiscreteVariable) variable));
         } else {
             throw new IllegalArgumentException(
@@ -373,10 +373,10 @@ public final class NumberObjectDataSet
      * @return the indices of the currently selected variables.
      */
     public final int[] getSelectedIndices() {
-        List<Node> variables = this.getVariables();
-        Set<Node> selection = this.getSelection();
+        final List<Node> variables = getVariables();
+        final Set<Node> selection = getSelection();
 
-        int[] indices = new int[selection.size()];
+        final int[] indices = new int[selection.size()];
 
         int j = -1;
         for (int i = 0; i < variables.size(); i++) {
@@ -392,7 +392,7 @@ public final class NumberObjectDataSet
      * @return the set of currently selected variables.
      */
     public final Set<Node> getSelectedVariables() {
-        return new HashSet<>(selection);
+        return new HashSet<>(this.selection);
     }
 
     /**
@@ -403,18 +403,18 @@ public final class NumberObjectDataSet
      * @throws IllegalArgumentException if the variable already exists in the
      *                                  dataset.
      */
-    public final void addVariable(Node variable) {
-        if (variables.contains(variable)) {
+    public final void addVariable(final Node variable) {
+        if (this.variables.contains(variable)) {
             throw new IllegalArgumentException("Expecting a new variable: " + variable);
         }
 
-        variables.add(variable);
+        this.variables.add(variable);
 
-        this.resize(data.length, variables.size());
-        int col = data[0].length - 1;
+        resize(this.data.length, this.variables.size());
+        final int col = this.data[0].length - 1;
 
-        for (int i = 0; i < data.length; i++) {
-            data[i][col] = null;
+        for (int i = 0; i < this.data.length; i++) {
+            this.data[i][col] = null;
         }
     }
 
@@ -423,33 +423,33 @@ public final class NumberObjectDataSet
      * columns by one, moving columns i >= <code>index</code> to column i + 1,
      * and inserting a column of missing values at column i.
      */
-    public final void addVariable(int index, Node variable) {
-        if (variables.contains(variable)) {
+    public final void addVariable(final int index, final Node variable) {
+        if (this.variables.contains(variable)) {
             throw new IllegalArgumentException("Expecting a new variable.");
         }
 
-        if (index < 0 || index > variables.size()) {
+        if (index < 0 || index > this.variables.size()) {
             throw new IndexOutOfBoundsException("Index must in (0, #vars).");
         }
 
-        variables.add(index, variable);
-        this.resize(data.length, variables.size());
+        this.variables.add(index, variable);
+        resize(this.data.length, this.variables.size());
 
-        Number[][] _data =
-                new Number[data.length][data[0].length + 1];
+        final Number[][] _data =
+                new Number[this.data.length][this.data[0].length + 1];
 
-        for (int j = 0; j < data[0].length + 1; j++) {
+        for (int j = 0; j < this.data[0].length + 1; j++) {
             if (j < index) {
-                for (int i = 0; i < data.length; i++) {
-                    _data[i][j] = data[i][j];
+                for (int i = 0; i < this.data.length; i++) {
+                    _data[i][j] = this.data[i][j];
                 }
             } else if (j == index) {
-                for (int i = 0; i < data.length; i++) {
+                for (int i = 0; i < this.data.length; i++) {
                     _data[i][j] = null;
                 }
             } else {
-                for (int i = 0; i < data.length; i++) {
-                    _data[i][j] = data[i][j - 1];
+                for (int i = 0; i < this.data.length; i++) {
+                    _data[i][j] = this.data[i][j - 1];
                 }
             }
         }
@@ -458,16 +458,16 @@ public final class NumberObjectDataSet
     /**
      * @return the variable at the given column.
      */
-    public final Node getVariable(int col) {
-        return variables.get(col);
+    public final Node getVariable(final int col) {
+        return this.variables.get(col);
     }
 
     /**
      * @return the index of the column of the given variable. You can also get
      * this by calling getVariable().indexOf(variable).
      */
-    public final int getColumn(Node variable) {
-        return variables.indexOf(variable);
+    public final int getColumn(final Node variable) {
+        return this.variables.indexOf(variable);
     }
 
     /**
@@ -476,56 +476,56 @@ public final class NumberObjectDataSet
      *
      * @throws IllegalArgumentException if the given change is not supported.
      */
-    @SuppressWarnings({"ConstantConditions"})
-    public final void changeVariable(Node from, Node to) {
+    @SuppressWarnings("ConstantConditions")
+    public final void changeVariable(final Node from, final Node to) {
         if (!(from instanceof DiscreteVariable &&
                 to instanceof DiscreteVariable)) {
             throw new IllegalArgumentException(
                     "Only discrete variables supported.");
         }
 
-        DiscreteVariable _from = (DiscreteVariable) from;
-        DiscreteVariable _to = (DiscreteVariable) to;
+        final DiscreteVariable _from = (DiscreteVariable) from;
+        final DiscreteVariable _to = (DiscreteVariable) to;
 
-        int col = variables.indexOf(_from);
+        final int col = this.variables.indexOf(_from);
 
-        List<String> oldCategories = _from.getCategories();
-        List<String> newCategories = _to.getCategories();
+        final List<String> oldCategories = _from.getCategories();
+        final List<String> newCategories = _to.getCategories();
 
-        int[] indexArray = new int[oldCategories.size()];
+        final int[] indexArray = new int[oldCategories.size()];
 
         for (int i = 0; i < oldCategories.size(); i++) {
             indexArray[i] = newCategories.indexOf(oldCategories.get(i));
         }
 
-        for (int i = 0; i < this.getNumRows(); i++) {
-            if (data[i][col] == null) {
+        for (int i = 0; i < getNumRows(); i++) {
+            if (this.data[i][col] == null) {
                 break;
             }
 
-            int value = this.getInt(i, col);
+            final int value = getInt(i, col);
             int newIndex = 0;
             try {
                 newIndex = indexArray[value];
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 e.printStackTrace();
             }
 
             if (newIndex == -1) {
-                data[i][col] = null;
+                this.data[i][col] = null;
             } else {
-                this.setInt(i, col, newIndex);
+                setInt(i, col, newIndex);
             }
         }
 
-        variables.set(col, _to);
+        this.variables.set(col, _to);
     }
 
     /**
      * @return the variable with the given name.
      */
-    public final Node getVariable(String varName) {
-        for (Node variable1 : variables) {
+    public final Node getVariable(final String varName) {
+        for (final Node variable1 : this.variables) {
             if (variable1.getName().equals(varName)) {
                 return variable1;
             }
@@ -539,7 +539,7 @@ public final class NumberObjectDataSet
      * of their columns.
      */
     public final List<Node> getVariables() {
-        return new LinkedList<>(variables);
+        return new LinkedList<>(this.variables);
     }
 
 
@@ -548,13 +548,13 @@ public final class NumberObjectDataSet
      * null.)
      */
     public final IKnowledge getKnowledge() {
-        return knowledge.copy();
+        return this.knowledge.copy();
     }
 
     /**
      * Sets knowledge to be associated with this data set. May not be null.
      */
-    public final void setKnowledge(IKnowledge knowledge) {
+    public final void setKnowledge(final IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -567,11 +567,11 @@ public final class NumberObjectDataSet
      * of their columns.
      */
     public final List<String> getVariableNames() {
-        List<Node> vars = this.getVariables();
-        List<String> names = new ArrayList<>();
+        final List<Node> vars = getVariables();
+        final List<String> names = new ArrayList<>();
 
-        for (Node variable : vars) {
-            String name = variable.getName();
+        for (final Node variable : vars) {
+            final String name = variable.getName();
             names.add(name);
         }
 
@@ -582,14 +582,14 @@ public final class NumberObjectDataSet
      * Marks the given column as selected if 'selected' is true or deselected if
      * 'selected' is false.
      */
-    public final void setSelected(Node variable, boolean selected) {
+    public final void setSelected(final Node variable, final boolean selected) {
         if (selected) {
-            if (variables.contains(variable)) {
-                this.getSelection().add(variable);
+            if (this.variables.contains(variable)) {
+                getSelection().add(variable);
             }
         } else {
-            if (variables.contains(variable)) {
-                this.getSelection().remove(variable);
+            if (this.variables.contains(variable)) {
+                getSelection().remove(variable);
             }
         }
     }
@@ -598,7 +598,7 @@ public final class NumberObjectDataSet
      * Marks all variables as deselected.
      */
     public final void clearSelection() {
-        this.getSelection().clear();
+        getSelection().clear();
     }
 
     /**
@@ -606,9 +606,9 @@ public final class NumberObjectDataSet
      * if necessary to make that the case. The new rows will be filled with
      * missing values.
      */
-    public void ensureRows(int rows) {
-        if (rows > this.getNumRows()) {
-            this.resize(rows, this.getNumColumns());
+    public void ensureRows(final int rows) {
+        if (rows > getNumRows()) {
+            resize(rows, getNumColumns());
         }
     }
 
@@ -617,32 +617,32 @@ public final class NumberObjectDataSet
      * adding continuous variables with unique names until that is true.
      * The new columns will be filled with missing values.
      */
-    public void ensureColumns(int columns, List<String> excludedVariableNames) {
-        for (int col = this.getNumColumns(); col < columns; col++) {
+    public void ensureColumns(final int columns, final List<String> excludedVariableNames) {
+        for (int col = getNumColumns(); col < columns; col++) {
             int i = 0;
             String _name;
 
             while (true) {
                 _name = "X" + (++i);
-                if (this.getVariable(_name) == null &&
+                if (getVariable(_name) == null &&
                         !excludedVariableNames.contains(_name)) break;
             }
 
-            ContinuousVariable variable = new ContinuousVariable(_name);
-            this.addVariable(variable);
+            final ContinuousVariable variable = new ContinuousVariable(_name);
+            addVariable(variable);
         }
     }
 
     @Override
     public boolean existsMissingValue() {
-        for (int i = 0; i < this.getNumRows(); i++) {
-            for (int j = 0; j < this.getNumColumns(); j++) {
-                if (variables.get(j) instanceof ContinuousVariable) {
-                    if (Double.isNaN(this.getDouble(i, j))) return true;
+        for (int i = 0; i < getNumRows(); i++) {
+            for (int j = 0; j < getNumColumns(); j++) {
+                if (this.variables.get(j) instanceof ContinuousVariable) {
+                    if (Double.isNaN(getDouble(i, j))) return true;
                 }
 
-                if (variables.get(j) instanceof DiscreteVariable) {
-                    if (this.getInt(i, j) == -99) return true;
+                if (this.variables.get(j) instanceof DiscreteVariable) {
+                    if (getInt(i, j) == -99) return true;
                 }
             }
         }
@@ -653,47 +653,47 @@ public final class NumberObjectDataSet
     /**
      * @return true iff the given column has been marked as selected.
      */
-    public final boolean isSelected(Node variable) {
-        return this.getSelection().contains(variable);
+    public final boolean isSelected(final Node variable) {
+        return getSelection().contains(variable);
     }
 
     /**
      * Removes the column for the variable at the given index, reducing the
      * number of columns by one.
      */
-    public final void removeColumn(int index) {
-        if (index < 0 || index >= variables.size()) {
+    public final void removeColumn(final int index) {
+        if (index < 0 || index >= this.variables.size()) {
             throw new IllegalArgumentException(
                     "Not a column in this data set: " + index);
         }
 
-        variables.remove(index);
+        this.variables.remove(index);
 
-        int[] rows = new int[data.length];
+        final int[] rows = new int[this.data.length];
 
-        for (int i = 0; i < data.length; i++) {
+        for (int i = 0; i < this.data.length; i++) {
             rows[i] = i;
         }
 
-        int[] cols = new int[data[0].length - 1];
+        final int[] cols = new int[this.data[0].length - 1];
 
         int m = -1;
 
-        for (int i = 0; i < data[0].length; i++) {
+        for (int i = 0; i < this.data[0].length; i++) {
             if (i != index) {
                 cols[++m] = i;
             }
         }
 
-        data = this.viewSelection(rows, cols);
+        this.data = viewSelection(rows, cols);
     }
 
-    private Number[][] viewSelection(int[] rows, int[] cols) {
-        Number[][] _data = new Number[rows.length][cols.length];
+    private Number[][] viewSelection(final int[] rows, final int[] cols) {
+        final Number[][] _data = new Number[rows.length][cols.length];
 
         for (int i = 0; i < rows.length; i++) {
             for (int j = 0; j < cols.length; j++) {
-                _data[i][j] = data[rows[i]][cols[j]];
+                _data[i][j] = this.data[rows[i]][cols[j]];
             }
         }
         return _data;
@@ -703,11 +703,11 @@ public final class NumberObjectDataSet
      * Removes the columns for the given variable from the dataset, reducing
      * the number of columns by one.
      */
-    public final void removeColumn(Node variable) {
-        int index = variables.indexOf(variable);
+    public final void removeColumn(final Node variable) {
+        final int index = this.variables.indexOf(variable);
 
         if (index != -1) {
-            this.removeColumn(index);
+            removeColumn(index);
         }
     }
 
@@ -717,34 +717,34 @@ public final class NumberObjectDataSet
      * ordering of the elements of vars will be the same as in the list of
      * variables in this DataSet.
      */
-    public final DataSet subsetColumns(List<Node> vars) {
+    public final DataSet subsetColumns(final List<Node> vars) {
 //        if (vars.isEmpty()) {
 //            throw new IllegalArgumentException("Subset must not be empty.");
 //        }
 
-        if (!(this.getVariables().containsAll(vars))) {
-            List<Node> missingVars = new ArrayList<>(vars);
-            missingVars.removeAll(this.getVariables());
+        if (!(getVariables().containsAll(vars))) {
+            final List<Node> missingVars = new ArrayList<>(vars);
+            missingVars.removeAll(getVariables());
 
             throw new IllegalArgumentException(
                     "All vars must be original vars: " + missingVars);
         }
 
-        int[] rows = new int[data.length];
+        final int[] rows = new int[this.data.length];
 
         for (int i = 0; i < rows.length; i++) {
             rows[i] = i;
         }
 
-        int[] cols = new int[vars.size()];
+        final int[] cols = new int[vars.size()];
 
         for (int j = 0; j < cols.length; j++) {
-            cols[j] = this.getVariables().indexOf(vars.get(j));
+            cols[j] = getVariables().indexOf(vars.get(j));
         }
 
-        Number[][] _data = this.viewSelection(rows, cols);
+        final Number[][] _data = viewSelection(rows, cols);
 
-        NumberObjectDataSet _dataSet = new NumberObjectDataSet(0, new LinkedList<Node>());
+        final NumberObjectDataSet _dataSet = new NumberObjectDataSet(0, new LinkedList<Node>());
         _dataSet.data = _data;
 
 //        _dataSet.name = name + "_copy";
@@ -753,7 +753,7 @@ public final class NumberObjectDataSet
 //        _dataSet.multipliers = new HashMap<>(multipliers);
 
         // Might have to delete some knowledge.
-        _dataSet.knowledge = knowledge.copy();
+        _dataSet.knowledge = this.knowledge.copy();
 
         return _dataSet;
     }
@@ -780,22 +780,22 @@ public final class NumberObjectDataSet
      *
      * @throws IllegalArgumentException if the given case ID is already used.
      */
-    public final void setCaseId(int caseNumber, String id) {
+    public final void setCaseId(final int caseNumber, final String id) {
         if (id == null) {
-            caseIds.remove(caseNumber);
-        } else if (caseIds.containsValue(id)) {
+            this.caseIds.remove(caseNumber);
+        } else if (this.caseIds.containsValue(id)) {
             throw new IllegalArgumentException("Case ID's must be unique; that one " +
                     "has already been used: " + id);
         } else {
-            caseIds.put(caseNumber, id);
+            this.caseIds.put(caseNumber, id);
         }
     }
 
     /**
      * @return the case ID for the given case number.
      */
-    public final String getCaseId(int caseNumber) {
-        return caseIds.get(caseNumber);
+    public final String getCaseId(final int caseNumber) {
+        return this.caseIds.get(caseNumber);
     }
 
     /**
@@ -804,8 +804,8 @@ public final class NumberObjectDataSet
      * and continuous.)
      */
     public final boolean isContinuous() {
-        for (int i = 0; i < this.getNumColumns(); i++) {
-            Node variable = variables.get(i);
+        for (int i = 0; i < getNumColumns(); i++) {
+            final Node variable = this.variables.get(i);
 
             if (!(variable instanceof ContinuousVariable)) {
                 return false;
@@ -821,8 +821,8 @@ public final class NumberObjectDataSet
      * continuous.)
      */
     public final boolean isDiscrete() {
-        for (int i = 0; i < this.getNumColumns(); i++) {
-            Node column = variables.get(i);
+        for (int i = 0; i < getNumColumns(); i++) {
+            final Node column = this.variables.get(i);
 
             if (!(column instanceof DiscreteVariable)) {
                 return false;
@@ -840,8 +840,8 @@ public final class NumberObjectDataSet
         int numContinuous = 0;
         int numDiscrete = 0;
 
-        for (int i = 0; i < this.getNumColumns(); i++) {
-            Node column = variables.get(i);
+        for (int i = 0; i < getNumColumns(); i++) {
+            final Node column = this.variables.get(i);
 
             if (column instanceof ContinuousVariable) {
                 numContinuous++;
@@ -867,11 +867,11 @@ public final class NumberObjectDataSet
      * first.
      */
     public final Matrix getCorrelationMatrix() {
-        if (!this.isContinuous()) {
+        if (!isContinuous()) {
             throw new IllegalStateException("Not a continuous data set.");
         }
 
-        return MatrixUtils.convertCovToCorr(this.getCovarianceMatrix());
+        return MatrixUtils.convertCovToCorr(getCovarianceMatrix());
     }
 
     /**
@@ -883,20 +883,20 @@ public final class NumberObjectDataSet
      * first.
      */
     public final Matrix getCovarianceMatrix() {
-        if (!this.isContinuous()) {
+        if (!isContinuous()) {
             throw new IllegalStateException("Not a continuous data set.");
         }
 
-        Matrix cov = new Matrix(data[0].length, data[0].length);
+        final Matrix cov = new Matrix(this.data[0].length, this.data[0].length);
 
-        double[] x = new double[data.length];
-        double[] y = new double[data.length];
+        final double[] x = new double[this.data.length];
+        final double[] y = new double[this.data.length];
 
-        for (int i = 0; i < data[0].length; i++) {
-            for (int j = 0; j < data[0].length; j++) {
-                for (int k = 0; k < data.length; k++) {
-                    x[k] = data[k][i].doubleValue();
-                    y[k] = data[k][j].doubleValue();
+        for (int i = 0; i < this.data[0].length; i++) {
+            for (int j = 0; j < this.data[0].length; j++) {
+                for (int k = 0; k < this.data.length; k++) {
+                    x[k] = this.data[k][i].doubleValue();
+                    y[k] = this.data[k][j].doubleValue();
 
                     cov.set(i, j, StatUtils.covariance(x, y));
                 }
@@ -910,8 +910,8 @@ public final class NumberObjectDataSet
      * @return the value at the given row and column, rounded to the nearest
      * integer, or DiscreteVariable.MISSING_VALUE if the value is missing.
      */
-    public final int getInt(int row, int column) {
-        Number value = data[row][column];
+    public final int getInt(final int row, final int column) {
+        final Number value = this.data[row][column];
 
         if (value == null) {
             return DiscreteVariable.MISSING_VALUE;
@@ -926,8 +926,8 @@ public final class NumberObjectDataSet
      * given row and column may be missing, in which case Double.NaN is
      * returned.
      */
-    public final double getDouble(int row, int column) {
-        Number value = data[row][column];
+    public final double getDouble(final int row, final int column) {
+        final Number value = this.data[row][column];
 
         if (value == null) {
             return ContinuousVariable.getDoubleMissingValue();
@@ -970,53 +970,53 @@ public final class NumberObjectDataSet
      * @see DataWriter
      */
     public final String toString() {
-        StringBuilder buf = new StringBuilder();
-        List<Node> variables = this.getVariables();
+        final StringBuilder buf = new StringBuilder();
+        final List<Node> variables = getVariables();
 
         buf.append("\n");
 
-        for (int i = 0; i < this.getNumColumns(); i++) {
+        for (int i = 0; i < getNumColumns(); i++) {
             buf.append(variables.get(i));
 
-            if (i < this.getNumColumns() - 1) {
-                buf.append(outputDelimiter);
+            if (i < getNumColumns() - 1) {
+                buf.append(this.outputDelimiter);
             }
         }
 
         buf.append("\n");
 
-        for (int i = 0; i < this.getNumRows(); i++) {
-            for (int j = 0; j < this.getNumColumns(); j++) {
-                Node variable = this.getVariable(j);
+        for (int i = 0; i < getNumRows(); i++) {
+            for (int j = 0; j < getNumColumns(); j++) {
+                final Node variable = getVariable(j);
 
                 if (variable instanceof ContinuousVariable) {
-                    if (Double.isNaN(this.getDouble(i, j))) {
+                    if (Double.isNaN(getDouble(i, j))) {
                         buf.append("*");
                     } else {
-                        buf.append(this.getNumberFormat().format(this.getDouble(i, j)));
+                        buf.append(getNumberFormat().format(getDouble(i, j)));
                     }
 
-                    if (j < this.getNumColumns() - 1) {
-                        buf.append(outputDelimiter);
+                    if (j < getNumColumns() - 1) {
+                        buf.append(this.outputDelimiter);
                     }
                 } else if (variable instanceof DiscreteVariable) {
-                    DiscreteVariable _variable = (DiscreteVariable) variable;
-                    int value = this.getInt(i, j);
+                    final DiscreteVariable _variable = (DiscreteVariable) variable;
+                    final int value = getInt(i, j);
 
                     if (value == -99) {
                         buf.append("*");
                     } else {
-                        String category = _variable.getCategory(value);
+                        final String category = _variable.getCategory(value);
 
-                        if (category.indexOf(outputDelimiter) == -1) {
+                        if (category.indexOf(this.outputDelimiter) == -1) {
                             buf.append(category);
                         } else {
                             buf.append("\"").append(category).append("\"");
                         }
                     }
 
-                    if (j < this.getNumColumns() - 1) {
-                        buf.append(outputDelimiter);
+                    if (j < getNumColumns() - 1) {
+                        buf.append(this.outputDelimiter);
                     }
                 } else {
                     throw new IllegalStateException(
@@ -1030,8 +1030,8 @@ public final class NumberObjectDataSet
 
         buf.append("\n");
 
-        if (knowledge != null && !knowledge.isEmpty()) {
-            buf.append(knowledge);
+        if (this.knowledge != null && !this.knowledge.isEmpty()) {
+            buf.append(this.knowledge);
         }
 
         return buf.toString();
@@ -1053,11 +1053,11 @@ public final class NumberObjectDataSet
      * //     * @see #isMulipliersCollapsed()
      */
     public final Matrix getDoubleData() {
-        Matrix copy = new Matrix(data.length, data[0].length);
+        final Matrix copy = new Matrix(this.data.length, this.data[0].length);
 
-        for (int i = 0; i < data.length; i++) {
-            for (int j = 0; j < data[0].length; j++) {
-                copy.set(i, j, data[i][j].doubleValue());
+        for (int i = 0; i < this.data.length; i++) {
+            for (int j = 0; j < this.data[0].length; j++) {
+                copy.set(i, j, this.data[i][j].doubleValue());
             }
         }
 
@@ -1068,51 +1068,51 @@ public final class NumberObjectDataSet
      * @return a new data set in which the the column at indices[i] is placed at
      * index i, for i = 0 to indices.length - 1. (Moved over from Purify.)
      */
-    public final DataSet subsetColumns(int[] indices) {
-        List<Node> variables = this.getVariables();
-        List<Node> _variables = new LinkedList<>();
+    public final DataSet subsetColumns(final int[] indices) {
+        final List<Node> variables = getVariables();
+        final List<Node> _variables = new LinkedList<>();
 
-        for (int index : indices) {
+        for (final int index : indices) {
             _variables.add(variables.get(index));
         }
 
-        int[] rows = new int[data.length];
+        final int[] rows = new int[this.data.length];
 
         for (int i = 0; i < rows.length; i++) {
             rows[i] = i;
         }
 
-        Number[][] _data = this.viewSelection(rows, indices);
+        final Number[][] _data = viewSelection(rows, indices);
 
-        NumberObjectDataSet _dataSet = new NumberObjectDataSet(0, new LinkedList<Node>());
+        final NumberObjectDataSet _dataSet = new NumberObjectDataSet(0, new LinkedList<Node>());
         _dataSet.data = _data;
 
 //        _dataSet.name = name + "_copy";
-        _dataSet.name = name;
+        _dataSet.name = this.name;
         _dataSet.variables = _variables;
         _dataSet.selection = new HashSet<>();
 //        _dataSet.multipliers = new HashMap<>(multipliers);
 
         // Might have to delete some knowledge.
-        _dataSet.knowledge = knowledge.copy();
+        _dataSet.knowledge = this.knowledge.copy();
         return _dataSet;
     }
 
-    public final DataSet subsetRows(int[] rows) {
-        int[] cols = new int[data[0].length];
+    public final DataSet subsetRows(final int[] rows) {
+        final int[] cols = new int[this.data[0].length];
 
         for (int i = 0; i < cols.length; i++) {
             cols[i] = i;
         }
 
-        NumberObjectDataSet _data = new NumberObjectDataSet(this);
+        final NumberObjectDataSet _data = new NumberObjectDataSet(this);
 
 
         _data.data = new Number[rows.length][cols.length];
 
         for (int i = 0; i < rows.length; i++) {
             for (int j = 0; j < cols.length; j++) {
-                _data.data[i][j] = data[rows[i]][cols[j]];
+                _data.data[i][j] = this.data[rows[i]][cols[j]];
             }
         }
 
@@ -1120,8 +1120,8 @@ public final class NumberObjectDataSet
     }
 
     @Override
-    public DataSet subsetRowsColumns(int[] rows, int[] columns) {
-        DataSet dataSet = this.subsetRows(rows);
+    public DataSet subsetRowsColumns(final int[] rows, final int[] columns) {
+        DataSet dataSet = subsetRows(rows);
         dataSet = dataSet.subsetColumns(columns);
         return dataSet;
     }
@@ -1129,16 +1129,16 @@ public final class NumberObjectDataSet
     /**
      * Shifts the given column
      */
-    public final void shiftColumnDown(int row, int col, int numRowsShifted) {
+    public final void shiftColumnDown(final int row, final int col, final int numRowsShifted) {
 
-        if (row >= this.getNumRows() || col >= this.getNumColumns()) {
+        if (row >= getNumRows() || col >= getNumColumns()) {
             throw new IllegalArgumentException("Out of range:  row = " + row + " col = " + col);
         }
 
         int lastRow = -1;
 
-        for (int i = this.getNumRows() - 1; i >= row; i--) {
-            if (data[i][col] != null) {
+        for (int i = getNumRows() - 1; i >= row; i--) {
+            if (this.data[i][col] != null) {
                 lastRow = i;
                 break;
             }
@@ -1148,71 +1148,71 @@ public final class NumberObjectDataSet
             return;
         }
 
-        this.resize(this.getNumRows() + numRowsShifted, this.getNumColumns());
+        resize(getNumRows() + numRowsShifted, getNumColumns());
 
-        for (int i = this.getNumRows() - 1; i >= row + numRowsShifted; i--) {
-            data[i][col] = data[i - numRowsShifted][col];
-            data[i - numRowsShifted][col] = null;
+        for (int i = getNumRows() - 1; i >= row + numRowsShifted; i--) {
+            this.data[i][col] = this.data[i - numRowsShifted][col];
+            this.data[i - numRowsShifted][col] = null;
         }
     }
 
     /**
      * Removes the given columns from the data set.
      */
-    public final void removeCols(int[] cols) {
+    public final void removeCols(final int[] cols) {
 
-        int[] rows = new int[data.length];
+        final int[] rows = new int[this.data.length];
 
-        for (int i = 0; i < data.length; i++) {
+        for (int i = 0; i < this.data.length; i++) {
             rows[i] = i;
         }
 
-        int[] retainedCols = new int[variables.size() - cols.length];
+        final int[] retainedCols = new int[this.variables.size() - cols.length];
         int i = -1;
 
-        for (int j = 0; j < variables.size(); j++) {
+        for (int j = 0; j < this.variables.size(); j++) {
             if (Arrays.binarySearch(cols, j) < 0) {
                 retainedCols[++i] = j;
             }
         }
 
-        List<Node> retainedVars = new LinkedList<>();
+        final List<Node> retainedVars = new LinkedList<>();
 
-        for (int retainedCol : retainedCols) {
-            retainedVars.add(variables.get(retainedCol));
+        for (final int retainedCol : retainedCols) {
+            retainedVars.add(this.variables.get(retainedCol));
         }
 
-        data = this.viewSelection(rows, cols);
-        variables = retainedVars;
-        selection = new HashSet<>();
+        this.data = viewSelection(rows, cols);
+        this.variables = retainedVars;
+        this.selection = new HashSet<>();
 //        multipliers = new HashMap<>(multipliers);
-        knowledge = knowledge.copy(); // Might have to delete some knowledge.
+        this.knowledge = this.knowledge.copy(); // Might have to delete some knowledge.
     }
 
     /**
      * Removes the given rows from the data set.
      */
-    public final void removeRows(int[] selectedRows) {
+    public final void removeRows(final int[] selectedRows) {
 
-        int[] cols = new int[data[0].length];
+        final int[] cols = new int[this.data[0].length];
 
-        for (int i = 0; i < data[0].length; i++) {
+        for (int i = 0; i < this.data[0].length; i++) {
             cols[i] = i;
         }
 
-        int[] retainedRows = new int[data.length - selectedRows.length];
+        final int[] retainedRows = new int[this.data.length - selectedRows.length];
         int i = -1;
 
-        for (int j = 0; j < data.length; j++) {
+        for (int j = 0; j < this.data.length; j++) {
             if (Arrays.binarySearch(selectedRows, j) < 0) {
                 retainedRows[++i] = j;
             }
         }
 
-        data = this.viewSelection(retainedRows, cols);
-        selection = new HashSet<>();
+        this.data = viewSelection(retainedRows, cols);
+        this.selection = new HashSet<>();
 //        multipliers = new HashMap<>(multipliers);
-        knowledge = knowledge.copy(); // Might have to delete some knowledge.
+        this.knowledge = this.knowledge.copy(); // Might have to delete some knowledge.
     }
 
     /**
@@ -1220,8 +1220,8 @@ public final class NumberObjectDataSet
      * corresponding variables of the same name and corresponding data values
      * equal, when rendered using the number format at <code>NumberFormatUtil.getInstance().getNumberFormat()</code>.
      */
-    public final boolean equals(Object obj) {
-        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    public final boolean equals(final Object obj) {
+        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
         if (obj == this) {
             return true;
@@ -1231,34 +1231,34 @@ public final class NumberObjectDataSet
             return false;
         }
 
-        DataSet _dataSet = (DataSet) obj;
+        final DataSet _dataSet = (DataSet) obj;
 
-        for (int i = 0; i < this.getVariables().size(); i++) {
-            Node node = this.getVariables().get(i);
-            Node _node = _dataSet.getVariables().get(i);
+        for (int i = 0; i < getVariables().size(); i++) {
+            final Node node = getVariables().get(i);
+            final Node _node = _dataSet.getVariables().get(i);
             if (!node.equals(_node)) {
                 return false;
             }
         }
 
-        if (!(_dataSet.getNumRows() == this.getNumRows())) {
+        if (!(_dataSet.getNumRows() == getNumRows())) {
             return false;
         }
 
-        for (int i = 0; i < this.getNumRows(); i++) {
-            for (int j = 0; j < this.getNumColumns(); j++) {
-                Node variable = this.getVariable(j);
+        for (int i = 0; i < getNumRows(); i++) {
+            for (int j = 0; j < getNumColumns(); j++) {
+                final Node variable = getVariable(j);
 
                 if (variable instanceof ContinuousVariable) {
-                    double value = Double.parseDouble(nf.format(this.getDouble(i, j)));
-                    double _value = Double.parseDouble(nf.format(_dataSet.getDouble(i, j)));
+                    final double value = Double.parseDouble(nf.format(getDouble(i, j)));
+                    final double _value = Double.parseDouble(nf.format(_dataSet.getDouble(i, j)));
 
                     if (Math.abs(value - _value) > 0.0) {
                         return false;
                     }
                 } else {
-                    double value = this.getInt(i, j);
-                    double _value = _dataSet.getInt(i, j);
+                    final double value = getInt(i, j);
+                    final double _value = _dataSet.getInt(i, j);
 
                     if (!(value == _value)) {
                         return false;
@@ -1277,10 +1277,10 @@ public final class NumberObjectDataSet
 
     @Override
     public DataSet like() {
-        return new NumberObjectDataSet(this.getNumRows(), variables);
+        return new NumberObjectDataSet(getNumRows(), this.variables);
     }
 
-    public void setNumberFormat(NumberFormat nf) {
+    public void setNumberFormat(final NumberFormat nf) {
         if (nf == null) {
             throw new NullPointerException();
         }
@@ -1294,40 +1294,40 @@ public final class NumberObjectDataSet
      *
      * @see #toString
      */
-    public void setOutputDelimiter(Character character) {
-        outputDelimiter = character;
+    public void setOutputDelimiter(final Character character) {
+        this.outputDelimiter = character;
     }
 
     /**
      * Randomly permutes the rows of the dataset.
      */
     public void permuteRows() {
-        List<Integer> permutation = new ArrayList<>();
+        final List<Integer> permutation = new ArrayList<>();
 
-        for (int i = 0; i < this.getNumRows(); i++) {
+        for (int i = 0; i < getNumRows(); i++) {
             permutation.add(i);
         }
 
         Collections.shuffle(permutation);
 
-        Number[][] data2 = new Number[data.length][data[0].length];
+        final Number[][] data2 = new Number[this.data.length][this.data[0].length];
 
-        for (int i = 0; i < this.getNumRows(); i++) {
-            for (int j = 0; j < this.getNumColumns(); j++) {
-                data2[i][j] = data[permutation.get(i)][j];
+        for (int i = 0; i < getNumRows(); i++) {
+            for (int j = 0; j < getNumColumns(); j++) {
+                data2[i][j] = this.data[permutation.get(i)][j];
             }
         }
 
-        data = data2;
+        this.data = data2;
     }
 
     //===============================PRIVATE METHODS=====================//
 
-    private void setIntPrivate(int row, int col, int value) {
+    private void setIntPrivate(final int row, final int col, final int value) {
         if (value == -99) {
-            data[row][col] = null;
+            this.data[row][col] = null;
         } else {
-            data[row][col] = value;
+            this.data[row][col] = value;
         }
     }
 
@@ -1340,20 +1340,20 @@ public final class NumberObjectDataSet
      * @param rows The number of rows in the redimensioned data.
      * @param cols The number of columns in the redimensioned data.
      */
-    private void resize(int rows, int cols) {
-        Number[][] _data = new Number[rows][cols];
+    private void resize(final int rows, final int cols) {
+        final Number[][] _data = new Number[rows][cols];
 
         for (int i = 0; i < _data.length; i++) {
             for (int j = 0; j < _data[0].length; j++) {
-                if (i < data.length && j < data[0].length) {
-                    _data[i][j] = data[i][j];
+                if (i < this.data.length && j < this.data[0].length) {
+                    _data[i][j] = this.data[i][j];
                 } else {
                     _data[i][j] = null;
                 }
             }
         }
 
-        data = _data;
+        this.data = _data;
     }
 
 //    /**
@@ -1376,7 +1376,7 @@ public final class NumberObjectDataSet
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private static void readObject(ObjectInputStream s)
+    private static void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
@@ -1385,10 +1385,10 @@ public final class NumberObjectDataSet
      * @return the set of selected nodes, creating a new set if necessary.
      */
     private Set<Node> getSelection() {
-        if (selection == null) {
-            selection = new HashSet<>();
+        if (this.selection == null) {
+            this.selection = new HashSet<>();
         }
-        return selection;
+        return this.selection;
     }
 
     /**
@@ -1399,7 +1399,7 @@ public final class NumberObjectDataSet
      * @throws IllegalArgumentException if the translation cannot be made. The
      *                                  reason is in the message.
      */
-    private static double getValueFromObjectContinuous(Object element) {
+    private static double getValueFromObjectContinuous(final Object element) {
         if ("*".equals(element) || "".equals(element)) {
             return ContinuousVariable.getDoubleMissingValue();
         } else if (element instanceof Number) {
@@ -1407,7 +1407,7 @@ public final class NumberObjectDataSet
         } else if (element instanceof String) {
             try {
                 return Double.parseDouble((String) element);
-            } catch (NumberFormatException e) {
+            } catch (final NumberFormatException e) {
                 return ContinuousVariable.getDoubleMissingValue();
             }
         } else {
@@ -1425,7 +1425,7 @@ public final class NumberObjectDataSet
      * @throws IllegalArgumentException if the translation cannot be made. The
      *                                  reason is in the message.
      */
-    private int getValueFromObjectDiscrete(Object element,
+    private int getValueFromObjectDiscrete(final Object element,
                                            DiscreteVariable variable) {
         if ("*".equals(element) || "".equals(element)) {
             return DiscreteVariable.MISSING_VALUE;
@@ -1433,11 +1433,11 @@ public final class NumberObjectDataSet
 
         if (variable.isAccommodateNewCategories()) {
             if (element instanceof Number) {
-                int index = ((Number) element).intValue();
+                final int index = ((Number) element).intValue();
 
                 if (!variable.checkValue(index)) {
                     if (index >= variable.getNumCategories()) {
-                        this.accomodateIndex(variable, index);
+                        accomodateIndex(variable, index);
                     } else {
                         throw new IllegalArgumentException("Variable " + variable +
                                 " is not accepting " +
@@ -1447,15 +1447,15 @@ public final class NumberObjectDataSet
 
                 return index;
             } else if (element instanceof String) {
-                String label = (String) element;
+                final String label = (String) element;
 
                 if ("".equals(label)) {
                     throw new IllegalArgumentException(
                             "Blank category names not permitted.");
                 }
 
-                variable = this.accomodateCategory(variable, label);
-                int index = variable.getIndex(label);
+                variable = accomodateCategory(variable, label);
+                final int index = variable.getIndex(label);
 
                 if (index == -1) {
                     throw new IllegalArgumentException(
@@ -1470,7 +1470,7 @@ public final class NumberObjectDataSet
             }
         } else {
             if (element instanceof Number) {
-                int index = ((Number) element).intValue();
+                final int index = ((Number) element).intValue();
 
                 if (!variable.checkValue(index)) {
                     return DiscreteVariable.MISSING_VALUE;
@@ -1478,9 +1478,9 @@ public final class NumberObjectDataSet
 
                 return index;
             } else if (element instanceof String) {
-                String label = (String) element;
+                final String label = (String) element;
 
-                int index = variable.getIndex(label);
+                final int index = variable.getIndex(label);
 
                 if (index == -1) {
                     return DiscreteVariable.MISSING_VALUE;
@@ -1500,20 +1500,20 @@ public final class NumberObjectDataSet
      * the range of category by one and sets the category of the new value to
      * the given category.
      */
-    private DiscreteVariable accomodateCategory(DiscreteVariable variable,
-                                                String category) {
+    private DiscreteVariable accomodateCategory(final DiscreteVariable variable,
+                                                final String category) {
         if (category == null) {
             throw new NullPointerException();
         }
 
-        List<String> categories = variable.getCategories();
+        final List<String> categories = variable.getCategories();
 
         if (!categories.contains(category)) {
-            List<String> newCategories = new LinkedList<>(categories);
+            final List<String> newCategories = new LinkedList<>(categories);
             newCategories.add(category);
-            DiscreteVariable newVariable =
+            final DiscreteVariable newVariable =
                     new DiscreteVariable(variable.getName(), newCategories);
-            this.changeVariable(variable, newVariable);
+            changeVariable(variable, newVariable);
             return newVariable;
         }
 
@@ -1524,14 +1524,14 @@ public final class NumberObjectDataSet
      * Increases the number of categories if necessary to make sure that this
      * variable has the given index.
      */
-    private void accomodateIndex(DiscreteVariable variable, int index) {
+    private void accomodateIndex(final DiscreteVariable variable, final int index) {
         if (!variable.isAccommodateNewCategories()) {
             throw new IllegalArgumentException("This variable is not set " +
                     "to accomodate new categories.");
         }
 
         if (index >= variable.getNumCategories()) {
-            this.adjustCategories(variable, index + 1);
+            adjustCategories(variable, index + 1);
         }
     }
 
@@ -1540,11 +1540,11 @@ public final class NumberObjectDataSet
      * categories. If the list is too short, it is padded with default
      * categories. If it is too long, the extra categories are removed.
      */
-    private void adjustCategories(DiscreteVariable variable,
-                                  int numCategories) {
-        List<String> categories =
+    private void adjustCategories(final DiscreteVariable variable,
+                                  final int numCategories) {
+        final List<String> categories =
                 new LinkedList<>(variable.getCategories());
-        List<String> newCategories = new LinkedList<>(categories);
+        final List<String> newCategories = new LinkedList<>(categories);
 
         if (categories.size() > numCategories) {
             for (int i = variable.getCategories().size() - 1;
@@ -1553,7 +1553,7 @@ public final class NumberObjectDataSet
             }
         } else if (categories.size() < numCategories) {
             for (int i = categories.size(); i < numCategories; i++) {
-                String category = DataUtils.defaultCategory(i);
+                final String category = DataUtils.defaultCategory(i);
 
                 if (categories.contains(category)) {
                     continue;
@@ -1563,9 +1563,9 @@ public final class NumberObjectDataSet
             }
         }
 
-        DiscreteVariable to =
+        final DiscreteVariable to =
                 new DiscreteVariable(variable.getName(), newCategories);
-        this.changeVariable(variable, to);
+        changeVariable(variable, to);
     }
 
     /**
@@ -1575,11 +1575,11 @@ public final class NumberObjectDataSet
      * @see #setNumberFormat(java.text.NumberFormat)
      */
     public NumberFormat getNumberFormat() {
-        if (nf == null) {
-            nf = NumberFormatUtil.getInstance().getNumberFormat();
+        if (this.nf == null) {
+            this.nf = NumberFormatUtil.getInstance().getNumberFormat();
         }
 
-        return nf;
+        return this.nf;
     }
 
 

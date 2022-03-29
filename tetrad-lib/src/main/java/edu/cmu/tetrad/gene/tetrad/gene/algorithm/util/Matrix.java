@@ -37,7 +37,7 @@ public class Matrix extends BasicMatrix {
      * Creates a matrix with name <code>mname</code>, and <code>nrows</code>
      * rows.
      */
-    public Matrix(String mname, int nrows) {
+    public Matrix(final String mname, final int nrows) {
         super(mname, nrows);
     }
 
@@ -59,7 +59,7 @@ public class Matrix extends BasicMatrix {
      * the total needed to fill the matrix.  If it has more elements an illegal
      * argument exception will be generated.
      */
-    public Matrix(String fname) throws IOException {
+    public Matrix(final String fname) throws IOException {
         super(fname);
     }
 
@@ -67,75 +67,75 @@ public class Matrix extends BasicMatrix {
      * Initializes the data structure used to hold the contents of the matrix
      */
     protected void initMatrixStorage() {
-        A = new short[n][n];
+        this.A = new short[this.n][this.n];
     }
 
     /**
      * Casts double value x to short and assigns it to element (r,c)
      */
-    public void setDoubleValue(int r, int c, double x) {
-        if ((r >= n) || (c >= n) || (r < 0) || (c < 0)) {
-            this.badIndexXcp(r, c);
+    public void setDoubleValue(final int r, final int c, final double x) {
+        if ((r >= this.n) || (c >= this.n) || (r < 0) || (c < 0)) {
+            badIndexXcp(r, c);
         }
         if ((x < BasicMatrix.MIN_SHORT) || (x > BasicMatrix.MAX_SHORT)) {
             throw new IllegalArgumentException(
                     "Integer " + x + " cannot be stored as a short");
         }
-        A[r][c] = (short) x;
+        this.A[r][c] = (short) x;
     }
 
     /**
      * Returns the value stored at element (r,c) as a double
      */
-    public double getDoubleValue(int r, int c) {
-        if ((r >= n) || (c >= n) || (r < 0) || (c < 0)) {
-            this.badIndexXcp(r, c);
+    public double getDoubleValue(final int r, final int c) {
+        if ((r >= this.n) || (c >= this.n) || (r < 0) || (c < 0)) {
+            badIndexXcp(r, c);
         }
-        return A[r][c];
+        return this.A[r][c];
     }
 
     /**
      * Assigns short x to matrix element at (r, c)
      */
-    public void setValue(int r, int c, short x) {
-        if ((r >= n) || (c >= n) || (r < 0) || (c < 0)) {
-            this.badIndexXcp(r, c);
+    public void setValue(final int r, final int c, final short x) {
+        if ((r >= this.n) || (c >= this.n) || (r < 0) || (c < 0)) {
+            badIndexXcp(r, c);
         }
-        A[r][c] = x;
+        this.A[r][c] = x;
     }
 
     /**
      * Assigns integer x to matrix element at (r, c).  This method checks that
      * the integer x can be converted to a short without causing overflow.
      */
-    public void setValue(int r, int c, int x) {
+    public void setValue(final int r, final int c, final int x) {
         if ((x < BasicMatrix.MIN_SHORT) || (x > BasicMatrix.MAX_SHORT)) {
             throw new IllegalArgumentException(
                     "Integer " + x + " cannot be stored as a short");
         }
-        if ((r >= n) || (c >= n) || (r < 0) || (c < 0)) {
-            this.badIndexXcp(r, c);
+        if ((r >= this.n) || (c >= this.n) || (r < 0) || (c < 0)) {
+            badIndexXcp(r, c);
         }
-        A[r][c] = (short) x;
+        this.A[r][c] = (short) x;
     }
 
     /**
      * Returns the value stored at element (r,c)
      */
-    public short getValue(int r, int c) {
-        if ((r >= n) || (c >= n) || (r < 0) || (c < 0)) {
-            this.badIndexXcp(r, c);
+    public short getValue(final int r, final int c) {
+        if ((r >= this.n) || (c >= this.n) || (r < 0) || (c < 0)) {
+            badIndexXcp(r, c);
         }
-        return A[r][c];
+        return this.A[r][c];
     }
 
     /**
      * Assign zero to all elements in the matrix
      */
     public void setAllValuesToZero() {
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                A[i][j] = 0;
+        for (int i = 0; i < this.n; i++) {
+            for (int j = 0; j < this.n; j++) {
+                this.A[i][j] = 0;
             }
         }
     }
@@ -145,12 +145,12 @@ public class Matrix extends BasicMatrix {
      * matrix
      */
     public String toString() {
-        String s = getClass().getName() + " " + name + "\n" + n +
+        String s = this.getClass().getName() + " " + this.name + "\n" + this.n +
                 " // <- Total # rows\n";
-        for (int r = 0; r < n; r++) {
+        for (int r = 0; r < this.n; r++) {
             //s = s + "/* "+r+" */  ";
-            for (int c = 0; c < n; c++) {
-                s = s + getValue(r, c) + " ";
+            for (int c = 0; c < this.n; c++) {
+                s = s + this.getValue(r, c) + " ";
             }
             s = s + "\n";
         }

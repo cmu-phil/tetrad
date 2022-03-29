@@ -43,7 +43,7 @@ final class ExitAction extends AbstractAction {
     /**
      * Performs the action of loading a session from a file.
      */
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(final ActionEvent e) {
         DesktopController.getInstance().exitProgram();
     }
 }

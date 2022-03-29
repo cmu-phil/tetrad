@@ -53,15 +53,15 @@ public class MeasurementSimulatorParams implements TetradSerializable {
      *
      * @throws NullPointerException if the history argument is null.
      */
-    public MeasurementSimulatorParams(Parameters parameters) {
-        simulator = new MeasurementSimulator(parameters);
+    public MeasurementSimulatorParams(final Parameters parameters) {
+        this.simulator = new MeasurementSimulator(parameters);
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
     public static MeasurementSimulatorParams serializableInstance() {
-        MeasurementSimulatorParams params = new MeasurementSimulatorParams(new Parameters());
+        final MeasurementSimulatorParams params = new MeasurementSimulatorParams(new Parameters());
         params.setHistory(new GeneHistory(
                 BasalInitializer.serializableInstance(),
                 BooleanGlassFunction.serializableInstance()));
@@ -70,132 +70,132 @@ public class MeasurementSimulatorParams implements TetradSerializable {
 
     //==============================PUBLIC METHODS======================//
 
-    public void setHistory(GeneHistory history) {
-        this.getSimulator().setHistory(history);
+    public void setHistory(final GeneHistory history) {
+        getSimulator().setHistory(history);
     }
 
     public double getDishDishVariability() {
-        return this.getSimulator().getDishDishVariability();
+        return getSimulator().getDishDishVariability();
     }
 
-    public void setDishDishVariability(double value) {
-        this.getSimulator().setDishDishVariability(value);
+    public void setDishDishVariability(final double value) {
+        getSimulator().setDishDishVariability(value);
     }
 
     public double getSampleSampleVariability() {
-        return this.getSimulator().getSampleSampleVariability();
+        return getSimulator().getSampleSampleVariability();
     }
 
-    public void setSampleSampleVariability(double value) {
-        this.getSimulator().setSampleSampleVariability(value);
+    public void setSampleSampleVariability(final double value) {
+        getSimulator().setSampleSampleVariability(value);
     }
 
     public double getChipChipVariability() {
-        return this.getSimulator().getChipChipVariability();
+        return getSimulator().getChipChipVariability();
     }
 
-    public void setChipChipVariability(double value) {
-        this.getSimulator().setChipChipVariability(value);
+    public void setChipChipVariability(final double value) {
+        getSimulator().setChipChipVariability(value);
     }
 
     public double getPixelDigitalization() {
-        return this.getSimulator().getPixelDigitalization();
+        return getSimulator().getPixelDigitalization();
     }
 
-    public void setPixelDigitalization(double value) {
-        this.getSimulator().setPixelDigitalization(value);
+    public void setPixelDigitalization(final double value) {
+        getSimulator().setPixelDigitalization(value);
     }
 
     public int getNumDishes() {
-        return this.getSimulator().getNumDishes();
+        return getSimulator().getNumDishes();
     }
 
-    public void setNumDishes(int value) {
-        this.getSimulator().setNumDishes(value);
+    public void setNumDishes(final int value) {
+        getSimulator().setNumDishes(value);
     }
 
     public int getNumCellsPerDish() {
-        return this.getSimulator().getNumCellsPerDish();
+        return getSimulator().getNumCellsPerDish();
     }
 
-    public void setNumCellsPerDish(int value) {
-        this.getSimulator().setNumCellsPerDish(value);
+    public void setNumCellsPerDish(final int value) {
+        getSimulator().setNumCellsPerDish(value);
     }
 
     public int getNumSamplesPerDish() {
-        return this.getSimulator().getNumSamplesPerDish();
+        return getSimulator().getNumSamplesPerDish();
     }
 
-    public void setNumSamplesPerDish(int value) {
-        this.getSimulator().setNumSamplesPerDish(value);
+    public void setNumSamplesPerDish(final int value) {
+        getSimulator().setNumSamplesPerDish(value);
     }
 
     public int getStepsGenerated() {
-        return this.getSimulator().getStepsGenerated();
+        return getSimulator().getStepsGenerated();
     }
 
-    public void setStepsGenerated(int value) {
-        this.getSimulator().setStepsGenerated(value);
+    public void setStepsGenerated(final int value) {
+        getSimulator().setStepsGenerated(value);
     }
 
     public int getFirstStepStored() {
-        return this.getSimulator().getFirstStepStored();
+        return getSimulator().getFirstStepStored();
     }
 
-    public void setFirstStepStored(int value) {
-        this.getSimulator().setFirstStepStored(value);
+    public void setFirstStepStored(final int value) {
+        getSimulator().setFirstStepStored(value);
     }
 
     public int getInterval() {
-        return this.getSimulator().getInterval();
+        return getSimulator().getInterval();
     }
 
-    public void setInterval(int value) {
-        this.getSimulator().setInterval(value);
+    public void setInterval(final int value) {
+        getSimulator().setInterval(value);
     }
 
     public boolean isInitSync() {
-        return this.getSimulator().isInitSync();
+        return getSimulator().isInitSync();
     }
 
-    public void setInitSync(boolean selected) {
-        this.getSimulator().setInitSync(selected);
+    public void setInitSync(final boolean selected) {
+        getSimulator().setInitSync(selected);
     }
 
     public boolean isRawDataSaved() {
-        return this.getSimulator().isRawDataSaved();
+        return getSimulator().isRawDataSaved();
     }
 
-    public void setRawDataSaved(boolean selected) {
-        this.getSimulator().setRawDataSaved(selected);
+    public void setRawDataSaved(final boolean selected) {
+        getSimulator().setRawDataSaved(selected);
     }
 
     public boolean isAntilogCalculated() {
-        return this.getSimulator().isAntilogCalculated();
+        return getSimulator().isAntilogCalculated();
     }
 
-    public void setAntilogCalculated(boolean selected) {
-        this.getSimulator().setAntilogCalculated(selected);
+    public void setAntilogCalculated(final boolean selected) {
+        getSimulator().setAntilogCalculated(selected);
     }
 
     public MeasurementSimulator getSimulator() {
-        return simulator;
+        return this.simulator;
     }
 
-    public void simulate(GeneHistory history) {
-        this.getSimulator().simulate(history);
+    public void simulate(final GeneHistory history) {
+        getSimulator().simulate(history);
     }
 
     public double[][][] getMeasuredData() {
-        return this.getSimulator().getMeasuredData();
+        return getSimulator().getMeasuredData();
     }
 
     public int[] getTimeSteps() {
-        return this.getSimulator().getTimeSteps();
+        return getSimulator().getTimeSteps();
     }
 
     public double[][][] getRawData() {
-        return this.getSimulator().getRawData();
+        return getSimulator().getRawData();
     }
 
     /**
@@ -211,21 +211,21 @@ public class MeasurementSimulatorParams implements TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (simulator == null) {
+        if (this.simulator == null) {
             throw new NullPointerException();
         }
     }
 
     public boolean isIncludeDishAndChipVariables() {
-        return this.getSimulator().isIncludeDishAndChipColumns();
+        return getSimulator().isIncludeDishAndChipColumns();
     }
 
-    public void setIncludeDishAndChipVariables(boolean includeDishAndChipVariables) {
-        this.getSimulator().setIncludeDishAndChipColumns(includeDishAndChipVariables);
+    public void setIncludeDishAndChipVariables(final boolean includeDishAndChipVariables) {
+        getSimulator().setIncludeDishAndChipColumns(includeDishAndChipVariables);
     }
 }
 

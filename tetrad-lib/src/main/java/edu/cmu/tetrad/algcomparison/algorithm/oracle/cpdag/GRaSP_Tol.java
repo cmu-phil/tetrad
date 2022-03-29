@@ -45,19 +45,19 @@ public class GRaSP_Tol implements Algorithm, UsesScoreWrapper, TakesIndependence
         // Used in reflection; do not delete.
     }
 
-    public GRaSP_Tol(ScoreWrapper score, IndependenceWrapper test) {
+    public GRaSP_Tol(final ScoreWrapper score, final IndependenceWrapper test) {
         this.score = score;
         this.test = test;
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(final DataModel dataSet, final Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            Score score = this.score.getScore(dataSet, parameters);
-            IndependenceTest test = this.test.getTest(dataSet, parameters);
+            final Score score = this.score.getScore(dataSet, parameters);
+            final IndependenceTest test = this.test.getTest(dataSet, parameters);
 
             test.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            GraspTol grasp = new GraspTol(test, score);
+            final GraspTol grasp = new GraspTol(test, score);
 
             grasp.setDepth(parameters.getInt(Params.GRASP_DEPTH));
             grasp.setUncoveredDepth(parameters.getInt(Params.GRASP_UNCOVERED_DEPTH));
@@ -72,15 +72,15 @@ public class GRaSP_Tol implements Algorithm, UsesScoreWrapper, TakesIndependence
             grasp.setCacheScores(parameters.getBoolean(Params.CACHE_SCORES));
 
             grasp.setNumStarts(parameters.getInt(Params.NUM_STARTS));
-            grasp.setKnowledge(knowledge);
+            grasp.setKnowledge(this.knowledge);
             grasp.bestOrder(score.getVariables());
             return grasp.getGraph(parameters.getBoolean(Params.OUTPUT_CPDAG));
         } else {
-            GRaSP_Tol algorithm = new GRaSP_Tol(score, test);
+            final GRaSP_Tol algorithm = new GRaSP_Tol(this.score, this.test);
 
-            DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(knowledge);
+            final DataSet data = (DataSet) dataSet;
+            final GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
+            search.setKnowledge(this.knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -106,24 +106,24 @@ public class GRaSP_Tol implements Algorithm, UsesScoreWrapper, TakesIndependence
     }
 
     @Override
-    public Graph getComparisonGraph(Graph graph) {
+    public Graph getComparisonGraph(final Graph graph) {
         return new EdgeListGraph(graph);
     }
 
     @Override
     public String getDescription() {
-        return "GRaSP-tol (Greedy Relaxed Sparsest Permutation) using " + test.getDescription()
-                + " or " + score.getDescription();
+        return "GRaSP-tol (Greedy Relaxed Sparsest Permutation) using " + this.test.getDescription()
+                + " or " + this.score.getDescription();
     }
 
     @Override
     public DataType getDataType() {
-        return score.getDataType();
+        return this.score.getDataType();
     }
 
     @Override
     public List<String> getParameters() {
-        ArrayList<String> params = new ArrayList<>();
+        final ArrayList<String> params = new ArrayList<>();
 
         // Flags
         params.add(Params.GRASP_DEPTH);
@@ -147,31 +147,31 @@ public class GRaSP_Tol implements Algorithm, UsesScoreWrapper, TakesIndependence
 
     @Override
     public ScoreWrapper getScoreWrapper() {
-        return score;
+        return this.score;
     }
 
     @Override
-    public void setScoreWrapper(ScoreWrapper score) {
+    public void setScoreWrapper(final ScoreWrapper score) {
         this.score = score;
     }
 
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
-        return test;
+        return this.test;
     }
 
     @Override
-    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
-        test = independenceWrapper;
+    public void setIndependenceWrapper(final IndependenceWrapper independenceWrapper) {
+        this.test = independenceWrapper;
     }
 
     @Override
     public IKnowledge getKnowledge() {
-        return knowledge.copy();
+        return this.knowledge.copy();
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(final IKnowledge knowledge) {
         this.knowledge = knowledge.copy();
     }
 }

@@ -38,12 +38,12 @@ public final class DataColumns {
     private DataColumns() {
     }
 
-    public static DataColumn[] update(DataColumn[] dataColumns, Metadata metadata) {
-        Map<String, ColumnMetadata> columnMetadataMap = getColumnMetadataMap(metadata);
+    public static DataColumn[] update(DataColumn[] dataColumns, final Metadata metadata) {
+        final Map<String, ColumnMetadata> columnMetadataMap = DataColumns.getColumnMetadataMap(metadata);
 
         // update data column's data type and metadata column's column number
-        for (DataColumn dataColumn : dataColumns) {
-            ColumnMetadata column = columnMetadataMap.get(dataColumn.getName());
+        for (final DataColumn dataColumn : dataColumns) {
+            final ColumnMetadata column = columnMetadataMap.get(dataColumn.getName());
             if (column != null) {
                 dataColumn.setDiscrete(column.isDiscrete());
                 column.setColumnNumber(dataColumn.getColumnNumber());
@@ -51,13 +51,13 @@ public final class DataColumns {
         }
 
         // add missing interventional status metadata
-        List<DataColumn> additionalColumns = new LinkedList<>();
+        final List<DataColumn> additionalColumns = new LinkedList<>();
         int numOfCols = dataColumns.length;
-        for (InterventionalColumn column : metadata.getInterventionalColumns()) {
+        for (final InterventionalColumn column : metadata.getInterventionalColumns()) {
             if (column.getStatusColumn() == null) {
-                String name = column.getValueColumn().getName() + "_s";
+                final String name = column.getValueColumn().getName() + "_s";
                 final boolean discrete = true;
-                int columnNumber = ++numOfCols;
+                final int columnNumber = ++numOfCols;
 
                 column.setStatusColumn(new ColumnMetadata(name, columnNumber, discrete));
                 additionalColumns.add(new TabularDataColumn(name, columnNumber, true, discrete));
@@ -66,11 +66,11 @@ public final class DataColumns {
 
         // add additional columns
         if (!additionalColumns.isEmpty()) {
-            DataColumn[] expandedDataColumns = new DataColumn[numOfCols];
+            final DataColumn[] expandedDataColumns = new DataColumn[numOfCols];
             System.arraycopy(dataColumns, 0, expandedDataColumns, 0, dataColumns.length);
 
             int index = dataColumns.length;
-            for (DataColumn dataColumn : additionalColumns) {
+            for (final DataColumn dataColumn : additionalColumns) {
                 expandedDataColumns[index++] = dataColumn;
             }
 
@@ -80,8 +80,8 @@ public final class DataColumns {
         return dataColumns;
     }
 
-    private static Map<String, ColumnMetadata> getColumnMetadataMap(Metadata metadata) {
-        Map<String, ColumnMetadata> columnMetadataMap = new HashMap<>();
+    private static Map<String, ColumnMetadata> getColumnMetadataMap(final Metadata metadata) {
+        final Map<String, ColumnMetadata> columnMetadataMap = new HashMap<>();
 
         // get metadata for domain
         metadata.getDomainColumnns()

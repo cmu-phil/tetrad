@@ -38,30 +38,30 @@ public class FirstDifferencesWrapper extends DataWrapper {
     /**
      * Constructs the wrapper given some data and the params.
      */
-    public FirstDifferencesWrapper(DataWrapper wrapper, Parameters params) {
-        LogDataUtils.logDataModelList("Parent data in which rows have been randomly permuted.", this.getDataModelList());
+    public FirstDifferencesWrapper(final DataWrapper wrapper, final Parameters params) {
+        LogDataUtils.logDataModelList("Parent data in which rows have been randomly permuted.", getDataModelList());
 
-        DataModelList inList = wrapper.getDataModelList();
-        DataModelList outList = new DataModelList();
+        final DataModelList inList = wrapper.getDataModelList();
+        final DataModelList outList = new DataModelList();
 
-        for (DataModel model : inList) {
+        for (final DataModel model : inList) {
             if (!(model instanceof DataSet)) {
                 throw new IllegalArgumentException("Not a data set: " + model.getName());
             }
 
-            DataSet data = (DataSet) model;
+            final DataSet data = (DataSet) model;
 
             if (!(data.isContinuous())) {
                 throw new IllegalArgumentException("Not a continuous data set: " + data.getName());
             }
 
-            DataSet firstDiff = new BoxDataSet(new DoubleDataBox(data.getNumRows() - 1, data.getVariables().size()),
+            final DataSet firstDiff = new BoxDataSet(new DoubleDataBox(data.getNumRows() - 1, data.getVariables().size()),
                     data.getVariables());
 
             for (int j = 0; j < data.getNumColumns(); j++) {
                 for (int i = 0; i < data.getNumRows() - 1; i++) {
-                    double d2 = data.getDouble(i + 1, j);
-                    double d1 = data.getDouble(i, j);
+                    final double d2 = data.getDouble(i + 1, j);
+                    final double d1 = data.getDouble(i, j);
                     firstDiff.setDouble(i, j, d2 - d1);
                 }
             }
@@ -69,8 +69,8 @@ public class FirstDifferencesWrapper extends DataWrapper {
             outList.add(firstDiff);
         }
 
-        this.setDataModel(outList);
-        this.setSourceGraph(wrapper.getSourceGraph());
+        setDataModel(outList);
+        setSourceGraph(wrapper.getSourceGraph());
 
 
     }

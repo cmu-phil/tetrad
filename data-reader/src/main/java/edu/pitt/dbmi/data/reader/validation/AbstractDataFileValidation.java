@@ -32,13 +32,13 @@ public abstract class AbstractDataFileValidation extends DataFileReader implemen
 
     protected int maxNumOfMsg;
 
-    public AbstractDataFileValidation(Path dataFile, Delimiter delimiter) {
+    public AbstractDataFileValidation(final Path dataFile, final Delimiter delimiter) {
         super(dataFile, delimiter);
-        maxNumOfMsg = Integer.MAX_VALUE;
+        this.maxNumOfMsg = Integer.MAX_VALUE;
     }
 
     @Override
-    public void setMaximumNumberOfMessages(int maxNumOfMsg) {
+    public void setMaximumNumberOfMessages(final int maxNumOfMsg) {
         this.maxNumOfMsg = maxNumOfMsg;
     }
 

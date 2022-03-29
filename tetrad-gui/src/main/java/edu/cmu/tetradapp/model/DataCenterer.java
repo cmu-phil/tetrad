@@ -38,28 +38,28 @@ public class DataCenterer extends DataWrapper {
     static final long serialVersionUID = 23L;
 
     //=============================CONSTRUCTORS==============================//
-    private DataCenterer(DataWrapper wrapper, Parameters params) {
-        DataModelList inList = wrapper.getDataModelList();
-        DataModelList outList = new DataModelList();
+    private DataCenterer(final DataWrapper wrapper, final Parameters params) {
+        final DataModelList inList = wrapper.getDataModelList();
+        final DataModelList outList = new DataModelList();
 
-        for (DataModel model : inList) {
+        for (final DataModel model : inList) {
             if (!(model instanceof DataSet)) {
                 throw new IllegalArgumentException("Not a data set: " + model.getName());
             }
 
-            DataSet dataSet = (DataSet) model;
+            final DataSet dataSet = (DataSet) model;
 
-            Matrix data2 = DataUtils.centerData(dataSet.getDoubleData());
-            List<Node> list = dataSet.getVariables();
-            DataSet dataSet2 = new BoxDataSet(new VerticalDoubleDataBox(data2.transpose().toArray()), list);
+            final Matrix data2 = DataUtils.centerData(dataSet.getDoubleData());
+            final List<Node> list = dataSet.getVariables();
+            final DataSet dataSet2 = new BoxDataSet(new VerticalDoubleDataBox(data2.transpose().toArray()), list);
             dataSet2.setName(model.getName());
             outList.add(dataSet2);
         }
 
-        this.setDataModel(outList);
-        this.setSourceGraph(wrapper.getSourceGraph());
+        setDataModel(outList);
+        setSourceGraph(wrapper.getSourceGraph());
 
-        LogDataUtils.logDataModelList("Conversion of data to centered form.", this.getDataModelList());
+        LogDataUtils.logDataModelList("Conversion of data to centered form.", getDataModelList());
     }
 
     /**

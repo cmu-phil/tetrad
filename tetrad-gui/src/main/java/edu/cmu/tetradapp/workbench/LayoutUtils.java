@@ -23,7 +23,6 @@ package edu.cmu.tetradapp.workbench;
 
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.graph.TimeLagGraph.NodeId;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.util.GraphEditorUtils;
@@ -51,22 +50,22 @@ public class LayoutUtils {
 
     static Layout layout = Layout.topToBottom;
 
-    public static void setLayout(Layout _layout) {
-        layout = _layout;
+    public static void setLayout(final Layout _layout) {
+        LayoutUtils.layout = _layout;
     }
 
     public static Layout getLayout() {
-        return layout;
+        return LayoutUtils.layout;
     }
 
-    public static void setPreferredAsSize(Component comp) {
-        Dimension pref = comp.getPreferredSize();
+    public static void setPreferredAsSize(final Component comp) {
+        final Dimension pref = comp.getPreferredSize();
         comp.setMaximumSize(pref);
         comp.setMinimumSize(pref);
     }
 
 
-    public static void setAllSizes(Component comp, Dimension dim) {
+    public static void setAllSizes(final Component comp, final Dimension dim) {
         comp.setPreferredSize(dim);
         comp.setMaximumSize(dim);
         comp.setMinimumSize(dim);
@@ -74,21 +73,21 @@ public class LayoutUtils {
     }
 
 
-    public static Box leftAlignJLabel(JLabel label) {
-        Box box = Box.createHorizontalBox();
+    public static Box leftAlignJLabel(final JLabel label) {
+        final Box box = Box.createHorizontalBox();
         box.add(label);
         box.add(Box.createHorizontalGlue());
         return box;
     }
 
 
-    public static void copyLag0LayoutTopToBottom(LayoutEditable layoutEditable) {
-        TimeLagGraph graph = layoutEditable.getGraph().getTimeLagGraph();
+    public static void copyLag0LayoutTopToBottom(final LayoutEditable layoutEditable) {
+        final TimeLagGraph graph = layoutEditable.getGraph().getTimeLagGraph();
 
-        java.util.List<Node> lag0Nodes = graph.getLag0Nodes();
+        final java.util.List<Node> lag0Nodes = graph.getLag0Nodes();
 
         Collections.sort(lag0Nodes, new Comparator<Node>() {
-            public int compare(Node o1, Node o2) {
+            public int compare(final Node o1, final Node o2) {
                 return o1.getCenterX() - o2.getCenterX();
             }
         });
@@ -96,20 +95,20 @@ public class LayoutUtils {
         int minLag0Y = Integer.MAX_VALUE;
         int maxLag0Y = Integer.MIN_VALUE;
 
-        for (Node node : lag0Nodes) {
+        for (final Node node : lag0Nodes) {
             if (node.getCenterY() < minLag0Y) minLag0Y = node.getCenterY();
             if (node.getCenterY() > maxLag0Y) maxLag0Y = node.getCenterY();
         }
 
-        int lag0YDiff = maxLag0Y - minLag0Y;
-        int ySpace = lag0YDiff + 25 < 100 ? 100 : lag0YDiff + 25;
+        final int lag0YDiff = maxLag0Y - minLag0Y;
+        final int ySpace = lag0YDiff + 25 < 100 ? 100 : lag0YDiff + 25;
 
         int minY = Integer.MAX_VALUE;
 
-        for (Node node : lag0Nodes) {
-            int x = node.getCenterX();
+        for (final Node node : lag0Nodes) {
+            final int x = node.getCenterX();
             int y = node.getCenterY();
-            NodeId id = graph.getNodeId(node);
+            TimeLagGraph.NodeId id = graph.getNodeId(node);
 
             for (int lag = 0; lag <= graph.getMaxLag(); lag++) {
                 y -= ySpace;
@@ -130,7 +129,7 @@ public class LayoutUtils {
         int diffY = 50 - minY;
 
         for (Node node : lag0Nodes) {
-            NodeId id = graph.getNodeId(node);
+            TimeLagGraph.NodeId id = graph.getNodeId(node);
 
             for (int lag = 0; lag <= graph.getMaxLag(); lag++) {
                 Node _node = graph.getNode(id.getName(), lag);
@@ -170,7 +169,7 @@ public class LayoutUtils {
         for (Node node : lag0Nodes) {
             int x = node.getCenterX();
             int y = node.getCenterY();
-            NodeId id = graph.getNodeId(node);
+            TimeLagGraph.NodeId id = graph.getNodeId(node);
 
             for (int lag = graph.getMaxLag(); lag >= 0; lag--) {
                 y -= ySpace;
@@ -191,7 +190,7 @@ public class LayoutUtils {
         int diffY = 50 - minY;
 
         for (Node node : lag0Nodes) {
-            NodeId id = graph.getNodeId(node);
+            TimeLagGraph.NodeId id = graph.getNodeId(node);
 
             for (int lag = graph.getMaxLag(); lag >= 0; lag--) {
                 Node _node = graph.getNode(id.getName(), lag);
@@ -231,7 +230,7 @@ public class LayoutUtils {
         for (Node node : lag0Nodes) {
             int x = node.getCenterX();
             int y = node.getCenterY();
-            NodeId id = graph.getNodeId(node);
+            TimeLagGraph.NodeId id = graph.getNodeId(node);
 
             for (int lag = 0; lag <= graph.getMaxLag(); lag++) {
                 x -= xSpace;
@@ -252,7 +251,7 @@ public class LayoutUtils {
         int diffX = 50 - minX;
 
         for (Node node : lag0Nodes) {
-            NodeId id = graph.getNodeId(node);
+            TimeLagGraph.NodeId id = graph.getNodeId(node);
 
             for (int lag = 0; lag <= graph.getMaxLag(); lag++) {
                 Node _node = graph.getNode(id.getName(), lag);
@@ -292,7 +291,7 @@ public class LayoutUtils {
         for (Node node : lag0Nodes) {
             int x = node.getCenterX();
             int y = node.getCenterY();
-            NodeId id = graph.getNodeId(node);
+            TimeLagGraph.NodeId id = graph.getNodeId(node);
 
             for (int lag = graph.getMaxLag(); lag >= 0; lag--) {
                 x -= xSpace;
@@ -313,7 +312,7 @@ public class LayoutUtils {
         int diffX = 50 - minX;
 
         for (Node node : lag0Nodes) {
-            NodeId id = graph.getNodeId(node);
+            TimeLagGraph.NodeId id = graph.getNodeId(node);
 
             for (int lag = graph.getMaxLag(); lag >= 0; lag--) {
                 Node _node = graph.getNode(id.getName(), lag);
@@ -346,7 +345,7 @@ public class LayoutUtils {
         for (Node node : lag0Nodes) {
             x += xSpace;
             int y = yStart - ySpace;
-            NodeId id = graph.getNodeId(node);
+            TimeLagGraph.NodeId id = graph.getNodeId(node);
 
             for (int lag = graph.getMaxLag(); lag >= 0; lag--) {
                 y += ySpace;
@@ -386,7 +385,7 @@ public class LayoutUtils {
         for (Node node : lag0Nodes) {
             y += ySpace;
             int x = xStart - xSpace;
-            NodeId id = graph.getNodeId(node);
+            TimeLagGraph.NodeId id = graph.getNodeId(node);
 
             for (int lag = graph.getMaxLag(); lag >= 0; lag--) {
                 x += xSpace;
@@ -426,7 +425,7 @@ public class LayoutUtils {
         for (Node node : lag0Nodes) {
             x += xSpace;
             int y = yStart - ySpace;
-            NodeId id = graph.getNodeId(node);
+            TimeLagGraph.NodeId id = graph.getNodeId(node);
 
             for (int lag = 0; lag <= graph.getMaxLag(); lag++) {
                 y += ySpace;
@@ -466,11 +465,11 @@ public class LayoutUtils {
         for (Node node : lag0Nodes) {
             y += ySpace;
             int x = xStart - xSpace;
-            NodeId id = graph.getNodeId(node);
+            final TimeLagGraph.NodeId id = graph.getNodeId(node);
 
             for (int lag = 0; lag <= graph.getMaxLag(); lag++) {
                 x += xSpace;
-                Node _node = graph.getNode(id.getName(), lag);
+                final Node _node = graph.getNode(id.getName(), lag);
 
                 if (_node == null) {
                     System.out.println("Couldn't find " + _node);
@@ -483,13 +482,13 @@ public class LayoutUtils {
         }
 
         layoutEditable.layoutByGraph(graph);
-        layout = Layout.rightToLeft;
+        LayoutUtils.layout = Layout.rightToLeft;
     }
 
-    public static void layeredDrawingLayout(LayoutEditable layoutEditable) {
-        Graph graph = layoutEditable.getGraph();
+    public static void layeredDrawingLayout(final LayoutEditable layoutEditable) {
+        final Graph graph = layoutEditable.getGraph();
 
-        for (Node node : new ArrayList<>(graph.getNodes())) {
+        for (final Node node : new ArrayList<>(graph.getNodes())) {
             if (node.getNodeType() == NodeType.ERROR) {
                 graph.removeNode(node);
             }
@@ -497,75 +496,75 @@ public class LayoutUtils {
 
         GraphUtils.hierarchicalLayout(graph);
         layoutEditable.layoutByGraph(graph);
-        layout = Layout.layered;
+        LayoutUtils.layout = Layout.layered;
     }
 
-    private static void sourceGraphLayout(LayoutEditable layoutEditable) {
-        Graph graph = new EdgeListGraph(layoutEditable.getGraph());
+    private static void sourceGraphLayout(final LayoutEditable layoutEditable) {
+        final Graph graph = new EdgeListGraph(layoutEditable.getGraph());
 
-        for (Node node : new ArrayList<>(graph.getNodes())) {
+        for (final Node node : new ArrayList<>(graph.getNodes())) {
             if (node.getNodeType() == NodeType.ERROR) {
                 graph.removeNode(node);
             }
         }
 
-        Graph sourceGraph = layoutEditable.getSourceGraph();
+        final Graph sourceGraph = layoutEditable.getSourceGraph();
         GraphUtils.arrangeBySourceGraph(graph, sourceGraph);
         layoutEditable.layoutByGraph(graph);
-        layout = Layout.source;
+        LayoutUtils.layout = Layout.source;
     }
 
-    public static void knowledgeLayout(LayoutEditable layoutEditable) {
-        Graph graph = new EdgeListGraph(layoutEditable.getGraph());
+    public static void knowledgeLayout(final LayoutEditable layoutEditable) {
+        final Graph graph = new EdgeListGraph(layoutEditable.getGraph());
 
         try {
 
-            for (Node node : new ArrayList<>(graph.getNodes())) {
+            for (final Node node : new ArrayList<>(graph.getNodes())) {
                 if (node.getNodeType() == NodeType.ERROR) {
                     graph.removeNode(node);
                 }
             }
 
-            IKnowledge knowledge = layoutEditable.getKnowledge();
+            final IKnowledge knowledge = layoutEditable.getKnowledge();
             SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
             layoutEditable.layoutByGraph(graph);
-        } catch (Exception e1) {
+        } catch (final Exception e1) {
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     e1.getMessage());
         }
-        layout = Layout.knowledge;
+        LayoutUtils.layout = Layout.knowledge;
     }
 
-    public static void circleLayout(LayoutEditable layoutEditable) {
-        Graph graph = layoutEditable.getGraph();
+    public static void circleLayout(final LayoutEditable layoutEditable) {
+        final Graph graph = layoutEditable.getGraph();
 
-        for (Node node : new ArrayList<>(graph.getNodes())) {
+        for (final Node node : new ArrayList<>(graph.getNodes())) {
             if (node.getNodeType() == NodeType.ERROR) {
                 ((SemGraph) graph).setShowErrorTerms(false);
 //                graph.removeNode(node);
             }
         }
 
-        Rectangle r = layoutEditable.getVisibleRect();
+        final Rectangle r = layoutEditable.getVisibleRect();
 
-        int m = Math.min(r.width, r.height) / 2;
-        int radius = m - 50;
-        int centerx = r.x + m;
-        int centery = r.y + m;
+        final int m = Math.min(r.width, r.height) / 2;
+        final int radius = m - 50;
+        final int centerx = r.x + m;
+        final int centery = r.y + m;
 
 //        DataGraphUtils.circleLayout(graph, 200, 200, 150);
         GraphUtils.circleLayout(graph, centerx, centery, radius);
         layoutEditable.layoutByGraph(graph);
-        layout = Layout.circle;
+        LayoutUtils.layout = Layout.circle;
     }
 
-    public static void kamadaKawaiLayout(LayoutEditable layoutEditable) {
-        Graph graph = layoutEditable.getGraph();
+    public static void kamadaKawaiLayout(final LayoutEditable layoutEditable) {
+        final Graph graph = layoutEditable.getGraph();
 
-        Runnable runnable = new Runnable() {
+        final Runnable runnable = new Runnable() {
             public void run() {
 
-                for (Node node : new ArrayList<>(graph.getNodes())) {
+                for (final Node node : new ArrayList<>(graph.getNodes())) {
                     if (node.getNodeType() == NodeType.ERROR) {
                         ((SemGraph) graph).setShowErrorTerms(false);
 //                        graph.removeNode(node);
@@ -574,34 +573,34 @@ public class LayoutUtils {
 
                 GraphEditorUtils.editkamadaKawaiLayoutParams();
 
-                boolean initializeRandomly = Preferences.userRoot()
+                final boolean initializeRandomly = Preferences.userRoot()
                         .getBoolean(
                                 "kamadaKawaiLayoutInitializeRandomly",
                                 false);
-                double naturalEdgeLength = Preferences.userRoot()
+                final double naturalEdgeLength = Preferences.userRoot()
                         .getDouble("kamadaKawaiLayoutNaturalEdgeLength",
                                 80.0);
-                double springConstant = Preferences.userRoot()
+                final double springConstant = Preferences.userRoot()
                         .getDouble("kamadaKawaiLayoutSpringConstant",
                                 0.2);
-                double stopEnergy = Preferences.userRoot().getDouble(
+                final double stopEnergy = Preferences.userRoot().getDouble(
                         "kamadaKawaiLayoutStopEnergy", 1.0);
 
                 GraphUtils.kamadaKawaiLayout(graph, initializeRandomly,
                         naturalEdgeLength, springConstant, stopEnergy);
                 layoutEditable.layoutByGraph(graph);
-                layout = Layout.kamadaKawai;
+                LayoutUtils.layout = Layout.kamadaKawai;
             }
         };
 
-        Thread thread = new Thread(runnable);
+        final Thread thread = new Thread(runnable);
         thread.start();
     }
 
-    public static void fruchtermanReingoldLayout(LayoutEditable layoutEditable) {
-        Graph graph = layoutEditable.getGraph();
+    public static void fruchtermanReingoldLayout(final LayoutEditable layoutEditable) {
+        final Graph graph = layoutEditable.getGraph();
 
-        for (Node node : new ArrayList<>(graph.getNodes())) {
+        for (final Node node : new ArrayList<>(graph.getNodes())) {
             if (node.getNodeType() == NodeType.ERROR) {
                 ((SemGraph) graph).setShowErrorTerms(false);
             }
@@ -609,67 +608,67 @@ public class LayoutUtils {
 
         GraphUtils.fruchtermanReingoldLayout(graph);
         layoutEditable.layoutByGraph(graph);
-        layout = Layout.fruchtermReingold;
+        LayoutUtils.layout = Layout.fruchtermReingold;
     }
 
-    public static void distanceFromSelectedLayout(LayoutEditable layoutEditable) {
-        Graph graph = layoutEditable.getGraph();
+    public static void distanceFromSelectedLayout(final LayoutEditable layoutEditable) {
+        final Graph graph = layoutEditable.getGraph();
 
-        for (Node node : new ArrayList<>(graph.getNodes())) {
+        for (final Node node : new ArrayList<>(graph.getNodes())) {
             if (node.getNodeType() == NodeType.ERROR) {
                 graph.removeNode(node);
             }
         }
 
-        DistanceFromSelected layout1 = new DistanceFromSelected(layoutEditable);
+        final DistanceFromSelected layout1 = new DistanceFromSelected(layoutEditable);
         layout1.doLayout();
         layoutEditable.layoutByGraph(graph);
-        layout = Layout.distanceFromSelected;
+        LayoutUtils.layout = Layout.distanceFromSelected;
     }
 
-    public static void lastLayout(LayoutEditable layoutEditable) {
-        switch (layout) {
+    public static void lastLayout(final LayoutEditable layoutEditable) {
+        switch (LayoutUtils.layout) {
             case lag0TopToBottom:
-                copyLag0LayoutTopToBottom(layoutEditable);
+                LayoutUtils.copyLag0LayoutTopToBottom(layoutEditable);
                 break;
             case lag0BottomToTop:
-                copyLag0LayoutBottomToTop(layoutEditable);
+                LayoutUtils.copyLag0LayoutBottomToTop(layoutEditable);
                 break;
             case lag0LeftToRight:
-                copyLag0LayoutLeftToRight(layoutEditable);
+                LayoutUtils.copyLag0LayoutLeftToRight(layoutEditable);
                 break;
             case lag0RightToLeft:
-                copyLag0LayoutRightToLeft(layoutEditable);
+                LayoutUtils.copyLag0LayoutRightToLeft(layoutEditable);
                 break;
             case topToBottom:
-                topToBottomLayout(layoutEditable);
+                LayoutUtils.topToBottomLayout(layoutEditable);
                 break;
             case bottomToTop:
-                bottomToTopLayout(layoutEditable);
+                LayoutUtils.bottomToTopLayout(layoutEditable);
                 break;
             case leftToRight:
-                leftToRightLayout(layoutEditable);
+                LayoutUtils.leftToRightLayout(layoutEditable);
                 break;
             case rightToLeft:
-                rightToLeftLayout(layoutEditable);
+                LayoutUtils.rightToLeftLayout(layoutEditable);
                 break;
             case layered:
-                layeredDrawingLayout(layoutEditable);
+                LayoutUtils.layeredDrawingLayout(layoutEditable);
                 break;
             case source:
-                sourceGraphLayout(layoutEditable);
+                LayoutUtils.sourceGraphLayout(layoutEditable);
                 break;
             case knowledge:
-                knowledgeLayout(layoutEditable);
+                LayoutUtils.knowledgeLayout(layoutEditable);
                 break;
             case circle:
-                circleLayout(layoutEditable);
+                LayoutUtils.circleLayout(layoutEditable);
                 break;
             case kamadaKawai:
-                kamadaKawaiLayout(layoutEditable);
+                LayoutUtils.kamadaKawaiLayout(layoutEditable);
                 break;
             case fruchtermReingold:
-                fruchtermanReingoldLayout(layoutEditable);
+                LayoutUtils.fruchtermanReingoldLayout(layoutEditable);
                 break;
             default:
         }

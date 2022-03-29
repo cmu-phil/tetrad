@@ -45,15 +45,15 @@ public class GraphIntersectionsEditor extends JPanel {
     /**
      * Constructs the editor given the model
      */
-    public GraphIntersectionsEditor(GraphAdjacencyIntersectionWrapper comparison) {
-        graphs = comparison.getGraphs();
-        this.setup();
+    public GraphIntersectionsEditor(final GraphAdjacencyIntersectionWrapper comparison) {
+        this.graphs = comparison.getGraphs();
+        setup();
     }
 
     //============================ Private Methods =========================//
 
 
-    private boolean isLegal(String text) {
+    private boolean isLegal(final String text) {
 //        if (!NamingProtocol.isLegalName(text)) {
 //            JOptionPane.showMessageDialog(this, NamingProtocol.getProtocolDescription() + ": " + text);
 //            return false;
@@ -62,32 +62,32 @@ public class GraphIntersectionsEditor extends JPanel {
     }
 
     private void setup() {
-        String compareString = GraphUtils.getIntersectionComparisonString(graphs);
+        final String compareString = GraphUtils.getIntersectionComparisonString(this.graphs);
 
-        Font font = new Font("Monospaced", Font.PLAIN, 14);
-        JTextArea textPane = new JTextArea();
+        final Font font = new Font("Monospaced", Font.PLAIN, 14);
+        final JTextArea textPane = new JTextArea();
         textPane.setText(compareString);
 
         textPane.setFont(font);
 //        textPane.setCaretPosition(textPane.getStyledDocument().getLength());
 
-        JScrollPane scroll = new JScrollPane(textPane);
+        final JScrollPane scroll = new JScrollPane(textPane);
         scroll.setPreferredSize(new Dimension(400, 400));
 
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        add(Box.createVerticalStrut(10));
+        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        this.add(Box.createVerticalStrut(10));
 
-        Box box = Box.createHorizontalBox();
-        add(box);
-        add(Box.createVerticalStrut(10));
+        final Box box = Box.createHorizontalBox();
+        this.add(box);
+        this.add(Box.createVerticalStrut(10));
 
-        Box box1 = Box.createHorizontalBox();
+        final Box box1 = Box.createHorizontalBox();
         box1.add(new JLabel("Graph Comparison: "));
         box1.add(Box.createHorizontalGlue());
 
-        this.add(box1);
-        this.setLayout(new BorderLayout());
-        this.add(scroll);
+        add(box1);
+        setLayout(new BorderLayout());
+        add(scroll);
     }
 
 

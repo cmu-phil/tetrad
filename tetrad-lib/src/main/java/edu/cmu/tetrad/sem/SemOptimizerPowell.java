@@ -61,17 +61,17 @@ public class SemOptimizerPowell implements SemOptimizer {
 
     //=========================PUBLIC METHODS==========================//
 
-    public void optimize(SemIm semIm) {
+    public void optimize(final SemIm semIm) {
         double min = Double.POSITIVE_INFINITY;
         double[] point = null;
 
-        for (int count = 0; count < numRestarts + 1; count++) {
+        for (int count = 0; count < this.numRestarts + 1; count++) {
 //            System.out.println("Trial " + (count + 1));
-            SemIm _sem2 = new SemIm(semIm);
+            final SemIm _sem2 = new SemIm(semIm);
 
-            List<Parameter> freeParameters = _sem2.getFreeParameters();
+            final List<Parameter> freeParameters = _sem2.getFreeParameters();
 
-            double[] p = new double[freeParameters.size()];
+            final double[] p = new double[freeParameters.size()];
 
             for (int i = 0; i < freeParameters.size(); i++) {
                 if (freeParameters.get(i).getType() == ParamType.VAR) {
@@ -83,15 +83,15 @@ public class SemOptimizerPowell implements SemOptimizer {
 
             _sem2.setFreeParamValues(p);
 
-            MultivariateOptimizer search = new PowellOptimizer(1e-7, 1e-7);
-            PointValuePair pair = search.optimize(
+            final MultivariateOptimizer search = new PowellOptimizer(1e-7, 1e-7);
+            final PointValuePair pair = search.optimize(
                     new InitialGuess(_sem2.getFreeParamValues()),
-                    new ObjectiveFunction(this.fittingFunction(semIm)),
+                    new ObjectiveFunction(fittingFunction(semIm)),
                     GoalType.MINIMIZE,
                     new MaxEval(100000)
             );
 
-            double chisq = _sem2.getChiSquare();
+            final double chisq = _sem2.getChiSquare();
 //            System.out.println("chisq = " + chisq);
 
             if (chisq < min) {
@@ -111,18 +111,18 @@ public class SemOptimizerPowell implements SemOptimizer {
         return "Sem Optimizer PAL Powell";
     }
 
-    private FittingFunction fittingFunction(SemIm sem) {
+    private FittingFunction fittingFunction(final SemIm sem) {
         return new FittingFunction(sem);
     }
 
     @Override
-    public void setNumRestarts(int numRestarts) {
+    public void setNumRestarts(final int numRestarts) {
         this.numRestarts = numRestarts;
     }
 
     @Override
     public int getNumRestarts() {
-        return numRestarts;
+        return this.numRestarts;
     }
 
 
@@ -144,9 +144,9 @@ public class SemOptimizerPowell implements SemOptimizer {
         /**
          * Constructs a new CoefFittingFunction for the given Sem.
          */
-        public FittingFunction(SemIm sem) {
+        public FittingFunction(final SemIm sem) {
             this.sem = sem;
-            freeParameters = sem.getFreeParameters();
+            this.freeParameters = sem.getFreeParameters();
         }
 
 
@@ -157,22 +157,22 @@ public class SemOptimizerPowell implements SemOptimizer {
          */
 
         @Override
-        public double value(double[] parameters) {
-            for (double parameter : parameters) {
+        public double value(final double[] parameters) {
+            for (final double parameter : parameters) {
                 if (Double.isNaN(parameter) || Double.isInfinite(parameter)) {
                     return 100000;
                 }
             }
 
             for (int i = 0; i < parameters.length; i++) {
-                if (freeParameters.get(i).getType() == ParamType.VAR && parameters[i] <= 0.0) {
+                if (this.freeParameters.get(i).getType() == ParamType.VAR && parameters[i] <= 0.0) {
                     return 100000;
                 }
             }
 
-            sem.setFreeParamValues(parameters);
+            this.sem.setFreeParamValues(parameters);
 
-            double fml = sem.getScore();
+            final double fml = this.sem.getScore();
 
             if (Double.isNaN(fml) || Double.isInfinite(fml)) {
                 return 100000;

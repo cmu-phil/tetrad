@@ -28,7 +28,6 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.util.DoubleTextField;
-import edu.cmu.tetradapp.util.DoubleTextField.Filter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -58,29 +57,29 @@ final class MissingDataInjectorAction extends AbstractAction {
     /**
      * Creates a new action to split by collinear columns.
      */
-    public MissingDataInjectorAction(DataEditor editor) {
+    public MissingDataInjectorAction(final DataEditor editor) {
         super("Inject Missing Data Randomly");
 
         if (editor == null) {
             throw new NullPointerException();
         }
 
-        dataEditor = editor;
+        this.dataEditor = editor;
     }
 
     /**
      * Performs the action of loading a session from a file.
      */
-    public void actionPerformed(ActionEvent e) {
-        DataModel dataModel = this.getDataEditor().getSelectedDataModel();
+    public void actionPerformed(final ActionEvent e) {
+        final DataModel dataModel = getDataEditor().getSelectedDataModel();
 
 
         if (dataModel instanceof DataSet) {
-            DataSet dataSet = (DataSet) dataModel;
+            final DataSet dataSet = (DataSet) dataModel;
 
 
-            JComponent editor = this.editor();
-            int selection = JOptionPane.showOptionDialog(
+            final JComponent editor = editor();
+            final int selection = JOptionPane.showOptionDialog(
                     JOptionUtils.centeringComp(), editor, "Probability",
                     JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
                     null, new String[]{"Done", "Cancel"}, "Done");
@@ -89,19 +88,19 @@ final class MissingDataInjectorAction extends AbstractAction {
                 return;
             }
 
-            int numVars = dataSet.getNumColumns();
+            final int numVars = dataSet.getNumColumns();
 
-            double prob = this.getProb();
-            double[] probs = new double[numVars];
+            final double prob = getProb();
+            final double[] probs = new double[numVars];
 
             Arrays.fill(probs, prob);
 
-            DataSet newDataSet = DataUtils.addMissingData(dataSet, probs);
+            final DataSet newDataSet = DataUtils.addMissingData(dataSet, probs);
 
-            DataModelList list = new DataModelList();
+            final DataModelList list = new DataModelList();
             list.add(newDataSet);
-            this.getDataEditor().reset(list);
-            this.getDataEditor().selectFirstTab();
+            getDataEditor().reset(list);
+            getDataEditor().selectFirstTab();
         } else {
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     "Must be a tabular data set.");
@@ -109,31 +108,31 @@ final class MissingDataInjectorAction extends AbstractAction {
     }
 
     private JComponent editor() {
-        JPanel editor = new JPanel();
+        final JPanel editor = new JPanel();
         editor.setLayout(new BorderLayout());
 
-        DoubleTextField probField = new DoubleTextField(this.getProb(), 6, NumberFormatUtil.getInstance().getNumberFormat());
-        probField.setFilter(new Filter() {
-            public double filter(double value, double oldValue) {
+        final DoubleTextField probField = new DoubleTextField(getProb(), 6, NumberFormatUtil.getInstance().getNumberFormat());
+        probField.setFilter(new DoubleTextField.Filter() {
+            public double filter(final double value, final double oldValue) {
                 try {
-                    MissingDataInjectorAction.this.setProb(value);
+                    setProb(value);
                     return value;
-                } catch (IllegalArgumentException e) {
+                } catch (final IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
         // continue workbench construction.
-        Box b1 = Box.createVerticalBox();
+        final Box b1 = Box.createVerticalBox();
 
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("<html>" +
                 "The input dataset will have missing data values inserted " +
                 "<br>independently for each variable in each case with the" +
                 "<br>probability specified." + "</html>"));
 
-        Box b7 = Box.createHorizontalBox();
+        final Box b7 = Box.createHorizontalBox();
         b7.add(Box.createHorizontalGlue());
         b7.add(new JLabel("<html>" + "<i>Probability:  </i>" + "</html>"));
         b7.add(probField);
@@ -147,14 +146,14 @@ final class MissingDataInjectorAction extends AbstractAction {
     }
 
     private DataEditor getDataEditor() {
-        return dataEditor;
+        return this.dataEditor;
     }
 
     private double getProb() {
-        return prob;
+        return this.prob;
     }
 
-    private void setProb(double prob) {
+    private void setProb(final double prob) {
         if (prob < 0.0 || prob > 1.0) {
             throw new IllegalArgumentException(
                     "Probability must be between 0.0 and 1.0: " + prob);

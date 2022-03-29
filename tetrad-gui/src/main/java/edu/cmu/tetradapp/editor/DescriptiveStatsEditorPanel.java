@@ -63,62 +63,62 @@ class DescriptiveStatsEditorPanel extends JPanel {
     /**
      * Constructs the editor panel given the initial histogram and the dataset.
      */
-    public DescriptiveStatsEditorPanel(Node selected, DataSet dataSet) {
+    public DescriptiveStatsEditorPanel(final Node selected, final DataSet dataSet) {
         //   construct components
-        setLayout(new BorderLayout());
+        this.setLayout(new BorderLayout());
         // first build histogram and components used in the editor.
         this.dataSet = dataSet;
-        variableBox = new JComboBox();
-        ListCellRenderer renderer = new VariableBoxRenderer();
-        variableBox.setRenderer(renderer);
-        for (Node node : dataSet.getVariables()) {
+        this.variableBox = new JComboBox();
+        final ListCellRenderer renderer = new VariableBoxRenderer();
+        this.variableBox.setRenderer(renderer);
+        for (final Node node : dataSet.getVariables()) {
 //            if (node instanceof ContinuousVariable) {
-            variableBox.addItem(node);
+            this.variableBox.addItem(node);
             if (node == selected) {
-                variableBox.setSelectedItem(node);
+                this.variableBox.setSelectedItem(node);
             }
 //            }
         }
-        variableBox.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
+        this.variableBox.addItemListener(new ItemListener() {
+            public void itemStateChanged(final ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
-                    Node node = (Node) e.getItem();
-                    DescriptiveStatsEditorPanel.this.changeDescriptiveStats(DescriptiveStats.generateDescriptiveStats(DescriptiveStatsEditorPanel.this.dataSet, node));
+                    final Node node = (Node) e.getItem();
+                    changeDescriptiveStats(DescriptiveStats.generateDescriptiveStats(DescriptiveStatsEditorPanel.this.dataSet, node));
                 }
             }
         });
 
         // build the gui.
-        add(this.buildEditArea(), BorderLayout.CENTER);
+        this.add(buildEditArea(), BorderLayout.CENTER);
     }
 
     //========================== Private Methods ================================//
 
-    private void changeDescriptiveStats(String test) {
+    private void changeDescriptiveStats(final String test) {
         // fire event
-        firePropertyChange("histogramChange", null, test);
+        this.firePropertyChange("histogramChange", null, test);
     }
 
 
-    private static void setPreferredAsMax(JComponent component) {
+    private static void setPreferredAsMax(final JComponent component) {
         component.setMaximumSize(component.getPreferredSize());
 
     }
 
 
     private Box buildEditArea() {
-        setPreferredAsMax(variableBox);
+        DescriptiveStatsEditorPanel.setPreferredAsMax(this.variableBox);
 
-        Box main = Box.createVerticalBox();
-        Box hBox = Box.createHorizontalBox();
+        final Box main = Box.createVerticalBox();
+        final Box hBox = Box.createHorizontalBox();
         hBox.add(Box.createHorizontalStrut(10));
         hBox.add(new JLabel("Select Variable: "));
         hBox.add(Box.createHorizontalStrut(10));
-        hBox.add(variableBox);
+        hBox.add(this.variableBox);
         hBox.add(Box.createHorizontalGlue());
         main.add(hBox);
         main.add(Box.createVerticalStrut(5));
-        Box hBox2 = Box.createHorizontalBox();
+        final Box hBox2 = Box.createHorizontalBox();
         hBox2.add(Box.createHorizontalStrut(10));
         hBox2.add(Box.createHorizontalGlue());
         main.add(hBox2);
@@ -135,19 +135,19 @@ class DescriptiveStatsEditorPanel extends JPanel {
 
     private static class VariableBoxRenderer extends DefaultListCellRenderer {
 
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            Node node = (Node) value;
+        public Component getListCellRendererComponent(final JList list, final Object value, final int index, final boolean isSelected, final boolean cellHasFocus) {
+            final Node node = (Node) value;
             if (node == null) {
-                setText("");
+                this.setText("");
             } else {
-                setText(node.getName());
+                this.setText(node.getName());
             }
             if (isSelected) {
-                this.setBackground(list.getSelectionBackground());
-                this.setForeground(list.getSelectionForeground());
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());
             } else {
-                this.setBackground(list.getBackground());
-                this.setForeground(list.getForeground());
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
             }
 
             return this;

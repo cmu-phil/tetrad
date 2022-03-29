@@ -46,7 +46,7 @@ public class TestSession {
     private String eventId;
 
     public void setUp() {
-        session = new Session("Test");
+        this.session = new Session("Test");
     }
 
     /**
@@ -55,27 +55,27 @@ public class TestSession {
      */
     @Test
     public void testAddRemoveSessionNodes() {
-        this.setUp();
+        setUp();
 
         // Test adding/removing independent nodes.
-        session.clearNodes();
+        this.session.clearNodes();
 
-        SessionNode node1 = new SessionNode(Type6.class);
-        SessionNode node2 = new SessionNode(Type7.class);
-        SessionNode node3 = new SessionNode(Type8.class);
+        final SessionNode node1 = new SessionNode(Type6.class);
+        final SessionNode node2 = new SessionNode(Type7.class);
+        final SessionNode node3 = new SessionNode(Type8.class);
 
-        session.addNode(node1);
-        session.addNode(node2);
-        session.addNode(node3);
-        assertEquals(3, session.getNodes().size());
-        assertTrue(session.getNodes().contains(node1));
-        assertTrue(session.getNodes().contains(node2));
-        assertTrue(session.getNodes().contains(node3));
-        session.removeNode(node2);
-        assertEquals(2, session.getNodes().size());
-        assertTrue(!session.getNodes().contains(node2));
-        session.clearNodes();
-        assertEquals(0, session.getNodes().size());
+        this.session.addNode(node1);
+        this.session.addNode(node2);
+        this.session.addNode(node3);
+        assertEquals(3, this.session.getNodes().size());
+        assertTrue(this.session.getNodes().contains(node1));
+        assertTrue(this.session.getNodes().contains(node2));
+        assertTrue(this.session.getNodes().contains(node3));
+        this.session.removeNode(node2);
+        assertEquals(2, this.session.getNodes().size());
+        assertTrue(!this.session.getNodes().contains(node2));
+        this.session.clearNodes();
+        assertEquals(0, this.session.getNodes().size());
     }
 
     /**
@@ -83,126 +83,126 @@ public class TestSession {
      */
 //    @Test
     public void testEvents() {
-        this.setUp();
+        setUp();
         final boolean simulation = true;
 
-        SessionListener listener = new SessionListener() {
+        final SessionListener listener = new SessionListener() {
 
             /**
              * This method is called when a node is added.
              */
-            public void nodeAdded(SessionEvent event) {
-                TestSession.this.setEventId("nodeAdded");
+            public void nodeAdded(final SessionEvent event) {
+                setEventId("nodeAdded");
             }
 
             /**
              * This method is called when a node is removed.
              */
-            public void nodeRemoved(SessionEvent event) {
-                TestSession.this.setEventId("nodeRemoved");
+            public void nodeRemoved(final SessionEvent event) {
+                setEventId("nodeRemoved");
             }
 
             /**
              * This method is called when a parent is added.
              */
-            public void parentAdded(SessionEvent event) {
-                TestSession.this.setEventId("parentAdded");
+            public void parentAdded(final SessionEvent event) {
+                setEventId("parentAdded");
             }
 
             /**
              * This method is called when a parent is removed.
              */
-            public void parentRemoved(SessionEvent event) {
-                TestSession.this.setEventId("parentRemoved");
+            public void parentRemoved(final SessionEvent event) {
+                setEventId("parentRemoved");
             }
 
             /**
              * This method is called when a model is created for a node.
              */
-            public void modelCreated(SessionEvent event) {
-                TestSession.this.setEventId("modelCreated");
+            public void modelCreated(final SessionEvent event) {
+                setEventId("modelCreated");
             }
 
             /**
              * This method is called when a model is destroyed for a node.
              */
-            public void modelDestroyed(SessionEvent event) {
-                TestSession.this.setEventId("modelDestroyed");
+            public void modelDestroyed(final SessionEvent event) {
+                setEventId("modelDestroyed");
             }
 
             /**
              * This method is called when a model is destroyed for a node.
              */
-            public void modelUnclear(SessionEvent event) {
-                TestSession.this.setEventId("modelUnclear");
+            public void modelUnclear(final SessionEvent event) {
+                setEventId("modelUnclear");
             }
 
             /**
              * This method is called when a node is executed manually.
              */
-            public void executionStarted(SessionEvent event) {
-                TestSession.this.setEventId("executionBegun");
+            public void executionStarted(final SessionEvent event) {
+                setEventId("executionBegun");
             }
 
             /**
              * This method is called when a node is executed manually.
              */
-            public void repetitionChanged(SessionEvent event) {
-                TestSession.this.setEventId("repetitionChanged");
+            public void repetitionChanged(final SessionEvent event) {
+                setEventId("repetitionChanged");
             }
 
             /**
              * This method is called when a node is executed manually.
              */
-            public void addingEdge(SessionEvent event) {
-                TestSession.this.setEventId("addingEdge");
+            public void addingEdge(final SessionEvent event) {
+                setEventId("addingEdge");
             }
         };
 
         // List to the session.
-        session.addSessionListener(listener);
+        this.session.addSessionListener(listener);
 
         // Test nodeAdded, nodeRemoved.
         try {
-            this.setEventId(null);
+            setEventId(null);
 
-            SessionNode node1 = new SessionNode(Type6.class);
+            final SessionNode node1 = new SessionNode(Type6.class);
 
-            session.addNode(node1);
-            assertEquals("nodeAdded", this.getEventId());
+            this.session.addNode(node1);
+            assertEquals("nodeAdded", getEventId());
 
-            SessionNode node2 = new SessionNode(Type7.class);
-            SessionNode node3 = new SessionNode(Type8.class);
+            final SessionNode node2 = new SessionNode(Type7.class);
+            final SessionNode node3 = new SessionNode(Type8.class);
 
-            session.addNode(node2);
-            session.addNode(node3);
-            this.setEventId(null);
+            this.session.addNode(node2);
+            this.session.addNode(node3);
+            setEventId(null);
             node1.addParent(node2);
-            assertEquals("parentAdded", this.getEventId());
-            this.setEventId(null);
+            assertEquals("parentAdded", getEventId());
+            setEventId(null);
             node2.createModel(Type7.class, simulation);
-            assertEquals("modelCreated", this.getEventId());
-            this.setEventId(null);
+            assertEquals("modelCreated", getEventId());
+            setEventId(null);
             node2.destroyModel();
-            assertEquals("modelDestroyed", this.getEventId());
-            this.setEventId(null);
+            assertEquals("modelDestroyed", getEventId());
+            setEventId(null);
             node1.removeParent(node2);
-            assertEquals("parentRemoved", this.getEventId());
-            this.setEventId(null);
-            session.removeNode(node2);
-            assertEquals("nodeRemoved", this.getEventId());
-        } catch (Exception e) {
+            assertEquals("parentRemoved", getEventId());
+            setEventId(null);
+            this.session.removeNode(node2);
+            assertEquals("nodeRemoved", getEventId());
+        } catch (final Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
         }
     }
 
-    private void setEventId(String eventId) {
+    private void setEventId(final String eventId) {
         this.eventId = eventId;
     }
 
     private String getEventId() {
-        return eventId;
+        return this.eventId;
     }
 
     /**
@@ -215,18 +215,18 @@ public class TestSession {
      */
 //    @Test
     public void rtestSerialization() {
-        this.setUp();
+        setUp();
         final boolean simulation = true;
 
-        session.clearNodes();
+        this.session.clearNodes();
 
-        SessionNode node1 = new SessionNode(Type6.class);
-        SessionNode node2 = new SessionNode(Type7.class);
-        SessionNode node3 = new SessionNode(Type8.class);
+        final SessionNode node1 = new SessionNode(Type6.class);
+        final SessionNode node2 = new SessionNode(Type7.class);
+        final SessionNode node3 = new SessionNode(Type8.class);
 
-        session.addNode(node1);
-        session.addNode(node2);
-        session.addNode(node3);
+        this.session.addNode(node1);
+        this.session.addNode(node2);
+        this.session.addNode(node3);
         node1.addParent(node2);
         node1.addParent(node3);
         node3.addParent(node2);
@@ -235,13 +235,13 @@ public class TestSession {
             node2.createModel(Type7.class, simulation);
             node3.createModel(Type8.class, simulation);
             node1.createModel(Type6.class, simulation);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             fail("Model not created.");
         }
 
         try {
-            new MarshalledObject(session).get();
-        } catch (Exception e) {
+            new MarshalledObject(this.session).get();
+        } catch (final Exception e) {
             fail("Serialization failed.");
         }
     }

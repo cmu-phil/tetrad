@@ -21,13 +21,13 @@ public class Parameters implements TetradSerializable {
     public Parameters() {
     }
 
-    public Parameters(Parameters parameters) {
+    public Parameters(final Parameters parameters) {
         if (parameters == null) {
             throw new NullPointerException();
         }
         this.parameters = new LinkedHashMap<>(parameters.parameters);
-        usedParameters = new LinkedHashSet<>(parameters.usedParameters);
-        overriddenParameters = new HashMap<>(parameters.overriddenParameters);
+        this.usedParameters = new LinkedHashSet<>(parameters.usedParameters);
+        this.overriddenParameters = new HashMap<>(parameters.overriddenParameters);
     }
 
     public static Parameters serializableInstance() {
@@ -35,13 +35,13 @@ public class Parameters implements TetradSerializable {
     }
 
     // Includes all of the given parameters setting with the current parameter settings.
-    public void putAll(Parameters parameters) {
+    public void putAll(final Parameters parameters) {
         if (parameters == null) {
             throw new NullPointerException();
         }
         this.parameters.putAll(parameters.parameters);
-        usedParameters.addAll(parameters.usedParameters);
-        overriddenParameters.putAll(parameters.overriddenParameters);
+        this.usedParameters.addAll(parameters.usedParameters);
+        this.overriddenParameters.putAll(parameters.overriddenParameters);
     }
 
     /**
@@ -52,8 +52,8 @@ public class Parameters implements TetradSerializable {
      */
     @Override
     public String toString() {
-        return usedParameters.stream()
-                .map(e -> String.format("%s = %s", e, parameters.get(e)[0]))
+        return this.usedParameters.stream()
+                .map(e -> String.format("%s = %s", e, this.parameters.get(e)[0]))
                 .collect(Collectors.joining(System.lineSeparator()));
     }
 
@@ -64,8 +64,8 @@ public class Parameters implements TetradSerializable {
      * @param name The name of the parameter.
      * @return The integer value of this parameter.
      */
-    public int getInt(String name) {
-        return ((Number) this.get(name, ParamDescriptions.getInstance().get(name).getDefaultValue())).intValue();
+    public int getInt(final String name) {
+        return ((Number) get(name, ParamDescriptions.getInstance().get(name).getDefaultValue())).intValue();
     }
 
     /**
@@ -75,10 +75,10 @@ public class Parameters implements TetradSerializable {
      * @param name The name of the parameter.
      * @return The boolean value of this parameter.
      */
-    public boolean getBoolean(String name) {
+    public boolean getBoolean(final String name) {
         try {
-            return (Boolean) this.get(name, ParamDescriptions.getInstance().get(name).getDefaultValue());
-        } catch (Exception e) {
+            return (Boolean) get(name, ParamDescriptions.getInstance().get(name).getDefaultValue());
+        } catch (final Exception e) {
             throw new RuntimeException("ERROR: Parameter " + name + " was not actually boolean.");
         }
     }
@@ -90,8 +90,8 @@ public class Parameters implements TetradSerializable {
      * @param name The name or the parameter.
      * @return The double value of this parameter.
      */
-    public double getDouble(String name) {
-        return ((Number) this.get(name, ParamDescriptions.getInstance().get(name).getDefaultValue())).doubleValue();
+    public double getDouble(final String name) {
+        return ((Number) get(name, ParamDescriptions.getInstance().get(name).getDefaultValue())).doubleValue();
     }
 
     /**
@@ -101,8 +101,8 @@ public class Parameters implements TetradSerializable {
      * @param name The name or the parameter.
      * @return The string value of this parameter.
      */
-    public String getString(String name) {
-        return String.valueOf(this.get(name, ParamDescriptions.getInstance().get(name).getDefaultValue()));
+    public String getString(final String name) {
+        return String.valueOf(get(name, ParamDescriptions.getInstance().get(name).getDefaultValue()));
     }
 
     /**
@@ -112,8 +112,8 @@ public class Parameters implements TetradSerializable {
      * @param name The name of the parameter.
      * @return The object value of this parameter.
      */
-    public Object get(String name) {
-        return this.get(name, ParamDescriptions.getInstance().get(name).getDefaultValue());
+    public Object get(final String name) {
+        return get(name, ParamDescriptions.getInstance().get(name).getDefaultValue());
     }
 
     /**
@@ -123,8 +123,8 @@ public class Parameters implements TetradSerializable {
      * @param name The name of the parameter.
      * @return The integer value of this parameter.
      */
-    public int getInt(String name, int defaultValue) {
-        return ((Number) this.get(name, defaultValue)).intValue();
+    public int getInt(final String name, final int defaultValue) {
+        return ((Number) get(name, defaultValue)).intValue();
     }
 
     /**
@@ -134,8 +134,8 @@ public class Parameters implements TetradSerializable {
      * @param name The name of the parameter.
      * @return The boolean value of this parameter.
      */
-    public boolean getBoolean(String name, boolean defaultValue) {
-        Object b = this.get(name, defaultValue);
+    public boolean getBoolean(final String name, final boolean defaultValue) {
+        final Object b = get(name, defaultValue);
 
         if (b == null || !(b instanceof Boolean)) {
             return false;
@@ -150,8 +150,8 @@ public class Parameters implements TetradSerializable {
      * @param name The name of the parameter.
      * @return The double value of this parameter.
      */
-    public double getDouble(String name, double defaultValue) {
-        return ((Number) this.get(name, defaultValue)).doubleValue();
+    public double getDouble(final String name, final double defaultValue) {
+        return ((Number) get(name, defaultValue)).doubleValue();
     }
 
     /**
@@ -160,8 +160,8 @@ public class Parameters implements TetradSerializable {
      * @param name The name of the parameter.
      * @return The string value of this parameter.
      */
-    public String getString(String name, String defaultValue) {
-        return String.valueOf(this.get(name, defaultValue));
+    public String getString(final String name, final String defaultValue) {
+        return String.valueOf(get(name, defaultValue));
     }
 
     /**
@@ -170,23 +170,23 @@ public class Parameters implements TetradSerializable {
      * @param name The name of the parameter.
      * @return The object value of this parameter.
      */
-    public Object get(String name, Object defaultValue) {
-        if (overriddenParameters.containsKey(name)) {
-            return overriddenParameters.get(name);
+    public Object get(final String name, final Object defaultValue) {
+        if (this.overriddenParameters.containsKey(name)) {
+            return this.overriddenParameters.get(name);
         }
 
-        usedParameters.add(name);
-        Object[] objects = parameters.get(name);
+        this.usedParameters.add(name);
+        final Object[] objects = this.parameters.get(name);
 
         if (objects == null) {
 //            if (defaultValue != null) {
-            this.set(name, defaultValue);
+            set(name, defaultValue);
             return defaultValue;
 //            } else {
 //                throw new IllegalArgumentException("Parameter '" + name + "' has no default value.");
 //            }
         } else {
-            if (this.getNumValues(name) != 1) {
+            if (getNumValues(name) != 1) {
                 System.out.println("ERROR. Parameter '" + name + "' was not listed among the algorithm parameters "
                         + "for this algorithm. Skipping this run.\n");
             }
@@ -201,15 +201,15 @@ public class Parameters implements TetradSerializable {
      * @param name The name of the parameter.
      * @return The array of values.
      */
-    public Object[] getValues(String name) {
-        if (overriddenParameters.containsKey(name)) {
-            return (Object[]) overriddenParameters.get(name);
+    public Object[] getValues(final String name) {
+        if (this.overriddenParameters.containsKey(name)) {
+            return (Object[]) this.overriddenParameters.get(name);
         }
 
-        Object[] objects = parameters.get(name);
+        final Object[] objects = this.parameters.get(name);
 
         if (objects == null) {
-            ParamDescription paramDescription = ParamDescriptions.getInstance().get(name);
+            final ParamDescription paramDescription = ParamDescriptions.getInstance().get(name);
             if (paramDescription == null) {
                 throw new IllegalArgumentException("A description of '" + name + "' has "
                         + "not been given in ParamDescriptions.");
@@ -226,8 +226,8 @@ public class Parameters implements TetradSerializable {
      * @param name The name of the parameter.
      * @param n    A list of values for the parameter.
      */
-    public void set(String name, Object... n) {
-        parameters.put(name, n);
+    public void set(final String name, final Object... n) {
+        this.parameters.put(name, n);
     }
 
     /**
@@ -236,8 +236,8 @@ public class Parameters implements TetradSerializable {
      * @param name The name of the parameter.
      * @param s    A list of strings for the parameter.
      */
-    public void set(String name, String... s) {
-        parameters.put(name, s);
+    public void set(final String name, final String... s) {
+        this.parameters.put(name, s);
     }
 
     /**
@@ -246,8 +246,8 @@ public class Parameters implements TetradSerializable {
      * @param name The name of the parameter.
      * @return The number of values set for that parameter.
      */
-    public int getNumValues(String name) {
-        Object[] objects = parameters.get(name);
+    public int getNumValues(final String name) {
+        final Object[] objects = this.parameters.get(name);
         if (objects == null) {
             return 0;
         }
@@ -260,13 +260,13 @@ public class Parameters implements TetradSerializable {
      * @param name  The name of the parameter.
      * @param value The value of the parameter (a single value).
      */
-    public void set(String name, Object value) {
+    public void set(final String name, final Object value) {
         if (value == null) {
             return;
 //            throw new IllegalArgumentException("Parameter '" + name + "' has no default value.");
         }
 
-        parameters.put(name, new Object[]{value});
+        this.parameters.put(name, new Object[]{value});
     }
 
     /**
@@ -275,11 +275,11 @@ public class Parameters implements TetradSerializable {
      * @param name  The name of the parameter.
      * @param value The value of the parameter (a single value).
      */
-    public void set(String name, String value) {
-        parameters.put(name, new String[]{value});
+    public void set(final String name, final String value) {
+        this.parameters.put(name, new String[]{value});
     }
 
     public Set<String> getParametersNames() {
-        return parameters.keySet();
+        return this.parameters.keySet();
     }
 }

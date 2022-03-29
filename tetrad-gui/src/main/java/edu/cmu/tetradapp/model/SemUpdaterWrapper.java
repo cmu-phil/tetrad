@@ -48,19 +48,19 @@ public class SemUpdaterWrapper implements SessionModel {
 
     //=============================CONSTRUCTORS============================//
 
-    public SemUpdaterWrapper(SemEstimatorWrapper wrapper) {
+    public SemUpdaterWrapper(final SemEstimatorWrapper wrapper) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
-        semUpdater = new SemUpdater(wrapper.getEstimatedSemIm());
+        this.semUpdater = new SemUpdater(wrapper.getEstimatedSemIm());
 
     }
 
-    public SemUpdaterWrapper(SemImWrapper wrapper) {
+    public SemUpdaterWrapper(final SemImWrapper wrapper) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
-        semUpdater = new SemUpdater(wrapper.getSemIm());
+        this.semUpdater = new SemUpdater(wrapper.getSemIm());
     }
 
     /**
@@ -76,7 +76,7 @@ public class SemUpdaterWrapper implements SessionModel {
     //==============================PUBLIC METHODS========================//
 
     public SemUpdater getSemUpdater() {
-        return semUpdater;
+        return this.semUpdater;
     }
 
     /**
@@ -92,20 +92,20 @@ public class SemUpdaterWrapper implements SessionModel {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (semUpdater == null) {
+        if (this.semUpdater == null) {
             throw new NullPointerException();
         }
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 }

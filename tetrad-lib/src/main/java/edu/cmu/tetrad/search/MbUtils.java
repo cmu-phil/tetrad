@@ -40,16 +40,16 @@ public class MbUtils {
      *
      * @param includeBidirected true if bidirected edges should be included.
      */
-    public static void trimToMbNodes(Graph graph, Node target,
-                                     boolean includeBidirected) {
+    public static void trimToMbNodes(final Graph graph, final Node target,
+                                     final boolean includeBidirected) {
         if (includeBidirected) {
-            List<Node> pc = graph.getAdjacentNodes(target);
-            List<Node> children = graph.getNodesOutTo(target, Endpoint.ARROW);
+            final List<Node> pc = graph.getAdjacentNodes(target);
+            final List<Node> children = graph.getNodesOutTo(target, Endpoint.ARROW);
 
-            Set<Node> parentsOfChildren = new HashSet<>();
+            final Set<Node> parentsOfChildren = new HashSet<>();
 
-            for (Node v : children) {
-                for (Node w : graph.getAdjacentNodes(v)) {
+            for (final Node v : children) {
+                for (final Node w : graph.getAdjacentNodes(v)) {
                     if (w == target) {
                         continue;
                     }
@@ -69,19 +69,19 @@ public class MbUtils {
                 }
             }
 
-            Set<Node> allRelevantNodes = new HashSet<>();
+            final Set<Node> allRelevantNodes = new HashSet<>();
             allRelevantNodes.add(target);
             allRelevantNodes.addAll(pc);
             allRelevantNodes.addAll(parentsOfChildren);
 
-            List<Node> irrelevantNodes = graph.getNodes();
+            final List<Node> irrelevantNodes = graph.getNodes();
             irrelevantNodes.removeAll(allRelevantNodes);
 
             graph.removeNodes(irrelevantNodes);
         } else {
-            List<Node> pc = new LinkedList<>();
+            final List<Node> pc = new LinkedList<>();
 
-            for (Node node : graph.getAdjacentNodes(target)) {
+            for (final Node node : graph.getAdjacentNodes(target)) {
                 if (graph.isDirectedFromTo(target, node) ||
                         graph.isDirectedFromTo(node, target) ||
                         graph.isUndirectedFromTo(node, target)) {
@@ -89,9 +89,9 @@ public class MbUtils {
                 }
             }
 
-            List<Node> children = new LinkedList<>();
+            final List<Node> children = new LinkedList<>();
 
-            for (Node v : graph.getAdjacentNodes(target)) {
+            for (final Node v : graph.getAdjacentNodes(target)) {
                 if (children.contains(v)) {
                     continue;
                 }
@@ -101,10 +101,10 @@ public class MbUtils {
                 }
             }
 
-            Set<Node> parentsOfChildren = new HashSet<>();
+            final Set<Node> parentsOfChildren = new HashSet<>();
 
-            for (Node v : children) {
-                for (Node w : graph.getAdjacentNodes(v)) {
+            for (final Node v : children) {
+                for (final Node w : graph.getAdjacentNodes(v)) {
                     if (w == target) {
                         continue;
                     }
@@ -122,12 +122,12 @@ public class MbUtils {
                 }
             }
 
-            Set<Node> allRelevantNodes = new HashSet<>();
+            final Set<Node> allRelevantNodes = new HashSet<>();
             allRelevantNodes.add(target);
             allRelevantNodes.addAll(pc);
             allRelevantNodes.addAll(parentsOfChildren);
 
-            List<Node> irrelevantNodes = graph.getNodes();
+            final List<Node> irrelevantNodes = graph.getNodes();
             irrelevantNodes.removeAll(allRelevantNodes);
 
             graph.removeNodes(irrelevantNodes);
@@ -137,18 +137,18 @@ public class MbUtils {
     /**
      * Removes edges among the parents of the target.
      */
-    public static void trimEdgesAmongParents(Graph graph, Node target) {
-        List parents = graph.getParents(target);
+    public static void trimEdgesAmongParents(final Graph graph, final Node target) {
+        final List parents = graph.getParents(target);
 
         if (parents.size() >= 2) {
-            ChoiceGenerator cg = new ChoiceGenerator(parents.size(), 2);
+            final ChoiceGenerator cg = new ChoiceGenerator(parents.size(), 2);
             int[] choice;
 
             while ((choice = cg.next()) != null) {
-                Node v = (Node) parents.get(choice[0]);
-                Node w = (Node) parents.get(choice[1]);
+                final Node v = (Node) parents.get(choice[0]);
+                final Node w = (Node) parents.get(choice[1]);
 
-                Edge edge = graph.getEdge(v, w);
+                final Edge edge = graph.getEdge(v, w);
 
                 if (edge != null) {
 //                    LogUtils.getInstance().finest("Removing edge among parents: " + edge);
@@ -161,29 +161,29 @@ public class MbUtils {
     /**
      * Removes edges among the parents of children of the target.
      */
-    public static void trimEdgesAmongParentsOfChildren(Graph graph,
-                                                       Node target) {
-        List<Node> children = graph.getNodesOutTo(target, Endpoint.ARROW);
-        Set<Node> parents = new HashSet<>();
+    public static void trimEdgesAmongParentsOfChildren(final Graph graph,
+                                                       final Node target) {
+        final List<Node> children = graph.getNodesOutTo(target, Endpoint.ARROW);
+        final Set<Node> parents = new HashSet<>();
 
-        for (Node aChildren : children) {
+        for (final Node aChildren : children) {
             parents.addAll(graph.getParents(aChildren));
         }
 
         parents.remove(target);
         parents.removeAll(graph.getAdjacentNodes(target));
-        List<Node> parentsOfChildren = new ArrayList<>(parents);
+        final List<Node> parentsOfChildren = new ArrayList<>(parents);
 
         if (parentsOfChildren.size() >= 2) {
-            ChoiceGenerator cg =
+            final ChoiceGenerator cg =
                     new ChoiceGenerator(parentsOfChildren.size(), 2);
             int[] choice;
 
             while ((choice = cg.next()) != null) {
-                Node v = parentsOfChildren.get(choice[0]);
-                Node w = parentsOfChildren.get(choice[1]);
+                final Node v = parentsOfChildren.get(choice[0]);
+                final Node w = parentsOfChildren.get(choice[1]);
 
-                Edge edge = graph.getEdge(v, w);
+                final Edge edge = graph.getEdge(v, w);
 
                 if (edge != null) {
 //                    LogUtils.getInstance().finest("Removing edge among parents: " + edge);
@@ -193,8 +193,8 @@ public class MbUtils {
         }
     }
 
-    public static void trimToAdjacents(Graph graph, Node target) {
-        for (Node node : graph.getNodes()) {
+    public static void trimToAdjacents(final Graph graph, final Node target) {
+        for (final Node node : graph.getNodes()) {
             if (node == target) {
                 continue;
             }
@@ -205,9 +205,9 @@ public class MbUtils {
         }
     }
 
-    public static void trimToNeighborhood(Graph graph,
-                                          List<Node> neighborhood) {
-        List<Node> irrelevantNodes = graph.getNodes();
+    public static void trimToNeighborhood(final Graph graph,
+                                          final List<Node> neighborhood) {
+        final List<Node> irrelevantNodes = graph.getNodes();
         irrelevantNodes.removeAll(neighborhood);
 
         graph.removeNodes(irrelevantNodes);
@@ -216,29 +216,29 @@ public class MbUtils {
     /**
      * Trims <code>graph</code> to variables whose least distance to the target is no more than <code>distance</code>
      */
-    public static void trimToDistance(Graph graph, Node target, int distance) {
-        Set<Node> nodes = getNeighborhood(graph, target, distance);
+    public static void trimToDistance(final Graph graph, final Node target, final int distance) {
+        final Set<Node> nodes = MbUtils.getNeighborhood(graph, target, distance);
 
-        List<Node> irrelevantNodes = graph.getNodes();
+        final List<Node> irrelevantNodes = graph.getNodes();
         irrelevantNodes.removeAll(nodes);
 
         graph.removeNodes(irrelevantNodes);
     }
 
-    public static Set<Node> getNeighborhood(Graph graph, Node target,
-                                            int distance) {
+    public static Set<Node> getNeighborhood(final Graph graph, final Node target,
+                                            final int distance) {
         if (distance < 1) {
             throw new IllegalArgumentException("Distance must be >= 1.");
         }
 
-        Set<Node> nodes = new HashSet<>();
+        final Set<Node> nodes = new HashSet<>();
         nodes.add(target);
         Set<Node> tier = new HashSet<>(nodes);
 
         for (int i = 0; i < distance; i++) {
-            Set<Node> adjacents = new HashSet<>();
+            final Set<Node> adjacents = new HashSet<>();
 
-            for (Node aTier : tier) {
+            for (final Node aTier : tier) {
                 adjacents.addAll(graph.getAdjacentNodes(aTier));
             }
 
@@ -254,11 +254,11 @@ public class MbUtils {
      * @param orientBidirectedEdges True iff bidirected edges should be oriented as if they were undirected.
      * @return a list of Dag's.
      */
-    public static List<Graph> generateMbDags(Graph mbCPDAG,
-                                             boolean orientBidirectedEdges,
-                                             IndependenceTest test, int depth,
-                                             Node target) {
-        return new LinkedList<>(listMbDags(new EdgeListGraph(mbCPDAG),
+    public static List<Graph> generateMbDags(final Graph mbCPDAG,
+                                             final boolean orientBidirectedEdges,
+                                             final IndependenceTest test, final int depth,
+                                             final Node target) {
+        return new LinkedList<>(MbUtils.listMbDags(new EdgeListGraph(mbCPDAG),
                 orientBidirectedEdges, test, depth, target));
     }
 
@@ -266,17 +266,17 @@ public class MbUtils {
      * The recursive method used to list the MB DAGS consistent with an MB CPDAG (i.e. with the independence
      * information available to the search.
      */
-    private static Set<Graph> listMbDags(Graph mbCPDAG,
-                                         boolean orientBidirectedEdges,
-                                         IndependenceTest test, int depth,
-                                         Node target) {
-        Set<Graph> dags = new HashSet<>();
-        Graph graph = new EdgeListGraph(mbCPDAG);
-        doAbbreviatedMbOrientation(graph, test, depth, target);
-        Set<Edge> edges = graph.getEdges();
+    private static Set<Graph> listMbDags(final Graph mbCPDAG,
+                                         final boolean orientBidirectedEdges,
+                                         final IndependenceTest test, final int depth,
+                                         final Node target) {
+        final Set<Graph> dags = new HashSet<>();
+        final Graph graph = new EdgeListGraph(mbCPDAG);
+        MbUtils.doAbbreviatedMbOrientation(graph, test, depth, target);
+        final Set<Edge> edges = graph.getEdges();
         Edge edge = null;
 
-        for (Edge _edge : edges) {
+        for (final Edge _edge : edges) {
             if (orientBidirectedEdges && Edges.isBidirectedEdge(_edge)) {
                 edge = _edge;
                 break;
@@ -296,31 +296,31 @@ public class MbUtils {
         graph.setEndpoint(edge.getNode2(), edge.getNode1(), Endpoint.TAIL);
         graph.setEndpoint(edge.getNode1(), edge.getNode2(), Endpoint.ARROW);
         dags.addAll(
-                listMbDags(graph, orientBidirectedEdges, test, depth, target));
+                MbUtils.listMbDags(graph, orientBidirectedEdges, test, depth, target));
 
         graph.setEndpoint(edge.getNode1(), edge.getNode2(), Endpoint.TAIL);
         graph.setEndpoint(edge.getNode2(), edge.getNode1(), Endpoint.ARROW);
         dags.addAll(
-                listMbDags(graph, orientBidirectedEdges, test, depth, target));
+                MbUtils.listMbDags(graph, orientBidirectedEdges, test, depth, target));
 
         return dags;
     }
 
-    public static Graph getOneMbDag(Graph mbCPDAG) {
+    public static Graph getOneMbDag(final Graph mbCPDAG) {
         return SearchGraphUtils.dagFromCPDAG(mbCPDAG);
     }
 
     /**
      * A reiteration of orientation steps 5-7 of the search for use in generating the list of MB DAGs.
      */
-    private static void doAbbreviatedMbOrientation(Graph graph,
-                                                   IndependenceTest test,
-                                                   int depth, Node target) {
+    private static void doAbbreviatedMbOrientation(final Graph graph,
+                                                   final IndependenceTest test,
+                                                   final int depth, final Node target) {
         SearchGraphUtils.orientUsingMeekRulesLocally(new Knowledge2(), graph,
                 test, depth);
-        trimToMbNodes(graph, target, false);
-        trimEdgesAmongParents(graph, target);
-        trimEdgesAmongParentsOfChildren(graph, target);
+        MbUtils.trimToMbNodes(graph, target, false);
+        MbUtils.trimEdgesAmongParents(graph, target);
+        MbUtils.trimEdgesAmongParentsOfChildren(graph, target);
     }
 }
 

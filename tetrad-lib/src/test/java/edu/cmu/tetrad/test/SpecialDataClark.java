@@ -36,67 +36,67 @@ public class SpecialDataClark implements Simulation {
     private List<Graph> graphs = new ArrayList<>();
     private final List<BayesIm> ims = new ArrayList<>();
 
-    public SpecialDataClark(RandomGraph graph) {
-        randomGraph = graph;
+    public SpecialDataClark(final RandomGraph graph) {
+        this.randomGraph = graph;
     }
 
     @Override
-    public void createData(Parameters parameters, boolean newModel) {
+    public void createData(final Parameters parameters, final boolean newModel) {
 //        if (!newModel && !dataSets.isEmpty()) return;
 
-        Graph graph = randomGraph.createGraph(parameters);
+        Graph graph = this.randomGraph.createGraph(parameters);
 
-        dataSets = new ArrayList<>();
-        graphs = new ArrayList<>();
+        this.dataSets = new ArrayList<>();
+        this.graphs = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
 
             if (parameters.getBoolean("differentGraphs") && i > 0) {
-                graph = randomGraph.createGraph(parameters);
+                graph = this.randomGraph.createGraph(parameters);
             }
 
-            graphs.add(graph);
+            this.graphs.add(graph);
 
-            DataSet dataSet = this.simulate(graph, parameters);
+            final DataSet dataSet = simulate(graph, parameters);
             dataSet.setName("" + (i + 1));
-            dataSets.add(dataSet);
+            this.dataSets.add(dataSet);
         }
     }
 
     @Override
-    public DataModel getDataModel(int index) {
-        return dataSets.get(index);
+    public DataModel getDataModel(final int index) {
+        return this.dataSets.get(index);
     }
 
 
     @Override
-    public Graph getTrueGraph(int index) {
-        if (graphs.isEmpty()) {
+    public Graph getTrueGraph(final int index) {
+        if (this.graphs.isEmpty()) {
             return new EdgeListGraph();
         } else {
-            return graphs.get(index);
+            return this.graphs.get(index);
         }
     }
 
     @Override
     public String getDescription() {
-        return "Bayes net simulation using " + randomGraph.getDescription();
+        return "Bayes net simulation using " + this.randomGraph.getDescription();
     }
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
+        final List<String> parameters = new ArrayList<>();
 
-        if (!(randomGraph instanceof SingleGraph)) {
-            parameters.addAll(randomGraph.getParameters());
+        if (!(this.randomGraph instanceof SingleGraph)) {
+            parameters.addAll(this.randomGraph.getParameters());
         }
 
-        if (pm == null) {
+        if (this.pm == null) {
             parameters.addAll(BayesPm.getParameterNames());
         }
 
-        if (im == null) {
+        if (this.im == null) {
             parameters.addAll(MlBayesIm.getParameterNames());
         }
 
@@ -108,7 +108,7 @@ public class SpecialDataClark implements Simulation {
 
     @Override
     public int getNumDataModels() {
-        return dataSets.size();
+        return this.dataSets.size();
     }
 
     @Override
@@ -116,16 +116,16 @@ public class SpecialDataClark implements Simulation {
         return DataType.Discrete;
     }
 
-    private DataSet simulate(Graph graph, Parameters parameters) {
-        int N = parameters.getInt("sampleSize");
+    private DataSet simulate(final Graph graph, final Parameters parameters) {
+        final int N = parameters.getInt("sampleSize");
 
         try {
 
-            GeneralizedSemPm pm = new GeneralizedSemPm(graph);
-            Graph g = pm.getGraph();
+            final GeneralizedSemPm pm = new GeneralizedSemPm(graph);
+            final Graph g = pm.getGraph();
 
 
-            for (String p : pm.getParameters()) {
+            for (final String p : pm.getParameters()) {
                 double coef = RandomUtil.getInstance().nextUniform(0.3, 0.6);
 
                 if (RandomUtil.getInstance().nextDouble() < 0.5) {
@@ -135,13 +135,13 @@ public class SpecialDataClark implements Simulation {
                 pm.setParameterExpression(p, "" + coef);
             }
 
-            for (Node x : g.getNodes()) {
+            for (final Node x : g.getNodes()) {
                 if (!(x.getNodeType() == NodeType.ERROR)) {
-                    String error;
+                    final String error;
 
-                    double s = RandomUtil.getInstance().nextUniform(.1, .4);
+                    final double s = RandomUtil.getInstance().nextUniform(.1, .4);
 
-                    double f = this.getF(s, N);
+                    final double f = getF(s, N);
 
                     if (s > 0) {
                         error = "pow(Uniform(0, 1), " + (1.0 + f) + ")";
@@ -153,25 +153,25 @@ public class SpecialDataClark implements Simulation {
                 }
             }
 
-            GeneralizedSemIm im = new GeneralizedSemIm(pm);
+            final GeneralizedSemIm im = new GeneralizedSemIm(pm);
 
 //            System.out.println(im);
 
             return im.simulateData(N, false);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new IllegalArgumentException("Sorry, I couldn't simulate from that Bayes IM; perhaps not all of\n" +
                     "the parameters have been specified.");
         }
     }
 
-    private double getF(double s, int N) {
+    private double getF(final double s, final int N) {
         double high = 100.0;
         double low = 0.0;
 
         while (high - low > 1e-10) {
-            double midpoint = (high + low) / 2.0;
+            final double midpoint = (high + low) / 2.0;
 
-            if (this.skewf(midpoint, N) < s) {
+            if (skewf(midpoint, N) < s) {
                 low = midpoint;
             } else {
                 high = midpoint;
@@ -181,8 +181,8 @@ public class SpecialDataClark implements Simulation {
         return high;
     }
 
-    private double skewf(double f, int N) {
-        double[] s = new double[N];
+    private double skewf(final double f, final int N) {
+        final double[] s = new double[N];
 
         for (int i = 0; i < N; i++) {
             s[i] = Math.pow(RandomUtil.getInstance().nextUniform(0, 1), abs((1 + f)));

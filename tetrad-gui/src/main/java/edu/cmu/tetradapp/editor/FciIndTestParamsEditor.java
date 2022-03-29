@@ -24,7 +24,6 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
-import edu.cmu.tetradapp.util.IntTextField.Filter;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -43,7 +42,7 @@ class FciIndTestParamsEditor extends JComponent {
     /**
      * The parameters object being edited.
      */
-    private Parameters params;
+    private final Parameters params;
 
     private final DoubleTextField alphaField;
 
@@ -70,27 +69,27 @@ class FciIndTestParamsEditor extends JComponent {
     /**
      * Constructs a dialog to edit the given gene simulation parameters object.
      */
-    public FciIndTestParamsEditor(Parameters params) {
+    public FciIndTestParamsEditor(final Parameters params) {
         this.params = params;
 
-        NumberFormat smallNumberFormat = new DecimalFormat("0E00");
+        final NumberFormat smallNumberFormat = new DecimalFormat("0E00");
 
         // set up text and ties them to the parameters object being edited.
-        alphaField = new DoubleTextField(this.params().getDouble("alpha", 0.001), 8,
+        this.alphaField = new DoubleTextField(params().getDouble("alpha", 0.001), 8,
                 new DecimalFormat("0.0########"), smallNumberFormat, 1e-4);
-        alphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(double value, double oldValue) {
+        this.alphaField.setFilter(new DoubleTextField.Filter() {
+            public double filter(final double value, final double oldValue) {
                 try {
-                    FciIndTestParamsEditor.this.params().set("alpha", 0.001);
+                    params().set("alpha", 0.001);
                     return value;
-                } catch (IllegalArgumentException e) {
+                } catch (final IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
-        depthField = new IntTextField(this.params().getInt("depth", -1), 5);
-        depthField.setFilter(new Filter() {
+        this.depthField = new IntTextField(params().getInt("depth", -1), 5);
+        this.depthField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 try {
                     FciIndTestParamsEditor.this.params().set("depth", value);
@@ -153,19 +152,19 @@ class FciIndTestParamsEditor extends JComponent {
         });
 
         maxReachablePathLengthField = new IntTextField(this.params().getInt("maxReachablePathLength", -1), 3);
-        maxReachablePathLengthField.setFilter(new Filter() {
-            public int filter(int value, int oldValue) {
+        maxReachablePathLengthField.setFilter(new IntTextField.Filter() {
+            public int filter(final int value, final int oldValue) {
                 try {
-                    FciIndTestParamsEditor.this.params().set("maxReachablePathLength", value);
+                    params().set("maxReachablePathLength", value);
                     return value;
-                } catch (Exception e) {
+                } catch (final Exception e) {
                     return oldValue;
                 }
             }
         });
 
 
-        this.buildGui();
+        buildGui();
     }
 
     /**
@@ -174,45 +173,45 @@ class FciIndTestParamsEditor extends JComponent {
      * appropriate listeners.
      */
     private void buildGui() {
-        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        if (alphaField != null) {
-            Box b1 = Box.createHorizontalBox();
+        if (this.alphaField != null) {
+            final Box b1 = Box.createHorizontalBox();
             b1.add(new JLabel("Alpha:"));
             b1.add(Box.createHorizontalStrut(10));
             b1.add(Box.createHorizontalGlue());
-            b1.add(alphaField);
-            this.add(b1);
+            b1.add(this.alphaField);
+            add(b1);
         }
 
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("Depth:"));
         b2.add(Box.createHorizontalStrut(10));
         b2.add(Box.createHorizontalGlue());
-        b2.add(depthField);
-        this.add(b2);
+        b2.add(this.depthField);
+        add(b2);
 
-        Box b3 = Box.createHorizontalBox();
+        final Box b3 = Box.createHorizontalBox();
         b3.add(new JLabel("Use complete rule set: "));
-        b3.add(completeRuleSetCheckBox);
-        this.add(b3);
+        b3.add(this.completeRuleSetCheckBox);
+        add(b3);
 
-        Box b4 = Box.createHorizontalBox();
+        final Box b4 = Box.createHorizontalBox();
         b4.add(new JLabel("Do possible DSEP search: "));
-        b4.add(possibleDsepCheckBox);
-        this.add(b4);
+        b4.add(this.possibleDsepCheckBox);
+        add(b4);
 
-        Box b5 = Box.createHorizontalBox();
+        final Box b5 = Box.createHorizontalBox();
         b5.add(new JLabel("Max reachable path length: "));
-        b5.add(maxReachablePathLengthField);
-        this.add(b5);
+        b5.add(this.maxReachablePathLengthField);
+        add(b5);
 
-        Box b6 = Box.createHorizontalBox();
+        final Box b6 = Box.createHorizontalBox();
         b6.add(new JLabel("Use RFCI (complete rule set): "));
-        b6.add(RFCI_CheckBox);
-        this.add(b6);
+        b6.add(this.RFCI_CheckBox);
+        add(b6);
 
-        this.add(Box.createHorizontalGlue());
+        add(Box.createHorizontalGlue());
     }
 
     /**
@@ -220,7 +219,7 @@ class FciIndTestParamsEditor extends JComponent {
      * public, but it is needed so that the textfields can edit the model.).
      */
     private Parameters params() {
-        return params;
+        return this.params;
     }
 }
 

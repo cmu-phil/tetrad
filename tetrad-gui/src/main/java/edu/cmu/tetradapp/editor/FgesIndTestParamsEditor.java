@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetradapp.model.FgesRunner.Type;
+import edu.cmu.tetradapp.model.FgesRunner;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.IntTextField.Filter;
@@ -41,7 +41,7 @@ import java.text.NumberFormat;
  */
 
 class FgesIndTestParamsEditor extends JComponent {
-    private final Type type;
+    private final FgesRunner.Type type;
     private final Parameters params;
     private DoubleTextField cellPriorField, structurePriorField;
     private JButton uniformStructurePrior;
@@ -54,14 +54,14 @@ class FgesIndTestParamsEditor extends JComponent {
      */
     private final JCheckBox faithfulnessAssumed;
 
-    public FgesIndTestParamsEditor(Parameters params, Type type) {
+    public FgesIndTestParamsEditor(Parameters params, FgesRunner.Type type) {
         this.params = params;
         this.type = type;
 
         NumberFormat nf = new DecimalFormat("0.0####");
         NumberFormat smallNf = new DecimalFormat("0.0E0");
 
-        if (type == Type.DISCRETE) {
+        if (type == FgesRunner.Type.DISCRETE) {
             cellPriorField = new DoubleTextField(
                     this.getFgesIndTestParams().getDouble("samplePrior", 1), 5, nf, smallNf, 1e-4);
 
@@ -164,7 +164,7 @@ class FgesIndTestParamsEditor extends JComponent {
     private void buildGui() {
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        if (type == Type.DISCRETE) {
+        if (type == FgesRunner.Type.DISCRETE) {
             Box b0 = Box.createHorizontalBox();
             b0.add(new JLabel("BDeu:"));
             b0.add(Box.createHorizontalGlue());
@@ -209,7 +209,7 @@ class FgesIndTestParamsEditor extends JComponent {
             b4b.add(Box.createHorizontalGlue());
             b4b.add(depth);
             this.add(b4b);
-        } else if (type == Type.CONTINUOUS || type == Type.MIXED) {
+        } else if (type == FgesRunner.Type.CONTINUOUS || type == FgesRunner.Type.MIXED) {
             Box b7 = Box.createHorizontalBox();
             b7.add(new JLabel("Penalty Discount"));
             b7.add(Box.createHorizontalGlue());
@@ -233,32 +233,32 @@ class FgesIndTestParamsEditor extends JComponent {
             b4b.add(Box.createHorizontalGlue());
             b4b.add(depth);
             this.add(b4b);
-        } else if (type == Type.GRAPH) {
-            Box b8 = Box.createHorizontalBox();
+        } else if (type == FgesRunner.Type.GRAPH) {
+            final Box b8 = Box.createHorizontalBox();
             b8.add(new JLabel("Num CPDAGs to Save"));
             b8.add(Box.createHorizontalGlue());
-            b8.add(numCPDAGsToSave);
-            this.add(b8);
+            b8.add(this.numCPDAGsToSave);
+            add(b8);
 
-            Box b4a = Box.createHorizontalBox();
+            final Box b4a = Box.createHorizontalBox();
             b4a.add(new JLabel("Length 1 faithfulness assumed "));
-            b4a.add(faithfulnessAssumed);
-            this.add(b4a);
+            b4a.add(this.faithfulnessAssumed);
+            add(b4a);
 
-            Box b4b = Box.createHorizontalBox();
+            final Box b4b = Box.createHorizontalBox();
             b4b.add(new JLabel("Depth "));
             b4b.add(Box.createHorizontalGlue());
-            b4b.add(depth);
-            this.add(b4b);
+            b4b.add(this.depth);
+            add(b4b);
 
         } else {
-            throw new IllegalStateException("Unrecognized type: " + type);
+            throw new IllegalStateException("Unrecognized type: " + this.type);
         }
 
     }
 
     private Parameters getFgesIndTestParams() {
-        return params;
+        return this.params;
     }
 
 }

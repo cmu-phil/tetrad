@@ -27,15 +27,15 @@ public class TailPrecision implements Statistic {
     }
 
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        TailConfusion adjConfusion = new TailConfusion(trueGraph, estGraph);
-        double arrowsTp = adjConfusion.getArrowsTp();
-        double arrowsFp = adjConfusion.getArrowsFp();
+    public double getValue(final Graph trueGraph, final Graph estGraph, final DataModel dataModel) {
+        final TailConfusion adjConfusion = new TailConfusion(trueGraph, estGraph);
+        final double arrowsTp = adjConfusion.getArrowsTp();
+        final double arrowsFp = adjConfusion.getArrowsFp();
         return arrowsTp / (arrowsTp + arrowsFp);
     }
 
     @Override
-    public double getNormValue(double value) {
+    public double getNormValue(final double value) {
         return value;
     }
 }

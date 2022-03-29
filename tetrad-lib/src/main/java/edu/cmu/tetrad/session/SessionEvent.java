@@ -50,15 +50,15 @@ public class SessionEvent extends EventObject {
      * Constructs an event where one session node is involved--session node
      * added or removed, model created or destroyed.
      */
-    public SessionEvent(Object source, int type) {
+    public SessionEvent(final Object source, final int type) {
         super(source);
 
         switch (type) {
-            case EXECUTION_STARTED:
+            case SessionEvent.EXECUTION_STARTED:
                 this.type = type;
                 break;
 
-            case ADDING_EDGE:
+            case SessionEvent.ADDING_EDGE:
                 this.type = type;
                 break;
 
@@ -74,7 +74,7 @@ public class SessionEvent extends EventObject {
      * Constructs an event where one session node is involved--session node
      * added or removed, model created or destroyed.
      */
-    public SessionEvent(Object source, SessionNode node, int type) {
+    public SessionEvent(final Object source, final SessionNode node, final int type) {
         super(source);
 
         if (node != null) {
@@ -84,22 +84,22 @@ public class SessionEvent extends EventObject {
         }
 
         switch (type) {
-            case NODE_ADDED:
+            case SessionEvent.NODE_ADDED:
 
                 // Falls through!
-            case NODE_REMOVED:
+            case SessionEvent.NODE_REMOVED:
 
                 // Falls through!
-            case MODEL_CREATED:
+            case SessionEvent.MODEL_CREATED:
 
                 // Falls through!
-            case MODEL_DESTROYED:
+            case SessionEvent.MODEL_DESTROYED:
 
                 // Falls through!
-            case MODEL_UNCLEAR:
+            case SessionEvent.MODEL_UNCLEAR:
 
                 // Falls through!
-            case REPETITION_CHANGED:
+            case SessionEvent.REPETITION_CHANGED:
                 this.type = type;
                 break;
 
@@ -114,8 +114,8 @@ public class SessionEvent extends EventObject {
      * Constructs an event where two session nodes are involved--parent added or
      * removed.
      */
-    public SessionEvent(Object source, SessionNode parent, SessionNode child,
-                        int type) {
+    public SessionEvent(final Object source, final SessionNode parent, final SessionNode child,
+                        final int type) {
 
         super(source);
 
@@ -123,10 +123,10 @@ public class SessionEvent extends EventObject {
         this.child = child;
 
         switch (type) {
-            case PARENT_ADDED:
+            case SessionEvent.PARENT_ADDED:
 
                 // Falls through!
-            case PARENT_REMOVED:
+            case SessionEvent.PARENT_REMOVED:
                 this.type = type;
                 break;
 
@@ -142,14 +142,14 @@ public class SessionEvent extends EventObject {
      * Creates a new SessionEvent with the same information as the given event
      * but with a new source.
      */
-    public SessionEvent(Object source, SessionEvent event) {
+    public SessionEvent(final Object source, final SessionEvent event) {
 
         super(source);
 
-        node = event.getNode();
-        parent = event.getParent();
-        child = event.getChild();
-        type = event.getType();
+        this.node = event.getNode();
+        this.parent = event.getParent();
+        this.child = event.getChild();
+        this.type = event.getType();
     }
 
     /**
@@ -157,7 +157,7 @@ public class SessionEvent extends EventObject {
      * session node.
      */
     public SessionNode getNode() {
-        return node;
+        return this.node;
     }
 
     /**
@@ -165,7 +165,7 @@ public class SessionEvent extends EventObject {
      * using two session nodes.
      */
     public SessionNode getParent() {
-        return parent;
+        return this.parent;
     }
 
     /**
@@ -173,7 +173,7 @@ public class SessionEvent extends EventObject {
      * two session nodes
      */
     public SessionNode getChild() {
-        return child;
+        return this.child;
     }
 
     /**
@@ -182,7 +182,7 @@ public class SessionEvent extends EventObject {
      * MODEL_UNCLEAR.
      */
     public int getType() {
-        return type;
+        return this.type;
     }
 }
 

@@ -34,19 +34,19 @@ public class Lingam implements Algorithm {
 
     static final long serialVersionUID = 23L;
 
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(final DataModel dataSet, final Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            edu.cmu.tetrad.search.Lingam lingam = new edu.cmu.tetrad.search.Lingam();
+            final edu.cmu.tetrad.search.Lingam lingam = new edu.cmu.tetrad.search.Lingam();
             lingam.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
             lingam.setFastIcaA(parameters.getDouble(Params.FAST_ICA_A));
             lingam.setFastMaxIter(parameters.getInt(Params.FAST_ICA_MAX_ITER));
             lingam.setFastIcaTolerance(parameters.getDouble(Params.FAST_ICA_TOLERANCE));
             return lingam.search(DataUtils.getContinuousDataSet(dataSet));
         } else {
-            Lingam algorithm = new Lingam();
+            final Lingam algorithm = new Lingam();
 
-            DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
+            final DataSet data = (DataSet) dataSet;
+            final GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -72,7 +72,7 @@ public class Lingam implements Algorithm {
     }
 
     @Override
-    public Graph getComparisonGraph(Graph graph) {
+    public Graph getComparisonGraph(final Graph graph) {
         return new EdgeListGraph(graph);
     }
 
@@ -87,7 +87,7 @@ public class Lingam implements Algorithm {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
+        final List<String> parameters = new ArrayList<>();
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.VERBOSE);
 //        parameters.add(Params.FAST_ICA_A);

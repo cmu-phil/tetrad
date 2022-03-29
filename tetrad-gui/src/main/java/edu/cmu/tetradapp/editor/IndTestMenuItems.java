@@ -38,42 +38,42 @@ import java.awt.event.ActionListener;
  * @author Joseph Ramsey
  */
 class IndTestMenuItems {
-    static void addIndependenceTestChoices(JMenu test, IndTestTypeSetter setter) {
-        DataModel dataModel = setter.getDataModel();
+    static void addIndependenceTestChoices(final JMenu test, final IndTestTypeSetter setter) {
+        final DataModel dataModel = setter.getDataModel();
 
         if (dataModel == null &&
                 setter.getSourceGraph() != null) {
-            addGraphTestMenuItems(test, setter);
+            IndTestMenuItems.addGraphTestMenuItems(test, setter);
         } else if (dataModel instanceof DataSet) {
-            DataSet _dataSet = (DataSet) dataModel;
+            final DataSet _dataSet = (DataSet) dataModel;
 
             if (_dataSet.isContinuous()) {
-                addContinuousTestMenuItems(test, setter);
+                IndTestMenuItems.addContinuousTestMenuItems(test, setter);
             } else if (_dataSet.isDiscrete()) {
-                addDiscreteTestMenuItems(test, setter);
+                IndTestMenuItems.addDiscreteTestMenuItems(test, setter);
             } else if (_dataSet.isMixed()) {
-                addMixedTestMenuItems(test, setter);
+                IndTestMenuItems.addMixedTestMenuItems(test, setter);
             } else {
                 throw new IllegalArgumentException(
                         "Don't have any tests for mixed data sets right now.");
             }
         } else if (dataModel instanceof ICovarianceMatrix) {
-            addCovMatrixTestMenuItems(test, setter);
+            IndTestMenuItems.addCovMatrixTestMenuItems(test, setter);
         } else if (dataModel instanceof DataModelList) {
-            DataModelList dataSets = (DataModelList) dataModel;
+            final DataModelList dataSets = (DataModelList) dataModel;
 
             boolean continuous = true;
 
-            for (DataModel _dataModel : dataSets) {
-                DataSet dataSet = (DataSet) _dataModel;
+            for (final DataModel _dataModel : dataSets) {
+                final DataSet dataSet = (DataSet) _dataModel;
                 if (!dataSet.isContinuous()) continuous = false;
             }
 
-            addMultiTestMenuItems(test, setter);
+            IndTestMenuItems.addMultiTestMenuItems(test, setter);
         }
     }
 
-    static void addContinuousTestMenuItems(JMenu test, IndTestTypeSetter setter) {
+    static void addContinuousTestMenuItems(final JMenu test, final IndTestTypeSetter setter) {
         IndTestType testType = setter.getTestType();
         if (testType != IndTestType.FISHER_Z &&
                 testType != IndTestType.FISHER_ZD &&
@@ -86,8 +86,8 @@ class IndTestMenuItems {
             setter.setTestType(IndTestType.FISHER_Z);
         }
 
-        ButtonGroup group = new ButtonGroup();
-        JCheckBoxMenuItem fishersZ = new JCheckBoxMenuItem("Fisher's Z");
+        final ButtonGroup group = new ButtonGroup();
+        final JCheckBoxMenuItem fishersZ = new JCheckBoxMenuItem("Fisher's Z");
         group.add(fishersZ);
         test.add(fishersZ);
 
@@ -101,29 +101,29 @@ class IndTestMenuItems {
 //        group.add(fishersZBootstrap);
 //        test.add(fishersZBootstrap);
 
-        JCheckBoxMenuItem tTest = new JCheckBoxMenuItem("Correlation T");
+        final JCheckBoxMenuItem tTest = new JCheckBoxMenuItem("Correlation T");
         group.add(tTest);
         test.add(tTest);
 
-        JCheckBoxMenuItem logr = new JCheckBoxMenuItem("Multinomial Logistic Regression");
+        final JCheckBoxMenuItem logr = new JCheckBoxMenuItem("Multinomial Logistic Regression");
         group.add(logr);
         test.add(logr);
         logr.setSelected(true);
 
-        JCheckBoxMenuItem conditionalCorrelation = new JCheckBoxMenuItem("Conditional Correlation");
+        final JCheckBoxMenuItem conditionalCorrelation = new JCheckBoxMenuItem("Conditional Correlation");
         group.add(conditionalCorrelation);
         test.add(conditionalCorrelation);
 
-        JCheckBoxMenuItem linRegrTest = new JCheckBoxMenuItem("Linear Regression Test");
+        final JCheckBoxMenuItem linRegrTest = new JCheckBoxMenuItem("Linear Regression Test");
         group.add(linRegrTest);
         test.add(linRegrTest);
 
-        JCheckBoxMenuItem bicBump = new JCheckBoxMenuItem("BIC Score Bump");
+        final JCheckBoxMenuItem bicBump = new JCheckBoxMenuItem("BIC Score Bump");
         group.add(bicBump);
         test.add(bicBump);
 
         logr.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 setter.setTestType(IndTestType.MIXED_MLR);
             }
         });
@@ -148,7 +148,7 @@ class IndTestMenuItems {
         }
 
         fishersZ.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 setter.setTestType(IndTestType.FISHER_Z);
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Using Fisher's Z.");
@@ -180,7 +180,7 @@ class IndTestMenuItems {
 //        });
 
         conditionalCorrelation.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 setter.setTestType(IndTestType.CONDITIONAL_CORRELATION);
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Using Conditional Correlation.");
@@ -188,7 +188,7 @@ class IndTestMenuItems {
         });
 
         linRegrTest.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 setter.setTestType(IndTestType.LINEAR_REGRESSION);
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Using linear regression test.");
@@ -196,7 +196,7 @@ class IndTestMenuItems {
         });
 
         logr.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 setter.setTestType(IndTestType.MIXED_MLR);
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Using multinomial logistic regression test.");
@@ -204,7 +204,7 @@ class IndTestMenuItems {
         });
 
         bicBump.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 setter.setTestType(IndTestType.SEM_BIC);
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Using the BIC bump test.");
@@ -213,7 +213,7 @@ class IndTestMenuItems {
 
     }
 
-    private static void addMultiTestMenuItems(JMenu test, IndTestTypeSetter setter) {
+    private static void addMultiTestMenuItems(final JMenu test, final IndTestTypeSetter setter) {
         IndTestType testType = setter.getTestType();
         if (testType != IndTestType.POOL_RESIDUALS_FISHER_Z
                 && testType != IndTestType.TIPPETT
@@ -222,21 +222,21 @@ class IndTestMenuItems {
             setter.setTestType(IndTestType.POOL_RESIDUALS_FISHER_Z);
         }
 
-        ButtonGroup group = new ButtonGroup();
+        final ButtonGroup group = new ButtonGroup();
 
-        JCheckBoxMenuItem fisher = new JCheckBoxMenuItem("Fisher (Fisher Z)");
+        final JCheckBoxMenuItem fisher = new JCheckBoxMenuItem("Fisher (Fisher Z)");
         group.add(fisher);
         test.add(fisher);
 
-        JCheckBoxMenuItem tippett = new JCheckBoxMenuItem("Tippett (Fisher Z)");
+        final JCheckBoxMenuItem tippett = new JCheckBoxMenuItem("Tippett (Fisher Z)");
         group.add(tippett);
         test.add(tippett);
 
-        JCheckBoxMenuItem fisherZPoolResiduals = new JCheckBoxMenuItem("Pool Residuals (Fisher Z)");
+        final JCheckBoxMenuItem fisherZPoolResiduals = new JCheckBoxMenuItem("Pool Residuals (Fisher Z)");
         group.add(fisherZPoolResiduals);
         test.add(fisherZPoolResiduals);
 
-        JCheckBoxMenuItem bicBump = new JCheckBoxMenuItem("BIC Bump (IMaGES)");
+        final JCheckBoxMenuItem bicBump = new JCheckBoxMenuItem("BIC Bump (IMaGES)");
         group.add(bicBump);
         test.add(bicBump);
 
@@ -259,7 +259,7 @@ class IndTestMenuItems {
         }
 
         fisherZPoolResiduals.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 setter.setTestType(IndTestType.POOL_RESIDUALS_FISHER_Z);
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Using Pooled Residuals Fisher Z");
@@ -267,7 +267,7 @@ class IndTestMenuItems {
         });
 
         fisher.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 setter.setTestType(IndTestType.FISHER);
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Using Fisher");
@@ -275,7 +275,7 @@ class IndTestMenuItems {
         });
 
         tippett.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 setter.setTestType(IndTestType.TIPPETT);
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Using Tippett");
@@ -283,7 +283,7 @@ class IndTestMenuItems {
         });
 
         bicBump.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 setter.setTestType(IndTestType.SEM_BIC);
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Using BIC Bump (IMaGES)");
@@ -291,7 +291,7 @@ class IndTestMenuItems {
         });
     }
 
-    private static void addCovMatrixTestMenuItems(JMenu test, IndTestTypeSetter setter) {
+    private static void addCovMatrixTestMenuItems(final JMenu test, final IndTestTypeSetter setter) {
         IndTestType testType = setter.getTestType();
         if (testType != IndTestType.FISHER_Z
 //                &&
@@ -300,12 +300,12 @@ class IndTestMenuItems {
             setter.setTestType(IndTestType.FISHER_Z);
         }
 
-        ButtonGroup group = new ButtonGroup();
-        JCheckBoxMenuItem fishersZ = new JCheckBoxMenuItem("Fisher's Z");
+        final ButtonGroup group = new ButtonGroup();
+        final JCheckBoxMenuItem fishersZ = new JCheckBoxMenuItem("Fisher's Z");
         group.add(fishersZ);
         test.add(fishersZ);
 
-        JCheckBoxMenuItem tTest = new JCheckBoxMenuItem("Cramer's T");
+        final JCheckBoxMenuItem tTest = new JCheckBoxMenuItem("Cramer's T");
         group.add(tTest);
         test.add(tTest);
 
@@ -319,7 +319,7 @@ class IndTestMenuItems {
 //        }
 
         fishersZ.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 setter.setTestType(IndTestType.FISHER_Z);
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Using Fisher's Z.");
@@ -335,24 +335,24 @@ class IndTestMenuItems {
 //        });
     }
 
-    static void addDiscreteTestMenuItems(JMenu test, IndTestTypeSetter setter) {
-        IndTestType testType = setter.getTestType();
+    static void addDiscreteTestMenuItems(final JMenu test, final IndTestTypeSetter setter) {
+        final IndTestType testType = setter.getTestType();
         if (testType != IndTestType.CHI_SQUARE &&
                 testType != IndTestType.G_SQUARE &&
                 testType != IndTestType.MIXED_MLR) {
             setter.setTestType(IndTestType.CHI_SQUARE);
         }
 
-        ButtonGroup group = new ButtonGroup();
-        JCheckBoxMenuItem chiSquare = new JCheckBoxMenuItem("Chi Square");
+        final ButtonGroup group = new ButtonGroup();
+        final JCheckBoxMenuItem chiSquare = new JCheckBoxMenuItem("Chi Square");
         group.add(chiSquare);
         test.add(chiSquare);
 
-        JCheckBoxMenuItem gSquare = new JCheckBoxMenuItem("G Square");
+        final JCheckBoxMenuItem gSquare = new JCheckBoxMenuItem("G Square");
         group.add(gSquare);
         test.add(gSquare);
 
-        JCheckBoxMenuItem logr = new JCheckBoxMenuItem("Multinomial Logistic Regression");
+        final JCheckBoxMenuItem logr = new JCheckBoxMenuItem("Multinomial Logistic Regression");
         group.add(logr);
         test.add(logr);
 //
@@ -365,7 +365,7 @@ class IndTestMenuItems {
         }
 
         chiSquare.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 setter.setTestType(IndTestType.CHI_SQUARE);
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Using Chi Square.");
@@ -373,7 +373,7 @@ class IndTestMenuItems {
         });
 
         gSquare.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 setter.setTestType(IndTestType.G_SQUARE);
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Using G square.");
@@ -381,7 +381,7 @@ class IndTestMenuItems {
         });
 
         logr.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 setter.setTestType(IndTestType.MIXED_MLR);
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Using multinomial logistic regression test.");
@@ -389,39 +389,39 @@ class IndTestMenuItems {
         });
     }
 
-    private static void addMixedTestMenuItems(JMenu test, IndTestTypeSetter setter) {
-        IndTestType testType = setter.getTestType();
+    private static void addMixedTestMenuItems(final JMenu test, final IndTestTypeSetter setter) {
+        final IndTestType testType = setter.getTestType();
         if (testType != IndTestType.MIXED_MLR) {
             setter.setTestType(IndTestType.MIXED_MLR);
         }
 
-        ButtonGroup group = new ButtonGroup();
-        JCheckBoxMenuItem logr = new JCheckBoxMenuItem("Multinomial Logistic Regression");
+        final ButtonGroup group = new ButtonGroup();
+        final JCheckBoxMenuItem logr = new JCheckBoxMenuItem("Multinomial Logistic Regression");
         group.add(logr);
         test.add(logr);
         logr.setSelected(true);
 
         logr.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 setter.setTestType(IndTestType.MIXED_MLR);
             }
         });
     }
 
-    private static void addGraphTestMenuItems(JMenu test, IndTestTypeSetter setter) {
-        IndTestType testType = setter.getTestType();
+    private static void addGraphTestMenuItems(final JMenu test, final IndTestTypeSetter setter) {
+        final IndTestType testType = setter.getTestType();
         if (testType != IndTestType.D_SEPARATION) {
             setter.setTestType(IndTestType.D_SEPARATION);
         }
 
-        ButtonGroup group = new ButtonGroup();
-        JCheckBoxMenuItem dsep = new JCheckBoxMenuItem("D-Separation");
+        final ButtonGroup group = new ButtonGroup();
+        final JCheckBoxMenuItem dsep = new JCheckBoxMenuItem("D-Separation");
         group.add(dsep);
         test.add(dsep);
         dsep.setSelected(true);
 
         dsep.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 setter.setTestType(IndTestType.D_SEPARATION);
             }
         });

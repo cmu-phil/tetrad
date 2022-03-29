@@ -41,7 +41,7 @@ public class NodePair {
     private final Node second;
 
 
-    public NodePair(Node first, Node second) {
+    public NodePair(final Node first, final Node second) {
         if (first == null) {
             throw new NullPointerException("First node must not be null.");
         }
@@ -55,32 +55,32 @@ public class NodePair {
     //============================== Public methods =============================//
 
     public Node getFirst() {
-        return first;
+        return this.first;
     }
 
     public Node getSecond() {
-        return second;
+        return this.second;
     }
 
     public int hashCode() {
-        return first.hashCode() + second.hashCode();
+        return this.first.hashCode() + this.second.hashCode();
     }
 
 
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (o == this) {
             return true;
         }
         if (!(o instanceof NodePair)) {
             return false;
         }
-        NodePair thatPair = (NodePair) o;
+        final NodePair thatPair = (NodePair) o;
 //        return this.first.equals(thatPair.first) && this.second.equals(thatPair.second) || this.first.equals(thatPair.second) && this.second.equals(thatPair.first);
-        return (first == thatPair.first && second == thatPair.second) || (first == thatPair.second && second == thatPair.first);
+        return (this.first == thatPair.first && this.second == thatPair.second) || (this.first == thatPair.second && this.second == thatPair.first);
     }
 
     public String toString() {
-        return "{" + first + ", " + second + "}";
+        return "{" + this.first + ", " + this.second + "}";
     }
 
 }

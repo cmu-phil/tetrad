@@ -57,7 +57,7 @@ public final class ClusterEditor extends JPanel {
      * Constructs an editor to allow the user to assign variables to clusters,
      * showing a list of variables to choose from.
      */
-    public ClusterEditor(Clusters clusters, List<String> varNames) {
+    public ClusterEditor(final Clusters clusters, final List<String> varNames) {
         if (clusters == null) {
             throw new NullPointerException();
         }
@@ -69,35 +69,35 @@ public final class ClusterEditor extends JPanel {
         this.clusters = clusters;
         this.varNames = varNames;
 
-        this.setLayout(new BorderLayout());
-        this.add(this.clusterDisplay(), BorderLayout.CENTER);
+        setLayout(new BorderLayout());
+        add(clusterDisplay(), BorderLayout.CENTER);
 
         if (clusters.getNumClusters() == 0) {
-            this.setNumDisplayClusters(3);
+            setNumDisplayClusters(3);
             clusters.setNumClusters(3);
         }
     }
 
-    public ClusterEditor(MeasurementModelWrapper wrapper) {
+    public ClusterEditor(final MeasurementModelWrapper wrapper) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
 
-        clusters = wrapper.getClusters();
-        varNames = wrapper.getVarNames();
+        this.clusters = wrapper.getClusters();
+        this.varNames = wrapper.getVarNames();
 
-        this.setLayout(new BorderLayout());
-        this.add(this.clusterDisplay(), BorderLayout.CENTER);
+        setLayout(new BorderLayout());
+        add(clusterDisplay(), BorderLayout.CENTER);
 
-        if (clusters.getNumClusters() == 0) {
-            this.setNumDisplayClusters(3);
-            clusters.setNumClusters(3);
+        if (this.clusters.getNumClusters() == 0) {
+            setNumDisplayClusters(3);
+            this.clusters.setNumClusters(3);
         }
     }
 
     public Clusters getClusters() {
 //        return clusters;
-        return new Clusters(clusters);
+        return new Clusters(this.clusters);
     }
 
     private Box clusterDisplay() {
@@ -105,39 +105,39 @@ public final class ClusterEditor extends JPanel {
 //            clusters.setNumClusters(1);
 //        }
 
-        Box b = Box.createVerticalBox();
+        final Box b = Box.createVerticalBox();
         b.setBorder(new EmptyBorder(5, 5, 5, 5));
 
-        Box b1 = Box.createHorizontalBox();
+        final Box b1 = Box.createHorizontalBox();
         b1.add(new JLabel("Not in cluster:"));
         b1.add(Box.createHorizontalGlue());
         b1.add(new JLabel("# Clusters = "));
-        int numClusters = clusters.getNumClusters();
+        int numClusters = this.clusters.getNumClusters();
         numClusters = numClusters < 3 ? 3 : numClusters;
-        SpinnerNumberModel spinnerNumberModel
+        final SpinnerNumberModel spinnerNumberModel
                 = new SpinnerNumberModel(numClusters, 3, 100, 1);
         spinnerNumberModel.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                SpinnerNumberModel model = (SpinnerNumberModel) e.getSource();
-                int numClusters = model.getNumber().intValue();
-                ClusterEditor.this.setNumDisplayClusters(numClusters);
-                clusters.setNumClusters(numClusters);
+            public void stateChanged(final ChangeEvent e) {
+                final SpinnerNumberModel model = (SpinnerNumberModel) e.getSource();
+                final int numClusters = model.getNumber().intValue();
+                setNumDisplayClusters(numClusters);
+                ClusterEditor.this.clusters.setNumClusters(numClusters);
             }
         });
 
-        JSpinner spinner = new JSpinner(spinnerNumberModel);
+        final JSpinner spinner = new JSpinner(spinnerNumberModel);
         spinner.setMaximumSize(spinner.getPreferredSize());
         b1.add(spinner);
         b.add(b1);
 
-        clustersPanel = new JPanel();
-        clustersPanel.setLayout(new BorderLayout());
-        clustersPanel.add(this.getClusterBoxes(clusters.getNumClusters()),
+        this.clustersPanel = new JPanel();
+        this.clustersPanel.setLayout(new BorderLayout());
+        this.clustersPanel.add(getClusterBoxes(this.clusters.getNumClusters()),
                 BorderLayout.CENTER);
 
-        b.add(clustersPanel);
+        b.add(this.clustersPanel);
 
-        Box c = Box.createHorizontalBox();
+        final Box c = Box.createHorizontalBox();
         c.add(new JLabel("Use shift key to select multiple items."));
         c.add(Box.createGlue());
         b.add(c);
@@ -145,63 +145,63 @@ public final class ClusterEditor extends JPanel {
         return b;
     }
 
-    private void setNumDisplayClusters(int numClusters) {
+    private void setNumDisplayClusters(final int numClusters) {
         if (numClusters < 0) {
-            int numStoredClusters = this.getClustersPrivate().getNumClusters();
-            int n = (int) Math.pow(this.getVarNames().size(), 0.5);
-            int defaultNumClusters = n + 1;
-            int numClusters2 = numStoredClusters
+            final int numStoredClusters = getClustersPrivate().getNumClusters();
+            final int n = (int) Math.pow(getVarNames().size(), 0.5);
+            final int defaultNumClusters = n + 1;
+            final int numClusters2 = numStoredClusters
                     < defaultNumClusters ? defaultNumClusters : numStoredClusters;
-            clusters.setNumClusters(numClusters2);
+            this.clusters.setNumClusters(numClusters2);
         } else {
-            clusters.setNumClusters(numClusters);
+            this.clusters.setNumClusters(numClusters);
         }
 
-        clustersPanel.removeAll();
-        clustersPanel.add(this.getClusterBoxes(clusters.getNumClusters()),
+        this.clustersPanel.removeAll();
+        this.clustersPanel.add(getClusterBoxes(this.clusters.getNumClusters()),
                 BorderLayout.CENTER);
-        clustersPanel.revalidate();
-        clustersPanel.repaint();
+        this.clustersPanel.revalidate();
+        this.clustersPanel.repaint();
     }
 
-    private Box getClusterBoxes(int numClusters) {
-        Box c = Box.createVerticalBox();
+    private Box getClusterBoxes(final int numClusters) {
+        final Box c = Box.createVerticalBox();
 
-        List varsNotInCluster
-                = this.getClustersPrivate().getVarsNotInCluster(this.getVarNames());
-        JList l1
+        final List varsNotInCluster
+                = getClustersPrivate().getVarsNotInCluster(getVarNames());
+        final JList l1
                 = new DragDropList(varsNotInCluster, -1, JList.HORIZONTAL_WRAP);
         l1.setBorder(null);
 
-        Box b2 = Box.createHorizontalBox();
-        JScrollPane scrollPane = new JScrollPane(l1);
+        final Box b2 = Box.createHorizontalBox();
+        final JScrollPane scrollPane = new JScrollPane(l1);
         scrollPane.setPreferredSize(new Dimension(400, 50));
         b2.add(scrollPane);
         c.add(b2);
 
         c.add(Box.createVerticalStrut(5));
 
-        Box d = Box.createHorizontalBox();
+        final Box d = Box.createHorizontalBox();
         d.add(Box.createHorizontalGlue());
 
-        nameFields = new ArrayList();
+        this.nameFields = new ArrayList();
 
         for (int cluster = 0; cluster < numClusters; cluster++) {
-            Box d1 = Box.createVerticalBox();
-            Box d2 = Box.createHorizontalBox();
+            final Box d1 = Box.createVerticalBox();
+            final Box d2 = Box.createHorizontalBox();
             d2.add(Box.createHorizontalGlue());
-            d2.add(new JLabel(this.getClustersPrivate().getClusterName(cluster)));
+            d2.add(new JLabel(getClustersPrivate().getClusterName(cluster)));
             //            d2.add(field);
             d2.add(Box.createHorizontalGlue());
             d1.add(d2);
             d.add(d1);
 
-            List clusterNames = this.getClustersPrivate().getCluster(cluster);
+            final List clusterNames = getClustersPrivate().getCluster(cluster);
 
-            JList clusterList = new DragDropList(clusterNames, cluster,
+            final JList clusterList = new DragDropList(clusterNames, cluster,
                     JList.VERTICAL_WRAP);
 
-            JScrollPane scrollPane2 = new JScrollPane(clusterList);
+            final JScrollPane scrollPane2 = new JScrollPane(clusterList);
             scrollPane2.setPreferredSize(new Dimension(50, 275));
             scrollPane2.setMaximumSize(new Dimension(200, 275));
             d1.add(scrollPane2);
@@ -209,22 +209,22 @@ public final class ClusterEditor extends JPanel {
             d.add(Box.createHorizontalGlue());
         }
 
-        JScrollPane scroll = new JScrollPane(d);
+        final JScrollPane scroll = new JScrollPane(d);
         scroll.setPreferredSize(new Dimension(400, 300));
         c.add(scroll);
         return c;
     }
 
     private Clusters getClustersPrivate() {
-        return clusters;
+        return this.clusters;
     }
 
     private List<String> getVarNames() {
-        return varNames;
+        return this.varNames;
     }
 
     public ArrayList getNameFields() {
-        return nameFields;
+        return this.nameFields;
     }
 
     public class DragDropList extends JList implements DropTargetListener,
@@ -240,23 +240,23 @@ public final class ClusterEditor extends JPanel {
          */
         private final int cluster;
 
-        public DragDropList(List items, int cluster, int orientation) {
+        public DragDropList(final List items, final int cluster, final int orientation) {
             if (cluster < -1) {
                 throw new IllegalArgumentException();
             }
 
             this.cluster = cluster;
 
-            this.setLayoutOrientation(orientation);
-            this.setVisibleRowCount(0);
-            setCellRenderer(new ListCellRenderer() {
-                public Component getListCellRendererComponent(JList list,
-                                                              Object value, int index, boolean isSelected,
-                                                              boolean cellHasFocus) {
-                    Color fillColor = new Color(153, 204, 204);
-                    Color selectedFillColor = new Color(255, 204, 102);
+            setLayoutOrientation(orientation);
+            setVisibleRowCount(0);
+            this.setCellRenderer(new ListCellRenderer() {
+                public Component getListCellRendererComponent(final JList list,
+                                                              final Object value, final int index, final boolean isSelected,
+                                                              final boolean cellHasFocus) {
+                    final Color fillColor = new Color(153, 204, 204);
+                    final Color selectedFillColor = new Color(255, 204, 102);
 
-                    JLabel comp = new JLabel(" " + value + " ");
+                    final JLabel comp = new JLabel(" " + value + " ");
                     comp.setOpaque(true);
 
                     if (isSelected) {
@@ -282,56 +282,56 @@ public final class ClusterEditor extends JPanel {
             // and move individual disconnected items using the control key.
             // ACTION_COPY_OR_MOVE lets me do this. Don't ask me why.
             new DropTarget(this, DnDConstants.ACTION_MOVE, this, true);
-            DragSource dragSource = DragSource.getDefaultDragSource();
+            final DragSource dragSource = DragSource.getDefaultDragSource();
             dragSource.createDefaultDragGestureRecognizer(this,
                     DnDConstants.ACTION_MOVE, this);
 
-            this.setModel(new DefaultListModel());
-            for (Object item : items) {
-                ((DefaultListModel) this.getModel()).addElement(item);
+            setModel(new DefaultListModel());
+            for (final Object item : items) {
+                ((DefaultListModel) getModel()).addElement(item);
             }
         }
 
         public int getCluster() {
-            return cluster;
+            return this.cluster;
         }
 
-        public void dragGestureRecognized(DragGestureEvent dragGestureEvent) {
-            if (this.getSelectedIndex() == -1) {
+        public void dragGestureRecognized(final DragGestureEvent dragGestureEvent) {
+            if (getSelectedIndex() == -1) {
                 return;
             }
 
-            List list = this.getSelectedValuesList();
+            final List list = getSelectedValuesList();
 
             if (list == null) {
-                this.getToolkit().beep();
+                getToolkit().beep();
             } else {
-                movedList = list;
-                ListSelection transferable = new ListSelection(list);
+                this.movedList = list;
+                final ListSelection transferable = new ListSelection(list);
                 dragGestureEvent.startDrag(DragSource.DefaultMoveDrop,
                         transferable, this);
             }
         }
 
-        public void drop(DropTargetDropEvent dropTargetDropEvent) {
+        public void drop(final DropTargetDropEvent dropTargetDropEvent) {
             try {
-                Transferable tr = dropTargetDropEvent.getTransferable();
-                DataFlavor flavor = tr.getTransferDataFlavors()[0];
-                List list = (List) tr.getTransferData(flavor);
+                final Transferable tr = dropTargetDropEvent.getTransferable();
+                final DataFlavor flavor = tr.getTransferDataFlavors()[0];
+                final List list = (List) tr.getTransferData(flavor);
 
-                for (Object aList : list) {
-                    String name = (String) aList;
+                for (final Object aList : list) {
+                    final String name = (String) aList;
 
-                    if (this.getCluster() >= 0) {
+                    if (getCluster() >= 0) {
                         try {
-                            ClusterEditor.this.getClustersPrivate().addToCluster(this.getCluster(), name);
-                            DefaultListModel model
-                                    = (DefaultListModel) this.getModel();
+                            getClustersPrivate().addToCluster(getCluster(), name);
+                            final DefaultListModel model
+                                    = (DefaultListModel) getModel();
                             model.addElement(name);
-                            this.sort(model);
+                            sort(model);
                             dropTargetDropEvent.dropComplete(true);
-                        } catch (IllegalStateException e) {
-                            String s = e.getMessage();
+                        } catch (final IllegalStateException e) {
+                            final String s = e.getMessage();
 
                             if (!"".equals(s)) {
                                 JOptionPane.showMessageDialog(
@@ -346,65 +346,65 @@ public final class ClusterEditor extends JPanel {
                             dropTargetDropEvent.dropComplete(false);
                         }
                     } else {
-                        ClusterEditor.this.getClustersPrivate().removeFromClusters(name);
-                        DefaultListModel model = (DefaultListModel) this.getModel();
+                        getClustersPrivate().removeFromClusters(name);
+                        final DefaultListModel model = (DefaultListModel) getModel();
                         model.addElement(name);
-                        this.sort(model);
+                        sort(model);
                         dropTargetDropEvent.dropComplete(true);
                     }
                 }
-            } catch (UnsupportedFlavorException e) {
+            } catch (final UnsupportedFlavorException e) {
                 e.printStackTrace();
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 e.printStackTrace();
             }
         }
 
-        public void dragDropEnd(DragSourceDropEvent dsde) {
+        public void dragDropEnd(final DragSourceDropEvent dsde) {
             if (!dsde.getDropSuccess()) {
                 return;
             }
 
-            if (movedList != null) {
-                for (Object aMovedList : movedList) {
-                    ((DefaultListModel) this.getModel()).removeElement(aMovedList);
+            if (this.movedList != null) {
+                for (final Object aMovedList : this.movedList) {
+                    ((DefaultListModel) getModel()).removeElement(aMovedList);
                 }
 
-                movedList = null;
+                this.movedList = null;
             }
         }
 
-        public void dragEnter(DropTargetDragEvent dtde) {
+        public void dragEnter(final DropTargetDragEvent dtde) {
         }
 
-        public void dragOver(DropTargetDragEvent dtde) {
+        public void dragOver(final DropTargetDragEvent dtde) {
         }
 
-        public void dropActionChanged(DropTargetDragEvent dtde) {
+        public void dropActionChanged(final DropTargetDragEvent dtde) {
         }
 
-        public void dragExit(DropTargetEvent dte) {
+        public void dragExit(final DropTargetEvent dte) {
         }
 
-        public void dragEnter(DragSourceDragEvent dsde) {
+        public void dragEnter(final DragSourceDragEvent dsde) {
         }
 
-        public void dragOver(DragSourceDragEvent dsde) {
+        public void dragOver(final DragSourceDragEvent dsde) {
         }
 
-        public void dropActionChanged(DragSourceDragEvent dsde) {
+        public void dropActionChanged(final DragSourceDragEvent dsde) {
         }
 
-        public void dragExit(DragSourceEvent dse) {
+        public void dragExit(final DragSourceEvent dse) {
         }
 
-        private void sort(DefaultListModel model) {
-            Object[] elements = model.toArray();
+        private void sort(final DefaultListModel model) {
+            final Object[] elements = model.toArray();
             Arrays.sort(elements);
 
             model.clear();
 
-            for (Object element : elements) {
+            for (final Object element : elements) {
                 model.addElement(element);
             }
         }
@@ -426,7 +426,7 @@ public final class ClusterEditor extends JPanel {
         /**
          * Constructs a new selection with the given list of graph nodes.
          */
-        public ListSelection(List list) {
+        public ListSelection(final List list) {
             if (list == null) {
                 throw new NullPointerException(
                         "List of list must " + "not be null.");
@@ -446,13 +446,13 @@ public final class ClusterEditor extends JPanel {
          *                                                          requested data flavor is not supported.
          * @see java.awt.datatransfer.DataFlavor#getRepresentationClass
          */
-        public Object getTransferData(DataFlavor flavor)
+        public Object getTransferData(final DataFlavor flavor)
                 throws UnsupportedFlavorException, IOException {
-            if (!this.isDataFlavorSupported(flavor)) {
+            if (!isDataFlavorSupported(flavor)) {
                 throw new UnsupportedFlavorException(flavor);
             }
 
-            return list;
+            return this.list;
         }
 
         /**
@@ -463,8 +463,8 @@ public final class ClusterEditor extends JPanel {
          * @return boolean indicating whether or not the data flavor is
          * supported
          */
-        public boolean isDataFlavorSupported(DataFlavor flavor) {
-            return flavor.equals(this.getTransferDataFlavors()[0]);
+        public boolean isDataFlavorSupported(final DataFlavor flavor) {
+            return flavor.equals(getTransferDataFlavors()[0]);
         }
 
         /**
@@ -477,7 +477,7 @@ public final class ClusterEditor extends JPanel {
          * transferred
          */
         public DataFlavor[] getTransferDataFlavors() {
-            return dataFlavors;
+            return this.dataFlavors;
         }
     }
 }

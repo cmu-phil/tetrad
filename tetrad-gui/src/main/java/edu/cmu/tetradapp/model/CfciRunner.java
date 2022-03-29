@@ -45,14 +45,14 @@ public class CfciRunner extends AbstractAlgorithmRunner
 
     //=========================CONSTRUCTORS================================//
 
-    public CfciRunner(DataWrapper dataWrapper, Parameters params) {
+    public CfciRunner(final DataWrapper dataWrapper, final Parameters params) {
         super(dataWrapper, params, null);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CfciRunner(GraphSource graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public CfciRunner(final GraphSource graphWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
@@ -61,32 +61,32 @@ public class CfciRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public CfciRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public CfciRunner(final DataWrapper dataWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
-    public CfciRunner(Graph graph, Parameters params) {
+    public CfciRunner(final Graph graph, final Parameters params) {
         super(graph, params);
     }
 
 
-    public CfciRunner(GraphWrapper graphWrapper, Parameters params) {
+    public CfciRunner(final GraphWrapper graphWrapper, final Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
-    public CfciRunner(DagWrapper dagWrapper, Parameters params) {
+    public CfciRunner(final DagWrapper dagWrapper, final Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public CfciRunner(SemGraphWrapper dagWrapper, Parameters params) {
+    public CfciRunner(final SemGraphWrapper dagWrapper, final Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public CfciRunner(IndependenceFactsModel model, Parameters params) {
+    public CfciRunner(final IndependenceFactsModel model, final Parameters params) {
         super(model, params, null);
     }
 
-    public CfciRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public CfciRunner(final IndependenceFactsModel model, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -106,42 +106,42 @@ public class CfciRunner extends AbstractAlgorithmRunner
      * implemented in the extending class.
      */
     public void execute() {
-        IKnowledge knowledge = (IKnowledge) this.getParams().get("knowledge", new Knowledge2());
-        Parameters searchParams = this.getParams();
+        final IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
+        final Parameters searchParams = getParams();
 
-        Parameters params = searchParams;
+        final Parameters params = searchParams;
 
-        Cfci cfci = new Cfci(this.getIndependenceTest());
+        final Cfci cfci = new Cfci(getIndependenceTest());
         cfci.setKnowledge(knowledge);
         cfci.setDepth(params.getInt("depth", -1));
-        Graph graph = cfci.search();
+        final Graph graph = cfci.search();
 
-        if (this.getSourceGraph() != null) {
-            GraphUtils.arrangeBySourceGraph(graph, this.getSourceGraph());
+        if (getSourceGraph() != null) {
+            GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
         } else if (knowledge.isDefaultToKnowledgeLayout()) {
             SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
         } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
 
-        this.setResultGraph(graph);
+        setResultGraph(graph);
     }
 
     public IndependenceTest getIndependenceTest() {
-        Object dataModel = this.getDataModel();
+        Object dataModel = getDataModel();
 
         if (dataModel == null) {
-            dataModel = this.getSourceGraph();
+            dataModel = getSourceGraph();
         }
 
-        Parameters params = this.getParams();
-        IndTestType testType;
+        final Parameters params = getParams();
+        final IndTestType testType;
 
-        if (this.getParams() instanceof Parameters) {
-            Parameters _params = params;
+        if (getParams() instanceof Parameters) {
+            final Parameters _params = params;
             testType = (IndTestType) _params.get("indTestType", IndTestType.FISHER_Z);
         } else {
-            Parameters _params = params;
+            final Parameters _params = params;
             testType = (IndTestType) _params.get("indTestType", IndTestType.FISHER_Z);
         }
 
@@ -149,14 +149,14 @@ public class CfciRunner extends AbstractAlgorithmRunner
     }
 
     public Graph getGraph() {
-        return this.getResultGraph();
+        return getResultGraph();
     }
 
     /**
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<>();
+        final List<String> names = new ArrayList<>();
 //        names.add("Definite ColliderDiscovery");
 //        names.add("Definite Noncolliders");
         names.add("Ambiguous Triples");
@@ -166,9 +166,9 @@ public class CfciRunner extends AbstractAlgorithmRunner
     /**
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
-    public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<>();
-        Graph graph = this.getGraph();
+    public List<List<Triple>> getTriplesLists(final Node node) {
+        final List<List<Triple>> triplesList = new ArrayList<>();
+        final Graph graph = getGraph();
 //        triplesList.add(DataGraphUtils.getDefiniteCollidersFromGraph(node, graph));
 //        triplesList.add(DataGraphUtils.getDefiniteNoncollidersFromGraph(node, graph));
         triplesList.add(GraphUtils.getAmbiguousTriplesFromGraph(node, graph));

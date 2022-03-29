@@ -52,8 +52,8 @@ class EvidenceWizardSingle extends JPanel {
      * form P(Node=c1|Parent1=c2, Parent2=c2,...); values for these parameters
      * are probabilities ranging from 0.0 to 1.0.
      */
-    public EvidenceWizardSingle(UpdaterWrapper updaterWrapper,
-                                GraphWorkbench workbench) {
+    public EvidenceWizardSingle(final UpdaterWrapper updaterWrapper,
+                                final GraphWorkbench workbench) {
         if (updaterWrapper == null) {
             throw new NullPointerException();
         }
@@ -62,7 +62,7 @@ class EvidenceWizardSingle extends JPanel {
             throw new NullPointerException();
         }
 
-        Node node = workbench.getGraph().getNodes().get(0);
+        final Node node = workbench.getGraph().getNodes().get(0);
         workbench.deselectAll();
         workbench.selectNode(node);
 
@@ -71,37 +71,37 @@ class EvidenceWizardSingle extends JPanel {
         this.workbench = workbench;
 
         workbench.setAllowDoubleClickActions(false);
-        this.setBorder(new MatteBorder(10, 10, 10, 10, this.getBackground()));
-        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setBorder(new MatteBorder(10, 10, 10, 10, getBackground()));
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        JButton updateButton = new JButton("Do Update Now");
+        final JButton updateButton = new JButton("Do Update Now");
 
         // Do Layout.
-        Box b0 = Box.createHorizontalBox();
+        final Box b0 = Box.createHorizontalBox();
         b0.add(new JLabel("<html>" +
                 "Select the node in the graph that you would like to see updated" +
                 "<br>probabilities for. In the list below, select the evidence that" +
                 "<br>you would like to update on. Click the 'Do Update Now' button" +
                 "<br>to view updated probabilities." + "</html>"));
         b0.add(Box.createHorizontalGlue());
-        this.add(b0);
-        this.add(Box.createVerticalStrut(10));
+        add(b0);
+        add(Box.createVerticalStrut(10));
 
-        evidenceEditor = new EvidenceEditor(updaterWrapper.getBayesUpdater().getEvidence());
-        this.getUpdaterWrapper().getParams().set("evidence", evidenceEditor.getEvidence());
-        this.add(evidenceEditor);
-        this.add(Box.createVerticalStrut(10));
+        this.evidenceEditor = new EvidenceEditor(updaterWrapper.getBayesUpdater().getEvidence());
+        getUpdaterWrapper().getParams().set("evidence", this.evidenceEditor.getEvidence());
+        add(this.evidenceEditor);
+        add(Box.createVerticalStrut(10));
 
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(Box.createHorizontalGlue());
         b2.add(updateButton);
-        this.add(b2);
-        this.add(Box.createVerticalGlue());
+        add(b2);
+        add(Box.createVerticalGlue());
 
         // Add listeners.
         updateButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                DisplayNode graphNode = EvidenceWizardSingle.this.getWorkbench().getSelectedNode();
+            public void actionPerformed(final ActionEvent e) {
+                final DisplayNode graphNode = getWorkbench().getSelectedNode();
 
                 if (graphNode == null) {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
@@ -109,37 +109,37 @@ class EvidenceWizardSingle extends JPanel {
                     return;
                 }
 
-                Node tetradNode = graphNode.getModelNode();
-                String selectedNodeName = tetradNode.getName();
+                final Node tetradNode = graphNode.getModelNode();
+                final String selectedNodeName = tetradNode.getName();
 
-                EvidenceWizardSingle.this.getUpdaterWrapper().getParams().set("evidence", evidenceEditor.getEvidence());
-                EvidenceWizardSingle.this.getUpdaterWrapper().getParams().set("variable", updaterWrapper.getBayesUpdater().getBayesIm().getBayesPm().getVariable(tetradNode));
-                EvidenceWizardSingle.this.getUpdaterWrapper().getBayesUpdater().setEvidence(evidenceEditor.getEvidence());
+                getUpdaterWrapper().getParams().set("evidence", EvidenceWizardSingle.this.evidenceEditor.getEvidence());
+                getUpdaterWrapper().getParams().set("variable", updaterWrapper.getBayesUpdater().getBayesIm().getBayesPm().getVariable(tetradNode));
+                getUpdaterWrapper().getBayesUpdater().setEvidence(EvidenceWizardSingle.this.evidenceEditor.getEvidence());
 
 
-                Graph updatedGraph = EvidenceWizardSingle.this.getUpdaterWrapper().getBayesUpdater().getManipulatedGraph();
-                Node selectedNode = updatedGraph.getNode(selectedNodeName);
+                final Graph updatedGraph = getUpdaterWrapper().getBayesUpdater().getManipulatedGraph();
+                final Node selectedNode = updatedGraph.getNode(selectedNodeName);
 
-                EvidenceWizardSingle.this.getWorkbench().setGraph(updatedGraph);
-                EvidenceWizardSingle.this.getWorkbench().deselectAll();
-                EvidenceWizardSingle.this.getWorkbench().selectNode(selectedNode);
+                getWorkbench().setGraph(updatedGraph);
+                getWorkbench().deselectAll();
+                getWorkbench().selectNode(selectedNode);
 
-                EvidenceWizardSingle.this.firePropertyChange("updateButtonPressed", null, null);
-                EvidenceWizardSingle.this.firePropertyChange("modelChanged", null, null);
+                firePropertyChange("updateButtonPressed", null, null);
+                firePropertyChange("modelChanged", null, null);
             }
         });
     }
 
     public BayesIm getBayesIM() {
-        return this.getUpdaterWrapper().getBayesUpdater().getUpdatedBayesIm();
+        return getUpdaterWrapper().getBayesUpdater().getUpdatedBayesIm();
     }
 
     private UpdaterWrapper getUpdaterWrapper() {
-        return updaterWrapper;
+        return this.updaterWrapper;
     }
 
     private GraphWorkbench getWorkbench() {
-        return workbench;
+        return this.workbench;
     }
 }
 

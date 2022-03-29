@@ -41,7 +41,7 @@ public final class KernelGaussian implements Kernel {
      *
      * @param sigma the bandwidth
      */
-    public KernelGaussian(double sigma) {
+    public KernelGaussian(final double sigma) {
         if (sigma <= 0)
             throw new IllegalArgumentException("Sigma must be > 0");
         this.sigma = sigma;
@@ -53,15 +53,15 @@ public final class KernelGaussian implements Kernel {
      * @param dataset dataet containing variable used to set bandwidth
      * @param node    variable used to set bandwidth
      */
-    public KernelGaussian(DataSet dataset, Node node) {
-        this.setMedianBandwidth(dataset, node);
+    public KernelGaussian(final DataSet dataset, final Node node) {
+        setMedianBandwidth(dataset, node);
     }
 
     /**
      * @return the bandwidth
      */
     public double getBandwidth() {
-        return sigma;
+        return this.sigma;
     }
 
     /**
@@ -70,16 +70,16 @@ public final class KernelGaussian implements Kernel {
      * @param i first point
      * @param j second point
      */
-    public double eval(double i, double j) {
-        double evalKernel = Math.exp(-.5 * (Math.pow((i - j), 2) / Math.pow(sigma, 2)));
+    public double eval(final double i, final double j) {
+        final double evalKernel = Math.exp(-.5 * (Math.pow((i - j), 2) / Math.pow(this.sigma, 2)));
         return evalKernel;
     }
 
     /**
      * Default setting of bandwidth based on median distance heuristic
      */
-    public void setDefaultBw(DataSet dataset, Node node) {
-        this.setMedianBandwidth(dataset, node);
+    public void setDefaultBw(final DataSet dataset, final Node node) {
+        setMedianBandwidth(dataset, node);
     }
 
 
@@ -89,11 +89,11 @@ public final class KernelGaussian implements Kernel {
      * @param dataset dataet containing variable used to set bandwidth
      * @param node    variable used to set bandwidth
      */
-    public void setMedianBandwidth(DataSet dataset, Node node) {
-        int col = dataset.getColumn(node);
-        int m = dataset.getNumRows();
+    public void setMedianBandwidth(final DataSet dataset, final Node node) {
+        final int col = dataset.getColumn(node);
+        final int m = dataset.getNumRows();
 
-        double[] diff = new double[(int) Math.pow(m, 2) - m];
+        final double[] diff = new double[(int) Math.pow(m, 2) - m];
         int c = 0;
         for (int i = 0; i < (m - 1); i++) {
             for (int j = (i + 1); j < m; j++) {
@@ -102,36 +102,36 @@ public final class KernelGaussian implements Kernel {
             }
         }
 
-        sigma = this.find(diff, 0, (m - 1));
+        this.sigma = find(diff, 0, (m - 1));
     }
 
     // private method for finding median distance
 
-    private double find(double[] a, int from, int to) {
+    private double find(final double[] a, final int from, final int to) {
         int low = from;
         int high = to;
-        int median = (low + high) / 2;
+        final int median = (low + high) / 2;
         do {
             if (high <= low) {
                 return a[median];
             }
             if (high == low + 1) {
                 if (a[low] > a[high]) {
-                    this.swap(a, low, high);
+                    swap(a, low, high);
                 }
                 return a[median];
             }
-            int middle = (low + high) / 2;
+            final int middle = (low + high) / 2;
             if (a[middle] > a[high]) {
-                this.swap(a, middle, high);
+                swap(a, middle, high);
             }
             if (a[low] > a[high]) {
-                this.swap(a, low, high);
+                swap(a, low, high);
             }
             if (a[middle] > a[low]) {
-                this.swap(a, middle, low);
+                swap(a, middle, low);
             }
-            this.swap(a, middle, low + 1);
+            swap(a, middle, low + 1);
             int ll = low + 1;
             int hh = high;
             do {
@@ -146,10 +146,10 @@ public final class KernelGaussian implements Kernel {
                 if (hh < ll) {
                     break;
                 }
-                this.swap(a, ll, hh);
+                swap(a, ll, hh);
             }
             while (true);
-            this.swap(a, low, hh);
+            swap(a, low, hh);
             if (hh <= median) {
                 low = ll;
             }
@@ -160,8 +160,8 @@ public final class KernelGaussian implements Kernel {
         while (true);
     }
 
-    private void swap(double[] a, int i1, int i2) {
-        double temp = a[i1];
+    private void swap(final double[] a, final int i1, final int i2) {
+        final double temp = a[i1];
         a[i1] = a[i2];
         a[i2] = temp;
     }

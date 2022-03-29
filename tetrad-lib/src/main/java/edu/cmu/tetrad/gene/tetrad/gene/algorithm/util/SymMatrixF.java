@@ -37,14 +37,14 @@ public class SymMatrixF extends LTMatrixF {
     /**
      * Creates a symmetric matrix with <code>nrows</code> rows.
      */
-    public SymMatrixF(String mname, int nrows) {
+    public SymMatrixF(final String mname, final int nrows) {
         super(mname, nrows);
     }
 
     /**
      * Creates a symmetric matrix reading it from file <code>fname</code>.
      */
-    public SymMatrixF(String fname) throws IOException {
+    public SymMatrixF(final String fname) throws IOException {
         super(fname);
     }
 
@@ -52,7 +52,7 @@ public class SymMatrixF extends LTMatrixF {
      * Sets the value of element (<code>row</code>,<code>col</code>) to
      * <code>x</code>
      */
-    public void setValue(int row, int col, double x) {
+    public void setValue(final int row, final int col, final double x) {
         if (row >= col) {
             super.setValue(row, col, x);
         } else {
@@ -64,7 +64,7 @@ public class SymMatrixF extends LTMatrixF {
      * Sets the value of element (<code>row</code>,<code>col</code>) to
      * <code>x</code>
      */
-    public void setValue(int row, int col, float x) {
+    public void setValue(final int row, final int col, final float x) {
         if (row >= col) {
             super.setValue(row, col, x);
         } else {
@@ -75,7 +75,7 @@ public class SymMatrixF extends LTMatrixF {
     /**
      * Returns the value of element at (<code>row</code>,<code>col</code>)
      */
-    public float getValue(int row, int col) {
+    public float getValue(final int row, final int col) {
         return (row >= col ? super.getValue(row, col) : super.getValue(col,
                 row));
     }
@@ -85,12 +85,12 @@ public class SymMatrixF extends LTMatrixF {
      * matrix
      */
     public String toString() {
-        String s = getClass().getName() + " " + name + "\n" + n +
+        String s = this.getClass().getName() + " " + this.name + "\n" + this.n +
                 " // <- Total # rows\n";
-        for (int r = 0; r < n; r++) {
+        for (int r = 0; r < this.n; r++) {
             //s = s + "/* "+r+" */  ";
-            for (int c = 0; c < n; c++) {
-                s = s + getValue(r, c) + " ";
+            for (int c = 0; c < this.n; c++) {
+                s = s + this.getValue(r, c) + " ";
             }
             s = s + "\n";
         }

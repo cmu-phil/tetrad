@@ -43,20 +43,20 @@ public final class TestDag {
 
     @Test
     public void testDag() {
-        this.checkGraph(new Dag());
+        checkGraph(new Dag());
     }
 
-    private void checkGraph(Dag graph) {
-        this.checkAddRemoveNodes(graph);
-        this.checkCopy(graph);
+    private void checkGraph(final Dag graph) {
+        checkAddRemoveNodes(graph);
+        checkCopy(graph);
     }
 
-    private void checkAddRemoveNodes(Dag graph) {
-        Node x1 = new GraphNode("x1");
-        Node x2 = new GraphNode("x2");
-        Node x3 = new GraphNode("x3");
-        Node x4 = new GraphNode("x4");
-        Node x5 = new GraphNode("x5");
+    private void checkAddRemoveNodes(final Dag graph) {
+        final Node x1 = new GraphNode("x1");
+        final Node x2 = new GraphNode("x2");
+        final Node x3 = new GraphNode("x3");
+        final Node x4 = new GraphNode("x4");
+        final Node x5 = new GraphNode("x5");
 
         graph.addNode(x1);
         graph.addNode(x2);
@@ -69,8 +69,8 @@ public final class TestDag {
         graph.addDirectedEdge(x3, x4);
         graph.addDirectedEdge(x5, x4);
 
-        List<Node> children = graph.getChildren(x1);
-        List<Node> parents = graph.getParents(x4);
+        final List<Node> children = graph.getChildren(x1);
+        final List<Node> parents = graph.getParents(x4);
 
         assertTrue(children.contains(x2));
         assertTrue(parents.contains(x3));
@@ -88,8 +88,8 @@ public final class TestDag {
         assertTrue(!graph.isDescendentOf(x2, x4));
     }
 
-    private void checkCopy(Graph graph) {
-        Graph graph2 = new Dag(graph);
+    private void checkCopy(final Graph graph) {
+        final Graph graph2 = new Dag(graph);
         assertEquals(graph, graph2);
     }
 }

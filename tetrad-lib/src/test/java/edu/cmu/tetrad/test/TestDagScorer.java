@@ -53,7 +53,7 @@ public class TestDagScorer {
     public void test1() {
         RandomUtil.getInstance().setSeed(492839483L);
 
-        List<Node> nodes = new ArrayList<>();
+        final List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < 10; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
@@ -62,31 +62,31 @@ public class TestDagScorer {
         Graph dag = new Dag(GraphUtils.randomGraph(nodes, 0, 10,
                 30, 15, 15, false));
 
-        SemPm pm = new SemPm(dag);
-        SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(1000, false);
+        final SemPm pm = new SemPm(dag);
+        final SemIm im = new SemIm(pm);
+        final DataSet data = im.simulateData(1000, false);
 
         GraphUtils.replaceNodes(dag, data.getVariables());
 
-        SemEstimator est = new SemEstimator(data, pm);
-        SemIm estSem = est.estimate();
-        double fml = estSem.getScore();
+        final SemEstimator est = new SemEstimator(data, pm);
+        final SemIm estSem = est.estimate();
+        final double fml = estSem.getScore();
 
         assertEquals(0.04, fml, 0.03);
 
         dag = GraphUtils.replaceNodes(dag, data.getVariables());
 
-        Scorer scorer = new DagScorer(data);
-        double _fml = scorer.score(dag);
+        final Scorer scorer = new DagScorer(data);
+        final double _fml = scorer.score(dag);
 
 //        assertEquals(0.04, _fml, 0.01);
 
-        double bicScore = scorer.getBicScore();
+        final double bicScore = scorer.getBicScore();
         assertEquals(-210, bicScore, 10);
 
-        int dof = scorer.getDof();
+        final int dof = scorer.getDof();
         assertEquals(35, dof);
-        int numFreeParams = scorer.getNumFreeParams();
+        final int numFreeParams = scorer.getNumFreeParams();
         assertEquals(20, numFreeParams);
     }
 }

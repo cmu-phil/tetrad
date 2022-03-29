@@ -48,8 +48,8 @@ public final class SemEstimatorGibbsParams implements TetradSerializable {
     /**
      *
      */
-    private SemEstimatorGibbsParams(SemIm startIm, boolean flatPrior,
-                                    double stretch, int numIterations) {
+    private SemEstimatorGibbsParams(final SemIm startIm, final boolean flatPrior,
+                                    final double stretch, final int numIterations) {
 
         // note that seed is never used... just as well to get rid of it?
 
@@ -58,53 +58,53 @@ public final class SemEstimatorGibbsParams implements TetradSerializable {
         this.stretch = stretch;
         this.numIterations = numIterations;
 
-        tolerance = 0.0001;
+        this.tolerance = 0.0001;
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
     public static SemEstimatorGibbsParams serializableInstance() {
-        SemGraph graph = new SemGraph();
+        final SemGraph graph = new SemGraph();
         graph.addNode(new GraphNode("X"));
         return new SemEstimatorGibbsParams(new SemIm(new SemPm(graph)), false,
                 0.0d, 1);
     }
 
     public SemIm getStartIm() {
-        return startIm;
+        return this.startIm;
     }
 
-    public void setStartIm(SemIm startIm) {
+    public void setStartIm(final SemIm startIm) {
         this.startIm = startIm;
     }
 
     public double getStretch() {
-        return stretch;
+        return this.stretch;
     }
 
-    public void setStretch(double stretch) {
+    public void setStretch(final double stretch) {
         this.stretch = stretch;
     }
 
     public double getTolerance() {
-        return tolerance;
+        return this.tolerance;
     }
 
     public int getNumIterations() {
-        return numIterations;
+        return this.numIterations;
     }
 
-    public void setNumIterations(int numIterations) {
+    public void setNumIterations(final int numIterations) {
         this.numIterations = numIterations;
     }
 
-    public void setFlatPrior(boolean flatPrior) {
+    public void setFlatPrior(final boolean flatPrior) {
         this.flatPrior = flatPrior;
     }
 
     public boolean isFlatPrior() {
-        return flatPrior;
+        return this.flatPrior;
     }
 
 
@@ -121,7 +121,7 @@ public final class SemEstimatorGibbsParams implements TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }

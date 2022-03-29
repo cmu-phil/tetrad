@@ -50,7 +50,7 @@ class SelectUndirectedAction extends AbstractAction implements ClipboardOwner {
      * Creates a new copy subsession action for the given desktop and
      * clipboard.
      */
-    public SelectUndirectedAction(GraphWorkbench workbench) {
+    public SelectUndirectedAction(final GraphWorkbench workbench) {
         super("Highlight Undirected Edges");
 
         if (workbench == null) {
@@ -64,14 +64,14 @@ class SelectUndirectedAction extends AbstractAction implements ClipboardOwner {
      * Copies a parentally closed selection of session nodes in the frontmost
      * session editor to the clipboard.
      */
-    public void actionPerformed(ActionEvent e) {
-        workbench.deselectAll();
+    public void actionPerformed(final ActionEvent e) {
+        this.workbench.deselectAll();
 
-        for (Component comp : workbench.getComponents()) {
+        for (final Component comp : this.workbench.getComponents()) {
             if (comp instanceof DisplayEdge) {
-                Edge edge = ((DisplayEdge) comp).getModelEdge();
+                final Edge edge = ((DisplayEdge) comp).getModelEdge();
                 if (Edges.isUndirectedEdge(edge)) {
-                    workbench.selectEdge(edge);
+                    this.workbench.selectEdge(edge);
                 }
             }
         }
@@ -80,7 +80,7 @@ class SelectUndirectedAction extends AbstractAction implements ClipboardOwner {
     /**
      * Required by the AbstractAction interface; does nothing.
      */
-    public void lostOwnership(Clipboard clipboard, Transferable contents) {
+    public void lostOwnership(final Clipboard clipboard, final Transferable contents) {
     }
 }
 

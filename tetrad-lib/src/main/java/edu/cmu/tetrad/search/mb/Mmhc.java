@@ -56,21 +56,21 @@ public class Mmhc implements GraphSearch {
 
     //=============================CONSTRUCTORS==========================//
 
-    public Mmhc(IndependenceTest test, DataSet dataSet) {
-        depth = -1;
-        independenceTest = test;
-        data = dataSet;
+    public Mmhc(final IndependenceTest test, final DataSet dataSet) {
+        this.depth = -1;
+        this.independenceTest = test;
+        this.data = dataSet;
     }
 
     //==============================PUBLIC METHODS========================//
 
 
     public IndependenceTest getIndependenceTest() {
-        return independenceTest;
+        return this.independenceTest;
     }
 
     public int getDepth() {
-        return depth;
+        return this.depth;
     }
 
     public long getElapsedTime() {
@@ -82,38 +82,38 @@ public class Mmhc implements GraphSearch {
      * Runs PC starting with a fully connected graph over all of the variables in the domain of the independence test.
      */
     public Graph search() {
-        List<Node> variables = independenceTest.getVariables();
-        Mmmb mmmb = new Mmmb(independenceTest, this.getDepth(), true);
-        Map<Node, List<Node>> pc = new HashMap<>();
+        final List<Node> variables = this.independenceTest.getVariables();
+        final Mmmb mmmb = new Mmmb(this.independenceTest, getDepth(), true);
+        final Map<Node, List<Node>> pc = new HashMap<>();
 
-        for (Node x : variables) {
+        for (final Node x : variables) {
             pc.put(x, mmmb.getPc(x));
         }
 
-        Graph graph = new EdgeListGraph();
+        final Graph graph = new EdgeListGraph();
 
-        for (Node x : variables) {
+        for (final Node x : variables) {
             graph.addNode(x);
         }
 
-        for (Node x : variables) {
-            for (Node y : pc.get(x)) {
+        for (final Node x : variables) {
+            for (final Node y : pc.get(x)) {
                 if (!graph.isAdjacentTo(x, y)) {
                     graph.addUndirectedEdge(x, y);
                 }
             }
         }
 
-        FgesOrienter orienter = new FgesOrienter(data);
+        final FgesOrienter orienter = new FgesOrienter(this.data);
         orienter.orient(graph);
         return graph;
     }
 
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(final IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -121,7 +121,7 @@ public class Mmhc implements GraphSearch {
         this.knowledge = knowledge;
     }
 
-    public void setDepth(int depth) {
+    public void setDepth(final int depth) {
         this.depth = depth;
     }
 }

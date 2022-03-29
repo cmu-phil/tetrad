@@ -22,7 +22,6 @@ package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeEqualityMode;
-import edu.cmu.tetrad.graph.NodeEqualityMode.Type;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.graph.NodeVariableType;
 
@@ -91,18 +90,18 @@ public final class ContinuousVariable extends AbstractVariable {
      *
      * @param name the name of the variable.
      */
-    public ContinuousVariable(String name) {
+    public ContinuousVariable(final String name) {
         super(name);
     }
 
     /**
      * Copy constructor.
      */
-    public ContinuousVariable(ContinuousVariable variable) {
+    public ContinuousVariable(final ContinuousVariable variable) {
         super(variable.getName());
-        nodeType = variable.nodeType;
-        centerX = variable.centerX;
-        centerY = variable.centerY;
+        this.nodeType = variable.nodeType;
+        this.centerX = variable.centerX;
+        this.centerY = variable.centerY;
     }
 
     /**
@@ -120,14 +119,14 @@ public final class ContinuousVariable extends AbstractVariable {
      * @param value the value to check.
      * @return true iff the value is legitimate.
      */
-    public boolean checkValue(Object value) {
+    public boolean checkValue(final Object value) {
         if (value instanceof Double) {
             return true;
         } else if (value instanceof String) {
             try {
                 Double.parseDouble((String) value);
                 return true;
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 return false;
             }
         } else {
@@ -135,9 +134,9 @@ public final class ContinuousVariable extends AbstractVariable {
         }
     }
 
-    public Node like(String name) {
-        ContinuousVariable continuousVariable = new ContinuousVariable(name);
-        continuousVariable.setNodeType(this.getNodeType());
+    public Node like(final String name) {
+        final ContinuousVariable continuousVariable = new ContinuousVariable(name);
+        continuousVariable.setNodeType(getNodeType());
         return continuousVariable;
     }
 
@@ -145,14 +144,14 @@ public final class ContinuousVariable extends AbstractVariable {
      * @return the missing value marker, wrapped as a Double.
      */
     public Object getMissingValueMarker() {
-        return MISSING_VALUE;
+        return ContinuousVariable.MISSING_VALUE;
     }
 
     /**
      * @return the missing value marker.
      */
     public static double getDoubleMissingValue() {
-        return MISSING_VALUE;
+        return ContinuousVariable.MISSING_VALUE;
     }
 
     /**
@@ -163,7 +162,7 @@ public final class ContinuousVariable extends AbstractVariable {
      * @return true iff it really is a wrapped version of the missing value
      * marker.
      */
-    public static boolean isDoubleMissingValue(double value) {
+    public static boolean isDoubleMissingValue(final double value) {
         return Double.isNaN(value);
     }
 
@@ -175,9 +174,9 @@ public final class ContinuousVariable extends AbstractVariable {
      * @return true iff it really is a wrapped version of the missing value
      * marker.
      */
-    public boolean isMissingValue(Object value) {
+    public boolean isMissingValue(final Object value) {
         if (value instanceof Double) {
-            double doubleValue = (Double) value;
+            final double doubleValue = (Double) value;
             return Double.isNaN(doubleValue);
         }
 
@@ -185,9 +184,9 @@ public final class ContinuousVariable extends AbstractVariable {
     }
 
     public int hashCode() {
-        if (NodeEqualityMode.getEqualityType() == Type.OBJECT) {
+        if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.OBJECT) {
             return super.hashCode();
-        } else if (NodeEqualityMode.getEqualityType() == Type.NAME) {
+        } else if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.NAME) {
             return this.getName().hashCode();
         }
 
@@ -208,20 +207,20 @@ public final class ContinuousVariable extends AbstractVariable {
         if (!(o instanceof ContinuousVariable)) {
             return false;
         }
-        if (NodeEqualityMode.getEqualityType() == Type.OBJECT) {
+        if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.OBJECT) {
             return o == this;
-        } else if (NodeEqualityMode.getEqualityType() == Type.NAME) {
-            return this.getName().equals(((Node) o).getName());
+        } else if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.NAME) {
+            return getName().equals(((Node) o).getName());
         }
 
         throw new IllegalStateException();
     }
 
     public NodeType getNodeType() {
-        return nodeType;
+        return this.nodeType;
     }
 
-    public void setNodeType(NodeType nodeType) {
+    public void setNodeType(final NodeType nodeType) {
         this.nodeType = nodeType;
     }
 
@@ -229,13 +228,13 @@ public final class ContinuousVariable extends AbstractVariable {
      * @return the x coordinate of the center of the node.
      */
     public int getCenterX() {
-        return centerX;
+        return this.centerX;
     }
 
     /**
      * Sets the x coordinate of the center of this node.
      */
-    public void setCenterX(int centerX) {
+    public void setCenterX(final int centerX) {
         this.centerX = centerX;
     }
 
@@ -243,37 +242,37 @@ public final class ContinuousVariable extends AbstractVariable {
      * @return the y coordinate of the center of the node.
      */
     public int getCenterY() {
-        return centerY;
+        return this.centerY;
     }
 
     /**
      * Sets the y coordinate of the center of this node.
      */
-    public void setCenterY(int centerY) {
+    public void setCenterY(final int centerY) {
         this.centerY = centerY;
     }
 
     /**
      * Sets the (x, y) coordinates of the center of this node.
      */
-    public void setCenter(int centerX, int centerY) {
-        this.setCenterX(centerX);
-        this.setCenterY(centerY);
+    public void setCenter(final int centerX, final int centerY) {
+        setCenterX(centerX);
+        setCenterY(centerY);
     }
 
     /**
      * Adds a property change listener.
      */
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        this.getPcs().addPropertyChangeListener(l);
+    public void addPropertyChangeListener(final PropertyChangeListener l) {
+        getPcs().addPropertyChangeListener(l);
     }
 
     private PropertyChangeSupport getPcs() {
-        if (pcs == null) {
-            pcs = new PropertyChangeSupport(this);
+        if (this.pcs == null) {
+            this.pcs = new PropertyChangeSupport(this);
         }
 
-        return pcs;
+        return this.pcs;
     }
 
     /**
@@ -289,43 +288,43 @@ public final class ContinuousVariable extends AbstractVariable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (nodeType == null) {
+        if (this.nodeType == null) {
             throw new NullPointerException();
         }
     }
 
     @Override
     public NodeVariableType getNodeVariableType() {
-        return nodeVariableType;
+        return this.nodeVariableType;
     }
 
     @Override
-    public void setNodeVariableType(NodeVariableType nodeVariableType) {
+    public void setNodeVariableType(final NodeVariableType nodeVariableType) {
         this.nodeVariableType = nodeVariableType;
     }
 
     @Override
     public Map<String, Object> getAllAttributes() {
-        return attributes;
+        return this.attributes;
     }
 
     @Override
-    public Object getAttribute(String key) {
-        return attributes.get(key);
+    public Object getAttribute(final String key) {
+        return this.attributes.get(key);
     }
 
     @Override
-    public void removeAttribute(String key) {
-        attributes.remove(key);
+    public void removeAttribute(final String key) {
+        this.attributes.remove(key);
     }
 
     @Override
-    public void addAttribute(String key, Object value) {
-        attributes.put(key, value);
+    public void addAttribute(final String key, final Object value) {
+        this.attributes.put(key, value);
     }
 
 }

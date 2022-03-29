@@ -37,17 +37,17 @@ public class NonparanormalTransform extends DataWrapper {
     static final long serialVersionUID = 23L;
 
     //=============================CONSTRUCTORS==============================//
-    public NonparanormalTransform(DataWrapper wrapper, Parameters params) {
-        DataModel dataModel = wrapper.getSelectedDataModel();
-        DataSet nonparanormalTransformed = DataUtils.getNonparanormalTransformed((DataSet) dataModel);
+    public NonparanormalTransform(final DataWrapper wrapper, final Parameters params) {
+        final DataModel dataModel = wrapper.getSelectedDataModel();
+        final DataSet nonparanormalTransformed = DataUtils.getNonparanormalTransformed((DataSet) dataModel);
         nonparanormalTransformed.setKnowledge(dataModel.getKnowledge().copy());
 
-        this.setDataModel(nonparanormalTransformed);
-        this.setSourceGraph(wrapper.getSourceGraph());
+        setDataModel(nonparanormalTransformed);
+        setSourceGraph(wrapper.getSourceGraph());
 //        IKnowledge knowledge = new PairwiseForbiddenGraphModel().getKnowledge();
 //        setKnowledge(knowledge);
 
-        LogDataUtils.logDataModelList("Conversion of parent data to correlation matrix form.", this.getDataModelList());
+        LogDataUtils.logDataModelList("Conversion of parent data to correlation matrix form.", getDataModelList());
     }
 
     /**

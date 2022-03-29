@@ -44,37 +44,37 @@ public final class TestBayesBicScorer {
         RandomUtil.getInstance().setSeed(492834924L);
 
 //        Graph graph = GraphConverter.convert("X1,X2,X4,X4,X5,X6,X7,X8");
-        Graph graph = GraphConverter.convert("X1-->X2,X2-->X3,X3-->X6,X6-->X7");
+        final Graph graph = GraphConverter.convert("X1-->X2,X2-->X3,X3-->X6,X6-->X7");
 //        Graph graph2 = GraphConverter.convert("X1,X2,X3,X7-->X6,X9,X10,X11,X12");
 
         final int numCategories = 8;
-        BayesPm pm = new BayesPm(graph, numCategories, numCategories);
-        BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+        final BayesPm pm = new BayesPm(graph, numCategories, numCategories);
+        final BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
 
-        DataSet data = im.simulateData(1000, false);
+        final DataSet data = im.simulateData(1000, false);
 
-        BayesProperties scorer = new BayesProperties(data);
+        final BayesProperties scorer = new BayesProperties(data);
 
-        double lik = scorer.getLikelihoodRatioP(graph);
+        final double lik = scorer.getLikelihoodRatioP(graph);
 
         assertEquals(1, lik, 0.001);
     }
 
     public void testGregsBdeuStructurePrior() {
         for (int i = 100; i >= 1; i--) {
-            double e = .0001 / i;
-            System.out.println("e = " + e + "\t" + this.prior(e, 1, 10));
+            final double e = .0001 / i;
+            System.out.println("e = " + e + "\t" + prior(e, 1, 10));
         }
     }
 
-    private double prior(double e, int k, int v) {
-        double choose = Math.exp(MathUtils.choose(v - 1, k));
+    private double prior(final double e, final int k, final int v) {
+        final double choose = Math.exp(MathUtils.choose(v - 1, k));
         return choose * Math.pow(e / (v - 1), k) * Math.pow(1.0 - e / (v - 1), (v - k - 1));
     }
 
     // Greg's structure prior
-    private double prior2(double e, int k, int v) {
-        double choose = Math.exp(MathUtils.choose(v - 1, k));
+    private double prior2(final double e, final int k, final int v) {
+        final double choose = Math.exp(MathUtils.choose(v - 1, k));
         return 1.0 / choose;//k * Math.log(e / (v - 1)) + (v - k - 1) * Math.log(1.0 - (e / (v - 1)));
     }
 }

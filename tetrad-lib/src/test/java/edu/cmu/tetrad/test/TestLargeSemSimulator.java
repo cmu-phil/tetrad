@@ -44,13 +44,13 @@ public class TestLargeSemSimulator {
 
     @Test
     public void test1() {
-        List<Node> nodes = new ArrayList<>();
+        final List<Node> nodes = new ArrayList<>();
         for (int i = 1; i <= 10; i++) nodes.add(new ContinuousVariable("X" + i));
 
-        Graph graph = GraphUtils.randomGraph(nodes, 0, 10, 5, 5, 5, false);
+        final Graph graph = GraphUtils.randomGraph(nodes, 0, 10, 5, 5, 5, false);
 
-        LargeScaleSimulation simulator = new LargeScaleSimulation(graph);
-        DataSet dataset = simulator.simulateDataFisher(1000);
+        final LargeScaleSimulation simulator = new LargeScaleSimulation(graph);
+        final DataSet dataset = simulator.simulateDataFisher(1000);
 
         assertEquals(1000, dataset.getNumRows());
     }

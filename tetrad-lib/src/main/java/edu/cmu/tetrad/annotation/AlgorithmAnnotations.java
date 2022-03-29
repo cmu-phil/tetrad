@@ -39,30 +39,30 @@ public class AlgorithmAnnotations extends AbstractAnnotations<Algorithm> {
     }
 
     public static AlgorithmAnnotations getInstance() {
-        return INSTANCE;
+        return AlgorithmAnnotations.INSTANCE;
     }
 
-    public List<AnnotatedClass<Algorithm>> filterOutExperimental(List<AnnotatedClass<Algorithm>> list) {
-        return this.filterOutByAnnotation(list, Experimental.class);
+    public List<AnnotatedClass<Algorithm>> filterOutExperimental(final List<AnnotatedClass<Algorithm>> list) {
+        return filterOutByAnnotation(list, Experimental.class);
     }
 
-    public boolean acceptMultipleDataset(Class clazz) {
+    public boolean acceptMultipleDataset(final Class clazz) {
         return clazz != null && MultiDataSetAlgorithm.class.isAssignableFrom(clazz);
     }
 
-    public boolean acceptKnowledge(Class clazz) {
+    public boolean acceptKnowledge(final Class clazz) {
         return clazz != null && HasKnowledge.class.isAssignableFrom(clazz);
     }
 
-    public boolean requireIndependenceTest(Class clazz) {
+    public boolean requireIndependenceTest(final Class clazz) {
         return clazz != null && TakesIndependenceWrapper.class.isAssignableFrom(clazz);
     }
 
-    public boolean requireScore(Class clazz) {
+    public boolean requireScore(final Class clazz) {
         return clazz != null && UsesScoreWrapper.class.isAssignableFrom(clazz);
     }
 
-    public boolean handleUnmeasuredConfounder(Class clazz) {
+    public boolean handleUnmeasuredConfounder(final Class clazz) {
         return clazz != null && clazz.isAnnotationPresent(UnmeasuredConfounder.class);
     }
 

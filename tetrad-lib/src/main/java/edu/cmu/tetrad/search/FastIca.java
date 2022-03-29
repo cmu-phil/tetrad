@@ -183,12 +183,12 @@ public class FastIca {
      * (the default). if algorithmType == DEFLATION the components are extracted
      * one at a time.
      */
-    private int algorithmType = PARALLEL;
+    private int algorithmType = FastIca.PARALLEL;
 
     /**
      * The function type to be used, either LOGCOSH or EXP.
      */
-    private int function = LOGCOSH;
+    private int function = FastIca.LOGCOSH;
 
     /**
      * Constant in range [1, 2] used in approximation to neg-entropy when 'fun
@@ -236,7 +236,7 @@ public class FastIca {
      *          variables. It is assumed that there are no missing
      *          values.
      */
-    public FastIca(Matrix X, int numComponents) {
+    public FastIca(final Matrix X, final int numComponents) {
         this.X = X;
         this.numComponents = numComponents;
     }
@@ -249,7 +249,7 @@ public class FastIca {
      * one at a time.
      */
     public int getAlgorithmType() {
-        return algorithmType;
+        return this.algorithmType;
     }
 
     /**
@@ -257,8 +257,8 @@ public class FastIca {
      * (the default). if algorithmType == DEFLATION the components are extracted
      * one at a time.
      */
-    public void setAlgorithmType(int algorithmType) {
-        if (!(algorithmType == DEFLATION || algorithmType == PARALLEL)) {
+    public void setAlgorithmType(final int algorithmType) {
+        if (!(algorithmType == FastIca.DEFLATION || algorithmType == FastIca.PARALLEL)) {
             throw new IllegalArgumentException("Value should be DEFLATION or PARALLEL.");
         }
 
@@ -269,14 +269,14 @@ public class FastIca {
      * The function type to be used, either LOGCOSH or EXP.
      */
     public int getFunction() {
-        return function;
+        return this.function;
     }
 
     /**
      * The function type to be used, either LOGCOSH or EXP.
      */
-    public void setFunction(int function) {
-        if (!(function == LOGCOSH || function == EXP)) {
+    public void setFunction(final int function) {
+        if (!(function == FastIca.LOGCOSH || function == FastIca.EXP)) {
             throw new IllegalArgumentException("Value should be LOGCOSH or EXP.");
         }
 
@@ -288,14 +288,14 @@ public class FastIca {
      * == "logcosh"'
      */
     public double getAlpha() {
-        return alpha;
+        return this.alpha;
     }
 
     /**
      * Constant in range [1, 2] used in approximation to neg-entropy when 'fun
      * == "logcosh"'
      */
-    public void setAlpha(double alpha) {
+    public void setAlpha(final double alpha) {
         if (!(alpha >= 1 && alpha <= 2)) {
             throw new IllegalArgumentException("Alpha should be in range [1, 2].");
         }
@@ -308,28 +308,28 @@ public class FastIca {
      * standardized beforehand.
      */
     public boolean isRowNorm() {
-        return rowNorm;
+        return this.rowNorm;
     }
 
     /**
      * A logical value indicating whether rows of the data matrix 'X' should be
      * standardized beforehand.
      */
-    public void setRowNorm(boolean colNorm) {
-        rowNorm = colNorm;
+    public void setRowNorm(final boolean colNorm) {
+        this.rowNorm = colNorm;
     }
 
     /**
      * Maximum number of iterations to perform.
      */
     public int getMaxIterations() {
-        return maxIterations;
+        return this.maxIterations;
     }
 
     /**
      * Maximum number of iterations to perform.
      */
-    public void setMaxIterations(int maxIterations) {
+    public void setMaxIterations(final int maxIterations) {
         if (maxIterations < 1) {
             TetradLogger.getInstance().log("info", "maxIterations should be positive.");
         }
@@ -342,14 +342,14 @@ public class FastIca {
      * considered to have converged.
      */
     public double getTolerance() {
-        return tolerance;
+        return this.tolerance;
     }
 
     /**
      * A positive scalar giving the tolerance at which the un-mixing matrix is
      * considered to have converged.
      */
-    public void setTolerance(double tolerance) {
+    public void setTolerance(final double tolerance) {
         if (!(tolerance > 0)) {
             TetradLogger.getInstance().log("info", "Tolerance should be positive.");
         }
@@ -361,13 +361,13 @@ public class FastIca {
      * A logical value indicating the level of output as the algorithm runs.
      */
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     /**
      * A logical value indicating the level of output as the algorithm runs.
      */
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 
@@ -376,14 +376,14 @@ public class FastIca {
      * then a matrix of normal r.v.'s is used.
      */
     public Matrix getWInit() {
-        return wInit;
+        return this.wInit;
     }
 
     /**
      * Initial un-mixing matrix of dimension (n.comp,n.comp). If NULL (default)
      * then a matrix of normal r.v.'s is used.
      */
-    public void setWInit(Matrix wInit) {
+    public void setWInit(final Matrix wInit) {
         this.wInit = wInit;
     }
 
@@ -394,46 +394,46 @@ public class FastIca {
      * @return this list, as an FastIca.IcaResult object.
      */
     public IcaResult findComponents() {
-        int n = X.columns();
-        int p = X.rows();
+        final int n = this.X.columns();
+        final int p = this.X.rows();
 
-        if (numComponents > Math.min(n, p)) {
+        if (this.numComponents > Math.min(n, p)) {
             TetradLogger.getInstance().log("info", "Requested number of components is too large.");
             TetradLogger.getInstance().log("info", "Reset to " + Math.min(n, p));
-            numComponents = Math.min(n, p);
+            this.numComponents = Math.min(n, p);
         }
 
-        if (wInit == null) {
-            wInit = new Matrix(numComponents, numComponents);
-            for (int i = 0; i < wInit.rows(); i++) {
-                for (int j = 0; j < wInit.columns(); j++) {
-                    wInit.set(i, j, RandomUtil.getInstance().nextNormal(0, 1));
+        if (this.wInit == null) {
+            this.wInit = new Matrix(this.numComponents, this.numComponents);
+            for (int i = 0; i < this.wInit.rows(); i++) {
+                for (int j = 0; j < this.wInit.columns(); j++) {
+                    this.wInit.set(i, j, RandomUtil.getInstance().nextNormal(0, 1));
                 }
             }
-        } else if (wInit.rows() != wInit.columns()) {
+        } else if (this.wInit.rows() != this.wInit.columns()) {
             throw new IllegalArgumentException("wInit is the wrong size.");
         }
 
-        if (verbose) {
+        if (this.verbose) {
             TetradLogger.getInstance().log("info", "Centering");
         }
 
-        X = this.center(X);
+        this.X = center(this.X);
 
-        if (rowNorm) {
-            X = this.scale(X);
+        if (this.rowNorm) {
+            this.X = scale(this.X);
         }
 
-        if (verbose) {
+        if (this.verbose) {
             TetradLogger.getInstance().log("info", "Whitening");
         }
 
         // Whiten.
-        Matrix cov = X.times(X.transpose()).scalarMult(1.0 / n);
+        final Matrix cov = this.X.times(this.X.transpose()).scalarMult(1.0 / n);
 
-        SingularValueDecomposition s = new SingularValueDecomposition(new BlockRealMatrix(cov.toArray()));
-        Matrix D = new Matrix(s.getS().getData());
-        Matrix U = new Matrix(s.getU().getData());
+        final SingularValueDecomposition s = new SingularValueDecomposition(new BlockRealMatrix(cov.toArray()));
+        final Matrix D = new Matrix(s.getS().getData());
+        final Matrix U = new Matrix(s.getU().getData());
 
         for (int i = 0; i < D.rows(); i++) {
             D.set(i, i, 1.0 / Math.sqrt(D.get(i, i)));
@@ -441,41 +441,41 @@ public class FastIca {
 
         Matrix K = D.times(U.transpose());
 //        K = K.scalarMult(-1); // This SVD gives -U from R's SVD.
-        K = K.getPart(0, numComponents - 1, 0, p - 1);
+        K = K.getPart(0, this.numComponents - 1, 0, p - 1);
 
-        Matrix X1 = K.times(X);
-        Matrix b;
+        final Matrix X1 = K.times(this.X);
+        final Matrix b;
 
-        if (algorithmType == DEFLATION) {
-            b = this.icaDeflation(X1, tolerance, function, alpha,
-                    maxIterations, verbose, wInit);
-        } else if (algorithmType == PARALLEL) {
-            b = this.icaParallel(X1, numComponents, tolerance, function, alpha,
-                    maxIterations, verbose, wInit);
+        if (this.algorithmType == FastIca.DEFLATION) {
+            b = icaDeflation(X1, this.tolerance, this.function, this.alpha,
+                    this.maxIterations, this.verbose, this.wInit);
+        } else if (this.algorithmType == FastIca.PARALLEL) {
+            b = icaParallel(X1, this.numComponents, this.tolerance, this.function, this.alpha,
+                    this.maxIterations, this.verbose, this.wInit);
         } else {
             throw new IllegalStateException();
         }
 
-        Matrix w = b.times(K);
-        Matrix S = w.times(X);
-        return new IcaResult(X, K, w, S);
+        final Matrix w = b.times(K);
+        final Matrix S = w.times(this.X);
+        return new IcaResult(this.X, K, w, S);
 
     }
 
     //==============================PRIVATE METHODS==========================//
 
-    private Matrix icaDeflation(Matrix X,
-                                double tolerance, int function, double alpha,
-                                int maxIterations, boolean verbose, Matrix wInit) {
-        if (verbose && function == LOGCOSH) {
+    private Matrix icaDeflation(final Matrix X,
+                                final double tolerance, final int function, final double alpha,
+                                final int maxIterations, final boolean verbose, final Matrix wInit) {
+        if (verbose && function == FastIca.LOGCOSH) {
             TetradLogger.getInstance().log("info", "Deflation FastIca using lgcosh approx. to neg-entropy function");
         }
 
-        if (verbose && function == EXP) {
+        if (verbose && function == FastIca.EXP) {
             TetradLogger.getInstance().log("info", "Deflation FastIca using exponential approx. to neg-entropy function");
         }
 
-        Matrix W = new Matrix(X.rows(), X.rows());
+        final Matrix W = new Matrix(X.rows(), X.rows());
 
         for (int i = 0; i < X.rows(); i++) {
             if (verbose) {
@@ -486,33 +486,33 @@ public class FastIca {
 
             if (i > 0) {
                 for (int u = 0; u < i; u++) {
-                    double k = w.dotProduct(W.getRow(u));
+                    final double k = w.dotProduct(W.getRow(u));
                     w = w.minus(W.getRow(u).scalarMult(k));
                 }
             }
 
-            w = w.scalarMult(1.0 / this.rms(w));
+            w = w.scalarMult(1.0 / rms(w));
 
             int it = 0;
             double _tolerance = Double.POSITIVE_INFINITY;
 
             while (_tolerance > tolerance && ++it <= maxIterations) {
-                Vector wx = X.transpose().times(w);
+                final Vector wx = X.transpose().times(w);
 
-                Vector gwx0 = new Vector(X.columns());
+                final Vector gwx0 = new Vector(X.columns());
 
                 for (int j = 0; j < X.columns(); j++) {
-                    gwx0.set(j, this.g(alpha, wx.get(j)));
+                    gwx0.set(j, g(alpha, wx.get(j)));
                 }
 
-                Matrix gwx = new Matrix(X.rows(), X.columns());
+                final Matrix gwx = new Matrix(X.rows(), X.columns());
 
                 for (int _i = 0; _i < X.rows(); _i++) {
                     gwx.assignRow(i, gwx0);
                 }
 
                 // A weighting of X by gwx0.
-                Matrix xgwx = new Matrix(X.rows(), X.columns());
+                final Matrix xgwx = new Matrix(X.rows(), X.columns());
 
                 for (int _i = 0; _i < X.rows(); _i++) {
                     for (int j = 0; j < X.columns(); j++) {
@@ -520,27 +520,27 @@ public class FastIca {
                     }
                 }
 
-                Vector v1 = new Vector(X.rows());
+                final Vector v1 = new Vector(X.rows());
 
                 for (int k = 0; k < X.rows(); k++) {
-                    v1.set(k, this.mean(xgwx.getRow(k)));
+                    v1.set(k, mean(xgwx.getRow(k)));
                 }
 
-                Vector g_wx = new Vector(X.columns());
+                final Vector g_wx = new Vector(X.columns());
 
                 for (int k = 0; k < X.columns(); k++) {
-                    double t = this.g(alpha, wx.get(k));
+                    final double t = g(alpha, wx.get(k));
                     g_wx.set(k, (1.0 - t * t));
                 }
 
                 Vector v2 = w.copy();
-                double meanGwx = this.mean(g_wx);
+                final double meanGwx = mean(g_wx);
                 v2 = v2.scalarMult(meanGwx);
 
                 Vector w1 = v1.minus(v2);
 
                 if (i > 0) {
-                    Vector t = w1.like();
+                    final Vector t = w1.like();
 
                     for (int u = 0; u < i; u++) {
                         double k = 0.0;
@@ -559,7 +559,7 @@ public class FastIca {
                     }
                 }
 
-                w1 = w1.scalarMult(1.0 / this.rms(w1));
+                w1 = w1.scalarMult(1.0 / rms(w1));
 
                 _tolerance = 0.0;
 
@@ -582,17 +582,17 @@ public class FastIca {
         return W;
     }
 
-    private double g(double alpha, double y) {
-        if (function == LOGCOSH) {
+    private double g(final double alpha, final double y) {
+        if (this.function == FastIca.LOGCOSH) {
             return tanh(alpha * y);
-        } else if (function == EXP) {
+        } else if (this.function == FastIca.EXP) {
             return y * exp(-(y * y) / 2.);
         } else {
             throw new IllegalArgumentException("That function is not configured.");
         }
     }
 
-    private double mean(Vector v) {
+    private double mean(final Vector v) {
         double sum = 0.0;
 
         for (int i = 0; i < v.size(); i++) {
@@ -602,7 +602,7 @@ public class FastIca {
         return sum / v.size();
     }
 
-    private double sumOfSquares(Vector v) {
+    private double sumOfSquares(final Vector v) {
         double sum = 0.0;
 
         for (int i = 0; i < v.size(); i++) {
@@ -612,19 +612,19 @@ public class FastIca {
         return sum;
     }
 
-    private double rms(Vector w) {
-        double ssq = this.sumOfSquares(w);
+    private double rms(final Vector w) {
+        final double ssq = sumOfSquares(w);
         return Math.sqrt(ssq);
     }
 
-    private Matrix icaParallel(Matrix X, int numComponents,
-                               double tolerance, int function, double alpha,
-                               int maxIterations, boolean verbose, Matrix wInit) {
-        int p = X.columns();
+    private Matrix icaParallel(final Matrix X, final int numComponents,
+                               final double tolerance, final int function, final double alpha,
+                               final int maxIterations, final boolean verbose, final Matrix wInit) {
+        final int p = X.columns();
         Matrix W = wInit;
 
-        SingularValueDecomposition sW = new SingularValueDecomposition(new BlockRealMatrix(W.toArray()));
-        Matrix D = new Matrix(sW.getS().getData());
+        final SingularValueDecomposition sW = new SingularValueDecomposition(new BlockRealMatrix(W.toArray()));
+        final Matrix D = new Matrix(sW.getS().getData());
         for (int i = 0; i < D.rows(); i++) D.set(i, i, 1.0 / D.get(i, i));
 
         Matrix WTemp = new Matrix(sW.getU().getData()).times(D);
@@ -641,39 +641,39 @@ public class FastIca {
         }
 
         while (_tolerance > tolerance && it < maxIterations) {
-            Matrix wx = W.times(X);
-            Matrix gwx = new Matrix(numComponents, p);
+            final Matrix wx = W.times(X);
+            final Matrix gwx = new Matrix(numComponents, p);
 
             for (int i = 0; i < numComponents; i++) {
                 for (int j = 0; j < p; j++) {
-                    gwx.set(i, j, this.g(alpha, wx.get(i, j)));
+                    gwx.set(i, j, g(alpha, wx.get(i, j)));
                 }
             }
 
-            Matrix v1 = gwx.times(X.transpose().scalarMult(1.0 / p));
-            Matrix g_wx = gwx.like();
+            final Matrix v1 = gwx.times(X.transpose().scalarMult(1.0 / p));
+            final Matrix g_wx = gwx.like();
 
             for (int i = 0; i < g_wx.rows(); i++) {
                 for (int j = 0; j < g_wx.columns(); j++) {
-                    double v = g_wx.get(i, j);
-                    double w = alpha * (1.0 - v * v);
+                    final double v = g_wx.get(i, j);
+                    final double w = alpha * (1.0 - v * v);
                     g_wx.set(i, j, w);
                 }
             }
 
-            Vector V20 = new Vector(numComponents);
+            final Vector V20 = new Vector(numComponents);
 
             for (int k = 0; k < numComponents; k++) {
-                V20.set(k, this.mean(g_wx.getRow(k)));
+                V20.set(k, mean(g_wx.getRow(k)));
             }
 
             Matrix v2 = V20.diag();
             v2 = v2.times(W);
             W1 = v1.minus(v2);
 
-            SingularValueDecomposition sW1 = new SingularValueDecomposition(new BlockRealMatrix(W1.toArray()));
-            Matrix U = new Matrix(sW1.getU().getData());
-            Matrix sD = new Matrix(sW1.getS().getData());
+            final SingularValueDecomposition sW1 = new SingularValueDecomposition(new BlockRealMatrix(W1.toArray()));
+            final Matrix U = new Matrix(sW1.getU().getData());
+            final Matrix sD = new Matrix(sW1.getS().getData());
             for (int i = 0; i < sD.rows(); i++)
                 sD.set(i, i, 1.0 / sD.get(i, i));
 
@@ -682,12 +682,12 @@ public class FastIca {
             W1Temp = W1Temp.times(W1);
             W1 = W1Temp;
 
-            Matrix d1 = W1.times(W.transpose());
-            Vector d = d1.diag();
+            final Matrix d1 = W1.times(W.transpose());
+            final Vector d = d1.diag();
             _tolerance = Double.NEGATIVE_INFINITY;
 
             for (int i = 0; i < d.size(); i++) {
-                double m = Math.abs(Math.abs(d.get(i)) - 1);
+                final double m = Math.abs(Math.abs(d.get(i)) - 1);
                 if (m > _tolerance) _tolerance = m;
             }
 
@@ -703,19 +703,19 @@ public class FastIca {
         return W;
     }
 
-    private Matrix scale(Matrix x) {
+    private Matrix scale(final Matrix x) {
         for (int i = 0; i < x.rows(); i++) {
-            Vector u = x.getRow(i).scalarMult(1.0 / this.rms(x.getRow(i)));
+            final Vector u = x.getRow(i).scalarMult(1.0 / rms(x.getRow(i)));
             x.assignRow(i, u);
         }
 
         return x;
     }
 
-    private Matrix center(Matrix x) {
+    private Matrix center(final Matrix x) {
         for (int i = 0; i < x.rows(); i++) {
-            Vector u = x.getRow(i);
-            double mean = this.mean(u);
+            final Vector u = x.getRow(i);
+            final double mean = mean(u);
 
             for (int j = 0; j < x.columns(); j++) {
                 x.set(i, j, x.get(i, j) - mean);
@@ -748,8 +748,8 @@ public class FastIca {
         private final Matrix W;
         private final Matrix S;
 
-        public IcaResult(Matrix X, Matrix K, Matrix W,
-                         Matrix S) {
+        public IcaResult(final Matrix X, final Matrix K, final Matrix W,
+                         final Matrix S) {
             this.X = X;
             this.K = K;
             this.W = W;
@@ -757,35 +757,35 @@ public class FastIca {
         }
 
         public Matrix getX() {
-            return X;
+            return this.X;
         }
 
         public Matrix getK() {
-            return K;
+            return this.K;
         }
 
         public Matrix getW() {
-            return W;
+            return this.W;
         }
 
         public Matrix getS() {
-            return S;
+            return this.S;
         }
 
         public String toString() {
-            StringBuilder buf = new StringBuilder();
+            final StringBuilder buf = new StringBuilder();
 
             buf.append("\n\nX:\n");
-            buf.append(X);
+            buf.append(this.X);
 
             buf.append("\n\nK:\n");
-            buf.append(K);
+            buf.append(this.K);
 
             buf.append("\n\nW:\n");
-            buf.append(W);
+            buf.append(this.W);
 
             buf.append("\n\nS:\n");
-            buf.append(S);
+            buf.append(this.S);
 
             return buf.toString();
         }

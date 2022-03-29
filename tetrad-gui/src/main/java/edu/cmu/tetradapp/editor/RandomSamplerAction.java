@@ -27,7 +27,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.RandomSampler;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.util.IntTextField;
-import edu.cmu.tetradapp.util.IntTextField.Filter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -49,24 +48,24 @@ final class RandomSamplerAction extends AbstractAction {
     /**
      * Creates a new action to split by collinear columns.
      */
-    public RandomSamplerAction(DataEditor editor) {
+    public RandomSamplerAction(final DataEditor editor) {
         super("Random Sample (Without Replacement)");
 
         if (editor == null) {
             throw new NullPointerException();
         }
 
-        dataEditor = editor;
+        this.dataEditor = editor;
     }
 
     /**
      * Performs the action of loading a session from a file.
      */
-    public void actionPerformed(ActionEvent e) {
-        DataModel dataModel = this.getDataEditor().getSelectedDataModel();
+    public void actionPerformed(final ActionEvent e) {
+        final DataModel dataModel = getDataEditor().getSelectedDataModel();
 
         if (dataModel instanceof DataSet) {
-            DataSet dataSet = (DataSet) dataModel;
+            final DataSet dataSet = (DataSet) dataModel;
 
             if (dataSet.getNumRows() == 0) {
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
@@ -74,8 +73,8 @@ final class RandomSamplerAction extends AbstractAction {
                 return;
             }
 
-            JComponent editor = this.editor();
-            int selection = JOptionPane.showOptionDialog(
+            final JComponent editor = editor();
+            final int selection = JOptionPane.showOptionDialog(
                     JOptionUtils.centeringComp(), editor, "Sample Size",
                     JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
                     null, new String[]{"Done", "Cancel"}, "Done");
@@ -85,14 +84,14 @@ final class RandomSamplerAction extends AbstractAction {
             }
 
             try {
-                DataSet newDataSet =
-                        RandomSampler.sample(dataSet, this.getSampleSize());
+                final DataSet newDataSet =
+                        RandomSampler.sample(dataSet, getSampleSize());
 
-                DataModelList list = new DataModelList();
+                final DataModelList list = new DataModelList();
                 list.add(newDataSet);
-                this.getDataEditor().reset(list);
-                this.getDataEditor().selectFirstTab();
-            } catch (Exception e1) {
+                getDataEditor().reset(list);
+                getDataEditor().selectFirstTab();
+            } catch (final Exception e1) {
                 String s = e1.getMessage();
 
                 if (s == null || "".equals(s)) {
@@ -108,31 +107,31 @@ final class RandomSamplerAction extends AbstractAction {
     }
 
     private JComponent editor() {
-        JPanel panel = new JPanel();
+        final JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
 
-        IntTextField sampleSizeField = new IntTextField(this.getSampleSize(), 6);
-        sampleSizeField.setFilter(new Filter() {
-            public int filter(int value, int oldValue) {
+        final IntTextField sampleSizeField = new IntTextField(getSampleSize(), 6);
+        sampleSizeField.setFilter(new IntTextField.Filter() {
+            public int filter(final int value, final int oldValue) {
                 try {
-                    RandomSamplerAction.this.setSampleSize(value);
+                    setSampleSize(value);
                     return value;
-                } catch (IllegalArgumentException e) {
+                } catch (final IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
         // continue workbench construction.
-        Box b1 = Box.createVerticalBox();
+        final Box b1 = Box.createVerticalBox();
 
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("<html>" +
                 "The input dataset will be sampled with replacement to create a new" +
                 "<br>dataset with the number of samples entered below." +
                 "<br>The editable default sample size is 100." + "</html>"));
 
-        Box b7 = Box.createHorizontalBox();
+        final Box b7 = Box.createHorizontalBox();
         b7.add(Box.createHorizontalGlue());
         b7.add(new JLabel("<html>" + "<i>Sample size:  </i>" + "</html>"));
         b7.add(sampleSizeField);
@@ -146,7 +145,7 @@ final class RandomSamplerAction extends AbstractAction {
         return panel;
     }
 
-    private void setSampleSize(int sampleSize) {
+    private void setSampleSize(final int sampleSize) {
         if (sampleSize < 1) {
             throw new IllegalArgumentException("Sample size Must be greater than or equal to 1.");
         }
@@ -154,11 +153,11 @@ final class RandomSamplerAction extends AbstractAction {
     }
 
     private int getSampleSize() {
-        return sampleSize;
+        return this.sampleSize;
     }
 
     private DataEditor getDataEditor() {
-        return dataEditor;
+        return this.dataEditor;
     }
 }
 

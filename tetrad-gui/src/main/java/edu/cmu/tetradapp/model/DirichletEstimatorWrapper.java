@@ -53,8 +53,8 @@ public class DirichletEstimatorWrapper implements SessionModel {
     private final DirichletBayesIm dirichletBayesIm;
 
     //============================CONSTRUCTORS============================//
-    public DirichletEstimatorWrapper(DataWrapper dataWrapper,
-                                     DirichletBayesImWrapper dirichletPriorWrapper) {
+    public DirichletEstimatorWrapper(final DataWrapper dataWrapper,
+                                     final DirichletBayesImWrapper dirichletPriorWrapper) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -63,24 +63,24 @@ public class DirichletEstimatorWrapper implements SessionModel {
             throw new NullPointerException();
         }
 
-        DataSet dataSet
+        final DataSet dataSet
                 = (DataSet) dataWrapper.getSelectedDataModel();
 
         if (DataUtils.containsMissingValue(dataSet)) {
             throw new IllegalArgumentException("Please remove or impute missing values.");
         }
 
-        DirichletBayesIm dirichletBayesIm
+        final DirichletBayesIm dirichletBayesIm
                 = dirichletPriorWrapper.getDirichletBayesIm();
 
         try {
             this.dirichletBayesIm
                     = DirichletEstimator.estimate(dirichletBayesIm, dataSet);
-        } catch (IllegalArgumentException e) {
+        } catch (final IllegalArgumentException e) {
             throw new RuntimeException(
                     "Please fully specify the Dirichlet prior first.");
         }
-        this.log(dirichletBayesIm);
+        log(dirichletBayesIm);
     }
 
     //    public DirichletEstimatorWrapper(DataWrapper dataWrapper,
@@ -113,8 +113,8 @@ public class DirichletEstimatorWrapper implements SessionModel {
 //        }
 //        log(dirichletBayesIm);
 //    }
-    public DirichletEstimatorWrapper(DataWrapper dataWrapper,
-                                     BayesPmWrapper bayesPmWrapper, Parameters params) {
+    public DirichletEstimatorWrapper(final DataWrapper dataWrapper,
+                                     final BayesPmWrapper bayesPmWrapper, final Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -127,14 +127,14 @@ public class DirichletEstimatorWrapper implements SessionModel {
             throw new NullPointerException();
         }
 
-        DataSet dataSet
+        final DataSet dataSet
                 = (DataSet) dataWrapper.getSelectedDataModel();
 
         if (DataUtils.containsMissingValue(dataSet)) {
             throw new IllegalArgumentException("Please remove or impute missing values.");
         }
 
-        DirichletBayesIm dirichletBayesIm
+        final DirichletBayesIm dirichletBayesIm
                 = DirichletBayesIm.symmetricDirichletIm(
                 bayesPmWrapper.getBayesPm(),
                 params.getDouble("symmetricAlpha", 1.0));
@@ -146,11 +146,11 @@ public class DirichletEstimatorWrapper implements SessionModel {
         try {
             this.dirichletBayesIm
                     = DirichletEstimator.estimate(dirichletBayesIm, dataSet);
-        } catch (IllegalArgumentException e) {
+        } catch (final IllegalArgumentException e) {
             throw new RuntimeException(
                     "Please fully specify the Dirichlet prior first.");
         }
-        this.log(dirichletBayesIm);
+        log(dirichletBayesIm);
     }
 
     /**
@@ -164,7 +164,7 @@ public class DirichletEstimatorWrapper implements SessionModel {
 
     //===============================PUBLIC METHODS=======================//
     public DirichletBayesIm getEstimatedBayesIm() {
-        return dirichletBayesIm;
+        return this.dirichletBayesIm;
     }
 
     /**
@@ -182,28 +182,28 @@ public class DirichletEstimatorWrapper implements SessionModel {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (dirichletBayesIm == null) {
+        if (this.dirichletBayesIm == null) {
             throw new NullPointerException();
         }
     }
 
     public Graph getGraph() {
-        return dirichletBayesIm.getBayesPm().getDag();
+        return this.dirichletBayesIm.getBayesPm().getDag();
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
-    private void log(DirichletBayesIm im) {
+    private void log(final DirichletBayesIm im) {
         TetradLogger.getInstance().log("info", "Estimated Dirichlet Bayes IM");
         TetradLogger.getInstance().log("im", "" + im);
         TetradLogger.getInstance().reset();

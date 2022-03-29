@@ -52,56 +52,56 @@ public class PcRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public PcRunner(DataWrapper dataWrapper, Parameters params) {
+    public PcRunner(final DataWrapper dataWrapper, final Parameters params) {
         super(dataWrapper, params, null);
     }
 
-    public PcRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcRunner(final DataWrapper dataWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
     // Starts PC from the given graph.
-    public PcRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params) {
+    public PcRunner(final DataWrapper dataWrapper, final GraphWrapper graphWrapper, final Parameters params) {
         super(dataWrapper, params, null);
-        externalGraph = graphWrapper.getGraph();
+        this.externalGraph = graphWrapper.getGraph();
     }
 
-    public PcRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcRunner(final DataWrapper dataWrapper, final GraphWrapper graphWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
-        externalGraph = graphWrapper.getGraph();
+        this.externalGraph = graphWrapper.getGraph();
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public PcRunner(Graph graph, Parameters params) {
+    public PcRunner(final Graph graph, final Parameters params) {
         super(graph, params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public PcRunner(GraphWrapper graphWrapper, Parameters params) {
+    public PcRunner(final GraphWrapper graphWrapper, final Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
-    public PcRunner(GraphWrapper graphWrapper, KnowledgeBoxModel knowledgeBoxModel, Parameters params) {
+    public PcRunner(final GraphWrapper graphWrapper, final KnowledgeBoxModel knowledgeBoxModel, final Parameters params) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-    public PcRunner(DagWrapper dagWrapper, Parameters params) {
+    public PcRunner(final DagWrapper dagWrapper, final Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public PcRunner(SemGraphWrapper dagWrapper, Parameters params) {
+    public PcRunner(final SemGraphWrapper dagWrapper, final Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public PcRunner(GraphWrapper graphModel, IndependenceFactsModel facts, Parameters params) {
+    public PcRunner(final GraphWrapper graphModel, final IndependenceFactsModel facts, final Parameters params) {
         super(graphModel.getGraph(), params, null, facts.getFacts());
     }
 
-    public PcRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcRunner(final IndependenceFactsModel model, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -116,9 +116,9 @@ public class PcRunner extends AbstractAlgorithmRunner
     }
 
     public ImpliedOrientation getMeekRules() {
-        MeekRules rules = new MeekRules();
-        rules.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
-        rules.setKnowledge((IKnowledge) this.getParams().get("knowledge", new Knowledge2()));
+        final MeekRules rules = new MeekRules();
+        rules.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
+        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
 
@@ -130,50 +130,50 @@ public class PcRunner extends AbstractAlgorithmRunner
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     public void execute() {
-        IKnowledge knowledge = (IKnowledge) this.getParams().get("knowledge", new Knowledge2());
-        int depth = this.getParams().getInt("depth", -1);
-        Graph graph;
-        Pc pc = new Pc(this.getIndependenceTest());
+        final IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
+        final int depth = getParams().getInt("depth", -1);
+        final Graph graph;
+        final Pc pc = new Pc(getIndependenceTest());
         pc.setKnowledge(knowledge);
-        pc.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
+        pc.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
         pc.setDepth(depth);
-        pc.setExternalGraph(externalGraph);
+        pc.setExternalGraph(this.externalGraph);
         graph = pc.search();
 
         System.out.println(graph);
 
-        if (this.getSourceGraph() != null) {
-            GraphUtils.arrangeBySourceGraph(graph, this.getSourceGraph());
+        if (getSourceGraph() != null) {
+            GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
         } else if (knowledge.isDefaultToKnowledgeLayout()) {
             SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
         } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
 
-        this.setResultGraph(graph);
-        this.setPcFields(pc);
+        setResultGraph(graph);
+        setPcFields(pc);
     }
 
     public IndependenceTest getIndependenceTest() {
-        Object dataModel = this.getDataModel();
+        Object dataModel = getDataModel();
 
         if (dataModel == null) {
-            dataModel = this.getSourceGraph();
+            dataModel = getSourceGraph();
         }
 
-        IndTestType testType = (IndTestType) (this.getParams()).get("indTestType", IndTestType.FISHER_Z);
-        return new IndTestChooser().getTest(dataModel, this.getParams(), testType);
+        final IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
+        return new IndTestChooser().getTest(dataModel, getParams(), testType);
     }
 
     public Graph getGraph() {
-        return this.getResultGraph();
+        return getResultGraph();
     }
 
     /**
      * @return the names of the triple classifications. Coordinates with getTriplesList.
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<>();
+        final List<String> names = new ArrayList<>();
 //        names.add("ColliderDiscovery");
 //        names.add("Noncolliders");
         return names;
@@ -183,8 +183,8 @@ public class PcRunner extends AbstractAlgorithmRunner
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>
      * for the given node.
      */
-    public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<>();
+    public List<List<Triple>> getTriplesLists(final Node node) {
+        final List<List<Triple>> triplesList = new ArrayList<>();
 //        Graph graph = getGraph();
 //        triplesList.add(DataGraphUtils.getCollidersFromGraph(node, graph));
 //        triplesList.add(DataGraphUtils.getNoncollidersFromGraph(node, graph));
@@ -192,11 +192,11 @@ public class PcRunner extends AbstractAlgorithmRunner
     }
 
     public Set<Edge> getAdj() {
-        return new HashSet<>(pcAdjacent);
+        return new HashSet<>(this.pcAdjacent);
     }
 
     public Set<Edge> getNonAdj() {
-        return new HashSet<>(pcNonadjacent);
+        return new HashSet<>(this.pcNonadjacent);
     }
 
     public boolean supportsKnowledge() {
@@ -206,20 +206,20 @@ public class PcRunner extends AbstractAlgorithmRunner
     @Override
     public Map<String, String> getParamSettings() {
         super.getParamSettings();
-        paramSettings.put("Test", this.getIndependenceTest().toString());
-        return paramSettings;
+        this.paramSettings.put("Test", getIndependenceTest().toString());
+        return this.paramSettings;
     }
 
     //========================== Private Methods ===============================//
 
     private boolean isAggressivelyPreventCycles() {
-        return this.getParams().getBoolean("aggressivelyPreventCycles", false);
+        return getParams().getBoolean("aggressivelyPreventCycles", false);
     }
 
-    private void setPcFields(Pc pc) {
-        pcAdjacent = pc.getAdjacencies();
-        pcNonadjacent = pc.getNonadjacencies();
-        pcNodes = this.getGraph().getNodes();
+    private void setPcFields(final Pc pc) {
+        this.pcAdjacent = pc.getAdjacencies();
+        this.pcNonadjacent = pc.getNonadjacencies();
+        this.pcNodes = getGraph().getNodes();
     }
 }
 

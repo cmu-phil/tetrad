@@ -98,19 +98,19 @@ public final class MagToPag {
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
      */
-    public MagToPag(Graph mag) {
+    public MagToPag(final Graph mag) {
         this.mag = new EdgeListGraph(mag);
-        variables.addAll(mag.getNodes());
-        dsep = new IndTestDSep(mag);
+        this.variables.addAll(mag.getNodes());
+        this.dsep = new IndTestDSep(mag);
     }
 
     //========================PUBLIC METHODS==========================//
 
     public int getDepth() {
-        return depth;
+        return this.depth;
     }
 
-    public void setDepth(int depth) {
+    public void setDepth(final int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException(
                     "Depth must be -1 (unlimited) or >= 0: " + depth);
@@ -120,24 +120,24 @@ public final class MagToPag {
     }
 
     public Graph convert() {
-        logger.log("info", "Starting DAG to PAG_of_the_true_DAG.");
+        this.logger.log("info", "Starting DAG to PAG_of_the_true_DAG.");
 
-        this.setMaxPathLength(maxPathLength);
+        setMaxPathLength(this.maxPathLength);
 
-        Graph graph = new EdgeListGraph(mag);
+        final Graph graph = new EdgeListGraph(this.mag);
         graph.reorientAllWith(Endpoint.CIRCLE);
 
-        FciOrient fciOrient = new FciOrient(new DagSepsets(mag));
-        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        final FciOrient fciOrient = new FciOrient(new DagSepsets(this.mag));
+        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         return fciOrient.orient(graph);
     }
 
 
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(final IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -150,18 +150,18 @@ public final class MagToPag {
      * should be used. False by default.
      */
     public boolean isCompleteRuleSetUsed() {
-        return completeRuleSetUsed;
+        return this.completeRuleSetUsed;
     }
 
     /**
      * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
      *                            set of the original FCI) should be used. False by default.
      */
-    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
+    public void setCompleteRuleSetUsed(final boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
-    public void setMaxPathLength(int maxPathLength) {
+    public void setMaxPathLength(final int maxPathLength) {
         if (maxPathLength < -1) {
             throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
         }
@@ -174,10 +174,10 @@ public final class MagToPag {
      * True iff verbose output should be printed.
      */
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 

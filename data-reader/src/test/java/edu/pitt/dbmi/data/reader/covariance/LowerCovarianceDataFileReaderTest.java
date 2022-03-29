@@ -39,8 +39,8 @@ public class LowerCovarianceDataFileReaderTest {
     private final String commentMarker = "//";
 
     private final Path[] dataFiles = {
-            Paths.get(this.getClass().getResource("/data/covariance/spartina.txt").getFile()),
-            Paths.get(this.getClass().getResource("/data/covariance/quotes_spartina.txt").getFile())
+            Paths.get(getClass().getResource("/data/covariance/spartina.txt").getFile()),
+            Paths.get(getClass().getResource("/data/covariance/quotes_spartina.txt").getFile())
     };
 
     public LowerCovarianceDataFileReaderTest() {
@@ -53,24 +53,24 @@ public class LowerCovarianceDataFileReaderTest {
      */
     @Test
     public void testReadInData() throws IOException {
-        for (Path dataFile : dataFiles) {
-            CovarianceDataReader dataFileReader = new LowerCovarianceDataFileReader(dataFile, delimiter);
-            dataFileReader.setCommentMarker(commentMarker);
-            dataFileReader.setQuoteCharacter(quoteCharacter);
+        for (final Path dataFile : this.dataFiles) {
+            final CovarianceDataReader dataFileReader = new LowerCovarianceDataFileReader(dataFile, this.delimiter);
+            dataFileReader.setCommentMarker(this.commentMarker);
+            dataFileReader.setQuoteCharacter(this.quoteCharacter);
 
-            CovarianceData covarianceData = dataFileReader.readInData();
+            final CovarianceData covarianceData = dataFileReader.readInData();
 
-            int numberOfCases = covarianceData.getNumberOfCases();
+            final int numberOfCases = covarianceData.getNumberOfCases();
             long expected = 45;
             long actual = numberOfCases;
             Assert.assertEquals(expected, actual);
 
-            List<String> variables = covarianceData.getVariables();
+            final List<String> variables = covarianceData.getVariables();
             expected = 15;
             actual = variables.size();
             Assert.assertEquals(expected, actual);
 
-            double[][] data = covarianceData.getData();
+            final double[][] data = covarianceData.getData();
             expected = 15;
             actual = data.length;
             Assert.assertEquals(expected, actual);

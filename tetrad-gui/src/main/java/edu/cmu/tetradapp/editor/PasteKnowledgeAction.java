@@ -48,7 +48,7 @@ class PasteKnowledgeAction extends AbstractAction implements ClipboardOwner {
      * Constucts an action for loading the session in the given '.tet' file into
      * the knowledgeEditable.
      */
-    public PasteKnowledgeAction(KnowledgeEditable knowledgeEditable) {
+    public PasteKnowledgeAction(final KnowledgeEditable knowledgeEditable) {
         super("Paste Knowledge");
 
         if (knowledgeEditable == null) {
@@ -62,25 +62,25 @@ class PasteKnowledgeAction extends AbstractAction implements ClipboardOwner {
      * Copies a parentally closed selection of session nodes in the frontmost
      * session editor to the clipboard.
      */
-    public void actionPerformed(ActionEvent e) {
-        Transferable transferable = InternalClipboard.getInstance()
+    public void actionPerformed(final ActionEvent e) {
+        final Transferable transferable = InternalClipboard.getInstance()
                 .getContents(null);
 
         if (!(transferable instanceof KnowledgeSelection)) {
             return;
         }
 
-        KnowledgeSelection selection = (KnowledgeSelection) transferable;
-        DataFlavor flavor =
+        final KnowledgeSelection selection = (KnowledgeSelection) transferable;
+        final DataFlavor flavor =
                 new DataFlavor(KnowledgeSelection.class, "Knowledge");
 
         try {
-            IKnowledge knowledge = (IKnowledge) selection.getTransferData(flavor);
+            final IKnowledge knowledge = (IKnowledge) selection.getTransferData(flavor);
 
             if (knowledge != null) {
-                knowledgeEditable.setKnowledge(knowledge);
+                this.knowledgeEditable.setKnowledge(knowledge);
             }
-        } catch (Exception e1) {
+        } catch (final Exception e1) {
             throw new RuntimeException(e1);
         }
     }
@@ -93,7 +93,7 @@ class PasteKnowledgeAction extends AbstractAction implements ClipboardOwner {
      * @param contents  the contents which this owner had placed on the
      *                  clipboard
      */
-    public void lostOwnership(Clipboard clipboard, Transferable contents) {
+    public void lostOwnership(final Clipboard clipboard, final Transferable contents) {
     }
 }
 

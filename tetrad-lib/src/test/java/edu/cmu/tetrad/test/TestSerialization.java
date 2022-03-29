@@ -130,7 +130,7 @@ public class TestSerialization {
         final String currentDirectory = "build/tetrad/serializable/model";
         final String archiveDirectory = "archives";
 
-        TetradSerializableUtils utils = new TetradSerializableUtils(
+        final TetradSerializableUtils utils = new TetradSerializableUtils(
                 serializableScope, currentDirectory, archiveDirectory);
 
         try {
@@ -138,7 +138,7 @@ public class TestSerialization {
             utils.serializeCurrentDirectory();
             utils.deserializeCurrentDirectory();
             utils.deserializeArchivedVersions();
-        } catch (RuntimeException e) {
+        } catch (final RuntimeException e) {
             System.out.println();
             e.printStackTrace();
             fail("TestSerialization.testLoadability() failed! Please fix " +
@@ -151,7 +151,7 @@ public class TestSerialization {
         final String currentDirectory = "build/tetrad/serializable/model";
         final String archiveDirectory = "archives";
 
-        TetradSerializableUtils utils = new TetradSerializableUtils(
+        final TetradSerializableUtils utils = new TetradSerializableUtils(
                 serializableScope, currentDirectory, archiveDirectory);
 
         utils.checkNestingOfFields();

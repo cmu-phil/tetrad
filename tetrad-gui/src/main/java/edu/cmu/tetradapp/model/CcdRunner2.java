@@ -51,40 +51,40 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public CcdRunner2(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public CcdRunner2(final DataWrapper dataWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
-    public CcdRunner2(Graph graph, Parameters params) {
+    public CcdRunner2(final Graph graph, final Parameters params) {
         super(graph, params);
     }
 
 
-    public CcdRunner2(GraphWrapper graphWrapper, Parameters params) {
+    public CcdRunner2(final GraphWrapper graphWrapper, final Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
-    public CcdRunner2(DagWrapper dagWrapper, Parameters params) {
+    public CcdRunner2(final DagWrapper dagWrapper, final Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public CcdRunner2(SemGraphWrapper dagWrapper, Parameters params) {
+    public CcdRunner2(final SemGraphWrapper dagWrapper, final Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public CcdRunner2(IndependenceFactsModel model, Parameters params) {
+    public CcdRunner2(final IndependenceFactsModel model, final Parameters params) {
         super(model, params, null);
     }
 
-    public CcdRunner2(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public CcdRunner2(final IndependenceFactsModel model, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
-    public CcdRunner2(DataWrapper[] dataWrappers, Parameters params) {
+    public CcdRunner2(final DataWrapper[] dataWrappers, final Parameters params) {
         super(new MergeDatasetsWrapper(dataWrappers, params), params, null);
     }
 
-    public CcdRunner2(GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public CcdRunner2(final GraphWrapper graphWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
@@ -153,10 +153,10 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
     public void execute() {
 //        IKnowledge knowledge = getParameters().getKnowledge();
 
-        Object model = this.getDataModel();
+        Object model = getDataModel();
 
-        if (model == null && this.getSourceGraph() != null) {
-            model = this.getSourceGraph();
+        if (model == null && getSourceGraph() != null) {
+            model = getSourceGraph();
         }
 
         if (model == null) {
@@ -169,28 +169,28 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
         final double penaltyDiscount = 20.0;//params.getPenaltyDiscount();
 
         if (model instanceof Graph) {
-            IndependenceTest test = new IndTestDSep((Graph) model);
-            ccd = new CcdMax(test);
+            final IndependenceTest test = new IndTestDSep((Graph) model);
+            this.ccd = new CcdMax(test);
 //            ccd.setAssumeIid(false);
-            ccd.setCollapseTiers(true);
+            this.ccd.setCollapseTiers(true);
 //            ccd.setGaussianErrors(true);
         } else {
 
             if (model instanceof DataSet) {
-                DataSet dataSet = (DataSet) model;
+                final DataSet dataSet = (DataSet) model;
 
                 if (dataSet.isContinuous()) {
-                    SemBicScore gesScore = new SemBicScore(new CovarianceMatrix((DataSet) model));
+                    final SemBicScore gesScore = new SemBicScore(new CovarianceMatrix((DataSet) model));
 //                    SemBicScore2 gesScore = new SemBicScore2(new CovarianceMatrix((DataSet) model));
 //                    SemGpScore gesScore = new SemGpScore(new CovarianceMatrix((DataSet) model));
 //                    SvrScore gesScore = new SvrScore((DataSet) model);
-                    IndependenceTest test = new IndTestScore(gesScore);
+                    final IndependenceTest test = new IndTestScore(gesScore);
 
                     gesScore.setPenaltyDiscount(penaltyDiscount);
                     System.out.println("Score done");
-                    ccd = new CcdMax(test);
+                    this.ccd = new CcdMax(test);
 //                    ccd.setAssumeIid(false);
-                    ccd.setCollapseTiers(true);
+                    this.ccd.setCollapseTiers(true);
 //                    ccd.setGaussianErrors(true);
                 }
 //                else if (dataSet.isDiscrete()) {
@@ -205,18 +205,18 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
                     throw new IllegalStateException("Data set must either be continuous or discrete.");
                 }
             } else if (model instanceof ICovarianceMatrix) {
-                SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model);
+                final SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model);
                 gesScore.setPenaltyDiscount(penaltyDiscount);
                 gesScore.setPenaltyDiscount(penaltyDiscount);
-                IndependenceTest test = new IndTestScore(gesScore);
-                ccd = new CcdMax(test);
+                final IndependenceTest test = new IndTestScore(gesScore);
+                this.ccd = new CcdMax(test);
 //                ccd.setAssumeIid(false);
-                ccd.setCollapseTiers(true);
+                this.ccd.setCollapseTiers(true);
 //                ccd.setGaussianErrors(true);
             } else if (model instanceof DataModelList) {
-                DataModelList list = (DataModelList) model;
+                final DataModelList list = (DataModelList) model;
 
-                for (DataModel dataModel : list) {
+                for (final DataModel dataModel : list) {
                     if (!(dataModel instanceof DataSet || dataModel instanceof ICovarianceMatrix)) {
                         throw new IllegalArgumentException("Need a combination of all continuous data sets or " +
                                 "covariance matrices, or else all discrete data sets, or else a single externalGraph.");
@@ -231,15 +231,15 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
 //                Parameters Parameters = (Parameters) getParameters();
 //                Parameters params = (Parameters) Parameters;
 
-                if (this.allContinuous(list)) {
+                if (allContinuous(list)) {
                     final double penalty = 4;//params.getPenaltyDiscount();
 
-                    SemBicScoreImages fgesScore = new SemBicScoreImages(list);
+                    final SemBicScoreImages fgesScore = new SemBicScoreImages(list);
                     fgesScore.setPenaltyDiscount(penalty);
-                    IndependenceTest test = new IndTestScore(fgesScore);
-                    ccd = new CcdMax(test);
+                    final IndependenceTest test = new IndTestScore(fgesScore);
+                    this.ccd = new CcdMax(test);
 //                    ccd.setAssumeIid(false);
-                    ccd.setCollapseTiers(true);
+                    this.ccd.setCollapseTiers(true);
 //                    ccd.setGaussianErrors(true);
                 }
 //                else if (allDiscrete(list)) {
@@ -266,10 +266,10 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
 //        gfci.setHeuristicSpeedup(true);
 //        gfci.setMaxIndegree(3);
 //        ccd.setHeuristicSpeedup(params.isFaithfulnessAssumed());
-        Graph graph = ccd.search();
+        final Graph graph = this.ccd.search();
 
-        if (this.getSourceGraph() != null) {
-            GraphUtils.arrangeBySourceGraph(graph, this.getSourceGraph());
+        if (getSourceGraph() != null) {
+            GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
         }
 //        else if (getParameters().getKnowledge().isDefaultToKnowledgeLayout()) {
 //            SearchGraphUtils.arrangeByKnowledgeTiers(graph, getParameters().getKnowledge());
@@ -278,7 +278,7 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
 
-        this.setResultGraph(graph);
+        setResultGraph(graph);
 
 //        this.topGraphs = new ArrayList<>(gfci.getTopGraphs());
 //
@@ -290,8 +290,8 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
 //        setIndex(topGraphs.size() - 1);
     }
 
-    private boolean allContinuous(List<DataModel> dataModels) {
-        for (DataModel dataModel : dataModels) {
+    private boolean allContinuous(final List<DataModel> dataModels) {
+        for (final DataModel dataModel : dataModels) {
             if (dataModel instanceof DataSet) {
                 if (!dataModel.isContinuous() || dataModel instanceof ICovarianceMatrix) {
                     return false;
@@ -302,8 +302,8 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
         return true;
     }
 
-    private boolean allDiscrete(List<DataModel> dataModels) {
-        for (DataModel dataModel : dataModels) {
+    private boolean allDiscrete(final List<DataModel> dataModels) {
+        for (final DataModel dataModel : dataModels) {
             if (dataModel instanceof DataSet) {
                 if (!dataModel.isDiscrete()) {
                     return false;
@@ -315,30 +315,30 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
     }
 
     public IndependenceTest getIndependenceTest() {
-        Object dataModel = this.getDataModel();
+        Object dataModel = getDataModel();
 
         if (dataModel == null) {
-            dataModel = this.getSourceGraph();
+            dataModel = getSourceGraph();
         }
 
-        Parameters params = this.getParams();
+        final Parameters params = getParams();
         IndTestType testType = null;
 
-        Parameters _params = params;
+        final Parameters _params = params;
         testType = (IndTestType) _params.get("indTestType", IndTestType.FISHER_Z);
 
         return new IndTestChooser().getTest(dataModel, params, testType);
     }
 
     public Graph getGraph() {
-        return this.getResultGraph();
+        return getResultGraph();
     }
 
     /**
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<>();
+        final List<String> names = new ArrayList<>();
 //        names.add("Definite ColliderDiscovery");
 //        names.add("Definite Noncolliders");
 //        names.add("Ambiguous Triples");
@@ -350,9 +350,9 @@ public class CcdRunner2 extends AbstractAlgorithmRunner
     /**
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
-    public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<>();
-        Graph graph = this.getGraph();
+    public List<List<Triple>> getTriplesLists(final Node node) {
+        final List<List<Triple>> triplesList = new ArrayList<>();
+        final Graph graph = getGraph();
         triplesList.add(GraphUtils.getUnderlinedTriplesFromGraph(node, graph));
         triplesList.add(GraphUtils.getDottedUnderlinedTriplesFromGraph(node, graph));
 //        triplesList.add(DataGraphUtils.getDefiniteCollidersFromGraph(node, graph));

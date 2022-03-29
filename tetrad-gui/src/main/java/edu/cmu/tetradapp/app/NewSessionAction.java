@@ -43,7 +43,7 @@ final class NewSessionAction extends AbstractAction {
     /**
      * Performs the action of opening a session from a file.
      */
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(final ActionEvent e) {
         DesktopController.getInstance().newSessionEditor();
     }
 }

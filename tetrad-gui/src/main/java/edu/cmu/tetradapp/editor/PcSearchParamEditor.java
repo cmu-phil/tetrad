@@ -32,7 +32,6 @@ import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.GraphWrapper;
 import edu.cmu.tetradapp.model.SemGraphWrapper;
 import edu.cmu.tetradapp.util.DoubleTextField;
-import edu.cmu.tetradapp.util.DoubleTextField.Filter;
 import edu.cmu.tetradapp.util.IntTextField;
 
 import javax.swing.*;
@@ -71,7 +70,7 @@ public final class PcSearchParamEditor extends JPanel implements ParameterEditor
     public PcSearchParamEditor() {
     }
 
-    public void setParams(Parameters params) {
+    public void setParams(final Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
@@ -79,7 +78,7 @@ public final class PcSearchParamEditor extends JPanel implements ParameterEditor
         this.params = params;
     }
 
-    public void setParentModels(Object[] parentModels) {
+    public void setParentModels(final Object[] parentModels) {
         if (parentModels == null) {
             throw new NullPointerException();
         }
@@ -91,29 +90,29 @@ public final class PcSearchParamEditor extends JPanel implements ParameterEditor
         /*
       The variable names from the object being searched over (usually data).
      */
-        List<String> varNames = (List<String>) params.get("varNames", null);
+        List<String> varNames = (List<String>) this.params.get("varNames", null);
 
         DataModel dataModel1 = null;
         Graph graph = null;
 
-        for (Object parentModel1 : parentModels) {
+        for (final Object parentModel1 : this.parentModels) {
             if (parentModel1 instanceof DataWrapper) {
-                DataWrapper dataWrapper = (DataWrapper) parentModel1;
+                final DataWrapper dataWrapper = (DataWrapper) parentModel1;
                 dataModel1 = dataWrapper.getSelectedDataModel();
             }
 
             if (parentModel1 instanceof GraphWrapper) {
-                GraphWrapper graphWrapper = (GraphWrapper) parentModel1;
+                final GraphWrapper graphWrapper = (GraphWrapper) parentModel1;
                 graph = graphWrapper.getGraph();
             }
 
             if (parentModel1 instanceof DagWrapper) {
-                DagWrapper dagWrapper = (DagWrapper) parentModel1;
+                final DagWrapper dagWrapper = (DagWrapper) parentModel1;
                 graph = dagWrapper.getDag();
             }
 
             if (parentModel1 instanceof SemGraphWrapper) {
-                SemGraphWrapper semGraphWrapper = (SemGraphWrapper) parentModel1;
+                final SemGraphWrapper semGraphWrapper = (SemGraphWrapper) parentModel1;
                 graph = semGraphWrapper.getGraph();
             }
         }
@@ -121,7 +120,7 @@ public final class PcSearchParamEditor extends JPanel implements ParameterEditor
         if (dataModel1 != null) {
             varNames = new ArrayList<>(dataModel1.getVariableNames());
         } else if (graph != null) {
-            Iterator<Node> it = graph.getNodes().iterator();
+            final Iterator<Node> it = graph.getNodes().iterator();
             varNames = new ArrayList();
 
             Node temp;
@@ -139,57 +138,57 @@ public final class PcSearchParamEditor extends JPanel implements ParameterEditor
                             "passed to the search).");
         }
 
-        params.set("varNames", varNames);
+        this.params.set("varNames", varNames);
 
-        IntTextField depthField =
-                new IntTextField(params.getInt("depth", -1), 4);
+        final IntTextField depthField =
+                new IntTextField(this.params.getInt("depth", -1), 4);
         depthField.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
+            public int filter(final int value, final int oldValue) {
                 try {
-                    params.set("depth", value);
+                    PcSearchParamEditor.this.params.set("depth", value);
                     Preferences.userRoot().putInt("depth", value);
                     return value;
-                } catch (Exception e) {
+                } catch (final Exception e) {
                     return oldValue;
                 }
             }
         });
 
-        double alpha = params.getDouble("alpha", 0.001);
+        final double alpha = this.params.getDouble("alpha", 0.001);
 
         if (!Double.isNaN(alpha)) {
-            alphaField = new DoubleTextField(alpha, 4, NumberFormatUtil.getInstance().getNumberFormat());
-            alphaField.setFilter(new Filter() {
-                public double filter(double value, double oldValue) {
+            this.alphaField = new DoubleTextField(alpha, 4, NumberFormatUtil.getInstance().getNumberFormat());
+            this.alphaField.setFilter(new DoubleTextField.Filter() {
+                public double filter(final double value, final double oldValue) {
                     try {
-                        params.set("alpha", 0.001);
+                        PcSearchParamEditor.this.params.set("alpha", 0.001);
                         Preferences.userRoot().putDouble("alpha", value);
                         return value;
-                    } catch (Exception e) {
+                    } catch (final Exception e) {
                         return oldValue;
                     }
                 }
             });
         }
 
-        this.setBorder(new MatteBorder(10, 10, 10, 10, getBackground()));
-        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setBorder(new MatteBorder(10, 10, 10, 10, this.getBackground()));
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
         if (!Double.isNaN(alpha)) {
-            Box b2 = Box.createHorizontalBox();
+            final Box b2 = Box.createHorizontalBox();
             b2.add(new JLabel("Alpha Value:"));
             b2.add(Box.createGlue());
-            b2.add(alphaField);
-            this.add(b2);
-            this.add(Box.createVerticalStrut(10));
+            b2.add(this.alphaField);
+            add(b2);
+            add(Box.createVerticalStrut(10));
         }
 
-        Box b3 = Box.createHorizontalBox();
+        final Box b3 = Box.createHorizontalBox();
         b3.add(new JLabel("Search Depth:"));
         b3.add(Box.createGlue());
         b3.add(depthField);
-        this.add(b3);
-        this.add(Box.createVerticalStrut(10));
+        add(b3);
+        add(Box.createVerticalStrut(10));
     }
 
     public boolean mustBeShown() {
@@ -197,7 +196,7 @@ public final class PcSearchParamEditor extends JPanel implements ParameterEditor
     }
 
     private Parameters getParams() {
-        return params;
+        return this.params;
     }
 }
 

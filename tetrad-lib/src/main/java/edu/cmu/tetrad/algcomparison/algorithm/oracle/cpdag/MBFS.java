@@ -41,36 +41,36 @@ public class MBFS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
     public MBFS() {
     }
 
-    public MBFS(IndependenceWrapper type) {
-        test = type;
+    public MBFS(final IndependenceWrapper type) {
+        this.test = type;
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(final DataModel dataSet, final Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            IndependenceTest test = this.test.getTest(dataSet, parameters);
-            edu.cmu.tetrad.search.Mbfs search = new edu.cmu.tetrad.search.Mbfs(test, parameters.getInt(Params.DEPTH));
+            final IndependenceTest test = this.test.getTest(dataSet, parameters);
+            final edu.cmu.tetrad.search.Mbfs search = new edu.cmu.tetrad.search.Mbfs(test, parameters.getInt(Params.DEPTH));
 
             search.setDepth(parameters.getInt(Params.DEPTH));
-            search.setKnowledge(knowledge);
+            search.setKnowledge(this.knowledge);
 
-            targetName = parameters.getString(Params.TARGET_NAME);
-            if (targetName.isEmpty()) {
+            this.targetName = parameters.getString(Params.TARGET_NAME);
+            if (this.targetName.isEmpty()) {
                 throw new IllegalArgumentException("Target variable name needs to be provided.");
             }
 
-            if (test.getVariable(targetName) == null) {
-                throw new IllegalArgumentException("Target variable name '" + targetName + "' not found in dataset.");
+            if (test.getVariable(this.targetName) == null) {
+                throw new IllegalArgumentException("Target variable name '" + this.targetName + "' not found in dataset.");
             }
 
-            Node target = test.getVariable(targetName);
+            final Node target = test.getVariable(this.targetName);
             return search.search(target.getName());
         } else {
-            MBFS algorithm = new MBFS(test);
+            final MBFS algorithm = new MBFS(this.test);
 
-            DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(knowledge);
+            final DataSet data = (DataSet) dataSet;
+            final GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
+            search.setKnowledge(this.knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -96,24 +96,24 @@ public class MBFS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
     }
 
     @Override
-    public Graph getComparisonGraph(Graph graph) {
-        Node target = graph.getNode(targetName);
+    public Graph getComparisonGraph(final Graph graph) {
+        final Node target = graph.getNode(this.targetName);
         return GraphUtils.markovBlanketDag(target, new EdgeListGraph(graph));
     }
 
     @Override
     public String getDescription() {
-        return "MBFS (Markov Blanket Fan Search) using " + test.getDescription();
+        return "MBFS (Markov Blanket Fan Search) using " + this.test.getDescription();
     }
 
     @Override
     public DataType getDataType() {
-        return test.getDataType();
+        return this.test.getDataType();
     }
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
+        final List<String> parameters = new ArrayList<>();
         parameters.add(Params.DEPTH);
         parameters.add(Params.TARGET_NAME);
 
@@ -123,21 +123,21 @@ public class MBFS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     @Override
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(final IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
     @Override
-    public void setIndependenceWrapper(IndependenceWrapper test) {
+    public void setIndependenceWrapper(final IndependenceWrapper test) {
         this.test = test;
     }
 
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
-        return test;
+        return this.test;
     }
 }

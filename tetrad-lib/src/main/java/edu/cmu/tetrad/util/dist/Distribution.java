@@ -31,7 +31,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-@SuppressWarnings({"UnusedDeclaration"})
+@SuppressWarnings("UnusedDeclaration")
 public interface Distribution extends TetradSerializable {
     long serialVersionUID = 23L;
 

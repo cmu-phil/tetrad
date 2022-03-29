@@ -63,7 +63,7 @@ final class UpdatedSemImWizard extends JPanel {
     private final JComboBox varNamesComboBox2;
     private final JPanel marginalsPanel;
 
-    public UpdatedSemImWizard(SemUpdater semUpdater, GraphWorkbench workbench,
+    public UpdatedSemImWizard(final SemUpdater semUpdater, final GraphWorkbench workbench,
                               int tab, Node selectedNode) {
         if (semUpdater == null) {
             throw new NullPointerException();
@@ -75,110 +75,110 @@ final class UpdatedSemImWizard extends JPanel {
 
         this.selectedNode = selectedNode;
 
-        evidence = semUpdater.getEvidence();
+        this.evidence = semUpdater.getEvidence();
         this.workbench = workbench;
         this.workbench.setAllowDoubleClickActions(false);
 
-        this.setLayout(new BorderLayout());
+        setLayout(new BorderLayout());
 
         // Set up components.
-        varNamesComboBox = this.makeVarNamesDropdown();
-        varNamesComboBox2 = this.makeVarNamesDropdown();
+        this.varNamesComboBox = makeVarNamesDropdown();
+        this.varNamesComboBox2 = makeVarNamesDropdown();
 
-        Node modelNode = (Node) (varNamesComboBox.getSelectedItem());
+        final Node modelNode = (Node) (this.varNamesComboBox.getSelectedItem());
         workbench.deselectAll();
         workbench.selectNode(modelNode);
-        selectedNode = (Node) (varNamesComboBox.getSelectedItem());
+        selectedNode = (Node) (this.varNamesComboBox.getSelectedItem());
 
-        marginalsPanel = new JPanel();
-        marginalsPanel.setLayout(new BorderLayout());
-        marginalsPanel.add(this.createMarginalDisplay(selectedNode),
+        this.marginalsPanel = new JPanel();
+        this.marginalsPanel.setLayout(new BorderLayout());
+        this.marginalsPanel.add(createMarginalDisplay(selectedNode),
                 BorderLayout.CENTER);
 
-        JTabbedPane probsPane = new JTabbedPane(SwingConstants.TOP);
+        final JTabbedPane probsPane = new JTabbedPane(SwingConstants.TOP);
 
-        this.setupMarginalsDisplay(probsPane);
+        setupMarginalsDisplay(probsPane);
 
         tab = tab < probsPane.getTabCount() ? tab : 0;
         probsPane.setSelectedIndex(tab);
 
-        this.add(probsPane, BorderLayout.CENTER);
+        add(probsPane, BorderLayout.CENTER);
 
         // Add listeners.
-        varNamesComboBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Node node = (Node) (varNamesComboBox.getSelectedItem());
-                UpdatedSemImWizard.this.setCurrentNode(node);
+        this.varNamesComboBox.addActionListener(new ActionListener() {
+            public void actionPerformed(final ActionEvent e) {
+                final Node node = (Node) (UpdatedSemImWizard.this.varNamesComboBox.getSelectedItem());
+                setCurrentNode(node);
             }
         });
 
-        varNamesComboBox2.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Node node = (Node) (varNamesComboBox2.getSelectedItem());
-                UpdatedSemImWizard.this.setCurrentNode(node);
+        this.varNamesComboBox2.addActionListener(new ActionListener() {
+            public void actionPerformed(final ActionEvent e) {
+                final Node node = (Node) (UpdatedSemImWizard.this.varNamesComboBox2.getSelectedItem());
+                setCurrentNode(node);
             }
         });
 
         workbench.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent e) {
+            public void propertyChange(final PropertyChangeEvent e) {
                 if (e.getPropertyName().equals("selectedNodes")) {
-                    List selection = (List) (e.getNewValue());
+                    final List selection = (List) (e.getNewValue());
 
                     if (selection.size() == 1) {
-                        Node node = (Node) (selection.get(0));
-                        varNamesComboBox.setSelectedItem(node);
+                        final Node node = (Node) (selection.get(0));
+                        UpdatedSemImWizard.this.varNamesComboBox.setSelectedItem(node);
                     }
                 }
             }
         });
     }
 
-    private void setupMarginalsDisplay(JTabbedPane probsPane) {
-        probsPane.add("Marginal Probabilities", marginalsPanel);
+    private void setupMarginalsDisplay(final JTabbedPane probsPane) {
+        probsPane.add("Marginal Probabilities", this.marginalsPanel);
         probsPane.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                JTabbedPane tabbedPane = (JTabbedPane) e.getSource();
-                int tab = tabbedPane.getSelectedIndex();
-                UpdatedSemImWizard.this.firePropertyChange("updatedBayesImWizardTab", null, tab);
+            public void stateChanged(final ChangeEvent e) {
+                final JTabbedPane tabbedPane = (JTabbedPane) e.getSource();
+                final int tab = tabbedPane.getSelectedIndex();
+                firePropertyChange("updatedBayesImWizardTab", null, tab);
             }
         });
     }
 
     private JComboBox makeVarNamesDropdown() {
-        JComboBox varNamesComboBox = new SortingComboBox() {
+        final JComboBox varNamesComboBox = new SortingComboBox() {
             public Dimension getMaximumSize() {
-                return this.getPreferredSize();
+                return getPreferredSize();
             }
         };
 
         varNamesComboBox.setBackground(Color.white);
 
-        Graph graph = semUpdater.getManipulatedGraph();
+        final Graph graph = this.semUpdater.getManipulatedGraph();
 
-        for (Object o : graph.getNodes()) {
+        for (final Object o : graph.getNodes()) {
             varNamesComboBox.addItem(o);
         }
 
-        if (selectedNode != null) {
-            varNamesComboBox.setSelectedItem(selectedNode);
+        if (this.selectedNode != null) {
+            varNamesComboBox.setSelectedItem(this.selectedNode);
         } else {
             varNamesComboBox.setSelectedIndex(0);
-            selectedNode = (Node) varNamesComboBox.getSelectedItem();
+            this.selectedNode = (Node) varNamesComboBox.getSelectedItem();
         }
 
         return varNamesComboBox;
     }
 
-    private void addListOfEvidence(Box verticalBox) {
+    private void addListOfEvidence(final Box verticalBox) {
         boolean foundACondition = false;
 
-        for (int i = 0; i < evidence.getNumNodes(); i++) {
+        for (int i = 0; i < this.evidence.getNumNodes(); i++) {
             foundACondition = true;
 
-            Node node = evidence.getNode(i);
-            Box c = Box.createHorizontalBox();
+            final Node node = this.evidence.getNode(i);
+            final Box c = Box.createHorizontalBox();
             c.add(Box.createRigidArea(new Dimension(30, 1)));
-            StringBuilder buf = new StringBuilder();
+            final StringBuilder buf = new StringBuilder();
 
             buf.append("<html>").append(node.getName()).append(" = ");
 //            boolean listedOneAlready = false;
@@ -205,7 +205,7 @@ final class UpdatedSemImWizard extends JPanel {
         }
 
         if (!foundACondition) {
-            Box e = Box.createHorizontalBox();
+            final Box e = Box.createHorizontalBox();
             e.add(Box.createRigidArea(new Dimension(30, 1)));
             e.add(new JLabel("--No Evidence--"));
             e.add(Box.createHorizontalGlue());
@@ -213,27 +213,27 @@ final class UpdatedSemImWizard extends JPanel {
         }
     }
 
-    private JComponent createMarginalDisplay(Node node) {
+    private JComponent createMarginalDisplay(final Node node) {
         if (node == null) {
             throw new NullPointerException();
         }
 
-        Box marginalBox = Box.createVerticalBox();
+        final Box marginalBox = Box.createVerticalBox();
 
-        Box b1 = Box.createHorizontalBox();
+        final Box b1 = Box.createHorizontalBox();
         b1.add(new JLabel("Marginal probabilities for variable "));
-        b1.add(varNamesComboBox2);
+        b1.add(this.varNamesComboBox2);
         b1.add(new JLabel(", updated"));
         b1.add(Box.createHorizontalGlue());
         marginalBox.add(b1);
 
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("to reflect the following evidence:"));
         b2.add(Box.createHorizontalGlue());
         marginalBox.add(b2);
 
         marginalBox.add(Box.createRigidArea(new Dimension(1, 10)));
-        this.addListOfEvidence(marginalBox);
+        addListOfEvidence(marginalBox);
         marginalBox.add(Box.createRigidArea(new Dimension(1, 20)));
 
 //        Node node1 = semUpdater.getEstIm().getIndex(node.getNode());
@@ -328,50 +328,50 @@ final class UpdatedSemImWizard extends JPanel {
      * Sets the getModel display to reflect the stored values of the getModel
      * selectedNode.
      */
-    private void setCurrentNode(Node node) {
-        Window owner = (Window) this.getTopLevelAncestor();
+    private void setCurrentNode(final Node node) {
+        final Window owner = (Window) getTopLevelAncestor();
 
         if (owner == null) {
-            this.setCurrentNodeSub(node);
+            setCurrentNodeSub(node);
         } else {
             new WatchedProcess(owner) {
                 public void watch() {
-                    UpdatedSemImWizard.this.setCurrentNodeSub(node);
+                    setCurrentNodeSub(node);
                 }
             };
         }
     }
 
-    private void setCurrentNodeSub(Node node) {
-        if (node == selectedNode) {
+    private void setCurrentNodeSub(final Node node) {
+        if (node == this.selectedNode) {
             return;
         }
 
-        selectedNode = node;
+        this.selectedNode = node;
 
-        this.getWorkbench().deselectAll();
-        this.getWorkbench().selectNode(selectedNode);
+        getWorkbench().deselectAll();
+        getWorkbench().selectNode(this.selectedNode);
 
-        if (varNamesComboBox.getSelectedItem() != node) {
-            varNamesComboBox.setSelectedItem(node);
+        if (this.varNamesComboBox.getSelectedItem() != node) {
+            this.varNamesComboBox.setSelectedItem(node);
         }
 
-        if (varNamesComboBox2.getSelectedItem() != node) {
-            varNamesComboBox2.setSelectedItem(node);
+        if (this.varNamesComboBox2.getSelectedItem() != node) {
+            this.varNamesComboBox2.setSelectedItem(node);
         }
 
-        marginalsPanel.removeAll();
-        marginalsPanel.add(this.createMarginalDisplay(node), BorderLayout.CENTER);
-        marginalsPanel.revalidate();
-        marginalsPanel.repaint();
+        this.marginalsPanel.removeAll();
+        this.marginalsPanel.add(createMarginalDisplay(node), BorderLayout.CENTER);
+        this.marginalsPanel.revalidate();
+        this.marginalsPanel.repaint();
     }
 
     private GraphWorkbench getWorkbench() {
-        return workbench;
+        return this.workbench;
     }
 
     public Node getSelectedNode() {
-        return selectedNode;
+        return this.selectedNode;
     }
 }
 

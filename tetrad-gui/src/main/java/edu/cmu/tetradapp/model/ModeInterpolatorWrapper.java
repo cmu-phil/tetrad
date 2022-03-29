@@ -37,14 +37,14 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 public class ModeInterpolatorWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
 
-    public ModeInterpolatorWrapper(DataWrapper wrapper, Parameters params) {
-        DataFilter interpolator = new ModeInterpolator();
-        DataSet dataSet =
+    public ModeInterpolatorWrapper(final DataWrapper wrapper, final Parameters params) {
+        final DataFilter interpolator = new ModeInterpolator();
+        final DataSet dataSet =
                 (DataSet) wrapper.getSelectedDataModel();
-        this.setDataModel(interpolator.filter(dataSet));
-        this.setSourceGraph(wrapper.getSourceGraph());
+        setDataModel(interpolator.filter(dataSet));
+        setSourceGraph(wrapper.getSourceGraph());
 
-        LogDataUtils.logDataModelList("Parent data with missing values replaced by column modes.", this.getDataModelList());
+        LogDataUtils.logDataModelList("Parent data with missing values replaced by column modes.", getDataModelList());
 
     }
 

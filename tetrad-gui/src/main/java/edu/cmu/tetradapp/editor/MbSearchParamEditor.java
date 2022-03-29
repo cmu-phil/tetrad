@@ -29,7 +29,6 @@ import edu.cmu.tetradapp.model.GraphSource;
 import edu.cmu.tetradapp.model.IndependenceFactsModel;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
-import edu.cmu.tetradapp.util.IntTextField.Filter;
 
 import javax.swing.*;
 import javax.swing.border.MatteBorder;
@@ -70,7 +69,7 @@ public final class MbSearchParamEditor extends JPanel implements ParameterEditor
     public MbSearchParamEditor() {
     }
 
-    public void setParams(Parameters params) {
+    public void setParams(final Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
@@ -78,7 +77,7 @@ public final class MbSearchParamEditor extends JPanel implements ParameterEditor
         this.params = params;
     }
 
-    public void setParentModels(Object[] parentModels) {
+    public void setParentModels(final Object[] parentModels) {
         if (parentModels == null) {
             throw new NullPointerException();
         }
@@ -90,13 +89,13 @@ public final class MbSearchParamEditor extends JPanel implements ParameterEditor
         /*
       The variable names from the object being searched over (usually data).
      */
-        List<String> varNames = (List<String>) this.params().get("varNames", null);
+        List<String> varNames = (List<String>) params().get("varNames", null);
 
         if (varNames == null) {
-            varNames = this.getVarsFromData(parentModels);
+            varNames = getVarsFromData(this.parentModels);
 
             if (varNames == null) {
-                varNames = this.getVarsFromGraph(parentModels);
+                varNames = getVarsFromGraph(this.parentModels);
             }
 
             if (varNames == null) {
@@ -104,23 +103,23 @@ public final class MbSearchParamEditor extends JPanel implements ParameterEditor
                         "Variables are not accessible.");
             }
 
-            this.params().set("varNames", varNames);
+            params().set("varNames", varNames);
         }
 
-        this.setBorder(new MatteBorder(10, 10, 10, 10, getBackground()));
-        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setBorder(new MatteBorder(10, 10, 10, 10, this.getBackground()));
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
         // Set up components.
-        String[] variableNames = varNames.toArray(new String[varNames.size()]);
+        final String[] variableNames = varNames.toArray(new String[varNames.size()]);
         Arrays.sort(variableNames);
-        JComboBox varsBox = new JComboBox(variableNames);
+        final JComboBox varsBox = new JComboBox(variableNames);
         varsBox.setMaximumSize(new Dimension(80, 24));
         varsBox.setPreferredSize(new Dimension(80, 24));
 
-        String targetName = params.getString("targetName", null);
+        String targetName = this.params.getString("targetName", null);
         if (!Arrays.asList(variableNames).contains(targetName)) {
-            params.set("targetName", variableNames[0]);
-            targetName = params.getString("targetName", null);
+            this.params.set("targetName", variableNames[0]);
+            targetName = this.params.getString("targetName", null);
         }
 
         if (targetName == null) {
@@ -129,92 +128,92 @@ public final class MbSearchParamEditor extends JPanel implements ParameterEditor
             varsBox.setSelectedItem(targetName);
         }
 
-        this.setTargetName(targetName);
-        this.params().set("targetName", this.targetName());
+        setTargetName(targetName);
+        params().set("targetName", targetName());
 
         varsBox.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                JComboBox box = (JComboBox) e.getSource();
-                MbSearchParamEditor.this.setTargetName((String) box.getSelectedItem());
-                MbSearchParamEditor.this.params().set("targetName", MbSearchParamEditor.this.targetName());
+            public void itemStateChanged(final ItemEvent e) {
+                final JComboBox box = (JComboBox) e.getSource();
+                setTargetName((String) box.getSelectedItem());
+                params().set("targetName", targetName());
             }
         });
 
-        DoubleTextField alphaField = new DoubleTextField(params.getDouble("alpha", 0.001), 8,
+        final DoubleTextField alphaField = new DoubleTextField(this.params.getDouble("alpha", 0.001), 8,
                 new DecimalFormat("0.0########"));
         alphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(double value, double oldValue) {
+            public double filter(final double value, final double oldValue) {
                 try {
-                    MbSearchParamEditor.this.params().set("alpha", 0.001);
+                    params().set("alpha", 0.001);
                     Preferences.userRoot().putDouble("alpha",
-                            MbSearchParamEditor.this.params().getDouble("alpha", 0.001));
+                            params().getDouble("alpha", 0.001));
                     return value;
-                } catch (Exception e) {
+                } catch (final Exception e) {
                     return oldValue;
                 }
             }
         });
 
-        IntTextField pcDepthField = new IntTextField(this.params().getInt("depth", -1), 4);
-        pcDepthField.setFilter(new Filter() {
-            public int filter(int value, int oldValue) {
+        final IntTextField pcDepthField = new IntTextField(params().getInt("depth", -1), 4);
+        pcDepthField.setFilter(new IntTextField.Filter() {
+            public int filter(final int value, final int oldValue) {
                 try {
-                    MbSearchParamEditor.this.params().set("depth", value);
+                    params().set("depth", value);
                     Preferences.userRoot().putInt("pcDepth",
-                            MbSearchParamEditor.this.params().getInt("depth", -1));
+                            params().getInt("depth", -1));
                     return value;
-                } catch (Exception e) {
+                } catch (final Exception e) {
                     return oldValue;
                 }
             }
         });
 
-        JButton knowledgeButton = new JButton("Edit");
+        final JButton knowledgeButton = new JButton("Edit");
         knowledgeButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                MbSearchParamEditor.this.openKnowledgeEditor();
+            public void actionPerformed(final ActionEvent e) {
+                openKnowledgeEditor();
             }
         });
 
-        JCheckBox preventCycles = new JCheckBox();
-        preventCycles.setSelected(params.getBoolean("aggressivelyPreventCycles", false));
+        final JCheckBox preventCycles = new JCheckBox();
+        preventCycles.setSelected(this.params.getBoolean("aggressivelyPreventCycles", false));
         preventCycles.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JCheckBox box = (JCheckBox) e.getSource();
-                Parameters p = params;
+            public void actionPerformed(final ActionEvent e) {
+                final JCheckBox box = (JCheckBox) e.getSource();
+                final Parameters p = MbSearchParamEditor.this.params;
                 p.set("aggressivelyPreventCycles", box.isSelected());
             }
         });
 
         // Do Layout.
-        Box hBox = Box.createHorizontalBox();
+        final Box hBox = Box.createHorizontalBox();
         hBox.add(new JLabel("Aggressively Prevent Cycles:"));
         hBox.add(Box.createHorizontalGlue());
         hBox.add(preventCycles);
-        this.add(hBox);
-        this.add(Box.createVerticalStrut(5));
+        add(hBox);
+        add(Box.createVerticalStrut(5));
 
 
-        Box b0 = Box.createHorizontalBox();
+        final Box b0 = Box.createHorizontalBox();
         b0.add(new JLabel("Target:"));
         b0.add(Box.createRigidArea(new Dimension(10, 0)));
         b0.add(Box.createHorizontalGlue());
         b0.add(varsBox);
-        this.add(b0);
+        add(b0);
 
-        Box b1 = Box.createHorizontalBox();
+        final Box b1 = Box.createHorizontalBox();
         b1.add(new JLabel("Alpha:"));
         b1.add(Box.createRigidArea(new Dimension(10, 0)));
         b1.add(Box.createHorizontalGlue());
         b1.add(alphaField);
-        this.add(b1);
+        add(b1);
 
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("Depth:"));
         b2.add(Box.createRigidArea(new Dimension(10, 0)));
         b2.add(Box.createHorizontalGlue());
         b2.add(pcDepthField);
-        this.add(b2);
+        add(b2);
 
 //        Box b3 = Box.createHorizontalBox();
 //        b3.add(new JLabel("Knowledge:"));
@@ -230,12 +229,12 @@ public final class MbSearchParamEditor extends JPanel implements ParameterEditor
         return false;
     }
 
-    private List<String> getVarsFromData(Object[] parentModels) {
+    private List<String> getVarsFromData(final Object[] parentModels) {
         DataModel dataModel = null;
 
-        for (Object parentModel : parentModels) {
+        for (final Object parentModel : parentModels) {
             if (parentModel instanceof DataWrapper) {
-                DataWrapper dataWrapper = (DataWrapper) parentModel;
+                final DataWrapper dataWrapper = (DataWrapper) parentModel;
                 dataModel = dataWrapper.getSelectedDataModel();
             } else if (parentModel instanceof IndependenceFactsModel) {
                 dataModel = ((IndependenceFactsModel) parentModel).getFacts();
@@ -249,10 +248,10 @@ public final class MbSearchParamEditor extends JPanel implements ParameterEditor
         }
     }
 
-    private List<String> getVarsFromGraph(Object[] parentModels) {
+    private List<String> getVarsFromGraph(final Object[] parentModels) {
         GraphSource graphSource = null;
 
-        for (Object parentModel : parentModels) {
+        for (final Object parentModel : parentModels) {
             if (parentModel instanceof GraphSource) {
                 graphSource = (GraphSource) parentModel;
             }
@@ -269,26 +268,26 @@ public final class MbSearchParamEditor extends JPanel implements ParameterEditor
      * Opens the knowledge editor.
      */
     private void openKnowledgeEditor() {
-        if (this.params() == null) {
+        if (params() == null) {
             throw new NullPointerException("Parameter object must not be " +
                     "null if you want to launch a OldKnowledgeEditor.");
         }
 
-        if (this.params().get("knowledge", new Knowledge2()) == null) {
+        if (params().get("knowledge", new Knowledge2()) == null) {
             throw new NullPointerException(
                     "Knowledge in params object must " + "not be null.");
         }
     }
 
     private Parameters params() {
-        return params;
+        return this.params;
     }
 
     private String targetName() {
-        return targetName;
+        return this.targetName;
     }
 
-    private void setTargetName(String targetName) {
+    private void setTargetName(final String targetName) {
         this.targetName = targetName;
     }
 }

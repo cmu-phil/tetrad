@@ -38,25 +38,25 @@ public class SimulateFromCovWrapper extends DataWrapper {
     /**
      * Splits the given data set by collinear columns.
      */
-    public SimulateFromCovWrapper(DataWrapper wrapper, Parameters params) {
+    public SimulateFromCovWrapper(final DataWrapper wrapper, final Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException("The given data must not be null");
         }
 
-        DataModel model = wrapper.getSelectedDataModel();
+        final DataModel model = wrapper.getSelectedDataModel();
 
         if (model instanceof ICovarianceMatrix) {
-            CovarianceMatrix covarianceMatrix = new CovarianceMatrix((CovarianceMatrix) model);
+            final CovarianceMatrix covarianceMatrix = new CovarianceMatrix((CovarianceMatrix) model);
 
-            DataSet dataSet = DataUtils.choleskySimulation(covarianceMatrix);
+            final DataSet dataSet = DataUtils.choleskySimulation(covarianceMatrix);
 
-            this.setDataModel(dataSet);
-            this.setSourceGraph(wrapper.getSourceGraph());
+            setDataModel(dataSet);
+            setSourceGraph(wrapper.getSourceGraph());
         } else {
             throw new IllegalArgumentException("Must be a dataset or a covariance  matrix");
         }
 
-        LogDataUtils.logDataModelList("Conversion of data to covariance matrix form.", this.getDataModelList());
+        LogDataUtils.logDataModelList("Conversion of data to covariance matrix form.", getDataModelList());
 
     }
 

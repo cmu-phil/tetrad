@@ -39,12 +39,12 @@ public class TestFdr {
 
     @Test
     public void testSimpleCase() {
-        double[] p = {
+        final double[] p = {
                 .8, .01, .2, .07, .003, .9, .05, .03, .0001
         };
 
-        List<Double> pValues = new ArrayList<>();
-        for (double _p : p) pValues.add(_p);
+        final List<Double> pValues = new ArrayList<>();
+        for (final double _p : p) pValues.add(_p);
 
         final double alpha = 0.05;
         boolean negativelyCorrelated = false;

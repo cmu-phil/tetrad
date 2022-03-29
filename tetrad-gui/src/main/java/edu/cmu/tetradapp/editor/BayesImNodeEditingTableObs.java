@@ -66,77 +66,77 @@ class BayesImNodeEditingTableObs extends JTable {
     /**
      * Constructs a new editing table from a given editing table model.
      */
-    public BayesImNodeEditingTableObs(BayesIm bayesIm) {
+    public BayesImNodeEditingTableObs(final BayesIm bayesIm) {
         if (bayesIm == null) {
             throw new NullPointerException();
         }
 
-        Model model = new Model(bayesIm, this);
+        final Model model = new Model(bayesIm, this);
         model.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
+            public void propertyChange(final PropertyChangeEvent evt) {
                 if ("modelChanged".equals(evt.getPropertyName())) {
-                    BayesImNodeEditingTableObs.this.firePropertyChange("modelChanged", null, null);
+                    firePropertyChange("modelChanged", null, null);
                 }
             }
         });
-        this.setModel(model);
+        setModel(model);
 
         ////////////////////////////////////////////////////////////////
 
-        this.setDefaultEditor(Number.class, new NumberCellEditor());
-        this.setDefaultRenderer(Number.class, new NumberCellRenderer());
-        this.getTableHeader().setReorderingAllowed(false);
-        this.getTableHeader().setResizingAllowed(true);
-        this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        this.setCellSelectionEnabled(true);
+        setDefaultEditor(Number.class, new NumberCellEditor());
+        setDefaultRenderer(Number.class, new NumberCellRenderer());
+        getTableHeader().setReorderingAllowed(false);
+        getTableHeader().setResizingAllowed(true);
+        setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        setCellSelectionEnabled(true);
 
-        ListSelectionModel rowSelectionModel = this.getSelectionModel();
+        final ListSelectionModel rowSelectionModel = getSelectionModel();
 
         rowSelectionModel.addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                ListSelectionModel m = (ListSelectionModel) (e.getSource());
-                BayesImNodeEditingTableObs.this.setFocusRow(m.getAnchorSelectionIndex());
+            public void valueChanged(final ListSelectionEvent e) {
+                final ListSelectionModel m = (ListSelectionModel) (e.getSource());
+                setFocusRow(m.getAnchorSelectionIndex());
             }
         });
 
-        ListSelectionModel columnSelectionModel = this.getColumnModel()
+        final ListSelectionModel columnSelectionModel = getColumnModel()
                 .getSelectionModel();
 
         columnSelectionModel.addListSelectionListener(
                 new ListSelectionListener() {
-                    public void valueChanged(ListSelectionEvent e) {
-                        ListSelectionModel m =
+                    public void valueChanged(final ListSelectionEvent e) {
+                        final ListSelectionModel m =
                                 (ListSelectionModel) (e.getSource());
-                        BayesImNodeEditingTableObs.this.setFocusColumn();
+                        setFocusColumn();
                     }
                 });
 
-        this.addMouseListener(new MouseAdapter() {
-            public void mousePressed(MouseEvent e) {
+        addMouseListener(new MouseAdapter() {
+            public void mousePressed(final MouseEvent e) {
                 if (SwingUtilities.isRightMouseButton(e)) {
-                    BayesImNodeEditingTableObs.this.showPopup(e);
+                    showPopup(e);
                 }
             }
         });
 
-        this.setFocusRow(0);
-        this.setFocusColumn();
+        setFocusRow(0);
+        setFocusColumn();
     }
 
     public void createDefaultColumnsFromModel() {
         super.createDefaultColumnsFromModel();
 
-        if (this.getModel() instanceof Model) {
-            FontMetrics fontMetrics = this.getFontMetrics(this.getFont());
-            Model model = (Model) this.getModel();
+        if (getModel() instanceof Model) {
+            final FontMetrics fontMetrics = getFontMetrics(getFont());
+            final Model model = (Model) getModel();
 
             for (int i = 0; i < model.getColumnCount(); i++) {
-                TableColumn column = this.getColumnModel().getColumn(i);
-                String columnName = model.getColumnName(i);
-                int currentWidth = column.getPreferredWidth();
+                final TableColumn column = getColumnModel().getColumn(i);
+                final String columnName = model.getColumnName(i);
+                final int currentWidth = column.getPreferredWidth();
 
                 if (columnName != null) {
-                    int minimumWidth = fontMetrics.stringWidth(columnName) + 8;
+                    final int minimumWidth = fontMetrics.stringWidth(columnName) + 8;
 
                     if (minimumWidth > currentWidth) {
                         column.setPreferredWidth(minimumWidth);
@@ -146,17 +146,17 @@ class BayesImNodeEditingTableObs extends JTable {
         }
     }
 
-    private void showPopup(MouseEvent e) {
-        JPopupMenu popup = new JPopupMenu();
+    private void showPopup(final MouseEvent e) {
+        final JPopupMenu popup = new JPopupMenu();
 
-        JMenuItem randomizeEntireTable =
+        final JMenuItem randomizeEntireTable =
                 new JMenuItem("Randomize entire table");
-        JMenuItem clearEntireTable = new JMenuItem("Clear entire table");
+        final JMenuItem clearEntireTable = new JMenuItem("Clear entire table");
 
         randomizeEntireTable.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 /*if (existsCompleteRow(bayesIm, nodeIndex)) {*/
-                int ret = JOptionPane.showConfirmDialog(
+                final int ret = JOptionPane.showConfirmDialog(
                         JOptionUtils.centeringComp(),
                         "This will modify all values in the table. " +
                                 "Continue?", "Warning",
@@ -167,9 +167,9 @@ class BayesImNodeEditingTableObs extends JTable {
                 }
                 /*}*/
 
-                BayesImNodeEditingTableObs editingTable =
+                final BayesImNodeEditingTableObs editingTable =
                         BayesImNodeEditingTableObs.this;
-                TableCellEditor cellEditor = editingTable.getCellEditor();
+                final TableCellEditor cellEditor = editingTable.getCellEditor();
 
                 if (cellEditor != null) {
                     cellEditor.cancelCellEditing();
@@ -177,17 +177,17 @@ class BayesImNodeEditingTableObs extends JTable {
 
                 // randomize the jpd
                 //getBayesIm().getJPD().createRandomCellTable();
-                BayesImNodeEditingTableObs.this.getBayesIm().createRandomCellTable();
+                getBayesIm().createRandomCellTable();
 
-                BayesImNodeEditingTableObs.this.getEditingTableModel().fireTableDataChanged();
-                BayesImNodeEditingTableObs.this.firePropertyChange("modelChanged", null, null);
+                getEditingTableModel().fireTableDataChanged();
+                firePropertyChange("modelChanged", null, null);
             }
         });
 
         clearEntireTable.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 //if (existsCompleteRow(bayesIm, nodeIndex)) {
-                int ret = JOptionPane.showConfirmDialog(
+                final int ret = JOptionPane.showConfirmDialog(
                         JOptionUtils.centeringComp(),
                         "This will delete all values in the table. " +
                                 "Continue?", "Warning",
@@ -198,32 +198,32 @@ class BayesImNodeEditingTableObs extends JTable {
                 }
                 //}
 
-                BayesImNodeEditingTableObs editingTable =
+                final BayesImNodeEditingTableObs editingTable =
                         BayesImNodeEditingTableObs.this;
-                TableCellEditor cellEditor = editingTable.getCellEditor();
+                final TableCellEditor cellEditor = editingTable.getCellEditor();
 
                 if (cellEditor != null) {
                     cellEditor.cancelCellEditing();
                 }
 
                 // clear the jpd
-                BayesImNodeEditingTableObs.this.getBayesIm().getJPD().clearCellTable();
+                getBayesIm().getJPD().clearCellTable();
 
-                BayesImNodeEditingTableObs.this.getEditingTableModel().fireTableDataChanged();
-                BayesImNodeEditingTableObs.this.firePropertyChange("modelChanged", null, null);
+                getEditingTableModel().fireTableDataChanged();
+                firePropertyChange("modelChanged", null, null);
             }
         });
 
         popup.add(randomizeEntireTable);
         popup.add(clearEntireTable);
 
-        lastX = e.getX();
-        lastY = e.getY();
+        this.lastX = e.getX();
+        this.lastY = e.getY();
 
         popup.show((Component) e.getSource(), e.getX(), e.getY());
     }
 
-    public void setModel(TableModel model) {
+    public void setModel(final TableModel model) {
         super.setModel(model);
     }
 
@@ -235,19 +235,19 @@ class BayesImNodeEditingTableObs extends JTable {
             return;
         }
 
-        Model editingTableModel = (Model) this.getModel();
-        int failedRow = editingTableModel.getFailedRow();
+        final Model editingTableModel = (Model) getModel();
+        final int failedRow = editingTableModel.getFailedRow();
 
         if (failedRow != -1) {
             row = failedRow;
             editingTableModel.resetFailedRow();
         }
 
-        focusRow = row;
+        this.focusRow = row;
 
-        if (focusRow < this.getRowCount()) {
-            this.setRowSelectionInterval(focusRow, focusRow);
-            this.editCellAt(focusRow, focusCol);
+        if (this.focusRow < getRowCount()) {
+            setRowSelectionInterval(this.focusRow, this.focusRow);
+            editCellAt(this.focusRow, this.focusCol);
         }
     }
 
@@ -255,37 +255,37 @@ class BayesImNodeEditingTableObs extends JTable {
      * Sets the focus column to the anchor column currently being selected.
      */
     private void setFocusColumn() {
-        Model editingTableModel = (Model) this.getModel();
-        int failedCol = editingTableModel.getFailedCol();
+        final Model editingTableModel = (Model) getModel();
+        final int failedCol = editingTableModel.getFailedCol();
 
         if (failedCol != -1) {
-            int col = failedCol;
+            final int col = failedCol;
             editingTableModel.resetFailedCol();
         }
 
         // always focus on the last column of each row (the joint probability
         // of the combination of variable values denoted by the other columns
         // in that row)
-        focusCol = this.getColumnCount() - 1;
+        this.focusCol = getColumnCount() - 1;
 
-        this.setColumnSelectionInterval(focusCol, focusCol);
-        this.editCellAt(focusRow, focusCol);
+        setColumnSelectionInterval(this.focusCol, this.focusCol);
+        editCellAt(this.focusRow, this.focusCol);
     }
 
     private Model getEditingTableModel() {
-        return (Model) this.getModel();
+        return (Model) getModel();
     }
 
     private MlBayesImObs getBayesIm() {
-        return this.getEditingTableModel().getBayesIm();
+        return getEditingTableModel().getBayesIm();
     }
 
     private int getLastX() {
-        return lastX;
+        return this.lastX;
     }
 
     private int getLastY() {
-        return lastY;
+        return this.lastY;
     }
 
 
@@ -319,7 +319,7 @@ class BayesImNodeEditingTableObs extends JTable {
         /////////////////////////////////////////////////////////////
         // construct a new editing table model for a given bayesIm
         //
-        public Model(BayesIm bayesIm, JComponent messageAnchor) {
+        public Model(final BayesIm bayesIm, final JComponent messageAnchor) {
             if (bayesIm == null) {
                 throw new NullPointerException("Bayes IM must not be null.");
             }
@@ -349,9 +349,9 @@ class BayesImNodeEditingTableObs extends JTable {
 			*/
 
             for (int i = 0; i < bayesIm.getNumNodes(); i++) {
-                Node nodeO = bayesIm.getNode(i);
+                final Node nodeO = bayesIm.getNode(i);
                 if (nodeO.getNodeType() == NodeType.MEASURED) {
-                    obsNodes.add(nodeO);
+                    this.obsNodes.add(nodeO);
                 }
             }
 
@@ -365,10 +365,10 @@ class BayesImNodeEditingTableObs extends JTable {
         /**
          * @return the name of the given column.
          */
-        public String getColumnName(int col) {
-            if (col < obsNodes.size()) {
-                return obsNodes.get(col).getName();
-            } else if (col == obsNodes.size()) {
+        public String getColumnName(final int col) {
+            if (col < this.obsNodes.size()) {
+                return this.obsNodes.get(col).getName();
+            } else if (col == this.obsNodes.size()) {
                 return "Probability";  // last column is the joint probability
             } else {
                 return null;
@@ -378,7 +378,7 @@ class BayesImNodeEditingTableObs extends JTable {
         //////////////////////////////////////////////////////////////////*
         // number of rows in the table.
         public int getRowCount() {
-            return this.getBayesIm().getNumRows();
+            return getBayesIm().getNumRows();
         }
 
         //////////////////////////////////////////////////////////////////
@@ -386,7 +386,7 @@ class BayesImNodeEditingTableObs extends JTable {
         // (number of variables in the bayeIm plus one for the probability
         // value)
         public int getColumnCount() {
-            return obsNodes.size() + 1;
+            return this.obsNodes.size() + 1;
         }
 
         ////////////////////////////////////////////////////////////////////
@@ -397,15 +397,15 @@ class BayesImNodeEditingTableObs extends JTable {
         // The last column is a Double representing the probability of
         // this combination of node values.
         //
-        public Object getValueAt(int tableRow, int tableCol) {
+        public Object getValueAt(final int tableRow, final int tableCol) {
 
-            if (tableCol < obsNodes.size()) {
-                int categoryIndex = this.getBayesIm().getRowValues(tableRow)[tableCol];
-                BayesPm bayesPm = this.getBayesIm().getBayesPm();
-                return bayesPm.getCategory(obsNodes.get(tableCol),
+            if (tableCol < this.obsNodes.size()) {
+                final int categoryIndex = getBayesIm().getRowValues(tableRow)[tableCol];
+                final BayesPm bayesPm = getBayesIm().getBayesPm();
+                return bayesPm.getCategory(this.obsNodes.get(tableCol),
                         categoryIndex);
-            } else if (tableCol == obsNodes.size()) {
-                return this.getBayesIm().getProbability(tableRow);
+            } else if (tableCol == this.obsNodes.size()) {
+                return getBayesIm().getProbability(tableRow);
             } else {
                 return null;
             }
@@ -414,30 +414,30 @@ class BayesImNodeEditingTableObs extends JTable {
         ////////////////////////////////////////////////////////////////////
         // Determine whether a cell is in the column range to allow for editing
         // (only the last column (representing the prob value) can be edited.)
-        public boolean isCellEditable(int row, int col) {
-            return (col >= obsNodes.size());
+        public boolean isCellEditable(final int row, final int col) {
+            return (col >= this.obsNodes.size());
         }
 
         ////////////////////////////////////////////////////////////////////
         // Set the value of the cell at (row, col) to 'aValue'.
         // Perform some error checking to make sure the probabilities add up.
         //
-        public void setValueAt(Object aValue, int row, int col) {
+        public void setValueAt(final Object aValue, final int row, final int col) {
             if ("".equals(aValue) || aValue == null) {    // cell is cleared
-                this.getBayesIm().setProbability(row, Double.NaN);
-                this.fireTableRowsUpdated(row, row);
-                this.getPcs().firePropertyChange("modelChanged", null, null);
+                getBayesIm().setProbability(row, Double.NaN);
+                fireTableRowsUpdated(row, row);
+                getPcs().firePropertyChange("modelChanged", null, null);
                 return;
             }
 
             try {
-                NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+                final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-                double probability = Double.parseDouble((String) aValue);
+                final double probability = Double.parseDouble((String) aValue);
 //                probability = Double.parseDouble(nf.format(probability));
-                double sum = this.sumProb(row) + probability;
+                final double sum = sumProb(row) + probability;
 
-                double oldProbability = this.getBayesIm().getProbability(row);
+                double oldProbability = getBayesIm().getProbability(row);
 
                 if (!Double.isNaN(oldProbability)) { // there is an old value 
                     oldProbability = Double.parseDouble(nf.format(oldProbability));
@@ -447,100 +447,100 @@ class BayesImNodeEditingTableObs extends JTable {
                     return;
                 }
 
-                if (this.probabilityOutOfRange(probability)) {
+                if (probabilityOutOfRange(probability)) {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                             "Probabilities must be in range [0.0, 1.0].");
-                    failedRow = row;
-                    failedCol = col;
+                    this.failedRow = row;
+                    this.failedCol = col;
                 } else if (sum > 1.00005) {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                             "Sum of probabilities in the column must not exceed 1.0.");
-                    failedRow = row;
-                    failedCol = col;
+                    this.failedRow = row;
+                    this.failedCol = col;
                 } else {
-                    this.getBayesIm().setProbability(row, probability);
+                    getBayesIm().setProbability(row, probability);
 
                     // all the rows are filled in and the total is less than 1
-                    if ((this.numNanRows() == 0) && (sum < 0.99995)) {
+                    if ((numNanRows() == 0) && (sum < 0.99995)) {
                         //if (sumInRow < 0.99995 || sumInRow > 1.00005) {
                         // emptyRow(row);   // too harsh
 
                         // only two rows in the table: filling in one row will
                         // cause the other row to be filled in
-                        if (this.getBayesIm().getNumRows() == 2) {
-                            this.getBayesIm().setProbability(row, probability);
-                            this.fillInSingleRemainingRow();
-                            this.fireTableRowsUpdated(row, row);
-                            this.getPcs().firePropertyChange("modelChanged", null,
+                        if (getBayesIm().getNumRows() == 2) {
+                            getBayesIm().setProbability(row, probability);
+                            fillInSingleRemainingRow();
+                            fireTableRowsUpdated(row, row);
+                            getPcs().firePropertyChange("modelChanged", null,
                                     null);
                         } else {
                             // set the probability back to before editing
-                            this.getBayesIm().setProbability(row, oldProbability);
+                            getBayesIm().setProbability(row, oldProbability);
                             JOptionPane.showMessageDialog(
                                     JOptionUtils.centeringComp(),
                                     "Probabilities in the column must sum up to 1.0.\n"
                                             + "Leave one row (or two) blank while working.");
-                            failedRow = row;
-                            failedCol = col;
+                            this.failedRow = row;
+                            this.failedCol = col;
                         }
 
                     } else // things are ok
                     {
-                        this.fillInSingleRemainingRow();
-                        this.fillInZerosIfSumIsOne();
-                        this.fireTableRowsUpdated(row, row);
-                        this.getPcs().firePropertyChange("modelChanged", null,
+                        fillInSingleRemainingRow();
+                        fillInZerosIfSumIsOne();
+                        fireTableRowsUpdated(row, row);
+                        getPcs().firePropertyChange("modelChanged", null,
                                 null);
                     }
                 }
-            } catch (NumberFormatException e) {  // not a number
+            } catch (final NumberFormatException e) {  // not a number
                 e.printStackTrace();
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Could not interpret '" + aValue + "'");
-                failedRow = row;
-                failedCol = col;
+                this.failedRow = row;
+                this.failedCol = col;
             }
         }
 
-        public void addPropertyChangeListener(PropertyChangeListener l) {
-            this.getPcs().addPropertyChangeListener(l);
+        public void addPropertyChangeListener(final PropertyChangeListener l) {
+            getPcs().addPropertyChangeListener(l);
         }
 
         private PropertyChangeSupport getPcs() {
-            if (pcs == null) {
-                pcs = new PropertyChangeSupport(this);
+            if (this.pcs == null) {
+                this.pcs = new PropertyChangeSupport(this);
             }
-            return pcs;
+            return this.pcs;
         }
 
         // fill in the last remaining row so that the rows sum up to 1
         private void fillInSingleRemainingRow() {
-            int leftOverRow = this.uniqueNanRow();
+            final int leftOverRow = uniqueNanRow();
 
             if (leftOverRow != -1) {
-                double difference = 1.0 - this.sumProb(leftOverRow);
-                this.getBayesIm().setProbability(leftOverRow, difference);
+                final double difference = 1.0 - sumProb(leftOverRow);
+                getBayesIm().setProbability(leftOverRow, difference);
             }
         }
 
         // make all remaining rows 0 if the filled in rows already sum up to 1
         private void fillInZerosIfSumIsOne() {
-            double sum = this.sumProb(-1);  // sum all the rows without skipping
+            final double sum = sumProb(-1);  // sum all the rows without skipping
 
             if (sum > 0.9995 && sum < 1.0005) {
-                int numRows = this.getBayesIm().getNumRows();
+                final int numRows = getBayesIm().getNumRows();
 
                 for (int i = 0; i < numRows; i++) {
-                    double probability = this.getBayesIm().getProbability(i);
+                    final double probability = getBayesIm().getProbability(i);
 
                     if (Double.isNaN(probability)) {
-                        this.getBayesIm().setProbability(i, 0.0);
+                        getBayesIm().setProbability(i, 0.0);
                     }
                 }
             }
         }
 
-        private boolean probabilityOutOfRange(double value) {
+        private boolean probabilityOutOfRange(final double value) {
             return value < 0.0 || value > 1.0;
         }
 
@@ -549,8 +549,8 @@ class BayesImNodeEditingTableObs extends JTable {
             int numNanRows = 0;
             int lastNanRow = -1;
 
-            for (int i = 0; i < this.getBayesIm().getNumRows(); i++) {
-                double probability = this.getBayesIm().getProbability(i);
+            for (int i = 0; i < getBayesIm().getNumRows(); i++) {
+                final double probability = getBayesIm().getProbability(i);
                 if (Double.isNaN(probability)) {
                     numNanRows++;
                     lastNanRow = i;
@@ -564,8 +564,8 @@ class BayesImNodeEditingTableObs extends JTable {
         private int numNanRows() {
             int numNanRows = 0;
 
-            for (int i = 0; i < this.getBayesIm().getNumRows(); i++) {
-                double probability = this.getBayesIm().getProbability(i);
+            for (int i = 0; i < getBayesIm().getNumRows(); i++) {
+                final double probability = getBayesIm().getProbability(i);
                 if (Double.isNaN(probability)) {
                     numNanRows++;
                 }
@@ -577,15 +577,15 @@ class BayesImNodeEditingTableObs extends JTable {
 
         // sum of all probability entries in the table except the row rowToSkip
         // To sum every row, make rowToSkip an impossible value, e.g. -1
-        private double sumProb(int rowToSkip) {
+        private double sumProb(final int rowToSkip) {
             double sum = 0.0;
 
-            for (int i = 0; i < this.getBayesIm().getNumRows(); i++) {
-                double probability = this.getBayesIm().getProbability(i);
+            for (int i = 0; i < getBayesIm().getNumRows(); i++) {
+                double probability = getBayesIm().getProbability(i);
 
                 if (i != rowToSkip && !Double.isNaN(probability)) {
 
-                    NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+                    final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
                     probability = Double.parseDouble(nf.format(probability));
 
                     sum += probability;
@@ -598,33 +598,33 @@ class BayesImNodeEditingTableObs extends JTable {
         ///////////////////////////////////////
         // last column is a number, the others general objects
         // This is used to determine the formatting of the cell
-        public Class getColumnClass(int col) {
-            return col == this.getColumnCount() - 1 ? Number.class : Object.class;
+        public Class getColumnClass(final int col) {
+            return col == getColumnCount() - 1 ? Number.class : Object.class;
         }
 
         // cast the bayesIm to MlBayesImObs
         public MlBayesImObs getBayesIm() {
-            return bayesIm;
+            return this.bayesIm;
         }
 
         public JComponent getMessageAnchor() {
-            return messageAnchor;
+            return this.messageAnchor;
         }
 
         public int getFailedRow() {
-            return failedRow;
+            return this.failedRow;
         }
 
         public int getFailedCol() {
-            return failedCol;
+            return this.failedCol;
         }
 
         public void resetFailedRow() {
-            failedRow = -1;
+            this.failedRow = -1;
         }
 
         public void resetFailedCol() {
-            failedCol = -1;
+            this.failedCol = -1;
         }
 
     }

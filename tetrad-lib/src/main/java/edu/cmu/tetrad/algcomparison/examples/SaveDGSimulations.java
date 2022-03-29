@@ -33,8 +33,8 @@ import edu.cmu.tetrad.util.Parameters;
  * @author jdramsey
  */
 public class SaveDGSimulations {
-    public static void main(String... args) {
-        Parameters parameters = new Parameters();
+    public static void main(final String... args) {
+        final Parameters parameters = new Parameters();
         parameters.set("numRuns", 30);
 //        parameters.set("numMeasures", 500);
         parameters.set("numMeasures", 100, 500, 1000);
@@ -51,10 +51,10 @@ public class SaveDGSimulations {
 //        parameters.set("percentDiscrete", 100);
         parameters.set("differentGraphs", true);
 
-        Simulation simulation = new ConditionalGaussianSimulation(new RandomForward());
+        final Simulation simulation = new ConditionalGaussianSimulation(new RandomForward());
 //        Simulation simulation = new LeeHastieSimulation(new RandomForward());
 
-        Comparison comparison = new Comparison();
+        final Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
         comparison.saveToFiles("comparison-CG-measures", simulation, parameters);
     }

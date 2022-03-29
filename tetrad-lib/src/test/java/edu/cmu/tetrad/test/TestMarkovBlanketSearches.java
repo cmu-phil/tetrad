@@ -39,14 +39,14 @@ public class TestMarkovBlanketSearches {
      */
     @Test
     public void testSubgraph1() {
-        Graph graph = GraphConverter.convert("T-->X,X-->Y,W-->X,W-->Y");
+        final Graph graph = GraphConverter.convert("T-->X,X-->Y,W-->X,W-->Y");
 
-        IndTestDSep test = new IndTestDSep(graph);
+        final IndTestDSep test = new IndTestDSep(graph);
 
-        MbSearch search = new GrowShrink(test);
-        List<Node> blanket = search.findMb("T");
+        final MbSearch search = new GrowShrink(test);
+        final List<Node> blanket = search.findMb("T");
 
-        List<Node> b = new ArrayList<>();
+        final List<Node> b = new ArrayList<>();
         b.add(graph.getNode("X"));
         b.add(graph.getNode("W"));
 
@@ -58,15 +58,15 @@ public class TestMarkovBlanketSearches {
      */
     @Test
     public void testSubgraph2() {
-        Graph graph = GraphConverter.convert("P1-->T,P2-->T,T-->C1,T-->C2," +
+        final Graph graph = GraphConverter.convert("P1-->T,P2-->T,T-->C1,T-->C2," +
                 "T-->C3,PC1a-->C1,PC1b-->C1,PC2a-->C2,PC2b<--C2,PC3a-->C3," +
                 "PC3b-->C3,PC1b-->PC2a,PC1a<--PC3b,U,V");
 
-        IndTestDSep test = new IndTestDSep(graph);
-        MbSearch mbSearch = new GrowShrink(test);
-        List<Node> blanket = mbSearch.findMb("T");
+        final IndTestDSep test = new IndTestDSep(graph);
+        final MbSearch mbSearch = new GrowShrink(test);
+        final List<Node> blanket = mbSearch.findMb("T");
 
-        List<Node> mbd = GraphUtils.markovBlanketDag(graph.getNode("T"), graph).getNodes();
+        final List<Node> mbd = GraphUtils.markovBlanketDag(graph.getNode("T"), graph).getNodes();
         mbd.remove(graph.getNode("T"));
 
         assertEquals(new HashSet<>(mbd), new HashSet<>(blanket));
@@ -75,33 +75,33 @@ public class TestMarkovBlanketSearches {
 
     @Test
     public void testRandom() {
-        List<Node> nodes1 = new ArrayList<>();
+        final List<Node> nodes1 = new ArrayList<>();
 
         for (int i = 0; i < 10; i++) {
             nodes1.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Dag dag = new Dag(GraphUtils.randomGraph(nodes1, 0, 10,
+        final Dag dag = new Dag(GraphUtils.randomGraph(nodes1, 0, 10,
                 5, 5, 5, false));
-        IndependenceTest test = new IndTestDSep(dag);
-        Mbfs search = new Mbfs(test, -1);
+        final IndependenceTest test = new IndTestDSep(dag);
+        final Mbfs search = new Mbfs(test, -1);
 
-        List<Node> nodes = dag.getNodes();
+        final List<Node> nodes = dag.getNodes();
 
-        for (Node node : nodes) {
-            List<Node> resultNodes = search.findMb(node.getName());
-            Graph trueMb = GraphUtils.markovBlanketDag(node, dag);
-            List<Node> trueNodes = trueMb.getNodes();
+        for (final Node node : nodes) {
+            final List<Node> resultNodes = search.findMb(node.getName());
+            final Graph trueMb = GraphUtils.markovBlanketDag(node, dag);
+            final List<Node> trueNodes = trueMb.getNodes();
             trueNodes.remove(node);
 
             Collections.sort(trueNodes, new Comparator<Node>() {
-                public int compare(Node n1, Node n2) {
+                public int compare(final Node n1, final Node n2) {
                     return n1.getName().compareTo(n2.getName());
                 }
             });
 
             Collections.sort(resultNodes, new Comparator<Node>() {
-                public int compare(Node n1, Node n2) {
+                public int compare(final Node n1, final Node n2) {
                     return n1.getName().compareTo(n2.getName());
                 }
             });

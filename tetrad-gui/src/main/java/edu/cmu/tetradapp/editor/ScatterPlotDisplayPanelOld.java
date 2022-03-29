@@ -57,8 +57,8 @@ class ScatterPlotDisplayPanelOld extends JPanel {
      */
     private int PADDINGLEFT = 75;
     private int PADDINGOTHER = 50;
-    private int HEIGHT = 600 + PADDINGOTHER;
-    private int WIDTH = 600 + PADDINGLEFT;
+    private int HEIGHT = 600 + this.PADDINGOTHER;
+    private int WIDTH = 600 + this.PADDINGLEFT;
     private int SPACE = 2;
     private int DASH = 10;
 
@@ -66,7 +66,7 @@ class ScatterPlotDisplayPanelOld extends JPanel {
     /**
      * The default size of the component.
      */
-    private final Dimension size = new Dimension(WIDTH + 2 * SPACE, HEIGHT);
+    private final Dimension size = new Dimension(this.WIDTH + 2 * this.SPACE, this.HEIGHT);
 
     /**
      * Format for continuous data.
@@ -89,15 +89,15 @@ class ScatterPlotDisplayPanelOld extends JPanel {
     /**
      * Constructs the scatterplot dipslay panel given the initial scatterplot to display.
      */
-    public ScatterPlotDisplayPanelOld(ScatterPlotOld scatterPlot) {
+    public ScatterPlotDisplayPanelOld(final ScatterPlotOld scatterPlot) {
         this.scatterPlot = scatterPlot;
 
         if (scatterPlot == null) {
             throw new NullPointerException("Given scatter plot must be null");
         }
 
-        addMouseMotionListener(new MouseMovementListener());
-        setToolTipText(" ");
+        this.addMouseMotionListener(new MouseMovementListener());
+        this.setToolTipText(" ");
     }
 
     //============================ PUblic Methods =============================//
@@ -105,20 +105,20 @@ class ScatterPlotDisplayPanelOld extends JPanel {
     /**
      * Updates the histogram that is dispalyed to the given one.
      */
-    public synchronized void updateScatterPlot(ScatterPlotOld scatterPlot) {
+    public synchronized void updateScatterPlot(final ScatterPlotOld scatterPlot) {
         if (scatterPlot == null) {
             throw new NullPointerException("The given scatter plot must not be null");
         }
         /*
       A cached string displaying what is being viewed in the histogram.
      */
-        String displayString = null;
+        final String displayString = null;
         this.scatterPlot = scatterPlot;
-        repaint();
+        this.repaint();
     }
 
 
-    public String getToolTipText(MouseEvent evt) {
+    public String getToolTipText(final MouseEvent evt) {
         return null;
     }
 
@@ -126,71 +126,71 @@ class ScatterPlotDisplayPanelOld extends JPanel {
     /**
      * Paints the histogram and related items.
      */
-    public void paintComponent(Graphics graphics) {
+    public void paintComponent(final Graphics graphics) {
 
-        double least = scatterPlot.getMinSample();
-        double greatest = scatterPlot.getMaxSample();
+        final double least = this.scatterPlot.getMinSample();
+        final double greatest = this.scatterPlot.getMaxSample();
 
-        String minStr = format.format(least);
-        String maxStr = format.format(greatest);
+        final String minStr = this.format.format(least);
+        final String maxStr = this.format.format(greatest);
 
-        Graphics2D g2d = (Graphics2D) graphics;
-        FontMetrics fontMetrics = g2d.getFontMetrics();
+        final Graphics2D g2d = (Graphics2D) graphics;
+        final FontMetrics fontMetrics = g2d.getFontMetrics();
 
-        int widthMinStr = fontMetrics.stringWidth(minStr);
-        int widthMaxStr = fontMetrics.stringWidth(maxStr);
+        final int widthMinStr = fontMetrics.stringWidth(minStr);
+        final int widthMaxStr = fontMetrics.stringWidth(maxStr);
 
-        int maxWidth = Math.max(widthMinStr, widthMaxStr);
+        final int maxWidth = Math.max(widthMinStr, widthMaxStr);
 
-        PADDINGLEFT = maxWidth;
-        PADDINGOTHER = 50;
-        HEIGHT = 600 + PADDINGOTHER;
-        WIDTH = 600 + PADDINGLEFT;
-        SPACE = 2;
-        DASH = 10;
+        this.PADDINGLEFT = maxWidth;
+        this.PADDINGOTHER = 50;
+        this.HEIGHT = 600 + this.PADDINGOTHER;
+        this.WIDTH = 600 + this.PADDINGLEFT;
+        this.SPACE = 2;
+        this.DASH = 10;
 
-        this.setSize(new Dimension(WIDTH + 2 * SPACE, HEIGHT));
+        setSize(new Dimension(this.WIDTH + 2 * this.SPACE, this.HEIGHT));
 
         // set up variables.
-        rectMap.clear();
-        int height = HEIGHT - PADDINGOTHER;
+        this.rectMap.clear();
+        final int height = this.HEIGHT - this.PADDINGOTHER;
 
         // draw background/surrounding box.
-        g2d.setColor(getBackground());
-        g2d.fillRect(0, 0, WIDTH + 2 * SPACE, HEIGHT);
+        g2d.setColor(this.getBackground());
+        g2d.fillRect(0, 0, this.WIDTH + 2 * this.SPACE, this.HEIGHT);
         g2d.setColor(Color.WHITE);
-        g2d.fillRect(PADDINGLEFT, 0, (WIDTH + SPACE) - PADDINGLEFT, height);
+        g2d.fillRect(this.PADDINGLEFT, 0, (this.WIDTH + this.SPACE) - this.PADDINGLEFT, height);
 
         //border
-        g2d.setColor(LINE_COLOR);
-        g2d.drawRect(PADDINGLEFT, 0, (WIDTH + SPACE) - PADDINGLEFT, height - 2 * SPACE);
+        g2d.setColor(ScatterPlotDisplayPanelOld.LINE_COLOR);
+        g2d.drawRect(this.PADDINGLEFT, 0, (this.WIDTH + this.SPACE) - this.PADDINGLEFT, height - 2 * this.SPACE);
 
         // draw the buttom line
-        g2d.setColor(LINE_COLOR);
+        g2d.setColor(ScatterPlotDisplayPanelOld.LINE_COLOR);
 
 //        double least = Math.floor(this.scatterPlot.getMinSample());
 //        double greatest = Math.ceil(this.scatterPlot.getMaxSample());
-        g2d.drawString(minStr, PADDINGLEFT + 5, height + 15);
-        g2d.drawLine(PADDINGLEFT, height + DASH, PADDINGOTHER, height);
-        g2d.drawString(maxStr, WIDTH - widthMaxStr, height + 15);
-        g2d.drawLine(WIDTH + SPACE, height + DASH, WIDTH + SPACE, height);
+        g2d.drawString(minStr, this.PADDINGLEFT + 5, height + 15);
+        g2d.drawLine(this.PADDINGLEFT, height + this.DASH, this.PADDINGOTHER, height);
+        g2d.drawString(maxStr, this.WIDTH - widthMaxStr, height + 15);
+        g2d.drawLine(this.WIDTH + this.SPACE, height + this.DASH, this.WIDTH + this.SPACE, height);
 //        int size = (WIDTH - PADDINGLEFT) / 4;
 
         // draw the side line
-        g2d.setColor(LINE_COLOR);
+        g2d.setColor(ScatterPlotDisplayPanelOld.LINE_COLOR);
         final int topY = 0;
 //        String top = "" + Math.ceil(this.scatterPlot.getMaxSample());
-        g2d.drawString(maxStr, PADDINGLEFT - fontMetrics.stringWidth(maxStr), topY + 10);
-        g2d.drawLine(PADDINGLEFT - DASH, topY, PADDINGOTHER, topY);
-        g2d.drawString(minStr, PADDINGLEFT - fontMetrics.stringWidth(minStr), height - 2);
-        g2d.drawLine(PADDINGLEFT - DASH, height, PADDINGOTHER, height);
+        g2d.drawString(maxStr, this.PADDINGLEFT - fontMetrics.stringWidth(maxStr), topY + 10);
+        g2d.drawLine(this.PADDINGLEFT - this.DASH, topY, this.PADDINGOTHER, topY);
+        g2d.drawString(minStr, this.PADDINGLEFT - fontMetrics.stringWidth(minStr), height - 2);
+        g2d.drawLine(this.PADDINGLEFT - this.DASH, height, this.PADDINGOTHER, height);
 
         //draw the origin lines if they should go on the screen -- first find out where they exist
-        if (scatterPlot.getMinSample() < 0 && scatterPlot.getMaxSample() > 0) {
-            double[] originLeft = this.plotPoint(least, 0, least, greatest);
-            double[] originRight = this.plotPoint(greatest, 0, least, greatest);
-            double[] originTop = this.plotPoint(0, least, least, greatest);
-            double[] originBottom = this.plotPoint(0, greatest, least, greatest);
+        if (this.scatterPlot.getMinSample() < 0 && this.scatterPlot.getMaxSample() > 0) {
+            final double[] originLeft = plotPoint(least, 0, least, greatest);
+            final double[] originRight = plotPoint(greatest, 0, least, greatest);
+            final double[] originTop = plotPoint(0, least, least, greatest);
+            final double[] originBottom = plotPoint(0, greatest, least, greatest);
 
             g2d.drawLine((int) originLeft[0] + 2, (int) originLeft[1] + 2, (int) originRight[0] + 2, (int) originRight[1] + 2);
             g2d.drawLine((int) originTop[0] + 2, (int) originTop[1] + 2, (int) originBottom[0] + 2, (int) originBottom[1] + 2);
@@ -199,19 +199,19 @@ class ScatterPlotDisplayPanelOld extends JPanel {
         g2d.setColor(new Color(255, 0, 0));
 
         //draw each point in the indexSet from our ScatterPlot
-        for (Object o : scatterPlot.getIndexSet()) {
-            int i = (Integer) o;
-            double x = scatterPlot.getxData()[i];
-            double y = scatterPlot.getyData()[i];
+        for (final Object o : this.scatterPlot.getIndexSet()) {
+            final int i = (Integer) o;
+            final double x = this.scatterPlot.getxData()[i];
+            final double y = this.scatterPlot.getyData()[i];
 
-            double[] result = this.plotPoint(x, y, least, greatest);
+            final double[] result = plotPoint(x, y, least, greatest);
             g2d.fill(new Ellipse2D.Double(result[0], result[1], 4, 4));
         }
 
         //draw the regression line
-        if (scatterPlot.isDrawRegLine()) {
+        if (this.scatterPlot.isDrawRegLine()) {
             //RegressionRunner regRunner;
-            RegressionDataset regData;
+            final RegressionDataset regData;
 
             /*
              * In the following code, the complement of the indexSet (for all integers <= (n - 1)) is
@@ -219,39 +219,39 @@ class ScatterPlotDisplayPanelOld extends JPanel {
              * that the ScatterPlot only contains the appropriate points for rendering.
              */
 
-            Parameters params = new Parameters();
-            Vector<String> regressors = new Vector();
-            regressors.add(scatterPlot.getXVariable().getName());
-            params.set("targetName", scatterPlot.getYVariable().getName());
+            final Parameters params = new Parameters();
+            final Vector<String> regressors = new Vector();
+            regressors.add(this.scatterPlot.getXVariable().getName());
+            params.set("targetName", this.scatterPlot.getYVariable().getName());
 
-            if (scatterPlot.getIndexSet().size() != scatterPlot.getDataSet().getNumRows()) {
-                DataSet newDataSet = scatterPlot.getDataSet().copy();
+            if (this.scatterPlot.getIndexSet().size() != this.scatterPlot.getDataSet().getNumRows()) {
+                final DataSet newDataSet = this.scatterPlot.getDataSet().copy();
 
-                int[] throwAway = new int[scatterPlot.getComplementIndexSet().size()];
+                final int[] throwAway = new int[this.scatterPlot.getComplementIndexSet().size()];
                 for (int j = 0; j < throwAway.length; j++) {
-                    throwAway[j] = (Integer) scatterPlot.getComplementIndexSet().get(j);
+                    throwAway[j] = (Integer) this.scatterPlot.getComplementIndexSet().get(j);
                 }
 
                 newDataSet.removeRows(throwAway);
                 regData = new RegressionDataset(newDataSet);
                 //regRunner = new RegressionRunner(new DataWrapper(newDataSet), params);
             } else {
-                regData = new RegressionDataset(scatterPlot.getDataSet());
+                regData = new RegressionDataset(this.scatterPlot.getDataSet());
                 //regRunner = new RegressionRunner(new DataWrapper(scatterPlot.dataSet), params);
             }
 
             //regRunner.execute();
-            RegressionResult regResult = regData.regress(scatterPlot.getYVariable(), scatterPlot.getXVariable());
-            double[] coef = regResult.getCoef();
+            final RegressionResult regResult = regData.regress(this.scatterPlot.getYVariable(), this.scatterPlot.getXVariable());
+            final double[] coef = regResult.getCoef();
 
-            double[] regLeft = this.plotPoint(least, coef[0] + coef[1] * least, least, greatest);
-            double[] regRight = this.plotPoint(greatest, coef[0] + coef[1] * greatest, least, greatest);
-            g2d.setColor(LINE_COLOR);
+            final double[] regLeft = plotPoint(least, coef[0] + coef[1] * least, least, greatest);
+            final double[] regRight = plotPoint(greatest, coef[0] + coef[1] * greatest, least, greatest);
+            g2d.setColor(ScatterPlotDisplayPanelOld.LINE_COLOR);
             g2d.drawLine((int) regLeft[0] + 2, (int) regLeft[1] + 2, (int) regRight[0] + 2, (int) regRight[1] + 2);
         }
 
         // draw the display string.
-        g2d.setColor(LINE_COLOR);
+        g2d.setColor(ScatterPlotDisplayPanelOld.LINE_COLOR);
 //        g2d.drawString(getDisplayString(), PADDINGOTHER, HEIGHT - 5);
     }
 
@@ -269,36 +269,36 @@ class ScatterPlotDisplayPanelOld extends JPanel {
      * @param maxRange The value at the extremity (determined by the largest value encountered in either variable).
      * @return An ordered pair determining the proper location on the screen in Java2D coordinates.
      */
-    private double[] plotPoint(double x, double y, double minRange, double maxRange) {
-        double[] result = new double[2];
-        double range = maxRange - minRange;
-        result[0] = (WIDTH - PADDINGLEFT) * ((x - minRange) / range) + 4 + PADDINGLEFT;
-        result[1] = HEIGHT - (HEIGHT - PADDINGOTHER) * ((y - minRange) / range) - 8 - PADDINGOTHER;
+    private double[] plotPoint(final double x, final double y, final double minRange, final double maxRange) {
+        final double[] result = new double[2];
+        final double range = maxRange - minRange;
+        result[0] = (this.WIDTH - this.PADDINGLEFT) * ((x - minRange) / range) + 4 + this.PADDINGLEFT;
+        result[1] = this.HEIGHT - (this.HEIGHT - this.PADDINGOTHER) * ((y - minRange) / range) - 8 - this.PADDINGOTHER;
 
         return result;
     }
 
 
     public Dimension getPreferredSize() {
-        return size;
+        return this.size;
     }
 
 
     public Dimension getMaximumSize() {
-        return size;
+        return this.size;
     }
 
 
     public Dimension getMinimumSize() {
-        return size;
+        return this.size;
     }
 
     //========================== private methods ==========================//
 
-    private static int getMax(int[] freqs) {
+    private static int getMax(final int[] freqs) {
         int max = freqs[0];
         for (int i = 1; i < freqs.length; i++) {
-            int current = freqs[i];
+            final int current = freqs[i];
             if (max < current) {
                 max = current;
             }
@@ -310,13 +310,13 @@ class ScatterPlotDisplayPanelOld extends JPanel {
 
     private class MouseMovementListener implements MouseMotionListener {
 
-        public void mouseDragged(MouseEvent e) {
+        public void mouseDragged(final MouseEvent e) {
 
         }
 
-        public void mouseMoved(MouseEvent e) {
-            Point point = e.getPoint();
-            for (Rectangle rect : rectMap.keySet()) {
+        public void mouseMoved(final MouseEvent e) {
+            final Point point = e.getPoint();
+            for (final Rectangle rect : ScatterPlotDisplayPanelOld.this.rectMap.keySet()) {
                 if (rect.contains(point)) {
                     break;
                 }

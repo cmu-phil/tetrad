@@ -30,7 +30,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference;
-import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference.OP;
 
 import java.util.*;
 
@@ -79,7 +78,7 @@ public class IndTestProbabilistic implements IndependenceTest {
     /**
      * Initializes the test using a discrete data sets.
      */
-    public IndTestProbabilistic(DataSet dataSet) {
+    public IndTestProbabilistic(final DataSet dataSet) {
         if (!dataSet.isDiscrete()) {
             throw new IllegalArgumentException("Not a discrete data set.");
 
@@ -93,44 +92,44 @@ public class IndTestProbabilistic implements IndependenceTest {
 //            }
 //        }
 
-        nodes = dataSet.getVariables();
+        this.nodes = dataSet.getVariables();
 
-        indices = new HashMap<>();
+        this.indices = new HashMap<>();
 
-        for (int i = 0; i < nodes.size(); i++) {
-            indices.put(nodes.get(i), i);
+        for (int i = 0; i < this.nodes.size(); i++) {
+            this.indices.put(this.nodes.get(i), i);
         }
 
-        data = dataSet;
-        H = new HashMap<>();
+        this.data = dataSet;
+        this.H = new HashMap<>();
 
-        int[] _cols = new int[nodes.size()];
-        for (int i = 0; i < _cols.length; i++) _cols[i] = indices.get(nodes.get(i));
+        final int[] _cols = new int[this.nodes.size()];
+        for (int i = 0; i < _cols.length; i++) _cols[i] = this.indices.get(this.nodes.get(i));
 
-        int[] _rows = new int[dataSet.getNumRows()];
+        final int[] _rows = new int[dataSet.getNumRows()];
         for (int i = 0; i < dataSet.getNumRows(); i++) _rows[i] = i;
 
-        DataSet _data = data.subsetRowsColumns(_rows, _cols);
+        final DataSet _data = this.data.subsetRowsColumns(_rows, _cols);
 
-        List<Node> nodes = _data.getVariables();
+        final List<Node> nodes = _data.getVariables();
 
         for (int i = 0; i < nodes.size(); i++) {
-            indices.put(nodes.get(i), i);
+            this.indices.put(nodes.get(i), i);
         }
 
-        bci = this.setup(_data);
+        this.bci = setup(_data);
     }
 
-    private BCInference setup(DataSet dataSet) {
-        int[] nodeDimensions = new int[dataSet.getNumColumns() + 1];
+    private BCInference setup(final DataSet dataSet) {
+        final int[] nodeDimensions = new int[dataSet.getNumColumns() + 1];
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
-            DiscreteVariable variable = (DiscreteVariable) (dataSet.getVariable(j));
-            int numCategories = variable.getNumCategories();
+            final DiscreteVariable variable = (DiscreteVariable) (dataSet.getVariable(j));
+            final int numCategories = variable.getNumCategories();
             nodeDimensions[j + 1] = numCategories;
         }
 
-        int[][] cases = new int[dataSet.getNumRows() + 1][dataSet.getNumColumns() + 2];
+        final int[][] cases = new int[dataSet.getNumRows() + 1][dataSet.getNumColumns() + 2];
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
             for (int j = 0; j < dataSet.getNumColumns(); j++) {
@@ -138,51 +137,51 @@ public class IndTestProbabilistic implements IndependenceTest {
             }
         }
 
-        BCInference bci = new BCInference(cases, nodeDimensions);
-        bci.setPriorEqivalentSampleSize(priorEquivalentSampleSize);
+        final BCInference bci = new BCInference(cases, nodeDimensions);
+        bci.setPriorEqivalentSampleSize(this.priorEquivalentSampleSize);
         return bci;
     }
 
     @Override
-    public IndependenceTest indTestSubset(List<Node> vars) {
+    public IndependenceTest indTestSubset(final List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
-        Node[] _z = z.toArray(new Node[0]);
-        return this.isIndependent(x, y, _z);
+    public boolean isIndependent(final Node x, final Node y, final List<Node> z) {
+        final Node[] _z = z.toArray(new Node[0]);
+        return isIndependent(x, y, _z);
     }
 
     @Override
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        IndependenceFact key = new IndependenceFact(x, y, z);
+    public boolean isIndependent(final Node x, final Node y, final Node... z) {
+        final IndependenceFact key = new IndependenceFact(x, y, z);
 
-        List<Node> allVars = new ArrayList<>();
+        final List<Node> allVars = new ArrayList<>();
         allVars.add(x);
         allVars.add(y);
         Collections.addAll(allVars, z);
 
-        List<Integer> rows = this.getRows(data, allVars, indices);
+        final List<Integer> rows = getRows(this.data, allVars, this.indices);
         if (rows.isEmpty()) return true;
 
-        BCInference bci;
-        Map<Node, Integer> indices;
+        final BCInference bci;
+        final Map<Node, Integer> indices;
 
-        if (rows.size() == data.getNumRows()) {
+        if (rows.size() == this.data.getNumRows()) {
             bci = this.bci;
             indices = this.indices;
         } else {
 
-            int[] _cols = new int[allVars.size()];
+            final int[] _cols = new int[allVars.size()];
             for (int i = 0; i < _cols.length; i++) _cols[i] = this.indices.get(allVars.get(i));
 
-            int[] _rows = new int[rows.size()];
+            final int[] _rows = new int[rows.size()];
             for (int i = 0; i < rows.size(); i++) _rows[i] = rows.get(i);
 
-            DataSet _data = data.subsetRowsColumns(_rows, _cols);
+            final DataSet _data = this.data.subsetRowsColumns(_rows, _cols);
 
-            List<Node> nodes = _data.getVariables();
+            final List<Node> nodes = _data.getVariables();
 
             indices = new HashMap<>();
 
@@ -190,13 +189,13 @@ public class IndTestProbabilistic implements IndependenceTest {
                 indices.put(nodes.get(i), i);
             }
 
-            bci = this.setup(_data);
+            bci = setup(_data);
         }
 
-        double pInd;
+        final double pInd;
 
-        if (!H.containsKey(key)) {
-            pInd = this.probConstraint(bci, OP.independent, x, y, z, indices);
+        if (!this.H.containsKey(key)) {
+            pInd = probConstraint(bci, BCInference.OP.independent, x, y, z, indices);
             H.put(key, pInd);
         } else {
             pInd = H.get(key);
@@ -217,12 +216,12 @@ public class IndTestProbabilistic implements IndependenceTest {
     }
 
 
-    public double probConstraint(BCInference bci, OP op, Node x, Node y, Node[] z, Map<Node, Integer> indices) {
+    public double probConstraint(BCInference bci, final BCInference.OP op, final Node x, final Node y, final Node[] z, final Map<Node, Integer> indices) {
 
-        int _x = indices.get(x) + 1;
-        int _y = indices.get(y) + 1;
+        final int _x = indices.get(x) + 1;
+        final int _y = indices.get(y) + 1;
 
-        int[] _z = new int[z.length + 1];
+        final int[] _z = new int[z.length + 1];
         _z[0] = z.length;
         for (int i = 0; i < z.length; i++) {
             _z[i + 1] = indices.get(z[i]) + 1;
@@ -232,29 +231,29 @@ public class IndTestProbabilistic implements IndependenceTest {
     }
 
     @Override
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        Node[] _z = z.toArray(new Node[0]);
-        return !this.isIndependent(x, y, _z);
+    public boolean isDependent(final Node x, final Node y, final List<Node> z) {
+        final Node[] _z = z.toArray(new Node[0]);
+        return !isIndependent(x, y, _z);
     }
 
     @Override
-    public boolean isDependent(Node x, Node y, Node... z) {
-        return !this.isIndependent(x, y, z);
+    public boolean isDependent(final Node x, final Node y, final Node... z) {
+        return !isIndependent(x, y, z);
     }
 
     @Override
     public double getPValue() {
-        return posterior;
+        return this.posterior;
     }
 
     @Override
     public List<Node> getVariables() {
-        return nodes;
+        return this.nodes;
     }
 
     @Override
-    public Node getVariable(String name) {
-        for (Node node : nodes) {
+    public Node getVariable(final String name) {
+        for (final Node node : this.nodes) {
             if (name.equals(node.getName())) return node;
         }
 
@@ -263,16 +262,16 @@ public class IndTestProbabilistic implements IndependenceTest {
 
     @Override
     public List<String> getVariableNames() {
-        List<String> names = new ArrayList<>();
+        final List<String> names = new ArrayList<>();
 
-        for (Node node : nodes) {
+        for (final Node node : this.nodes) {
             names.add(node.getName());
         }
         return names;
     }
 
     @Override
-    public boolean determines(List<Node> z, Node y) {
+    public boolean determines(final List<Node> z, final Node y) {
         throw new UnsupportedOperationException();
     }
 
@@ -282,13 +281,13 @@ public class IndTestProbabilistic implements IndependenceTest {
     }
 
     @Override
-    public void setAlpha(double alpha) {
+    public void setAlpha(final double alpha) {
         throw new UnsupportedOperationException();
     }
 
     @Override
     public DataModel getData() {
-        return data;
+        return this.data;
     }
 
     @Override
@@ -313,45 +312,45 @@ public class IndTestProbabilistic implements IndependenceTest {
 
     @Override
     public double getScore() {
-        return this.getPValue();
+        return getPValue();
     }
 
     public Map<IndependenceFact, Double> getH() {
-        return new HashMap<>(H);
+        return new HashMap<>(this.H);
     }
 
     public double getPosterior() {
-        return posterior;
+        return this.posterior;
     }
 
     @Override
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     @Override
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 
-    public void setThreshold(boolean noRandomizedGeneratingConstraints) {
-        threshold = noRandomizedGeneratingConstraints;
+    public void setThreshold(final boolean noRandomizedGeneratingConstraints) {
+        this.threshold = noRandomizedGeneratingConstraints;
     }
 
-    public void setCutoff(double cutoff) {
+    public void setCutoff(final double cutoff) {
         this.cutoff = cutoff;
     }
 
-    public void setPriorEquivalentSampleSize(double priorEquivalentSampleSize) {
+    public void setPriorEquivalentSampleSize(final double priorEquivalentSampleSize) {
         this.priorEquivalentSampleSize = priorEquivalentSampleSize;
     }
 
-    private List<Integer> getRows(DataSet dataSet, List<Node> allVars, Map<Node, Integer> nodesHash) {
-        List<Integer> rows = new ArrayList<>();
+    private List<Integer> getRows(final DataSet dataSet, final List<Node> allVars, final Map<Node, Integer> nodesHash) {
+        final List<Integer> rows = new ArrayList<>();
 
         K:
         for (int k = 0; k < dataSet.getNumRows(); k++) {
-            for (Node node : allVars) {
+            for (final Node node : allVars) {
                 if (dataSet.getInt(k, nodesHash.get(node)) == -99) continue K;
             }
 

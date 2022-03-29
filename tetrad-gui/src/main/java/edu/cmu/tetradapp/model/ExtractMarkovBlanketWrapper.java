@@ -42,20 +42,20 @@ import java.util.prefs.Preferences;
 public class ExtractMarkovBlanketWrapper extends GraphWrapper {
     static final long serialVersionUID = 23L;
 
-    public ExtractMarkovBlanketWrapper(GraphSource source) {
+    public ExtractMarkovBlanketWrapper(final GraphSource source) {
         this(source.getGraph());
     }
 
 
-    public ExtractMarkovBlanketWrapper(Graph graph) {
+    public ExtractMarkovBlanketWrapper(final Graph graph) {
         super(new EdgeListGraph(), "Extract Markov Blanket");
 
-        String targetName = this.getVariableName(graph);
-        Graph mb = this.getMb(graph, targetName);
-        setGraph(mb);
+        final String targetName = getVariableName(graph);
+        final Graph mb = getMb(graph, targetName);
+        this.setGraph(mb);
 
         TetradLogger.getInstance().log("graph", "\nMarkov blanket for variable '" + targetName + "':");
-        TetradLogger.getInstance().log("graph", this.getGraph() + "");
+        TetradLogger.getInstance().log("graph", getGraph() + "");
     }
 
 
@@ -70,13 +70,13 @@ public class ExtractMarkovBlanketWrapper extends GraphWrapper {
 
     //======================== Private Methods ================================//
 
-    private Graph getMb(Graph graph, String target) {
+    private Graph getMb(final Graph graph, final String target) {
         if (target == null) {
             return new EdgeListGraph();
         }
 
-        Graph mb = new EdgeListGraph(graph);
-        Node _target = mb.getNode(target);
+        final Graph mb = new EdgeListGraph(graph);
+        final Node _target = mb.getNode(target);
 
         MbUtils.trimToMbNodes(mb, _target, false);
         MbUtils.trimEdgesAmongParents(mb, _target);
@@ -87,13 +87,13 @@ public class ExtractMarkovBlanketWrapper extends GraphWrapper {
         return mb;
     }
 
-    private String getVariableName(Graph graph) {
-        Box box = Box.createVerticalBox();
-        List<Node> nodes = graph.getNodes();
+    private String getVariableName(final Graph graph) {
+        final Box box = Box.createVerticalBox();
+        final List<Node> nodes = graph.getNodes();
 
-        List<String> nodeNames = new ArrayList<>();
+        final List<String> nodeNames = new ArrayList<>();
 
-        for (Node node : nodes) {
+        for (final Node node : nodes) {
             nodeNames.add(node.getName());
         }
 
@@ -103,9 +103,9 @@ public class ExtractMarkovBlanketWrapper extends GraphWrapper {
             return null;
         }
 
-        JComboBox comboBox = new JComboBox(nodeNames.toArray());
+        final JComboBox comboBox = new JComboBox(nodeNames.toArray());
 
-        String savedNode = Preferences.userRoot().get("mbSavedNode", nodeNames.get(0));
+        final String savedNode = Preferences.userRoot().get("mbSavedNode", nodeNames.get(0));
 
         if (nodeNames.contains(savedNode)) {
             comboBox.setSelectedItem(savedNode);
@@ -119,7 +119,7 @@ public class ExtractMarkovBlanketWrapper extends GraphWrapper {
         JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                 box, "Which target variable?", JOptionPane.QUESTION_MESSAGE);
 
-        String setNode = (String) comboBox.getSelectedItem();
+        final String setNode = (String) comboBox.getSelectedItem();
 
         Preferences.userRoot().put("mbSavedNode", setNode);
 

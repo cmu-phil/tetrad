@@ -65,7 +65,7 @@ public class SimpleRandomizer implements GraphInitializer {
     /**
      * The indegree type of this randomizer.
      */
-    private int indegreeType = CONSTANT;
+    private int indegreeType = SimpleRandomizer.CONSTANT;
 
     /**
      * The stored indegree for this randomizer (differently interpreted
@@ -84,8 +84,8 @@ public class SimpleRandomizer implements GraphInitializer {
      */
     private double percentHousekeeping = 80.0;
 
-    public SimpleRandomizer(int indegree, int indegreeType, int mlag,
-                            double percentHousekeeping) {
+    public SimpleRandomizer(final int indegree, final int indegreeType, final int mlag,
+                            final double percentHousekeeping) {
 
         // Set indegree.
         if (indegree >= 2) {
@@ -98,13 +98,13 @@ public class SimpleRandomizer implements GraphInitializer {
         // Set indegree type.
         switch (indegreeType) {
 
-            case CONSTANT:
+            case SimpleRandomizer.CONSTANT:
 
                 // Falls through!
-            case MAX:
+            case SimpleRandomizer.MAX:
 
                 // Falls through!
-            case MEAN:
+            case SimpleRandomizer.MEAN:
                 this.indegreeType = indegreeType;
                 break;
 
@@ -130,15 +130,15 @@ public class SimpleRandomizer implements GraphInitializer {
     /**
      * Randomizes the graph.
      */
-    public void initialize(LagGraph lagGraph) {
+    public void initialize(final LagGraph lagGraph) {
         lagGraph.clearEdges();
 
-        List factors = new ArrayList(lagGraph.getFactors());
+        final List factors = new ArrayList(lagGraph.getFactors());
 
         // Add edges one time step back.
-        for (Iterator it = factors.iterator(); it.hasNext(); ) {
-            String factor = (String) it.next();
-            LaggedFactor laggedFactor = new LaggedFactor(factor, 1);
+        for (final Iterator it = factors.iterator(); it.hasNext(); ) {
+            final String factor = (String) it.next();
+            final LaggedFactor laggedFactor = new LaggedFactor(factor, 1);
 
             lagGraph.addEdge(factor, laggedFactor);
         }
@@ -146,36 +146,36 @@ public class SimpleRandomizer implements GraphInitializer {
         //        System.out.println("Indegree = " + indegree);
 
         // Add remaining edges for each factor.
-        for (Iterator it = factors.iterator(); it.hasNext(); ) {
-            String factor = (String) it.next();
+        for (final Iterator it = factors.iterator(); it.hasNext(); ) {
+            final String factor = (String) it.next();
 
             // Pick an indegree for this variable
             int extraEdges = 1;
 
             // Decide whether this is a housekeeping gene and if so
             // don't add any more edges.
-            boolean isHousekeeping =
-                    RandomUtil.getInstance().nextDouble() * 100 < percentHousekeeping;
+            final boolean isHousekeeping =
+                    RandomUtil.getInstance().nextDouble() * 100 < this.percentHousekeeping;
 
             if (isHousekeeping) {
                 continue;
             }
 
             // This is not a housekeeping gene, so add more edges.
-            switch (indegreeType) {
+            switch (this.indegreeType) {
 
-                case CONSTANT:
-                    extraEdges = indegree - 1;
+                case SimpleRandomizer.CONSTANT:
+                    extraEdges = this.indegree - 1;
                     break;
 
-                case MAX:
+                case SimpleRandomizer.MAX:
                     extraEdges = RandomUtil.getInstance().nextInt(
-                            indegree - 1) + 1;
+                            this.indegree - 1) + 1;
                     break;
 
-                case MEAN:
+                case SimpleRandomizer.MEAN:
                     extraEdges = RandomUtil.getInstance().nextInt(
-                            2 * (indegree - 1) - 1) + 1;
+                            2 * (this.indegree - 1) - 1) + 1;
 
                     //                    System.out.println("Mean indegree selection: " +
                     //                            extraEdges);
@@ -191,16 +191,16 @@ public class SimpleRandomizer implements GraphInitializer {
             while (i < extraEdges) {
 
                 // Pick a lag uniformly from {1, ..., mlag}.
-                int lag = RandomUtil.getInstance().nextInt(
-                        mlag) + 1;
+                final int lag = RandomUtil.getInstance().nextInt(
+                        this.mlag) + 1;
 
                 // Pick a factor uniformly from {0, ..., numfactors}.
-                int factorIndex = RandomUtil.getInstance().nextInt(
+                final int factorIndex = RandomUtil.getInstance().nextInt(
                         lagGraph.getNumFactors());
 
                 // If that edge has not already been added, add it.
-                String otherFactor = (String) factors.get(factorIndex);
-                LaggedFactor laggedFactor = new LaggedFactor(otherFactor, lag);
+                final String otherFactor = (String) factors.get(factorIndex);
+                final LaggedFactor laggedFactor = new LaggedFactor(otherFactor, lag);
 
                 if (!lagGraph.existsEdge(factor, laggedFactor)) {
                     lagGraph.addEdge(factor, laggedFactor);

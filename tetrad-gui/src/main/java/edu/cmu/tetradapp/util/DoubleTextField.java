@@ -78,15 +78,15 @@ public class DoubleTextField extends JTextField {
      * @param width  the width (in characters) of the text field.
      * @param format the number formatter, for example new Decimal("0.0000").
      */
-    public DoubleTextField(double value, int width, NumberFormat format) {
+    public DoubleTextField(final double value, final int width, final NumberFormat format) {
         super(width);
-        this.setup(value, format, format, 1e-4);
+        setup(value, format, format, 1e-4);
     }
 
-    public DoubleTextField(double value, int width, NumberFormat format, NumberFormat smallNumberFormat,
-                           double smallNumberCutoff) {
+    public DoubleTextField(final double value, final int width, final NumberFormat format, final NumberFormat smallNumberFormat,
+                           final double smallNumberCutoff) {
         super(width);
-        this.setup(value, format, smallNumberFormat, smallNumberCutoff);
+        setup(value, format, smallNumberFormat, smallNumberCutoff);
     }
 
     //============================PUBLIC FIELDS=========================//
@@ -97,19 +97,19 @@ public class DoubleTextField extends JTextField {
      *
      * @param value the value to be set.
      */
-    public void setValue(double value) {
+    public void setValue(final double value) {
         if (value == this.value) {
             return;
         }
 
-        double newValue = this.filter(value, this.value);
+        final double newValue = filter(value, this.value);
 
         if (newValue == this.value) {
-            this.smartSetText(format, this.value);
+            smartSetText(this.format, this.value);
         } else {
             this.value = newValue;
-            this.smartSetText(format, this.value);
-            this.firePropertyChange("newValue", null, this.value);
+            smartSetText(this.format, this.value);
+            firePropertyChange("newValue", null, this.value);
         }
     }
 
@@ -119,13 +119,13 @@ public class DoubleTextField extends JTextField {
      * @return the getModel value.
      */
     public double getValue() {
-        return value;
+        return this.value;
     }
 
     /**
      * Sets whether the given value should be accepted.
      */
-    public void setFilter(Filter filter) {
+    public void setFilter(final Filter filter) {
         this.filter = filter;
     }
 
@@ -136,7 +136,7 @@ public class DoubleTextField extends JTextField {
      * @return the maximum size.
      */
     public Dimension getMaximumSize() {
-        return this.getPreferredSize();
+        return getPreferredSize();
     }
 
     /**
@@ -146,37 +146,37 @@ public class DoubleTextField extends JTextField {
      * @return the maximum size.
      */
     public Dimension getMinimumSize() {
-        return this.getPreferredSize();
+        return getPreferredSize();
     }
 
     //==============================PRIVATE METHODS=======================//
 
-    private double filter(double value, double oldValue) {
-        if (filter == null) {
+    private double filter(final double value, final double oldValue) {
+        if (this.filter == null) {
             return value;
         }
 
-        return filter.filter(value, oldValue);
+        return this.filter.filter(value, oldValue);
     }
 
-    private void setup(double value, NumberFormat nf, NumberFormat smallNumberFormat, double smallNumberCutoff) {
+    private void setup(final double value, final NumberFormat nf, final NumberFormat smallNumberFormat, final double smallNumberCutoff) {
         if (nf == null) {
             throw new NullPointerException();
         }
 
-        this.value = this.filter(value, 0.0);
-        format = nf;
+        this.value = filter(value, 0.0);
+        this.format = nf;
         this.smallNumberFormat = smallNumberFormat;
         this.smallNumberCutoff = smallNumberCutoff;
-        this.smartSetText(nf, this.value);
+        smartSetText(nf, this.value);
 
-        this.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        addActionListener(new ActionListener() {
+            public void actionPerformed(final ActionEvent e) {
                 try {
-                    double value = Double.parseDouble(e.getActionCommand());
-                    DoubleTextField.this.setValue(value);
-                } catch (NumberFormatException e1) {
-                    DoubleTextField.this.setText(format.format(DoubleTextField.this.getValue()));
+                    final double value = Double.parseDouble(e.getActionCommand());
+                    setValue(value);
+                } catch (final NumberFormatException e1) {
+                    setText(DoubleTextField.this.format.format(getValue()));
 //                    if ("".equals(getText().trim())) {
 //                        setValue(Double.NaN);
 //                    }
@@ -187,41 +187,41 @@ public class DoubleTextField extends JTextField {
             }
         });
 
-        this.addFocusListener(new FocusAdapter() {
-            public void focusGained(FocusEvent e) {
-                DoubleTextField source = (DoubleTextField) e.getSource();
+        addFocusListener(new FocusAdapter() {
+            public void focusGained(final FocusEvent e) {
+                final DoubleTextField source = (DoubleTextField) e.getSource();
 
                 if (source.isEditable()) {
                     source.selectAll();
                 }
             }
 
-            public void focusLost(FocusEvent e) {
+            public void focusLost(final FocusEvent e) {
                 try {
-                    double value = Double.parseDouble(DoubleTextField.this.getText());
-                    DoubleTextField.this.setValue(value);
-                } catch (NumberFormatException e1) {
-                    if ("".equals(DoubleTextField.this.getText().trim())) {
-                        DoubleTextField.this.setValue(Double.NaN);
+                    final double value = Double.parseDouble(getText());
+                    setValue(value);
+                } catch (final NumberFormatException e1) {
+                    if ("".equals(getText().trim())) {
+                        setValue(Double.NaN);
                     } else {
-                        DoubleTextField.this.setValue(DoubleTextField.this.getValue());
+                        setValue(getValue());
                     }
                 }
             }
         });
     }
 
-    private void smartSetText(NumberFormat nf, double value) {
+    private void smartSetText(final NumberFormat nf, final double value) {
         if (Double.isNaN(value)) {
-            this.setHorizontalAlignment(SwingConstants.RIGHT);
-            this.setText("");
+            setHorizontalAlignment(SwingConstants.RIGHT);
+            setText("");
         } else {
-            this.setHorizontalAlignment(SwingConstants.RIGHT);
+            setHorizontalAlignment(SwingConstants.RIGHT);
 
-            if (Math.abs(value) < smallNumberCutoff && value != 0.0) {
-                this.setText(smallNumberFormat.format(value));
+            if (Math.abs(value) < this.smallNumberCutoff && value != 0.0) {
+                setText(this.smallNumberFormat.format(value));
             } else {
-                this.setText(nf.format(value));
+                setText(nf.format(value));
             }
         }
     }

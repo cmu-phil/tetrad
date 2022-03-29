@@ -37,31 +37,31 @@ import java.util.List;
  */
 public class LowerCovarianceDataFileValidation extends AbstractDataFileValidation implements CovarianceValidation {
 
-    public LowerCovarianceDataFileValidation(Path dataFile, Delimiter delimiter) {
+    public LowerCovarianceDataFileValidation(final Path dataFile, final Delimiter delimiter) {
         super(dataFile, delimiter);
     }
 
     @Override
     public List<ValidationResult> validate() {
-        List<ValidationResult> validationResults = new LinkedList<>();
+        final List<ValidationResult> validationResults = new LinkedList<>();
 
         try {
-            int numOfCases = this.validateNumberOfCases(validationResults);
-            int numOfVars = this.validateVariables(validationResults);
-            this.validateData(numOfVars, validationResults);
+            final int numOfCases = validateNumberOfCases(validationResults);
+            final int numOfVars = validateVariables(validationResults);
+            validateData(numOfVars, validationResults);
 
-            if (validationResults.size() <= maxNumOfMsg) {
-                String infoMsg = String.format("There are %d cases and %d variables.", numOfCases, numOfVars);
-                ValidationResult result = new ValidationResult(ValidationCode.INFO, MessageType.FILE_SUMMARY, infoMsg);
+            if (validationResults.size() <= this.maxNumOfMsg) {
+                final String infoMsg = String.format("There are %d cases and %d variables.", numOfCases, numOfVars);
+                final ValidationResult result = new ValidationResult(ValidationCode.INFO, MessageType.FILE_SUMMARY, infoMsg);
                 result.setAttribute(ValidationAttribute.ROW_NUMBER, numOfCases);
                 result.setAttribute(ValidationAttribute.COLUMN_NUMBER, numOfVars);
                 validationResults.add(result);
             }
-        } catch (IOException exception) {
-            if (validationResults.size() <= maxNumOfMsg) {
-                String errMsg = String.format("Unable to read file %s.", dataFile.getFileName());
-                ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_IO_ERROR, errMsg);
-                result.setAttribute(ValidationAttribute.FILE_NAME, dataFile.getFileName());
+        } catch (final IOException exception) {
+            if (validationResults.size() <= this.maxNumOfMsg) {
+                final String errMsg = String.format("Unable to read file %s.", this.dataFile.getFileName());
+                final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_IO_ERROR, errMsg);
+                result.setAttribute(ValidationAttribute.FILE_NAME, this.dataFile.getFileName());
                 validationResults.add(result);
             }
         }
@@ -69,16 +69,16 @@ public class LowerCovarianceDataFileValidation extends AbstractDataFileValidatio
         return validationResults;
     }
 
-    private void validateData(int numOfVars, List<ValidationResult> results) throws IOException {
-        try (InputStream in = Files.newInputStream(dataFile, StandardOpenOption.READ)) {
+    private void validateData(final int numOfVars, final List<ValidationResult> results) throws IOException {
+        try (final InputStream in = Files.newInputStream(this.dataFile, StandardOpenOption.READ)) {
             boolean skip = false;
             boolean hasSeenNonblankChar = false;
             boolean hasQuoteChar = false;
 
-            byte delimChar = delimiter.getByteValue();
+            final byte delimChar = this.delimiter.getByteValue();
 
             // comment marker check
-            byte[] comment = commentMarker.getBytes();
+            final byte[] comment = this.commentMarker.getBytes();
             int cmntIndex = 0;
             boolean checkForComment = comment.length > 0;
 
@@ -87,13 +87,13 @@ public class LowerCovarianceDataFileValidation extends AbstractDataFileValidatio
             int colNum = 0;
             int rowNum = 1;
 
-            StringBuilder dataBuilder = new StringBuilder();
+            final StringBuilder dataBuilder = new StringBuilder();
             byte prevChar = -1;
-            byte[] buffer = new byte[DataFileReader.BUFFER_SIZE];
+            final byte[] buffer = new byte[DataFileReader.BUFFER_SIZE];
             int len;
-            while ((len = in.read(buffer)) != -1 && results.size() <= maxNumOfMsg && !Thread.currentThread().isInterrupted()) {
+            while ((len = in.read(buffer)) != -1 && results.size() <= this.maxNumOfMsg && !Thread.currentThread().isInterrupted()) {
                 for (int i = 0; i < len && !Thread.currentThread().isInterrupted(); i++) {
-                    byte currChar = buffer[i];
+                    final byte currChar = buffer[i];
 
                     if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
                         if (currChar == DataFileReader.LINE_FEED && prevChar == DataFileReader.CARRIAGE_RETURN) {
@@ -104,25 +104,25 @@ public class LowerCovarianceDataFileValidation extends AbstractDataFileValidatio
                         if (hasSeenNonblankChar && !skip) {
                             if (lineDataNum >= 3) {
                                 colNum++;
-                                String value = dataBuilder.toString().trim();
+                                final String value = dataBuilder.toString().trim();
 
                                 if (colNum > rowNum) {
-                                    if (results.size() <= maxNumOfMsg) {
-                                        String errMsg = String.format(
+                                    if (results.size() <= this.maxNumOfMsg) {
+                                        final String errMsg = String.format(
                                                 "Line %d: Excess data.  Expect %d value(s) but encounter %d.",
                                                 lineNum, rowNum, colNum);
-                                        ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_EXCESS_DATA, errMsg);
+                                        final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_EXCESS_DATA, errMsg);
                                         result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                                         result.setAttribute(ValidationAttribute.EXPECTED_COUNT, rowNum);
                                         result.setAttribute(ValidationAttribute.ACTUAL_COUNT, colNum);
                                         results.add(result);
                                     }
                                 } else if (colNum < rowNum) {
-                                    if (results.size() <= maxNumOfMsg) {
-                                        String errMsg = String.format(
+                                    if (results.size() <= this.maxNumOfMsg) {
+                                        final String errMsg = String.format(
                                                 "Line %d: Insufficient data.  Expect %d value(s) but encounter %d.",
                                                 lineNum, rowNum, colNum);
-                                        ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_INSUFFICIENT_DATA, errMsg);
+                                        final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_INSUFFICIENT_DATA, errMsg);
                                         result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                                         result.setAttribute(ValidationAttribute.EXPECTED_COUNT, rowNum);
                                         result.setAttribute(ValidationAttribute.ACTUAL_COUNT, colNum);
@@ -130,9 +130,9 @@ public class LowerCovarianceDataFileValidation extends AbstractDataFileValidatio
                                     }
                                 } else {
                                     if (value.isEmpty()) {
-                                        if (results.size() <= maxNumOfMsg) {
-                                            String errMsg = String.format("Line %d, column %d: Missing value.", lineNum, colNum);
-                                            ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_MISSING_VALUE, errMsg);
+                                        if (results.size() <= this.maxNumOfMsg) {
+                                            final String errMsg = String.format("Line %d, column %d: Missing value.", lineNum, colNum);
+                                            final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_MISSING_VALUE, errMsg);
                                             result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                                             result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                                             results.add(result);
@@ -140,10 +140,10 @@ public class LowerCovarianceDataFileValidation extends AbstractDataFileValidatio
                                     } else {
                                         try {
                                             Double.parseDouble(value);
-                                        } catch (NumberFormatException exception) {
-                                            if (results.size() <= maxNumOfMsg) {
-                                                String errMsg = String.format("Line %d, column %d: Invalid number %s.", lineNum, colNum, value);
-                                                ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_INVALID_NUMBER, errMsg);
+                                        } catch (final NumberFormatException exception) {
+                                            if (results.size() <= this.maxNumOfMsg) {
+                                                final String errMsg = String.format("Line %d, column %d: Invalid number %s.", lineNum, colNum, value);
+                                                final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_INVALID_NUMBER, errMsg);
                                                 result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                                                 result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                                                 result.setAttribute(ValidationAttribute.VALUE, value);
@@ -195,11 +195,11 @@ public class LowerCovarianceDataFileValidation extends AbstractDataFileValidatio
                         }
 
                         if (lineDataNum >= 3) {
-                            if (currChar == quoteCharacter) {
+                            if (currChar == this.quoteCharacter) {
                                 hasQuoteChar = !hasQuoteChar;
                             } else if (!hasQuoteChar) {
-                                boolean isDelimiter;
-                                switch (delimiter) {
+                                final boolean isDelimiter;
+                                switch (this.delimiter) {
                                     case WHITESPACE:
                                         isDelimiter = (currChar <= DataFileReader.SPACE_CHAR) && (prevChar > DataFileReader.SPACE_CHAR);
                                         break;
@@ -209,15 +209,15 @@ public class LowerCovarianceDataFileValidation extends AbstractDataFileValidatio
 
                                 if (isDelimiter) {
                                     colNum++;
-                                    String value = dataBuilder.toString().trim();
+                                    final String value = dataBuilder.toString().trim();
                                     dataBuilder.delete(0, dataBuilder.length());
 
                                     if (colNum > rowNum) {
-                                        if (results.size() <= maxNumOfMsg) {
-                                            String errMsg = String.format(
+                                        if (results.size() <= this.maxNumOfMsg) {
+                                            final String errMsg = String.format(
                                                     "Line %d: Excess data.  Expect %d value(s) but encounter %d.",
                                                     lineNum, rowNum, colNum);
-                                            ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_EXCESS_DATA, errMsg);
+                                            final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_EXCESS_DATA, errMsg);
                                             result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                                             result.setAttribute(ValidationAttribute.EXPECTED_COUNT, rowNum);
                                             result.setAttribute(ValidationAttribute.ACTUAL_COUNT, colNum);
@@ -225,9 +225,9 @@ public class LowerCovarianceDataFileValidation extends AbstractDataFileValidatio
                                         }
                                     } else {
                                         if (value.isEmpty()) {
-                                            if (results.size() <= maxNumOfMsg) {
-                                                String errMsg = String.format("Line %d, column %d: Missing value.", lineNum, colNum);
-                                                ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_MISSING_VALUE, errMsg);
+                                            if (results.size() <= this.maxNumOfMsg) {
+                                                final String errMsg = String.format("Line %d, column %d: Missing value.", lineNum, colNum);
+                                                final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_MISSING_VALUE, errMsg);
                                                 result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                                                 result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                                                 results.add(result);
@@ -235,10 +235,10 @@ public class LowerCovarianceDataFileValidation extends AbstractDataFileValidatio
                                         } else {
                                             try {
                                                 Double.parseDouble(value);
-                                            } catch (NumberFormatException exception) {
-                                                if (results.size() <= maxNumOfMsg) {
-                                                    String errMsg = String.format("Line %d, column %d: Invalid number %s.", lineNum, colNum, value);
-                                                    ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_INVALID_NUMBER, errMsg);
+                                            } catch (final NumberFormatException exception) {
+                                                if (results.size() <= this.maxNumOfMsg) {
+                                                    final String errMsg = String.format("Line %d, column %d: Invalid number %s.", lineNum, colNum, value);
+                                                    final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_INVALID_NUMBER, errMsg);
                                                     result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                                                     result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                                                     result.setAttribute(ValidationAttribute.VALUE, value);
@@ -261,25 +261,25 @@ public class LowerCovarianceDataFileValidation extends AbstractDataFileValidatio
             if (hasSeenNonblankChar && !skip) {
                 if (lineDataNum >= 3) {
                     colNum++;
-                    String value = dataBuilder.toString().trim();
+                    final String value = dataBuilder.toString().trim();
 
                     if (colNum > rowNum) {
-                        if (results.size() <= maxNumOfMsg) {
-                            String errMsg = String.format(
+                        if (results.size() <= this.maxNumOfMsg) {
+                            final String errMsg = String.format(
                                     "Line %d: Excess data.  Expect %d value(s) but encounter %d.",
                                     lineNum, rowNum, colNum);
-                            ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_EXCESS_DATA, errMsg);
+                            final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_EXCESS_DATA, errMsg);
                             result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                             result.setAttribute(ValidationAttribute.EXPECTED_COUNT, rowNum);
                             result.setAttribute(ValidationAttribute.ACTUAL_COUNT, colNum);
                             results.add(result);
                         }
                     } else if (colNum < rowNum) {
-                        if (results.size() <= maxNumOfMsg) {
-                            String errMsg = String.format(
+                        if (results.size() <= this.maxNumOfMsg) {
+                            final String errMsg = String.format(
                                     "Line %d: Insufficient data.  Expect %d value(s) but encounter %d.",
                                     lineNum, rowNum, colNum);
-                            ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_INSUFFICIENT_DATA, errMsg);
+                            final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_INSUFFICIENT_DATA, errMsg);
                             result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                             result.setAttribute(ValidationAttribute.EXPECTED_COUNT, rowNum);
                             result.setAttribute(ValidationAttribute.ACTUAL_COUNT, colNum);
@@ -287,9 +287,9 @@ public class LowerCovarianceDataFileValidation extends AbstractDataFileValidatio
                         }
                     } else {
                         if (value.isEmpty()) {
-                            if (results.size() <= maxNumOfMsg) {
-                                String errMsg = String.format("Line %d, column %d: Missing value.", lineNum, colNum);
-                                ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_MISSING_VALUE, errMsg);
+                            if (results.size() <= this.maxNumOfMsg) {
+                                final String errMsg = String.format("Line %d, column %d: Missing value.", lineNum, colNum);
+                                final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_MISSING_VALUE, errMsg);
                                 result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                                 result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                                 results.add(result);
@@ -297,10 +297,10 @@ public class LowerCovarianceDataFileValidation extends AbstractDataFileValidatio
                         } else {
                             try {
                                 Double.parseDouble(value);
-                            } catch (NumberFormatException exception) {
-                                if (results.size() <= maxNumOfMsg) {
-                                    String errMsg = String.format("Line %d, column %d: Invalid number %s.", lineNum, colNum, value);
-                                    ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_INVALID_NUMBER, errMsg);
+                            } catch (final NumberFormatException exception) {
+                                if (results.size() <= this.maxNumOfMsg) {
+                                    final String errMsg = String.format("Line %d, column %d: Invalid number %s.", lineNum, colNum, value);
+                                    final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_INVALID_NUMBER, errMsg);
                                     result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                                     result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                                     result.setAttribute(ValidationAttribute.VALUE, value);
@@ -316,21 +316,21 @@ public class LowerCovarianceDataFileValidation extends AbstractDataFileValidatio
 
             rowNum--;  // minus the extra count for possibly the next line
             if (rowNum > numOfVars) {
-                if (results.size() <= maxNumOfMsg) {
-                    String errMsg = String.format(
+                if (results.size() <= this.maxNumOfMsg) {
+                    final String errMsg = String.format(
                             "Excess data.  Expect %d row(s) but encounter %d.",
                             numOfVars, rowNum);
-                    ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_EXCESS_DATA, errMsg);
+                    final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_EXCESS_DATA, errMsg);
                     result.setAttribute(ValidationAttribute.EXPECTED_COUNT, numOfVars);
                     result.setAttribute(ValidationAttribute.ACTUAL_COUNT, rowNum);
                     results.add(result);
                 }
             } else if (rowNum < numOfVars) {
-                if (results.size() <= maxNumOfMsg) {
-                    String errMsg = String.format(
+                if (results.size() <= this.maxNumOfMsg) {
+                    final String errMsg = String.format(
                             "Insufficient data.  Expect %d row(s) but encounter %d.",
                             numOfVars, rowNum);
-                    ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_EXCESS_DATA, errMsg);
+                    final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_EXCESS_DATA, errMsg);
                     result.setAttribute(ValidationAttribute.EXPECTED_COUNT, numOfVars);
                     result.setAttribute(ValidationAttribute.ACTUAL_COUNT, rowNum);
                     results.add(result);
@@ -339,19 +339,19 @@ public class LowerCovarianceDataFileValidation extends AbstractDataFileValidatio
         }
     }
 
-    private int validateVariables(List<ValidationResult> results) throws IOException {
+    private int validateVariables(final List<ValidationResult> results) throws IOException {
         int numOfVars = 0;
 
-        try (InputStream in = Files.newInputStream(dataFile, StandardOpenOption.READ)) {
+        try (final InputStream in = Files.newInputStream(this.dataFile, StandardOpenOption.READ)) {
             boolean skip = false;
             boolean hasSeenNonblankChar = false;
             boolean hasQuoteChar = false;
             boolean finished = false;
 
-            byte delimChar = delimiter.getByteValue();
+            final byte delimChar = this.delimiter.getByteValue();
 
             // comment marker check
-            byte[] comment = commentMarker.getBytes();
+            final byte[] comment = this.commentMarker.getBytes();
             int cmntIndex = 0;
             boolean checkForComment = comment.length > 0;
 
@@ -359,13 +359,13 @@ public class LowerCovarianceDataFileValidation extends AbstractDataFileValidatio
             int colNum = 0;
             int lineNum = 1;
 
-            StringBuilder dataBuilder = new StringBuilder();
+            final StringBuilder dataBuilder = new StringBuilder();
             byte prevChar = -1;
-            byte[] buffer = new byte[DataFileReader.BUFFER_SIZE];
+            final byte[] buffer = new byte[DataFileReader.BUFFER_SIZE];
             int len;
             while ((len = in.read(buffer)) != -1 && !finished && !Thread.currentThread().isInterrupted()) {
                 for (int i = 0; i < len && !finished && !Thread.currentThread().isInterrupted(); i++) {
-                    byte currChar = buffer[i];
+                    final byte currChar = buffer[i];
 
                     if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
                         if (currChar == DataFileReader.LINE_FEED && prevChar == DataFileReader.CARRIAGE_RETURN) {
@@ -375,13 +375,13 @@ public class LowerCovarianceDataFileValidation extends AbstractDataFileValidatio
 
                         if (hasSeenNonblankChar && !skip) {
                             if (lineDataNum == 2) {
-                                String value = dataBuilder.toString().trim();
+                                final String value = dataBuilder.toString().trim();
 
                                 colNum++;
                                 if (value.isEmpty()) {
-                                    if (results.size() <= maxNumOfMsg) {
-                                        String errMsg = String.format("Line %d, column %d: Missing value.", lineNum, colNum);
-                                        ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_MISSING_VALUE, errMsg);
+                                    if (results.size() <= this.maxNumOfMsg) {
+                                        final String errMsg = String.format("Line %d, column %d: Missing value.", lineNum, colNum);
+                                        final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_MISSING_VALUE, errMsg);
                                         result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                                         result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                                         results.add(result);
@@ -431,11 +431,11 @@ public class LowerCovarianceDataFileValidation extends AbstractDataFileValidatio
                         }
 
                         if (lineDataNum == 2) {
-                            if (currChar == quoteCharacter) {
+                            if (currChar == this.quoteCharacter) {
                                 hasQuoteChar = !hasQuoteChar;
                             } else if (!hasQuoteChar) {
-                                boolean isDelimiter;
-                                switch (delimiter) {
+                                final boolean isDelimiter;
+                                switch (this.delimiter) {
                                     case WHITESPACE:
                                         isDelimiter = (currChar <= DataFileReader.SPACE_CHAR) && (prevChar > DataFileReader.SPACE_CHAR);
                                         break;
@@ -444,14 +444,14 @@ public class LowerCovarianceDataFileValidation extends AbstractDataFileValidatio
                                 }
 
                                 if (isDelimiter) {
-                                    String value = dataBuilder.toString().trim();
+                                    final String value = dataBuilder.toString().trim();
                                     dataBuilder.delete(0, dataBuilder.length());
 
                                     colNum++;
                                     if (value.isEmpty()) {
-                                        if (results.size() <= maxNumOfMsg) {
-                                            String errMsg = String.format("Line %d, column %d: Missing value.", lineNum, colNum);
-                                            ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_MISSING_VALUE, errMsg);
+                                        if (results.size() <= this.maxNumOfMsg) {
+                                            final String errMsg = String.format("Line %d, column %d: Missing value.", lineNum, colNum);
+                                            final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_MISSING_VALUE, errMsg);
                                             result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                                             result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                                             results.add(result);
@@ -472,14 +472,14 @@ public class LowerCovarianceDataFileValidation extends AbstractDataFileValidatio
 
             if (hasSeenNonblankChar && !skip) {
                 if (lineDataNum == 2) {
-                    String value = dataBuilder.toString().trim();
+                    final String value = dataBuilder.toString().trim();
                     dataBuilder.delete(0, dataBuilder.length());
 
                     colNum++;
                     if (value.isEmpty()) {
-                        if (results.size() <= maxNumOfMsg) {
-                            String errMsg = String.format("Line %d, column %d: Missing value.", lineNum, colNum);
-                            ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_MISSING_VALUE, errMsg);
+                        if (results.size() <= this.maxNumOfMsg) {
+                            final String errMsg = String.format("Line %d, column %d: Missing value.", lineNum, colNum);
+                            final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_MISSING_VALUE, errMsg);
                             result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                             result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                             results.add(result);
@@ -492,9 +492,9 @@ public class LowerCovarianceDataFileValidation extends AbstractDataFileValidatio
         }
 
         if (numOfVars == 0) {
-            if (results.size() <= maxNumOfMsg) {
+            if (results.size() <= this.maxNumOfMsg) {
                 final String errMsg = "Covariance file does not contain variable names.";
-                ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_MISSING_VALUE, errMsg);
+                final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_MISSING_VALUE, errMsg);
                 results.add(result);
             }
         }
@@ -502,29 +502,29 @@ public class LowerCovarianceDataFileValidation extends AbstractDataFileValidatio
         return numOfVars;
     }
 
-    private int validateNumberOfCases(List<ValidationResult> results) throws IOException {
+    private int validateNumberOfCases(final List<ValidationResult> results) throws IOException {
         int count = 0;
 
-        try (InputStream in = Files.newInputStream(dataFile, StandardOpenOption.READ)) {
+        try (final InputStream in = Files.newInputStream(this.dataFile, StandardOpenOption.READ)) {
             boolean skip = false;
             boolean hasSeenNonblankChar = false;
             boolean hasQuoteChar = false;
             boolean finished = false;
 
             // comment marker check
-            byte[] comment = commentMarker.getBytes();
+            final byte[] comment = this.commentMarker.getBytes();
             int cmntIndex = 0;
             boolean checkForComment = comment.length > 0;
 
             int lineNum = 1;
 
-            StringBuilder dataBuilder = new StringBuilder();
+            final StringBuilder dataBuilder = new StringBuilder();
             byte prevChar = -1;
-            byte[] buffer = new byte[DataFileReader.BUFFER_SIZE];
+            final byte[] buffer = new byte[DataFileReader.BUFFER_SIZE];
             int len;
             while ((len = in.read(buffer)) != -1 && !finished && !Thread.currentThread().isInterrupted()) {
                 for (int i = 0; i < len && !finished && !Thread.currentThread().isInterrupted(); i++) {
-                    byte currChar = buffer[i];
+                    final byte currChar = buffer[i];
 
                     if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
                         if (currChar == DataFileReader.LINE_FEED && prevChar == DataFileReader.CARRIAGE_RETURN) {
@@ -570,7 +570,7 @@ public class LowerCovarianceDataFileValidation extends AbstractDataFileValidatio
                             }
                         }
 
-                        if (currChar == quoteCharacter) {
+                        if (currChar == this.quoteCharacter) {
                             hasQuoteChar = !hasQuoteChar;
                         } else if (!hasQuoteChar) {
                             dataBuilder.append((char) currChar);
@@ -581,21 +581,21 @@ public class LowerCovarianceDataFileValidation extends AbstractDataFileValidatio
                 }
             }
 
-            String value = dataBuilder.toString().trim();
+            final String value = dataBuilder.toString().trim();
             if (value.isEmpty()) {
-                if (results.size() <= maxNumOfMsg) {
-                    String errMsg = String.format("Line %d: Missing number of cases.", lineNum);
-                    ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_MISSING_VALUE, errMsg);
+                if (results.size() <= this.maxNumOfMsg) {
+                    final String errMsg = String.format("Line %d: Missing number of cases.", lineNum);
+                    final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_MISSING_VALUE, errMsg);
                     result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                     results.add(result);
                 }
             } else {
                 try {
                     count += Integer.parseInt(value);
-                } catch (NumberFormatException exception) {
-                    if (results.size() <= maxNumOfMsg) {
-                        String errMsg = String.format("Line %d: Invalid number %s.", lineNum, value);
-                        ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_INVALID_NUMBER, errMsg);
+                } catch (final NumberFormatException exception) {
+                    if (results.size() <= this.maxNumOfMsg) {
+                        final String errMsg = String.format("Line %d: Invalid number %s.", lineNum, value);
+                        final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_INVALID_NUMBER, errMsg);
                         result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                         result.setAttribute(ValidationAttribute.VALUE, value);
                         results.add(result);

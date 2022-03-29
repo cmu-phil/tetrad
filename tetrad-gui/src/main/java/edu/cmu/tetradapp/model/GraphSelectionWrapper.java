@@ -57,11 +57,11 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
 
     //=============================CONSTRUCTORS==========================//
 
-    public GraphSelectionWrapper(GraphSource graphWrapper, Parameters parameters) {
+    public GraphSelectionWrapper(final GraphSource graphWrapper, final Parameters parameters) {
         this(graphWrapper.getGraph(), parameters);
     }
 
-    public GraphSelectionWrapper(List<Graph> graphs, Parameters params) {
+    public GraphSelectionWrapper(final List<Graph> graphs, final Parameters params) {
         if (graphs == null) {
             throw new NullPointerException("Graph must not be null.");
         }
@@ -69,7 +69,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
         this.params = params;
 
 
-        this.init(params, graphs);
+        init(params, graphs);
     }
 
 //    private Object getGraphs(Parameters params) {
@@ -77,20 +77,20 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
 //    }
 
 
-    public GraphSelectionWrapper(Graph graph, Parameters params) {
+    public GraphSelectionWrapper(final Graph graph, final Parameters params) {
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");
         }
 
         this.params = params;
 
-        List<Graph> graphs = new ArrayList<>();
+        final List<Graph> graphs = new ArrayList<>();
         graphs.add(graph);
 
-        this.init(params, graphs);
+        init(params, graphs);
     }
 
-    public GraphSelectionWrapper(Graph graphs, Parameters params, String message) {
+    public GraphSelectionWrapper(final Graph graphs, final Parameters params, final String message) {
         this(graphs, params);
         TetradLogger.getInstance().log("info", message);
     }
@@ -106,14 +106,14 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
 
     //===============================================METHODS================================//
 
-    private void init(Parameters params, List<Graph> graphs) {
-        this.setGraphs(graphs);
+    private void init(final Parameters params, final List<Graph> graphs) {
+        setGraphs(graphs);
 
-        this.calculateSelection();
-        List<Graph> selectionGraphs = this.getSelectionGraphs(params);
+        calculateSelection();
+        final List<Graph> selectionGraphs = getSelectionGraphs(params);
 
         for (int i = 0; i < graphs.size(); i++) {
-            Graph graph = selectionGraphs.get(i);
+            final Graph graph = selectionGraphs.get(i);
             GraphUtils.fruchtermanReingoldLayout(graph);
         }
 
@@ -130,143 +130,143 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
 //
 //        setSelectedVariables(first50);
 
-        this.log();
+        log();
     }
 
 
     public List<Node> getSelectedVariables() {
-        return selectedNodes;
+        return this.selectedNodes;
     }
 
-    private List<Graph> getSelectionGraphs(Parameters params) {
+    private List<Graph> getSelectionGraphs(final Parameters params) {
         return (List<Graph>) params.get("selectionGraphs",
                 Collections.singletonList(new EdgeListGraph()));
     }
 
     public void calculateSelection() {
-        List<Graph> selectedGraphs = new ArrayList<>();
+        final List<Graph> selectedGraphs = new ArrayList<>();
 
-        for (int i = 0; i < this.getGraphs().size(); i++) {
-            selectedGraphs.add(this.calculateSelectionGraph(i));
+        for (int i = 0; i < getGraphs().size(); i++) {
+            selectedGraphs.add(calculateSelectionGraph(i));
         }
 
-        params.set("selectionGraphs", selectedGraphs);
+        this.params.set("selectionGraphs", selectedGraphs);
     }
 
     public List<Graph> getGraphs() {
 
-        if (graphs == null || graphs.isEmpty()) {
-            List<Graph> _graphs = Collections.singletonList(new EdgeListGraph());
-            params.set("graphs", _graphs);
+        if (this.graphs == null || this.graphs.isEmpty()) {
+            final List<Graph> _graphs = Collections.singletonList(new EdgeListGraph());
+            this.params.set("graphs", _graphs);
             return _graphs;
         } else {
-            return graphs;
+            return this.graphs;
         }
     }
 
-    private Graph calculateSelectionGraph(int k) {
-        List<Node> selectedVariables = this.getSelectedVariables();
-        selectedVariables = GraphUtils.replaceNodes(selectedVariables, this.getSelectedGraph(k).getNodes());
-        Graph selectedGraph;
+    private Graph calculateSelectionGraph(final int k) {
+        List<Node> selectedVariables = getSelectedVariables();
+        selectedVariables = GraphUtils.replaceNodes(selectedVariables, getSelectedGraph(k).getNodes());
+        final Graph selectedGraph;
 
-        if (params.getString("graphSelectionType", "Subgraph").equals(Type.Subgraph.toString())) {
-            selectedGraph = this.getSelectedGraph(k).subgraph(selectedVariables);
-            params.set("highlightInEditor", selectedVariables);
-        } else if (params.getString("graphSelectionType", "subgraph").equals(Type.Adjacents.toString())) {
-            Set<Node> adj = new HashSet<>(selectedVariables);
+        if (this.params.getString("graphSelectionType", "Subgraph").equals(Type.Subgraph.toString())) {
+            selectedGraph = getSelectedGraph(k).subgraph(selectedVariables);
+            this.params.set("highlightInEditor", selectedVariables);
+        } else if (this.params.getString("graphSelectionType", "subgraph").equals(Type.Adjacents.toString())) {
+            final Set<Node> adj = new HashSet<>(selectedVariables);
 
-            for (Node node : selectedVariables) {
-                adj.addAll((this.getSelectedGraph(k).getAdjacentNodes(node)));
+            for (final Node node : selectedVariables) {
+                adj.addAll((getSelectedGraph(k).getAdjacentNodes(node)));
             }
 
-            selectedGraph = (this.getSelectedGraph(k).subgraph(new ArrayList<>(adj)));
-            params.set("highlightInEditor", selectedVariables);
-        } else if (params.getString("graphSelectionType", "Subgraph").equals(Type.Adjacents_of_Adjacents.toString())) {
-            Set<Node> adj = new HashSet<>(selectedVariables);
+            selectedGraph = (getSelectedGraph(k).subgraph(new ArrayList<>(adj)));
+            this.params.set("highlightInEditor", selectedVariables);
+        } else if (this.params.getString("graphSelectionType", "Subgraph").equals(Type.Adjacents_of_Adjacents.toString())) {
+            final Set<Node> adj = new HashSet<>(selectedVariables);
 
-            for (Node node : selectedVariables) {
-                adj.addAll((this.getSelectedGraph(k).getAdjacentNodes(node)));
+            for (final Node node : selectedVariables) {
+                adj.addAll((getSelectedGraph(k).getAdjacentNodes(node)));
             }
 
-            for (Node node : new HashSet<>(adj)) {
-                adj.addAll((this.getSelectedGraph(k).getAdjacentNodes(node)));
+            for (final Node node : new HashSet<>(adj)) {
+                adj.addAll((getSelectedGraph(k).getAdjacentNodes(node)));
             }
 
-            selectedGraph = (this.getSelectedGraph(k).subgraph(new ArrayList<>(adj)));
-            params.set("highlightInEditor", selectedVariables);
-        } else if (params.getString("graphSelectionType", "Subgraph").equals(Type.Adjacents_of_Adjacents_of_Adjacents.toString())) {
-            Set<Node> adj = new HashSet<>(selectedVariables);
+            selectedGraph = (getSelectedGraph(k).subgraph(new ArrayList<>(adj)));
+            this.params.set("highlightInEditor", selectedVariables);
+        } else if (this.params.getString("graphSelectionType", "Subgraph").equals(Type.Adjacents_of_Adjacents_of_Adjacents.toString())) {
+            final Set<Node> adj = new HashSet<>(selectedVariables);
 
-            for (Node node : selectedVariables) {
-                adj.addAll((this.getSelectedGraph(k).getAdjacentNodes(node)));
+            for (final Node node : selectedVariables) {
+                adj.addAll((getSelectedGraph(k).getAdjacentNodes(node)));
             }
 
-            for (Node node : new HashSet<>(adj)) {
-                adj.addAll((this.getSelectedGraph(k).getAdjacentNodes(node)));
+            for (final Node node : new HashSet<>(adj)) {
+                adj.addAll((getSelectedGraph(k).getAdjacentNodes(node)));
             }
 
-            for (Node node : new HashSet<>(adj)) {
-                adj.addAll((this.getSelectedGraph(k).getAdjacentNodes(node)));
+            for (final Node node : new HashSet<>(adj)) {
+                adj.addAll((getSelectedGraph(k).getAdjacentNodes(node)));
             }
 
-            selectedGraph = (this.getSelectedGraph(k).subgraph(new ArrayList<>(adj)));
-            params.set("highlightInEditor", selectedVariables);
-        } else if (params.getString("graphSelectionType", "subgraph").equals(Type.Adjacents.toString())) {
-            Set<Node> adj = new HashSet<>(selectedVariables);
+            selectedGraph = (getSelectedGraph(k).subgraph(new ArrayList<>(adj)));
+            this.params.set("highlightInEditor", selectedVariables);
+        } else if (this.params.getString("graphSelectionType", "subgraph").equals(Type.Adjacents.toString())) {
+            final Set<Node> adj = new HashSet<>(selectedVariables);
 
-            for (Node node : selectedVariables) {
-                adj.addAll((this.getSelectedGraph(k).getAdjacentNodes(node)));
+            for (final Node node : selectedVariables) {
+                adj.addAll((getSelectedGraph(k).getAdjacentNodes(node)));
             }
 
-            selectedGraph = (this.getSelectedGraph(k).subgraph(new ArrayList<>(adj)));
-            params.set("highlightInEditor", selectedVariables);
-        } else if (params.getString("graphSelectionType", "parents").equals(Type.Parents.toString())) {
-            Set<Node> adj = new HashSet<>(selectedVariables);
+            selectedGraph = (getSelectedGraph(k).subgraph(new ArrayList<>(adj)));
+            this.params.set("highlightInEditor", selectedVariables);
+        } else if (this.params.getString("graphSelectionType", "parents").equals(Type.Parents.toString())) {
+            final Set<Node> adj = new HashSet<>(selectedVariables);
 
-            for (Node node : selectedVariables) {
-                adj.addAll((this.getSelectedGraph(k).getParents(node)));
+            for (final Node node : selectedVariables) {
+                adj.addAll((getSelectedGraph(k).getParents(node)));
             }
 
-            selectedGraph = (this.getSelectedGraph(k).subgraph(new ArrayList<>(adj)));
-            params.set("highlightInEditor", selectedVariables);
-        } else if (params.getString("graphSelectionType", "children").equals(Type.Children.toString())) {
-            Set<Node> adj = new HashSet<>(selectedVariables);
+            selectedGraph = (getSelectedGraph(k).subgraph(new ArrayList<>(adj)));
+            this.params.set("highlightInEditor", selectedVariables);
+        } else if (this.params.getString("graphSelectionType", "children").equals(Type.Children.toString())) {
+            final Set<Node> adj = new HashSet<>(selectedVariables);
 
-            for (Node node : selectedVariables) {
-                adj.addAll((this.getSelectedGraph(k).getChildren(node)));
+            for (final Node node : selectedVariables) {
+                adj.addAll((getSelectedGraph(k).getChildren(node)));
             }
 
-            selectedGraph = (this.getSelectedGraph(k).subgraph(new ArrayList<>(adj)));
-            params.set("highlightInEditor", selectedVariables);
-        } else if (params.getString("graphSelectionType", "ancestors").equals(Type.Ancestors.toString())) {
-            Set<Node> adj = new HashSet<>(selectedVariables);
+            selectedGraph = (getSelectedGraph(k).subgraph(new ArrayList<>(adj)));
+            this.params.set("highlightInEditor", selectedVariables);
+        } else if (this.params.getString("graphSelectionType", "ancestors").equals(Type.Ancestors.toString())) {
+            final Set<Node> adj = new HashSet<>(selectedVariables);
 
-            for (Node node : selectedVariables) {
-                adj.addAll((this.getSelectedGraph(k).getAncestors(Collections.singletonList(node))));
+            for (final Node node : selectedVariables) {
+                adj.addAll((getSelectedGraph(k).getAncestors(Collections.singletonList(node))));
             }
 
-            selectedGraph = (this.getSelectedGraph(k).subgraph(new ArrayList<>(adj)));
-            params.set("highlightInEditor", selectedVariables);
-        } else if (params.getString("graphSelectionType", "descendants").equals(Type.Descendants.toString())) {
-            Set<Node> adj = new HashSet<>(selectedVariables);
+            selectedGraph = (getSelectedGraph(k).subgraph(new ArrayList<>(adj)));
+            this.params.set("highlightInEditor", selectedVariables);
+        } else if (this.params.getString("graphSelectionType", "descendants").equals(Type.Descendants.toString())) {
+            final Set<Node> adj = new HashSet<>(selectedVariables);
 
-            for (Node node : selectedVariables) {
-                adj.addAll((this.getSelectedGraph(k).getDescendants(Collections.singletonList(node))));
+            for (final Node node : selectedVariables) {
+                adj.addAll((getSelectedGraph(k).getDescendants(Collections.singletonList(node))));
             }
 
-            selectedGraph = (this.getSelectedGraph(k).subgraph(new ArrayList<>(adj)));
-            params.set("highlightInEditor", selectedVariables);
-        } else if (params.getString("graphSelectionType", "Subgraph").equals(Type.Descendants.toString())) {
-            Set<Edge> edges = new HashSet<>();
+            selectedGraph = (getSelectedGraph(k).subgraph(new ArrayList<>(adj)));
+            this.params.set("highlightInEditor", selectedVariables);
+        } else if (this.params.getString("graphSelectionType", "Subgraph").equals(Type.Descendants.toString())) {
+            final Set<Edge> edges = new HashSet<>();
 
-            for (Node node : selectedVariables) {
-                Set<Edge> ys = this.yStructures(this.getGraphAtIndex(k), node, k);
+            for (final Node node : selectedVariables) {
+                final Set<Edge> ys = yStructures(getGraphAtIndex(k), node, k);
                 edges.addAll(ys);
             }
 
-            Graph subGraph = new EdgeListGraph();
+            final Graph subGraph = new EdgeListGraph();
 
-            for (Edge edge : edges) {
+            for (final Edge edge : edges) {
                 if (!subGraph.containsNode(edge.getNode1())) {
                     subGraph.addNode(edge.getNode1());
                 }
@@ -279,18 +279,18 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
             }
 
             selectedGraph = subGraph;
-            params.set("highlightInEditor", selectedVariables);
-        } else if (params.getString("graphSelectionType", "Subgraph").equals(Type.Pag_Y_Structures.toString())) {
-            Set<Edge> edges = new HashSet<>();
+            this.params.set("highlightInEditor", selectedVariables);
+        } else if (this.params.getString("graphSelectionType", "Subgraph").equals(Type.Pag_Y_Structures.toString())) {
+            final Set<Edge> edges = new HashSet<>();
 
-            for (Node node : selectedVariables) {
-                Set<Edge> ys = this.pagYStructures(this.getGraphAtIndex(k), node, k);
+            for (final Node node : selectedVariables) {
+                final Set<Edge> ys = pagYStructures(getGraphAtIndex(k), node, k);
                 edges.addAll(ys);
             }
 
-            Graph subGraph = new EdgeListGraph();
+            final Graph subGraph = new EdgeListGraph();
 
-            for (Edge edge : edges) {
+            for (final Edge edge : edges) {
                 if (!subGraph.containsNode(edge.getNode1())) {
                     subGraph.addNode(edge.getNode1());
                 }
@@ -303,44 +303,44 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
             }
 
             selectedGraph = subGraph;
-            params.set("highlightInEditor", selectedVariables);
-        } else if (params.getString("graphSelectionType", "Subgraph").equals(Type.Markov_Blankets.toString())) {
-            Set<Node> _nodes = new HashSet<>();
+            this.params.set("highlightInEditor", selectedVariables);
+        } else if (this.params.getString("graphSelectionType", "Subgraph").equals(Type.Markov_Blankets.toString())) {
+            final Set<Node> _nodes = new HashSet<>();
 
-            for (Node node : selectedVariables) {
-                Set<Node> mb = this.mb(this.getGraphAtIndex(k), node);
+            for (final Node node : selectedVariables) {
+                final Set<Node> mb = mb(getGraphAtIndex(k), node);
                 mb.add(node);
                 _nodes.addAll(mb);
             }
 
-            selectedGraph = (this.getSelectedGraph(k).subgraph(new ArrayList<>(_nodes)));
-            params.set("highlightInEditor", selectedVariables);
-        } else if (params.getString("graphSelectionType", "Subgraph").equals(Type.Treks.toString())) {
-            Graph g = new EdgeListGraph(selectedVariables);
+            selectedGraph = (getSelectedGraph(k).subgraph(new ArrayList<>(_nodes)));
+            this.params.set("highlightInEditor", selectedVariables);
+        } else if (this.params.getString("graphSelectionType", "Subgraph").equals(Type.Treks.toString())) {
+            final Graph g = new EdgeListGraph(selectedVariables);
 
             for (int i = 0; i < selectedVariables.size(); i++) {
                 for (int j = i + 1; j < selectedVariables.size(); j++) {
-                    Node x = selectedVariables.get(i);
-                    Node y = selectedVariables.get(j);
-                    List<List<Node>> paths = GraphUtils.treks(this.getGraphAtIndex(k), x, y, this.getN() + 1);
+                    final Node x = selectedVariables.get(i);
+                    final Node y = selectedVariables.get(j);
+                    final List<List<Node>> paths = GraphUtils.treks(getGraphAtIndex(k), x, y, getN() + 1);
 
-                    if (params.getString("nType", "atLeast").equals(nType.atMost.toString()) && !paths.isEmpty()) {
-                        for (List<Node> path : paths) {
-                            if (path.size() <= this.getN() + 1) {
+                    if (this.params.getString("nType", "atLeast").equals(nType.atMost.toString()) && !paths.isEmpty()) {
+                        for (final List<Node> path : paths) {
+                            if (path.size() <= getN() + 1) {
                                 g.addUndirectedEdge(x, y);
                                 break;
                             }
                         }
-                    } else if (params.getString("nType", "atLeast").equals(nType.atLeast.toString()) && !paths.isEmpty()) {
-                        for (List<Node> path : paths) {
-                            if (path.size() >= this.getN() + 1) {
+                    } else if (this.params.getString("nType", "atLeast").equals(nType.atLeast.toString()) && !paths.isEmpty()) {
+                        for (final List<Node> path : paths) {
+                            if (path.size() >= getN() + 1) {
                                 g.addUndirectedEdge(x, y);
                                 break;
                             }
                         }
-                    } else if (params.getString("nType", "atLeast").equals(nType.equals.toString())) {
-                        for (List<Node> path : paths) {
-                            if (path.size() == this.getN() + 1) {
+                    } else if (this.params.getString("nType", "atLeast").equals(nType.equals.toString())) {
+                        for (final List<Node> path : paths) {
+                            if (path.size() == getN() + 1) {
                                 g.addUndirectedEdge(x, y);
                                 break;
                             }
@@ -350,68 +350,68 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
             }
 
             selectedGraph = g;
-            params.set("highlightInEditor", selectedVariables);
-        } else if (params.getString("graphSelectionType", "Subgraph").equals(Type.Trek_Edges.toString())) {
-            Set<Edge> edges = new HashSet<>();
+            this.params.set("highlightInEditor", selectedVariables);
+        } else if (this.params.getString("graphSelectionType", "Subgraph").equals(Type.Trek_Edges.toString())) {
+            final Set<Edge> edges = new HashSet<>();
 
             for (int i = 0; i < selectedVariables.size(); i++) {
                 for (int j = i + 1; j < selectedVariables.size(); j++) {
-                    Node x = selectedVariables.get(i);
-                    Node y = selectedVariables.get(j);
+                    final Node x = selectedVariables.get(i);
+                    final Node y = selectedVariables.get(j);
 
-                    if (params.getString("nType", "atLeast").equals(nType.atMost.toString())) {
-                        List<List<Node>> paths = GraphUtils.treks(this.getGraphAtIndex(k), x, y, this.getN() + 1);
-                        for (List<Node> path : paths) {
-                            if (path.size() <= this.getN() + 1) {
-                                edges.addAll(this.getEdgesFromPath(path, this.getGraphAtIndex(k)));
+                    if (this.params.getString("nType", "atLeast").equals(nType.atMost.toString())) {
+                        final List<List<Node>> paths = GraphUtils.treks(getGraphAtIndex(k), x, y, getN() + 1);
+                        for (final List<Node> path : paths) {
+                            if (path.size() <= getN() + 1) {
+                                edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
                             }
                         }
-                    } else if (params.getString("nType", "atLeast").equals(nType.atLeast.toString())) {
-                        List<List<Node>> paths = GraphUtils.treks(this.getGraphAtIndex(k), x, y, -1);
-                        for (List<Node> path : paths) {
-                            if (path.size() >= this.getN() + 1) {
-                                edges.addAll(this.getEdgesFromPath(path, this.getGraphAtIndex(k)));
+                    } else if (this.params.getString("nType", "atLeast").equals(nType.atLeast.toString())) {
+                        final List<List<Node>> paths = GraphUtils.treks(getGraphAtIndex(k), x, y, -1);
+                        for (final List<Node> path : paths) {
+                            if (path.size() >= getN() + 1) {
+                                edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
                             }
                         }
-                    } else if (params.getString("nType", "atLeast").equals(nType.equals.toString())) {
-                        List<List<Node>> paths = GraphUtils.treks(this.getGraphAtIndex(k), x, y, this.getN() + 1);
-                        for (List<Node> path : paths) {
-                            if (path.size() == this.getN() + 1) {
-                                edges.addAll(this.getEdgesFromPath(path, this.getGraphAtIndex(k)));
+                    } else if (this.params.getString("nType", "atLeast").equals(nType.equals.toString())) {
+                        final List<List<Node>> paths = GraphUtils.treks(getGraphAtIndex(k), x, y, getN() + 1);
+                        for (final List<Node> path : paths) {
+                            if (path.size() == getN() + 1) {
+                                edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
                             }
                         }
                     }
                 }
             }
 
-            selectedGraph = this.graphFromEdges(edges, new ArrayList<Node>());
-            params.set("highlightInEditor", selectedVariables);
-        } else if (params.getString("graphSelectionType", "Subgraph").equals(Type.Paths.toString())) {
-            Graph g = new EdgeListGraph(selectedVariables);
+            selectedGraph = graphFromEdges(edges, new ArrayList<Node>());
+            this.params.set("highlightInEditor", selectedVariables);
+        } else if (this.params.getString("graphSelectionType", "Subgraph").equals(Type.Paths.toString())) {
+            final Graph g = new EdgeListGraph(selectedVariables);
 
             for (int i = 0; i < selectedVariables.size(); i++) {
                 for (int j = i + 1; j < selectedVariables.size(); j++) {
-                    Node x = selectedVariables.get(i);
-                    Node y = selectedVariables.get(j);
-                    List<List<Node>> paths = GraphUtils.allPathsFromTo(this.getGraphAtIndex(k), x, y, this.getN());
+                    final Node x = selectedVariables.get(i);
+                    final Node y = selectedVariables.get(j);
+                    final List<List<Node>> paths = GraphUtils.allPathsFromTo(getGraphAtIndex(k), x, y, getN());
 
-                    if (params.getString("nType", "atLeast").equals(nType.atMost.toString()) && !paths.isEmpty()) {
-                        for (List<Node> path : paths) {
-                            if (path.size() <= this.getN() + 1) {
+                    if (this.params.getString("nType", "atLeast").equals(nType.atMost.toString()) && !paths.isEmpty()) {
+                        for (final List<Node> path : paths) {
+                            if (path.size() <= getN() + 1) {
                                 g.addUndirectedEdge(x, y);
                                 break;
                             }
                         }
-                    } else if (params.getString("nType", "atLeast").equals(nType.atLeast.toString()) && !paths.isEmpty()) {
-                        for (List<Node> path : paths) {
-                            if (path.size() >= this.getN() + 1) {
+                    } else if (this.params.getString("nType", "atLeast").equals(nType.atLeast.toString()) && !paths.isEmpty()) {
+                        for (final List<Node> path : paths) {
+                            if (path.size() >= getN() + 1) {
                                 g.addUndirectedEdge(x, y);
                                 break;
                             }
                         }
-                    } else if (params.getString("nType", "atLeast").equals(nType.equals.toString())) {
-                        for (List<Node> path : paths) {
-                            if (path.size() == this.getN() + 1) {
+                    } else if (this.params.getString("nType", "atLeast").equals(nType.equals.toString())) {
+                        for (final List<Node> path : paths) {
+                            if (path.size() == getN() + 1) {
                                 g.addUndirectedEdge(x, y);
                                 break;
                             }
@@ -421,72 +421,72 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
             }
 
             selectedGraph = g;
-            params.set("highlightInEditor", selectedVariables);
-        } else if (params.getString("graphSelectionType", "Subgraph").equals(Type.Path_Edges.toString())) {
-            Set<Edge> edges = new HashSet<>();
+            this.params.set("highlightInEditor", selectedVariables);
+        } else if (this.params.getString("graphSelectionType", "Subgraph").equals(Type.Path_Edges.toString())) {
+            final Set<Edge> edges = new HashSet<>();
 
             for (int i = 0; i < selectedVariables.size(); i++) {
                 for (int j = i + 1; j < selectedVariables.size(); j++) {
-                    Node x = selectedVariables.get(i);
-                    Node y = selectedVariables.get(j);
+                    final Node x = selectedVariables.get(i);
+                    final Node y = selectedVariables.get(j);
 
-                    if (params.getString("nType", "atLeast").equals(nType.atMost.toString())) {
-                        List<List<Node>> paths = GraphUtils.allPathsFromTo(this.getGraphAtIndex(k), x, y, this.getN());
-                        for (List<Node> path : paths) {
-                            if (path.size() <= this.getN() + 1) {
-                                edges.addAll(this.getEdgesFromPath(path, this.getGraphAtIndex(k)));
+                    if (this.params.getString("nType", "atLeast").equals(nType.atMost.toString())) {
+                        final List<List<Node>> paths = GraphUtils.allPathsFromTo(getGraphAtIndex(k), x, y, getN());
+                        for (final List<Node> path : paths) {
+                            if (path.size() <= getN() + 1) {
+                                edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
                             }
                         }
-                    } else if (params.getString("nType", "atLeast").equals(nType.atLeast.toString())) {
-                        List<List<Node>> paths = GraphUtils.allPathsFromTo(this.getGraphAtIndex(k), x, y, -1);
-                        for (List<Node> path : paths) {
-                            if (path.size() >= this.getN() + 1) {
-                                edges.addAll(this.getEdgesFromPath(path, this.getGraphAtIndex(k)));
+                    } else if (this.params.getString("nType", "atLeast").equals(nType.atLeast.toString())) {
+                        final List<List<Node>> paths = GraphUtils.allPathsFromTo(getGraphAtIndex(k), x, y, -1);
+                        for (final List<Node> path : paths) {
+                            if (path.size() >= getN() + 1) {
+                                edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
                             }
                         }
-                    } else if (params.getString("nType", "atLeast").equals(nType.equals.toString())) {
-                        List<List<Node>> paths = GraphUtils.allPathsFromTo(this.getGraphAtIndex(k), x, y, this.getN());
-                        for (List<Node> path : paths) {
-                            if (path.size() == this.getN() + 1) {
-                                edges.addAll(this.getEdgesFromPath(path, this.getGraphAtIndex(k)));
+                    } else if (this.params.getString("nType", "atLeast").equals(nType.equals.toString())) {
+                        final List<List<Node>> paths = GraphUtils.allPathsFromTo(getGraphAtIndex(k), x, y, getN());
+                        for (final List<Node> path : paths) {
+                            if (path.size() == getN() + 1) {
+                                edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
                             }
                         }
                     }
                 }
             }
 
-            selectedGraph = this.graphFromEdges(edges, new ArrayList<Node>());
-            params.set("highlightInEditor", selectedVariables);
-        } else if (params.getString("graphSelectionType", "Subgraph").equals(Type.Directed_Paths.toString())) {
-            Graph g = new EdgeListGraph(selectedVariables);
+            selectedGraph = graphFromEdges(edges, new ArrayList<Node>());
+            this.params.set("highlightInEditor", selectedVariables);
+        } else if (this.params.getString("graphSelectionType", "Subgraph").equals(Type.Directed_Paths.toString())) {
+            final Graph g = new EdgeListGraph(selectedVariables);
 
             for (int i = 0; i < selectedVariables.size(); i++) {
                 for (int j = 0; j < selectedVariables.size(); j++) {
                     if (i == j) continue;
 
-                    Node x = selectedVariables.get(i);
-                    Node y = selectedVariables.get(j);
+                    final Node x = selectedVariables.get(i);
+                    final Node y = selectedVariables.get(j);
 
-                    if (params.getString("nType", "atLeast").equals(nType.atMost.toString())) {
-                        List<List<Node>> paths = GraphUtils.allDirectedPathsFromTo(this.getGraphAtIndex(k), x, y, this.getN());
-                        for (List<Node> path : paths) {
-                            if (path.size() <= this.getN() + 1) {
+                    if (this.params.getString("nType", "atLeast").equals(nType.atMost.toString())) {
+                        final List<List<Node>> paths = GraphUtils.allDirectedPathsFromTo(getGraphAtIndex(k), x, y, getN());
+                        for (final List<Node> path : paths) {
+                            if (path.size() <= getN() + 1) {
                                 g.addDirectedEdge(x, y);
                                 break;
                             }
                         }
-                    } else if (params.getString("nType", "atLeast").equals(nType.atLeast.toString())) {
-                        List<List<Node>> paths = GraphUtils.allDirectedPathsFromTo(this.getGraphAtIndex(k), x, y, -1);
-                        for (List<Node> path : paths) {
-                            if (path.size() >= this.getN() + 1) {
+                    } else if (this.params.getString("nType", "atLeast").equals(nType.atLeast.toString())) {
+                        final List<List<Node>> paths = GraphUtils.allDirectedPathsFromTo(getGraphAtIndex(k), x, y, -1);
+                        for (final List<Node> path : paths) {
+                            if (path.size() >= getN() + 1) {
                                 g.addDirectedEdge(x, y);
                                 break;
                             }
                         }
-                    } else if (params.getString("nType", "atLeast").equals(nType.equals.toString())) {
-                        List<List<Node>> paths = GraphUtils.allDirectedPathsFromTo(this.getGraphAtIndex(k), x, y, this.getN());
-                        for (List<Node> path : paths) {
-                            if (path.size() == this.getN() + 1) {
+                    } else if (this.params.getString("nType", "atLeast").equals(nType.equals.toString())) {
+                        final List<List<Node>> paths = GraphUtils.allDirectedPathsFromTo(getGraphAtIndex(k), x, y, getN());
+                        for (final List<Node> path : paths) {
+                            if (path.size() == getN() + 1) {
                                 g.addDirectedEdge(x, y);
                                 break;
                             }
@@ -496,136 +496,136 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
             }
 
             selectedGraph = g;
-            params.set("highlightInEditor", selectedVariables);
-        } else if (params.getString("graphSelectionType", "Subgraph").equals(Type.Directed_Path_Edges.toString())) {
-            Set<Edge> edges = new HashSet<>();
+            this.params.set("highlightInEditor", selectedVariables);
+        } else if (this.params.getString("graphSelectionType", "Subgraph").equals(Type.Directed_Path_Edges.toString())) {
+            final Set<Edge> edges = new HashSet<>();
 
             for (int i = 0; i < selectedVariables.size(); i++) {
                 for (int j = 0; j < selectedVariables.size(); j++) {
                     if (i == j) continue;
 
-                    Node x = selectedVariables.get(i);
-                    Node y = selectedVariables.get(j);
-                    List<List<Node>> paths = GraphUtils.allDirectedPathsFromTo(this.getGraphAtIndex(k), x, y, this.getN());
+                    final Node x = selectedVariables.get(i);
+                    final Node y = selectedVariables.get(j);
+                    final List<List<Node>> paths = GraphUtils.allDirectedPathsFromTo(getGraphAtIndex(k), x, y, getN());
 
-                    if (params.getString("nType", "atLeast").equals(nType.atMost.toString()) && !paths.isEmpty()) {
-                        for (List<Node> path : paths) {
-                            if (path.size() <= this.getN() + 1) {
-                                edges.addAll(this.getEdgesFromPath(path, this.getGraphAtIndex(k)));
+                    if (this.params.getString("nType", "atLeast").equals(nType.atMost.toString()) && !paths.isEmpty()) {
+                        for (final List<Node> path : paths) {
+                            if (path.size() <= getN() + 1) {
+                                edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
                             }
                         }
-                    } else if (params.getString("nType", "atLeast").equals(nType.atLeast.toString()) && !paths.isEmpty()) {
-                        for (List<Node> path : paths) {
-                            if (path.size() >= this.getN() + 1) {
-                                edges.addAll(this.getEdgesFromPath(path, this.getGraphAtIndex(k)));
+                    } else if (this.params.getString("nType", "atLeast").equals(nType.atLeast.toString()) && !paths.isEmpty()) {
+                        for (final List<Node> path : paths) {
+                            if (path.size() >= getN() + 1) {
+                                edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
                             }
                         }
-                    } else if (params.getString("nType", "atLeast").equals(nType.equals.toString())) {
-                        for (List<Node> path : paths) {
-                            if (path.size() == this.getN() + 1) {
-                                edges.addAll(this.getEdgesFromPath(path, this.getGraphAtIndex(k)));
+                    } else if (this.params.getString("nType", "atLeast").equals(nType.equals.toString())) {
+                        for (final List<Node> path : paths) {
+                            if (path.size() == getN() + 1) {
+                                edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
                             }
                         }
                     }
                 }
             }
 
-            selectedGraph = this.graphFromEdges(edges, new ArrayList<Node>());
-            params.set("highlightInEditor", selectedVariables);
-        } else if (params.getString("graphSelectionType", "Subgraph").equals(Type.Indegree.toString())) {
-            Set<Edge> g = new HashSet<>();
-            List<Node> nodes = new ArrayList<>();
+            selectedGraph = graphFromEdges(edges, new ArrayList<Node>());
+            this.params.set("highlightInEditor", selectedVariables);
+        } else if (this.params.getString("graphSelectionType", "Subgraph").equals(Type.Indegree.toString())) {
+            final Set<Edge> g = new HashSet<>();
+            final List<Node> nodes = new ArrayList<>();
 
-            for (Node n : selectedVariables) {
-                List<Node> h = (this.getSelectedGraph(k).getParents(n));
+            for (final Node n : selectedVariables) {
+                final List<Node> h = (getSelectedGraph(k).getParents(n));
 
-                if (params.getString("nType", "atLeast").equals(nType.atMost.toString()) && h.size() <= this.getN()) {
+                if (this.params.getString("nType", "atLeast").equals(nType.atMost.toString()) && h.size() <= getN()) {
                     nodes.add(n);
-                    for (Node m : h) {
-                        g.add((this.getSelectedGraph(k).getEdge(m, n)));
+                    for (final Node m : h) {
+                        g.add((getSelectedGraph(k).getEdge(m, n)));
                     }
-                } else if (params.getString("nType", "atLeast").equals(nType.atLeast.toString()) && h.size() >= this.getN()) {
+                } else if (this.params.getString("nType", "atLeast").equals(nType.atLeast.toString()) && h.size() >= getN()) {
                     nodes.add(n);
-                    for (Node m : h) {
-                        g.add((this.getSelectedGraph(k).getEdge(m, n)));
+                    for (final Node m : h) {
+                        g.add((getSelectedGraph(k).getEdge(m, n)));
                     }
-                } else if (params.getString("nType", "atLeast").equals(nType.equals.toString()) && h.size() == this.getN()) {
+                } else if (this.params.getString("nType", "atLeast").equals(nType.equals.toString()) && h.size() == getN()) {
                     nodes.add(n);
-                    for (Node m : h) {
-                        g.add((this.getSelectedGraph(k).getEdge(m, n)));
-                    }
-                }
-            }
-
-            selectedGraph = this.graphFromEdges(g, new ArrayList<Node>());
-            params.set("highlightInEditor", nodes);
-        } else if (params.getString("graphSelectionType", "Subgraph").equals(Type.Out_Degree.toString())) {
-            Set<Edge> g = new HashSet<>();
-            List<Node> nodes = new ArrayList<>();
-
-            for (Node n : selectedVariables) {
-                List<Node> h = (this.getSelectedGraph(k).getChildren(n));
-
-                if (params.getString("nType", "atLeast").equals(nType.atMost.toString()) && h.size() <= this.getN()) {
-                    nodes.add(n);
-                    for (Node m : h) {
-                        g.add((this.getSelectedGraph(k).getEdge(m, n)));
-                    }
-                } else if (params.getString("nType", "atLeast").equals(nType.atLeast.toString()) && h.size() >= this.getN()) {
-                    nodes.add(n);
-                    for (Node m : h) {
-                        g.add((this.getSelectedGraph(k).getEdge(m, n)));
-                    }
-                } else if (params.getString("nType", "atLeast").equals(nType.equals.toString()) && h.size() == this.getN()) {
-                    nodes.add(n);
-                    for (Node m : h) {
-                        g.add((this.getSelectedGraph(k).getEdge(m, n)));
+                    for (final Node m : h) {
+                        g.add((getSelectedGraph(k).getEdge(m, n)));
                     }
                 }
             }
 
-            selectedGraph = this.graphFromEdges(g, nodes);
-            params.set("highlightInEditor", nodes);
-        } else if (params.getString("graphSelectionType", "Subgraph").equals(Type.Degree.toString())) {
-            Set<Edge> g = new HashSet<>();
-            List<Node> nodes = new ArrayList<>();
+            selectedGraph = graphFromEdges(g, new ArrayList<Node>());
+            this.params.set("highlightInEditor", nodes);
+        } else if (this.params.getString("graphSelectionType", "Subgraph").equals(Type.Out_Degree.toString())) {
+            final Set<Edge> g = new HashSet<>();
+            final List<Node> nodes = new ArrayList<>();
 
-            for (Node n : selectedVariables) {
-                List<Node> h = (this.getSelectedGraph(k).getAdjacentNodes(n));
+            for (final Node n : selectedVariables) {
+                final List<Node> h = (getSelectedGraph(k).getChildren(n));
 
-                if (params.getString("nType", "atLeast").equals(nType.atMost.toString()) && h.size() <= this.getN()) {
+                if (this.params.getString("nType", "atLeast").equals(nType.atMost.toString()) && h.size() <= getN()) {
                     nodes.add(n);
-                    for (Node m : h) {
-                        g.add((this.getSelectedGraph(k).getEdge(m, n)));
+                    for (final Node m : h) {
+                        g.add((getSelectedGraph(k).getEdge(m, n)));
                     }
-                } else if (params.getString("nType", "atLeast").equals(nType.atLeast.toString()) && h.size() >= this.getN()) {
+                } else if (this.params.getString("nType", "atLeast").equals(nType.atLeast.toString()) && h.size() >= getN()) {
                     nodes.add(n);
-                    for (Node m : h) {
-                        g.add((this.getSelectedGraph(k).getEdge(m, n)));
+                    for (final Node m : h) {
+                        g.add((getSelectedGraph(k).getEdge(m, n)));
                     }
-                } else if (params.getString("nType", "atLeast").equals(nType.equals.toString()) && h.size() == this.getN()) {
+                } else if (this.params.getString("nType", "atLeast").equals(nType.equals.toString()) && h.size() == getN()) {
                     nodes.add(n);
-                    for (Node m : h) {
-                        g.add((this.getSelectedGraph(k).getEdge(m, n)));
+                    for (final Node m : h) {
+                        g.add((getSelectedGraph(k).getEdge(m, n)));
                     }
                 }
             }
 
-            selectedGraph = this.graphFromEdges(g, nodes);
-            params.set("highlightInEditor", nodes);
+            selectedGraph = graphFromEdges(g, nodes);
+            this.params.set("highlightInEditor", nodes);
+        } else if (this.params.getString("graphSelectionType", "Subgraph").equals(Type.Degree.toString())) {
+            final Set<Edge> g = new HashSet<>();
+            final List<Node> nodes = new ArrayList<>();
+
+            for (final Node n : selectedVariables) {
+                final List<Node> h = (getSelectedGraph(k).getAdjacentNodes(n));
+
+                if (this.params.getString("nType", "atLeast").equals(nType.atMost.toString()) && h.size() <= getN()) {
+                    nodes.add(n);
+                    for (final Node m : h) {
+                        g.add((getSelectedGraph(k).getEdge(m, n)));
+                    }
+                } else if (this.params.getString("nType", "atLeast").equals(nType.atLeast.toString()) && h.size() >= getN()) {
+                    nodes.add(n);
+                    for (final Node m : h) {
+                        g.add((getSelectedGraph(k).getEdge(m, n)));
+                    }
+                } else if (this.params.getString("nType", "atLeast").equals(nType.equals.toString()) && h.size() == getN()) {
+                    nodes.add(n);
+                    for (final Node m : h) {
+                        g.add((getSelectedGraph(k).getEdge(m, n)));
+                    }
+                }
+            }
+
+            selectedGraph = graphFromEdges(g, nodes);
+            this.params.set("highlightInEditor", nodes);
         } else {
-            throw new IllegalArgumentException("Unrecognized selection type: " + params.getString("graphSelectionType", "subgraph"));
+            throw new IllegalArgumentException("Unrecognized selection type: " + this.params.getString("graphSelectionType", "subgraph"));
         }
 
         return selectedGraph;
     }
 
-    private Graph getGraphAtIndex(int k) {
-        return this.getGraphs().get(k);
+    private Graph getGraphAtIndex(final int k) {
+        return getGraphs().get(k);
     }
 
-    private Graph getSelectedGraph(int i) {
-        List<Graph> graphs = this.getGraphs();
+    private Graph getSelectedGraph(final int i) {
+        final List<Graph> graphs = getGraphs();
 
         if (graphs != null && graphs.size() > 0) {
             return graphs.get(i);
@@ -636,61 +636,61 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
 
     // Sorry, this has to return the selection graph since its used downstream in the interface.
     public Graph getGraph() {
-        return this.getSelectionGraphs(params).get(0);
+        return getSelectionGraphs(this.params).get(0);
     }
 
-    public void setGraphs(List<Graph> graphs) {
+    public void setGraphs(final List<Graph> graphs) {
         this.graphs = graphs;
 
-        List<Graph> selectionGraphs = new ArrayList<>();
+        final List<Graph> selectionGraphs = new ArrayList<>();
 
         for (int i = 0; i < graphs.size(); i++) {
             selectionGraphs.add(new EdgeListGraph());
         }
 
-        this.setSelectedVariables(new ArrayList<Node>());
-        params.set("selectionGraphs", selectionGraphs);
+        setSelectedVariables(new ArrayList<Node>());
+        this.params.set("selectionGraphs", selectionGraphs);
 
-        List<Node> highlighted = (List<Node>) params.get("highlightInEditor", new ArrayList<>());
-        highlighted.retainAll(this.getSelectedGraph(0).getNodes());
-        params.set("highlightInEditor", highlighted);
-        List<Node> selected = this.getSelectedVariables();
-        selected.retainAll(this.getSelectedGraph(0).getNodes());
-        this.setSelectedVariables(selected);
+        final List<Node> highlighted = (List<Node>) this.params.get("highlightInEditor", new ArrayList<>());
+        highlighted.retainAll(getSelectedGraph(0).getNodes());
+        this.params.set("highlightInEditor", highlighted);
+        final List<Node> selected = getSelectedVariables();
+        selected.retainAll(getSelectedGraph(0).getNodes());
+        setSelectedVariables(selected);
 
-        this.log();
+        log();
     }
 
-    public Graph getSelectionGraph(int i) {
-        List<Graph> selectionGraphs = (List<Graph>) params.get("selectionGraphs", new ArrayList<>());
+    public Graph getSelectionGraph(final int i) {
+        final List<Graph> selectionGraphs = (List<Graph>) this.params.get("selectionGraphs", new ArrayList<>());
 
         if (selectionGraphs == null || selectionGraphs.isEmpty()) {
-            for (int j = 0; j < this.getGraphs().size(); j++) {
+            for (int j = 0; j < getGraphs().size(); j++) {
                 selectionGraphs.add(new EdgeListGraph());
             }
 
-            params.set("selectionGraphs", selectionGraphs);
+            this.params.set("selectionGraphs", selectionGraphs);
         }
 
         return selectionGraphs.get(i);
     }
 
     public Graph getOriginalGraph() {
-        return this.getSelectedGraph(0);
+        return getSelectedGraph(0);
     }
 
-    public void setDialogText(String dialogText) {
-        params.set("dialogText", dialogText);
+    public void setDialogText(final String dialogText) {
+        this.params.set("dialogText", dialogText);
     }
 
     public String getDialogText() {
-        return params.getString("dialogText", "");
+        return this.params.getString("dialogText", "");
     }
 
     public Type getType() {
-        String graphSelectionType = params.getString("graphSelectionType", "subgraph");
+        final String graphSelectionType = this.params.getString("graphSelectionType", "subgraph");
 
-        for (Type type : Type.values()) {
+        for (final Type type : Type.values()) {
             if (type.toString().equals(graphSelectionType)) {
                 return type;
             }
@@ -699,58 +699,58 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
         throw new IllegalArgumentException();
     }
 
-    public void setType(Type type) {
-        params.set("graphSelectionType", type.toString());
+    public void setType(final Type type) {
+        this.params.set("graphSelectionType", type.toString());
     }
 
     public String getName() {
-        return params.getString("name", null);
+        return this.params.getString("name", null);
     }
 
-    public void setName(String name) {
-        params.set("name", name);
+    public void setName(final String name) {
+        this.params.set("name", name);
     }
 
     public Graph getSourceGraph() {
-        return this.getSelectedGraph(0);
+        return getSelectedGraph(0);
     }
 
     public Graph getResultGraph() {
-        return (this.getSelectionGraphs(params)).get(0);
+        return (getSelectionGraphs(this.params)).get(0);
     }
 
     public List<String> getVariableNames() {
-        return this.getSelectedGraph(0).getNodeNames();
+        return getSelectedGraph(0).getNodeNames();
     }
 
-    public void setSelectedVariables(List<Node> variables) {
-        selectedNodes = variables;
+    public void setSelectedVariables(final List<Node> variables) {
+        this.selectedNodes = variables;
     }
 
 
     public List<Node> getVariables() {
-        return this.getSelectedGraph(0).getNodes();
+        return getSelectedGraph(0).getNodes();
     }
 
-    public void setN(int n) {
+    public void setN(final int n) {
         if (n < 0) throw new IllegalArgumentException();
-        params.set("n", n);
+        this.params.set("n", n);
     }
 
     public int getN() {
-        return params.getInt("n", 0);
+        return this.params.getInt("n", 0);
     }
 
-    public void setNType(nType NType) {
-        params.set("nType", NType.toString());
+    public void setNType(final nType NType) {
+        this.params.set("nType", NType.toString());
     }
 
     public String getNType() {
-        return params.getString("nType", "atLeast");
+        return this.params.getString("nType", "atLeast");
     }
 
     public List<Node> getHighlightInEditor() {
-        return (List<Node>) params.get("highlightInEditor", new ArrayList<Node>());
+        return (List<Node>) this.params.get("highlightInEditor", new ArrayList<Node>());
     }
 
 
@@ -758,10 +758,10 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
 
     // Calculates a graph from give nodes and edges. The nodes are always included in the graph, plus
     // whatever nodes and edges are in the edges set.
-    private Graph graphFromEdges(Set<Edge> edges, List<Node> nodes) {
-        Graph selectedGraph = new EdgeListGraph(nodes);
+    private Graph graphFromEdges(final Set<Edge> edges, final List<Node> nodes) {
+        final Graph selectedGraph = new EdgeListGraph(nodes);
 
-        for (Edge edge : edges) {
+        for (final Edge edge : edges) {
             if (!selectedGraph.containsNode(edge.getNode1())) selectedGraph.addNode(edge.getNode1());
             if (!selectedGraph.containsNode(edge.getNode2())) selectedGraph.addNode(edge.getNode2());
             selectedGraph.addEdge(edge);
@@ -771,11 +771,11 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
     }
 
     // Calculates the Markov blanket of a node in a params.getGraph().
-    private Set<Node> mb(Graph graph, Node z) {
-        Set<Node> mb = new HashSet<>(graph.getAdjacentNodes(z));
+    private Set<Node> mb(final Graph graph, final Node z) {
+        final Set<Node> mb = new HashSet<>(graph.getAdjacentNodes(z));
 
-        for (Node c : graph.getChildren(z)) {
-            for (Node p : graph.getParents(c)) {
+        for (final Node c : graph.getChildren(z)) {
+            for (final Node p : graph.getParents(c)) {
                 if (p != z) {
                     mb.add(p);
                 }
@@ -785,50 +785,50 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
         return mb;
     }
 
-    private Set<Edge> yStructures(Graph graph, Node z, int i) {
-        Set<Edge> edges = new HashSet<>();
+    private Set<Edge> yStructures(final Graph graph, final Node z, final int i) {
+        final Set<Edge> edges = new HashSet<>();
 
-        List<Edge> parents = new ArrayList<>();
+        final List<Edge> parents = new ArrayList<>();
 
-        for (Node node : graph.getAdjacentNodes(z)) {
-            Edge edge = graph.getEdge(node, z);
+        for (final Node node : graph.getAdjacentNodes(z)) {
+            final Edge edge = graph.getEdge(node, z);
             if (Edges.isDirectedEdge(edge) && edge.pointsTowards(z)) {
                 parents.add(edge);
             }
         }
 
-        List<Node> children = this.getSelectedGraph(i).getChildren(z);
+        final List<Node> children = getSelectedGraph(i).getChildren(z);
 
         if (parents.size() > 1 && children.size() > 0) {
             edges.addAll(parents);
 
-            for (Node node : children) {
-                edges.add(this.getSelectedGraph(i).getEdge(node, z));
+            for (final Node node : children) {
+                edges.add(getSelectedGraph(i).getEdge(node, z));
             }
         }
 
         return edges;
     }
 
-    private Set<Edge> pagYStructures(Graph graph, Node z, int i) {
-        Set<Edge> edges = new HashSet<>();
+    private Set<Edge> pagYStructures(final Graph graph, final Node z, final int i) {
+        final Set<Edge> edges = new HashSet<>();
 
-        List<Edge> parents = new ArrayList<>();
+        final List<Edge> parents = new ArrayList<>();
 
-        for (Node node : graph.getAdjacentNodes(z)) {
-            Edge edge = graph.getEdge(node, z);
+        for (final Node node : graph.getAdjacentNodes(z)) {
+            final Edge edge = graph.getEdge(node, z);
             if (Edges.isPartiallyOrientedEdge(edge) && edge.pointsTowards(z)) {
                 parents.add(edge);
             }
         }
 
-        List<Node> children = this.getSelectedGraph(i).getChildren(z);
+        final List<Node> children = getSelectedGraph(i).getChildren(z);
 
         if (parents.size() > 1 && children.size() > 0) {
             edges.addAll(parents);
 
-            for (Node node : children) {
-                edges.add(this.getSelectedGraph(i).getEdge(node, z));
+            for (final Node node : children) {
+                edges.add(getSelectedGraph(i).getEdge(node, z));
             }
         }
 
@@ -839,13 +839,13 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
         TetradLogger.getInstance().log("info", "General Graph");
     }
 
-    private Set<Edge> getEdgesFromPath(List<Node> path, Graph graph) {
-        Set<Edge> edges = new HashSet<>();
+    private Set<Edge> getEdgesFromPath(final List<Node> path, final Graph graph) {
+        final Set<Edge> edges = new HashSet<>();
 
         for (int m = 1; m < path.size(); m++) {
-            Node n0 = path.get(m - 1);
-            Node n1 = path.get(m);
-            Edge edge = graph.getEdge(n0, n1);
+            final Node n0 = path.get(m - 1);
+            final Node n1 = path.get(m);
+            final Edge edge = graph.getEdge(n0, n1);
             if (edge != null) {
                 edges.add(edge);
             }
@@ -867,14 +867,14 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
      * @throws IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
 
     @Override
     public IndependenceTest getIndependenceTest() {
-        return new IndTestDSep(this.getGraph());
+        return new IndTestDSep(getGraph());
     }
 }
 

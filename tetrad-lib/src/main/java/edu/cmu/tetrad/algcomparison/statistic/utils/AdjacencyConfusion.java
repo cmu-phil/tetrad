@@ -20,58 +20,58 @@ public class AdjacencyConfusion {
     private int adjFn;
     private final int adjTn;
 
-    public AdjacencyConfusion(Graph truth, Graph est) {
+    public AdjacencyConfusion(final Graph truth, final Graph est) {
         this.truth = truth;
         this.est = est;
-        adjTp = 0;
-        adjFp = 0;
-        adjFn = 0;
+        this.adjTp = 0;
+        this.adjFp = 0;
+        this.adjFn = 0;
 
-        Set<Edge> allUnoriented = new HashSet<>();
-        for (Edge edge : this.truth.getEdges()) {
+        final Set<Edge> allUnoriented = new HashSet<>();
+        for (final Edge edge : this.truth.getEdges()) {
             allUnoriented.add(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
         }
 
-        for (Edge edge : this.est.getEdges()) {
+        for (final Edge edge : this.est.getEdges()) {
             allUnoriented.add(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
         }
 
-        for (Edge edge : allUnoriented) {
+        for (final Edge edge : allUnoriented) {
             if (this.est.isAdjacentTo(edge.getNode1(), edge.getNode2()) &&
                     !this.truth.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                adjFp++;
+                this.adjFp++;
             }
 
             if (this.truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) &&
                     !this.est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                adjFn++;
+                this.adjFn++;
             }
 
             if (this.truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) &&
                     this.est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                adjTp++;
+                this.adjTp++;
             }
         }
 
-        int allEdges = this.truth.getNumNodes() * (this.truth.getNumNodes() - 1) / 2;
+        final int allEdges = this.truth.getNumNodes() * (this.truth.getNumNodes() - 1) / 2;
 
-        adjTn = allEdges - adjFn;
+        this.adjTn = allEdges - this.adjFn;
     }
 
     public int getAdjTp() {
-        return adjTp;
+        return this.adjTp;
     }
 
     public int getAdjFp() {
-        return adjFp;
+        return this.adjFp;
     }
 
     public int getAdjFn() {
-        return adjFn;
+        return this.adjFn;
     }
 
     public int getAdjTn() {
-        return adjTn;
+        return this.adjTn;
     }
 
 }

@@ -47,34 +47,34 @@ public class TestPurify {
     public void test1() {
         RandomUtil.getInstance().setSeed(48290483L);
 
-        SemGraph graph = new SemGraph();
+        final SemGraph graph = new SemGraph();
 
-        Node l1 = new GraphNode("L1");
+        final Node l1 = new GraphNode("L1");
         l1.setNodeType(NodeType.LATENT);
 
-        Node l2 = new GraphNode("L2");
+        final Node l2 = new GraphNode("L2");
         l2.setNodeType(NodeType.LATENT);
 
-        Node l3 = new GraphNode("L3");
+        final Node l3 = new GraphNode("L3");
         l3.setNodeType(NodeType.LATENT);
 
-        Node x1 = new GraphNode("X1");
-        Node x2 = new GraphNode("X2");
-        Node x3 = new GraphNode("X3");
-        Node x4 = new GraphNode("X4");
-        Node x4b = new GraphNode("X4b");
+        final Node x1 = new GraphNode("X1");
+        final Node x2 = new GraphNode("X2");
+        final Node x3 = new GraphNode("X3");
+        final Node x4 = new GraphNode("X4");
+        final Node x4b = new GraphNode("X4b");
 
-        Node x5 = new GraphNode("X5");
-        Node x6 = new GraphNode("X6");
-        Node x7 = new GraphNode("X7");
-        Node x8 = new GraphNode("X8");
-        Node x8b = new GraphNode("X8b");
+        final Node x5 = new GraphNode("X5");
+        final Node x6 = new GraphNode("X6");
+        final Node x7 = new GraphNode("X7");
+        final Node x8 = new GraphNode("X8");
+        final Node x8b = new GraphNode("X8b");
 
-        Node x9 = new GraphNode("X9");
-        Node x10 = new GraphNode("X10");
-        Node x11 = new GraphNode("X11");
-        Node x12 = new GraphNode("X12");
-        Node x12b = new GraphNode("X12b");
+        final Node x9 = new GraphNode("X9");
+        final Node x10 = new GraphNode("X10");
+        final Node x11 = new GraphNode("X11");
+        final Node x12 = new GraphNode("X12");
+        final Node x12b = new GraphNode("X12b");
 
         graph.addNode(l1);
         graph.addNode(l2);
@@ -119,13 +119,13 @@ public class TestPurify {
 
         graph.addDirectedEdge(x1, x4);
 
-        SemPm pm = new SemPm(graph);
-        SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(1000, false);
+        final SemPm pm = new SemPm(graph);
+        final SemIm im = new SemIm(pm);
+        final DataSet data = im.simulateData(1000, false);
 
-        List<List<Node>> partition = new ArrayList<>();
+        final List<List<Node>> partition = new ArrayList<>();
 
-        List<Node> cluster1 = new ArrayList<>();
+        final List<Node> cluster1 = new ArrayList<>();
         cluster1.add(x1);
         cluster1.add(x2);
         cluster1.add(x3);
@@ -133,14 +133,14 @@ public class TestPurify {
         cluster1.add(x4b);
         cluster1.add(x5);
 
-        List<Node> cluster2 = new ArrayList<>();
+        final List<Node> cluster2 = new ArrayList<>();
         cluster2.add(x5);
         cluster2.add(x6);
         cluster2.add(x7);
         cluster2.add(x8);
         cluster2.add(x8b);
 
-        List<Node> cluster3 = new ArrayList<>();
+        final List<Node> cluster3 = new ArrayList<>();
         cluster3.add(x9);
         cluster3.add(x10);
         cluster3.add(x11);
@@ -151,11 +151,11 @@ public class TestPurify {
         partition.add(cluster2);
         partition.add(cluster3);
 
-        TetradTest test = new ContinuousTetradTest(data, TestType.TETRAD_WISHART, 0.05);
-        IPurify purify = new PurifyTetradBased2(test);
+        final TetradTest test = new ContinuousTetradTest(data, TestType.TETRAD_WISHART, 0.05);
+        final IPurify purify = new PurifyTetradBased2(test);
         purify.setTrueGraph(graph);
 
-        List<List<Node>> partition2 = purify.purify(partition);
+        final List<List<Node>> partition2 = purify.purify(partition);
 
         assertEquals(3, partition2.get(0).size());
         assertEquals(2, partition2.get(1).size());
@@ -166,27 +166,27 @@ public class TestPurify {
     public void test1b() {
         RandomUtil.getInstance().setSeed(48290483L);
 
-        SemGraph graph = new SemGraph();
+        final SemGraph graph = new SemGraph();
 
-        Node l1 = new GraphNode("L1");
+        final Node l1 = new GraphNode("L1");
         l1.setNodeType(NodeType.LATENT);
 
-        Node l2 = new GraphNode("L2");
+        final Node l2 = new GraphNode("L2");
         l2.setNodeType(NodeType.LATENT);
 
-        Node x1 = new GraphNode("X1");
-        Node x2 = new GraphNode("X2");
-        Node x3 = new GraphNode("X3");
-        Node x4 = new GraphNode("X4");
-        Node x5 = new GraphNode("X5");
-        Node x6 = new GraphNode("X6");
+        final Node x1 = new GraphNode("X1");
+        final Node x2 = new GraphNode("X2");
+        final Node x3 = new GraphNode("X3");
+        final Node x4 = new GraphNode("X4");
+        final Node x5 = new GraphNode("X5");
+        final Node x6 = new GraphNode("X6");
 
-        Node x7 = new GraphNode("X7");
-        Node x8 = new GraphNode("X8");
-        Node x9 = new GraphNode("X9");
-        Node x10 = new GraphNode("X10");
-        Node x11 = new GraphNode("X11");
-        Node x12 = new GraphNode("X12");
+        final Node x7 = new GraphNode("X7");
+        final Node x8 = new GraphNode("X8");
+        final Node x9 = new GraphNode("X9");
+        final Node x10 = new GraphNode("X10");
+        final Node x11 = new GraphNode("X11");
+        final Node x12 = new GraphNode("X12");
 
         graph.addNode(l1);
         graph.addNode(l2);
@@ -224,20 +224,20 @@ public class TestPurify {
         graph.addDirectedEdge(x3, x4);
         graph.addDirectedEdge(x9, x10);
 
-        SemPm pm = new SemPm(graph);
-        SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(3000, false);
+        final SemPm pm = new SemPm(graph);
+        final SemIm im = new SemIm(pm);
+        final DataSet data = im.simulateData(3000, false);
 
-        List<List<Node>> partition = new ArrayList<>();
+        final List<List<Node>> partition = new ArrayList<>();
 
-        List<Node> cluster1 = new ArrayList<>();
+        final List<Node> cluster1 = new ArrayList<>();
         cluster1.add(x1);
         cluster1.add(x2);
         cluster1.add(x3);
         cluster1.add(x4);
         cluster1.add(x5);
 
-        List<Node> cluster2 = new ArrayList<>();
+        final List<Node> cluster2 = new ArrayList<>();
         cluster2.add(x7);
         cluster2.add(x8);
         cluster2.add(x9);
@@ -248,11 +248,11 @@ public class TestPurify {
         partition.add(cluster1);
         partition.add(cluster2);
 
-        TetradTest test = new ContinuousTetradTest(data, TestType.TETRAD_WISHART, 0.0001);
-        IPurify purify = new PurifyTetradBased2(test);
+        final TetradTest test = new ContinuousTetradTest(data, TestType.TETRAD_WISHART, 0.0001);
+        final IPurify purify = new PurifyTetradBased2(test);
         purify.setTrueGraph(graph);
 
-        List<List<Node>> clustering = purify.purify(partition);
+        final List<List<Node>> clustering = purify.purify(partition);
 
         assertEquals(4, clustering.get(0).size());
         assertEquals(5, clustering.get(1).size());
@@ -263,51 +263,51 @@ public class TestPurify {
     public void test2() {
         RandomUtil.getInstance().setSeed(48290483L);
 
-        Graph graph = new EdgeListGraph(DataGraphUtils.randomSingleFactorModel(3, 3, 5, 0, 0, 0));
+        final Graph graph = new EdgeListGraph(DataGraphUtils.randomSingleFactorModel(3, 3, 5, 0, 0, 0));
 
-        SemPm pm = new SemPm(graph);
-        SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(1000, false);
+        final SemPm pm = new SemPm(graph);
+        final SemIm im = new SemIm(pm);
+        final DataSet data = im.simulateData(1000, false);
 
-        List<Node> latents = new ArrayList<>();
+        final List<Node> latents = new ArrayList<>();
 
-        for (Node node : graph.getNodes()) {
+        for (final Node node : graph.getNodes()) {
             if (node.getNodeType() == NodeType.LATENT) latents.add(node);
         }
 
-        Graph structuralGraph = graph.subgraph(latents);
+        final Graph structuralGraph = graph.subgraph(latents);
 
-        List<List<Node>> clustering = new ArrayList<>();
+        final List<List<Node>> clustering = new ArrayList<>();
 
-        for (Node node : latents) {
-            List<Node> adj = graph.getAdjacentNodes(node);
+        for (final Node node : latents) {
+            final List<Node> adj = graph.getAdjacentNodes(node);
             adj.removeAll(latents);
 
             clustering.add(adj);
         }
 
-        ContinuousTetradTest test = new ContinuousTetradTest(data, TestType.TETRAD_WISHART, 0.001);
+        final ContinuousTetradTest test = new ContinuousTetradTest(data, TestType.TETRAD_WISHART, 0.001);
 
-        IPurify purify = new PurifyTetradBased2(test);
+        final IPurify purify = new PurifyTetradBased2(test);
 
-        List<List<Node>> purifiedClustering = purify.purify(clustering);
-        List<String> latentsNames = new ArrayList<>();
+        final List<List<Node>> purifiedClustering = purify.purify(clustering);
+        final List<String> latentsNames = new ArrayList<>();
 
         for (int i = 0; i < latents.size(); i++) {
             latentsNames.add(latents.get(i).getName());
         }
 
-        Mimbuild mimbuild = new Mimbuild();
+        final Mimbuild mimbuild = new Mimbuild();
         mimbuild.setPenaltyDiscount(1);
-        Graph _graph = mimbuild.search(purifiedClustering, latentsNames, new CovarianceMatrix(data));
+        final Graph _graph = mimbuild.search(purifiedClustering, latentsNames, new CovarianceMatrix(data));
 
-        List<Node> _latents = new ArrayList<>();
+        final List<Node> _latents = new ArrayList<>();
 
-        for (Node node : _graph.getNodes()) {
+        for (final Node node : _graph.getNodes()) {
             if (node.getNodeType() == NodeType.LATENT) _latents.add(node);
         }
 
-        Graph _structuralGraph = _graph.subgraph(_latents);
+        final Graph _structuralGraph = _graph.subgraph(_latents);
 
         assertEquals(2, _structuralGraph.getNumEdges());
     }

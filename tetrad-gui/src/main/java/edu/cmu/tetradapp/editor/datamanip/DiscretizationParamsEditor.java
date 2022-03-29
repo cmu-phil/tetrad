@@ -25,7 +25,6 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.editor.FinalizingParameterEditor;
-import edu.cmu.tetradapp.editor.datamanip.ContinuousDiscretizationEditor.Method;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.util.IntSpinner;
 import edu.cmu.tetradapp.util.IntSpinner.Filter;
@@ -94,54 +93,54 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
     public void setup() {
         System.out.println("setup");
 
-        List<Node> variables = sourceDataSet.getVariables();
-        List<Node> allVariables = new LinkedList<>();
-        List<Node> discretizeVars = new LinkedList<>();
+        final List<Node> variables = this.sourceDataSet.getVariables();
+        final List<Node> allVariables = new LinkedList<>();
+        final List<Node> discretizeVars = new LinkedList<>();
 
-        for (Node node : variables) {
+        for (final Node node : variables) {
             discretizeVars.add(node);
             allVariables.add(node);
         }
 
-        for (Node node : allVariables) {
-            nodeEditors.put(node, this.createEditor(node));
+        for (final Node node : allVariables) {
+            this.nodeEditors.put(node, createEditor(node));
         }
 
-        this.finalizeEdit();
+        finalizeEdit();
 
         // create discretized ar list.
         /*
       The list of variables to discretize.
      */
-        JList discretizeVariableList = new JList(new VariableListModel(allVariables));
+        final JList discretizeVariableList = new JList(new VariableListModel(allVariables));
         discretizeVariableList.setCellRenderer(new VariableBoxRenderer());
         discretizeVariableList.getSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         discretizeVariableList.addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                JList list = (JList) e.getSource();
-                List<Node> selected = getSelected(list);
+            public void valueChanged(final ListSelectionEvent e) {
+                final JList list = (JList) e.getSource();
+                final List<Node> selected = DiscretizationParamsEditor.getSelected(list);
 
-                DiscretizationParamsEditor.this.finalizeEdit();
+                finalizeEdit();
 
                 if (selected.size() == 1) {
-                    editorPane.removeAll();
-                    Node node = selected.get(0);
-                    editorPane.add(node.getName(), (JPanel) nodeEditors.get(node));
+                    DiscretizationParamsEditor.this.editorPane.removeAll();
+                    final Node node = selected.get(0);
+                    DiscretizationParamsEditor.this.editorPane.add(node.getName(), (JPanel) DiscretizationParamsEditor.this.nodeEditors.get(node));
                 } else if (1 < selected.size()) {
-                    if (this.allContinuous(selected)) {
-                        editorPane.removeAll();
-                        Node first = selected.get(0);
-                        Node last = selected.get(selected.size() - 1);
-                        String label = first.getName() + " - " + last.getName();
-                        editorPane.add(label, new VariableSelectionEditor(selected));
+                    if (allContinuous(selected)) {
+                        DiscretizationParamsEditor.this.editorPane.removeAll();
+                        final Node first = selected.get(0);
+                        final Node last = selected.get(selected.size() - 1);
+                        final String label = first.getName() + " - " + last.getName();
+                        DiscretizationParamsEditor.this.editorPane.add(label, new VariableSelectionEditor(selected));
                     } else {
-                        editorPane.removeAll();
+                        DiscretizationParamsEditor.this.editorPane.removeAll();
                     }
                 }
             }
 
-            private boolean allContinuous(List<Node> selected) {
-                for (Node node : selected) {
+            private boolean allContinuous(final List<Node> selected) {
+                for (final Node node : selected) {
                     if (!(node instanceof ContinuousVariable)) {
                         return false;
                     }
@@ -151,29 +150,29 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
             }
         });
         // Add entries for previously selected variables.
-        for (Node node : discretizeVars) {
+        for (final Node node : discretizeVars) {
             if (node instanceof ContinuousVariable) {
-                ContinuousVariable continuousVariable = (ContinuousVariable) node;
-                ContinuousDiscretizationEditor editor = new ContinuousDiscretizationEditor(
-                        sourceDataSet, continuousVariable);
-                DiscretizationSpec spec = this.getSpecs().get(node);
+                final ContinuousVariable continuousVariable = (ContinuousVariable) node;
+                final ContinuousDiscretizationEditor editor = new ContinuousDiscretizationEditor(
+                        this.sourceDataSet, continuousVariable);
+                final DiscretizationSpec spec = getSpecs().get(node);
                 if (spec == null) continue;
                 editor.setDiscretizationSpec(spec);
-                nodeEditors.put(node, editor);
+                this.nodeEditors.put(node, editor);
             } else if (node instanceof DiscreteVariable) {
-                DiscreteVariable variable = (DiscreteVariable) node;
-                DiscreteDiscretizationEditor editor = new DiscreteDiscretizationEditor(variable);
-                DiscretizationSpec spec = this.getSpecs().get(node);
+                final DiscreteVariable variable = (DiscreteVariable) node;
+                final DiscreteDiscretizationEditor editor = new DiscreteDiscretizationEditor(variable);
+                final DiscretizationSpec spec = getSpecs().get(node);
                 if (spec == null) continue;
                 editor.setDiscretizationSpec(spec);
-                nodeEditors.put(node, editor);
+                this.nodeEditors.put(node, editor);
             }
         }
 
         // set up the tabbed pane
-        editorPane = new JTabbedPane();
+        this.editorPane = new JTabbedPane();
 
-        JScrollPane editorScrollPane = new JScrollPane(editorPane);
+        final JScrollPane editorScrollPane = new JScrollPane(this.editorPane);
         editorScrollPane.setPreferredSize(new Dimension(400, 350));
 
 //        JCheckBox copyUnselectedCheckBox =
@@ -191,21 +190,21 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
 
         discretizeVariableList.setSelectedIndex(0);
 
-        Box hBox = Box.createHorizontalBox();
+        final Box hBox = Box.createHorizontalBox();
         hBox.add(Box.createHorizontalStrut(5));
 
         // build the continuous variable box.
-        Box selectionBox = Box.createVerticalBox();
+        final Box selectionBox = Box.createVerticalBox();
 
         selectionBox.add(Box.createVerticalStrut(5));
         selectionBox.add(Box.createVerticalGlue());
 
         // build the discrete variable box
-        Box discreteSelectionBox = Box.createVerticalBox();
-        JLabel discreteLabel = new JLabel("Variables:");
+        final Box discreteSelectionBox = Box.createVerticalBox();
+        final JLabel discreteLabel = new JLabel("Variables:");
 
-        JScrollPane discreteListPane = new JScrollPane(discretizeVariableList);
-        int width2 = Math.max(100, discreteLabel.getPreferredSize().width);
+        final JScrollPane discreteListPane = new JScrollPane(discretizeVariableList);
+        final int width2 = Math.max(100, discreteLabel.getPreferredSize().width);
         LayoutUtils.setAllSizes(discreteListPane, new Dimension(width2, 350 - discreteLabel.getPreferredSize().height));
 
         discreteSelectionBox.add(Box.createVerticalStrut(5));
@@ -218,7 +217,7 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
         hBox.add(discreteSelectionBox);
         hBox.add(Box.createHorizontalStrut(8));
 
-        Box vBox = Box.createVerticalBox();
+        final Box vBox = Box.createVerticalBox();
         vBox.add(Box.createVerticalStrut(5));
         vBox.add(editorScrollPane);
 
@@ -232,7 +231,7 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
         hBox.add(vBox);
         hBox.add(Box.createHorizontalStrut(5));
 
-        this.add(hBox, BorderLayout.CENTER);
+        add(hBox, BorderLayout.CENTER);
     }
 
 
@@ -243,15 +242,15 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
      */
     public boolean finalizeEdit() {
         // if there was no editors, then nothing can be done so return false.
-        if (nodeEditors.isEmpty()) {
+        if (this.nodeEditors.isEmpty()) {
             return false;
         }
-        Map<Node, DiscretizationSpec> map = new HashMap<>();
-        for (Node node : nodeEditors.keySet()) {
-            DiscretizationEditor editor = nodeEditors.get(node);
+        final Map<Node, DiscretizationSpec> map = new HashMap<>();
+        for (final Node node : this.nodeEditors.keySet()) {
+            final DiscretizationEditor editor = this.nodeEditors.get(node);
             map.put(node, editor.getDiscretizationSpec());
         }
-        parameters.set("discretizationSpecs", map);
+        this.parameters.set("discretizationSpecs", map);
         return true;
     }
 
@@ -261,20 +260,20 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
      *
      * @param params
      */
-    public void setParams(Parameters params) {
-        parameters = params;
-        parameters.set("discretizationSpecs", new HashMap<Node, DiscretizationSpec>());
+    public void setParams(final Parameters params) {
+        this.parameters = params;
+        this.parameters.set("discretizationSpecs", new HashMap<Node, DiscretizationSpec>());
     }
 
     /**
      * The parant model should be a <code>DataWrapper</code>.
      */
-    public void setParentModels(Object[] parentModels) {
+    public void setParentModels(final Object[] parentModels) {
         if (parentModels == null || parentModels.length == 0) {
             throw new IllegalArgumentException("There must be parent model");
         }
         DataWrapper data = null;
-        for (Object parent : parentModels) {
+        for (final Object parent : parentModels) {
             if (parent instanceof DataWrapper) {
                 data = (DataWrapper) parent;
             }
@@ -282,11 +281,11 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
         if (data == null) {
             throw new IllegalArgumentException("Should have have a data wrapper as a parent");
         }
-        DataModel model = data.getSelectedDataModel();
+        final DataModel model = data.getSelectedDataModel();
         if (!(model instanceof DataSet)) {
             throw new IllegalArgumentException("The dataset must be a rectangular dataset");
         }
-        sourceDataSet = (DataSet) model;
+        this.sourceDataSet = (DataSet) model;
     }
 
     /**
@@ -299,11 +298,11 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
     //=============================== Private Methods ================================//
 
 
-    private static List<Node> getSelected(JList list) {
-        List selected = list.getSelectedValuesList();
-        List<Node> nodes = new LinkedList<>();
+    private static List<Node> getSelected(final JList list) {
+        final List selected = list.getSelectedValuesList();
+        final List<Node> nodes = new LinkedList<>();
         if (selected != null) {
-            for (Object o : selected) {
+            for (final Object o : selected) {
                 nodes.add((Node) o);
             }
         }
@@ -311,9 +310,9 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
     }
 
 
-    private DiscretizationEditor createEditor(Node node) {
+    private DiscretizationEditor createEditor(final Node node) {
         if (node instanceof ContinuousVariable) {
-            return new ContinuousDiscretizationEditor(sourceDataSet, (ContinuousVariable) node
+            return new ContinuousDiscretizationEditor(this.sourceDataSet, (ContinuousVariable) node
             );
         } else if (node instanceof DiscreteVariable) {
             return new DiscreteDiscretizationEditor((DiscreteVariable) node);
@@ -325,23 +324,23 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
 
     private boolean globalChangeVerification() {
         if (!Preferences.userRoot().getBoolean("ignoreGlobalDiscretizationWarning", false)) {
-            Box box = Box.createVerticalBox();
+            final Box box = Box.createVerticalBox();
             final String message = "<html>This action will change the number of categories for all selected variables<br>" +
                     "and override any previous work. Are you sure you want continue?</html>";
             box.add(new JLabel(message));
             box.add(Box.createVerticalStrut(5));
-            JCheckBox checkBox = new JCheckBox("Don't show this again");
+            final JCheckBox checkBox = new JCheckBox("Don't show this again");
             checkBox.setHorizontalTextPosition(SwingConstants.LEFT);
             checkBox.setHorizontalAlignment(SwingConstants.RIGHT);
             checkBox.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    JCheckBox box = (JCheckBox) e.getSource();
+                public void actionPerformed(final ActionEvent e) {
+                    final JCheckBox box = (JCheckBox) e.getSource();
                     Preferences.userRoot().putBoolean("ignoreGlobalDiscretizationWarning", box.isSelected());
                 }
             });
             box.add(checkBox);
             box.add(Box.createVerticalStrut(5));
-            int option = JOptionPane.showConfirmDialog(this, box, "Discretization Warning", JOptionPane.YES_NO_OPTION);
+            final int option = JOptionPane.showConfirmDialog(this, box, "Discretization Warning", JOptionPane.YES_NO_OPTION);
             return JOptionPane.YES_OPTION == option;
         }
         return true;
@@ -350,9 +349,9 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
     /**
      * Changes the number of categories on the editors for the given nodes.
      */
-    private void changeNumberOfCategories(int numOfCats, List<Node> nodes) {
-        for (Node node : nodes) {
-            DiscretizationEditor editor = nodeEditors.get(node);
+    private void changeNumberOfCategories(final int numOfCats, final List<Node> nodes) {
+        for (final Node node : nodes) {
+            final DiscretizationEditor editor = this.nodeEditors.get(node);
             if (editor != null && editor instanceof ContinuousDiscretizationEditor) {
                 ((ContinuousDiscretizationEditor) editor).setNumCategories(numOfCats);
             }
@@ -363,7 +362,7 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
     /**
      * Changes the method of the editor.
      */
-    private void changeMethod(List<Node> nodes, Method method) {
+    private void changeMethod(final List<Node> nodes, ContinuousDiscretizationEditor.Method method) {
         for (Node node : nodes) {
             DiscretizationEditor editor = nodeEditors.get(node);
             if (editor != null && editor instanceof ContinuousDiscretizationEditor) {
@@ -376,8 +375,8 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
     /**
      * @return the common mehtod if there is one.
      */
-    private Method getCommonMethod(List<Node> nodes) {
-        Method method = null;
+    private ContinuousDiscretizationEditor.Method getCommonMethod(List<Node> nodes) {
+        ContinuousDiscretizationEditor.Method method = null;
         for (Node node : nodes) {
             DiscretizationEditor editor = nodeEditors.get(node);
             if (editor != null && editor instanceof ContinuousDiscretizationEditor) {
@@ -438,7 +437,7 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
             this.setLayout(new BorderLayout());
             nodes = vars;
             IntSpinner spinner = new IntSpinner(DiscretizationParamsEditor.this.getDefaultCategoryNum(vars), 1, 3);
-            Method method = DiscretizationParamsEditor.this.getCommonMethod(vars);
+            ContinuousDiscretizationEditor.Method method = DiscretizationParamsEditor.this.getCommonMethod(vars);
             spinner.setMin(2);
             spinner.setFilter(new Filter() {
                 public int filter(int oldValue, int newValue) {
@@ -455,34 +454,34 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
             vBox.add(new JLabel("Discretization Method: "));
 
             JRadioButton none = new JRadioButton("Don't Discretize",
-                    method == Method.NONE);
+                    method == ContinuousDiscretizationEditor.Method.NONE);
             JRadioButton equalBuckets = new JRadioButton("Evenly Distributed Values",
-                    method == Method.EQUAL_SIZE_BUCKETS);
+                    method == ContinuousDiscretizationEditor.Method.EQUAL_SIZE_BUCKETS);
             JRadioButton equalInterval = new JRadioButton("Evenly Distributed Intervals",
-                    method == Method.EVENLY_DIVIDED_INTERNVALS);
+                    method == ContinuousDiscretizationEditor.Method.EVENLY_DIVIDED_INTERNVALS);
             none.setHorizontalTextPosition(SwingConstants.RIGHT);
             equalBuckets.setHorizontalTextPosition(SwingConstants.RIGHT);
             equalInterval.setHorizontalTextPosition(SwingConstants.RIGHT);
 
             none.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    DiscretizationParamsEditor.this.changeMethod(nodes, Method.NONE);
+                    DiscretizationParamsEditor.this.changeMethod(nodes, ContinuousDiscretizationEditor.Method.NONE);
                 }
             });
 
             equalBuckets.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    DiscretizationParamsEditor.this.changeMethod(nodes, Method.EQUAL_SIZE_BUCKETS);
+                    DiscretizationParamsEditor.this.changeMethod(nodes, ContinuousDiscretizationEditor.Method.EQUAL_SIZE_BUCKETS);
                 }
             });
 
             equalInterval.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    DiscretizationParamsEditor.this.changeMethod(nodes, Method.EVENLY_DIVIDED_INTERNVALS);
+                    DiscretizationParamsEditor.this.changeMethod(nodes, ContinuousDiscretizationEditor.Method.EVENLY_DIVIDED_INTERNVALS);
                 }
             });
 
-            ButtonGroup group = new ButtonGroup();
+            final ButtonGroup group = new ButtonGroup();
             group.add(none);
             group.add(equalBuckets);
             group.add(equalInterval);
@@ -493,23 +492,23 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
 
             none.setSelected(true);
 
-            Box buttons = Box.createHorizontalBox();
+            final Box buttons = Box.createHorizontalBox();
             buttons.add(vBox);
             buttons.add(Box.createHorizontalGlue());
             buttons.setBorder(new EmptyBorder(15, 5, 5, 5));
 
-            Box cats = Box.createHorizontalBox();
+            final Box cats = Box.createHorizontalBox();
             cats.add(new JLabel(" Change number of categories: "));
             cats.add(spinner);
             cats.add(Box.createHorizontalGlue());
             cats.setBorder(new EmptyBorder(5, 5, 5, 5));
 
-            Box vBox1 = Box.createVerticalBox();
+            final Box vBox1 = Box.createVerticalBox();
             vBox1.add(buttons);
             vBox1.add(cats);
             vBox1.add(Box.createVerticalGlue());
 
-            add(vBox1, BorderLayout.NORTH);
+            this.add(vBox1, BorderLayout.NORTH);
         }
 
 
@@ -521,17 +520,17 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
         private final Vector<Node> variables;
 
 
-        public VariableListModel(List<Node> variables) {
+        public VariableListModel(final List<Node> variables) {
             this.variables = new Vector<>(variables);
         }
 
 
         public int getSize() {
-            return variables.size();
+            return this.variables.size();
         }
 
-        public Object getElementAt(int index) {
-            return variables.get(index);
+        public Object getElementAt(final int index) {
+            return this.variables.get(index);
         }
 
 
@@ -540,19 +539,19 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
 
     private static class VariableBoxRenderer extends DefaultListCellRenderer {
 
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            Node node = (Node) value;
+        public Component getListCellRendererComponent(final JList list, final Object value, final int index, final boolean isSelected, final boolean cellHasFocus) {
+            final Node node = (Node) value;
             if (node == null) {
-                setText("");
+                this.setText("");
             } else {
-                setText(node.getName());
+                this.setText(node.getName());
             }
             if (isSelected) {
-                this.setBackground(list.getSelectionBackground());
-                this.setForeground(list.getSelectionForeground());
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());
             } else {
-                this.setBackground(list.getBackground());
-                this.setForeground(list.getForeground());
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
             }
 
             return this;

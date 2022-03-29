@@ -52,23 +52,23 @@ public class TimeSeriesUtils {
      * variable at previous lags, up to the given number of lags, and the
      * residuals of these regressions for each variable are returned.
      */
-    public static DataSet ar(DataSet timeSeries, int numLags) {
-        DataSet timeLags = createLagData(timeSeries, numLags);
-        List<Node> regressors = new ArrayList<>();
+    public static DataSet ar(final DataSet timeSeries, final int numLags) {
+        final DataSet timeLags = TimeSeriesUtils.createLagData(timeSeries, numLags);
+        final List<Node> regressors = new ArrayList<>();
 
         for (int i = timeSeries.getNumColumns(); i < timeLags.getNumColumns(); i++) {
             regressors.add(timeLags.getVariable(i));
         }
 
-        Regression regression = new RegressionDataset(timeLags);
+        final Regression regression = new RegressionDataset(timeLags);
 //        Regression regression = new RegressionDatasetGeneralized(timeLags);
 
-        Matrix residuals = new Matrix(timeLags.getNumRows(), timeSeries.getNumColumns());
+        final Matrix residuals = new Matrix(timeLags.getNumRows(), timeSeries.getNumColumns());
 
         for (int i = 0; i < timeSeries.getNumColumns(); i++) {
-            Node target = timeLags.getVariable(i);
-            RegressionResult result = regression.regress(target, regressors);
-            Vector residualsColumn = result.getResiduals();
+            final Node target = timeLags.getVariable(i);
+            final RegressionResult result = regression.regress(target, regressors);
+            final Vector residualsColumn = result.getResiduals();
 //            residuals.viewColumn(i).assign(residualsColumn);
             residuals.assignColumn(i, residualsColumn);
         }
@@ -76,11 +76,11 @@ public class TimeSeriesUtils {
         return new BoxDataSet(new DoubleDataBox(residuals.toArray()), timeSeries.getVariables());
     }
 
-    public static DataSet ar2(DataSet timeSeries, int numLags) {
-        List<Node> missingVariables = new ArrayList<>();
+    public static DataSet ar2(final DataSet timeSeries, final int numLags) {
+        final List<Node> missingVariables = new ArrayList<>();
 
-        for (Node node : timeSeries.getVariables()) {
-            int index = timeSeries.getVariables().indexOf(node);
+        for (final Node node : timeSeries.getVariables()) {
+            final int index = timeSeries.getVariables().indexOf(node);
             boolean missing = true;
 
             for (int i = 0; i < timeSeries.getNumRows(); i++) {
@@ -95,15 +95,15 @@ public class TimeSeriesUtils {
             }
         }
 
-        DataSet timeLags = createLagData(timeSeries, numLags);
+        final DataSet timeLags = TimeSeriesUtils.createLagData(timeSeries, numLags);
 
-        Regression regression = new RegressionDataset(timeLags);
+        final Regression regression = new RegressionDataset(timeLags);
 
-        Matrix residuals = new Matrix(timeLags.getNumRows(), timeSeries.getNumColumns());
+        final Matrix residuals = new Matrix(timeLags.getNumRows(), timeSeries.getNumColumns());
 
         for (int i = 0; i < timeSeries.getNumColumns(); i++) {
-            Node target = timeLags.getVariable(i);
-            int index = timeSeries.getVariables().indexOf(target);
+            final Node target = timeLags.getVariable(i);
+            final int index = timeSeries.getVariables().indexOf(target);
 
             if (missingVariables.contains(target)) {
                 for (int i2 = 0; i2 < residuals.rows(); i2++) {
@@ -113,11 +113,11 @@ public class TimeSeriesUtils {
                 continue;
             }
 
-            List<Node> regressors = new ArrayList<>();
+            final List<Node> regressors = new ArrayList<>();
 
             for (int i2 = timeSeries.getNumColumns(); i2 < timeLags.getNumColumns(); i2++) {
-                int varIndex = i2 % timeSeries.getNumColumns();
-                Node var = timeSeries.getVariable(varIndex);
+                final int varIndex = i2 % timeSeries.getNumColumns();
+                final Node var = timeSeries.getVariable(varIndex);
 
                 if (missingVariables.contains(var)) {
                     continue;
@@ -126,24 +126,24 @@ public class TimeSeriesUtils {
                 regressors.add(timeLags.getVariable(i2));
             }
 
-            RegressionResult result = regression.regress(target, regressors);
-            Vector residualsColumn = result.getResiduals();
+            final RegressionResult result = regression.regress(target, regressors);
+            final Vector residualsColumn = result.getResiduals();
             residuals.assignColumn(i, residualsColumn);
         }
 
         return new BoxDataSet(new DoubleDataBox(residuals.toArray()), timeSeries.getVariables());
     }
 
-    private int[] eliminateMissing(int[] parents, int dataIndex, DataSet dataSet, List<Node> missingVariables) {
-        List<Integer> _parents = new ArrayList<>();
+    private int[] eliminateMissing(final int[] parents, final int dataIndex, final DataSet dataSet, final List<Node> missingVariables) {
+        final List<Integer> _parents = new ArrayList<>();
 
-        for (int k : parents) {
+        for (final int k : parents) {
             if (!missingVariables.contains(dataSet.getVariable(k))) {
                 _parents.add(k);
             }
         }
 
-        int[] _parents2 = new int[_parents.size()];
+        final int[] _parents2 = new int[_parents.size()];
 
         for (int i = 0; i < _parents.size(); i++) {
             _parents2[i] = _parents.get(i);
@@ -152,67 +152,67 @@ public class TimeSeriesUtils {
         return _parents2;
     }
 
-    public static VarResult structuralVar(DataSet timeSeries, int numLags) {
-        DataSet timeLags = createLagData(timeSeries, numLags);
-        IKnowledge knowledge = timeLags.getKnowledge().copy();
+    public static VarResult structuralVar(final DataSet timeSeries, final int numLags) {
+        final DataSet timeLags = TimeSeriesUtils.createLagData(timeSeries, numLags);
+        final IKnowledge knowledge = timeLags.getKnowledge().copy();
 
         for (int i = 0; i <= numLags; i++) {
             knowledge.setTierForbiddenWithin(i, true);
         }
 
-        Score score;
+        final Score score;
 
         if (timeLags.isDiscrete()) {
             score = new BDeuScore(timeLags);
         } else if (timeLags.isContinuous()) {
-            SemBicScore semBicScore = new SemBicScore(new CovarianceMatrix(timeLags));
+            final SemBicScore semBicScore = new SemBicScore(new CovarianceMatrix(timeLags));
             semBicScore.setPenaltyDiscount(2.0);
             score = semBicScore;
         } else {
             throw new IllegalArgumentException("Mixed data set");
         }
 
-        Fges search = new Fges(score);
+        final Fges search = new Fges(score);
         search.setKnowledge(knowledge);
-        Graph graph = search.search();
+        final Graph graph = search.search();
 
         // want to collapse graph here...
-        Graph collapsedVarGraph = new EdgeListGraph(timeSeries.getVariables());
+        final Graph collapsedVarGraph = new EdgeListGraph(timeSeries.getVariables());
 
-        for (Edge edge : graph.getEdges()) {
-            String node1_before = edge.getNode1().getName();
-            String node2_before = edge.getNode2().getName();
+        for (final Edge edge : graph.getEdges()) {
+            final String node1_before = edge.getNode1().getName();
+            final String node2_before = edge.getNode2().getName();
 
-            String node1_after = node1_before.substring(0, node1_before.indexOf("."));
-            String node2_after = node2_before.substring(0, node2_before.indexOf("."));
+            final String node1_after = node1_before.substring(0, node1_before.indexOf("."));
+            final String node2_after = node2_before.substring(0, node2_before.indexOf("."));
 
-            Node node1 = collapsedVarGraph.getNode(node1_after);
-            Node node2 = collapsedVarGraph.getNode(node2_after);
+            final Node node1 = collapsedVarGraph.getNode(node1_after);
+            final Node node2 = collapsedVarGraph.getNode(node2_after);
 
-            Edge _edge = new Edge(node1, node2, edge.getEndpoint1(), edge.getEndpoint2());
+            final Edge _edge = new Edge(node1, node2, edge.getEndpoint1(), edge.getEndpoint2());
 
             if (!collapsedVarGraph.containsEdge(_edge)) {
                 collapsedVarGraph.addEdge(_edge);
             }
         }
 
-        Matrix residuals = new Matrix(timeLags.getNumRows(), timeSeries.getNumColumns());
-        Regression regression = new RegressionDataset(timeLags);
+        final Matrix residuals = new Matrix(timeLags.getNumRows(), timeSeries.getNumColumns());
+        final Regression regression = new RegressionDataset(timeLags);
 
         for (int i = 0; i < timeSeries.getNumColumns(); i++) {
-            Node target = timeLags.getVariable(i);
+            final Node target = timeLags.getVariable(i);
 
-            List<Node> regressors = new ArrayList<>();
+            final List<Node> regressors = new ArrayList<>();
 
             // Collect up parents from each lagged variable behind
             // timelags.getVariable(i).
             for (int j = 0; j <= 0 /*numLags*/; j++) {
-                Node variable = timeLags.getVariable(i + j * timeSeries.getNumColumns());
+                final Node variable = timeLags.getVariable(i + j * timeSeries.getNumColumns());
                 regressors.addAll(graph.getParents(variable));
             }
 
-            RegressionResult result = regression.regress(target, regressors);
-            Vector residualsColumn = result.getResiduals();
+            final RegressionResult result = regression.regress(target, regressors);
+            final Vector residualsColumn = result.getResiduals();
 //            residuals.viewColumn(i).assign(residualsColumn);
             residuals.assignColumn(i, residualsColumn);
         }
@@ -221,8 +221,8 @@ public class TimeSeriesUtils {
                 collapsedVarGraph);
     }
 
-    public static DataSet createShiftedData(DataSet data, int[] shifts) {
-        Matrix data2 = data.getDoubleData();
+    public static DataSet createShiftedData(final DataSet data, final int[] shifts) {
+        final Matrix data2 = data.getDoubleData();
 
         int min = Integer.MAX_VALUE;
         int max = Integer.MIN_VALUE;
@@ -236,9 +236,9 @@ public class TimeSeriesUtils {
             }
         }
 
-        int shiftRange = max - min;
+        final int shiftRange = max - min;
 
-        int[] _shifts = new int[shifts.length];
+        final int[] _shifts = new int[shifts.length];
 
         for (int i = 0; i < shifts.length; i++) {
             _shifts[i] = shiftRange - (shifts[i] - min);
@@ -248,8 +248,8 @@ public class TimeSeriesUtils {
             throw new IllegalArgumentException("Range of shifts greater than sample size.");
         }
 
-        int shiftedDataLength = data2.rows() - shiftRange;
-        Matrix shiftedData = new Matrix(shiftedDataLength, data2.columns());
+        final int shiftedDataLength = data2.rows() - shiftRange;
+        final Matrix shiftedData = new Matrix(shiftedDataLength, data2.columns());
 
         for (int j = 0; j < shiftedData.columns(); j++) {
             for (int i = 0; i < shiftedDataLength; i++) {
@@ -265,64 +265,64 @@ public class TimeSeriesUtils {
         private final DataSet residuals;
         private final Graph collapsedVarGraph;
 
-        public VarResult(DataSet dataSet, Graph collapsedVarGraph) {
-            residuals = dataSet;
+        public VarResult(final DataSet dataSet, final Graph collapsedVarGraph) {
+            this.residuals = dataSet;
             this.collapsedVarGraph = collapsedVarGraph;
         }
 
         public DataSet getResiduals() {
-            return residuals;
+            return this.residuals;
         }
 
         public Graph getCollapsedVarGraph() {
-            return collapsedVarGraph;
+            return this.collapsedVarGraph;
         }
     }
 
-    public static double[] getSelfLoopCoefs(DataSet timeSeries) {
-        DataSet timeLags = createLagData(timeSeries, 1);
+    public static double[] getSelfLoopCoefs(final DataSet timeSeries) {
+        final DataSet timeLags = TimeSeriesUtils.createLagData(timeSeries, 1);
 
-        double[] coefs = new double[timeSeries.getNumColumns()];
+        final double[] coefs = new double[timeSeries.getNumColumns()];
 
         for (int j = 0; j < timeSeries.getNumColumns(); j++) {
-            Node target = timeLags.getVariable(j);
-            Node selfLoop = timeLags.getVariable(j + timeSeries.getNumColumns());
-            List<Node> regressors = Collections.singletonList(selfLoop);
+            final Node target = timeLags.getVariable(j);
+            final Node selfLoop = timeLags.getVariable(j + timeSeries.getNumColumns());
+            final List<Node> regressors = Collections.singletonList(selfLoop);
 
-            Regression regression = new RegressionDataset(timeLags);
-            RegressionResult result = regression.regress(target, regressors);
+            final Regression regression = new RegressionDataset(timeLags);
+            final RegressionResult result = regression.regress(target, regressors);
             coefs[j] = result.getCoef()[1];
         }
 
         return coefs;
     }
 
-    public static double sumOfArCoefficients(DataSet timeSeries, int numLags) {
-        DataSet timeLags = createLagData(timeSeries, numLags);
-        List<Node> regressors = new ArrayList<>();
+    public static double sumOfArCoefficients(final DataSet timeSeries, final int numLags) {
+        final DataSet timeLags = TimeSeriesUtils.createLagData(timeSeries, numLags);
+        final List<Node> regressors = new ArrayList<>();
 
         for (int i = timeSeries.getNumColumns(); i < timeLags.getNumColumns(); i++) {
             regressors.add(timeLags.getVariable(i));
         }
 
-        Regression regression = new RegressionDataset(timeLags);
-        Matrix residuals = new Matrix(timeLags.getNumRows(), timeSeries.getNumColumns());
+        final Regression regression = new RegressionDataset(timeLags);
+        final Matrix residuals = new Matrix(timeLags.getNumRows(), timeSeries.getNumColumns());
 
         double sum = 0.0;
         int n = 0;
 
         for (int i = 0; i < timeSeries.getNumColumns(); i++) {
-            Node target = timeLags.getVariable(i);
-            RegressionResult result = regression.regress(target, regressors);
+            final Node target = timeLags.getVariable(i);
+            final RegressionResult result = regression.regress(target, regressors);
 
-            double[] coef = result.getCoef();
+            final double[] coef = result.getCoef();
 
             for (int k = 0; k < coef.length; k++) {
                 sum += coef[k] * coef[k];
                 n++;
             }
 
-            Vector residualsColumn = result.getResiduals();
+            final Vector residualsColumn = result.getResiduals();
 //            residuals.viewColumn(i).assign(residualsColumn);
             residuals.assignColumn(i, residualsColumn);
         }
@@ -340,7 +340,7 @@ public class TimeSeriesUtils {
      * @param d    the number of differences to take, >= 0.
      * @return the differenced data.
      */
-    public static DataSet difference(DataSet data, int d) {
+    public static DataSet difference(final DataSet data, final int d) {
         if (d == 0) {
             return data;
         }
@@ -348,7 +348,7 @@ public class TimeSeriesUtils {
         Matrix _data = data.getDoubleData();
 
         for (int k = 1; k <= d; k++) {
-            Matrix _data2 = new Matrix(_data.rows() - 1, _data.columns());
+            final Matrix _data2 = new Matrix(_data.rows() - 1, _data.columns());
 
             for (int i = 1; i < _data.rows(); i++) {
                 for (int j = 0; j < _data.columns(); j++) {
@@ -366,19 +366,19 @@ public class TimeSeriesUtils {
      * Creates new time series dataset from the given one (fixed to deal with
      * mixed datasets)
      */
-    public static DataSet createLagData(DataSet data, int numLags) {
-        List<Node> variables = data.getVariables();
-        int dataSize = variables.size();
-        int laggedRows = data.getNumRows() - numLags;
-        IKnowledge knowledge = new Knowledge2();
-        Node[][] laggedNodes = new Node[numLags + 1][dataSize];
-        List<Node> newVariables = new ArrayList<>((numLags + 1) * dataSize + 1);
+    public static DataSet createLagData(final DataSet data, final int numLags) {
+        final List<Node> variables = data.getVariables();
+        final int dataSize = variables.size();
+        final int laggedRows = data.getNumRows() - numLags;
+        final IKnowledge knowledge = new Knowledge2();
+        final Node[][] laggedNodes = new Node[numLags + 1][dataSize];
+        final List<Node> newVariables = new ArrayList<>((numLags + 1) * dataSize + 1);
 
         for (int lag = 0; lag <= numLags; lag++) {
             for (int col = 0; col < dataSize; col++) {
-                Node node = variables.get(col);
-                String varName = node.getName();
-                Node laggedNode;
+                final Node node = variables.get(col);
+                final String varName = node.getName();
+                final Node laggedNode;
                 String name = varName;
 
                 if (lag != 0) {
@@ -388,7 +388,7 @@ public class TimeSeriesUtils {
                 if (node instanceof ContinuousVariable) {
                     laggedNode = new ContinuousVariable(name);
                 } else if (node instanceof DiscreteVariable) {
-                    DiscreteVariable var = (DiscreteVariable) node;
+                    final DiscreteVariable var = (DiscreteVariable) node;
                     laggedNode = new DiscreteVariable(var);
                     laggedNode.setName(name);
                 } else {
@@ -434,10 +434,10 @@ public class TimeSeriesUtils {
 //        });
 
 //        System.out.println("Variable list after the sort = " + newVariables);
-        for (Node node : newVariables) {
-            String varName = node.getName();
-            String tmp;
-            int lag;
+        for (final Node node : newVariables) {
+            final String varName = node.getName();
+            final String tmp;
+            final int lag;
             if (varName.indexOf(':') == -1) {
                 lag = 0;
 //                laglist.add(lag);
@@ -449,16 +449,16 @@ public class TimeSeriesUtils {
             knowledge.addToTier(numLags - lag, node.getName());
         }
 
-        DataSet laggedData = new BoxDataSet(new DoubleDataBox(laggedRows, newVariables.size()), newVariables);
+        final DataSet laggedData = new BoxDataSet(new DoubleDataBox(laggedRows, newVariables.size()), newVariables);
         for (int lag = 0; lag <= numLags; lag++) {
             for (int col = 0; col < dataSize; col++) {
                 for (int row = 0; row < laggedRows; row++) {
-                    Node laggedNode = laggedNodes[lag][col];
+                    final Node laggedNode = laggedNodes[lag][col];
                     if (laggedNode instanceof ContinuousVariable) {
-                        double value = data.getDouble(row + numLags - lag, col);
+                        final double value = data.getDouble(row + numLags - lag, col);
                         laggedData.setDouble(row, col + lag * dataSize, value);
                     } else {
-                        int value = data.getInt(row + numLags - lag, col);
+                        final int value = data.getInt(row + numLags - lag, col);
                         laggedData.setInt(row, col + lag * dataSize, value);
                     }
                 }
@@ -478,9 +478,9 @@ public class TimeSeriesUtils {
      */
     public static DataSet addIndex(DataSet data) {
         data = data.copy();
-        ContinuousVariable timeVar = new ContinuousVariable("Time");
+        final ContinuousVariable timeVar = new ContinuousVariable("Time");
         data.addVariable(timeVar);
-        int c = data.getColumn(timeVar);
+        final int c = data.getColumn(timeVar);
 
         for (int r = 0; r < data.getNumRows(); r++) {
             data.setDouble(r, c, (r + 1));
@@ -613,23 +613,23 @@ public class TimeSeriesUtils {
      * Input must have associated knowledge in tiers
      * Variables must be continuous
      */
-    public static DataSet createDifferencedData(DataSet data) {
-        IKnowledge knowledge;
+    public static DataSet createDifferencedData(final DataSet data) {
+        final IKnowledge knowledge;
         if (data.getKnowledge().isEmpty()) {
             throw new IllegalStateException("Need to input a lagged dataset with knowledge tiers");
         } else {
             knowledge = data.getKnowledge();
         }
-        List<Node> variables = data.getVariables();
-        int dataSize = variables.size();
-        int numRows = data.getNumRows();
+        final List<Node> variables = data.getVariables();
+        final int dataSize = variables.size();
+        final int numRows = data.getNumRows();
         // rename variables?
 
-        int numTiers = knowledge.getNumTiers();
-        int numVars = dataSize / numTiers;
+        final int numTiers = knowledge.getNumTiers();
+        final int numVars = dataSize / numTiers;
 
-        List<Node> nodes = variables.subList(0, numVars);
-        DataSet differencedData = new BoxDataSet(new VerticalDoubleDataBox(numRows, nodes.size()), nodes);
+        final List<Node> nodes = variables.subList(0, numVars);
+        final DataSet differencedData = new BoxDataSet(new VerticalDoubleDataBox(numRows, nodes.size()), nodes);
 //        for (int tier = 1; tier < numTiers; tier++) {
         final int tier = 1;
         for (int col = 0; col < numVars; col++) {
@@ -637,8 +637,8 @@ public class TimeSeriesUtils {
                 throw new IllegalStateException("All variables must be continuous");
             }
             for (int row = 0; row < numRows; row++) {
-                double value = data.getDouble(row, (tier - 1) * numVars + col);
-                double lagvalue = data.getDouble(row, tier * numVars + col);
+                final double value = data.getDouble(row, (tier - 1) * numVars + col);
+                final double lagvalue = data.getDouble(row, tier * numVars + col);
 
                 differencedData.setDouble(row, col, value - lagvalue);
             }
@@ -646,35 +646,35 @@ public class TimeSeriesUtils {
         return differencedData;
     }
 
-    public static TimeLagGraph graphToLagGraph(Graph _graph, int numLags) {
-        TimeLagGraph graph = new TimeLagGraph();
+    public static TimeLagGraph graphToLagGraph(final Graph _graph, final int numLags) {
+        final TimeLagGraph graph = new TimeLagGraph();
         graph.setMaxLag(numLags);
 
-        for (Node node : _graph.getNodes()) {
-            Node graphNode = new ContinuousVariable(node.getName());
+        for (final Node node : _graph.getNodes()) {
+            final Node graphNode = new ContinuousVariable(node.getName());
             graphNode.setNodeType(node.getNodeType());
             graph.addNode(graphNode);
 
             /* adding node from Lag 1 to Lag 0 for every node */
-            Node from = graph.getNode(node.getName(), 1);
-            Node to = graph.getNode(node.getName(), 0);
-            Edge edge = new Edge(from, to, Endpoint.TAIL, Endpoint.ARROW);
+            final Node from = graph.getNode(node.getName(), 1);
+            final Node to = graph.getNode(node.getName(), 0);
+            final Edge edge = new Edge(from, to, Endpoint.TAIL, Endpoint.ARROW);
             graph.addEdge(edge);
             //graph.addDirectedEdge(from, to);
         }
 
-        for (Edge edge : _graph.getEdges()) {
+        for (final Edge edge : _graph.getEdges()) {
             if (!Edges.isDirectedEdge(edge)) {
                 throw new IllegalArgumentException();
             }
 
-            Node from = edge.getNode1();
-            Node to = edge.getNode2();
+            final Node from = edge.getNode1();
+            final Node to = edge.getNode2();
 //            System.out.println("From node = " + from.getName());
 //            System.out.println("To node = " + to.getName());
-            Node _from = graph.getNode(from.getName(), 0);
-            Node _to = graph.getNode(to.getName(), 0);
-            Edge edge1 = new Edge(_from, _to, Endpoint.TAIL, Endpoint.ARROW);
+            final Node _from = graph.getNode(from.getName(), 0);
+            final Node _to = graph.getNode(to.getName(), 0);
+            final Edge edge1 = new Edge(_from, _to, Endpoint.TAIL, Endpoint.ARROW);
             graph.addEdge(edge1);
             //graph.addDirectedEdge(_from, _to);
         }
@@ -683,15 +683,15 @@ public class TimeSeriesUtils {
         // for node
         //  with probability 0.3 add edge from node to *random* node at lag0
         for (int lag = 1; lag <= numLags; lag++) {
-            for (Node node1 : graph.getLag0Nodes()) {
-                Node from = graph.getNode(node1.getName(), lag);
-                for (Node node2 : graph.getLag0Nodes()) {
-                    Node to = graph.getNode(node2.getName(), 0);
+            for (final Node node1 : graph.getLag0Nodes()) {
+                final Node from = graph.getNode(node1.getName(), lag);
+                for (final Node node2 : graph.getLag0Nodes()) {
+                    final Node to = graph.getNode(node2.getName(), 0);
                     if (node1.getName().equals(node2.getName())) {
                         continue;
                     }
                     if (RandomUtil.getInstance().nextUniform(0, 1) <= 0.15) {
-                        Edge edge = new Edge(from, to, Endpoint.TAIL, Endpoint.ARROW);
+                        final Edge edge = new Edge(from, to, Endpoint.TAIL, Endpoint.ARROW);
                         graph.addEdge(edge);
                         //graph.addDirectedEdge(from, to);
                     }
@@ -702,8 +702,8 @@ public class TimeSeriesUtils {
         return graph;
     }
 
-    public static String getNameNoLag(Object obj) {
-        String tempS = obj.toString();
+    public static String getNameNoLag(final Object obj) {
+        final String tempS = obj.toString();
         if (tempS.indexOf(':') == -1) {
             return tempS;
         } else {
@@ -711,7 +711,7 @@ public class TimeSeriesUtils {
         }
     }
 
-    public static String getPrefix(String s) {
+    public static String getPrefix(final String s) {
 //        int y = 0;
 //        for (int i = s.length() - 1; i >= 0; i--) {
 //            try {
@@ -729,36 +729,36 @@ public class TimeSeriesUtils {
         return s.substring(0, 1);
     }
 
-    public static int getIndex(String s) {
+    public static int getIndex(final String s) {
         int y = 0;
         for (int i = s.length() - 1; i >= 0; i--) {
             try {
                 y = Integer.parseInt(s.substring(i));
-            } catch (NumberFormatException e) {
+            } catch (final NumberFormatException e) {
                 return y;
             }
         }
         throw new IllegalArgumentException("Not integer suffix.");
     }
 
-    public static int getLag(String s) {
+    public static int getLag(final String s) {
         if (s.indexOf(':') == -1) {
             return 0;
         }
-        String tmp = s.substring(s.indexOf(':') + 1);
+        final String tmp = s.substring(s.indexOf(':') + 1);
         return (Integer.parseInt(tmp));
     }
 
-    public static IKnowledge getKnowledge(Graph graph) {
+    public static IKnowledge getKnowledge(final Graph graph) {
 //        System.out.println("Entering getKnowledge ... ");
         int numLags = 1; // need to fix this!
-        List<Node> variables = graph.getNodes();
-        List<Integer> laglist = new ArrayList<>();
-        IKnowledge knowledge = new Knowledge2();
+        final List<Node> variables = graph.getNodes();
+        final List<Integer> laglist = new ArrayList<>();
+        final IKnowledge knowledge = new Knowledge2();
         int lag;
-        for (Node node : variables) {
-            String varName = node.getName();
-            String tmp;
+        for (final Node node : variables) {
+            final String varName = node.getName();
+            final String tmp;
             if (varName.indexOf(':') == -1) {
                 lag = 0;
                 laglist.add(lag);
@@ -773,38 +773,38 @@ public class TimeSeriesUtils {
 //        System.out.println("Variable list before the sort = " + variables);
         Collections.sort(variables, new Comparator<Node>() {
             @Override
-            public int compare(Node o1, Node o2) {
-                String name1 = getNameNoLag(o1);
-                String name2 = getNameNoLag(o2);
+            public int compare(final Node o1, final Node o2) {
+                final String name1 = TimeSeriesUtils.getNameNoLag(o1);
+                final String name2 = TimeSeriesUtils.getNameNoLag(o2);
 
 //                System.out.println("name 1 = " + name1);
 //                System.out.println("name 2 = " + name2);
-                String prefix1 = getPrefix(name1);
-                String prefix2 = getPrefix(name2);
+                final String prefix1 = TimeSeriesUtils.getPrefix(name1);
+                final String prefix2 = TimeSeriesUtils.getPrefix(name2);
 
 //                System.out.println("prefix 1 = " + prefix1);
 //                System.out.println("prefix 2 = " + prefix2);
-                int index1 = getIndex(name1);
-                int index2 = getIndex(name2);
+                final int index1 = TimeSeriesUtils.getIndex(name1);
+                final int index2 = TimeSeriesUtils.getIndex(name2);
 
 //                System.out.println("index 1 = " + index1);
 //                System.out.println("index 2 = " + index2);
-                if (getLag(o1.getName()) == getLag(o2.getName())) {
+                if (TimeSeriesUtils.getLag(o1.getName()) == TimeSeriesUtils.getLag(o2.getName())) {
                     if (prefix1.compareTo(prefix2) == 0) {
                         return Integer.compare(index1, index2);
                     } else {
                         return prefix1.compareTo(prefix2);
                     }
                 } else {
-                    return getLag(o1.getName()) - getLag(o2.getName());
+                    return TimeSeriesUtils.getLag(o1.getName()) - TimeSeriesUtils.getLag(o2.getName());
                 }
             }
         });
 
 //        System.out.println("Variable list after the sort = " + variables);
-        for (Node node : variables) {
-            String varName = node.getName();
-            String tmp;
+        for (final Node node : variables) {
+            final String varName = node.getName();
+            final String tmp;
             if (varName.indexOf(':') == -1) {
                 lag = 0;
 //                laglist.add(lag);
@@ -820,23 +820,23 @@ public class TimeSeriesUtils {
         return knowledge;
     }
 
-    public static boolean allEigenvaluesAreSmallerThanOneInModulus(Matrix mat) {
+    public static boolean allEigenvaluesAreSmallerThanOneInModulus(final Matrix mat) {
 
         double[] realEigenvalues = new double[0];
         double[] imagEigenvalues = new double[0];
         try {
-            EigenDecomposition dec = new EigenDecomposition(new BlockRealMatrix(mat.toArray()));
+            final EigenDecomposition dec = new EigenDecomposition(new BlockRealMatrix(mat.toArray()));
             realEigenvalues = dec.getRealEigenvalues();
             imagEigenvalues = dec.getImagEigenvalues();
-        } catch (MaxCountExceededException e) {
+        } catch (final MaxCountExceededException e) {
             e.printStackTrace();
         }
 
         for (int i = 0; i < realEigenvalues.length; i++) {
-            double realEigenvalue = realEigenvalues[i];
-            double imagEigenvalue = imagEigenvalues[i];
+            final double realEigenvalue = realEigenvalues[i];
+            final double imagEigenvalue = imagEigenvalues[i];
             System.out.println("Real eigenvalues are : " + realEigenvalue + " and imag part : " + imagEigenvalue);
-            double modulus = Math.sqrt(Math.pow(realEigenvalue, 2) + Math.pow(imagEigenvalue, 2));
+            final double modulus = Math.sqrt(Math.pow(realEigenvalue, 2) + Math.pow(imagEigenvalue, 2));
 
             if (modulus >= 1.0) {
                 return false;

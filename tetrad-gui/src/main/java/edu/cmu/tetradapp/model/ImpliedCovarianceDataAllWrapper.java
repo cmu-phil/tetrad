@@ -46,28 +46,28 @@ public class ImpliedCovarianceDataAllWrapper extends DataWrapper {
 
     //==============================CONSTRUCTORS=============================//
 
-    public ImpliedCovarianceDataAllWrapper(SemEstimatorWrapper wrapper, Parameters params) {
+    public ImpliedCovarianceDataAllWrapper(final SemEstimatorWrapper wrapper, final Parameters params) {
 //        int sampleSize = params.getSampleSize();
 //        boolean latentDataSaved = params.isIncludeLatents();
-        SemEstimator semEstimator = wrapper.getSemEstimator();
-        SemIm semIm1 = semEstimator.getEstimatedSem();
+        final SemEstimator semEstimator = wrapper.getSemEstimator();
+        final SemIm semIm1 = semEstimator.getEstimatedSem();
 
         if (semIm1 != null) {
 
-            Matrix matrix2D = semIm1.getImplCovar(true);
-            int sampleSize = semIm1.getSampleSize();
-            List<Node> variables = wrapper.getSemEstimator().getEstimatedSem().getSemPm().getVariableNodes();
-            CovarianceMatrix cov = new CovarianceMatrix(variables, matrix2D, sampleSize);
-            this.setDataModel(cov);
-            this.setSourceGraph(wrapper.getSemEstimator().getEstimatedSem().getSemPm().getGraph());
-            semIm = wrapper.getEstimatedSemIm();
+            final Matrix matrix2D = semIm1.getImplCovar(true);
+            final int sampleSize = semIm1.getSampleSize();
+            final List<Node> variables = wrapper.getSemEstimator().getEstimatedSem().getSemPm().getVariableNodes();
+            final CovarianceMatrix cov = new CovarianceMatrix(variables, matrix2D, sampleSize);
+            setDataModel(cov);
+            setSourceGraph(wrapper.getSemEstimator().getEstimatedSem().getSemPm().getGraph());
+            this.semIm = wrapper.getEstimatedSemIm();
         }
 
-        LogDataUtils.logDataModelList("Data simulated from a linear structural equation model.", this.getDataModelList());
+        LogDataUtils.logDataModelList("Data simulated from a linear structural equation model.", getDataModelList());
     }
 
     public SemIm getSemIm() {
-        return semIm;
+        return this.semIm;
     }
 
     /**

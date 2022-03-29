@@ -93,36 +93,36 @@ public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
     /**
      * The getModel mode.
      */
-    private int mode = SINGLE_VALUE;
+    private int mode = BayesUpdaterEditorObs.SINGLE_VALUE;
 
     //===============================CONSTRUCTORS=========================//
 
     /**
      * Constructs a new instanted model editor from a Bayes Updater.
      */
-    private BayesUpdaterEditorObs(UpdaterWrapper updaterWrapper) {
+    private BayesUpdaterEditorObs(final UpdaterWrapper updaterWrapper) {
         if (updaterWrapper == null) {
             throw new NullPointerException(
                     "Updater Wrapper must not be null.");
         }
 
         this.updaterWrapper = updaterWrapper;
-        this.setLayout(new BorderLayout());
-        this.add(this.createSplitPane(this.getUpdaterWrapper()), BorderLayout.CENTER);
-        this.setName("Bayes Updater Editor");
+        setLayout(new BorderLayout());
+        add(createSplitPane(getUpdaterWrapper()), BorderLayout.CENTER);
+        setName("Bayes Updater Editor");
 
-        JMenuBar menuBar = new JMenuBar();
-        JMenu file = new JMenu("File");
+        final JMenuBar menuBar = new JMenuBar();
+        final JMenu file = new JMenu("File");
         menuBar.add(file);
 //        file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
-        file.add(new SaveComponentImage(workbench, "Save Graph Image..."));
-        this.add(menuBar, BorderLayout.NORTH);
+        file.add(new SaveComponentImage(this.workbench, "Save Graph Image..."));
+        add(menuBar, BorderLayout.NORTH);
 
-        workbench.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (mode == MULTI_VALUE &&
+        this.workbench.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(final PropertyChangeEvent evt) {
+                if (BayesUpdaterEditorObs.this.mode == BayesUpdaterEditorObs.MULTI_VALUE &&
                         "selectedNodes".equals(evt.getPropertyName())) {
-                    BayesUpdaterEditorObs.this.setMode(MULTI_VALUE);
+                    setMode(BayesUpdaterEditorObs.MULTI_VALUE);
                 }
             }
         });
@@ -131,7 +131,7 @@ public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
     /**
      * Constructs a new instanted model editor from a Bayes IM wrapper.
      */
-    public BayesUpdaterEditorObs(IdentifiabilityWrapper wrapper) {
+    public BayesUpdaterEditorObs(final IdentifiabilityWrapper wrapper) {
         this((UpdaterWrapper) wrapper);
     }
 
@@ -140,74 +140,74 @@ public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
     /**
      * Sets the name of this editor.
      */
-    public void setName(String name) {
-        String oldName = this.getName();
+    public void setName(final String name) {
+        final String oldName = getName();
         super.setName(name);
-        firePropertyChange("name", oldName, this.getName());
+        this.firePropertyChange("name", oldName, getName());
     }
 
     private EvidenceWizardSingleObs getEvidenceWizardSingle() {
-        return evidenceWizardSingle;
+        return this.evidenceWizardSingle;
     }
 
     private EvidenceWizardMultipleObs getEvidenceWizardMultiple() {
-        return evidenceWizardMultiple;
+        return this.evidenceWizardMultiple;
     }
 
     public JComponent getEditDelegate() {
-        return evidenceWizardSingle;
+        return this.evidenceWizardSingle;
     }
 
     private UpdaterWrapper getUpdaterWrapper() {
-        return updaterWrapper;
+        return this.updaterWrapper;
     }
 
     private GraphWorkbench getWorkbench() {
-        return workbench;
+        return this.workbench;
     }
 
     /**
      * Reacts to property change events.
      */
-    public void propertyChange(PropertyChangeEvent e) {
+    public void propertyChange(final PropertyChangeEvent e) {
         if ("editorClosing".equals(e.getPropertyName())) {
-            firePropertyChange("editorClosing", null, this.getName());
+            this.firePropertyChange("editorClosing", null, getName());
         } else if ("closeFrame".equals(e.getPropertyName())) {
-            firePropertyChange("closeFrame", null, null);
-            firePropertyChange("editorClosing", true, true);
+            this.firePropertyChange("closeFrame", null, null);
+            this.firePropertyChange("editorClosing", true, true);
         } else if ("updatedBayesImWizardTab".equals(e.getPropertyName())) {
-            updatedBayesImWizardTab = ((Integer) (e.getNewValue()));
+            this.updatedBayesImWizardTab = ((Integer) (e.getNewValue()));
         }
     }
 
     //================================PRIVATE METHODS=======================//
 
-    private JSplitPane createSplitPane(UpdaterWrapper updaterWrapper) {
-        JScrollPane workbenchScroll = this.createWorkbenchScroll(updaterWrapper);
+    private JSplitPane createSplitPane(final UpdaterWrapper updaterWrapper) {
+        final JScrollPane workbenchScroll = createWorkbenchScroll(updaterWrapper);
         workbenchScroll.setBorder(new TitledBorder("Manipulated Graph"));
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                workbenchScroll, this.createRightPanel(updaterWrapper));
+        final JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+                workbenchScroll, createRightPanel(updaterWrapper));
         splitPane.setOneTouchExpandable(true);
         splitPane.setDividerLocation(workbenchScroll.getPreferredSize().width);
         return splitPane;
     }
 
     private JScrollPane createWorkbenchScroll(
-            UpdaterWrapper updaterWrapper) {
-        workbench = new GraphWorkbench(updaterWrapper.getBayesUpdater().getManipulatedGraph());
-        workbench.setAllowDoubleClickActions(false);
-        JScrollPane workbenchScroll = new JScrollPane(this.getWorkbench());
+            final UpdaterWrapper updaterWrapper) {
+        this.workbench = new GraphWorkbench(updaterWrapper.getBayesUpdater().getManipulatedGraph());
+        this.workbench.setAllowDoubleClickActions(false);
+        final JScrollPane workbenchScroll = new JScrollPane(getWorkbench());
         workbenchScroll.setPreferredSize(new Dimension(400, 400));
         return workbenchScroll;
     }
 
-    private JPanel createRightPanel(UpdaterWrapper bayesUpdater) {
-        JPanel rightPanel = new JPanel();
+    private JPanel createRightPanel(final UpdaterWrapper bayesUpdater) {
+        final JPanel rightPanel = new JPanel();
         rightPanel.setLayout(new BorderLayout());
-        rightPanel.add(this.createMenuBar(), BorderLayout.NORTH);
-        rightPanel.add(this.createWizardPanel(bayesUpdater), BorderLayout.CENTER);
+        rightPanel.add(createMenuBar(), BorderLayout.NORTH);
+        rightPanel.add(createWizardPanel(bayesUpdater), BorderLayout.CENTER);
 
-        BayesIm bayesIm = bayesUpdater.getBayesUpdater().getBayesIm();
+        final BayesIm bayesIm = bayesUpdater.getBayesUpdater().getBayesIm();
         boolean incomplete = false;
 
         for (int i = 0; i < bayesIm.getNumNodes(); i++) {
@@ -218,7 +218,7 @@ public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
         }
 
         if (incomplete) {
-            JLabel label = new JLabel("NOTE: The Bayes IM is not completely specified.");
+            final JLabel label = new JLabel("NOTE: The Bayes IM is not completely specified.");
             label.setFont(new Font("Dialog", Font.BOLD, 12));
             rightPanel.add(label,
                     BorderLayout.SOUTH);
@@ -227,79 +227,79 @@ public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
         return rightPanel;
     }
 
-    private JPanel createWizardPanel(UpdaterWrapper updaterWrapper) {
-        cardPanel = new JPanel();
-        cardPanel.setLayout(new CardLayout());
-        evidenceWizardSingle =
-                new EvidenceWizardSingleObs(updaterWrapper, this.getWorkbench());
-        this.getEvidenceWizardSingle().addPropertyChangeListener(
+    private JPanel createWizardPanel(final UpdaterWrapper updaterWrapper) {
+        this.cardPanel = new JPanel();
+        this.cardPanel.setLayout(new CardLayout());
+        this.evidenceWizardSingle =
+                new EvidenceWizardSingleObs(updaterWrapper, getWorkbench());
+        getEvidenceWizardSingle().addPropertyChangeListener(
                 new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent e) {
+                    public void propertyChange(final PropertyChangeEvent e) {
                         if ("updateButtonPressed".equals(e.getPropertyName())) {
-                            BayesUpdaterEditorObs.this.resetSingleResultPanel();
-                            BayesUpdaterEditorObs.this.show("viewSingleResult");
+                            resetSingleResultPanel();
+                            show("viewSingleResult");
                         }
                     }
                 });
-        cardPanel.add(new JScrollPane(this.getEvidenceWizardSingle()),
+        this.cardPanel.add(new JScrollPane(getEvidenceWizardSingle()),
                 "editEvidenceSingle");
 
-        evidenceWizardMultiple =
-                new EvidenceWizardMultipleObs(updaterWrapper, this.getWorkbench());
-        this.getEvidenceWizardMultiple().addPropertyChangeListener(
+        this.evidenceWizardMultiple =
+                new EvidenceWizardMultipleObs(updaterWrapper, getWorkbench());
+        getEvidenceWizardMultiple().addPropertyChangeListener(
                 new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent e) {
+                    public void propertyChange(final PropertyChangeEvent e) {
                         if ("updateButtonPressed".equals(e.getPropertyName())) {
-                            BayesUpdaterEditorObs.this.resetMultipleResultPanel();
-                            BayesUpdaterEditorObs.this.show("viewMultiResult");
+                            resetMultipleResultPanel();
+                            show("viewMultiResult");
                         }
                     }
                 });
-        cardPanel.add(new JScrollPane(this.getEvidenceWizardMultiple()),
+        this.cardPanel.add(new JScrollPane(getEvidenceWizardMultiple()),
                 "editEvidenceMultiple");
 
-        singleResultPanel = new JPanel();
-        singleResultPanel.setLayout(new BorderLayout());
-        this.resetSingleResultPanel();
+        this.singleResultPanel = new JPanel();
+        this.singleResultPanel.setLayout(new BorderLayout());
+        resetSingleResultPanel();
 
-        multiResultPanel = new JPanel();
-        multiResultPanel.setLayout(new BorderLayout());
-        this.resetMultipleResultPanel();
+        this.multiResultPanel = new JPanel();
+        this.multiResultPanel.setLayout(new BorderLayout());
+        resetMultipleResultPanel();
 
-        cardPanel.add(new JScrollPane(singleResultPanel), "viewSingleResult");
-        cardPanel.add(new JScrollPane(multiResultPanel), "viewMultiResult");
+        this.cardPanel.add(new JScrollPane(this.singleResultPanel), "viewSingleResult");
+        this.cardPanel.add(new JScrollPane(this.multiResultPanel), "viewMultiResult");
 
-        return cardPanel;
+        return this.cardPanel;
     }
 
-    private void show(String s) {
-        CardLayout card = (CardLayout) cardPanel.getLayout();
-        card.show(cardPanel, s);
+    private void show(final String s) {
+        final CardLayout card = (CardLayout) this.cardPanel.getLayout();
+        card.show(this.cardPanel, s);
     }
 
     private JMenuBar createMenuBar() {
-        JMenuBar menuBar = new JMenuBar();
-        JMenu evidenceMenu = new JMenu("Evidence");
+        final JMenuBar menuBar = new JMenuBar();
+        final JMenu evidenceMenu = new JMenu("Evidence");
         menuBar.add(evidenceMenu);
-        JMenuItem editEvidence = new JMenuItem("Edit Evidence");
+        final JMenuItem editEvidence = new JMenuItem("Edit Evidence");
         editEvidence.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.ALT_MASK));
         evidenceMenu.add(editEvidence);
 
-        JMenu modeMenu = new JMenu("Mode");
+        final JMenu modeMenu = new JMenu("Mode");
         menuBar.add(modeMenu);
-        JCheckBoxMenuItem singleVariable =
+        final JCheckBoxMenuItem singleVariable =
                 new JCheckBoxMenuItem("In-Depth Information (Single Variable)");
-        JCheckBoxMenuItem multiVariable =
+        final JCheckBoxMenuItem multiVariable =
                 new JCheckBoxMenuItem("Marginals Only (Multiple Variables)");
 
-        ButtonGroup group = new ButtonGroup();
+        final ButtonGroup group = new ButtonGroup();
         group.add(singleVariable);
         group.add(multiVariable);
 
-        if (mode == SINGLE_VALUE) {
+        if (this.mode == BayesUpdaterEditorObs.SINGLE_VALUE) {
             singleVariable.setSelected(true);
-        } else if (mode == MULTI_VALUE) {
+        } else if (this.mode == BayesUpdaterEditorObs.MULTI_VALUE) {
             multiVariable.setSelected(true);
         }
 
@@ -307,83 +307,83 @@ public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
         modeMenu.add(multiVariable);
 
         editEvidence.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                BayesUpdaterEditorObs.this.setMode(mode);
+            public void actionPerformed(final ActionEvent e) {
+                setMode(BayesUpdaterEditorObs.this.mode);
             }
         });
 
         singleVariable.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                BayesUpdaterEditorObs.this.setMode(SINGLE_VALUE);
+            public void actionPerformed(final ActionEvent e) {
+                setMode(BayesUpdaterEditorObs.SINGLE_VALUE);
             }
         });
 
         multiVariable.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                BayesUpdaterEditorObs.this.setMode(MULTI_VALUE);
+            public void actionPerformed(final ActionEvent e) {
+                setMode(BayesUpdaterEditorObs.MULTI_VALUE);
             }
         });
 
         return menuBar;
     }
 
-    private void setMode(int mode) {
+    private void setMode(final int mode) {
         this.mode = mode;
 
-        if (mode == SINGLE_VALUE) {
-            this.show("editEvidenceSingle");
-        } else if (mode == MULTI_VALUE) {
-            this.show("editEvidenceMultiple");
+        if (mode == BayesUpdaterEditorObs.SINGLE_VALUE) {
+            show("editEvidenceSingle");
+        } else if (mode == BayesUpdaterEditorObs.MULTI_VALUE) {
+            show("editEvidenceMultiple");
         } else {
             throw new IllegalStateException();
         }
     }
 
     private void resetSingleResultPanel() {
-        Window owner = (Window) this.getTopLevelAncestor();
+        final Window owner = (Window) getTopLevelAncestor();
 
         if (owner == null) {
-            this.resetSingleResultPanelSub();
+            resetSingleResultPanelSub();
         } else {
             new WatchedProcess(owner) {
                 public void watch() {
-                    BayesUpdaterEditorObs.this.resetSingleResultPanelSub();
+                    resetSingleResultPanelSub();
                 }
             };
         }
     }
 
     private void resetSingleResultPanelSub() {
-        UpdatedBayesImWizardObs wizard = new UpdatedBayesImWizardObs(
-                this.getUpdaterWrapper(), this.getWorkbench(), updatedBayesImWizardTab,
-                this.getSelectedNode());
+        final UpdatedBayesImWizardObs wizard = new UpdatedBayesImWizardObs(
+                getUpdaterWrapper(), getWorkbench(), this.updatedBayesImWizardTab,
+                getSelectedNode());
         wizard.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent e) {
+            public void propertyChange(final PropertyChangeEvent e) {
                 if ("updatedBayesImWizardTab".equals(e.getPropertyName())) {
-                    updatedBayesImWizardTab = ((Integer) (e.getNewValue()));
+                    BayesUpdaterEditorObs.this.updatedBayesImWizardTab = ((Integer) (e.getNewValue()));
                 }
             }
         });
-        singleResultPanel.removeAll();
-        singleResultPanel.add(wizard, BorderLayout.CENTER);
-        singleResultPanel.revalidate();
-        singleResultPanel.repaint();
+        this.singleResultPanel.removeAll();
+        this.singleResultPanel.add(wizard, BorderLayout.CENTER);
+        this.singleResultPanel.revalidate();
+        this.singleResultPanel.repaint();
     }
 
     private void resetMultipleResultPanel() {
-        JTextArea textArea = this.getEvidenceWizardMultiple().getTextArea();
-        multiResultPanel.removeAll();
-        multiResultPanel.add(textArea, BorderLayout.CENTER);
-        multiResultPanel.revalidate();
-        multiResultPanel.repaint();
+        final JTextArea textArea = getEvidenceWizardMultiple().getTextArea();
+        this.multiResultPanel.removeAll();
+        this.multiResultPanel.add(textArea, BorderLayout.CENTER);
+        this.multiResultPanel.revalidate();
+        this.multiResultPanel.repaint();
     }
 
     private Node getSelectedNode() {
         UpdatedBayesImWizardObs wizard = null;
         Node selectedNode = null;
 
-        for (int i = 0; i < singleResultPanel.getComponentCount(); i++) {
-            Component component = singleResultPanel.getComponent(i);
+        for (int i = 0; i < this.singleResultPanel.getComponentCount(); i++) {
+            final Component component = this.singleResultPanel.getComponent(i);
             if (component instanceof UpdatedBayesImWizardObs) {
                 wizard = (UpdatedBayesImWizardObs) component;
             }

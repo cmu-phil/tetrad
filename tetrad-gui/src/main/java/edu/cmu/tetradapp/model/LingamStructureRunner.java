@@ -54,7 +54,7 @@ public class LingamStructureRunner extends AbstractAlgorithmRunner implements
 
     //============================CONSTRUCTORS============================//
 
-    public LingamStructureRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public LingamStructureRunner(final DataWrapper dataWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
@@ -75,13 +75,13 @@ public class LingamStructureRunner extends AbstractAlgorithmRunner implements
      */
 
     public void execute() {
-        DataModel source = this.getDataModel();
+        final DataModel source = getDataModel();
 
         if (!(source instanceof DataSet)) {
             throw new IllegalArgumentException("Expecting a rectangular data set.");
         }
 
-        DataSet data = (DataSet) source;
+        final DataSet data = (DataSet) source;
 
         if (!data.isContinuous()) {
             throw new IllegalArgumentException("Expecting a continuous data set.");
@@ -95,15 +95,15 @@ public class LingamStructureRunner extends AbstractAlgorithmRunner implements
 //        Graph graph = result.getGraph();
 
 
-        Lingam lingam = new Lingam();
-        Parameters params = this.getParams();
-        Graph graph = lingam.search(data);
+        final Lingam lingam = new Lingam();
+        final Parameters params = getParams();
+        final Graph graph = lingam.search(data);
 
 
-        this.setResultGraph(graph);
+        setResultGraph(graph);
 
-        if (this.getSourceGraph() != null) {
-            GraphUtils.arrangeBySourceGraph(graph, this.getSourceGraph());
+        if (getSourceGraph() != null) {
+            GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
         } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
@@ -111,7 +111,7 @@ public class LingamStructureRunner extends AbstractAlgorithmRunner implements
     }
 
     public Graph getGraph() {
-        return this.getResultGraph();
+        return getResultGraph();
     }
 
     /**
@@ -127,7 +127,7 @@ public class LingamStructureRunner extends AbstractAlgorithmRunner implements
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>
      * for the given node.
      */
-    public List<List<Triple>> getTriplesLists(Node node) {
+    public List<List<Triple>> getTriplesLists(final Node node) {
         return new LinkedList<>();
     }
 
@@ -136,8 +136,8 @@ public class LingamStructureRunner extends AbstractAlgorithmRunner implements
     }
 
     public ImpliedOrientation getMeekRules() {
-        MeekRules rules = new MeekRules();
-        rules.setKnowledge((IKnowledge) this.getParams().get("knowledge", new Knowledge2()));
+        final MeekRules rules = new MeekRules();
+        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
 
@@ -147,32 +147,32 @@ public class LingamStructureRunner extends AbstractAlgorithmRunner implements
     }
 
     private boolean isAggressivelyPreventCycles() {
-        Parameters params = this.getParams();
+        final Parameters params = getParams();
         if (params instanceof Parameters) {
             return params.getBoolean("aggressivelyPreventCycles", false);
         }
         return false;
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        this.firePropertyChange(evt);
+    public void propertyChange(final PropertyChangeEvent evt) {
+        firePropertyChange(evt);
     }
 
-    private void firePropertyChange(PropertyChangeEvent evt) {
-        for (PropertyChangeListener l : this.getListeners()) {
+    private void firePropertyChange(final PropertyChangeEvent evt) {
+        for (final PropertyChangeListener l : getListeners()) {
             l.propertyChange(evt);
         }
     }
 
     private List<PropertyChangeListener> getListeners() {
-        if (listeners == null) {
-            listeners = new ArrayList<>();
+        if (this.listeners == null) {
+            this.listeners = new ArrayList<>();
         }
-        return listeners;
+        return this.listeners;
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        if (!this.getListeners().contains(l)) this.getListeners().add(l);
+    public void addPropertyChangeListener(final PropertyChangeListener l) {
+        if (!getListeners().contains(l)) getListeners().add(l);
     }
 }
 

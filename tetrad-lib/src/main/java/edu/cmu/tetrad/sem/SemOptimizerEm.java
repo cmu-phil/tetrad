@@ -64,10 +64,10 @@ public class SemOptimizerEm implements SemOptimizer {
     public SemOptimizerEm() {
     }
 
-    public void optimize(SemIm semIm) {
-        if (numRestarts < 1) numRestarts = 1;
+    public void optimize(final SemIm semIm) {
+        if (this.numRestarts < 1) this.numRestarts = 1;
 
-        Matrix sampleCovar = semIm.getSampleCovar();
+        final Matrix sampleCovar = semIm.getSampleCovar();
 
         if (sampleCovar == null) {
             throw new NullPointerException("Sample covar has not been set.");
@@ -77,7 +77,7 @@ public class SemOptimizerEm implements SemOptimizer {
             throw new IllegalArgumentException("Please remove or impute missing values.");
         }
 
-        if (numRestarts < 1) numRestarts = 1;
+        if (this.numRestarts < 1) this.numRestarts = 1;
 
 
         // Optimize the semIm. Note that the the covariance matrix of the
@@ -85,13 +85,13 @@ public class SemOptimizerEm implements SemOptimizer {
         double min = semIm.getChiSquare();
         SemIm _sem = semIm;
 
-        for (int count = 0; count < numRestarts; count++) {
+        for (int count = 0; count < this.numRestarts; count++) {
             TetradLogger.getInstance().log("details", "Trial " + (count + 1));
-            SemIm _sem2 = new SemIm(semIm);
+            final SemIm _sem2 = new SemIm(semIm);
 
-            List<Parameter> freeParameters = _sem2.getFreeParameters();
+            final List<Parameter> freeParameters = _sem2.getFreeParameters();
 
-            double[] p = new double[freeParameters.size()];
+            final double[] p = new double[freeParameters.size()];
 
             for (int i = 0; i < freeParameters.size(); i++) {
                 if (freeParameters.get(i).getType() == ParamType.VAR) {
@@ -103,9 +103,9 @@ public class SemOptimizerEm implements SemOptimizer {
 
             _sem2.setFreeParamValues(p);
 
-            this.optimize2(_sem2);
+            optimize2(_sem2);
 
-            double chisq = _sem2.getChiSquare();
+            final double chisq = _sem2.getChiSquare();
             TetradLogger.getInstance().log("details", "chisq = " + chisq);
 
             if (chisq < min) {
@@ -114,53 +114,53 @@ public class SemOptimizerEm implements SemOptimizer {
             }
         }
 
-        for (Parameter param : semIm.getFreeParameters()) {
+        for (final Parameter param : semIm.getFreeParameters()) {
             try {
-                Node nodeA = param.getNodeA();
-                Node nodeB = param.getNodeB();
+                final Node nodeA = param.getNodeA();
+                final Node nodeB = param.getNodeB();
 
-                Node _nodeA = _sem.getVariableNode(nodeA.getName());
-                Node _nodeB = _sem.getVariableNode(nodeB.getName());
+                final Node _nodeA = _sem.getVariableNode(nodeA.getName());
+                final Node _nodeB = _sem.getVariableNode(nodeB.getName());
 
-                double value = _sem.getParamValue(_nodeA, _nodeB);
+                final double value = _sem.getParamValue(_nodeA, _nodeB);
                 semIm.setParamValue(param, value);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 e.printStackTrace();
                 throw new RuntimeException(e);
             }
         }
     }
 
-    private void optimize2(SemIm semIm) {
-        boolean showErrors = semIm.getSemPm().getGraph().isShowErrorTerms();
+    private void optimize2(final SemIm semIm) {
+        final boolean showErrors = semIm.getSemPm().getGraph().isShowErrorTerms();
         semIm.getSemPm().getGraph().setShowErrorTerms(true);
 
-        this.initialize(semIm);
-        this.updateMatrices();
-        double score, newScore = this.scoreSemIm();
+        initialize(semIm);
+        updateMatrices();
+        double score, newScore = scoreSemIm();
         do {
             score = newScore;
-            this.expectation();
-            this.maximization();
-            this.updateMatrices();
-            newScore = this.scoreSemIm();
-        } while (newScore > score + FUNC_TOLERANCE);
+            expectation();
+            maximization();
+            updateMatrices();
+            newScore = scoreSemIm();
+        } while (newScore > score + SemOptimizerEm.FUNC_TOLERANCE);
 
         semIm.getSemPm().getGraph().setShowErrorTerms(showErrors);
     }
 
     @Override
-    public void setNumRestarts(int numRestarts) {
+    public void setNumRestarts(final int numRestarts) {
         this.numRestarts = numRestarts;
     }
 
     @Override
     public int getNumRestarts() {
-        return numRestarts;
+        return this.numRestarts;
     }
 
     public Matrix getExpectedCovarianceMatrix() {
-        return new Matrix(expectedCov);
+        return new Matrix(this.expectedCov);
     }
 
     /**
@@ -172,85 +172,85 @@ public class SemOptimizerEm implements SemOptimizer {
 
     //==============================PRIVATE METHODS========================//
 
-    private void initialize(SemIm semIm) {
+    private void initialize(final SemIm semIm) {
         this.semIm = semIm;
-        graph = semIm.getSemPm().getGraph();
-        yCov = semIm.getSampleCovar();
+        this.graph = semIm.getSemPm().getGraph();
+        this.yCov = semIm.getSampleCovar();
 
-        if (yCov == null) {
+        if (this.yCov == null) {
             throw new NullPointerException("Sample covar has not been set.");
         }
 
-        numObserved = 0;
-        numLatent = 0;
-        List<Node> nodes = graph.getNodes();
+        this.numObserved = 0;
+        this.numLatent = 0;
+        final List<Node> nodes = this.graph.getNodes();
 
-        for (Node node : nodes) {
+        for (final Node node : nodes) {
             if (node.getNodeType() == NodeType.LATENT) {
-                numLatent++;
+                this.numLatent++;
             } else if (node.getNodeType() == NodeType.MEASURED) {
-                numObserved++;
+                this.numObserved++;
             }
         }
 
-        if (numLatent == 0) {
+        if (this.numLatent == 0) {
             throw new IllegalArgumentException("Need at least one latent for the EM estimator.");
         }
 
-        idxLatent = new int[numLatent];
-        idxObserved = new int[numObserved];
+        this.idxLatent = new int[this.numLatent];
+        this.idxObserved = new int[this.numObserved];
         int countLatent = 0;
         int countObserved = 0;
 
         for (int i = 0; i < nodes.size(); i++) {
-            Node node = nodes.get(i);
+            final Node node = nodes.get(i);
             if (node.getNodeType() == NodeType.LATENT) {
-                idxLatent[countLatent++] = i;
+                this.idxLatent[countLatent++] = i;
             } else if (node.getNodeType() == NodeType.MEASURED) {
-                idxObserved[countObserved++] = i;
+                this.idxObserved[countObserved++] = i;
             }
         }
 
-        expectedCov = new Matrix(numObserved + numLatent, numObserved + numLatent);
+        this.expectedCov = new Matrix(this.numObserved + this.numLatent, this.numObserved + this.numLatent);
 
-        for (int i = 0; i < numObserved; i++) {
-            for (int j = i; j < numObserved; j++) {
-                expectedCov.set(idxObserved[i], idxObserved[j], yCov.get(i, j));
-                expectedCov.set(idxObserved[j], idxObserved[i], yCov.get(i, j));
+        for (int i = 0; i < this.numObserved; i++) {
+            for (int j = i; j < this.numObserved; j++) {
+                this.expectedCov.set(this.idxObserved[i], this.idxObserved[j], this.yCov.get(i, j));
+                this.expectedCov.set(this.idxObserved[j], this.idxObserved[i], this.yCov.get(i, j));
             }
         }
 
-        yCovModel = new Matrix(numObserved, numObserved);
-        yzCovModel = new Matrix(numObserved, numLatent);
-        zCovModel = new Matrix(numLatent, numLatent);
+        this.yCovModel = new Matrix(this.numObserved, this.numObserved);
+        this.yzCovModel = new Matrix(this.numObserved, this.numLatent);
+        this.zCovModel = new Matrix(this.numLatent, this.numLatent);
 
-        parents = new int[numLatent + numObserved][];
-        errorParent = new Node[numLatent + numObserved];
-        nodeParentsCov = new double[numLatent + numObserved][];
-        parentsCov = new double[numLatent + numObserved][][];
-        for (Node node : nodes) {
+        this.parents = new int[this.numLatent + this.numObserved][];
+        this.errorParent = new Node[this.numLatent + this.numObserved];
+        this.nodeParentsCov = new double[this.numLatent + this.numObserved][];
+        this.parentsCov = new double[this.numLatent + this.numObserved][][];
+        for (final Node node : nodes) {
             if (node.getNodeType() == NodeType.ERROR) {
                 continue;
             }
-            int idx = nodes.indexOf(node);
-            List<Node> _parents = graph.getParents(node);
+            final int idx = nodes.indexOf(node);
+            final List<Node> _parents = this.graph.getParents(node);
             for (int i = 0; i < _parents.size(); i++) {
-                Node nextParent = _parents.get(i);
+                final Node nextParent = _parents.get(i);
                 if (nextParent.getNodeType() == NodeType.ERROR) {
-                    errorParent[idx] = nextParent;
+                    this.errorParent[idx] = nextParent;
                     _parents.remove(nextParent);
                     break;
                 }
             }
             if (_parents.size() > 0) {
-                parents[idx] = new int[_parents.size()];
-                nodeParentsCov[idx] = new double[_parents.size()];
-                parentsCov[idx] = new double[_parents.size()][_parents.size()];
+                this.parents[idx] = new int[_parents.size()];
+                this.nodeParentsCov[idx] = new double[_parents.size()];
+                this.parentsCov[idx] = new double[_parents.size()][_parents.size()];
                 for (int i = 0; i < _parents.size(); i++) {
-                    parents[idx][i] = nodes.indexOf(_parents.get(i));
+                    this.parents[idx][i] = nodes.indexOf(_parents.get(i));
                 }
             } else {
-                parents[idx] = null;
+                this.parents[idx] = null;
             }
         }
     }
@@ -260,90 +260,90 @@ public class SemOptimizerEm implements SemOptimizer {
     }
 
     private void expectation() {
-        Matrix bYZModel = yCovModel.inverse().times(yzCovModel);
-        Matrix yzCovPred = yCov.times(bYZModel);
-        Matrix zCovModel = yzCovModel.transpose().times(bYZModel);
-        Matrix zCovDiff = this.zCovModel.minus(zCovModel);
-        Matrix CzPred = yzCovPred.transpose().times(bYZModel);
-        Matrix newCz = CzPred.plus(zCovDiff);
+        final Matrix bYZModel = this.yCovModel.inverse().times(this.yzCovModel);
+        final Matrix yzCovPred = this.yCov.times(bYZModel);
+        final Matrix zCovModel = this.yzCovModel.transpose().times(bYZModel);
+        final Matrix zCovDiff = this.zCovModel.minus(zCovModel);
+        final Matrix CzPred = yzCovPred.transpose().times(bYZModel);
+        final Matrix newCz = CzPred.plus(zCovDiff);
 
-        for (int i = 0; i < numLatent; i++) {
-            for (int j = i; j < numLatent; j++) {
-                expectedCov.set(idxLatent[i], idxLatent[j], newCz.get(i, j));
-                expectedCov.set(idxLatent[j], idxLatent[i], newCz.get(j, i));
+        for (int i = 0; i < this.numLatent; i++) {
+            for (int j = i; j < this.numLatent; j++) {
+                this.expectedCov.set(this.idxLatent[i], this.idxLatent[j], newCz.get(i, j));
+                this.expectedCov.set(this.idxLatent[j], this.idxLatent[i], newCz.get(j, i));
             }
         }
 
-        for (int i = 0; i < numLatent; i++) {
-            for (int j = 0; j < numObserved; j++) {
-                double v = yzCovPred.get(j, i);
-                expectedCov.set(idxLatent[i], idxObserved[j], v);
-                expectedCov.set(idxObserved[j], idxLatent[i], v);
+        for (int i = 0; i < this.numLatent; i++) {
+            for (int j = 0; j < this.numObserved; j++) {
+                final double v = yzCovPred.get(j, i);
+                this.expectedCov.set(this.idxLatent[i], this.idxObserved[j], v);
+                this.expectedCov.set(this.idxObserved[j], this.idxLatent[i], v);
             }
         }
     }
 
     private void maximization() {
-        List<Node> nodes = graph.getNodes();
+        final List<Node> nodes = this.graph.getNodes();
 
-        for (Node node : graph.getNodes()) {
+        for (final Node node : this.graph.getNodes()) {
             if (node.getNodeType() == NodeType.ERROR) {
                 continue;
             }
 
-            int idx = nodes.indexOf(node);
-            double variance = expectedCov.get(idx, idx);
+            final int idx = nodes.indexOf(node);
+            double variance = this.expectedCov.get(idx, idx);
 
-            if (parents[idx] != null) {
-                for (int i = 0; i < parents[idx].length; i++) {
-                    int idx2 = parents[idx][i];
-                    nodeParentsCov[idx][i] = expectedCov.get(idx, idx2);
-                    for (int j = i; j < parents[idx].length; j++) {
-                        int idx3 = parents[idx][j];
-                        parentsCov[idx][i][j] = expectedCov.get(idx2, idx3);
-                        parentsCov[idx][j][i] = expectedCov.get(idx3, idx2);
+            if (this.parents[idx] != null) {
+                for (int i = 0; i < this.parents[idx].length; i++) {
+                    final int idx2 = this.parents[idx][i];
+                    this.nodeParentsCov[idx][i] = this.expectedCov.get(idx, idx2);
+                    for (int j = i; j < this.parents[idx].length; j++) {
+                        final int idx3 = this.parents[idx][j];
+                        this.parentsCov[idx][i][j] = this.expectedCov.get(idx2, idx3);
+                        this.parentsCov[idx][j][i] = this.expectedCov.get(idx3, idx2);
                     }
                 }
 
-                Vector coefs = new Matrix(parentsCov[idx]).inverse().times(new Vector(nodeParentsCov[idx]));
+                final Vector coefs = new Matrix(this.parentsCov[idx]).inverse().times(new Vector(this.nodeParentsCov[idx]));
 
                 for (int i = 0; i < coefs.size(); i++) {
 
-                    if (semIm.getSemPm().getParameter(nodes.get(parents[idx][i]), node) != null && !semIm.getSemPm().getParameter(nodes.get(parents[idx][i]), node).isFixed()) {
-                        semIm.setEdgeCoef(nodes.get(parents[idx][i]), node, coefs.get(i));
+                    if (this.semIm.getSemPm().getParameter(nodes.get(this.parents[idx][i]), node) != null && !this.semIm.getSemPm().getParameter(nodes.get(this.parents[idx][i]), node).isFixed()) {
+                        this.semIm.setEdgeCoef(nodes.get(this.parents[idx][i]), node, coefs.get(i));
                     }
                 }
 
-                variance -= new Vector(nodeParentsCov[idx]).dotProduct(coefs);
+                variance -= new Vector(this.nodeParentsCov[idx]).dotProduct(coefs);
             }
 
-            if (!semIm.getSemPm().getParameter(errorParent[idx], errorParent[idx]).isFixed()) {
-                semIm.setErrCovar(errorParent[idx], variance);
+            if (!this.semIm.getSemPm().getParameter(this.errorParent[idx], this.errorParent[idx]).isFixed()) {
+                this.semIm.setErrCovar(this.errorParent[idx], variance);
             }
         }
     }
 
     private void updateMatrices() {
-        Matrix impliedCovar = semIm.getImplCovar(true);
-        for (int i = 0; i < numObserved; i++) {
-            for (int j = i; j < numObserved; j++) {
-                yCovModel.set(i, j, impliedCovar.get(idxObserved[i], idxObserved[j]));
-                yCovModel.set(j, i, impliedCovar.get(idxObserved[i], idxObserved[j]));
+        final Matrix impliedCovar = this.semIm.getImplCovar(true);
+        for (int i = 0; i < this.numObserved; i++) {
+            for (int j = i; j < this.numObserved; j++) {
+                this.yCovModel.set(i, j, impliedCovar.get(this.idxObserved[i], this.idxObserved[j]));
+                this.yCovModel.set(j, i, impliedCovar.get(this.idxObserved[i], this.idxObserved[j]));
             }
-            for (int j = 0; j < numLatent; j++) {
-                yzCovModel.set(i, j, impliedCovar.get(idxObserved[i], idxLatent[j]));
+            for (int j = 0; j < this.numLatent; j++) {
+                this.yzCovModel.set(i, j, impliedCovar.get(this.idxObserved[i], this.idxLatent[j]));
             }
         }
-        for (int i = 0; i < numLatent; i++) {
-            for (int j = i; j < numLatent; j++) {
-                zCovModel.set(i, j, impliedCovar.get(idxLatent[i], idxLatent[j]));
-                zCovModel.set(j, i, impliedCovar.get(idxLatent[i], idxLatent[j]));
+        for (int i = 0; i < this.numLatent; i++) {
+            for (int j = i; j < this.numLatent; j++) {
+                this.zCovModel.set(i, j, impliedCovar.get(this.idxLatent[i], this.idxLatent[j]));
+                this.zCovModel.set(j, i, impliedCovar.get(this.idxLatent[i], this.idxLatent[j]));
             }
         }
     }
 
     private double scoreSemIm() {
-        return -semIm.getScore();
+        return -this.semIm.getScore();
     }
 
 }

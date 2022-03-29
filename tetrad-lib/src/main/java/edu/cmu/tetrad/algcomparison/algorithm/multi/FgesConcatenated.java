@@ -34,44 +34,44 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     private Algorithm externalGraph;
     private boolean compareToTrue;
 
-    public FgesConcatenated(ScoreWrapper score) {
+    public FgesConcatenated(final ScoreWrapper score) {
         this.score = score;
     }
 
-    public FgesConcatenated(ScoreWrapper score, boolean compareToTrue) {
+    public FgesConcatenated(final ScoreWrapper score, final boolean compareToTrue) {
         this.score = score;
         this.compareToTrue = compareToTrue;
     }
 
-    public FgesConcatenated(ScoreWrapper score, Algorithm externalGraph) {
+    public FgesConcatenated(final ScoreWrapper score, final Algorithm externalGraph) {
         this.score = score;
         this.externalGraph = externalGraph;
     }
 
     @Override
-    public Graph search(List<DataModel> dataModels, Parameters parameters) {
+    public Graph search(final List<DataModel> dataModels, final Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            List<DataSet> dataSets = new ArrayList<>();
+            final List<DataSet> dataSets = new ArrayList<>();
 
-            for (DataModel dataModel : dataModels) {
+            for (final DataModel dataModel : dataModels) {
                 dataSets.add((DataSet) dataModel);
             }
 
-            DataSet dataSet = DataUtils.concatenate(dataSets);
+            final DataSet dataSet = DataUtils.concatenate(dataSets);
 
             Graph initial = null;
-            if (externalGraph != null) {
+            if (this.externalGraph != null) {
 
-                initial = externalGraph.search(dataSet, parameters);
+                initial = this.externalGraph.search(dataSet, parameters);
             }
 
-            edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(score.getScore(dataSet, parameters));
+            final edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(this.score.getScore(dataSet, parameters));
             search.setFaithfulnessAssumed(parameters.getBoolean(Params.FAITHFULNESS_ASSUMED));
-            search.setKnowledge(knowledge);
+            search.setKnowledge(this.knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
 
-            Object obj = parameters.get("printStedu.cmream");
+            final Object obj = parameters.get("printStedu.cmream");
             if (obj instanceof PrintStream) {
                 search.setOut((PrintStream) obj);
             }
@@ -82,16 +82,16 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
             return search.search();
         } else {
-            FgesConcatenated fgesConcatenated = new FgesConcatenated(score, externalGraph);
-            fgesConcatenated.setCompareToTrue(compareToTrue);
+            final FgesConcatenated fgesConcatenated = new FgesConcatenated(this.score, this.externalGraph);
+            fgesConcatenated.setCompareToTrue(this.compareToTrue);
 
-            List<DataSet> datasets = new ArrayList<>();
+            final List<DataSet> datasets = new ArrayList<>();
 
-            for (DataModel dataModel : dataModels) {
+            for (final DataModel dataModel : dataModels) {
                 datasets.add((DataSet) dataModel);
             }
-            GeneralResamplingTest search = new GeneralResamplingTest(datasets, fgesConcatenated, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(knowledge);
+            final GeneralResamplingTest search = new GeneralResamplingTest(datasets, fgesConcatenated, parameters.getInt(Params.NUMBER_RESAMPLING));
+            search.setKnowledge(this.knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -117,16 +117,16 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(final DataModel dataSet, final Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            return this.search(Collections.singletonList(DataUtils.getContinuousDataSet(dataSet)), parameters);
+            return search(Collections.singletonList(DataUtils.getContinuousDataSet(dataSet)), parameters);
         } else {
-            FgesConcatenated fgesConcatenated = new FgesConcatenated(score, externalGraph);
-            fgesConcatenated.setCompareToTrue(compareToTrue);
+            final FgesConcatenated fgesConcatenated = new FgesConcatenated(this.score, this.externalGraph);
+            fgesConcatenated.setCompareToTrue(this.compareToTrue);
 
-            List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
-            GeneralResamplingTest search = new GeneralResamplingTest(dataSets, fgesConcatenated, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(knowledge);
+            final List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
+            final GeneralResamplingTest search = new GeneralResamplingTest(dataSets, fgesConcatenated, parameters.getInt(Params.NUMBER_RESAMPLING));
+            search.setKnowledge(this.knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -152,8 +152,8 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     }
 
     @Override
-    public Graph getComparisonGraph(Graph graph) {
-        if (compareToTrue) {
+    public Graph getComparisonGraph(final Graph graph) {
+        if (this.compareToTrue) {
             return new EdgeListGraph(graph);
         } else {
             return SearchGraphUtils.cpdagForDag(new EdgeListGraph(graph));
@@ -162,7 +162,7 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "FGES (Fast Greedy Equivalence Search) on concatenated data using " + score.getDescription();
+        return "FGES (Fast Greedy Equivalence Search) on concatenated data using " + this.score.getDescription();
     }
 
     @Override
@@ -172,7 +172,7 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
+        final List<String> parameters = new ArrayList<>();
         parameters.add(Params.FAITHFULNESS_ASSUMED);
         parameters.add(Params.MAX_DEGREE);
 
@@ -186,11 +186,11 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(final IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
@@ -198,7 +198,7 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
      * @param compareToTrue true if the result should be compared to the true graph, false
      *                      if to the CPDAG of the true graph.
      */
-    public void setCompareToTrue(boolean compareToTrue) {
+    public void setCompareToTrue(final boolean compareToTrue) {
         this.compareToTrue = compareToTrue;
     }
 }

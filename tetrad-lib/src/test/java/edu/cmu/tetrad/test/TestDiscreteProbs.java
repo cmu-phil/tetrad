@@ -44,39 +44,39 @@ public final class TestDiscreteProbs extends TestCase {
     /**
      * Standard constructor for JUnit test cases.
      */
-    public TestDiscreteProbs(String name) {
+    public TestDiscreteProbs(final String name) {
         super(name);
     }
 
     public static void testCreateRandom() {
-        DiscreteVariable x = new DiscreteVariable("X", 3);
-        DiscreteVariable y = new DiscreteVariable("Y", 3);
-        DiscreteVariable z = new DiscreteVariable("Z", 3);
-        DiscreteVariable w = new DiscreteVariable("W", 2);
+        final DiscreteVariable x = new DiscreteVariable("X", 3);
+        final DiscreteVariable y = new DiscreteVariable("Y", 3);
+        final DiscreteVariable z = new DiscreteVariable("Z", 3);
+        final DiscreteVariable w = new DiscreteVariable("W", 2);
 
-        List<Node> variables = new LinkedList<>();
+        final List<Node> variables = new LinkedList<>();
         variables.add(x);
         variables.add(y);
         variables.add(z);
         variables.add(w);
 
-        StoredCellProbs cellProbabilities =
+        final StoredCellProbs cellProbabilities =
                 StoredCellProbs.createRandomCellTable(variables);
     }
 
     public void testCreateUsingBayesIm() {
-        Graph graph = GraphConverter.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
-        Dag dag = new Dag(graph);
-        BayesPm bayesPm = new BayesPm(dag);
-        BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+        final Graph graph = GraphConverter.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
+        final Dag dag = new Dag(graph);
+        final BayesPm bayesPm = new BayesPm(dag);
+        final BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
 
-        StoredCellProbs cellProbs = StoredCellProbs.createCellTable(bayesIm);
+        final StoredCellProbs cellProbs = StoredCellProbs.createCellTable(bayesIm);
 
-        Proposition assertion = Proposition.tautology(bayesIm);
+        final Proposition assertion = Proposition.tautology(bayesIm);
         assertion.setCategory(0, 1);
         assertion.removeCategory(2, 0);
 
-        Proposition condition = Proposition.tautology(bayesIm);
+        final Proposition condition = Proposition.tautology(bayesIm);
         condition.setCategory(0, 1);
 
         cellProbs.getConditionalProb(assertion, condition);

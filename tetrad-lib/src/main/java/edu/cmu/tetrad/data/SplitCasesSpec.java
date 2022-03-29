@@ -60,11 +60,11 @@ public final class SplitCasesSpec implements TetradSerializable {
 
     //============================CONSTRUCTORS==========================//
 
-    public SplitCasesSpec(int sampleSize, int[] breakpoints,
-                          List<String> splits) {
+    public SplitCasesSpec(final int sampleSize, final int[] breakpoints,
+                          final List<String> splits) {
         this.sampleSize = sampleSize;
         this.breakpoints = breakpoints;
-        splitNames = splits;
+        this.splitNames = splits;
     }
 
     /**
@@ -77,11 +77,11 @@ public final class SplitCasesSpec implements TetradSerializable {
     //============================PUBLIC METHODS========================//
 
     public List<String> getSplitNames() {
-        return splitNames;
+        return this.splitNames;
     }
 
     public int[] getBreakpoints() {
-        return breakpoints;
+        return this.breakpoints;
     }
 
     /**
@@ -97,21 +97,21 @@ public final class SplitCasesSpec implements TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (breakpoints == null) {
+        if (this.breakpoints == null) {
             throw new NullPointerException();
         }
 
-        if (splitNames == null) {
+        if (this.splitNames == null) {
             throw new NullPointerException();
         }
     }
 
     public int getSampleSize() {
-        return sampleSize;
+        return this.sampleSize;
     }
 }
 

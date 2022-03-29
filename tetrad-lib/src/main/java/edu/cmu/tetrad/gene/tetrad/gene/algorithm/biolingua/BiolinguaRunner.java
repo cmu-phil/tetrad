@@ -33,9 +33,9 @@ import edu.cmu.tetrad.gene.tetrad.gene.algorithm.util.SymMatrixF;
 public class BiolinguaRunner {
     static final String dashes =
             "===================================================================\n";
-    static final String welcomeMsg = "\n" + dashes +
+    static final String welcomeMsg = "\n" + BiolinguaRunner.dashes +
             "edu.cmu.gene.algorithm.biolingua.BiolinguaRunner.java    IHMC-UWF    rsaavedr@ai.uwf.edu    Jan/2002\n" +
-            "Runs the Biolingua algorithm\n" + dashes;
+            "Runs the Biolingua algorithm\n" + BiolinguaRunner.dashes;
 
     // Default inputs for the run
     static String mfname = "ltm.txt";
@@ -48,9 +48,9 @@ public class BiolinguaRunner {
     /**
      * Displays usage information for this program (moves line options)
      */
-    static void usageInfo(boolean welcome) {
+    static void usageInfo(final boolean welcome) {
         if (welcome) {
-            System.out.println("\n" + welcomeMsg + "\n");
+            System.out.println("\n" + BiolinguaRunner.welcomeMsg + "\n");
         }
         System.out.println(
                 "\nUsage  : java edu.cmu.gene.algorithm.biolingua.BiolinguaRunner [parameters]\n\n" +
@@ -69,11 +69,11 @@ public class BiolinguaRunner {
     /**
      * Used to display the usage info and an error message
      */
-    static void bailout(String errorMsg, boolean showUsageInfo, int exitCode) {
+    static void bailout(final String errorMsg, final boolean showUsageInfo, final int exitCode) {
         final String highlight =
                 "***************************************************************";
         if (showUsageInfo) {
-            usageInfo(false);
+            BiolinguaRunner.usageInfo(false);
         }
         System.out.println(highlight + "\nError: " + errorMsg);
         if (showUsageInfo) {
@@ -83,66 +83,66 @@ public class BiolinguaRunner {
         System.exit(exitCode);
     }
 
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
         if ((args.length > 0) && (args[0].equals("/?"))) {
             // Help invoked, or no arguments -> show usage info
-            usageInfo(true);
+            BiolinguaRunner.usageInfo(true);
             System.exit(0);
         }
         // Get and validate parameters from moves line
-        for (String arg : args) {
-            String varg = arg.toLowerCase();
+        for (final String arg : args) {
+            final String varg = arg.toLowerCase();
             try {
                 if (varg.startsWith("-m")) {
-                    mfname = varg.substring(2);
+                    BiolinguaRunner.mfname = varg.substring(2);
                     continue;
                 }
                 if (varg.startsWith("-g")) {
-                    gfname = varg.substring(2);
+                    BiolinguaRunner.gfname = varg.substring(2);
                     continue;
                 }
                 if (varg.startsWith("-ka")) {
-                    ka = Float.parseFloat(varg.substring(3));
+                    BiolinguaRunner.ka = Float.parseFloat(varg.substring(3));
                     continue;
                 }
                 if (varg.startsWith("-ke")) {
-                    ke = Float.parseFloat(varg.substring(3));
+                    BiolinguaRunner.ke = Float.parseFloat(varg.substring(3));
                     continue;
                 }
                 if (varg.startsWith("-kl")) {
-                    kl = Float.parseFloat(varg.substring(3));
+                    BiolinguaRunner.kl = Float.parseFloat(varg.substring(3));
                     continue;
                 }
                 if (varg.startsWith("-kp")) {
-                    kp = Float.parseFloat(varg.substring(3));
+                    BiolinguaRunner.kp = Float.parseFloat(varg.substring(3));
                     continue;
                 }
-                bailout("Unrecognized parameter  " + arg, true, 2);
-            } catch (Exception xcp) {
-                bailout("Unable to parse value from parameter  " + arg, true,
+                BiolinguaRunner.bailout("Unrecognized parameter  " + arg, true, 2);
+            } catch (final Exception xcp) {
+                BiolinguaRunner.bailout("Unable to parse value from parameter  " + arg, true,
                         1);
             }
         }
 
         try {
-            SymMatrixF cm = new SymMatrixF(mfname);
-            BiolinguaDigraph g = new BiolinguaDigraph(gfname);
+            final SymMatrixF cm = new SymMatrixF(BiolinguaRunner.mfname);
+            final BiolinguaDigraph g = new BiolinguaDigraph(BiolinguaRunner.gfname);
 
-            System.out.println(welcomeMsg);
+            System.out.println(BiolinguaRunner.welcomeMsg);
             System.out.println("Inputs:");
-            System.out.println("**** ka = " + ka);
-            System.out.println("**** ke = " + ke);
-            System.out.println("**** kl = " + kl);
-            System.out.println("**** kp = " + kp);
+            System.out.println("**** ka = " + BiolinguaRunner.ka);
+            System.out.println("**** ke = " + BiolinguaRunner.ke);
+            System.out.println("**** kl = " + BiolinguaRunner.kl);
+            System.out.println("**** kp = " + BiolinguaRunner.kp);
             System.out.println("**** Correlation matrix:\n" + cm);
             System.out.println("**** Initial graph:\n" + g);
 
             System.out.println("Running Biolingua");
-            BiolinguaDigraph result =
-                    Biolingua.BiolinguaAlgorithm(cm, g, ka, ke, kl, kp);
+            final BiolinguaDigraph result =
+                    Biolingua.BiolinguaAlgorithm(cm, g, BiolinguaRunner.ka, BiolinguaRunner.ke, BiolinguaRunner.kl, BiolinguaRunner.kp);
 
             System.out.println("\nFinal Graph:\n" + result);
-        } catch (Exception xcp) {
+        } catch (final Exception xcp) {
             System.out.println("Watch out!!!!  There was an exception:");
             xcp.printStackTrace();
         }

@@ -38,7 +38,7 @@ public class FciMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper
     public FciMax() {
     }
 
-    public FciMax(IndependenceWrapper test) {
+    public FciMax(final IndependenceWrapper test) {
         this.test = test;
     }
 
@@ -48,11 +48,11 @@ public class FciMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(final DataModel dataSet, final Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            edu.cmu.tetrad.search.FciMax search = new edu.cmu.tetrad.search.FciMax(test.getTest(dataSet, parameters));
+            final edu.cmu.tetrad.search.FciMax search = new edu.cmu.tetrad.search.FciMax(this.test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
-            search.setKnowledge(knowledge);
+            search.setKnowledge(this.knowledge);
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -62,15 +62,15 @@ public class FciMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper
 //            }
             return search.search();
         } else {
-            FciMax algorithm = new FciMax(test);
+            final FciMax algorithm = new FciMax(this.test);
             //algorithm.setKnowledge(knowledge);
 //          if (externalGraph != null) {
 //      		algorithm.setExternalGraph(externalGraph);
 //  		}
 
-            DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(knowledge);
+            final DataSet data = (DataSet) dataSet;
+            final GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
+            search.setKnowledge(this.knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -96,22 +96,22 @@ public class FciMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper
     }
 
     @Override
-    public Graph getComparisonGraph(Graph graph) {
+    public Graph getComparisonGraph(final Graph graph) {
         return new DagToPag2(new EdgeListGraph(graph)).convert();
     }
 
     public String getDescription() {
-        return "FCI-Max (Fast Causal Inference Max P-value) using " + test.getDescription();
+        return "FCI-Max (Fast Causal Inference Max P-value) using " + this.test.getDescription();
     }
 
     @Override
     public DataType getDataType() {
-        return test.getDataType();
+        return this.test.getDataType();
     }
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
+        final List<String> parameters = new ArrayList<>();
 
         parameters.add(Params.DEPTH);
         parameters.add(Params.MAX_PATH_LENGTH);
@@ -123,21 +123,21 @@ public class FciMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper
 
     @Override
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(final IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
-        return test;
+        return this.test;
     }
 
     @Override
-    public void setIndependenceWrapper(IndependenceWrapper test) {
+    public void setIndependenceWrapper(final IndependenceWrapper test) {
         this.test = test;
     }
 

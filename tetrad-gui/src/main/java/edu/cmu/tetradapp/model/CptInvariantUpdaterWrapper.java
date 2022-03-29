@@ -57,44 +57,44 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
 
     //============================CONSTRUCTORS==========================//
 
-    public CptInvariantUpdaterWrapper(BayesImWrapper wrapper, Parameters params) {
+    public CptInvariantUpdaterWrapper(final BayesImWrapper wrapper, final Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
-        BayesIm bayesIm = wrapper.getBayesIm();
-        this.setup(bayesIm, params);
+        final BayesIm bayesIm = wrapper.getBayesIm();
+        setup(bayesIm, params);
     }
 
-    public CptInvariantUpdaterWrapper(DirichletBayesImWrapper wrapper, Parameters params) {
+    public CptInvariantUpdaterWrapper(final DirichletBayesImWrapper wrapper, final Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
-        DirichletBayesIm bayesIm = wrapper.getDirichletBayesIm();
-        this.setup(bayesIm, params);
+        final DirichletBayesIm bayesIm = wrapper.getDirichletBayesIm();
+        setup(bayesIm, params);
     }
 
-    public CptInvariantUpdaterWrapper(BayesEstimatorWrapper wrapper, Parameters params) {
+    public CptInvariantUpdaterWrapper(final BayesEstimatorWrapper wrapper, final Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
-        BayesIm bayesIm = wrapper.getEstimatedBayesIm();
-        this.setup(bayesIm, params);
+        final BayesIm bayesIm = wrapper.getEstimatedBayesIm();
+        setup(bayesIm, params);
     }
 
-    public CptInvariantUpdaterWrapper(DirichletEstimatorWrapper wrapper, Parameters params) {
+    public CptInvariantUpdaterWrapper(final DirichletEstimatorWrapper wrapper, final Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
-        DirichletBayesIm bayesIm = wrapper.getEstimatedBayesIm();
-        this.setup(bayesIm, params);
+        final DirichletBayesIm bayesIm = wrapper.getEstimatedBayesIm();
+        setup(bayesIm, params);
     }
 
-    public CptInvariantUpdaterWrapper(EmBayesEstimatorWrapper wrapper, Parameters params) {
+    public CptInvariantUpdaterWrapper(final EmBayesEstimatorWrapper wrapper, final Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
-        BayesIm bayesIm = wrapper.getEstimateBayesIm();
-        this.setup(bayesIm, params);
+        final BayesIm bayesIm = wrapper.getEstimateBayesIm();
+        setup(bayesIm, params);
     }
 
     /**
@@ -110,26 +110,26 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
     //=============================PUBLIC METHODS==========================//
 
     public ManipulatingBayesUpdater getBayesUpdater() {
-        return bayesUpdater;
+        return this.bayesUpdater;
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
     //============================PRIVATE METHODS=========================//
 
-    private void setup(BayesIm bayesIm, Parameters params) {
-        TetradLogger.getInstance().setConfigForClass(getClass());
+    private void setup(final BayesIm bayesIm, final Parameters params) {
+        TetradLogger.getInstance().setConfigForClass(this.getClass());
         this.params = params;
         if (params.get("evidence", null) == null || ((Evidence) params.get("evidence", null)).isIncompatibleWith(bayesIm)) {
-            bayesUpdater = new CptInvariantUpdater(bayesIm);
+            this.bayesUpdater = new CptInvariantUpdater(bayesIm);
         } else {
-            bayesUpdater = new CptInvariantUpdater(bayesIm,
+            this.bayesUpdater = new CptInvariantUpdater(bayesIm,
                     (Evidence) params.get("evidence", null));
         }
 
@@ -169,12 +169,12 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
         TetradLogger.getInstance().reset();
     }
 
-    private String category(Evidence evidence, String nodeName, int i) {
-        DiscreteVariable variable = this.discreteVariable(evidence, nodeName);
+    private String category(final Evidence evidence, final String nodeName, final int i) {
+        final DiscreteVariable variable = discreteVariable(evidence, nodeName);
         return variable.getCategory(i);
     }
 
-    private DiscreteVariable discreteVariable(Evidence evidence, String nodeName) {
+    private DiscreteVariable discreteVariable(final Evidence evidence, final String nodeName) {
         return evidence.getVariable(nodeName);
     }
 
@@ -191,17 +191,17 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (bayesUpdater == null) {
+        if (this.bayesUpdater == null) {
             throw new NullPointerException();
         }
     }
 
     public Parameters getParams() {
-        return params;
+        return this.params;
     }
 }
 

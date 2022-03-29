@@ -37,7 +37,7 @@ public class MatrixF extends BasicMatrix {
      * Creates a matrix with name <code>mname</code>, and <code>nrows</code>
      * rows.
      */
-    public MatrixF(String mname, int nrows) {
+    public MatrixF(final String mname, final int nrows) {
         super(mname, nrows);
     }
 
@@ -59,7 +59,7 @@ public class MatrixF extends BasicMatrix {
      * the total needed to fill the matrix.  If it has more elements an illegal
      * argument exception will be generated.
      */
-    public MatrixF(String fname) throws IOException {
+    public MatrixF(final String fname) throws IOException {
         super(fname);
     }
 
@@ -67,75 +67,75 @@ public class MatrixF extends BasicMatrix {
      * Initializes the data structure used to hold the contents of the matrix
      */
     protected void initMatrixStorage() {
-        A = new float[n][n];
+        this.A = new float[this.n][this.n];
     }
 
     /**
      * Casts double value x to float and assigns it to element (r,c)
      */
-    public void setDoubleValue(int r, int c, double x) {
-        if ((r >= n) || (c >= n) || (r < 0) || (c < 0)) {
-            this.badIndexXcp(r, c);
+    public void setDoubleValue(final int r, final int c, final double x) {
+        if ((r >= this.n) || (c >= this.n) || (r < 0) || (c < 0)) {
+            badIndexXcp(r, c);
         }
         if ((x < BasicMatrix.MIN_FLOAT) || (x > BasicMatrix.MAX_FLOAT)) {
             throw new IllegalArgumentException(
                     "Integer " + x + " cannot be stored as a float");
         }
-        A[r][c] = (float) x;
+        this.A[r][c] = (float) x;
     }
 
     /**
      * Returns the value stored at element (r,c) as a double
      */
-    public double getDoubleValue(int r, int c) {
-        if ((r >= n) || (c >= n) || (r < 0) || (c < 0)) {
-            this.badIndexXcp(r, c);
+    public double getDoubleValue(final int r, final int c) {
+        if ((r >= this.n) || (c >= this.n) || (r < 0) || (c < 0)) {
+            badIndexXcp(r, c);
         }
-        return A[r][c];
+        return this.A[r][c];
     }
 
     /**
      * Assigns float x to matrix element at (r, c)
      */
-    public void setValue(int r, int c, float x) {
-        if ((r >= n) || (c >= n) || (r < 0) || (c < 0)) {
-            this.badIndexXcp(r, c);
+    public void setValue(final int r, final int c, final float x) {
+        if ((r >= this.n) || (c >= this.n) || (r < 0) || (c < 0)) {
+            badIndexXcp(r, c);
         }
-        A[r][c] = x;
+        this.A[r][c] = x;
     }
 
     /**
      * Assigns double x to matrix element at (r, c).  This method checks that
      * the double x can be converted to a float without causing overflow.
      */
-    public void setValue(int r, int c, double x) {
+    public void setValue(final int r, final int c, final double x) {
         if ((x < BasicMatrix.MIN_FLOAT) || (x > BasicMatrix.MAX_FLOAT)) {
             throw new IllegalArgumentException(
                     "Integer " + x + " cannot be stored as a float");
         }
-        if ((r >= n) || (c >= n) || (r < 0) || (c < 0)) {
-            this.badIndexXcp(r, c);
+        if ((r >= this.n) || (c >= this.n) || (r < 0) || (c < 0)) {
+            badIndexXcp(r, c);
         }
-        A[r][c] = (float) x;
+        this.A[r][c] = (float) x;
     }
 
     /**
      * Returns the value stored at element (r,c)
      */
-    public float getValue(int r, int c) {
-        if ((r >= n) || (c >= n) || (r < 0) || (c < 0)) {
-            this.badIndexXcp(r, c);
+    public float getValue(final int r, final int c) {
+        if ((r >= this.n) || (c >= this.n) || (r < 0) || (c < 0)) {
+            badIndexXcp(r, c);
         }
-        return A[r][c];
+        return this.A[r][c];
     }
 
     /**
      * Assign zero to all elements in the matrix
      */
     public void setAllValuesToZero() {
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                A[i][j] = 0;
+        for (int i = 0; i < this.n; i++) {
+            for (int j = 0; j < this.n; j++) {
+                this.A[i][j] = 0;
             }
         }
     }

@@ -53,8 +53,8 @@ public class ParameterPair implements TetradSerializable {
      * Constructs a new (blank) ordered pair where a = null and b = null.
      */
     private ParameterPair() {
-        a = null;
-        b = null;
+        this.a = null;
+        this.b = null;
     }
 
     /**
@@ -63,8 +63,8 @@ public class ParameterPair implements TetradSerializable {
      * @param a the first element of the ordered pair.
      * @param b the second element of the ordered pair.
      */
-    public ParameterPair(Parameter a, Parameter b) {
-        this.setPair(a, b);
+    public ParameterPair(final Parameter a, final Parameter b) {
+        setPair(a, b);
     }
 
     /**
@@ -82,7 +82,7 @@ public class ParameterPair implements TetradSerializable {
      * @return the first element of the ordered pair.
      */
     public Parameter getA() {
-        return a;
+        return this.a;
     }
 
     /**
@@ -91,7 +91,7 @@ public class ParameterPair implements TetradSerializable {
      * @return the second element of the ordered pair.
      */
     public Parameter getB() {
-        return b;
+        return this.b;
     }
 
     /**
@@ -102,7 +102,7 @@ public class ParameterPair implements TetradSerializable {
      * @param object the object pair putatively equal to this one.
      * @return true if the object pairs are equals, false if not.
      */
-    public boolean equals(Object object) {
+    public boolean equals(final Object object) {
         if (object == null) {
             return false;
         }
@@ -111,17 +111,17 @@ public class ParameterPair implements TetradSerializable {
             return false;
         }
 
-        ParameterPair pair = (ParameterPair) object;
-        return a.equals(pair.a) && b.equals(pair.b);
+        final ParameterPair pair = (ParameterPair) object;
+        return this.a.equals(pair.a) && this.b.equals(pair.b);
     }
 
     /**
      * @return this hashcode.
      */
     public int hashCode() {
-        int hashCode = 31 + ((a == null) ? 0 : a.hashCode());
+        final int hashCode = 31 + ((this.a == null) ? 0 : this.a.hashCode());
 
-        return 31 * hashCode + ((b == null) ? 0 : b.hashCode());
+        return 31 * hashCode + ((this.b == null) ? 0 : this.b.hashCode());
     }
 
     /**
@@ -130,7 +130,7 @@ public class ParameterPair implements TetradSerializable {
      * @param a the new first element.
      * @param b the new seconde element.
      */
-    private void setPair(Parameter a, Parameter b) {
+    private void setPair(final Parameter a, final Parameter b) {
         this.a = a;
         this.b = b;
     }

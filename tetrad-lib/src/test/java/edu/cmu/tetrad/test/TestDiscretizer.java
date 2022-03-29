@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.data.Discretizer.Discretization;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -49,14 +48,14 @@ public final class TestDiscretizer {
 
     @Test
     public void testBreakpointCalculation() {
-        double[] data = {13, 1.2, 2.2, 4.5, 12.005, 5.5, 10.1, 7.5, 3.4};
+        final double[] data = {13, 1.2, 2.2, 4.5, 12.005, 5.5, 10.1, 7.5, 3.4};
         double[] breakpoints = Discretizer.getEqualFrequencyBreakPoints(data, 3);
 
         assertTrue(breakpoints.length == 2);
         assertEquals(4.5, breakpoints[0], 0.1);
         assertEquals(10.1, breakpoints[1], 0.1);
 
-        Discretization dis = Discretizer.discretize(data, breakpoints, "after", Arrays.asList("0", "1", "2"));
+        Discretizer.Discretization dis = Discretizer.discretize(data, breakpoints, "after", Arrays.asList("0", "1", "2"));
 
         breakpoints = Discretizer.getEqualFrequencyBreakPoints(data, 4);
         assertTrue(breakpoints.length == 3);
@@ -188,11 +187,11 @@ public final class TestDiscretizer {
         double[] cutoffs = {2.5, 3.2};
         List<String> categories = Arrays.asList("lo", "med", "hi");
 
-        Discretization discretization = Discretizer.discretize(data, cutoffs, "after", categories);
+        final Discretizer.Discretization discretization = Discretizer.discretize(data, cutoffs, "after", categories);
 
-        List<String> discretizedCategories =
+        final List<String> discretizedCategories =
                 discretization.getVariable().getCategories();
-        int[] discretizedData = discretization.getData();
+        final int[] discretizedData = discretization.getData();
 
         assertEquals("lo", discretizedCategories.get(discretizedData[0]));
         assertEquals("lo", discretizedCategories.get(discretizedData[1]));

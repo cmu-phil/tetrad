@@ -33,8 +33,8 @@ import edu.cmu.tetrad.util.Parameters;
  * @author jdramsey
  */
 public class ExampleNonlinearSave {
-    public static void main(String... args) {
-        Parameters parameters = new Parameters();
+    public static void main(final String... args) {
+        final Parameters parameters = new Parameters();
 
         parameters.set("numRuns", 100);
         parameters.set("numMeasures", 20);
@@ -61,8 +61,8 @@ public class ExampleNonlinearSave {
         parameters.set("gammaLow", 1.0);
         parameters.set("gammaHigh", 1.5);
 
-        Simulation simulation = new LinearSineSimulation(new RandomForward());
-        Comparison comparison = new Comparison();
+        final Simulation simulation = new LinearSineSimulation(new RandomForward());
+        final Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
         comparison.saveToFiles("comparison", simulation, parameters);
     }

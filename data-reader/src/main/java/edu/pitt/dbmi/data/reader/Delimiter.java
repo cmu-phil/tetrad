@@ -37,22 +37,22 @@ public enum Delimiter {
     private final char value;
     private final byte byteValue;
 
-    Delimiter(String name, char value) {
+    Delimiter(final String name, final char value) {
         this.name = name;
         this.value = value;
-        byteValue = (byte) value;
+        this.byteValue = (byte) value;
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public char getValue() {
-        return value;
+        return this.value;
     }
 
     public byte getByteValue() {
-        return byteValue;
+        return this.byteValue;
     }
 
 }

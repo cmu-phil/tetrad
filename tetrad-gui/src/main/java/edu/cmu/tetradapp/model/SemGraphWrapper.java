@@ -60,162 +60,162 @@ public class SemGraphWrapper implements GraphSource,
     private Parameters parameters = new Parameters();
 
     // =============================CONSTRUCTORS==========================//
-    public SemGraphWrapper(GraphSource graphSource, Parameters parameters) {
+    public SemGraphWrapper(final GraphSource graphSource, final Parameters parameters) {
         if (graphSource instanceof Simulation) {
-            Simulation simulation = (Simulation) graphSource;
-            List<Graph> graphs = simulation.getGraphs();
+            final Simulation simulation = (Simulation) graphSource;
+            final List<Graph> graphs = simulation.getGraphs();
             this.graphs = new ArrayList<>();
-            for (Graph graph : graphs) {
+            for (final Graph graph : graphs) {
                 this.graphs.add(new SemGraph(graph));
             }
 
-            numModels = this.graphs.size();
-            modelIndex = 0;
-            modelSourceName = simulation.getName();
+            this.numModels = this.graphs.size();
+            this.modelIndex = 0;
+            this.modelSourceName = simulation.getName();
         } else {
-            this.setGraph(new SemGraph(graphSource.getGraph()));
+            setGraph(new SemGraph(graphSource.getGraph()));
         }
 
-        this.log();
+        log();
     }
 
-    public SemGraphWrapper(SemGraph graph) {
+    public SemGraphWrapper(final SemGraph graph) {
         if (graph == null) {
             throw new NullPointerException("MAG must not be null.");
         }
-        this.setSemGraph(graph);
-        this.getSemGraph().setShowErrorTerms(false);
-        parameters = new Parameters();
-        this.log();
+        setSemGraph(graph);
+        getSemGraph().setShowErrorTerms(false);
+        this.parameters = new Parameters();
+        log();
     }
 
     // Do not, repeat not, get rid of these params. -jdramsey 7/4/2010
-    public SemGraphWrapper(Parameters params) {
+    public SemGraphWrapper(final Parameters params) {
         if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
-            SemGraph semGraph = new SemGraph();
+            final SemGraph semGraph = new SemGraph();
             semGraph.setShowErrorTerms(false);
-            this.setSemGraph(semGraph);
+            setSemGraph(semGraph);
         } else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
             RandomUtil.getInstance().setSeed(new Date().getTime());
-            this.setSemGraph(new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(this.getGraph(), parameters)));
+            setSemGraph(new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), this.parameters)));
         } else {
             RandomUtil.getInstance().setSeed(new Date().getTime());
-            this.setSemGraph(new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(this.getGraph(), parameters)));
+            setSemGraph(new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), this.parameters)));
         }
 
-        parameters = params;
-        this.log();
+        this.parameters = params;
+        log();
     }
 
-    public SemGraphWrapper(SemGraphWrapper graphWrapper, Parameters params) {
-        parameters = params;
+    public SemGraphWrapper(final SemGraphWrapper graphWrapper, final Parameters params) {
+        this.parameters = params;
         if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
             try {
-                SemGraph semGraph = new SemGraph(graphWrapper.getSemGraph());
+                final SemGraph semGraph = new SemGraph(graphWrapper.getSemGraph());
                 semGraph.setShowErrorTerms(false);
-                this.setSemGraph(semGraph);
-            } catch (Exception e) {
+                setSemGraph(semGraph);
+            } catch (final Exception e) {
                 e.printStackTrace();
-                SemGraph semGraph = new SemGraph();
+                final SemGraph semGraph = new SemGraph();
                 semGraph.setShowErrorTerms(false);
-                this.setSemGraph(semGraph);
+                setSemGraph(semGraph);
             }
         } else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
             RandomUtil.getInstance().setSeed(new Date().getTime());
-            this.setSemGraph(new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(this.getGraph(), parameters)));
+            setSemGraph(new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), this.parameters)));
         }
-        this.log();
+        log();
     }
 
-    public SemGraphWrapper(DagWrapper graphWrapper, Parameters params) {
-        parameters = params;
+    public SemGraphWrapper(final DagWrapper graphWrapper, final Parameters params) {
+        this.parameters = params;
         if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
-            SemGraph semGraph = new SemGraph(graphWrapper.getDag());
+            final SemGraph semGraph = new SemGraph(graphWrapper.getDag());
             semGraph.setShowErrorTerms(false);
-            this.setSemGraph(semGraph);
+            setSemGraph(semGraph);
         } else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
             RandomUtil.getInstance().setSeed(new Date().getTime());
-            this.setSemGraph(new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(this.getGraph(), parameters)));
+            setSemGraph(new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), this.parameters)));
         }
-        this.log();
+        log();
     }
 
-    public SemGraphWrapper(GraphWrapper graphWrapper, Parameters params) {
+    public SemGraphWrapper(final GraphWrapper graphWrapper, final Parameters params) {
         if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
-            SemGraph semGraph = new SemGraph(graphWrapper.getGraph());
+            final SemGraph semGraph = new SemGraph(graphWrapper.getGraph());
             semGraph.setShowErrorTerms(false);
-            this.setSemGraph(semGraph);
+            setSemGraph(semGraph);
         } else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
             RandomUtil.getInstance().setSeed(new Date().getTime());
-            this.setSemGraph(new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(this.getGraph(), parameters)));
+            setSemGraph(new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), this.parameters)));
         }
-        parameters = params;
-        this.log();
+        this.parameters = params;
+        log();
     }
 
-    public SemGraphWrapper(AbstractAlgorithmRunner wrapper) {
+    public SemGraphWrapper(final AbstractAlgorithmRunner wrapper) {
         this(new SemGraph(wrapper.getResultGraph()));
     }
 
-    public SemGraphWrapper(DataWrapper wrapper) {
+    public SemGraphWrapper(final DataWrapper wrapper) {
         if (wrapper instanceof Simulation) {
-            Simulation simulation = (Simulation) wrapper;
-            graphs = new ArrayList<>();
+            final Simulation simulation = (Simulation) wrapper;
+            this.graphs = new ArrayList<>();
 
-            for (Graph graph : simulation.getGraphs()) {
-                SemGraph semGraph = new SemGraph(graph);
+            for (final Graph graph : simulation.getGraphs()) {
+                final SemGraph semGraph = new SemGraph(graph);
                 semGraph.setShowErrorTerms(false);
-                graphs.add(semGraph);
+                this.graphs.add(semGraph);
             }
 
-            numModels = graphs.size();
-            modelIndex = 0;
-            modelSourceName = simulation.getName();
+            this.numModels = this.graphs.size();
+            this.modelIndex = 0;
+            this.modelSourceName = simulation.getName();
         } else {
-            this.setGraph(new EdgeListGraph(wrapper.getVariables()));
+            setGraph(new EdgeListGraph(wrapper.getVariables()));
         }
 
-        GraphUtils.circleLayout(this.getGraph(), 200, 200, 150);
+        GraphUtils.circleLayout(getGraph(), 200, 200, 150);
     }
 
-    public SemGraphWrapper(BayesPmWrapper wrapper) {
+    public SemGraphWrapper(final BayesPmWrapper wrapper) {
         this(new SemGraph(wrapper.getBayesPm().getDag()));
     }
 
-    public SemGraphWrapper(BayesImWrapper wrapper) {
+    public SemGraphWrapper(final BayesImWrapper wrapper) {
         this(new SemGraph(wrapper.getBayesIm().getBayesPm().getDag()));
     }
 
-    public SemGraphWrapper(BayesEstimatorWrapper wrapper) {
+    public SemGraphWrapper(final BayesEstimatorWrapper wrapper) {
         this(new SemGraph(wrapper.getEstimatedBayesIm().getBayesPm().getDag()));
     }
 
-    public SemGraphWrapper(CptInvariantUpdaterWrapper wrapper) {
+    public SemGraphWrapper(final CptInvariantUpdaterWrapper wrapper) {
         this(new SemGraph(wrapper.getBayesUpdater().getManipulatedGraph()));
     }
 
-    public SemGraphWrapper(SemPmWrapper wrapper) {
+    public SemGraphWrapper(final SemPmWrapper wrapper) {
         this(new SemGraph(wrapper.getSemPm().getGraph()));
     }
 
-    public SemGraphWrapper(SemImWrapper wrapper) {
+    public SemGraphWrapper(final SemImWrapper wrapper) {
         this(new SemGraph(wrapper.getSemIm().getSemPm().getGraph()));
     }
 
-    public SemGraphWrapper(SemEstimatorWrapper wrapper) {
+    public SemGraphWrapper(final SemEstimatorWrapper wrapper) {
         this(new SemGraph(wrapper.getSemEstimator().getEstimatedSem()
                 .getSemPm().getGraph()));
     }
 
-    public SemGraphWrapper(RegressionRunner wrapper) {
+    public SemGraphWrapper(final RegressionRunner wrapper) {
         this(new SemGraph(wrapper.getResultGraph()));
     }
 
-    public SemGraphWrapper(BuildPureClustersRunner wrapper) {
+    public SemGraphWrapper(final BuildPureClustersRunner wrapper) {
         this(new SemGraph(wrapper.getResultGraph()));
     }
 
-    public SemGraphWrapper(MimBuildRunner wrapper) {
+    public SemGraphWrapper(final MimBuildRunner wrapper) {
         this(new SemGraph(wrapper.getResultGraph()));
     }
 
@@ -230,20 +230,20 @@ public class SemGraphWrapper implements GraphSource,
 
     // ================================PUBLIC METHODS=======================//
     public SemGraph getSemGraph() {
-        return (SemGraph) this.getGraph();
+        return (SemGraph) getGraph();
     }
 
-    public void setSemGraph(SemGraph graph) {
-        graphs = new ArrayList<>();
+    public void setSemGraph(final SemGraph graph) {
+        this.graphs = new ArrayList<>();
         graph.setShowErrorTerms(false);
-        graphs.add(graph);
-        this.log();
+        this.graphs.add(graph);
+        log();
     }
 
     // ============================PRIVATE METHODS========================//
     private void log() {
         TetradLogger.getInstance().log("info", "Structural Equation Model (SEM) Graph");
-        TetradLogger.getInstance().log("graph", "" + this.getGraph());
+        TetradLogger.getInstance().log("graph", "" + getGraph());
     }
 
     /**
@@ -259,97 +259,97 @@ public class SemGraphWrapper implements GraphSource,
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s) throws IOException,
+    private void readObject(final ObjectInputStream s) throws IOException,
             ClassNotFoundException {
         s.defaultReadObject();
     }
 
     public Graph getGraph() {
-        return graphs.get(this.getModelIndex());
+        return this.graphs.get(getModelIndex());
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
     public Graph getSourceGraph() {
-        return this.getGraph();
+        return getGraph();
     }
 
     public Graph getResultGraph() {
-        return this.getGraph();
+        return getGraph();
     }
 
     public List<String> getVariableNames() {
-        return this.getGraph().getNodeNames();
+        return getGraph().getNodeNames();
     }
 
     public List<Node> getVariables() {
-        return this.getGraph().getNodes();
+        return getGraph().getNodes();
     }
 
     @Override
     public Map<String, String> getParamSettings() {
-        Map<String, String> paramSettings = new HashMap<>();
+        final Map<String, String> paramSettings = new HashMap<>();
         if (!paramSettings.containsKey("# Vars")) {
-            paramSettings.put("# Nodes", Integer.toString(this.getSemGraph().getNumNodes()));
+            paramSettings.put("# Nodes", Integer.toString(getSemGraph().getNumNodes()));
         }
-        paramSettings.put("# Edges", Integer.toString(this.getSemGraph().getNumEdges()));
-        if (this.getSemGraph().existsDirectedCycle()) {
+        paramSettings.put("# Edges", Integer.toString(getSemGraph().getNumEdges()));
+        if (getSemGraph().existsDirectedCycle()) {
             paramSettings.put("Cyclic", null);
         }
         return paramSettings;
     }
 
     @Override
-    public void setAllParamSettings(Map<String, String> paramSettings) {
-        allParamSettings = paramSettings;
+    public void setAllParamSettings(final Map<String, String> paramSettings) {
+        this.allParamSettings = paramSettings;
     }
 
     @Override
     public Map<String, String> getAllParamSettings() {
-        return allParamSettings;
+        return this.allParamSettings;
     }
 
     public Parameters getParameters() {
-        return parameters;
+        return this.parameters;
     }
 
     public int getNumModels() {
-        return numModels;
+        return this.numModels;
     }
 
-    public void setNumModels(int numModels) {
+    public void setNumModels(final int numModels) {
         this.numModels = numModels;
     }
 
     public int getModelIndex() {
-        return modelIndex;
+        return this.modelIndex;
     }
 
-    public void setModelIndex(int modelIndex) {
+    public void setModelIndex(final int modelIndex) {
         this.modelIndex = modelIndex;
     }
 
     public String getModelSourceName() {
-        return modelSourceName;
+        return this.modelSourceName;
     }
 
-    public void setModelSourceName(String modelSourceName) {
+    public void setModelSourceName(final String modelSourceName) {
         this.modelSourceName = modelSourceName;
     }
 
-    public void setGraph(Graph graph) {
-        graphs = new ArrayList<>();
-        graphs.add(new SemGraph(graph));
-        this.log();
+    public void setGraph(final Graph graph) {
+        this.graphs = new ArrayList<>();
+        this.graphs.add(new SemGraph(graph));
+        log();
     }
 
     public List<Graph> getGraphs() {
-        return graphs;
+        return this.graphs;
     }
 }

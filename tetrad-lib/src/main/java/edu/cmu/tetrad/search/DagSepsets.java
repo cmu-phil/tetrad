@@ -37,25 +37,25 @@ public class DagSepsets implements SepsetProducer {
     private final EdgeListGraph dag;
     private boolean verbose;
 
-    public DagSepsets(Graph dag) {
+    public DagSepsets(final Graph dag) {
         this.dag = new EdgeListGraph(dag);
     }
 
     @Override
-    public List<Node> getSepset(Node a, Node b) {
-        return dag.getSepset(a, b);
+    public List<Node> getSepset(final Node a, final Node b) {
+        return this.dag.getSepset(a, b);
     }
 
     @Override
-    public boolean isCollider(Node i, Node j, Node k) {
-        List<Node> sepset = dag.getSepset(i, k);
+    public boolean isCollider(final Node i, final Node j, final Node k) {
+        final List<Node> sepset = this.dag.getSepset(i, k);
         return sepset != null && !sepset.contains(j);
     }
 
     @Override
-    public boolean isNoncollider(Node i, Node j, Node k) {
+    public boolean isNoncollider(final Node i, final Node j, final Node k) {
 //        return true;
-        List<Node> sepset = dag.getSepset(i, k);
+        final List<Node> sepset = this.dag.getSepset(i, k);
         return sepset != null && sepset.contains(j);
     }
 
@@ -70,26 +70,26 @@ public class DagSepsets implements SepsetProducer {
     }
 
     @Override
-    public boolean isIndependent(Node a, Node b, List<Node> c) {
-        return dag.isDSeparatedFrom(a, b, c);
+    public boolean isIndependent(final Node a, final Node b, final List<Node> c) {
+        return this.dag.isDSeparatedFrom(a, b, c);
     }
 
     @Override
     public List<Node> getVariables() {
-        return dag.getNodes();
+        return this.dag.getNodes();
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     @Override
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 
     public Graph getDag() {
-        return dag;
+        return this.dag;
     }
 }
 

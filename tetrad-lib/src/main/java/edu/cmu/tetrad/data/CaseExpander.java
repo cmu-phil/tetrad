@@ -34,11 +34,11 @@ public final class CaseExpander implements DataFilter {
     /**
      * Expands cases for the given dataset.
      */
-    public final DataSet filter(DataSet dataSet) {
-        return expand(dataSet);
+    public final DataSet filter(final DataSet dataSet) {
+        return CaseExpander.expand(dataSet);
     }
 
-    private static DataSet expand(DataSet dataSet) {
+    private static DataSet expand(final DataSet dataSet) {
         int rows = 0;
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
@@ -49,9 +49,9 @@ public final class CaseExpander implements DataFilter {
 //            }
         }
 
-        DataSet newDataSet =
+        final DataSet newDataSet =
                 new BoxDataSet(new VerticalDoubleDataBox(rows, dataSet.getVariables().size()), dataSet.getVariables());
-        int cols = dataSet.getNumColumns();
+        final int cols = dataSet.getNumColumns();
         int index = -1;
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {

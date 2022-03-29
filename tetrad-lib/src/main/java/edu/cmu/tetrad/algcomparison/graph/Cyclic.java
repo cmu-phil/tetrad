@@ -16,7 +16,7 @@ public class Cyclic implements RandomGraph {
     static final long serialVersionUID = 23L;
 
     @Override
-    public Graph createGraph(Parameters parameters) {
+    public Graph createGraph(final Parameters parameters) {
         return GraphUtils.cyclicGraph3(parameters.getInt("numMeasures"),
                 parameters.getInt("avgDegree") * parameters.getInt("numMeasures") / 2,
                 parameters.getInt("maxDegree"), parameters.getDouble("probCycle"),
@@ -30,7 +30,7 @@ public class Cyclic implements RandomGraph {
 
     @Override
     public List<String> getParameters() {
-        List<String> paramDescriptions = new ArrayList<>();
+        final List<String> paramDescriptions = new ArrayList<>();
         paramDescriptions.add("numMeasures");
         paramDescriptions.add("avgDegree");
         paramDescriptions.add("maxDegree");

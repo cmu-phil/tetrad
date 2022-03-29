@@ -29,39 +29,39 @@ import java.util.List;
 public class HsimRobustCompare {
 
     //*************Public Methods*****************8//
-    public static List<double[]> run(int numVars, double edgesPerNode, int numCases, double penaltyDiscount,
-                                     int resimSize, int repeat, boolean verbose) {
+    public static List<double[]> run(final int numVars, final double edgesPerNode, final int numCases, final double penaltyDiscount,
+                                     final int resimSize, final int repeat, final boolean verbose) {
         //public static void main(String[] args) {
         //first generate the data
         RandomUtil.getInstance().setSeed(1450184147770L);
         final char delimiter = ',';//'\t';
-        int numEdges = (int) (numVars * edgesPerNode);
+        final int numEdges = (int) (numVars * edgesPerNode);
 
-        List<Node> vars = new ArrayList<>();
+        final List<Node> vars = new ArrayList<>();
         double[] oErrors = new double[5];
         double[] hsimErrors = new double[5];
         double[] simErrors = new double[5];
-        List<double[]> output = new ArrayList<>();
+        final List<double[]> output = new ArrayList<>();
 
         for (int i = 0; i < numVars; i++) {
             vars.add(new ContinuousVariable("X" + i));
         }
 
-        Graph odag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, numEdges, 30, 15, 15, false, true);
+        final Graph odag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, numEdges, 30, 15, 15, false, true);
 
-        BayesPm bayesPm = new BayesPm(odag, 2, 2);
-        BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+        final BayesPm bayesPm = new BayesPm(odag, 2, 2);
+        final BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
         //oData is the original data set, and odag is the original dag.
-        DataSet oData = bayesIm.simulateData(numCases, false);
+        final DataSet oData = bayesIm.simulateData(numCases, false);
         //System.out.println(oData);
         //System.out.println(odag);
 
         //then run FGES
-        BDeuScore oscore = new BDeuScore(oData);
-        Fges fges = new Fges(oscore);
+        final BDeuScore oscore = new BDeuScore(oData);
+        final Fges fges = new Fges(oscore);
         fges.setVerbose(false);
         fges.setPenaltyDiscount(penaltyDiscount);
-        Graph oGraphOut = fges.search();
+        final Graph oGraphOut = fges.search();
         if (verbose) System.out.println(oGraphOut);
 
         //calculate FGES errors
@@ -73,26 +73,26 @@ public class HsimRobustCompare {
         //create various simulated data sets
 
         ////let's do the full simulated data set first: a dag in the FGES CPDAG fit to the data set.
-        Graph fgesDag = SearchGraphUtils.dagFromCPDAG(oGraphOut);
+        final Graph fgesDag = SearchGraphUtils.dagFromCPDAG(oGraphOut);
 
-        Dag fgesdag2 = new Dag(fgesDag);
-        BayesPm simBayesPm = new BayesPm(fgesdag2, bayesPm);
-        DirichletBayesIm simIM = DirichletBayesIm.symmetricDirichletIm(simBayesPm, 1.0);
-        DirichletEstimator simEstimator = new DirichletEstimator();
-        DirichletBayesIm fittedIM = DirichletEstimator.estimate(simIM, oData);
-        DataSet simData = fittedIM.simulateData(numCases, false);
+        final Dag fgesdag2 = new Dag(fgesDag);
+        final BayesPm simBayesPm = new BayesPm(fgesdag2, bayesPm);
+        final DirichletBayesIm simIM = DirichletBayesIm.symmetricDirichletIm(simBayesPm, 1.0);
+        final DirichletEstimator simEstimator = new DirichletEstimator();
+        final DirichletBayesIm fittedIM = DirichletEstimator.estimate(simIM, oData);
+        final DataSet simData = fittedIM.simulateData(numCases, false);
 
         ////next let's do a schedule of small hsims
-        HsimRepeatAutoRun study = new HsimRepeatAutoRun(oData);
+        final HsimRepeatAutoRun study = new HsimRepeatAutoRun(oData);
         hsimErrors = study.run(resimSize, repeat);
 
         //calculate errors for all simulated output graphs
         ////full simulation errors first
-        BDeuScore simscore = new BDeuScore(simData);
-        Fges simfges = new Fges(simscore);
+        final BDeuScore simscore = new BDeuScore(simData);
+        final Fges simfges = new Fges(simscore);
         simfges.setVerbose(false);
         simfges.setPenaltyDiscount(penaltyDiscount);
-        Graph simGraphOut = simfges.search();
+        final Graph simGraphOut = simfges.search();
         //simErrors = new double[5];
         simErrors = HsimUtils.errorEval(simGraphOut, fgesdag2);
         //System.out.println("Full resim errors are: " + simErrors[0] + " " + simErrors[1] + " " + simErrors[2] + " " + simErrors[3] + " " + simErrors[4]);

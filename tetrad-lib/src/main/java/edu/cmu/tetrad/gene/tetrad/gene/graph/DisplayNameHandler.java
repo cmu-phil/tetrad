@@ -34,25 +34,25 @@ public final class DisplayNameHandler {
     /**
      * Converts the given lagged factor into a display string.
      */
-    public static String getDisplayString(LaggedFactor laggedFactor) {
-        return getDisplayString(laggedFactor.getFactor(),
+    public static String getDisplayString(final LaggedFactor laggedFactor) {
+        return DisplayNameHandler.getDisplayString(laggedFactor.getFactor(),
                 laggedFactor.getLag());
     }
 
     /**
      * Uses the given factor and lag information to construct a display string.
      */
-    public static String getDisplayString(String factor, int lag) {
+    public static String getDisplayString(final String factor, final int lag) {
         return factor + ":L" + lag;
     }
 
     /**
      * Parses the given string and returns the LaggedFactor it represents.
      */
-    public static LaggedFactor getLaggedFactor(String displayString) {
+    public static LaggedFactor getLaggedFactor(final String displayString) {
 
-        String factor = extractFactor_Display(displayString);
-        int lag = extractLag_Display(displayString);
+        final String factor = DisplayNameHandler.extractFactor_Display(displayString);
+        final int lag = DisplayNameHandler.extractLag_Display(displayString);
 
         return new LaggedFactor(factor, lag);
     }
@@ -61,10 +61,10 @@ public final class DisplayNameHandler {
      * Parses the given string representing a lagged factor and return the part
      * that represents the factor.
      */
-    public static String extractFactor_Display(String laggedFactor) {
+    public static String extractFactor_Display(final String laggedFactor) {
 
-        int colonIndex = laggedFactor.indexOf(":L");
-        String factor = laggedFactor.substring(0, colonIndex);
+        final int colonIndex = laggedFactor.indexOf(":L");
+        final String factor = laggedFactor.substring(0, colonIndex);
 
         return factor;
     }
@@ -76,10 +76,10 @@ public final class DisplayNameHandler {
      * @param laggedFactor the lagged factor whose lag is wanted.
      * @return the lag of this lagged factor.
      */
-    public static int extractLag_Display(String laggedFactor) {
+    public static int extractLag_Display(final String laggedFactor) {
 
-        int colonIndex = laggedFactor.indexOf(":L");
-        int lag = Integer.parseInt(
+        final int colonIndex = laggedFactor.indexOf(":L");
+        final int lag = Integer.parseInt(
                 laggedFactor.substring(colonIndex + 2));
 
         return lag;

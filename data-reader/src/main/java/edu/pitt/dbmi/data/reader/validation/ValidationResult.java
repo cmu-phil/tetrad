@@ -36,43 +36,43 @@ public class ValidationResult {
 
     private String message;
 
-    public ValidationResult(ValidationCode code, MessageType messageType) {
+    public ValidationResult(final ValidationCode code, final MessageType messageType) {
         this.code = code;
         this.messageType = messageType;
-        attributes = new EnumMap<>(ValidationAttribute.class);
+        this.attributes = new EnumMap<>(ValidationAttribute.class);
     }
 
-    public ValidationResult(ValidationCode code, MessageType messageType, String message) {
+    public ValidationResult(final ValidationCode code, final MessageType messageType, final String message) {
         this(code, messageType);
         this.message = message;
     }
 
     @Override
     public String toString() {
-        return "ValidationResult{" + "code=" + code + ", messageType=" + messageType + ", attributes=" + attributes + ", message=" + message + '}';
+        return "ValidationResult{" + "code=" + this.code + ", messageType=" + this.messageType + ", attributes=" + this.attributes + ", message=" + this.message + '}';
     }
 
     public ValidationCode getCode() {
-        return code;
+        return this.code;
     }
 
     public MessageType getMessageType() {
-        return messageType;
+        return this.messageType;
     }
 
     public Map<ValidationAttribute, Object> getAttributes() {
-        return attributes;
+        return this.attributes;
     }
 
-    public void setAttribute(ValidationAttribute attribute, Object value) {
-        attributes.put(attribute, value);
+    public void setAttribute(final ValidationAttribute attribute, final Object value) {
+        this.attributes.put(attribute, value);
     }
 
     public String getMessage() {
-        return message;
+        return this.message;
     }
 
-    public void setMessage(String message) {
+    public void setMessage(final String message) {
         this.message = message;
     }
 

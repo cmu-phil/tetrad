@@ -60,8 +60,8 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
 
     //=============================CONSTRUCTORS==========================//
 
-    public TabularComparison(GraphSource model1, GraphSource model2,
-                             Parameters params) {
+    public TabularComparison(final GraphSource model1, final GraphSource model2,
+                             final Parameters params) {
         this(model1, model2, null, params);
     }
 
@@ -70,8 +70,8 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
      * of omission and commission. The counts can be retrieved using the methods
      * <code>countOmissionErrors</code> and <code>countCommissionErrors</code>.
      */
-    public TabularComparison(GraphSource model1, GraphSource model2,
-                             DataWrapper dataWrapper, Parameters params) {
+    public TabularComparison(final GraphSource model1, final GraphSource model2,
+                             final DataWrapper dataWrapper, final Parameters params) {
         if (params == null) {
             throw new NullPointerException("Parameters must not be null");
         }
@@ -82,62 +82,62 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
 
         this.params = params;
 
-        referenceName = params.getString("referenceGraphName", null);
-        targetName = params.getString("targetGraphName", null);
+        this.referenceName = params.getString("referenceGraphName", null);
+        this.targetName = params.getString("targetGraphName", null);
 
-        String model1Name = model1.getName();
-        String model2Name = model2.getName();
+        final String model1Name = model1.getName();
+        final String model2Name = model2.getName();
 
-        if (referenceName.equals(model1Name)) {
-            referenceGraph = model1.getGraph();
-            targetGraph = model2.getGraph();
-        } else if (referenceName.equals(model2Name)) {
-            referenceGraph = model2.getGraph();
-            targetGraph = model1.getGraph();
+        if (this.referenceName.equals(model1Name)) {
+            this.referenceGraph = model1.getGraph();
+            this.targetGraph = model2.getGraph();
+        } else if (this.referenceName.equals(model2Name)) {
+            this.referenceGraph = model2.getGraph();
+            this.targetGraph = model1.getGraph();
         } else {
-            referenceGraph = model1.getGraph();
-            targetGraph = model2.getGraph();
+            this.referenceGraph = model1.getGraph();
+            this.targetGraph = model2.getGraph();
         }
 
-        if (targetGraph.isPag() || referenceGraph.isPag()) {
-            targetGraph.setPag(true);
-            referenceGraph.setPag(true);
+        if (this.targetGraph.isPag() || this.referenceGraph.isPag()) {
+            this.targetGraph.setPag(true);
+            this.referenceGraph.setPag(true);
         }
 
-        this.newExecution();
+        newExecution();
 
-        this.addRecord();
+        addRecord();
 
         TetradLogger.getInstance().log("info", "Graph Comparison");
     }
 
     private void newExecution() {
-        statistics = new ArrayList<>();
-        statistics.add(new AdjacencyPrecision());
-        statistics.add(new AdjacencyRecall());
-        statistics.add(new ArrowheadPrecision());
-        statistics.add(new ArrowheadRecall());
-        statistics.add(new TwoCyclePrecision());
-        statistics.add(new TwoCycleRecall());
-        statistics.add(new TwoCycleFalsePositive());
+        this.statistics = new ArrayList<>();
+        this.statistics.add(new AdjacencyPrecision());
+        this.statistics.add(new AdjacencyRecall());
+        this.statistics.add(new ArrowheadPrecision());
+        this.statistics.add(new ArrowheadRecall());
+        this.statistics.add(new TwoCyclePrecision());
+        this.statistics.add(new TwoCycleRecall());
+        this.statistics.add(new TwoCycleFalsePositive());
 
-        List<Node> variables = new ArrayList<>();
+        final List<Node> variables = new ArrayList<>();
 
-        for (Statistic statistic : statistics) {
+        for (final Statistic statistic : this.statistics) {
             variables.add(new ContinuousVariable(statistic.getAbbreviation()));
         }
 
-        dataSet = new BoxDataSet(new DoubleDataBox(0, variables.size()), variables);
-        dataSet.setNumberFormat(new DecimalFormat("0.00"));
+        this.dataSet = new BoxDataSet(new DoubleDataBox(0, variables.size()), variables);
+        this.dataSet.setNumberFormat(new DecimalFormat("0.00"));
     }
 
     private void addRecord() {
-        int newRow = dataSet.getNumRows();
+        final int newRow = this.dataSet.getNumRows();
 
-        for (int j = 0; j < statistics.size(); j++) {
-            Statistic statistic = statistics.get(j);
-            double value = statistic.getValue(referenceGraph, targetGraph, null);
-            dataSet.setDouble(newRow, j, value);
+        for (int j = 0; j < this.statistics.size(); j++) {
+            final Statistic statistic = this.statistics.get(j);
+            final double value = statistic.getValue(this.referenceGraph, this.targetGraph, null);
+            this.dataSet.setDouble(newRow, j, value);
         }
     }
 
@@ -153,14 +153,14 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
 //    }
     //==============================PUBLIC METHODS========================//
     public DataSet getDataSet() {
-        return dataSet;
+        return this.dataSet;
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
@@ -176,7 +176,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
@@ -188,43 +188,43 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
 
     @Override
     public Map<String, String> getAllParamSettings() {
-        return allParamSettings;
+        return this.allParamSettings;
     }
 
     @Override
-    public void setAllParamSettings(Map<String, String> paramSettings) {
-        allParamSettings = new LinkedHashMap<>(paramSettings);
+    public void setAllParamSettings(final Map<String, String> paramSettings) {
+        this.allParamSettings = new LinkedHashMap<>(paramSettings);
     }
 
     public Graph getReferenceGraph() {
-        return referenceGraph;
+        return this.referenceGraph;
     }
 
     public Graph getTargetGraph() {
-        return targetGraph;
+        return this.targetGraph;
     }
 
     public String getTargetName() {
-        return targetName;
+        return this.targetName;
     }
 
-    public void setTargetName(String targetName) {
+    public void setTargetName(final String targetName) {
         this.targetName = targetName;
     }
 
     public String getReferenceName() {
-        return referenceName;
+        return this.referenceName;
     }
 
-    public void setReferenceName(String referenceName) {
+    public void setReferenceName(final String referenceName) {
         this.referenceName = referenceName;
     }
 
     public Parameters getParams() {
-        return params;
+        return this.params;
     }
 
     public DataModel getDataModel() {
-        return dataModel;
+        return this.dataModel;
     }
 }

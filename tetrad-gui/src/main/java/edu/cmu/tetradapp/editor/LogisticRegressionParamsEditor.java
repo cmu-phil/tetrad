@@ -47,19 +47,19 @@ public final class LogisticRegressionParamsEditor extends JPanel implements Para
 
     }
 
-    public void setParams(Parameters params) {
+    public void setParams(final Parameters params) {
         this.params = params;
     }
 
-    public void setParentModels(Object[] parentModels) {
+    public void setParentModels(final Object[] parentModels) {
         this.parentModels = parentModels;
     }
 
     public void setup() {
-        LogisticRegressionParamsPanel panel =
-                new LogisticRegressionParamsPanel(params, parentModels);
-        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        this.add(panel, BorderLayout.CENTER);
+        final LogisticRegressionParamsPanel panel =
+                new LogisticRegressionParamsPanel(this.params, this.parentModels);
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        add(panel, BorderLayout.CENTER);
     }
 
     public boolean mustBeShown() {

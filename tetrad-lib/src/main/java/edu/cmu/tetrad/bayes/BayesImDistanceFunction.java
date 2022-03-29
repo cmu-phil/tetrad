@@ -38,24 +38,24 @@ final class BayesImDistanceFunction {
      * The static distance method's arguments are the two BayesIM's whose
      * BayesPm's are "equal".
      */
-    public static double distance(BayesIm firstBn, BayesIm secondBn) {
+    public static double distance(final BayesIm firstBn, final BayesIm secondBn) {
         if (!firstBn.getBayesPm().equals(secondBn.getBayesPm())) {
             throw new IllegalArgumentException("BayesPms must be equal.");
         }
 
-        Graph graph = firstBn.getBayesPm().getDag();
-        int numNodes = graph.getNumNodes();
+        final Graph graph = firstBn.getBayesPm().getDag();
+        final int numNodes = graph.getNumNodes();
 
         double sum = 0.0;
 
         for (int i = 0; i < numNodes; i++) {
-            int numRows = firstBn.getNumRows(i);
+            final int numRows = firstBn.getNumRows(i);
 
             for (int j = 0; j < numRows; j++) {
-                int numCols = firstBn.getNumColumns(i);
+                final int numCols = firstBn.getNumColumns(i);
 
                 for (int k = 0; k < numCols; k++) {
-                    double diff = firstBn.getProbability(i, j, k) -
+                    final double diff = firstBn.getProbability(i, j, k) -
                             secondBn.getProbability(i, j, k);
                     sum += diff * diff;
                 }

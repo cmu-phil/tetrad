@@ -62,7 +62,7 @@ public abstract class BasicMatrix {
     /**
      * Minimum float value
      */
-    public static final float MIN_FLOAT = -MAX_FLOAT;
+    public static final float MIN_FLOAT = -BasicMatrix.MAX_FLOAT;
 
     /**
      * No parameters constructor, only used within the package
@@ -74,13 +74,13 @@ public abstract class BasicMatrix {
      * Creates a matrix with <code>nrows</code> rows, and with name
      * <code>mname</code>.
      */
-    public BasicMatrix(String mname, int nrows) {
-        name = mname;
+    public BasicMatrix(final String mname, final int nrows) {
+        this.name = mname;
         if (nrows <= 0) {
             throw new IllegalArgumentException("Invalid # nodes " + nrows);
         }
-        n = nrows;
-        initMatrixStorage();
+        this.n = nrows;
+        this.initMatrixStorage();
     }
 
     /**
@@ -101,11 +101,11 @@ public abstract class BasicMatrix {
      * the total needed to fill the matrix.  If it has more elements an illegal
      * argument exception will be generated.
      */
-    public BasicMatrix(String fname) throws IOException {
+    public BasicMatrix(final String fname) throws IOException {
         // Create and prepare stream tokenizer
-        File f = new File(fname);
-        BufferedReader in = new BufferedReader(new FileReader(f));
-        StreamTokenizer strmTok = new StreamTokenizer(in);
+        final File f = new File(fname);
+        final BufferedReader in = new BufferedReader(new FileReader(f));
+        final StreamTokenizer strmTok = new StreamTokenizer(in);
         strmTok.slashStarComments(true);
         strmTok.slashSlashComments(true);
         strmTok.parseNumbers();
@@ -119,7 +119,7 @@ public abstract class BasicMatrix {
                     "First token does not contain 'MATRIX': " + strmTok.sval);
         }
         nt = strmTok.nextToken();
-        name = strmTok.sval;
+        this.name = strmTok.sval;
 
         // Read from file # of rows in the matrix
         nt = strmTok.nextToken();
@@ -127,12 +127,12 @@ public abstract class BasicMatrix {
             throw new IllegalArgumentException(
                     "Error parsing # of rows: " + strmTok.sval);
         }
-        int vnrows = (int) strmTok.nval;
+        final int vnrows = (int) strmTok.nval;
         if (vnrows <= 0) {
             throw new IllegalArgumentException("Invalid # rows " + vnrows);
         }
-        n = vnrows;
-        initMatrixStorage();
+        this.n = vnrows;
+        this.initMatrixStorage();
 
         // Now read elements from the file
         int row = 0;
@@ -141,14 +141,14 @@ public abstract class BasicMatrix {
         while (true) {
             try {
                 nt = strmTok.nextToken();
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 break;
             }
             if (nt == StreamTokenizer.TT_EOF) {
                 break;
             }
             if (nt == StreamTokenizer.TT_NUMBER) {
-                setDoubleValue(row, col, strmTok.nval);
+                this.setDoubleValue(row, col, strmTok.nval);
                 col++;
                 if (col == vnrows) {
                     col = 0;
@@ -166,21 +166,21 @@ public abstract class BasicMatrix {
      * Returns # rows ( == # columns) of this matrix
      */
     public int getSize() {
-        return n;
+        return this.n;
     }
 
     /**
      * Sets the name of this matrix
      */
-    public void setName(String newName) {
-        name = newName;
+    public void setName(final String newName) {
+        this.name = newName;
     }
 
     /**
      * Returns name of this matrix
      */
     public String getName() {
-        return name;
+        return this.name;
     }
 
     /**
@@ -188,21 +188,21 @@ public abstract class BasicMatrix {
      * matrix
      */
     public String toString() {
-        String s = getClass().getName() + " " + name + "\n" + n +
+        String s = this.getClass().getName() + " " + this.name + "\n" + this.n +
                 " // <- Total # rows\n";
-        for (int r = 0; r < n; r++) {
+        for (int r = 0; r < this.n; r++) {
             //s = s + "/* "+r+" */  ";
-            for (int c = 0; c < n; c++) {
-                s = s + getDoubleValue(r, c) + " ";
+            for (int c = 0; c < this.n; c++) {
+                s = s + this.getDoubleValue(r, c) + " ";
             }
             s = s + "\n";
         }
         return s;
     }
 
-    protected void badIndexXcp(int r, int c) {
+    protected void badIndexXcp(final int r, final int c) {
         throw new IllegalArgumentException(
-                "Bad index (" + r + "," + c + ") for matrix of size " + n);
+                "Bad index (" + r + "," + c + ") for matrix of size " + this.n);
     }
 
     /**

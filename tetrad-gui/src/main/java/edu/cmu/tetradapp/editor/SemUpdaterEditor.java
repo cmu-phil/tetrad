@@ -62,33 +62,33 @@ public class SemUpdaterEditor extends JPanel {
      *
      * @param semUpdater
      */
-    public SemUpdaterEditor(SemUpdater semUpdater) {
+    public SemUpdaterEditor(final SemUpdater semUpdater) {
         if (semUpdater == null) {
             throw new NullPointerException(
                     "Bayes semUpdater must not be null.");
         }
 
         this.semUpdater = semUpdater;
-        this.setLayout(new BorderLayout());
-        this.setName("Bayes Updater Editor");
+        setLayout(new BorderLayout());
+        setName("Bayes Updater Editor");
 
-        Box b1 = Box.createHorizontalBox();
+        final Box b1 = Box.createHorizontalBox();
 
-        semImEditor = new SemImEditor(new SemImWrapper(semUpdater.getSemIm()));
-        semImEditor.add(this.getUpdatePanel(), BorderLayout.WEST);
-        semImEditor.setEditable(false);
-        b1.add(semImEditor);
+        this.semImEditor = new SemImEditor(new SemImWrapper(semUpdater.getSemIm()));
+        this.semImEditor.add(getUpdatePanel(), BorderLayout.WEST);
+        this.semImEditor.setEditable(false);
+        b1.add(this.semImEditor);
 
-        this.add(b1, BorderLayout.CENTER);
+        add(b1, BorderLayout.CENTER);
     }
 
     private Box getUpdatePanel() {
-        SemEvidence evidence = semUpdater.getEvidence();
-        focusTraversalOrder.clear();
+        final SemEvidence evidence = this.semUpdater.getEvidence();
+        this.focusTraversalOrder.clear();
 
-        Box b = Box.createVerticalBox();
+        final Box b = Box.createVerticalBox();
 
-        Box b0 = Box.createHorizontalBox();
+        final Box b0 = Box.createHorizontalBox();
         b0.add(new JLabel("<html>"
                 + "In the list below, specify values for variables you have evidence "
                 + "<br>for. Click the 'Do Update Now' button to view updated model."));
@@ -96,33 +96,33 @@ public class SemUpdaterEditor extends JPanel {
         b.add(b0);
         b.add(Box.createVerticalStrut(10));
 
-        Box d = Box.createHorizontalBox();
+        final Box d = Box.createHorizontalBox();
         d.add(new JLabel("Variable = value"));
         d.add(Box.createHorizontalGlue());
         d.add(new JLabel("Manipulated"));
         b.add(d);
 
         for (int i = 0; i < evidence.getNumNodes(); i++) {
-            Box c = Box.createHorizontalBox();
-            SemIm semIm = evidence.getSemIm();
-            Node node = semIm.getVariableNodes().get(i);
-            String name = node.getName();
-            JLabel label = new JLabel(name + " =  ") {
+            final Box c = Box.createHorizontalBox();
+            final SemIm semIm = evidence.getSemIm();
+            final Node node = semIm.getVariableNodes().get(i);
+            final String name = node.getName();
+            final JLabel label = new JLabel(name + " =  ") {
                 private static final long serialVersionUID = 820570350956700782L;
 
                 @Override
                 public Dimension getMaximumSize() {
-                    return this.getPreferredSize();
+                    return getPreferredSize();
                 }
             };
             c.add(label);
 
-            double mean = evidence.getProposition().getValue(i);
-            DoubleTextField field = new DoubleTextField(mean, 5, NumberFormatUtil.getInstance().getNumberFormat());
+            final double mean = evidence.getProposition().getValue(i);
+            final DoubleTextField field = new DoubleTextField(mean, 5, NumberFormatUtil.getInstance().getNumberFormat());
 
             field.setFilter((value, oldValue) -> {
                 try {
-                    int nodeIndex = labels.get(field);
+                    final int nodeIndex = this.labels.get(field);
 
                     if (Double.isNaN(value)
                             && evidence.isManipulated(nodeIndex)) {
@@ -131,58 +131,58 @@ public class SemUpdaterEditor extends JPanel {
 
                     evidence.getProposition().setValue(nodeIndex, value);
 //                    semIm.setMean(node, value);
-                    SemIm updatedSem = semUpdater.getUpdatedSemIm();
-                    semImEditor.displaySemIm(updatedSem,
-                            semImEditor.getTabSelectionIndex(),
-                            semImEditor.getMatrixSelection());
+                    final SemIm updatedSem = this.semUpdater.getUpdatedSemIm();
+                    this.semImEditor.displaySemIm(updatedSem,
+                            this.semImEditor.getTabSelectionIndex(),
+                            this.semImEditor.getMatrixSelection());
                     return value;
-                } catch (IllegalArgumentException e) {
+                } catch (final IllegalArgumentException e) {
                     return oldValue;
                 }
             });
 
-            labels.put(field, i);
-            variablesToTextFields.put(i, field);
-            focusTraversalOrder.add(field);
+            this.labels.put(field, i);
+            this.variablesToTextFields.put(i, field);
+            this.focusTraversalOrder.add(field);
 
             c.add(field);
             c.add(Box.createHorizontalStrut(2));
             c.add(Box.createHorizontalGlue());
 
-            JCheckBox checkbox = new JCheckBox() {
+            final JCheckBox checkbox = new JCheckBox() {
                 private static final long serialVersionUID = -3808843047563493212L;
 
                 @Override
                 public Dimension getMaximumSize() {
-                    return this.getPreferredSize();
+                    return getPreferredSize();
                 }
             };
 
             checkbox.setSelected(evidence.isManipulated(i));
-            checkBoxesToVariables.put(checkbox, i);
-            variablesToCheckboxes.put(i, checkbox);
+            this.checkBoxesToVariables.put(checkbox, i);
+            this.variablesToCheckboxes.put(i, checkbox);
             checkbox.addActionListener((e) -> {
-                JCheckBox chkbox = (JCheckBox) e.getSource();
-                boolean selected = chkbox.isSelected();
-                Integer o = checkBoxesToVariables.get(chkbox);
+                final JCheckBox chkbox = (JCheckBox) e.getSource();
+                final boolean selected = chkbox.isSelected();
+                final Integer o = this.checkBoxesToVariables.get(chkbox);
 
                 // If no value has been set for this variable, set it to
                 // the mean.
-                double value = evidence.getProposition().getValue(o);
+                final double value = evidence.getProposition().getValue(o);
 //
                 if (Double.isNaN(value)) {
-                    DoubleTextField dblTxtField = variablesToTextFields.get(o);
-                    SemIm semIM = semUpdater.getSemIm();
-                    Node varNode = semIM.getVariableNodes().get(o);
-                    double semIMMean = semIM.getMean(varNode);
+                    final DoubleTextField dblTxtField = this.variablesToTextFields.get(o);
+                    final SemIm semIM = this.semUpdater.getSemIm();
+                    final Node varNode = semIM.getVariableNodes().get(o);
+                    final double semIMMean = semIM.getMean(varNode);
                     dblTxtField.setValue(semIMMean);
                 }
 
-                semUpdater.getEvidence().setManipulated(o, selected);
-                SemIm updatedSem = semUpdater.getUpdatedSemIm();
-                semImEditor.displaySemIm(updatedSem,
-                        semImEditor.getTabSelectionIndex(),
-                        semImEditor.getMatrixSelection());
+                this.semUpdater.getEvidence().setManipulated(o, selected);
+                final SemIm updatedSem = this.semUpdater.getUpdatedSemIm();
+                this.semImEditor.displaySemIm(updatedSem,
+                        this.semImEditor.getTabSelectionIndex(),
+                        this.semImEditor.getMatrixSelection());
             });
             checkbox.setBackground(Color.WHITE);
             checkbox.setBorder(null);
@@ -193,15 +193,15 @@ public class SemUpdaterEditor extends JPanel {
 
         b.add(Box.createVerticalGlue());
 
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(Box.createHorizontalGlue());
-        JButton button = new JButton("Do Update Now");
+        final JButton button = new JButton("Do Update Now");
 
         button.addActionListener((e) -> {
-            SemIm updatedSem = semUpdater.getUpdatedSemIm();
-            semImEditor.displaySemIm(updatedSem,
-                    semImEditor.getTabSelectionIndex(),
-                    semImEditor.getMatrixSelection());
+            final SemIm updatedSem = this.semUpdater.getUpdatedSemIm();
+            this.semImEditor.displaySemIm(updatedSem,
+                    this.semImEditor.getTabSelectionIndex(),
+                    this.semImEditor.getMatrixSelection());
 //            semUpdater.setEvidence(new SemEvidence(updatedSem));
         });
 
@@ -210,50 +210,50 @@ public class SemUpdaterEditor extends JPanel {
 
         b.setBorder(new EmptyBorder(5, 5, 5, 5));
 
-        this.setFocusTraversalPolicy(new FocusTraversalPolicy() {
+        setFocusTraversalPolicy(new FocusTraversalPolicy() {
             @Override
-            public Component getComponentAfter(Container focusCycleRoot,
-                                               Component aComponent) {
-                int index = focusTraversalOrder.indexOf(aComponent);
-                int size = focusTraversalOrder.size();
+            public Component getComponentAfter(final Container focusCycleRoot,
+                                               final Component aComponent) {
+                final int index = SemUpdaterEditor.this.focusTraversalOrder.indexOf(aComponent);
+                final int size = SemUpdaterEditor.this.focusTraversalOrder.size();
 
                 if (index != -1) {
-                    return focusTraversalOrder.get((index + 1) % size);
+                    return SemUpdaterEditor.this.focusTraversalOrder.get((index + 1) % size);
                 } else {
-                    return this.getFirstComponent(focusCycleRoot);
+                    return getFirstComponent(focusCycleRoot);
                 }
             }
 
             @Override
-            public Component getComponentBefore(Container focusCycleRoot,
-                                                Component aComponent) {
-                int index = focusTraversalOrder.indexOf(aComponent);
-                int size = focusTraversalOrder.size();
+            public Component getComponentBefore(final Container focusCycleRoot,
+                                                final Component aComponent) {
+                final int index = SemUpdaterEditor.this.focusTraversalOrder.indexOf(aComponent);
+                final int size = SemUpdaterEditor.this.focusTraversalOrder.size();
 
                 if (index != -1) {
-                    return focusTraversalOrder.get((index - 1) % size);
+                    return SemUpdaterEditor.this.focusTraversalOrder.get((index - 1) % size);
                 } else {
-                    return this.getFirstComponent(focusCycleRoot);
+                    return getFirstComponent(focusCycleRoot);
                 }
             }
 
             @Override
-            public Component getFirstComponent(Container focusCycleRoot) {
-                return focusTraversalOrder.getFirst();
+            public Component getFirstComponent(final Container focusCycleRoot) {
+                return SemUpdaterEditor.this.focusTraversalOrder.getFirst();
             }
 
             @Override
-            public Component getLastComponent(Container focusCycleRoot) {
-                return focusTraversalOrder.getLast();
+            public Component getLastComponent(final Container focusCycleRoot) {
+                return SemUpdaterEditor.this.focusTraversalOrder.getLast();
             }
 
             @Override
-            public Component getDefaultComponent(Container focusCycleRoot) {
-                return this.getFirstComponent(focusCycleRoot);
+            public Component getDefaultComponent(final Container focusCycleRoot) {
+                return getFirstComponent(focusCycleRoot);
             }
         });
 
-        this.setFocusCycleRoot(true);
+        setFocusCycleRoot(true);
 
         return b;
     }
@@ -263,7 +263,7 @@ public class SemUpdaterEditor extends JPanel {
      *
      * @param wrapper
      */
-    public SemUpdaterEditor(SemUpdaterWrapper wrapper) {
+    public SemUpdaterEditor(final SemUpdaterWrapper wrapper) {
         this(wrapper.getSemUpdater());
     }
 
@@ -273,9 +273,9 @@ public class SemUpdaterEditor extends JPanel {
      * Sets the name of this editor.
      */
     @Override
-    public void setName(String name) {
-        String oldName = this.getName();
+    public void setName(final String name) {
+        final String oldName = getName();
         super.setName(name);
-        firePropertyChange("name", oldName, this.getName());
+        this.firePropertyChange("name", oldName, getName());
     }
 }

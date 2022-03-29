@@ -49,7 +49,7 @@ public final class KnowledgeEdge implements TetradSerializable {
     /**
      * Constructs a knowledge edge for from-->to.
      */
-    public KnowledgeEdge(String from, String to) {
+    public KnowledgeEdge(final String from, final String to) {
         if (from == null || to == null) {
             throw new NullPointerException();
         }
@@ -71,20 +71,20 @@ public final class KnowledgeEdge implements TetradSerializable {
      * @return the tail node of the edge.
      */
     public final String getFrom() {
-        return from;
+        return this.from;
     }
 
     /**
      * @return the head node of the edge.
      */
     public final String getTo() {
-        return to;
+        return this.to;
     }
 
     /**
      * Reteurns true if (from1, to1) == (from2, to2).
      */
-    public final boolean equals(Object object) {
+    public final boolean equals(final Object object) {
         if (object == null) {
             return false;
         }
@@ -93,20 +93,20 @@ public final class KnowledgeEdge implements TetradSerializable {
             return false;
         }
 
-        KnowledgeEdge pair = (KnowledgeEdge) object;
-        return from.equals(pair.from) && to.equals(pair.to);
+        final KnowledgeEdge pair = (KnowledgeEdge) object;
+        return this.from.equals(pair.from) && this.to.equals(pair.to);
     }
 
     /**
      * @return a good hashcode.
      */
     public final int hashCode() {
-        int hashCode = 31 + from.hashCode();
-        return 37 * hashCode + to.hashCode();
+        final int hashCode = 31 + this.from.hashCode();
+        return 37 * hashCode + this.to.hashCode();
     }
 
     public String toString() {
-        return from + "-->" + to;
+        return this.from + "-->" + this.to;
     }
 
     /**
@@ -122,15 +122,15 @@ public final class KnowledgeEdge implements TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (from == null) {
+        if (this.from == null) {
             throw new NullPointerException();
         }
 
-        if (to == null) {
+        if (this.to == null) {
             throw new NullPointerException();
         }
     }

@@ -32,17 +32,17 @@ public class LingUtils {
     //
     //makes the diagonal 1, scaling the remainder of each row appropriately
     //pre: 'matrix' must be square
-    public static Matrix normalizeDiagonal(Matrix matrix) {
-        Matrix resultMatrix = matrix.copy();
+    public static Matrix normalizeDiagonal(final Matrix matrix) {
+        final Matrix resultMatrix = matrix.copy();
         for (int i = 0; i < resultMatrix.rows(); i++) {
-            double factor = 1 / resultMatrix.get(i, i);
+            final double factor = 1 / resultMatrix.get(i, i);
             for (int j = 0; j < resultMatrix.columns(); j++)
                 resultMatrix.set(i, j, factor * resultMatrix.get(i, j));
         }
         return resultMatrix;
     }
 
-    public static boolean isPositiveDefinite(Matrix matrix) {
+    public static boolean isPositiveDefinite(final Matrix matrix) {
         return new CholeskyDecomposition(new DenseDoubleMatrix2D(matrix.toArray())).isSymmetricPositiveDefinite();
     }
 

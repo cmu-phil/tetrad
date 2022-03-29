@@ -37,18 +37,18 @@ public final class TestCollisions {
 
     @Test
     public void testMatrixGraph() {
-        this.checkGraph(new EndpointMatrixGraph());
+        checkGraph(new EndpointMatrixGraph());
     }
 
     @Test
     public void testListGraph() {
-        this.checkGraph(new EdgeListGraph());
+        checkGraph(new EdgeListGraph());
     }
 
-    private void checkGraph(Graph graph) {
-        Node x1 = new GraphNode("x1");
-        Node x2 = new GraphNode("x2");
-        Node x3 = new GraphNode("x3");
+    private void checkGraph(final Graph graph) {
+        final Node x1 = new GraphNode("x1");
+        final Node x2 = new GraphNode("x2");
+        final Node x3 = new GraphNode("x3");
 
         graph.addNode(x1);
         graph.addNode(x2);

@@ -49,7 +49,7 @@ public class MmhcRunner extends AbstractAlgorithmRunner {
 
     //============================CONSTRUCTORS============================//
 
-    private MmhcRunner(DataWrapper dataWrapper, Parameters params) {
+    private MmhcRunner(final DataWrapper dataWrapper, final Parameters params) {
         super(dataWrapper, params, null);
     }
 
@@ -70,19 +70,19 @@ public class MmhcRunner extends AbstractAlgorithmRunner {
      */
 
     public void execute() {
-        Mmhc search;
+        final Mmhc search;
 
-        int depth = this.getParams().getInt("depth", -1);
+        final int depth = getParams().getInt("depth", -1);
 
-        search = new Mmhc(this.getIndependenceTest(), this.getIndependenceTest().getDataSets().get(0));
+        search = new Mmhc(getIndependenceTest(), getIndependenceTest().getDataSets().get(0));
         search.setDepth(depth);
-        search.setKnowledge((IKnowledge) this.getParams().get("knowledge", new Knowledge2()));
+        search.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
 
-        Graph graph = search.search();
-        this.setResultGraph(graph);
+        final Graph graph = search.search();
+        setResultGraph(graph);
 
-        if (this.getSourceGraph() != null) {
-            GraphUtils.arrangeBySourceGraph(graph, this.getSourceGraph());
+        if (getSourceGraph() != null) {
+            GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
         } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
@@ -90,7 +90,7 @@ public class MmhcRunner extends AbstractAlgorithmRunner {
     }
 
     public Graph getGraph() {
-        return this.getResultGraph();
+        return getResultGraph();
     }
 
     /**
@@ -106,7 +106,7 @@ public class MmhcRunner extends AbstractAlgorithmRunner {
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>
      * for the given node.
      */
-    public List<List<Triple>> getTriplesLists(Node node) {
+    public List<List<Triple>> getTriplesLists(final Node node) {
         return new LinkedList<>();
     }
 
@@ -115,8 +115,8 @@ public class MmhcRunner extends AbstractAlgorithmRunner {
     }
 
     public ImpliedOrientation getMeekRules() {
-        MeekRules rules = new MeekRules();
-        rules.setKnowledge((IKnowledge) this.getParams().get("knowledge", new Knowledge2()));
+        final MeekRules rules = new MeekRules();
+        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
 
@@ -126,14 +126,14 @@ public class MmhcRunner extends AbstractAlgorithmRunner {
     }
 
     private IndependenceTest getIndependenceTest() {
-        Object dataModel = this.getDataModel();
+        Object dataModel = getDataModel();
 
         if (dataModel == null) {
-            dataModel = this.getSourceGraph();
+            dataModel = getSourceGraph();
         }
 
-        IndTestType testType = (IndTestType) (this.getParams()).get("indTestType", IndTestType.FISHER_Z);
-        return new IndTestChooser().getTest(dataModel, this.getParams(), testType);
+        final IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
+        return new IndTestChooser().getTest(dataModel, getParams(), testType);
     }
 }
 

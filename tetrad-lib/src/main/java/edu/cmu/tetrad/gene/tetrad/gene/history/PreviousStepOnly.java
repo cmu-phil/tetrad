@@ -36,15 +36,15 @@ public class PreviousStepOnly implements GraphInitializer {
     /**
      * Randomizes the graph.
      */
-    public void initialize(LagGraph lagGraph) {
+    public void initialize(final LagGraph lagGraph) {
 
         lagGraph.clearEdges();
 
-        List<String> factors = new ArrayList<>(lagGraph.getFactors());
+        final List<String> factors = new ArrayList<>(lagGraph.getFactors());
 
         // Add edges one time step back.
-        for (String factor1 : factors) {
-            LaggedFactor laggedFactor = new LaggedFactor(factor1, 1);
+        for (final String factor1 : factors) {
+            final LaggedFactor laggedFactor = new LaggedFactor(factor1, 1);
             lagGraph.addEdge(factor1, laggedFactor);
         }
     }

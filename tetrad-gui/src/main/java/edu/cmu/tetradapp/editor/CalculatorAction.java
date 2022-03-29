@@ -59,7 +59,7 @@ class CalculatorAction extends AbstractAction {
     /**
      * Constructs the calculator action given the data wrapper to operate on.
      */
-    private CalculatorAction(DataWrapper wrapper) {
+    private CalculatorAction(final DataWrapper wrapper) {
         super("Calculator ...");
         if (wrapper == null) {
             throw new NullPointerException("DataWrapper was null.");
@@ -71,30 +71,30 @@ class CalculatorAction extends AbstractAction {
     /**
      * Constructs the calculator given the data editor its attached to.
      */
-    public CalculatorAction(DataEditor editor) {
+    public CalculatorAction(final DataEditor editor) {
         this(editor.getDataWrapper());
-        dataEditor = editor;
+        this.dataEditor = editor;
 
     }
 
     /**
      * Launches the calculator editoir.
      */
-    public void actionPerformed(ActionEvent e) {
-        CalculatorEditor editor = new CalculatorEditor();
+    public void actionPerformed(final ActionEvent e) {
+        final CalculatorEditor editor = new CalculatorEditor();
 
-        Parameters params = wrapper.getParams();
+        Parameters params = this.wrapper.getParams();
 
         if (params instanceof HasCalculatorParams) {
             params = ((HasCalculatorParams) params).getCalculatorParams();
         }
 
         editor.setParams(params);
-        editor.setParentModels(new Object[]{wrapper});
+        editor.setParentModels(new Object[]{this.wrapper});
         editor.setup();
 
-        EditorWindow editorWindow =
-                new EditorWindow(editor, editor.getName(), "Save", true, dataEditor);
+        final EditorWindow editorWindow =
+                new EditorWindow(editor, editor.getName(), "Save", true, this.dataEditor);
 
         DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
         editorWindow.pack();
@@ -102,21 +102,21 @@ class CalculatorAction extends AbstractAction {
 
 
         editorWindow.addInternalFrameListener(new InternalFrameAdapter() {
-            public void internalFrameClosed(InternalFrameEvent e) {
-                EditorWindow window = (EditorWindow) e.getSource();
+            public void internalFrameClosed(final InternalFrameEvent e) {
+                final EditorWindow window = (EditorWindow) e.getSource();
 
                 if (window.isCanceled()) {
                     return;
                 }
 
                 if (editor.finalizeEdit()) {
-                    List<String> equations = new ArrayList<>();
-                    String _displayEquations = Preferences.userRoot().get("calculator_equations", "");
-                    String[] displayEquations = _displayEquations.split("///");
+                    final List<String> equations = new ArrayList<>();
+                    final String _displayEquations = Preferences.userRoot().get("calculator_equations", "");
+                    final String[] displayEquations = _displayEquations.split("///");
 
-                    for (String equation : displayEquations) {
+                    for (final String equation : displayEquations) {
                         if (equation.contains("$")) {
-                            for (Node node : editor.getDataSet().getVariables()) {
+                            for (final Node node : editor.getDataSet().getVariables()) {
                                 equations.add(equation.replace("$", node.getName()));
                             }
                         } else {
@@ -124,10 +124,10 @@ class CalculatorAction extends AbstractAction {
                         }
                     }
 
-                    String[] eqs = equations.toArray(new String[0]);
+                    final String[] eqs = equations.toArray(new String[0]);
                     try {
                         Transformation.transform(editor.getDataSet(), eqs);
-                    } catch (ParseException e1) {
+                    } catch (final ParseException e1) {
                         throw new IllegalStateException("Parse error while applying equations to dataset.");
                     }
                 }

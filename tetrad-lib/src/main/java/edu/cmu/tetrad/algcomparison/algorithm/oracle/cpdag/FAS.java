@@ -40,32 +40,32 @@ public class FAS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
     public FAS() {
     }
 
-    public FAS(IndependenceWrapper test) {
+    public FAS(final IndependenceWrapper test) {
         this.test = test;
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(final DataModel dataSet, final Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            Fas search = new Fas(test.getTest(dataSet, parameters));
+            final Fas search = new Fas(this.test.getTest(dataSet, parameters));
             search.setStable(parameters.getBoolean(Params.STABLE_FAS));
             search.setHeuristic(parameters.getInt(Params.FAS_HEURISTIC));
             search.setDepth(parameters.getInt(Params.DEPTH));
-            search.setKnowledge(knowledge);
+            search.setKnowledge(this.knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
-            Object obj = parameters.get(Params.PRINT_STREAM);
+            final Object obj = parameters.get(Params.PRINT_STREAM);
             if (obj instanceof PrintStream) {
                 search.setOut((PrintStream) obj);
             }
 
             return search.search();
         } else {
-            FAS algorithm = new FAS(test);
+            final FAS algorithm = new FAS(this.test);
 
-            DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(knowledge);
+            final DataSet data = (DataSet) dataSet;
+            final GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
+            search.setKnowledge(this.knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -91,23 +91,23 @@ public class FAS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
     }
 
     @Override
-    public Graph getComparisonGraph(Graph graph) {
+    public Graph getComparisonGraph(final Graph graph) {
         return SearchGraphUtils.cpdagForDag(new EdgeListGraph(graph));
     }
 
     @Override
     public String getDescription() {
-        return "Fast adjacency search (FAS) using " + test.getDescription();
+        return "Fast adjacency search (FAS) using " + this.test.getDescription();
     }
 
     @Override
     public DataType getDataType() {
-        return test.getDataType();
+        return this.test.getDataType();
     }
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
+        final List<String> parameters = new ArrayList<>();
         parameters.add(Params.DEPTH);
         parameters.add(Params.FAS_HEURISTIC);
         parameters.add(Params.STABLE_FAS);
@@ -117,21 +117,21 @@ public class FAS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     @Override
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(final IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
-        return test;
+        return this.test;
     }
 
     @Override
-    public void setIndependenceWrapper(IndependenceWrapper test) {
+    public void setIndependenceWrapper(final IndependenceWrapper test) {
         this.test = test;
     }
 }

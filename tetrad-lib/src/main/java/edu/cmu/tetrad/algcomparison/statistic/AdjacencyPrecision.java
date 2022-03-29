@@ -24,17 +24,17 @@ public class AdjacencyPrecision implements Statistic {
     }
 
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        AdjacencyConfusion adjConfusion = new AdjacencyConfusion(trueGraph, estGraph);
-        int adjTp = adjConfusion.getAdjTp();
-        int adjFp = adjConfusion.getAdjFp();
+    public double getValue(final Graph trueGraph, final Graph estGraph, final DataModel dataModel) {
+        final AdjacencyConfusion adjConfusion = new AdjacencyConfusion(trueGraph, estGraph);
+        final int adjTp = adjConfusion.getAdjTp();
+        final int adjFp = adjConfusion.getAdjFp();
 //        int adjFn = adjConfusion.getAdjFn();
 //        int adjTn = adjConfusion.getAdjTn();
         return adjTp / (double) (adjTp + adjFp);
     }
 
     @Override
-    public double getNormValue(double value) {
+    public double getNormValue(final double value) {
         return value;
     }
 }

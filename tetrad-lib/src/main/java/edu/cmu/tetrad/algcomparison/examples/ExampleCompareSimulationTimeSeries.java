@@ -39,8 +39,8 @@ import edu.cmu.tetrad.util.Parameters;
  * @authors jdramsey, dmalinsky
  */
 public class ExampleCompareSimulationTimeSeries {
-    public static void main(String... args) {
-        Parameters parameters = new Parameters();
+    public static void main(final String... args) {
+        final Parameters parameters = new Parameters();
 
         parameters.set("numRuns", 10);
         parameters.set("numMeasures", 10);
@@ -48,7 +48,7 @@ public class ExampleCompareSimulationTimeSeries {
         parameters.set("sampleSize", 500);
         parameters.set("alpha", 1e-4, 1e-3, 1e-2);
 
-        Statistics statistics = new Statistics();
+        final Statistics statistics = new Statistics();
 
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
@@ -64,16 +64,16 @@ public class ExampleCompareSimulationTimeSeries {
         statistics.setWeight("AP", 1.0);
         statistics.setWeight("AR", 0.5);
 
-        Algorithms algorithms = new Algorithms();
+        final Algorithms algorithms = new Algorithms();
 
         algorithms.add(new SvarFci(new FisherZ()));
         algorithms.add(new SvarGfci(new FisherZ(), new SemBicScore()));
 
-        Simulations simulations = new Simulations();
+        final Simulations simulations = new Simulations();
 
         simulations.add(new TimeSeriesSemSimulation(new RandomForward()));
 
-        Comparison comparison = new Comparison();
+        final Comparison comparison = new Comparison();
 
         comparison.setSortByUtility(true);
         comparison.setShowUtilities(true);

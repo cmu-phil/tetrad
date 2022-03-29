@@ -42,9 +42,9 @@ public class TestFaskSimpleSimulaton {
         for (int i = 0; i < 1000; i++) {
 
             // Pick coefficients.
-            double a = .2 + RandomUtil.getInstance().nextDouble() * 0.6;
-            double b = .2 + RandomUtil.getInstance().nextDouble() * 0.6;
-            double c = .2 + RandomUtil.getInstance().nextDouble() * 0.6;
+            final double a = .2 + RandomUtil.getInstance().nextDouble() * 0.6;
+            final double b = .2 + RandomUtil.getInstance().nextDouble() * 0.6;
+            final double c = .2 + RandomUtil.getInstance().nextDouble() * 0.6;
 
             double[] z = new double[sampleSize];
             double[] y = new double[sampleSize];
@@ -52,9 +52,9 @@ public class TestFaskSimpleSimulaton {
 
             // Generate data for x, y, z, x -> y, x < -z -> y
             for (int j = 0; j < sampleSize; j++) {
-                z[j] = this.rand();
-                x[j] = c * z[j] + this.rand();
-                y[j] = a * x[j] + b * z[j] + this.rand();
+                z[j] = rand();
+                x[j] = c * z[j] + rand();
+                y[j] = a * x[j] + b * z[j] + rand();
             }
 
             // Center variables.
@@ -63,14 +63,14 @@ public class TestFaskSimpleSimulaton {
             z = DataUtils.center(z);
 
             // Swap x and y so y->x instead.
-            double[] w = x;
+            final double[] w = x;
             x = y;
             y = w;
 
-            if (this.leftright(x, y))
+            if (leftright(x, y))
                 xtoy = xtoy + 1;
 
-            if (this.leftright(y, x))
+            if (leftright(y, x))
                 ytox = ytox + 1;
         }
 
@@ -84,23 +84,23 @@ public class TestFaskSimpleSimulaton {
         return RandomUtil.getInstance().nextBeta(2, 5);
     }
 
-    private boolean leftright(double[] x, double[] y) {
-        return this.r(x, y) > 0;
+    private boolean leftright(final double[] x, final double[] y) {
+        return r(x, y) > 0;
     }
 
-    private double r(double[] x, double[] y) {
-        return this.q(x, y) - this.q(y, x);
+    private double r(final double[] x, final double[] y) {
+        return q(x, y) - q(y, x);
     }
 
-    private double q(double[] x, double[] y) {
-        return cv(x, y, x) / cv(x, x, x) - cv(x, y, y) / cv(x, x, y);
+    private double q(final double[] x, final double[] y) {
+        return TestFaskSimpleSimulaton.cv(x, y, x) / TestFaskSimpleSimulaton.cv(x, x, x) - TestFaskSimpleSimulaton.cv(x, y, y) / TestFaskSimpleSimulaton.cv(x, x, y);
     }
 
-    private double symmetric(double[] x, double[] y) {
-        return cv(x, y, x) / cv(x, x, x) - cv(x, y, y) / cv(y, y, y);
+    private double symmetric(final double[] x, final double[] y) {
+        return TestFaskSimpleSimulaton.cv(x, y, x) / TestFaskSimpleSimulaton.cv(x, x, x) - TestFaskSimpleSimulaton.cv(x, y, y) / TestFaskSimpleSimulaton.cv(y, y, y);
     }
 
-    public static double cv(double[] x, double[] y, double[] condition) {
+    public static double cv(final double[] x, final double[] y, final double[] condition) {
         double exy = 0.0;
         double ex = 0.0;
         double ey = 0.0;
@@ -126,16 +126,16 @@ public class TestFaskSimpleSimulaton {
 
         final int sampleSize = 1000;
 
-        double[] zzdiff = new double[sampleSize];
-        double[] xxdiff = new double[sampleSize];
-        double[] ratiodiff = new double[sampleSize];
+        final double[] zzdiff = new double[sampleSize];
+        final double[] xxdiff = new double[sampleSize];
+        final double[] ratiodiff = new double[sampleSize];
 
         for (int i = 0; i < 1000; i++) {
 
             // Pick coefficients.
-            double a = .2 + RandomUtil.getInstance().nextDouble() * 0.6;
-            double b = .2 + RandomUtil.getInstance().nextDouble() * 0.6;
-            double c = .2 + RandomUtil.getInstance().nextDouble() * 0.6;
+            final double a = .2 + RandomUtil.getInstance().nextDouble() * 0.6;
+            final double b = .2 + RandomUtil.getInstance().nextDouble() * 0.6;
+            final double c = .2 + RandomUtil.getInstance().nextDouble() * 0.6;
 
             double[] z = new double[sampleSize];
             double[] y = new double[sampleSize];
@@ -143,9 +143,9 @@ public class TestFaskSimpleSimulaton {
 
             // Generate data for x, y, z, x -> y, x < -z -> y
             for (int j = 0; j < sampleSize; j++) {
-                z[j] = this.rand();
-                x[j] = c * z[j] + this.rand();
-                y[j] = a * x[j] + b * z[j] + this.rand();
+                z[j] = rand();
+                x[j] = c * z[j] + rand();
+                y[j] = a * x[j] + b * z[j] + rand();
             }
 
             // Center variables.
@@ -158,16 +158,16 @@ public class TestFaskSimpleSimulaton {
 //            x = y;
 //            y = w;
 
-            if (this.leftright(x, y))
+            if (leftright(x, y))
                 xtoy = xtoy + 1;
 
-            if (this.leftright(y, x))
+            if (leftright(y, x))
                 ytox = ytox + 1;
 
-            zzdiff[i] = cu(z, z, x) - cu(z, z, y);
-            xxdiff[i] = cu(x, x, x) - cu(x, x, y);
+            zzdiff[i] = TestFaskSimpleSimulaton.cu(z, z, x) - TestFaskSimpleSimulaton.cu(z, z, y);
+            xxdiff[i] = TestFaskSimpleSimulaton.cu(x, x, x) - TestFaskSimpleSimulaton.cu(x, x, y);
 
-            ratiodiff[i] = (cu(z, z, x) / cu(x, x, x)) - (cu(z, z, y) / cu(x, x, y));
+            ratiodiff[i] = (TestFaskSimpleSimulaton.cu(z, z, x) / TestFaskSimpleSimulaton.cu(x, x, x)) - (TestFaskSimpleSimulaton.cu(z, z, y) / TestFaskSimpleSimulaton.cu(x, x, y));
 
         }
 
@@ -180,7 +180,7 @@ public class TestFaskSimpleSimulaton {
 
     }
 
-    public static double cu(double[] x, double[] y, double[] condition) {
+    public static double cu(final double[] x, final double[] y, final double[] condition) {
         double exy = 0.0;
 
         int n = 0;
@@ -196,7 +196,7 @@ public class TestFaskSimpleSimulaton {
     }
 
 
-    public static void main(String... args) {
+    public static void main(final String... args) {
         new TestFaskSimpleSimulaton().test2();
     }
 }

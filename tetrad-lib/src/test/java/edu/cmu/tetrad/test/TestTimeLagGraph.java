@@ -37,19 +37,19 @@ public final class TestTimeLagGraph {
 
     @Test
     public void test1() {
-        TimeLagGraph graph = new TimeLagGraph();
-        Node x0 = new GraphNode("X");
-        Node y0 = new GraphNode("Y");
+        final TimeLagGraph graph = new TimeLagGraph();
+        final Node x0 = new GraphNode("X");
+        final Node y0 = new GraphNode("Y");
         assertTrue(graph.addNode(x0));
         assertTrue(graph.addNode(y0));
         assertFalse(graph.setMaxLag(2));
-        Node x1 = graph.getNode("X", 1);
+        final Node x1 = graph.getNode("X", 1);
         assertTrue(graph.addDirectedEdge(x1, y0));
         assertTrue(graph.setMaxLag(4));
         assertTrue(graph.setNumInitialLags(2));
         assertFalse(graph.setMaxLag(3));
         assertTrue(graph.setMaxLag(5));
-        Node y1 = graph.getNode("Y", 1);
+        final Node y1 = graph.getNode("Y", 1);
         assertTrue(graph.addDirectedEdge(y1, x0));
         assertTrue(graph.setMaxLag(1));
         assertFalse(graph.setMaxLag(0));

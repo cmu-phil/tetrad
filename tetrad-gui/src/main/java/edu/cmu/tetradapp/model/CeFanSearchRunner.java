@@ -52,7 +52,7 @@ public class CeFanSearchRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public CeFanSearchRunner(DataWrapper dataWrapper, Parameters params) {
+    public CeFanSearchRunner(final DataWrapper dataWrapper, final Parameters params) {
         super(dataWrapper, params, null);
     }
 
@@ -60,34 +60,34 @@ public class CeFanSearchRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CeFanSearchRunner(Graph graph, Parameters params) {
+    public CeFanSearchRunner(final Graph graph, final Parameters params) {
         super(graph, params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CeFanSearchRunner(GraphWrapper graphWrapper, Parameters params) {
+    public CeFanSearchRunner(final GraphWrapper graphWrapper, final Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CeFanSearchRunner(DagWrapper dagWrapper, Parameters params) {
+    public CeFanSearchRunner(final DagWrapper dagWrapper, final Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public CeFanSearchRunner(SemGraphWrapper dagWrapper,
-                             Parameters params) {
+    public CeFanSearchRunner(final SemGraphWrapper dagWrapper,
+                             final Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public CeFanSearchRunner(IndependenceFactsModel model, Parameters params) {
+    public CeFanSearchRunner(final IndependenceFactsModel model, final Parameters params) {
         super(model, params, null);
     }
 
-    public CeFanSearchRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public CeFanSearchRunner(final IndependenceFactsModel model, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -108,40 +108,40 @@ public class CeFanSearchRunner extends AbstractAlgorithmRunner
      * implemented in the extending class.
      */
     public void execute() {
-        int pcDepth = this.getParams().getInt("depth", -1);
-        Cefs search =
-                new Cefs(this.getIndependenceTest(), pcDepth);
-        Parameters params = this.getParams();
+        final int pcDepth = getParams().getInt("depth", -1);
+        final Cefs search =
+                new Cefs(getIndependenceTest(), pcDepth);
+        final Parameters params = getParams();
         if (params instanceof Parameters) {
             search.setAggressivelyPreventCycles(params.getBoolean("aggressivelyPreventCycles", false));
         }
-        String targetName = this.getParams().getString("targetName", null);
-        Graph graph = search.search(targetName);
-        this.setResultGraph(graph);
+        final String targetName = getParams().getString("targetName", null);
+        final Graph graph = search.search(targetName);
+        setResultGraph(graph);
 
-        if (this.getSourceGraph() != null) {
-            GraphUtils.arrangeBySourceGraph(graph, this.getSourceGraph());
-        } else if (((IKnowledge) this.getParams().get("knowledge", new Knowledge2())).isDefaultToKnowledgeLayout()) {
-            SearchGraphUtils.arrangeByKnowledgeTiers(graph, (IKnowledge) this.getParams().get("knowledge", new Knowledge2()));
+        if (getSourceGraph() != null) {
+            GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
+        } else if (((IKnowledge) getParams().get("knowledge", new Knowledge2())).isDefaultToKnowledgeLayout()) {
+            SearchGraphUtils.arrangeByKnowledgeTiers(graph, (IKnowledge) getParams().get("knowledge", new Knowledge2()));
         } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
     }
 
     public IndependenceTest getIndependenceTest() {
-        Object dataModel = this.getDataModel();
+        Object dataModel = getDataModel();
 
         if (dataModel == null) {
-            dataModel = this.getSourceGraph();
+            dataModel = getSourceGraph();
         }
 
-        Parameters params = this.getParams();
-        IndTestType testType = (IndTestType) params.get("indTestType", IndTestType.FISHER_Z);
+        final Parameters params = getParams();
+        final IndTestType testType = (IndTestType) params.get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, params, testType);
     }
 
     public Graph getGraph() {
-        return this.getResultGraph();
+        return getResultGraph();
     }
 
     /**
@@ -154,7 +154,7 @@ public class CeFanSearchRunner extends AbstractAlgorithmRunner
     /**
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
-    public List<List<Triple>> getTriplesLists(Node node) {
+    public List<List<Triple>> getTriplesLists(final Node node) {
         return new LinkedList<>();
     }
 

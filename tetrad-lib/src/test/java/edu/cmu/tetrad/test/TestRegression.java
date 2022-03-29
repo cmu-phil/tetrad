@@ -48,19 +48,19 @@ public class TestRegression {
     DataSet data;
 
     public void setUp() {
-        List<Node> nodes = new ArrayList<>();
+        final List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < 5; i++) {
             nodes.add(new GraphNode("X" + (i + 1)));
         }
 
         RandomUtil.getInstance().setSeed(342233L);
-        Graph graph = new Dag(GraphUtils.randomGraphRandomForwardEdges(nodes, 0, 5, 3,
+        final Graph graph = new Dag(GraphUtils.randomGraphRandomForwardEdges(nodes, 0, 5, 3,
                 3, 3, false, true));
 
-        SemPm pm = new SemPm(graph);
-        SemIm im = new SemIm(pm);
-        data = im.simulateDataReducedForm(1000, false);
+        final SemPm pm = new SemPm(graph);
+        final SemIm im = new SemIm(pm);
+        this.data = im.simulateDataReducedForm(1000, false);
     }
 
     /**
@@ -69,23 +69,23 @@ public class TestRegression {
      */
     @Test
     public void testTabular() {
-        this.setUp();
+        setUp();
 
         RandomUtil.getInstance().setSeed(3848283L);
 
-        List<Node> nodes = data.getVariables();
+        final List<Node> nodes = this.data.getVariables();
 
-        Node target = nodes.get(0);
-        List<Node> regressors = new ArrayList<>();
+        final Node target = nodes.get(0);
+        final List<Node> regressors = new ArrayList<>();
 
         for (int i = 1; i < nodes.size(); i++) {
             regressors.add(nodes.get(i));
         }
 
-        Regression regression = new RegressionDataset(data);
-        RegressionResult result = regression.regress(target, regressors);
+        final Regression regression = new RegressionDataset(this.data);
+        final RegressionResult result = regression.regress(target, regressors);
 
-        double[] coeffs = result.getCoef();
+        final double[] coeffs = result.getCoef();
 //        assertEquals(.08, coeffs[0], 0.01);
 //        assertEquals(-.05, coeffs[1], 0.01);
 //        assertEquals(.035, coeffs[2], 0.01);
@@ -98,24 +98,24 @@ public class TestRegression {
      */
     @Test
     public void testCovariance() {
-        this.setUp();
+        setUp();
 
         RandomUtil.getInstance().setSeed(3848283L);
 
-        ICovarianceMatrix cov = new CovarianceMatrix(data);
-        List<Node> nodes = cov.getVariables();
+        final ICovarianceMatrix cov = new CovarianceMatrix(this.data);
+        final List<Node> nodes = cov.getVariables();
 
-        Node target = nodes.get(0);
-        List<Node> regressors = new ArrayList<>();
+        final Node target = nodes.get(0);
+        final List<Node> regressors = new ArrayList<>();
 
         for (int i = 1; i < nodes.size(); i++) {
             regressors.add(nodes.get(i));
         }
 
-        Regression regression = new RegressionCovariance(cov);
-        RegressionResult result = regression.regress(target, regressors);
+        final Regression regression = new RegressionCovariance(cov);
+        final RegressionResult result = regression.regress(target, regressors);
 
-        double[] coeffs = result.getCoef();
+        final double[] coeffs = result.getCoef();
 //        assertEquals(0.00, coeffs[0], 0.01);
 //        assertEquals(-.053, coeffs[1], 0.01);
 //        assertEquals(0.036, coeffs[2], 0.01);

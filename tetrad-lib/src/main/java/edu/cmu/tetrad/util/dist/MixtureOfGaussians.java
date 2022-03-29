@@ -38,7 +38,7 @@ public class MixtureOfGaussians implements Distribution {
     private double mean2;
     private double sd2;
 
-    public MixtureOfGaussians(double a, double mean1, double sd1, double mean2, double sd2) {
+    public MixtureOfGaussians(final double a, final double mean1, final double sd1, final double mean2, final double sd2) {
         if (a < 0 || a > 1) {
             throw new IllegalArgumentException();
         }
@@ -63,7 +63,7 @@ public class MixtureOfGaussians implements Distribution {
      *
      * @return The exemplar.
      */
-    @SuppressWarnings({"UnusedDeclaration"})
+    @SuppressWarnings("UnusedDeclaration")
     public static MixtureOfGaussians serializableInstance() {
         return new MixtureOfGaussians(.5, -2, 2, 2, 2);
     }
@@ -76,39 +76,39 @@ public class MixtureOfGaussians implements Distribution {
         return "Mixture of Gaussians";
     }
 
-    public void setParameter(int index, double value) {
+    public void setParameter(final int index, final double value) {
         if (index == 0) {
-            a = value;
+            this.a = value;
         } else if (index == 1) {
-            mean1 = value;
+            this.mean1 = value;
         } else if (index == 2) {
-            sd1 = value;
+            this.sd1 = value;
         } else if (index == 3) {
-            mean2 = value;
+            this.mean2 = value;
         } else if (index == 5) {
-            sd2 = value;
+            this.sd2 = value;
         }
 
         throw new IllegalArgumentException();
     }
 
-    public double getParameter(int index) {
+    public double getParameter(final int index) {
         if (index == 0) {
-            return a;
+            return this.a;
         } else if (index == 1) {
-            return mean1;
+            return this.mean1;
         } else if (index == 2) {
-            return sd1;
+            return this.sd1;
         } else if (index == 3) {
-            return mean2;
+            return this.mean2;
         } else if (index == 5) {
-            return sd2;
+            return this.sd2;
         }
 
         throw new IllegalArgumentException();
     }
 
-    public String getParameterName(int index) {
+    public String getParameterName(final int index) {
         if (index == 0) {
             return "Ratio";
         } else if (index == 1) {
@@ -125,17 +125,17 @@ public class MixtureOfGaussians implements Distribution {
     }
 
     public double nextRandom() {
-        double r = RandomUtil.getInstance().nextDouble();
+        final double r = RandomUtil.getInstance().nextDouble();
 
-        if (r < a) {
-            return RandomUtil.getInstance().nextNormal(mean1, sd1);
+        if (r < this.a) {
+            return RandomUtil.getInstance().nextNormal(this.mean1, this.sd1);
         } else {
-            return RandomUtil.getInstance().nextNormal(mean2, sd2);
+            return RandomUtil.getInstance().nextNormal(this.mean2, this.sd2);
         }
     }
 
     public String toString() {
-        return "MixtureOfGaussians(" + a + ", " + mean1 + ", " + sd1 + ", " + mean2 + ", " + sd2 + ")";
+        return "MixtureOfGaussians(" + this.a + ", " + this.mean1 + ", " + this.sd1 + ", " + this.mean2 + ", " + this.sd2 + ")";
     }
 }
 

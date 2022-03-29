@@ -26,15 +26,14 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndTestType;
-import edu.cmu.tetrad.search.Lofs.Score;
-import edu.cmu.tetrad.search.Lofs2.Rule;
+import edu.cmu.tetrad.search.Lofs;
+import edu.cmu.tetrad.search.Lofs2;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.*;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.DoubleTextField;
-import edu.cmu.tetradapp.util.DoubleTextField.Filter;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
@@ -69,39 +68,39 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
     /**
      * Opens up an editor to let the user view the given PcRunner.
      */
-    public LofsSearchEditorNew(LofsRunner runner) {
+    public LofsSearchEditorNew(final LofsRunner runner) {
         super(runner, "Result Graph");
     }
 
     //=============================== Public Methods ==================================//
 
     public Graph getGraph() {
-        return this.getWorkbench().getGraph();
+        return getWorkbench().getGraph();
     }
 
     @Override
     public Map getModelEdgesToDisplay() {
-        return this.getWorkbench().getModelEdgesToDisplay();
+        return getWorkbench().getModelEdgesToDisplay();
     }
 
     public Map getModelNodesToDisplay() {
-        return this.getWorkbench().getModelNodesToDisplay();
+        return getWorkbench().getModelNodesToDisplay();
     }
 
-    public void layoutByGraph(Graph graph) {
-        this.getWorkbench().layoutByGraph(graph);
+    public void layoutByGraph(final Graph graph) {
+        getWorkbench().layoutByGraph(graph);
     }
 
     public void layoutByKnowledge() {
-        GraphWorkbench resultWorkbench = this.getWorkbench();
-        Graph graph = resultWorkbench.getGraph();
-        IKnowledge knowledge = (IKnowledge) this.getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
+        final GraphWorkbench resultWorkbench = getWorkbench();
+        final Graph graph = resultWorkbench.getGraph();
+        final IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
         SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
 //        resultWorkbench.setGraph(graph);
     }
 
     public Rectangle getVisibleRect() {
-        return this.getWorkbench().getVisibleRect();
+        return getWorkbench().getVisibleRect();
     }
 
     //==========================PROTECTED METHODS============================//
@@ -110,36 +109,36 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
     /**
      * Sets up the editor, does the layout, and so on.
      */
-    protected void setup(String resultLabel) {
-        this.setLayout(new BorderLayout());
-        this.add(this.getToolbar(), BorderLayout.WEST);
-        JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.add("forbid_latent_common_causes", this.workbenchScroll(resultLabel));
+    protected void setup(final String resultLabel) {
+        setLayout(new BorderLayout());
+        add(getToolbar(), BorderLayout.WEST);
+        final JTabbedPane tabbedPane = new JTabbedPane();
+        tabbedPane.add("forbid_latent_common_causes", workbenchScroll(resultLabel));
 
-        this.add(tabbedPane, BorderLayout.CENTER);
-        this.add(this.menuBar(), BorderLayout.NORTH);
+        add(tabbedPane, BorderLayout.CENTER);
+        add(menuBar(), BorderLayout.NORTH);
     }
 
     /**
      * Construct the toolbar panel.
      */
     protected JPanel getToolbar() {
-        Parameters searchParams = this.getAlgorithmRunner().getParams();
+        final Parameters searchParams = getAlgorithmRunner().getParams();
 
-        strongerDirection = new JCheckBox("Stronger Direction");
+        this.strongerDirection = new JCheckBox("Stronger Direction");
 
-        strongerDirection.setSelected(searchParams.getBoolean("orientStrongerDirection", true));
+        this.strongerDirection.setSelected(searchParams.getBoolean("orientStrongerDirection", true));
 
-        strongerDirection.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JCheckBox button = (JCheckBox) actionEvent.getSource();
+        this.strongerDirection.addActionListener(new ActionListener() {
+            public void actionPerformed(final ActionEvent actionEvent) {
+                final JCheckBox button = (JCheckBox) actionEvent.getSource();
                 searchParams.set("orientStrongerDirection", button.isSelected());
             }
         });
 
-        selfLoopStrength = new DoubleTextField(searchParams.getDouble("selfLoopStrength", 0.0), 5,
+        this.selfLoopStrength = new DoubleTextField(searchParams.getDouble("selfLoopStrength", 0.0), 5,
                 new DecimalFormat("0.0#####"));
-        selfLoopStrength.setFilter(new Filter() {
+        this.selfLoopStrength.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 searchParams.set("selfLoopStrength", value);
                 return value;
@@ -168,7 +167,7 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
 
         epsilon = new DoubleTextField(searchParams.getDouble("epsilon", .1), 5,
                 new DecimalFormat("0.0#####"));
-        epsilon.setFilter(new Filter() {
+        epsilon.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 searchParams.set("epsilon", value);
                 return value;
@@ -177,27 +176,27 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
 
         zeta = new DoubleTextField(searchParams.getDouble("zeta", 1), 5,
                 new DecimalFormat("0.0#####"));
-        zeta.setFilter(new Filter() {
-            public double filter(double value, double oldValue) {
+        zeta.setFilter(new DoubleTextField.Filter() {
+            public double filter(final double value, final double oldValue) {
                 searchParams.set("dataSet", value);
                 return value;
             }
         });
 
-        label1 = new JLabel("Cutoff = ");
-        label2 = new JLabel("Range = ");
+        this.label1 = new JLabel("Cutoff = ");
+        this.label2 = new JLabel("Range = ");
 
-        JPanel toolbar = new JPanel();
+        final JPanel toolbar = new JPanel();
 
-        this.getExecuteButton().setText("Execute*");
-        this.getExecuteButton().addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                LofsSearchEditorNew.this.execute();
+        getExecuteButton().setText("Execute*");
+        getExecuteButton().addActionListener(new ActionListener() {
+            public void actionPerformed(final ActionEvent e) {
+                execute();
             }
         });
 
 
-        JComboBox rulebox = new JComboBox();
+        final JComboBox rulebox = new JComboBox();
         rulebox.addItem("R1");
         rulebox.addItem("R2");
         rulebox.addItem("R3");
@@ -212,33 +211,33 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
 //        rulebox.addItem("IGCI");
 //        rulebox.addItem("RC");
 
-        Rule _rule = (Rule) searchParams.get("rule", Rule.R3);
+        Lofs2.Rule _rule = (Lofs2.Rule) searchParams.get("rule", Lofs2.Rule.R3);
         this.disableR4Items();
 
-        if (_rule == Rule.R1) {
+        if (_rule == Lofs2.Rule.R1) {
             rulebox.setSelectedItem("R1");
-        } else if (_rule == Rule.R1TimeLag) {
+        } else if (_rule == Lofs2.Rule.R1TimeLag) {
             rulebox.setSelectedItem("R1-TL");
-        } else if (_rule == Rule.R2) {
+        } else if (_rule == Lofs2.Rule.R2) {
             rulebox.setSelectedItem("R2");
-        } else if (_rule == Rule.R3) {
+        } else if (_rule == Lofs2.Rule.R3) {
             rulebox.setSelectedItem("R3");
-        } else if (_rule == Rule.R4) {
+        } else if (_rule == Lofs2.Rule.R4) {
             rulebox.setSelectedItem("R4");
             this.enableR4Items();
-        } else if (_rule == Rule.Tanh) {
+        } else if (_rule == Lofs2.Rule.Tanh) {
             rulebox.setSelectedItem("Tanh");
-        } else if (_rule == Rule.Skew) {
+        } else if (_rule == Lofs2.Rule.Skew) {
             rulebox.setSelectedItem("Skew");
-        } else if (_rule == Rule.SkewE) {
+        } else if (_rule == Lofs2.Rule.SkewE) {
             rulebox.setSelectedItem("SkewE");
-        } else if (_rule == Rule.RSkew) {
+        } else if (_rule == Lofs2.Rule.RSkew) {
             rulebox.setSelectedItem("RSkew");
-        } else if (_rule == Rule.RSkewE) {
+        } else if (_rule == Lofs2.Rule.RSkewE) {
             rulebox.setSelectedItem("RSkewE");
-        } else if (_rule == Rule.Patel) {
+        } else if (_rule == Lofs2.Rule.Patel) {
             rulebox.setSelectedItem("Patel");
-        } else if (_rule == Rule.FastICA) {
+        } else if (_rule == Lofs2.Rule.FastICA) {
             rulebox.setSelectedItem("FastICA (see console)");
         }
 
@@ -255,31 +254,31 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
                 }
 
                 if ("R1".equals(item)) {
-                    searchParams.set("rule", Rule.R1);
+                    searchParams.set("rule", Lofs2.Rule.R1);
                 } else if ("R1-TL".equals(item)) {
-                    searchParams.set("rule", Rule.R1TimeLag);
+                    searchParams.set("rule", Lofs2.Rule.R1TimeLag);
                 } else if ("R2".equals(item)) {
-                    searchParams.set("rule", Rule.R2);
+                    searchParams.set("rule", Lofs2.Rule.R2);
                 } else if ("R3".equals(item)) {
-                    searchParams.set("rule", Rule.R3);
+                    searchParams.set("rule", Lofs2.Rule.R3);
                 } else if ("R4".equals(item)) {
-                    searchParams.set("rule", Rule.R4);
+                    searchParams.set("rule", Lofs2.Rule.R4);
                 } else if ("EB".equals(item)) {
-                    searchParams.set("rule", Rule.EB);
+                    searchParams.set("rule", Lofs2.Rule.EB);
                 } else if ("Tanh".equals(item)) {
-                    searchParams.set("rule", Rule.Tanh);
+                    searchParams.set("rule", Lofs2.Rule.Tanh);
                 } else if ("Skew".equals(item)) {
-                    searchParams.set("rule", Rule.Skew);
+                    searchParams.set("rule", Lofs2.Rule.Skew);
                 } else if ("SkewE".equals(item)) {
-                    searchParams.set("rule", Rule.SkewE);
+                    searchParams.set("rule", Lofs2.Rule.SkewE);
                 } else if ("RSkew".equals(item)) {
-                    searchParams.set("rule", Rule.RSkew);
+                    searchParams.set("rule", Lofs2.Rule.RSkew);
                 } else if ("RSkewE".equals(item)) {
-                    searchParams.set("rule", Rule.RSkewE);
+                    searchParams.set("rule", Lofs2.Rule.RSkewE);
                 } else if ("Patel".equals(item)) {
-                    searchParams.set("rule", Rule.Patel);
+                    searchParams.set("rule", Lofs2.Rule.Patel);
                 } else if ("FastICA (see console)".equals(item)) {
-                    searchParams.set("rule", Rule.FastICA);
+                    searchParams.set("rule", Lofs2.Rule.FastICA);
                 } else {
                     throw new IllegalStateException();
                 }
@@ -287,32 +286,32 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
 
         });
 
-        JComboBox scoreBox = new JComboBox();
+        final JComboBox scoreBox = new JComboBox();
         scoreBox.addItem("Anderson Darling");
         scoreBox.addItem("Absolute Value");
         scoreBox.addItem("Log Cosh");
 //        scoreBox.addItem("Maxent Approx");
 //        scoreBox.addItem("Other");
 
-        Score _score = (Score) searchParams.get("score", Score.andersonDarling);
+        Lofs.Score _score = (Lofs.Score) searchParams.get("score", Lofs.Score.andersonDarling);
 
-        if (_score == Score.andersonDarling) {
+        if (_score == Lofs.Score.andersonDarling) {
             scoreBox.setSelectedItem("Anderson Darling");
-        } else if (_score == Score.skew) {
+        } else if (_score == Lofs.Score.skew) {
             scoreBox.setSelectedItem("Skew");
-        } else if (_score == Score.kurtosis) {
+        } else if (_score == Lofs.Score.kurtosis) {
             scoreBox.setSelectedItem("Kurtosis");
-        } else if (_score == Score.entropy) {
+        } else if (_score == Lofs.Score.entropy) {
             scoreBox.setSelectedItem("Entropy (delta = bins)");
-        } else if (_score == Score.fifthMoment) {
+        } else if (_score == Lofs.Score.fifthMoment) {
             scoreBox.setSelectedItem("Fifth Moment");
-        } else if (_score == Score.absoluteValue) {
+        } else if (_score == Lofs.Score.absoluteValue) {
             scoreBox.setSelectedItem("Absolute Value");
-        } else if (_score == Score.exp) {
+        } else if (_score == Lofs.Score.exp) {
             scoreBox.setSelectedItem("E(e^X)");
-        } else if (_score == Score.logcosh) {
+        } else if (_score == Lofs.Score.logcosh) {
             scoreBox.setSelectedItem("Log Cosh");
-        } else if (_score == Score.other) {
+        } else if (_score == Lofs.Score.other) {
             scoreBox.setSelectedItem("Other");
         }
 
@@ -323,83 +322,83 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
                 System.out.println(item);
 
                 if ("Anderson Darling".equals(item)) {
-                    searchParams.set("score", Score.andersonDarling);
+                    searchParams.set("score", Lofs.Score.andersonDarling);
                 } else if ("Skew".equals(item)) {
-                    searchParams.set("score", Score.skew);
+                    searchParams.set("score", Lofs.Score.skew);
                 } else if ("Kurtosis".equals(item)) {
-                    searchParams.set("score", Score.kurtosis);
+                    searchParams.set("score", Lofs.Score.kurtosis);
                 } else if ("Fifth Moment".equals(item)) {
-                    searchParams.set("score", Score.fifthMoment);
+                    searchParams.set("score", Lofs.Score.fifthMoment);
                 } else if ("Entropy (delta = bins)".equals(item)) {
-                    searchParams.set("score", Score.entropy);
+                    searchParams.set("score", Lofs.Score.entropy);
                 } else if ("Absolute Value".equals(item)) {
-                    searchParams.set("score", Score.absoluteValue);
+                    searchParams.set("score", Lofs.Score.absoluteValue);
                 } else if ("E(e^X)".equals(item)) {
-                    searchParams.set("score", Score.exp);
+                    searchParams.set("score", Lofs.Score.exp);
                 } else if ("Exp Unstandardized".equals(item)) {
-                    searchParams.set("score", Score.expUnstandardized);
+                    searchParams.set("score", Lofs.Score.expUnstandardized);
                 } else if ("-e^(-X^2/2)".equals(item)) {
-                    searchParams.set("score", Score.other);
+                    searchParams.set("score", Lofs.Score.other);
                 } else if ("Log Cosh".equals(item)) {
-                    searchParams.set("score", Score.logcosh);
+                    searchParams.set("score", Lofs.Score.logcosh);
                 } else if ("Maxent Approx".equals(item)) {
-                    searchParams.set("score", Score.entropy);
+                    searchParams.set("score", Lofs.Score.entropy);
                 } else if ("Other".equals(item)) {
-                    searchParams.set("score", Score.other);
+                    searchParams.set("score", Lofs.Score.other);
                 } else {
                     throw new IllegalStateException();
                 }
             }
         });
 
-        Box b1 = Box.createVerticalBox();
-        b1.add(this.getParamsPanel());
+        final Box b1 = Box.createVerticalBox();
+        b1.add(getParamsPanel());
         b1.add(Box.createVerticalStrut(10));
 
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(Box.createGlue());
-        b2.add(this.getExecuteButton());
+        b2.add(getExecuteButton());
         b1.add(b2);
         b1.add(Box.createVerticalStrut(10));
 
-        Box b3b = Box.createHorizontalBox();
+        final Box b3b = Box.createHorizontalBox();
         b3b.add(new JLabel("Rule:"));
         b3b.add(Box.createHorizontalGlue());
         b3b.add(rulebox);
         b3b.add(Box.createHorizontalGlue());
         b1.add(b3b);
 
-        Box b3c = Box.createHorizontalBox();
-        b3c.add(strongerDirection);
+        final Box b3c = Box.createHorizontalBox();
+        b3c.add(this.strongerDirection);
         b3c.add(Box.createHorizontalGlue());
         b1.add(b3c);
 
-        Box b3f = Box.createHorizontalBox();
-        b3f.add(label1);
-        b3f.add(epsilon);
+        final Box b3f = Box.createHorizontalBox();
+        b3f.add(this.label1);
+        b3f.add(this.epsilon);
         b3f.add(Box.createHorizontalGlue());
         b1.add(b3f);
 
-        Box b3f3 = Box.createHorizontalBox();
-        b3f3.add(label2);
-        b3f3.add(zeta);
+        final Box b3f3 = Box.createHorizontalBox();
+        b3f3.add(this.label2);
+        b3f3.add(this.zeta);
         b3f3.add(Box.createHorizontalGlue());
         b1.add(b3f3);
 
-        Box b3e = Box.createHorizontalBox();
+        final Box b3e = Box.createHorizontalBox();
         b3e.add(new JLabel("SL coef = "));
-        b3e.add(selfLoopStrength);
+        b3e.add(this.selfLoopStrength);
         b3e.add(Box.createHorizontalGlue());
         b1.add(b3e);
 
-        Box b3g = Box.createHorizontalBox();
+        final Box b3g = Box.createHorizontalBox();
         b3g.add(new JLabel("Score:"));
         b3g.add(scoreBox);
         b3g.add(Box.createHorizontalGlue());
         b1.add(b3g);
 
-        Box b4 = Box.createHorizontalBox();
-        JLabel label = new JLabel("<html>" + "*Please note that some" +
+        final Box b4 = Box.createHorizontalBox();
+        final JLabel label = new JLabel("<html>" + "*Please note that some" +
                 "<br>searches may take a" + "<br>long time to complete." +
                 "</html>");
         label.setHorizontalAlignment(SwingConstants.CENTER);
@@ -415,21 +414,21 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
     }
 
     private void disableR4Items() {
-        epsilon.setEnabled(false);
-        zeta.setEnabled(false);
-        strongerDirection.setEnabled(false);
-        selfLoopStrength.setEnabled(false);
-        label1.setEnabled(false);
-        label2.setEnabled(false);
+        this.epsilon.setEnabled(false);
+        this.zeta.setEnabled(false);
+        this.strongerDirection.setEnabled(false);
+        this.selfLoopStrength.setEnabled(false);
+        this.label1.setEnabled(false);
+        this.label2.setEnabled(false);
     }
 
     private void enableR4Items() {
-        epsilon.setEnabled(true);
-        zeta.setEnabled(true);
-        strongerDirection.setEnabled(true);
-        selfLoopStrength.setEnabled(true);
-        label1.setEnabled(true);
-        label2.setEnabled(true);
+        this.epsilon.setEnabled(true);
+        this.zeta.setEnabled(true);
+        this.strongerDirection.setEnabled(true);
+        this.selfLoopStrength.setEnabled(true);
+        this.label1.setEnabled(true);
+        this.label2.setEnabled(true);
     }
 
     protected void doPostExecutionSteps() {
@@ -437,9 +436,9 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
     }
 
 
-    protected void addSpecialMenus(JMenuBar menuBar) {
-        if (!(this.getAlgorithmRunner() instanceof IGesRunner)) {
-            JMenu test = new JMenu("Independence");
+    protected void addSpecialMenus(final JMenuBar menuBar) {
+        if (!(getAlgorithmRunner() instanceof IGesRunner)) {
+            final JMenu test = new JMenu("Independence");
             menuBar.add(test);
 
             IndTestMenuItems.addIndependenceTestChoices(test, this);
@@ -456,17 +455,17 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
 //            }
         }
 
-        JMenu graph = new JMenu("Graph");
-        JMenuItem showDags = new JMenuItem("Show DAGs in forbid_latent_common_causes");
+        final JMenu graph = new JMenu("Graph");
+        final JMenuItem showDags = new JMenuItem("Show DAGs in forbid_latent_common_causes");
 //        JMenuItem meekOrient = new JMenuItem("Meek Orientation");
-        JMenuItem dagInCPDAG = new JMenuItem("Choose DAG in forbid_latent_common_causes");
-        JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
-        JMenuItem nextGraph = new JMenuItem("Next Graph");
-        JMenuItem previousGraph = new JMenuItem("Previous Graph");
+        final JMenuItem dagInCPDAG = new JMenuItem("Choose DAG in forbid_latent_common_causes");
+        final JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
+        final JMenuItem nextGraph = new JMenuItem("Next Graph");
+        final JMenuItem previousGraph = new JMenuItem("Previous Graph");
 
-        graph.add(new GraphPropertiesAction(this.getWorkbench()));
-        graph.add(new PathsAction(this.getWorkbench()));
-        graph.add(new TriplesAction(this.getWorkbench().getGraph(), this.getAlgorithmRunner()));
+        graph.add(new GraphPropertiesAction(getWorkbench()));
+        graph.add(new PathsAction(getWorkbench()));
+        graph.add(new TriplesAction(getWorkbench().getGraph(), getAlgorithmRunner()));
         graph.addSeparator();
 
 //        graph.add(meekOrient);
@@ -481,14 +480,14 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
         graph.add(showDags);
 
         graph.addSeparator();
-        graph.add(new JMenuItem(new SelectBidirectedAction(this.getWorkbench())));
-        graph.add(new JMenuItem(new SelectUndirectedAction(this.getWorkbench())));
+        graph.add(new JMenuItem(new SelectBidirectedAction(getWorkbench())));
+        graph.add(new JMenuItem(new SelectUndirectedAction(getWorkbench())));
 
         menuBar.add(graph);
 
         showDags.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Window owner = (Window) LofsSearchEditorNew.this.getTopLevelAncestor();
+            public void actionPerformed(final ActionEvent e) {
+                final Window owner = (Window) getTopLevelAncestor();
 
                 new WatchedProcess(owner) {
                     public void watch() {
@@ -496,8 +495,8 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
                         // Needs to be a CPDAG search; this isn't checked
                         // before running the algorithm because of allowable
                         // "slop"--e.g. bidirected edges.
-                        AlgorithmRunner runner = LofsSearchEditorNew.this.getAlgorithmRunner();
-                        Graph graph = runner.getGraph();
+                        final AlgorithmRunner runner = getAlgorithmRunner();
+                        final Graph graph = runner.getGraph();
 
 
                         if (graph == null) {
@@ -507,10 +506,10 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
                             return;
                         }
 
-                        CPDAGDisplay display = new CPDAGDisplay(graph);
-                        GraphWorkbench workbench = LofsSearchEditorNew.this.getWorkbench();
+                        final CPDAGDisplay display = new CPDAGDisplay(graph);
+                        final GraphWorkbench workbench = getWorkbench();
 
-                        EditorWindow editorWindow =
+                        final EditorWindow editorWindow =
                                 new EditorWindow(display, "Independence Facts",
                                         "Close", false, workbench);
                         DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
@@ -532,54 +531,54 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
 //        });
 
         dagInCPDAG.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Graph graph = new EdgeListGraph(LofsSearchEditorNew.this.getGraph());
+            public void actionPerformed(final ActionEvent e) {
+                final Graph graph = new EdgeListGraph(getGraph());
 
                 // Removing bidirected edges from the CPDAG before selecting a DAG.                                   4
-                for (Edge edge : graph.getEdges()) {
+                for (final Edge edge : graph.getEdges()) {
                     if (Edges.isBidirectedEdge(edge)) {
                         graph.removeEdge(edge);
                     }
                 }
 
-                Graph dag = SearchGraphUtils.dagFromCPDAG(graph);
+                final Graph dag = SearchGraphUtils.dagFromCPDAG(graph);
 
-                LofsSearchEditorNew.this.getGraphHistory().add(dag);
-                LofsSearchEditorNew.this.getWorkbench().setGraph(dag);
+                getGraphHistory().add(dag);
+                getWorkbench().setGraph(dag);
 
-                ((AbstractAlgorithmRunner) LofsSearchEditorNew.this.getAlgorithmRunner()).setResultGraph(dag);
-                LofsSearchEditorNew.this.firePropertyChange("modelChanged", null, null);
+                ((AbstractAlgorithmRunner) getAlgorithmRunner()).setResultGraph(dag);
+                firePropertyChange("modelChanged", null, null);
             }
         });
 
         gesOrient.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                DataModel dataModel = LofsSearchEditorNew.this.getAlgorithmRunner().getDataModel();
+            public void actionPerformed(final ActionEvent e) {
+                final DataModel dataModel = getAlgorithmRunner().getDataModel();
 
-                Graph graph = SearchGraphUtils.reorient(LofsSearchEditorNew.this.getGraph(), dataModel, LofsSearchEditorNew.this.getKnowledge());
+                final Graph graph = SearchGraphUtils.reorient(getGraph(), dataModel, getKnowledge());
 
-                LofsSearchEditorNew.this.getGraphHistory().add(graph);
-                LofsSearchEditorNew.this.getWorkbench().setGraph(graph);
-                LofsSearchEditorNew.this.firePropertyChange("modelChanged", null, null);
+                getGraphHistory().add(graph);
+                getWorkbench().setGraph(graph);
+                firePropertyChange("modelChanged", null, null);
             }
 
         });
 
         nextGraph.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Graph next = LofsSearchEditorNew.this.getGraphHistory().next();
-                LofsSearchEditorNew.this.getWorkbench().setGraph(next);
-                ((AbstractAlgorithmRunner) LofsSearchEditorNew.this.getAlgorithmRunner()).setResultGraph(next);
-                LofsSearchEditorNew.this.firePropertyChange("modelChanged", null, null);
+            public void actionPerformed(final ActionEvent e) {
+                final Graph next = getGraphHistory().next();
+                getWorkbench().setGraph(next);
+                ((AbstractAlgorithmRunner) getAlgorithmRunner()).setResultGraph(next);
+                firePropertyChange("modelChanged", null, null);
             }
         });
 
         previousGraph.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Graph previous = LofsSearchEditorNew.this.getGraphHistory().previous();
-                LofsSearchEditorNew.this.getWorkbench().setGraph(previous);
-                ((AbstractAlgorithmRunner) LofsSearchEditorNew.this.getAlgorithmRunner()).setResultGraph(previous);
-                LofsSearchEditorNew.this.firePropertyChange("modelChanged", null, null);
+            public void actionPerformed(final ActionEvent e) {
+                final Graph previous = getGraphHistory().previous();
+                getWorkbench().setGraph(previous);
+                ((AbstractAlgorithmRunner) getAlgorithmRunner()).setResultGraph(previous);
+                firePropertyChange("modelChanged", null, null);
             }
         });
 
@@ -587,20 +586,20 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
     }
 
     public Graph getSourceGraph() {
-        Graph sourceGraph = this.getWorkbench().getGraph();
+        Graph sourceGraph = getWorkbench().getGraph();
 
         if (sourceGraph == null) {
-            sourceGraph = this.getAlgorithmRunner().getSourceGraph();
+            sourceGraph = getAlgorithmRunner().getSourceGraph();
         }
         return sourceGraph;
     }
 
     public List<String> getVarNames() {
-        Parameters params = this.getAlgorithmRunner().getParams();
+        final Parameters params = getAlgorithmRunner().getParams();
         return (List<String>) params.get("varNames", null);
     }
 
-    public void setTestType(IndTestType testType) {
+    public void setTestType(final IndTestType testType) {
         super.setTestType(testType);
     }
 
@@ -608,22 +607,22 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
         return super.getTestType();
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
-        this.getAlgorithmRunner().getParams().set("knowledge", knowledge);
+    public void setKnowledge(final IKnowledge knowledge) {
+        getAlgorithmRunner().getParams().set("knowledge", knowledge);
     }
 
     public IKnowledge getKnowledge() {
-        return (IKnowledge) this.getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
+        return (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
     }
 
     //================================PRIVATE METHODS====================//
 
     private JPanel getParamsPanel() {
-        JPanel paramsPanel = new JPanel();
+        final JPanel paramsPanel = new JPanel();
 
-        Box b2 = Box.createVerticalBox();
+        final Box b2 = Box.createVerticalBox();
 
-        JComponent indTestParamBox = this.getIndTestParamBox();
+        final JComponent indTestParamBox = getIndTestParamBox();
         if (indTestParamBox != null) {
             b2.add(indTestParamBox);
         }
@@ -634,21 +633,21 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
     }
 
     private JComponent getIndTestParamBox() {
-        return this.getIndTestParamBox(this.getAlgorithmRunner().getParams());
+        return getIndTestParamBox(getAlgorithmRunner().getParams());
     }
 
     /**
      * Factory to return the correct param editor for independence test params.
      * This will go in a little box in the search editor.
      */
-    private JComponent getIndTestParamBox(Parameters params) {
+    private JComponent getIndTestParamBox(final Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
 
         if (params instanceof Parameters) {
-            if (this.getAlgorithmRunner() instanceof IFgesRunner) {
-                IFgesRunner gesRunner = ((IFgesRunner) this.getAlgorithmRunner());
+            if (getAlgorithmRunner() instanceof IFgesRunner) {
+                final IFgesRunner gesRunner = ((IFgesRunner) getAlgorithmRunner());
                 return new FgesIndTestParamsEditor(params, gesRunner.getType());
             }
         }
@@ -667,11 +666,11 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
         }
 
         if (params instanceof Parameters) {
-            if (this.getAlgorithmRunner() instanceof LingamCPDAGRunner) {
+            if (getAlgorithmRunner() instanceof LingamCPDAGRunner) {
                 return new PcLingamIndTestParamsEditor(params);
             }
 
-            if (this.getAlgorithmRunner() instanceof LofsRunner) {
+            if (getAlgorithmRunner() instanceof LofsRunner) {
                 return new PcLingamIndTestParamsEditor(params);
             }
 
@@ -681,13 +680,13 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
         return new IndTestParamsEditor(params);
     }
 
-    protected void doDefaultArrangement(Graph resultGraph) {
-        if (this.getLatestWorkbenchGraph() != null) {   //(alreadyLaidOut) {
+    protected void doDefaultArrangement(final Graph resultGraph) {
+        if (getLatestWorkbenchGraph() != null) {   //(alreadyLaidOut) {
             GraphUtils.arrangeBySourceGraph(resultGraph,
-                    this.getLatestWorkbenchGraph());
-        } else if (this.getKnowledge().isDefaultToKnowledgeLayout()) {
+                    getLatestWorkbenchGraph());
+        } else if (getKnowledge().isDefaultToKnowledgeLayout()) {
             SearchGraphUtils.arrangeByKnowledgeTiers(resultGraph,
-                    this.getKnowledge());
+                    getKnowledge());
         } else {
             GraphUtils.circleLayout(resultGraph, 200, 200, 150);
         }

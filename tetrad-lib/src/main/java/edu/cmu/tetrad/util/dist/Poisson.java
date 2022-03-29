@@ -35,7 +35,7 @@ public class Poisson implements Distribution {
     private double mean;
 
     private Poisson() {
-        mean = 1;
+        this.mean = 1;
     }
 
     /**
@@ -55,23 +55,23 @@ public class Poisson implements Distribution {
         return "Distibution";
     }
 
-    public void setParameter(int index, double value) {
+    public void setParameter(final int index, final double value) {
         if (index == 0) {
-            mean = value;
+            this.mean = value;
         }
 
         throw new IllegalArgumentException();
     }
 
-    public double getParameter(int index) {
+    public double getParameter(final int index) {
         if (index == 0) {
-            return mean;
+            return this.mean;
         }
 
         throw new IllegalArgumentException();
     }
 
-    public String getParameterName(int index) {
+    public String getParameterName(final int index) {
         if (index == 0) {
             return "Mean";
         }
@@ -80,11 +80,11 @@ public class Poisson implements Distribution {
     }
 
     public double nextRandom() {
-        return RandomUtil.getInstance().nextPoisson(mean);
+        return RandomUtil.getInstance().nextPoisson(this.mean);
     }
 
     public String toString() {
-        return "Poisson(" + mean + ")";
+        return "Poisson(" + this.mean + ")";
     }
 }
 

@@ -50,15 +50,15 @@ public class LayoutSelection implements Transferable {
     /**
      * Constructs a new selection with the given list of session nodes.
      */
-    public LayoutSelection(Graph layoutGraph) {
+    public LayoutSelection(final Graph layoutGraph) {
         if (layoutGraph == null) {
             throw new NullPointerException("Layout graph must not be null.");
         }
 
-        Object result;
+        final Object result;
         try {
             result = new MarshalledObject(layoutGraph).get();
-        } catch (Exception e1) {
+        } catch (final Exception e1) {
             e1.printStackTrace();
             throw new IllegalStateException("Could not clone.");
         }
@@ -76,13 +76,13 @@ public class LayoutSelection implements Transferable {
      *                                                          supported.
      * @see java.awt.datatransfer.DataFlavor#getRepresentationClass
      */
-    public Object getTransferData(DataFlavor flavor)
+    public Object getTransferData(final DataFlavor flavor)
             throws UnsupportedFlavorException, IOException {
-        if (!this.isDataFlavorSupported(flavor)) {
+        if (!isDataFlavorSupported(flavor)) {
             throw new UnsupportedFlavorException(flavor);
         }
 
-        return layoutGraph;
+        return this.layoutGraph;
     }
 
     /**
@@ -90,8 +90,8 @@ public class LayoutSelection implements Transferable {
      * @return whether or not the specified data flavor is supported for this
      * object.
      */
-    public boolean isDataFlavorSupported(DataFlavor flavor) {
-        return flavor.equals(this.getTransferDataFlavors()[0]);
+    public boolean isDataFlavorSupported(final DataFlavor flavor) {
+        return flavor.equals(getTransferDataFlavors()[0]);
     }
 
     /**
@@ -101,7 +101,7 @@ public class LayoutSelection implements Transferable {
      * descriptive).
      */
     public DataFlavor[] getTransferDataFlavors() {
-        return dataFlavors;
+        return this.dataFlavors;
     }
 }
 

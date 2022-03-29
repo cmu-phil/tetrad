@@ -56,14 +56,14 @@ class FactorAnalysisJoe {
     private Vector<Matrix> residualMatrices;
 
 
-    public FactorAnalysisJoe(ICovarianceMatrix covarianceMatrix) {
+    public FactorAnalysisJoe(final ICovarianceMatrix covarianceMatrix) {
         this.covarianceMatrix = covarianceMatrix;
-        correlationMatrix = new CorrelationMatrix(covarianceMatrix);
+        this.correlationMatrix = new CorrelationMatrix(covarianceMatrix);
     }
 
-    public FactorAnalysisJoe(DataSet dataSet) {
-        covarianceMatrix = new CovarianceMatrix(dataSet);
-        correlationMatrix = new CorrelationMatrix(dataSet);
+    public FactorAnalysisJoe(final DataSet dataSet) {
+        this.covarianceMatrix = new CovarianceMatrix(dataSet);
+        this.correlationMatrix = new CorrelationMatrix(dataSet);
     }
 
     //================= COMMUNALITY ESTIMATES =================//
@@ -82,8 +82,8 @@ class FactorAnalysisJoe {
      * variance.  This prevents resultant factor loading matrices from accounting
      * for more variance than the original, which is strange.
      */
-    public void unity(CorrelationMatrix r) {
-        Matrix residual = r.getMatrix();
+    public void unity(final CorrelationMatrix r) {
+        final Matrix residual = r.getMatrix();
         //System.out.println("About to compute unity estimate:");
         //System.out.println(residual.toString());
         for (int i = 0; i < residual.columns(); i++) {
@@ -100,15 +100,15 @@ class FactorAnalysisJoe {
      *
      * Tends to produce smaller numbers of factors than the unity method.
      */
-    public void largestNonDiagonalMagnitude(CorrelationMatrix r) {
-        Matrix residual = r.getMatrix();
+    public void largestNonDiagonalMagnitude(final CorrelationMatrix r) {
+        final Matrix residual = r.getMatrix();
         //System.out.println("About to compute magnitude estimate:");
         //System.out.println(residual.toString());
         for (int i = 0; i < residual.columns(); i++) {
             double max = 0;
             for (int j = 0; j < residual.columns(); j++) {
                 if (i == j) continue;
-                double temp = Math.abs(residual.get(j, i));
+                final double temp = Math.abs(residual.get(j, i));
                 if (temp > max) max = temp;
             }
             residual.set(i, i, max);
@@ -119,7 +119,7 @@ class FactorAnalysisJoe {
     //================= FACTORING METHODS =================//
 
     private void loadTestMatrix() {
-        Matrix testMatrix = new Matrix(9, 9);
+        final Matrix testMatrix = new Matrix(9, 9);
         //set diagonals to test
         for (int i = 0; i < 9; i++)
             testMatrix.set(i, i, 1);
@@ -211,9 +211,9 @@ class FactorAnalysisJoe {
         testMatrix.set(7, 8, .541);
         testMatrix.set(8, 7, .541);
 
-        correlationMatrix.setMatrix(testMatrix);
+        this.correlationMatrix.setMatrix(testMatrix);
 
-        System.out.println(correlationMatrix);
+        System.out.println(this.correlationMatrix);
 
 //        System.out.println("Positive definite: " + MatrixUtils.isPositiveDefinite(correlationMatrix.getMatrix()));
     }
@@ -223,35 +223,35 @@ class FactorAnalysisJoe {
      */
 
     public Matrix successiveResidual() {
-        this.loadTestMatrix();
+        loadTestMatrix();
 
-        factorLoadingVectors = new Vector<>();
-        residualMatrices = new Vector<>();
-        dValues = new Vector<>();
+        this.factorLoadingVectors = new Vector<>();
+        this.residualMatrices = new Vector<>();
+        this.dValues = new Vector<>();
 
-        residualMatrices.add(correlationMatrix.getMatrix());
+        this.residualMatrices.add(this.correlationMatrix.getMatrix());
 
-        Matrix unitVector = new Matrix(9, 1);
+        final Matrix unitVector = new Matrix(9, 1);
         for (int i = 0; i < 9; i++) {
             unitVector.set(i, 0, 1);
         }
 
         //find the first fact                   or loading vector
-        this.successiveResidualHelper(residualMatrices.lastElement(),
+        successiveResidualHelper(this.residualMatrices.lastElement(),
                 unitVector);
 
         int failSafe = 0;
 
-        while (vectorSum(dValues) / trace(correlationMatrix.getMatrix()) < .99) {
-            System.out.println("****************  " + dValues.lastElement() / trace(correlationMatrix.getMatrix()));
+        while (FactorAnalysisJoe.vectorSum(this.dValues) / FactorAnalysisJoe.trace(this.correlationMatrix.getMatrix()) < .99) {
+            System.out.println("****************  " + this.dValues.lastElement() / FactorAnalysisJoe.trace(this.correlationMatrix.getMatrix()));
             //calculate new residual matrix
-            Matrix prod = matrixMult(factorLoadingVectors.lastElement(),
-                    transpose(factorLoadingVectors.lastElement()));
+            final Matrix prod = FactorAnalysisJoe.matrixMult(this.factorLoadingVectors.lastElement(),
+                    FactorAnalysisJoe.transpose(this.factorLoadingVectors.lastElement()));
 //            System.out.println("Prod = " + prod);
 
-            Matrix residual = matrixSubtract(residualMatrices.lastElement(), prod);
-            residualMatrices.add(residual);
-            this.successiveResidualHelper(residualMatrices.lastElement(), unitVector);
+            final Matrix residual = FactorAnalysisJoe.matrixSubtract(this.residualMatrices.lastElement(), prod);
+            this.residualMatrices.add(residual);
+            successiveResidualHelper(this.residualMatrices.lastElement(), unitVector);
 
             failSafe++;
             if (failSafe > 500) break;
@@ -266,15 +266,15 @@ class FactorAnalysisJoe {
      * the factor loading vector and the "d value" which is used to determine
      * the amount of total variance accounted for so far.
      */
-    private void successiveResidualHelper(Matrix residual, Matrix approximationVector) {
-        Matrix uVector = matrixMult(residual, approximationVector);
-        Matrix lVector = matrixMult(transpose(approximationVector), uVector);
+    private void successiveResidualHelper(final Matrix residual, Matrix approximationVector) {
+        Matrix uVector = FactorAnalysisJoe.matrixMult(residual, approximationVector);
+        Matrix lVector = FactorAnalysisJoe.matrixMult(FactorAnalysisJoe.transpose(approximationVector), uVector);
         double dScalar = Math.sqrt(lVector.get(0, 0));
-        Matrix aVector = matrixDiv(dScalar, uVector);
+        Matrix aVector = FactorAnalysisJoe.matrixDiv(dScalar, uVector);
 
-        Vector aVectors = new Vector();
-        Vector uVectors = new Vector();
-        Vector dScalars = new Vector();
+        final Vector aVectors = new Vector();
+        final Vector uVectors = new Vector();
+        final Vector dScalars = new Vector();
 
         aVectors.add(aVector);
         uVectors.add(uVector);
@@ -283,10 +283,10 @@ class FactorAnalysisJoe {
 
         for (int i = 0; i < 100; i++) {
             approximationVector = (Matrix) aVectors.lastElement();
-            uVector = matrixMult(residual, approximationVector);
-            lVector = matrixMult(transpose(approximationVector), uVector);
+            uVector = FactorAnalysisJoe.matrixMult(residual, approximationVector);
+            lVector = FactorAnalysisJoe.matrixMult(FactorAnalysisJoe.transpose(approximationVector), uVector);
             dScalar = Math.sqrt(lVector.get(0, 0));
-            aVector = matrixDiv(dScalar, uVector);
+            aVector = FactorAnalysisJoe.matrixDiv(dScalar, uVector);
 
             aVectors.add(aVector);
             uVectors.add(uVector);
@@ -318,8 +318,8 @@ class FactorAnalysisJoe {
         System.out.println("Resultant factor loading matrix: ");
         System.out.println(aVectors.lastElement());
 
-        dValues.add((Double) dScalars.lastElement());
-        factorLoadingVectors.add((Matrix) aVectors.lastElement());
+        this.dValues.add((Double) dScalars.lastElement());
+        this.factorLoadingVectors.add((Matrix) aVectors.lastElement());
     }
 
     /*
@@ -391,9 +391,9 @@ class FactorAnalysisJoe {
      * If the matrix is not a square matrix, then it compiles what WOULD be the
      * diagonal if it were, starting from the upper-left corner.
      */
-    private static Matrix diag(Matrix matrix) {
+    private static Matrix diag(final Matrix matrix) {
         //System.out.println(matrix);
-        Matrix diagonal = new Matrix(matrix.columns(), matrix.columns());
+        final Matrix diagonal = new Matrix(matrix.columns(), matrix.columns());
         for (int i = 0; i < matrix.columns(); i++) {
             for (int j = 0; j < matrix.columns(); j++) {
                 if (i == j) diagonal.set(j, i, matrix.get(i, i));
@@ -404,27 +404,27 @@ class FactorAnalysisJoe {
         return diagonal;
     }
 
-    public static Matrix diag(DataSet dataSet) {
-        return diag(dataSet.getDoubleData());
+    public static Matrix diag(final DataSet dataSet) {
+        return FactorAnalysisJoe.diag(dataSet.getDoubleData());
     }
 
-    public static Matrix diag(ICovarianceMatrix covMatrix) {
-        return diag(covMatrix.getMatrix());
+    public static Matrix diag(final ICovarianceMatrix covMatrix) {
+        return FactorAnalysisJoe.diag(covMatrix.getMatrix());
     }
 
-    public static Matrix diag(CorrelationMatrix corMatrix) {
-        return diag(corMatrix.getMatrix());
+    public static Matrix diag(final CorrelationMatrix corMatrix) {
+        return FactorAnalysisJoe.diag(corMatrix.getMatrix());
     }
 
     /*
      * Subtracts b from a.
      */
-    private static Matrix matrixSubtract(Matrix a, Matrix b) {
+    private static Matrix matrixSubtract(final Matrix a, final Matrix b) {
         if (!(a.columns() == b.columns() && a.rows() == b.rows())) {
             throw new IllegalArgumentException();
         }
 
-        Matrix result = new Matrix(a.rows(), a.columns());
+        final Matrix result = new Matrix(a.rows(), a.columns());
         for (int i = 0; i < result.rows(); i++) {
             for (int j = 0; j < result.columns(); j++) {
                 result.set(i, j, a.get(i, j) - b.get(i, j));
@@ -437,12 +437,12 @@ class FactorAnalysisJoe {
     /*
      * Calculates (a * b)
      */
-    private static Matrix matrixMult(Matrix a, Matrix b) {
+    private static Matrix matrixMult(final Matrix a, final Matrix b) {
         if (a.columns() != b.rows()) {
             throw new IllegalArgumentException();
         }
 
-        Matrix result = new Matrix(a.rows(), b.columns());
+        final Matrix result = new Matrix(a.rows(), b.columns());
 
         for (int i = 0; i < a.rows(); i++) {
             for (int j = 0; j < b.columns(); j++) {
@@ -458,8 +458,8 @@ class FactorAnalysisJoe {
         return result;
     }
 
-    public static Matrix matrixMult(double scalar, Matrix a) {
-        Matrix result = new Matrix(a.rows(), a.columns());
+    public static Matrix matrixMult(final double scalar, final Matrix a) {
+        final Matrix result = new Matrix(a.rows(), a.columns());
 
         for (int i = 0; i < a.rows(); i++) {
             for (int j = 0; j < a.columns(); j++) {
@@ -471,12 +471,12 @@ class FactorAnalysisJoe {
         return result;
     }
 
-    public static Matrix matrixAdd(Matrix a, Matrix b) {
+    public static Matrix matrixAdd(final Matrix a, final Matrix b) {
         if (!(a.rows() == b.rows() && a.columns() == b.columns())) {
             throw new IllegalArgumentException();
         }
 
-        Matrix result = new Matrix(a.rows(), a.columns());
+        final Matrix result = new Matrix(a.rows(), a.columns());
 
         for (int i = 0; i < a.rows(); i++) {
             for (int j = 0; j < a.columns(); j++) {
@@ -488,8 +488,8 @@ class FactorAnalysisJoe {
         return result;
     }
 
-    private static Matrix matrixDiv(double scalar, Matrix a) {
-        Matrix result = new Matrix(a.rows(), a.columns());
+    private static Matrix matrixDiv(final double scalar, final Matrix a) {
+        final Matrix result = new Matrix(a.rows(), a.columns());
         //System.out.println("About to divide " + a + " by " + scalar);
 
         for (int i = 0; i < a.rows(); i++) {
@@ -503,11 +503,11 @@ class FactorAnalysisJoe {
         return result;
     }
 
-    private static Matrix transpose(Matrix a) {
+    private static Matrix transpose(final Matrix a) {
         //System.out.println("About to transpose:");
         //System.out.println(a);
 
-        Matrix result = new Matrix(a.columns(), a.rows());
+        final Matrix result = new Matrix(a.columns(), a.rows());
 
         for (int i = 0; i < a.columns(); i++) {
             for (int j = 0; j < a.rows(); j++) {
@@ -520,7 +520,7 @@ class FactorAnalysisJoe {
         return result;
     }
 
-    private static double trace(Matrix a) {
+    private static double trace(final Matrix a) {
         double result = 0;
         for (int i = 0; i < a.columns(); i++) {
             result += a.get(i, i);
@@ -528,7 +528,7 @@ class FactorAnalysisJoe {
         return result;
     }
 
-    private static double vectorSum(Vector<Double> vector) {
+    private static double vectorSum(final Vector<Double> vector) {
         double sum = 0;
         for (int i = 0; i < vector.size(); i++) sum += vector.get(i);
         return sum;

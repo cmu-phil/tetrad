@@ -38,22 +38,22 @@ public final class GraphConverter {
      * Unconnected nodes may be listed separately--example: "X,Y->Z". To specify
      * a node as latent, use "Latent()." Example: "Latent(L1),Y->L1".
      */
-    public static Graph convert(String spec) {
-        Graph graph = new EdgeListGraph();
-        StringTokenizer st1;
+    public static Graph convert(final String spec) {
+        final Graph graph = new EdgeListGraph();
+        final StringTokenizer st1;
         StringTokenizer st2;
 
         for (st1 = new StringTokenizer(spec, ", "); st1.hasMoreTokens(); ) {
-            String edgeSpec = st1.nextToken();
+            final String edgeSpec = st1.nextToken();
 
             st2 = new StringTokenizer(edgeSpec, "<>-o ");
 
-            String var1 = st2.nextToken();
+            final String var1 = st2.nextToken();
 
             if (var1.startsWith("Latent(")) {
-                String latentName =
+                final String latentName =
                         (String) var1.subSequence(7, var1.length() - 1);
-                GraphNode node = new GraphNode(latentName);
+                final GraphNode node = new GraphNode(latentName);
                 node.setNodeType(NodeType.LATENT);
                 graph.addNode(node);
                 continue;
@@ -64,7 +64,7 @@ public final class GraphConverter {
                 continue;
             }
 
-            String var2 = st2.nextToken();
+            final String var2 = st2.nextToken();
 
             if (graph.getNode(var1) == null) {
                 graph.addNode(new GraphNode(var1));
@@ -74,9 +74,9 @@ public final class GraphConverter {
                 graph.addNode(new GraphNode(var2));
             }
 
-            Node nodeA = graph.getNode(var1);
-            Node nodeB = graph.getNode(var2);
-            Edge edge = graph.getEdge(nodeA, nodeB);
+            final Node nodeA = graph.getNode(var1);
+            final Node nodeB = graph.getNode(var2);
+            final Edge edge = graph.getEdge(nodeA, nodeB);
 
             if (edge != null) {
                 throw new IllegalArgumentException(

@@ -48,7 +48,7 @@ public final class BayesImEditorWizardObs extends JPanel {
 
     private boolean enableEditing = true;
 
-    public BayesImEditorWizardObs(BayesIm bayesIm, GraphWorkbench workbench) {
+    public BayesImEditorWizardObs(final BayesIm bayesIm, final GraphWorkbench workbench) {
         if (bayesIm == null) {
             throw new NullPointerException();
         }
@@ -58,80 +58,80 @@ public final class BayesImEditorWizardObs extends JPanel {
         }
 
         workbench.setAllowDoubleClickActions(false);
-        this.setBorder(new MatteBorder(10, 10, 10, 10, this.getBackground()));
-        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        this.setFont(new Font("SanSerif", Font.BOLD, 12));
+        setBorder(new MatteBorder(10, 10, 10, 10, getBackground()));
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setFont(new Font("SanSerif", Font.BOLD, 12));
 
-        BayesImNodeEditingTableObs editingTable = new BayesImNodeEditingTableObs(bayesIm);
+        final BayesImNodeEditingTableObs editingTable = new BayesImNodeEditingTableObs(bayesIm);
         editingTable.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
+            public void propertyChange(final PropertyChangeEvent evt) {
                 if ("modelChanged".equals(evt.getPropertyName())) {
-                    BayesImEditorWizardObs.this.firePropertyChange("modelChanged", null, null);
+                    firePropertyChange("modelChanged", null, null);
                 }
             }
         });
 
-        JScrollPane scroll = new JScrollPane(editingTable);
+        final JScrollPane scroll = new JScrollPane(editingTable);
         scroll.setPreferredSize(new Dimension(0, 150));
-        JPanel tablePanel = new JPanel();
+        final JPanel tablePanel = new JPanel();
         tablePanel.setLayout(new BorderLayout());
         tablePanel.add(scroll, BorderLayout.CENTER);
         editingTable.grabFocus();
 
         // Do Layout.
-        Box b3 = Box.createHorizontalBox();
+        final Box b3 = Box.createHorizontalBox();
         b3.add(new JLabel("Click in the appropriate box and assign "
                 + "a probability to each combination"));
         b3.add(Box.createHorizontalGlue());
 
-        Box b3a = Box.createHorizontalBox();
+        final Box b3a = Box.createHorizontalBox();
         b3a.add(new JLabel("of variable values in that row."));
         b3a.add(Box.createHorizontalGlue());
 
-        Box b4 = Box.createHorizontalBox();
+        final Box b4 = Box.createHorizontalBox();
         b4.add(tablePanel, BorderLayout.CENTER);
 
-        Box b5 = Box.createHorizontalBox();
+        final Box b5 = Box.createHorizontalBox();
         b5.add(new JLabel("Right click in table to randomize."));
         b5.add(Box.createHorizontalGlue());
 
-        Box b6 = Box.createHorizontalBox();
+        final Box b6 = Box.createHorizontalBox();
         b6.add(new JLabel("Note: Editing this table with arbitrary numbers "
                 + "may result in a table "));
         b6.add(Box.createHorizontalGlue());
 
-        Box b6a = Box.createHorizontalBox();
+        final Box b6a = Box.createHorizontalBox();
         b6a.add(new JLabel("inconsistent with the graph constraints."));
         b6a.add(Box.createHorizontalGlue());
 
-        this.add(b3);
-        this.add(b3a);
-        this.add(b4);
-        this.add(b5);
-        this.add(Box.createVerticalStrut(5));
-        this.add(b6);
-        this.add(b6a);
+        add(b3);
+        add(b3a);
+        add(b4);
+        add(b5);
+        add(Box.createVerticalStrut(5));
+        add(b6);
+        add(b6a);
 
         this.bayesIm = bayesIm;
         this.workbench = workbench;
     }
 
     public BayesIm getBayesIm() {
-        return bayesIm;
+        return this.bayesIm;
     }
 
     private GraphWorkbench getWorkbench() {
-        return workbench;
+        return this.workbench;
     }
 
     public boolean isEnableEditing() {
-        return enableEditing;
+        return this.enableEditing;
     }
 
-    public void enableEditing(boolean enableEditing) {
+    public void enableEditing(final boolean enableEditing) {
         this.enableEditing = enableEditing;
-        if (workbench != null) {
-            workbench.enableEditing(enableEditing);
+        if (this.workbench != null) {
+            this.workbench.enableEditing(enableEditing);
         }
     }
 

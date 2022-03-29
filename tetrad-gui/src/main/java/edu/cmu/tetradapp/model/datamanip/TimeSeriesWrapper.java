@@ -42,21 +42,21 @@ public class TimeSeriesWrapper extends DataWrapper implements KnowledgeTransfera
      * @param data   - Previous data (from the parent node)
      * @param params - The parameters.
      */
-    public TimeSeriesWrapper(DataWrapper data, Parameters params) {
-        DataModelList dataSets = data.getDataModelList();
-        DataModelList timeSeriesDataSets = new DataModelList();
+    public TimeSeriesWrapper(final DataWrapper data, final Parameters params) {
+        final DataModelList dataSets = data.getDataModelList();
+        final DataModelList timeSeriesDataSets = new DataModelList();
 
-        for (DataModel dataModel : dataSets) {
+        for (final DataModel dataModel : dataSets) {
             if (!(dataModel instanceof DataSet)) {
                 throw new IllegalArgumentException("Only tabular data sets can be converted to time lagged form.");
             }
 
-            DataSet dataSet = (DataSet) dataModel;
-            DataSet timeSeries = TimeSeriesUtils.createLagData(dataSet, params.getInt("numTimeLags", 1));
+            final DataSet dataSet = (DataSet) dataModel;
+            final DataSet timeSeries = TimeSeriesUtils.createLagData(dataSet, params.getInt("numTimeLags", 1));
             if (dataSet.getName() != null) {
                 timeSeries.setName(dataSet.getName());
             }
-            knowledge = timeSeries.getKnowledge();
+            this.knowledge = timeSeries.getKnowledge();
             timeSeriesDataSets.add(timeSeries);
         }
 
@@ -65,10 +65,10 @@ public class TimeSeriesWrapper extends DataWrapper implements KnowledgeTransfera
 //            throw new IllegalArgumentException("The data model must be a rectangular dataset");
 //        }
 //        model = TimeSeriesUtils.createLagData((DataSet) model, params.getNumOfTimeLags());
-        setDataModel(timeSeriesDataSets);
-        setSourceGraph(data.getSourceGraph());
+        this.setDataModel(timeSeriesDataSets);
+        this.setSourceGraph(data.getSourceGraph());
 
-        LogDataUtils.logDataModelList("Expansion of parent data into lagged data.", this.getDataModelList());
+        LogDataUtils.logDataModelList("Expansion of parent data into lagged data.", getDataModelList());
 
     }
 

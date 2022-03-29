@@ -50,15 +50,15 @@ class DescriptiveStatsAction extends AbstractAction {
      * Constructs the <code>DescriptiveStatsAction</code> given the <code>DataEditor</code>
      * that its attached to.
      */
-    public DescriptiveStatsAction(DataEditor editor) {
+    public DescriptiveStatsAction(final DataEditor editor) {
         super("Descriptive Statistics...");
-        dataEditor = editor;
+        this.dataEditor = editor;
     }
 
-    public void actionPerformed(ActionEvent e) {
-        DataSet dataSet = (DataSet) dataEditor.getSelectedDataModel();
+    public void actionPerformed(final ActionEvent e) {
+        final DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
         if (dataSet == null || dataSet.getNumColumns() == 0) {
-            JOptionPane.showMessageDialog(this.findOwner(), "Cannot generate descriptive statistics on an empty data set.");
+            JOptionPane.showMessageDialog(findOwner(), "Cannot generate descriptive statistics on an empty data set.");
             return;
         }
         // if there are missing values warn and don't display descriptive statistics.
@@ -71,17 +71,17 @@ class DescriptiveStatsAction extends AbstractAction {
 
         Node selected = null;
 
-        for (Node node : dataSet.getVariables()) {
+        for (final Node node : dataSet.getVariables()) {
             if (dataSet.isSelected(node)) {
                 selected = node;
                 break;
             }
         }
 
-        JPanel panel = this.createDescriptiveStatsDialog(selected);
+        final JPanel panel = createDescriptiveStatsDialog(selected);
 
-        EditorWindow window = new EditorWindow(panel,
-                "Descriptive Statistics", "Close", false, dataEditor);
+        final EditorWindow window = new EditorWindow(panel,
+                "Descriptive Statistics", "Close", false, this.dataEditor);
         DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
         window.setVisible(true);
 
@@ -94,21 +94,21 @@ class DescriptiveStatsAction extends AbstractAction {
      * one is selected for you)
      */
     private JPanel createDescriptiveStatsDialog(Node selected) {
-        DataSet dataSet = (DataSet) dataEditor.getSelectedDataModel();
+        final DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
 
         //if nothing is selected, select something by default
         if (selected == null && dataSet.getNumColumns() != 0) {
             selected = dataSet.getVariable(0);
         }
-        DescriptiveStatsEditorPanel editorPanel = new DescriptiveStatsEditorPanel(selected, dataSet);
+        final DescriptiveStatsEditorPanel editorPanel = new DescriptiveStatsEditorPanel(selected, dataSet);
 
-        JTextArea display = new JTextArea(DescriptiveStats.generateDescriptiveStats(dataSet,
+        final JTextArea display = new JTextArea(DescriptiveStats.generateDescriptiveStats(dataSet,
                 selected), 20, 65);
         display.setEditable(false);
         display.setFont(new Font("Monospaced", Font.PLAIN, 12));
         editorPanel.addPropertyChangeListener(new DescriptiveStatsListener(display));
 
-        Box box = Box.createHorizontalBox();
+        final Box box = Box.createHorizontalBox();
         box.add(display);
 
         box.add(Box.createHorizontalStrut(3));
@@ -116,12 +116,12 @@ class DescriptiveStatsAction extends AbstractAction {
         box.add(Box.createHorizontalStrut(5));
         box.add(Box.createHorizontalGlue());
 
-        Box vBox = Box.createVerticalBox();
+        final Box vBox = Box.createVerticalBox();
         vBox.add(Box.createVerticalStrut(15));
         vBox.add(box);
         vBox.add(Box.createVerticalStrut(5));
 
-        JPanel panel = new JPanel();
+        final JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.add(vBox, BorderLayout.CENTER);
 
@@ -131,7 +131,7 @@ class DescriptiveStatsAction extends AbstractAction {
 
     private JFrame findOwner() {
         return (JFrame) SwingUtilities.getAncestorOfClass(
-                JFrame.class, dataEditor);
+                JFrame.class, this.dataEditor);
     }
 
     //================================= Inner Class ======================================//
@@ -145,14 +145,14 @@ class DescriptiveStatsAction extends AbstractAction {
         private final JTextArea display;
 
 
-        public DescriptiveStatsListener(JTextArea display) {
+        public DescriptiveStatsListener(final JTextArea display) {
             this.display = display;
         }
 
 
-        public void propertyChange(PropertyChangeEvent evt) {
+        public void propertyChange(final PropertyChangeEvent evt) {
             if ("histogramChange".equals(evt.getPropertyName())) {
-                display.setText((String) evt.getNewValue());
+                this.display.setText((String) evt.getNewValue());
             }
         }
     }

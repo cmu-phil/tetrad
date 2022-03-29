@@ -30,8 +30,8 @@ import edu.cmu.tetrad.graph.Graph;
 public abstract class DataGraphSearch {
     public final double[] searchParams;
 
-    public DataGraphSearch(double... params) {
-        searchParams = params;
+    public DataGraphSearch(final double... params) {
+        this.searchParams = params;
     }
 
     public abstract DataGraphSearch copy();

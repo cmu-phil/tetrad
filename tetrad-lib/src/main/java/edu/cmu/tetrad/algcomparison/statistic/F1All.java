@@ -28,27 +28,27 @@ public class F1All implements Statistic {
     }
 
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        AdjacencyConfusion adjConfusion = new AdjacencyConfusion(trueGraph, estGraph);
-        ArrowConfusion arrowConfusion = new ArrowConfusion(trueGraph, estGraph);
-        int adjTp = adjConfusion.getAdjTp();
-        int adjFp = adjConfusion.getAdjFp();
-        int adjFn = adjConfusion.getAdjFn();
-        int adjTn = adjConfusion.getAdjTn();
-        int arrowTp = arrowConfusion.getArrowsTp();
-        int arrowFp = arrowConfusion.getArrowsFp();
-        int arrowFn = arrowConfusion.getArrowsFn();
-        int arrowTn = arrowConfusion.getArrowsTn();
-        double adjPrecision = adjTp / (double) (adjTp + adjFp);
-        double adjRecall = adjTp / (double) (adjTp + adjFn);
-        double arrowPrecision = arrowTp / (double) (arrowTp + arrowFp);
-        double arrowRecall = arrowTp / (double) (arrowTp + arrowFn);
+    public double getValue(final Graph trueGraph, final Graph estGraph, final DataModel dataModel) {
+        final AdjacencyConfusion adjConfusion = new AdjacencyConfusion(trueGraph, estGraph);
+        final ArrowConfusion arrowConfusion = new ArrowConfusion(trueGraph, estGraph);
+        final int adjTp = adjConfusion.getAdjTp();
+        final int adjFp = adjConfusion.getAdjFp();
+        final int adjFn = adjConfusion.getAdjFn();
+        final int adjTn = adjConfusion.getAdjTn();
+        final int arrowTp = arrowConfusion.getArrowsTp();
+        final int arrowFp = arrowConfusion.getArrowsFp();
+        final int arrowFn = arrowConfusion.getArrowsFn();
+        final int arrowTn = arrowConfusion.getArrowsTn();
+        final double adjPrecision = adjTp / (double) (adjTp + adjFp);
+        final double adjRecall = adjTp / (double) (adjTp + adjFn);
+        final double arrowPrecision = arrowTp / (double) (arrowTp + arrowFp);
+        final double arrowRecall = arrowTp / (double) (arrowTp + arrowFn);
         return 4 * (adjPrecision * adjRecall * arrowPrecision * arrowRecall)
                 / (adjPrecision + adjRecall + arrowPrecision + arrowRecall);
     }
 
     @Override
-    public double getNormValue(double value) {
+    public double getNormValue(final double value) {
         return value;
     }
 }

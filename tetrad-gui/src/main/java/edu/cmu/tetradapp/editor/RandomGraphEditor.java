@@ -27,7 +27,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.IntTextField;
-import edu.cmu.tetradapp.util.IntTextField.Filter;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -58,7 +57,7 @@ class RandomGraphEditor extends JPanel {
      * Constructs a dialog to edit the given workbench randomization
      * parameters.
      */
-    public RandomGraphEditor(boolean cyclicAllowed, Parameters parameters) {
+    public RandomGraphEditor(final boolean cyclicAllowed, final Parameters parameters) {
         this(new EdgeListGraph(), cyclicAllowed, parameters);
     }
 
@@ -69,7 +68,7 @@ class RandomGraphEditor extends JPanel {
      * //     * number of edges,a nd number of latent nodes. Useful if the interface suggests a number of nodes
      * //     * that overrides the number of nodes set in the preferences.
      */
-    public RandomGraphEditor(Graph oldGraph, boolean cyclicAllowed, Parameters parameters) {
+    public RandomGraphEditor(final Graph oldGraph, final boolean cyclicAllowed, final Parameters parameters) {
         if (parameters == null) {
             throw new NullPointerException();
         }
@@ -79,7 +78,7 @@ class RandomGraphEditor extends JPanel {
         int oldNumMeasured = 0;
         int oldNumLatents = 0;
 
-        for (Node node : oldGraph.getNodes()) {
+        for (final Node node : oldGraph.getNodes()) {
             if (node.getNodeType() == NodeType.LATENT) {
                 oldNumMeasured++;
             }
@@ -89,39 +88,39 @@ class RandomGraphEditor extends JPanel {
             }
         }
 
-        int oldNumNodes = oldNumMeasured + oldNumLatents;
+        final int oldNumNodes = oldNumMeasured + oldNumLatents;
 
-        if (oldNumNodes > 1 && oldNumMeasured == this.getNumMeasuredNodes() &&
-                oldNumLatents == this.getNumLatents()) {
-            this.setNumMeasuredNodes(oldNumMeasured);
-            this.setNumLatents(oldNumLatents);
-            this.setMaxEdges(Math.min(this.getMaxEdges(), oldNumNodes * (oldNumNodes - 1) / 2));
+        if (oldNumNodes > 1 && oldNumMeasured == getNumMeasuredNodes() &&
+                oldNumLatents == getNumLatents()) {
+            setNumMeasuredNodes(oldNumMeasured);
+            setNumLatents(oldNumLatents);
+            setMaxEdges(Math.min(getMaxEdges(), oldNumNodes * (oldNumNodes - 1) / 2));
         }
 
-        numNodesField = new IntTextField(this.getNumMeasuredNodes(), 4);
-        numLatentsField = new IntTextField(this.getNumLatents(), 4);
-        maxEdgesField = new IntTextField(this.getMaxEdges(), 4);
-        maxIndegreeField = new IntTextField(this.getMaxIndegree(), 4);
-        maxOutdegreeField = new IntTextField(this.getMaxOutdegree(), 4);
-        maxDegreeField = new IntTextField(this.getMaxDegree(), 4);
-        JRadioButton randomForward = new JRadioButton("Add random forward edges");
-        chooseUniform = new JRadioButton("Draw uniformly from all such DAGs");
-        chooseFixed = new JRadioButton("Guarantee maximum number of edges");
-        connectedBox = new JComboBox<>(new String[]{"No", "Yes"});
-        JComboBox addCyclesBox = new JComboBox<>(new String[]{"No", "Yes"});
-        numTwoCyclesField = new IntTextField(this.getMinNumCycles(), 4);
-        minCycleLengthField = new IntTextField(this.getMinCycleLength(), 4);
+        this.numNodesField = new IntTextField(getNumMeasuredNodes(), 4);
+        this.numLatentsField = new IntTextField(getNumLatents(), 4);
+        this.maxEdgesField = new IntTextField(getMaxEdges(), 4);
+        this.maxIndegreeField = new IntTextField(getMaxIndegree(), 4);
+        this.maxOutdegreeField = new IntTextField(getMaxOutdegree(), 4);
+        this.maxDegreeField = new IntTextField(getMaxDegree(), 4);
+        final JRadioButton randomForward = new JRadioButton("Add random forward edges");
+        this.chooseUniform = new JRadioButton("Draw uniformly from all such DAGs");
+        this.chooseFixed = new JRadioButton("Guarantee maximum number of edges");
+        this.connectedBox = new JComboBox<>(new String[]{"No", "Yes"});
+        final JComboBox addCyclesBox = new JComboBox<>(new String[]{"No", "Yes"});
+        this.numTwoCyclesField = new IntTextField(getMinNumCycles(), 4);
+        this.minCycleLengthField = new IntTextField(getMinCycleLength(), 4);
 
-        ButtonGroup group = new ButtonGroup();
+        final ButtonGroup group = new ButtonGroup();
         group.add(randomForward);
-        group.add(chooseUniform);
-        group.add(chooseFixed);
-        randomForward.setSelected(this.isRandomForward());
-        chooseUniform.setSelected(this.isUniformlySelected());
-        chooseFixed.setSelected(this.isChooseFixed());
+        group.add(this.chooseUniform);
+        group.add(this.chooseFixed);
+        randomForward.setSelected(isRandomForward());
+        this.chooseUniform.setSelected(isUniformlySelected());
+        this.chooseFixed.setSelected(isChooseFixed());
 
         // set up text and ties them to the parameters object being edited.
-        numNodesField.setFilter(new Filter() {
+        this.numNodesField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 if (value == numNodesField.getValue()) {
                     return oldValue;
@@ -138,7 +137,7 @@ class RandomGraphEditor extends JPanel {
             }
         });
 
-        numLatentsField.setFilter(new Filter() {
+        numLatentsField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 if (value == numLatentsField.getValue()) {
                     return oldValue;
@@ -155,7 +154,7 @@ class RandomGraphEditor extends JPanel {
             }
         });
 
-        maxEdgesField.setFilter(new Filter() {
+        maxEdgesField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 if (value == maxEdgesField.getValue()) {
                     return oldValue;
@@ -171,7 +170,7 @@ class RandomGraphEditor extends JPanel {
             }
         });
 
-        maxIndegreeField.setFilter(new Filter() {
+        maxIndegreeField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 if (value == maxIndegreeField.getValue()) {
                     return oldValue;
@@ -188,7 +187,7 @@ class RandomGraphEditor extends JPanel {
             }
         });
 
-        maxOutdegreeField.setFilter(new Filter() {
+        maxOutdegreeField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 if (value == maxOutdegreeField.getValue()) {
                     return oldValue;
@@ -206,7 +205,7 @@ class RandomGraphEditor extends JPanel {
             }
         });
 
-        maxDegreeField.setFilter(new Filter() {
+        maxDegreeField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 if (value == maxDegreeField.getValue()) {
                     return oldValue;
@@ -334,7 +333,7 @@ class RandomGraphEditor extends JPanel {
             }
         });
 
-        numTwoCyclesField.setFilter(new Filter() {
+        numTwoCyclesField.setFilter(new IntTextField.Filter() {
             public int filter(int value, int oldValue) {
                 if (value == numTwoCyclesField.getValue()) {
                     return oldValue;
@@ -350,15 +349,15 @@ class RandomGraphEditor extends JPanel {
             }
         });
 
-        minCycleLengthField.setFilter(new Filter() {
-            public int filter(int value, int oldValue) {
-                if (value == minCycleLengthField.getValue()) {
+        minCycleLengthField.setFilter(new IntTextField.Filter() {
+            public int filter(final int value, final int oldValue) {
+                if (value == RandomGraphEditor.this.minCycleLengthField.getValue()) {
                     return oldValue;
                 }
 
                 try {
-                    RandomGraphEditor.this.setMinCycleLength(value);
-                } catch (Exception e) {
+                    setMinCycleLength(value);
+                } catch (final Exception e) {
                     // Ignore.
                 }
 
@@ -367,97 +366,97 @@ class RandomGraphEditor extends JPanel {
         });
 
         // construct the workbench.
-        this.setLayout(new BorderLayout());
+        setLayout(new BorderLayout());
 
-        Box b1 = Box.createVerticalBox();
+        final Box b1 = Box.createVerticalBox();
 
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("Parameters for Random DAG:"));
         b2.add(Box.createHorizontalGlue());
         b1.add(b2);
         b1.add(Box.createVerticalStrut(5));
 
-        Box b10 = Box.createHorizontalBox();
+        final Box b10 = Box.createHorizontalBox();
         b10.add(new JLabel("Number of measured nodes:"));
         b10.add(Box.createRigidArea(new Dimension(10, 0)));
         b10.add(Box.createHorizontalGlue());
-        b10.add(numNodesField);
+        b10.add(this.numNodesField);
         b1.add(b10);
 
-        Box b11 = Box.createHorizontalBox();
+        final Box b11 = Box.createHorizontalBox();
         b11.add(new JLabel("Max # latent confounders:"));
         b11.add(Box.createHorizontalStrut(25));
         b11.add(Box.createHorizontalGlue());
-        b11.add(numLatentsField);
+        b11.add(this.numLatentsField);
         b1.add(b11);
         b1.add(Box.createVerticalStrut(5));
 
-        Box b12 = Box.createHorizontalBox();
+        final Box b12 = Box.createHorizontalBox();
         b12.add(new JLabel("Maximum number of edges:"));
         b12.add(Box.createHorizontalGlue());
-        b12.add(maxEdgesField);
+        b12.add(this.maxEdgesField);
         b1.add(b12);
         b1.add(Box.createVerticalStrut(5));
 
-        Box b14 = Box.createHorizontalBox();
+        final Box b14 = Box.createHorizontalBox();
         b14.add(new JLabel("Maximum indegree:"));
         b14.add(Box.createHorizontalGlue());
-        b14.add(maxIndegreeField);
+        b14.add(this.maxIndegreeField);
         b1.add(b14);
 
-        Box b15 = Box.createHorizontalBox();
+        final Box b15 = Box.createHorizontalBox();
         b15.add(new JLabel("Maximum outdegree:"));
         b15.add(Box.createHorizontalGlue());
-        b15.add(maxOutdegreeField);
+        b15.add(this.maxOutdegreeField);
         b1.add(b15);
 
-        Box b13 = Box.createHorizontalBox();
+        final Box b13 = Box.createHorizontalBox();
         b13.add(new JLabel("Maximum degree:"));
         b13.add(Box.createHorizontalGlue());
-        b13.add(maxDegreeField);
+        b13.add(this.maxDegreeField);
         b1.add(b13);
         b1.add(Box.createVerticalStrut(5));
 
-        Box b16 = Box.createHorizontalBox();
+        final Box b16 = Box.createHorizontalBox();
         b16.add(new JLabel("Connected:"));
         b16.add(Box.createHorizontalGlue());
-        b16.add(connectedBox);
+        b16.add(this.connectedBox);
         b1.add(b16);
         b1.add(Box.createVerticalStrut(5));
 
-        Box b17a = Box.createHorizontalBox();
+        final Box b17a = Box.createHorizontalBox();
         b17a.add(randomForward);
         b17a.add(Box.createHorizontalGlue());
         b1.add(b17a);
 
-        Box b17 = Box.createHorizontalBox();
-        b17.add(chooseUniform);
+        final Box b17 = Box.createHorizontalBox();
+        b17.add(this.chooseUniform);
         b17.add(Box.createHorizontalGlue());
         b1.add(b17);
 
-        Box b18 = Box.createHorizontalBox();
-        b18.add(chooseFixed);
+        final Box b18 = Box.createHorizontalBox();
+        b18.add(this.chooseFixed);
         b18.add(Box.createHorizontalGlue());
         b1.add(b18);
 
-        Box d = Box.createVerticalBox();
+        final Box d = Box.createVerticalBox();
         b1.setBorder(new TitledBorder(""));
         d.add(b1);
 
         if (cyclicAllowed) {
-            Box c1 = Box.createVerticalBox();
+            final Box c1 = Box.createVerticalBox();
 
-            Box c2 = Box.createHorizontalBox();
+            final Box c2 = Box.createHorizontalBox();
             c2.add(new JLabel("Create a cyclic graph?"));
             c2.add(Box.createHorizontalGlue());
             c2.add(addCyclesBox);
             c1.add(c2);
             c1.add(Box.createVerticalStrut(5));
 
-            Box c3 = Box.createHorizontalBox();
+            final Box c3 = Box.createHorizontalBox();
             c3.add(new JLabel("Number of two cycles to add:"));
             c3.add(Box.createHorizontalGlue());
-            c3.add(numTwoCyclesField);
+            c3.add(this.numTwoCyclesField);
             c1.add(c3);
             c1.add(Box.createVerticalStrut(5));
 
@@ -467,236 +466,236 @@ class RandomGraphEditor extends JPanel {
             d.add(c1);
         }
 
-        this.add(d, BorderLayout.CENTER);
+        add(d, BorderLayout.CENTER);
     }
 
-    public void setEnabled(boolean enabled) {
+    public void setEnabled(final boolean enabled) {
         super.setEnabled(enabled);
 
-        if (this.isChooseFixed() && enabled) {
-            numNodesField.setEnabled(enabled);
-            numLatentsField.setEnabled(enabled);
-            maxEdgesField.setEnabled(enabled);
-            maxIndegreeField.setEnabled(false);
-            maxOutdegreeField.setEnabled(false);
-            maxDegreeField.setEnabled(false);
-            connectedBox.setEnabled(false);
-            chooseUniform.setEnabled(enabled);
-            chooseFixed.setEnabled(enabled);
+        if (isChooseFixed() && enabled) {
+            this.numNodesField.setEnabled(enabled);
+            this.numLatentsField.setEnabled(enabled);
+            this.maxEdgesField.setEnabled(enabled);
+            this.maxIndegreeField.setEnabled(false);
+            this.maxOutdegreeField.setEnabled(false);
+            this.maxDegreeField.setEnabled(false);
+            this.connectedBox.setEnabled(false);
+            this.chooseUniform.setEnabled(enabled);
+            this.chooseFixed.setEnabled(enabled);
         } else {
-            numNodesField.setEnabled(enabled);
-            numLatentsField.setEnabled(enabled);
-            maxEdgesField.setEnabled(enabled);
-            maxIndegreeField.setEnabled(enabled);
-            maxOutdegreeField.setEnabled(enabled);
-            maxDegreeField.setEnabled(enabled);
-            connectedBox.setEnabled(enabled);
-            chooseUniform.setEnabled(enabled);
-            chooseFixed.setEnabled(enabled);
+            this.numNodesField.setEnabled(enabled);
+            this.numLatentsField.setEnabled(enabled);
+            this.maxEdgesField.setEnabled(enabled);
+            this.maxIndegreeField.setEnabled(enabled);
+            this.maxOutdegreeField.setEnabled(enabled);
+            this.maxDegreeField.setEnabled(enabled);
+            this.connectedBox.setEnabled(enabled);
+            this.chooseUniform.setEnabled(enabled);
+            this.chooseFixed.setEnabled(enabled);
         }
     }
 
     public boolean isRandomForward() {
-        return parameters.getBoolean("graphRandomFoward", true);
+        return this.parameters.getBoolean("graphRandomFoward", true);
     }
 
     public boolean isUniformlySelected() {
-        return parameters.getBoolean("graphUniformlySelected", true);
+        return this.parameters.getBoolean("graphUniformlySelected", true);
     }
 
     public boolean isChooseFixed() {
-        return parameters.getBoolean("graphChooseFixed", true);
+        return this.parameters.getBoolean("graphChooseFixed", true);
     }
 
-    private void setRandomForward(boolean randomFoward) {
-        parameters.set("graphRandomFoward", randomFoward);
+    private void setRandomForward(final boolean randomFoward) {
+        this.parameters.set("graphRandomFoward", randomFoward);
     }
 
-    private void setUniformlySelected(boolean uniformlySelected) {
-        parameters.set("graphUniformlySelected", uniformlySelected);
+    private void setUniformlySelected(final boolean uniformlySelected) {
+        this.parameters.set("graphUniformlySelected", uniformlySelected);
     }
 
-    private void setChooseFixed(boolean chooseFixed) {
-        parameters.set("graphChooseFixed", chooseFixed);
+    private void setChooseFixed(final boolean chooseFixed) {
+        this.parameters.set("graphChooseFixed", chooseFixed);
     }
 
     public int getNumNodes() {
-        return this.getNumMeasuredNodes() + this.getNumLatents();
+        return getNumMeasuredNodes() + getNumLatents();
     }
 
     private int getNumMeasuredNodes() {
-        return parameters.getInt("newGraphNumMeasuredNodes", 10);
+        return this.parameters.getInt("newGraphNumMeasuredNodes", 10);
     }
 
-    private void setNumMeasuredNodes(int numMeasuredNodes) {
-        if (numMeasuredNodes + this.getNumLatents() < 2) {
+    private void setNumMeasuredNodes(final int numMeasuredNodes) {
+        if (numMeasuredNodes + getNumLatents() < 2) {
             throw new IllegalArgumentException("Number of nodes Must be greater than or equal to 2.");
         }
 
-        parameters.set("newGraphNumMeasuredNodes", numMeasuredNodes);
+        this.parameters.set("newGraphNumMeasuredNodes", numMeasuredNodes);
 
-        if (this.isConnected()) {
-            this.setMaxEdges(Math.max(this.getMaxEdges(), numMeasuredNodes + this.getNumLatents()));
+        if (isConnected()) {
+            setMaxEdges(Math.max(getMaxEdges(), numMeasuredNodes + getNumLatents()));
         }
     }
 
     public int getNumLatents() {
-        return parameters.getInt("newGraphNumLatents", 0);
+        return this.parameters.getInt("newGraphNumLatents", 0);
     }
 
-    private void setNumLatents(int numLatentNodes) {
+    private void setNumLatents(final int numLatentNodes) {
         if (numLatentNodes < 0) {
             throw new IllegalArgumentException(
                     "Max # latent confounders must be" + " >= 0: " +
                             numLatentNodes);
         }
 
-        parameters.set("newGraphNumLatents", numLatentNodes);
+        this.parameters.set("newGraphNumLatents", numLatentNodes);
     }
 
     public int getMaxEdges() {
-        return parameters.getInt("newGraphNumEdges", 10);
+        return this.parameters.getInt("newGraphNumEdges", 10);
     }
 
 
     private void setMaxEdges(int numEdges) {
-        if (this.isConnected() && numEdges < this.getNumNodes()) {
+        if (isConnected() && numEdges < getNumNodes()) {
             throw new IllegalArgumentException("When assuming connectedness, " +
                     "the number of edges must be at least the number of nodes.");
         }
 
-        if (!this.isConnected() && numEdges < 0) {
+        if (!isConnected() && numEdges < 0) {
             throw new IllegalArgumentException(
                     "Number of edges Must be greater than or equal to 0: " + numEdges);
         }
 
-        int maxNumEdges = this.getNumNodes() * (this.getNumNodes() - 1) / 2;
+        final int maxNumEdges = getNumNodes() * (getNumNodes() - 1) / 2;
 
         if (numEdges > maxNumEdges) {
             numEdges = maxNumEdges;
         }
 
-        parameters.set("newGraphNumEdges", numEdges);
+        this.parameters.set("newGraphNumEdges", numEdges);
     }
 
     public int getMaxDegree() {
-        return parameters.getInt("randomGraphMaxDegree", 6);
+        return this.parameters.getInt("randomGraphMaxDegree", 6);
     }
 
-    private void setMaxDegree(int maxDegree) {
-        if (!this.isConnected() && maxDegree < 1) {
-            parameters.set("randomGraphMaxDegree", 1);
+    private void setMaxDegree(final int maxDegree) {
+        if (!isConnected() && maxDegree < 1) {
+            this.parameters.set("randomGraphMaxDegree", 1);
             return;
         }
 
-        if (this.isConnected() && maxDegree < 3) {
-            parameters.set("randomGraphMaxDegree", 3);
+        if (isConnected() && maxDegree < 3) {
+            this.parameters.set("randomGraphMaxDegree", 3);
             return;
         }
 
-        parameters.set("randomGraphMaxDegree", maxDegree);
+        this.parameters.set("randomGraphMaxDegree", maxDegree);
     }
 
     public int getMaxIndegree() {
-        return parameters.getInt("randomGraphMaxIndegree", 3);
+        return this.parameters.getInt("randomGraphMaxIndegree", 3);
     }
 
-    private void setMaxIndegree(int maxIndegree) {
-        if (!this.isConnected() && maxIndegree < 1) {
-            parameters.set("randomGraphMaxIndegree", 1);
+    private void setMaxIndegree(final int maxIndegree) {
+        if (!isConnected() && maxIndegree < 1) {
+            this.parameters.set("randomGraphMaxIndegree", 1);
             return;
         }
 
-        if (this.isConnected() && maxIndegree < 2) {
-            parameters.set("randomGraphMaxIndegree", 2);
+        if (isConnected() && maxIndegree < 2) {
+            this.parameters.set("randomGraphMaxIndegree", 2);
             return;
         }
 
-        parameters.set("randomGraphMaxIndegree", maxIndegree);
+        this.parameters.set("randomGraphMaxIndegree", maxIndegree);
     }
 
     public int getMaxOutdegree() {
-        return parameters.getInt("randomGraphMaxOutdegree", 3);
+        return this.parameters.getInt("randomGraphMaxOutdegree", 3);
     }
 
-    private void setMaxOutdegree(int maxOutDegree) {
-        if (!this.isConnected() && maxOutDegree < 1) {
-            parameters.set("randomGraphMaxOutdegree", 1);
+    private void setMaxOutdegree(final int maxOutDegree) {
+        if (!isConnected() && maxOutDegree < 1) {
+            this.parameters.set("randomGraphMaxOutdegree", 1);
             return;
         }
 
-        if (this.isConnected() && maxOutDegree < 2) {
-            parameters.set("randomGraphMaxOutdegree", 2);
+        if (isConnected() && maxOutDegree < 2) {
+            this.parameters.set("randomGraphMaxOutdegree", 2);
             return;
         }
 
-        parameters.set("randomGraphMaxOutdegree", maxOutDegree);
+        this.parameters.set("randomGraphMaxOutdegree", maxOutDegree);
     }
 
-    private void setConnected(boolean connected) {
-        parameters.set("randomGraphConnected", connected);
+    private void setConnected(final boolean connected) {
+        this.parameters.set("randomGraphConnected", connected);
 
         if (connected) {
-            if (this.getMaxIndegree() < 2) {
-                this.setMaxIndegree(2);
+            if (getMaxIndegree() < 2) {
+                setMaxIndegree(2);
             }
 
-            if (this.getMaxOutdegree() < 2) {
-                this.setMaxOutdegree(2);
+            if (getMaxOutdegree() < 2) {
+                setMaxOutdegree(2);
             }
 
-            if (this.getMaxDegree() < 3) {
-                this.setMaxDegree(3);
+            if (getMaxDegree() < 3) {
+                setMaxDegree(3);
             }
 
-            if (this.getMaxEdges() < this.getNumNodes()) {
-                this.setMaxEdges(this.getNumNodes());
+            if (getMaxEdges() < getNumNodes()) {
+                setMaxEdges(getNumNodes());
             }
         }
     }
 
     public boolean isConnected() {
-        return parameters.getBoolean("randomGraphConnected", false);
+        return this.parameters.getBoolean("randomGraphConnected", false);
     }
 
-    private void setAddCycles(boolean addCycles) {
-        parameters.set("randomGraphAddCycles", addCycles);
+    private void setAddCycles(final boolean addCycles) {
+        this.parameters.set("randomGraphAddCycles", addCycles);
     }
 
     public boolean isAddCycles() {
-        return parameters.getBoolean("randomGraphAddCycles", false);
+        return this.parameters.getBoolean("randomGraphAddCycles", false);
     }
 
     public int getMinNumCycles() {
-        int minNumCycles = parameters.getInt("randomGraphMinNumCycles", 0);
+        final int minNumCycles = this.parameters.getInt("randomGraphMinNumCycles", 0);
         System.out.println("get min num cycles = " + minNumCycles);
 
         return minNumCycles;
     }
 
-    private void setMinNumCycles(int minNumCycles) {
+    private void setMinNumCycles(final int minNumCycles) {
 
         System.out.println("set min num cycles = " + minNumCycles);
 
         if (minNumCycles < 0) {
-            parameters.set("randomGraphMinNumCycles", 0);
+            this.parameters.set("randomGraphMinNumCycles", 0);
             return;
         }
 
-        parameters.set("randomGraphMinNumCycles", minNumCycles);
+        this.parameters.set("randomGraphMinNumCycles", minNumCycles);
     }
 
     public int getMinCycleLength() {
-        return parameters.getInt("randomGraphMinCycleLength", 2);
+        return this.parameters.getInt("randomGraphMinCycleLength", 2);
     }
 
-    private void setMinCycleLength(int minCycleLength) {
+    private void setMinCycleLength(final int minCycleLength) {
         if (minCycleLength < 2) {
-            parameters.set("randomGraphMinCycleLength", 2);
+            this.parameters.set("randomGraphMinCycleLength", 2);
             return;
         }
 
-        parameters.set("randomGraphMinCycleLength", minCycleLength);
+        this.parameters.set("randomGraphMinCycleLength", minCycleLength);
     }
 }
 

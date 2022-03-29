@@ -40,46 +40,46 @@ import java.nio.file.Path;
 
 public final class FciTemp {
 
-    public static void main(String... args) {
+    public static void main(final String... args) {
         if (args.length != 3) {
             throw new RuntimeException("java -jar edu.cmu.edu.tetrad.FciTemp [data] [knowledge] [alpha]");
         }
 
-        Path dataFile = new File(args[0]).toPath();
+        final Path dataFile = new File(args[0]).toPath();
         final Delimiter delimiter = Delimiter.TAB;
 
-        ContinuousTabularDatasetReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, delimiter);
+        final ContinuousTabularDatasetReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, delimiter);
         dataReader.setHasHeader(true);
-        DataSet dataSet;
+        final DataSet dataSet;
 
         try {
-            Data data = dataReader.readInData();
+            final Data data = dataReader.readInData();
             dataSet = (DataSet) DataConvertUtils.toDataModel(data);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
             throw new RuntimeException("Expecting a properly formatted data file: " + args[0]);
         }
 
-        IKnowledge knowledge;
+        final IKnowledge knowledge;
 
         try {
             knowledge = DataUtils.loadKnowledge(new File(args[1]), DelimiterType.WHITESPACE, "//");
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new RuntimeException("Expecting properly formatted knowledge file: " + args[1]);
         }
 
         double alpha = 0;
         try {
             alpha = Double.parseDouble(args[2]);
-        } catch (NumberFormatException e) {
+        } catch (final NumberFormatException e) {
             throw new RuntimeException("Expecting a number for alpha");
         }
 
-        Fci fci = new Fci(new IndTestFisherZ(dataSet, alpha));
+        final Fci fci = new Fci(new IndTestFisherZ(dataSet, alpha));
         fci.setKnowledge(knowledge);
         fci.setHeuristic(1); // lexicographic order.
 
-        Graph graph = fci.search();
+        final Graph graph = fci.search();
 
         System.out.println(GraphUtils.graphToText(graph));
     }

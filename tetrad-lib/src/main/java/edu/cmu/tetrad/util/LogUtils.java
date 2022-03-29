@@ -34,7 +34,7 @@ import java.util.logging.*;
  *
  * @author Joseph Ramsey
  */
-@SuppressWarnings({"UnusedDeclaration"})
+@SuppressWarnings("UnusedDeclaration")
 public class LogUtils {
 
     /**
@@ -59,16 +59,16 @@ public class LogUtils {
      * Private constructor.
      */
     private LogUtils() {
-        logger.setUseParentHandlers(false);
-        logger.setLevel(Level.FINEST);
+        this.logger.setUseParentHandlers(false);
+        this.logger.setLevel(Level.FINEST);
     }
 
     /**
      * @return Ibid.
      */
-    @SuppressWarnings({"UnusedDeclaration"})
+    @SuppressWarnings("UnusedDeclaration")
     public static LogUtils getInstance() {
-        return INSTANCE;
+        return LogUtils.INSTANCE;
     }
 
     //===========================PUBLIC METHODS=========================//
@@ -79,7 +79,7 @@ public class LogUtils {
      * @param stream The OutputStream to be added to logging.
      * @param level  The level at which logging events will be printed.
      */
-    public void add(OutputStream stream, Level level) {
+    public void add(final OutputStream stream, final Level level) {
         if (stream == null) {
             throw new NullPointerException();
         }
@@ -88,18 +88,18 @@ public class LogUtils {
             throw new NullPointerException();
         }
 
-        SimpleFormatter formatter = new SimpleFormatter() {
-            public synchronized String format(LogRecord record) {
+        final SimpleFormatter formatter = new SimpleFormatter() {
+            public synchronized String format(final LogRecord record) {
                 return record.getMessage() +
                         "\n";
             }
         };
 
-        StreamHandler handler = new StreamHandler(stream, formatter);
+        final StreamHandler handler = new StreamHandler(stream, formatter);
         handler.setLevel(level);
-        streams.put(stream, handler);
+        this.streams.put(stream, handler);
 
-        this.getLogger().addHandler(handler);
+        getLogger().addHandler(handler);
     }
 
     /**
@@ -108,8 +108,8 @@ public class LogUtils {
      * @param stream The OutputStream whose level is to change.
      * @param level  The new level.
      */
-    public void setLevel(OutputStream stream, Level level) {
-        Handler handler = streams.get(stream);
+    public void setLevel(final OutputStream stream, final Level level) {
+        final Handler handler = this.streams.get(stream);
 
         if (handler != null) {
             handler.setLevel(level);
@@ -121,12 +121,12 @@ public class LogUtils {
      *
      * @param stream Ibid.
      */
-    private void remove(OutputStream stream) {
+    private void remove(final OutputStream stream) {
         if (stream == null) {
             return;
         }
 
-        Handler handler = streams.get(stream);
+        final Handler handler = this.streams.get(stream);
 
         if (handler == null) {
             return;
@@ -138,59 +138,59 @@ public class LogUtils {
             handler.close();
         }
 
-        this.getLogger().removeHandler(handler);
+        getLogger().removeHandler(handler);
     }
 
     /**
      * Removes all streams from logging.
      */
     public void clear() {
-        for (OutputStream stream : streams.keySet()) {
-            this.remove(stream);
+        for (final OutputStream stream : this.streams.keySet()) {
+            remove(stream);
         }
     }
 
-    public void severe(String s) {
-        this.getLogger().severe(s);
+    public void severe(final String s) {
+        getLogger().severe(s);
     }
 
-    public void warning(String s) {
-        this.getLogger().warning(s);
-        this.flushAll();
+    public void warning(final String s) {
+        getLogger().warning(s);
+        flushAll();
     }
 
-    public void config(String s) {
-        this.getLogger().config(s);
-        this.flushAll();
+    public void config(final String s) {
+        getLogger().config(s);
+        flushAll();
     }
 
-    public void info(String s) {
-        this.getLogger().info(s);
-        this.flushAll();
+    public void info(final String s) {
+        getLogger().info(s);
+        flushAll();
     }
 
-    public void fine(String s) {
-        this.getLogger().fine(s);
-        this.flushAll();
+    public void fine(final String s) {
+        getLogger().fine(s);
+        flushAll();
     }
 
-    public void finer(String s) {
-        this.getLogger().finer(s);
-        this.flushAll();
+    public void finer(final String s) {
+        getLogger().finer(s);
+        flushAll();
     }
 
-    public void finest(String s) {
-        this.getLogger().finest(s);
-        this.flushAll();
+    public void finest(final String s) {
+        getLogger().finest(s);
+        flushAll();
     }
 
     private Logger getLogger() {
-        return logger;
+        return this.logger;
     }
 
     private void flushAll() {
-        for (OutputStream stream : streams.keySet()) {
-            Handler handler = streams.get(stream);
+        for (final OutputStream stream : this.streams.keySet()) {
+            final Handler handler = this.streams.get(stream);
             handler.flush();
         }
     }

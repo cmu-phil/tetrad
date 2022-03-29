@@ -65,13 +65,13 @@ public class CovLINone implements CovarianceFunction {
      * @param X        input dataset
      * @return K covariance <code>Matrix</code>
      */
-    public Matrix compute(Matrix loghyper, Matrix X) {
-        if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != this.numParameters())
-            throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + this.numParameters());
+    public Matrix compute(final Matrix loghyper, final Matrix X) {
+        if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != numParameters())
+            throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + numParameters());
 
-        double it2 = Math.exp(-2 * loghyper.get(0, 0));
+        final double it2 = Math.exp(-2 * loghyper.get(0, 0));
 
-        Matrix A = X.times(X.transpose());
+        final Matrix A = X.times(X.transpose());
         return addValue(A, 1).times(it2);
     }
 
@@ -83,11 +83,11 @@ public class CovLINone implements CovarianceFunction {
      * @param Xstar    test set
      * @return [K(Xstar, Xstar) K(X,Xstar)]
      */
-    public Matrix[] compute(Matrix loghyper, Matrix X, Matrix Xstar) {
-        if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != this.numParameters())
-            throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + this.numParameters());
+    public Matrix[] compute(final Matrix loghyper, final Matrix X, final Matrix Xstar) {
+        if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != numParameters())
+            throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + numParameters());
 
-        double it2 = Math.exp(-2 * loghyper.get(0, 0));
+        final double it2 = Math.exp(-2 * loghyper.get(0, 0));
 
         Matrix A = sumRows(Xstar.arrayTimes(Xstar));
 
@@ -108,36 +108,36 @@ public class CovLINone implements CovarianceFunction {
      * @param index    hyperparameter index
      * @return <code>Matrix</code> of derivatives
      */
-    public Matrix computeDerivatives(Matrix loghyper, Matrix X, int index) {
+    public Matrix computeDerivatives(final Matrix loghyper, final Matrix X, final int index) {
 
-        if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != this.numParameters())
-            throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + this.numParameters());
-        if (index > this.numParameters() - 1)
-            throw new IllegalArgumentException("Wrong hyperparameters index " + index + " it should be smaller or equal to " + (this.numParameters() - 1));
+        if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != numParameters())
+            throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + numParameters());
+        if (index > numParameters() - 1)
+            throw new IllegalArgumentException("Wrong hyperparameters index " + index + " it should be smaller or equal to " + (numParameters() - 1));
 
-        double it2 = Math.exp(-2 * loghyper.get(0, 0));
-        Matrix A = X.times(X.transpose());
+        final double it2 = Math.exp(-2 * loghyper.get(0, 0));
+        final Matrix A = X.times(X.transpose());
         return addValue(A, 1).times(-2 * it2);
     }
 
-    public static void main(String[] args) {
-        CovLINone cf = new CovLINone();
+    public static void main(final String[] args) {
+        final CovLINone cf = new CovLINone();
 
-        Matrix X = Matrix.identity(6, 6);
-        Matrix logtheta = new Matrix(new double[][]{{0.1}});
+        final Matrix X = Matrix.identity(6, 6);
+        final Matrix logtheta = new Matrix(new double[][]{{0.1}});
 
-        Matrix z = new Matrix(new double[][]{{1, 2, 3, 4, 5, 6}, {1, 2, 3, 4, 5, 6}});
+        final Matrix z = new Matrix(new double[][]{{1, 2, 3, 4, 5, 6}, {1, 2, 3, 4, 5, 6}});
 
         System.out.println();
-        Matrix K = cf.compute(logtheta, X);
+        final Matrix K = cf.compute(logtheta, X);
         K.print(K.getColumnDimension(), 8);
 
-        Matrix[] res = cf.compute(logtheta, X, z);
+        final Matrix[] res = cf.compute(logtheta, X, z);
 
         res[0].print(res[0].getColumnDimension(), 8);
         res[1].print(res[1].getColumnDimension(), 8);
 
-        Matrix d = cf.computeDerivatives(logtheta, X, 0);
+        final Matrix d = cf.computeDerivatives(logtheta, X, 0);
 
         d.print(d.getColumnDimension(), 8);
 

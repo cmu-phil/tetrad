@@ -79,15 +79,15 @@ public class ActiveLagGraph implements LagGraph {
     /**
      * Registers a listener to events concerning the lag graph.
      */
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        this.getPropertyChangeManager().addPropertyChangeListener(l);
+    public void addPropertyChangeListener(final PropertyChangeListener l) {
+        getPropertyChangeManager().addPropertyChangeListener(l);
     }
 
     /*
      * Unregisters a listener for events concerning the lag graph.
      */
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-        this.getPropertyChangeManager().removePropertyChangeListener(l);
+    public void removePropertyChangeListener(final PropertyChangeListener l) {
+        getPropertyChangeManager().removePropertyChangeListener(l);
     }
 
     /**
@@ -97,12 +97,12 @@ public class ActiveLagGraph implements LagGraph {
      * if an edge's lag is greater than MaxAllowableLag. </p> Will throw a
      * propertyChange event of (null, (Integer) newMaxLagAllowable).
      */
-    public void setMaxLagAllowable(int maxLagAllowable) {
-        if (maxLagAllowable >= this.getMaxLag()) {
-            lagGraph.setMaxLagAllowable(maxLagAllowable);
-            lagGraph.setMaxLagAllowable(maxLagAllowable);
-            this.getPropertyChangeManager().firePropertyChange("maxLagAllowable",
-                    null, this.getMaxLagAllowable());
+    public void setMaxLagAllowable(final int maxLagAllowable) {
+        if (maxLagAllowable >= getMaxLag()) {
+            this.lagGraph.setMaxLagAllowable(maxLagAllowable);
+            this.lagGraph.setMaxLagAllowable(maxLagAllowable);
+            getPropertyChangeManager().firePropertyChange("maxLagAllowable",
+                    null, getMaxLagAllowable());
         }
     }
 
@@ -112,19 +112,19 @@ public class ActiveLagGraph implements LagGraph {
      * that the edge can be added. </p> Will throw a propertyChange event of
      * (null, (LaggedEdge) newEdge)
      */
-    public void addEdge(String factor, LaggedFactor laggedFactor) {
+    public void addEdge(final String factor, final LaggedFactor laggedFactor) {
         // super class does not care if edge is already in the graph, therefore
         // we need to check manually
-        if (!this.existsEdge(factor, laggedFactor)) {
+        if (!existsEdge(factor, laggedFactor)) {
             try {
-                if (laggedFactor.getLag() > this.getMaxLagAllowable()) {
-                    this.setMaxLagAllowable(laggedFactor.getLag());
+                if (laggedFactor.getLag() > getMaxLagAllowable()) {
+                    setMaxLagAllowable(laggedFactor.getLag());
                 }
 
-                lagGraph.addEdge(factor, laggedFactor);
-                this.getPropertyChangeManager().firePropertyChange("edgeAdded", null,
+                this.lagGraph.addEdge(factor, laggedFactor);
+                getPropertyChangeManager().firePropertyChange("edgeAdded", null,
                         new LaggedEdge(factor, laggedFactor));
-            } catch (Exception e) {
+            } catch (final Exception e) {
             }
         }
     }
@@ -133,19 +133,19 @@ public class ActiveLagGraph implements LagGraph {
      * Attempts to add a factor to the graph. Will throw a propertyChange event
      * of (null, (String) factor).
      */
-    public void addFactor(String factor) {
+    public void addFactor(final String factor) {
         if (!NamingProtocol.isLegalName(factor)) {
             throw new IllegalArgumentException(
                     NamingProtocol.getProtocolDescription());
         }
 
         // no exception is thrown if the factor is already in the graph
-        if (!this.existsFactor(factor)) {
+        if (!existsFactor(factor)) {
             try {
-                lagGraph.addFactor(factor);
-                this.getPropertyChangeManager().firePropertyChange("nodeAdded", null,
+                this.lagGraph.addFactor(factor);
+                getPropertyChangeManager().firePropertyChange("nodeAdded", null,
                         factor);
-            } catch (Exception e) {
+            } catch (final Exception e) {
             }
         }
     }
@@ -154,13 +154,13 @@ public class ActiveLagGraph implements LagGraph {
      * Attempts to remove an edge from the graph. </p> Will throw a
      * propertyChange event of ((LaggedEdge) edge_removed, null).
      */
-    public void removeEdge(String factor, LaggedFactor laggedFactor) {
-        if (this.existsEdge(factor, laggedFactor)) {
+    public void removeEdge(final String factor, final LaggedFactor laggedFactor) {
+        if (existsEdge(factor, laggedFactor)) {
             try {
-                lagGraph.removeEdge(factor, laggedFactor);
-                this.getPropertyChangeManager().firePropertyChange("edgeRemoved",
+                this.lagGraph.removeEdge(factor, laggedFactor);
+                getPropertyChangeManager().firePropertyChange("edgeRemoved",
                         new LaggedEdge(factor, laggedFactor), null);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 // Igore.
             }
         }
@@ -171,39 +171,39 @@ public class ActiveLagGraph implements LagGraph {
      * remove any edges that involve this edge. </p> Will throw a propertyChange
      * event of ((String) factor_removed, null).
      */
-    public void removeFactor(String factor) {
+    public void removeFactor(final String factor) {
         try {
-            lagGraph.removeFactor(factor);
-            this.getPropertyChangeManager().firePropertyChange("nodeRemoved", factor,
+            this.lagGraph.removeFactor(factor);
+            getPropertyChangeManager().firePropertyChange("nodeRemoved", factor,
                     null);
 
             // search through and find edges which were sourced by this factor
             // and remove them
-            ArrayList toDelete = new ArrayList();
-            SortedSet factors = this.getFactors();
-            Iterator f = factors.iterator();
+            final ArrayList toDelete = new ArrayList();
+            final SortedSet factors = getFactors();
+            final Iterator f = factors.iterator();
             // have to search through all destination factors to find edges to remove
             while (f.hasNext()) {
-                String destFactor = (String) f.next();
-                SortedSet parents = lagGraph.getParents(destFactor);
-                Iterator p = parents.iterator();
+                final String destFactor = (String) f.next();
+                final SortedSet parents = this.lagGraph.getParents(destFactor);
+                final Iterator p = parents.iterator();
 
                 // find edges sourced by factor
                 while (p.hasNext()) {
-                    LaggedFactor lf = (LaggedFactor) p.next();
+                    final LaggedFactor lf = (LaggedFactor) p.next();
                     if (lf.getFactor().equals(factor)) {
                         toDelete.add(lf);
                     }
                 }
 
                 // remove those edges
-                Iterator d = toDelete.iterator();
+                final Iterator d = toDelete.iterator();
                 while (d.hasNext()) {
-                    this.removeEdge(destFactor, (LaggedFactor) d.next());
+                    removeEdge(destFactor, (LaggedFactor) d.next());
                 }
                 toDelete.clear();
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             // Ignore.
         }
     }
@@ -212,73 +212,73 @@ public class ActiveLagGraph implements LagGraph {
      * Attempts to rename a factor. </p> Will throw a propertyChange event of
      * ((String) oldName, (String) newName).
      */
-    public void renameFactor(String oldName, String newName) {
+    public void renameFactor(final String oldName, final String newName) {
         try {
-            lagGraph.renameFactor(oldName, newName);
-            this.getPropertyChangeManager().firePropertyChange("factorRenamed",
+            this.lagGraph.renameFactor(oldName, newName);
+            getPropertyChangeManager().firePropertyChange("factorRenamed",
                     oldName, newName);
-        } catch (IllegalArgumentException e) {
+        } catch (final IllegalArgumentException e) {
             // ignore
         }
     }
 
     private PropertyChangeSupport getPropertyChangeManager() {
-        if (propertyChangeManager == null) {
-            propertyChangeManager = new PropertyChangeSupport(this);
+        if (this.propertyChangeManager == null) {
+            this.propertyChangeManager = new PropertyChangeSupport(this);
         }
-        return propertyChangeManager;
+        return this.propertyChangeManager;
     }
 
     public void clearEdges() {
-        lagGraph.clearEdges();
+        this.lagGraph.clearEdges();
     }
 
-    public boolean existsFactor(String factor) {
-        return lagGraph.existsFactor(factor);
+    public boolean existsFactor(final String factor) {
+        return this.lagGraph.existsFactor(factor);
     }
 
-    public boolean existsEdge(String factor, LaggedFactor laggedFactor) {
-        return lagGraph.existsEdge(factor, laggedFactor);
+    public boolean existsEdge(final String factor, final LaggedFactor laggedFactor) {
+        return this.lagGraph.existsEdge(factor, laggedFactor);
     }
 
-    public SortedSet getParents(String factor) {
-        return lagGraph.getParents(factor);
+    public SortedSet getParents(final String factor) {
+        return this.lagGraph.getParents(factor);
     }
 
     public int getMaxLagAllowable() {
-        return lagGraph.getMaxLagAllowable();
+        return this.lagGraph.getMaxLagAllowable();
     }
 
     public int getMaxLag() {
-        return lagGraph.getMaxLag();
+        return this.lagGraph.getMaxLag();
     }
 
     public SortedMap getConnectivity() {
-        return lagGraph.getConnectivity();
+        return this.lagGraph.getConnectivity();
     }
 
     public int getNumFactors() {
-        return lagGraph.getNumFactors();
+        return this.lagGraph.getNumFactors();
     }
 
     public SortedSet<String> getFactors() {
-        return lagGraph.getFactors();
+        return this.lagGraph.getFactors();
     }
 
-    public void addFactors(String base, int numFactors) {
-        lagGraph.addFactors(base, numFactors);
+    public void addFactors(final String base, final int numFactors) {
+        this.lagGraph.addFactors(base, numFactors);
     }
 
-    public void setLocation(String factor, PointXy point) {
-        lagGraph.setLocation(factor, point);
+    public void setLocation(final String factor, final PointXy point) {
+        this.lagGraph.setLocation(factor, point);
     }
 
-    public PointXy getLocation(String factor) {
-        return lagGraph.getLocation(factor);
+    public PointXy getLocation(final String factor) {
+        return this.lagGraph.getLocation(factor);
     }
 
     public Map getLocations() {
-        return lagGraph.getLocations();
+        return this.lagGraph.getLocations();
     }
 
     /**
@@ -294,11 +294,11 @@ public class ActiveLagGraph implements LagGraph {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (lagGraph == null) {
+        if (this.lagGraph == null) {
             throw new NullPointerException();
         }
     }

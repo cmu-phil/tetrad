@@ -23,17 +23,17 @@ public class SingleGraphAlg implements Algorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private final Graph graph;
 
-    public SingleGraphAlg(Graph graph) {
+    public SingleGraphAlg(final Graph graph) {
         this.graph = graph;
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
-        return graph;
+    public Graph search(final DataModel dataSet, final Parameters parameters) {
+        return this.graph;
     }
 
     @Override
-    public Graph getComparisonGraph(Graph graph) {
+    public Graph getComparisonGraph(final Graph graph) {
         return new EdgeListGraph(graph);
     }
 
@@ -58,7 +58,7 @@ public class SingleGraphAlg implements Algorithm, HasKnowledge {
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(final IKnowledge knowledge) {
     }
 
 }

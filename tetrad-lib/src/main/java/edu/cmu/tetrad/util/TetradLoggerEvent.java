@@ -41,14 +41,14 @@ public class TetradLoggerEvent extends EventObject {
      * @param source - The source
      * @param config - The config, may be null.
      */
-    public TetradLoggerEvent(Object source, TetradLoggerConfig config) {
+    public TetradLoggerEvent(final Object source, final TetradLoggerConfig config) {
         super(source);
         this.config = config;
     }
 
 
     public TetradLoggerConfig getTetradLoggerConfig() {
-        return config;
+        return this.config;
     }
 
 

@@ -42,55 +42,55 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore {
 
     private final int[] numCategories;
 
-    public BDeuScore(DataSet dataSet) {
+    public BDeuScore(final DataSet dataSet) {
         if (dataSet == null) {
             throw new NullPointerException("Data was not provided.");
         }
 
         if (dataSet instanceof BoxDataSet && ((BoxDataSet) dataSet).getDataBox() instanceof VerticalIntDataBox) {
-            DataBox dataBox = ((BoxDataSet) dataSet).getDataBox();
-            variables = dataSet.getVariables();
-            VerticalIntDataBox box = (VerticalIntDataBox) dataBox;
+            final DataBox dataBox = ((BoxDataSet) dataSet).getDataBox();
+            this.variables = dataSet.getVariables();
+            final VerticalIntDataBox box = (VerticalIntDataBox) dataBox;
 
-            data = box.getVariableVectors();
-            sampleSize = box.numRows();
+            this.data = box.getVariableVectors();
+            this.sampleSize = box.numRows();
         } else {
-            data = new int[dataSet.getNumColumns()][];
-            variables = dataSet.getVariables();
+            this.data = new int[dataSet.getNumColumns()][];
+            this.variables = dataSet.getVariables();
 
             for (int j = 0; j < dataSet.getNumColumns(); j++) {
-                data[j] = new int[dataSet.getNumRows()];
+                this.data[j] = new int[dataSet.getNumRows()];
 
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
-                    data[j][i] = dataSet.getInt(i, j);
+                    this.data[j][i] = dataSet.getInt(i, j);
                 }
             }
 
-            sampleSize = dataSet.getNumRows();
+            this.sampleSize = dataSet.getNumRows();
         }
 
-        List<Node> variables = dataSet.getVariables();
-        numCategories = new int[variables.size()];
+        final List<Node> variables = dataSet.getVariables();
+        this.numCategories = new int[variables.size()];
         for (int i = 0; i < variables.size(); i++) {
-            numCategories[i] = (this.getVariable(i)).getNumCategories();
+            this.numCategories[i] = (getVariable(i)).getNumCategories();
         }
     }
 
-    private DiscreteVariable getVariable(int i) {
-        return (DiscreteVariable) variables.get(i);
+    private DiscreteVariable getVariable(final int i) {
+        return (DiscreteVariable) this.variables.get(i);
     }
 
     @Override
-    public double localScore(int node, int[] parents) {
+    public double localScore(final int node, final int[] parents) {
 
         // Number of categories for node.
-        int c = numCategories[node];
+        final int c = this.numCategories[node];
 
         // Numbers of categories of parents.
-        int[] dims = new int[parents.length];
+        final int[] dims = new int[parents.length];
 
         for (int p = 0; p < parents.length; p++) {
-            dims[p] = numCategories[parents[p]];
+            dims[p] = this.numCategories[parents[p]];
         }
 
         // Number of parent states.
@@ -101,34 +101,34 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore {
         }
 
         // Conditional cell coefs of data for node given parents(node).
-        int[][] n_jk = new int[r][c];
-        int[] n_j = new int[r];
+        final int[][] n_jk = new int[r][c];
+        final int[] n_j = new int[r];
 
-        int[] parentValues = new int[parents.length];
+        final int[] parentValues = new int[parents.length];
 
-        int[][] myParents = new int[parents.length][];
+        final int[][] myParents = new int[parents.length][];
         for (int i = 0; i < parents.length; i++) {
-            myParents[i] = data[parents[i]];
+            myParents[i] = this.data[parents[i]];
         }
 
-        int[] myChild = data[node];
+        final int[] myChild = this.data[node];
 
         int N = 0;
 
         ROW:
-        for (int i = 0; i < sampleSize; i++) {
+        for (int i = 0; i < this.sampleSize; i++) {
             for (int p = 0; p < parents.length; p++) {
                 if (myParents[p][i] == -99) continue ROW;
                 parentValues[p] = myParents[p][i];
             }
 
-            int childValue = myChild[i];
+            final int childValue = myChild[i];
 
             if (childValue == -99) {
                 continue;
             }
 
-            int rowIndex = getRowIndex(dims, parentValues);
+            final int rowIndex = BDeuScore.getRowIndex(dims, parentValues);
 
             n_jk[rowIndex][childValue]++;
             n_j[rowIndex]++;
@@ -138,10 +138,10 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore {
         //Finally, compute the score
         double score = 0.0;
 
-        score += this.getPriorForStructure(parents.length, N);
+        score += getPriorForStructure(parents.length, N);
 
-        double cellPrior = this.getSamplePrior() / (c * r);
-        double rowPrior = this.getSamplePrior() / r;
+        final double cellPrior = getSamplePrior() / (c * r);
+        final double rowPrior = getSamplePrior() / r;
 
         for (int j = 0; j < r; j++) {
             score -= Gamma.logGamma(rowPrior + n_j[j]);
@@ -157,52 +157,52 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore {
         return score;
     }
 
-    private double getPriorForStructure(int numParents, int N) {
-        double e = this.getStructurePrior();
-        int vm = N - 1;
+    private double getPriorForStructure(final int numParents, final int N) {
+        final double e = getStructurePrior();
+        final int vm = N - 1;
         return numParents * Math.log(e / (vm)) + (vm - numParents) * Math.log(1.0 - (e / (vm)));
     }
 
     @Override
-    public double localScoreDiff(int x, int y, int[] z) {
-        return this.localScore(y, this.append(z, x)) - this.localScore(y, z);
+    public double localScoreDiff(final int x, final int y, final int[] z) {
+        return localScore(y, append(z, x)) - localScore(y, z);
     }
 
     @Override
-    public double localScoreDiff(int x, int y) {
-        return this.localScore(y, x) - this.localScore(y);
+    public double localScoreDiff(final int x, final int y) {
+        return localScore(y, x) - localScore(y);
     }
 
-    int[] append(int[] parents, int extra) {
-        int[] all = new int[parents.length + 1];
+    int[] append(final int[] parents, final int extra) {
+        final int[] all = new int[parents.length + 1];
         System.arraycopy(parents, 0, all, 0, parents.length);
         all[parents.length] = extra;
         return all;
     }
 
     @Override
-    public double localScore(int node, int parent) {
-        return this.localScore(node, new int[]{parent});
+    public double localScore(final int node, final int parent) {
+        return localScore(node, new int[]{parent});
     }
 
     @Override
-    public double localScore(int node) {
-        return this.localScore(node, new int[0]);
+    public double localScore(final int node) {
+        return localScore(node, new int[0]);
     }
 
     @Override
     public List<Node> getVariables() {
-        return variables;
+        return this.variables;
     }
 
     public int getSampleSize() {
-        return sampleSize;
+        return this.sampleSize;
     }
 
     /**
      * Must be called directly after the corresponding scoring call.
      */
-    public boolean isEffectEdge(double bump) {
+    public boolean isEffectEdge(final double bump) {
         return bump > 0;//lastBumpThreshold;
     }
 
@@ -211,7 +211,7 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore {
         throw new UnsupportedOperationException();
     }
 
-    private static int getRowIndex(int[] dim, int[] values) {
+    private static int getRowIndex(final int[] dim, final int[] values) {
         int rowIndex = 0;
         for (int i = 0; i < dim.length; i++) {
             rowIndex *= dim[i];
@@ -222,25 +222,25 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore {
 
     @Override
     public double getStructurePrior() {
-        return structurePrior;
+        return this.structurePrior;
     }
 
     @Override
     public double getSamplePrior() {
-        return samplePrior;
+        return this.samplePrior;
     }
 
     @Override
-    public void setStructurePrior(double structurePrior) {
+    public void setStructurePrior(final double structurePrior) {
         this.structurePrior = structurePrior;
     }
 
     @Override
-    public void setSamplePrior(double samplePrior) {
+    public void setSamplePrior(final double samplePrior) {
         this.samplePrior = samplePrior;
     }
 
-    public void setVariables(List<Node> variables) {
+    public void setVariables(final List<Node> variables) {
         for (int i = 0; i < variables.size(); i++) {
             if (!variables.get(i).getName().equals(this.variables.get(i).getName())) {
                 throw new IllegalArgumentException("Variable in index " + (i + 1) + " does not have the same name " +
@@ -251,8 +251,8 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore {
         this.variables = variables;
     }
 
-    public Node getVariable(String targetName) {
-        for (Node node : variables) {
+    public Node getVariable(final String targetName) {
+        for (final Node node : this.variables) {
             if (node.getName().equals(targetName)) {
                 return node;
             }
@@ -263,17 +263,17 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore {
 
     @Override
     public String toString() {
-        NumberFormat nf = new DecimalFormat("0.00");
-        return "BDeu Score SampP " + nf.format(samplePrior) + " StuctP " + nf.format(structurePrior);
+        final NumberFormat nf = new DecimalFormat("0.00");
+        return "BDeu Score SampP " + nf.format(this.samplePrior) + " StuctP " + nf.format(this.structurePrior);
     }
 
     @Override
     public int getMaxDegree() {
-        return (int) Math.ceil(Math.log(sampleSize));
+        return (int) Math.ceil(Math.log(this.sampleSize));
     }
 
     @Override
-    public boolean determines(List<Node> z, Node y) {
+    public boolean determines(final List<Node> z, final Node y) {
         return false;
     }
 }

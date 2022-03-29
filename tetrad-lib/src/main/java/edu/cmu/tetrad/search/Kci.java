@@ -89,21 +89,21 @@ public class Kci implements IndependenceTest, ScoreForFact {
      * @param data  The dataset to analyse. Must be continuous.
      * @param alpha The alpha value of the test.
      */
-    public Kci(DataSet data, double alpha) {
+    public Kci(final DataSet data, final double alpha) {
         this.data = data;
-        variables = data.getVariables();
-        int n = this.data.getNumRows();
+        this.variables = data.getVariables();
+        final int n = this.data.getNumRows();
 
-        Matrix Ones = new Matrix(n, 1);
+        final Matrix Ones = new Matrix(n, 1);
         for (int j = 0; j < n; j++) Ones.set(j, 0, 1);
 
         this.alpha = alpha;
-        p = -1;
+        this.p = -1;
 
-        hash = new HashMap<>();
+        this.hash = new HashMap<>();
 
-        for (int i = 0; i < this.getVariables().size(); i++) {
-            hash.put(this.getVariables().get(i), i);
+        for (int i = 0; i < getVariables().size(); i++) {
+            this.hash.put(getVariables().get(i), i);
         }
     }
 
@@ -112,7 +112,7 @@ public class Kci implements IndependenceTest, ScoreForFact {
     /**
      * Returns an Independence test for a subset of the variables.
      */
-    public IndependenceTest indTestSubset(List<Node> vars) {
+    public IndependenceTest indTestSubset(final List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
@@ -121,42 +121,42 @@ public class Kci implements IndependenceTest, ScoreForFact {
      * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are variables in the list returned by
      * getVariableNames().
      */
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
-        List<Node> allVars = new ArrayList<>();
+    public boolean isIndependent(final Node x, final Node y, final List<Node> z) {
+        final List<Node> allVars = new ArrayList<>();
         allVars.add(x);
         allVars.add(y);
         allVars.addAll(z);
 
-        List<Integer> rows = this.getRows(allVars, hash, data);
+        final List<Integer> rows = getRows(allVars, this.hash, this.data);
 
-        int[] _cols = new int[allVars.size()];
-        for (int i = 0; i < _cols.length; i++) _cols[i] = hash.get(allVars.get(i));
+        final int[] _cols = new int[allVars.size()];
+        for (int i = 0; i < _cols.length; i++) _cols[i] = this.hash.get(allVars.get(i));
 
-        int[] _rows = new int[rows.size()];
+        final int[] _rows = new int[rows.size()];
         for (int i = 0; i < rows.size(); i++) _rows[i] = rows.get(i);
 
         DataSet data = this.data.subsetRowsColumns(_rows, _cols);
         data = DataUtils.standardizeData(data);
-        double[][] _data = data.getDoubleData().transpose().toArray();
+        final double[][] _data = data.getDoubleData().transpose().toArray();
 
-        Map<Node, Integer> hash = new HashMap<>();
+        final Map<Node, Integer> hash = new HashMap<>();
         for (int i = 0; i < allVars.size(); i++) hash.put(allVars.get(i), i);
 
-        int N = data.getNumRows();
+        final int N = data.getNumRows();
 
-        Matrix Ones = new Matrix(N, 1);
+        final Matrix Ones = new Matrix(N, 1);
         for (int j = 0; j < N; j++) Ones.set(j, 0, 1);
 
-        Matrix I = Matrix.identity(N);
+        final Matrix I = Matrix.identity(N);
 
-        Matrix H = Matrix.identity(N).minus(Ones.times(Ones.transpose()).scalarMult(1.0 / N));
+        final Matrix H = Matrix.identity(N).minus(Ones.times(Ones.transpose()).scalarMult(1.0 / N));
 
-        double[] h = new double[data.getNumColumns()];
+        final double[] h = new double[data.getNumColumns()];
         int count = 0;
 
         double sum = 0.0;
         for (int i = 0; i < data.getNumColumns(); i++) {
-            h[i] = this.h(allVars.get(i), _data, hash);
+            h[i] = h(allVars.get(i), _data, hash);
 
             if (h[i] != 0) {
                 sum += h[i];
@@ -164,36 +164,36 @@ public class Kci implements IndependenceTest, ScoreForFact {
             }
         }
 
-        double avg = sum / count;
+        final double avg = sum / count;
 
         for (int i = 0; i < h.length; i++) {
             if (h[i] == 0) h[i] = avg;
         }
 
 
-        boolean independent;
+        final boolean independent;
 
         if (Thread.currentThread().isInterrupted()) {
             return false;
         }
 
-        IndependenceFact fact = new IndependenceFact(x, y, z);
+        final IndependenceFact fact = new IndependenceFact(x, y, z);
 
-        if (facts.get(fact) != null) {
-            independent = facts.get(fact);
-            p = pValues.get(fact);
+        if (this.facts.get(fact) != null) {
+            independent = this.facts.get(fact);
+            this.p = this.pValues.get(fact);
         } else {
             if (z.isEmpty()) {
-                independent = this.isIndependentUnconditional(x, y, fact, _data, h, N, hash);
+                independent = isIndependentUnconditional(x, y, fact, _data, h, N, hash);
             } else {
-                independent = this.isIndependentConditional(x, y, z, fact, _data, N, H, I, h, hash);
+                independent = isIndependentConditional(x, y, z, fact, _data, N, H, I, h, hash);
             }
 
-            facts.put(fact, independent);
+            this.facts.put(fact, independent);
         }
 
-        if (verbose) {
-            double p = this.getPValue();
+        if (this.verbose) {
+            final double p = getPValue();
 
             if (independent) {
                 System.out.println(fact + " INDEPENDENT p = " + p);
@@ -213,10 +213,10 @@ public class Kci implements IndependenceTest, ScoreForFact {
      * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are variables in the list returned by
      * getVariableNames().
      */
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        LinkedList<Node> thez = new LinkedList<>();
+    public boolean isIndependent(final Node x, final Node y, final Node... z) {
+        final LinkedList<Node> thez = new LinkedList<>();
         Collections.addAll(thez, z);
-        return this.isIndependent(x, y, thez);
+        return isIndependent(x, y, thez);
     }
 
     /**
@@ -224,8 +224,8 @@ public class Kci implements IndependenceTest, ScoreForFact {
      * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are variables in the list returned by
      * getVariableNames().
      */
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        return !this.isIndependent(x, y, z);
+    public boolean isDependent(final Node x, final Node y, final List<Node> z) {
+        return !isIndependent(x, y, z);
     }
 
     /**
@@ -233,10 +233,10 @@ public class Kci implements IndependenceTest, ScoreForFact {
      * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are variables in the list returned by
      * getVariableNames().
      */
-    public boolean isDependent(Node x, Node y, Node... z) {
-        LinkedList<Node> thez = new LinkedList<>();
+    public boolean isDependent(final Node x, final Node y, final Node... z) {
+        final LinkedList<Node> thez = new LinkedList<>();
         Collections.addAll(thez, z);
-        return this.isDependent(x, y, thez);
+        return isDependent(x, y, thez);
     }
 
     /**
@@ -244,7 +244,7 @@ public class Kci implements IndependenceTest, ScoreForFact {
      * not meaningful for tis test.
      */
     public double getPValue() {
-        return p;
+        return this.p;
     }
 
     /**
@@ -252,27 +252,27 @@ public class Kci implements IndependenceTest, ScoreForFact {
      * relations.
      */
     public List<Node> getVariables() {
-        return variables;
+        return this.variables;
     }
 
     /**
      * Returns the variable by the given name.
      */
-    public Node getVariable(String name) {
-        return data.getVariable(name);
+    public Node getVariable(final String name) {
+        return this.data.getVariable(name);
     }
 
     /**
      * Returns the list of names for the variables in getNodesInEvidence.
      */
     public List<String> getVariableNames() {
-        return data.getVariableNames();
+        return this.data.getVariableNames();
     }
 
     /**
      * Returns true if y is determined the variable in z.
      */
-    public boolean determines(List<Node> z, Node y) {
+    public boolean determines(final List<Node> z, final Node y) {
         throw new UnsupportedOperationException();
     }
 
@@ -282,13 +282,13 @@ public class Kci implements IndependenceTest, ScoreForFact {
      * @throws UnsupportedOperationException if there is no significance level.
      */
     public double getAlpha() {
-        return alpha;
+        return this.alpha;
     }
 
     /**
      * Sets the significance level.
      */
-    public void setAlpha(double alpha) {
+    public void setAlpha(final double alpha) {
         this.alpha = alpha;
     }
 
@@ -296,7 +296,7 @@ public class Kci implements IndependenceTest, ScoreForFact {
      * @return The data model for the independence test.
      */
     public DataModel getData() {
-        return data;
+        return this.data;
     }
 
 
@@ -305,13 +305,13 @@ public class Kci implements IndependenceTest, ScoreForFact {
     }
 
     public List<DataSet> getDataSets() {
-        LinkedList<DataSet> L = new LinkedList<>();
-        L.add(data);
+        final LinkedList<DataSet> L = new LinkedList<>();
+        L.add(this.data);
         return L;
     }
 
     public int getSampleSize() {
-        return data.getNumRows();
+        return this.data.getNumRows();
     }
 
     public List<Matrix> getCovMatrices() {
@@ -319,55 +319,55 @@ public class Kci implements IndependenceTest, ScoreForFact {
     }
 
     public double getScore() {
-        return this.getAlpha() - this.getPValue();
+        return getAlpha() - getPValue();
     }
 
     @Override
-    public double getScoreForFact(IndependenceFact fact) {
-        return this.getAlpha() - pValues.get(fact);
+    public double getScoreForFact(final IndependenceFact fact) {
+        return getAlpha() - this.pValues.get(fact);
     }
 
     public boolean isApproximate() {
-        return approximate;
+        return this.approximate;
     }
 
-    public void setApproximate(boolean approximate) {
+    public void setApproximate(final boolean approximate) {
         this.approximate = approximate;
     }
 
     private double getWidthMultiplier() {
-        return widthMultiplier;
+        return this.widthMultiplier;
     }
 
-    public void setWidthMultiplier(double widthMultiplier) {
+    public void setWidthMultiplier(final double widthMultiplier) {
         if (widthMultiplier <= 0) throw new IllegalStateException("Width must be > 0");
         this.widthMultiplier = widthMultiplier;
     }
 
     private int getNumBootstraps() {
-        return numBootstraps;
+        return this.numBootstraps;
     }
 
-    public void setNumBootstraps(int numBootstraps) {
+    public void setNumBootstraps(final int numBootstraps) {
         if (numBootstraps < 1) throw new IllegalArgumentException("Num bootstraps should be >= 1: " + numBootstraps);
         this.numBootstraps = numBootstraps;
     }
 
 
     public double getThreshold() {
-        return threshold;
+        return this.threshold;
     }
 
-    public void setThreshold(double threshold) {
+    public void setThreshold(final double threshold) {
         if (threshold < 0.0) throw new IllegalArgumentException("Threshold must be >= 0.0: " + threshold);
         this.threshold = threshold;
     }
 
     public double getEpsilon() {
-        return epsilon;
+        return this.epsilon;
     }
 
-    public void setEpsilon(double epsilon) {
+    public void setEpsilon(final double epsilon) {
         this.epsilon = epsilon;
     }
 
@@ -378,35 +378,35 @@ public class Kci implements IndependenceTest, ScoreForFact {
      *
      * @return true just in case independence holds.
      */
-    private boolean isIndependentUnconditional(Node x, Node y, IndependenceFact fact, double[][] _data,
-                                               double[] _h, int N,
-                                               Map<Node, Integer> hash) {
-        Matrix Ones = new Matrix(N, 1);
+    private boolean isIndependentUnconditional(final Node x, final Node y, final IndependenceFact fact, final double[][] _data,
+                                               final double[] _h, final int N,
+                                               final Map<Node, Integer> hash) {
+        final Matrix Ones = new Matrix(N, 1);
         for (int j = 0; j < N; j++) Ones.set(j, 0, 1);
 
-        Matrix H = Matrix.identity(N).minus(Ones.times(Ones.transpose()).scalarMult(1.0 / N));
+        final Matrix H = Matrix.identity(N).minus(Ones.times(Ones.transpose()).scalarMult(1.0 / N));
 
-        Matrix kx = this.center(this.kernelMatrix(_data, x, null, this.getWidthMultiplier(), hash, N, _h), H);
-        Matrix ky = this.center(this.kernelMatrix(_data, y, null, this.getWidthMultiplier(), hash, N, _h), H);
+        final Matrix kx = center(kernelMatrix(_data, x, null, getWidthMultiplier(), hash, N, _h), H);
+        final Matrix ky = center(kernelMatrix(_data, y, null, getWidthMultiplier(), hash, N, _h), H);
 
         try {
-            if (this.isApproximate()) {
-                double sta = kx.times(ky).trace();
-                double mean_appr = kx.trace() * ky.trace() / N;
-                double var_appr = 2 * kx.times(kx).trace() * ky.times(ky).trace() / (N * N);
-                double k_appr = mean_appr * mean_appr / var_appr;
-                double theta_appr = var_appr / mean_appr;
-                double p = 1.0 - new GammaDistribution(k_appr, theta_appr).cumulativeProbability(sta);
-                pValues.put(fact, p);
+            if (isApproximate()) {
+                final double sta = kx.times(ky).trace();
+                final double mean_appr = kx.trace() * ky.trace() / N;
+                final double var_appr = 2 * kx.times(kx).trace() * ky.times(ky).trace() / (N * N);
+                final double k_appr = mean_appr * mean_appr / var_appr;
+                final double theta_appr = var_appr / mean_appr;
+                final double p = 1.0 - new GammaDistribution(k_appr, theta_appr).cumulativeProbability(sta);
+                this.pValues.put(fact, p);
                 this.p = p;
-                return p > alpha;
+                return p > this.alpha;
             } else {
-                return this.theorem4(kx, ky, fact, N);
+                return theorem4(kx, ky, fact, N);
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             e.printStackTrace();
-            pValues.put(fact, 0.0);
-            facts.put(fact, false);
+            this.pValues.put(fact, 0.0);
+            this.facts.put(fact, false);
             return false;
         }
     }
@@ -416,50 +416,50 @@ public class Kci implements IndependenceTest, ScoreForFact {
      *
      * @return true just in case independence holds.
      */
-    private boolean isIndependentConditional(Node x, Node y, List<Node> z, IndependenceFact fact, double[][] _data,
-                                             int N, Matrix H, Matrix I, double[] _h, Map<Node, Integer> hash) {
-        Matrix kx;
-        Matrix ky;
+    private boolean isIndependentConditional(final Node x, final Node y, final List<Node> z, final IndependenceFact fact, final double[][] _data,
+                                             final int N, final Matrix H, final Matrix I, final double[] _h, final Map<Node, Integer> hash) {
+        final Matrix kx;
+        final Matrix ky;
 
         try {
-            Matrix KXZ = this.center(this.kernelMatrix(_data, x, z, this.getWidthMultiplier(), hash, N, _h), H);
-            Matrix Ky = this.center(this.kernelMatrix(_data, y, null, this.getWidthMultiplier(), hash, N, _h), H);
-            Matrix KZ = this.center(this.kernelMatrix(_data, null, z, this.getWidthMultiplier(), hash, N, _h), H);
+            final Matrix KXZ = center(kernelMatrix(_data, x, z, getWidthMultiplier(), hash, N, _h), H);
+            final Matrix Ky = center(kernelMatrix(_data, y, null, getWidthMultiplier(), hash, N, _h), H);
+            final Matrix KZ = center(kernelMatrix(_data, null, z, getWidthMultiplier(), hash, N, _h), H);
 
-            Matrix Rz = (KZ.plus(I.scalarMult(epsilon)).inverse().scalarMult(epsilon));
+            final Matrix Rz = (KZ.plus(I.scalarMult(this.epsilon)).inverse().scalarMult(this.epsilon));
 
-            kx = this.symmetrized(Rz.times(KXZ).times(Rz.transpose()));
-            ky = this.symmetrized(Rz.times(Ky).times(Rz.transpose()));
+            kx = symmetrized(Rz.times(KXZ).times(Rz.transpose()));
+            ky = symmetrized(Rz.times(Ky).times(Rz.transpose()));
 
-            return this.proposition5(kx, ky, fact, N);
-        } catch (Exception e) {
+            return proposition5(kx, ky, fact, N);
+        } catch (final Exception e) {
             e.printStackTrace();
-            pValues.put(fact, 0.0);
-            facts.put(fact, false);
+            this.pValues.put(fact, 0.0);
+            this.facts.put(fact, false);
             return false;
         }
     }
 
-    private boolean theorem4(Matrix kx, Matrix ky, IndependenceFact fact, int N) {
+    private boolean theorem4(final Matrix kx, final Matrix ky, final IndependenceFact fact, final int N) {
 
-        double T = (1.0 / N) * (kx.times(ky).trace());
+        final double T = (1.0 / N) * (kx.times(ky).trace());
 
         // Eigen decomposition of kx and ky.
-        Eigendecomposition eigendecompositionx = new Eigendecomposition(kx).invoke();
-        List<Double> evx = eigendecompositionx.getTopEigenvalues();
+        final Eigendecomposition eigendecompositionx = new Eigendecomposition(kx).invoke();
+        final List<Double> evx = eigendecompositionx.getTopEigenvalues();
 
-        Eigendecomposition eigendecompositiony = new Eigendecomposition(ky).invoke();
-        List<Double> evy = eigendecompositiony.getTopEigenvalues();
+        final Eigendecomposition eigendecompositiony = new Eigendecomposition(ky).invoke();
+        final List<Double> evy = eigendecompositiony.getTopEigenvalues();
 
         // Calculate formula (9).
         int sum = 0;
 
-        for (int j = 0; j < this.getNumBootstraps(); j++) {
+        for (int j = 0; j < getNumBootstraps(); j++) {
             double tui = 0.0;
 
-            for (double lambdax : evx) {
-                for (double lambday : evy) {
-                    tui += lambdax * lambday * this.getChisqSample();
+            for (final double lambdax : evx) {
+                for (final double lambday : evy) {
+                    tui += lambdax * lambday * getChisqSample();
                 }
             }
 
@@ -469,10 +469,10 @@ public class Kci implements IndependenceTest, ScoreForFact {
         }
 
         // Calculate p.
-        double p = sum / (double) this.getNumBootstraps();
-        pValues.put(fact, p);
+        final double p = sum / (double) getNumBootstraps();
+        this.pValues.put(fact, p);
 
-        boolean independent = p > alpha;
+        final boolean independent = p > this.alpha;
 
         if (independent) {
             System.out.println(fact + " INDEPENDENT p = " + p);
@@ -486,23 +486,23 @@ public class Kci implements IndependenceTest, ScoreForFact {
         return independent;
     }
 
-    private boolean proposition5(Matrix kx, Matrix ky, IndependenceFact fact, int N) {
-        double T = (1.0 / N) * kx.times(ky).trace();
+    private boolean proposition5(final Matrix kx, final Matrix ky, final IndependenceFact fact, final int N) {
+        final double T = (1.0 / N) * kx.times(ky).trace();
 
-        Eigendecomposition eigendecompositionx = new Eigendecomposition(kx).invoke();
-        Matrix vx = eigendecompositionx.getV();
-        Matrix dx = eigendecompositionx.getD();
+        final Eigendecomposition eigendecompositionx = new Eigendecomposition(kx).invoke();
+        final Matrix vx = eigendecompositionx.getV();
+        final Matrix dx = eigendecompositionx.getD();
 
-        Eigendecomposition eigendecompositiony = new Eigendecomposition(ky).invoke();
-        Matrix vy = eigendecompositiony.getV();
-        Matrix dy = eigendecompositiony.getD();
+        final Eigendecomposition eigendecompositiony = new Eigendecomposition(ky).invoke();
+        final Matrix vy = eigendecompositiony.getV();
+        final Matrix dy = eigendecompositiony.getD();
 
         // VD
-        Matrix vdx = vx.times(dx);
-        Matrix vdy = vy.times(dy);
+        final Matrix vdx = vx.times(dx);
+        final Matrix vdy = vy.times(dy);
 
-        int prod = vx.columns() * vy.columns();
-        Matrix UU = new Matrix(N, prod);
+        final int prod = vx.columns() * vy.columns();
+        final Matrix UU = new Matrix(N, prod);
 
         // stack
         for (int i = 0; i < vx.columns(); i++) {
@@ -513,31 +513,31 @@ public class Kci implements IndependenceTest, ScoreForFact {
             }
         }
 
-        Matrix uuprod = prod > N ? UU.times(UU.transpose()) : UU.transpose().times(UU);
+        final Matrix uuprod = prod > N ? UU.times(UU.transpose()) : UU.transpose().times(UU);
 
-        if (this.isApproximate()) {
-            double sta = kx.times(ky).trace();
-            double mean_appr = uuprod.trace();
-            double var_appr = 2.0 * uuprod.times(uuprod).trace();
-            double k_appr = mean_appr * mean_appr / var_appr;
-            double theta_appr = var_appr / mean_appr;
-            double p = 1.0 - new GammaDistribution(k_appr, theta_appr).cumulativeProbability(sta);
-            pValues.put(fact, p);
-            return p > this.getAlpha();
+        if (isApproximate()) {
+            final double sta = kx.times(ky).trace();
+            final double mean_appr = uuprod.trace();
+            final double var_appr = 2.0 * uuprod.times(uuprod).trace();
+            final double k_appr = mean_appr * mean_appr / var_appr;
+            final double theta_appr = var_appr / mean_appr;
+            final double p = 1.0 - new GammaDistribution(k_appr, theta_appr).cumulativeProbability(sta);
+            this.pValues.put(fact, p);
+            return p > getAlpha();
         } else {
 
             // Get top eigenvalues of that.
-            Eigendecomposition eigendecompositionu = new Eigendecomposition(uuprod).invoke();
-            List<Double> eigenu = eigendecompositionu.getTopEigenvalues();
+            final Eigendecomposition eigendecompositionu = new Eigendecomposition(uuprod).invoke();
+            final List<Double> eigenu = eigendecompositionu.getTopEigenvalues();
 
             // Calculate formulas (13) and (14).
             int sum = 0;
 
-            for (int j = 0; j < this.getNumBootstraps(); j++) {
+            for (int j = 0; j < getNumBootstraps(); j++) {
                 double s = 0.0;
 
-                for (double lambdaStar : eigenu) {
-                    s += lambdaStar * this.getChisqSample();
+                for (final double lambdaStar : eigenu) {
+                    s += lambdaStar * getChisqSample();
                 }
 
                 s *= 1.0 / N;
@@ -545,11 +545,11 @@ public class Kci implements IndependenceTest, ScoreForFact {
                 if (s > T) sum++;
             }
 
-            double p = sum / (double) this.getNumBootstraps();
-            pValues.put(fact, p);
+            final double p = sum / (double) getNumBootstraps();
+            this.pValues.put(fact, p);
             this.p = p;
 
-            boolean independent = p > alpha;
+            final boolean independent = p > this.alpha;
 
             if (independent) {
                 System.out.println(fact + " INDEPENDENT p = " + p);
@@ -564,38 +564,38 @@ public class Kci implements IndependenceTest, ScoreForFact {
         }
     }
 
-    private List<Integer> series(int size) {
-        List<Integer> series = new ArrayList<>();
+    private List<Integer> series(final int size) {
+        final List<Integer> series = new ArrayList<>();
         for (int i = 0; i < size; i++) series.add(i);
         return series;
     }
 
-    private Matrix center(Matrix K, Matrix H) {
+    private Matrix center(final Matrix K, final Matrix H) {
         return H.times(K).times(H);
     }
 
     private double getChisqSample() {
-        double z = normal.sample();
+        final double z = this.normal.sample();
         return z * z;
     }
 
     // Optimal bandwidth qsuggested by Bowman and Azzalini (1997) q.31,
     // using MAD.
-    private double h(Node x, double[][] _data, Map<Node, Integer> hash) {
-        double[] xCol = _data[hash.get(x)];
-        double[] g = new double[xCol.length];
-        double median = median(xCol);
+    private double h(final Node x, final double[][] _data, final Map<Node, Integer> hash) {
+        final double[] xCol = _data[hash.get(x)];
+        final double[] g = new double[xCol.length];
+        final double median = median(xCol);
         for (int j = 0; j < xCol.length; j++) g[j] = abs(xCol[j] - median);
-        double mad = median(g);
+        final double mad = median(g);
         return (1.4826 * mad) * pow((4.0 / 3.0) / xCol.length, 0.2);
     }
 
-    private List<Integer> getTopIndices(List<Double> prod, List<Integer> allIndices, double threshold) {
-        double maxEig = prod.get(allIndices.get(0));
+    private List<Integer> getTopIndices(final List<Double> prod, final List<Integer> allIndices, final double threshold) {
+        final double maxEig = prod.get(allIndices.get(0));
 
-        List<Integer> indices = new ArrayList<>();
+        final List<Integer> indices = new ArrayList<>();
 
-        for (int i : allIndices) {
+        for (final int i : allIndices) {
             if (prod.get(i) > maxEig * threshold) {
                 indices.add(i);
             }
@@ -604,40 +604,40 @@ public class Kci implements IndependenceTest, ScoreForFact {
         return indices;
     }
 
-    private Matrix symmetrized(Matrix kx) {
+    private Matrix symmetrized(final Matrix kx) {
         return (kx.plus(kx.transpose())).scalarMult(0.5);
     }
 
-    private Matrix kernelMatrix(double[][] _data, Node x, List<Node> z, double widthMultiplier,
-                                Map<Node, Integer> hash,
-                                int N, double[] _h) {
+    private Matrix kernelMatrix(final double[][] _data, final Node x, final List<Node> z, final double widthMultiplier,
+                                final Map<Node, Integer> hash,
+                                final int N, final double[] _h) {
 
-        List<Integer> _z = new ArrayList<>();
+        final List<Integer> _z = new ArrayList<>();
 
         if (x != null) {
             _z.add(hash.get(x));
         }
 
         if (z != null) {
-            for (Node z2 : z) {
+            for (final Node z2 : z) {
                 _z.add(hash.get(z2));
             }
         }
 
-        double h = this.getH(_z, _h);
+        final double h = getH(_z, _h);
 
-        Matrix result = new Matrix(N, N);
+        final Matrix result = new Matrix(N, N);
 
         for (int i = 0; i < N; i++) {
             for (int j = i + 1; j < N; j++) {
-                double d = this.distance(_data, _z, i, j);
-                double k = this.kernelGaussian(d, widthMultiplier * h);
+                final double d = distance(_data, _z, i, j);
+                final double k = kernelGaussian(d, widthMultiplier * h);
                 result.set(i, j, k);
                 result.set(j, i, k);
             }
         }
 
-        double k = this.kernelGaussian(0, widthMultiplier * h);
+        final double k = kernelGaussian(0, widthMultiplier * h);
 
         for (int i = 0; i < N; i++) {
             result.set(i, i, k);
@@ -646,10 +646,10 @@ public class Kci implements IndependenceTest, ScoreForFact {
         return result;
     }
 
-    private double getH(List<Integer> _z, double[] _h) {
+    private double getH(final List<Integer> _z, final double[] _h) {
         double h = 0;
 
-        for (int c : _z) {
+        for (final int c : _z) {
             if (_h[c] > h) {
                 h = _h[c];
             }
@@ -659,7 +659,7 @@ public class Kci implements IndependenceTest, ScoreForFact {
         return h;
     }
 
-    private double kernelGaussian(double z, double width) {
+    private double kernelGaussian(double z, final double width) {
 //        if (width == 0) {
 //            throw new IllegalArgumentException("Width is zero.");
 //        }
@@ -669,11 +669,11 @@ public class Kci implements IndependenceTest, ScoreForFact {
     }
 
     // Euclidean distance.
-    private double distance(double[][] data, List<Integer> cols, int i, int j) {
+    private double distance(final double[][] data, final List<Integer> cols, final int i, final int j) {
         double sum = 0.0;
 
-        for (int col : cols) {
-            double d = (data[col][i] - data[col][j]) / 2;
+        for (final int col : cols) {
+            final double d = (data[col][i] - data[col][j]) / 2;
 
             if (!Double.isNaN(d)) {
                 sum += d * d;
@@ -685,11 +685,11 @@ public class Kci implements IndependenceTest, ScoreForFact {
 
     @Override
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     @Override
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 
@@ -699,7 +699,7 @@ public class Kci implements IndependenceTest, ScoreForFact {
         private Matrix V;
         private List<Double> topEigenvalues;
 
-        public Eigendecomposition(Matrix k) {
+        public Eigendecomposition(final Matrix k) {
             if (k.rows() == 0 || k.columns() == 0) {
                 throw new IllegalArgumentException("Empty matrix to decompose. Please don't do that to me.");
             }
@@ -708,43 +708,43 @@ public class Kci implements IndependenceTest, ScoreForFact {
         }
 
         public Matrix getD() {
-            return D;
+            return this.D;
         }
 
         public Matrix getV() {
-            return V;
+            return this.V;
         }
 
         public List<Double> getTopEigenvalues() {
-            return topEigenvalues;
+            return this.topEigenvalues;
         }
 
         public Eigendecomposition invoke() {
-            List<Integer> topIndices;
+            final List<Integer> topIndices;
 
-            EigenDecomposition ed = new EigenDecomposition(new BlockRealMatrix(k.toArray()));
+            final EigenDecomposition ed = new EigenDecomposition(new BlockRealMatrix(this.k.toArray()));
 
-            List<Double> evxAll = asList(ed.getRealEigenvalues());
-            List<Integer> indx = Kci.this.series(evxAll.size()); // 1 2 3...
-            topIndices = Kci.this.getTopIndices(evxAll, indx, Kci.this.getThreshold());
+            final List<Double> evxAll = asList(ed.getRealEigenvalues());
+            final List<Integer> indx = series(evxAll.size()); // 1 2 3...
+            topIndices = getTopIndices(evxAll, indx, getThreshold());
 
-            D = new Matrix(topIndices.size(), topIndices.size());
-
-            for (int i = 0; i < topIndices.size(); i++) {
-                D.set(i, i, sqrt(evxAll.get(topIndices.get(i))));
-            }
-
-            topEigenvalues = new ArrayList<>();
-
-            for (int t : topIndices) {
-                this.getTopEigenvalues().add(evxAll.get(t));
-            }
-
-            V = new Matrix(ed.getEigenvector(0).getDimension(), topIndices.size());
+            this.D = new Matrix(topIndices.size(), topIndices.size());
 
             for (int i = 0; i < topIndices.size(); i++) {
-                RealVector t = ed.getEigenvector(topIndices.get(i));
-                V.assignColumn(i, new Vector(t.toArray()));
+                this.D.set(i, i, sqrt(evxAll.get(topIndices.get(i))));
+            }
+
+            this.topEigenvalues = new ArrayList<>();
+
+            for (final int t : topIndices) {
+                getTopEigenvalues().add(evxAll.get(t));
+            }
+
+            this.V = new Matrix(ed.getEigenvector(0).getDimension(), topIndices.size());
+
+            for (int i = 0; i < topIndices.size(); i++) {
+                final RealVector t = ed.getEigenvector(topIndices.get(i));
+                this.V.assignColumn(i, new Vector(t.toArray()));
             }
 //            } else {
 //                SingularValueDecomposition svd = new SingularValueDecomposition(new BlockRealMatrix(k.toArray()));
@@ -782,12 +782,12 @@ public class Kci implements IndependenceTest, ScoreForFact {
     }
 
 
-    private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodesHash, DataSet dataSet) {
-        List<Integer> rows = new ArrayList<>();
+    private List<Integer> getRows(final List<Node> allVars, final Map<Node, Integer> nodesHash, final DataSet dataSet) {
+        final List<Integer> rows = new ArrayList<>();
 
         K:
         for (int k = 0; k < dataSet.getNumRows(); k++) {
-            for (Node node : allVars) {
+            for (final Node node : allVars) {
                 if (Double.isNaN(dataSet.getDouble(k, nodesHash.get(node)))) continue K;
             }
 

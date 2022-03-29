@@ -29,7 +29,6 @@ import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetradapp.model.IndTestModel;
 import edu.cmu.tetradapp.model.IndTestProducer;
 import edu.cmu.tetradapp.model.IndependenceResult;
-import edu.cmu.tetradapp.model.IndependenceResult.Type;
 import edu.cmu.tetradapp.util.IntTextField;
 
 import javax.swing.*;
@@ -66,39 +65,39 @@ public class IndependenceFactsEditor extends JPanel {
     private final NumberFormat nf = new DecimalFormat("0.0000");
     private boolean showPs;
 
-    public IndependenceFactsEditor(IndTestModel model) {
-        indTestProducers = model.getIndTestProducers();
+    public IndependenceFactsEditor(final IndTestModel model) {
+        this.indTestProducers = model.getIndTestProducers();
         this.model = model;
 
-        vars = new LinkedList<>();
-        textField = new JTextField(40);
-        textField.setEditable(false);
-        textField.setFont(new Font("Serif", Font.BOLD, 14));
-        textField.setBackground(new Color(250, 250, 250));
+        this.vars = new LinkedList<>();
+        this.textField = new JTextField(40);
+        this.textField.setEditable(false);
+        this.textField.setFont(new Font("Serif", Font.BOLD, 14));
+        this.textField.setBackground(new Color(250, 250, 250));
 
-        vars = model.getVars();
-        results = model.getResults();
-        if (results == null) {
-            results = new ArrayList<>();
+        this.vars = model.getVars();
+        this.results = model.getResults();
+        if (this.results == null) {
+            this.results = new ArrayList<>();
         }
 
-        this.resetText();
+        resetText();
 
-        if (indTestProducers.isEmpty()) {
+        if (this.indTestProducers.isEmpty()) {
             throw new IllegalArgumentException("At least one source must be specified");
         }
 
-        List<String> names = indTestProducers.get(0).getIndependenceTest().getVariableNames();
+        final List<String> names = this.indTestProducers.get(0).getIndependenceTest().getVariableNames();
 
-        for (int i = 1; i < indTestProducers.size(); i++) {
-            List<String> _names = indTestProducers.get(i).getIndependenceTest().getVariableNames();
+        for (int i = 1; i < this.indTestProducers.size(); i++) {
+            final List<String> _names = this.indTestProducers.get(i).getIndependenceTest().getVariableNames();
 
             if (!new HashSet<>(names).equals(new HashSet<>(_names))) {
                 throw new IllegalArgumentException("All sources must have the same variable names.");
             }
         }
 
-        this.buildGui();
+        buildGui();
     }
 
     //========================PUBLIC METHODS==========================//
@@ -108,23 +107,23 @@ public class IndependenceFactsEditor extends JPanel {
      */
     private void buildGui() {
 //        this.independenceTest = getIndTestProducer().getIndependenceTest();
-        List<String> varNames = new ArrayList<>();
+        final List<String> varNames = new ArrayList<>();
         varNames.add("VAR");
-        varNames.addAll(this.getDataVars());
+        varNames.addAll(getDataVars());
         varNames.add("?");
         varNames.add("+");
 
-        JComboBox<String> variableBox = new JComboBox<>();
-        DefaultComboBoxModel<String> aModel1 = new DefaultComboBoxModel<>(varNames.toArray(new String[0]));
+        final JComboBox<String> variableBox = new JComboBox<>();
+        final DefaultComboBoxModel<String> aModel1 = new DefaultComboBoxModel<>(varNames.toArray(new String[0]));
         aModel1.setSelectedItem("VAR");
         variableBox.setModel(aModel1);
 
         variableBox.addActionListener(e -> {
-            JComboBox box = (JComboBox) e.getSource();
+            final JComboBox box = (JComboBox) e.getSource();
 
-            String var = (String) box.getSelectedItem();
-            LinkedList<String> vars = this.getVars();
-            int size = vars.size();
+            final String var = (String) box.getSelectedItem();
+            final LinkedList<String> vars = getVars();
+            final int size = vars.size();
 
             if ("VAR".equals(var)) {
                 return;
@@ -143,35 +142,35 @@ public class IndependenceFactsEditor extends JPanel {
                 vars.add(var);
             }
 
-            this.resetText();
+            resetText();
 
             // This is a workaround to an introduced bug in the JDK whereby
             // repeated selections of the same item send out just one
             // action event.
-            DefaultComboBoxModel<String> aModel = new DefaultComboBoxModel<>(
+            final DefaultComboBoxModel<String> aModel = new DefaultComboBoxModel<>(
                     varNames.toArray(new String[0]));
             aModel.setSelectedItem("VAR");
             variableBox.setModel(aModel);
         });
 
-        JButton delete = new JButton("Delete");
+        final JButton delete = new JButton("Delete");
 
         delete.addActionListener(e -> {
-            if (!this.getVars().isEmpty()) {
-                this.getVars().removeLast();
-                this.resetText();
+            if (!getVars().isEmpty()) {
+                getVars().removeLast();
+                resetText();
             }
         });
 
-        textField.addKeyListener(new KeyAdapter() {
-            public void keyTyped(KeyEvent e) {
+        this.textField.addKeyListener(new KeyAdapter() {
+            public void keyTyped(final KeyEvent e) {
                 if ('?' == e.getKeyChar()) {
                     variableBox.setSelectedItem("?");
                 } else if ('+' == e.getKeyChar()) {
                     variableBox.setSelectedItem("+");
                 } else if ('\b' == e.getKeyChar()) {
-                    vars.removeLast();
-                    IndependenceFactsEditor.this.resetText();
+                    IndependenceFactsEditor.this.vars.removeLast();
+                    resetText();
                 }
 
                 e.consume();
@@ -179,110 +178,110 @@ public class IndependenceFactsEditor extends JPanel {
         });
 
         delete.addKeyListener(new KeyAdapter() {
-            public void keyTyped(KeyEvent e) {
+            public void keyTyped(final KeyEvent e) {
                 if ('?' == e.getKeyChar()) {
                     variableBox.setSelectedItem("?");
                 } else if ('+' == e.getKeyChar()) {
                     variableBox.setSelectedItem("+");
                 } else if ('\b' == e.getKeyChar()) {
-                    vars.removeLast();
-                    IndependenceFactsEditor.this.resetText();
+                    IndependenceFactsEditor.this.vars.removeLast();
+                    resetText();
                 }
             }
         });
 
         variableBox.addKeyListener(new KeyAdapter() {
-            public void keyTyped(KeyEvent e) {
+            public void keyTyped(final KeyEvent e) {
                 super.keyTyped(e);
 
                 if ('\b' == e.getKeyChar()) {
-                    vars.removeLast();
-                    IndependenceFactsEditor.this.resetText();
+                    IndependenceFactsEditor.this.vars.removeLast();
+                    resetText();
                 }
             }
         });
 
-        JButton list = new JButton("LIST");
+        final JButton list = new JButton("LIST");
         list.setFont(new Font("Dialog", Font.BOLD, 14));
 
-        list.addActionListener(e -> this.generateResults());
+        list.addActionListener(e -> generateResults());
 
-        Box b1 = Box.createVerticalBox();
+        final Box b1 = Box.createVerticalBox();
 
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("Compares conditional independence tests from the given sources: "));
         b2.add(Box.createHorizontalGlue());
         b1.add(b2);
 
-        for (int i = 0; i < indTestProducers.size(); i++) {
-            Box b2a = Box.createHorizontalBox();
-            b2a.add(new JLabel(indTestProducers.get(i).getName() + ": " + this.getIndependenceTest(i).toString()));
+        for (int i = 0; i < this.indTestProducers.size(); i++) {
+            final Box b2a = Box.createHorizontalBox();
+            b2a.add(new JLabel(this.indTestProducers.get(i).getName() + ": " + getIndependenceTest(i).toString()));
             b2a.add(Box.createHorizontalGlue());
             b1.add(b2a);
         }
 
         b1.add(Box.createVerticalStrut(5));
 
-        Box b3 = Box.createHorizontalBox();
-        b3.add(this.getTextField());
+        final Box b3 = Box.createHorizontalBox();
+        b3.add(getTextField());
         b3.add(variableBox);
         b3.add(delete);
         b1.add(b3);
         b1.add(Box.createVerticalStrut(10));
 
-        tableModel = new AbstractTableModel() {
-            public String getColumnName(int column) {
+        this.tableModel = new AbstractTableModel() {
+            public String getColumnName(final int column) {
                 if (column == 0) {
                     return "Index";
                 }
                 if (column == 1) {
                     return "Fact";
                 } else if (column >= 2) {
-                    return indTestProducers.get(column - 2).getName();//  "Judgment";
+                    return IndependenceFactsEditor.this.indTestProducers.get(column - 2).getName();//  "Judgment";
                 }
 
                 return null;
             }
 
             public int getColumnCount() {
-                return 2 + indTestProducers.size();
+                return 2 + IndependenceFactsEditor.this.indTestProducers.size();
             }
 
             public int getRowCount() {
-                return results.size();
+                return IndependenceFactsEditor.this.results.size();
             }
 
-            public Object getValueAt(int rowIndex, int columnIndex) {
-                if (rowIndex > results.size()) return null;
+            public Object getValueAt(final int rowIndex, final int columnIndex) {
+                if (rowIndex > IndependenceFactsEditor.this.results.size()) return null;
 
                 if (columnIndex == 0) {
-                    return results.get(rowIndex).get(0).getIndex();
+                    return IndependenceFactsEditor.this.results.get(rowIndex).get(0).getIndex();
                 }
                 if (columnIndex == 1) {
-                    return results.get(rowIndex).get(0).getFact();
+                    return IndependenceFactsEditor.this.results.get(rowIndex).get(0).getFact();
                 }
 
-                IndependenceResult independenceResult = results.get(rowIndex).get(columnIndex - 2);
+                final IndependenceResult independenceResult = IndependenceFactsEditor.this.results.get(rowIndex).get(columnIndex - 2);
 
-                for (int i = 0; i < indTestProducers.size(); i++) {
+                for (int i = 0; i < IndependenceFactsEditor.this.indTestProducers.size(); i++) {
                     if (columnIndex == i + 2) {
-                        if (IndependenceFactsEditor.this.getIndependenceTest(i) instanceof IndTestDSep) {
-                            if (independenceResult.getType() == Type.INDEPENDENT) {
+                        if (getIndependenceTest(i) instanceof IndTestDSep) {
+                            if (independenceResult.getType() == IndependenceResult.Type.INDEPENDENT) {
                                 return "D-SEPARATED";
-                            } else if (independenceResult.getType() == Type.DEPENDENT) {
+                            } else if (independenceResult.getType() == IndependenceResult.Type.DEPENDENT) {
                                 return "d-connected";
-                            } else if (independenceResult.getType() == Type.UNDETERMINED) {
+                            } else if (independenceResult.getType() == IndependenceResult.Type.UNDETERMINED) {
                                 return "*";
                             }
                         } else {
                             if (IndependenceFactsEditor.this.isShowPs()) {
                                 return nf.format(independenceResult.getpValue());
                             } else {
-                                if (independenceResult.getType() == Type.INDEPENDENT) {
+                                if (independenceResult.getType() == IndependenceResult.Type.INDEPENDENT) {
                                     return "INDEPENDENT";
-                                } else if (independenceResult.getType() == Type.DEPENDENT) {
+                                } else if (independenceResult.getType() == IndependenceResult.Type.DEPENDENT) {
                                     return "dependent";
-                                } else if (independenceResult.getType() == Type.UNDETERMINED) {
+                                } else if (independenceResult.getType() == IndependenceResult.Type.UNDETERMINED) {
                                     return "*";
                                 }
                             }
@@ -406,17 +405,17 @@ public class IndependenceFactsEditor extends JPanel {
                     int ind2;
                     int col = sortCol - 2;
 
-                    if (r1.get(col).getType() == Type.UNDETERMINED) {
+                    if (r1.get(col).getType() == IndependenceResult.Type.UNDETERMINED) {
                         ind1 = 0;
-                    } else if (r1.get(col).getType() == Type.DEPENDENT) {
+                    } else if (r1.get(col).getType() == IndependenceResult.Type.DEPENDENT) {
                         ind1 = 1;
                     } else {
                         ind1 = 2;
                     }
 
-                    if (r2.get(col).getType() == Type.UNDETERMINED) {
+                    if (r2.get(col).getType() == IndependenceResult.Type.UNDETERMINED) {
                         ind2 = 0;
-                    } else if (r2.get(col).getType() == Type.DEPENDENT) {
+                    } else if (r2.get(col).getType() == IndependenceResult.Type.DEPENDENT) {
                         ind2 = 1;
                     } else {
                         ind2 = 2;
@@ -633,35 +632,35 @@ public class IndependenceFactsEditor extends JPanel {
                             z.add(independenceTest.getVariable(vars4[i]));
                         }
 
-                        Type indep;
+                        IndependenceResult.Type indep;
                         double pValue;
 
                         try {
-                            indep = independenceTest.isIndependent(x, y, z) ? Type.INDEPENDENT : Type.DEPENDENT;
+                            indep = independenceTest.isIndependent(x, y, z) ? IndependenceResult.Type.INDEPENDENT : IndependenceResult.Type.DEPENDENT;
                             pValue = independenceTest.getPValue();
                         } catch (Exception e) {
-                            indep = Type.UNDETERMINED;
+                            indep = IndependenceResult.Type.UNDETERMINED;
                             pValue = Double.NaN;
                         }
 
-                        results.get(results.size() - 1).add(new IndependenceResult(results.size(),
-                                factString(x, y, z), indep, pValue));
+                        this.results.get(this.results.size() - 1).add(new IndependenceResult(this.results.size(),
+                                IndependenceFactsEditor.factString(x, y, z), indep, pValue));
                     }
 
-                    if (results.size() > this.getListLimit()) break LOOP;
+                    if (this.results.size() > getListLimit()) break LOOP;
                 }
             }
         }
 
-        model.setResults(results);
+        this.model.setResults(this.results);
 
-        tableModel.fireTableDataChanged();
+        this.tableModel.fireTableDataChanged();
     }
 
-    private static List<String> asList(int[] indices, List<String> nodes) {
-        List<String> list = new LinkedList<>();
+    private static List<String> asList(final int[] indices, final List<String> nodes) {
+        final List<String> list = new LinkedList<>();
 
-        for (int i : indices) {
+        for (final int i : indices) {
             list.add(nodes.get(i));
         }
 
@@ -669,26 +668,26 @@ public class IndependenceFactsEditor extends JPanel {
     }
 
     private LinkedList<String> getVars() {
-        return vars;
+        return this.vars;
     }
 
     private JTextField getTextField() {
-        return textField;
+        return this.textField;
     }
 
-    public IndependenceFactsEditor(LayoutManager layout, boolean isDoubleBuffered) {
+    public IndependenceFactsEditor(final LayoutManager layout, final boolean isDoubleBuffered) {
         super(layout, isDoubleBuffered);
     }
 
 
-    private static String factString(Node x, Node y, List<Node> condSet) {
-        StringBuilder sb = new StringBuilder();
+    private static String factString(final Node x, final Node y, final List<Node> condSet) {
+        final StringBuilder sb = new StringBuilder();
 
         sb.append(x.getName());
         sb.append(" _||_ ");
         sb.append(y.getName());
 
-        Iterator<Node> it = condSet.iterator();
+        final Iterator<Node> it = condSet.iterator();
 
         if (it.hasNext()) {
             sb.append(" | ");
@@ -703,15 +702,15 @@ public class IndependenceFactsEditor extends JPanel {
         return sb.toString();
     }
 
-    private IndependenceTest getIndependenceTest(int i) {
-        return indTestProducers.get(i).getIndependenceTest();
+    private IndependenceTest getIndependenceTest(final int i) {
+        return this.indTestProducers.get(i).getIndependenceTest();
     }
 
     private int getLastSortCol() {
-        return lastSortCol;
+        return this.lastSortCol;
     }
 
-    private void setLastSortCol(int lastSortCol) {
+    private void setLastSortCol(final int lastSortCol) {
         if (lastSortCol < 0 || lastSortCol > 4) {
             throw new IllegalArgumentException();
         }
@@ -720,10 +719,10 @@ public class IndependenceFactsEditor extends JPanel {
     }
 
     private int getSortDir() {
-        return sortDir;
+        return this.sortDir;
     }
 
-    private void setSortDir(int sortDir) {
+    private void setSortDir(final int sortDir) {
         if (!(sortDir == 1 || sortDir == -1)) {
             throw new IllegalArgumentException();
         }
@@ -735,7 +734,7 @@ public class IndependenceFactsEditor extends JPanel {
         return Preferences.userRoot().getInt("indFactsListLimit", 10000);
     }
 
-    private void setListLimit(int listLimit) {
+    private void setListLimit(final int listLimit) {
         if (listLimit < 1) {
             throw new IllegalArgumentException();
         }

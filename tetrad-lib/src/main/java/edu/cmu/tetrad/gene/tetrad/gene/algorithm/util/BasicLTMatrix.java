@@ -36,7 +36,7 @@ public abstract class BasicLTMatrix extends BasicMatrix {
     /**
      * Creates a lower triangular matrix with <code>nrows</code> rows.
      */
-    public BasicLTMatrix(String mname, int nrows) {
+    public BasicLTMatrix(final String mname, final int nrows) {
         super(mname, nrows);
     }
 
@@ -56,12 +56,12 @@ public abstract class BasicLTMatrix extends BasicMatrix {
      * may have less elements than the total needed to fill the matrix.  If it
      * has more elements an illegal argument exception will be generated.
      */
-    public BasicLTMatrix(String fname)
+    public BasicLTMatrix(final String fname)
             throws IOException {
         // Create and prepare stream tokenizer
-        File f = new File(fname);
-        BufferedReader in = new BufferedReader(new FileReader(f));
-        StreamTokenizer strmTok = new StreamTokenizer(in);
+        final File f = new File(fname);
+        final BufferedReader in = new BufferedReader(new FileReader(f));
+        final StreamTokenizer strmTok = new StreamTokenizer(in);
         strmTok.slashStarComments(true);
         strmTok.slashSlashComments(true);
         strmTok.parseNumbers();
@@ -75,7 +75,7 @@ public abstract class BasicLTMatrix extends BasicMatrix {
                     "First token does not contain 'LTMATRIX': " + strmTok.sval);
         }
         nt = strmTok.nextToken();
-        name = strmTok.sval;
+        this.name = strmTok.sval;
 
         // Read from file # of rows in the matrix
         nt = strmTok.nextToken();
@@ -83,26 +83,26 @@ public abstract class BasicLTMatrix extends BasicMatrix {
             throw new IllegalArgumentException(
                     "Error parsing # of rows: " + strmTok.sval);
         }
-        n = (int) strmTok.nval;
-        if (n <= 0) {
-            throw new IllegalArgumentException("Invalid # nodes " + n);
+        this.n = (int) strmTok.nval;
+        if (this.n <= 0) {
+            throw new IllegalArgumentException("Invalid # nodes " + this.n);
         }
 
-        initMatrixStorage();
+        this.initMatrixStorage();
         // Now read elements from the file
         int row = 0;
         int col = 0;
         while (true) {
             try {
                 nt = strmTok.nextToken();
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 break;
             }
             if (nt == StreamTokenizer.TT_EOF) {
                 break;
             }
             if (nt == StreamTokenizer.TT_NUMBER) {
-                setDoubleValue(row, col, strmTok.nval);
+                this.setDoubleValue(row, col, strmTok.nval);
                 if (col < row) {
                     col++;
                 } else {
@@ -122,12 +122,12 @@ public abstract class BasicLTMatrix extends BasicMatrix {
      * matrix
      */
     public String toString() {
-        String s = getClass().getName() + " " + name + "\n" + n +
+        String s = this.getClass().getName() + " " + this.name + "\n" + this.n +
                 " // <- Total # rows\n";
-        for (int r = 0; r < n; r++) {
+        for (int r = 0; r < this.n; r++) {
             //s = s + "/* "+r+" */  ";
             for (int c = 0; c <= r; c++) {
-                s = s + getDoubleValue(r, c) + " ";
+                s = s + this.getDoubleValue(r, c) + " ";
             }
             s = s + "\n";
 

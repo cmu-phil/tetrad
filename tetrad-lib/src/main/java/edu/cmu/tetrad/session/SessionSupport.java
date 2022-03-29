@@ -46,7 +46,7 @@ public class SessionSupport {
      * Constructs a new session support object for the given source object. The
      * source object will be stamped on all fired events.
      */
-    public SessionSupport(Object source) {
+    public SessionSupport(final Object source) {
         if (source == null) {
             throw new IllegalArgumentException("Source must not be null.");
         }
@@ -57,125 +57,125 @@ public class SessionSupport {
     /**
      * Adds a listener for SessionEvents.
      */
-    public void addSessionListener(SessionListener l) {
-        if (!(sessionListeners.contains(l))) {
-            sessionListeners.add(l);
+    public void addSessionListener(final SessionListener l) {
+        if (!(this.sessionListeners.contains(l))) {
+            this.sessionListeners.add(l);
         }
     }
 
     /**
      * Removes a listener for SessionEvents.
      */
-    public void removeSessionListener(SessionListener l) {
-        sessionListeners.remove(l);
+    public void removeSessionListener(final SessionListener l) {
+        this.sessionListeners.remove(l);
     }
 
     /**
      * Fires an event indicating that a session node has been added to the
      * session.
      */
-    public void fireNodeAdded(SessionNode node) {
-        SessionEvent event =
-                new SessionEvent(source, node, SessionEvent.NODE_ADDED);
+    public void fireNodeAdded(final SessionNode node) {
+        final SessionEvent event =
+                new SessionEvent(this.source, node, SessionEvent.NODE_ADDED);
 
-        this.fireSessionEvent(event);
+        fireSessionEvent(event);
     }
 
     /**
      * Fires an event indicating that a sesison node has been removed from the
      * session.
      */
-    public void fireNodeRemoved(SessionNode node) {
-        SessionEvent event =
-                new SessionEvent(source, node, SessionEvent.NODE_REMOVED);
+    public void fireNodeRemoved(final SessionNode node) {
+        final SessionEvent event =
+                new SessionEvent(this.source, node, SessionEvent.NODE_REMOVED);
 
-        this.fireSessionEvent(event);
+        fireSessionEvent(event);
     }
 
     /**
      * Fires an event indicating that a parent has been added from the given
      * parent to the given child session node in the session.
      */
-    public void fireParentAdded(SessionNode parent, SessionNode child) {
-        SessionEvent event = new SessionEvent(source, parent, child,
+    public void fireParentAdded(final SessionNode parent, final SessionNode child) {
+        final SessionEvent event = new SessionEvent(this.source, parent, child,
                 SessionEvent.PARENT_ADDED);
 
-        this.fireSessionEvent(event);
+        fireSessionEvent(event);
     }
 
     /**
      * Fires an event indicating that a parent has been removed from the given
      * parent to the given child session node in the session.
      */
-    public void fireParentRemoved(SessionNode parent, SessionNode child) {
-        SessionEvent event = new SessionEvent(source, parent, child,
+    public void fireParentRemoved(final SessionNode parent, final SessionNode child) {
+        final SessionEvent event = new SessionEvent(this.source, parent, child,
                 SessionEvent.PARENT_REMOVED);
 
-        this.fireSessionEvent(event);
+        fireSessionEvent(event);
     }
 
     /**
      * Fires an event indicating that a new model has been created for the given
      * session node in the session.
      */
-    public void fireModelCreated(SessionNode node) {
-        SessionEvent event =
-                new SessionEvent(source, node, SessionEvent.MODEL_CREATED);
+    public void fireModelCreated(final SessionNode node) {
+        final SessionEvent event =
+                new SessionEvent(this.source, node, SessionEvent.MODEL_CREATED);
 
-        this.fireSessionEvent(event);
+        fireSessionEvent(event);
     }
 
     /**
      * Fires an event indicating that the model for the given session node in
      * the session has been destroyed.
      */
-    public void fireModelDestroyed(SessionNode node) {
-        SessionEvent event = new SessionEvent(source, node,
+    public void fireModelDestroyed(final SessionNode node) {
+        final SessionEvent event = new SessionEvent(this.source, node,
                 SessionEvent.MODEL_DESTROYED);
 
-        this.fireSessionEvent(event);
+        fireSessionEvent(event);
     }
 
     /**
      * Fires an event indicating that the model for the given session node in
      * the session has been destroyed.
      */
-    public void fireModelUnclear(SessionNode node) {
-        SessionEvent event =
-                new SessionEvent(source, node, SessionEvent.MODEL_UNCLEAR);
+    public void fireModelUnclear(final SessionNode node) {
+        final SessionEvent event =
+                new SessionEvent(this.source, node, SessionEvent.MODEL_UNCLEAR);
 
-        this.fireSessionEvent(event);
+        fireSessionEvent(event);
     }
 
     /**
      * Fires an event indicating that the model for the given session node in
      * the session has been destroyed.
      */
-    public void fireRepetitionChanged(SessionNode node) {
-        SessionEvent event = new SessionEvent(source, node,
+    public void fireRepetitionChanged(final SessionNode node) {
+        final SessionEvent event = new SessionEvent(this.source, node,
                 SessionEvent.REPETITION_CHANGED);
 
-        this.fireSessionEvent(event);
+        fireSessionEvent(event);
     }
 
     /**
      * Fires an event indicating that an new execution of a node has begun.
      */
     public void fireExecutionStarted() {
-        SessionEvent event =
-                new SessionEvent(source, SessionEvent.EXECUTION_STARTED);
+        final SessionEvent event =
+                new SessionEvent(this.source, SessionEvent.EXECUTION_STARTED);
 
-        this.fireSessionEvent(event);
+        fireSessionEvent(event);
     }
 
     /**
      * Fires an event indicating that an edge is about to be added.
      */
     public void fireAddingEdge() {
-        SessionEvent event =
-                new SessionEvent(source, SessionEvent.ADDING_EDGE);
+        final SessionEvent event =
+                new SessionEvent(this.source, SessionEvent.ADDING_EDGE);
 
-        this.fireSessionEvent(event);
+        fireSessionEvent(event);
     }
 
     /**
@@ -183,8 +183,8 @@ public class SessionSupport {
      * type of session event it is. All event fired with this session support
      * are stamped with the source object of this session support.
      */
-    public void fireSessionEvent(SessionEvent event) {
-        this.fireSessionEvent(event, true);
+    public void fireSessionEvent(final SessionEvent event) {
+        fireSessionEvent(event, true);
     }
 
     /**
@@ -196,13 +196,13 @@ public class SessionSupport {
      * @param restamp true iff the source of this event should be set to the
      *                source of this SessionSupport object.
      */
-    public void fireSessionEvent(SessionEvent event, boolean restamp) {
-        if (restamp && event.getSource() != source) {
-            event = new SessionEvent(source, event);
+    public void fireSessionEvent(SessionEvent event, final boolean restamp) {
+        if (restamp && event.getSource() != this.source) {
+            event = new SessionEvent(this.source, event);
         }
 
-        for (int i = 0; i < sessionListeners.size(); i++) {
-            SessionListener l = (SessionListener) sessionListeners.get(i);
+        for (int i = 0; i < this.sessionListeners.size(); i++) {
+            final SessionListener l = (SessionListener) this.sessionListeners.get(i);
 
             switch (event.getType()) {
                 case SessionEvent.NODE_ADDED:

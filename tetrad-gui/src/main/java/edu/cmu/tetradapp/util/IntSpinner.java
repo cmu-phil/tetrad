@@ -65,57 +65,57 @@ public class IntSpinner extends JSpinner {
      * @param step  - The step (the amount that is "jumped" when the spinner is activated)
      * @param size  - The size of the int text field.
      */
-    public IntSpinner(Integer value, Integer step, Integer size) {
+    public IntSpinner(final Integer value, final Integer step, final Integer size) {
         super(new SpinnerNumberModel(value, null, null, step));
-        editor = new IntTextField(value, size);
+        this.editor = new IntTextField(value, size);
         // make the spinner a bit bigger than the text field (looks better)
-        setPreferredSize(increment(editor.getPreferredSize(), 2));
-        setMaximumSize(increment(editor.getMaximumSize(), 2));
-        setMinimumSize(increment(editor.getMinimumSize(), 2));
-        setSize(increment(editor.getSize(), 2));
+        this.setPreferredSize(IntSpinner.increment(this.editor.getPreferredSize(), 2));
+        this.setMaximumSize(IntSpinner.increment(this.editor.getMaximumSize(), 2));
+        this.setMinimumSize(IntSpinner.increment(this.editor.getMinimumSize(), 2));
+        this.setSize(IntSpinner.increment(this.editor.getSize(), 2));
 
-        editor.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
-                if (min != null && value < min) {
-                    value = min;
-                } else if (max != null && max < value) {
-                    value = max;
+        this.editor.setFilter(new IntTextField.Filter() {
+            public int filter(int value, final int oldValue) {
+                if (IntSpinner.this.min != null && value < IntSpinner.this.min) {
+                    value = IntSpinner.this.min;
+                } else if (IntSpinner.this.max != null && IntSpinner.this.max < value) {
+                    value = IntSpinner.this.max;
                 }
                 return value;
             }
         });
 
         // Can't do this in the filter, due to other events calling the filter
-        editor.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                IntTextField field = (IntTextField) e.getSource();
-                String text = field.getText();
+        this.editor.addActionListener(new ActionListener() {
+            public void actionPerformed(final ActionEvent e) {
+                final IntTextField field = (IntTextField) e.getSource();
+                final String text = field.getText();
                 try {
                     // parse value and let the field filter it.
                     int value = Integer.parseInt(text);
                     field.setValue(value);
                     value = field.getValue();
-                    if (!getValue().equals(value)) {
-                        setValue(value);
+                    if (!IntSpinner.this.getValue().equals(value)) {
+                        IntSpinner.this.setValue(value);
                     }
-                } catch (Exception ex) {
+                } catch (final Exception ex) {
                     // do nothing in this case
                 }
             }
         });
 
-        setEditor(editor);
+        this.setEditor(this.editor);
     }
 
     //=========================== Public Methods ============================//
 
-    public void setMin(Integer min) {
+    public void setMin(final Integer min) {
         if (this.min != min) {
             this.min = min;
-            SpinnerNumberModel model = (SpinnerNumberModel) getModel();
+            final SpinnerNumberModel model = (SpinnerNumberModel) this.getModel();
             model.setMinimum(min);
             // update the text filed by resetting value
-            editor.setValue(editor.getValue());
+            this.editor.setValue(this.editor.getValue());
         }
     }
 
@@ -123,50 +123,50 @@ public class IntSpinner extends JSpinner {
     /**
      * Sets the max value for the spinner.
      */
-    public void setMax(Integer max) {
+    public void setMax(final Integer max) {
         if (this.max != max) {
             this.max = max;
-            SpinnerNumberModel model = (SpinnerNumberModel) getModel();
+            final SpinnerNumberModel model = (SpinnerNumberModel) this.getModel();
             model.setMaximum(max);
             // update the text filed by resetting value
-            editor.setValue(editor.getValue());
+            this.editor.setValue(this.editor.getValue());
         }
     }
 
 
-    public void setFilter(Filter filter) {
+    public void setFilter(final Filter filter) {
         this.filter = filter;
     }
 
 
-    public void setValue(Object object) {
+    public void setValue(final Object object) {
         if (object == null) {
             throw new NullPointerException();
         }
 
-        int value = this.filter((Integer) object);
-        if (!this.getValue().equals(value)) {
+        final int value = filter((Integer) object);
+        if (!getValue().equals(value)) {
             super.setValue(value);
-            editor.setUnfilteredValue(value);
+            this.editor.setUnfilteredValue(value);
         }
     }
 
 
-    private static Dimension increment(Dimension dim, int increment) {
+    private static Dimension increment(final Dimension dim, final int increment) {
         return new Dimension(dim.width + increment, dim.height + increment);
     }
 
     //=========================== private methods ======================//
 
 
-    private int filter(int value) {
-        if (filter == null) {
+    private int filter(final int value) {
+        if (this.filter == null) {
             return value;
         }
-        if (this.getValue().equals(value)) {
+        if (getValue().equals(value)) {
             return value;
         }
-        return filter.filter((Integer) this.getValue(), value);
+        return this.filter.filter((Integer) getValue(), value);
     }
 
     //============================ Inner classer ====================================//

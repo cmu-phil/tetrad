@@ -54,26 +54,26 @@ public class PointPair {
      * @param p1 The <code>from</code> Point
      * @param p2 The <code>to</code> Point
      */
-    public PointPair(Point p1, Point p2) {
+    public PointPair(final Point p1, final Point p2) {
         if (p1 == null || p2 == null) {
             throw new NullPointerException(
                     "Points p1 and p2 must be non-null.");
         }
 
-        from = p1;
-        to = p2;
+        this.from = p1;
+        this.to = p2;
     }
 
     public Point getFrom() {
-        return from;
+        return this.from;
     }
 
     public Point getTo() {
-        return to;
+        return this.to;
     }
 
     public String toString() {
-        return "<From " + from + " to " + to + ">";
+        return "<From " + this.from + " to " + this.to + ">";
     }
 }
 

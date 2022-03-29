@@ -42,36 +42,36 @@ public class ShortDataBox implements DataBox {
     /**
      * The number of rows (tracked because it may be zero).
      */
-    private int numRows;
+    private final int numRows;
 
     /**
      * The number of columns (tracked because it may be zero).
      */
-    private int numCols;
+    private final int numCols;
 
     /**
      * Constructs an 2D short array consisting entirely of missing values (-99).
      */
-    public ShortDataBox(int rows, int cols) {
-        data = new short[rows][cols];
+    public ShortDataBox(final int rows, final int cols) {
+        this.data = new short[rows][cols];
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                data[i][j] = -99;
+                this.data[i][j] = -99;
             }
         }
 
-        numRows = rows;
-        numCols = cols;
+        this.numRows = rows;
+        this.numCols = cols;
     }
 
     /**
      * Constructs a new data box using the given 2D short data array as data.
      */
-    public ShortDataBox(short[][] data) {
-        int length = data[0].length;
+    public ShortDataBox(final short[][] data) {
+        final int length = data[0].length;
 
-        for (short[] datum : data) {
+        for (final short[] datum : data) {
             if (datum.length != length) {
                 throw new IllegalArgumentException("All rows must have same length.");
             }
@@ -79,15 +79,15 @@ public class ShortDataBox implements DataBox {
 
         this.data = data;
 
-        numCols = data[0].length;
-        numRows = data.length;
+        this.numCols = data[0].length;
+        this.numRows = data.length;
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
     public static BoxDataSet serializableInstance() {
-        List<Node> vars = new ArrayList<>();
+        final List<Node> vars = new ArrayList<>();
         for (int i = 0; i < 4; i++) vars.add(new ContinuousVariable("X" + i));
         return new BoxDataSet(new ShortDataBox(4, 4), vars);
     }
@@ -96,28 +96,28 @@ public class ShortDataBox implements DataBox {
      * @return the number of rows in this data box.
      */
     public int numRows() {
-        return numRows;
+        return this.numRows;
     }
 
     /**
      * @return the number of columns in this data box.n
      */
     public int numCols() {
-        return numCols;
+        return this.numCols;
     }
 
     /**
      * Sets the value at the given row/column to the given Number value.
      * The value used is number.shortValue().
      */
-    public void set(int row, int col, Number value) {
+    public void set(final int row, final int col, final Number value) {
         if (value == null) {
-            synchronized (data) {
-                data[row][col] = -99;
+            synchronized (this.data) {
+                this.data[row][col] = -99;
             }
         } else {
-            synchronized (data) {
-                data[row][col] = value.shortValue();
+            synchronized (this.data) {
+                this.data[row][col] = value.shortValue();
             }
         }
     }
@@ -126,8 +126,8 @@ public class ShortDataBox implements DataBox {
      * @return the Number value at the given row and column. If the value
      * is missing (-99), null, is returned.
      */
-    public Number get(int row, int col) {
-        short datum = data[row][col];
+    public Number get(final int row, final int col) {
+        final short datum = this.data[row][col];
 
         if (datum == -99) {
             return null;
@@ -140,11 +140,11 @@ public class ShortDataBox implements DataBox {
      * @return a copy of this data box.
      */
     public DataBox copy() {
-        ShortDataBox box = new ShortDataBox(this.numRows(), this.numCols());
+        final ShortDataBox box = new ShortDataBox(numRows(), numCols());
 
-        for (int i = 0; i < this.numRows(); i++) {
-            for (int j = 0; j < this.numCols(); j++) {
-                box.set(i, j, this.get(i, j));
+        for (int i = 0; i < numRows(); i++) {
+            for (int j = 0; j < numCols(); j++) {
+                box.set(i, j, get(i, j));
             }
         }
 
@@ -155,22 +155,22 @@ public class ShortDataBox implements DataBox {
      * @return a DataBox of type ShortDataBox, but with the given dimensions.
      */
     public DataBox like() {
-        int[] rows = new int[this.numRows()];
-        int[] cols = new int[this.numCols()];
+        final int[] rows = new int[numRows()];
+        final int[] cols = new int[numCols()];
 
-        for (int i = 0; i < this.numRows(); i++) rows[i] = i;
-        for (int j = 0; j < this.numCols(); j++) cols[j] = j;
+        for (int i = 0; i < numRows(); i++) rows[i] = i;
+        for (int j = 0; j < numCols(); j++) cols[j] = j;
 
-        return this.viewSelection(rows, cols);
+        return viewSelection(rows, cols);
     }
 
     @Override
-    public DataBox viewSelection(int[] rows, int[] cols) {
-        DataBox _dataBox = new ShortDataBox(rows.length, cols.length);
+    public DataBox viewSelection(final int[] rows, final int[] cols) {
+        final DataBox _dataBox = new ShortDataBox(rows.length, cols.length);
 
         for (int i = 0; i < rows.length; i++) {
             for (int j = 0; j < cols.length; j++) {
-                _dataBox.set(i, j, this.get(rows[i], cols[j]));
+                _dataBox.set(i, j, get(rows[i], cols[j]));
             }
         }
 

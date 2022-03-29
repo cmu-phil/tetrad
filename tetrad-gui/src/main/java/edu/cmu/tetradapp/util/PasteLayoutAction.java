@@ -47,7 +47,7 @@ public class PasteLayoutAction extends AbstractAction
      * Constucts an action for loading the session in the given '.tet' file into
      * the layoutEditable.
      */
-    public PasteLayoutAction(LayoutEditable layoutEditable) {
+    public PasteLayoutAction(final LayoutEditable layoutEditable) {
         super("Paste Layout");
 
         if (layoutEditable == null) {
@@ -61,24 +61,24 @@ public class PasteLayoutAction extends AbstractAction
      * Copies a parentally closed selection of session nodes in the frontmost
      * session editor to the clipboard.
      */
-    public void actionPerformed(ActionEvent e) {
-        Transferable transferable = InternalClipboard.getInstance()
+    public void actionPerformed(final ActionEvent e) {
+        final Transferable transferable = InternalClipboard.getInstance()
                 .getContents(null);
 
         if (!(transferable instanceof LayoutSelection)) {
             return;
         }
 
-        LayoutSelection selection = (LayoutSelection) transferable;
-        DataFlavor flavor = new DataFlavor(LayoutSelection.class, "Layout");
+        final LayoutSelection selection = (LayoutSelection) transferable;
+        final DataFlavor flavor = new DataFlavor(LayoutSelection.class, "Layout");
 
         try {
-            Graph layoutGraph = (Graph) selection.getTransferData(flavor);
+            final Graph layoutGraph = (Graph) selection.getTransferData(flavor);
 
             if (layoutGraph != null) {
-                layoutEditable.layoutByGraph(layoutGraph);
+                this.layoutEditable.layoutByGraph(layoutGraph);
             }
-        } catch (Exception e1) {
+        } catch (final Exception e1) {
             throw new RuntimeException(e1);
         }
     }
@@ -91,7 +91,7 @@ public class PasteLayoutAction extends AbstractAction
      * @param contents  the contents which this owner had placed on the
      *                  clipboard
      */
-    public void lostOwnership(Clipboard clipboard, Transferable contents) {
+    public void lostOwnership(final Clipboard clipboard, final Transferable contents) {
     }
 }
 

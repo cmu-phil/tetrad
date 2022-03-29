@@ -57,70 +57,70 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
     /**
      * Opens up an editor to let the user view the given PcRunner.
      */
-    public FciCcdSearchEditor(PcRunner runner) {
+    public FciCcdSearchEditor(final PcRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
     /**
      * Opens up an editor to let the user view the given FciRunner.
      */
-    public FciCcdSearchEditor(FciRunner runner) {
+    public FciCcdSearchEditor(final FciRunner runner) {
         super(runner, "Result allow_latent_common_causes");
     }
 
-    public FciCcdSearchEditor(CfciRunner runner) {
+    public FciCcdSearchEditor(final CfciRunner runner) {
         super(runner, "Result allow_latent_common_causes");
     }
 
-    public FciCcdSearchEditor(GFciRunner runner) {
+    public FciCcdSearchEditor(final GFciRunner runner) {
         super(runner, "Result allow_latent_common_causes");
     }
 
-    public FciCcdSearchEditor(SvarFciRunner runner) {
+    public FciCcdSearchEditor(final SvarFciRunner runner) {
         super(runner, "Result allow_latent_common_causes");
     }
 
-    public FciCcdSearchEditor(SvarGFciRunner runner) {
+    public FciCcdSearchEditor(final SvarGFciRunner runner) {
         super(runner, "Result allow_latent_common_causes");
     }
 
     /**
      * Opens up an editor to let the user view the given CcdRunner.
      */
-    public FciCcdSearchEditor(CcdRunner runner) {
+    public FciCcdSearchEditor(final CcdRunner runner) {
         super(runner, "Result allow_latent_common_causes");
     }
 
-    public FciCcdSearchEditor(CcdRunner2 runner) {
+    public FciCcdSearchEditor(final CcdRunner2 runner) {
         super(runner, "Result allow_latent_common_causes");
     }
 
     public Graph getGraph() {
-        return this.getWorkbench().getGraph();
+        return getWorkbench().getGraph();
     }
 
     @Override
     public Map getModelEdgesToDisplay() {
-        return this.getWorkbench().getModelEdgesToDisplay();
+        return getWorkbench().getModelEdgesToDisplay();
     }
 
     public Map getModelNodesToDisplay() {
-        return this.getWorkbench().getModelNodesToDisplay();
+        return getWorkbench().getModelNodesToDisplay();
     }
 
-    public void layoutByGraph(Graph graph) {
-        this.getWorkbench().layoutByGraph(graph);
+    public void layoutByGraph(final Graph graph) {
+        getWorkbench().layoutByGraph(graph);
     }
 
     public void layoutByKnowledge() {
-        GraphWorkbench resultWorkbench = this.getWorkbench();
-        Graph graph = resultWorkbench.getGraph();
-        IKnowledge knowledge = (IKnowledge) this.getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
+        final GraphWorkbench resultWorkbench = getWorkbench();
+        final Graph graph = resultWorkbench.getGraph();
+        final IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
         SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
     }
 
     public Rectangle getVisibleRect() {
-        return this.getWorkbench().getVisibleRect();
+        return getWorkbench().getVisibleRect();
     }
 
 
@@ -131,24 +131,24 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
      * Construct the toolbar panel.
      */
     protected JPanel getToolbar() {
-        JPanel toolbar = new JPanel();
-        this.getExecuteButton().setText("Execute*");
-        this.getExecuteButton().addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                FciCcdSearchEditor.this.execute();
+        final JPanel toolbar = new JPanel();
+        getExecuteButton().setText("Execute*");
+        getExecuteButton().addActionListener(new ActionListener() {
+            public void actionPerformed(final ActionEvent e) {
+                execute();
             }
         });
 
-        Box b1 = Box.createVerticalBox();
-        b1.add(this.getParamsPanel());
+        final Box b1 = Box.createVerticalBox();
+        b1.add(getParamsPanel());
         b1.add(Box.createVerticalStrut(10));
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(Box.createGlue());
-        b2.add(this.getExecuteButton());
+        b2.add(getExecuteButton());
         b1.add(b2);
 
-        Box b3 = Box.createHorizontalBox();
-        JLabel label = new JLabel("<html>" + "*Please note that some" +
+        final Box b3 = Box.createHorizontalBox();
+        final JLabel label = new JLabel("<html>" + "*Please note that some" +
                 "<br>searches may take a" + "<br>long time to complete." +
                 "</html>");
         label.setHorizontalAlignment(SwingConstants.CENTER);
@@ -163,9 +163,9 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
         return toolbar;
     }
 
-    protected void addSpecialMenus(JMenuBar menuBar) {
-        if (!(this.getAlgorithmRunner() instanceof IGesRunner)) {
-            JMenu test = new JMenu("Independence");
+    protected void addSpecialMenus(final JMenuBar menuBar) {
+        if (!(getAlgorithmRunner() instanceof IGesRunner)) {
+            final JMenu test = new JMenu("Independence");
             menuBar.add(test);
 
             IndTestMenuItems.addIndependenceTestChoices(test, this);
@@ -182,22 +182,22 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
 //            }
         }
 
-        JMenu graph = new JMenu("Graph");
-        JMenuItem showDags = new JMenuItem("Show DAGs in forbid_latent_common_causes");
+        final JMenu graph = new JMenu("Graph");
+        final JMenuItem showDags = new JMenuItem("Show DAGs in forbid_latent_common_causes");
 //        JMenuItem meekOrient = new JMenuItem("Meek Orientation");
-        JMenuItem dagInCPDAG = new JMenuItem("Choose DAG in forbid_latent_common_causes");
-        JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
-        JMenuItem nextGraph = new JMenuItem("Next Graph");
-        JMenuItem previousGraph = new JMenuItem("Previous Graph");
+        final JMenuItem dagInCPDAG = new JMenuItem("Choose DAG in forbid_latent_common_causes");
+        final JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
+        final JMenuItem nextGraph = new JMenuItem("Next Graph");
+        final JMenuItem previousGraph = new JMenuItem("Previous Graph");
 
 //        graph.add(new LayoutMenu(this));
-        graph.add(new GraphPropertiesAction(this.getWorkbench()));
-        graph.add(new PathsAction(this.getWorkbench()));
+        graph.add(new GraphPropertiesAction(getWorkbench()));
+        graph.add(new PathsAction(getWorkbench()));
 //        graph.add(new DirectedPathsAction(getWorkbench()));
 //        graph.add(new TreksAction(getWorkbench()));
 //        graph.add(new AllPathsAction(getWorkbench()));
 //        graph.add(new NeighborhoodsAction(getWorkbench()));
-        graph.add(new TriplesAction(this.getWorkbench().getGraph(), this.getAlgorithmRunner()));
+        graph.add(new TriplesAction(getWorkbench().getGraph(), getAlgorithmRunner()));
         graph.addSeparator();
 
 //        graph.add(meekOrient);
@@ -212,14 +212,14 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
         graph.add(showDags);
 
         graph.addSeparator();
-        graph.add(new JMenuItem(new SelectBidirectedAction(this.getWorkbench())));
-        graph.add(new JMenuItem(new SelectUndirectedAction(this.getWorkbench())));
+        graph.add(new JMenuItem(new SelectBidirectedAction(getWorkbench())));
+        graph.add(new JMenuItem(new SelectUndirectedAction(getWorkbench())));
 
         menuBar.add(graph);
 
         showDags.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Window owner = (Window) FciCcdSearchEditor.this.getTopLevelAncestor();
+            public void actionPerformed(final ActionEvent e) {
+                final Window owner = (Window) getTopLevelAncestor();
 
                 new WatchedProcess(owner) {
                     public void watch() {
@@ -227,8 +227,8 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
                         // Needs to be a CPDAG search; this isn't checked
                         // before running the algorithm because of allowable
                         // "slop"--e.g. bidirected edges.
-                        AlgorithmRunner runner = FciCcdSearchEditor.this.getAlgorithmRunner();
-                        Graph graph = runner.getGraph();
+                        final AlgorithmRunner runner = getAlgorithmRunner();
+                        final Graph graph = runner.getGraph();
 
 
                         if (graph == null) {
@@ -252,10 +252,10 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
 //                            editorWindow.setVisible(true);
 //                        }
 //                        else {
-                        CPDAGDisplay display = new CPDAGDisplay(graph);
-                        GraphWorkbench workbench = FciCcdSearchEditor.this.getWorkbench();
+                        final CPDAGDisplay display = new CPDAGDisplay(graph);
+                        final GraphWorkbench workbench = getWorkbench();
 
-                        EditorWindow editorWindow =
+                        final EditorWindow editorWindow =
                                 new EditorWindow(display, "Independence Facts",
                                         "Close", false, workbench);
                         DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
@@ -278,54 +278,54 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
 //        });
 
         dagInCPDAG.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Graph graph = new EdgeListGraph(FciCcdSearchEditor.this.getGraph());
+            public void actionPerformed(final ActionEvent e) {
+                final Graph graph = new EdgeListGraph(getGraph());
 
                 // Removing bidirected edges from the CPDAG before selecting a DAG.                                   4
-                for (Edge edge : graph.getEdges()) {
+                for (final Edge edge : graph.getEdges()) {
                     if (Edges.isBidirectedEdge(edge)) {
                         graph.removeEdge(edge);
                     }
                 }
 
-                Graph dag = SearchGraphUtils.dagFromCPDAG(graph);
+                final Graph dag = SearchGraphUtils.dagFromCPDAG(graph);
 
-                FciCcdSearchEditor.this.getGraphHistory().add(dag);
-                FciCcdSearchEditor.this.getWorkbench().setGraph(dag);
+                getGraphHistory().add(dag);
+                getWorkbench().setGraph(dag);
 
-                ((AbstractAlgorithmRunner) FciCcdSearchEditor.this.getAlgorithmRunner()).setResultGraph(dag);
-                FciCcdSearchEditor.this.firePropertyChange("modelChanged", null, null);
+                ((AbstractAlgorithmRunner) getAlgorithmRunner()).setResultGraph(dag);
+                firePropertyChange("modelChanged", null, null);
             }
         });
 
         gesOrient.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                DataModel dataModel = FciCcdSearchEditor.this.getAlgorithmRunner().getDataModel();
+            public void actionPerformed(final ActionEvent e) {
+                final DataModel dataModel = getAlgorithmRunner().getDataModel();
 
-                Graph graph = SearchGraphUtils.reorient(FciCcdSearchEditor.this.getGraph(), dataModel, FciCcdSearchEditor.this.getKnowledge());
+                final Graph graph = SearchGraphUtils.reorient(getGraph(), dataModel, getKnowledge());
 
-                FciCcdSearchEditor.this.getGraphHistory().add(graph);
-                FciCcdSearchEditor.this.getWorkbench().setGraph(graph);
-                FciCcdSearchEditor.this.firePropertyChange("modelChanged", null, null);
+                getGraphHistory().add(graph);
+                getWorkbench().setGraph(graph);
+                firePropertyChange("modelChanged", null, null);
             }
 
         });
 
         nextGraph.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Graph next = FciCcdSearchEditor.this.getGraphHistory().next();
-                FciCcdSearchEditor.this.getWorkbench().setGraph(next);
-                ((AbstractAlgorithmRunner) FciCcdSearchEditor.this.getAlgorithmRunner()).setResultGraph(next);
-                FciCcdSearchEditor.this.firePropertyChange("modelChanged", null, null);
+            public void actionPerformed(final ActionEvent e) {
+                final Graph next = getGraphHistory().next();
+                getWorkbench().setGraph(next);
+                ((AbstractAlgorithmRunner) getAlgorithmRunner()).setResultGraph(next);
+                firePropertyChange("modelChanged", null, null);
             }
         });
 
         previousGraph.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Graph previous = FciCcdSearchEditor.this.getGraphHistory().previous();
-                FciCcdSearchEditor.this.getWorkbench().setGraph(previous);
-                ((AbstractAlgorithmRunner) FciCcdSearchEditor.this.getAlgorithmRunner()).setResultGraph(previous);
-                FciCcdSearchEditor.this.firePropertyChange("modelChanged", null, null);
+            public void actionPerformed(final ActionEvent e) {
+                final Graph previous = getGraphHistory().previous();
+                getWorkbench().setGraph(previous);
+                ((AbstractAlgorithmRunner) getAlgorithmRunner()).setResultGraph(previous);
+                firePropertyChange("modelChanged", null, null);
             }
         });
 
@@ -337,20 +337,20 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
     }
 
     public Graph getSourceGraph() {
-        Graph sourceGraph = this.getWorkbench().getGraph();
+        Graph sourceGraph = getWorkbench().getGraph();
 
         if (sourceGraph == null) {
-            sourceGraph = this.getAlgorithmRunner().getSourceGraph();
+            sourceGraph = getAlgorithmRunner().getSourceGraph();
         }
         return sourceGraph;
     }
 
     public List<String> getVarNames() {
-        Parameters params = this.getAlgorithmRunner().getParams();
+        final Parameters params = getAlgorithmRunner().getParams();
         return (List<String>) params.get("varNames", null);
     }
 
-    public void setTestType(IndTestType testType) {
+    public void setTestType(final IndTestType testType) {
         super.setTestType(testType);
     }
 
@@ -358,22 +358,22 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
         return super.getTestType();
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
-        this.getAlgorithmRunner().getParams().set("knowledge", knowledge);
+    public void setKnowledge(final IKnowledge knowledge) {
+        getAlgorithmRunner().getParams().set("knowledge", knowledge);
     }
 
     public IKnowledge getKnowledge() {
-        return (IKnowledge) this.getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
+        return (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
     }
 
     //================================PRIVATE METHODS====================//
 
     private JPanel getParamsPanel() {
-        JPanel paramsPanel = new JPanel();
+        final JPanel paramsPanel = new JPanel();
 
-        Box b2 = Box.createVerticalBox();
+        final Box b2 = Box.createVerticalBox();
 
-        JComponent indTestParamBox = this.getIndTestParamBox();
+        final JComponent indTestParamBox = getIndTestParamBox();
         if (indTestParamBox != null) {
             b2.add(indTestParamBox);
         }
@@ -384,21 +384,21 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
     }
 
     private JComponent getIndTestParamBox() {
-        Parameters params = this.getAlgorithmRunner().getParams();
-        return this.getIndTestParamBox(params);
+        final Parameters params = getAlgorithmRunner().getParams();
+        return getIndTestParamBox(params);
     }
 
     /**
      * Factory to return the correct param editor for independence test params.
      * This will go in a little box in the search editor.
      */
-    private JComponent getIndTestParamBox(Parameters params) {
+    private JComponent getIndTestParamBox(final Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
 
         if (params instanceof Parameters) {
-            FgesRunner fgesRunner = ((FgesRunner) this.getAlgorithmRunner());
+            final FgesRunner fgesRunner = ((FgesRunner) getAlgorithmRunner());
             return new FgesIndTestParamsEditor(params, fgesRunner.getType());
         }
 
@@ -431,13 +431,13 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
         return new IndTestParamsEditor(params);
     }
 
-    protected void doDefaultArrangement(Graph resultGraph) {
-        if (this.getLatestWorkbenchGraph() != null) {   //(alreadyLaidOut) {
+    protected void doDefaultArrangement(final Graph resultGraph) {
+        if (getLatestWorkbenchGraph() != null) {   //(alreadyLaidOut) {
             GraphUtils.arrangeBySourceGraph(resultGraph,
-                    this.getLatestWorkbenchGraph());
-        } else if (this.getKnowledge().isDefaultToKnowledgeLayout()) {
+                    getLatestWorkbenchGraph());
+        } else if (getKnowledge().isDefaultToKnowledgeLayout()) {
             SearchGraphUtils.arrangeByKnowledgeTiers(resultGraph,
-                    this.getKnowledge());
+                    getKnowledge());
 //            alreadyLaidOut = true;
         } else {
             GraphUtils.circleLayout(resultGraph, 200, 200, 150);

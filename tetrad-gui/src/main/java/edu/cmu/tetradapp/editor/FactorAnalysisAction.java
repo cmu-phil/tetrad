@@ -61,25 +61,25 @@ public class FactorAnalysisAction extends AbstractAction {
      * Constructs the <code>HistogramAction</code> given the <code>DataEditor</code>
      * that its attached to.
      */
-    public FactorAnalysisAction(DataEditor editor) {
+    public FactorAnalysisAction(final DataEditor editor) {
         super("Factor Analysis...");
-        dataEditor = editor;
+        this.dataEditor = editor;
     }
 
-    public void actionPerformed(ActionEvent e) {
-        DataSet dataSet = (DataSet) dataEditor.getSelectedDataModel();
+    public void actionPerformed(final ActionEvent e) {
+        final DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
         if (dataSet == null || dataSet.getNumColumns() == 0) {
-            JOptionPane.showMessageDialog(this.findOwner(), "Cannot perform factor analysis on an empty data set.");
+            JOptionPane.showMessageDialog(findOwner(), "Cannot perform factor analysis on an empty data set.");
             return;
         }
 
-        FactorAnalysis factorAnalysis = new FactorAnalysis(dataSet);
+        final FactorAnalysis factorAnalysis = new FactorAnalysis(dataSet);
         //factorAnalysis.centroidUnity();
 
-        JPanel panel = this.createDialog(factorAnalysis);
+        final JPanel panel = createDialog(factorAnalysis);
 
-        EditorWindow window = new EditorWindow(panel,
-                "Factor Loading Matrices", "Close", false, dataEditor);
+        final EditorWindow window = new EditorWindow(panel,
+                "Factor Loading Matrices", "Close", false, this.dataEditor);
         DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
         window.setVisible(true);
 
@@ -91,18 +91,18 @@ public class FactorAnalysisAction extends AbstractAction {
         */
     }
 
-    private JPanel createDialog(FactorAnalysis analysis) {
+    private JPanel createDialog(final FactorAnalysis analysis) {
         final double threshold = .2;
 
-        Matrix unrotatedSolution = analysis.successiveResidual();
-        Matrix rotatedSolution = analysis.successiveFactorVarimax(unrotatedSolution);
+        final Matrix unrotatedSolution = analysis.successiveResidual();
+        final Matrix rotatedSolution = analysis.successiveFactorVarimax(unrotatedSolution);
 
-        DataSet dataSet = (DataSet) dataEditor.getSelectedDataModel();
-        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        final DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
+        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
         String output = "Unrotated Factor Loading Matrix:\n";
 
-        output += this.tableString(unrotatedSolution, nf, Double.POSITIVE_INFINITY);
+        output += tableString(unrotatedSolution, nf, Double.POSITIVE_INFINITY);
 //        String temp = unrotatedSolution.toString();
 //        temp = temp.split("\n", 2)[1];
 //        output += temp;
@@ -110,34 +110,34 @@ public class FactorAnalysisAction extends AbstractAction {
         if (unrotatedSolution.columns() != 1) {
             output += "\n\nRotated Matrix (using sequential varimax):\n";
 
-            output += this.tableString(rotatedSolution, nf, threshold);
+            output += tableString(rotatedSolution, nf, threshold);
             //        temp = rotatedSolution.toString();
             //        temp = temp.split("\n", 2)[1];
             //        output += temp;
 
         }
 
-        JTextArea display = new JTextArea(output);
-        JScrollPane scrollPane = new JScrollPane(display);
+        final JTextArea display = new JTextArea(output);
+        final JScrollPane scrollPane = new JScrollPane(display);
         scrollPane.setPreferredSize(new Dimension(500, 400));
         display.setEditable(false);
         display.setFont(new Font("Monospaced", Font.PLAIN, 12));
         //editorPanel.addPropertyChangeListener(new NormalityTestListener(display));
 
 
-        SemGraph graph = new SemGraph();
+        final SemGraph graph = new SemGraph();
 
-        Vector<Node> observedVariables = new Vector<>();
+        final Vector<Node> observedVariables = new Vector<>();
 
-        for (Node a : dataSet.getVariables()) {
+        for (final Node a : dataSet.getVariables()) {
             graph.addNode(a);
             observedVariables.add(a);
         }
 
-        Vector<Node> factors = new Vector<>();
+        final Vector<Node> factors = new Vector<>();
 
         for (int i = 0; i < rotatedSolution.columns(); i++) {
-            ContinuousVariable factor = new ContinuousVariable("Factor" + (i + 1));
+            final ContinuousVariable factor = new ContinuousVariable("Factor" + (i + 1));
             factor.setNodeType(NodeType.LATENT);
             graph.addNode(factor);
             factors.add(factor);
@@ -155,12 +155,12 @@ public class FactorAnalysisAction extends AbstractAction {
         GraphUtils.circleLayout(graph, 225, 200, 150);
         GraphUtils.fruchtermanReingoldLayout(graph);
 
-        GraphWorkbench workbench = new GraphWorkbench(graph);
+        final GraphWorkbench workbench = new GraphWorkbench(graph);
 
-        JScrollPane graphPane = new JScrollPane(workbench);
+        final JScrollPane graphPane = new JScrollPane(workbench);
         graphPane.setPreferredSize(new Dimension(500, 400));
 
-        Box box = Box.createHorizontalBox();
+        final Box box = Box.createHorizontalBox();
         box.add(scrollPane);
 
         box.add(Box.createHorizontalStrut(3));
@@ -168,21 +168,21 @@ public class FactorAnalysisAction extends AbstractAction {
         box.add(Box.createHorizontalStrut(5));
         box.add(Box.createHorizontalGlue());
 
-        Box vBox = Box.createVerticalBox();
+        final Box vBox = Box.createVerticalBox();
         vBox.add(Box.createVerticalStrut(15));
         vBox.add(box);
         vBox.add(Box.createVerticalStrut(5));
         box.add(graphPane);
 
-        JPanel panel = new JPanel();
+        final JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.add(vBox, BorderLayout.CENTER);
 
         return panel;
     }
 
-    private String tableString(Matrix matrix, NumberFormat nf, double threshold) {
-        TextTable table = new TextTable(matrix.rows() + 1, matrix.columns() + 1);
+    private String tableString(final Matrix matrix, final NumberFormat nf, final double threshold) {
+        final TextTable table = new TextTable(matrix.rows() + 1, matrix.columns() + 1);
 
         for (int i = 0; i < matrix.rows() + 1; i++) {
             for (int j = 0; j < matrix.columns() + 1; j++) {
@@ -191,7 +191,7 @@ public class FactorAnalysisAction extends AbstractAction {
                 } else if (i == 0 && j > 0) {
                     table.setToken(0, j, "Factor " + j);
                 } else if (i > 0 && j > 0) {
-                    double coefficient = matrix.get(i - 1, j - 1);
+                    final double coefficient = matrix.get(i - 1, j - 1);
                     String token = !Double.isNaN(coefficient) ? nf.format(coefficient) : "Undefined";
                     token += Math.abs(coefficient) > threshold ? "*" : " ";
                     table.setToken(i, j, token);
@@ -207,24 +207,24 @@ public class FactorAnalysisAction extends AbstractAction {
 
     private JFrame findOwner() {
         return (JFrame) SwingUtilities.getAncestorOfClass(
-                JFrame.class, dataEditor);
+                JFrame.class, this.dataEditor);
     }
 
-    public static void main(String[] args) {
-        java.util.List<Node> nodes = new ArrayList<>();
+    public static void main(final String[] args) {
+        final java.util.List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < 9; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 9,
+        final Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 9,
                 30, 15, 15, false));
-        SemPm pm = new SemPm(graph);
-        SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(500, false);
-        ICovarianceMatrix cov = new CovarianceMatrix(data);
+        final SemPm pm = new SemPm(graph);
+        final SemIm im = new SemIm(pm);
+        final DataSet data = im.simulateData(500, false);
+        final ICovarianceMatrix cov = new CovarianceMatrix(data);
 
-        FactorAnalysis factorAnalysis = new FactorAnalysis(cov);
+        final FactorAnalysis factorAnalysis = new FactorAnalysis(cov);
         //factorAnalysis.centroidUnity();
         factorAnalysis.successiveResidual();
     }

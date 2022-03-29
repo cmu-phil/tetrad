@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.study.Conditions;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
-import edu.cmu.tetrad.algcomparison.Comparison.ComparisonGraph;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.external.*;
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -41,7 +40,7 @@ import edu.cmu.tetrad.util.Parameters;
  */
 public class Condition2 {
     public void generateTetradResults() {
-        Parameters parameters = new Parameters();
+        final Parameters parameters = new Parameters();
 
         parameters.set("alpha", 0.01);
         parameters.set("numRuns", 10);
@@ -49,7 +48,7 @@ public class Condition2 {
         parameters.set("useMaxPOrientationHeuristic", false);
 //        parameters.set("maxPOrientationMaxPathLength", 3);
 
-        Statistics statistics = new Statistics();
+        final Statistics statistics = new Statistics();
 
         statistics.add(new ParameterColumn("numMeasures"));
         statistics.add(new ParameterColumn("avgDegree"));
@@ -68,7 +67,7 @@ public class Condition2 {
         statistics.setWeight("AHP", 1.0);
         statistics.setWeight("AHR", 0.5);
 
-        Algorithms algorithms = new Algorithms();
+        final Algorithms algorithms = new Algorithms();
 
 //        algorithms.add(new Pc(new FisherZ()));
 //        algorithms.add(new PcStable(new FisherZ()));
@@ -76,7 +75,7 @@ public class Condition2 {
 //        algorithms.add(new Cpc(new FisherZ()));
 //        algorithms.add(new CpcStable(new FisherZ()));
 
-        Comparison comparison = new Comparison();
+        final Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
@@ -89,11 +88,11 @@ public class Condition2 {
     }
 
     public void compileTable() {
-        Parameters parameters = new Parameters();
+        final Parameters parameters = new Parameters();
 
         parameters.set("numRuns", 10);
 
-        Statistics statistics = new Statistics();
+        final Statistics statistics = new Statistics();
 
         statistics.add(new ParameterColumn("numMeasures"));
         statistics.add(new ParameterColumn("avgDegree"));
@@ -111,7 +110,7 @@ public class Condition2 {
         statistics.setWeight("AHP", 1.0);
         statistics.setWeight("AHR", 0.5);
 
-        Algorithms algorithms = new Algorithms();
+        final Algorithms algorithms = new Algorithms();
 
         algorithms.add(new ExternalAlgorithmTetrad("PC_(\"Peter_and_Clark\"),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.01"));
         algorithms.add(new ExternalAlgorithmTetrad("PC_(\"Peter_and_Clark\"),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.001"));
@@ -205,20 +204,20 @@ public class Condition2 {
 //                new ExternalAlgorithmPcalgPc("CPC_majority_pcalg_defaults_alpha_=_0.001")
 //        ));
 
-        Comparison comparison = new Comparison();
+        final Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
         comparison.setSaveGraphs(true);
-        comparison.setComparisonGraph(ComparisonGraph.true_DAG);
+        comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
         comparison.generateReportFromExternalAlgorithms("/Users/user/comparison-data/condition_2",
                 "/Users/user/causal-comparisons/condition_2", "Comparison.txt",
                 algorithms, statistics, parameters);
 
 
-        Statistics statistics2 = new Statistics();
+        final Statistics statistics2 = new Statistics();
 
         statistics2.add(new ParameterColumn("numMeasures"));
         statistics2.add(new ParameterColumn("avgDegree"));
@@ -239,7 +238,7 @@ public class Condition2 {
 
     }
 
-    public static void main(String... args) {
+    public static void main(final String... args) {
         new Condition2().compileTable();
     }
 }

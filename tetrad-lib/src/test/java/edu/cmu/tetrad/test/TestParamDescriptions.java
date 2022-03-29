@@ -24,11 +24,11 @@ import static org.junit.Assert.assertEquals;
 public class TestParamDescriptions {
     @Test
     public void testUndocumentedParams() {
-        Set<String> allParams = Params.getParameters();
+        final Set<String> allParams = Params.getParameters();
 
-        List<String> undocumentedParams = new ArrayList<>();
+        final List<String> undocumentedParams = new ArrayList<>();
 
-        for (String param : allParams) {
+        for (final String param : allParams) {
             if (ParamDescriptions.getInstance().get(param) == null) {
                 System.out.println("Undocumented parameter found in HTML manual: " + param);
                 undocumentedParams.add(param);
@@ -40,7 +40,7 @@ public class TestParamDescriptions {
 
     @Test
     public void testUnsupportedParamsValueType() {
-        List<String> paramsWithUnsupportedValueType = ParamDescriptions.getInstance().getParamsWithUnsupportedValueType();
+        final List<String> paramsWithUnsupportedValueType = ParamDescriptions.getInstance().getParamsWithUnsupportedValueType();
 
         paramsWithUnsupportedValueType.forEach(e -> {
             System.out.println("Unsupported parameter value type found in HTML manual for: " + e);

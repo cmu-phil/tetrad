@@ -43,31 +43,31 @@ public class TabularColumnFileValidation extends AbstractTabularColumnFileReader
 
     private int maxNumOfMsg;
 
-    public TabularColumnFileValidation(Path dataFile, Delimiter delimiter) {
+    public TabularColumnFileValidation(final Path dataFile, final Delimiter delimiter) {
         super(dataFile, delimiter);
-        maxNumOfMsg = Integer.MAX_VALUE;
+        this.maxNumOfMsg = Integer.MAX_VALUE;
     }
 
     @Override
     public List<ValidationResult> validate() {
-        return this.validate(Collections.EMPTY_SET);
+        return validate(Collections.EMPTY_SET);
     }
 
     @Override
-    public List<ValidationResult> validate(int[] excludedColumns) {
-        List<ValidationResult> results = new LinkedList<>();
+    public List<ValidationResult> validate(final int[] excludedColumns) {
+        final List<ValidationResult> results = new LinkedList<>();
 
         try {
-            int numOfCols = this.countNumberOfColumns();
-            int[] excludedCols = Columns.sortNew(excludedColumns);
-            int[] validCols = Columns.extractValidColumnNumbers(numOfCols, excludedCols);
+            final int numOfCols = countNumberOfColumns();
+            final int[] excludedCols = Columns.sortNew(excludedColumns);
+            final int[] validCols = Columns.extractValidColumnNumbers(numOfCols, excludedCols);
 
-            this.validateColumns(validCols, results);
-        } catch (IOException exception) {
-            if (results.size() <= maxNumOfMsg) {
-                String errMsg = String.format("Unable to read file %s.", dataFile.getFileName());
-                ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_IO_ERROR, errMsg);
-                result.setAttribute(ValidationAttribute.FILE_NAME, dataFile.getFileName());
+            validateColumns(validCols, results);
+        } catch (final IOException exception) {
+            if (results.size() <= this.maxNumOfMsg) {
+                final String errMsg = String.format("Unable to read file %s.", this.dataFile.getFileName());
+                final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_IO_ERROR, errMsg);
+                result.setAttribute(ValidationAttribute.FILE_NAME, this.dataFile.getFileName());
                 results.add(result);
             }
         }
@@ -76,19 +76,19 @@ public class TabularColumnFileValidation extends AbstractTabularColumnFileReader
     }
 
     @Override
-    public List<ValidationResult> validate(Set<String> excludedColumns) {
-        List<ValidationResult> results = new LinkedList<>();
+    public List<ValidationResult> validate(final Set<String> excludedColumns) {
+        final List<ValidationResult> results = new LinkedList<>();
 
         try {
             if (excludedColumns == null || excludedColumns.isEmpty()) {
-                this.validateColumns(new int[0], results);
+                validateColumns(new int[0], results);
             } else {
-                Set<String> modifiedExcludedCols = new HashSet<>();
-                if (Character.isDefined(quoteCharacter)) {
+                final Set<String> modifiedExcludedCols = new HashSet<>();
+                if (Character.isDefined(this.quoteCharacter)) {
                     excludedColumns.stream()
                             .map(e -> e.trim())
                             .filter(e -> !e.isEmpty())
-                            .forEach(e -> modifiedExcludedCols.add(this.stripCharacter(e, quoteCharacter)));
+                            .forEach(e -> modifiedExcludedCols.add(stripCharacter(e, this.quoteCharacter)));
                 } else {
                     excludedColumns.stream()
                             .map(e -> e.trim())
@@ -96,15 +96,15 @@ public class TabularColumnFileValidation extends AbstractTabularColumnFileReader
                             .forEach(e -> modifiedExcludedCols.add(e));
                 }
 
-                int[] excludedCols = this.toColumnNumbers(modifiedExcludedCols);
+                final int[] excludedCols = toColumnNumbers(modifiedExcludedCols);
 
-                this.validateColumns(excludedCols, results);
+                validateColumns(excludedCols, results);
             }
-        } catch (IOException exception) {
-            if (results.size() <= maxNumOfMsg) {
-                String errMsg = String.format("Unable to read file %s.", dataFile.getFileName());
-                ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_IO_ERROR, errMsg);
-                result.setAttribute(ValidationAttribute.FILE_NAME, dataFile.getFileName());
+        } catch (final IOException exception) {
+            if (results.size() <= this.maxNumOfMsg) {
+                final String errMsg = String.format("Unable to read file %s.", this.dataFile.getFileName());
+                final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_IO_ERROR, errMsg);
+                result.setAttribute(ValidationAttribute.FILE_NAME, this.dataFile.getFileName());
                 results.add(result);
             }
         }
@@ -112,49 +112,49 @@ public class TabularColumnFileValidation extends AbstractTabularColumnFileReader
         return results;
     }
 
-    private void validateColumns(int[] excludedColumns, List<ValidationResult> results) throws IOException {
+    private void validateColumns(final int[] excludedColumns, final List<ValidationResult> results) throws IOException {
         int numOfVars = 0;
 
-        try (InputStream in = Files.newInputStream(dataFile, StandardOpenOption.READ)) {
+        try (final InputStream in = Files.newInputStream(this.dataFile, StandardOpenOption.READ)) {
             boolean skip = false;
             boolean hasSeenNonblankChar = false;
             boolean hasQuoteChar = false;
             boolean finished = false;
 
-            byte delimChar = delimiter.getByteValue();
+            final byte delimChar = this.delimiter.getByteValue();
             byte prevChar = -1;
 
             // comment marker check
-            byte[] comment = commentMarker.getBytes();
+            final byte[] comment = this.commentMarker.getBytes();
             int cmntIndex = 0;
             boolean checkForComment = comment.length > 0;
 
             // excluded columns check
-            int numOfExCols = excludedColumns.length;
+            final int numOfExCols = excludedColumns.length;
             int exColsIndex = 0;
 
             int colNum = 0;
             int lineNum = 1;
-            StringBuilder dataBuilder = new StringBuilder();
+            final StringBuilder dataBuilder = new StringBuilder();
 
-            byte[] buffer = new byte[DataFileReader.BUFFER_SIZE];
+            final byte[] buffer = new byte[DataFileReader.BUFFER_SIZE];
             int len;
             while ((len = in.read(buffer)) != -1 && !finished && !Thread.currentThread().isInterrupted()) {
                 for (int i = 0; i < len && !finished && !Thread.currentThread().isInterrupted(); i++) {
-                    byte currChar = buffer[i];
+                    final byte currChar = buffer[i];
 
                     if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
                         finished = hasSeenNonblankChar && !skip;
                         if (finished) {
-                            String value = dataBuilder.toString().trim();
+                            final String value = dataBuilder.toString().trim();
                             dataBuilder.delete(0, dataBuilder.length());
 
                             colNum++;
                             if (numOfExCols == 0 || exColsIndex >= numOfExCols || colNum != excludedColumns[exColsIndex]) {
                                 numOfVars++;
                                 if (value.isEmpty()) {
-                                    String errMsg = String.format("Line %d, column %d: Missing variable name.", lineNum, colNum);
-                                    ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_MISSING_VALUE, errMsg);
+                                    final String errMsg = String.format("Line %d, column %d: Missing variable name.", lineNum, colNum);
+                                    final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_MISSING_VALUE, errMsg);
                                     result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                                     result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                                     results.add(result);
@@ -195,14 +195,14 @@ public class TabularColumnFileValidation extends AbstractTabularColumnFileReader
                             }
                         }
 
-                        if (currChar == quoteCharacter) {
+                        if (currChar == this.quoteCharacter) {
                             hasQuoteChar = !hasQuoteChar;
                         } else {
                             if (hasQuoteChar) {
                                 dataBuilder.append((char) currChar);
                             } else {
-                                boolean isDelimiter;
-                                switch (delimiter) {
+                                final boolean isDelimiter;
+                                switch (this.delimiter) {
                                     case WHITESPACE:
                                         isDelimiter = (currChar <= DataFileReader.SPACE_CHAR) && (prevChar > DataFileReader.SPACE_CHAR);
                                         break;
@@ -211,7 +211,7 @@ public class TabularColumnFileValidation extends AbstractTabularColumnFileReader
                                 }
 
                                 if (isDelimiter) {
-                                    String value = dataBuilder.toString().trim();
+                                    final String value = dataBuilder.toString().trim();
                                     dataBuilder.delete(0, dataBuilder.length());
 
                                     colNum++;
@@ -220,8 +220,8 @@ public class TabularColumnFileValidation extends AbstractTabularColumnFileReader
                                     } else {
                                         numOfVars++;
                                         if (value.isEmpty()) {
-                                            String errMsg = String.format("Line %d, column %d: Missing variable name.", lineNum, colNum);
-                                            ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_MISSING_VALUE, errMsg);
+                                            final String errMsg = String.format("Line %d, column %d: Missing variable name.", lineNum, colNum);
+                                            final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_MISSING_VALUE, errMsg);
                                             result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                                             result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                                             results.add(result);
@@ -241,15 +241,15 @@ public class TabularColumnFileValidation extends AbstractTabularColumnFileReader
 
             finished = hasSeenNonblankChar && !skip;
             if (finished) {
-                String value = dataBuilder.toString().trim();
+                final String value = dataBuilder.toString().trim();
                 dataBuilder.delete(0, dataBuilder.length());
 
                 colNum++;
                 if (numOfExCols == 0 || exColsIndex >= numOfExCols || colNum != excludedColumns[exColsIndex]) {
                     numOfVars++;
                     if (value.isEmpty()) {
-                        String errMsg = String.format("Line %d, column %d: Missing variable name.", lineNum, colNum);
-                        ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_MISSING_VALUE, errMsg);
+                        final String errMsg = String.format("Line %d, column %d: Missing variable name.", lineNum, colNum);
+                        final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_MISSING_VALUE, errMsg);
                         result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                         result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                         results.add(result);
@@ -260,17 +260,17 @@ public class TabularColumnFileValidation extends AbstractTabularColumnFileReader
 
         if (numOfVars <= 0) {
             final String errMsg = "No variable was read in.";
-            ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_MISSING_VALUE, errMsg);
+            final ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_MISSING_VALUE, errMsg);
             results.add(result);
         }
 
-        String infoMsg = String.format("There are %d variables.", numOfVars);
-        ValidationResult result = new ValidationResult(ValidationCode.INFO, MessageType.FILE_SUMMARY, infoMsg);
+        final String infoMsg = String.format("There are %d variables.", numOfVars);
+        final ValidationResult result = new ValidationResult(ValidationCode.INFO, MessageType.FILE_SUMMARY, infoMsg);
         results.add(result);
     }
 
     @Override
-    public void setMaximumNumberOfMessages(int maxNumOfMsg) {
+    public void setMaximumNumberOfMessages(final int maxNumOfMsg) {
         this.maxNumOfMsg = maxNumOfMsg;
     }
 

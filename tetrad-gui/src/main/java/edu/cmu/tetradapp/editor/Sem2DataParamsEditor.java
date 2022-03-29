@@ -23,7 +23,6 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.IntTextField;
-import edu.cmu.tetradapp.util.IntTextField.Filter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -49,7 +48,7 @@ public class Sem2DataParamsEditor extends JPanel implements ParameterEditor {
     public Sem2DataParamsEditor() {
     }
 
-    public void setParams(Parameters params) {
+    public void setParams(final Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
@@ -57,30 +56,30 @@ public class Sem2DataParamsEditor extends JPanel implements ParameterEditor {
         this.params = params;
     }
 
-    public void setParentModels(Object[] parentModels) {
+    public void setParentModels(final Object[] parentModels) {
         // Do nothing.
     }
 
     public void setup() {
 
         // set up text and ties them to the parameters object being edited.
-        IntTextField sampleSizeField = new IntTextField(this.getParams().getInt("sampleSize", 1000), 4);
-        sampleSizeField.setFilter(new Filter() {
-            public int filter(int value, int oldValue) {
+        final IntTextField sampleSizeField = new IntTextField(getParams().getInt("sampleSize", 1000), 4);
+        sampleSizeField.setFilter(new IntTextField.Filter() {
+            public int filter(final int value, final int oldValue) {
                 try {
-                    Sem2DataParamsEditor.this.getParams().set("sampleSize", value);
+                    getParams().set("sampleSize", value);
                     return value;
-                } catch (Exception e) {
+                } catch (final Exception e) {
                     return oldValue;
                 }
             }
         });
-        JCheckBox latentVarsBox = new JCheckBox("Include Latent Variables");
+        final JCheckBox latentVarsBox = new JCheckBox("Include Latent Variables");
         latentVarsBox.setHorizontalTextPosition(SwingConstants.LEFT);
         latentVarsBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JCheckBox b = (JCheckBox) e.getSource();
-                Sem2DataParamsEditor.this.getParams().set("includeLatents", b.isSelected());
+            public void actionPerformed(final ActionEvent e) {
+                final JCheckBox b = (JCheckBox) e.getSource();
+                getParams().set("includeLatents", b.isSelected());
             }
         });
 
@@ -94,17 +93,17 @@ public class Sem2DataParamsEditor extends JPanel implements ParameterEditor {
 //        });
 
 
-        this.setLayout(new BorderLayout());
+        setLayout(new BorderLayout());
 
         // continue workbench construction.
-        Box b6 = Box.createVerticalBox();
-        Box b1 = Box.createHorizontalBox();
+        final Box b6 = Box.createVerticalBox();
+        final Box b1 = Box.createHorizontalBox();
 
         b1.add(new JLabel("Sample size:  "));
         b1.add(Box.createHorizontalGlue());
         b1.add(sampleSizeField);
 
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(latentVarsBox);
         b2.add(Box.createHorizontalGlue());
 
@@ -116,7 +115,7 @@ public class Sem2DataParamsEditor extends JPanel implements ParameterEditor {
         //    b6.add(Box.createVerticalStrut(5));
         //   b6.add(hBox);
         b6.add(Box.createVerticalGlue());
-        this.add(b6, BorderLayout.CENTER);
+        add(b6, BorderLayout.CENTER);
     }
 
     public boolean mustBeShown() {
@@ -128,7 +127,7 @@ public class Sem2DataParamsEditor extends JPanel implements ParameterEditor {
      * public, but it is needed so that the textfields can edit the model.)
      */
     private synchronized Parameters getParams() {
-        return params;
+        return this.params;
     }
 }
 

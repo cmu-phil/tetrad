@@ -129,13 +129,13 @@ public class Fasts implements IFas {
     /**
      * Constructs a new FastAdjacencySearch.
      */
-    public Fasts(Graph graph, IndependenceTest test) {
+    public Fasts(final Graph graph, final IndependenceTest test) {
         this.graph = graph;
         this.test = test;
     }
 
-    public Fasts(IndependenceTest test) {
-        graph = new EdgeListGraph(test.getVariables());
+    public Fasts(final IndependenceTest test) {
+        this.graph = new EdgeListGraph(test.getVariables());
         this.test = test;
     }
 
@@ -152,32 +152,32 @@ public class Fasts implements IFas {
      * @return a SepSet, which indicates which variables are independent conditional on which other variables
      */
     public Graph search() {
-        logger.log("info", "Starting Fast Adjacency Search.");
-        graph.removeEdges(graph.getEdges());
+        this.logger.log("info", "Starting Fast Adjacency Search.");
+        this.graph.removeEdges(this.graph.getEdges());
 
-        sepset = new SepsetMap();
+        this.sepset = new SepsetMap();
 //        sepset.setReturnEmptyIfNotSet(true);
 
-        int _depth = depth;
+        int _depth = this.depth;
 
         if (_depth == -1) {
             _depth = 1000;
         }
 
-        Map<Node, Set<Node>> adjacencies = new HashMap<>();
-        List<Node> nodes = graph.getNodes();
+        final Map<Node, Set<Node>> adjacencies = new HashMap<>();
+        final List<Node> nodes = this.graph.getNodes();
 
-        for (Node node : nodes) {
+        for (final Node node : nodes) {
             adjacencies.put(node, new TreeSet<Node>());
         }
 
         for (int d = 0; d <= _depth; d++) {
-            boolean more;
+            final boolean more;
 
             if (d == 0) {
-                more = this.searchAtDepth0(nodes, test, adjacencies);
+                more = searchAtDepth0(nodes, this.test, adjacencies);
             } else {
-                more = this.searchAtDepth(nodes, test, adjacencies, d);
+                more = searchAtDepth(nodes, this.test, adjacencies, d);
             }
 
             if (!more) {
@@ -187,47 +187,47 @@ public class Fasts implements IFas {
 
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = i + 1; j < nodes.size(); j++) {
-                Node x = nodes.get(i);
-                Node y = nodes.get(j);
+                final Node x = nodes.get(i);
+                final Node y = nodes.get(j);
 
                 if (adjacencies.get(x).contains(y)) {
-                    graph.addUndirectedEdge(x, y);
+                    this.graph.addUndirectedEdge(x, y);
                 }
             }
         }
 
-        logger.log("info", "Finishing Fast Adjacency Search.");
+        this.logger.log("info", "Finishing Fast Adjacency Search.");
 
-        return graph;
+        return this.graph;
     }
 
     public Map<Node, Set<Node>> searchMapOnly() {
-        logger.log("info", "Starting Fast Adjacency Search.");
-        graph.removeEdges(graph.getEdges());
+        this.logger.log("info", "Starting Fast Adjacency Search.");
+        this.graph.removeEdges(this.graph.getEdges());
 
-        sepset = new SepsetMap();
+        this.sepset = new SepsetMap();
 
-        int _depth = depth;
+        int _depth = this.depth;
 
         if (_depth == -1) {
             _depth = 1000;
         }
 
 
-        Map<Node, Set<Node>> adjacencies = new HashMap<>();
-        List<Node> nodes = graph.getNodes();
+        final Map<Node, Set<Node>> adjacencies = new HashMap<>();
+        final List<Node> nodes = this.graph.getNodes();
 
-        for (Node node : nodes) {
+        for (final Node node : nodes) {
             adjacencies.put(node, new TreeSet<Node>());
         }
 
         for (int d = 0; d <= _depth; d++) {
-            boolean more;
+            final boolean more;
 
             if (d == 0) {
-                more = this.searchAtDepth0(nodes, test, adjacencies);
+                more = searchAtDepth0(nodes, this.test, adjacencies);
             } else {
-                more = this.searchAtDepth(nodes, test, adjacencies, d);
+                more = searchAtDepth(nodes, this.test, adjacencies, d);
             }
 
             if (!more) {
@@ -239,10 +239,10 @@ public class Fasts implements IFas {
     }
 
     public int getDepth() {
-        return depth;
+        return this.depth;
     }
 
-    public void setDepth(int depth) {
+    public void setDepth(final int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException(
                     "Depth must be -1 (unlimited) or >= 0.");
@@ -252,10 +252,10 @@ public class Fasts implements IFas {
     }
 
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(final IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException("Cannot set knowledge to null");
         }
@@ -264,34 +264,34 @@ public class Fasts implements IFas {
 
     //==============================PRIVATE METHODS======================/
 
-    private boolean searchAtDepth0(List<Node> nodes, IndependenceTest test, Map<Node, Set<Node>> adjacencies) {
-        List<Node> empty = Collections.emptyList();
-        List<Node> simListX = new ArrayList<>();
-        List<Node> simListY = new ArrayList<>();
+    private boolean searchAtDepth0(final List<Node> nodes, final IndependenceTest test, final Map<Node, Set<Node>> adjacencies) {
+        final List<Node> empty = Collections.emptyList();
+        final List<Node> simListX = new ArrayList<>();
+        final List<Node> simListY = new ArrayList<>();
         for (int i = 0; i < nodes.size(); i++) {
-            if (verbose) {
-                if ((i + 1) % 100 == 0) out.println("Node # " + (i + 1));
+            if (this.verbose) {
+                if ((i + 1) % 100 == 0) this.out.println("Node # " + (i + 1));
             }
 
 
-            Node x = nodes.get(i);
+            final Node x = nodes.get(i);
 
             for (int j = i + 1; j < nodes.size(); j++) {
 
-                Node y = nodes.get(j);
+                final Node y = nodes.get(j);
 
                 //if the current nodes under consideration were already handled by similarNodes, skip this pair
-                String xName = x.getName();
-                String yName = y.getName();
+                final String xName = x.getName();
+                final String yName = y.getName();
                 boolean skippair = false;
 
-                Iterator itx1 = simListX.iterator();
-                Iterator ity1 = simListY.iterator();
+                final Iterator itx1 = simListX.iterator();
+                final Iterator ity1 = simListY.iterator();
                 while (itx1.hasNext() && ity1.hasNext()) {
-                    Node x1 = (Node) itx1.next();
-                    Node y1 = (Node) ity1.next();
-                    String simX = x1.getName();
-                    String simY = y1.getName();
+                    final Node x1 = (Node) itx1.next();
+                    final Node y1 = (Node) ity1.next();
+                    final String simX = x1.getName();
+                    final String simY = y1.getName();
                     if ((Objects.equals(xName, simX) && Objects.equals(yName, simY)) ||
                             (Objects.equals(xName, simY) && Objects.equals(yName, simX))) {
                         skippair = true;
@@ -302,11 +302,11 @@ public class Fasts implements IFas {
 
                 if (skippair) continue;
 
-                if (externalGraph != null) {
-                    Node x2 = externalGraph.getNode(x.getName());
-                    Node y2 = externalGraph.getNode(y.getName());
+                if (this.externalGraph != null) {
+                    final Node x2 = this.externalGraph.getNode(x.getName());
+                    final Node y2 = this.externalGraph.getNode(y.getName());
 
-                    if (!externalGraph.isAdjacentTo(x2, y2)) {
+                    if (!this.externalGraph.isAdjacentTo(x2, y2)) {
                         continue;
                     }
                 }
@@ -314,94 +314,94 @@ public class Fasts implements IFas {
                 boolean independent;
 
                 try {
-                    numIndependenceTests++;
+                    this.numIndependenceTests++;
                     independent = test.isIndependent(x, y, empty);
                     System.out.println("############# independence given empty set: x,y " + x + ", " +
                             y + " independence = " + independent);
-                } catch (Exception e) {
+                } catch (final Exception e) {
                     e.printStackTrace();
                     independent = false;
                 }
 
                 if (independent) {
-                    numIndependenceJudgements++;
+                    this.numIndependenceJudgements++;
                 } else {
-                    numDependenceJudgement++;
+                    this.numDependenceJudgement++;
                 }
 
-                boolean noEdgeRequired =
-                        knowledge.noEdgeRequired(x.getName(), y.getName());
+                final boolean noEdgeRequired =
+                        this.knowledge.noEdgeRequired(x.getName(), y.getName());
 
 //                getSepsets().setReturnEmptyIfNotSet(false); // added 05.30.2016
                 if (independent && noEdgeRequired) {
 //                    if (!getSepsets().isReturnEmptyIfNotSet()) {
-                    this.getSepsets().set(x, y, empty);
+                    getSepsets().set(x, y, empty);
                     System.out.println("$$$$$$$$$$$ look for similar pairs x,y = " + x + ", " + y);
-                    List<List<Node>> simList = this.returnSimilarPairs(test, x, y);
+                    final List<List<Node>> simList = returnSimilarPairs(test, x, y);
                     if (simList.isEmpty()) continue;
-                    List<Node> x1List = simList.get(0);
-                    List<Node> y1List = simList.get(1);
+                    final List<Node> x1List = simList.get(0);
+                    final List<Node> y1List = simList.get(1);
                     simListX.addAll(x1List);
                     simListY.addAll(y1List);
-                    Iterator itx = x1List.iterator();
-                    Iterator ity = y1List.iterator();
+                    final Iterator itx = x1List.iterator();
+                    final Iterator ity = y1List.iterator();
                     while (itx.hasNext() && ity.hasNext()) {
-                        Node x1 = (Node) itx.next();
-                        Node y1 = (Node) ity.next();
+                        final Node x1 = (Node) itx.next();
+                        final Node y1 = (Node) ity.next();
                         System.out.println("$$$$$$$$$$$ found similar pair x,y = " + x1 + ", " + y1);
-                        this.getSepsets().set(x1, y1, empty);
+                        getSepsets().set(x1, y1, empty);
                     }
 //                    }
 
                     TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, empty) + " score = " +
-                            nf.format(test.getScore()));
+                            this.nf.format(test.getScore()));
 
-                    if (verbose) {
-                        out.println(SearchLogUtils.independenceFact(x, y, empty) + " score = " +
-                                nf.format(test.getScore()));
+                    if (this.verbose) {
+                        this.out.println(SearchLogUtils.independenceFact(x, y, empty) + " score = " +
+                                this.nf.format(test.getScore()));
                     }
 
-                } else if (!this.forbiddenEdge(x, y)) {
+                } else if (!forbiddenEdge(x, y)) {
                     System.out.println("adding edge between x = " + x + " and y = " + y);
                     adjacencies.get(x).add(y);
                     adjacencies.get(y).add(x);
                     // This would add edges to all similar pairs which are found to be dependent...
-                    List<List<Node>> simList = this.returnSimilarPairs(test, x, y);
+                    final List<List<Node>> simList = returnSimilarPairs(test, x, y);
                     if (simList.isEmpty()) continue;
-                    List<Node> x1List = simList.get(0);
-                    List<Node> y1List = simList.get(1);
+                    final List<Node> x1List = simList.get(0);
+                    final List<Node> y1List = simList.get(1);
                     simListX.addAll(x1List);
                     simListY.addAll(y1List);
-                    Iterator itx = x1List.iterator();
-                    Iterator ity = y1List.iterator();
+                    final Iterator itx = x1List.iterator();
+                    final Iterator ity = y1List.iterator();
                     while (itx.hasNext() && ity.hasNext()) {
-                        Node x1 = (Node) itx.next();
-                        Node y1 = (Node) ity.next();
+                        final Node x1 = (Node) itx.next();
+                        final Node y1 = (Node) ity.next();
                         System.out.println("$$$$$$$$$$$ similar pair x,y = " + x1 + ", " + y1);
                         System.out.println("adding edge between x = " + x1 + " and y = " + y1);
                         adjacencies.get(x1).add(y1);
                         adjacencies.get(y1).add(x1);
                     }
 
-                    if (verbose) {
+                    if (this.verbose) {
                         TetradLogger.getInstance().log("dependencies", SearchLogUtils.independenceFact(x, y, empty) + " score = " +
-                                nf.format(test.getScore()));
+                                this.nf.format(test.getScore()));
                     }
                 }
             }
         }
 
-        return this.freeDegree(nodes, adjacencies) > 0;
+        return freeDegree(nodes, adjacencies) > 0;
     }
 
-    private int freeDegree(List<Node> nodes, Map<Node, Set<Node>> adjacencies) {
+    private int freeDegree(final List<Node> nodes, final Map<Node, Set<Node>> adjacencies) {
         int max = 0;
 
-        for (Node x : nodes) {
-            Set<Node> opposites = adjacencies.get(x);
+        for (final Node x : nodes) {
+            final Set<Node> opposites = adjacencies.get(x);
 
-            for (Node y : opposites) {
-                Set<Node> adjx = new HashSet<>(opposites);
+            for (final Node y : opposites) {
+                final Set<Node> adjx = new HashSet<>(opposites);
                 adjx.remove(y);
 
                 if (adjx.size() > max) {
@@ -413,13 +413,13 @@ public class Fasts implements IFas {
         return max;
     }
 
-    private boolean forbiddenEdge(Node x, Node y) {
-        String name1 = x.getName();
-        String name2 = y.getName();
+    private boolean forbiddenEdge(final Node x, final Node y) {
+        final String name1 = x.getName();
+        final String name2 = y.getName();
 
-        if (knowledge.isForbidden(name1, name2) &&
-                knowledge.isForbidden(name2, name1)) {
-            logger.log("edgeRemoved", "Removed " + Edges.undirectedEdge(x, y) + " because it was " +
+        if (this.knowledge.isForbidden(name1, name2) &&
+                this.knowledge.isForbidden(name2, name1)) {
+            this.logger.log("edgeRemoved", "Removed " + Edges.undirectedEdge(x, y) + " because it was " +
                     "forbidden by background knowledge.");
 
             return true;
@@ -428,61 +428,61 @@ public class Fasts implements IFas {
         return false;
     }
 
-    private boolean searchAtDepth(List<Node> nodes, IndependenceTest test, Map<Node, Set<Node>> adjacencies, int depth) {
+    private boolean searchAtDepth(final List<Node> nodes, final IndependenceTest test, final Map<Node, Set<Node>> adjacencies, final int depth) {
         int count = 0;
 
-        for (Node x : nodes) {
-            if (verbose) {
-                if (++count % 100 == 0) out.println("count " + count + " of " + nodes.size());
+        for (final Node x : nodes) {
+            if (this.verbose) {
+                if (++count % 100 == 0) this.out.println("count " + count + " of " + nodes.size());
             }
 
-            List<Node> adjx = new ArrayList<>(adjacencies.get(x));
+            final List<Node> adjx = new ArrayList<>(adjacencies.get(x));
 
             EDGE:
-            for (Node y : adjx) {
-                List<Node> _adjx = new ArrayList<>(adjacencies.get(x));
+            for (final Node y : adjx) {
+                final List<Node> _adjx = new ArrayList<>(adjacencies.get(x));
                 _adjx.remove(y);
-                List<Node> ppx = this.possibleParents(x, _adjx, knowledge);
+                final List<Node> ppx = possibleParents(x, _adjx, this.knowledge);
 
                 if (ppx.size() >= depth) {
-                    ChoiceGenerator cg = new ChoiceGenerator(ppx.size(), depth);
+                    final ChoiceGenerator cg = new ChoiceGenerator(ppx.size(), depth);
                     int[] choice;
 
                     while ((choice = cg.next()) != null) {
-                        List<Node> condSet = GraphUtils.asList(choice, ppx);
+                        final List<Node> condSet = GraphUtils.asList(choice, ppx);
 
                         boolean independent;
 
                         try {
-                            numIndependenceTests++;
+                            this.numIndependenceTests++;
                             independent = test.isIndependent(x, y, condSet);
-                        } catch (Exception e) {
+                        } catch (final Exception e) {
                             independent = false;
                         }
 
                         if (independent) {
-                            numIndependenceJudgements++;
+                            this.numIndependenceJudgements++;
                         } else {
-                            numDependenceJudgement++;
+                            this.numDependenceJudgement++;
                         }
 
-                        boolean noEdgeRequired =
-                                knowledge.noEdgeRequired(x.getName(), y.getName());
+                        final boolean noEdgeRequired =
+                                this.knowledge.noEdgeRequired(x.getName(), y.getName());
 
                         if (independent && noEdgeRequired) {
                             adjacencies.get(x).remove(y);
                             adjacencies.get(y).remove(x);
 
-                            this.getSepsets().set(x, y, condSet);
+                            getSepsets().set(x, y, condSet);
 
                             // This is the added component to enforce repeating structure
-                            this.removeSimilarPairs(adjacencies, test, x, y, condSet);
+                            removeSimilarPairs(adjacencies, test, x, y, condSet);
 
 
-                            if (verbose) {
+                            if (this.verbose) {
                                 TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, condSet) +
-                                        " score = " + nf.format(test.getScore()));
-                                out.println(SearchLogUtils.independenceFactMsg(x, y, condSet, test.getPValue()));
+                                        " score = " + this.nf.format(test.getScore()));
+                                this.out.println(SearchLogUtils.independenceFactMsg(x, y, condSet, test.getPValue()));
                             }
 
                             continue EDGE;
@@ -492,18 +492,18 @@ public class Fasts implements IFas {
             }
         }
 
-        return this.freeDegree(nodes, adjacencies) > depth;
+        return freeDegree(nodes, adjacencies) > depth;
     }
 
-    private List<Node> possibleParents(Node x, List<Node> adjx,
-                                       IKnowledge knowledge) {
-        List<Node> possibleParents = new LinkedList<>();
-        String _x = x.getName();
+    private List<Node> possibleParents(final Node x, final List<Node> adjx,
+                                       final IKnowledge knowledge) {
+        final List<Node> possibleParents = new LinkedList<>();
+        final String _x = x.getName();
 
-        for (Node z : adjx) {
-            String _z = z.getName();
+        for (final Node z : adjx) {
+            final String _z = z.getName();
 
-            if (this.possibleParentOf(_z, _x, knowledge)) {
+            if (possibleParentOf(_z, _x, knowledge)) {
                 possibleParents.add(z);
             }
         }
@@ -511,46 +511,46 @@ public class Fasts implements IFas {
         return possibleParents;
     }
 
-    private boolean possibleParentOf(String z, String x, IKnowledge knowledge) {
+    private boolean possibleParentOf(final String z, final String x, final IKnowledge knowledge) {
         return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
     }
 
     // removeSimilarPairs based on orientSimilarPairs in SvarFciOrient.java by Entner and Hoyer
-    private void removeSimilarPairs(Map<Node, Set<Node>> adjacencies, IndependenceTest test, Node x, Node y, List<Node> condSet) {
+    private void removeSimilarPairs(final Map<Node, Set<Node>> adjacencies, final IndependenceTest test, final Node x, final Node y, final List<Node> condSet) {
         System.out.println("Entering removeSimilarPairs method...");
         System.out.println("original independence: " + x + " and " + y + " conditional on " + condSet);
         if (x.getName().equals("time") || y.getName().equals("time")) {
             System.out.println("Not removing similar pairs b/c variable pair includes time.");
             return;
         }
-        for (Node tempNode : condSet) {
+        for (final Node tempNode : condSet) {
             if (tempNode.getName().equals("time")) {
                 System.out.println("Not removing similar pairs b/c conditioning set includes time.");
                 return;
             }
         }
-        int ntiers = knowledge.getNumTiers();
-        int indx_tier = knowledge.isInWhichTier(x);
-        int indy_tier = knowledge.isInWhichTier(y);
-        int max_tier = Math.max(indx_tier, indy_tier);
-        int tier_diff = Math.max(indx_tier, indy_tier) - Math.min(indx_tier, indy_tier);
+        final int ntiers = this.knowledge.getNumTiers();
+        final int indx_tier = this.knowledge.isInWhichTier(x);
+        final int indy_tier = this.knowledge.isInWhichTier(y);
+        final int max_tier = Math.max(indx_tier, indy_tier);
+        final int tier_diff = Math.max(indx_tier, indy_tier) - Math.min(indx_tier, indy_tier);
         int indx_comp = -1;
         int indy_comp = -1;
-        List tier_x = knowledge.getTier(indx_tier);
+        final List tier_x = this.knowledge.getTier(indx_tier);
 //        Collections.sort(tier_x);
-        List tier_y = knowledge.getTier(indy_tier);
+        final List tier_y = this.knowledge.getTier(indy_tier);
 //        Collections.sort(tier_y);
 
         int i;
         for (i = 0; i < tier_x.size(); ++i) {
-            if (this.getNameNoLag(x.getName()).equals(this.getNameNoLag(tier_x.get(i)))) {
+            if (getNameNoLag(x.getName()).equals(getNameNoLag(tier_x.get(i)))) {
                 indx_comp = i;
                 break;
             }
         }
 
         for (i = 0; i < tier_y.size(); ++i) {
-            if (this.getNameNoLag(y.getName()).equals(this.getNameNoLag(tier_y.get(i)))) {
+            if (getNameNoLag(y.getName()).equals(getNameNoLag(tier_y.get(i)))) {
                 indy_comp = i;
                 break;
             }
@@ -560,15 +560,15 @@ public class Fasts implements IFas {
         if (indy_comp == -1) System.out.println("WARNING: indy_comp = -1!!!! ");
 
         for (i = 0; i < ntiers - tier_diff; ++i) {
-            if (knowledge.getTier(i).size() == 1) continue;
-            String A;
-            Node x1;
-            String B;
-            Node y1;
+            if (this.knowledge.getTier(i).size() == 1) continue;
+            final String A;
+            final Node x1;
+            final String B;
+            final Node y1;
             if (indx_tier >= indy_tier) {
-                List tmp_tier1 = knowledge.getTier(i + tier_diff);
+                final List tmp_tier1 = this.knowledge.getTier(i + tier_diff);
 //                Collections.sort(tmp_tier1);
-                List tmp_tier2 = knowledge.getTier(i);
+                final List tmp_tier2 = this.knowledge.getTier(i);
 //                Collections.sort(tmp_tier2);
                 A = (String) tmp_tier1.get(indx_comp);
                 B = (String) tmp_tier2.get(indy_comp);
@@ -580,21 +580,21 @@ public class Fasts implements IFas {
                 adjacencies.get(x1).remove(y1);
                 adjacencies.get(y1).remove(x1);
                 System.out.println("removed edge between " + x1 + " and " + y1 + " because of structure knowledge");
-                List<Node> condSetAB = new ArrayList<>();
-                for (Node tempNode : condSet) {
-                    int ind_temptier = knowledge.isInWhichTier(tempNode);
-                    List temptier = knowledge.getTier(ind_temptier);
+                final List<Node> condSetAB = new ArrayList<>();
+                for (final Node tempNode : condSet) {
+                    final int ind_temptier = this.knowledge.isInWhichTier(tempNode);
+                    final List temptier = this.knowledge.getTier(ind_temptier);
 //                    Collections.sort(temptier);
                     int ind_temp = -1;
                     for (int j = 0; j < temptier.size(); ++j) {
-                        if (this.getNameNoLag(tempNode.getName()).equals(this.getNameNoLag(temptier.get(j)))) {
+                        if (getNameNoLag(tempNode.getName()).equals(getNameNoLag(temptier.get(j)))) {
                             ind_temp = j;
                             break;
                         }
                     }
 
-                    int cond_diff = indx_tier - ind_temptier;
-                    int condAB_tier = knowledge.isInWhichTier(x1) - cond_diff;
+                    final int cond_diff = indx_tier - ind_temptier;
+                    final int condAB_tier = this.knowledge.isInWhichTier(x1) - cond_diff;
 //                    System.out.println("tempNode = " + tempNode);
 //                    System.out.println("ind_temptier = " + ind_temptier);
 //                    System.out.println("indx_tier = " + indx_tier);
@@ -603,27 +603,27 @@ public class Fasts implements IFas {
 //                    System.out.println("max_tier = " + max_tier);
 //                    System.out.println("ntiers = " + ntiers);
                     if (condAB_tier < 0 || condAB_tier > (ntiers - 1)
-                            || knowledge.getTier(condAB_tier).size() == 1) { // added condition for time tier 05.29.2016
+                            || this.knowledge.getTier(condAB_tier).size() == 1) { // added condition for time tier 05.29.2016
 //                        List<Node> empty = Collections.emptyList();
 //                        getSepsets2().set(x1, y1, empty); // added 05.01.2016
                         System.out.println("Warning: For nodes " + x1 + "," + y1 + " the conditioning variable is outside "
                                 + "of window, so not added to SepSet");
                         continue;
                     }
-                    List new_tier = knowledge.getTier(condAB_tier);
+                    final List new_tier = this.knowledge.getTier(condAB_tier);
 //                    Collections.sort(new_tier);
-                    String tempNode1 = (String) new_tier.get(ind_temp);
+                    final String tempNode1 = (String) new_tier.get(ind_temp);
                     System.out.println("adding variable " + tempNode1 + " to SepSet");
                     condSetAB.add(test.getVariable(tempNode1));
                 }
                 System.out.println("done");
-                this.getSepsets().set(x1, y1, condSetAB);
+                getSepsets().set(x1, y1, condSetAB);
             } else {
                 //System.out.println("############## WARNING (removeSimilarPairs): did not catch x,y pair " + x + ", " + y);
                 //System.out.println();
-                List tmp_tier1 = knowledge.getTier(i);
+                final List tmp_tier1 = this.knowledge.getTier(i);
 //                Collections.sort(tmp_tier1);
-                List tmp_tier2 = knowledge.getTier(i + tier_diff);
+                final List tmp_tier2 = this.knowledge.getTier(i + tier_diff);
 //                Collections.sort(tmp_tier2);
                 A = (String) tmp_tier1.get(indx_comp);
                 B = (String) tmp_tier2.get(indy_comp);
@@ -635,21 +635,21 @@ public class Fasts implements IFas {
                 adjacencies.get(x1).remove(y1);
                 adjacencies.get(y1).remove(x1);
                 System.out.println("removed edge between " + x1 + " and " + y1 + " because of structure knowledge");
-                List<Node> condSetAB = new ArrayList<>();
-                for (Node tempNode : condSet) {
-                    int ind_temptier = knowledge.isInWhichTier(tempNode);
-                    List temptier = knowledge.getTier(ind_temptier);
+                final List<Node> condSetAB = new ArrayList<>();
+                for (final Node tempNode : condSet) {
+                    final int ind_temptier = this.knowledge.isInWhichTier(tempNode);
+                    final List temptier = this.knowledge.getTier(ind_temptier);
 //                    Collections.sort(temptier);
                     int ind_temp = -1;
                     for (int j = 0; j < temptier.size(); ++j) {
-                        if (this.getNameNoLag(tempNode.getName()).equals(this.getNameNoLag(temptier.get(j)))) {
+                        if (getNameNoLag(tempNode.getName()).equals(getNameNoLag(temptier.get(j)))) {
                             ind_temp = j;
                             break;
                         }
                     }
 
-                    int cond_diff = indx_tier - ind_temptier;
-                    int condAB_tier = knowledge.isInWhichTier(x1) - cond_diff;
+                    final int cond_diff = indx_tier - ind_temptier;
+                    final int condAB_tier = this.knowledge.isInWhichTier(x1) - cond_diff;
 //                    System.out.println("tempNode = " + tempNode);
 //                    System.out.println("ind_temptier = " + ind_temptier);
 //                    System.out.println("indx_tier = " + indx_tier);
@@ -658,53 +658,53 @@ public class Fasts implements IFas {
 //                    System.out.println("max_tier = " + max_tier);
 //                    System.out.println("ntiers = " + ntiers);
                     if (condAB_tier < 0 || condAB_tier > (ntiers - 1)
-                            || knowledge.getTier(condAB_tier).size() == 1) { // added condition for time tier 05.29.2016
+                            || this.knowledge.getTier(condAB_tier).size() == 1) { // added condition for time tier 05.29.2016
 //                        List<Node> empty = Collections.emptyList();
 //                        getSepsets2().set(x1, y1, empty); // added 05.01.2016
                         System.out.println("Warning: For nodes " + x1 + "," + y1 + " the conditioning variable is outside "
                                 + "of window, so not added to SepSet");
                         continue;
                     }
-                    List new_tier = knowledge.getTier(condAB_tier);
+                    final List new_tier = this.knowledge.getTier(condAB_tier);
 //                    Collections.sort(new_tier);
-                    String tempNode1 = (String) new_tier.get(ind_temp);
+                    final String tempNode1 = (String) new_tier.get(ind_temp);
                     System.out.println("adding variable " + tempNode1 + " to SepSet");
                     condSetAB.add(test.getVariable(tempNode1));
                 }
                 System.out.println("done");
-                this.getSepsets().set(x1, y1, condSetAB);
+                getSepsets().set(x1, y1, condSetAB);
             }
         }
     }
 
     // returnSimilarPairs based on orientSimilarPairs in SvarFciOrient.java by Entner and Hoyer
-    private List<List<Node>> returnSimilarPairs(IndependenceTest test, Node x, Node y) {
+    private List<List<Node>> returnSimilarPairs(final IndependenceTest test, final Node x, final Node y) {
         System.out.println("$$$$$ Entering returnSimilarPairs method with x,y = " + x + ", " + y);
         if (x.getName().equals("time") || y.getName().equals("time")) {
             return new ArrayList<>();
         }
 //        System.out.println("Knowledge within returnSimilar : " + knowledge);
-        int ntiers = knowledge.getNumTiers();
-        int indx_tier = knowledge.isInWhichTier(x);
-        int indy_tier = knowledge.isInWhichTier(y);
-        int tier_diff = Math.max(indx_tier, indy_tier) - Math.min(indx_tier, indy_tier);
+        final int ntiers = this.knowledge.getNumTiers();
+        final int indx_tier = this.knowledge.isInWhichTier(x);
+        final int indy_tier = this.knowledge.isInWhichTier(y);
+        final int tier_diff = Math.max(indx_tier, indy_tier) - Math.min(indx_tier, indy_tier);
         int indx_comp = -1;
         int indy_comp = -1;
-        List tier_x = knowledge.getTier(indx_tier);
+        final List tier_x = this.knowledge.getTier(indx_tier);
 //        Collections.sort(tier_x);
-        List tier_y = knowledge.getTier(indy_tier);
+        final List tier_y = this.knowledge.getTier(indy_tier);
 //        Collections.sort(tier_y);
 
         int i;
         for (i = 0; i < tier_x.size(); ++i) {
-            if (this.getNameNoLag(x.getName()).equals(this.getNameNoLag(tier_x.get(i)))) {
+            if (getNameNoLag(x.getName()).equals(getNameNoLag(tier_x.get(i)))) {
                 indx_comp = i;
                 break;
             }
         }
 
         for (i = 0; i < tier_y.size(); ++i) {
-            if (this.getNameNoLag(y.getName()).equals(this.getNameNoLag(tier_y.get(i)))) {
+            if (getNameNoLag(y.getName()).equals(getNameNoLag(tier_y.get(i)))) {
                 indy_comp = i;
                 break;
             }
@@ -716,19 +716,19 @@ public class Fasts implements IFas {
         if (indy_comp == -1) System.out.println("WARNING: indy_comp = -1!!!! ");
 
 
-        List<Node> simListX = new ArrayList<>();
-        List<Node> simListY = new ArrayList<>();
+        final List<Node> simListX = new ArrayList<>();
+        final List<Node> simListY = new ArrayList<>();
 
         for (i = 0; i < ntiers - tier_diff; ++i) {
-            if (knowledge.getTier(i).size() == 1) continue;
-            String A;
-            Node x1;
-            String B;
-            Node y1;
+            if (this.knowledge.getTier(i).size() == 1) continue;
+            final String A;
+            final Node x1;
+            final String B;
+            final Node y1;
             if (indx_tier >= indy_tier) {
-                List tmp_tier1 = knowledge.getTier(i + tier_diff);
+                final List tmp_tier1 = this.knowledge.getTier(i + tier_diff);
 //                Collections.sort(tmp_tier1);
-                List tmp_tier2 = knowledge.getTier(i);
+                final List tmp_tier2 = this.knowledge.getTier(i);
 //                Collections.sort(tmp_tier2);
                 A = (String) tmp_tier1.get(indx_comp);
                 B = (String) tmp_tier2.get(indy_comp);
@@ -743,9 +743,9 @@ public class Fasts implements IFas {
             } else {
                 //System.out.println("############## WARNING (returnSimilarPairs): did not catch x,y pair " + x + ", " + y);
                 //System.out.println();
-                List tmp_tier1 = knowledge.getTier(i);
+                final List tmp_tier1 = this.knowledge.getTier(i);
 //                Collections.sort(tmp_tier1);
-                List tmp_tier2 = knowledge.getTier(i + tier_diff);
+                final List tmp_tier2 = this.knowledge.getTier(i + tier_diff);
 //                Collections.sort(tmp_tier2);
                 A = (String) tmp_tier1.get(indx_comp);
                 B = (String) tmp_tier2.get(indy_comp);
@@ -760,49 +760,49 @@ public class Fasts implements IFas {
             }
         }
 
-        List<List<Node>> pairList = new ArrayList<>();
+        final List<List<Node>> pairList = new ArrayList<>();
         pairList.add(simListX);
         pairList.add(simListY);
         return (pairList);
     }
 
 
-    public String getNameNoLag(Object obj) {
-        String tempS = obj.toString();
+    public String getNameNoLag(final Object obj) {
+        final String tempS = obj.toString();
         if (tempS.indexOf(':') == -1) {
             return tempS;
         } else return tempS.substring(0, tempS.indexOf(':'));
     }
 
     public int getNumIndependenceTests() {
-        return numIndependenceTests;
+        return this.numIndependenceTests;
     }
 
-    public void setTrueGraph(Graph trueGraph) {
+    public void setTrueGraph(final Graph trueGraph) {
         this.trueGraph = trueGraph;
     }
 
     public int getNumFalseDependenceJudgments() {
-        return numFalseDependenceJudgments;
+        return this.numFalseDependenceJudgments;
     }
 
     public int getNumDependenceJudgments() {
-        return numDependenceJudgement;
+        return this.numDependenceJudgement;
     }
 
     public SepsetMap getSepsets() {
-        return sepset;
+        return this.sepset;
     }
 
-    public void setExternalGraph(Graph externalGraph) {
+    public void setExternalGraph(final Graph externalGraph) {
         this.externalGraph = externalGraph;
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 
@@ -812,7 +812,7 @@ public class Fasts implements IFas {
     }
 
     @Override
-    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
+    public void setAggressivelyPreventCycles(final boolean aggressivelyPreventCycles) {
 
     }
 
@@ -822,7 +822,7 @@ public class Fasts implements IFas {
     }
 
     @Override
-    public Graph search(List<Node> nodes) {
+    public Graph search(final List<Node> nodes) {
         return null;
     }
 
@@ -833,20 +833,20 @@ public class Fasts implements IFas {
 
     @Override
     public List<Node> getNodes() {
-        return test.getVariables();
+        return this.test.getVariables();
     }
 
     @Override
-    public List<Triple> getAmbiguousTriples(Node node) {
+    public List<Triple> getAmbiguousTriples(final Node node) {
         return null;
     }
 
     public int getNumIndependenceJudgements() {
-        return numIndependenceJudgements;
+        return this.numIndependenceJudgements;
     }
 
     @Override
-    public void setOut(PrintStream out) {
+    public void setOut(final PrintStream out) {
         this.out = out;
     }
 }

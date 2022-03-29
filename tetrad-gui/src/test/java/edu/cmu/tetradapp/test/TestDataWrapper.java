@@ -45,31 +45,31 @@ public class TestDataWrapper {
     @Test
     public void testConstruction() {
 
-        dataWrapper = new DataWrapper(new Parameters());
+        this.dataWrapper = new DataWrapper(new Parameters());
 
-        assertNotNull(dataWrapper);
+        assertNotNull(this.dataWrapper);
     }
 
     @Test
     public void testDataModelList() {
-        DataModelList modelList = new DataModelList();
+        final DataModelList modelList = new DataModelList();
 
-        List<Node> variables1 = new ArrayList<>();
+        final List<Node> variables1 = new ArrayList<>();
 
         for (int i = 0; i < 10; i++) {
             variables1.add(new ContinuousVariable("X" + i));
         }
 
-        List<Node> variables2 = new ArrayList<>();
+        final List<Node> variables2 = new ArrayList<>();
 
         for (int i = 0; i < 10; i++) {
             variables2.add(new ContinuousVariable("X" + i));
         }
 
-        DataSet first = new BoxDataSet(new VerticalDoubleDataBox(10, variables1.size()), variables1);
+        final DataSet first = new BoxDataSet(new VerticalDoubleDataBox(10, variables1.size()), variables1);
         first.setName("first");
 
-        DataSet second = new BoxDataSet(new VerticalDoubleDataBox(10, variables2.size()), variables2);
+        final DataSet second = new BoxDataSet(new VerticalDoubleDataBox(10, variables2.size()), variables2);
         second.setName("second");
 
         modelList.add(first);
@@ -81,9 +81,9 @@ public class TestDataWrapper {
         modelList.setSelectedModel(second);
 
         try {
-            DataModelList modelList2 = new MarshalledObject<>(modelList).get();
+            final DataModelList modelList2 = new MarshalledObject<>(modelList).get();
             assertEquals("second", modelList2.getSelectedModel().getName());
-        } catch (Exception e) {
+        } catch (final Exception e) {
             e.printStackTrace();
         }
     }

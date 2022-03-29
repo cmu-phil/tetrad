@@ -65,14 +65,14 @@ class GeneralizedSemPmParamsEditor extends JPanel {
     /**
      * Constructs a SemPm graphical editor for the given SemIm.
      */
-    public GeneralizedSemPmParamsEditor(GeneralizedSemPm semPm, Map<Object, EditorWindow> launchedEditors) {
+    public GeneralizedSemPmParamsEditor(final GeneralizedSemPm semPm, final Map<Object, EditorWindow> launchedEditors) {
         this.semPm = semPm;
         this.launchedEditors = launchedEditors;
-        this.setLayout(new BorderLayout());
-        JScrollPane scroll = new JScrollPane(this.initialValuesPane());
+        setLayout(new BorderLayout());
+        final JScrollPane scroll = new JScrollPane(initialValuesPane());
         scroll.setPreferredSize(new Dimension(450, 450));
-        this.add(scroll, BorderLayout.CENTER);
-        this.refreshLabels();
+        add(scroll, BorderLayout.CENTER);
+        refreshLabels();
 
 
 //        this.semPm = semPm;
@@ -95,26 +95,26 @@ class GeneralizedSemPmParamsEditor extends JPanel {
 //    }
 
     private JComponent initialValuesPane() {
-        formulasBox = Box.createVerticalBox();
-        this.refreshLabels();
-        return formulasBox;
+        this.formulasBox = Box.createVerticalBox();
+        refreshLabels();
+        return this.formulasBox;
     }
 
     public void refreshLabels() {
-        formulasBox.removeAll();
+        this.formulasBox.removeAll();
 
-        java.util.List<String> parameters = new ArrayList<>(this.semPm().getParameters());
+        final java.util.List<String> parameters = new ArrayList<>(semPm().getParameters());
         Collections.sort(parameters);
 
-        for (String parameter : parameters) {
-            Box c = Box.createHorizontalBox();
-            JLabel label = new JLabel(parameter + " ~ " + this.semPm().getParameterExpressionString(parameter));
-            String _parameter = parameter;
+        for (final String parameter : parameters) {
+            final Box c = Box.createHorizontalBox();
+            final JLabel label = new JLabel(parameter + " ~ " + semPm().getParameterExpressionString(parameter));
+            final String _parameter = parameter;
 
             label.addMouseListener(new MouseAdapter() {
-                public void mouseClicked(MouseEvent mouseEvent) {
+                public void mouseClicked(final MouseEvent mouseEvent) {
                     if (mouseEvent.getClickCount() == 2) {
-                        GeneralizedSemPmParamsEditor.this.beginParamEdit(_parameter, label, label);
+                        beginParamEdit(_parameter, label, label);
                     }
                 }
             });
@@ -122,71 +122,71 @@ class GeneralizedSemPmParamsEditor extends JPanel {
             c.add(label);
             c.add(Box.createHorizontalGlue());
 
-            formulasBox.add(c);
-            formulasBox.add(Box.createVerticalStrut(5));
+            this.formulasBox.add(c);
+            this.formulasBox.add(Box.createVerticalStrut(5));
         }
 
-        formulasBox.setBorder(new CompoundBorder(new TitledBorder("Double click expressions to edit."),
+        this.formulasBox.setBorder(new CompoundBorder(new TitledBorder("Double click expressions to edit."),
                 new EmptyBorder(5, 5, 5, 5)));
 
-        formulasBox.revalidate();
-        formulasBox.repaint();
+        this.formulasBox.revalidate();
+        this.formulasBox.repaint();
     }
 
-    private void beginParamEdit(String parameter, JLabel label, JComponent centering) {
-        if (launchedEditors.containsKey(parameter)) {
-            launchedEditors.get(parameter).moveToFront();
+    private void beginParamEdit(final String parameter, final JLabel label, final JComponent centering) {
+        if (this.launchedEditors.containsKey(parameter)) {
+            this.launchedEditors.get(parameter).moveToFront();
             return;
         }
 
-        GeneralizedExpressionEditor paramEditor = new GeneralizedExpressionEditor(semPm, parameter);
+        final GeneralizedExpressionEditor paramEditor = new GeneralizedExpressionEditor(this.semPm, parameter);
 
-        JPanel panel = new JPanel();
+        final JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.add(paramEditor, BorderLayout.CENTER);
         panel.setBorder(new EmptyBorder(5, 5, 5, 5));
 
-        EditorWindow editorWindow =
+        final EditorWindow editorWindow =
                 new EditorWindow(panel, "Edit Expression", "OK", true, centering);
 
         DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
         editorWindow.pack();
         editorWindow.setVisible(true);
 
-        launchedEditors.put(parameter, editorWindow);
+        this.launchedEditors.put(parameter, editorWindow);
 
         editorWindow.addInternalFrameListener(new InternalFrameAdapter() {
-            public void internalFrameClosing(InternalFrameEvent internalFrameEvent) {
+            public void internalFrameClosing(final InternalFrameEvent internalFrameEvent) {
                 if (!editorWindow.isCanceled()) {
-                    String expressionString = paramEditor.getExpressionString();
+                    final String expressionString = paramEditor.getExpressionString();
                     try {
-                        semPm.setParameterExpression(parameter, expressionString);
+                        GeneralizedSemPmParamsEditor.this.semPm.setParameterExpression(parameter, expressionString);
 //                        label.setText(parameter + " ~ " + semPm().getParameterExpressionString(parameter));
-                        GeneralizedSemPmParamsEditor.this.refreshLabels();
-                    } catch (ParseException e) {
+                        refreshLabels();
+                    } catch (final ParseException e) {
                         // This is an expression that's been vetted by the expression editor.
                         e.printStackTrace();
-                        launchedEditors.remove(parameter);
+                        GeneralizedSemPmParamsEditor.this.launchedEditors.remove(parameter);
                         throw new RuntimeException("The expression editor returned an unparseable string: " + expressionString, e);
-                    } catch (IllegalArgumentException e) {
+                    } catch (final IllegalArgumentException e) {
                         JOptionPane.showMessageDialog(panel, e.getMessage());
-                        launchedEditors.remove(parameter);
+                        GeneralizedSemPmParamsEditor.this.launchedEditors.remove(parameter);
                     }
 
-                    GeneralizedSemPmParamsEditor.this.firePropertyChange("modelChanged", null, null);
+                    firePropertyChange("modelChanged", null, null);
                 }
 
-                launchedEditors.remove(parameter);
+                GeneralizedSemPmParamsEditor.this.launchedEditors.remove(parameter);
             }
         });
     }
 
     private GeneralizedSemPm semPm() {
-        return semPm;
+        return this.semPm;
     }
 
     private Graph graph() {
-        return this.semPm().getGraph();
+        return semPm().getGraph();
     }
 
 }

@@ -49,25 +49,25 @@ final class SessionUtils {
      * @param onlyModel If true, displays a message indicating that this is the
      *                  only model consistent with the parents.
      */
-    public static void showPermissibleParentsDialog(Class modelClass,
-                                                    JComponent centeringComp,
-                                                    boolean warning,
-                                                    boolean onlyModel) {
-        TetradApplicationConfig config = TetradApplicationConfig.getInstance();
-        SessionNodeConfig nodeConfig = config.getSessionNodeConfig(modelClass);
+    public static void showPermissibleParentsDialog(final Class modelClass,
+                                                    final JComponent centeringComp,
+                                                    final boolean warning,
+                                                    final boolean onlyModel) {
+        final TetradApplicationConfig config = TetradApplicationConfig.getInstance();
+        final SessionNodeConfig nodeConfig = config.getSessionNodeConfig(modelClass);
         if (nodeConfig == null) {
             throw new NullPointerException("No configuration for model: " + modelClass);
         }
-        SessionNodeModelConfig modelConfig = nodeConfig.getModelConfig(modelClass);
-        String[][] parentCombinations =
-                possibleParentCombinations(modelClass);
+        final SessionNodeModelConfig modelConfig = nodeConfig.getModelConfig(modelClass);
+        final String[][] parentCombinations =
+                SessionUtils.possibleParentCombinations(modelClass);
 
-        StringBuilder b = new StringBuilder();
+        final StringBuilder b = new StringBuilder();
         b.append("<html>");
         b.append("The combinations of parent models you can use for ").append(modelConfig.getName()).append(" are:");
 
         for (int i = 0; i < parentCombinations.length; i++) {
-            String[] parentCombination = parentCombinations[i];
+            final String[] parentCombination = parentCombinations[i];
 
             b.append("\n  " + (i + 1) + ". ");
 
@@ -84,7 +84,7 @@ final class SessionUtils {
             }
         }
 
-        int messageType = JOptionPane.INFORMATION_MESSAGE;
+        final int messageType = JOptionPane.INFORMATION_MESSAGE;
 
         JOptionPane.showMessageDialog(centeringComp, b.toString(),
                 "Information on \"" + modelConfig.getName() + "\"", messageType);
@@ -95,26 +95,26 @@ final class SessionUtils {
      * given model class. The item at [i][j] is the jth parent model description
      * of the ith parent model combination.
      */
-    private static String[][] possibleParentCombinations(Class modelClass) {
-        List<List<String>> parentCombinations = new LinkedList<>();
+    private static String[][] possibleParentCombinations(final Class modelClass) {
+        final List<List<String>> parentCombinations = new LinkedList<>();
 
-        Constructor[] constructors = modelClass.getConstructors();
+        final Constructor[] constructors = modelClass.getConstructors();
         boolean foundNull = false;
 
         PARENT_SET:
-        for (Constructor constructor : constructors) {
-            List _list = Arrays.asList(constructor.getParameterTypes());
-            List parameterTypes = new LinkedList(_list);
+        for (final Constructor constructor : constructors) {
+            final List _list = Arrays.asList(constructor.getParameterTypes());
+            final List parameterTypes = new LinkedList(_list);
 
-            for (Iterator j = parameterTypes.iterator(); j.hasNext(); ) {
-                Class parameterType = (Class) j.next();
+            for (final Iterator j = parameterTypes.iterator(); j.hasNext(); ) {
+                final Class parameterType = (Class) j.next();
 
                 if (!(SessionModel.class.isAssignableFrom(parameterType) ||
                         (Parameters.class.isAssignableFrom(parameterType)))) {
                     continue PARENT_SET;
                 }
 
-                String descrip = getModelName(parameterType);
+                final String descrip = SessionUtils.getModelName(parameterType);
 
                 if (descrip == null) {
                     j.remove();
@@ -126,11 +126,11 @@ final class SessionUtils {
                 continue;
             }
 
-            List<String> combination = new LinkedList<>();
+            final List<String> combination = new LinkedList<>();
 
-            for (Object parameterType1 : parameterTypes) {
-                Class parameterType = (Class) parameterType1;
-                String descrip = getModelName(parameterType);
+            for (final Object parameterType1 : parameterTypes) {
+                final Class parameterType = (Class) parameterType1;
+                final String descrip = SessionUtils.getModelName(parameterType);
                 combination.add(descrip);
             }
 
@@ -141,11 +141,11 @@ final class SessionUtils {
             parentCombinations.add(0, new LinkedList<String>());
         }
 
-        String[][] _parentCombinations =
+        final String[][] _parentCombinations =
                 new String[parentCombinations.size()][];
 
         for (int i = 0; i < parentCombinations.size(); i++) {
-            List<String> combination = parentCombinations.get(i);
+            final List<String> combination = parentCombinations.get(i);
 
             _parentCombinations[i] = new String[combination.size()];
 
@@ -162,9 +162,9 @@ final class SessionUtils {
     /**
      * @return the name of the given model
      */
-    private static String getModelName(Class model) {
-        TetradApplicationConfig tetradConfig = TetradApplicationConfig.getInstance();
-        SessionNodeConfig config = tetradConfig.getSessionNodeConfig(model);
+    private static String getModelName(final Class model) {
+        final TetradApplicationConfig tetradConfig = TetradApplicationConfig.getInstance();
+        final SessionNodeConfig config = tetradConfig.getSessionNodeConfig(model);
         if (config == null) {
             if (AbstractAlgorithmRunner.class.equals(model)) {
                 return "Algorithm";
@@ -172,7 +172,7 @@ final class SessionUtils {
 
             return null;
         }
-        SessionNodeModelConfig modelConfig = config.getModelConfig(model);
+        final SessionNodeModelConfig modelConfig = config.getModelConfig(model);
         return modelConfig.getName();
     }
 

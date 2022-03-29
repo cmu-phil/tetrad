@@ -27,7 +27,7 @@ public class ChiSquare implements IndependenceWrapper {
     static final long serialVersionUID = 23L;
 
     @Override
-    public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+    public IndependenceTest getTest(final DataModel dataSet, final Parameters parameters) {
         return new IndTestChiSquare(DataUtils.getDiscreteDataSet(dataSet), parameters.getDouble("alpha"));
     }
 
@@ -43,7 +43,7 @@ public class ChiSquare implements IndependenceWrapper {
 
     @Override
     public List<String> getParameters() {
-        List<String> params = new ArrayList<>();
+        final List<String> params = new ArrayList<>();
         params.add(Params.ALPHA);
         return params;
     }

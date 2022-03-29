@@ -52,7 +52,7 @@ public class PointXy implements TetradSerializable {
      * @param x The x coordinate for the point.
      * @param y The y coordinate for the point.
      */
-    public PointXy(int x, int y) {
+    public PointXy(final int x, final int y) {
         this.x = x;
         this.y = y;
     }
@@ -62,9 +62,9 @@ public class PointXy implements TetradSerializable {
      *
      * @param point The point to be copied.
      */
-    public PointXy(PointXy point) {
-        x = point.x;
-        y = point.y;
+    public PointXy(final PointXy point) {
+        this.x = point.x;
+        this.y = point.y;
     }
 
     /**
@@ -72,7 +72,7 @@ public class PointXy implements TetradSerializable {
      *
      * @return the examplar.
      */
-    @SuppressWarnings({"UnusedDeclaration"})
+    @SuppressWarnings("UnusedDeclaration")
     public static PointXy serializableInstance() {
         return new PointXy(1, 2);
     }
@@ -83,21 +83,21 @@ public class PointXy implements TetradSerializable {
      * @return Ibid.
      */
     public int getX() {
-        return x;
+        return this.x;
     }
 
     /**
      * @return Ibid.
      */
     public int getY() {
-        return y;
+        return this.y;
     }
 
     /**
      * @return true just in case o is a Point with the same x and y
      * coordinates.
      */
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (!(o instanceof PointXy)) {
             throw new IllegalArgumentException("Not a Point object.");
         }
@@ -106,15 +106,15 @@ public class PointXy implements TetradSerializable {
             return true;
         }
 
-        PointXy c = (PointXy) o;
-        return c.x == x && c.y == y;
+        final PointXy c = (PointXy) o;
+        return c.x == this.x && c.y == this.y;
     }
 
     /**
      * @return a string representation of a point.
      */
     public String toString() {
-        return "Point<" + x + "," + y + ">";
+        return "Point<" + this.x + "," + this.y + ">";
     }
 }
 

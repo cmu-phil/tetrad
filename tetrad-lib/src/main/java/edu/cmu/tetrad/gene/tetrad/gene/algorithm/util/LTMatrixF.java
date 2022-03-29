@@ -37,7 +37,7 @@ public class LTMatrixF extends BasicLTMatrix {
     /**
      * Creates a lower triangular matrix with <code>nrows</code> rows.
      */
-    public LTMatrixF(String mname, int nrows) {
+    public LTMatrixF(final String mname, final int nrows) {
         super(mname, nrows);
     }
 
@@ -45,7 +45,7 @@ public class LTMatrixF extends BasicLTMatrix {
      * Creates a lower triangular matrix reading it from file
      * <code>fname</code>.
      */
-    public LTMatrixF(String fname) throws IOException {
+    public LTMatrixF(final String fname) throws IOException {
         super(fname);
     }
 
@@ -53,7 +53,7 @@ public class LTMatrixF extends BasicLTMatrix {
      * Initializes the data structure used to hold the contents of the matrix
      */
     protected void initMatrixStorage() {
-        A = new float[(n * (n + 1) / 2)];
+        this.A = new float[(this.n * (this.n + 1) / 2)];
     }
 
     /**
@@ -61,65 +61,65 @@ public class LTMatrixF extends BasicLTMatrix {
      * method checks that x can be converted to a float without causing
      * overflow.
      */
-    public void setDoubleValue(int r, int c, double x) {
-        this.setValue(r, c, x);
+    public void setDoubleValue(final int r, final int c, final double x) {
+        setValue(r, c, x);
     }
 
     /**
      * Assigns double x to matrix element (r, c).  This method checks that x can
      * be converted to a float without causing overflow.
      */
-    public void setValue(int r, int c, double x) {
+    public void setValue(final int r, final int c, final double x) {
         if ((x < BasicMatrix.MIN_FLOAT) || (x > BasicMatrix.MAX_FLOAT)) {
             throw new IllegalArgumentException(
                     "Double " + x + " cannot be stored as a float");
         }
-        this.setValue(r, c, (float) x);
+        setValue(r, c, (float) x);
     }
 
     /**
      * Assigns float x to matrix element (r, c)
      */
-    public void setValue(int r, int c, float x) {
+    public void setValue(final int r, final int c, final float x) {
         if (r < c) {
-            this.upperTriangXcp(r, c);
+            upperTriangXcp(r, c);
         }
-        if ((r >= n) || (c >= n) || (r < 0) || (c < 0)) {
-            this.badIndexXcp(r, c);
+        if ((r >= this.n) || (c >= this.n) || (r < 0) || (c < 0)) {
+            badIndexXcp(r, c);
         }
-        A[(r * (r + 1) / 2 + c)] = x;
+        this.A[(r * (r + 1) / 2 + c)] = x;
     }
 
     /**
      * Returns element (r,c) as a double
      */
-    public double getDoubleValue(int r, int c) {
-        if ((r >= n) || (c >= n) || (r < 0) || (c < 0)) {
-            this.badIndexXcp(r, c);
+    public double getDoubleValue(final int r, final int c) {
+        if ((r >= this.n) || (c >= this.n) || (r < 0) || (c < 0)) {
+            badIndexXcp(r, c);
         }
-        return r >= c ? A[r * (r + 1) / 2 + c] : 0;
+        return r >= c ? this.A[r * (r + 1) / 2 + c] : 0;
     }
 
     /**
      * Returns element (r,c)
      */
-    public float getValue(int r, int c) {
-        if ((r >= n) || (c >= n) || (r < 0) || (c < 0)) {
-            this.badIndexXcp(r, c);
+    public float getValue(final int r, final int c) {
+        if ((r >= this.n) || (c >= this.n) || (r < 0) || (c < 0)) {
+            badIndexXcp(r, c);
         }
-        return (r >= c ? A[r * (r + 1) / 2 + c] : 0);
+        return (r >= c ? this.A[r * (r + 1) / 2 + c] : 0);
     }
 
     /**
      * Assign zero to all elements in the matrix
      */
     public void setAllValuesToZero() {
-        for (int i = 0; i < A.length; i++) {
-            A[i] = 0;
+        for (int i = 0; i < this.A.length; i++) {
+            this.A[i] = 0;
         }
     }
 
-    private void upperTriangXcp(int r, int c) {
+    private void upperTriangXcp(final int r, final int c) {
         throw new IllegalArgumentException("Trying to set a value in (" + r +
                 "," + c + ") -> " + "Upper Triangular region ");
     }

@@ -28,7 +28,6 @@ import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.ImpliedOrientation;
 import edu.cmu.tetrad.search.Ling;
-import edu.cmu.tetrad.search.Ling.StoredGraphs;
 import edu.cmu.tetrad.search.MeekRules;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -49,7 +48,7 @@ public class LingRunner extends AbstractAlgorithmRunner implements
         PropertyChangeListener {
     static final long serialVersionUID = 23L;
     private transient List<PropertyChangeListener> listeners;
-    private transient StoredGraphs storedGraphs;
+    private transient Ling.StoredGraphs storedGraphs;
 
     //============================CONSTRUCTORS============================//
 
@@ -153,7 +152,7 @@ public class LingRunner extends AbstractAlgorithmRunner implements
         Ling ling = new Ling(data);
         Parameters searchParams = this.getParams();
         ling.setThreshold(searchParams.getDouble("threshold", 0.5));
-        StoredGraphs graphs = ling.search();
+        Ling.StoredGraphs graphs = ling.search();
         Graph graph = null;
 
         for (int i = 0; i < graphs.getNumGraphs(); i++) {
@@ -183,16 +182,16 @@ public class LingRunner extends AbstractAlgorithmRunner implements
 
     }
 
-    private void setStoredGraphs(StoredGraphs graphs) {
+    private void setStoredGraphs(Ling.StoredGraphs graphs) {
         storedGraphs = graphs;
     }
 
-    public StoredGraphs getStoredGraphs() {
-        return storedGraphs;
+    public Ling.StoredGraphs getStoredGraphs() {
+        return this.storedGraphs;
     }
 
     public Graph getGraph() {
-        return this.getResultGraph();
+        return getResultGraph();
     }
 
     /**
@@ -208,7 +207,7 @@ public class LingRunner extends AbstractAlgorithmRunner implements
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>
      * for the given node.
      */
-    public List<List<Triple>> getTriplesLists(Node node) {
+    public List<List<Triple>> getTriplesLists(final Node node) {
         return new LinkedList<>();
     }
 
@@ -217,8 +216,8 @@ public class LingRunner extends AbstractAlgorithmRunner implements
     }
 
     public ImpliedOrientation getMeekRules() {
-        MeekRules rules = new MeekRules();
-        rules.setKnowledge((IKnowledge) this.getParams().get("knowledge", new Knowledge2()));
+        final MeekRules rules = new MeekRules();
+        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
 
@@ -228,32 +227,32 @@ public class LingRunner extends AbstractAlgorithmRunner implements
     }
 
     private boolean isAggressivelyPreventCycles() {
-        Parameters params = this.getParams();
+        final Parameters params = getParams();
         if (params instanceof Parameters) {
             return params.getBoolean("aggressivelyPreventCycles", false);
         }
         return false;
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        this.firePropertyChange(evt);
+    public void propertyChange(final PropertyChangeEvent evt) {
+        firePropertyChange(evt);
     }
 
-    private void firePropertyChange(PropertyChangeEvent evt) {
-        for (PropertyChangeListener l : this.getListeners()) {
+    private void firePropertyChange(final PropertyChangeEvent evt) {
+        for (final PropertyChangeListener l : getListeners()) {
             l.propertyChange(evt);
         }
     }
 
     private List<PropertyChangeListener> getListeners() {
-        if (listeners == null) {
-            listeners = new ArrayList<>();
+        if (this.listeners == null) {
+            this.listeners = new ArrayList<>();
         }
-        return listeners;
+        return this.listeners;
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        if (!this.getListeners().contains(l)) this.getListeners().add(l);
+    public void addPropertyChangeListener(final PropertyChangeListener l) {
+        if (!getListeners().contains(l)) getListeners().add(l);
     }
 }
 

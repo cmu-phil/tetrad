@@ -289,45 +289,45 @@ public final class TestCellTable {
 
     public final void setUp() {
 
-        table = new CellTable(dims);
+        this.table = new CellTable(this.dims);
 
 //        // Add data to table.
-        List<Node> variables = new LinkedList<>();
+        final List<Node> variables = new LinkedList<>();
         variables.add(new DiscreteVariable("X1", 2));
         variables.add(new DiscreteVariable("X2", 2));
         variables.add(new DiscreteVariable("X3", 2));
         variables.add(new DiscreteVariable("X4", 2));
 
-        DataSet dataSet = new BoxDataSet(new DoubleDataBox(data.length, variables.size()), variables);
+        final DataSet dataSet = new BoxDataSet(new DoubleDataBox(this.data.length, variables.size()), variables);
 
-        for (int i = 0; i < data.length; i++) {
-            for (int j = 0; j < data[0].length; j++) {
-                dataSet.setInt(i, j, data[i][j]);
+        for (int i = 0; i < this.data.length; i++) {
+            for (int j = 0; j < this.data[0].length; j++) {
+                dataSet.setInt(i, j, this.data[i][j]);
             }
         }
 
-        int[] indices = {0, 1, 2, 3};
+        final int[] indices = {0, 1, 2, 3};
 
-        table.addToTable(dataSet, indices);
+        this.table.addToTable(dataSet, indices);
     }
 
     @Test
     public final void testCount() {
-        this.setUp();
+        setUp();
 
         // Pick 8 random cells, count those cells, test the counts in
         // the cell count.
         int[] testCell;
 
         for (int c = 0; c < 8; c++) {
-            testCell = pickRandomCell(4);
+            testCell = TestCellTable.pickRandomCell(4);
 
             int myCount = 0;
 
-            for (int[] aData : data) {
+            for (final int[] aData : this.data) {
                 boolean inCell = true;
 
-                for (int j = 0; j < data[0].length; j++) {
+                for (int j = 0; j < this.data[0].length; j++) {
                     if (aData[j] != testCell[j]) {
                         inCell = false;
                     }
@@ -338,13 +338,13 @@ public final class TestCellTable {
                 }
             }
 
-            assertEquals(myCount, table.getValue(testCell));
+            assertEquals(myCount, this.table.getValue(testCell));
         }
     }
 
     @Test
     public final void testMargins() {
-        this.setUp();
+        setUp();
 
         // Test 15 margin calculations.
         for (int m = 0; m < 15; m++) {
@@ -353,11 +353,11 @@ public final class TestCellTable {
             // array of variable indices to marginalize and (b) a
             // "wildcard" version of this cell with those indices
             // replaced by -1.
-            int[] cell = pickRandomCell(4);
+            final int[] cell = TestCellTable.pickRandomCell(4);
 
             // The indices to marginalize. (No repeats.)
-            int numMargin = RandomUtil.getInstance().nextInt(4);
-            int[] marginVars = new int[numMargin];
+            final int numMargin = RandomUtil.getInstance().nextInt(4);
+            final int[] marginVars = new int[numMargin];
 
             for (int i = 0; i < numMargin; i++) {
                 marginVars[i] = RandomUtil.getInstance().nextInt(4);
@@ -370,7 +370,7 @@ public final class TestCellTable {
             }
 
             // The wildcard version of the test cell.
-            int[] testCell = new int[4];
+            final int[] testCell = new int[4];
 
             System.arraycopy(cell, 0, testCell, 0, 4);
 
@@ -381,10 +381,10 @@ public final class TestCellTable {
             // Count the data, using the -1 as a wildcard.
             int myCount = 0;
 
-            for (int[] aData : data) {
+            for (final int[] aData : this.data) {
                 boolean inMargin = true;
 
-                for (int j = 0; j < data[0].length; j++) {
+                for (int j = 0; j < this.data[0].length; j++) {
                     if (testCell[j] == -1) {
                         // Do nothing.
                     } else if (aData[j] != testCell[j]) {
@@ -399,14 +399,14 @@ public final class TestCellTable {
 
             // Test using both the wildcard and the variable indices
             // version of the calcMargin method.
-            assertEquals(myCount, table.calcMargin(testCell));
-            assertEquals(myCount, table.calcMargin(cell, marginVars));
+            assertEquals(myCount, this.table.calcMargin(testCell));
+            assertEquals(myCount, this.table.calcMargin(cell, marginVars));
         }
     }
 
-    private static int[] pickRandomCell(int size) {
+    private static int[] pickRandomCell(final int size) {
 
-        int[] cell = new int[size];
+        final int[] cell = new int[size];
 
         for (int i = 0; i < size; i++) {
             cell[i] = RandomUtil.getInstance().nextInt(2);

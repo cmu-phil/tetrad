@@ -36,7 +36,7 @@ public final class TestLexer {
     @Test
     public void testLexer() {
         final String s = "(1 + 2.5)";
-        ExpressionLexer lexer = new ExpressionLexer(s);
+        final ExpressionLexer lexer = new ExpressionLexer(s);
 
         Token token = lexer.nextToken();
         assertTrue(token == Token.LPAREN);

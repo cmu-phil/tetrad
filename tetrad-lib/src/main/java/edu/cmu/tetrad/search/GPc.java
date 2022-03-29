@@ -123,49 +123,49 @@ public final class GPc implements GraphSearch {
 
     //============================CONSTRUCTORS============================//
 
-    public GPc(Score score) {
+    public GPc(final Score score) {
         if (score == null) throw new NullPointerException();
         this.score = score;
 
         if (score instanceof GraphScore) {
-            dag = ((GraphScore) score).getDag();
+            this.dag = ((GraphScore) score).getDag();
         }
 
-        sampleSize = score.getSampleSize();
-        independenceTest = new IndTestScore(score);
-        variables = score.getVariables();
-        this.buildIndexing(variables);
+        this.sampleSize = score.getSampleSize();
+        this.independenceTest = new IndTestScore(score);
+        this.variables = score.getVariables();
+        buildIndexing(this.variables);
     }
 
     //========================PUBLIC METHODS==========================//
 
 
     public Graph search() {
-        long time1 = System.currentTimeMillis();
+        final long time1 = System.currentTimeMillis();
 
-        List<Node> nodes = this.getIndependenceTest().getVariables();
+        final List<Node> nodes = getIndependenceTest().getVariables();
 
-        logger.log("info", "Starting FCI algorithm.");
-        logger.log("info", "Independence test = " + this.getIndependenceTest() + ".");
+        this.logger.log("info", "Starting FCI algorithm.");
+        this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
 
-        graph = new EdgeListGraph(nodes);
+        this.graph = new EdgeListGraph(nodes);
 
-        if (score == null) {
-            this.setScore();
+        if (this.score == null) {
+            setScore();
         }
 
-        Fges fges = new Fges(score);
-        fges.setKnowledge(this.getKnowledge());
-        fges.setVerbose(verbose);
+        final Fges fges = new Fges(this.score);
+        fges.setKnowledge(getKnowledge());
+        fges.setVerbose(this.verbose);
 //        fges.setHeuristicSpeedup(heuristicSpeedup);
 //        fges.setMaxDegree(fgesDepth);
-        graph = fges.search();
+        this.graph = fges.search();
 
-        Graph fgesGraph = new EdgeListGraph(graph);
+        final Graph fgesGraph = new EdgeListGraph(this.graph);
 
 //        System.out.println("GFCI: FGES done");
 
-        sepsets = new SepsetsGreedy(fgesGraph, independenceTest, null, maxIndegree);
+        this.sepsets = new SepsetsGreedy(fgesGraph, this.independenceTest, null, this.maxIndegree);
 //        ((SepsetsGreedy) sepsets).setMaxDegree(3);
 //        sepsets = new SepsetsConservative(fgesGraph, independenceTest, null, maxIndegree);
 //        sepsets = new SepsetsConservativeMajority(fgesGraph, independenceTest, null, maxIndegree);
@@ -174,23 +174,23 @@ public final class GPc implements GraphSearch {
 //
 //        System.out.println("GFCI: Look inside triangles starting");
 
-        for (Node b : nodes) {
-            List<Node> adjacentNodes = fgesGraph.getAdjacentNodes(b);
+        for (final Node b : nodes) {
+            final List<Node> adjacentNodes = fgesGraph.getAdjacentNodes(b);
 
             if (adjacentNodes.size() < 2) {
                 continue;
             }
 
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            final ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
             int[] combination;
 
             while ((combination = cg.next()) != null) {
-                Node a = adjacentNodes.get(combination[0]);
-                Node c = adjacentNodes.get(combination[1]);
+                final Node a = adjacentNodes.get(combination[0]);
+                final Node c = adjacentNodes.get(combination[1]);
 
-                if (graph.isAdjacentTo(a, c) && fgesGraph.isAdjacentTo(a, c)) {
-                    if (sepsets.getSepset(a, c) != null) {
-                        graph.removeEdge(a, c);
+                if (this.graph.isAdjacentTo(a, c) && fgesGraph.isAdjacentTo(a, c)) {
+                    if (this.sepsets.getSepset(a, c) != null) {
+                        this.graph.removeEdge(a, c);
                     }
                 }
             }
@@ -260,51 +260,51 @@ public final class GPc implements GraphSearch {
 ////            }
 ////        }
 
-        this.modifiedR0(fgesGraph);
+        modifiedR0(fgesGraph);
 
-        MeekRules rules = new MeekRules();
+        final MeekRules rules = new MeekRules();
         rules.setAggressivelyPreventCycles(false);
-        rules.setKnowledge(knowledge);
-        rules.orientImplied(graph);
+        rules.setKnowledge(this.knowledge);
+        rules.orientImplied(this.graph);
 
-        GraphUtils.replaceNodes(graph, independenceTest.getVariables());
+        GraphUtils.replaceNodes(this.graph, this.independenceTest.getVariables());
 
-        long time2 = System.currentTimeMillis();
+        final long time2 = System.currentTimeMillis();
 
-        elapsedTime = time2 - time1;
+        this.elapsedTime = time2 - time1;
 
-        return graph;
+        return this.graph;
     }
 
     @Override
     public long getElapsedTime() {
-        return elapsedTime;
+        return this.elapsedTime;
     }
 
     private void setScore() {
-        sampleSize = independenceTest.getSampleSize();
-        double penaltyDiscount = this.getPenaltyDiscount();
+        this.sampleSize = this.independenceTest.getSampleSize();
+        final double penaltyDiscount = getPenaltyDiscount();
 
-        DataSet dataSet = (DataSet) independenceTest.getData();
-        ICovarianceMatrix cov = independenceTest.getCov();
-        Score score;
+        final DataSet dataSet = (DataSet) this.independenceTest.getData();
+        final ICovarianceMatrix cov = this.independenceTest.getCov();
+        final Score score;
 
-        if (independenceTest instanceof IndTestDSep) {
-            score = new GraphScore(dag);
+        if (this.independenceTest instanceof IndTestDSep) {
+            score = new GraphScore(this.dag);
         } else if (cov != null) {
-            covarianceMatrix = cov;
-            SemBicScore score0 = new SemBicScore(cov);
+            this.covarianceMatrix = cov;
+            final SemBicScore score0 = new SemBicScore(cov);
             score0.setPenaltyDiscount(penaltyDiscount);
             score = score0;
         } else if (dataSet.isContinuous()) {
-            covarianceMatrix = new CovarianceMatrix(dataSet);
-            SemBicScore score0 = new SemBicScore(covarianceMatrix);
+            this.covarianceMatrix = new CovarianceMatrix(dataSet);
+            final SemBicScore score0 = new SemBicScore(this.covarianceMatrix);
             score0.setPenaltyDiscount(penaltyDiscount);
             score = score0;
         } else if (dataSet.isDiscrete()) {
-            BDeuScore score0 = new BDeuScore(dataSet);
-            score0.setSamplePrior(samplePrior);
-            score0.setStructurePrior(structurePrior);
+            final BDeuScore score0 = new BDeuScore(dataSet);
+            score0.setSamplePrior(this.samplePrior);
+            score0.setStructurePrior(this.structurePrior);
             score = score0;
         } else {
             throw new IllegalArgumentException("Mixed data not supported.");
@@ -314,10 +314,10 @@ public final class GPc implements GraphSearch {
     }
 
     public int getMaxIndegree() {
-        return maxIndegree;
+        return this.maxIndegree;
     }
 
-    public void setMaxIndegree(int maxIndegree) {
+    public void setMaxIndegree(final int maxIndegree) {
         if (maxIndegree < -1) {
             throw new IllegalArgumentException(
                     "Depth must be -1 (unlimited) or >= 0: " + maxIndegree);
@@ -327,35 +327,35 @@ public final class GPc implements GraphSearch {
     }
 
     // Due to Spirtes.
-    public void modifiedR0(Graph fgesGraph) {
-        graph.reorientAllWith(Endpoint.TAIL);
-        this.pcOrientBk(knowledge, graph, graph.getNodes());
+    public void modifiedR0(final Graph fgesGraph) {
+        this.graph.reorientAllWith(Endpoint.TAIL);
+        pcOrientBk(this.knowledge, this.graph, this.graph.getNodes());
 
-        List<Node> nodes = graph.getNodes();
+        final List<Node> nodes = this.graph.getNodes();
 
-        for (Node b : nodes) {
-            List<Node> adjacentNodes = graph.getAdjacentNodes(b);
+        for (final Node b : nodes) {
+            final List<Node> adjacentNodes = this.graph.getAdjacentNodes(b);
 
             if (adjacentNodes.size() < 2) {
                 continue;
             }
 
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            final ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
             int[] combination;
 
             while ((combination = cg.next()) != null) {
-                Node a = adjacentNodes.get(combination[0]);
-                Node c = adjacentNodes.get(combination[1]);
+                final Node a = adjacentNodes.get(combination[0]);
+                final Node c = adjacentNodes.get(combination[1]);
 
                 if (fgesGraph.isDefCollider(a, b, c)) {
-                    graph.setEndpoint(a, b, Endpoint.ARROW);
-                    graph.setEndpoint(c, b, Endpoint.ARROW);
-                } else if (fgesGraph.isAdjacentTo(a, c) && !graph.isAdjacentTo(a, c)) {
-                    List<Node> sepset = sepsets.getSepset(a, c);
+                    this.graph.setEndpoint(a, b, Endpoint.ARROW);
+                    this.graph.setEndpoint(c, b, Endpoint.ARROW);
+                } else if (fgesGraph.isAdjacentTo(a, c) && !this.graph.isAdjacentTo(a, c)) {
+                    final List<Node> sepset = this.sepsets.getSepset(a, c);
 
                     if (sepset != null && !sepset.contains(b)) {
-                        graph.setEndpoint(a, b, Endpoint.ARROW);
-                        graph.setEndpoint(c, b, Endpoint.ARROW);
+                        this.graph.setEndpoint(a, b, Endpoint.ARROW);
+                        this.graph.setEndpoint(c, b, Endpoint.ARROW);
                     }
                 }
             }
@@ -363,10 +363,10 @@ public final class GPc implements GraphSearch {
     }
 
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(final IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -379,14 +379,14 @@ public final class GPc implements GraphSearch {
      * should be used. False by default.
      */
     public boolean isCompleteRuleSetUsed() {
-        return completeRuleSetUsed;
+        return this.completeRuleSetUsed;
     }
 
     /**
      * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
      *                            set of the original FCI) should be used. False by default.
      */
-    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
+    public void setCompleteRuleSetUsed(final boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
@@ -394,13 +394,13 @@ public final class GPc implements GraphSearch {
      * @return the maximum length of any discriminating path, or -1 of unlimited.
      */
     public int getMaxPathLength() {
-        return maxPathLength;
+        return this.maxPathLength;
     }
 
     /**
      * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
-    public void setMaxPathLength(int maxPathLength) {
+    public void setMaxPathLength(final int maxPathLength) {
         if (maxPathLength < -1) {
             throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
         }
@@ -412,10 +412,10 @@ public final class GPc implements GraphSearch {
      * True iff verbose output should be printed.
      */
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 
@@ -423,69 +423,69 @@ public final class GPc implements GraphSearch {
      * The independence test.
      */
     public IndependenceTest getIndependenceTest() {
-        return independenceTest;
+        return this.independenceTest;
     }
 
     public double getPenaltyDiscount() {
-        return penaltyDiscount;
+        return this.penaltyDiscount;
     }
 
-    public void setPenaltyDiscount(double penaltyDiscount) {
+    public void setPenaltyDiscount(final double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
     }
 
     public ICovarianceMatrix getCovMatrix() {
-        return covarianceMatrix;
+        return this.covarianceMatrix;
     }
 
     public ICovarianceMatrix getCovarianceMatrix() {
-        return covarianceMatrix;
+        return this.covarianceMatrix;
     }
 
-    public void setCovarianceMatrix(ICovarianceMatrix covarianceMatrix) {
+    public void setCovarianceMatrix(final ICovarianceMatrix covarianceMatrix) {
         this.covarianceMatrix = covarianceMatrix;
     }
 
     public PrintStream getOut() {
-        return out;
+        return this.out;
     }
 
-    public void setOut(PrintStream out) {
+    public void setOut(final PrintStream out) {
         this.out = out;
     }
 
-    public void setIndependenceTest(IndependenceTest independenceTest) {
+    public void setIndependenceTest(final IndependenceTest independenceTest) {
         this.independenceTest = independenceTest;
     }
 
-    public void setHeuristicSpeedup(boolean heuristicSpeedup) {
+    public void setHeuristicSpeedup(final boolean heuristicSpeedup) {
         this.heuristicSpeedup = heuristicSpeedup;
     }
 
     //===========================================PRIVATE METHODS=======================================//
 
-    private void buildIndexing(List<Node> nodes) {
-        hashIndices = new ConcurrentHashMap<>();
+    private void buildIndexing(final List<Node> nodes) {
+        this.hashIndices = new ConcurrentHashMap<>();
 
         int i = 0;
 
-        for (Node node : nodes) {
-            hashIndices.put(node, i++);
+        for (final Node node : nodes) {
+            this.hashIndices.put(node, i++);
         }
     }
 
     /**
      * Orients according to background knowledge
      */
-    private void pcOrientBk(IKnowledge knowledge, Graph graph, List<Node> variables) {
-        logger.log("info", "Starting BK Orientation.");
+    private void pcOrientBk(final IKnowledge knowledge, final Graph graph, final List<Node> variables) {
+        this.logger.log("info", "Starting BK Orientation.");
 
-        for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
-            KnowledgeEdge edge = it.next();
+        for (final Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
+            final KnowledgeEdge edge = it.next();
 
             //match strings to variables in the graph.
-            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+            final Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
+            final Node to = SearchGraphUtils.translate(edge.getTo(), variables);
 
 
             if (from == null || to == null) {
@@ -499,15 +499,15 @@ public final class GPc implements GraphSearch {
             // Orient to*->from
             graph.setEndpoint(to, from, Endpoint.ARROW);
             graph.setEndpoint(from, to, Endpoint.TAIL);
-            logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+            this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }
 
-        for (Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext(); ) {
-            KnowledgeEdge edge = it.next();
+        for (final Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext(); ) {
+            final KnowledgeEdge edge = it.next();
 
             //match strings to variables in this graph
-            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+            final Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
+            final Node to = SearchGraphUtils.translate(edge.getTo(), variables);
 
             if (from == null || to == null) {
                 continue;
@@ -519,25 +519,25 @@ public final class GPc implements GraphSearch {
 
             graph.setEndpoint(to, from, Endpoint.TAIL);
             graph.setEndpoint(from, to, Endpoint.ARROW);
-            logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+            this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }
 
-        logger.log("info", "Finishing BK Orientation.");
+        this.logger.log("info", "Finishing BK Orientation.");
     }
 
-    public void setSamplePrior(double samplePrior) {
+    public void setSamplePrior(final double samplePrior) {
         this.samplePrior = samplePrior;
     }
 
-    public void setStructurePrior(double structurePrior) {
+    public void setStructurePrior(final double structurePrior) {
         this.structurePrior = structurePrior;
     }
 
     public int getFgesDepth() {
-        return fgesDepth;
+        return this.fgesDepth;
     }
 
-    public void setFgesDepth(int fgesDepth) {
+    public void setFgesDepth(final int fgesDepth) {
         this.fgesDepth = fgesDepth;
     }
 }

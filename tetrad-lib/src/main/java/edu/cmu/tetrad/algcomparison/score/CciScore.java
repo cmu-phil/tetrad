@@ -6,8 +6,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.ConditionalCorrelationIndependence.Basis;
-import edu.cmu.tetrad.search.ConditionalCorrelationIndependence.Kernel;
+import edu.cmu.tetrad.search.ConditionalCorrelationIndependence;
 import edu.cmu.tetrad.search.IndTestConditionalCorrelation;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.search.ScoredIndTest;
@@ -22,11 +21,7 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@edu.cmu.tetrad.annotation.Score(
-        name = "CCI-Score (Conditional Correlation Independence Score)",
-        command = "cci-score",
-        dataType = {DataType.Continuous}
-)
+@edu.cmu.tetrad.annotation.Score(name = "CCI-Score (Conditional Correlation Independence Score)", command = "cci-score", dataType = DataType.Continuous)
 @General
 @Experimental
 public class CciScore implements ScoreWrapper {
@@ -35,14 +30,14 @@ public class CciScore implements ScoreWrapper {
     private DataModel dataSet;
 
     @Override
-    public Score getScore(DataModel dataSet, Parameters parameters) {
+    public Score getScore(final DataModel dataSet, final Parameters parameters) {
         this.dataSet = dataSet;
-        IndTestConditionalCorrelation cci = new IndTestConditionalCorrelation(DataUtils.getContinuousDataSet(dataSet),
+        final IndTestConditionalCorrelation cci = new IndTestConditionalCorrelation(DataUtils.getContinuousDataSet(dataSet),
                 parameters.getDouble(Params.CCI_SCORE_ALPHA));
         if (parameters.getInt(Params.KERNEL_TYPE) == 1) {
-            cci.setKernel(Kernel.Gaussian);
+            cci.setKernel(ConditionalCorrelationIndependence.Kernel.Gaussian);
         } else if (parameters.getInt(Params.KERNEL_TYPE) == 2) {
-            cci.setKernel(Kernel.Epinechnikov);
+            cci.setKernel(ConditionalCorrelationIndependence.Kernel.Epinechnikov);
         } else {
             throw new IllegalStateException("Kernel not configured.");
         }
@@ -51,9 +46,9 @@ public class CciScore implements ScoreWrapper {
         cci.setKernelRegressionSampleSize(parameters.getInt(Params.KERNEL_REGRESSION_SAMPLE_SIZE));
 
         if (parameters.getInt(Params.BASIS_TYPE) == 1) {
-            cci.setBasis(Basis.Polynomial);
+            cci.setBasis(ConditionalCorrelationIndependence.Basis.Polynomial);
         } else if (parameters.getInt(Params.BASIS_TYPE) == 2) {
-            cci.setBasis(Basis.Cosine);
+            cci.setBasis(ConditionalCorrelationIndependence.Basis.Cosine);
         } else {
             throw new IllegalStateException("Basis not configured.");
         }
@@ -73,7 +68,7 @@ public class CciScore implements ScoreWrapper {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
+        final List<String> parameters = new ArrayList<>();
         parameters.add(Params.CCI_SCORE_ALPHA);
         parameters.add(Params.NUM_BASIS_FUNCTIONS);
         parameters.add(Params.KERNEL_TYPE);
@@ -86,8 +81,8 @@ public class CciScore implements ScoreWrapper {
     }
 
     @Override
-    public Node getVariable(String name) {
-        return dataSet.getVariable(name);
+    public Node getVariable(final String name) {
+        return this.dataSet.getVariable(name);
     }
 
 }

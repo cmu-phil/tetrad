@@ -89,7 +89,7 @@ public abstract class WatchedProcess {
      * @param owner The ancestor window in front of which the stop dialog is
      *              being displayed.
      */
-    public WatchedProcess(Window owner) {
+    public WatchedProcess(final Window owner) {
         this(owner, JOptionUtils.centeringComp());
     }
 
@@ -99,14 +99,14 @@ public abstract class WatchedProcess {
      * @param owner The ancestor window in front of which the stop dialog is
      *              being displayed.
      */
-    private WatchedProcess(Window owner, Component centeringComp) {
+    private WatchedProcess(final Window owner, final Component centeringComp) {
         if (owner == null) {
             throw new NullPointerException();
         }
 
         this.owner = owner;
         this.centeringComp = centeringComp;
-        this.watchProcess();
+        watchProcess();
 
     }
 
@@ -127,44 +127,44 @@ public abstract class WatchedProcess {
     public abstract void watch();
 
     private String getErrorMessage() {
-        return errorMessage;
+        return this.errorMessage;
     }
 
-    public void setErrorMessage(String errorMessage) {
+    public void setErrorMessage(final String errorMessage) {
         this.errorMessage = errorMessage;
     }
 
     private JDialog getStopDialog() {
-        return stopDialog;
+        return this.stopDialog;
     }
 
-    private void setStopDialog(JDialog stopDialog) {
+    private void setStopDialog(final JDialog stopDialog) {
         this.stopDialog = stopDialog;
     }
 
     private Window getOwner() {
-        return owner;
+        return this.owner;
     }
 
     private boolean isShowDialog() {
-        return SHOW_DIALOG;
+        return WatchedProcess.SHOW_DIALOG;
     }
 
-    public void setShowDialog(boolean showDialog) {
-        SHOW_DIALOG = showDialog;
+    public void setShowDialog(final boolean showDialog) {
+        WatchedProcess.SHOW_DIALOG = showDialog;
     }
 
     public boolean isAlive() {
-        return thread.isAlive();
+        return this.thread.isAlive();
     }
 
     //================================PRIVATE METHODS====================//
     private void watchProcess() {
-        Runnable runnable = new Runnable() {
+        final Runnable runnable = new Runnable() {
             public void run() {
                 try {
-                    WatchedProcess.this.watch();
-                } catch (Exception e) {
+                    watch();
+                } catch (final Exception e) {
                     e.printStackTrace();
                     String message = e.getMessage();
 
@@ -172,49 +172,49 @@ public abstract class WatchedProcess {
                         message = e.getCause().getMessage();
                     }
 
-                    WatchedProcess.this.setErrorMessage(message);
+                    setErrorMessage(message);
                     throw e;
                 }
             }
         };
 
-        Thread thread = new Thread(runnable);
-        this.setThread(thread);
+        final Thread thread = new Thread(runnable);
+        setThread(thread);
         thread.setPriority(7);
         thread.start();
 
-        if (this.isShowDialog()) {
-            Thread watcher = new Thread() {
+        if (isShowDialog()) {
+            final Thread watcher = new Thread() {
                 public void run() {
                     try {
-                        Thread.sleep(delay);
-                    } catch (InterruptedException e) {
+                        Thread.sleep(WatchedProcess.this.delay);
+                    } catch (final InterruptedException e) {
                         return;
                     }
 
-                    if (WatchedProcess.this.getErrorMessage() != null) {
+                    if (getErrorMessage() != null) {
                         JOptionPane.showMessageDialog(
-                                centeringComp, WatchedProcess.this.getErrorMessage());
+                                WatchedProcess.this.centeringComp, getErrorMessage());
                         return;
                     }
 
-                    JProgressBar progressBar = new JProgressBar(0, 100);
+                    final JProgressBar progressBar = new JProgressBar(0, 100);
                     progressBar.setIndeterminate(true);
 
-                    JButton stopButton = new JButton("Stop");
+                    final JButton stopButton = new JButton("Stop");
 
                     stopButton.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            if (WatchedProcess.this.getThread() != null) {
-                                while (WatchedProcess.this.getThread().isAlive()) {
+                        public void actionPerformed(final ActionEvent e) {
+                            if (getThread() != null) {
+                                while (getThread().isAlive()) {
                                     TaskManager.getInstance().setCanceled(true);
-                                    WatchedProcess.this.getThread().stop();
+                                    getThread().stop();
 
                                     try {
                                         Thread.sleep(500);
-                                    } catch (InterruptedException e1) {
+                                    } catch (final InterruptedException e1) {
                                         JOptionPane.showMessageDialog(
-                                                centeringComp,
+                                                WatchedProcess.this.centeringComp,
                                                 "Could not stop thread.");
                                         return;
                                     }
@@ -227,8 +227,8 @@ public abstract class WatchedProcess {
                         }
                     });
 
-                    Box b = Box.createVerticalBox();
-                    Box b1 = Box.createHorizontalBox();
+                    final Box b = Box.createVerticalBox();
+                    final Box b1 = Box.createHorizontalBox();
                     b1.add(progressBar);
                     b1.add(stopButton);
                     b.add(b1);
@@ -242,23 +242,23 @@ public abstract class WatchedProcess {
 //                    scroll.setPreferredSize(new Dimension(300, 50));
 //                    b2.add(scroll);
 //                    b.add(b2);
-                    if (WatchedProcess.this.isShowDialog()) {
-                        Frame ancestor = (Frame) JOptionUtils.centeringComp()
+                    if (isShowDialog()) {
+                        final Frame ancestor = (Frame) JOptionUtils.centeringComp()
                                 .getTopLevelAncestor();
-                        JDialog dialog
+                        final JDialog dialog
                                 = new JDialog(ancestor, "Executing...", false);
-                        WatchedProcess.this.setStopDialog(dialog);
+                        setStopDialog(dialog);
 
                         dialog.getContentPane().add(b);
                         dialog.pack();
                         dialog.setLocationRelativeTo(
-                                centeringComp);
+                                WatchedProcess.this.centeringComp);
 
 //                        LogUtils.getInstance().add(out, Level.FINER);
-                        while (WatchedProcess.this.getThread().isAlive()) {
+                        while (getThread().isAlive()) {
                             try {
                                 Thread.sleep(200);
-                                if (WatchedProcess.this.existsOtherDialog()) {
+                                if (existsOtherDialog()) {
                                     dialog.setVisible(false);
                                 } else {
                                     dialog.setVisible(true);
@@ -266,7 +266,7 @@ public abstract class WatchedProcess {
                                 }
 
 //                                anomaliesTextArea.setCaretPosition(out.getLengthWritten());
-                            } catch (InterruptedException e) {
+                            } catch (final InterruptedException e) {
                                 return;
                             }
                         }
@@ -275,11 +275,11 @@ public abstract class WatchedProcess {
                         dialog.setVisible(false);
                         dialog.dispose();
 
-                        if (WatchedProcess.this.getErrorMessage() != null) {
+                        if (getErrorMessage() != null) {
                             JOptionPane.showMessageDialog(
-                                    centeringComp,
+                                    WatchedProcess.this.centeringComp,
                                     "Stopped with error:\n"
-                                            + WatchedProcess.this.getErrorMessage());
+                                            + getErrorMessage());
                         }
                     }
                 }
@@ -290,23 +290,23 @@ public abstract class WatchedProcess {
     }
 
     private Thread getThread() {
-        return thread;
+        return this.thread;
     }
 
-    private void setThread(Thread thread) {
+    private void setThread(final Thread thread) {
         this.thread = thread;
     }
 
     private boolean existsOtherDialog() {
-        Frame ancestor = (Frame) JOptionUtils.centeringComp()
+        final Frame ancestor = (Frame) JOptionUtils.centeringComp()
                 .getTopLevelAncestor();
-        Window[] ownedWindows = ancestor.getOwnedWindows();
+        final Window[] ownedWindows = ancestor.getOwnedWindows();
 
-        for (Window window : ownedWindows) {
+        for (final Window window : ownedWindows) {
             if (window instanceof Dialog
-                    && !(window == this.getStopDialog())
-                    && !(window == this.getOwner())) {
-                Dialog dialog = (Dialog) window;
+                    && !(window == getStopDialog())
+                    && !(window == getOwner())) {
+                final Dialog dialog = (Dialog) window;
                 if (dialog.isVisible()) {
                     return true;
                 }

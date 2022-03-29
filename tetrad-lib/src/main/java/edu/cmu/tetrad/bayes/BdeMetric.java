@@ -44,7 +44,7 @@ final class BdeMetric {
 
     private int[][][] observedCounts;
 
-    public BdeMetric(DataSet dataSet, BayesPm bayesPm) {
+    public BdeMetric(final DataSet dataSet, final BayesPm bayesPm) {
 
         this.dataSet = dataSet;
         this.bayesPm = bayesPm;
@@ -57,25 +57,25 @@ final class BdeMetric {
     public double score() {
 
 
-        double[][][] priorProbs;
-        double[][] priorProbsRowSum;
+        final double[][][] priorProbs;
+        final double[][] priorProbsRowSum;
 
-        Graph graph = bayesPm.getDag();
+        final Graph graph = this.bayesPm.getDag();
 
-        int n = graph.getNumNodes();
+        final int n = graph.getNumNodes();
 
-        observedCounts = new int[n][][];
+        this.observedCounts = new int[n][][];
         priorProbs = new double[n][][];
 
-        int[][] observedCountsRowSum = new int[n][];
+        final int[][] observedCountsRowSum = new int[n][];
         priorProbsRowSum = new double[n][];
 
-        bayesIm = new MlBayesIm(bayesPm);
+        this.bayesIm = new MlBayesIm(this.bayesPm);
 
         for (int i = 0; i < n; i++) {
             //int numRows = bayesImMixed.getNumRows(i);
-            int numRows = bayesIm.getNumRows(i);
-            observedCounts[i] = new int[numRows][];
+            final int numRows = this.bayesIm.getNumRows(i);
+            this.observedCounts[i] = new int[numRows][];
             priorProbs[i] = new double[numRows][];
 
             observedCountsRowSum[i] = new int[numRows];
@@ -88,19 +88,19 @@ final class BdeMetric {
                 priorProbsRowSum[i][j] = 0;
 
                 //int numCols = bayesImMixed.getNumColumns(i);
-                int numCols = bayesIm.getNumColumns(i);
-                observedCounts[i][j] = new int[numCols];
+                final int numCols = this.bayesIm.getNumColumns(i);
+                this.observedCounts[i][j] = new int[numCols];
                 priorProbs[i][j] = new double[numCols];
             }
         }
 
         //At this point set values in both observedCounts and priorProbs
-        this.computeObservedCounts();
+        computeObservedCounts();
         //Set all priorProbs (i.e. estimated counts) to 1.0.  Eventually they may be
         //supplied as a parameter of the constructor of this class.
         for (int i = 0; i < n; i++) {
-            for (int j = 0; j < bayesIm.getNumRows(i); j++) {
-                for (int k = 0; k < bayesIm.getNumColumns(i); k++) {
+            for (int j = 0; j < this.bayesIm.getNumRows(i); j++) {
+                for (int k = 0; k < this.bayesIm.getNumColumns(i); k++) {
                     priorProbs[i][j][k] = 1.0;
                 }
             }
@@ -108,9 +108,9 @@ final class BdeMetric {
 
 
         for (int i = 0; i < n; i++) {
-            for (int j = 0; j < bayesIm.getNumRows(i); j++) {
-                for (int k = 0; k < bayesIm.getNumColumns(i); k++) {
-                    observedCountsRowSum[i][j] += observedCounts[i][j][k];
+            for (int j = 0; j < this.bayesIm.getNumRows(i); j++) {
+                for (int k = 0; k < this.bayesIm.getNumColumns(i); k++) {
+                    observedCountsRowSum[i][j] += this.observedCounts[i][j][k];
                     priorProbsRowSum[i][j] += priorProbs[i][j][k];
                 }
             }
@@ -120,28 +120,28 @@ final class BdeMetric {
 
         for (int i = 0; i < n; i++) {
 
-            int qi = bayesIm.getNumRows(i);
+            final int qi = this.bayesIm.getNumRows(i);
             double prodj = 1.0;
             for (int j = 0; j < qi; j++) {
 
                 try {
-                    double numerator = Gamma.gamma(priorProbsRowSum[i][j]);
-                    double denom = Gamma.gamma(priorProbsRowSum[i][j] +
+                    final double numerator = Gamma.gamma(priorProbsRowSum[i][j]);
+                    final double denom = Gamma.gamma(priorProbsRowSum[i][j] +
                             observedCountsRowSum[i][j]);
                     //System.out.println("num = " + numerator + " denom = " + denom);
                     prodj *= (numerator / denom);
-                } catch (Exception e) {
+                } catch (final Exception e) {
                     e.printStackTrace();
                 }
 
-                int ri = bayesIm.getNumColumns(i);
+                final int ri = this.bayesIm.getNumColumns(i);
                 double prodk = 1.0;
                 for (int k = 0; k < ri; k++) {
                     try {
                         prodk *= Gamma.gamma(
-                                priorProbs[i][j][k] + observedCounts[i][j][k]) /
+                                priorProbs[i][j][k] + this.observedCounts[i][j][k]) /
                                 Gamma.gamma(priorProbs[i][j][k]);
-                    } catch (Exception e) {
+                    } catch (final Exception e) {
                         e.printStackTrace();
                     }
                 }
@@ -155,14 +155,14 @@ final class BdeMetric {
     }
 
     private void computeObservedCounts() {
-        for (int j = 0; j < dataSet.getNumColumns(); j++) {
-            DiscreteVariable var = (DiscreteVariable) dataSet.getVariables()
+        for (int j = 0; j < this.dataSet.getNumColumns(); j++) {
+            final DiscreteVariable var = (DiscreteVariable) this.dataSet.getVariables()
                     .get(j);
-            String varName = var.getName();
-            Node varNode = bayesPm.getDag().getNode(varName);
-            int varIndex = bayesIm.getNodeIndex(varNode);
+            final String varName = var.getName();
+            final Node varNode = this.bayesPm.getDag().getNode(varName);
+            final int varIndex = this.bayesIm.getNodeIndex(varNode);
 
-            int[] parentVarIndices = bayesIm.getParents(varIndex);
+            final int[] parentVarIndices = this.bayesIm.getParents(varIndex);
             //System.out.println("graph = " + graph);
 
             //for(int col = 0; col < ar.getNumSplits(); col++)
@@ -173,31 +173,31 @@ final class BdeMetric {
             if (parentVarIndices.length == 0) {
                 //System.out.println("No parents");
                 for (int col = 0; col < var.getNumCategories(); col++) {
-                    observedCounts[j][0][col] = 0;
+                    this.observedCounts[j][0][col] = 0;
                 }
 
 
-                for (int i = 0; i < dataSet.getNumRows(); i++) {
-                    observedCounts[j][0][dataSet.getInt(i, j)] += 1.0;
+                for (int i = 0; i < this.dataSet.getNumRows(); i++) {
+                    this.observedCounts[j][0][this.dataSet.getInt(i, j)] += 1.0;
                 }
             } else {    //For variables with parents:
-                int numRows = bayesIm.getNumRows(varIndex);
+                final int numRows = this.bayesIm.getNumRows(varIndex);
 
                 for (int row = 0; row < numRows; row++) {
-                    int[] parValues = bayesIm.getParentValues(varIndex, row);
+                    final int[] parValues = this.bayesIm.getParentValues(varIndex, row);
 
                     for (int col = 0; col < var.getNumCategories(); col++) {
-                        observedCounts[varIndex][row][col] = 0;
+                        this.observedCounts[varIndex][row][col] = 0;
                     }
 
-                    for (int i = 0; i < dataSet.getNumRows(); i++) {
+                    for (int i = 0; i < this.dataSet.getNumRows(); i++) {
                         //for a case where the parent values = parValues increment the estCount
 
                         boolean parentMatch = true;
 
                         for (int p = 0; p < parentVarIndices.length; p++) {
                             if (parValues[p] !=
-                                    dataSet.getInt(i, parentVarIndices[p])) {
+                                    this.dataSet.getInt(i, parentVarIndices[p])) {
                                 parentMatch = false;
                                 break;
                             }
@@ -207,7 +207,7 @@ final class BdeMetric {
                             continue;  //Not a matching case; go to next.
                         }
 
-                        observedCounts[j][row][dataSet.getInt(i, j)] += 1;
+                        this.observedCounts[j][row][this.dataSet.getInt(i, j)] += 1;
                     }
                 }
 

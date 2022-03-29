@@ -21,10 +21,9 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.search.FindTwoFactorClusters.Algorithm;
+import edu.cmu.tetrad.search.FindTwoFactorClusters;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
-import edu.cmu.tetradapp.util.DoubleTextField.Filter;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -41,59 +40,59 @@ import java.text.NumberFormat;
 class FtfcIndTestParamsEditor extends JComponent {
     private final Parameters FtfcParams;
 
-    public FtfcIndTestParamsEditor(Parameters paramsPureClusters) {
-        FtfcParams = paramsPureClusters;
+    public FtfcIndTestParamsEditor(final Parameters paramsPureClusters) {
+        this.FtfcParams = paramsPureClusters;
 
-        NumberFormat smallNumberFormat = new DecimalFormat("0E00");
-        DoubleTextField alphaField = new DoubleTextField(this.getParams().getDouble("alpha", 0.001), 8,
+        final NumberFormat smallNumberFormat = new DecimalFormat("0E00");
+        final DoubleTextField alphaField = new DoubleTextField(getParams().getDouble("alpha", 0.001), 8,
                 new DecimalFormat("0.0########"), smallNumberFormat, 1e-4);
 
-        alphaField.setFilter(new Filter() {
-            public double filter(double value, double oldValue) {
+        alphaField.setFilter(new DoubleTextField.Filter() {
+            public double filter(final double value, final double oldValue) {
                 try {
-                    FtfcIndTestParamsEditor.this.getParams().set("alpha", 0.001);
+                    getParams().set("alpha", 0.001);
                     return value;
-                } catch (IllegalArgumentException e) {
+                } catch (final IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
-        JComboBox<Algorithm> algorithmSelector = new JComboBox<>();
-        algorithmSelector.addItem(Algorithm.SAG);
-        algorithmSelector.addItem(Algorithm.GAP);
+        JComboBox<FindTwoFactorClusters.Algorithm> algorithmSelector = new JComboBox<>();
+        algorithmSelector.addItem(FindTwoFactorClusters.Algorithm.SAG);
+        algorithmSelector.addItem(FindTwoFactorClusters.Algorithm.GAP);
 
-        Algorithm algorithmType = (Algorithm) this.getParams().get("ftfcAlgorithm", Algorithm.GAP);
+        FindTwoFactorClusters.Algorithm algorithmType = (FindTwoFactorClusters.Algorithm) this.getParams().get("ftfcAlgorithm", FindTwoFactorClusters.Algorithm.GAP);
         algorithmSelector.setSelectedItem(algorithmType);
 
         algorithmSelector.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                Algorithm index = (Algorithm) algorithmSelector.getSelectedItem();
+                FindTwoFactorClusters.Algorithm index = (FindTwoFactorClusters.Algorithm) algorithmSelector.getSelectedItem();
                 if (index != null) {
-                    FtfcIndTestParamsEditor.this.getParams().set("ftfcAlgorithm", index);
+                    getParams().set("ftfcAlgorithm", index);
                 }
             }
         });
 
-        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("Algorithm:"));
         b2.add(Box.createHorizontalGlue());
         b2.add(algorithmSelector);
-        this.add(b2);
+        add(b2);
 
-        this.add(Box.createHorizontalGlue());
-        Box b3 = Box.createHorizontalBox();
+        add(Box.createHorizontalGlue());
+        final Box b3 = Box.createHorizontalBox();
         b3.add(new JLabel("Alpha:"));
         b3.add(Box.createHorizontalGlue());
         b3.add(alphaField);
-        this.add(b3);
-        this.add(Box.createHorizontalGlue());
+        add(b3);
+        add(Box.createHorizontalGlue());
     }
 
     private Parameters getParams() {
-        return FtfcParams;
+        return this.FtfcParams;
     }
 
 

@@ -44,7 +44,7 @@ public class CalculatorWrapper extends DataWrapper {
      * Constructs the <code>DiscretizationWrapper</code> by discretizing the select
      * <code>DataModel</code>.
      */
-    public CalculatorWrapper(DataWrapper data, Parameters params) {
+    public CalculatorWrapper(final DataWrapper data, final Parameters params) {
         if (data == null) {
             throw new NullPointerException("The given data must not be null");
         }
@@ -52,21 +52,21 @@ public class CalculatorWrapper extends DataWrapper {
             throw new NullPointerException("The given parameters must not be null");
         }
 
-        DataModelList list = new DataModelList();
+        final DataModelList list = new DataModelList();
 
-        DataModelList originals = data.getDataModelList();
+        final DataModelList originals = data.getDataModelList();
 
-        for (DataModel model : originals) {
-            DataSet copy = copy((DataSet) model);
+        for (final DataModel model : originals) {
+            final DataSet copy = CalculatorWrapper.copy((DataSet) model);
 
-            List<String> equations = new ArrayList<>();
+            final List<String> equations = new ArrayList<>();
 
-            int size = ((List<String>) params.get("equations", null)).size();
-            String[] displayEquations = ((List<String>) params.get("equations", null)).toArray(new String[size]);
+            final int size = ((List<String>) params.get("equations", null)).size();
+            final String[] displayEquations = ((List<String>) params.get("equations", null)).toArray(new String[size]);
 
-            for (String equation : displayEquations) {
+            for (final String equation : displayEquations) {
                 if (equation.contains("$")) {
-                    for (Node node : copy.getVariables()) {
+                    for (final Node node : copy.getVariables()) {
                         equations.add(equation.replace("$", node.getName()));
                     }
                 } else {
@@ -77,7 +77,7 @@ public class CalculatorWrapper extends DataWrapper {
             if (!equations.isEmpty()) {
                 try {
                     Transformation.transform(copy, equations.toArray(new String[equations.size()]));
-                } catch (ParseException e) {
+                } catch (final ParseException e) {
                     throw new IllegalStateException("Was given unparsable expressions.");
                 }
                 list.add(copy);
@@ -86,10 +86,10 @@ public class CalculatorWrapper extends DataWrapper {
             }
         }
 
-        this.setDataModel(list);
-        this.setSourceGraph(data.getSourceGraph());
+        setDataModel(list);
+        setSourceGraph(data.getSourceGraph());
 
-        LogDataUtils.logDataModelList("Result data from a calculator operation.", this.getDataModelList());
+        LogDataUtils.logDataModelList("Result data from a calculator operation.", getDataModelList());
 
     }
 
@@ -106,10 +106,10 @@ public class CalculatorWrapper extends DataWrapper {
     //=============================== Private Methods =========================//
 
 
-    private static DataSet copy(DataSet data) {
-        DataSet copy = new BoxDataSet(new DoubleDataBox(data.getNumRows(), data.getVariables().size()), data.getVariables());
-        int cols = data.getNumColumns();
-        int rows = data.getNumRows();
+    private static DataSet copy(final DataSet data) {
+        final DataSet copy = new BoxDataSet(new DoubleDataBox(data.getNumRows(), data.getVariables().size()), data.getVariables());
+        final int cols = data.getNumColumns();
+        final int rows = data.getNumRows();
         for (int col = 0; col < cols; col++) {
             for (int row = 0; row < rows; row++) {
                 copy.setDouble(row, col, data.getDouble(row, col));
@@ -132,8 +132,8 @@ public class CalculatorWrapper extends DataWrapper {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    @SuppressWarnings({"MethodMayBeStatic"})
-    private void readObject(ObjectInputStream s)
+    @SuppressWarnings("MethodMayBeStatic")
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 

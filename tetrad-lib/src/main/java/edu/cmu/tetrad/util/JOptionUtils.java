@@ -37,19 +37,19 @@ public class JOptionUtils {
      *
      * @param component Ibid.
      */
-    public static void setCenteringComp(JComponent component) {
-        COMPONENT = component;
+    public static void setCenteringComp(final JComponent component) {
+        JOptionUtils.COMPONENT = component;
     }
 
     /**
      * @return Ibid.
      */
     public static JComponent centeringComp() {
-        return COMPONENT;
+        return JOptionUtils.COMPONENT;
     }
 
     public static Frame getCenteringFrame() {
-        for (Container c = COMPONENT; c != null; c = c.getParent()) {
+        for (Container c = JOptionUtils.COMPONENT; c != null; c = c.getParent()) {
             if (c instanceof Frame) {
                 return (Frame) c;
             }

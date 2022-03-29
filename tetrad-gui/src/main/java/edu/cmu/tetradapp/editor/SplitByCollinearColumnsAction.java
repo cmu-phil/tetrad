@@ -24,7 +24,6 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.util.IntTextField;
-import edu.cmu.tetradapp.util.IntTextField.Filter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -45,30 +44,30 @@ final class SplitByCollinearColumnsAction extends AbstractAction {
     /**
      * Creates a new action to split by collinear columns.
      */
-    public SplitByCollinearColumnsAction(DataEditor editor) {
+    public SplitByCollinearColumnsAction(final DataEditor editor) {
         super("Split Data by Collinear Columns");
 
         if (editor == null) {
             throw new NullPointerException();
         }
 
-        dataEditor = editor;
+        this.dataEditor = editor;
     }
 
     /**
      * Performs the action of loading a session from a file.
      */
-    public void actionPerformed(ActionEvent e) {
-        DataModel dataModel = this.getDataEditor().getSelectedDataModel();
-        CorrelationMatrix corrMatrix;
+    public void actionPerformed(final ActionEvent e) {
+        final DataModel dataModel = getDataEditor().getSelectedDataModel();
+        final CorrelationMatrix corrMatrix;
 
         if (dataModel instanceof DataSet) {
             try {
-                DataSet dataSet = (DataSet) dataModel;
-                ICovarianceMatrix covMatrix = new CovarianceMatrix(dataSet);
+                final DataSet dataSet = (DataSet) dataModel;
+                final ICovarianceMatrix covMatrix = new CovarianceMatrix(dataSet);
                 corrMatrix = new CorrelationMatrix(covMatrix);
-            } catch (Exception e1) {
-                String message = e1.getMessage();
+            } catch (final Exception e1) {
+                final String message = e1.getMessage();
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         message);
                 e1.printStackTrace();
@@ -84,32 +83,32 @@ final class SplitByCollinearColumnsAction extends AbstractAction {
             throw new RuntimeException(message);
         }
 
-        CollinearityChooser collinearityChooser =
-                new CollinearityChooser(dataEditor);
-        int selection = JOptionPane.showOptionDialog(
+        final CollinearityChooser collinearityChooser =
+                new CollinearityChooser(this.dataEditor);
+        final int selection = JOptionPane.showOptionDialog(
                 JOptionUtils.centeringComp(), collinearityChooser,
                 "Degree of collinearity", JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE, null,
                 new String[]{"Done", "Cancel"}, "Done");
 
-        if (selection == 0 && this.confirmSplit(corrMatrix, dataModel,
+        if (selection == 0 && confirmSplit(corrMatrix, dataModel,
                 (double) collinearityChooser.getCorrelationSize() / 100.)) {
-            DataModelList splitData = new DataModelList();
-            DataModelList splitData1 = this.getSplitData(corrMatrix, dataModel,
+            final DataModelList splitData = new DataModelList();
+            final DataModelList splitData1 = getSplitData(corrMatrix, dataModel,
                     (double) collinearityChooser.getCorrelationSize() / 100.,
                     splitData);
-            this.getDataEditor().reset(splitData1);
+            getDataEditor().reset(splitData1);
         }
     }
 
-    private boolean confirmSplit(CorrelationMatrix corrMatrix,
-                                 DataModel dataModel, double correlation) {
+    private boolean confirmSplit(final CorrelationMatrix corrMatrix,
+                                 final DataModel dataModel, final double correlation) {
         int count = 0;
         for (int i = 0; i < dataModel.getVariableNames().size() - 1; i++) {
-            int index1 = this.getMatrixIndex(corrMatrix,
+            final int index1 = getMatrixIndex(corrMatrix,
                     dataModel.getVariableNames().get(i));
             for (int j = i + 1; j < dataModel.getVariableNames().size(); j++) {
-                int index2 = this.getMatrixIndex(corrMatrix,
+                final int index2 = getMatrixIndex(corrMatrix,
                         dataModel.getVariableNames().get(j));
                 if (Math.abs(corrMatrix.getValue(index1, index2)) > correlation) {
                     count++;
@@ -119,15 +118,15 @@ final class SplitByCollinearColumnsAction extends AbstractAction {
         if (count == 0) {
             return false;
         }
-        int total = (int) Math.pow(2, count);
-        int selection = JOptionPane.showConfirmDialog(
+        final int total = (int) Math.pow(2, count);
+        final int selection = JOptionPane.showConfirmDialog(
                 JOptionUtils.centeringComp(), "This option will generate " +
                         total + " extra data sets. Continue?", "Confirmation",
                 JOptionPane.YES_NO_OPTION);
         return (selection == javax.swing.JOptionPane.YES_OPTION);
     }
 
-    private int getMatrixIndex(CorrelationMatrix corrMatrix, String key) {
+    private int getMatrixIndex(final CorrelationMatrix corrMatrix, final String key) {
         for (int i = 0; i < corrMatrix.getVariableNames().size(); i++) {
             if (corrMatrix.getVariableNames().get(i).equals(key)) {
                 return i;
@@ -136,19 +135,19 @@ final class SplitByCollinearColumnsAction extends AbstractAction {
         return -1;
     }
 
-    private DataModelList getSplitData(CorrelationMatrix corrMatrix,
-                                       DataModel dataModel, double correlation, DataModelList modelList) {
+    private DataModelList getSplitData(final CorrelationMatrix corrMatrix,
+                                       final DataModel dataModel, final double correlation, final DataModelList modelList) {
         int index1 = -1, index2 = -1;
         boolean found = false;
 
         for (int i = 0;
              i < dataModel.getVariableNames().size() - 1 && !found; i++) {
-            int index_i = this.getMatrixIndex(corrMatrix,
+            final int index_i = getMatrixIndex(corrMatrix,
                     dataModel.getVariableNames().get(i));
             index1 = i;
             for (int j = i + 1;
                  j < dataModel.getVariableNames().size() && !found; j++) {
-                int index_j = this.getMatrixIndex(corrMatrix,
+                final int index_j = getMatrixIndex(corrMatrix,
                         dataModel.getVariableNames().get(j));
                 index2 = j;
                 if (Math.abs(corrMatrix.getValue(index_i, index_j)) >
@@ -161,12 +160,12 @@ final class SplitByCollinearColumnsAction extends AbstractAction {
             if (dataModel instanceof DataSet) {
                 ((DataSet) dataModel).removeColumn(index2);
                 ((DataSet) dataModel).removeColumn(index1);
-                this.getSplitData(corrMatrix, dataModel, correlation, modelList);
-                this.getSplitData(corrMatrix, dataModel, correlation, modelList);
+                getSplitData(corrMatrix, dataModel, correlation, modelList);
+                getSplitData(corrMatrix, dataModel, correlation, modelList);
             } else { //CovarianceMatrix
-                String[] subVarNames1 = new String[dataModel.getVariableNames()
+                final String[] subVarNames1 = new String[dataModel.getVariableNames()
                         .size() - 1];
-                String[] subVarNames2 = new String[dataModel.getVariableNames()
+                final String[] subVarNames2 = new String[dataModel.getVariableNames()
                         .size() - 1];
                 int count1 = 0, count2 = 0;
                 for (int i = 0; i < dataModel.getVariableNames().size(); i++) {
@@ -179,14 +178,14 @@ final class SplitByCollinearColumnsAction extends AbstractAction {
                                 dataModel.getVariableNames().get(i);
                     }
                 }
-                ICovarianceMatrix newDataModel1 =
+                final ICovarianceMatrix newDataModel1 =
                         ((ICovarianceMatrix) dataModel).getSubmatrix(
                                 subVarNames1);
-                ICovarianceMatrix newDataModel2 =
+                final ICovarianceMatrix newDataModel2 =
                         ((ICovarianceMatrix) dataModel).getSubmatrix(
                                 subVarNames2);
-                this.getSplitData(corrMatrix, newDataModel1, correlation, modelList);
-                this.getSplitData(corrMatrix, newDataModel2, correlation, modelList);
+                getSplitData(corrMatrix, newDataModel1, correlation, modelList);
+                getSplitData(corrMatrix, newDataModel2, correlation, modelList);
             }
         } else {
             modelList.add(dataModel);
@@ -196,7 +195,7 @@ final class SplitByCollinearColumnsAction extends AbstractAction {
     }
 
     private DataEditor getDataEditor() {
-        return dataEditor;
+        return this.dataEditor;
     }
 
     /**
@@ -209,24 +208,24 @@ final class SplitByCollinearColumnsAction extends AbstractAction {
         /**
          * Constructs a new component with the given model classes.
          */
-        public CollinearityChooser(DataEditor editor) {
+        public CollinearityChooser(final DataEditor editor) {
 
-            correlationSize = 95;
+            this.correlationSize = 95;
 
-            this.setLayout(new BorderLayout());
+            setLayout(new BorderLayout());
 
-            Box b1 = Box.createVerticalBox();
-            Box b2 = Box.createHorizontalBox();
-            JLabel l1 = new JLabel("Correlation threshold (x 100):");
+            final Box b1 = Box.createVerticalBox();
+            final Box b2 = Box.createHorizontalBox();
+            final JLabel l1 = new JLabel("Correlation threshold (x 100):");
 
             l1.setForeground(Color.black);
             b2.add(l1);
             b2.add(Box.createGlue());
 
-            IntTextField correlationSizeField = new IntTextField(95, 3);
+            final IntTextField correlationSizeField = new IntTextField(95, 3);
             correlationSizeField.setFilter(
-                    new Filter() {
-                        public int filter(int value, int oldValue) {
+                    new IntTextField.Filter() {
+                        public int filter(final int value, final int oldValue) {
                             if (value < 80 || value > 100) {
                                 JOptionPane.showMessageDialog(
                                         JOptionUtils.centeringComp(),
@@ -236,21 +235,21 @@ final class SplitByCollinearColumnsAction extends AbstractAction {
                                 return oldValue;
                             }
 
-                            correlationSize = value;
+                            CollinearityChooser.this.correlationSize = value;
                             return value;
                         }
                     });
 
             b2.add(correlationSizeField);
             b1.add(b2);
-            this.add(b1, BorderLayout.CENTER);
+            add(b1, BorderLayout.CENTER);
         }
 
         /**
          * @return the correlation level.
          */
         public int getCorrelationSize() {
-            return correlationSize;
+            return this.correlationSize;
         }
     }
 

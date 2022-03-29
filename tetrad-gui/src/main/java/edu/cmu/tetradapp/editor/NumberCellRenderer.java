@@ -46,15 +46,15 @@ class NumberCellRenderer extends DefaultTableCellRenderer {
     /**
      * Constructs a new number cell renderer.
      */
-    public NumberCellRenderer(NumberFormat nf) {
+    public NumberCellRenderer(final NumberFormat nf) {
         if (nf == null) {
             throw new NullPointerException();
         }
 
         this.nf = nf;
 
-        this.setHorizontalAlignment(SwingConstants.RIGHT);
-        this.setFont(new Font("Serif", Font.PLAIN, 12));
+        setHorizontalAlignment(SwingConstants.RIGHT);
+        setFont(new Font("Serif", Font.PLAIN, 12));
     }
 
     /**
@@ -63,28 +63,28 @@ class NumberCellRenderer extends DefaultTableCellRenderer {
      *
      * @param value the stored numerical value.
      */
-    public void setValue(Object value) {
+    public void setValue(final Object value) {
         if (value == null) {
-            this.setText(this.getEmptyString());
+            setText(getEmptyString());
         } else if (value instanceof Integer) {
-            this.setText(value.toString());
+            setText(value.toString());
         } else if (value instanceof Double) {
-            double doubleValue = (Double) value;
+            final double doubleValue = (Double) value;
             if (Double.isNaN(doubleValue)) {
-                this.setText(this.getEmptyString());
+                setText(getEmptyString());
             } else {
-                this.setText(nf.format(doubleValue));
+                setText(this.nf.format(doubleValue));
             }
         } else {
-            this.setText("");
+            setText("");
         }
     }
 
     private String getEmptyString() {
-        return emptyString;
+        return this.emptyString;
     }
 
-    public void setEmptyString(String emptyString) {
+    public void setEmptyString(final String emptyString) {
         if (emptyString == null) {
             throw new NullPointerException();
         }

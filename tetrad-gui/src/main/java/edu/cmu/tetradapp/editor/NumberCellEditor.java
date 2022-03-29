@@ -50,20 +50,20 @@ class NumberCellEditor extends DefaultCellEditor {
     /**
      * Constructs a new number cell editor.
      */
-    public NumberCellEditor(NumberFormat nf) {
+    public NumberCellEditor(final NumberFormat nf) {
         super(new JTextField());
 
         if (nf == null) {
             throw new NullPointerException();
         }
 
-        textField = (JTextField) editorComponent;
-        textField.setHorizontalAlignment(SwingConstants.RIGHT);
-        textField.setBorder(new LineBorder(Color.black));
-        textField.setFont(new Font("Serif", Font.PLAIN, 12));
-        this.setClickCountToStart(1);
+        this.textField = (JTextField) this.editorComponent;
+        this.textField.setHorizontalAlignment(SwingConstants.RIGHT);
+        this.textField.setBorder(new LineBorder(Color.black));
+        this.textField.setFont(new Font("Serif", Font.PLAIN, 12));
+        setClickCountToStart(1);
 
-        delegate = new DefaultCellEditor.EditorDelegate() {
+        this.delegate = new EditorDelegate() {
 
             /**
              * Overrides delegate; sets the value of the textfield to the
@@ -71,23 +71,23 @@ class NumberCellEditor extends DefaultCellEditor {
              *
              * @param value this value.
              */
-            public void setValue(Object value) {
+            public void setValue(final Object value) {
                 if (value == null) {
-                    textField.setText(emptyString);
+                    NumberCellEditor.this.textField.setText(NumberCellEditor.this.emptyString);
                 } else if (value instanceof Integer) {
-                    textField.setText(value.toString());
+                    NumberCellEditor.this.textField.setText(value.toString());
                 } else if (value instanceof Double) {
-                    double doubleValue = (Double) value;
+                    final double doubleValue = (Double) value;
 
                     if (Double.isNaN(doubleValue)) {
-                        textField.setText(emptyString);
+                        NumberCellEditor.this.textField.setText(NumberCellEditor.this.emptyString);
                     } else {
-                        textField.setText(nf.format(doubleValue));
+                        NumberCellEditor.this.textField.setText(nf.format(doubleValue));
                     }
                 }
 
-                textField.setCaretPosition(0);
-                textField.moveCaretPosition(textField.getText().length());
+                NumberCellEditor.this.textField.setCaretPosition(0);
+                NumberCellEditor.this.textField.moveCaretPosition(NumberCellEditor.this.textField.getText().length());
             }
 
             /**
@@ -97,18 +97,18 @@ class NumberCellEditor extends DefaultCellEditor {
              * @return this text value.
              */
             public Object getCellEditorValue() {
-                return textField.getText();
+                return NumberCellEditor.this.textField.getText();
             }
         };
 
-        textField.addActionListener(delegate);
+        this.textField.addActionListener(this.delegate);
     }
 
     public String getEmptyString() {
-        return emptyString;
+        return this.emptyString;
     }
 
-    public void setEmptyString(String emptyString) {
+    public void setEmptyString(final String emptyString) {
         if (emptyString == null) {
             throw new NullPointerException();
         }

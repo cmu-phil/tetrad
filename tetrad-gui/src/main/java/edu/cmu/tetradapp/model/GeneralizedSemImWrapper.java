@@ -59,14 +59,14 @@ public class GeneralizedSemImWrapper implements KnowledgeBoxInput {
     private boolean showErrors;
 
     //==============================CONSTRUCTORS==========================//
-    public GeneralizedSemImWrapper(Simulation simulation) {
+    public GeneralizedSemImWrapper(final Simulation simulation) {
         List<GeneralizedSemIm> semIms = new ArrayList<>();
 
         if (simulation == null) {
             throw new NullPointerException("The Simulation box does not contain a simulation.");
         }
 
-        edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation = simulation.getSimulation();
+        final edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation = simulation.getSimulation();
 
         if (_simulation == null) {
             throw new NullPointerException("No data sets have been simulated.");
@@ -89,24 +89,24 @@ public class GeneralizedSemImWrapper implements KnowledgeBoxInput {
         }
     }
 
-    private GeneralizedSemImWrapper(GeneralizedSemPm semPm) {
+    private GeneralizedSemImWrapper(final GeneralizedSemPm semPm) {
         if (semPm == null) {
             throw new NullPointerException("SEM PM must not be null.");
         }
 
-        semIms.add(new GeneralizedSemIm(semPm));
+        this.semIms.add(new GeneralizedSemIm(semPm));
     }
 
     /**
      * Creates a new BayesPm from the given workbench and uses it to construct a
      * new BayesPm.
      */
-    public GeneralizedSemImWrapper(GeneralizedSemPmWrapper wrapper) {
+    public GeneralizedSemImWrapper(final GeneralizedSemPmWrapper wrapper) {
         this(wrapper.getSemPm());
     }
 
-    public GeneralizedSemImWrapper(GeneralizedSemPmWrapper genSemPm, SemImWrapper imWrapper) {
-        semIms.add(new GeneralizedSemIm(genSemPm.getSemPm(), imWrapper.getSemIm()));
+    public GeneralizedSemImWrapper(final GeneralizedSemPmWrapper genSemPm, final SemImWrapper imWrapper) {
+        this.semIms.add(new GeneralizedSemIm(genSemPm.getSemPm(), imWrapper.getSemIm()));
     }
 
     /**
@@ -120,7 +120,7 @@ public class GeneralizedSemImWrapper implements KnowledgeBoxInput {
 
     //============================PUBLIC METHODS=========================//
     public List<GeneralizedSemIm> getSemIms() {
-        return semIms;
+        return this.semIms;
     }
 
     /**
@@ -136,55 +136,55 @@ public class GeneralizedSemImWrapper implements KnowledgeBoxInput {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (semIms == null) {
+        if (this.semIms == null) {
             throw new NullPointerException();
         }
     }
 
     public Graph getGraph() {
-        return semIms.get(0).getSemPm().getGraph();
+        return this.semIms.get(0).getSemPm().getGraph();
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
     public boolean isShowErrors() {
-        return showErrors;
+        return this.showErrors;
     }
 
-    public void setShowErrors(boolean showErrors) {
+    public void setShowErrors(final boolean showErrors) {
         this.showErrors = showErrors;
     }
 
     //======================= Private methods ====================//
-    private void log(GeneralizedSemIm im) {
+    private void log(final GeneralizedSemIm im) {
         TetradLogger.getInstance().log("info", "Generalized SEM IM");
         TetradLogger.getInstance().log("im", im.toString());
     }
 
     public Graph getSourceGraph() {
-        return this.getGraph();
+        return getGraph();
     }
 
     public Graph getResultGraph() {
-        return this.getGraph();
+        return getGraph();
     }
 
     public List<String> getVariableNames() {
-        return this.getGraph().getNodeNames();
+        return getGraph().getNodeNames();
     }
 
     public List<Node> getVariables() {
-        return this.getGraph().getNodes();
+        return getGraph().getNodes();
     }
 
 }

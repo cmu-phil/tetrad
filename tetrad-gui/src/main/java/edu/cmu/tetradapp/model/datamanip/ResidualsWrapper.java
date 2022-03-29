@@ -42,65 +42,65 @@ public class ResidualsWrapper extends DataWrapper {
      *
      * @param data - Previous data (from the parent node)
      */
-    public ResidualsWrapper(DataWrapper data, DagWrapper dagWrapper, Parameters params) {
-        DataModelList list = data.getDataModelList();
-        DataModelList newList = new DataModelList();
+    public ResidualsWrapper(final DataWrapper data, final DagWrapper dagWrapper, final Parameters params) {
+        final DataModelList list = data.getDataModelList();
+        final DataModelList newList = new DataModelList();
 
-        for (DataModel dataModel : list) {
+        for (final DataModel dataModel : list) {
             if (!(dataModel instanceof DataSet)) {
                 throw new IllegalArgumentException("The data must be a rectangular dataset");
             }
             DataSet dataSet = (DataSet) dataModel;
-            Graph dag = dagWrapper.getGraph();
+            final Graph dag = dagWrapper.getGraph();
             dataSet = RegressionUtils.residuals(dataSet, dag);
             newList.add(dataSet);
         }
 
-        setDataModel(newList);
-        setSourceGraph(data.getSourceGraph());
+        this.setDataModel(newList);
+        this.setSourceGraph(data.getSourceGraph());
 
-        LogDataUtils.logDataModelList("Parent data in which each column has been replaced by its regression residuals.", this.getDataModelList());
+        LogDataUtils.logDataModelList("Parent data in which each column has been replaced by its regression residuals.", getDataModelList());
 
     }
 
-    public ResidualsWrapper(DataWrapper data, GraphWrapper graphWrapper, Parameters params) {
-        DataModelList list = data.getDataModelList();
-        DataModelList newList = new DataModelList();
+    public ResidualsWrapper(final DataWrapper data, final GraphWrapper graphWrapper, final Parameters params) {
+        final DataModelList list = data.getDataModelList();
+        final DataModelList newList = new DataModelList();
 
-        for (DataModel dataModel : list) {
+        for (final DataModel dataModel : list) {
             if (!(dataModel instanceof DataSet)) {
                 throw new IllegalArgumentException("The data must be a rectangular dataset");
             }
             DataSet dataSet = (DataSet) dataModel;
-            Graph graph = graphWrapper.getGraph();
+            final Graph graph = graphWrapper.getGraph();
             dataSet = RegressionUtils.residuals(dataSet, graph);
             newList.add(dataSet);
         }
 
-        setDataModel(newList);
-        setSourceGraph(data.getSourceGraph());
+        this.setDataModel(newList);
+        this.setSourceGraph(data.getSourceGraph());
 
-        LogDataUtils.logDataModelList("Parent data in which each column has been replaced by its regression residuals.", this.getDataModelList());
+        LogDataUtils.logDataModelList("Parent data in which each column has been replaced by its regression residuals.", getDataModelList());
     }
 
-    public ResidualsWrapper(DataWrapper data, SemGraphWrapper wrapper, Parameters params) {
-        DataModelList list = data.getDataModelList();
-        DataModelList newList = new DataModelList();
+    public ResidualsWrapper(final DataWrapper data, final SemGraphWrapper wrapper, final Parameters params) {
+        final DataModelList list = data.getDataModelList();
+        final DataModelList newList = new DataModelList();
 
-        for (DataModel dataModel : list) {
+        for (final DataModel dataModel : list) {
             if (!(dataModel instanceof DataSet)) {
                 throw new IllegalArgumentException("The data must be a rectangular dataset");
             }
             DataSet dataSet = (DataSet) dataModel;
-            Graph graph = wrapper.getGraph();
+            final Graph graph = wrapper.getGraph();
             dataSet = RegressionUtils.residuals(dataSet, graph);
             newList.add(dataSet);
         }
 
-        setDataModel(newList);
-        setSourceGraph(data.getSourceGraph());
+        this.setDataModel(newList);
+        this.setSourceGraph(data.getSourceGraph());
 
-        LogDataUtils.logDataModelList("Parent data in which each column has been replaced by its regression residuals.", this.getDataModelList());
+        LogDataUtils.logDataModelList("Parent data in which each column has been replaced by its regression residuals.", getDataModelList());
     }
 
     /**

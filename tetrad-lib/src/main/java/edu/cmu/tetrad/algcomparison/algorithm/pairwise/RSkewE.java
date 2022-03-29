@@ -10,7 +10,6 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Lofs2;
-import edu.cmu.tetrad.search.Lofs2.Rule;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -43,37 +42,37 @@ public class RSkewE implements Algorithm, TakesExternalGraph {
 
     }
 
-    public RSkewE(Algorithm algorithm) {
+    public RSkewE(final Algorithm algorithm) {
         this.algorithm = algorithm;
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(final DataModel dataSet, final Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            Graph graph = algorithm.search(dataSet, parameters);
+            final Graph graph = this.algorithm.search(dataSet, parameters);
 
             if (graph != null) {
-                externalGraph = graph;
+                this.externalGraph = graph;
             } else {
                 throw new IllegalArgumentException("This RSkewE algorithm needs both data and a graph source as inputs; it \n"
                         + "will orient the edges in the input graph using the data");
             }
 
-            List<DataSet> dataSets = new ArrayList<>();
+            final List<DataSet> dataSets = new ArrayList<>();
             dataSets.add(DataUtils.getContinuousDataSet(dataSet));
 
-            Lofs2 lofs = new Lofs2(externalGraph, dataSets);
-            lofs.setRule(Rule.RSkewE);
+            final Lofs2 lofs = new Lofs2(this.externalGraph, dataSets);
+            lofs.setRule(Lofs2.Rule.RSkewE);
 
             return lofs.orient();
         } else {
-            RSkewE rSkewE = new RSkewE(algorithm);
-            if (externalGraph != null) {
-                rSkewE.setExternalGraph(externalGraph);
+            final RSkewE rSkewE = new RSkewE(this.algorithm);
+            if (this.externalGraph != null) {
+                rSkewE.setExternalGraph(this.externalGraph);
             }
 
-            DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, rSkewE, parameters.getInt(Params.NUMBER_RESAMPLING));
+            final DataSet data = (DataSet) dataSet;
+            final GeneralResamplingTest search = new GeneralResamplingTest(data, rSkewE, parameters.getInt(Params.NUMBER_RESAMPLING));
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -99,14 +98,14 @@ public class RSkewE implements Algorithm, TakesExternalGraph {
     }
 
     @Override
-    public Graph getComparisonGraph(Graph graph) {
+    public Graph getComparisonGraph(final Graph graph) {
         return new EdgeListGraph(graph);
     }
 
     @Override
     public String getDescription() {
-        return "RSkewE" + (externalGraph != null ? " with initial graph from "
-                + algorithm.getDescription() : "");
+        return "RSkewE" + (this.externalGraph != null ? " with initial graph from "
+                + this.algorithm.getDescription() : "");
     }
 
     @Override
@@ -116,10 +115,10 @@ public class RSkewE implements Algorithm, TakesExternalGraph {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new LinkedList<>();
+        final List<String> parameters = new LinkedList<>();
 
-        if (algorithm != null && !algorithm.getParameters().isEmpty()) {
-            parameters.addAll(algorithm.getParameters());
+        if (this.algorithm != null && !this.algorithm.getParameters().isEmpty()) {
+            parameters.addAll(this.algorithm.getParameters());
         }
 
         parameters.add(Params.VERBOSE);
@@ -129,16 +128,16 @@ public class RSkewE implements Algorithm, TakesExternalGraph {
 
     @Override
     public Graph getExternalGraph() {
-        return externalGraph;
+        return this.externalGraph;
     }
 
     @Override
-    public void setExternalGraph(Graph externalGraph) {
+    public void setExternalGraph(final Graph externalGraph) {
         this.externalGraph = externalGraph;
     }
 
     @Override
-    public void setExternalGraph(Algorithm algorithm) {
+    public void setExternalGraph(final Algorithm algorithm) {
         if (algorithm == null) {
             throw new IllegalArgumentException("This RSkewE algorithm needs both data and a graph source as inputs; it \n"
                     + "will orient the edges in the input graph using the data.");

@@ -47,13 +47,13 @@ public class TestMbfs {
      */
     @Test
     public void testGenerateDaglist() {
-        Graph graph = GraphConverter.convert("T-->X1,T-->X2,X1-->X2,T-->X3,X4-->T");
+        final Graph graph = GraphConverter.convert("T-->X1,T-->X2,X1-->X2,T-->X3,X4-->T");
 
-        IndTestDSep test = new IndTestDSep(graph);
-        Mbfs search = new Mbfs(test, -1);
-        Graph resultGraph = search.search("T");
+        final IndTestDSep test = new IndTestDSep(graph);
+        final Mbfs search = new Mbfs(test, -1);
+        final Graph resultGraph = search.search("T");
 
-        List mbDags = MbUtils.generateMbDags(resultGraph, true,
+        final List mbDags = MbUtils.generateMbDags(resultGraph, true,
                 search.getTest(), search.getDepth(), search.getTarget());
 
         assertTrue(mbDags.size() == 9);
@@ -64,50 +64,50 @@ public class TestMbfs {
     public void testRandom() {
         RandomUtil.getInstance().setSeed(8388428832L);
 
-        List<Node> nodes1 = new ArrayList<>();
+        final List<Node> nodes1 = new ArrayList<>();
 
         for (int i = 0; i < 10; i++) {
             nodes1.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Dag dag = new Dag(GraphUtils.randomGraph(nodes1, 0, 10,
+        final Dag dag = new Dag(GraphUtils.randomGraph(nodes1, 0, 10,
                 5, 5, 5, false));
 
-        IndependenceTest test = new IndTestDSep(dag);
-        Mbfs search = new Mbfs(test, -1);
+        final IndependenceTest test = new IndTestDSep(dag);
+        final Mbfs search = new Mbfs(test, -1);
 
-        List<Node> nodes = dag.getNodes();
+        final List<Node> nodes = dag.getNodes();
 
-        for (Node node : nodes) {
-            Graph resultMb = search.search(node.getName());
-            Graph trueMb = GraphUtils.markovBlanketDag(node, dag);
+        for (final Node node : nodes) {
+            final Graph resultMb = search.search(node.getName());
+            final Graph trueMb = GraphUtils.markovBlanketDag(node, dag);
 
-            List<Node> resultNodes = resultMb.getNodes();
-            List<Node> trueNodes = trueMb.getNodes();
+            final List<Node> resultNodes = resultMb.getNodes();
+            final List<Node> trueNodes = trueMb.getNodes();
 
-            Set<String> resultNames = new HashSet<>();
+            final Set<String> resultNames = new HashSet<>();
 
-            for (Node resultNode : resultNodes) {
+            for (final Node resultNode : resultNodes) {
                 resultNames.add(resultNode.getName());
             }
 
-            Set<String> trueNames = new HashSet<>();
+            final Set<String> trueNames = new HashSet<>();
 
-            for (Node v : trueNodes) {
+            for (final Node v : trueNodes) {
                 trueNames.add(v.getName());
             }
 
             assertTrue(resultNames.equals(trueNames));
 
-            Set<Edge> resultEdges = resultMb.getEdges();
+            final Set<Edge> resultEdges = resultMb.getEdges();
 
-            for (Edge resultEdge : resultEdges) {
+            for (final Edge resultEdge : resultEdges) {
                 if (Edges.isDirectedEdge(resultEdge)) {
-                    String name1 = resultEdge.getNode1().getName();
-                    String name2 = resultEdge.getNode2().getName();
+                    final String name1 = resultEdge.getNode1().getName();
+                    final String name2 = resultEdge.getNode2().getName();
 
-                    Node node1 = trueMb.getNode(name1);
-                    Node node2 = trueMb.getNode(name2);
+                    final Node node1 = trueMb.getNode(name1);
+                    final Node node2 = trueMb.getNode(name2);
 
                     // If one of these nodes is null, probably it's because some
                     // parent of the target could not be oriented as such, and
@@ -121,15 +121,15 @@ public class TestMbfs {
                         fail("Node " + name2 + " is not in the true graph.");
                     }
 
-                    Edge trueEdge = trueMb.getEdge(node1, node2);
+                    final Edge trueEdge = trueMb.getEdge(node1, node2);
 
                     if (trueEdge == null) {
-                        Node resultNode1 = resultMb.getNode(node1.getName());
-                        Node resultNode2 = resultMb.getNode(node2.getName());
-                        Node resultTarget = resultMb.getNode(node.getName());
+                        final Node resultNode1 = resultMb.getNode(node1.getName());
+                        final Node resultNode2 = resultMb.getNode(node2.getName());
+                        final Node resultTarget = resultMb.getNode(node.getName());
 
-                        Edge a = resultMb.getEdge(resultNode1, resultTarget);
-                        Edge b = resultMb.getEdge(resultNode2, resultTarget);
+                        final Edge a = resultMb.getEdge(resultNode1, resultTarget);
+                        final Edge b = resultMb.getEdge(resultNode2, resultTarget);
 
                         if (a == null || b == null) {
                             continue;

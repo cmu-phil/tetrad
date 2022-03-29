@@ -19,13 +19,13 @@ public class SpecialGraphClark implements RandomGraph {
     static final long serialVersionUID = 23L;
 
     @Override
-    public Graph createGraph(Parameters parameters) {
+    public Graph createGraph(final Parameters parameters) {
 
-        Node x = new ContinuousVariable("X");
-        Node y = new ContinuousVariable("Y");
-        Node z = new ContinuousVariable("Z");
+        final Node x = new ContinuousVariable("X");
+        final Node y = new ContinuousVariable("Y");
+        final Node z = new ContinuousVariable("Z");
 
-        Graph g = new EdgeListGraph();
+        final Graph g = new EdgeListGraph();
         g.addNode(x);
         g.addNode(y);
         g.addNode(z);

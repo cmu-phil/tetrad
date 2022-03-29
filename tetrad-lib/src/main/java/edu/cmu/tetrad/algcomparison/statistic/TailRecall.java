@@ -27,16 +27,16 @@ public class TailRecall implements Statistic {
     }
 
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        TailConfusion confusion = new TailConfusion(trueGraph, estGraph);
-        double arrowsTp = confusion.getArrowsTp();
-        double arrowsFn = confusion.getArrowsFn();
-        double den = arrowsTp + arrowsFn;
+    public double getValue(final Graph trueGraph, final Graph estGraph, final DataModel dataModel) {
+        final TailConfusion confusion = new TailConfusion(trueGraph, estGraph);
+        final double arrowsTp = confusion.getArrowsTp();
+        final double arrowsFn = confusion.getArrowsFn();
+        final double den = arrowsTp + arrowsFn;
         return arrowsTp / den;
     }
 
     @Override
-    public double getNormValue(double value) {
+    public double getNormValue(final double value) {
         return value;
     }
 }

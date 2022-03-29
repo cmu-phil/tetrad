@@ -23,12 +23,12 @@ public class AverageDegreeEst implements Statistic {
     }
 
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+    public double getValue(final Graph trueGraph, final Graph estGraph, final DataModel dataModel) {
         return 2.0 * estGraph.getNumEdges() / estGraph.getNumNodes();
     }
 
     @Override
-    public double getNormValue(double value) {
+    public double getNormValue(final double value) {
         return value;
     }
 }

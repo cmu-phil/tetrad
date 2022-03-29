@@ -41,19 +41,19 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 public class TestHistogram extends TestCase {
-    public TestHistogram(String name) {
+    public TestHistogram(final String name) {
         super(name);
     }
 
     public void test1() {
-        List<Node> nodes = new LinkedList<>();
+        final List<Node> nodes = new LinkedList<>();
 
-        Node x1 = new ContinuousVariable("X1");
-        Node x2 = new ContinuousVariable("X2");
+        final Node x1 = new ContinuousVariable("X1");
+        final Node x2 = new ContinuousVariable("X2");
         nodes.add(x1);
         nodes.add(x2);
 
-        Matrix dataMatrix = new Matrix(10, 2);
+        final Matrix dataMatrix = new Matrix(10, 2);
 
         dataMatrix.set(0, 0, 0);
         dataMatrix.set(1, 0, 0);
@@ -78,7 +78,7 @@ public class TestHistogram extends TestCase {
         dataMatrix.set(9, 1, 1);
 
 
-        DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(dataMatrix.transpose().toArray()), nodes);
+        final DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(dataMatrix.transpose().toArray()), nodes);
 
 //        Histogram histogram = new Histogram(dataSet, );
     }

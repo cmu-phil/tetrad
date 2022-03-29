@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.calculator.expression;
 
-import edu.cmu.tetrad.calculator.expression.ExpressionDescriptor.Position;
 import org.apache.commons.math3.distribution.IntegerDistribution;
 import org.apache.commons.math3.distribution.RealDistribution;
 
@@ -45,14 +44,14 @@ abstract class AbstractExpression implements Expression {
     /**
      * The position of the token--infix or prefix or both.
      */
-    private final Position position;
+    private final ExpressionDescriptor.Position position;
 
     /**
      * The token--for example, + or cos.
      */
     private final String token;
 
-    public AbstractExpression(String token, Position position, Expression... expressions) {
+    public AbstractExpression(String token, ExpressionDescriptor.Position position, Expression... expressions) {
         this.position = position;
         this.token = token;
         this.expressions = Collections.unmodifiableList(Arrays.asList(expressions));
@@ -63,30 +62,30 @@ abstract class AbstractExpression implements Expression {
         return token;
     }
 
-    public Position getPosition() {
-        return position;
+    public ExpressionDescriptor.Position getPosition() {
+        return this.position;
     }
 
     /**
      * @return the sub expressions (unmodifiable).f
      */
     public List<Expression> getExpressions() {
-        return expressions;
+        return this.expressions;
     }
 
     @Override
-    public RealDistribution getRealDistribution(Context context) {
-        if (expressions.size() == 1) {
-            return expressions.get(0).getRealDistribution(context);
+    public RealDistribution getRealDistribution(final Context context) {
+        if (this.expressions.size() == 1) {
+            return this.expressions.get(0).getRealDistribution(context);
         }
 
         return null;
 
     }
 
-    public IntegerDistribution getIntegerDistribution(Context context) {
-        if (expressions.size() == 1) {
-            return expressions.get(0).getIntegerDistribution(context);
+    public IntegerDistribution getIntegerDistribution(final Context context) {
+        if (this.expressions.size() == 1) {
+            return this.expressions.get(0).getIntegerDistribution(context);
         }
 
         return null;
@@ -94,8 +93,8 @@ abstract class AbstractExpression implements Expression {
     }
 
     public String toString() {
-        if (this.getPosition() != null && this.getToken() != null) {
-            return ExpressionUtils.renderExpression(this, this.getPosition(), this.getToken());
+        if (getPosition() != null && getToken() != null) {
+            return ExpressionUtils.renderExpression(this, getPosition(), getToken());
         }
         return "No string representation available.";
     }

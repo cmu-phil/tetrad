@@ -22,7 +22,7 @@ import java.io.ObjectInputStream;
 public class DeterminismWraper extends DataWrapper {
     private static final long serialVersionUID = -5573234622763285581L;
 
-    public DeterminismWraper(DataWrapper dataWrapper, Parameters params) {
+    public DeterminismWraper(final DataWrapper dataWrapper, final Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException("The given data must not be null");
         }
@@ -39,9 +39,9 @@ public class DeterminismWraper extends DataWrapper {
 
         // Get the merged data through parameter set by the editor
         // Kepp the origional data unchanged, use copies for merging.
-        DataModel mergedDataset = (DataModel) params.get("DeterminisedDataset");
+        final DataModel mergedDataset = (DataModel) params.get("DeterminisedDataset");
         mergedDataset.setName("Determinised");
-        this.setDataModel(mergedDataset);
+        setDataModel(mergedDataset);
     }
 
 
@@ -71,7 +71,7 @@ public class DeterminismWraper extends DataWrapper {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }

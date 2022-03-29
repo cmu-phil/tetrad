@@ -9,10 +9,6 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.PcAll;
-import edu.cmu.tetrad.search.PcAll.ColliderDiscovery;
-import edu.cmu.tetrad.search.PcAll.Concurrent;
-import edu.cmu.tetrad.search.PcAll.ConflictRule;
-import edu.cmu.tetrad.search.PcAll.FasType;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -38,37 +34,37 @@ public class CpcStable implements Algorithm, HasKnowledge, TakesIndependenceWrap
     public CpcStable() {
     }
 
-    public CpcStable(IndependenceWrapper test) {
+    public CpcStable(final IndependenceWrapper test) {
         this.test = test;
     }
 
-    public CpcStable(IndependenceWrapper test, Algorithm algorithm) {
+    public CpcStable(final IndependenceWrapper test, final Algorithm algorithm) {
         this.test = test;
         this.algorithm = algorithm;
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(final DataModel dataSet, final Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            Graph init = null;
-            if (algorithm != null) {
+            final Graph init = null;
+            if (this.algorithm != null) {
 //                init = algorithm.search(dataSet, parameters);
             }
-            PcAll search = new PcAll(test.getTest(dataSet, parameters));
+            final PcAll search = new PcAll(this.test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
-            search.setKnowledge(knowledge);
-            search.setFasType(FasType.STABLE);
-            search.setConcurrent(Concurrent.NO);
-            search.setColliderDiscovery(ColliderDiscovery.CONSERVATIVE);
-            search.setConflictRule(ConflictRule.PRIORITY);
+            search.setKnowledge(this.knowledge);
+            search.setFasType(PcAll.FasType.STABLE);
+            search.setConcurrent(PcAll.Concurrent.NO);
+            search.setColliderDiscovery(PcAll.ColliderDiscovery.CONSERVATIVE);
+            search.setConflictRule(PcAll.ConflictRule.PRIORITY);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         } else {
-            CpcStable cpcStable = new CpcStable(test, algorithm);
+            final CpcStable cpcStable = new CpcStable(this.test, this.algorithm);
 
-            DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, cpcStable, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(knowledge);
+            final DataSet data = (DataSet) dataSet;
+            final GeneralResamplingTest search = new GeneralResamplingTest(data, cpcStable, parameters.getInt(Params.NUMBER_RESAMPLING));
+            search.setKnowledge(this.knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -94,23 +90,23 @@ public class CpcStable implements Algorithm, HasKnowledge, TakesIndependenceWrap
     }
 
     @Override
-    public Graph getComparisonGraph(Graph graph) {
+    public Graph getComparisonGraph(final Graph graph) {
         return SearchGraphUtils.cpdagForDag(new EdgeListGraph(graph));
     }
 
     @Override
     public String getDescription() {
-        return "CPC-Stable (Conservative \"Peter and Clark\" Stable), Priority Rule, using " + test.getDescription();
+        return "CPC-Stable (Conservative \"Peter and Clark\" Stable), Priority Rule, using " + this.test.getDescription();
     }
 
     @Override
     public DataType getDataType() {
-        return test.getDataType();
+        return this.test.getDataType();
     }
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
+        final List<String> parameters = new ArrayList<>();
         parameters.add(Params.DEPTH);
 
         parameters.add(Params.VERBOSE);
@@ -119,21 +115,21 @@ public class CpcStable implements Algorithm, HasKnowledge, TakesIndependenceWrap
 
     @Override
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(final IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
     @Override
-    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
-        test = independenceWrapper;
+    public void setIndependenceWrapper(final IndependenceWrapper independenceWrapper) {
+        this.test = independenceWrapper;
     }
 
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
-        return test;
+        return this.test;
     }
 }

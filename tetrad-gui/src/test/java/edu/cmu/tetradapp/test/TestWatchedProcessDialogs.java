@@ -41,10 +41,10 @@ public class TestWatchedProcessDialogs {
     @Test
     public void testWatchedProcessDialogs() {
         try {
-            Field field = WatchedProcess.class.getDeclaredField("SHOW_DIALOG");
+            final Field field = WatchedProcess.class.getDeclaredField("SHOW_DIALOG");
 
-            int modifiers = field.getModifiers();
-            boolean _static = Modifier.isStatic(modifiers);
+            final int modifiers = field.getModifiers();
+            final boolean _static = Modifier.isStatic(modifiers);
             field.setAccessible(true);
 
             if (!_static || !(field.getBoolean(null))) {
@@ -52,10 +52,10 @@ public class TestWatchedProcessDialogs {
                         "boolean SHOW_DIALOG = true. Please revise before " +
                         "posting next time.");
             }
-        } catch (NoSuchFieldException e) {
+        } catch (final NoSuchFieldException e) {
             throw new RuntimeException(
                     "No field showDialog in WatchedProcess!");
-        } catch (IllegalAccessException e) {
+        } catch (final IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }

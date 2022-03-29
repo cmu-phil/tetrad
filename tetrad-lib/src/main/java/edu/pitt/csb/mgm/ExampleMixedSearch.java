@@ -33,28 +33,28 @@ import java.io.IOException;
  * Created by ajsedgewick on 8/18/15.
  */
 public class ExampleMixedSearch {
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
         try {
-            String path = args[0];
+            final String path = args[0];
             //String path = ExampleMixedSearch.class.getResource("test_data").getPath();
             //DoubleMatrix2D xIn = DoubleFactory2D.dense.make(MixedUtils.loadDataSelect(path, "med_test_C.txt"));
             //DoubleMatrix2D yIn = DoubleFactory2D.dense.make(MixedUtils.loadDataSelect(path, "med_test_D.txt"));
-            Graph trueGraph = GraphUtils.loadGraphTxt(new File(path, "DAG_0_graph.txt"));
-            DataSet data = MixedUtils.loadDataSet(path, "DAG_0_data.txt");
+            final Graph trueGraph = GraphUtils.loadGraphTxt(new File(path, "DAG_0_graph.txt"));
+            final DataSet data = MixedUtils.loadDataSet(path, "DAG_0_data.txt");
 
             //lambda is a sparsity parameter, higher values result in sparser graphs
             //separate lambda entries for continuous-continuous, continuous-discrete and discrete-discrete edges
             //respectively, generally lower lambdas for edges with discrete variables
-            double[] lambda = {.2, .2, .2};
+            final double[] lambda = {.2, .2, .2};
             final double tolerance = 1e-7; //convergeance tolerance
             final int iterLimit = 1000; //iteration limit
 
-            MGM model = new MGM(data, lambda);
+            final MGM model = new MGM(data, lambda);
             model.learn(tolerance, iterLimit);
-            Graph mgmGraph = model.graphFromMGM();
+            final Graph mgmGraph = model.graphFromMGM();
 
             //Graph class can't deal with edge weights, so we put them in a matrix
-            DoubleMatrix2D adjMat = model.adjMatFromMGM();
+            final DoubleMatrix2D adjMat = model.adjMatFromMGM();
 
             System.out.println("True Graph");
             System.out.println(trueGraph);
@@ -69,7 +69,7 @@ public class ExampleMixedSearch {
             System.out.println(MixedUtils.stringFrom2dArray(MixedUtils.allEdgeStats(trueGraph, mgmGraph)));
 
 
-        } catch (IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
         }
     }

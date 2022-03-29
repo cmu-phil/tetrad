@@ -23,16 +23,16 @@ package edu.cmu.tetrad.gene.tetrad.gene.algorithm.ideker;
 
 
 public class LTestPredictorSearch {
-    public static void main(String[] argv) {
+    public static void main(final String[] argv) {
 
         final int ngenes = 4;
         //int[][] exp = new int[4][4];
-        String[] names = {"a0", "a1", "a2", "a3"};
+        final String[] names = {"a0", "a1", "a2", "a3"};
 
-        int[][] exp = {{1, 1, 1, 0}, {-1, 1, 0, 1}, {1, -1, 0, 0},
+        final int[][] exp = {{1, 1, 1, 0}, {-1, 1, 0, 1}, {1, -1, 0, 0},
                 {1, 1, -1, 1}, {1, 1, 1, 2}};
 
-        ItkPredictorSearch ips = new ItkPredictorSearch(ngenes, exp, names);
+        final ItkPredictorSearch ips = new ItkPredictorSearch(ngenes, exp, names);
 
         for (int gene = 0; gene < ngenes; gene++) {
             ips.predictor(gene);

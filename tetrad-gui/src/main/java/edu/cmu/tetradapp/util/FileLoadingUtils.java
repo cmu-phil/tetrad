@@ -28,7 +28,6 @@ import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.channels.FileChannel.MapMode;
 import java.nio.charset.Charset;
 
 /**
@@ -37,32 +36,32 @@ import java.nio.charset.Charset;
 public class FileLoadingUtils {
     // Converts the contents of a file into a CharSequence
     // suitable for use by the regex package.
-    public static String fromFile(File file) throws IOException {
-        FileInputStream fis = new FileInputStream(file);
-        FileChannel fc = fis.getChannel();
+    public static String fromFile(final File file) throws IOException {
+        final FileInputStream fis = new FileInputStream(file);
+        final FileChannel fc = fis.getChannel();
 
         // Create a read-only CharBuffer on the file
-        ByteBuffer bbuf =
-                fc.map(MapMode.READ_ONLY, 0, (int) fc.size());
-        CharBuffer cbuf = Charset.forName("8859_1").newDecoder().decode(bbuf);
+        final ByteBuffer bbuf =
+                fc.map(FileChannel.MapMode.READ_ONLY, 0, (int) fc.size());
+        final CharBuffer cbuf = Charset.forName("8859_1").newDecoder().decode(bbuf);
 
-        String s = cbuf.toString();
+        final String s = cbuf.toString();
         fis.close();
         return s;
     }
 
-    public static String fromResources(String path) {
+    public static String fromResources(final String path) {
         try {
-            URL url = Version.class.getResource(path);
+            final URL url = Version.class.getResource(path);
 
             if (url == null) {
                 throw new RuntimeException(
                         "Could not load resource file: " + path);
             }
 
-            InputStream inStream = url.openStream();
-            Reader reader = new InputStreamReader(inStream);
-            BufferedReader bufReader = new BufferedReader(reader);
+            final InputStream inStream = url.openStream();
+            final Reader reader = new InputStreamReader(inStream);
+            final BufferedReader bufReader = new BufferedReader(reader);
 
             String line;
             String spec = "";
@@ -72,7 +71,7 @@ public class FileLoadingUtils {
             bufReader.close();
 
             return spec;
-        } catch (IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
         }
 

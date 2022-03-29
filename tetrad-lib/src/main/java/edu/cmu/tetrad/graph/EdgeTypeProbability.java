@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.graph;
 
-import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.util.ArrayList;
@@ -21,7 +20,7 @@ public class EdgeTypeProbability implements TetradSerializable {
 
     private EdgeType edgeType;
 
-    private List<Property> properties = new ArrayList<>();
+    private List<Edge.Property> properties = new ArrayList<>();
 
     private double probability;
 
@@ -29,44 +28,44 @@ public class EdgeTypeProbability implements TetradSerializable {
 
     }
 
-    public EdgeTypeProbability(EdgeType edgeType, List<Property> properties, double probability) {
+    public EdgeTypeProbability(EdgeType edgeType, final List<Edge.Property> properties, final double probability) {
         this.edgeType = edgeType;
         this.properties = properties;
         this.probability = probability;
     }
 
-    public EdgeTypeProbability(EdgeType edgeType, double probability) {
+    public EdgeTypeProbability(final EdgeType edgeType, final double probability) {
         this.edgeType = edgeType;
         this.probability = probability;
     }
 
     public EdgeType getEdgeType() {
-        return edgeType;
+        return this.edgeType;
     }
 
-    public void setEdgeType(EdgeType edgeType) {
+    public void setEdgeType(final EdgeType edgeType) {
         this.edgeType = edgeType;
     }
 
-    public void addProperty(Edge.Property property) {
-        if (!this.properties.contains(property)) {
-            this.properties.add(property);
+    public void addProperty(final Edge.Property property) {
+        if (!properties.contains(property)) {
+            properties.add(property);
         }
     }
 
-    public void removeProperty(final Edge.Property property) {
-        this.properties.remove(property);
+    public void removeProperty(Edge.Property property) {
+        properties.remove(property);
     }
 
     public ArrayList<Edge.Property> getProperties() {
-        return new ArrayList<>(properties);
+        return new ArrayList<>(this.properties);
     }
 
     public double getProbability() {
-        return probability;
+        return this.probability;
     }
 
-    public void setProbability(double probability) {
+    public void setProbability(final double probability) {
         this.probability = probability;
     }
 

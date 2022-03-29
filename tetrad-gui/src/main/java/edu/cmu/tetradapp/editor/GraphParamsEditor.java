@@ -44,27 +44,27 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
     public GraphParamsEditor() {
     }
 
-    public void setParams(Parameters params) {
+    public void setParams(final Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
 
         this.params = params;
-        this.setup();
+        setup();
     }
 
-    public void setParentModels(Object[] parentModels) {
+    public void setParentModels(final Object[] parentModels) {
         // Do nothing.
     }
 
     public void setup() {
-        boolean cyclicAllowed = params.getBoolean("cyclicAllowed", false);
-        RandomGraphEditor randomDagEditor = new RandomGraphEditor(cyclicAllowed, params);
-        RandomMimParamsEditor randomMimEditor = new RandomMimParamsEditor(params);
-        RandomDagScaleFreeEditor randomScaleFreeEditor = new RandomDagScaleFreeEditor();
+        final boolean cyclicAllowed = this.params.getBoolean("cyclicAllowed", false);
+        final RandomGraphEditor randomDagEditor = new RandomGraphEditor(cyclicAllowed, this.params);
+        final RandomMimParamsEditor randomMimEditor = new RandomMimParamsEditor(this.params);
+        final RandomDagScaleFreeEditor randomScaleFreeEditor = new RandomDagScaleFreeEditor();
 
         // construct the workbench.
-        this.setLayout(new BorderLayout());
+        setLayout(new BorderLayout());
 
 //        JRadioButton manual = new JRadioButton(
 //                "An empty graph (to be constructed manually).");
@@ -104,8 +104,8 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
 //            }
 //        });
 
-        Box b1 = Box.createVerticalBox();
-        Box b2 = Box.createVerticalBox();
+        final Box b1 = Box.createVerticalBox();
+        final Box b2 = Box.createVerticalBox();
 
 //        Box b3 = Box.createHorizontalBox();
 //        b3.add(new JLabel("Make new graph:"));
@@ -127,12 +127,12 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
         b1.add(b2);
         b1.add(Box.createVerticalStrut(5));
 
-        JTabbedPane tabs = new JTabbedPane();
+        final JTabbedPane tabs = new JTabbedPane();
         tabs.addTab("DAG", randomDagEditor);
         tabs.add("MIM", randomMimEditor);
         tabs.add("Scale Free", randomScaleFreeEditor);
 
-        String type = params.getString("randomGraphType", "Uniform");
+        final String type = this.params.getString("randomGraphType", "Uniform");
 
         if (type.equals("Uniform")) {
             tabs.setSelectedIndex(0);
@@ -146,20 +146,20 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
 
         tabs.addChangeListener(new ChangeListener() {
             @Override
-            public void stateChanged(ChangeEvent changeEvent) {
-                JTabbedPane pane = (JTabbedPane) changeEvent.getSource();
+            public void stateChanged(final ChangeEvent changeEvent) {
+                final JTabbedPane pane = (JTabbedPane) changeEvent.getSource();
 
                 if (pane.getSelectedIndex() == 0) {
-                    params.set("randomGraphType", "Uniform");
+                    GraphParamsEditor.this.params.set("randomGraphType", "Uniform");
                 } else if (pane.getSelectedIndex() == 1) {
-                    params.set("randomGraphType", "Mim");
+                    GraphParamsEditor.this.params.set("randomGraphType", "Mim");
                 } else if (pane.getSelectedIndex() == 2) {
-                    params.set("randomGraphType", "ScaleFree");
+                    GraphParamsEditor.this.params.set("randomGraphType", "ScaleFree");
                 }
             }
         });
 
-        Box b6 = Box.createHorizontalBox();
+        final Box b6 = Box.createHorizontalBox();
         b6.add(tabs);
         b6.add(Box.createHorizontalGlue());
 
@@ -168,7 +168,7 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
         b1.add(b6);
 
         b1.add(Box.createHorizontalGlue());
-        this.add(b1, BorderLayout.CENTER);
+        add(b1, BorderLayout.CENTER);
     }
 
     public boolean mustBeShown() {

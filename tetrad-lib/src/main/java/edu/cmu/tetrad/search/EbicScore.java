@@ -68,114 +68,114 @@ public class EbicScore implements Score {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public EbicScore(ICovarianceMatrix covariances) {
+    public EbicScore(final ICovarianceMatrix covariances) {
         if (covariances == null) {
             throw new NullPointerException();
         }
 
-        this.setCovariances(covariances);
-        variables = covariances.getVariables();
-        sampleSize = covariances.getSampleSize();
+        setCovariances(covariances);
+        this.variables = covariances.getVariables();
+        this.sampleSize = covariances.getSampleSize();
     }
 
     /**
      * Constructs the score using a covariance matrix.
      */
-    public EbicScore(DataSet dataSet) {
+    public EbicScore(final DataSet dataSet) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
 
         this.dataSet = dataSet;
 
-        variables = dataSet.getVariables();
-        sampleSize = dataSet.getNumRows();
+        this.variables = dataSet.getVariables();
+        this.sampleSize = dataSet.getNumRows();
 
-        DataSet _dataSet = DataUtils.center(dataSet);
-        data = _dataSet.getDoubleData();
+        final DataSet _dataSet = DataUtils.center(dataSet);
+        this.data = _dataSet.getDoubleData();
 
         if (!dataSet.existsMissingValue()) {
-            this.setCovariances(new CovarianceMatrix(dataSet));
-            calculateRowSubsets = false;
+            setCovariances(new CovarianceMatrix(dataSet));
+            this.calculateRowSubsets = false;
         } else {
-            calculateRowSubsets = true;
+            this.calculateRowSubsets = true;
         }
 
     }
 
-    private int[] indices(List<Node> __adj) {
-        int[] indices = new int[__adj.size()];
-        for (int t = 0; t < __adj.size(); t++) indices[t] = variables.indexOf(__adj.get(t));
+    private int[] indices(final List<Node> __adj) {
+        final int[] indices = new int[__adj.size()];
+        for (int t = 0; t < __adj.size(); t++) indices[t] = this.variables.indexOf(__adj.get(t));
         return indices;
     }
 
     @Override
-    public double localScoreDiff(int x, int y, int[] z) {
-        return this.localScore(y, append(z, x)) - this.localScore(y, z);
+    public double localScoreDiff(final int x, final int y, final int[] z) {
+        return localScore(y, EbicScore.append(z, x)) - localScore(y, z);
     }
 
     @Override
-    public double localScoreDiff(int x, int y) {
-        return this.localScoreDiff(x, y, new int[0]);
+    public double localScoreDiff(final int x, final int y) {
+        return localScoreDiff(x, y, new int[0]);
     }
 
-    public double localScore(int i, int... parents) throws RuntimeException {
-        int pi = parents.length + 1;
-        double varRy = SemBicScore.getVarRy(i, parents, data, covariances, calculateRowSubsets);
+    public double localScore(final int i, final int... parents) throws RuntimeException {
+        final int pi = parents.length + 1;
+        final double varRy = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
 
-        double gamma = this.gamma;//  1.0 - riskBound;
+        final double gamma = this.gamma;//  1.0 - riskBound;
 
-        return -(N * log(varRy) + (pi * log(N)
-                + 2 * gamma * ChoiceGenerator.logCombinations(variables.size() - 1, pi)));
+        return -(this.N * log(varRy) + (pi * log(this.N)
+                + 2 * gamma * ChoiceGenerator.logCombinations(this.variables.size() - 1, pi)));
     }
 
-    public static double getP(int pn, int m0, double lambda) {
+    public static double getP(final int pn, final int m0, final double lambda) {
         return 2 - pow(1 + (exp(-(lambda - 1) / 2.)) * sqrt(lambda), (double) pn - m0);
     }
 
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
-    public double localScore(int i, int parent) {
-        return this.localScore(i, new int[]{parent});
+    public double localScore(final int i, final int parent) {
+        return localScore(i, new int[]{parent});
     }
 
     /**
      * Specialized scoring method for no parents. Used to speed up the effect edges search.
      */
-    public double localScore(int i) {
-        return this.localScore(i, new int[0]);
+    public double localScore(final int i) {
+        return localScore(i, new int[0]);
     }
 
     public ICovarianceMatrix getCovariances() {
-        return covariances;
+        return this.covariances;
     }
 
     public int getSampleSize() {
-        return sampleSize;
+        return this.sampleSize;
     }
 
     @Override
-    public boolean isEffectEdge(double bump) {
+    public boolean isEffectEdge(final double bump) {
         return bump > 0;
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 
     @Override
     public List<Node> getVariables() {
-        return variables;
+        return this.variables;
     }
 
     @Override
-    public Node getVariable(String targetName) {
-        for (Node node : variables) {
+    public Node getVariable(final String targetName) {
+        for (final Node node : this.variables) {
             if (node.getName().equals(targetName)) {
                 return node;
             }
@@ -186,27 +186,27 @@ public class EbicScore implements Score {
 
     @Override
     public int getMaxDegree() {
-        return (int) ceil(log(sampleSize));
+        return (int) ceil(log(this.sampleSize));
     }
 
     @Override
-    public boolean determines(List<Node> z, Node y) {
-        int i = variables.indexOf(y);
+    public boolean determines(final List<Node> z, final Node y) {
+        final int i = this.variables.indexOf(y);
 
-        int[] k = this.indices(z);
+        final int[] k = indices(z);
 
-        double v = this.localScore(i, k);
+        final double v = localScore(i, k);
 
         return Double.isNaN(v);
     }
 
-//    @Override
+    //    @Override
     public DataModel getData() {
-        return dataSet;
+        return this.dataSet;
     }
 
-    private void setCovariances(ICovarianceMatrix covariances) {
-        CorrelationMatrix correlations = new CorrelationMatrix(covariances);
+    private void setCovariances(final ICovarianceMatrix covariances) {
+        final CorrelationMatrix correlations = new CorrelationMatrix(covariances);
         this.covariances = covariances;
 
         boolean exists = false;
@@ -214,8 +214,8 @@ public class EbicScore implements Score {
         for (int i = 0; i < correlations.getSize(); i++) {
             for (int j = 0; j < correlations.getSize(); j++) {
                 if (i == j) continue;
-                double r = correlations.getValue(i, j);
-                if (abs(r) > correlationThreshold) {
+                final double r = correlations.getValue(i, j);
+                if (abs(r) > this.correlationThreshold) {
                     System.out.println("Absolute correlation too high: " + r);
                     exists = true;
                 }
@@ -223,25 +223,25 @@ public class EbicScore implements Score {
         }
 
         if (exists) {
-            throw new IllegalArgumentException("Some correlations are too high (> " + correlationThreshold
+            throw new IllegalArgumentException("Some correlations are too high (> " + this.correlationThreshold
                     + ") in absolute value.");
         }
 
 
-        N = covariances.getSampleSize();
+        this.N = covariances.getSampleSize();
     }
 
-    private static int[] append(int[] z, int x) {
-        int[] _z = Arrays.copyOf(z, z.length + 1);
+    private static int[] append(final int[] z, final int x) {
+        final int[] _z = Arrays.copyOf(z, z.length + 1);
         _z[z.length] = x;
         return _z;
     }
 
-    public void setCorrelationThreshold(double correlationThreshold) {
+    public void setCorrelationThreshold(final double correlationThreshold) {
         this.correlationThreshold = correlationThreshold;
     }
 
-    public void setGamma(double gamma) {
+    public void setGamma(final double gamma) {
         this.gamma = gamma;
     }
 }

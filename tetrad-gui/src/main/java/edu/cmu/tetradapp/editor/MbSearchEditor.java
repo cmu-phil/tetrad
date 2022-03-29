@@ -57,70 +57,70 @@ public class MbSearchEditor extends AbstractSearchEditor
     /**
      * Opens up an editor to let the user view the given PcxRunner.
      */
-    public MbSearchEditor(MbfsRunner runner) {
+    public MbSearchEditor(final MbfsRunner runner) {
         super(runner, "Result MB forbid_latent_common_causes");
     }
 
-    public MbSearchEditor(FgesMbRunner runner) {
+    public MbSearchEditor(final FgesMbRunner runner) {
         super(runner, "Result MB forbid_latent_common_causes");
     }
 
-    public MbSearchEditor(MbFanSearchRunner runner) {
+    public MbSearchEditor(final MbFanSearchRunner runner) {
         super(runner, "Result MB forbid_latent_common_causes");
     }
 
     /**
      * Opens up an editor to let the user view the given PcxRunner.
      */
-    public MbSearchEditor(CeFanSearchRunner runner) {
+    public MbSearchEditor(final CeFanSearchRunner runner) {
         super(runner, "Result Causal Environment");
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
-        this.getAlgorithmRunner().getParams().set("knowledge", knowledge);
+    public void setKnowledge(final IKnowledge knowledge) {
+        getAlgorithmRunner().getParams().set("knowledge", knowledge);
     }
 
     @Override
     public Map getModelEdgesToDisplay() {
-        return this.getWorkbench().getModelEdgesToDisplay();
+        return getWorkbench().getModelEdgesToDisplay();
     }
 
     public Map getModelNodesToDisplay() {
-        return this.getWorkbench().getModelNodesToDisplay();
+        return getWorkbench().getModelNodesToDisplay();
     }
 
     public IKnowledge getKnowledge() {
-        return (IKnowledge) this.getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
+        return (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
     }
 
     public java.util.List<String> getVarNames() {
-        Parameters params = this.getAlgorithmRunner().getParams();
+        final Parameters params = getAlgorithmRunner().getParams();
         return (java.util.List<String>) params.get("varNames", null);
     }
 
     public Graph getSourceGraph() {
-        Graph sourceGraph = this.getWorkbench().getGraph();
+        Graph sourceGraph = getWorkbench().getGraph();
 
         if (sourceGraph == null) {
-            sourceGraph = this.getAlgorithmRunner().getSourceGraph();
+            sourceGraph = getAlgorithmRunner().getSourceGraph();
         }
         return sourceGraph;
     }
 
-    public void layoutByGraph(Graph graph) {
-        this.getWorkbench().layoutByGraph(graph);
+    public void layoutByGraph(final Graph graph) {
+        getWorkbench().layoutByGraph(graph);
     }
 
     public void layoutByKnowledge() {
-        GraphWorkbench resultWorkbench = this.getWorkbench();
-        Graph graph = resultWorkbench.getGraph();
-        IKnowledge knowledge = (IKnowledge) this.getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
+        final GraphWorkbench resultWorkbench = getWorkbench();
+        final Graph graph = resultWorkbench.getGraph();
+        final IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
         SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
 //        resultWorkbench.setGraph(graph);
     }
 
     public Rectangle getVisibleRect() {
-        return this.getWorkbench().getVisibleRect();
+        return getWorkbench().getVisibleRect();
     }
 
     //==========================PROTECTED METHODS============================//
@@ -130,25 +130,25 @@ public class MbSearchEditor extends AbstractSearchEditor
      * Construct the toolbar panel.
      */
     protected JPanel getToolbar() {
-        JPanel toolbar = new JPanel();
-        this.getExecuteButton().setText("Execute*");
-        this.getExecuteButton().addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                MbSearchEditor.this.execute();
+        final JPanel toolbar = new JPanel();
+        getExecuteButton().setText("Execute*");
+        getExecuteButton().addActionListener(new ActionListener() {
+            public void actionPerformed(final ActionEvent e) {
+                execute();
             }
         });
 
-        Box b1 = Box.createVerticalBox();
-        b1.add(this.getParamsPanel());
+        final Box b1 = Box.createVerticalBox();
+        b1.add(getParamsPanel());
         b1.add(Box.createVerticalStrut(10));
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(Box.createGlue());
-        b2.add(this.getExecuteButton());
+        b2.add(getExecuteButton());
         b1.add(b2);
         b1.add(Box.createVerticalStrut(10));
 
-        Box b3 = Box.createHorizontalBox();
-        JLabel label = new JLabel("<html>" + "*Please note that some" +
+        final Box b3 = Box.createHorizontalBox();
+        final JLabel label = new JLabel("<html>" + "*Please note that some" +
                 "<br>searches may take a" + "<br>long time to complete." +
                 "</html>");
         label.setHorizontalAlignment(SwingConstants.CENTER);
@@ -161,8 +161,8 @@ public class MbSearchEditor extends AbstractSearchEditor
         return toolbar;
     }
 
-    protected void addSpecialMenus(JMenuBar menuBar) {
-        JMenu test = new JMenu("Independence");
+    protected void addSpecialMenus(final JMenuBar menuBar) {
+        final JMenu test = new JMenu("Independence");
         menuBar.add(test);
 
         IndTestMenuItems.addIndependenceTestChoices(test, this);
@@ -178,16 +178,16 @@ public class MbSearchEditor extends AbstractSearchEditor
 //            test.add(action);
 //        }
 
-        if (this.getAlgorithmRunner() instanceof MbfsRunner) {
-            JMenu graph = new JMenu("Graph");
-            JMenuItem showDags = new JMenuItem("Show DAG's Consistent with forbid_latent_common_causes");
+        if (getAlgorithmRunner() instanceof MbfsRunner) {
+            final JMenu graph = new JMenu("Graph");
+            final JMenuItem showDags = new JMenuItem("Show DAG's Consistent with forbid_latent_common_causes");
 //            JMenuItem meekOrient = new JMenuItem("Meek Orientation");
-            JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
-            JMenuItem nextGraph = new JMenuItem("Next Graph");
-            JMenuItem previousGraph = new JMenuItem("Previous Graph");
+            final JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
+            final JMenuItem nextGraph = new JMenuItem("Next Graph");
+            final JMenuItem previousGraph = new JMenuItem("Previous Graph");
 
-            graph.add(new GraphPropertiesAction(this.getWorkbench()));
-            graph.add(new PathsAction(this.getWorkbench()));
+            graph.add(new GraphPropertiesAction(getWorkbench()));
+            graph.add(new PathsAction(getWorkbench()));
 //            graph.add(new DirectedPathsAction(getWorkbench()));
 //            graph.add(new TreksAction(getWorkbench()));
 //            graph.add(new AllPathsAction(getWorkbench()));
@@ -206,15 +206,15 @@ public class MbSearchEditor extends AbstractSearchEditor
             menuBar.add(graph);
 
             showDags.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    AlgorithmRunner runner = MbSearchEditor.this.getAlgorithmRunner();
+                public void actionPerformed(final ActionEvent e) {
+                    final AlgorithmRunner runner = getAlgorithmRunner();
 
                     if (!(runner instanceof MbfsRunner)) {
                         return;
                     }
 
-                    MbfsRunner mbRunner = (MbfsRunner) runner;
-                    Mbfs search = mbRunner.getMbFanSearch();
+                    final MbfsRunner mbRunner = (MbfsRunner) runner;
+                    final Mbfs search = mbRunner.getMbFanSearch();
 
                     if (search == null) {
                         JOptionPane.showMessageDialog(
@@ -223,7 +223,7 @@ public class MbSearchEditor extends AbstractSearchEditor
                         return;
                     }
 
-                    MbCPDAGDisplay display = new MbCPDAGDisplay(search);
+                    final MbCPDAGDisplay display = new MbCPDAGDisplay(search);
 
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                             display, "MB DAG's Consistent with forbid_latent_common_causes",
@@ -241,14 +241,14 @@ public class MbSearchEditor extends AbstractSearchEditor
 //            });
 
             gesOrient.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    DataModel dataModel = MbSearchEditor.this.getAlgorithmRunner().getDataModel();
+                public void actionPerformed(final ActionEvent e) {
+                    final DataModel dataModel = getAlgorithmRunner().getDataModel();
 
-                    Graph graph = SearchGraphUtils.reorient(MbSearchEditor.this.getGraph(), dataModel, MbSearchEditor.this.getKnowledge());
+                    final Graph graph = SearchGraphUtils.reorient(getGraph(), dataModel, getKnowledge());
 
-                    MbSearchEditor.this.getGraphHistory().add(graph);
-                    MbSearchEditor.this.getWorkbench().setGraph(graph);
-                    MbSearchEditor.this.firePropertyChange("modelChanged", null, null);
+                    getGraphHistory().add(graph);
+                    getWorkbench().setGraph(graph);
+                    firePropertyChange("modelChanged", null, null);
                 }
 
             });
@@ -264,22 +264,22 @@ public class MbSearchEditor extends AbstractSearchEditor
     //================================PRIVATE METHODS====================//
 
     private JPanel getParamsPanel() {
-        JPanel paramsPanel = new JPanel();
+        final JPanel paramsPanel = new JPanel();
         paramsPanel.setLayout(new BoxLayout(paramsPanel, BoxLayout.Y_AXIS));
-        paramsPanel.add(this.getSearchParamBox());
+        paramsPanel.add(getSearchParamBox());
         paramsPanel.setBorder(new TitledBorder("Parameters"));
         return paramsPanel;
     }
 
     private Box getSearchParamBox() {
-        if (!(this.getAlgorithmRunner().getParams() instanceof Parameters)) {
+        if (!(getAlgorithmRunner().getParams() instanceof Parameters)) {
             throw new IllegalStateException();
         }
 
-        Box b = Box.createHorizontalBox();
-        Parameters params =
-                this.getAlgorithmRunner().getParams();
-        MbSearchParamEditor comp = new MbSearchParamEditor();
+        final Box b = Box.createHorizontalBox();
+        final Parameters params =
+                getAlgorithmRunner().getParams();
+        final MbSearchParamEditor comp = new MbSearchParamEditor();
         comp.setParams(params);
 
         comp.setParams(params);
@@ -290,7 +290,7 @@ public class MbSearchEditor extends AbstractSearchEditor
     }
 
 
-    public void setTestType(IndTestType testType) {
+    public void setTestType(final IndTestType testType) {
         super.setTestType(testType);
     }
 
@@ -303,9 +303,9 @@ public class MbSearchEditor extends AbstractSearchEditor
      * graphs with many nodes, it's just impossible to find the nodes of the MB
      * DAG.
      */
-    protected void doDefaultArrangement(Graph resultGraph) {
-        Graph sourceGraph = this.getAlgorithmRunner().getSourceGraph();
-        boolean arrangedAll =
+    protected void doDefaultArrangement(final Graph resultGraph) {
+        final Graph sourceGraph = getAlgorithmRunner().getSourceGraph();
+        final boolean arrangedAll =
                 GraphUtils.arrangeBySourceGraph(resultGraph, sourceGraph);
 
         if (!arrangedAll) {

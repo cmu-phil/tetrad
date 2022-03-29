@@ -31,71 +31,71 @@ public class RealCovarianceMatrix implements RealCovariance {
 
     private final int numOfCols;
 
-    public RealCovarianceMatrix(double[][] data) {
+    public RealCovarianceMatrix(final double[][] data) {
         this.data = data;
-        numOfRows = data.length;
-        numOfCols = data[0].length;
+        this.numOfRows = data.length;
+        this.numOfCols = data[0].length;
     }
 
     private double[] computeMeans() {
-        double[] mean = new double[numOfCols];
-        for (int col = 0; col < numOfCols; col++) {
+        final double[] mean = new double[this.numOfCols];
+        for (int col = 0; col < this.numOfCols; col++) {
             double sum = 0;
-            for (int row = 0; row < numOfRows; row++) {
-                sum += data[row][col];
+            for (int row = 0; row < this.numOfRows; row++) {
+                sum += this.data[row][col];
             }
-            mean[col] = sum / numOfRows;
+            mean[col] = sum / this.numOfRows;
         }
 
         return mean;
     }
 
     @Override
-    public double[] computeLowerTriangle(boolean biasCorrected) {
-        double[] covarianceMatrix = new double[(numOfCols * (numOfCols + 1)) / 2];
+    public double[] computeLowerTriangle(final boolean biasCorrected) {
+        final double[] covarianceMatrix = new double[(this.numOfCols * (this.numOfCols + 1)) / 2];
 
-        double[] mean = this.computeMeans();
+        final double[] mean = computeMeans();
 
         int index = 0;
-        for (int col = 0; col < numOfCols; col++) {
+        for (int col = 0; col < this.numOfCols; col++) {
             for (int col2 = 0; col2 < col; col2++) {
                 double variance = 0;
-                for (int row = 0; row < numOfRows; row++) {
-                    variance += ((data[row][col] - mean[col]) * (data[row][col2] - mean[col2]) - variance) / (row + 1);
+                for (int row = 0; row < this.numOfRows; row++) {
+                    variance += ((this.data[row][col] - mean[col]) * (this.data[row][col2] - mean[col2]) - variance) / (row + 1);
                 }
-                covarianceMatrix[index++] = biasCorrected ? variance * ((double) numOfRows / (double) (numOfRows - 1)) : variance;
+                covarianceMatrix[index++] = biasCorrected ? variance * ((double) this.numOfRows / (double) (this.numOfRows - 1)) : variance;
             }
             double variance = 0;
-            for (int row = 0; row < numOfRows; row++) {
-                variance += ((data[row][col] - mean[col]) * (data[row][col] - mean[col]) - variance) / (row + 1);
+            for (int row = 0; row < this.numOfRows; row++) {
+                variance += ((this.data[row][col] - mean[col]) * (this.data[row][col] - mean[col]) - variance) / (row + 1);
             }
-            covarianceMatrix[index++] = biasCorrected ? variance * ((double) numOfRows / (double) (numOfRows - 1)) : variance;
+            covarianceMatrix[index++] = biasCorrected ? variance * ((double) this.numOfRows / (double) (this.numOfRows - 1)) : variance;
         }
 
         return covarianceMatrix;
     }
 
     @Override
-    public double[][] compute(boolean biasCorrected) {
-        double[][] covarianceMatrix = new double[numOfCols][numOfCols];
+    public double[][] compute(final boolean biasCorrected) {
+        final double[][] covarianceMatrix = new double[this.numOfCols][this.numOfCols];
 
-        double[] mean = this.computeMeans();
+        final double[] mean = computeMeans();
 
-        for (int col = 0; col < numOfCols; col++) {
+        for (int col = 0; col < this.numOfCols; col++) {
             for (int col2 = 0; col2 < col; col2++) {
                 double variance = 0;
-                for (int row = 0; row < numOfRows; row++) {
-                    variance += ((data[row][col] - mean[col]) * (data[row][col2] - mean[col2]) - variance) / (row + 1);
+                for (int row = 0; row < this.numOfRows; row++) {
+                    variance += ((this.data[row][col] - mean[col]) * (this.data[row][col2] - mean[col2]) - variance) / (row + 1);
                 }
-                variance = biasCorrected ? variance * ((double) numOfRows / (double) (numOfRows - 1)) : variance;
+                variance = biasCorrected ? variance * ((double) this.numOfRows / (double) (this.numOfRows - 1)) : variance;
                 covarianceMatrix[col][col2] = variance;
                 covarianceMatrix[col2][col] = variance;
             }
             double variance = 0;
-            for (int row = 0; row < numOfRows; row++) {
-                variance += ((data[row][col] - mean[col]) * (data[row][col] - mean[col]) - variance) / (row + 1);
+            for (int row = 0; row < this.numOfRows; row++) {
+                variance += ((this.data[row][col] - mean[col]) * (this.data[row][col] - mean[col]) - variance) / (row + 1);
             }
-            covarianceMatrix[col][col] = biasCorrected ? variance * ((double) numOfRows / (double) (numOfRows - 1)) : variance;
+            covarianceMatrix[col][col] = biasCorrected ? variance * ((double) this.numOfRows / (double) (this.numOfRows - 1)) : variance;
         }
 
         return covarianceMatrix;

@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.calculator.expression;
 
-import edu.cmu.tetrad.calculator.expression.ExpressionDescriptor.Position;
 import org.apache.commons.math3.distribution.IntegerDistribution;
 import org.apache.commons.math3.distribution.RealDistribution;
 
@@ -63,7 +62,7 @@ public class ConstantExpression implements Expression {
     /**
      * Constructs the constant expression given the value to use.
      */
-    public ConstantExpression(double value) {
+    public ConstantExpression(final double value) {
         this.value = value;
     }
 
@@ -71,7 +70,7 @@ public class ConstantExpression implements Expression {
     /**
      * Constructs the constant expression given the value and the name.
      */
-    private ConstantExpression(double value, String name) {
+    private ConstantExpression(final double value, final String name) {
         if (name == null) {
             throw new NullPointerException("name was null.");
         }
@@ -90,22 +89,22 @@ public class ConstantExpression implements Expression {
      * @return the name of the constant or null if there isn't one.
      */
     public String getName() {
-        return name;
+        return this.name;
     }
 
     /**
      * @return the constant value.
      */
-    public double evaluate(Context context) {
-        return value;
+    public double evaluate(final Context context) {
+        return this.value;
     }
 
     public String getToken() {
         return "";
     }
 
-    public Position getPosition() {
-        return Position.NEITHER;
+    public ExpressionDescriptor.Position getPosition() {
+        return ExpressionDescriptor.Position.NEITHER;
     }
 
     public List<Expression> getExpressions() {
@@ -113,19 +112,19 @@ public class ConstantExpression implements Expression {
     }
 
     public String toString() {
-        if (name == null) {
-            return Double.toString(value);
+        if (this.name == null) {
+            return Double.toString(this.value);
         } else {
-            return name;
+            return this.name;
         }
     }
 
     @Override
-    public RealDistribution getRealDistribution(Context context) {
+    public RealDistribution getRealDistribution(final Context context) {
         return null;
     }
 
-    public IntegerDistribution getIntegerDistribution(Context context) {
+    public IntegerDistribution getIntegerDistribution(final Context context) {
         return null;
     }
 }

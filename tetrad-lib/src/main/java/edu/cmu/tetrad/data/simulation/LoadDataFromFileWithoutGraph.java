@@ -28,31 +28,31 @@ public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath,
     private final String path;
     private final Map<String, Object> parameterValues = new HashMap<>();
 
-    public LoadDataFromFileWithoutGraph(String path) {
-        dataSet = null;
+    public LoadDataFromFileWithoutGraph(final String path) {
+        this.dataSet = null;
         this.path = path;
     }
 
     @Override
-    public void createData(Parameters parameters, boolean newModel) {
+    public void createData(final Parameters parameters, final boolean newModel) {
         try {
-            File file = new File(path);
+            final File file = new File(this.path);
             System.out.println("Loading data from " + file.getAbsolutePath());
-            dataSet = DataUtils.loadContinuousData(file, "//", '\"' ,
+            this.dataSet = DataUtils.loadContinuousData(file, "//", '\"',
                     "*", true, Delimiter.TAB);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
         }
     }
 
     @Override
-    public Graph getTrueGraph(int index) {
+    public Graph getTrueGraph(final int index) {
         return null;
     }
 
     @Override
-    public DataModel getDataModel(int index) {
-        return dataSet;
+    public DataModel getDataModel(final int index) {
+        return this.dataSet;
     }
 
     @Override
@@ -67,7 +67,7 @@ public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath,
 
     @Override
     public int getNumDataModels() {
-        return numDataSets;
+        return this.numDataSets;
     }
 
     @Override
@@ -77,11 +77,11 @@ public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath,
 
     @Override
     public String getPath() {
-        return path;
+        return this.path;
     }
 
     @Override
     public Map<String, Object> paremeterValues() {
-        return parameterValues;
+        return this.parameterValues;
     }
 }

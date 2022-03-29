@@ -40,34 +40,34 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
 
     private final int numOfThreads;
 
-    public RealCovarianceMatrixForkJoin(double[][] data, int numOfThreads) {
+    public RealCovarianceMatrixForkJoin(final double[][] data, final int numOfThreads) {
         this.data = data;
-        numOfRows = data.length;
-        numOfCols = data[0].length;
-        this.numOfThreads = (numOfThreads > numOfCols) ? numOfCols : numOfThreads;
+        this.numOfRows = data.length;
+        this.numOfCols = data[0].length;
+        this.numOfThreads = (numOfThreads > this.numOfCols) ? this.numOfCols : numOfThreads;
     }
 
     @Override
-    public double[] computeLowerTriangle(boolean biasCorrected) {
-        double[] covarianceMatrix = new double[(numOfCols * (numOfCols + 1)) / 2];
-        double[] means = new double[numOfCols];
+    public double[] computeLowerTriangle(final boolean biasCorrected) {
+        final double[] covarianceMatrix = new double[(this.numOfCols * (this.numOfCols + 1)) / 2];
+        final double[] means = new double[this.numOfCols];
 
-        ForkJoinPool pool = new ForkJoinPool(numOfThreads);
-        pool.invoke(new MeanAction(means, data, 0, numOfCols - 1));
-        pool.invoke(new CovarianceLowerTriangleAction(covarianceMatrix, means, 0, numOfCols - 1, biasCorrected));
+        final ForkJoinPool pool = new ForkJoinPool(this.numOfThreads);
+        pool.invoke(new MeanAction(means, this.data, 0, this.numOfCols - 1));
+        pool.invoke(new CovarianceLowerTriangleAction(covarianceMatrix, means, 0, this.numOfCols - 1, biasCorrected));
         pool.shutdown();
 
         return covarianceMatrix;
     }
 
     @Override
-    public double[][] compute(boolean biasCorrected) {
-        double[][] covarianceMatrix = new double[numOfCols][numOfCols];
-        double[] means = new double[numOfCols];
+    public double[][] compute(final boolean biasCorrected) {
+        final double[][] covarianceMatrix = new double[this.numOfCols][this.numOfCols];
+        final double[] means = new double[this.numOfCols];
 
-        ForkJoinPool pool = new ForkJoinPool(numOfThreads);
-        pool.invoke(new MeanAction(means, data, 0, numOfCols - 1));
-        pool.invoke(new CovarianceAction(covarianceMatrix, means, 0, numOfCols - 1, biasCorrected));
+        final ForkJoinPool pool = new ForkJoinPool(this.numOfThreads);
+        pool.invoke(new MeanAction(means, this.data, 0, this.numOfCols - 1));
+        pool.invoke(new CovarianceAction(covarianceMatrix, means, 0, this.numOfCols - 1, biasCorrected));
         pool.shutdown();
 
         return covarianceMatrix;
@@ -83,7 +83,7 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
         private final int end;
         private final boolean biasCorrected;
 
-        public CovarianceAction(double[][] covariance, double[] means, int start, int end, boolean biasCorrected) {
+        public CovarianceAction(final double[][] covariance, final double[] means, final int start, final int end, final boolean biasCorrected) {
             this.covariance = covariance;
             this.means = means;
             this.start = start;
@@ -92,40 +92,40 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
         }
 
         private void computeCovariance() {
-            for (int col = start; col <= end; col++) {
+            for (int col = this.start; col <= this.end; col++) {
                 for (int col2 = 0; col2 < col; col2++) {
                     double variance = 0;
-                    for (int row = 0; row < numOfRows; row++) {
-                        variance += ((data[row][col] - means[col]) * (data[row][col2] - means[col2]) - variance) / (row + 1);
+                    for (int row = 0; row < RealCovarianceMatrixForkJoin.this.numOfRows; row++) {
+                        variance += ((RealCovarianceMatrixForkJoin.this.data[row][col] - this.means[col]) * (RealCovarianceMatrixForkJoin.this.data[row][col2] - this.means[col2]) - variance) / (row + 1);
                     }
-                    variance = biasCorrected ? variance * ((double) numOfRows / (double) (numOfRows - 1)) : variance;
-                    covariance[col][col2] = variance;
-                    covariance[col2][col] = variance;
+                    variance = this.biasCorrected ? variance * ((double) RealCovarianceMatrixForkJoin.this.numOfRows / (double) (RealCovarianceMatrixForkJoin.this.numOfRows - 1)) : variance;
+                    this.covariance[col][col2] = variance;
+                    this.covariance[col2][col] = variance;
                 }
                 double variance = 0;
-                for (int row = 0; row < numOfRows; row++) {
-                    variance += ((data[row][col] - means[col]) * (data[row][col] - means[col]) - variance) / (row + 1);
+                for (int row = 0; row < RealCovarianceMatrixForkJoin.this.numOfRows; row++) {
+                    variance += ((RealCovarianceMatrixForkJoin.this.data[row][col] - this.means[col]) * (RealCovarianceMatrixForkJoin.this.data[row][col] - this.means[col]) - variance) / (row + 1);
                 }
-                covariance[col][col] = biasCorrected ? variance * ((double) numOfRows / (double) (numOfRows - 1)) : variance;
+                this.covariance[col][col] = this.biasCorrected ? variance * ((double) RealCovarianceMatrixForkJoin.this.numOfRows / (double) (RealCovarianceMatrixForkJoin.this.numOfRows - 1)) : variance;
             }
         }
 
         @Override
         protected void compute() {
-            int limit = numOfCols / numOfThreads;
-            int length = end - start;
-            int delta = length / numOfThreads;
+            final int limit = RealCovarianceMatrixForkJoin.this.numOfCols / RealCovarianceMatrixForkJoin.this.numOfThreads;
+            final int length = this.end - this.start;
+            final int delta = length / RealCovarianceMatrixForkJoin.this.numOfThreads;
             if (length <= limit) {
-                this.computeCovariance();
+                computeCovariance();
             } else {
-                List<CovarianceAction> actions = new LinkedList<>();
-                int startIndex = start;
+                final List<CovarianceAction> actions = new LinkedList<>();
+                int startIndex = this.start;
                 int endIndex = startIndex + delta;
-                while (startIndex < numOfCols) {
-                    if (endIndex >= numOfCols) {
-                        endIndex = numOfCols - 1;
+                while (startIndex < RealCovarianceMatrixForkJoin.this.numOfCols) {
+                    if (endIndex >= RealCovarianceMatrixForkJoin.this.numOfCols) {
+                        endIndex = RealCovarianceMatrixForkJoin.this.numOfCols - 1;
                     }
-                    actions.add(new CovarianceAction(covariance, means, startIndex, endIndex, biasCorrected));
+                    actions.add(new CovarianceAction(this.covariance, this.means, startIndex, endIndex, this.biasCorrected));
                     startIndex = endIndex + 1;
                     endIndex = startIndex + delta;
                 }
@@ -145,7 +145,7 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
         private final int end;
         private final boolean biasCorrected;
 
-        public CovarianceLowerTriangleAction(double[] covariance, double[] means, int start, int end, boolean biasCorrected) {
+        public CovarianceLowerTriangleAction(final double[] covariance, final double[] means, final int start, final int end, final boolean biasCorrected) {
             this.covariance = covariance;
             this.means = means;
             this.start = start;
@@ -154,39 +154,39 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
         }
 
         private void computeCovariance() {
-            int index = (start * (start + 1)) / 2;
-            for (int col = start; col <= end; col++) {
+            int index = (this.start * (this.start + 1)) / 2;
+            for (int col = this.start; col <= this.end; col++) {
                 for (int col2 = 0; col2 < col; col2++) {
                     double variance = 0;
-                    for (int row = 0; row < numOfRows; row++) {
-                        variance += ((data[row][col] - means[col]) * (data[row][col2] - means[col2]) - variance) / (row + 1);
+                    for (int row = 0; row < RealCovarianceMatrixForkJoin.this.numOfRows; row++) {
+                        variance += ((RealCovarianceMatrixForkJoin.this.data[row][col] - this.means[col]) * (RealCovarianceMatrixForkJoin.this.data[row][col2] - this.means[col2]) - variance) / (row + 1);
                     }
-                    covariance[index++] = biasCorrected ? variance * ((double) numOfRows / (double) (numOfRows - 1)) : variance;
+                    this.covariance[index++] = this.biasCorrected ? variance * ((double) RealCovarianceMatrixForkJoin.this.numOfRows / (double) (RealCovarianceMatrixForkJoin.this.numOfRows - 1)) : variance;
                 }
                 double variance = 0;
-                for (int row = 0; row < numOfRows; row++) {
-                    variance += ((data[row][col] - means[col]) * (data[row][col] - means[col]) - variance) / (row + 1);
+                for (int row = 0; row < RealCovarianceMatrixForkJoin.this.numOfRows; row++) {
+                    variance += ((RealCovarianceMatrixForkJoin.this.data[row][col] - this.means[col]) * (RealCovarianceMatrixForkJoin.this.data[row][col] - this.means[col]) - variance) / (row + 1);
                 }
-                covariance[index++] = biasCorrected ? variance * ((double) numOfRows / (double) (numOfRows - 1)) : variance;
+                this.covariance[index++] = this.biasCorrected ? variance * ((double) RealCovarianceMatrixForkJoin.this.numOfRows / (double) (RealCovarianceMatrixForkJoin.this.numOfRows - 1)) : variance;
             }
         }
 
         @Override
         protected void compute() {
-            int limit = numOfCols / numOfThreads;
-            int length = end - start;
-            int delta = length / numOfThreads;
+            final int limit = RealCovarianceMatrixForkJoin.this.numOfCols / RealCovarianceMatrixForkJoin.this.numOfThreads;
+            final int length = this.end - this.start;
+            final int delta = length / RealCovarianceMatrixForkJoin.this.numOfThreads;
             if (length <= limit) {
-                this.computeCovariance();
+                computeCovariance();
             } else {
-                List<CovarianceLowerTriangleAction> actions = new LinkedList<>();
-                int startIndex = start;
+                final List<CovarianceLowerTriangleAction> actions = new LinkedList<>();
+                int startIndex = this.start;
                 int endIndex = startIndex + delta;
-                while (startIndex < numOfCols) {
-                    if (endIndex >= numOfCols) {
-                        endIndex = numOfCols - 1;
+                while (startIndex < RealCovarianceMatrixForkJoin.this.numOfCols) {
+                    if (endIndex >= RealCovarianceMatrixForkJoin.this.numOfCols) {
+                        endIndex = RealCovarianceMatrixForkJoin.this.numOfCols - 1;
                     }
-                    actions.add(new CovarianceLowerTriangleAction(covariance, means, startIndex, endIndex, biasCorrected));
+                    actions.add(new CovarianceLowerTriangleAction(this.covariance, this.means, startIndex, endIndex, this.biasCorrected));
                     startIndex = endIndex + 1;
                     endIndex = startIndex + delta;
                 }
@@ -205,7 +205,7 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
         private final int start;
         private final int end;
 
-        public MeanAction(double[] means, double[][] data, int start, int end) {
+        public MeanAction(final double[] means, final double[][] data, final int start, final int end) {
             this.means = means;
             this.data = data;
             this.start = start;
@@ -213,31 +213,31 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
         }
 
         private void computeMean() {
-            for (int col = start; col <= end; col++) {
+            for (int col = this.start; col <= this.end; col++) {
                 double sum = 0;
-                for (int row = 0; row < numOfRows; row++) {
-                    sum += data[row][col];
+                for (int row = 0; row < RealCovarianceMatrixForkJoin.this.numOfRows; row++) {
+                    sum += this.data[row][col];
                 }
-                means[col] = sum / numOfRows;
+                this.means[col] = sum / RealCovarianceMatrixForkJoin.this.numOfRows;
             }
         }
 
         @Override
         protected void compute() {
-            int limit = numOfCols / numOfThreads;
-            int length = end - start;
-            int delta = length / numOfThreads;
+            final int limit = RealCovarianceMatrixForkJoin.this.numOfCols / RealCovarianceMatrixForkJoin.this.numOfThreads;
+            final int length = this.end - this.start;
+            final int delta = length / RealCovarianceMatrixForkJoin.this.numOfThreads;
             if (length <= limit) {
-                this.computeMean();
+                computeMean();
             } else {
-                List<MeanAction> actions = new LinkedList<>();
-                int startIndex = start;
+                final List<MeanAction> actions = new LinkedList<>();
+                int startIndex = this.start;
                 int endIndex = startIndex + delta;
-                while (startIndex < numOfCols) {
-                    if (endIndex >= numOfCols) {
-                        endIndex = numOfCols - 1;
+                while (startIndex < RealCovarianceMatrixForkJoin.this.numOfCols) {
+                    if (endIndex >= RealCovarianceMatrixForkJoin.this.numOfCols) {
+                        endIndex = RealCovarianceMatrixForkJoin.this.numOfCols - 1;
                     }
-                    actions.add(new MeanAction(means, data, startIndex, endIndex));
+                    actions.add(new MeanAction(this.means, this.data, startIndex, endIndex));
                     startIndex = endIndex + 1;
                     endIndex = startIndex + delta;
                 }

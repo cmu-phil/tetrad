@@ -49,9 +49,9 @@ public final class AtMostOneEdgePerPair implements GraphConstraint {
     /**
      * @return true iff the new edge may be added.
      */
-    public boolean isEdgeAddable(Edge edge, Graph graph) {
-        Node node1 = edge.getNode1();
-        Node node2 = edge.getNode2();
+    public boolean isEdgeAddable(final Edge edge, final Graph graph) {
+        final Node node1 = edge.getNode1();
+        final Node node2 = edge.getNode2();
 
         return graph.getEdges(node1, node2).isEmpty();
     }
@@ -59,21 +59,21 @@ public final class AtMostOneEdgePerPair implements GraphConstraint {
     /**
      * @return true iff the node may be added.
      */
-    public boolean isNodeAddable(Node node, Graph graph) {
+    public boolean isNodeAddable(final Node node, final Graph graph) {
         return true;
     }
 
     /**
      * @return true;
      */
-    public boolean isEdgeRemovable(Edge edge, Graph graph) {
+    public boolean isEdgeRemovable(final Edge edge, final Graph graph) {
         return true;
     }
 
     /**
      * @return true.
      */
-    public boolean isNodeRemovable(Node node, Graph graph) {
+    public boolean isNodeRemovable(final Node node, final Graph graph) {
         return true;
     }
 

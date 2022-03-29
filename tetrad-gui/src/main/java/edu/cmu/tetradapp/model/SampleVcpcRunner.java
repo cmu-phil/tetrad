@@ -64,99 +64,99 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public SampleVcpcRunner(DataWrapper dataWrapper, Parameters params) {
+    public SampleVcpcRunner(final DataWrapper dataWrapper, final Parameters params) {
         super(dataWrapper, params, null);
     }
 
-    public SampleVcpcRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public SampleVcpcRunner(final DataWrapper dataWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
-    public SampleVcpcRunner(SemImWrapper semImWrapper, Parameters params, DataWrapper dataWrapper) {
+    public SampleVcpcRunner(final SemImWrapper semImWrapper, final Parameters params, final DataWrapper dataWrapper) {
         super(dataWrapper, params, null);
-        semIm = semImWrapper.getSemIm();
+        this.semIm = semImWrapper.getSemIm();
     }
 
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public SampleVcpcRunner(Graph graph, Parameters params) {
+    public SampleVcpcRunner(final Graph graph, final Parameters params) {
         super(graph, params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public SampleVcpcRunner(Graph graph, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public SampleVcpcRunner(final Graph graph, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(graph, params, knowledgeBoxModel);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public SampleVcpcRunner(GraphWrapper graphWrapper, Parameters params) {
+    public SampleVcpcRunner(final GraphWrapper graphWrapper, final Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public SampleVcpcRunner(GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public SampleVcpcRunner(final GraphWrapper graphWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public SampleVcpcRunner(GraphSource graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public SampleVcpcRunner(final GraphSource graphWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-    public SampleVcpcRunner(GraphSource graphWrapper, Parameters params, IndependenceFactsModel model) {
+    public SampleVcpcRunner(final GraphSource graphWrapper, final Parameters params, final IndependenceFactsModel model) {
         super(graphWrapper.getGraph(), params);
-        independenceFactsModel = model;
+        this.independenceFactsModel = model;
     }
 
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public SampleVcpcRunner(GraphSource graphWrapper, Parameters params) {
+    public SampleVcpcRunner(final GraphSource graphWrapper, final Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
-    public SampleVcpcRunner(DagWrapper dagWrapper, Parameters params) {
+    public SampleVcpcRunner(final DagWrapper dagWrapper, final Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public SampleVcpcRunner(DagWrapper dagWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public SampleVcpcRunner(final DagWrapper dagWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(dagWrapper.getDag(), params, knowledgeBoxModel);
     }
 
-    public SampleVcpcRunner(SemGraphWrapper dagWrapper, Parameters params) {
+    public SampleVcpcRunner(final SemGraphWrapper dagWrapper, final Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public SampleVcpcRunner(SemGraphWrapper dagWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public SampleVcpcRunner(final SemGraphWrapper dagWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(dagWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-    public SampleVcpcRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params) {
+    public SampleVcpcRunner(final DataWrapper dataWrapper, final GraphWrapper graphWrapper, final Parameters params) {
         super(dataWrapper, params, null);
-        trueGraph = graphWrapper.getGraph();
+        this.trueGraph = graphWrapper.getGraph();
     }
 
-    public SampleVcpcRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public SampleVcpcRunner(final DataWrapper dataWrapper, final GraphWrapper graphWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
-        trueGraph = graphWrapper.getGraph();
+        this.trueGraph = graphWrapper.getGraph();
     }
 
-    public SampleVcpcRunner(IndependenceFactsModel model, Parameters params) {
+    public SampleVcpcRunner(final IndependenceFactsModel model, final Parameters params) {
         super(model, params, null);
     }
 
-    public SampleVcpcRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public SampleVcpcRunner(final IndependenceFactsModel model, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -172,20 +172,20 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     public void execute() {
-        IKnowledge knowledge = (IKnowledge) this.getParams().get("knowledge", new Knowledge2());
-        Parameters searchParams = this.getParams();
+        final IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
+        final Parameters searchParams = getParams();
 
-        Parameters params =
+        final Parameters params =
                 searchParams;
 
 
-        SampleVcpc svcpc = new SampleVcpc(this.getIndependenceTest());
+        final SampleVcpc svcpc = new SampleVcpc(getIndependenceTest());
 
         svcpc.setKnowledge(knowledge);
-        svcpc.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
+        svcpc.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
         svcpc.setDepth(params.getInt("depth", -1));
-        if (independenceFactsModel != null) {
-            svcpc.setFacts(independenceFactsModel.getFacts());
+        if (this.independenceFactsModel != null) {
+            svcpc.setFacts(this.independenceFactsModel.getFacts());
         }
 
 //        vcpc.setSemPm(semPm);
@@ -193,48 +193,48 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
 //        if (semPm != null) {
 //            vcpc.setSemPm(getSemPm());
 //        }
-        svcpc.setSemIm(semIm);
+        svcpc.setSemIm(this.semIm);
 
-        if (semIm != null) {
-            svcpc.setSemIm(semIm);
+        if (this.semIm != null) {
+            svcpc.setSemIm(this.semIm);
         }
 
-        Graph graph = svcpc.search();
+        final Graph graph = svcpc.search();
 
-        if (this.getSourceGraph() != null) {
-            GraphUtils.arrangeBySourceGraph(graph, this.getSourceGraph());
+        if (getSourceGraph() != null) {
+            GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
         } else if (knowledge.isDefaultToKnowledgeLayout()) {
             SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
         } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
 
-        this.setResultGraph(graph);
-        this.setSvcpcFields(svcpc);
+        setResultGraph(graph);
+        setSvcpcFields(svcpc);
     }
 
     //
     public IndependenceTest getIndependenceTest() {
-        Object dataModel = this.getDataModel();
+        Object dataModel = getDataModel();
 
         if (dataModel == null) {
-            dataModel = this.getSourceGraph();
+            dataModel = getSourceGraph();
         }
 
-        IndTestType testType = (IndTestType) (this.getParams()).get("indTestType", IndTestType.FISHER_Z);
-        return new IndTestChooser().getTest(dataModel, this.getParams(), testType);
+        final IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
+        return new IndTestChooser().getTest(dataModel, getParams(), testType);
     }
 
 
     public Graph getGraph() {
-        return this.getResultGraph();
+        return getResultGraph();
     }
 
     /**
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<>();
+        final List<String> names = new ArrayList<>();
 //        names.add("ColliderDiscovery");
 //        names.add("Noncolliders");
         names.add("Ambiguous Triples");
@@ -244,9 +244,9 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
     /**
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
-    public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<>();
-        Graph graph = this.getGraph();
+    public List<List<Triple>> getTriplesLists(final Node node) {
+        final List<List<Triple>> triplesList = new ArrayList<>();
+        final Graph graph = getGraph();
 //        triplesList.add(DataGraphUtils.getCollidersFromGraph(node, graph));
 //        triplesList.add(DataGraphUtils.getNoncollidersFromGraph(node, graph));
         triplesList.add(GraphUtils.getAmbiguousTriplesFromGraph(node, graph));
@@ -254,15 +254,15 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
     }
 
     public Set<Edge> getAdj() {
-        return new HashSet<>(sVcpcAdjacent);
+        return new HashSet<>(this.sVcpcAdjacent);
     }
 
     public Set<Edge> getAppNon() {
-        return new HashSet<>(sVcpcApparent);
+        return new HashSet<>(this.sVcpcApparent);
     }
 
     public Set<Edge> getDefNon() {
-        return new HashSet<>(sVcpcDefinite);
+        return new HashSet<>(this.sVcpcDefinite);
     }
 
     public boolean supportsKnowledge() {
@@ -270,9 +270,9 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
     }
 
     public ImpliedOrientation getMeekRules() {
-        MeekRules meekRules = new MeekRules();
-        meekRules.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
-        meekRules.setKnowledge((IKnowledge) this.getParams().get("knowledge", new Knowledge2()));
+        final MeekRules meekRules = new MeekRules();
+        meekRules.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
+        meekRules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return meekRules;
     }
 
@@ -282,27 +282,27 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
     }
 
     public SemIm getSemIm() {
-        return semIm;
+        return this.semIm;
     }
 
     public SemPm getSemPm() {
-        return semPm;
+        return this.semPm;
     }
     //========================== Private Methods ===============================//
 
     private boolean isAggressivelyPreventCycles() {
-        Parameters params = this.getParams();
+        final Parameters params = getParams();
         if (params instanceof Parameters) {
             return params.getBoolean("aggressivelyPreventCycles", false);
         }
         return false;
     }
 
-    private void setSvcpcFields(SampleVcpc svcpc) {
-        sVcpcAdjacent = svcpc.getAdjacencies();
-        sVcpcApparent = svcpc.getApparentNonadjacencies();
-        sVcpcDefinite = svcpc.getDefiniteNonadjacencies();
-        sVcpcNodes = this.getGraph().getNodes();
+    private void setSvcpcFields(final SampleVcpc svcpc) {
+        this.sVcpcAdjacent = svcpc.getAdjacencies();
+        this.sVcpcApparent = svcpc.getApparentNonadjacencies();
+        this.sVcpcDefinite = svcpc.getDefiniteNonadjacencies();
+        this.sVcpcNodes = getGraph().getNodes();
     }
 
 //    public Vcpc getVcpc() {

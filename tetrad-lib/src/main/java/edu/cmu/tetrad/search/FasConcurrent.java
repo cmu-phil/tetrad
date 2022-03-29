@@ -107,7 +107,7 @@ public class FasConcurrent implements IFas {
     /**
      * Constructs a new FastAdjacencySearch.    wd
      */
-    public FasConcurrent(IndependenceTest test) {
+    public FasConcurrent(final IndependenceTest test) {
         this.test = test;
     }
 
@@ -124,35 +124,35 @@ public class FasConcurrent implements IFas {
      * @return a SepSet, which indicates which variables are independent conditional on which other variables
      */
     public Graph search() {
-        logger.log("info", "Starting Fast Adjacency Search.");
+        this.logger.log("info", "Starting Fast Adjacency Search.");
 
         // The search graph. It is assumed going in that all of the true adjacencies of x are in this graph for every node
         // x. It is hoped (i.e. true in the large sample limit) that true adjacencies are never removed.
-        Graph graph = new EdgeListGraph(test.getVariables());
+        final Graph graph = new EdgeListGraph(this.test.getVariables());
 
-        sepsets = new SepsetMap();
+        this.sepsets = new SepsetMap();
 
-        int _depth = depth;
+        int _depth = this.depth;
 
         if (_depth == -1) {
             _depth = 1000;
         }
 
 
-        Map<Node, Set<Node>> adjacencies = new ConcurrentHashMap<>();
-        List<Node> nodes = graph.getNodes();
+        final Map<Node, Set<Node>> adjacencies = new ConcurrentHashMap<>();
+        final List<Node> nodes = graph.getNodes();
 
-        for (Node node : nodes) {
+        for (final Node node : nodes) {
             adjacencies.put(node, new HashSet<Node>());
         }
 
         for (int d = 0; d <= _depth; d++) {
-            boolean more;
+            final boolean more;
 
             if (d == 0) {
-                more = this.searchAtDepth0(nodes, adjacencies);
+                more = searchAtDepth0(nodes, adjacencies);
             } else {
-                more = this.searchAtDepth(d, nodes, adjacencies);
+                more = searchAtDepth(d, nodes, adjacencies);
             }
 
             if (!more) {
@@ -160,14 +160,14 @@ public class FasConcurrent implements IFas {
             }
         }
 
-        if (verbose) {
-            out.println("Finished with search, constructing Graph...");
+        if (this.verbose) {
+            this.out.println("Finished with search, constructing Graph...");
         }
 
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = i + 1; j < nodes.size(); j++) {
-                Node x = nodes.get(i);
-                Node y = nodes.get(j);
+                final Node x = nodes.get(i);
+                final Node y = nodes.get(j);
 
                 if (adjacencies.get(x).contains(y)) {
                     graph.addUndirectedEdge(x, y);
@@ -175,69 +175,69 @@ public class FasConcurrent implements IFas {
             }
         }
 
-        if (verbose) {
-            out.println("Finished constructing Graph.");
+        if (this.verbose) {
+            this.out.println("Finished constructing Graph.");
         }
 
-        if (verbose) {
-            logger.log("info", "Finishing Fast Adjacency Search.");
+        if (this.verbose) {
+            this.logger.log("info", "Finishing Fast Adjacency Search.");
         }
 
         return graph;
     }
 
-    private boolean searchAtDepth0(List<Node> nodes, Map<Node, Set<Node>> adjacencies) {
-        if (verbose) {
+    private boolean searchAtDepth0(final List<Node> nodes, final Map<Node, Set<Node>> adjacencies) {
+        if (this.verbose) {
             System.out.println("Searching at depth 0.");
         }
 
-        List<Node> empty = Collections.emptyList();
+        final List<Node> empty = Collections.emptyList();
 
         class Depth0Task implements Callable<Boolean> {
             private final int i;
 
-            private Depth0Task(int i) {
+            private Depth0Task(final int i) {
                 this.i = i;
             }
 
             public Boolean call() {
-                FasConcurrent.this.doNodeDepth0(i, nodes, test, empty, adjacencies);
+                doNodeDepth0(this.i, nodes, FasConcurrent.this.test, empty, adjacencies);
                 return true;
             }
         }
 
-        List<Callable<Boolean>> tasks = new ArrayList<>();
+        final List<Callable<Boolean>> tasks = new ArrayList<>();
 
         for (int i = 0; i < nodes.size(); i++) {
             tasks.add(new Depth0Task(i));
         }
 
-        ExecutorService pool = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors());
+        final ExecutorService pool = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors());
 
         try {
-            List<Future<Boolean>> futures = pool.invokeAll(tasks);
-        } catch (InterruptedException exception) {
-            out.print("Task has been interrupted");
+            final List<Future<Boolean>> futures = pool.invokeAll(tasks);
+        } catch (final InterruptedException exception) {
+            this.out.print("Task has been interrupted");
             Thread.currentThread().interrupt();
         }
 
-        this.shutdownAndAwaitTermination(pool);
+        shutdownAndAwaitTermination(pool);
 
-        return this.freeDegree(nodes, adjacencies) > depth;
+        return freeDegree(nodes, adjacencies) > this.depth;
     }
 
-    private boolean searchAtDepth(int depth, List<Node> nodes,
-                                  Map<Node, Set<Node>> adjacencies) {
-        if (verbose) {
+    private boolean searchAtDepth(final int depth, final List<Node> nodes,
+                                  final Map<Node, Set<Node>> adjacencies) {
+        if (this.verbose) {
             System.out.println("Searching at depth " + depth);
         }
 
-        Map<Node, Set<Node>> adjacenciesCopy;
+        final Map<Node, Set<Node>> adjacenciesCopy;
 
-        if (stable) {
+        if (this.stable) {
             adjacenciesCopy = new ConcurrentHashMap<>();
 
-            for (Node node : adjacencies.keySet()) {
+            for (final Node node : adjacencies.keySet()) {
                 adjacenciesCopy.put(node, new HashSet<>(adjacencies.get(node)));
             }
         } else {
@@ -246,7 +246,7 @@ public class FasConcurrent implements IFas {
 
         new ConcurrentHashMap<>();
 
-        for (Node node : adjacencies.keySet()) {
+        for (final Node node : adjacencies.keySet()) {
             adjacenciesCopy.put(node, new HashSet<>(adjacencies.get(node)));
         }
 
@@ -254,39 +254,39 @@ public class FasConcurrent implements IFas {
             private final int i;
             private final int depth;
 
-            public DepthTask(int i, int depth) {
+            public DepthTask(final int i, final int depth) {
                 this.i = i;
                 this.depth = depth;
             }
 
             public Boolean call() {
-                FasConcurrent.this.doNodeAtDepth(i, nodes, adjacenciesCopy, depth, test, adjacencies);
+                doNodeAtDepth(this.i, nodes, adjacenciesCopy, this.depth, FasConcurrent.this.test, adjacencies);
                 return true;
             }
         }
 
-        List<Callable<Boolean>> tasks = new ArrayList<>();
+        final List<Callable<Boolean>> tasks = new ArrayList<>();
 
         for (int i = 0; i < nodes.size(); i++) {
             tasks.add(new DepthTask(i, depth));
         }
 
-        ExecutorService pool = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors());
+        final ExecutorService pool = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors());
 
         try {
-            List<Future<Boolean>> futures = pool.invokeAll(tasks);
-        } catch (InterruptedException exception) {
-            out.printf("Task has been interrupted");//, dateTimeNow(), task.run.index + 1);
+            final List<Future<Boolean>> futures = pool.invokeAll(tasks);
+        } catch (final InterruptedException exception) {
+            this.out.printf("Task has been interrupted");//, dateTimeNow(), task.run.index + 1);
             Thread.currentThread().interrupt();
         }
 
-        this.shutdownAndAwaitTermination(pool);
+        shutdownAndAwaitTermination(pool);
 
-        return this.freeDegree(nodes, adjacencies) > depth;
+        return freeDegree(nodes, adjacencies) > depth;
     }
 
     @Override
-    public Graph search(List<Node> nodes) {
+    public Graph search(final List<Node> nodes) {
         return null;
     }
 
@@ -296,10 +296,10 @@ public class FasConcurrent implements IFas {
     }
 
     public int getDepth() {
-        return depth;
+        return this.depth;
     }
 
-    public void setDepth(int depth) {
+    public void setDepth(final int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException(
                     "Depth must be -1 (unlimited) or >= 0.");
@@ -314,20 +314,20 @@ public class FasConcurrent implements IFas {
     }
 
     @Override
-    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
+    public void setAggressivelyPreventCycles(final boolean aggressivelyPreventCycles) {
 
     }
 
     @Override
     public IndependenceTest getIndependenceTest() {
-        return test;
+        return this.test;
     }
 
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(final IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException("Cannot set knowledge to null");
         }
@@ -337,42 +337,42 @@ public class FasConcurrent implements IFas {
     //==============================PRIVATE METHODS======================/
 
 
-    private void doNodeDepth0(int i, List<Node> nodes, IndependenceTest test, List<Node> empty, Map<Node, Set<Node>> adjacencies) {
-        if (verbose) {
+    private void doNodeDepth0(final int i, final List<Node> nodes, final IndependenceTest test, final List<Node> empty, final Map<Node, Set<Node>> adjacencies) {
+        if (this.verbose) {
             if ((i + 1) % 1000 == 0) System.out.println("i = " + (i + 1));
         }
 
-        if (verbose) {
-            if ((i + 1) % 100 == 0) out.println("Node # " + (i + 1));
+        if (this.verbose) {
+            if ((i + 1) % 100 == 0) this.out.println("Node # " + (i + 1));
         }
 
         if (Thread.currentThread().isInterrupted()) {
             return;
         }
 
-        Node x = nodes.get(i);
+        final Node x = nodes.get(i);
 
         for (int j = i + 1; j < nodes.size(); j++) {
 
-            Node y = nodes.get(j);
+            final Node y = nodes.get(j);
 
             boolean independent;
 
             try {
-                numIndependenceTests++;
+                this.numIndependenceTests++;
                 independent = test.isIndependent(x, y, empty);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 e.printStackTrace();
                 independent = false;
             }
 
-            boolean noEdgeRequired =
-                    knowledge.noEdgeRequired(x.getName(), y.getName());
+            final boolean noEdgeRequired =
+                    this.knowledge.noEdgeRequired(x.getName(), y.getName());
 
 
             if (independent && noEdgeRequired) {
-                this.getSepsets().set(x, y, empty);
-            } else if (!this.forbiddenEdge(x, y)) {
+                getSepsets().set(x, y, empty);
+            } else if (!forbiddenEdge(x, y)) {
                 adjacencies.get(x).add(y);
                 adjacencies.get(y).add(x);
             }
@@ -380,27 +380,27 @@ public class FasConcurrent implements IFas {
 //        }
     }
 
-    private void doNodeAtDepth(int i, List<Node> nodes, Map<Node, Set<Node>> adjacenciesCopy, int depth, IndependenceTest test, Map<Node, Set<Node>> adjacencies) {
-        if (verbose) {
+    private void doNodeAtDepth(final int i, final List<Node> nodes, final Map<Node, Set<Node>> adjacenciesCopy, final int depth, final IndependenceTest test, final Map<Node, Set<Node>> adjacencies) {
+        if (this.verbose) {
             if ((i + 1) % 1000 == 0) System.out.println("i = " + (i + 1));
         }
 
-        Node x = nodes.get(i);
+        final Node x = nodes.get(i);
 
         if (Thread.currentThread().isInterrupted()) {
             return;
         }
 
-        List<Node> adjx = new ArrayList<>(adjacencies.get(x));
+        final List<Node> adjx = new ArrayList<>(adjacencies.get(x));
 
         EDGE:
-        for (Node y : adjx) {
-            List<Node> _adjx = new ArrayList<>(adjacencies.get(x));
+        for (final Node y : adjx) {
+            final List<Node> _adjx = new ArrayList<>(adjacencies.get(x));
             _adjx.remove(y);
-            List<Node> ppx = this.possibleParents(x, _adjx, knowledge);
+            final List<Node> ppx = possibleParents(x, _adjx, this.knowledge);
 
             if (ppx.size() >= depth) {
-                ChoiceGenerator cg = new ChoiceGenerator(ppx.size(), depth);
+                final ChoiceGenerator cg = new ChoiceGenerator(ppx.size(), depth);
                 int[] choice;
 
                 while ((choice = cg.next()) != null) {
@@ -408,25 +408,25 @@ public class FasConcurrent implements IFas {
                         return;
                     }
 
-                    List<Node> condSet = GraphUtils.asList(choice, ppx);
+                    final List<Node> condSet = GraphUtils.asList(choice, ppx);
 
                     boolean independent;
 
                     try {
-                        numIndependenceTests++;
+                        this.numIndependenceTests++;
                         independent = test.isIndependent(x, y, condSet);
-                    } catch (Exception e) {
+                    } catch (final Exception e) {
                         independent = false;
                     }
 
-                    boolean noEdgeRequired =
-                            knowledge.noEdgeRequired(x.getName(), y.getName());
+                    final boolean noEdgeRequired =
+                            this.knowledge.noEdgeRequired(x.getName(), y.getName());
 
                     if (independent && noEdgeRequired) {
                         adjacencies.get(x).remove(y);
                         adjacencies.get(y).remove(x);
 
-                        this.getSepsets().set(x, y, condSet);
+                        getSepsets().set(x, y, condSet);
 
                         continue EDGE;
                     }
@@ -435,14 +435,14 @@ public class FasConcurrent implements IFas {
         }
     }
 
-    private boolean forbiddenEdge(Node x, Node y) {
-        String name1 = x.getName();
-        String name2 = y.getName();
+    private boolean forbiddenEdge(final Node x, final Node y) {
+        final String name1 = x.getName();
+        final String name2 = y.getName();
 
-        if (knowledge.isForbidden(name1, name2) &&
-                knowledge.isForbidden(name2, name1)) {
-            if (verbose) {
-                logger.log("edgeRemoved", "Removed " + Edges.undirectedEdge(x, y) + " because it was " +
+        if (this.knowledge.isForbidden(name1, name2) &&
+                this.knowledge.isForbidden(name2, name1)) {
+            if (this.verbose) {
+                this.logger.log("edgeRemoved", "Removed " + Edges.undirectedEdge(x, y) + " because it was " +
                         "forbidden by background knowledge.");
             }
 
@@ -452,14 +452,14 @@ public class FasConcurrent implements IFas {
         return false;
     }
 
-    private int freeDegree(List<Node> nodes, Map<Node, Set<Node>> adjacencies) {
+    private int freeDegree(final List<Node> nodes, final Map<Node, Set<Node>> adjacencies) {
         int max = 0;
 
-        for (Node x : nodes) {
-            Set<Node> opposites = adjacencies.get(x);
+        for (final Node x : nodes) {
+            final Set<Node> opposites = adjacencies.get(x);
 
-            for (Node y : opposites) {
-                Set<Node> adjx = new HashSet<>(opposites);
+            for (final Node y : opposites) {
+                final Set<Node> adjx = new HashSet<>(opposites);
                 adjx.remove(y);
 
                 if (adjx.size() > max) {
@@ -472,15 +472,15 @@ public class FasConcurrent implements IFas {
     }
 
 
-    private List<Node> possibleParents(Node x, List<Node> adjx,
-                                       IKnowledge knowledge) {
-        List<Node> possibleParents = new LinkedList<>();
-        String _x = x.getName();
+    private List<Node> possibleParents(final Node x, final List<Node> adjx,
+                                       final IKnowledge knowledge) {
+        final List<Node> possibleParents = new LinkedList<>();
+        final String _x = x.getName();
 
-        for (Node z : adjx) {
-            String _z = z.getName();
+        for (final Node z : adjx) {
+            final String _z = z.getName();
 
-            if (this.possibleParentOf(_z, _x, knowledge)) {
+            if (possibleParentOf(_z, _x, knowledge)) {
                 possibleParents.add(z);
             }
         }
@@ -488,16 +488,16 @@ public class FasConcurrent implements IFas {
         return possibleParents;
     }
 
-    private boolean possibleParentOf(String z, String x, IKnowledge knowledge) {
+    private boolean possibleParentOf(final String z, final String x, final IKnowledge knowledge) {
         return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
     }
 
     public int getNumIndependenceTests() {
-        return numIndependenceTests;
+        return this.numIndependenceTests;
     }
 
     @Override
-    public void setTrueGraph(Graph trueGraph) {
+    public void setTrueGraph(final Graph trueGraph) {
 
     }
 
@@ -507,30 +507,30 @@ public class FasConcurrent implements IFas {
     }
 
     @Override
-    public List<Triple> getAmbiguousTriples(Node node) {
+    public List<Triple> getAmbiguousTriples(final Node node) {
         return null;
     }
 
     public SepsetMap getSepsets() {
-        return sepsets;
+        return this.sepsets;
     }
 
     /**
      * The logger, by default the empty logger.
      */
     public TetradLogger getLogger() {
-        return logger;
+        return this.logger;
     }
 
-    public void setLogger(TetradLogger logger) {
+    public void setLogger(final TetradLogger logger) {
         this.logger = logger;
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 
@@ -539,16 +539,16 @@ public class FasConcurrent implements IFas {
         return 0;
     }
 
-    public void setOut(PrintStream out) {
+    public void setOut(final PrintStream out) {
         if (out == null) throw new NullPointerException();
         this.out = out;
     }
 
     public PrintStream getOut() {
-        return out;
+        return this.out;
     }
 
-    private void shutdownAndAwaitTermination(ExecutorService pool) {
+    private void shutdownAndAwaitTermination(final ExecutorService pool) {
         pool.shutdown(); // Disable new tasks from being submitted
         try {
             // Wait a while for existing tasks to terminate
@@ -559,7 +559,7 @@ public class FasConcurrent implements IFas {
                     System.err.println("Pool did not terminate");
                 }
             }
-        } catch (InterruptedException ie) {
+        } catch (final InterruptedException ie) {
             // (Re-)Cancel if current thread also interrupted
             pool.shutdownNow();
             // Preserve interrupt status
@@ -567,7 +567,7 @@ public class FasConcurrent implements IFas {
         }
     }
 
-    public void setStable(boolean stable) {
+    public void setStable(final boolean stable) {
         this.stable = stable;
     }
 }

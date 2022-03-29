@@ -46,27 +46,27 @@ import java.io.IOException;
 public class ExternalAlgorithmTetrad extends ExternalAlgorithm {
     static final long serialVersionUID = 23L;
     private final String extDir;
-    private String shortDescription;
+    private final String shortDescription;
 
 
-    public ExternalAlgorithmTetrad(String extDir) {
+    public ExternalAlgorithmTetrad(final String extDir) {
         this.extDir = extDir;
-        shortDescription = new File(extDir).getName().replace("_", " ");
+        this.shortDescription = new File(extDir).getName().replace("_", " ");
     }
 
-    public ExternalAlgorithmTetrad(String extDir, String shortDecription) {
+    public ExternalAlgorithmTetrad(final String extDir, final String shortDecription) {
         this.extDir = extDir;
-        shortDescription = shortDecription;
+        this.shortDescription = shortDecription;
     }
 
     /**
      * Reads in the relevant graph from the file and returns it.
      */
-    public Graph search(DataModel dataSet, Parameters parameters) {
-        int index = this.getIndex(dataSet);
-        File file = new File(path, "/results/" + extDir + "/" + (simIndex + 1) + "/graph." + index + ".txt");
+    public Graph search(final DataModel dataSet, final Parameters parameters) {
+        final int index = getIndex(dataSet);
+        final File file = new File(this.path, "/results/" + this.extDir + "/" + (this.simIndex + 1) + "/graph." + index + ".txt");
         System.out.println(file.getAbsolutePath());
-        Graph graph = GraphUtils.loadGraphTxt(file);
+        final Graph graph = GraphUtils.loadGraphTxt(file);
         GraphUtils.circleLayout(graph, 225, 200, 150);
         return graph;
     }
@@ -74,15 +74,15 @@ public class ExternalAlgorithmTetrad extends ExternalAlgorithm {
     /**
      * Returns the CPDAG of the supplied DAG.
      */
-    public Graph getComparisonGraph(Graph graph) {
+    public Graph getComparisonGraph(final Graph graph) {
         return new EdgeListGraph(graph);
     }
 
     public String getDescription() {
-        if (shortDescription == null) {
-            return "Load data from " + path + "/" + extDir;
+        if (this.shortDescription == null) {
+            return "Load data from " + this.path + "/" + this.extDir;
         } else {
-            return shortDescription;
+            return this.shortDescription;
         }
     }
 
@@ -90,18 +90,18 @@ public class ExternalAlgorithmTetrad extends ExternalAlgorithm {
         return DataType.Continuous;
     }
 
-    public long getElapsedTime(DataModel dataSet, Parameters parameters) {
-        int index = this.getIndex(dataSet);
+    public long getElapsedTime(final DataModel dataSet, final Parameters parameters) {
+        final int index = getIndex(dataSet);
 
-        File file = new File(path, "/elapsed/" + extDir + "/" + (simIndex + 1) + "/graph." + index + ".txt");
+        final File file = new File(this.path, "/elapsed/" + this.extDir + "/" + (this.simIndex + 1) + "/graph." + index + ".txt");
 
         System.out.println(file.getAbsolutePath());
 
         try {
-            BufferedReader r = new BufferedReader(new FileReader(file));
-            String l = r.readLine(); // Skip the first line.
+            final BufferedReader r = new BufferedReader(new FileReader(file));
+            final String l = r.readLine(); // Skip the first line.
             return Long.parseLong(l);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new IllegalArgumentException();
         }
     }

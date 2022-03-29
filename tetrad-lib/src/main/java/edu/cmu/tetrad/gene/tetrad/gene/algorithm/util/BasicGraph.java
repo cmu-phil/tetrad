@@ -58,18 +58,18 @@ public abstract class BasicGraph {
     /**
      * Creates a graph with <code>gName</code> name, and <code>n</code> nodes.
      */
-    public BasicGraph(String gName, int n) {
+    public BasicGraph(final String gName, final int n) {
         if (n <= 0) {
             throw new IllegalArgumentException("Invalid # nodes " + n);
         }
-        graphName = gName;
-        nNodes = n;
-        nEdges = 0;
-        nodeNames = new String[n];
+        this.graphName = gName;
+        this.nNodes = n;
+        this.nEdges = 0;
+        this.nodeNames = new String[n];
         for (int i = 0; i < n; i++) {
-            nodeNames[i] = "Node" + i;
+            this.nodeNames[i] = "Node" + i;
         }
-        initializeEdges();
+        this.initializeEdges();
     }
 
     /**
@@ -95,11 +95,11 @@ public abstract class BasicGraph {
      * Support of int, long, floating point, or doubles as edge values will
      * depend on how a subclass of Graph implement the set of edges.
      */
-    public BasicGraph(String fname) throws IOException {
+    public BasicGraph(final String fname) throws IOException {
         // Create and prepare stream tokenizer
-        File f = new File(fname);
-        BufferedReader in = new BufferedReader(new FileReader(f));
-        StreamTokenizer strmTok = new StreamTokenizer(in);
+        final File f = new File(fname);
+        final BufferedReader in = new BufferedReader(new FileReader(f));
+        final StreamTokenizer strmTok = new StreamTokenizer(in);
         strmTok.slashStarComments(true);
         strmTok.slashSlashComments(true);
         strmTok.parseNumbers();
@@ -114,7 +114,7 @@ public abstract class BasicGraph {
         }
 
         nt = strmTok.nextToken();
-        graphName = strmTok.sval;
+        this.graphName = strmTok.sval;
 
         // Read # of nodes in graph
         nt = strmTok.nextToken();
@@ -123,32 +123,32 @@ public abstract class BasicGraph {
                     "Expecting # of nodes in graph instead of: " + strmTok
                             .sval);
         }
-        nNodes = (int) strmTok.nval;
-        if (nNodes <= 0) {
+        this.nNodes = (int) strmTok.nval;
+        if (this.nNodes <= 0) {
             throw new IllegalArgumentException(
-                    "Invalid # nodes " + nNodes);
+                    "Invalid # nodes " + this.nNodes);
         }
 
         // Read names of all nodes
-        nodeNames = new String[nNodes];
-        for (int i = 0; i < nNodes; i++) {
+        this.nodeNames = new String[this.nNodes];
+        for (int i = 0; i < this.nNodes; i++) {
             nt = strmTok.nextToken();
-            nodeNames[i] = strmTok.sval;
+            this.nodeNames[i] = strmTok.sval;
         }
 
         // Read edges
-        initializeEdges();
+        this.initializeEdges();
         while (true) {
             nt = strmTok.nextToken();
             if (nt == StreamTokenizer.TT_EOF) {
                 break;
             }
-            int node_i = (int) strmTok.nval;
+            final int node_i = (int) strmTok.nval;
             nt = strmTok.nextToken();
-            int node_j = (int) strmTok.nval;
+            final int node_j = (int) strmTok.nval;
             nt = strmTok.nextToken();
-            double edgeValue = strmTok.nval;
-            setEdge(node_i, node_j, edgeValue);
+            final double edgeValue = strmTok.nval;
+            this.setEdge(node_i, node_j, edgeValue);
         }
         in.close();
     }
@@ -157,48 +157,48 @@ public abstract class BasicGraph {
      * Returns the name of the graph
      */
     public String getGraphName() {
-        return graphName;
+        return this.graphName;
     }
 
     /**
      * Sets the name of the graph
      */
-    public void setGraphName(String newName) {
-        graphName = newName;
+    public void setGraphName(final String newName) {
+        this.graphName = newName;
     }
 
     /**
      * Returns the # nodes in this graph
      */
     public int getSize() {
-        return nNodes;
+        return this.nNodes;
     }
 
     /**
      * Sets the name of node <code>i</code> in this graph
      */
-    public void setNodeName(int i, String nodeName) {
-        if ((i < 0) || (i > nNodes - 1)) {
-            badNodeIndex(i);
+    public void setNodeName(final int i, final String nodeName) {
+        if ((i < 0) || (i > this.nNodes - 1)) {
+            this.badNodeIndex(i);
         }
-        nodeNames[i] = nodeName;
+        this.nodeNames[i] = nodeName;
     }
 
     /**
      * Returns the name of node <code>i</code> in this graph
      */
-    public String getNodeName(int i) {
-        if ((i < 0) || (i > nNodes - 1)) {
-            badNodeIndex(i);
+    public String getNodeName(final int i) {
+        if ((i < 0) || (i > this.nNodes - 1)) {
+            this.badNodeIndex(i);
         }
-        return nodeNames[i];
+        return this.nodeNames[i];
     }
 
     /**
      * Returns the Total # of edges in this graph
      */
     public int getNumEdges() {
-        return nEdges;
+        return this.nEdges;
     }
 
     /**
@@ -207,19 +207,19 @@ public abstract class BasicGraph {
      * graph from a file.
      */
     public String toString() {
-        String s = getClass().getName() + " " + graphName + "\n" +
-                nNodes + " // <-- Total # nodes\n";
+        String s = this.getClass().getName() + " " + this.graphName + "\n" +
+                this.nNodes + " // <-- Total # nodes\n";
         s = s + "\n// Node names:\n";
-        for (int i = 0; i < nNodes; i++) {
-            s = s + getNodeName(i) + "\t// # " + i + "\n";
+        for (int i = 0; i < this.nNodes; i++) {
+            s = s + this.getNodeName(i) + "\t// # " + i + "\n";
         }
-        s = s + "\n// edges:\n" + EdgesToString();
+        s = s + "\n// edges:\n" + this.EdgesToString();
         return s;
     }
 
-    protected void badNodeIndex(int i) {
+    protected void badNodeIndex(final int i) {
         throw new IllegalArgumentException("Bad node index " + i +
-                " for Graph with " + nNodes + " nodes");
+                " for Graph with " + this.nNodes + " nodes");
     }
 
     /**

@@ -37,7 +37,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
-import javax.swing.GroupLayout.Alignment;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -73,138 +72,138 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
     private final GeneralAlgorithmRunner algorithmRunner;
     private final TetradDesktop desktop;
 
-    public GeneralAlgorithmEditor(GeneralAlgorithmRunner algorithmRunner) {
+    public GeneralAlgorithmEditor(final GeneralAlgorithmRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
-        desktop = (TetradDesktop) DesktopController.getInstance();
-        algorithmCard = new AlgorithmCard(algorithmRunner);
-        parameterCard = new ParameterCard(algorithmRunner);
-        graphCard = new GraphCard(algorithmRunner);
+        this.desktop = (TetradDesktop) DesktopController.getInstance();
+        this.algorithmCard = new AlgorithmCard(algorithmRunner);
+        this.parameterCard = new ParameterCard(algorithmRunner);
+        this.graphCard = new GraphCard(algorithmRunner);
 
-        this.initComponents();
-        this.initListeners();
+        initComponents();
+        initListeners();
 
         // repopulate all the previous selections if reopen the search box
         if (algorithmRunner.getGraphs() != null && algorithmRunner.getGraphs().size() > 0) {
-            algorithmCard.refresh();
-            parameterCard.refresh();
-            graphCard.refresh();
+            this.algorithmCard.refresh();
+            this.parameterCard.refresh();
+            this.graphCard.refresh();
 
-            this.showGraphCard();
+            showGraphCard();
         }
     }
 
     private void initComponents() {
-        if (algorithmRunner.hasMissingValues()) {
-            this.setPreferredSize(new Dimension(827, 670));
+        if (this.algorithmRunner.hasMissingValues()) {
+            setPreferredSize(new Dimension(827, 670));
         } else {
-            this.setPreferredSize(new Dimension(827, 620));
+            setPreferredSize(new Dimension(827, 620));
         }
 
-        this.setLayout(new CardLayout());
-        this.add(new SingleButtonCard(algorithmCard, algoFwdBtn));
-        this.add(new DualButtonCard(parameterCard, paramBkBtn, paramFwdBtn));
-        this.add(new SingleButtonCard(graphCard, graphBkBtn));
+        setLayout(new CardLayout());
+        add(new SingleButtonCard(this.algorithmCard, this.algoFwdBtn));
+        add(new DualButtonCard(this.parameterCard, this.paramBkBtn, this.paramFwdBtn));
+        add(new SingleButtonCard(this.graphCard, this.graphBkBtn));
     }
 
     private void initListeners() {
-        algoFwdBtn.addActionListener(this);
-        paramBkBtn.addActionListener(this);
-        paramFwdBtn.addActionListener(this);
-        graphBkBtn.addActionListener(this);
+        this.algoFwdBtn.addActionListener(this);
+        this.paramBkBtn.addActionListener(this);
+        this.paramFwdBtn.addActionListener(this);
+        this.graphBkBtn.addActionListener(this);
 
-        algorithmCard.addPropertyChangeListener(this);
-        parameterCard.addPropertyChangeListener(this);
-        graphCard.addPropertyChangeListener(this);
+        this.algorithmCard.addPropertyChangeListener(this);
+        this.parameterCard.addPropertyChangeListener(this);
+        this.graphCard.addPropertyChangeListener(this);
     }
 
     @Override
-    public void propertyChange(PropertyChangeEvent evt) {
+    public void propertyChange(final PropertyChangeEvent evt) {
         switch (evt.getPropertyName()) {
             case "algoFwdBtn":
-                algoFwdBtn.setEnabled((boolean) evt.getNewValue());
+                this.algoFwdBtn.setEnabled((boolean) evt.getNewValue());
                 break;
         }
     }
 
     @Override
-    public void actionPerformed(ActionEvent evt) {
-        Object obj = evt.getSource();
-        if (obj == algoFwdBtn) {
-            if (algorithmCard.isAllValid()) {
-                parameterCard.refresh();
-                this.showNextCard();
+    public void actionPerformed(final ActionEvent evt) {
+        final Object obj = evt.getSource();
+        if (obj == this.algoFwdBtn) {
+            if (this.algorithmCard.isAllValid()) {
+                this.parameterCard.refresh();
+                showNextCard();
             }
-        } else if (obj == paramBkBtn) {
-            this.showPreviousCard();
-        } else if (obj == paramFwdBtn) {
-            this.doSearch();
-        } else if (obj == graphBkBtn) {
-            this.showPreviousCard();
+        } else if (obj == this.paramBkBtn) {
+            showPreviousCard();
+        } else if (obj == this.paramFwdBtn) {
+            doSearch();
+        } else if (obj == this.graphBkBtn) {
+            showPreviousCard();
         }
     }
 
-    public void setAlgorithmResult(String jsonResult) {
+    public void setAlgorithmResult(final String jsonResult) {
         this.jsonResult = jsonResult;
         System.out.println("json result: " + jsonResult);
 
-        Graph graph = JsonUtils.parseJSONObjectToTetradGraph(jsonResult);
-        algorithmRunner.getGraphs().clear();
-        algorithmRunner.getGraphs().add(graph);
+        final Graph graph = JsonUtils.parseJSONObjectToTetradGraph(jsonResult);
+        this.algorithmRunner.getGraphs().clear();
+        this.algorithmRunner.getGraphs().add(graph);
 
-        LOGGER.info("Remote graph result assigned to algorithmRunner!");
-        this.firePropertyChange("modelChanged", null, null);
+        GeneralAlgorithmEditor.LOGGER.info("Remote graph result assigned to algorithmRunner!");
+        firePropertyChange("modelChanged", null, null);
 
-        graphCard.refresh();
-        this.showGraphCard();
+        this.graphCard.refresh();
+        showGraphCard();
     }
 
-    public void setAlgorithmErrorResult(String errorResult) {
-        JOptionPane.showMessageDialog(desktop, jsonResult);
+    public void setAlgorithmErrorResult(final String errorResult) {
+        JOptionPane.showMessageDialog(this.desktop, this.jsonResult);
 
         throw new IllegalArgumentException(errorResult);
     }
 
     private void showNextCard() {
-        CardLayout cardLayout = (CardLayout) this.getLayout();
+        final CardLayout cardLayout = (CardLayout) getLayout();
         cardLayout.next(this);
     }
 
     private void showPreviousCard() {
-        CardLayout cardLayout = (CardLayout) this.getLayout();
+        final CardLayout cardLayout = (CardLayout) getLayout();
         cardLayout.previous(this);
     }
 
     private void showGraphCard() {
-        CardLayout cardLayout = (CardLayout) this.getLayout();
+        final CardLayout cardLayout = (CardLayout) getLayout();
         cardLayout.last(this);
     }
 
     private void doSearch() {
-        new WatchedProcess((Window) this.getTopLevelAncestor()) {
+        new WatchedProcess((Window) getTopLevelAncestor()) {
             @Override
             public void watch() {
-                AlgorithmModel algoModel = algorithmCard.getSelectedAlgorithm();
+                final AlgorithmModel algoModel = GeneralAlgorithmEditor.this.algorithmCard.getSelectedAlgorithm();
                 if (algoModel != null) {
 //                    paramBkBtn.setEnabled(false);
 //                    paramFwdBtn.setEnabled(false);
 
                     if (algoModel.getAlgorithm().getAnnotation().algoType() != AlgType.orient_pairwise
-                            && algorithmRunner.getDataModelList().getModelList().size() == 1) {
-                        String algoName = algoModel.getAlgorithm().getAnnotation().name();
+                            && GeneralAlgorithmEditor.this.algorithmRunner.getDataModelList().getModelList().size() == 1) {
+                        final String algoName = algoModel.getAlgorithm().getAnnotation().name();
                     }
 
                     try {
-                        algorithmCard.saveStates();
-                        algorithmRunner.execute();
+                        GeneralAlgorithmEditor.this.algorithmCard.saveStates();
+                        GeneralAlgorithmEditor.this.algorithmRunner.execute();
 
-                        GeneralAlgorithmEditor.this.firePropertyChange("modelChanged", null, null);
-                        graphCard.refresh();
-                        GeneralAlgorithmEditor.this.showGraphCard();
-                    } catch (Exception exception) {
+                        firePropertyChange("modelChanged", null, null);
+                        GeneralAlgorithmEditor.this.graphCard.refresh();
+                        showGraphCard();
+                    } catch (final Exception exception) {
                         exception.printStackTrace(System.err);
 
                         JOptionPane.showMessageDialog(
-                                GeneralAlgorithmEditor.this.getTopLevelAncestor(),
+                                getTopLevelAncestor(),
                                 "Stopped with error:\n"
                                         + exception.getMessage());
                     }
@@ -219,9 +218,9 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
 
     @Override
     public boolean finalizeEditor() {
-        List<Graph> graphs = algorithmRunner.getGraphs();
+        final List<Graph> graphs = this.algorithmRunner.getGraphs();
         if (graphs == null || graphs.isEmpty()) {
-            int option = JOptionPane.showConfirmDialog(this, "You have not performed a search. Close anyway?", "Close?",
+            final int option = JOptionPane.showConfirmDialog(this, "You have not performed a search. Close anyway?", "Close?",
                     JOptionPane.YES_NO_OPTION);
             return option == JOptionPane.YES_OPTION;
         }
@@ -236,22 +235,22 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         private final JComponent component;
         private final JButton button;
 
-        public SingleButtonCard(JComponent component, JButton button) {
+        public SingleButtonCard(final JComponent component, final JButton button) {
             this.component = component;
             this.button = button;
 
-            this.initComponents();
+            initComponents();
         }
 
         private void initComponents() {
-            Dimension buttonSize = new Dimension(268, 25);
-            button.setMinimumSize(buttonSize);
-            button.setMaximumSize(buttonSize);
-            button.setPreferredSize(buttonSize);
+            final Dimension buttonSize = new Dimension(268, 25);
+            this.button.setMinimumSize(buttonSize);
+            this.button.setMaximumSize(buttonSize);
+            this.button.setPreferredSize(buttonSize);
 
-            this.setLayout(new BorderLayout());
-            this.add(new JScrollPane(new PaddingPanel(component)), BorderLayout.CENTER);
-            this.add(new SouthPanel(), BorderLayout.SOUTH);
+            setLayout(new BorderLayout());
+            add(new JScrollPane(new PaddingPanel(this.component)), BorderLayout.CENTER);
+            add(new SouthPanel(), BorderLayout.SOUTH);
         }
 
         private class SouthPanel extends JPanel {
@@ -259,21 +258,21 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
             private static final long serialVersionUID = -126249189388443046L;
 
             public SouthPanel() {
-                this.initComponents();
+                initComponents();
             }
 
             private void initComponents() {
-                GroupLayout layout = new GroupLayout(this);
-                setLayout(layout);
+                final GroupLayout layout = new GroupLayout(this);
+                this.setLayout(layout);
                 layout.setHorizontalGroup(
-                        layout.createParallelGroup(Alignment.LEADING)
+                        layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addGroup(layout.createSequentialGroup()
                                         .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                         .addComponent(button)
                                         .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 );
                 layout.setVerticalGroup(
-                        layout.createParallelGroup(Alignment.LEADING)
+                        layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addGroup(layout.createSequentialGroup()
                                         .addContainerGap()
                                         .addComponent(button)
@@ -329,7 +328,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
                 GroupLayout layout = new GroupLayout(this);
                 setLayout(layout);
                 layout.setHorizontalGroup(
-                        layout.createParallelGroup(Alignment.LEADING)
+                        layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addGroup(layout.createSequentialGroup()
                                         .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                         .addComponent(backButton)
@@ -341,12 +340,12 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
                 layout.linkSize(SwingConstants.HORIZONTAL, backButton, forwardButton);
 
                 layout.setVerticalGroup(
-                        layout.createParallelGroup(Alignment.LEADING)
+                        layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addGroup(layout.createSequentialGroup()
                                         .addContainerGap()
-                                        .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-                                                .addComponent(backButton)
-                                                .addComponent(forwardButton))
+                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                                .addComponent(DualButtonCard.this.backButton)
+                                                .addComponent(DualButtonCard.this.forwardButton))
                                         .addContainerGap())
                 );
             }

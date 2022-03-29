@@ -33,8 +33,8 @@ public class Mgm implements Algorithm {
     }
 
     @Override
-    public Graph search(DataModel ds, Parameters parameters) {
-        DataSet _data = (DataSet) ds;
+    public Graph search(final DataModel ds, final Parameters parameters) {
+        final DataSet _data = (DataSet) ds;
 
         for (int j = 0; j < _data.getNumColumns(); j++) {
             for (int i = 0; i < _data.getNumRows(); i++) {
@@ -51,11 +51,11 @@ public class Mgm implements Algorithm {
         }
 
         // Notify the user that you need at least one continuous and one discrete variable to run MGM
-        List<Node> variables = ds.getVariables();
+        final List<Node> variables = ds.getVariables();
         boolean hasContinuous = false;
         boolean hasDiscrete = false;
 
-        for (Node node : variables) {
+        for (final Node node : variables) {
             if (node instanceof ContinuousVariable) {
                 hasContinuous = true;
             }
@@ -70,26 +70,26 @@ public class Mgm implements Algorithm {
         }
 
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            DataSet _ds = DataUtils.getMixedDataSet(ds);
+            final DataSet _ds = DataUtils.getMixedDataSet(ds);
 
-            double mgmParam1 = parameters.getDouble(Params.MGM_PARAM1);
-            double mgmParam2 = parameters.getDouble(Params.MGM_PARAM2);
-            double mgmParam3 = parameters.getDouble(Params.MGM_PARAM3);
+            final double mgmParam1 = parameters.getDouble(Params.MGM_PARAM1);
+            final double mgmParam2 = parameters.getDouble(Params.MGM_PARAM2);
+            final double mgmParam3 = parameters.getDouble(Params.MGM_PARAM3);
 
-            double[] lambda = {
+            final double[] lambda = {
                     mgmParam1,
                     mgmParam2,
                     mgmParam3
             };
 
-            MGM m = new MGM(_ds, lambda);
+            final MGM m = new MGM(_ds, lambda);
 
             return m.search();
         } else {
-            Mgm algorithm = new Mgm();
+            final Mgm algorithm = new Mgm();
 
-            DataSet data = (DataSet) ds;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
+            final DataSet data = (DataSet) ds;
+            final GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -116,7 +116,7 @@ public class Mgm implements Algorithm {
 
     // Need to marry the parents on this.
     @Override
-    public Graph getComparisonGraph(Graph graph) {
+    public Graph getComparisonGraph(final Graph graph) {
         return GraphUtils.undirectedGraph(graph);
     }
 
@@ -132,7 +132,7 @@ public class Mgm implements Algorithm {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
+        final List<String> parameters = new ArrayList<>();
         parameters.add(Params.MGM_PARAM1);
         parameters.add(Params.MGM_PARAM2);
         parameters.add(Params.MGM_PARAM3);

@@ -46,14 +46,14 @@ public final class TestIndependenceFacts {
 
     @Test
     public void test1() {
-        IndependenceFactsModel facts = new IndependenceFactsModel();
+        final IndependenceFactsModel facts = new IndependenceFactsModel();
 
-        Node x1 = new GraphNode("X1");
-        Node x2 = new GraphNode("X2");
-        Node x3 = new GraphNode("X3");
-        Node x4 = new GraphNode("X4");
-        Node x5 = new GraphNode("X5");
-        Node x6 = new GraphNode("X6");
+        final Node x1 = new GraphNode("X1");
+        final Node x2 = new GraphNode("X2");
+        final Node x3 = new GraphNode("X3");
+        final Node x4 = new GraphNode("X4");
+        final Node x5 = new GraphNode("X5");
+        final Node x6 = new GraphNode("X6");
 
         facts.add(new IndependenceFact(x1, x2, x3));
         facts.add(new IndependenceFact(x2, x3));
@@ -64,12 +64,12 @@ public final class TestIndependenceFacts {
 
         facts.remove(new IndependenceFact(x1, x2, x3));
 
-        IndependenceFacts _facts = new IndependenceFacts(facts.getFacts());
+        final IndependenceFacts _facts = new IndependenceFacts(facts.getFacts());
 
         assertTrue(_facts.isIndependent(x4, x2, x1, x2));
         assertTrue(_facts.isIndependent(x4, x2, x5, x3, x1));
 
-        List<Node> l = new ArrayList<>();
+        final List<Node> l = new ArrayList<>();
         l.add(x1);
         l.add(x2);
 
@@ -79,11 +79,11 @@ public final class TestIndependenceFacts {
 
     @Test
     public void test2() {
-        File file = new File("src/test/resources/sample.independencies.txt");
+        final File file = new File("src/test/resources/sample.independencies.txt");
 
         try {
-            IndependenceFactsModel facts = IndependenceFactsModel.loadFacts(new FileReader(file));
-        } catch (IOException e) {
+            final IndependenceFactsModel facts = IndependenceFactsModel.loadFacts(new FileReader(file));
+        } catch (final IOException e) {
             e.printStackTrace();
         }
     }

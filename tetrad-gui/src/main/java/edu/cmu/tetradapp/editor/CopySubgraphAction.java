@@ -47,7 +47,7 @@ class CopySubgraphAction extends AbstractAction implements ClipboardOwner {
      * Creates a new copy subsession action for the given desktop and
      * clipboard.
      */
-    public CopySubgraphAction(GraphEditable graphEditor) {
+    public CopySubgraphAction(final GraphEditable graphEditor) {
         super("Copy Selected Graph");
 
         if (graphEditor == null) {
@@ -61,16 +61,16 @@ class CopySubgraphAction extends AbstractAction implements ClipboardOwner {
      * Copies a parentally closed selection of session nodes in the frontmost
      * session editor to the clipboard.
      */
-    public void actionPerformed(ActionEvent e) {
-        List modelComponents = graphEditor.getSelectedModelComponents();
-        SubgraphSelection selection = new SubgraphSelection(modelComponents);
+    public void actionPerformed(final ActionEvent e) {
+        final List modelComponents = this.graphEditor.getSelectedModelComponents();
+        final SubgraphSelection selection = new SubgraphSelection(modelComponents);
         InternalClipboard.getInstance().setContents(selection, this);
     }
 
     /**
      * Required by the AbstractAction interface; does nothing.
      */
-    public void lostOwnership(Clipboard clipboard, Transferable contents) {
+    public void lostOwnership(final Clipboard clipboard, final Transferable contents) {
     }
 }
 

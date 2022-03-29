@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.calculator.expression;
 
-import edu.cmu.tetrad.calculator.expression.ExpressionDescriptor.Position;
 import org.apache.commons.math3.distribution.IntegerDistribution;
 import org.apache.commons.math3.distribution.RealDistribution;
 
@@ -42,7 +41,7 @@ public class VariableExpression implements Expression {
     private final String variable;
 
 
-    public VariableExpression(String variable) {
+    public VariableExpression(final String variable) {
         if (variable == null) {
             throw new NullPointerException("variable is null.");
         }
@@ -59,20 +58,20 @@ public class VariableExpression implements Expression {
      * @return the variable.
      */
     public String getVariable() {
-        return variable;
+        return this.variable;
     }
 
 
-    public Double evaluateGeneric(Context context) {
-        return context.getValue(variable);
+    public Double evaluateGeneric(final Context context) {
+        return context.getValue(this.variable);
     }
 
 
-    public double evaluate(Context context) {
-        Double value = context.getValue(variable);
+    public double evaluate(final Context context) {
+        final Double value = context.getValue(this.variable);
 
         if (value == null) {
-            throw new IllegalArgumentException(variable + " was not assigned a value.");
+            throw new IllegalArgumentException(this.variable + " was not assigned a value.");
         }
 
         return value;
@@ -82,8 +81,8 @@ public class VariableExpression implements Expression {
         return "";
     }
 
-    public Position getPosition() {
-        return Position.NEITHER;
+    public ExpressionDescriptor.Position getPosition() {
+        return ExpressionDescriptor.Position.NEITHER;
     }
 
 
@@ -92,15 +91,15 @@ public class VariableExpression implements Expression {
     }
 
     public String toString() {
-        return variable;
+        return this.variable;
     }
 
     @Override
-    public RealDistribution getRealDistribution(Context context) {
+    public RealDistribution getRealDistribution(final Context context) {
         return null;
     }
 
-    public IntegerDistribution getIntegerDistribution(Context context) {
+    public IntegerDistribution getIntegerDistribution(final Context context) {
         return null;
     }
 }

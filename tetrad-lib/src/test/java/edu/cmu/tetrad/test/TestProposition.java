@@ -43,24 +43,24 @@ public final class TestProposition {
      */
     @Test
     public void testUpdate1() {
-        BayesIm bayesIm = this.sampleBayesIm2();
+        final BayesIm bayesIm = sampleBayesIm2();
 
-        Proposition prop1 = Proposition.tautology(bayesIm);
+        final Proposition prop1 = Proposition.tautology(bayesIm);
         prop1.removeCategory(0, 1);
         prop1.setVariable(1, false);
-        Proposition prop2 = new Proposition(bayesIm, prop1);
+        final Proposition prop2 = new Proposition(bayesIm, prop1);
         assertEquals(prop1, prop2);
-        BayesIm bayesIm2 = new MlBayesIm(bayesIm);
-        Proposition prop3 = new Proposition(bayesIm2, prop1);
+        final BayesIm bayesIm2 = new MlBayesIm(bayesIm);
+        final Proposition prop3 = new Proposition(bayesIm2, prop1);
         assertTrue(!prop3.equals(prop1));
     }
 
     private BayesIm sampleBayesIm2() {
-        Node a = new GraphNode("a");
-        Node b = new GraphNode("b");
-        Node c = new GraphNode("c");
+        final Node a = new GraphNode("a");
+        final Node b = new GraphNode("b");
+        final Node c = new GraphNode("c");
 
-        Dag graph;
+        final Dag graph;
 
         graph = new Dag();
 
@@ -72,10 +72,10 @@ public final class TestProposition {
         graph.addDirectedEdge(a, c);
         graph.addDirectedEdge(b, c);
 
-        BayesPm bayesPm = new BayesPm(graph);
+        final BayesPm bayesPm = new BayesPm(graph);
         bayesPm.setNumCategories(b, 3);
 
-        BayesIm bayesIm1 = new MlBayesIm(bayesPm);
+        final BayesIm bayesIm1 = new MlBayesIm(bayesPm);
         bayesIm1.setProbability(0, 0, 0, .3);
         bayesIm1.setProbability(0, 0, 1, .7);
 

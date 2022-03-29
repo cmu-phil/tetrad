@@ -155,7 +155,7 @@ public final class DiscreteVariable extends AbstractVariable {
      * just a list of integer categories with no categories associated with the
      * categories.
      */
-    public DiscreteVariable(String name) {
+    public DiscreteVariable(final String name) {
         super(name);
     }
 
@@ -163,10 +163,10 @@ public final class DiscreteVariable extends AbstractVariable {
      * Builds a qualitative variable with the given name and number of
      * categories. The categories have the form 'categoryi'.
      */
-    public DiscreteVariable(String name, int numCategories) {
+    public DiscreteVariable(final String name, final int numCategories) {
         super(name);
-        this.setCategories(numCategories);
-        this.setCategoryNamesDisplayed(false);
+        setCategories(numCategories);
+        setCategoryNamesDisplayed(false);
     }
 
     /**
@@ -177,19 +177,19 @@ public final class DiscreteVariable extends AbstractVariable {
      * @param categories A String[] array of categories, where the categories[i]
      *                   is the category for index i.
      */
-    public DiscreteVariable(String name, List<String> categories) {
+    public DiscreteVariable(final String name, final List<String> categories) {
         super(name);
-        this.setCategories(categories.toArray(new String[categories.size()]));
-        this.setCategoryNamesDisplayed(true);
+        setCategories(categories.toArray(new String[categories.size()]));
+        setCategoryNamesDisplayed(true);
     }
 
     /**
      * Copy constructor.
      */
-    public DiscreteVariable(DiscreteVariable variable) {
+    public DiscreteVariable(final DiscreteVariable variable) {
         super(variable.getName());
-        categoriesCopy = getStoredCategoryList(variable.getCategories());
-        this.setCategoryNamesDisplayed(true);
+        this.categoriesCopy = DiscreteVariable.getStoredCategoryList(variable.getCategories());
+        setCategoryNamesDisplayed(true);
     }
 
     /**
@@ -206,15 +206,15 @@ public final class DiscreteVariable extends AbstractVariable {
      * (Currently only NOMINAL is supported.)
      */
     public final DiscreteVariableType getDiscreteVariableType() {
-        return discreteVariableType;
+        return this.discreteVariableType;
     }
 
     /**
      * @return the index of the given String category, or -1 if the category is
      * not a category for this variable.
      */
-    public final int getIndex(String category) {
-        return this.getCategories().indexOf(category);
+    public final int getIndex(final String category) {
+        return getCategories().indexOf(category);
     }
 
     /**
@@ -224,24 +224,24 @@ public final class DiscreteVariable extends AbstractVariable {
      * column.
      */
     public final int getNumCategories() {
-        return this.getCategories().size();
+        return getCategories().size();
     }
 
     /**
      * @return the missing value marker as an Integer.
      */
     public final Object getMissingValueMarker() {
-        return MISSING_VALUE;
+        return DiscreteVariable.MISSING_VALUE;
     }
 
     /**
      * @return the variable category specified by the given category.
      */
-    public final String getCategory(int category) {
-        if (category == MISSING_VALUE) {
-            return MISSING_VALUE_STRING;
+    public final String getCategory(final int category) {
+        if (category == DiscreteVariable.MISSING_VALUE) {
+            return DiscreteVariable.MISSING_VALUE_STRING;
         } else {
-            return this.getCategories().get(category);
+            return getCategories().get(category);
         }
     }
 
@@ -250,24 +250,24 @@ public final class DiscreteVariable extends AbstractVariable {
      * The string at index i is the category for index i.
      */
     public final List<String> getCategories() {
-        if (categories == null) {
-            categories = Collections.unmodifiableList(getStoredCategoryList(categoriesCopy));
+        if (this.categories == null) {
+            this.categories = Collections.unmodifiableList(DiscreteVariable.getStoredCategoryList(this.categoriesCopy));
         }
-        return categories;
+        return this.categories;
     }
 
     /**
      * @param category a category to be checked
      * @return true if the given category is legal.
      */
-    public final boolean checkValue(int category) {
-        boolean inRange = (category >= 0) && (category < this.getNumCategories());
-        boolean isMissing = (category == MISSING_VALUE);
+    public final boolean checkValue(final int category) {
+        final boolean inRange = (category >= 0) && (category < getNumCategories());
+        final boolean isMissing = (category == DiscreteVariable.MISSING_VALUE);
         return inRange || isMissing;
     }
 
-    public final boolean checkValue(String value) {
-        return this.getCategories().contains(value);
+    public final boolean checkValue(final String value) {
+        return getCategories().contains(value);
     }
 
     /**
@@ -275,12 +275,12 @@ public final class DiscreteVariable extends AbstractVariable {
      *
      * @param value the value to test; should be an Integer or a String.
      */
-    public final boolean isMissingValue(Object value) {
+    public final boolean isMissingValue(final Object value) {
         if (value instanceof Integer) {
-            Integer ivalue = (Integer) value;
-            return ivalue == MISSING_VALUE;
+            final Integer ivalue = (Integer) value;
+            return ivalue == DiscreteVariable.MISSING_VALUE;
         } else if (value instanceof String) {
-            return MISSING_VALUE_STRING.equals(value);
+            return DiscreteVariable.MISSING_VALUE_STRING.equals(value);
         }
 
         return false;
@@ -290,14 +290,14 @@ public final class DiscreteVariable extends AbstractVariable {
      * @return true iff categories for this variable should be displayed.
      */
     public final boolean isCategoryNamesDisplayed() {
-        return categoryNamesDisplayed;
+        return this.categoryNamesDisplayed;
     }
 
     /**
      * Sets whether categories for this variable should be displayed.
      */
     public final void setCategoryNamesDisplayed(
-            boolean categoryNamesDisplayed) {
+            final boolean categoryNamesDisplayed) {
         this.categoryNamesDisplayed = categoryNamesDisplayed;
     }
 
@@ -336,7 +336,7 @@ public final class DiscreteVariable extends AbstractVariable {
      * @return true iff the given object is a discrete variable with the same
      * number of categories and the same categories.
      */
-    public final boolean equals(Object o) {
+    public final boolean equals(final Object o) {
 
         //AJ
         if (!(o instanceof DiscreteVariable)) {
@@ -347,23 +347,23 @@ public final class DiscreteVariable extends AbstractVariable {
 //        if (equalityType == NodeEqualityMode.Type.OBJECT) {
 //            return o == this;
 //        } else if (equalityType == NodeEqualityMode.Type.NAME) {
-        DiscreteVariable variable = (DiscreteVariable) o;
+        final DiscreteVariable variable = (DiscreteVariable) o;
 
-        if (!(this.getName().equals(variable.getName()))) {
+        if (!(getName().equals(variable.getName()))) {
             return false;
         }
 
-        if (!(this.getNumCategories() == variable.getNumCategories())) {
+        if (!(getNumCategories() == variable.getNumCategories())) {
             return false;
         }
 
-        for (int i = 0; i < this.getNumCategories(); i++) {
-            if (!(this.getCategory(i).equals(variable.getCategory(i)))) {
+        for (int i = 0; i < getNumCategories(); i++) {
+            if (!(getCategory(i).equals(variable.getCategory(i)))) {
                 return false;
             }
         }
 
-        return this.getNodeType() == variable.getNodeType();
+        return getNodeType() == variable.getNodeType();
 //        }
 //        else {
 //            throw new IllegalStateException();
@@ -404,18 +404,18 @@ public final class DiscreteVariable extends AbstractVariable {
     }
 
     public final NodeType getNodeType() {
-        return nodeType;
+        return this.nodeType;
     }
 
-    public final void setNodeType(NodeType nodeType) {
+    public final void setNodeType(final NodeType nodeType) {
         this.nodeType = nodeType;
     }
 
     public boolean isAccommodateNewCategories() {
-        return accommodateNewCategories;
+        return this.accommodateNewCategories;
     }
 
-    public void setAccommodateNewCategories(boolean accommodateNewCategories) {
+    public void setAccommodateNewCategories(final boolean accommodateNewCategories) {
         this.accommodateNewCategories = accommodateNewCategories;
     }
 
@@ -423,13 +423,13 @@ public final class DiscreteVariable extends AbstractVariable {
      * @return the x coordinate of the center of the node.
      */
     public final int getCenterX() {
-        return centerX;
+        return this.centerX;
     }
 
     /**
      * Sets the x coordinate of the center of this node.
      */
-    public final void setCenterX(int centerX) {
+    public final void setCenterX(final int centerX) {
         this.centerX = centerX;
     }
 
@@ -437,20 +437,20 @@ public final class DiscreteVariable extends AbstractVariable {
      * @return the y coordinate of the center of the node.
      */
     public final int getCenterY() {
-        return centerY;
+        return this.centerY;
     }
 
     /**
      * Sets the y coordinate of the center of this node.
      */
-    public final void setCenterY(int centerY) {
+    public final void setCenterY(final int centerY) {
         this.centerY = centerY;
     }
 
     /**
      * Sets the (x, y) coordinates of the center of this node.
      */
-    public final void setCenter(int centerX, int centerY) {
+    public final void setCenter(final int centerX, final int centerY) {
         this.centerX = centerX;
         this.centerY = centerY;
     }
@@ -458,20 +458,20 @@ public final class DiscreteVariable extends AbstractVariable {
     /**
      * Adds a property change listener.
      */
-    public final void addPropertyChangeListener(PropertyChangeListener l) {
-        this.getPcs().addPropertyChangeListener(l);
+    public final void addPropertyChangeListener(final PropertyChangeListener l) {
+        getPcs().addPropertyChangeListener(l);
     }
 
     /**
      * @return the name of the variable followed by its list of categories.
      */
     public final String toString() {
-        return this.getName();
+        return getName();
     }
 
-    public Node like(String name) {
-        DiscreteVariable variable = new DiscreteVariable(name);
-        variable.setNodeType(this.getNodeType());
+    public Node like(final String name) {
+        final DiscreteVariable variable = new DiscreteVariable(name);
+        variable.setNodeType(getNodeType());
         return variable;
     }
 
@@ -502,63 +502,63 @@ public final class DiscreteVariable extends AbstractVariable {
      *                                  different type of variable that doesn't do all of the complicated things
      *                                  discrete variables do should be used.
      */
-    private void setCategories(String[] categories) {
-        for (String category : categories) {
+    private void setCategories(final String[] categories) {
+        for (final String category : categories) {
             if (category == null) {
                 throw new NullPointerException();
             }
         }
 
-        List<String> categoryList = Arrays.asList(categories);
+        final List<String> categoryList = Arrays.asList(categories);
 
         if (new HashSet<>(categoryList).size() != categoryList.size()) {
             throw new IllegalArgumentException("Duplicate category.");
         }
 
-        categoriesCopy = Collections.unmodifiableList(getStoredCategoryList(categoryList));
+        this.categoriesCopy = Collections.unmodifiableList(DiscreteVariable.getStoredCategoryList(categoryList));
     }
 
     /**
      * Sets the category of the category at the given index.
      */
-    private void setCategories(int numCategories) {
-        String[] categories = new String[numCategories];
+    private void setCategories(final int numCategories) {
+        final String[] categories = new String[numCategories];
 
         for (int i = 0; i < numCategories; i++) {
             categories[i] = DataUtils.defaultCategory(i);
         }
 
-        this.setCategories(categories);
+        setCategories(categories);
     }
 
     private PropertyChangeSupport getPcs() {
-        if (pcs == null) {
-            pcs = new PropertyChangeSupport(this);
+        if (this.pcs == null) {
+            this.pcs = new PropertyChangeSupport(this);
         }
 
-        return pcs;
+        return this.pcs;
     }
 
     private static List<String> getStoredCategoryList(
-            List<String> categoryList) {
+            final List<String> categoryList) {
         if (categoryList == null) {
             throw new NullPointerException();
         }
 
-        Set<String> categorySet = new HashSet<>(categoryList);
+        final Set<String> categorySet = new HashSet<>(categoryList);
 
-        if (STORED_CATEGORY_LISTS == null) {
-            STORED_CATEGORY_LISTS = new ArrayList<>();
+        if (DiscreteVariable.STORED_CATEGORY_LISTS == null) {
+            DiscreteVariable.STORED_CATEGORY_LISTS = new ArrayList<>();
         }
 
-        for (LinkedList<String> list : STORED_CATEGORY_LISTS) {
+        for (final LinkedList<String> list : DiscreteVariable.STORED_CATEGORY_LISTS) {
             if (categorySet.equals(new HashSet<>(list))) {
                 return list;
             }
         }
 
-        LinkedList<String> newList = new LinkedList<>(categoryList);
-        STORED_CATEGORY_LISTS.add(newList);
+        final LinkedList<String> newList = new LinkedList<>(categoryList);
+        DiscreteVariable.STORED_CATEGORY_LISTS.add(newList);
         return newList;
     }
 
@@ -575,51 +575,51 @@ public final class DiscreteVariable extends AbstractVariable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (categoriesCopy == null) {
+        if (this.categoriesCopy == null) {
             throw new NullPointerException();
         }
 
-        if (discreteVariableType == null) {
+        if (this.discreteVariableType == null) {
             throw new NullPointerException();
         }
 
-        if (nodeType == null) {
+        if (this.nodeType == null) {
             throw new NullPointerException();
         }
     }
 
     @Override
     public NodeVariableType getNodeVariableType() {
-        return nodeVariableType;
+        return this.nodeVariableType;
     }
 
     @Override
-    public void setNodeVariableType(NodeVariableType nodeVariableType) {
+    public void setNodeVariableType(final NodeVariableType nodeVariableType) {
         this.nodeVariableType = nodeVariableType;
     }
 
     @Override
     public Map<String, Object> getAllAttributes() {
-        return attributes;
+        return this.attributes;
     }
 
     @Override
-    public Object getAttribute(String key) {
-        return attributes.get(key);
+    public Object getAttribute(final String key) {
+        return this.attributes.get(key);
     }
 
     @Override
-    public void removeAttribute(String key) {
-        attributes.remove(key);
+    public void removeAttribute(final String key) {
+        this.attributes.remove(key);
     }
 
     @Override
-    public void addAttribute(String key, Object value) {
-        attributes.put(key, value);
+    public void addAttribute(final String key, final Object value) {
+        this.attributes.put(key, value);
     }
 
 }

@@ -12,8 +12,6 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.Fask.AdjacencyMethod;
-import edu.cmu.tetrad.search.Fask.LeftRight;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
@@ -51,17 +49,17 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
 
     }
 
-    public Fask(IndependenceWrapper test) {
+    public Fask(final IndependenceWrapper test) {
         this.test = test;
     }
 
-    private Graph getGraph(edu.cmu.tetrad.search.Fask search) {
+    private Graph getGraph(final edu.cmu.tetrad.search.Fask search) {
         return search.search();
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
-        DataSet _data = (DataSet) dataSet;
+    public Graph search(final DataModel dataSet, final Parameters parameters) {
+        final DataSet _data = (DataSet) dataSet;
 
         for (int j = 0; j < _data.getNumColumns(); j++) {
             for (int i = 0; i < _data.getNumRows(); i++) {
@@ -72,10 +70,10 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
         }
 
         if (parameters.getInt(NUMBER_RESAMPLING) < 1) {
-            edu.cmu.tetrad.search.Fask search;
+            final edu.cmu.tetrad.search.Fask search;
 
-            search = new edu.cmu.tetrad.search.Fask((DataSet) dataSet, score.getScore(dataSet, parameters),
-                    test.getTest(dataSet, parameters));
+            search = new edu.cmu.tetrad.search.Fask((DataSet) dataSet, this.score.getScore(dataSet, parameters),
+                    this.test.getTest(dataSet, parameters));
 
             search.setDepth(parameters.getInt(DEPTH));
             search.setSkewEdgeThreshold(parameters.getDouble(SKEW_EDGE_THRESHOLD));
@@ -84,50 +82,50 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
             search.setDelta(parameters.getDouble(FASK_DELTA));
             search.setEmpirical(!parameters.getBoolean(FASK_NONEMPIRICAL));
 
-            if (externalGraph != null) {
-                search.setExternalGraph(externalGraph);
-            } else if (algorithm != null) {
-                search.setExternalGraph(algorithm.search(dataSet, parameters));
+            if (this.externalGraph != null) {
+                search.setExternalGraph(this.externalGraph);
+            } else if (this.algorithm != null) {
+                search.setExternalGraph(this.algorithm.search(dataSet, parameters));
             }
 
-            int lrRule = parameters.getInt(FASK_LEFT_RIGHT_RULE);
+            final int lrRule = parameters.getInt(FASK_LEFT_RIGHT_RULE);
 
             if (lrRule == 1) {
-                search.setLeftRight(LeftRight.FASK1);
+                search.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.FASK1);
             } else if (lrRule == 2) {
-                search.setLeftRight(LeftRight.FASK2);
+                search.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.FASK2);
             } else if (lrRule == 3) {
-                search.setLeftRight(LeftRight.RSKEW);
+                search.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.RSKEW);
             } else if (lrRule == 4) {
-                search.setLeftRight(LeftRight.SKEW);
+                search.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.SKEW);
             } else if (lrRule == 5) {
-                search.setLeftRight(LeftRight.TANH);
+                search.setLeftRight(edu.cmu.tetrad.search.Fask.LeftRight.TANH);
             } else {
                 throw new IllegalStateException("Unconfigured left right rule index: " + lrRule);
             }
 
-            int adjacencyMethod = parameters.getInt(FASK_ADJACENCY_METHOD);
+            final int adjacencyMethod = parameters.getInt(FASK_ADJACENCY_METHOD);
 
             if (adjacencyMethod == 1) {
-                search.setAdjacencyMethod(AdjacencyMethod.FAS_STABLE);
+                search.setAdjacencyMethod(edu.cmu.tetrad.search.Fask.AdjacencyMethod.FAS_STABLE);
             } else if (adjacencyMethod == 2) {
-                search.setAdjacencyMethod(AdjacencyMethod.FGES);
+                search.setAdjacencyMethod(edu.cmu.tetrad.search.Fask.AdjacencyMethod.FGES);
             } else if (adjacencyMethod == 3) {
-                search.setAdjacencyMethod(AdjacencyMethod.EXTERNAL_GRAPH);
+                search.setAdjacencyMethod(edu.cmu.tetrad.search.Fask.AdjacencyMethod.EXTERNAL_GRAPH);
             } else if (adjacencyMethod == 4) {
-                search.setAdjacencyMethod(AdjacencyMethod.NONE);
+                search.setAdjacencyMethod(edu.cmu.tetrad.search.Fask.AdjacencyMethod.NONE);
             } else {
                 throw new IllegalStateException("Unconfigured left right rule index: " + lrRule);
             }
 
-            search.setKnowledge(knowledge);
-            return this.getGraph(search);
+            search.setKnowledge(this.knowledge);
+            return getGraph(search);
         } else {
-            Fask fask = new Fask(test);
+            final Fask fask = new Fask(this.test);
 
-            DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, fask, parameters.getInt(NUMBER_RESAMPLING));
-            search.setKnowledge(knowledge);
+            final DataSet data = (DataSet) dataSet;
+            final GeneralResamplingTest search = new GeneralResamplingTest(data, fask, parameters.getInt(NUMBER_RESAMPLING));
+            search.setKnowledge(this.knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(RESAMPLING_WITH_REPLACEMENT));
@@ -153,16 +151,16 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     }
 
     @Override
-    public Graph getComparisonGraph(Graph graph) {
+    public Graph getComparisonGraph(final Graph graph) {
         return new EdgeListGraph(graph);
     }
 
     @Override
     public String getDescription() {
-        if (test != null) {
-            return "FASK using " + test.getDescription();
-        } else if (algorithm != null) {
-            return "FASK using " + algorithm.getDescription();
+        if (this.test != null) {
+            return "FASK using " + this.test.getDescription();
+        } else if (this.algorithm != null) {
+            return "FASK using " + this.algorithm.getDescription();
         } else {
             throw new IllegalStateException("Need to initialize with either a test or an algorithm.");
         }
@@ -175,10 +173,10 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
+        final List<String> parameters = new ArrayList<>();
 
-        if (algorithm != null) {
-            parameters.addAll(algorithm.getParameters());
+        if (this.algorithm != null) {
+            parameters.addAll(this.algorithm.getParameters());
         }
 
         parameters.add(DEPTH);
@@ -195,47 +193,47 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
 
     @Override
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(final IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
     @Override
-    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
-        test = independenceWrapper;
+    public void setIndependenceWrapper(final IndependenceWrapper independenceWrapper) {
+        this.test = independenceWrapper;
     }
 
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
-        return test;
+        return this.test;
     }
 
     @Override
     public Graph getExternalGraph() {
-        return externalGraph;
+        return this.externalGraph;
     }
 
     @Override
-    public void setExternalGraph(Graph externalGraph) {
+    public void setExternalGraph(final Graph externalGraph) {
         this.externalGraph = externalGraph;
     }
 
     @Override
-    public void setExternalGraph(Algorithm algorithm) {
+    public void setExternalGraph(final Algorithm algorithm) {
         this.algorithm = algorithm;
     }
 
 
     @Override
-    public void setScoreWrapper(ScoreWrapper score) {
+    public void setScoreWrapper(final ScoreWrapper score) {
         this.score = score;
     }
 
     @Override
     public ScoreWrapper getScoreWrapper() {
-        return score;
+        return this.score;
     }
 }

@@ -54,41 +54,41 @@ public class IndTestModel implements SessionModel {
     }
 
 
-    public IndTestModel(IndTestProducer[] producers, Parameters parameters) {
-        indTestProducers = new ArrayList<>();
+    public IndTestModel(final IndTestProducer[] producers, final Parameters parameters) {
+        this.indTestProducers = new ArrayList<>();
 
-        for (IndTestProducer producer : producers) {
-            indTestProducers.add(producer);
+        for (final IndTestProducer producer : producers) {
+            this.indTestProducers.add(producer);
         }
     }
 
     public List<IndTestProducer> getIndTestProducers() {
-        return indTestProducers;
+        return this.indTestProducers;
     }
 
     @Override
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
     @Override
     public String getName() {
-        return name;
+        return this.name;
     }
 
-    public void setVars(LinkedList<String> vars) {
+    public void setVars(final LinkedList<String> vars) {
         this.vars = vars;
     }
 
     public LinkedList<String> getVars() {
-        return vars;
+        return this.vars;
     }
 
     public List<List<IndependenceResult>> getResults() {
-        return results;
+        return this.results;
     }
 
-    public void setResults(List<List<IndependenceResult>> results) {
+    public void setResults(final List<List<IndependenceResult>> results) {
         this.results = results;
     }
 }

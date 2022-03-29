@@ -5,7 +5,7 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.Lofs2.Rule;
+import edu.cmu.tetrad.search.Lofs2;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -24,32 +24,32 @@ import java.util.List;
  */
 public class FasLofs implements Algorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
-    private final Rule rule;
+    private final Lofs2.Rule rule;
     private IKnowledge knowledge = new Knowledge2();
 
-    public FasLofs(Rule rule) {
+    public FasLofs(final Lofs2.Rule rule) {
         this.rule = rule;
     }
 
-    private Graph getGraph(edu.cmu.tetrad.search.FasLofs search) {
+    private Graph getGraph(final edu.cmu.tetrad.search.FasLofs search) {
         return search.search();
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(final DataModel dataSet, final Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            edu.cmu.tetrad.search.FasLofs search = new edu.cmu.tetrad.search.FasLofs((DataSet) dataSet, rule);
+            final edu.cmu.tetrad.search.FasLofs search = new edu.cmu.tetrad.search.FasLofs((DataSet) dataSet, this.rule);
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-            search.setKnowledge(knowledge);
-            return this.getGraph(search);
+            search.setKnowledge(this.knowledge);
+            return getGraph(search);
         } else {
-            FasLofs fasLofs = new FasLofs(rule);
+            final FasLofs fasLofs = new FasLofs(this.rule);
             //fasLofs.setKnowledge(knowledge);
 
-            DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, fasLofs, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(knowledge);
+            final DataSet data = (DataSet) dataSet;
+            final GeneralResamplingTest search = new GeneralResamplingTest(data, fasLofs, parameters.getInt(Params.NUMBER_RESAMPLING));
+            search.setKnowledge(this.knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -75,13 +75,13 @@ public class FasLofs implements Algorithm, HasKnowledge {
     }
 
     @Override
-    public Graph getComparisonGraph(Graph graph) {
+    public Graph getComparisonGraph(final Graph graph) {
         return new EdgeListGraph(graph);
     }
 
     @Override
     public String getDescription() {
-        return "FAS followed by " + rule;
+        return "FAS followed by " + this.rule;
     }
 
     @Override
@@ -91,7 +91,7 @@ public class FasLofs implements Algorithm, HasKnowledge {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
+        final List<String> parameters = new ArrayList<>();
         parameters.add(Params.DEPTH);
         parameters.add(Params.PENALTY_DISCOUNT);
 
@@ -102,11 +102,11 @@ public class FasLofs implements Algorithm, HasKnowledge {
 
     @Override
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(final IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 }

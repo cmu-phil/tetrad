@@ -36,21 +36,21 @@ public class TestOfIndependenceAnnotationsTest {
 
     @Test
     public void testAnnotatedNameAttributeForUniqueness() {
-        List<AnnotatedClass<TestOfIndependence>> indTests = TestOfIndependenceAnnotations.getInstance().getAnnotatedClasses();
-        List<String> values = indTests.stream().map(e -> e.getAnnotation().name().toLowerCase()).collect(Collectors.toList());
+        final List<AnnotatedClass<TestOfIndependence>> indTests = TestOfIndependenceAnnotations.getInstance().getAnnotatedClasses();
+        final List<String> values = indTests.stream().map(e -> e.getAnnotation().name().toLowerCase()).collect(Collectors.toList());
 
-        long actual = values.size();
-        long expected = values.stream().distinct().count();
+        final long actual = values.size();
+        final long expected = values.stream().distinct().count();
         Assert.assertEquals("Annotation attribute 'name' is not unique.", expected, actual);
     }
 
     @Test
     public void testAnnotatedCommandAttributeForUniqueness() {
-        List<AnnotatedClass<TestOfIndependence>> indTests = TestOfIndependenceAnnotations.getInstance().getAnnotatedClasses();
-        List<String> values = indTests.stream().map(e -> e.getAnnotation().name().toLowerCase()).collect(Collectors.toList());
+        final List<AnnotatedClass<TestOfIndependence>> indTests = TestOfIndependenceAnnotations.getInstance().getAnnotatedClasses();
+        final List<String> values = indTests.stream().map(e -> e.getAnnotation().name().toLowerCase()).collect(Collectors.toList());
 
-        long actual = values.size();
-        long expected = values.stream().distinct().count();
+        final long actual = values.size();
+        final long expected = values.stream().distinct().count();
         Assert.assertEquals("Annotation attribute 'command' is not unique.", expected, actual);
     }
 

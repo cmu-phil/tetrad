@@ -43,23 +43,23 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     public Gfci() {
     }
 
-    public Gfci(IndependenceWrapper test, ScoreWrapper score) {
+    public Gfci(final IndependenceWrapper test, final ScoreWrapper score) {
         this.test = test;
         this.score = score;
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(final DataModel dataSet, final Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            GFci search = new GFci(test.getTest(dataSet, parameters), score.getScore(dataSet, parameters));
+            final GFci search = new GFci(this.test.getTest(dataSet, parameters), this.score.getScore(dataSet, parameters));
             search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
-            search.setKnowledge(knowledge);
+            search.setKnowledge(this.knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setFaithfulnessAssumed(parameters.getBoolean(Params.FAITHFULNESS_ASSUMED));
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
 
-            Object obj = parameters.get(Params.PRINT_STREAM);
+            final Object obj = parameters.get(Params.PRINT_STREAM);
 
             if (obj instanceof PrintStream) {
                 search.setOut((PrintStream) obj);
@@ -67,15 +67,15 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
 
             return search.search();
         } else {
-            Gfci algorithm = new Gfci(test, score);
+            final Gfci algorithm = new Gfci(this.test, this.score);
 
             //algorithm.setKnowledge(knowledge);
 //          if (externalGraph != null) {
 //      		algorithm.setExternalGraph(externalGraph);
 //  		}
-            DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(knowledge);
+            final DataSet data = (DataSet) dataSet;
+            final GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
+            search.setKnowledge(this.knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -101,24 +101,24 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     }
 
     @Override
-    public Graph getComparisonGraph(Graph graph) {
+    public Graph getComparisonGraph(final Graph graph) {
         return new DagToPag2(graph).convert();
     }
 
     @Override
     public String getDescription() {
-        return "GFCI (Greedy Fast Causal Inference) using " + test.getDescription()
-                + " and " + score.getDescription();
+        return "GFCI (Greedy Fast Causal Inference) using " + this.test.getDescription()
+                + " and " + this.score.getDescription();
     }
 
     @Override
     public DataType getDataType() {
-        return test.getDataType();
+        return this.test.getDataType();
     }
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
+        final List<String> parameters = new ArrayList<>();
 
         parameters.add(Params.FAITHFULNESS_ASSUMED);
         parameters.add(Params.MAX_DEGREE);
@@ -132,32 +132,32 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
 
     @Override
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(final IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
     @Override
-    public void setScoreWrapper(ScoreWrapper score) {
+    public void setScoreWrapper(final ScoreWrapper score) {
         this.score = score;
     }
 
     @Override
     public ScoreWrapper getScoreWrapper() {
-        return score;
+        return this.score;
     }
 
     @Override
-    public void setIndependenceWrapper(IndependenceWrapper test) {
+    public void setIndependenceWrapper(final IndependenceWrapper test) {
         this.test = test;
     }
 
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
-        return test;
+        return this.test;
     }
 
 }

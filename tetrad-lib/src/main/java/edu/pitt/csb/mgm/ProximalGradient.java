@@ -56,7 +56,7 @@ public class ProximalGradient {
      * @param alpha        (0,1) factor to decrease L otherwise, L = L_old*alpha
      * @param edgeConverge
      */
-    public ProximalGradient(double beta, double alpha, boolean edgeConverge) {
+    public ProximalGradient(final double beta, final double alpha, final boolean edgeConverge) {
         if (beta <= 0 || beta >= 1)
             throw new IllegalArgumentException("beta must be (0,1): " + beta);
 
@@ -72,9 +72,9 @@ public class ProximalGradient {
      * Constructor using defaults from Becker et al 2011. beta = .5, alpha = .9
      */
     public ProximalGradient() {
-        beta = .5;
-        alpha = .9;
-        edgeConverge = false;
+        this.beta = .5;
+        this.alpha = .9;
+        this.edgeConverge = false;
     }
 
     /**
@@ -82,18 +82,18 @@ public class ProximalGradient {
      * Negative edge change tolerance means convergence happens when number of difference edges <= |edge change tol|.
      * Default is 3.
      */
-    public void setEdgeChangeTol(int t) {
-        noEdgeChangeTol = t;
+    public void setEdgeChangeTol(final int t) {
+        this.noEdgeChangeTol = t;
     }
 
 
     //run FISTA with step size backtracking attempt to speed up
-    public DoubleMatrix1D learnBackTrack(ConvexProximal cp, DoubleMatrix1D Xin, double epsilon, int iterLimit) {
-        DoubleMatrix1D X = cp.proximalOperator(1.0, Xin.copy());
-        DoubleMatrix1D Y = X.copy();
-        DoubleMatrix1D Z = X.copy();
-        DoubleMatrix1D GrY = cp.smoothGradient(Y);
-        DoubleMatrix1D GrX = cp.smoothGradient(X);
+    public DoubleMatrix1D learnBackTrack(final ConvexProximal cp, final DoubleMatrix1D Xin, final double epsilon, final int iterLimit) {
+        final DoubleMatrix1D X = cp.proximalOperator(1.0, Xin.copy());
+        final DoubleMatrix1D Y = X.copy();
+        final DoubleMatrix1D Z = X.copy();
+        final DoubleMatrix1D GrY = cp.smoothGradient(Y);
+        final DoubleMatrix1D GrX = cp.smoothGradient(X);
 
         int iterCount = 0;
         int noEdgeChangeCount = 0;
@@ -113,9 +113,9 @@ public class ProximalGradient {
 
         while (true) {
             Lold = L;
-            L = L * alpha;
+            L = L * this.alpha;
             thetaOld = theta;
-            DoubleMatrix1D Xold = X.copy();
+            final DoubleMatrix1D Xold = X.copy();
             obj = Fx + Gx;
 
             while (true) {
@@ -127,7 +127,7 @@ public class ProximalGradient {
 
 
                 Fy = cp.smooth(Y, GrY);
-                DoubleMatrix1D temp = Y.copy().assign(GrY.copy().assign(Functions.mult(1.0 / L)), Functions.minus);
+                final DoubleMatrix1D temp = Y.copy().assign(GrY.copy().assign(Functions.mult(1.0 / L)), Functions.minus);
                 Gx = cp.nonSmooth(1.0 / L, temp, X);
 
                 if (backtrackSwitch) {
@@ -138,19 +138,19 @@ public class ProximalGradient {
                     //GrX.assign(factory1D.make(tempPar.toVector()[0]));
                 }
 
-                DoubleMatrix1D XmY = X.copy().assign(Y, Functions.minus);
-                double normXY = alg.norm2(XmY);
+                final DoubleMatrix1D XmY = X.copy().assign(Y, Functions.minus);
+                final double normXY = this.alg.norm2(XmY);
                 if (normXY == 0)
                     break;
 
-                double Qx;
+                final double Qx;
                 double LocalL;
 
                 if (backtrackSwitch) {
                     //System.out.println("Back Norm");
-                    Qx = Fy + alg.mult(XmY, GrY) + (L / 2.0) * normXY;
+                    Qx = Fy + this.alg.mult(XmY, GrY) + (L / 2.0) * normXY;
                     LocalL = L + 2 * Math.max(Fx - Qx, 0) / normXY;
-                    backtrackSwitch = Math.abs(Fy - Fx) >= backtrackTol * Math.max(Math.abs(Fx), Math.abs(Fy));
+                    backtrackSwitch = Math.abs(Fy - Fx) >= this.backtrackTol * Math.max(Math.abs(Fx), Math.abs(Fy));
                 } else {
                     //System.out.println("Close Rule");
 
@@ -159,7 +159,7 @@ public class ProximalGradient {
                     //GrX = factory1D.make(gradient(Xpar).toVector()[0]);
                     //Fx = alg.mult(YmX, Gx.assign(G, Functions.minus));
                     //Qx = (L / 2.0) * alg.norm2(YmX);
-                    LocalL = 2 * alg.mult(XmY, GrX.assign(GrY, Functions.minus)) / normXY;
+                    LocalL = 2 * this.alg.mult(XmY, GrX.assign(GrY, Functions.minus)) / normXY;
 
                 }
                 //System.out.println("Iter: " + iterCount + " Fx: " + Fx + " Qx: " + Qx + " L : " + L );
@@ -174,14 +174,14 @@ public class ProximalGradient {
                     LocalL = L;
                 }
 
-                L = Math.max(LocalL, L / beta);
+                L = Math.max(LocalL, L / this.beta);
 
             }
 
             int diffEdges = 0;
             for (int i = 0; i < X.size(); i++) {
-                double a = X.get(i);
-                double b = Xold.get(i);
+                final double a = X.get(i);
+                final double b = Xold.get(i);
                 if (a != 0 & b == 0) {
                     diffEdges++;
                 } else if (a == 0 & b != 0) {
@@ -189,21 +189,21 @@ public class ProximalGradient {
                 }
             }
 
-            dx = norm2(X.copy().assign(Xold, Functions.minus)) / Math.max(1, norm2(X));
+            dx = ProximalGradient.norm2(X.copy().assign(Xold, Functions.minus)) / Math.max(1, ProximalGradient.norm2(X));
 
             //sometimes there are more edge changes after initial 0, so may want to do two zeros in a row...
-            if (diffEdges == 0 && edgeConverge) {
+            if (diffEdges == 0 && this.edgeConverge) {
                 noEdgeChangeCount++;
-                if (noEdgeChangeCount >= noEdgeChangeTol) {
+                if (noEdgeChangeCount >= this.noEdgeChangeTol) {
                     System.out.println("Edges converged at iter: " + iterCount + " with |dx|/|x|: " + dx);
-                    System.out.println("Iter: " + iterCount + " |dx|/|x|: " + dx + " normX: " + norm2(X) + " nll: " +
+                    System.out.println("Iter: " + iterCount + " |dx|/|x|: " + dx + " normX: " + ProximalGradient.norm2(X) + " nll: " +
                             Fx + " reg: " + Gx + " DiffEdges: " + 0 + " L: " + L);
                     break;
                 }
                 // negative noEdgeChangeTol stops when diffEdges <= |noEdgeChangeTol|
-            } else if (noEdgeChangeTol < 0 && diffEdges <= Math.abs(noEdgeChangeTol)) {
+            } else if (this.noEdgeChangeTol < 0 && diffEdges <= Math.abs(this.noEdgeChangeTol)) {
                 System.out.println("Edges converged at iter: " + iterCount + " with |dx|/|x|: " + dx);
-                System.out.println("Iter: " + iterCount + " |dx|/|x|: " + dx + " normX: " + norm2(X) + " nll: " +
+                System.out.println("Iter: " + iterCount + " |dx|/|x|: " + dx + " normX: " + ProximalGradient.norm2(X) + " nll: " +
                         Fx + " reg: " + Gx + " DiffEdges: " + diffEdges + " L: " + L);
                 break;
             } else {
@@ -211,9 +211,9 @@ public class ProximalGradient {
             }
 
             //edge converge should happen before params converge, unless epsilon is big
-            if (dx < epsilon && !edgeConverge) {
+            if (dx < epsilon && !this.edgeConverge) {
                 System.out.println("Converged at iter: " + iterCount + " with |dx|/|x|: " + dx + " < epsilon: " + epsilon);
-                System.out.println("Iter: " + iterCount + " |dx|/|x|: " + dx + " normX: " + norm2(X) + " nll: " +
+                System.out.println("Iter: " + iterCount + " |dx|/|x|: " + dx + " normX: " + ProximalGradient.norm2(X) + " nll: " +
                         Fx + " reg: " + Gx + " DiffEdges: " + diffEdges + " L: " + L);
                 break;
             }
@@ -234,8 +234,8 @@ public class ProximalGradient {
             }
 
 
-            if (iterCount % printIter == 0) {
-                System.out.println("Iter: " + iterCount + " |dx|/|x|: " + dx + " normX: " + norm2(X) + " nll: " +
+            if (iterCount % this.printIter == 0) {
+                System.out.println("Iter: " + iterCount + " |dx|/|x|: " + dx + " normX: " + ProximalGradient.norm2(X) + " nll: " +
                         Fx + " reg: " + Gx + " DiffEdges: " + diffEdges + " L: " + L);
                 //System.out.println("Iter: " + iterCount + " |dx|/|x|: " + dx + " nll: " + negLogLikelihood(params) + " reg: " + regTerm(params));
             }
@@ -251,7 +251,7 @@ public class ProximalGradient {
         return X;
     }
 
-    public static double norm2(DoubleMatrix1D vec) {
+    public static double norm2(final DoubleMatrix1D vec) {
         //return Math.sqrt(vec.copy().assign(Functions.pow(2)).zSum());
         return Math.sqrt(new Algebra().norm2(vec));
     }

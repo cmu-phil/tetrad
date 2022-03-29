@@ -69,17 +69,17 @@ public final class ContinuousDiscretizationSpec implements TetradSerializable, D
 
     //============================CONSTRUCTORS==========================//
 
-    public ContinuousDiscretizationSpec(double[] breakpoints, List<String> categories) {
-        this(breakpoints, categories, EVENLY_DISTRIBUTED_INTERVALS);
+    public ContinuousDiscretizationSpec(final double[] breakpoints, final List<String> categories) {
+        this(breakpoints, categories, ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_INTERVALS);
     }
 
 
-    @SuppressWarnings({"SameParameterValue"})
-    public ContinuousDiscretizationSpec(double[] breakpoints, List<String> categories, int method) {
+    @SuppressWarnings("SameParameterValue")
+    public ContinuousDiscretizationSpec(final double[] breakpoints, final List<String> categories, final int method) {
         if (breakpoints == null) {
             throw new NullPointerException();
         }
-        if (method != EVENLY_DISTRIBUTED_VALUES && method != EVENLY_DISTRIBUTED_INTERVALS && method != NONE) {
+        if (method != ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_VALUES && method != ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_INTERVALS && method != ContinuousDiscretizationSpec.NONE) {
             throw new IllegalArgumentException();
         }
         this.breakpoints = breakpoints;
@@ -91,7 +91,7 @@ public final class ContinuousDiscretizationSpec implements TetradSerializable, D
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
-    @SuppressWarnings({"ZeroLengthArrayAllocation"})
+    @SuppressWarnings("ZeroLengthArrayAllocation")
     public static DiscretizationSpec serializableInstance() {
         return new ContinuousDiscretizationSpec(new double[0], new ArrayList<String>());
     }
@@ -100,22 +100,22 @@ public final class ContinuousDiscretizationSpec implements TetradSerializable, D
 
 
     public int getMethod() {
-        return method;
+        return this.method;
     }
 
-    public void setMethod(int method) {
-        if (method != EVENLY_DISTRIBUTED_VALUES && method != EVENLY_DISTRIBUTED_INTERVALS && method != NONE) {
+    public void setMethod(final int method) {
+        if (method != ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_VALUES && method != ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_INTERVALS && method != ContinuousDiscretizationSpec.NONE) {
             throw new IllegalArgumentException();
         }
         this.method = method;
     }
 
     public List<String> getCategories() {
-        return categories;
+        return this.categories;
     }
 
     public double[] getBreakpoints() {
-        return breakpoints;
+        return this.breakpoints;
     }
 
     /**
@@ -131,20 +131,20 @@ public final class ContinuousDiscretizationSpec implements TetradSerializable, D
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (breakpoints == null) {
+        if (this.breakpoints == null) {
             throw new NullPointerException();
         }
 
-        if (categories == null) {
+        if (this.categories == null) {
             throw new NullPointerException();
         }
 
-        if (method != EVENLY_DISTRIBUTED_VALUES && method != EVENLY_DISTRIBUTED_INTERVALS) {
-            method = EVENLY_DISTRIBUTED_INTERVALS;
+        if (this.method != ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_VALUES && this.method != ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_INTERVALS) {
+            this.method = ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_INTERVALS;
         }
     }
 }

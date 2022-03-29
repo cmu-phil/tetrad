@@ -65,24 +65,24 @@ public final class CombinationGenerator {
      *             be >= 0.
      * @throws NullPointerException if dims is null.
      */
-    public CombinationGenerator(int[] dims) {
+    public CombinationGenerator(final int[] dims) {
         this.dims = dims;
-        local = new int[dims.length];
-        returned = new int[dims.length];
+        this.local = new int[dims.length];
+        this.returned = new int[dims.length];
 
         // Initialize the combination array with successive integers [0 1 2 ...].
         // Set the value at the last index one less than it would be in such
         // a series, ([0 1 2 ... b - 2]) so that on the first call to next()
         // the first combination ([0 1 2 ... b - 1]) is returned correctly.
         for (int i = 0; i < dims.length - 1; i++) {
-            local[i] = 0;
+            this.local[i] = 0;
         }
 
-        if (local.length > 0) {
-            local[local.length - 1] = -1;
+        if (this.local.length > 0) {
+            this.local[this.local.length - 1] = -1;
         }
 
-        begun = false;
+        this.begun = false;
     }
 
     /**
@@ -90,26 +90,26 @@ public final class CombinationGenerator {
      * finished.
      */
     public int[] next() {
-        int i = this.getNumObjects();
+        int i = getNumObjects();
 
         // Scan from the right for the first index whose value is less than
         // its expected maximum (i + diff) and perform the fill() operation
         // at that index.
         while (--i > -1) {
-            if (local[i] < dims[i] - 1) {
-                this.fill(i);
-                begun = true;
-                System.arraycopy(local, 0, returned, 0, this.getNumObjects());
-                return returned;
+            if (this.local[i] < this.dims[i] - 1) {
+                fill(i);
+                this.begun = true;
+                System.arraycopy(this.local, 0, this.returned, 0, getNumObjects());
+                return this.returned;
             }
         }
 
-        if (begun) {
+        if (this.begun) {
             return null;
         } else {
-            begun = true;
-            System.arraycopy(local, 0, returned, 0, this.getNumObjects());
-            return returned;
+            this.begun = true;
+            System.arraycopy(this.local, 0, this.returned, 0, getNumObjects());
+            return this.returned;
         }
     }
 
@@ -120,8 +120,8 @@ public final class CombinationGenerator {
      * @param dims An int array consisting of the number of dimensions for each
      *             variable, in order.
      */
-    public static void testPrint(int[] dims) {
-        CombinationGenerator cg = new CombinationGenerator(dims);
+    public static void testPrint(final int[] dims) {
+        final CombinationGenerator cg = new CombinationGenerator(dims);
         int[] choice;
 
         System.out.println();
@@ -141,7 +141,7 @@ public final class CombinationGenerator {
             if (choice.length == 0) {
                 System.out.println("zero-length array");
             } else {
-                for (int aChoice : choice) {
+                for (final int aChoice : choice) {
                     System.out.print(aChoice + "\t");
                 }
 
@@ -156,7 +156,7 @@ public final class CombinationGenerator {
      * @return Ibid.
      */
     private int getNumObjects() {
-        return local.length;
+        return this.local.length;
     }
 
     /**
@@ -165,11 +165,11 @@ public final class CombinationGenerator {
      *
      * @param index the index to begin this incrementing operation.
      */
-    private void fill(int index) {
-        local[index]++;
+    private void fill(final int index) {
+        this.local[index]++;
 
-        for (int i = index + 1; i < this.getNumObjects(); i++) {
-            local[i] = 0;
+        for (int i = index + 1; i < getNumObjects(); i++) {
+            this.local[i] = 0;
         }
     }
 }

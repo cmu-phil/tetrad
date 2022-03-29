@@ -25,7 +25,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.Ling.StoredGraphs;
+import edu.cmu.tetrad.search.Ling;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.workbench.DisplayEdge;
 import edu.cmu.tetradapp.workbench.DisplayNode;
@@ -48,12 +48,12 @@ import java.util.List;
 public class LingDisplay extends JPanel implements GraphEditable {
     private final GraphWorkbench workbench;
     private final JComboBox subsetCombo;
-    private StoredGraphs storedGraphs;
+    private Ling.StoredGraphs storedGraphs;
     private final List<Integer> subsetIndices;
     private final JSpinner spinner;
     private final JLabel totalLabel;
 
-    public LingDisplay(StoredGraphs storedGraphs) {
+    public LingDisplay(Ling.StoredGraphs storedGraphs) {
         this.storedGraphs = storedGraphs;
 
         if (storedGraphs.getNumGraphs() == 0) {
@@ -188,12 +188,12 @@ public class LingDisplay extends JPanel implements GraphEditable {
         }
     }
 
-    public void resetGraphs(StoredGraphs storedGraphs) {
+    public void resetGraphs(Ling.StoredGraphs storedGraphs) {
         this.storedGraphs = storedGraphs;
         this.resetDisplay();
     }
 
-    private List<Integer> getAllIndices(StoredGraphs storedGraphs) {
+    private List<Integer> getAllIndices(Ling.StoredGraphs storedGraphs) {
         List<Integer> indices = new ArrayList<>();
 
         for (int i = 0; i < storedGraphs.getNumGraphs(); i++) {
@@ -203,7 +203,7 @@ public class LingDisplay extends JPanel implements GraphEditable {
         return indices;
     }
 
-    private List<Integer> getStableIndices(StoredGraphs storedGraphs) {
+    private List<Integer> getStableIndices(Ling.StoredGraphs storedGraphs) {
         List<Integer> indices = new ArrayList<>();
 
         for (int i = 0; i < storedGraphs.getNumGraphs(); i++) {
@@ -215,7 +215,7 @@ public class LingDisplay extends JPanel implements GraphEditable {
         return indices;
     }
 
-    private List<Integer> getUnstableIndices(StoredGraphs storedGraphs) {
+    private List<Integer> getUnstableIndices(Ling.StoredGraphs storedGraphs) {
         List<Integer> indices = new ArrayList<>();
 
         for (int i = 0; i < storedGraphs.getNumGraphs(); i++) {
@@ -293,8 +293,8 @@ public class LingDisplay extends JPanel implements GraphEditable {
 //
 //        return menuBar;
 //    }
-    private StoredGraphs getStoredGraphs() {
-        return storedGraphs;
+    private Ling.StoredGraphs getStoredGraphs() {
+        return this.storedGraphs;
     }
 }
 

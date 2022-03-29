@@ -35,11 +35,11 @@ public class TestMatrix {
 
     @Test
     public void test1() {
-        Matrix x = new Matrix(4, 0);
+        final Matrix x = new Matrix(4, 0);
 
-        Matrix xT = x.transpose();
-        Matrix xTx = xT.times(x);
-        Matrix xTxInv = xTx.inverse();
+        final Matrix xT = x.transpose();
+        final Matrix xTx = xT.times(x);
+        final Matrix xTxInv = xTx.inverse();
 
         assertEquals(0, xTx.trace(), 0.01);
         assertEquals(0, xTxInv.trace(), 0.01);

@@ -47,14 +47,14 @@ public class TestMatrixUtils {
 
     @Test
     public void testEquals() {
-        double[][] m1 = {{1.0, 2.0, 3.0}};
+        final double[][] m1 = {{1.0, 2.0, 3.0}};
 
-        double[][] m2 = {{6.0, 7.0}, {8.0, 9.0}};
+        final double[][] m2 = {{6.0, 7.0}, {8.0, 9.0}};
 
-        double[][] m3 = {{6.0, 7.0, 12.0, 14.0, 18.0, 21.0},
+        final double[][] m3 = {{6.0, 7.0, 12.0, 14.0, 18.0, 21.0},
                 {8.0, 9.0, 16.0, 18.0, 24.0, 27.0}};
 
-        double[][] m4 = {{6.0, 7.0, 12.0, 14.0, 18.0, 21.0},
+        final double[][] m4 = {{6.0, 7.0, 12.0, 14.0, 18.0, 21.0},
                 {8.0, 9.0, 16.0, 18.0, 24.05, 27.0}};
 
         assertTrue(!MatrixUtils.equals(m1, m2));
@@ -64,60 +64,60 @@ public class TestMatrixUtils {
 
     @Test
     public void testSum() {
-        double[][] m1 = {{6.0, 7.0, 12.0, 14.0, 18.0, 21.0},
+        final double[][] m1 = {{6.0, 7.0, 12.0, 14.0, 18.0, 21.0},
                 {8.0, 9.0, 16.0, 18.0, 24.0, 27.0},};
 
-        double[][] m2 = {{3.0, 7.0, 12.0, 14.0, 18.0, 21.0},
+        final double[][] m2 = {{3.0, 7.0, 12.0, 14.0, 18.0, 21.0},
                 {8.0, 9.0, 16.0, 18.0, 24.05, 27.0},};
 
-        double[][] m3 = MatrixUtils.sum(m1, m2);
+        final double[][] m3 = MatrixUtils.sum(m1, m2);
 
         assertEquals(32., m3[1][2], .01);
     }
 
     @Test
     public void testDeterminant() {
-        double[][] m3 = {{6.0, 7.0}, {8.0, 9.0},};
+        final double[][] m3 = {{6.0, 7.0}, {8.0, 9.0},};
 
-        double determinant = MatrixUtils.determinant(m3);
+        final double determinant = MatrixUtils.determinant(m3);
         assertEquals(-2.0, determinant, 0.01);
     }
 
     @Test
     public void testDirectProduct() {
-        double[][] m1 = {{1.0, 2.0, 3.0}, {1.0, 2.0, 3.0}};
+        final double[][] m1 = {{1.0, 2.0, 3.0}, {1.0, 2.0, 3.0}};
 
-        double[][] m2 = {{6.0, 7.0}, {8.0, 9.0}};
+        final double[][] m2 = {{6.0, 7.0}, {8.0, 9.0}};
 
-        double[][] result = {{6.0, 7.0, 12.0, 14.0, 18.0, 21.0},
+        final double[][] result = {{6.0, 7.0, 12.0, 14.0, 18.0, 21.0},
                 {8.0, 9.0, 16.0, 18.0, 24.0, 27.0},
                 {6.0, 7.0, 12.0, 14.0, 18.0, 21.0},
                 {8.0, 9.0, 16.0, 18.0, 24.0, 27.0}};
 
-        double[][] product = MatrixUtils.directProduct(m1, m2);
+        final double[][] product = MatrixUtils.directProduct(m1, m2);
         assertTrue(MatrixUtils.equals(product, result));
     }
 
     @Test
     public void testConcatenate() {
-        double[][] m1 = {{6.0, 7.0, 12.0, 14.0}, {8.0, 9.0, 16.0, 18.0}};
+        final double[][] m1 = {{6.0, 7.0, 12.0, 14.0}, {8.0, 9.0, 16.0, 18.0}};
 
-        double[] result = {6.0, 7.0, 12.0, 14.0, 8.0, 9.0, 16.0, 18.0};
+        final double[] result = {6.0, 7.0, 12.0, 14.0, 8.0, 9.0, 16.0, 18.0};
 
-        double[] concat = MatrixUtils.concatenate(m1);
+        final double[] concat = MatrixUtils.concatenate(m1);
         assertTrue(MatrixUtils.equals(concat, result));
     }
 
     @Test
     public void testProduct() {
-        double[][] m1 = {{6.0, 7.0, 12.0, 14.0}, {8.0, 9.0, 16.0, 18.0}};
+        final double[][] m1 = {{6.0, 7.0, 12.0, 14.0}, {8.0, 9.0, 16.0, 18.0}};
 
-        double[][] m2 = {{6.0, 7.0, 12.0}, {8.0, 9.0, 16.0}, {3.0, -2.0, 4.0},
+        final double[][] m2 = {{6.0, 7.0, 12.0}, {8.0, 9.0, 16.0}, {3.0, -2.0, 4.0},
                 {1.0, -4.0, 5.0}};
 
-        double[][] result = {{142.0, 25.0, 302.0}, {186.0, 33.0, 394.0}};
+        final double[][] result = {{142.0, 25.0, 302.0}, {186.0, 33.0, 394.0}};
 
-        double[][] product = MatrixUtils.product(m1, m2);
+        final double[][] product = MatrixUtils.product(m1, m2);
         assertTrue(MatrixUtils.equals(product, result));
     }
 
@@ -135,36 +135,36 @@ public class TestMatrixUtils {
      */
     @Test
     public void testVechToVecLeft() {
-        double[][] n = {{6.0, 8.0, 6.0, 8.0}, {8.0, 9.0, 7.0, 9.0},
+        final double[][] n = {{6.0, 8.0, 6.0, 8.0}, {8.0, 9.0, 7.0, 9.0},
                 {6.0, 7.0, 12.0, 16.0}, {8.0, 9.0, 16.0, 18.0}};
 
-        double[][] n1 = MatrixUtils.vec(n);
-        double[][] n2 = MatrixUtils.vech(n);
-        double[][] n3 = MatrixUtils.vechToVecLeft(4);
-        double[][] n4 = MatrixUtils.product(n3, n2);
+        final double[][] n1 = MatrixUtils.vec(n);
+        final double[][] n2 = MatrixUtils.vech(n);
+        final double[][] n3 = MatrixUtils.vechToVecLeft(4);
+        final double[][] n4 = MatrixUtils.product(n3, n2);
         assertTrue(MatrixUtils.equals(n4, n1));
     }
 
     @Test
     public void testImpiedCovar() {
-        List<Node> nodes = new ArrayList<>();
+        final List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < 10; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 10, 30, 15, 15, false));
-        SemPm pm = new SemPm(graph);
-        SemIm im = new SemIm(pm);
+        final Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 10, 30, 15, 15, false));
+        final SemPm pm = new SemPm(graph);
+        final SemIm im = new SemIm(pm);
 
-        Matrix err = im.getErrCovar();
-        Matrix coef = im.getEdgeCoef();
+        final Matrix err = im.getErrCovar();
+        final Matrix coef = im.getEdgeCoef();
 
-        Matrix implied = MatrixUtils.impliedCovar(coef, err);
+        final Matrix implied = MatrixUtils.impliedCovar(coef, err);
 
         assertTrue(MatrixUtils.isPositiveDefinite(implied));
 
-        Matrix corr = MatrixUtils.convertCovToCorr(new Matrix(implied));
+        final Matrix corr = MatrixUtils.convertCovToCorr(new Matrix(implied));
 
         assertTrue(MatrixUtils.isPositiveDefinite(corr));
     }

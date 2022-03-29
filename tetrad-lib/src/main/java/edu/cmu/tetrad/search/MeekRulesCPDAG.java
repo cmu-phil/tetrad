@@ -68,51 +68,51 @@ public class MeekRulesCPDAG implements ImpliedOrientation {
     //======================== Public Methods ========================//
 
 
-    public Set<Node> orientImplied(Graph graph) {
-        this.orientUsingMeekRulesLocally(IKnowledge, graph);
+    public Set<Node> orientImplied(final Graph graph) {
+        orientUsingMeekRulesLocally(this.IKnowledge, graph);
         return null;
     }
 
-    public void setKnowledge(IKnowledge IKnowledge) {
+    public void setKnowledge(final IKnowledge IKnowledge) {
         this.IKnowledge = IKnowledge;
     }
 
     //============================== Private Methods ===================================//
 
-    public void orientUsingMeekRulesLocally(IKnowledge IKnowledge, Graph graph) {
+    public void orientUsingMeekRulesLocally(final IKnowledge IKnowledge, final Graph graph) {
 
-        logger.log("info", "Starting Orientation Step D.");
+        this.logger.log("info", "Starting Orientation Step D.");
 
         boolean changed;
 
         do {
-            changed = this.meekR2(graph, IKnowledge) ||
-                    this.meekR1Locally(graph, IKnowledge) || this.meekR3(graph, IKnowledge) ||
-                    this.meekR4(graph, IKnowledge);
+            changed = meekR2(graph, IKnowledge) ||
+                    meekR1Locally(graph, IKnowledge) || meekR3(graph, IKnowledge) ||
+                    meekR4(graph, IKnowledge);
         } while (changed);
 
 
-        logger.log("info", "Finishing Orientation Step D.");
+        this.logger.log("info", "Finishing Orientation Step D.");
     }
 
-    public boolean meekR1Locally(Graph graph, IKnowledge IKnowledge) {
-        List<Node> nodes = graph.getNodes();
+    public boolean meekR1Locally(final Graph graph, final IKnowledge IKnowledge) {
+        final List<Node> nodes = graph.getNodes();
         boolean changed = false;
 
-        for (Node a : nodes) {
-            List<Node> adjacentNodes = graph.getAdjacentNodes(a);
+        for (final Node a : nodes) {
+            final List<Node> adjacentNodes = graph.getAdjacentNodes(a);
 
             if (adjacentNodes.size() < 2) {
                 continue;
             }
 
-            ChoiceGenerator cg =
+            final ChoiceGenerator cg =
                     new ChoiceGenerator(adjacentNodes.size(), 2);
             int[] combination;
 
             while ((combination = cg.next()) != null) {
-                Node b = adjacentNodes.get(combination[0]);
-                Node c = adjacentNodes.get(combination[1]);
+                final Node b = adjacentNodes.get(combination[0]);
+                final Node c = adjacentNodes.get(combination[1]);
 
                 // Skip triples that are shielded.
                 if (graph.isAdjacentTo(b, c)) {
@@ -121,33 +121,33 @@ public class MeekRulesCPDAG implements ImpliedOrientation {
 
                 if (graph.getEndpoint(b, a) == Endpoint.ARROW &&
                         graph.isUndirectedFromTo(a, c)) {
-                    if (!isUnshieldedNoncollider(b, a, c, graph)) {
+                    if (!MeekRulesCPDAG.isUnshieldedNoncollider(b, a, c, graph)) {
                         continue;
                     }
 
-                    if (isArrowpointAllowed(a, c, IKnowledge) && !this.createsCycle(a, c, graph)) {
+                    if (MeekRulesCPDAG.isArrowpointAllowed(a, c, IKnowledge) && !createsCycle(a, c, graph)) {
                         graph.setEndpoint(a, c, Endpoint.ARROW);
 
-                        logger.log("impliedOrientation", SearchLogUtils.edgeOrientedMsg(
+                        this.logger.log("impliedOrientation", SearchLogUtils.edgeOrientedMsg(
                                 "Meek R1 triangle (" + b + "-->" + a + "---" + c + ")", graph.getEdge(a, c)));
                         changed = true;
 
-                        this.meekR2(graph, IKnowledge);
+                        meekR2(graph, IKnowledge);
                     }
                 } else if (graph.getEndpoint(c, a) == Endpoint.ARROW &&
                         graph.isUndirectedFromTo(a, b)) {
-                    if (!isUnshieldedNoncollider(b, a, c, graph)) {
+                    if (!MeekRulesCPDAG.isUnshieldedNoncollider(b, a, c, graph)) {
                         continue;
                     }
 
-                    if (isArrowpointAllowed(a, b, IKnowledge) && !this.createsCycle(a, b, graph)) {
+                    if (MeekRulesCPDAG.isArrowpointAllowed(a, b, IKnowledge) && !createsCycle(a, b, graph)) {
                         graph.setEndpoint(a, b, Endpoint.ARROW);
 
-                        logger.log("impliedOrientation", SearchLogUtils.edgeOrientedMsg(
+                        this.logger.log("impliedOrientation", SearchLogUtils.edgeOrientedMsg(
                                 "Meek R1 triangle (" + c + "-->" + a + "---" + b + ")", graph.getEdge(a, b)));
                         changed = true;
 
-                        this.meekR2(graph, IKnowledge);
+                        meekR2(graph, IKnowledge);
                     }
                 }
             }
@@ -156,39 +156,39 @@ public class MeekRulesCPDAG implements ImpliedOrientation {
         return changed;
     }
 
-    public boolean meekR2(Graph graph, IKnowledge IKnowledge) {
-        List<Node> nodes = graph.getNodes();
+    public boolean meekR2(final Graph graph, final IKnowledge IKnowledge) {
+        final List<Node> nodes = graph.getNodes();
         final boolean changed = false;
 
-        for (Node a : nodes) {
-            List<Node> adjacentNodes = graph.getAdjacentNodes(a);
+        for (final Node a : nodes) {
+            final List<Node> adjacentNodes = graph.getAdjacentNodes(a);
 
             if (adjacentNodes.size() < 2) {
                 continue;
             }
 
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            final ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
             int[] combination;
 
             while ((combination = cg.next()) != null) {
-                Node b = adjacentNodes.get(combination[0]);
-                Node c = adjacentNodes.get(combination[1]);
+                final Node b = adjacentNodes.get(combination[0]);
+                final Node c = adjacentNodes.get(combination[1]);
 
                 if (graph.isDirectedFromTo(b, a) &&
                         graph.isDirectedFromTo(a, c) &&
                         graph.isUndirectedFromTo(b, c)) {
-                    if (isArrowpointAllowed(b, c, IKnowledge) && !this.createsCycle(b, c, graph)) {
+                    if (MeekRulesCPDAG.isArrowpointAllowed(b, c, IKnowledge) && !createsCycle(b, c, graph)) {
                         graph.setEndpoint(b, c, Endpoint.ARROW);
-                        logger.log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek R2", graph.getEdge(b, c)));
-                        this.meekR2(graph, IKnowledge);
+                        this.logger.log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek R2", graph.getEdge(b, c)));
+                        meekR2(graph, IKnowledge);
                     }
                 } else if (graph.isDirectedFromTo(c, a) &&
                         graph.isDirectedFromTo(a, b) &&
                         graph.isUndirectedFromTo(c, b)) {
-                    if (isArrowpointAllowed(c, b, IKnowledge) && !this.createsCycle(c, b, graph)) {
+                    if (MeekRulesCPDAG.isArrowpointAllowed(c, b, IKnowledge) && !createsCycle(c, b, graph)) {
                         graph.setEndpoint(c, b, Endpoint.ARROW);
-                        logger.log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek R2", graph.getEdge(c, b)));
-                        this.meekR2(graph, IKnowledge);
+                        this.logger.log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek R2", graph.getEdge(c, b)));
+                        meekR2(graph, IKnowledge);
                     }
                 }
             }
@@ -200,33 +200,33 @@ public class MeekRulesCPDAG implements ImpliedOrientation {
     /**
      * Meek's rule R3. If a--b, a--c, a--d, c-->b, d-->b, then orient a-->b.
      */
-    public boolean meekR3(Graph graph, IKnowledge IKnowledge) {
+    public boolean meekR3(final Graph graph, final IKnowledge IKnowledge) {
 
-        List<Node> nodes = graph.getNodes();
+        final List<Node> nodes = graph.getNodes();
         boolean changed = false;
 
-        for (Node a : nodes) {
-            List<Node> adjacentNodes = graph.getAdjacentNodes(a);
+        for (final Node a : nodes) {
+            final List<Node> adjacentNodes = graph.getAdjacentNodes(a);
 
             if (adjacentNodes.size() < 3) {
                 continue;
             }
 
-            for (Node b : adjacentNodes) {
-                List<Node> otherAdjacents = new LinkedList<>(adjacentNodes);
+            for (final Node b : adjacentNodes) {
+                final List<Node> otherAdjacents = new LinkedList<>(adjacentNodes);
                 otherAdjacents.remove(b);
 
                 if (!graph.isUndirectedFromTo(a, b)) {
                     continue;
                 }
 
-                ChoiceGenerator cg =
+                final ChoiceGenerator cg =
                         new ChoiceGenerator(otherAdjacents.size(), 2);
                 int[] combination;
 
                 while ((combination = cg.next()) != null) {
-                    Node c = otherAdjacents.get(combination[0]);
-                    Node d = otherAdjacents.get(combination[1]);
+                    final Node c = otherAdjacents.get(combination[0]);
+                    final Node d = otherAdjacents.get(combination[1]);
 
                     if (graph.isAdjacentTo(c, d)) {
                         continue;
@@ -240,18 +240,18 @@ public class MeekRulesCPDAG implements ImpliedOrientation {
                         continue;
                     }
 
-                    if (!isUnshieldedNoncollider(c, a, d, graph)) {
+                    if (!MeekRulesCPDAG.isUnshieldedNoncollider(c, a, d, graph)) {
                         continue;
                     }
 
                     if (graph.isDirectedFromTo(c, b) &&
                             graph.isDirectedFromTo(d, b)) {
-                        if (isArrowpointAllowed(a, b, IKnowledge) && !this.createsCycle(a, b, graph)) {
+                        if (MeekRulesCPDAG.isArrowpointAllowed(a, b, IKnowledge) && !createsCycle(a, b, graph)) {
                             graph.setEndpoint(a, b, Endpoint.ARROW);
 
-                            logger.log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek R3", graph.getEdge(a, b)));
+                            this.logger.log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek R3", graph.getEdge(a, b)));
                             changed = true;
-                            this.meekR2(graph, IKnowledge);
+                            meekR2(graph, IKnowledge);
                             break;
                         }
                     }
@@ -262,36 +262,36 @@ public class MeekRulesCPDAG implements ImpliedOrientation {
         return changed;
     }
 
-    public boolean meekR4(Graph graph, IKnowledge IKnowledge) {
+    public boolean meekR4(final Graph graph, final IKnowledge IKnowledge) {
         if (IKnowledge == null) {
             return false;
         }
 
-        List<Node> nodes = graph.getNodes();
+        final List<Node> nodes = graph.getNodes();
         boolean changed = false;
 
-        for (Node a : nodes) {
-            List<Node> adjacentNodes = graph.getAdjacentNodes(a);
+        for (final Node a : nodes) {
+            final List<Node> adjacentNodes = graph.getAdjacentNodes(a);
 
             if (adjacentNodes.size() < 3) {
                 continue;
             }
 
-            for (Node d : adjacentNodes) {
+            for (final Node d : adjacentNodes) {
                 if (!graph.isAdjacentTo(a, d)) {
                     continue;
                 }
 
-                List<Node> otherAdjacents = new LinkedList<>(adjacentNodes);
+                final List<Node> otherAdjacents = new LinkedList<>(adjacentNodes);
                 otherAdjacents.remove(d);
 
-                ChoiceGenerator cg =
+                final ChoiceGenerator cg =
                         new ChoiceGenerator(otherAdjacents.size(), 2);
                 int[] combination;
 
                 while ((combination = cg.next()) != null) {
-                    Node b = otherAdjacents.get(combination[0]);
-                    Node c = otherAdjacents.get(combination[1]);
+                    final Node b = otherAdjacents.get(combination[0]);
+                    final Node c = otherAdjacents.get(combination[1]);
 
                     if (!graph.isUndirectedFromTo(a, b)) {
                         continue;
@@ -301,28 +301,28 @@ public class MeekRulesCPDAG implements ImpliedOrientation {
                         continue;
                     }
 
-                    if (!isUnshieldedNoncollider(c, a, b, graph)) {
+                    if (!MeekRulesCPDAG.isUnshieldedNoncollider(c, a, b, graph)) {
                         continue;
                     }
 
                     if (graph.isDirectedFromTo(b, d) &&
                             graph.isDirectedFromTo(d, c)) {
-                        if (isArrowpointAllowed(a, c, IKnowledge) && !this.createsCycle(a, c, graph)) {
+                        if (MeekRulesCPDAG.isArrowpointAllowed(a, c, IKnowledge) && !createsCycle(a, c, graph)) {
                             graph.setEndpoint(a, c, Endpoint.ARROW);
 
-                            logger.log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek T1", graph.getEdge(a, c)));
+                            this.logger.log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek T1", graph.getEdge(a, c)));
                             changed = true;
-                            this.meekR2(graph, IKnowledge);
+                            meekR2(graph, IKnowledge);
                             break;
                         }
                     } else if (graph.isDirectedFromTo(c, d) &&
                             graph.isDirectedFromTo(d, b)) {
-                        if (isArrowpointAllowed(a, b, IKnowledge) && !this.createsCycle(a, b, graph)) {
+                        if (MeekRulesCPDAG.isArrowpointAllowed(a, b, IKnowledge) && !createsCycle(a, b, graph)) {
                             graph.setEndpoint(a, b, Endpoint.ARROW);
 
-                            logger.log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek T1", graph.getEdge(a, b)));
+                            this.logger.log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek T1", graph.getEdge(a, b)));
                             changed = true;
-                            this.meekR2(graph, IKnowledge);
+                            meekR2(graph, IKnowledge);
                             break;
                         }
                     }
@@ -333,8 +333,8 @@ public class MeekRulesCPDAG implements ImpliedOrientation {
         return changed;
     }
 
-    private static boolean isUnshieldedNoncollider(Node a, Node b, Node c,
-                                                   Graph graph) {
+    private static boolean isUnshieldedNoncollider(final Node a, final Node b, final Node c,
+                                                   final Graph graph) {
         if (graph.isAmbiguousTriple(a, b, c)) {
             return false;
         }
@@ -356,8 +356,8 @@ public class MeekRulesCPDAG implements ImpliedOrientation {
 
     }
 
-    private static boolean isArrowpointAllowed(Object from, Object to,
-                                               IKnowledge IKnowledge) {
+    private static boolean isArrowpointAllowed(final Object from, final Object to,
+                                               final IKnowledge IKnowledge) {
         if (IKnowledge == null) return true;
         return !IKnowledge.isRequired(to.toString(), from.toString()) &&
                 !IKnowledge.isForbidden(from.toString(), to.toString());
@@ -366,15 +366,15 @@ public class MeekRulesCPDAG implements ImpliedOrientation {
     /**
      * @return true if orienting x-->y would create a cycle.
      */
-    private boolean createsCycle(Node x, Node y, Graph graph) {
+    private boolean createsCycle(final Node x, final Node y, final Graph graph) {
         return graph.isAncestorOf(y, x);
     }
 
     public boolean isAggressivelyPreventCycles() {
-        return aggressivelyPreventCycles;
+        return this.aggressivelyPreventCycles;
     }
 
-    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
+    public void setAggressivelyPreventCycles(final boolean aggressivelyPreventCycles) {
         this.aggressivelyPreventCycles = aggressivelyPreventCycles;
     }
 }

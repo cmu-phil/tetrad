@@ -24,7 +24,6 @@ package edu.cmu.tetradapp.editor.datamanip;
 import edu.cmu.tetrad.data.ContinuousDiscretizationSpec;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.util.DoubleTextField;
-import edu.cmu.tetradapp.util.DoubleTextField.Filter;
 import edu.cmu.tetradapp.util.StringTextField;
 
 import javax.swing.*;
@@ -40,7 +39,7 @@ import java.util.Map;
  * @author Joseph Ramsey
  * @author Tyler Gibson
  */
-@SuppressWarnings({"SuspiciousMethodCalls"})
+@SuppressWarnings("SuspiciousMethodCalls")
 final class RangeEditor extends JComponent {
 
     /**
@@ -89,11 +88,11 @@ final class RangeEditor extends JComponent {
      * Contructs the range editor given the variable that is being edited and
      * the continuous discreitization spec to base initial values on.
      */
-    public RangeEditor(ContinuousDiscretizationSpec spec) {
-        breakpoints = spec.getBreakpoints();
-        categories = spec.getCategories();
-        editableRange = true;
-        this.buildEditor();
+    public RangeEditor(final ContinuousDiscretizationSpec spec) {
+        this.breakpoints = spec.getBreakpoints();
+        this.categories = spec.getCategories();
+        this.editableRange = true;
+        buildEditor();
     }
 
     //=============================== Public Methods ===========================//
@@ -104,8 +103,8 @@ final class RangeEditor extends JComponent {
      * created by the user.
      */
     public ContinuousDiscretizationSpec getDiscretizationSpec() {
-        return new ContinuousDiscretizationSpec(breakpoints,
-                categories);
+        return new ContinuousDiscretizationSpec(this.breakpoints,
+                this.categories);
     }
 
     //================================= Private Methods ==========================//
@@ -115,23 +114,23 @@ final class RangeEditor extends JComponent {
      * Builds the editor.
      */
     private void buildEditor() {
-        Box rangeEditor = Box.createVerticalBox();
+        final Box rangeEditor = Box.createVerticalBox();
 
-        this.createCategoryFields();
-        this.createRangeFields();
+        createCategoryFields();
+        createRangeFields();
 
-        for (int i = 0; i < categories.size(); i++) {
-            Box row = Box.createHorizontalBox();
+        for (int i = 0; i < this.categories.size(); i++) {
+            final Box row = Box.createHorizontalBox();
             row.add(Box.createRigidArea(new Dimension(10, 0)));
 
             row.add(new JLabel((i + 1) + ". "));
-            row.add(categoryFields[i]);
+            row.add(this.categoryFields[i]);
             row.add(new BigLabel(" = [ "));
-            row.add(leftRangeFields[i]);
+            row.add(this.leftRangeFields[i]);
             row.add(new BigLabel(", "));
-            row.add(rightRangeFields[i]);
+            row.add(this.rightRangeFields[i]);
 
-            if (i < categories.size() - 1) {
+            if (i < this.categories.size() - 1) {
                 row.add(new BigLabel(" )"));
             } else {
                 row.add(new BigLabel(" ]"));
@@ -141,50 +140,50 @@ final class RangeEditor extends JComponent {
             rangeEditor.add(row);
         }
 
-        this.setLayout(new BorderLayout());
-        this.add(rangeEditor, BorderLayout.CENTER);
+        setLayout(new BorderLayout());
+        add(rangeEditor, BorderLayout.CENTER);
 
-        this.setFocusTraversalPolicy(new MyFocusTraversalPolicy());
+        setFocusTraversalPolicy(new MyFocusTraversalPolicy());
 
-        this.setFocusCycleRoot(true);
+        setFocusCycleRoot(true);
     }
 
     /**
      * Creates the category fields, these are allowed to be edited even when editable is false.
      */
     private void createCategoryFields() {
-        categoryFields = new StringTextField[this.getNumCategories()];
+        this.categoryFields = new StringTextField[getNumCategories()];
 
-        for (int i = 0; i < this.getNumCategories(); i++) {
-            String category = categories.get(i);
-            categoryFields[i] = new StringTextField(category, 6);
-            StringTextField _field = categoryFields[i];
+        for (int i = 0; i < getNumCategories(); i++) {
+            final String category = this.categories.get(i);
+            this.categoryFields[i] = new StringTextField(category, 6);
+            final StringTextField _field = this.categoryFields[i];
 
-            categoryFields[i].setFilter(new StringTextField.Filter() {
-                public String filter(String value, String oldValue) {
-                    if (labels.get(_field) != null) {
-                        int index = labels.get(_field);
+            this.categoryFields[i].setFilter(new StringTextField.Filter() {
+                public String filter(String value, final String oldValue) {
+                    if (RangeEditor.this.labels.get(_field) != null) {
+                        final int index = RangeEditor.this.labels.get(_field);
 
                         if (value == null) {
-                            value = categories.get(index);
+                            value = RangeEditor.this.categories.get(index);
                         }
 
-                        for (int i = 0; i < categories.size(); i++) {
+                        for (int i = 0; i < RangeEditor.this.categories.size(); i++) {
                             if (i != index &&
-                                    categories.get(i).equals(value)) {
-                                value = categories.get(index);
+                                    RangeEditor.this.categories.get(i).equals(value)) {
+                                value = RangeEditor.this.categories.get(index);
                             }
                         }
 
-                        categories.set(index, value);
+                        RangeEditor.this.categories.set(index, value);
                     }
 
                     return value;
                 }
             });
 
-            labels.put(categoryFields[i], i);
-            focusTraveralOrder.add(categoryFields[i]);
+            this.labels.put(this.categoryFields[i], i);
+            this.focusTraveralOrder.add(this.categoryFields[i]);
         }
     }
 
@@ -193,15 +192,15 @@ final class RangeEditor extends JComponent {
      * be not editable.
      */
     private void createRangeFields() {
-        leftRangeFields = new DoubleTextField[this.getNumCategories()];
-        rightRangeFields = new DoubleTextField[this.getNumCategories()];
+        this.leftRangeFields = new DoubleTextField[getNumCategories()];
+        this.rightRangeFields = new DoubleTextField[getNumCategories()];
 
-        int maxCategory = this.getNumCategories() - 1;
+        final int maxCategory = getNumCategories() - 1;
 
-        leftRangeFields[0] = new DoubleTextField(
+        this.leftRangeFields[0] = new DoubleTextField(
                 Double.NEGATIVE_INFINITY, 6, NumberFormatUtil.getInstance().getNumberFormat());
-        leftRangeFields[0].setFilter(
-                new Filter() {
+        this.leftRangeFields[0].setFilter(
+                new DoubleTextField.Filter() {
                     public double filter(double value, double oldValue) {
                         return oldValue;
                     }
@@ -210,7 +209,7 @@ final class RangeEditor extends JComponent {
         rightRangeFields[maxCategory] = new DoubleTextField(
                 Double.POSITIVE_INFINITY, 6, NumberFormatUtil.getInstance().getNumberFormat());
         rightRangeFields[maxCategory].setFilter(
-                new Filter() {
+                new DoubleTextField.Filter() {
                     public double filter(double value, double oldValue) {
                         return oldValue;
                     }
@@ -233,45 +232,45 @@ final class RangeEditor extends JComponent {
 
             Object label = labels.get(leftRangeFields[i + 1]);
             leftRangeFields[i + 1].setFilter(
-                    new Filter() {
+                    new DoubleTextField.Filter() {
                         public double filter(double value,
-                                             double oldValue) {
+                                             final double oldValue) {
                             if (label == null) {
                                 return oldValue;
                             }
 
-                            int index = (Integer) label;
+                            final int index = (Integer) label;
 
                             if (index - 1 > 0 &&
-                                    !(breakpoints[index - 2] < value)) {
-                                value = breakpoints[index - 1];
+                                    !(RangeEditor.this.breakpoints[index - 2] < value)) {
+                                value = RangeEditor.this.breakpoints[index - 1];
                             }
 
-                            if (index - 1 < breakpoints.length - 1 &&
-                                    !(value < breakpoints[index])) {
-                                value = breakpoints[index - 1];
+                            if (index - 1 < RangeEditor.this.breakpoints.length - 1 &&
+                                    !(value < RangeEditor.this.breakpoints[index])) {
+                                value = RangeEditor.this.breakpoints[index - 1];
                             }
 
-                            breakpoints[index - 1] = value;
+                            RangeEditor.this.breakpoints[index - 1] = value;
 
-                            RangeEditor.this.getRightRangeFields()[index - 1].setValue(
+                            getRightRangeFields()[index - 1].setValue(
                                     value);
                             return value;
                         }
                     });
 
 
-            labels.put(leftRangeFields[i + 1], i + 1);
-            focusTraveralOrder.add(leftRangeFields[i + 1]);
+            this.labels.put(this.leftRangeFields[i + 1], i + 1);
+            this.focusTraveralOrder.add(this.leftRangeFields[i + 1]);
         }
     }
 
     private DoubleTextField[] getRightRangeFields() {
-        return rightRangeFields;
+        return this.rightRangeFields;
     }
 
     private int getNumCategories() {
-        return categories.size();
+        return this.categories.size();
     }
 
     //========================== Inner Class ====================================//
@@ -279,47 +278,47 @@ final class RangeEditor extends JComponent {
     private static final class BigLabel extends JLabel {
         private static final Font FONT = new Font("Dialog", Font.BOLD, 20);
 
-        public BigLabel(String text) {
+        public BigLabel(final String text) {
             super(text);
-            this.setFont(FONT);
+            setFont(BigLabel.FONT);
         }
     }
 
     private class MyFocusTraversalPolicy extends FocusTraversalPolicy {
-        public Component getComponentAfter(Container focusCycleRoot,
-                                           Component aComponent) {
-            int index = focusTraveralOrder.indexOf(aComponent);
-            int size = focusTraveralOrder.size();
+        public Component getComponentAfter(final Container focusCycleRoot,
+                                           final Component aComponent) {
+            final int index = RangeEditor.this.focusTraveralOrder.indexOf(aComponent);
+            final int size = RangeEditor.this.focusTraveralOrder.size();
 
             if (index != -1) {
-                return focusTraveralOrder.get((index + 1) % size);
+                return RangeEditor.this.focusTraveralOrder.get((index + 1) % size);
             } else {
-                return this.getFirstComponent(focusCycleRoot);
+                return getFirstComponent(focusCycleRoot);
             }
         }
 
-        public Component getComponentBefore(Container focusCycleRoot,
-                                            Component aComponent) {
-            int index = focusTraveralOrder.indexOf(aComponent);
-            int size = focusTraveralOrder.size();
+        public Component getComponentBefore(final Container focusCycleRoot,
+                                            final Component aComponent) {
+            final int index = RangeEditor.this.focusTraveralOrder.indexOf(aComponent);
+            final int size = RangeEditor.this.focusTraveralOrder.size();
 
             if (index != -1) {
-                return focusTraveralOrder.get((index - 1) % size);
+                return RangeEditor.this.focusTraveralOrder.get((index - 1) % size);
             } else {
-                return this.getFirstComponent(focusCycleRoot);
+                return getFirstComponent(focusCycleRoot);
             }
         }
 
-        public Component getFirstComponent(Container focusCycleRoot) {
-            return focusTraveralOrder.getFirst();
+        public Component getFirstComponent(final Container focusCycleRoot) {
+            return RangeEditor.this.focusTraveralOrder.getFirst();
         }
 
-        public Component getLastComponent(Container focusCycleRoot) {
-            return focusTraveralOrder.getLast();
+        public Component getLastComponent(final Container focusCycleRoot) {
+            return RangeEditor.this.focusTraveralOrder.getLast();
         }
 
-        public Component getDefaultComponent(Container focusCycleRoot) {
-            return this.getFirstComponent(focusCycleRoot);
+        public Component getDefaultComponent(final Container focusCycleRoot) {
+            return getFirstComponent(focusCycleRoot);
         }
     }
 }

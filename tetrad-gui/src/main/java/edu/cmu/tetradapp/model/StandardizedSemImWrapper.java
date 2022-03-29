@@ -58,23 +58,23 @@ public class StandardizedSemImWrapper implements KnowledgeBoxInput {
     private boolean showErrors;
 
     //============================CONSTRUCTORS==========================//
-    public StandardizedSemImWrapper(SemImWrapper semImWrapper, Parameters parameters) {
+    public StandardizedSemImWrapper(final SemImWrapper semImWrapper, final Parameters parameters) {
         if (semImWrapper == null) {
             throw new NullPointerException();
         }
 
-        standardizedSemIm = new StandardizedSemIm(semImWrapper.getSemIm(), parameters);
-        this.log(standardizedSemIm);
+        this.standardizedSemIm = new StandardizedSemIm(semImWrapper.getSemIm(), parameters);
+        log(this.standardizedSemIm);
     }
 
-    public StandardizedSemImWrapper(SemPmWrapper semPmWrapper, Parameters parameters) {
+    public StandardizedSemImWrapper(final SemPmWrapper semPmWrapper, final Parameters parameters) {
         if (semPmWrapper == null) {
             throw new NullPointerException();
         }
 
-        SemIm semIm = new SemIm(semPmWrapper.getSemPm());
-        standardizedSemIm = new StandardizedSemIm(semIm, parameters);
-        this.log(standardizedSemIm);
+        final SemIm semIm = new SemIm(semPmWrapper.getSemPm());
+        this.standardizedSemIm = new StandardizedSemIm(semIm, parameters);
+        log(this.standardizedSemIm);
     }
 
     /**
@@ -89,26 +89,26 @@ public class StandardizedSemImWrapper implements KnowledgeBoxInput {
 
     //===========================PUBLIC METHODS=========================//
     public StandardizedSemIm getStandardizedSemIm() {
-        return standardizedSemIm;
+        return this.standardizedSemIm;
     }
 
     public Graph getGraph() {
-        return standardizedSemIm.getSemPm().getGraph();
+        return this.standardizedSemIm.getSemPm().getGraph();
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
     public boolean isShowErrors() {
-        return showErrors;
+        return this.showErrors;
     }
 
-    public void setShowErrors(boolean showErrors) {
+    public void setShowErrors(final boolean showErrors) {
         this.showErrors = showErrors;
     }
 
@@ -127,32 +127,32 @@ public class StandardizedSemImWrapper implements KnowledgeBoxInput {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (standardizedSemIm == null) {
+        if (this.standardizedSemIm == null) {
             throw new NullPointerException();
         }
     }
 
     public Graph getSourceGraph() {
-        return this.getGraph();
+        return getGraph();
     }
 
     public Graph getResultGraph() {
-        return this.getGraph();
+        return getGraph();
     }
 
     public List<String> getVariableNames() {
-        return this.getGraph().getNodeNames();
+        return getGraph().getNodeNames();
     }
 
     public List<Node> getVariables() {
-        return this.getGraph().getNodes();
+        return getGraph().getNodes();
     }
 
-    private void log(StandardizedSemIm pm) {
+    private void log(final StandardizedSemIm pm) {
         TetradLogger.getInstance().log("info", "Standardized SEM IM");
         TetradLogger.getInstance().log("im", pm.toString());
     }

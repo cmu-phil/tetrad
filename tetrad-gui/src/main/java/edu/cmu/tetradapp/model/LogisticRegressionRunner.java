@@ -26,7 +26,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.regression.LogisticRegression;
-import edu.cmu.tetrad.regression.LogisticRegression.Result;
 import edu.cmu.tetrad.search.ImpliedOrientation;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -53,7 +52,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
     private List<DataSet> dataSets;
     private String report;
     private Graph outGraph;
-    private Result result;
+    private LogisticRegression.Result result;
     private double alpha = 0.001;
 
     private int numModels = 1;
@@ -157,20 +156,20 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
         this.alpha = alpha;
     }
 
-    public Result getResult() {
-        return result;
+    public LogisticRegression.Result getResult() {
+        return this.result;
     }
 
     public Parameters getParams() {
-        return params;
+        return this.params;
     }
 
     public Graph getResultGraph() {
-        return outGraph;
+        return this.outGraph;
     }
 
-    public void setResultGraph(Graph graph) {
-        outGraph = graph;
+    public void setResultGraph(final Graph graph) {
+        this.outGraph = graph;
     }
 
     public Graph getSourceGraph() {
@@ -184,47 +183,47 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
      * implemented in the extending class.
      */
     public void execute() {
-        outGraph = new EdgeListGraph();
+        this.outGraph = new EdgeListGraph();
 
-        if (regressorNames == null || regressorNames.isEmpty() || targetName == null) {
-            report = "Response and predictor variables not set.";
-
-            return;
-        }
-
-        if (regressorNames.contains(targetName)) {
-            report = "Response must not be a predictor.";
+        if (this.regressorNames == null || this.regressorNames.isEmpty() || this.targetName == null) {
+            this.report = "Response and predictor variables not set.";
 
             return;
         }
 
-        DataSet regressorsDataSet = dataSets.get(this.getModelIndex()).copy();
-        Node target = regressorsDataSet.getVariable(targetName);
+        if (this.regressorNames.contains(this.targetName)) {
+            this.report = "Response must not be a predictor.";
+
+            return;
+        }
+
+        final DataSet regressorsDataSet = this.dataSets.get(getModelIndex()).copy();
+        final Node target = regressorsDataSet.getVariable(this.targetName);
         regressorsDataSet.removeColumn(target);
 
-        List<String> names = regressorsDataSet.getVariableNames();
+        final List<String> names = regressorsDataSet.getVariableNames();
 
         //Get the list of regressors selected by the user
-        List<Node> regressorNodes = new ArrayList<>();
+        final List<Node> regressorNodes = new ArrayList<>();
 
-        for (String s : regressorNames) {
-            regressorNodes.add(dataSets.get(this.getModelIndex()).getVariable(s));
+        for (final String s : this.regressorNames) {
+            regressorNodes.add(this.dataSets.get(getModelIndex()).getVariable(s));
         }
 
         //If the user selected none, use them all
-        if (regressorNames.size() > 0) {
-            for (String name1 : names) {
-                Node regressorVar = regressorsDataSet.getVariable(name1);
-                if (!regressorNames.contains(regressorVar.getName())) {
+        if (this.regressorNames.size() > 0) {
+            for (final String name1 : names) {
+                final Node regressorVar = regressorsDataSet.getVariable(name1);
+                if (!this.regressorNames.contains(regressorVar.getName())) {
                     regressorsDataSet.removeColumn(regressorVar);
                 }
             }
         }
 
-        int ncases = regressorsDataSet.getNumRows();
-        int nvars = regressorsDataSet.getNumColumns();
+        final int ncases = regressorsDataSet.getNumRows();
+        final int nvars = regressorsDataSet.getNumColumns();
 
-        double[][] regressors = new double[nvars][ncases];
+        final double[][] regressors = new double[nvars][ncases];
 
         for (int i = 0; i < nvars; i++) {
             for (int j = 0; j < ncases; j++) {
@@ -232,10 +231,10 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
             }
         }
 
-        LogisticRegression logRegression = new LogisticRegression(dataSets.get(this.getModelIndex()));
-        logRegression.setAlpha(alpha);
+        final LogisticRegression logRegression = new LogisticRegression(this.dataSets.get(getModelIndex()));
+        logRegression.setAlpha(this.alpha);
 
-        result = logRegression.regress((DiscreteVariable) target, regressorNodes);
+        this.result = logRegression.regress((DiscreteVariable) target, regressorNodes);
     }
 
     public boolean supportsKnowledge() {
@@ -246,7 +245,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
         throw new UnsupportedOperationException();
     }
 
-    public void setExternalGraph(Graph graph) {
+    public void setExternalGraph(final Graph graph) {
     }
 
     public Graph getExternalGraph() {
@@ -259,12 +258,12 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
     }
 
     public Graph getOutGraph() {
-        return outGraph;
+        return this.outGraph;
     }
 
     @Override
     public List<String> getVariableNames() {
-        return variableNames;
+        return this.variableNames;
     }
 
     @Override
@@ -273,17 +272,17 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
     }
 
     @Override
-    public void setRegressorName(List<String> predictors) {
-        regressorNames = predictors;
+    public void setRegressorName(final List<String> predictors) {
+        this.regressorNames = predictors;
     }
 
     public String getTargetName() {
-        return targetName;
+        return this.targetName;
     }
 
     @Override
-    public void setTargetName(String target) {
-        targetName = target;
+    public void setTargetName(final String target) {
+        this.targetName = target;
     }
 
     /**
@@ -299,21 +298,21 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
     public Graph getGraph() {
-        return outGraph;
+        return this.outGraph;
     }
 
     /**
@@ -330,19 +329,19 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
      * @return the list of triples corresponding to
      * <code>getTripleClassificationNames</code> for the given node.
      */
-    public List<List<Triple>> getTriplesLists(Node node) {
+    public List<List<Triple>> getTriplesLists(final Node node) {
         return new LinkedList<>();
     }
 
     @Override
     public Map<String, String> getParamSettings() {
-        Map<String, String> paramSettings = new HashMap<>();
+        final Map<String, String> paramSettings = new HashMap<>();
         paramSettings.put("Algorithm", "Regression");
         return paramSettings;
     }
 
     @Override
-    public void setAllParamSettings(Map<String, String> paramSettings) {
+    public void setAllParamSettings(final Map<String, String> paramSettings) {
 //        Map<String, String> allParamsSettings = paramSettings;
     }
 
@@ -352,24 +351,24 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
     }
 
     public int getNumModels() {
-        return numModels;
+        return this.numModels;
     }
 
     public int getModelIndex() {
-        return modelIndex;
+        return this.modelIndex;
     }
 
     public String getModelSourceName() {
-        return modelSourceName;
+        return this.modelSourceName;
     }
 
-    public void setModelIndex(int modelIndex) {
+    public void setModelIndex(final int modelIndex) {
         this.modelIndex = modelIndex;
     }
 
-    public void setDataSet(DataSet dataSet) {
-        dataSets = new ArrayList<>();
-        dataSets.add(dataSet);
+    public void setDataSet(final DataSet dataSet) {
+        this.dataSets = new ArrayList<>();
+        this.dataSets.add(dataSet);
     }
 
     @Override

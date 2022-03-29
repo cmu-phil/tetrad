@@ -27,7 +27,6 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.Lofs2.Rule;
 
 import java.util.Collections;
 
@@ -40,7 +39,7 @@ import java.util.Collections;
  */
 public final class FasLofs implements GraphSearch {
 
-    private final Rule rule;
+    private final Lofs2.Rule rule;
     // Elapsed time of the search, in milliseconds.
     private long elapsed;
 
@@ -60,7 +59,7 @@ public final class FasLofs implements GraphSearch {
     /**
      * @param dataSet These datasets to analyze.
      */
-    public FasLofs(DataSet dataSet, Rule rule) {
+    public FasLofs(DataSet dataSet, final Lofs2.Rule rule) {
         this.dataSet = dataSet;
         this.rule = rule;
     }
@@ -77,32 +76,32 @@ public final class FasLofs implements GraphSearch {
      * and some of the adjacencies may be two-cycles.
      */
     public Graph search() {
-        long start = System.currentTimeMillis();
+        final long start = System.currentTimeMillis();
 
-        SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
-        score.setPenaltyDiscount(penaltyDiscount);
-        IndependenceTest test = new IndTestScore(score, dataSet);
+        final SemBicScore score = new SemBicScore(new CovarianceMatrix(this.dataSet));
+        score.setPenaltyDiscount(this.penaltyDiscount);
+        final IndependenceTest test = new IndTestScore(score, this.dataSet);
 
         System.out.println("FAS");
 
-        Fas fas = new Fas(test);
+        final Fas fas = new Fas(test);
         fas.setStable(true);
-        fas.setDepth(this.getDepth());
+        fas.setDepth(getDepth());
         fas.setVerbose(false);
-        fas.setKnowledge(knowledge);
-        Graph G0 = fas.search();
+        fas.setKnowledge(this.knowledge);
+        final Graph G0 = fas.search();
 
-        System.out.println("LOFS orientation, rule " + rule);
+        System.out.println("LOFS orientation, rule " + this.rule);
 
-        Lofs2 lofs2 = new Lofs2(G0, Collections.singletonList(dataSet));
-        lofs2.setRule(rule);
-        lofs2.setKnowledge(knowledge);
-        Graph graph = lofs2.orient();
+        final Lofs2 lofs2 = new Lofs2(G0, Collections.singletonList(this.dataSet));
+        lofs2.setRule(this.rule);
+        lofs2.setKnowledge(this.knowledge);
+        final Graph graph = lofs2.orient();
 
         System.out.println("Done");
 
-        long stop = System.currentTimeMillis();
-        elapsed = stop - start;
+        final long stop = System.currentTimeMillis();
+        this.elapsed = stop - start;
 
         return graph;
     }
@@ -111,14 +110,14 @@ public final class FasLofs implements GraphSearch {
      * @return The depth of search for the Fast Adjacency Search (FAS).
      */
     public int getDepth() {
-        return depth;
+        return this.depth;
     }
 
     /**
      * @param depth The depth of search for the Fast Adjacency Search (S). The default is -1.
      *              unlimited. Making this too high may results in statistical errors.
      */
-    public void setDepth(int depth) {
+    public void setDepth(final int depth) {
         this.depth = depth;
     }
 
@@ -126,7 +125,7 @@ public final class FasLofs implements GraphSearch {
      * @return The elapsed time in milliseconds.
      */
     public long getElapsedTime() {
-        return elapsed;
+        return this.elapsed;
     }
 
     /**
@@ -134,7 +133,7 @@ public final class FasLofs implements GraphSearch {
      * though a higher value is recommended, say, 2, 3, or 4.
      */
     public double getPenaltyDiscount() {
-        return penaltyDiscount;
+        return this.penaltyDiscount;
     }
 
     /**
@@ -142,7 +141,7 @@ public final class FasLofs implements GraphSearch {
      *                        The default is 1, though a higher value is recommended, say,
      *                        2, 3, or 4.
      */
-    public void setPenaltyDiscount(double penaltyDiscount) {
+    public void setPenaltyDiscount(final double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
     }
 
@@ -150,20 +149,20 @@ public final class FasLofs implements GraphSearch {
      * @return the current knowledge.
      */
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     /**
      * @param knowledge Knowledge of forbidden and required edges.
      */
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(final IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
     //======================================== PRIVATE METHODS ====================================//
 
-    private boolean knowledgeOrients(Node left, Node right) {
-        return knowledge.isForbidden(right.getName(), left.getName()) || knowledge.isRequired(left.getName(), right.getName());
+    private boolean knowledgeOrients(final Node left, final Node right) {
+        return this.knowledge.isForbidden(right.getName(), left.getName()) || this.knowledge.isRequired(left.getName(), right.getName());
     }
 
 }

@@ -38,14 +38,14 @@ public enum BpcAlgorithmType implements TetradSerializable {
     static final long serialVersionUID = 23L;
 
     public static BpcAlgorithmType serializableInstance() {
-        return BUILD_PURE_CLUSTERS;
+        return BpcAlgorithmType.BUILD_PURE_CLUSTERS;
     }
 
     public static BpcAlgorithmType[] getAlgorithmDescriptions() {
         return new BpcAlgorithmType[]{
-                BUILD_PURE_CLUSTERS,
+                BpcAlgorithmType.BUILD_PURE_CLUSTERS,
 //                BpcAlgorithmType.SIMPLIFIED_BPC,
-                TETRAD_PURIFY_WASHDOWN,
+                BpcAlgorithmType.TETRAD_PURIFY_WASHDOWN,
 //                BpcAlgorithmType.FIND_ONE_FACTOR_CLUSTERS,
 //                BpcAlgorithmType.FIND_TWO_FACTOR_CLUSTERS
         };

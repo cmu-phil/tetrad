@@ -21,8 +21,6 @@
 
 package edu.pitt.dbmi.algo.bayesian.constraint.inference;
 
-import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference.OP;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -47,17 +45,17 @@ public class BayesianConstraintInference {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
-        if (args == null || args.length != NUM_REQ_ARGS) {
-            System.err.println(USAGE);
+    public static void main(final String[] args) {
+        if (args == null || args.length != BayesianConstraintInference.NUM_REQ_ARGS) {
+            System.err.println(BayesianConstraintInference.USAGE);
             System.exit(127);
         }
 
         for (int i = 0; i < args.length; i++) {
-            String flag = args[i];
-            if (flag.equals(CAS_FLAG)) {
-                casFile = new File(args[++i]);
-                checkFile(casFile, false);
+            final String flag = args[i];
+            if (flag.equals(BayesianConstraintInference.CAS_FLAG)) {
+                BayesianConstraintInference.casFile = new File(args[++i]);
+                BayesianConstraintInference.checkFile(BayesianConstraintInference.casFile, false);
             } else {
                 System.out.printf("Unknown switch %s.\n", flag);
                 System.exit(-1);
@@ -65,18 +63,18 @@ public class BayesianConstraintInference {
         }
 
         try {
-            int[][] dataset = readInDataset(casFile);
-            int[] nodeDimension = readInNodeDimension(casFile);
-            BCInference bci = new BCInference(dataset, nodeDimension);
+            final int[][] dataset = BayesianConstraintInference.readInDataset(BayesianConstraintInference.casFile);
+            final int[] nodeDimension = BayesianConstraintInference.readInNodeDimension(BayesianConstraintInference.casFile);
+            final BCInference bci = new BCInference(dataset, nodeDimension);
 
-            OP constraint = OP.dependent;
+            BCInference.OP constraint = BCInference.OP.dependent;
             int x = 3;
             int y = 5;
             int[] z = {0};  // empty set
             double pc = bci.probConstraint(constraint, x, y, z);  // returns P(node3 dependent node5 given {} | data)
             System.out.printf("Probability constraint: %7.5f\n", pc);  // if fn = 1 then 0.76510; if fn = 2 then 0.91311
 
-            constraint = OP.independent;
+            constraint = BCInference.OP.independent;
             x = 1;
             y = 4;
             z = new int[3];
@@ -86,7 +84,7 @@ public class BayesianConstraintInference {
             pc = bci.probConstraint(constraint, x, y, z);  // returns P(node1 independent node4 given {node2, node3} | data)
             System.out.printf("Probability constraint: %7.5f\n", pc);  // if fn = 1 then 0.34093; if fn = 2 then 0.35806
 
-            constraint = OP.independent;
+            constraint = BCInference.OP.independent;
             x = 1;
             y = 5;
             z = new int[2];
@@ -118,31 +116,31 @@ public class BayesianConstraintInference {
 //            z = new int[]{2, 2, 3};
 //            pc = bci.probConstraint(constraint, x, y, z);  // returns P(node1 independent node4 given {node2, node3} | data)
 //            System.out.printf("Probability constraint: %7.5f\n", pc);
-        } catch (Exception exception) {
+        } catch (final Exception exception) {
             exception.printStackTrace(System.err);
         }
     }
 
-    private static int[] readInNodeDimension(File dataFile) throws IOException {
+    private static int[] readInNodeDimension(final File dataFile) throws IOException {
         int[] nodeDimension = null;
 
-        Pattern spaceDelim = Pattern.compile("\\s+");
+        final Pattern spaceDelim = Pattern.compile("\\s+");
         BufferedReader reader = null;
         try {
             reader = new BufferedReader(new FileReader(dataFile));
 
-            int numberOfNodes = Integer.parseInt(reader.readLine().trim());
+            final int numberOfNodes = Integer.parseInt(reader.readLine().trim());
             nodeDimension = new int[numberOfNodes + 2];
-            String[] data = spaceDelim.split(reader.readLine().trim());
+            final String[] data = spaceDelim.split(reader.readLine().trim());
             int i = 0;
-            for (String d : data) {
+            for (final String d : data) {
                 nodeDimension[++i] = Integer.parseInt(d);
             }
         } finally {
             if (reader != null) {
                 try {
                     reader.close();
-                } catch (IOException exception) {
+                } catch (final IOException exception) {
                     exception.printStackTrace(System.err);
                 }
             }
@@ -151,23 +149,23 @@ public class BayesianConstraintInference {
         return nodeDimension;
     }
 
-    private static int[][] readInDataset(File dataFile) throws IOException {
+    private static int[][] readInDataset(final File dataFile) throws IOException {
         int[][] dataset = null;
 
-        Pattern spaceDelim = Pattern.compile("\\s+");
+        final Pattern spaceDelim = Pattern.compile("\\s+");
         BufferedReader reader = null;
         try {
             reader = new BufferedReader(new FileReader(dataFile));
 
-            int numberOfNodes = Integer.parseInt(reader.readLine().trim());
+            final int numberOfNodes = Integer.parseInt(reader.readLine().trim());
             reader.readLine();  // skip node dimension
-            int numberOfCases = Integer.parseInt(reader.readLine().trim());
+            final int numberOfCases = Integer.parseInt(reader.readLine().trim());
 
             dataset = new int[numberOfCases + 1][numberOfNodes + 2];
             for (int i = 1; i <= numberOfCases; i++) {
-                String[] data = spaceDelim.split(reader.readLine().trim());
+                final String[] data = spaceDelim.split(reader.readLine().trim());
                 int j = 0;
-                for (String d : data) {
+                for (final String d : data) {
                     dataset[i][++j] = Integer.parseInt(d);
                 }
             }
@@ -175,7 +173,7 @@ public class BayesianConstraintInference {
             if (reader != null) {
                 try {
                     reader.close();
-                } catch (IOException exception) {
+                } catch (final IOException exception) {
                     exception.printStackTrace(System.err);
                 }
             }
@@ -184,7 +182,7 @@ public class BayesianConstraintInference {
         return dataset;
     }
 
-    private static void checkFile(File file, boolean checkDirectory) {
+    private static void checkFile(final File file, final boolean checkDirectory) {
         if (file.exists()) {
             if (checkDirectory) {
                 if (file.isFile()) {

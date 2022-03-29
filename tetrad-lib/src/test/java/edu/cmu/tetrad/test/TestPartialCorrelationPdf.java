@@ -32,14 +32,14 @@ public class TestPartialCorrelationPdf {
     private Function function;
 
     public void setUp() {
-        function = new PartialCorrelationPdf(1000, 5);
+        this.function = new PartialCorrelationPdf(1000, 5);
     }
 
     @Test
     public void testIntegralSumToOne() {
-        this.setUp();
+        setUp();
         final String message = "Integrator does not properly integrate a p.d.f.";
-        double area = Integrator.getArea(function, -1.0, 1.0, 10000);
+        final double area = Integrator.getArea(this.function, -1.0, 1.0, 10000);
         final double tolerance = 0.000001;
         assertEquals(message, 1.0, area, tolerance);
     }

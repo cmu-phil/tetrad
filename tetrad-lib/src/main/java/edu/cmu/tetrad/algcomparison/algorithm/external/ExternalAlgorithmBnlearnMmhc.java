@@ -44,41 +44,41 @@ import java.io.IOException;
 public class ExternalAlgorithmBnlearnMmhc extends ExternalAlgorithm {
     static final long serialVersionUID = 23L;
     private final String extDir;
-    private String shortDescription;
+    private final String shortDescription;
 
-    public ExternalAlgorithmBnlearnMmhc(String extDir) {
+    public ExternalAlgorithmBnlearnMmhc(final String extDir) {
         this.extDir = extDir;
-        shortDescription = new File(extDir).getName().replace("_", " ");
+        this.shortDescription = new File(extDir).getName().replace("_", " ");
     }
 
-    public ExternalAlgorithmBnlearnMmhc(String extDir, String shortDecription) {
+    public ExternalAlgorithmBnlearnMmhc(final String extDir, final String shortDecription) {
         this.extDir = extDir;
-        shortDescription = shortDecription;
+        this.shortDescription = shortDecription;
     }
 
     /**
      * Reads in the relevant graph from the file (see above) and returns it.
      */
-    public Graph search(DataModel dataSet, Parameters parameters) {
-        int index = this.getIndex(dataSet);
+    public Graph search(final DataModel dataSet, final Parameters parameters) {
+        final int index = getIndex(dataSet);
 
-        File file = new File(path, "/results/" + extDir + "/" + (simIndex + 1) + "/graph." + index + ".txt");
+        final File file = new File(this.path, "/results/" + this.extDir + "/" + (this.simIndex + 1) + "/graph." + index + ".txt");
 
         System.out.println(file.getAbsolutePath());
 
         try {
-            BufferedReader r = new BufferedReader(new FileReader(file));
+            final BufferedReader r = new BufferedReader(new FileReader(file));
 
             r.readLine(); // Skip the first line.
             String line;
 
-            Graph graph = new EdgeListGraph();
+            final Graph graph = new EdgeListGraph();
 
             while ((line = r.readLine()) != null) {
                 if (line.isEmpty()) continue;
-                String[] tokens = line.split("\t");
-                String name1 = tokens[0].replace(" ", "").replace("\"", "");
-                String name2 = tokens[1].replace(" ", "").replace("\"", "");
+                final String[] tokens = line.split("\t");
+                final String name1 = tokens[0].replace(" ", "").replace("\"", "");
+                final String name2 = tokens[1].replace(" ", "").replace("\"", "");
 
                 if (graph.getNode(name1) == null) {
                     graph.addNode(new GraphNode(name1));
@@ -88,8 +88,8 @@ public class ExternalAlgorithmBnlearnMmhc extends ExternalAlgorithm {
                     graph.addNode(new GraphNode(name2));
                 }
 
-                Node node1 = graph.getNode(name1);
-                Node node2 = graph.getNode(name2);
+                final Node node1 = graph.getNode(name1);
+                final Node node2 = graph.getNode(name2);
 
                 if (!graph.isAdjacentTo(node1, node2)) {
                     graph.addDirectedEdge(node1, node2);
@@ -102,7 +102,7 @@ public class ExternalAlgorithmBnlearnMmhc extends ExternalAlgorithm {
             GraphUtils.circleLayout(graph, 225, 200, 150);
 
             return graph;
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new RuntimeException("Couldn't parse graph.");
         }
     }
@@ -110,16 +110,16 @@ public class ExternalAlgorithmBnlearnMmhc extends ExternalAlgorithm {
     /**
      * Returns the CPDAG of the supplied DAG.
      */
-    public Graph getComparisonGraph(Graph graph) {
+    public Graph getComparisonGraph(final Graph graph) {
         return new EdgeListGraph(graph);
 //        return SearchGraphUtils.cpdagForDag(new EdgeListGraph(graph));
     }
 
     public String getDescription() {
-        if (shortDescription == null) {
-            return "Load data from " + path + "/" + extDir;
+        if (this.shortDescription == null) {
+            return "Load data from " + this.path + "/" + this.extDir;
         } else {
-            return shortDescription;
+            return this.shortDescription;
         }
     }
 
@@ -129,18 +129,18 @@ public class ExternalAlgorithmBnlearnMmhc extends ExternalAlgorithm {
     }
 
     @Override
-    public long getElapsedTime(DataModel dataSet, Parameters parameters) {
-        int index = this.getIndex(dataSet);
+    public long getElapsedTime(final DataModel dataSet, final Parameters parameters) {
+        final int index = getIndex(dataSet);
 
-        File file = new File(path, "/elapsed/" + extDir + "/" + (simIndex + 1) + "/graph." + index + ".txt");
+        final File file = new File(this.path, "/elapsed/" + this.extDir + "/" + (this.simIndex + 1) + "/graph." + index + ".txt");
 
 //        System.out.println(file.getAbsolutePath());
 
         try {
-            BufferedReader r = new BufferedReader(new FileReader(file));
-            String l = r.readLine(); // Skip the first line.
+            final BufferedReader r = new BufferedReader(new FileReader(file));
+            final String l = r.readLine(); // Skip the first line.
             return Long.parseLong(l);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             return -99;
         }
     }

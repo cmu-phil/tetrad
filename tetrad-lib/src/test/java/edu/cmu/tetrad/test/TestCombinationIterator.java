@@ -34,10 +34,10 @@ public class TestCombinationIterator {
 
     @Test
     public void test() {
-        int[] values = {3, 2, 2, 5};
+        final int[] values = {3, 2, 2, 5};
         int counter = 1;
 
-        Iterator i = new CombinationIterator(values);
+        final Iterator i = new CombinationIterator(values);
         int[] combination = (int[]) i.next();
 
         /* check first combination */
@@ -49,14 +49,14 @@ public class TestCombinationIterator {
             counter++;
         }
         int expectedCount = 1;
-        for (int value : values) {
+        for (final int value : values) {
             expectedCount *= value;
         }
 
         assertEquals(expectedCount, counter);
 
         /* check last combination matches the value array */
-        int[] lastCombination = combination; /* should be {2, 1, 1} */
+        final int[] lastCombination = combination; /* should be {2, 1, 1} */
         for (int j = 0; j < values.length; j++) {
             lastCombination[j]++;
         }

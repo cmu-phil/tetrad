@@ -47,66 +47,66 @@ public class GraphChange {
      * Default constructor, holds no changes.
      */
     public GraphChange() {
-        removes = new ArrayList<>();
-        colliders = new ArrayList<>();
-        nonColliders = new ArrayList<>();
-        orients = new ArrayList<>();
+        this.removes = new ArrayList<>();
+        this.colliders = new ArrayList<>();
+        this.nonColliders = new ArrayList<>();
+        this.orients = new ArrayList<>();
     }
 
     /**
      * Copy constructor.
      */
-    public GraphChange(GraphChange source) {
-        removes = new ArrayList<>(source.removes);
-        colliders = new ArrayList<>(source.colliders);
-        nonColliders = new ArrayList<>(source.nonColliders);
-        orients = new ArrayList<>(source.orients);
+    public GraphChange(final GraphChange source) {
+        this.removes = new ArrayList<>(source.removes);
+        this.colliders = new ArrayList<>(source.colliders);
+        this.nonColliders = new ArrayList<>(source.nonColliders);
+        this.orients = new ArrayList<>(source.orients);
     }
 
 
     /**
      * Absorbs all changes from the GraphChange other into the calling GraphChange.
      */
-    public void union(GraphChange other) {
-        removes.addAll(other.removes);
-        colliders.addAll(other.colliders);
-        nonColliders.addAll(other.nonColliders);
-        orients.addAll(other.orients);
+    public void union(final GraphChange other) {
+        this.removes.addAll(other.removes);
+        this.colliders.addAll(other.colliders);
+        this.nonColliders.addAll(other.nonColliders);
+        this.orients.addAll(other.orients);
     }
 
 
     /**
      * Consistency check, nonexhaustive, but catches the most blatant inconsistencies.
      */
-    public boolean isConsistent(GraphChange other) {
+    public boolean isConsistent(final GraphChange other) {
 
         /* checks same triples being marked as colliders and non colliders */
-        for (Triple colide : colliders)
+        for (final Triple colide : this.colliders)
             if (other.nonColliders.contains(colide))
                 return false;
-        for (Triple nonColide : nonColliders)
+        for (final Triple nonColide : this.nonColliders)
             if (other.colliders.contains(nonColide))
                 return false;
 
-        Collection colidePairsOther = this.makePairs(other.colliders);
-        Collection nonColidePairsOther = this.makePairs(other.nonColliders);
+        final Collection colidePairsOther = makePairs(other.colliders);
+        final Collection nonColidePairsOther = makePairs(other.nonColliders);
 
         /* checks for overlap between removes and noncolliders */
-        for (Edge e : removes) {
-            NodePair rem = new NodePair(e.getNode1(), e.getNode2());
+        for (final Edge e : this.removes) {
+            final NodePair rem = new NodePair(e.getNode1(), e.getNode2());
             if (colidePairsOther.contains(rem) || nonColidePairsOther.contains(rem)
                     || other.orients.contains(rem))
                 return false;
         }
 
-        Collection colidePairsThis = this.makePairs(colliders);
-        Collection nonColidePairsThis = this.makePairs(nonColliders);
+        final Collection colidePairsThis = makePairs(this.colliders);
+        final Collection nonColidePairsThis = makePairs(this.nonColliders);
 
         /* checks for overlap between removes and colliders/orients*/
-        for (Edge e : other.removes) {
-            NodePair rem = new NodePair(e.getNode1(), e.getNode2());
+        for (final Edge e : other.removes) {
+            final NodePair rem = new NodePair(e.getNode1(), e.getNode2());
             if (colidePairsThis.contains(rem) || nonColidePairsThis.contains(rem)
-                    || orients.contains(rem))
+                    || this.orients.contains(rem))
                 return false;
         }
 
@@ -118,23 +118,23 @@ public class GraphChange {
      * Outputs a new PAG, a copy of the input excepting the applied changes of this object. Will return null if some
      * change fails (ie an obscure inconsistensy).
      */
-    public Graph applyTo(Graph graph) {
+    public Graph applyTo(final Graph graph) {
         Graph output = new EdgeListGraph(graph);
-        output = this.makeNewEdges(output);
+        output = makeNewEdges(output);
 
-        for (Triple t : nonColliders)
+        for (final Triple t : this.nonColliders)
             output.addUnderlineTriple(t.getX(), t.getY(), t.getZ());
 
-        for (Edge e : removes)
+        for (final Edge e : this.removes)
             if (!output.removeEdge(e))
                 return null;
 
-        Collection<OrderedNodePair> allOrients = this.makePairs(colliders);
-        allOrients.addAll(this.pairToOrdered(orients));
+        final Collection<OrderedNodePair> allOrients = makePairs(this.colliders);
+        allOrients.addAll(pairToOrdered(this.orients));
 
-        for (OrderedNodePair or : allOrients) {
-            Node to = or.getSecond();
-            Node from = or.getFirst();
+        for (final OrderedNodePair or : allOrients) {
+            final Node to = or.getSecond();
+            final Node from = or.getFirst();
 
             if (!output.setEndpoint(from, to, Endpoint.ARROW))
                 return null;
@@ -147,32 +147,32 @@ public class GraphChange {
     /**
      * Add another remove operation to the GraphChange.
      */
-    public void addRemove(Edge removalEdge) {
-        removes.add(removalEdge);
+    public void addRemove(final Edge removalEdge) {
+        this.removes.add(removalEdge);
     }
 
 
     /**
      * Add another collider operation to the GraphChange.
      */
-    public void addCollider(Triple colliderTrip) {
-        colliders.add(colliderTrip);
+    public void addCollider(final Triple colliderTrip) {
+        this.colliders.add(colliderTrip);
     }
 
 
     /**
      * Add another non-collider operation to the GraphChange.
      */
-    public void addNonCollider(Triple nonColliderTrip) {
-        nonColliders.add(nonColliderTrip);
+    public void addNonCollider(final Triple nonColliderTrip) {
+        this.nonColliders.add(nonColliderTrip);
     }
 
 
     /**
      * Add another orient operation to the GraphChange.
      */
-    public void addOrient(Node from, Node to) {
-        orients.add(new NodePair(from, to));
+    public void addOrient(final Node from, final Node to) {
+        this.orients.add(new NodePair(from, to));
     }
 
 
@@ -180,11 +180,11 @@ public class GraphChange {
      * Contains is defined such that if the internal strucs of this GraphChange all individually contain the elements in
      * the corresponding strucs of GraphChange gc, then this "contains" gc.
      */
-    public boolean contains(GraphChange gc) {
-        if (!removes.containsAll(gc.removes)) return false;
-        if (!colliders.containsAll(gc.colliders)) return false;
-        if (!nonColliders.containsAll(gc.nonColliders)) return false;
-        return orients.containsAll(gc.orients);
+    public boolean contains(final GraphChange gc) {
+        if (!this.removes.containsAll(gc.removes)) return false;
+        if (!this.colliders.containsAll(gc.colliders)) return false;
+        if (!this.nonColliders.containsAll(gc.nonColliders)) return false;
+        return this.orients.containsAll(gc.orients);
     }
 
 
@@ -194,14 +194,14 @@ public class GraphChange {
     public String toString() {
         String ret = "[ ";
 //        ret = "\n" + super.toString();
-        if (!removes.isEmpty())
-            ret = ret + "\n removes: " + removes;
-        if (!colliders.isEmpty())
-            ret = ret + "\n colliders: " + colliders;
-        if (!nonColliders.isEmpty())
-            ret = ret + "\n nonColliders: " + nonColliders;
-        if (!orients.isEmpty())
-            ret = ret + "\n orient: " + orients;
+        if (!this.removes.isEmpty())
+            ret = ret + "\n removes: " + this.removes;
+        if (!this.colliders.isEmpty())
+            ret = ret + "\n colliders: " + this.colliders;
+        if (!this.nonColliders.isEmpty())
+            ret = ret + "\n nonColliders: " + this.nonColliders;
+        if (!this.orients.isEmpty())
+            ret = ret + "\n orient: " + this.orients;
         ret = ret + " ]";
         return ret;
     }
@@ -210,28 +210,28 @@ public class GraphChange {
      * Return colliders
      */
     public List<Triple> getColliders() {
-        return colliders;
+        return this.colliders;
     }
 
     /**
      * Return noncolliders
      */
     public List<Triple> getNoncolliders() {
-        return nonColliders;
+        return this.nonColliders;
     }
 
     /**
      * Return removes
      */
     public List<Edge> getRemoves() {
-        return removes;
+        return this.removes;
     }
 
     /**
      * Return orients
      */
     public List<NodePair> getOrients() {
-        return orients;
+        return this.orients;
     }
 
 
@@ -239,24 +239,24 @@ public class GraphChange {
      * Equals is defined such that if the internal strucs of this GraphChange all individually equal the corresponding
      * strucs of GraphChange gc, then this "equals" gc
      */
-    public boolean equals(Object other) {
+    public boolean equals(final Object other) {
         if (!(other instanceof GraphChange))
             return false;
-        GraphChange otherGC = (GraphChange) other;
+        final GraphChange otherGC = (GraphChange) other;
 
-        return otherGC.removes.equals(removes) &&
-                otherGC.colliders.equals(colliders) &&
-                otherGC.nonColliders.equals(nonColliders) &&
-                otherGC.orients.equals(orients);
+        return otherGC.removes.equals(this.removes) &&
+                otherGC.colliders.equals(this.colliders) &&
+                otherGC.nonColliders.equals(this.nonColliders) &&
+                otherGC.orients.equals(this.orients);
     }
 
 
     public int hashCode() {
         int hash = 1;
-        hash *= 17 * removes.hashCode();
-        hash *= 19 * colliders.hashCode();
-        hash *= 7 * nonColliders.hashCode();
-        hash *= 23 * orients.hashCode();
+        hash *= 17 * this.removes.hashCode();
+        hash *= 19 * this.colliders.hashCode();
+        hash *= 7 * this.nonColliders.hashCode();
+        hash *= 23 * this.orients.hashCode();
         return hash;
     }
 
@@ -268,10 +268,10 @@ public class GraphChange {
      * <p>
      * /** creates OrderedNodePairs out of given List. For use in consistent and applyTo
      */
-    private Collection<OrderedNodePair> makePairs(List<Triple> input) {
-        HashSet<OrderedNodePair> outputPairs = new HashSet<>();
-        for (Triple trip : input) {
-            Node y = trip.getY();
+    private Collection<OrderedNodePair> makePairs(final List<Triple> input) {
+        final HashSet<OrderedNodePair> outputPairs = new HashSet<>();
+        for (final Triple trip : input) {
+            final Node y = trip.getY();
             outputPairs.add(new OrderedNodePair(trip.getX(), y));
             outputPairs.add(new OrderedNodePair(trip.getZ(), y));
         }
@@ -281,10 +281,10 @@ public class GraphChange {
     /**
      * Creates a List of OrderedNodePairs from a datastructure of NodePairs.
      */
-    private Collection<OrderedNodePair> pairToOrdered(List<NodePair> orig) {
-        List<OrderedNodePair> ordered = new ArrayList<>(orig.size());
+    private Collection<OrderedNodePair> pairToOrdered(final List<NodePair> orig) {
+        final List<OrderedNodePair> ordered = new ArrayList<>(orig.size());
 
-        for (NodePair p : orig) {
+        for (final NodePair p : orig) {
             ordered.add(new OrderedNodePair(p.getFirst(), p.getSecond()));
         }
 
@@ -295,11 +295,11 @@ public class GraphChange {
      * Takes a graph and recreates all edges. Used in order to copy a graph, because the copy constructor does not go
      * all the way down through the datastructures to make entirely new objects for everything
      */
-    private Graph makeNewEdges(Graph graph) {
-        Set<Edge> origEdges = graph.getEdges();
+    private Graph makeNewEdges(final Graph graph) {
+        final Set<Edge> origEdges = graph.getEdges();
 
-        for (Edge e : origEdges) {
-            Edge newEdge = new Edge(e.getNode1(), e.getNode2(),
+        for (final Edge e : origEdges) {
+            final Edge newEdge = new Edge(e.getNode1(), e.getNode2(),
                     e.getEndpoint1(), e.getEndpoint2());
             graph.removeEdge(e);
             graph.addEdge(newEdge);
@@ -315,20 +315,20 @@ public class GraphChange {
      */
     private class OrderedNodePair extends NodePair {
 
-        public OrderedNodePair(Node first, Node second) {
+        public OrderedNodePair(final Node first, final Node second) {
             super(first, second);
         }
 
-        public boolean equals(Object o) {
+        public boolean equals(final Object o) {
             if (o == this) {
                 return true;
             }
             if (!(o instanceof NodePair)) {
                 return false;
             }
-            NodePair thatPair = (NodePair) o;
-            return getFirst().equals(thatPair.getFirst())
-                    && getSecond().equals(thatPair.getSecond());
+            final NodePair thatPair = (NodePair) o;
+            return this.getFirst().equals(thatPair.getFirst())
+                    && this.getSecond().equals(thatPair.getSecond());
 
         }
     }

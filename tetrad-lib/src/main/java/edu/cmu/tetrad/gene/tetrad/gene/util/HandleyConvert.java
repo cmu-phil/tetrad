@@ -49,16 +49,16 @@ public class HandleyConvert {
      *            main javadoc for this class.
      * @param out the printstream to write the converted graph to.
      */
-    private void convert(BufferedReader in, PrintStream out) {
+    private void convert(final BufferedReader in, final PrintStream out) {
         try {
-            LagGraph lagGraph = new BasicLagGraph();
+            final LagGraph lagGraph = new BasicLagGraph();
             String line = null;
 
             while ((line = in.readLine()) != null) {
-                this.addEdges(line, lagGraph);
+                addEdges(line, lagGraph);
             }
             out.print(lagGraph);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
         }
     }
@@ -70,12 +70,12 @@ public class HandleyConvert {
      *
      * @param line the input line described above.
      */
-    private void addEdges(String line, LagGraph lagGraph) {
-        StringTokenizer st = new StringTokenizer(line);
-        String cause = st.nextToken();
+    private void addEdges(final String line, final LagGraph lagGraph) {
+        final StringTokenizer st = new StringTokenizer(line);
+        final String cause = st.nextToken();
 
         while (st.hasMoreTokens()) {
-            String effect = st.nextToken();
+            final String effect = st.nextToken();
             if (effect == "") {
                 continue;
             }
@@ -94,21 +94,21 @@ public class HandleyConvert {
      *             has been saved out using the toString() method of the
      *             edu.cmu.genehistory.kernel.UpdateGraph class.
      */
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
         if (args.length != 1) {
             throw new IllegalArgumentException("Expecting exactly one " +
                     "argument, the filename " + "of the file to translate.");
         }
 
         try {
-            File inFile = new File(args[0]);
-            File outFile = new File(inFile.getName() + ".out");
-            BufferedReader in = new BufferedReader(new FileReader(inFile));
-            PrintStream out = new PrintStream(new FileOutputStream(outFile));
+            final File inFile = new File(args[0]);
+            final File outFile = new File(inFile.getName() + ".out");
+            final BufferedReader in = new BufferedReader(new FileReader(inFile));
+            final PrintStream out = new PrintStream(new FileOutputStream(outFile));
 
             new HandleyConvert().convert(in, out);
             out.close();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
         }
     }

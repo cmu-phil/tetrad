@@ -37,15 +37,15 @@ public class TestGraphWorkbench {
     private GraphWorkbench graphWorkbench;
 
     public void setUp() {
-        graphWorkbench = new GraphWorkbench(new EdgeListGraph());
+        this.graphWorkbench = new GraphWorkbench(new EdgeListGraph());
     }
 
     @Test
     public void testNextVariableName() {
-        this.setUp();
+        setUp();
 
         // change the workbench.
-        assertTrue("X1".equals(graphWorkbench.nextVariableName("X")));
+        assertTrue("X1".equals(this.graphWorkbench.nextVariableName("X")));
     }
 }
 

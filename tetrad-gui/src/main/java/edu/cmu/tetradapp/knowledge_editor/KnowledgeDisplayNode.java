@@ -44,26 +44,26 @@ public class KnowledgeDisplayNode extends DisplayNode {
     /**
      * Constructs a new measured workbench node.
      */
-    public KnowledgeDisplayNode(Node modelNode) {
-        this.setModelNode(modelNode);
-        this.setBackground(DisplayNodeUtils.getNodeFillColor());
-        this.setFont(DisplayNodeUtils.getFont());
+    public KnowledgeDisplayNode(final Node modelNode) {
+        setModelNode(modelNode);
+        setBackground(DisplayNodeUtils.getNodeFillColor());
+        setFont(DisplayNodeUtils.getFont());
     }
 
     /**
      * Determines whether the given coordinate lie inside the component.
      */
-    public boolean contains(int x, int y) {
-        return this.getShape().contains(x, y);
+    public boolean contains(final int x, final int y) {
+        return getShape().contains(x, y);
     }
 
     /**
      * Calculates the size of the component based on its name.
      */
     public Dimension getPreferredSize() {
-        FontMetrics fm = this.getFontMetrics(DisplayNodeUtils.getFont());
-        int width = fm.stringWidth(this.getName()) + 11;
-        int height = fm.getMaxAscent() + 6;
+        final FontMetrics fm = getFontMetrics(DisplayNodeUtils.getFont());
+        final int width = fm.stringWidth(getName()) + 11;
+        final int height = fm.getMaxAscent() + 6;
         return new Dimension(width, height);
     }
 
@@ -72,8 +72,8 @@ public class KnowledgeDisplayNode extends DisplayNode {
      */
     private Shape getShape() {
         return new Rectangle2D.Double(0, 0,
-                this.getPreferredSize().width - 1,
-                this.getPreferredSize().height - 1);
+                getPreferredSize().width - 1,
+                getPreferredSize().height - 1);
     }
 
     /**
@@ -81,30 +81,30 @@ public class KnowledgeDisplayNode extends DisplayNode {
      *
      * @param graph Strings which are invalid names for this node.
      */
-    public void doDoubleClickAction(Graph graph) {
+    public void doDoubleClickAction(final Graph graph) {
         String newName;
-        List<Node> nodes = graph.getNodes();
+        final List<Node> nodes = graph.getNodes();
 
-        JCheckBox latentCheckBox = new JCheckBox("Latent", false);
+        final JCheckBox latentCheckBox = new JCheckBox("Latent", false);
 
         loop:
         while (true) {
-            JTextField nameField = new JTextField(8);
+            final JTextField nameField = new JTextField(8);
 
-            nameField.setText(this.getName());
+            nameField.setText(getName());
             nameField.setCaretPosition(0);
-            nameField.moveCaretPosition(this.getName().length());
+            nameField.moveCaretPosition(getName().length());
 
-            JPanel message = new JPanel();
+            final JPanel message = new JPanel();
 
             message.add(new JLabel("Name:"));
             message.add(nameField);
 
             message.add(latentCheckBox);
 
-            JOptionPane pane = new JOptionPane(message,
+            final JOptionPane pane = new JOptionPane(message,
                     JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
-            JDialog dialog = pane.createDialog(this, "Node Properties");
+            final JDialog dialog = pane.createDialog(this, "Node Properties");
 
             dialog.pack();
             dialog.setVisible(true);
@@ -119,9 +119,9 @@ public class KnowledgeDisplayNode extends DisplayNode {
             }
             // Tests that newName is not in the nodes list.
             else if (nodes != null) {
-                for (Node node : nodes) {
+                for (final Node node : nodes) {
                     if (newName.equals(node.toString()) &&
-                            !newName.equals(getModelNode().getName())) {
+                            !newName.equals(this.getModelNode().getName())) {
                         JOptionPane.showMessageDialog(
                                 JOptionUtils.centeringComp(), "The name '" +
                                         newName + "' is already being used." +
@@ -136,20 +136,20 @@ public class KnowledgeDisplayNode extends DisplayNode {
 
         boolean changed = false;
 
-        if (getModelNode() != null /*&&
+        if (this.getModelNode() != null /*&&
                 !newName.equals(super.getModelNode().getNode())*/) {
-            getModelNode().setName(newName);
+            this.getModelNode().setName(newName);
             changed = true;
         }
 
         if (latentCheckBox.isSelected()) {
-            getModelNode().setNodeType(NodeType.LATENT);
-            this.firePropertyChange("resetGraph", null, null);
+            this.getModelNode().setNodeType(NodeType.LATENT);
+            firePropertyChange("resetGraph", null, null);
             changed = true;
         }
 
         if (changed) {
-            this.firePropertyChange("editingValueChanged", null, null);
+            firePropertyChange("editingValueChanged", null, null);
         }
     }
 
@@ -157,7 +157,7 @@ public class KnowledgeDisplayNode extends DisplayNode {
      * Launches an editor for this node.
      */
     public void doDoubleClickAction() {
-        this.doDoubleClickAction(null);
+        doDoubleClickAction(null);
     }
 
     /**
@@ -165,18 +165,18 @@ public class KnowledgeDisplayNode extends DisplayNode {
      *
      * @param g the graphics context.
      */
-    public void paint(Graphics g) {
-        Graphics2D g2 = (Graphics2D) g;
-        FontMetrics fm = this.getFontMetrics(DisplayNodeUtils.getFont());
+    public void paint(final Graphics g) {
+        final Graphics2D g2 = (Graphics2D) g;
+        final FontMetrics fm = getFontMetrics(DisplayNodeUtils.getFont());
         final int stringX = 6;
-        int stringY = fm.getMaxAscent() + 1;
+        final int stringY = fm.getMaxAscent() + 1;
 
-        g2.setColor(this.isSelected() ? DisplayNodeUtils.getNodeSelectedFillColor() : DisplayNodeUtils.getNodeFillColor());
-        g2.fill(this.getShape());
+        g2.setColor(isSelected() ? DisplayNodeUtils.getNodeSelectedFillColor() : DisplayNodeUtils.getNodeFillColor());
+        g2.fill(getShape());
         g2.setColor(Color.BLACK);
-        g2.draw(this.getShape());
+        g2.draw(getShape());
         g2.setColor(Color.BLACK);
-        g2.drawString(this.getName(), stringX, stringY);
+        g2.drawString(getName(), stringX, stringY);
     }
 }
 

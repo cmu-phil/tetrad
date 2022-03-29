@@ -38,7 +38,7 @@ public class TestPolynomial extends TestCase {
     /**
      * Standard constructor for JUnit test cases.
      */
-    public TestPolynomial(String name) {
+    public TestPolynomial(final String name) {
         super(name);
     }
 
@@ -46,16 +46,16 @@ public class TestPolynomial extends TestCase {
      * Tests to make sure that null parent throw an exception.
      */
     public void testConstruction() {
-        PolynomialTerm term0 = new PolynomialTerm(1.0, new int[]{0});
-        PolynomialTerm term1 = new PolynomialTerm(1.0, new int[]{1});
-        PolynomialTerm term2 = new PolynomialTerm(1.0, new int[]{2, 3});
+        final PolynomialTerm term0 = new PolynomialTerm(1.0, new int[]{0});
+        final PolynomialTerm term1 = new PolynomialTerm(1.0, new int[]{1});
+        final PolynomialTerm term2 = new PolynomialTerm(1.0, new int[]{2, 3});
 
-        List terms = new ArrayList();
+        final List terms = new ArrayList();
         terms.add(term0);
         terms.add(term1);
         terms.add(term2);
 
-        Polynomial p = new Polynomial(terms);
+        final Polynomial p = new Polynomial(terms);
 
         System.out.println(p);
     }
@@ -64,18 +64,18 @@ public class TestPolynomial extends TestCase {
      * Test the evaluation of terms.
      */
     public void testEvaluation() {
-        PolynomialTerm term0 = new PolynomialTerm(1.0, new int[]{0});
-        PolynomialTerm term1 = new PolynomialTerm(1.0, new int[]{1});
-        PolynomialTerm term2 = new PolynomialTerm(1.0, new int[]{2, 3});
+        final PolynomialTerm term0 = new PolynomialTerm(1.0, new int[]{0});
+        final PolynomialTerm term1 = new PolynomialTerm(1.0, new int[]{1});
+        final PolynomialTerm term2 = new PolynomialTerm(1.0, new int[]{2, 3});
 
-        List terms = new ArrayList();
+        final List terms = new ArrayList();
         terms.add(term0);
         terms.add(term1);
         terms.add(term2);
 
-        Polynomial p = new Polynomial(terms);
+        final Polynomial p = new Polynomial(terms);
 
-        double[] values = {1.0, 2.0, 3.0, 4.0};
+        final double[] values = {1.0, 2.0, 3.0, 4.0};
 
         TestCase.assertEquals(15.0, p.evaluate(values), 0.00001);
     }

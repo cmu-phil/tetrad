@@ -28,7 +28,7 @@ package edu.cmu.tetrad.session;
  * @author Joseph Ramsey
  */
 public interface Executable {
-    @SuppressWarnings({"UnusedDeclaration"})
+    @SuppressWarnings("UnusedDeclaration")
     long serialVersionUID = 23L;
 
     /**

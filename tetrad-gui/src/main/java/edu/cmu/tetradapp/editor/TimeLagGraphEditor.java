@@ -34,7 +34,7 @@ import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.workbench.*;
 
-import javax.help.CSH.DisplayHelpFromSource;
+import javax.help.CSH;
 import javax.help.HelpBroker;
 import javax.help.HelpSet;
 import javax.swing.*;
@@ -73,12 +73,12 @@ public final class TimeLagGraphEditor extends JPanel
     private final EdgeTypeTable edgeTypeTable;
 
     //===========================CONSTRUCTOR========================//
-    public TimeLagGraphEditor(TimeLagGraphWrapper timeLagGraphWrapper) {
-        this.setLayout(new BorderLayout());
-        layoutEditable = this;
-        edgeTypeTable = new EdgeTypeTable();
+    public TimeLagGraphEditor(final TimeLagGraphWrapper timeLagGraphWrapper) {
+        setLayout(new BorderLayout());
+        this.layoutEditable = this;
+        this.edgeTypeTable = new EdgeTypeTable();
 
-        this.initUI(timeLagGraphWrapper);
+        initUI(timeLagGraphWrapper);
     }
 
     //===========================PUBLIC METHODS========================//
@@ -87,10 +87,10 @@ public final class TimeLagGraphEditor extends JPanel
      * Sets the name of this editor.
      */
     @Override
-    public final void setName(String name) {
-        String oldName = this.getName();
+    public final void setName(final String name) {
+        final String oldName = getName();
         super.setName(name);
-        this.firePropertyChange("name", oldName, this.getName());
+        firePropertyChange("name", oldName, getName());
     }
 
     /**
@@ -102,9 +102,9 @@ public final class TimeLagGraphEditor extends JPanel
      */
     @Override
     public List getSelectedModelComponents() {
-        List<Component> selectedComponents
-                = this.getWorkbench().getSelectedComponents();
-        List<TetradSerializable> selectedModelComponents
+        final List<Component> selectedComponents
+                = getWorkbench().getSelectedComponents();
+        final List<TetradSerializable> selectedModelComponents
                 = new ArrayList<>();
 
         selectedComponents.forEach(comp -> {
@@ -122,46 +122,46 @@ public final class TimeLagGraphEditor extends JPanel
      * Pastes list of session elements into the workbench.
      */
     @Override
-    public void pasteSubsession(List sessionElements, Point upperLeft) {
-        this.getWorkbench().pasteSubgraph(sessionElements, upperLeft);
-        this.getWorkbench().deselectAll();
+    public void pasteSubsession(final List sessionElements, final Point upperLeft) {
+        getWorkbench().pasteSubgraph(sessionElements, upperLeft);
+        getWorkbench().deselectAll();
 
         for (int i = 0; i < sessionElements.size(); i++) {
 
-            Object o = sessionElements.get(i);
+            final Object o = sessionElements.get(i);
 
             if (o instanceof GraphNode) {
-                Node modelNode = (Node) o;
-                this.getWorkbench().selectNode(modelNode);
+                final Node modelNode = (Node) o;
+                getWorkbench().selectNode(modelNode);
             }
         }
 
-        this.getWorkbench().selectConnectingEdges();
+        getWorkbench().selectConnectingEdges();
     }
 
     @Override
     public GraphWorkbench getWorkbench() {
-        return workbench;
+        return this.workbench;
     }
 
     @Override
     public Graph getGraph() {
-        return this.getWorkbench().getGraph();
+        return getWorkbench().getGraph();
     }
 
     @Override
     public Map getModelEdgesToDisplay() {
-        return this.getWorkbench().getModelEdgesToDisplay();
+        return getWorkbench().getModelEdgesToDisplay();
     }
 
     @Override
     public Map getModelNodesToDisplay() {
-        return this.getWorkbench().getModelNodesToDisplay();
+        return getWorkbench().getModelNodesToDisplay();
     }
 
     @Override
-    public void setGraph(Graph graph) {
-        this.getWorkbench().setGraph(graph);
+    public void setGraph(final Graph graph) {
+        getWorkbench().setGraph(graph);
     }
 
     @Override
@@ -171,12 +171,12 @@ public final class TimeLagGraphEditor extends JPanel
 
     @Override
     public Graph getSourceGraph() {
-        return this.getWorkbench().getGraph();
+        return getWorkbench().getGraph();
     }
 
     @Override
-    public void layoutByGraph(Graph graph) {
-        this.getWorkbench().layoutByGraph(graph);
+    public void layoutByGraph(final Graph graph) {
+        getWorkbench().layoutByGraph(graph);
     }
 
     @Override
@@ -186,82 +186,82 @@ public final class TimeLagGraphEditor extends JPanel
 
     @Override
     public Rectangle getVisibleRect() {
-        return this.getWorkbench().getVisibleRect();
+        return getWorkbench().getVisibleRect();
     }
 
     //===========================PRIVATE METHODS======================//
-    private void initUI(TimeLagGraphWrapper timeLagGraphWrapper) {
-        TimeLagGraph graph = (TimeLagGraph) timeLagGraphWrapper.getGraph();
+    private void initUI(final TimeLagGraphWrapper timeLagGraphWrapper) {
+        final TimeLagGraph graph = (TimeLagGraph) timeLagGraphWrapper.getGraph();
 
-        workbench = new TimeLagGraphWorkbench(graph);
+        this.workbench = new TimeLagGraphWorkbench(graph);
 
-        workbench.addPropertyChangeListener((PropertyChangeEvent evt) -> {
-            String propertyName = evt.getPropertyName();
+        this.workbench.addPropertyChangeListener((PropertyChangeEvent evt) -> {
+            final String propertyName = evt.getPropertyName();
 
             // Update the bootstrap table if there's changes to the edges or node renaming
-            String[] events = {"graph", "edgeAdded", "edgeRemoved"};
+            final String[] events = {"graph", "edgeAdded", "edgeRemoved"};
 
             if (Arrays.asList(events).contains(propertyName)) {
-                if (this.getWorkbench() != null) {
-                    TimeLagGraph targetGraph = (TimeLagGraph) this.getWorkbench().getGraph();
+                if (getWorkbench() != null) {
+                    final TimeLagGraph targetGraph = (TimeLagGraph) getWorkbench().getGraph();
 
                     // Update the timeLagGraphWrapper
                     timeLagGraphWrapper.setGraph(targetGraph);
                     // Also need to update the UI
-                    this.updateBootstrapTable(targetGraph);
+                    updateBootstrapTable(targetGraph);
                 }
             } else if ("modelChanged".equals(propertyName)) {
-                this.firePropertyChange("modelChanged", null, null);
+                firePropertyChange("modelChanged", null, null);
             }
         });
 
 //         Graph menu at the very top of the window
-        JMenuBar menuBar = this.createGraphMenuBar();
+        final JMenuBar menuBar = createGraphMenuBar();
 
         // topBox Left side toolbar
-        DagGraphToolbar graphToolbar = new DagGraphToolbar(this.getWorkbench());
+        final DagGraphToolbar graphToolbar = new DagGraphToolbar(getWorkbench());
         graphToolbar.setMaximumSize(new Dimension(140, 450));
 
         // topBox right side graph editor
-        graphEditorScroll.setPreferredSize(new Dimension(760, 450));
-        graphEditorScroll.setViewportView(workbench);
+        this.graphEditorScroll.setPreferredSize(new Dimension(760, 450));
+        this.graphEditorScroll.setViewportView(this.workbench);
 
         // topBox contains the topGraphBox and the instructionBox underneath
-        Box topBox = Box.createVerticalBox();
+        final Box topBox = Box.createVerticalBox();
         topBox.setPreferredSize(new Dimension(820, 400));
 
         // topGraphBox contains the vertical graph toolbar and graph editor
-        Box topGraphBox = Box.createHorizontalBox();
+        final Box topGraphBox = Box.createHorizontalBox();
         topGraphBox.add(graphToolbar);
-        topGraphBox.add(graphEditorScroll);
+        topGraphBox.add(this.graphEditorScroll);
 
         // Instruction with info button
-        Box instructionBox = Box.createHorizontalBox();
+        final Box instructionBox = Box.createHorizontalBox();
         instructionBox.setMaximumSize(new Dimension(820, 40));
 
-        JLabel label = new JLabel("Double click variable/node rectangle to change name. More information on graph edge types and colorings");
+        final JLabel label = new JLabel("Double click variable/node rectangle to change name. More information on graph edge types and colorings");
         label.setFont(new Font("SansSerif", Font.PLAIN, 12));
 
         // Info button added by Zhou to show edge types
-        JButton infoBtn = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
+        final JButton infoBtn = new JButton(new ImageIcon(ImageUtils.getImage(this, "info.png")));
         infoBtn.setBorder(new EmptyBorder(0, 0, 0, 0));
 
         // Clock info button to show edge types instructions - Zhou
         infoBtn.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 // Initialize helpSet
                 final String helpHS = "/resources/javahelp/TetradHelp.hs";
 
                 try {
-                    URL url = getClass().getResource(helpHS);
-                    HelpSet helpSet = new HelpSet(null, url);
+                    final URL url = this.getClass().getResource(helpHS);
+                    final HelpSet helpSet = new HelpSet(null, url);
 
                     helpSet.setHomeID("graph_edge_types");
-                    HelpBroker broker = helpSet.createHelpBroker();
-                    ActionListener listener = new DisplayHelpFromSource(broker);
+                    final HelpBroker broker = helpSet.createHelpBroker();
+                    final ActionListener listener = new CSH.DisplayHelpFromSource(broker);
                     listener.actionPerformed(e);
-                } catch (Exception ee) {
+                } catch (final Exception ee) {
                     System.out.println("HelpSet " + ee.getMessage());
                     System.out.println("HelpSet " + helpHS + " not found");
                     throw new IllegalArgumentException();
@@ -277,22 +277,22 @@ public final class TimeLagGraphEditor extends JPanel
         topBox.add(topGraphBox);
         topBox.add(instructionBox);
 
-        edgeTypeTable.setPreferredSize(new Dimension(820, 150));
+        this.edgeTypeTable.setPreferredSize(new Dimension(820, 150));
 
-        JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.BOTTOM);
+        final JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.BOTTOM);
         tabbedPane.addTab("Graph", new PaddingPanel(topBox));
-        tabbedPane.addTab("Edges", edgeTypeTable);
+        tabbedPane.addTab("Edges", this.edgeTypeTable);
 
         // Add to parent container
-        this.add(menuBar, BorderLayout.NORTH);
-        this.add(tabbedPane, BorderLayout.CENTER);
+        add(menuBar, BorderLayout.NORTH);
+        add(tabbedPane, BorderLayout.CENTER);
 
-        edgeTypeTable.update(graph);
+        this.edgeTypeTable.update(graph);
 
         // Performs relayout.
         // It means invalid content is asked for all the sizes and
         // all the subcomponents' sizes are set to proper values by LayoutManager.
-        this.validate();
+        validate();
     }
 
     /**
@@ -300,17 +300,17 @@ public final class TimeLagGraphEditor extends JPanel
      *
      * @param graph
      */
-    private void updateBootstrapTable(Graph graph) {
-        edgeTypeTable.update(graph);
+    private void updateBootstrapTable(final Graph graph) {
+        this.edgeTypeTable.update(graph);
 
-        this.validate();
+        validate();
     }
 
     private JMenuBar createGraphMenuBar() {
-        JMenuBar menuBar = new JMenuBar();
+        final JMenuBar menuBar = new JMenuBar();
 
-        JMenu fileMenu = new GraphFileMenu(this, this.getWorkbench());
-        JMenu editMenu = this.createNumLagsMenu();
+        final JMenu fileMenu = new GraphFileMenu(this, getWorkbench());
+        final JMenu editMenu = createNumLagsMenu();
 //        JMenu graphMenu = createGraphMenu();
 
         menuBar.add(fileMenu);
@@ -328,8 +328,8 @@ public final class TimeLagGraphEditor extends JPanel
      * @return this menu.
      */
     private JMenu createNumLagsMenu() {
-        TimeLagGraph graph = (TimeLagGraph) this.getLayoutEditable().getGraph();
-        JMenu edit = new JMenu("Number-of-Lags = " + graph.getMaxLag());
+        final TimeLagGraph graph = (TimeLagGraph) getLayoutEditable().getGraph();
+        final JMenu edit = new JMenu("Number-of-Lags = " + graph.getMaxLag());
 
 //        JMenuItem copy = new JMenuItem(new CopySubgraphAction(this));
 //        JMenuItem paste = new JMenuItem(new PasteSubgraphAction(this));
@@ -342,7 +342,7 @@ public final class TimeLagGraphEditor extends JPanel
 //        edit.add(copy);
 //        edit.add(paste);
 //        edit.addSeparator();
-        JMenuItem configuration = new JMenuItem("Configuration...");
+        final JMenuItem configuration = new JMenuItem("Configuration...");
         edit.add(configuration);
 
         configuration.addActionListener(e -> {
@@ -355,70 +355,70 @@ public final class TimeLagGraphEditor extends JPanel
                 private int maxLag;
                 private int numInitialLags;
 
-                public ConfigurationEditor(TimeLagGraph graph) {
-                    maxLag = graph.getMaxLag();
-                    numInitialLags = graph.getNumInitialLags();
+                public ConfigurationEditor(final TimeLagGraph graph) {
+                    this.maxLag = graph.getMaxLag();
+                    this.numInitialLags = graph.getNumInitialLags();
 
-                    SpinnerModel maxLagSpinnerModel = new SpinnerNumberModel(graph.getMaxLag(), 0, 300, 1);
-                    JSpinner maxLagSpinner = new JSpinner(maxLagSpinnerModel);
+                    final SpinnerModel maxLagSpinnerModel = new SpinnerNumberModel(graph.getMaxLag(), 0, 300, 1);
+                    final JSpinner maxLagSpinner = new JSpinner(maxLagSpinnerModel);
 
                     maxLagSpinner.addChangeListener(e -> {
-                        JSpinner spinner = (JSpinner) e.getSource();
-                        SpinnerNumberModel model = (SpinnerNumberModel) spinner.getModel();
-                        int value = (Integer) model.getValue();
-                        this.setMaxLag(value);
+                        final JSpinner spinner = (JSpinner) e.getSource();
+                        final SpinnerNumberModel model = (SpinnerNumberModel) spinner.getModel();
+                        final int value = (Integer) model.getValue();
+                        setMaxLag(value);
                     });
 
-                    SpinnerModel initialLagsSpinnerModel = new SpinnerNumberModel(graph.getNumInitialLags(), 1, 300, 1);
-                    JSpinner initialLagsSpinner = new JSpinner(initialLagsSpinnerModel);
+                    final SpinnerModel initialLagsSpinnerModel = new SpinnerNumberModel(graph.getNumInitialLags(), 1, 300, 1);
+                    final JSpinner initialLagsSpinner = new JSpinner(initialLagsSpinnerModel);
 
                     initialLagsSpinner.addChangeListener(e -> {
-                        JSpinner spinner = (JSpinner) e.getSource();
-                        SpinnerNumberModel model = (SpinnerNumberModel) spinner.getModel();
-                        int value = (Integer) model.getValue();
-                        this.setNumInitialLags(value);
+                        final JSpinner spinner = (JSpinner) e.getSource();
+                        final SpinnerNumberModel model = (SpinnerNumberModel) spinner.getModel();
+                        final int value = (Integer) model.getValue();
+                        setNumInitialLags(value);
                     });
 
-                    this.setLayout(new BorderLayout());
+                    setLayout(new BorderLayout());
 
-                    Box box = Box.createVerticalBox();
+                    final Box box = Box.createVerticalBox();
 
-                    Box b1 = Box.createHorizontalBox();
+                    final Box b1 = Box.createHorizontalBox();
                     b1.add(new JLabel("Time lag graph configuration:"));
                     b1.add(Box.createHorizontalGlue());
                     box.add(b1);
 
-                    Box b2 = Box.createHorizontalBox();
+                    final Box b2 = Box.createHorizontalBox();
                     b2.add(new JLabel("Maximum Lag = "));
                     b2.add(Box.createHorizontalGlue());
                     b2.add(maxLagSpinner);
                     box.add(b2);
                     box.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-                    this.add(box, BorderLayout.CENTER);
+                    add(box, BorderLayout.CENTER);
                 }
 
                 public int getMaxLag() {
-                    return maxLag;
+                    return this.maxLag;
                 }
 
-                public void setMaxLag(int maxLag) {
+                public void setMaxLag(final int maxLag) {
                     this.maxLag = maxLag;
                     edit.setText("Number-of-Lags = " + maxLag);
                 }
 
                 public int getNumInitialLags() {
-                    return numInitialLags;
+                    return this.numInitialLags;
                 }
 
-                public void setNumInitialLags(int numInitialLags) {
+                public void setNumInitialLags(final int numInitialLags) {
                     this.numInitialLags = numInitialLags;
                 }
             }
 
-            ConfigurationEditor editor = new ConfigurationEditor((TimeLagGraph) this.getGraph());
+            final ConfigurationEditor editor = new ConfigurationEditor((TimeLagGraph) getGraph());
 
-            EditorWindow editorWindow
+            final EditorWindow editorWindow
                     = new EditorWindow(editor, "Configuration...", "Save", true, this);
 
             DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
@@ -427,8 +427,8 @@ public final class TimeLagGraphEditor extends JPanel
 
             editorWindow.addInternalFrameListener(new InternalFrameAdapter() {
                 @Override
-                public void internalFrameClosed(InternalFrameEvent e) {
-                    EditorWindow window = (EditorWindow) e.getSource();
+                public void internalFrameClosed(final InternalFrameEvent e) {
+                    final EditorWindow window = (EditorWindow) e.getSource();
 
                     if (window.isCanceled()) {
                         return;
@@ -437,7 +437,7 @@ public final class TimeLagGraphEditor extends JPanel
                     graph.setMaxLag(editor.getMaxLag());
                     graph.setNumInitialLags(editor.getNumInitialLags());
 
-                    LayoutUtils.lastLayout(TimeLagGraphEditor.this.getLayoutEditable());
+                    LayoutUtils.lastLayout(getLayoutEditable());
 
                 }
             });
@@ -448,17 +448,17 @@ public final class TimeLagGraphEditor extends JPanel
 
     @Override
     public IndependenceTest getIndependenceTest() {
-        Graph graph = this.getWorkbench().getGraph();
-        EdgeListGraph listGraph = new EdgeListGraph(graph);
+        final Graph graph = getWorkbench().getGraph();
+        final EdgeListGraph listGraph = new EdgeListGraph(graph);
         return new IndTestDSep(listGraph);
     }
 
     private LayoutEditable getLayoutEditable() {
-        return layoutEditable;
+        return this.layoutEditable;
     }
 
     private CopyLayoutAction getCopyLayoutAction() {
-        return copyLayoutAction;
+        return this.copyLayoutAction;
     }
 
 }

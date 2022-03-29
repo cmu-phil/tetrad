@@ -55,7 +55,7 @@ public final class DiscreteDiscretizationSpec implements TetradSerializable, Dis
 
     //============================CONSTRUCTORS==========================//
 
-    public DiscreteDiscretizationSpec(int[] remap, List<String> categories) {
+    public DiscreteDiscretizationSpec(final int[] remap, final List<String> categories) {
         if (remap == null) {
             throw new NullPointerException();
         }
@@ -84,11 +84,11 @@ public final class DiscreteDiscretizationSpec implements TetradSerializable, Dis
     //============================PUBLIC METHODS========================//
 
     public List<String> getCategories() {
-        return categories;
+        return this.categories;
     }
 
     public int[] getRemap() {
-        return remap;
+        return this.remap;
     }
 
     /**
@@ -104,7 +104,7 @@ public final class DiscreteDiscretizationSpec implements TetradSerializable, Dis
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }

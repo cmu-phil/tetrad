@@ -44,7 +44,7 @@ public final class IndependenceResult implements TetradSerializable {
     private final Type indep;
     private final double pValue;
 
-    public IndependenceResult(int index, String fact, Type indep, double pValue) {
+    public IndependenceResult(final int index, final String fact, final Type indep, final double pValue) {
         this.index = index;
         this.fact = fact;
         this.indep = indep;
@@ -61,23 +61,23 @@ public final class IndependenceResult implements TetradSerializable {
     }
 
     public int getIndex() {
-        return index;
+        return this.index;
     }
 
     public String getFact() {
-        return fact;
+        return this.fact;
     }
 
     public Type getType() {
-        return indep;
+        return this.indep;
     }
 
     public double getpValue() {
-        return pValue;
+        return this.pValue;
     }
 
     public String toString() {
-        return "Result: " + this.getFact() + "\t" + this.getType() + "\t" + nf.format(this.getpValue());
+        return "Result: " + getFact() + "\t" + getType() + "\t" + IndependenceResult.nf.format(getpValue());
     }
 }
 

@@ -36,33 +36,33 @@ import nu.xom.Text;
  */
 public final class BayesXmlRenderer {
 
-    public static Element getElement(BayesIm bayesIm) {
+    public static Element getElement(final BayesIm bayesIm) {
         if (bayesIm == null) {
             throw new NullPointerException();
         }
 
-        Element element = new Element("bayesNet");
+        final Element element = new Element("bayesNet");
 
-        element.appendChild(getVariablesElement(bayesIm));
-        element.appendChild(getParentsElement(bayesIm));
-        element.appendChild(getCptsElement(bayesIm));
+        element.appendChild(BayesXmlRenderer.getVariablesElement(bayesIm));
+        element.appendChild(BayesXmlRenderer.getParentsElement(bayesIm));
+        element.appendChild(BayesXmlRenderer.getCptsElement(bayesIm));
 
         return element;
     }
 
-    private static Element getVariablesElement(BayesIm bayesIm) {
-        Element element = new Element("bnVariables");
+    private static Element getVariablesElement(final BayesIm bayesIm) {
+        final Element element = new Element("bnVariables");
 
         for (int i = 0; i < bayesIm.getNumNodes(); i++) {
-            Node node = bayesIm.getNode(i);
-            BayesPm bayesPm = bayesIm.getBayesPm();
-            DiscreteVariable variable =
+            final Node node = bayesIm.getNode(i);
+            final BayesPm bayesPm = bayesIm.getBayesPm();
+            final DiscreteVariable variable =
                     (DiscreteVariable) bayesPm.getVariable(node);
-            Element element1 = new Element("discreteVariable");
+            final Element element1 = new Element("discreteVariable");
             element1.addAttribute(new Attribute("name", variable.getName()));
             element1.addAttribute(new Attribute("index", "" + i));
 
-            boolean latent = node.getNodeType() == NodeType.LATENT;
+            final boolean latent = node.getNodeType() == NodeType.LATENT;
 
             if (latent) {
                 element1.addAttribute(new Attribute("latent", "yes"));
@@ -72,7 +72,7 @@ public final class BayesXmlRenderer {
             element1.addAttribute(new Attribute("y", "" + node.getCenterY()));
 
             for (int j = 0; j < variable.getNumCategories(); j++) {
-                Element category = new Element("category");
+                final Element category = new Element("category");
                 category.addAttribute(
                         new Attribute("name", variable.getCategory(j)));
                 category.addAttribute(new Attribute("index", "" + j));
@@ -85,23 +85,23 @@ public final class BayesXmlRenderer {
         return element;
     }
 
-    private static Element getParentsElement(BayesIm bayesIm) {
-        Element parents = new Element("parents");
+    private static Element getParentsElement(final BayesIm bayesIm) {
+        final Element parents = new Element("parents");
 
         for (int i = 0; i < bayesIm.getNumNodes(); i++) {
-            Element variable = new Element("parentsFor");
+            final Element variable = new Element("parentsFor");
             parents.appendChild(variable);
 
-            String varName = bayesIm.getNode(i).getName();
+            final String varName = bayesIm.getNode(i).getName();
             variable.addAttribute(new Attribute("name", varName));
 
-            int[] parentIndices = bayesIm.getParents(i);
+            final int[] parentIndices = bayesIm.getParents(i);
 
             for (int j = 0; j < parentIndices.length; j++) {
-                Element parent = new Element("parent");
+                final Element parent = new Element("parent");
                 variable.appendChild(parent);
 
-                Node parentNode = bayesIm.getNode(parentIndices[j]);
+                final Node parentNode = bayesIm.getNode(parentIndices[j]);
                 parent.addAttribute(
                         new Attribute("name", parentNode.getName()));
                 parent.addAttribute(new Attribute("index", "" + j));
@@ -113,34 +113,34 @@ public final class BayesXmlRenderer {
         return parents;
     }
 
-    private static Element getCptsElement(BayesIm bayesIm) {
-        Element cpts = new Element("cpts");
+    private static Element getCptsElement(final BayesIm bayesIm) {
+        final Element cpts = new Element("cpts");
         cpts.addAttribute(new Attribute("rowSumTolerance", "0.0001"));
 
         for (int i = 0; i < bayesIm.getNumNodes(); i++) {
-            Element cpt = new Element("cpt");
+            final Element cpt = new Element("cpt");
             cpts.appendChild(cpt);
 
-            String varName = bayesIm.getNode(i).getName();
-            int numRows = bayesIm.getNumRows(i);
-            int numCols = bayesIm.getNumColumns(i);
+            final String varName = bayesIm.getNode(i).getName();
+            final int numRows = bayesIm.getNumRows(i);
+            final int numCols = bayesIm.getNumColumns(i);
 
             cpt.addAttribute(new Attribute("variable", varName));
             cpt.addAttribute(new Attribute("numRows", "" + numRows));
             cpt.addAttribute(new Attribute("numCols", "" + numCols));
 
             for (int j = 0; j < numRows; j++) {
-                Element row = new Element("row");
+                final Element row = new Element("row");
                 cpt.appendChild(row);
 
-                StringBuilder buf = new StringBuilder();
+                final StringBuilder buf = new StringBuilder();
 
                 for (int k = 0; k < numCols; k++) {
-                    double probability = bayesIm.getProbability(i, j, k);
+                    final double probability = bayesIm.getProbability(i, j, k);
                     buf.append(NumberFormatUtil.getInstance().getNumberFormat().format(probability)).append(" ");
                 }
 
-                String s = buf.toString();
+                final String s = buf.toString();
                 row.appendChild(new Text(s.trim()));
             }
         }

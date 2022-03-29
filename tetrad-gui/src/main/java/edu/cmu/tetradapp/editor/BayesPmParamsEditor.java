@@ -56,7 +56,7 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
     public BayesPmParamsEditor() {
     }
 
-    public void setParams(Parameters params) {
+    public void setParams(final Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
@@ -64,58 +64,58 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
         this.params = params;
     }
 
-    public void setParentModels(Object[] parentModels) {
+    public void setParentModels(final Object[] parentModels) {
         // Do nothing.
     }
 
     public void setup() {
-        lowerBoundField = new IntTextField(this.getParams().getInt("lowerBoundNumVals", 2), 4);
-        lowerBoundField.setFilter((value, oldValue) -> {
+        this.lowerBoundField = new IntTextField(getParams().getInt("lowerBoundNumVals", 2), 4);
+        this.lowerBoundField.setFilter((value, oldValue) -> {
             try {
-                this.getParams().set("lowerBoundNumVals", value);
+                getParams().set("lowerBoundNumVals", value);
                 return value;
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 return oldValue;
             }
         });
 
-        upperBoundField = new IntTextField(this.getParams().getInt("upperBoundNumVals", 4), 4);
-        upperBoundField.setFilter((value, oldValue) -> {
+        this.upperBoundField = new IntTextField(getParams().getInt("upperBoundNumVals", 4), 4);
+        this.upperBoundField.setFilter((value, oldValue) -> {
             try {
-                this.getParams().set("upperBoundNumVals", value);
+                getParams().set("upperBoundNumVals", value);
                 return value;
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 return oldValue;
             }
         });
 
         // construct the workbench.
-        this.setLayout(new BorderLayout());
+        setLayout(new BorderLayout());
 
-        JRadioButton trinary =
+        final JRadioButton trinary =
                 new JRadioButton("<html>" + "3-valued:</html>");
 
-        JRadioButton range =
+        final JRadioButton range =
                 new JRadioButton("<html>" + "Range:</html>");
-        ButtonGroup group = new ButtonGroup();
+        final ButtonGroup group = new ButtonGroup();
         group.add(trinary);
         group.add(range);
 
         // continue workbench construction.
-        Box b1 = Box.createVerticalBox();
+        final Box b1 = Box.createVerticalBox();
 
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("Categories for variables should be:"));
         b2.add(Box.createHorizontalGlue());
         b1.add(b2);
         b1.add(Box.createVerticalStrut(5));
 
-        Box b3 = Box.createHorizontalBox();
+        final Box b3 = Box.createHorizontalBox();
         b3.add(trinary);
         b3.add(Box.createHorizontalGlue());
         b1.add(b3);
 
-        Box b4 = Box.createHorizontalBox();
+        final Box b4 = Box.createHorizontalBox();
         b4.add(Box.createHorizontalStrut(25));
         b4.add(new JLabel("<html>" +
                 "All variables will initially have 3 categories, '0', '1' and '2', " +
@@ -125,12 +125,12 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
         b1.add(b4);
         b1.add(Box.createVerticalStrut(10));
 
-        Box b5 = Box.createHorizontalBox();
+        final Box b5 = Box.createHorizontalBox();
         b5.add(range);
         b5.add(Box.createHorizontalGlue());
         b1.add(b5);
 
-        Box b6 = Box.createHorizontalBox();
+        final Box b6 = Box.createHorizontalBox();
         b6.add(Box.createHorizontalStrut(25));
         b6.add(new JLabel("<html>" +
                 "Each variable will be automatically be assigned a number of categories" +
@@ -139,44 +139,44 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
         b1.add(b6);
         b1.add(Box.createVerticalStrut(10));
 
-        Box b7 = Box.createHorizontalBox();
+        final Box b7 = Box.createHorizontalBox();
         b7.add(Box.createHorizontalStrut(25));
         b7.add(new JLabel("Least number of categories for each variable:  "));
         b7.add(Box.createHorizontalGlue());
-        b7.add(lowerBoundField);
+        b7.add(this.lowerBoundField);
         b1.add(b7);
 
-        Box b8 = Box.createHorizontalBox();
+        final Box b8 = Box.createHorizontalBox();
         b8.add(Box.createHorizontalStrut(25));
         b8.add(new JLabel(
                 "Greatest number of categories for each variable:  "));
         b8.add(Box.createHorizontalGlue());
-        b8.add(upperBoundField);
+        b8.add(this.upperBoundField);
         b1.add(b8);
 
         b1.add(Box.createHorizontalGlue());
-        this.add(b1, BorderLayout.CENTER);
+        add(b1, BorderLayout.CENTER);
 
-        if (this.getParams().getString("bayesPmInitializationMode", "trinary").equals("trinary")) {
+        if (getParams().getString("bayesPmInitializationMode", "trinary").equals("trinary")) {
             trinary.setSelected(true);
-            lowerBoundField.setEnabled(false);
-            upperBoundField.setEnabled(false);
+            this.lowerBoundField.setEnabled(false);
+            this.upperBoundField.setEnabled(false);
         } else {
             range.setSelected(true);
-            lowerBoundField.setEnabled(true);
-            upperBoundField.setEnabled(true);
+            this.lowerBoundField.setEnabled(true);
+            this.upperBoundField.setEnabled(true);
         }
 
         trinary.addActionListener(e -> {
-            this.getParams().set("bayesPmInitializationMode", "trinary");
-            lowerBoundField.setEnabled(false);
-            upperBoundField.setEnabled(false);
+            getParams().set("bayesPmInitializationMode", "trinary");
+            this.lowerBoundField.setEnabled(false);
+            this.upperBoundField.setEnabled(false);
         });
 
         range.addActionListener(e -> {
-            this.getParams().set("bayesPmInitializationMode", "range");
-            lowerBoundField.setEnabled(true);
-            upperBoundField.setEnabled(true);
+            getParams().set("bayesPmInitializationMode", "range");
+            this.lowerBoundField.setEnabled(true);
+            this.upperBoundField.setEnabled(true);
         });
     }
 
@@ -191,7 +191,7 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
      * @return the stored simulation parameters model.
      */
     private synchronized Parameters getParams() {
-        return params;
+        return this.params;
     }
 }
 

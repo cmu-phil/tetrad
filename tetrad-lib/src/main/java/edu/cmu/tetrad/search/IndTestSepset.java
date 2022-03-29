@@ -62,33 +62,33 @@ public class IndTestSepset implements IndependenceTest {
     /**
      * Constructs a new independence test that returns d-separation facts for the given graph as independence results.
      */
-    public IndTestSepset(SepsetMapDci sepset, List<Node> nodes) {
+    public IndTestSepset(final SepsetMapDci sepset, final List<Node> nodes) {
         if (sepset == null) {
             throw new NullPointerException();
         }
 
         this.sepset = sepset;
-        nodesToVariables = new HashMap<>();
-        variablesToNodes = new HashMap<>();
+        this.nodesToVariables = new HashMap<>();
+        this.variablesToNodes = new HashMap<>();
 
-        for (Node node : nodes) {
-            nodesToVariables.put(node, node);
-            variablesToNodes.put(node, node);
+        for (final Node node : nodes) {
+            this.nodesToVariables.put(node, node);
+            this.variablesToNodes.put(node, node);
         }
 
-        observedVars = this.calcObservedVars(nodes);
+        this.observedVars = calcObservedVars(nodes);
     }
 
     /**
      * Required by IndependenceTest.
      */
-    public IndependenceTest indTestSubset(List<Node> vars) {
+    public IndependenceTest indTestSubset(final List<Node> vars) {
         if (vars.isEmpty()) {
             throw new IllegalArgumentException("Subset may not be empty.");
         }
 
-        for (Node var : vars) {
-            if (!this.getVariables().contains(var)) {
+        for (final Node var : vars) {
+            if (!getVariables().contains(var)) {
                 throw new IllegalArgumentException(
                         "All vars must be original vars");
             }
@@ -100,12 +100,12 @@ public class IndTestSepset implements IndependenceTest {
     /**
      * @return the list of observed nodes in the given graph.
      */
-    private List<Node> calcObservedVars(List<Node> nodes) {
-        List<Node> observedVars = new ArrayList<>();
+    private List<Node> calcObservedVars(final List<Node> nodes) {
+        final List<Node> observedVars = new ArrayList<>();
 
-        for (Node node : nodes) {
+        for (final Node node : nodes) {
             if (node.getNodeType() == NodeType.MEASURED) {
-                observedVars.add(this.getVariable(node));
+                observedVars.add(getVariable(node));
             }
         }
 
@@ -120,12 +120,12 @@ public class IndTestSepset implements IndependenceTest {
      * @param z a List of nodes (conditioning variables)
      * @return true iff x _||_ y | z
      */
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
+    public boolean isIndependent(final Node x, final Node y, final List<Node> z) {
         if (z == null) {
             throw new NullPointerException();
         }
 
-        for (Node node : z) {
+        for (final Node node : z) {
             if (node == null) {
                 throw new NullPointerException();
             }
@@ -133,13 +133,13 @@ public class IndTestSepset implements IndependenceTest {
 
         boolean independent = false;
 
-        if (sepset.get(x, y) != null) {
-            List<List<Node>> condSets = sepset.getSet(x, y);
-            for (List<Node> condSet : condSets) {
+        if (this.sepset.get(x, y) != null) {
+            final List<List<Node>> condSets = this.sepset.getSet(x, y);
+            for (final List<Node> condSet : condSets) {
                 if (condSet.size() == z.size() && condSet.containsAll(z)) {
                     final double pValue = 1.0;
 
-                    if (verbose) {
+                    if (this.verbose) {
                         TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, pValue));
                     }
                     independent = true;
@@ -149,11 +149,11 @@ public class IndTestSepset implements IndependenceTest {
             }
         }
 
-        if (verbose) {
+        if (this.verbose) {
             if (independent) {
-                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, this.getPValue()));
+                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
             } else {
-                TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, this.getPValue()));
+                TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
             }
         }
 
@@ -162,18 +162,18 @@ public class IndTestSepset implements IndependenceTest {
 //        return false;
     }
 
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return this.isIndependent(x, y, zList);
+    public boolean isIndependent(final Node x, final Node y, final Node... z) {
+        final List<Node> zList = Arrays.asList(z);
+        return isIndependent(x, y, zList);
     }
 
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        return !this.isIndependent(x, y, z);
+    public boolean isDependent(final Node x, final Node y, final List<Node> z) {
+        return !isIndependent(x, y, z);
     }
 
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return this.isDependent(x, y, zList);
+    public boolean isDependent(final Node x, final Node y, final Node... z) {
+        final List<Node> zList = Arrays.asList(z);
+        return isDependent(x, y, zList);
     }
 
     /**
@@ -188,22 +188,22 @@ public class IndTestSepset implements IndependenceTest {
      * relations-- that is, all the variables in the given graph or the given data set.
      */
     public List<Node> getVariables() {
-        return Collections.unmodifiableList(observedVars);
+        return Collections.unmodifiableList(this.observedVars);
     }
 
     /**
      * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
-        List<Node> nodes = this.getVariables();
-        List<String> nodeNames = new ArrayList<>();
-        for (Node var : nodes) {
+        final List<Node> nodes = getVariables();
+        final List<String> nodeNames = new ArrayList<>();
+        for (final Node var : nodes) {
             nodeNames.add(var.getName());
         }
         return nodeNames;
     }
 
-    public boolean determines(List z, Node x1) {
+    public boolean determines(final List z, final Node x1) {
         return z.contains(x1);
     }
 
@@ -211,13 +211,13 @@ public class IndTestSepset implements IndependenceTest {
         throw new UnsupportedOperationException();
     }
 
-    public void setAlpha(double alpha) {
+    public void setAlpha(final double alpha) {
         throw new UnsupportedOperationException();
     }
 
-    public Node getVariable(String name) {
-        for (int i = 0; i < this.getVariables().size(); i++) {
-            Node variable = this.getVariables().get(i);
+    public Node getVariable(final String name) {
+        for (int i = 0; i < getVariables().size(); i++) {
+            final Node variable = getVariables().get(i);
 
             if (variable.getName().equals(name)) {
                 return variable;
@@ -230,15 +230,15 @@ public class IndTestSepset implements IndependenceTest {
     /**
      * @return the variable associated with the given node in the graph.
      */
-    public Node getVariable(Node node) {
-        return nodesToVariables.get(node);
+    public Node getVariable(final Node node) {
+        return this.nodesToVariables.get(node);
     }
 
     /**
      * @return the node associated with the given variable in the graph.
      */
-    public Node getNode(Node variable) {
-        return variablesToNodes.get(variable);
+    public Node getNode(final Node variable) {
+        return this.variablesToNodes.get(variable);
     }
 
     public String toString() {
@@ -271,14 +271,14 @@ public class IndTestSepset implements IndependenceTest {
 
     @Override
     public double getScore() {
-        return this.getPValue();
+        return getPValue();
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
-    public void setVerbose(boolean verbose) {
+    public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
 }

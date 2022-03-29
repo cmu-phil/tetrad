@@ -45,24 +45,24 @@ final class SubsetDiscreteVariablesAction extends AbstractAction {
     /**
      * Creates a new action to remove discrete columns.
      */
-    public SubsetDiscreteVariablesAction(DataEditor editor) {
+    public SubsetDiscreteVariablesAction(final DataEditor editor) {
         super("Copy Discrete Variables");
 
         if (editor == null) {
             throw new NullPointerException();
         }
 
-        dataEditor = editor;
+        this.dataEditor = editor;
     }
 
     /**
      * Performs the action of loading a session from a file.
      */
-    public void actionPerformed(ActionEvent e) {
-        DataModel selectedDataModel = this.getDataEditor().getSelectedDataModel();
+    public void actionPerformed(final ActionEvent e) {
+        final DataModel selectedDataModel = getDataEditor().getSelectedDataModel();
 
         if (selectedDataModel instanceof DataSet) {
-            DataSet dataSet = (DataSet) selectedDataModel;
+            final DataSet dataSet = (DataSet) selectedDataModel;
 
             for (int i = dataSet.getNumColumns(); i >= 0; i--) {
                 if (dataSet.getVariable(i) instanceof DiscreteVariable) {
@@ -70,10 +70,10 @@ final class SubsetDiscreteVariablesAction extends AbstractAction {
                 }
             }
 
-            DataModelList list = new DataModelList();
+            final DataModelList list = new DataModelList();
             list.add(dataSet);
-            this.getDataEditor().reset(list);
-            this.getDataEditor().selectFirstTab();
+            getDataEditor().reset(list);
+            getDataEditor().selectFirstTab();
         } else {
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     "Requires a tabular data set.");
@@ -81,7 +81,7 @@ final class SubsetDiscreteVariablesAction extends AbstractAction {
     }
 
     private DataEditor getDataEditor() {
-        return dataEditor;
+        return this.dataEditor;
     }
 }
 

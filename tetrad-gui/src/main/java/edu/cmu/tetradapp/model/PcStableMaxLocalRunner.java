@@ -51,9 +51,9 @@ public class PcStableMaxLocalRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public PcStableMaxLocalRunner(DataWrapper dataWrapper, Parameters params) {
+    public PcStableMaxLocalRunner(final DataWrapper dataWrapper, final Parameters params) {
         super(dataWrapper, params, null);
-        sourceGraph = dataWrapper.getSourceGraph();
+        this.sourceGraph = dataWrapper.getSourceGraph();
     }
 
     /**
@@ -61,40 +61,40 @@ public class PcStableMaxLocalRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public PcStableMaxLocalRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcStableMaxLocalRunner(final DataWrapper dataWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
-        sourceGraph = dataWrapper.getSourceGraph();
+        this.sourceGraph = dataWrapper.getSourceGraph();
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public PcStableMaxLocalRunner(Graph graph, Parameters params) {
+    public PcStableMaxLocalRunner(final Graph graph, final Parameters params) {
         super(graph, params);
-        sourceGraph = graph;
+        this.sourceGraph = graph;
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public PcStableMaxLocalRunner(GraphWrapper graphWrapper, Parameters params) {
+    public PcStableMaxLocalRunner(final GraphWrapper graphWrapper, final Parameters params) {
         super(graphWrapper.getGraph(), params);
-        sourceGraph = graphWrapper.getGraph();
+        this.sourceGraph = graphWrapper.getGraph();
     }
 
-    public PcStableMaxLocalRunner(DagWrapper graphWrapper, Parameters params) {
+    public PcStableMaxLocalRunner(final DagWrapper graphWrapper, final Parameters params) {
         super(graphWrapper.getDag(), params);
     }
 
-    public PcStableMaxLocalRunner(SemGraphWrapper graphWrapper, Parameters params) {
+    public PcStableMaxLocalRunner(final SemGraphWrapper graphWrapper, final Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
-    public PcStableMaxLocalRunner(IndependenceFactsModel model, Parameters params) {
+    public PcStableMaxLocalRunner(final IndependenceFactsModel model, final Parameters params) {
         super(model, params, null);
     }
 
-    public PcStableMaxLocalRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcStableMaxLocalRunner(final IndependenceFactsModel model, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -108,9 +108,9 @@ public class PcStableMaxLocalRunner extends AbstractAlgorithmRunner
     }
 
     public ImpliedOrientation getMeekRules() {
-        MeekRules rules = new MeekRules();
-        rules.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
-        rules.setKnowledge((IKnowledge) this.getParams().get("knowledge", new Knowledge2()));
+        final MeekRules rules = new MeekRules();
+        rules.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
+        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
 
@@ -122,18 +122,18 @@ public class PcStableMaxLocalRunner extends AbstractAlgorithmRunner
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     public void execute() {
-        IKnowledge knowledge = (IKnowledge) this.getParams().get("knowledge", new Knowledge2());
+        final IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
 
-        IndependenceTest independenceTest = this.getIndependenceTest();
-        Parameters testParams = this.getParams();
+        final IndependenceTest independenceTest = getIndependenceTest();
+        final Parameters testParams = getParams();
 
-        PcStableMaxLocal search = new PcStableMaxLocal(independenceTest);
+        final PcStableMaxLocal search = new PcStableMaxLocal(independenceTest);
 
-        search.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
+        search.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
 
         search.setKnowledge(knowledge);
 
-        Graph graph = search.search();
+        final Graph graph = search.search();
 
 //        Jcpc1 search = new Jcpc1(independenceTest);
 //
@@ -146,30 +146,30 @@ public class PcStableMaxLocalRunner extends AbstractAlgorithmRunner
 //
 //        Graph graph = search.search();
 
-        if (this.getSourceGraph() != null) {
-            GraphUtils.arrangeBySourceGraph(graph, this.getSourceGraph());
+        if (getSourceGraph() != null) {
+            GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
         } else if (knowledge.isDefaultToKnowledgeLayout()) {
             SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
         } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
 
-        this.setResultGraph(graph);
+        setResultGraph(graph);
     }
 
     public IndependenceTest getIndependenceTest() {
-        Object dataModel = this.getDataModel();
+        Object dataModel = getDataModel();
 
         if (dataModel == null) {
-            dataModel = this.getSourceGraph();
+            dataModel = getSourceGraph();
         }
 
-        IndTestType testType = (IndTestType) (this.getParams()).get("indTestType", IndTestType.FISHER_Z);
-        return new IndTestChooser().getTest(dataModel, this.getParams(), testType);
+        final IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
+        return new IndTestChooser().getTest(dataModel, getParams(), testType);
     }
 
     public Graph getGraph() {
-        return this.getResultGraph();
+        return getResultGraph();
     }
 
 //    /**
@@ -183,7 +183,7 @@ public class PcStableMaxLocalRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<>();
+        final List<String> names = new ArrayList<>();
 //        names.add("ColliderDiscovery");
 //        names.add("Noncolliders");
         names.add("Ambiguous Triples");
@@ -193,9 +193,9 @@ public class PcStableMaxLocalRunner extends AbstractAlgorithmRunner
     /**
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
-    public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<>();
-        Graph graph = this.getGraph();
+    public List<List<Triple>> getTriplesLists(final Node node) {
+        final List<List<Triple>> triplesList = new ArrayList<>();
+        final Graph graph = getGraph();
 //        triplesList.add(DataGraphUtils.getCollidersFromGraph(node, graph));
 //        triplesList.add(DataGraphUtils.getNoncollidersFromGraph(node, graph));
         triplesList.add(GraphUtils.getAmbiguousTriplesFromGraph(node, graph));
@@ -213,14 +213,14 @@ public class PcStableMaxLocalRunner extends AbstractAlgorithmRunner
     /**
      * @return the underline triples for the given node. Non-null.
      */
-    public List<Triple> getUnderlineTriples(Node node) {
+    public List<Triple> getUnderlineTriples(final Node node) {
         return new ArrayList<>();
     }
 
     /**
      * @return the dotted underline triples for the given node. Non-null.
      */
-    public List<Triple> getDottedUnderlineTriples(Node node) {
+    public List<Triple> getDottedUnderlineTriples(final Node node) {
         return new ArrayList<>();
     }
 
@@ -231,14 +231,14 @@ public class PcStableMaxLocalRunner extends AbstractAlgorithmRunner
     @Override
     public Map<String, String> getParamSettings() {
         super.getParamSettings();
-        paramSettings.put("Test", this.getIndependenceTest().toString());
-        return paramSettings;
+        this.paramSettings.put("Test", getIndependenceTest().toString());
+        return this.paramSettings;
     }
 
     //========================== Private Methods ===============================//
 
     private boolean isAggressivelyPreventCycles() {
-        Parameters params = this.getParams();
+        final Parameters params = getParams();
         if (params instanceof Parameters) {
             return params.getBoolean("aggressivelyPreventCycles", false);
         }

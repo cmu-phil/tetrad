@@ -49,59 +49,59 @@ public class PcStableRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public PcStableRunner(DataWrapper dataWrapper, Parameters params) {
+    public PcStableRunner(final DataWrapper dataWrapper, final Parameters params) {
         super(dataWrapper, params, null);
     }
 
-    public PcStableRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcStableRunner(final DataWrapper dataWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
     // Starts PC from the given graph.
-    public PcStableRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params) {
+    public PcStableRunner(final DataWrapper dataWrapper, final GraphWrapper graphWrapper, final Parameters params) {
         super(dataWrapper, params, null);
-        externalGraph = graphWrapper.getGraph();
+        this.externalGraph = graphWrapper.getGraph();
     }
 
-    public PcStableRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcStableRunner(final DataWrapper dataWrapper, final GraphWrapper graphWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
-        externalGraph = graphWrapper.getGraph();
+        this.externalGraph = graphWrapper.getGraph();
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public PcStableRunner(Graph graph, Parameters params) {
+    public PcStableRunner(final Graph graph, final Parameters params) {
         super(graph, params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public PcStableRunner(GraphWrapper graphWrapper, Parameters params) {
+    public PcStableRunner(final GraphWrapper graphWrapper, final Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public PcStableRunner(GraphSource graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcStableRunner(final GraphSource graphWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-    public PcStableRunner(DagWrapper dagWrapper, Parameters params) {
+    public PcStableRunner(final DagWrapper dagWrapper, final Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public PcStableRunner(SemGraphWrapper dagWrapper, Parameters params) {
+    public PcStableRunner(final SemGraphWrapper dagWrapper, final Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public PcStableRunner(IndependenceFactsModel model, Parameters params) {
+    public PcStableRunner(final IndependenceFactsModel model, final Parameters params) {
         super(model, params, null);
     }
 
-    public PcStableRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public PcStableRunner(final IndependenceFactsModel model, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -115,9 +115,9 @@ public class PcStableRunner extends AbstractAlgorithmRunner
     }
 
     public ImpliedOrientation getMeekRules() {
-        MeekRules rules = new MeekRules();
-        rules.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
-        rules.setKnowledge((IKnowledge) this.getParams().get("knowledge", new Knowledge2()));
+        final MeekRules rules = new MeekRules();
+        rules.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
+        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
 
@@ -129,42 +129,42 @@ public class PcStableRunner extends AbstractAlgorithmRunner
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     public void execute() {
-        IKnowledge knowledge = (IKnowledge) this.getParams().get("knowledge", new Knowledge2());
-        int depth = this.getParams().getInt("depth", -1);
+        final IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
+        final int depth = getParams().getInt("depth", -1);
 
-        PcStable pc = new PcStable(this.getIndependenceTest());
+        final PcStable pc = new PcStable(getIndependenceTest());
         pc.setKnowledge(knowledge);
-        pc.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
+        pc.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
         pc.setDepth(depth);
-        pc.setExternalGraph(externalGraph);
-        Graph graph = pc.search();
+        pc.setExternalGraph(this.externalGraph);
+        final Graph graph = pc.search();
 
         System.out.println(graph);
 
-        if (this.getSourceGraph() != null) {
-            GraphUtils.arrangeBySourceGraph(graph, this.getSourceGraph());
+        if (getSourceGraph() != null) {
+            GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
         } else if (knowledge.isDefaultToKnowledgeLayout()) {
             SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
         } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
 
-        this.setResultGraph(graph);
+        setResultGraph(graph);
     }
 
     public IndependenceTest getIndependenceTest() {
-        Object dataModel = this.getDataModel();
+        Object dataModel = getDataModel();
 
         if (dataModel == null) {
-            dataModel = this.getSourceGraph();
+            dataModel = getSourceGraph();
         }
 
-        IndTestType testType = (IndTestType) (this.getParams()).get("indTestType", IndTestType.FISHER_Z);
-        return new IndTestChooser().getTest(dataModel, this.getParams(), testType);
+        final IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
+        return new IndTestChooser().getTest(dataModel, getParams(), testType);
     }
 
     public Graph getGraph() {
-        return this.getResultGraph();
+        return getResultGraph();
     }
 
     /**
@@ -178,7 +178,7 @@ public class PcStableRunner extends AbstractAlgorithmRunner
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>
      * for the given node.
      */
-    public List<List<Triple>> getTriplesLists(Node node) {
+    public List<List<Triple>> getTriplesLists(final Node node) {
         return new ArrayList<>();
     }
 
@@ -189,14 +189,14 @@ public class PcStableRunner extends AbstractAlgorithmRunner
     @Override
     public Map<String, String> getParamSettings() {
         super.getParamSettings();
-        paramSettings.put("Test", this.getIndependenceTest().toString());
-        return paramSettings;
+        this.paramSettings.put("Test", getIndependenceTest().toString());
+        return this.paramSettings;
     }
 
     //========================== Private Methods ===============================//
 
     private boolean isAggressivelyPreventCycles() {
-        return this.getParams().getBoolean("aggressivelyPreventCycles", false);
+        return getParams().getBoolean("aggressivelyPreventCycles", false);
     }
 
 }

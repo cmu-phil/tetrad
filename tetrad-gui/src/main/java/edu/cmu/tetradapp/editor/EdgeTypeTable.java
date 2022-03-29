@@ -19,8 +19,6 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.graph.Edge.Property;
-import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
 
 import javax.swing.*;
 import javax.swing.table.*;
@@ -66,33 +64,33 @@ public class EdgeTypeTable extends JPanel {
     private final JTable table = new EdgeInfoTable(new DefaultTableModel());
 
     public EdgeTypeTable() {
-        this.initComponents();
+        initComponents();
     }
 
     private void initComponents() {
-        title.setHorizontalAlignment(SwingConstants.CENTER);
-        title.setVerticalAlignment(SwingConstants.CENTER);
+        this.title.setHorizontalAlignment(SwingConstants.CENTER);
+        this.title.setVerticalAlignment(SwingConstants.CENTER);
 
-        this.setLayout(new BorderLayout(0, 10));
-        this.add(title, BorderLayout.NORTH);
-        this.add(new JScrollPane(table), BorderLayout.CENTER);
+        setLayout(new BorderLayout(0, 10));
+        add(this.title, BorderLayout.NORTH);
+        add(new JScrollPane(this.table), BorderLayout.CENTER);
     }
 
-    public void update(Graph graph) {
-        DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
+    public void update(final Graph graph) {
+        final DefaultTableModel tableModel = (DefaultTableModel) this.table.getModel();
 
         tableModel.setRowCount(0);
 
-        if (this.hasEdgeProbabilities(graph)) {
-            title.setText("Edges and Edge Type Probabilities");
+        if (hasEdgeProbabilities(graph)) {
+            this.title.setText("Edges and Edge Type Probabilities");
 
-            table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+            this.table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
-            JTableHeader header = table.getTableHeader();
-            Font boldFont = new Font(header.getFont().getFontName(), Font.BOLD, 18);
-            TableCellRenderer headerRenderer = header.getDefaultRenderer();
+            final JTableHeader header = this.table.getTableHeader();
+            final Font boldFont = new Font(header.getFont().getFontName(), Font.BOLD, 18);
+            final TableCellRenderer headerRenderer = header.getDefaultRenderer();
             header.setDefaultRenderer((tbl, value, isSelected, hasFocus, row, column) -> {
-                Component comp = headerRenderer.getTableCellRendererComponent(tbl, value, isSelected, hasFocus, row, column);
+                final Component comp = headerRenderer.getTableCellRendererComponent(tbl, value, isSelected, hasFocus, row, column);
                 if (column > 6 && column < 11) {
                     comp.setForeground(Color.GREEN);
                 }
@@ -103,29 +101,29 @@ public class EdgeTypeTable extends JPanel {
                 return comp;
             });
 
-            tableModel.setColumnIdentifiers(EDGES_AND_EDGE_TYPES);
+            tableModel.setColumnIdentifiers(EdgeTypeTable.EDGES_AND_EDGE_TYPES);
 
-            List<Edge> edges = graph.getEdges().stream().collect(Collectors.toList());
+            final List<Edge> edges = graph.getEdges().stream().collect(Collectors.toList());
             Edges.sortEdges(edges);
             edges.forEach(edge -> {
-                String[] rowData = new String[EDGES_AND_EDGE_TYPES.length];
-                this.addEdgeData(edge, rowData);
-                this.addEdgeProbabilityData(edge, rowData);
+                final String[] rowData = new String[EdgeTypeTable.EDGES_AND_EDGE_TYPES.length];
+                addEdgeData(edge, rowData);
+                addEdgeProbabilityData(edge, rowData);
 
                 tableModel.addRow(rowData);
             });
         } else {
-            title.setText("Edges");
+            this.title.setText("Edges");
 
-            table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+            this.table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 
-            tableModel.setColumnIdentifiers(EDGES);
+            tableModel.setColumnIdentifiers(EdgeTypeTable.EDGES);
 
-            List<Edge> edges = graph.getEdges().stream().collect(Collectors.toList());
+            final List<Edge> edges = graph.getEdges().stream().collect(Collectors.toList());
             Edges.sortEdges(edges);
             edges.forEach(edge -> {
-                String[] rowData = new String[EDGES.length];
-                this.addEdgeData(edge, rowData);
+                final String[] rowData = new String[EdgeTypeTable.EDGES.length];
+                addEdgeData(edge, rowData);
 
                 tableModel.addRow(rowData);
             });
@@ -134,9 +132,9 @@ public class EdgeTypeTable extends JPanel {
         tableModel.fireTableDataChanged();
     }
 
-    private void addEdgeProbabilityData(Edge edge, String[] rowData) {
+    private void addEdgeProbabilityData(final Edge edge, final String[] rowData) {
         edge.getEdgeTypeProbabilities().forEach(edgeTypeProb -> {
-            String probValue = String.format("%.4f", edgeTypeProb.getProbability());
+            final String probValue = String.format("%.4f", edgeTypeProb.getProbability());
             boolean nl, pd, dd;
             switch (edgeTypeProb.getEdgeType()) {
                 case nil:
@@ -146,14 +144,14 @@ public class EdgeTypeTable extends JPanel {
                     nl = false;
                     pd = false;
                     dd = false;
-                    for (Property p : edgeTypeProb.getProperties()) {
-                        if (p == Property.dd) {
+                    for (Edge.Property p : edgeTypeProb.getProperties()) {
+                        if (p == Edge.Property.dd) {
                             dd = true;
                         }
-                        if (p == Property.nl) {
+                        if (p == Edge.Property.nl) {
                             nl = true;
                         }
-                        if (p == Property.pd) {
+                        if (p == Edge.Property.pd) {
                             pd = true;
                         }
                     }
@@ -169,14 +167,14 @@ public class EdgeTypeTable extends JPanel {
                     nl = false;
                     pd = false;
                     dd = false;
-                    for (Property p : edgeTypeProb.getProperties()) {
-                        if (p == Property.dd) {
+                    for (Edge.Property p : edgeTypeProb.getProperties()) {
+                        if (p == Edge.Property.dd) {
                             dd = true;
                         }
-                        if (p == Property.nl) {
+                        if (p == Edge.Property.nl) {
                             nl = true;
                         }
-                        if (p == Property.pd) {
+                        if (p == Edge.Property.pd) {
                             pd = true;
                         }
                     }
@@ -206,20 +204,20 @@ public class EdgeTypeTable extends JPanel {
             }
         });
 
-        double maxEdgeProbability = edge.getEdgeTypeProbabilities().stream()
-                .filter(e -> e.getEdgeType() != EdgeType.nil)
+        final double maxEdgeProbability = edge.getEdgeTypeProbabilities().stream()
+                .filter(e -> e.getEdgeType() != EdgeTypeProbability.EdgeType.nil)
                 .mapToDouble(EdgeTypeProbability::getProbability)
                 .max()
                 .orElse(0);
         rowData[3] = String.format("%.4f", maxEdgeProbability);
     }
 
-    private void addEdgeData(Edge edge, String[] rowData) {
-        String node1Name = edge.getNode1().getName();
-        String node2Name = edge.getNode2().getName();
+    private void addEdgeData(final Edge edge, final String[] rowData) {
+        final String node1Name = edge.getNode1().getName();
+        final String node2Name = edge.getNode2().getName();
 
-        Endpoint endpoint1 = edge.getEndpoint1();
-        Endpoint endpoint2 = edge.getEndpoint2();
+        final Endpoint endpoint1 = edge.getEndpoint1();
+        final Endpoint endpoint2 = edge.getEndpoint2();
 
         // These should not be flipped.
 //        if (node1Name.compareTo(node2Name) > 0) {
@@ -252,15 +250,15 @@ public class EdgeTypeTable extends JPanel {
             endpoint2Str = "o";
         }
 
-        String edgeType = endpoint1Str + "-" + endpoint2Str;
+        final String edgeType = endpoint1Str + "-" + endpoint2Str;
 
         rowData[0] = node1Name;
         rowData[1] = edgeType;
         rowData[2] = node2Name;
     }
 
-    private boolean hasEdgeProbabilities(Graph graph) {
-        for (Edge edge : graph.getEdges()) {
+    private boolean hasEdgeProbabilities(final Graph graph) {
+        for (final Edge edge : graph.getEdges()) {
             return !edge.getEdgeTypeProbabilities().isEmpty();
         }
 
@@ -271,31 +269,31 @@ public class EdgeTypeTable extends JPanel {
 
         private static final long serialVersionUID = -4052775309418269033L;
 
-        public EdgeInfoTable(TableModel dm) {
+        public EdgeInfoTable(final TableModel dm) {
             super(dm);
-            this.initComponents();
+            initComponents();
         }
 
         private void initComponents() {
-            this.setFillsViewportHeight(true);
-            this.setDefaultRenderer(Object.class, new StripedRowTableCellRenderer());
-            this.setOpaque(true);
+            setFillsViewportHeight(true);
+            setDefaultRenderer(Object.class, new StripedRowTableCellRenderer());
+            setOpaque(true);
 
-            this.setRowSorter(new TableRowSorter<TableModel>(this.getModel()) {
+            setRowSorter(new TableRowSorter<TableModel>(getModel()) {
                 @Override
-                public boolean isSortable(int column) {
+                public boolean isSortable(final int column) {
                     return !(column == 1 || column == 12);
                 }
             });
         }
 
         @Override
-        public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+        public Component prepareRenderer(final TableCellRenderer renderer, final int row, final int column) {
             // adjust each column width automatically to fit the content
-            Component component = super.prepareRenderer(renderer, row, column);
-            int rendererWidth = component.getPreferredSize().width;
-            TableColumn tableColumn = this.getColumnModel().getColumn(column);
-            tableColumn.setPreferredWidth(Math.max(rendererWidth + this.getIntercellSpacing().width, tableColumn.getPreferredWidth()));
+            final Component component = super.prepareRenderer(renderer, row, column);
+            final int rendererWidth = component.getPreferredSize().width;
+            final TableColumn tableColumn = getColumnModel().getColumn(column);
+            tableColumn.setPreferredWidth(Math.max(rendererWidth + getIntercellSpacing().width, tableColumn.getPreferredWidth()));
 
             return component;
         }
@@ -310,19 +308,19 @@ public class EdgeTypeTable extends JPanel {
         private final Color NON_STRIPE = Color.WHITE;
 
         public StripedRowTableCellRenderer() {
-            this.initComponents();
+            initComponents();
         }
 
         private void initComponents() {
-            this.setOpaque(true);
+            setOpaque(true);
         }
 
         @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            JComponent component = (JComponent) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        public Component getTableCellRendererComponent(final JTable table, final Object value, final boolean isSelected, final boolean hasFocus, final int row, final int column) {
+            final JComponent component = (JComponent) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
             if (!isSelected) {
-                component.setBackground((row % 2 == 0) ? NON_STRIPE : STRIPE);
+                component.setBackground((row % 2 == 0) ? this.NON_STRIPE : this.STRIPE);
             }
 
             return component;

@@ -44,14 +44,14 @@ public class RestrictToGraphNodes extends DataWrapper {
     //=============================CONSTRUCTORS==============================//
 
 
-    public RestrictToGraphNodes(DataWrapper dataWrapper, GraphSource graphSource) {
-        DataModel dataModel = this.restrictToGraphNodes(dataWrapper.getSelectedDataModel(),
+    public RestrictToGraphNodes(final DataWrapper dataWrapper, final GraphSource graphSource) {
+        final DataModel dataModel = restrictToGraphNodes(dataWrapper.getSelectedDataModel(),
                 graphSource.getGraph());
 
-        this.setDataModel(dataModel);
-        this.setSourceGraph(graphSource.getGraph());
+        setDataModel(dataModel);
+        setSourceGraph(graphSource.getGraph());
 
-        LogDataUtils.logDataModelList("Restruct parent data to nodes in the paraent graph only.", this.getDataModelList());
+        LogDataUtils.logDataModelList("Restruct parent data to nodes in the paraent graph only.", getDataModelList());
     }
 
 
@@ -64,42 +64,42 @@ public class RestrictToGraphNodes extends DataWrapper {
         return PcRunner.serializableInstance();
     }
 
-    private DataModel restrictToGraphNodes(DataModel dataModel, Graph graph) {
+    private DataModel restrictToGraphNodes(final DataModel dataModel, final Graph graph) {
 
         if (dataModel instanceof DataSet) {
-            DataSet data = (DataSet) dataModel;
+            final DataSet data = (DataSet) dataModel;
 
-            List<Node> dataNodes = new ArrayList<>();
-            List<Node> graphNodes = graph.getNodes();
+            final List<Node> dataNodes = new ArrayList<>();
+            final List<Node> graphNodes = graph.getNodes();
 
-            for (Node graphNode : graphNodes) {
-                Node variable = data.getVariable(graphNode.getName());
+            for (final Node graphNode : graphNodes) {
+                final Node variable = data.getVariable(graphNode.getName());
 
                 if (variable != null) {
                     dataNodes.add(variable);
                 }
             }
 
-            DataSet dataSubset = data.subsetColumns(dataNodes);
+            final DataSet dataSubset = data.subsetColumns(dataNodes);
 
             return dataSubset;
         } else if (dataModel instanceof ICovarianceMatrix) {
-            ICovarianceMatrix cov = (ICovarianceMatrix) dataModel;
-            List<String> dataNames = new ArrayList<>();
-            List<Node> graphNodes = graph.getNodes();
+            final ICovarianceMatrix cov = (ICovarianceMatrix) dataModel;
+            final List<String> dataNames = new ArrayList<>();
+            final List<Node> graphNodes = graph.getNodes();
 
-            for (Node graphNode : graphNodes) {
-                Node variable = cov.getVariable(graphNode.getName());
+            for (final Node graphNode : graphNodes) {
+                final Node variable = cov.getVariable(graphNode.getName());
 
                 if (variable != null) {
                     dataNames.add(variable.getName());
                 }
             }
 
-            String[] _dataNames = dataNames.toArray(new String[dataNames.size()]);
-            ICovarianceMatrix dataSubset = cov.getSubmatrix(_dataNames);
+            final String[] _dataNames = dataNames.toArray(new String[dataNames.size()]);
+            final ICovarianceMatrix dataSubset = cov.getSubmatrix(_dataNames);
 
-            LogDataUtils.logDataModelList("Parent data restricted to variable in the given graph.", this.getDataModelList());
+            LogDataUtils.logDataModelList("Parent data restricted to variable in the given graph.", getDataModelList());
             return dataSubset;
         } else {
             throw new IllegalStateException("Unexpected data type.");

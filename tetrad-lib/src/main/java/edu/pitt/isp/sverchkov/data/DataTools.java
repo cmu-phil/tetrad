@@ -35,35 +35,35 @@ public class DataTools {
     public static final String DELIMITER_REGEX = " *, *";
     public static final String DELIMITER = ", ";
 
-    public static DataTable<String, String> dataTableFromFile(File file) throws FileNotFoundException {
+    public static DataTable<String, String> dataTableFromFile(final File file) throws FileNotFoundException {
         DataTable<String, String> data = null;
-        try (Scanner in = new Scanner(file)) {
-            data = new DataTableImpl<>(Arrays.asList(in.nextLine().trim().split(DELIMITER_REGEX)));
+        try (final Scanner in = new Scanner(file)) {
+            data = new DataTableImpl<>(Arrays.asList(in.nextLine().trim().split(DataTools.DELIMITER_REGEX)));
             while (in.hasNextLine())
-                data.addRow(Arrays.asList(in.nextLine().trim().split(DELIMITER_REGEX)));
+                data.addRow(Arrays.asList(in.nextLine().trim().split(DataTools.DELIMITER_REGEX)));
         }
         return data;
     }
 
-    public static <Attribute, Value> void saveCSV(DataTable<Attribute, Value> data, File dest, boolean headers) throws IOException {
-        try (BufferedWriter out = new BufferedWriter(new FileWriter(dest))) {
+    public static <Attribute, Value> void saveCSV(final DataTable<Attribute, Value> data, final File dest, final boolean headers) throws IOException {
+        try (final BufferedWriter out = new BufferedWriter(new FileWriter(dest))) {
 
             if (headers) {
                 String delim = "";
-                for (Attribute a : data.variables()) {
+                for (final Attribute a : data.variables()) {
                     out.append(delim).append(a.toString());
-                    delim = DELIMITER;
+                    delim = DataTools.DELIMITER;
                 }
-                out.append(NEWLINE);
+                out.append(DataTools.NEWLINE);
             }
 
-            for (List<Value> row : data) {
+            for (final List<Value> row : data) {
                 String delim = "";
-                for (Value v : row) {
+                for (final Value v : row) {
                     out.append(delim).append(v.toString());
-                    delim = DELIMITER;
+                    delim = DataTools.DELIMITER;
                 }
-                out.append(NEWLINE);
+                out.append(DataTools.NEWLINE);
             }
         }
     }

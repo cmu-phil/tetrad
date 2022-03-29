@@ -56,8 +56,8 @@ public class SemImWrapper implements SessionModel {
     private String modelSourceName;
 
     //============================CONSTRUCTORS==========================//
-    public SemImWrapper(SemIm semIm) {
-        this.setSemIm(semIm);
+    public SemImWrapper(final SemIm semIm) {
+        setSemIm(semIm);
     }
 
 //    public SemImWrapper(SemEstimatorWrapper semEstWrapper) {
@@ -74,12 +74,12 @@ public class SemImWrapper implements SessionModel {
 //        }
 //    }
 
-    public SemImWrapper(Simulation simulation) {
+    public SemImWrapper(final Simulation simulation) {
         if (simulation == null) {
             throw new NullPointerException("The Simulation box does not contain a simulation.");
         }
 
-        edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation = simulation.getSimulation();
+        final edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation = simulation.getSimulation();
 
         if (_simulation == null) {
             throw new NullPointerException("No data sets have been simulated.");
@@ -94,27 +94,27 @@ public class SemImWrapper implements SessionModel {
             throw new IllegalArgumentException("That was not a linear, Gaussian SEM simulation. Sorry.");
         }
 
-        semIms = ((SemSimulation) _simulation).getSemIms();
+        this.semIms = ((SemSimulation) _simulation).getSemIms();
 
-        if (semIms == null) {
+        if (this.semIms == null) {
             throw new NullPointerException("It looks like you have not done a simulation.");
         }
 
-        numModels = simulation.getDataModelList().size();
-        modelIndex = 0;
-        modelSourceName = simulation.getName();
+        this.numModels = simulation.getDataModelList().size();
+        this.modelIndex = 0;
+        this.modelSourceName = simulation.getName();
     }
 
-    public SemImWrapper(SemPmWrapper semPmWrapper, Parameters params) {
+    public SemImWrapper(final SemPmWrapper semPmWrapper, final Parameters params) {
         if (semPmWrapper == null) {
             throw new NullPointerException("SemPmWrapper must not be null.");
         }
 
-        this.setSemIm(new SemIm(semPmWrapper.getSemPms().get(semPmWrapper.getModelIndex()), params));
+        setSemIm(new SemIm(semPmWrapper.getSemPms().get(semPmWrapper.getModelIndex()), params));
     }
 
-    public SemImWrapper(SemPmWrapper semPmWrapper, SemImWrapper oldSemImWrapper,
-                        Parameters params) {
+    public SemImWrapper(final SemPmWrapper semPmWrapper, final SemImWrapper oldSemImWrapper,
+                        final Parameters params) {
         if (semPmWrapper == null) {
             throw new NullPointerException("SemPmWrapper must not be null.");
         }
@@ -123,30 +123,30 @@ public class SemImWrapper implements SessionModel {
             throw new NullPointerException("Parameters must not be null.");
         }
 
-        SemPm semPm = new SemPm(semPmWrapper.getSemPm());
-        SemIm oldSemIm = oldSemImWrapper.getSemIm();
+        final SemPm semPm = new SemPm(semPmWrapper.getSemPm());
+        final SemIm oldSemIm = oldSemImWrapper.getSemIm();
 
         if (!params.getBoolean("retainPreviousValues", false)) {
-            this.setSemIm(new SemIm(semPm, params));
+            setSemIm(new SemIm(semPm, params));
         } else {
-            this.setSemIm(new SemIm(semPm, oldSemIm, params));
+            setSemIm(new SemIm(semPm, oldSemIm, params));
         }
     }
 
-    public SemImWrapper(SemUpdaterWrapper semUpdaterWrapper) {
+    public SemImWrapper(final SemUpdaterWrapper semUpdaterWrapper) {
         if (semUpdaterWrapper == null) {
             throw new NullPointerException("SemPmWrapper must not be null.");
         }
 
-        this.setSemIm(semUpdaterWrapper.getSemUpdater().getUpdatedSemIm());
+        setSemIm(semUpdaterWrapper.getSemUpdater().getUpdatedSemIm());
     }
 
-    private void setSemIm(SemIm updatedSemIm) {
-        semIms = new ArrayList<>();
-        semIms.add(new SemIm(updatedSemIm));
+    private void setSemIm(final SemIm updatedSemIm) {
+        this.semIms = new ArrayList<>();
+        this.semIms.add(new SemIm(updatedSemIm));
 
-        for (int i = 0; i < semIms.size(); i++) {
-            this.log(i, semIms.get(i));
+        for (int i = 0; i < this.semIms.size(); i++) {
+            log(i, this.semIms.get(i));
         }
     }
 
@@ -158,9 +158,9 @@ public class SemImWrapper implements SessionModel {
 //        setSemIm(semImWrapper.getSemIm());
 //    }
 
-    public SemImWrapper(PValueImproverWrapper wrapper) {
-        SemIm oldSemIm = wrapper.getNewSemIm();
-        this.setSemIm(oldSemIm);
+    public SemImWrapper(final PValueImproverWrapper wrapper) {
+        final SemIm oldSemIm = wrapper.getNewSemIm();
+        setSemIm(oldSemIm);
     }
 
     /**
@@ -177,23 +177,23 @@ public class SemImWrapper implements SessionModel {
 
     //===========================PUBLIC METHODS=========================//
     public SemIm getSemIm() {
-        return semIms.get(this.getModelIndex());
+        return this.semIms.get(getModelIndex());
     }
 
     public Graph getGraph() {
-        return this.getSemIm().getSemPm().getGraph();
+        return getSemIm().getSemPm().getGraph();
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
     //======================== Private methods =======================//
-    private void log(int i, SemIm pm) {
+    private void log(final int i, final SemIm pm) {
         TetradLogger.getInstance().log("info", "Linear SEM IM");
         TetradLogger.getInstance().log("info", "IM # " + (i + 1));
         TetradLogger.getInstance().log("im", pm.toString());
@@ -212,40 +212,40 @@ public class SemImWrapper implements SessionModel {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
 
     public Graph getSourceGraph() {
-        return this.getGraph();
+        return getGraph();
     }
 
     public Graph getResultGraph() {
-        return this.getGraph();
+        return getGraph();
     }
 
     public List<String> getVariableNames() {
-        return this.getGraph().getNodeNames();
+        return getGraph().getNodeNames();
     }
 
     public List<Node> getVariables() {
-        return this.getGraph().getNodes();
+        return getGraph().getNodes();
     }
 
     public int getNumModels() {
-        return numModels;
+        return this.numModels;
     }
 
     public int getModelIndex() {
-        return modelIndex;
+        return this.modelIndex;
     }
 
     public String getModelSourceName() {
-        return modelSourceName;
+        return this.modelSourceName;
     }
 
-    public void setModelIndex(int modelIndex) {
+    public void setModelIndex(final int modelIndex) {
         this.modelIndex = modelIndex;
     }
 }

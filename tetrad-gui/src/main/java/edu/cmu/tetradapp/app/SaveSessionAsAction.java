@@ -54,30 +54,30 @@ final class SaveSessionAsAction extends AbstractAction {
      * Performs the action of saving a session to a file.
      */
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(final ActionEvent e) {
         // Get the frontmost SessionWrapper.
-        SessionEditorIndirectRef sessionEditorRef
+        final SessionEditorIndirectRef sessionEditorRef
                 = DesktopController.getInstance().getFrontmostSessionEditor();
-        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        SessionEditorWorkbench workbench = sessionEditor.getSessionWorkbench();
-        SessionWrapper sessionWrapper = workbench.getSessionWrapper();
-        TetradMetadata metadata = new TetradMetadata();
+        final SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
+        final SessionEditorWorkbench workbench = sessionEditor.getSessionWorkbench();
+        final SessionWrapper sessionWrapper = workbench.getSessionWrapper();
+        final TetradMetadata metadata = new TetradMetadata();
 
         // Select the file to save this to.
-        String sessionSaveLocation
+        final String sessionSaveLocation
                 = Preferences.userRoot().get("sessionSaveLocation", "");
-        File file = EditorUtils.getSaveFileWithPath(sessionEditor.getName(), "tet",
+        final File file = EditorUtils.getSaveFileWithPath(sessionEditor.getName(), "tet",
                 JOptionUtils.centeringComp(), true, "Save Session As...", sessionSaveLocation);
 
         if (file == null) {
-            saved = false;
+            this.saved = false;
             return;
         }
 
         if ((DesktopController.getInstance().existsSessionByName(
                 file.getName())
                 && !(sessionWrapper.getName().equals(file.getName())))) {
-            saved = false;
+            this.saved = false;
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     "Another session by that name is currently open. Please "
                             + "\nclose that session first.");
@@ -87,19 +87,19 @@ final class SaveSessionAsAction extends AbstractAction {
         sessionWrapper.setName(file.getName());
         sessionEditor.setName(file.getName());
 
-        try (ObjectOutputStream objOut = new ObjectOutputStream(Files.newOutputStream(file.toPath()))) {
+        try (final ObjectOutputStream objOut = new ObjectOutputStream(Files.newOutputStream(file.toPath()))) {
             objOut.writeObject(metadata);
             objOut.writeObject(sessionWrapper);
 
             sessionWrapper.setSessionChanged(false);
             sessionWrapper.setNewSession(false);
-            saved = true;
-        } catch (IOException exception) {
+            this.saved = true;
+        } catch (final IOException exception) {
             exception.printStackTrace(System.err);
 
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     "An error occurred while attempting to save the session.");
-            saved = false;
+            this.saved = false;
         }
 
         DesktopController.getInstance().putMetadata(sessionWrapper, metadata);
@@ -107,7 +107,7 @@ final class SaveSessionAsAction extends AbstractAction {
     }
 
     public boolean isSaved() {
-        return saved;
+        return this.saved;
     }
 
 }

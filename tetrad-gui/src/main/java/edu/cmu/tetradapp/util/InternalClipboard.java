@@ -34,7 +34,7 @@ public class InternalClipboard extends Clipboard {
     private static final InternalClipboard ourInstance = new InternalClipboard();
 
     public static InternalClipboard getInstance() {
-        return ourInstance;
+        return InternalClipboard.ourInstance;
     }
 
     private InternalClipboard() {

@@ -37,26 +37,26 @@ public final class TestVersion {
 
     @Test
     public void testRoundtrip() {
-        Version version = new Version("4.3.1-5");
-        String versionString = version.toString();
-        Version version2 = new Version(versionString);
+        final Version version = new Version("4.3.1-5");
+        final String versionString = version.toString();
+        final Version version2 = new Version(versionString);
         assertTrue(version.equals(version2));
     }
 
     @Test
     public void testNextVersion() {
-        Version version = new Version("4.3.1-5");
+        final Version version = new Version("4.3.1-5");
 
-        Version version2 = version.nextMajorVersion();
+        final Version version2 = version.nextMajorVersion();
         assertEquals(version2, new Version("5.0.0-0"));
 
-        Version version3 = version.nextMinorVersion();
+        final Version version3 = version.nextMinorVersion();
         assertEquals(version3, new Version("4.4.0-0"));
 
-        Version version4 = version.nextMinorSubversion();
+        final Version version4 = version.nextMinorSubversion();
         assertEquals(version4, new Version("4.3.2-0"));
 
-        Version version5 = version.nextIncrementalRelease();
+        final Version version5 = version.nextIncrementalRelease();
         assertEquals(version5, new Version("4.3.1-6"));
     }
 }

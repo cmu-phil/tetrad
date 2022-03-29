@@ -34,7 +34,7 @@ import java.util.Set;
  */
 public class MisclassificationUtils {
 
-    public static int getIndex(Endpoint endpoint) {
+    public static int getIndex(final Endpoint endpoint) {
         if (endpoint == Endpoint.CIRCLE) return 0;
         if (endpoint == Endpoint.ARROW) return 1;
         if (endpoint == Endpoint.TAIL) return 2;
@@ -42,11 +42,11 @@ public class MisclassificationUtils {
         throw new IllegalArgumentException();
     }
 
-    public static Set<Edge> convertNodes(Set<Edge> edges, List<Node> newVariables) {
-        Set<Edge> newEdges = new HashSet<>();
-        Graph convertedGraph = new EdgeListGraph(newVariables);
+    public static Set<Edge> convertNodes(final Set<Edge> edges, final List<Node> newVariables) {
+        final Set<Edge> newEdges = new HashSet<>();
+        final Graph convertedGraph = new EdgeListGraph(newVariables);
 
-        for (Edge edge : edges) {
+        for (final Edge edge : edges) {
             Node node1 = convertedGraph.getNode(edge.getNode1().getName());
             Node node2 = convertedGraph.getNode(edge.getNode2().getName());
 
@@ -73,9 +73,9 @@ public class MisclassificationUtils {
                         + " among the new variables for the converted graph (" + newVariables + ").");
             }
 
-            Endpoint endpoint1 = edge.getEndpoint1();
-            Endpoint endpoint2 = edge.getEndpoint2();
-            Edge newEdge = new Edge(node1, node2, endpoint1, endpoint2);
+            final Endpoint endpoint1 = edge.getEndpoint1();
+            final Endpoint endpoint2 = edge.getEndpoint2();
+            final Edge newEdge = new Edge(node1, node2, endpoint1, endpoint2);
             newEdges.add(newEdge);
         }
 
@@ -89,23 +89,23 @@ public class MisclassificationUtils {
 
         _nodes = estGraph.getNodes();
 
-        int[][] counts = new int[4][4];
+        final int[][] counts = new int[4][4];
 
         for (int i = 0; i < _nodes.size(); i++) {
             for (int j = 0; j < _nodes.size(); j++) {
                 if (i == j) continue;
 
-                Endpoint endpoint1 = refGraph.getEndpoint(_nodes.get(i), _nodes.get(j));
-                Endpoint endpoint2 = estGraph.getEndpoint(_nodes.get(i), _nodes.get(j));
+                final Endpoint endpoint1 = refGraph.getEndpoint(_nodes.get(i), _nodes.get(j));
+                final Endpoint endpoint2 = estGraph.getEndpoint(_nodes.get(i), _nodes.get(j));
 
-                int index1 = getIndex(endpoint1);
-                int index2 = getIndex(endpoint2);
+                final int index1 = MisclassificationUtils.getIndex(endpoint1);
+                final int index2 = MisclassificationUtils.getIndex(endpoint2);
 
                 counts[index1][index2]++;
             }
         }
 
-        TextTable table2 = new TextTable(5, 5);
+        final TextTable table2 = new TextTable(5, 5);
 
         table2.setToken(0, 1, "-o");
         table2.setToken(0, 2, "->");
@@ -126,10 +126,10 @@ public class MisclassificationUtils {
         return table2.toString();
     }
 
-    public static String edgeMisclassifications(Graph estGraph, Graph refGraph) {
-        StringBuilder builder = new StringBuilder();
+    public static String edgeMisclassifications(final Graph estGraph, final Graph refGraph) {
+        final StringBuilder builder = new StringBuilder();
 
-        TextTable table2 = new TextTable(9, 7);
+        final TextTable table2 = new TextTable(9, 7);
 
         table2.setToken(1, 0, "---");
         table2.setToken(2, 0, "o-o");
@@ -146,11 +146,11 @@ public class MisclassificationUtils {
         table2.setToken(0, 5, "<->");
         table2.setToken(0, 6, "null");
 
-        int[][] counts = new int[8][6];
+        final int[][] counts = new int[8][6];
 
-        for (Edge est1 : estGraph.getEdges()) {
-            Node x = est1.getNode1();
-            Node y = est1.getNode2();
+        for (final Edge est1 : estGraph.getEdges()) {
+            final Node x = est1.getNode1();
+            final Node y = est1.getNode2();
 
             Edge true1 = refGraph.getEdge(x, y);
 
@@ -158,17 +158,17 @@ public class MisclassificationUtils {
                 true1 = new Edge(x, y, Endpoint.NULL, Endpoint.NULL);
             }
 
-            Edge trueConvert = new Edge(x, y, true1.getProximalEndpoint(x), true1.getProximalEndpoint(y));
+            final Edge trueConvert = new Edge(x, y, true1.getProximalEndpoint(x), true1.getProximalEndpoint(y));
 
-            int m = getTypeLeft(trueConvert, est1);
-            int n = getTypeTop(est1);
+            final int m = MisclassificationUtils.getTypeLeft(trueConvert, est1);
+            final int n = MisclassificationUtils.getTypeTop(est1);
 
             counts[m][n]++;
         }
 
-        for (Edge true1 : refGraph.getEdges()) {
-            Node x = true1.getNode1();
-            Node y = true1.getNode2();
+        for (final Edge true1 : refGraph.getEdges()) {
+            final Node x = true1.getNode1();
+            final Node y = true1.getNode2();
 
             Edge est1 = estGraph.getEdge(x, y);
 
@@ -176,10 +176,10 @@ public class MisclassificationUtils {
                 est1 = new Edge(x, y, Endpoint.NULL, Endpoint.NULL);
             }
 
-            Edge estConvert = new Edge(x, y, est1.getProximalEndpoint(x), est1.getProximalEndpoint(y));
+            final Edge estConvert = new Edge(x, y, est1.getProximalEndpoint(x), est1.getProximalEndpoint(y));
 
-            int m = getTypeLeft(true1, estConvert);
-            int n = getTypeTop(estConvert);
+            final int m = MisclassificationUtils.getTypeLeft(true1, estConvert);
+            final int n = MisclassificationUtils.getTypeTop(estConvert);
 
             if (n == 5) {
                 counts[m][5]++;
@@ -215,13 +215,13 @@ public class MisclassificationUtils {
     }
 
 
-    private static int getTypeTop(Edge edgeTop) {
+    private static int getTypeTop(final Edge edgeTop) {
         if (edgeTop == null) {
             return 5;
         }
 
-        Endpoint e1 = edgeTop.getEndpoint1();
-        Endpoint e2 = edgeTop.getEndpoint2();
+        final Endpoint e1 = edgeTop.getEndpoint1();
+        final Endpoint e2 = edgeTop.getEndpoint2();
 
         if (e1 == Endpoint.TAIL && e2 == Endpoint.TAIL) {
             return 0;
@@ -260,13 +260,13 @@ public class MisclassificationUtils {
 //        throw new IllegalArgumentException("Unsupported edge type : " + e1 + " " + e2);
     }
 
-    private static int getTypeLeft(Edge edgeLeft, Edge edgeTop) {
+    private static int getTypeLeft(final Edge edgeLeft, final Edge edgeTop) {
         if (edgeLeft == null) {
             return 7;
         }
 
-        Endpoint e1 = edgeLeft.getEndpoint1();
-        Endpoint e2 = edgeLeft.getEndpoint2();
+        final Endpoint e1 = edgeLeft.getEndpoint1();
+        final Endpoint e2 = edgeLeft.getEndpoint2();
 
         if (e1 == Endpoint.TAIL && e2 == Endpoint.TAIL) {
             return 0;

@@ -68,57 +68,57 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
     //=============================CONSTRUCTORS==========================//
 
     private ScoredGraphsWrapper() {
-        graphsToScores = null;
-        graphScorer = null;
+        this.graphsToScores = null;
+        this.graphScorer = null;
     }
 
-    public ScoredGraphsWrapper(Graph graph, GraphScorer scorer) {
-        List<Graph> dags = SearchGraphUtils.generateCpdagDags(graph, true);
-        graphsToScores = new HashMap<>();
-        graphScorer = scorer;
+    public ScoredGraphsWrapper(final Graph graph, final GraphScorer scorer) {
+        final List<Graph> dags = SearchGraphUtils.generateCpdagDags(graph, true);
+        this.graphsToScores = new HashMap<>();
+        this.graphScorer = scorer;
 
-        for (Graph _graph : dags) {
+        for (final Graph _graph : dags) {
             double score = Double.NaN;
 
             if (scorer != null) {
                 score = scorer.scoreDag(_graph);
             }
 
-            graphsToScores.put(_graph, score);
+            this.graphsToScores.put(_graph, score);
         }
 
-        if (!graphsToScores.keySet().isEmpty()) {
+        if (!this.graphsToScores.keySet().isEmpty()) {
             /*
       The index of the selected graph.
      */
             final int index = 0;
-            selectedGraph = graphsToScores.keySet().iterator().next();
+            this.selectedGraph = this.graphsToScores.keySet().iterator().next();
         }
 
-        this.log();
+        log();
     }
 
-    public ScoredGraphsWrapper(FgesRunner runner, Parameters parameters) {
+    public ScoredGraphsWrapper(final FgesRunner runner, final Parameters parameters) {
         this(runner.getTopGraphs().get(runner.getIndex()).getGraph(), runner.getGraphScorer());
     }
 
-    public ScoredGraphsWrapper(DagWrapper wrapper, Parameters parameters) {
+    public ScoredGraphsWrapper(final DagWrapper wrapper, final Parameters parameters) {
         this(wrapper.getGraph(), null);
     }
 
-    public ScoredGraphsWrapper(GraphWrapper wrapper, Parameters parameters) {
+    public ScoredGraphsWrapper(final GraphWrapper wrapper, final Parameters parameters) {
         this(wrapper.getGraph(), null);
     }
 
-    public ScoredGraphsWrapper(SemGraphWrapper wrapper, Parameters parameters) {
+    public ScoredGraphsWrapper(final SemGraphWrapper wrapper, final Parameters parameters) {
         this(wrapper.getGraph(), null);
     }
 
-    public ScoredGraphsWrapper(PcRunner wrapper, Parameters parameters) {
+    public ScoredGraphsWrapper(final PcRunner wrapper, final Parameters parameters) {
         this(wrapper.getGraph(), null);
     }
 
-    public ScoredGraphsWrapper(CpcRunner wrapper, Parameters parameters) {
+    public ScoredGraphsWrapper(final CpcRunner wrapper, final Parameters parameters) {
         this(wrapper.getGraph(), null);
     }
 
@@ -134,10 +134,10 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
     //==============================PUBLIC METHODS======================//
 
     public Map<Graph, Double> getGraphsToScores() {
-        Map<Graph, Double> _graphsToScores = new LinkedHashMap<>();
+        final Map<Graph, Double> _graphsToScores = new LinkedHashMap<>();
 
-        for (Graph graph : graphsToScores.keySet()) {
-            _graphsToScores.put(new EdgeListGraph(graph), graphsToScores.get(graph));
+        for (final Graph graph : this.graphsToScores.keySet()) {
+            _graphsToScores.put(new EdgeListGraph(graph), this.graphsToScores.get(graph));
         }
 
         return _graphsToScores;
@@ -145,10 +145,10 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
 
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
@@ -157,12 +157,12 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
     private void log() {
         TetradLogger.getInstance().log("info", "DAGs in forbid_latent_common_causes");
         TetradLogger.getInstance().log("selected_graph", "\nSelected Graph\n");
-        TetradLogger.getInstance().log("selected_graph", this.getGraph() + "");
+        TetradLogger.getInstance().log("selected_graph", getGraph() + "");
 
         TetradLogger.getInstance().log("all_graphs", "\nAll Graphs:\n");
         int index = 0;
 
-        for (Graph graph : graphsToScores.keySet()) {
+        for (final Graph graph : this.graphsToScores.keySet()) {
             TetradLogger.getInstance().log("all_graphs", "\nGraph #" + (++index));
             TetradLogger.getInstance().log("all_graphs", graph + "");
         }
@@ -182,7 +182,7 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
@@ -191,29 +191,29 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
      * May be null; a selected graph must be set.
      */
     public Graph getGraph() {
-        return selectedGraph;
+        return this.selectedGraph;
     }
 
     /**
      * May be null; a selected graph must be set.
      */
     public Graph getSelectedGraph() {
-        return selectedGraph;
+        return this.selectedGraph;
     }
 
     /**
      * Sets a selected graph. Must be one of the graphs in <code>getGraphToScore().keySet</code>.
      */
-    public void setSelectedGraph(Graph graph) {
-        if (!graphsToScores.containsKey(graph)) {
+    public void setSelectedGraph(final Graph graph) {
+        if (!this.graphsToScores.containsKey(graph)) {
             throw new IllegalArgumentException("Not a graph in this set.");
         }
 
-        selectedGraph = graph;
+        this.selectedGraph = graph;
     }
 
     public GraphScorer getGraphScorer() {
-        return graphScorer;
+        return this.graphScorer;
     }
 }
 

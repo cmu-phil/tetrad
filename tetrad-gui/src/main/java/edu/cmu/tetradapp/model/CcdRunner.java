@@ -53,24 +53,24 @@ public class CcdRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public CcdRunner(DataWrapper dataWrapper, Parameters params) {
+    public CcdRunner(final DataWrapper dataWrapper, final Parameters params) {
         super(dataWrapper, params, null);
     }
 
-    public CcdRunner(DataWrapper dataWrapper, KnowledgeBoxModel knowledgeBoxModel, Parameters params) {
+    public CcdRunner(final DataWrapper dataWrapper, final KnowledgeBoxModel knowledgeBoxModel, final Parameters params) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
-    public CcdRunner(DataWrapper dataWrapper, GraphWrapper externalGraph, Parameters params) {
+    public CcdRunner(final DataWrapper dataWrapper, final GraphWrapper externalGraph, final Parameters params) {
         super(dataWrapper, params);
-        this.setExternalGraph(externalGraph.getGraph());
+        setExternalGraph(externalGraph.getGraph());
     }
 
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CcdRunner(GraphSource graphWrapper, Parameters params) {
+    public CcdRunner(final GraphSource graphWrapper, final Parameters params) {
         super(graphWrapper.getGraph(), params, null);
     }
 
@@ -78,33 +78,33 @@ public class CcdRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CcdRunner(GraphWrapper graphWrapper, Parameters params) {
+    public CcdRunner(final GraphWrapper graphWrapper, final Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CcdRunner(GraphWrapper graphWrapper, KnowledgeBoxModel knowledgeBoxModel, Parameters params) {
+    public CcdRunner(final GraphWrapper graphWrapper, final KnowledgeBoxModel knowledgeBoxModel, final Parameters params) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public CcdRunner(DagWrapper dagWrapper, Parameters params) {
+    public CcdRunner(final DagWrapper dagWrapper, final Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public CcdRunner(SemGraphWrapper dagWrapper, Parameters params) {
+    public CcdRunner(final SemGraphWrapper dagWrapper, final Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public CcdRunner(IndependenceFactsModel model, Parameters params) {
+    public CcdRunner(final IndependenceFactsModel model, final Parameters params) {
         super(model, params, null);
     }
 
-    public CcdRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public CcdRunner(final IndependenceFactsModel model, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -124,15 +124,15 @@ public class CcdRunner extends AbstractAlgorithmRunner
      * implemented in the extending class.
      */
     public void execute() {
-        Ccd ccd = new Ccd(this.getIndependenceTest());
-        ccd.setDepth(this.getParams().getInt("depth", -1));
-        ccd.setKnowledge((IKnowledge) this.getParams().get("knowledge", new Knowledge2()));
-        Graph graph = ccd.search();
+        final Ccd ccd = new Ccd(getIndependenceTest());
+        ccd.setDepth(getParams().getInt("depth", -1));
+        ccd.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
+        final Graph graph = ccd.search();
 
-        this.setResultGraph(graph);
+        setResultGraph(graph);
 
-        if (this.getSourceGraph() != null) {
-            GraphUtils.arrangeBySourceGraph(graph, this.getSourceGraph());
+        if (getSourceGraph() != null) {
+            GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
         } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
@@ -140,18 +140,18 @@ public class CcdRunner extends AbstractAlgorithmRunner
     }
 
     public IndependenceTest getIndependenceTest() {
-        Object dataModel = this.getDataModel();
+        Object dataModel = getDataModel();
 
         if (dataModel == null) {
-            dataModel = this.getSourceGraph();
+            dataModel = getSourceGraph();
         }
 
-        IndTestType testType = (IndTestType) (this.getParams()).get("indTestType", IndTestType.FISHER_Z);
-        return new IndTestChooser().getTest(dataModel, this.getParams(), testType);
+        final IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
+        return new IndTestChooser().getTest(dataModel, getParams(), testType);
     }
 
     public Graph getGraph() {
-        return this.getResultGraph();
+        return getResultGraph();
     }
 
 
@@ -159,7 +159,7 @@ public class CcdRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with <code>getTriplesList</code>
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<>();
+        final List<String> names = new ArrayList<>();
         names.add("Underlines");
         names.add("Dotted Underlines");
         return names;
@@ -169,9 +169,9 @@ public class CcdRunner extends AbstractAlgorithmRunner
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code> for the given
      * node.
      */
-    public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<>();
-        Graph graph = this.getGraph();
+    public List<List<Triple>> getTriplesLists(final Node node) {
+        final List<List<Triple>> triplesList = new ArrayList<>();
+        final Graph graph = getGraph();
         triplesList.add(GraphUtils.getUnderlinedTriplesFromGraph(node, graph));
         triplesList.add(GraphUtils.getDottedUnderlinedTriplesFromGraph(node, graph));
         return triplesList;

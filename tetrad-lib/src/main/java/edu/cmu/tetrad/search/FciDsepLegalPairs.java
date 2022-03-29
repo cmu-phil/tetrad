@@ -46,7 +46,7 @@ class FciDsepLegalPairs implements LegalPairs {
      *
      * @param graph The graph with respect to which legal pairs will be tested.
      */
-    public FciDsepLegalPairs(Graph graph) {
+    public FciDsepLegalPairs(final Graph graph) {
         if (graph == null) {
             throw new NullPointerException();
         }
@@ -57,25 +57,25 @@ class FciDsepLegalPairs implements LegalPairs {
     /**
      * @return true iff x is adjacent to y.
      */
-    public boolean isLegalFirstEdge(Node x, Node y) {
-        return graph.isAdjacentTo(x, y);
+    public boolean isLegalFirstEdge(final Node x, final Node y) {
+        return this.graph.isAdjacentTo(x, y);
     }
 
     /**
      * @return true iff x-->y<--z or else x is adjacent to z.
      * @throws IllegalArgumentException if x is not adjacent to y or y is not adjacent to z.
      */
-    public boolean isLegalPair(Node x, Node y, Node z, List<Node> c,
-                               List<Node> d) {
-        if (!(graph.isAdjacentTo(x, y)) || !(graph.isAdjacentTo(y, z))) {
+    public boolean isLegalPair(final Node x, final Node y, final Node z, final List<Node> c,
+                               final List<Node> d) {
+        if (!(this.graph.isAdjacentTo(x, y)) || !(this.graph.isAdjacentTo(y, z))) {
             throw new IllegalArgumentException();
         }
 
-        if (graph.isDefCollider(x, y, z)) {
+        if (this.graph.isDefCollider(x, y, z)) {
             return true;
         }
 
-        return graph.isAdjacentTo(x, z);
+        return this.graph.isAdjacentTo(x, z);
     }
 }
 

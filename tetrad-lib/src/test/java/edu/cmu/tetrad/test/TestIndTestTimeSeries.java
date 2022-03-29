@@ -1045,30 +1045,30 @@ public class TestIndTestTimeSeries {
     private IndTestTimeSeries test;
 
     private void setUp() {
-        List<Node> vars = new ArrayList<>();
+        final List<Node> vars = new ArrayList<>();
 
-        for (String varName : varNames) {
+        for (final String varName : this.varNames) {
             vars.add(new ContinuousVariable(varName));
         }
 
-        Matrix _data = new Matrix(data.length, data[0].length);
+        final Matrix _data = new Matrix(this.data.length, this.data[0].length);
 
-        for (int i = 0; i < data.length; i++) {
-            for (int j = 0; j < data[0].length; j++) {
-                _data.set(i, j, data[i][j]);
+        for (int i = 0; i < this.data.length; i++) {
+            for (int j = 0; j < this.data[0].length; j++) {
+                _data.set(i, j, this.data[i][j]);
             }
         }
 
-        test = new IndTestTimeSeries(_data, vars);
+        this.test = new IndTestTimeSeries(_data, vars);
     }
 
     @Test
     public void testChiSquareCutoff() {
-        this.setUp();
-        test.setAlpha(0.05);
-        assertEquals(3.84, test.chiSquareCutoff(), 0.01);
-        test.setAlpha(0.01);
-        assertEquals(6.63, test.chiSquareCutoff(), 0.01);
+        setUp();
+        this.test.setAlpha(0.05);
+        assertEquals(3.84, this.test.chiSquareCutoff(), 0.01);
+        this.test.setAlpha(0.01);
+        assertEquals(6.63, this.test.chiSquareCutoff(), 0.01);
     }
 }
 

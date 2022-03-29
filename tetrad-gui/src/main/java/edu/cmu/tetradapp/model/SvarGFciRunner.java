@@ -66,40 +66,40 @@ public class SvarGFciRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public SvarGFciRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public SvarGFciRunner(final DataWrapper dataWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
-    public SvarGFciRunner(Graph graph, Parameters params) {
+    public SvarGFciRunner(final Graph graph, final Parameters params) {
         super(graph, params);
     }
 
 
-    public SvarGFciRunner(GraphWrapper graphWrapper, Parameters params) {
+    public SvarGFciRunner(final GraphWrapper graphWrapper, final Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
-    public SvarGFciRunner(DagWrapper dagWrapper, Parameters params) {
+    public SvarGFciRunner(final DagWrapper dagWrapper, final Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public SvarGFciRunner(SemGraphWrapper dagWrapper, Parameters params) {
+    public SvarGFciRunner(final SemGraphWrapper dagWrapper, final Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public SvarGFciRunner(IndependenceFactsModel model, Parameters params) {
+    public SvarGFciRunner(final IndependenceFactsModel model, final Parameters params) {
         super(model, params, null);
     }
 
-    public SvarGFciRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public SvarGFciRunner(final IndependenceFactsModel model, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
-    public SvarGFciRunner(DataWrapper[] dataWrappers, Parameters params) {
+    public SvarGFciRunner(final DataWrapper[] dataWrappers, final Parameters params) {
         super(new MergeDatasetsWrapper(dataWrappers, params), params, null);
     }
 
-    public SvarGFciRunner(GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
+    public SvarGFciRunner(final GraphWrapper graphWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
@@ -161,10 +161,10 @@ public class SvarGFciRunner extends AbstractAlgorithmRunner
      * implemented in the extending class.
      */
     public void execute() {
-        Object model = this.getDataModel();
+        Object model = getDataModel();
 
-        if (model == null && this.getSourceGraph() != null) {
-            model = this.getSourceGraph();
+        if (model == null && getSourceGraph() != null) {
+            model = getSourceGraph();
         }
 
         if (model == null) {
@@ -174,30 +174,30 @@ public class SvarGFciRunner extends AbstractAlgorithmRunner
                     "file when you save the session. It can, however, be recreated from the saved seed.");
         }
 
-        Parameters params = this.getParams();
-        double penaltyDiscount = params.getDouble("penaltyDiscount", 4);
+        final Parameters params = getParams();
+        final double penaltyDiscount = params.getDouble("penaltyDiscount", 4);
 
         if (model instanceof Graph) {
-            GraphScore gesScore = new GraphScore((Graph) model);
-            IndependenceTest test = new IndTestDSep((Graph) model);
-            gfci = new SvarGFci(test, gesScore);
-            gfci.setKnowledge((IKnowledge) this.getParams().get("knowledge", new Knowledge2()));
-            gfci.setVerbose(true);
+            final GraphScore gesScore = new GraphScore((Graph) model);
+            final IndependenceTest test = new IndTestDSep((Graph) model);
+            this.gfci = new SvarGFci(test, gesScore);
+            this.gfci.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
+            this.gfci.setVerbose(true);
         } else {
 
             if (model instanceof DataSet) {
-                DataSet dataSet = (DataSet) model;
+                final DataSet dataSet = (DataSet) model;
 
                 if (dataSet.isContinuous()) {
-                    SemBicScore gesScore = new SemBicScore(new CovarianceMatrix((DataSet) model));
+                    final SemBicScore gesScore = new SemBicScore(new CovarianceMatrix((DataSet) model));
 //                    SemBicScore2 gesScore = new SemBicScore2(new CovarianceMatrix((DataSet) model));
 //                    SemGpScore gesScore = new SemGpScore(new CovarianceMatrix((DataSet) model));
 //                    SvrScore gesScore = new SvrScore((DataSet) model);
                     gesScore.setPenaltyDiscount(penaltyDiscount);
                     System.out.println("Score done");
-                    IndependenceTest test = new IndTestDSep((Graph) model);
-                    gfci = new SvarGFci(test, gesScore);
-                    gfci.setKnowledge((IKnowledge) this.getParams().get("knowledge", new Knowledge2()));
+                    final IndependenceTest test = new IndTestDSep((Graph) model);
+                    this.gfci = new SvarGFci(test, gesScore);
+                    this.gfci.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
                 }
 //                else if (dataSet.isDiscrete()) {
 //                    double samplePrior = ((Parameters) getParameters()).getSamplePrior();
@@ -211,16 +211,16 @@ public class SvarGFciRunner extends AbstractAlgorithmRunner
                     throw new IllegalStateException("Data set must either be continuous or discrete.");
                 }
             } else if (model instanceof ICovarianceMatrix) {
-                SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model);
+                final SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model);
                 gesScore.setPenaltyDiscount(penaltyDiscount);
                 gesScore.setPenaltyDiscount(penaltyDiscount);
-                IndependenceTest test = new IndTestDSep((Graph) model);
-                gfci = new SvarGFci(test, gesScore);
-                gfci.setKnowledge((IKnowledge) this.getParams().get("knowledge", new Knowledge2()));
+                final IndependenceTest test = new IndTestDSep((Graph) model);
+                this.gfci = new SvarGFci(test, gesScore);
+                this.gfci.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
             } else if (model instanceof DataModelList) {
-                DataModelList list = (DataModelList) model;
+                final DataModelList list = (DataModelList) model;
 
-                for (DataModel dataModel : list) {
+                for (final DataModel dataModel : list) {
                     if (!(dataModel instanceof DataSet || dataModel instanceof ICovarianceMatrix)) {
                         throw new IllegalArgumentException("Need a combination of all continuous data sets or " +
                                 "covariance matrices, or else all discrete data sets, or else a single externalGraph.");
@@ -235,14 +235,14 @@ public class SvarGFciRunner extends AbstractAlgorithmRunner
 //                Parameters Parameters = (Parameters) getParameters();
 //                Parameters params = (Parameters) Parameters;
 
-                if (this.allContinuous(list)) {
-                    double penalty = params.getDouble("penaltyDiscount", 4);
+                if (allContinuous(list)) {
+                    final double penalty = params.getDouble("penaltyDiscount", 4);
 
-                    SemBicScoreImages fgesScore = new SemBicScoreImages(list);
+                    final SemBicScoreImages fgesScore = new SemBicScoreImages(list);
                     fgesScore.setPenaltyDiscount(penalty);
-                    IndependenceTest test = new IndTestDSep((Graph) model);
-                    gfci = new SvarGFci(test, fgesScore);
-                    gfci.setKnowledge((IKnowledge) this.getParams().get("knowledge", new Knowledge2()));
+                    final IndependenceTest test = new IndTestDSep((Graph) model);
+                    this.gfci = new SvarGFci(test, fgesScore);
+                    this.gfci.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
                 }
 //                else if (allDiscrete(list)) {
 //                    double structurePrior = ((Parameters) getParameters()).getStructurePrior();
@@ -265,21 +265,21 @@ public class SvarGFciRunner extends AbstractAlgorithmRunner
 //        gfci.setExternalGraph(externalGraph);
 //        gfci.setKnowledge(getParameters().getKnowledge());
 //        gfci.setnumCPDAGsToStore(params.getnumCPDAGsToSave());
-        gfci.setVerbose(true);
+        this.gfci.setVerbose(true);
 //        gfci.setHeuristicSpeedup(true);
 //        gfci.setMaxIndegree(3);
-        gfci.setFaithfulnessAssumed(params.getBoolean("faithfulnessAssumed", true));
-        Graph graph = gfci.search();
+        this.gfci.setFaithfulnessAssumed(params.getBoolean("faithfulnessAssumed", true));
+        final Graph graph = this.gfci.search();
 
-        if (this.getSourceGraph() != null) {
-            GraphUtils.arrangeBySourceGraph(graph, this.getSourceGraph());
-        } else if (((IKnowledge) this.getParams().get("knowledge", new Knowledge2())).isDefaultToKnowledgeLayout()) {
-            SearchGraphUtils.arrangeByKnowledgeTiers(graph, (IKnowledge) this.getParams().get("knowledge", new Knowledge2()));
+        if (getSourceGraph() != null) {
+            GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
+        } else if (((IKnowledge) getParams().get("knowledge", new Knowledge2())).isDefaultToKnowledgeLayout()) {
+            SearchGraphUtils.arrangeByKnowledgeTiers(graph, (IKnowledge) getParams().get("knowledge", new Knowledge2()));
         } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
 
-        this.setResultGraph(graph);
+        setResultGraph(graph);
 
 //        this.topGraphs = new ArrayList<>(gfci.getTopGraphs());
 //
@@ -291,8 +291,8 @@ public class SvarGFciRunner extends AbstractAlgorithmRunner
 //        setIndex(topGraphs.size() - 1);
     }
 
-    private boolean allContinuous(List<DataModel> dataModels) {
-        for (DataModel dataModel : dataModels) {
+    private boolean allContinuous(final List<DataModel> dataModels) {
+        for (final DataModel dataModel : dataModels) {
             if (dataModel instanceof DataSet) {
                 if (!dataModel.isContinuous() || dataModel instanceof ICovarianceMatrix) {
                     return false;
@@ -303,8 +303,8 @@ public class SvarGFciRunner extends AbstractAlgorithmRunner
         return true;
     }
 
-    private boolean allDiscrete(List<DataModel> dataModels) {
-        for (DataModel dataModel : dataModels) {
+    private boolean allDiscrete(final List<DataModel> dataModels) {
+        for (final DataModel dataModel : dataModels) {
             if (dataModel instanceof DataSet) {
                 if (!dataModel.isDiscrete()) {
                     return false;
@@ -316,20 +316,20 @@ public class SvarGFciRunner extends AbstractAlgorithmRunner
     }
 
     public IndependenceTest getIndependenceTest() {
-        Object dataModel = this.getDataModel();
+        Object dataModel = getDataModel();
 
         if (dataModel == null) {
-            dataModel = this.getSourceGraph();
+            dataModel = getSourceGraph();
         }
 
-        Parameters params = this.getParams();
-        IndTestType testType;
+        final Parameters params = getParams();
+        final IndTestType testType;
 
-        if (this.getParams() instanceof Parameters) {
-            Parameters _params = params;
+        if (getParams() instanceof Parameters) {
+            final Parameters _params = params;
             testType = (IndTestType) _params.get("indTestType", IndTestType.FISHER_Z);
         } else {
-            Parameters _params = params;
+            final Parameters _params = params;
             testType = (IndTestType) _params.get("indTestType", IndTestType.FISHER_Z);
         }
 
@@ -337,14 +337,14 @@ public class SvarGFciRunner extends AbstractAlgorithmRunner
     }
 
     public Graph getGraph() {
-        return this.getResultGraph();
+        return getResultGraph();
     }
 
     /**
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<>();
+        final List<String> names = new ArrayList<>();
 //        names.add("Definite ColliderDiscovery");
 //        names.add("Definite Noncolliders");
         names.add("Ambiguous Triples");
@@ -354,9 +354,9 @@ public class SvarGFciRunner extends AbstractAlgorithmRunner
     /**
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
-    public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<>();
-        Graph graph = this.getGraph();
+    public List<List<Triple>> getTriplesLists(final Node node) {
+        final List<List<Triple>> triplesList = new ArrayList<>();
+        final Graph graph = getGraph();
 //        triplesList.add(DataGraphUtils.getDefiniteCollidersFromGraph(node, graph));
 //        triplesList.add(DataGraphUtils.getDefiniteNoncollidersFromGraph(node, graph));
         triplesList.add(GraphUtils.getAmbiguousTriplesFromGraph(node, graph));

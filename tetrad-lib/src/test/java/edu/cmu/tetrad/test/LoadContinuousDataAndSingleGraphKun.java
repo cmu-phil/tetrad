@@ -24,56 +24,56 @@ public class LoadContinuousDataAndSingleGraphKun implements Simulation, HasParam
     private final List<String> usedParameters = new ArrayList<>();
     private final Parameters parametersValues = new Parameters();
 
-    public LoadContinuousDataAndSingleGraphKun(String path, String prefix) {
+    public LoadContinuousDataAndSingleGraphKun(final String path, final String prefix) {
         this.path = path;
         this.prefix = prefix;
     }
 
     @Override
-    public void createData(Parameters parameters, boolean newModel) {
-        covs = new ArrayList<>();
+    public void createData(final Parameters parameters, final boolean newModel) {
+        this.covs = new ArrayList<>();
 
-        File dir = new File(path);
+        final File dir = new File(this.path);
 
         if (dir.exists()) {
             for (int i = 1; i <= 20; i++) {
-                File f = new File(path, prefix + i + ".txt");
+                final File f = new File(this.path, this.prefix + i + ".txt");
                 try {
-                    covs.add(DataUtils.parseCovariance(f, "//", DelimiterType.WHITESPACE, '\"', "*"));
-                } catch (IOException e) {
+                    this.covs.add(DataUtils.parseCovariance(f, "//", DelimiterType.WHITESPACE, '\"', "*"));
+                } catch (final IOException e) {
                     e.printStackTrace();
                 }
             }
         }
 
-        File graphFile = new File("/Users/user/Downloads//graph/graph1.txt");
-        graph = GraphUtils.loadGraphTxt(graphFile);
+        final File graphFile = new File("/Users/user/Downloads//graph/graph1.txt");
+        this.graph = GraphUtils.loadGraphTxt(graphFile);
 
     }
 
     @Override
-    public Graph getTrueGraph(int index) {
-        return graph;
+    public Graph getTrueGraph(final int index) {
+        return this.graph;
     }
 
     @Override
-    public DataModel getDataModel(int index) {
-        return covs.get(index);
+    public DataModel getDataModel(final int index) {
+        return this.covs.get(index);
     }
 
     public String getDescription() {
         try {
-            StringBuilder b = new StringBuilder();
+            final StringBuilder b = new StringBuilder();
             b.append("Load data sets and graphs from a directory.").append("\n\n");
             return b.toString();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
     public List<String> getParameters() {
-        return usedParameters;
+        return this.usedParameters;
     }
 
     @Override
@@ -88,6 +88,6 @@ public class LoadContinuousDataAndSingleGraphKun implements Simulation, HasParam
 
     @Override
     public Parameters getParameterValues() {
-        return parametersValues;
+        return this.parametersValues;
     }
 }

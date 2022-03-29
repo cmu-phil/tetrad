@@ -48,7 +48,7 @@ class DirectedPathsAction extends AbstractAction implements ClipboardOwner {
      * Creates a new copy subsession action for the given LayoutEditable and
      * clipboard.
      */
-    public DirectedPathsAction(GraphWorkbench workbench) {
+    public DirectedPathsAction(final GraphWorkbench workbench) {
         super("Directed Paths");
         this.workbench = workbench;
     }
@@ -57,30 +57,30 @@ class DirectedPathsAction extends AbstractAction implements ClipboardOwner {
      * Copies a parentally closed selection of session nodes in the frontmost
      * session editor to the clipboard.
      */
-    public void actionPerformed(ActionEvent e) {
-        Box b = Box.createVerticalBox();
-        Graph graph = workbench.getGraph();
+    public void actionPerformed(final ActionEvent e) {
+        final Box b = Box.createVerticalBox();
+        final Graph graph = this.workbench.getGraph();
 
-        JTextArea textArea = new JTextArea();
-        JScrollPane scroll = new JScrollPane(textArea);
+        final JTextArea textArea = new JTextArea();
+        final JScrollPane scroll = new JScrollPane(textArea);
         scroll.setPreferredSize(new Dimension(600, 600));
 
         textArea.append("Directed Paths:");
 
-        if (this.allDirectedPaths(graph, textArea)) return;
+        if (allDirectedPaths(graph, textArea)) return;
 
 
-        Box b2 = Box.createHorizontalBox();
+        final Box b2 = Box.createHorizontalBox();
         b2.add(scroll);
         textArea.setCaretPosition(0);
         b.add(b2);
 
-        JPanel panel = new JPanel();
+        final JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.add(b);
 
-        EditorWindow window = new EditorWindow(panel,
-                "Directed Paths", "Close", false, workbench);
+        final EditorWindow window = new EditorWindow(panel,
+                "Directed Paths", "Close", false, this.workbench);
         DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
         window.setVisible(true);
 
@@ -88,13 +88,13 @@ class DirectedPathsAction extends AbstractAction implements ClipboardOwner {
 //                "Graph Properties", JOptionPane.PLAIN_MESSAGE);
     }
 
-    private boolean allDirectedPaths(Graph graph, JTextArea textArea) {
+    private boolean allDirectedPaths(final Graph graph, final JTextArea textArea) {
         for (int i = 0; i < graph.getNodes().size(); i++) {
             for (int j = 0; j < graph.getNodes().size(); j++) {
-                Node node1 = graph.getNodes().get(i);
-                Node node2 = graph.getNodes().get(j);
+                final Node node1 = graph.getNodes().get(i);
+                final Node node2 = graph.getNodes().get(j);
 
-                List<List<Node>> directedPaths = GraphUtils.directedPathsFromTo(graph, node1, node2, -1);
+                final List<List<Node>> directedPaths = GraphUtils.directedPathsFromTo(graph, node1, node2, -1);
 
 //                List<List<Node>> directedPaths = new ArrayList<List<Node>>();
 //
@@ -108,18 +108,18 @@ class DirectedPathsAction extends AbstractAction implements ClipboardOwner {
 
                 for (int k = 0; k < directedPaths.size(); k++) {
                     textArea.append("\nPath " + k + ": ");
-                    List<Node> trek = directedPaths.get(k);
+                    final List<Node> trek = directedPaths.get(k);
 
                     textArea.append(trek.get(0).toString());
 
                     for (int m = 1; m < trek.size(); m++) {
-                        Node n0 = trek.get(m - 1);
-                        Node n1 = trek.get(m);
+                        final Node n0 = trek.get(m - 1);
+                        final Node n1 = trek.get(m);
 
-                        Edge edge = graph.getEdge(n0, n1);
+                        final Edge edge = graph.getEdge(n0, n1);
 
-                        Endpoint endpoint0 = edge.getProximalEndpoint(n0);
-                        Endpoint endpoint1 = edge.getProximalEndpoint(n1);
+                        final Endpoint endpoint0 = edge.getProximalEndpoint(n0);
+                        final Endpoint endpoint1 = edge.getProximalEndpoint(n1);
 
                         textArea.append(endpoint0 == Endpoint.ARROW ? "<" : "-");
                         textArea.append("-");
@@ -136,7 +136,7 @@ class DirectedPathsAction extends AbstractAction implements ClipboardOwner {
     /**
      * Required by the AbstractAction interface; does nothing.
      */
-    public void lostOwnership(Clipboard clipboard, Transferable contents) {
+    public void lostOwnership(final Clipboard clipboard, final Transferable contents) {
     }
 
 

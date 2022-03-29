@@ -67,7 +67,7 @@ public final class CptInvariantMarginalCalculator
      * conjunctions of the form P(V1=v1' & V2=v2' & ... & Vn=vn') should be
      * calculated.
      */
-    public CptInvariantMarginalCalculator(BayesIm bayesIm, Evidence evidence) {
+    public CptInvariantMarginalCalculator(final BayesIm bayesIm, final Evidence evidence) {
         if (bayesIm == null) {
             throw new NullPointerException();
         }
@@ -83,16 +83,16 @@ public final class CptInvariantMarginalCalculator
 
         this.bayesIm = bayesIm;
         this.evidence = evidence;
-        updatedBayesIm = new UpdatedBayesIm(bayesIm, evidence);
-        storedMarginals = this.initStoredMarginals();
+        this.updatedBayesIm = new UpdatedBayesIm(bayesIm, evidence);
+        this.storedMarginals = initStoredMarginals();
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
     public static CptInvariantMarginalCalculator serializableInstance() {
-        MlBayesIm bayesIm = MlBayesIm.serializableInstance();
-        Evidence evidence = Evidence.tautology(bayesIm);
+        final MlBayesIm bayesIm = MlBayesIm.serializableInstance();
+        final Evidence evidence = Evidence.tautology(bayesIm);
         return new CptInvariantMarginalCalculator(bayesIm, evidence);
     }
 
@@ -101,23 +101,23 @@ public final class CptInvariantMarginalCalculator
     /**
      * @return P&lpar;variable &equals; category&rpar;.
      */
-    public double getMarginal(int variable, int category) {
-        if (storedMarginals[variable][category] != -99.0) {
-            return storedMarginals[variable][category];
+    public double getMarginal(final int variable, final int category) {
+        if (this.storedMarginals[variable][category] != -99.0) {
+            return this.storedMarginals[variable][category];
         }
 
         double marginal = 0.0;
         boolean foundANumber = false;
 
-        for (int row = 0; row < bayesIm.getNumRows(variable); row++) {
-            double probability =
-                    updatedBayesIm.getProbability(variable, row, category);
+        for (int row = 0; row < this.bayesIm.getNumRows(variable); row++) {
+            final double probability =
+                    this.updatedBayesIm.getProbability(variable, row, category);
 
             if (Double.isNaN(probability)) {
                 continue;
             }
 
-            double probabilityOfRow = this.getProbabilityOfRow(variable, row);
+            final double probabilityOfRow = getProbabilityOfRow(variable, row);
 
             if (Double.isNaN(probabilityOfRow)) {
                 continue;
@@ -131,45 +131,45 @@ public final class CptInvariantMarginalCalculator
             marginal = Double.NaN;
         }
 
-        storedMarginals[variable][category] = marginal;
+        this.storedMarginals[variable][category] = marginal;
         return marginal;
     }
 
     public UpdatedBayesIm getUpdatedBayesIm() {
-        return updatedBayesIm;
+        return this.updatedBayesIm;
     }
 
     private double[][] initStoredMarginals() {
-        storedMarginals = new double[bayesIm.getNumNodes()][];
+        this.storedMarginals = new double[this.bayesIm.getNumNodes()][];
 
-        for (int i = 0; i < bayesIm.getNumNodes(); i++) {
-            storedMarginals[i] = new double[bayesIm.getNumColumns(i)];
-            Arrays.fill(storedMarginals[i], -99.0);
+        for (int i = 0; i < this.bayesIm.getNumNodes(); i++) {
+            this.storedMarginals[i] = new double[this.bayesIm.getNumColumns(i)];
+            Arrays.fill(this.storedMarginals[i], -99.0);
         }
-        return storedMarginals;
+        return this.storedMarginals;
     }
 
 
-    private double getProbabilityOfRow(int variable, int row) {
-        int[] parents = bayesIm.getParents(variable);
-        int[] parentValues = bayesIm.getParentValues(variable, row);
+    private double getProbabilityOfRow(final int variable, final int row) {
+        final int[] parents = this.bayesIm.getParents(variable);
+        final int[] parentValues = this.bayesIm.getParentValues(variable, row);
 
         double probabilityOfRow = 1.0;
 
         for (int index = 0; index < parents.length; index++) {
 
-            if (this.noModifiedCpts(parents, index)) {
-                double marginal =
-                        this.getMarginal(parents[index], parentValues[index]);
+            if (noModifiedCpts(parents, index)) {
+                final double marginal =
+                        getMarginal(parents[index], parentValues[index]);
 
                 if (!Double.isNaN(marginal)) {
                     probabilityOfRow *= marginal;
                 }
             } else {
-                Evidence evidence = new Evidence(this.evidence);
-                CptInvariantMarginalCalculator marginals =
-                        new CptInvariantMarginalCalculator(bayesIm, evidence);
-                double marginal = marginals.getMarginal(parents[index],
+                final Evidence evidence = new Evidence(this.evidence);
+                final CptInvariantMarginalCalculator marginals =
+                        new CptInvariantMarginalCalculator(this.bayesIm, evidence);
+                final double marginal = marginals.getMarginal(parents[index],
                         parentValues[index]);
 
                 if (!Double.isNaN(marginal)) {
@@ -186,18 +186,18 @@ public final class CptInvariantMarginalCalculator
      * of the conditional probability tables relevant to calculating P(node i =
      * value i).
      */
-    private boolean noModifiedCpts(int[] parents, int i) {
-        List<Node> target =
-                Collections.singletonList(bayesIm.getNode(parents[i]));
-        List<Node> conditioners = new LinkedList<>();
+    private boolean noModifiedCpts(final int[] parents, final int i) {
+        final List<Node> target =
+                Collections.singletonList(this.bayesIm.getNode(parents[i]));
+        final List<Node> conditioners = new LinkedList<>();
 
         for (int j = 0; j < i; j++) {
-            conditioners.add(bayesIm.getNode(parents[j]));
+            conditioners.add(this.bayesIm.getNode(parents[j]));
         }
 
-        List<Node> condAncestors = bayesIm.getDag().getAncestors(conditioners);
-        List<Node> targetAncestor = bayesIm.getDag().getAncestors(target);
-        Set<Node> intersection = new HashSet<>(condAncestors);
+        final List<Node> condAncestors = this.bayesIm.getDag().getAncestors(conditioners);
+        final List<Node> targetAncestor = this.bayesIm.getDag().getAncestors(target);
+        final Set<Node> intersection = new HashSet<>(condAncestors);
         intersection.retainAll(targetAncestor);
 
         return intersection.isEmpty();
@@ -213,23 +213,23 @@ public final class CptInvariantMarginalCalculator
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (bayesIm == null) {
+        if (this.bayesIm == null) {
             throw new NullPointerException();
         }
 
-        if (evidence == null) {
+        if (this.evidence == null) {
             throw new NullPointerException();
         }
 
-        if (storedMarginals == null) {
+        if (this.storedMarginals == null) {
             throw new NullPointerException();
         }
 
-        if (updatedBayesIm == null) {
+        if (this.updatedBayesIm == null) {
             throw new NullPointerException();
         }
     }

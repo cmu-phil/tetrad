@@ -99,7 +99,7 @@ public class EndpointMatrixGraph implements Graph {
      * Constructs a new (empty) EdgeListGraph.
      */
     public EndpointMatrixGraph() {
-        nodes = new ArrayList<>();
+        this.nodes = new ArrayList<>();
     }
 
     /**
@@ -112,64 +112,64 @@ public class EndpointMatrixGraph implements Graph {
      *              extracted.
      * @throws IllegalArgumentException if a duplicate edge is added.
      */
-    public EndpointMatrixGraph(Graph graph) throws IllegalArgumentException {
+    public EndpointMatrixGraph(final Graph graph) throws IllegalArgumentException {
         this();
 
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");
         }
 
-        this.transferNodesAndEdges(graph);
-        ambiguousTriples = graph.getAmbiguousTriples();
-        underLineTriples = graph.getUnderLines();
-        dottedUnderLineTriples = graph.getDottedUnderlines();
+        transferNodesAndEdges(graph);
+        this.ambiguousTriples = graph.getAmbiguousTriples();
+        this.underLineTriples = graph.getUnderLines();
+        this.dottedUnderLineTriples = graph.getDottedUnderlines();
 
 
-        for (Edge edge : graph.getEdges()) {
+        for (final Edge edge : graph.getEdges()) {
             if (graph.isHighlighted(edge)) {
-                this.setHighlighted(edge, true);
+                setHighlighted(edge, true);
             }
         }
 
-        for (Node node : nodes) {
-            namesHash.put(node.getName(), node);
+        for (final Node node : this.nodes) {
+            this.namesHash.put(node.getName(), node);
         }
 
-        this.initHashes();
+        initHashes();
     }
 
     /**
      * Constructs a new graph, with no edges, using the the given variable
      * names.
      */
-    private EndpointMatrixGraph(List<Node> nodes) {
+    private EndpointMatrixGraph(final List<Node> nodes) {
         this();
 
         if (nodes == null) {
             throw new NullPointerException();
         }
 
-        for (Object variable : nodes) {
-            if (!this.addNode((Node) variable)) {
+        for (final Object variable : nodes) {
+            if (!addNode((Node) variable)) {
                 throw new IllegalArgumentException();
             }
         }
 
-        graphMatrix = new short[nodes.size()][nodes.size()];
+        this.graphMatrix = new short[nodes.size()][nodes.size()];
 
-        for (Node node : nodes) {
-            namesHash.put(node.getName(), node);
+        for (final Node node : nodes) {
+            this.namesHash.put(node.getName(), node);
         }
 
-        this.initHashes();
+        initHashes();
     }
 
     // Makes a copy with the same object identical edges in it. If you make changes to those edges they will be
     // reflected here.
-    public static Graph shallowCopy(EndpointMatrixGraph graph) {
-        EndpointMatrixGraph _graph = new EndpointMatrixGraph();
+    public static Graph shallowCopy(final EndpointMatrixGraph graph) {
+        final EndpointMatrixGraph _graph = new EndpointMatrixGraph();
 
-        _graph.graphMatrix = copy(graph.graphMatrix);
+        _graph.graphMatrix = EndpointMatrixGraph.copy(graph.graphMatrix);
         _graph.nodes = new ArrayList<>(graph.nodes);
         _graph.ambiguousTriples = new HashSet<>(graph.ambiguousTriples);
         _graph.underLineTriples = new HashSet<>(graph.underLineTriples);
@@ -180,8 +180,8 @@ public class EndpointMatrixGraph implements Graph {
         return _graph;
     }
 
-    private static short[][] copy(short[][] graphMatrix) {
-        short[][] copy = new short[graphMatrix.length][graphMatrix[0].length];
+    private static short[][] copy(final short[][] graphMatrix) {
+        final short[][] copy = new short[graphMatrix.length][graphMatrix[0].length];
 
         if (copy.length == 0) {
             return new short[0][0];
@@ -195,23 +195,23 @@ public class EndpointMatrixGraph implements Graph {
     }
 
     private void initHashes() {
-        nodesHash = new HashMap<>();
+        this.nodesHash = new HashMap<>();
 
-        for (Node node : nodes) {
-            nodesHash.put(node, nodes.indexOf(node));
+        for (final Node node : this.nodes) {
+            this.nodesHash.put(node, this.nodes.indexOf(node));
         }
 
-        endpointsToShorts = new HashMap<>();
+        this.endpointsToShorts = new HashMap<>();
 
-        endpointsToShorts.put(Endpoint.TAIL, (short) 1);
-        endpointsToShorts.put(Endpoint.ARROW, (short) 2);
-        endpointsToShorts.put(Endpoint.CIRCLE, (short) 3);
+        this.endpointsToShorts.put(Endpoint.TAIL, (short) 1);
+        this.endpointsToShorts.put(Endpoint.ARROW, (short) 2);
+        this.endpointsToShorts.put(Endpoint.CIRCLE, (short) 3);
 
-        shortsToEndpoints = new HashMap<>();
+        this.shortsToEndpoints = new HashMap<>();
 
-        shortsToEndpoints.put((short) 1, Endpoint.TAIL);
-        shortsToEndpoints.put((short) 2, Endpoint.ARROW);
-        shortsToEndpoints.put((short) 3, Endpoint.CIRCLE);
+        this.shortsToEndpoints.put((short) 1, Endpoint.TAIL);
+        this.shortsToEndpoints.put((short) 2, Endpoint.ARROW);
+        this.shortsToEndpoints.put((short) 3, Endpoint.CIRCLE);
     }
 
     /**
@@ -229,18 +229,18 @@ public class EndpointMatrixGraph implements Graph {
      * @param node1 the "from" node.
      * @param node2 the "to" node.
      */
-    public boolean addDirectedEdge(Node node1, Node node2) {
-        int i = nodesHash.get(node1);
-        int j = nodesHash.get(node2);
+    public boolean addDirectedEdge(final Node node1, final Node node2) {
+        final int i = this.nodesHash.get(node1);
+        final int j = this.nodesHash.get(node2);
 
-        if (graphMatrix[i][j] != 0) {
+        if (this.graphMatrix[i][j] != 0) {
             return false;
         }
 
-        graphMatrix[j][i] = 1;
-        graphMatrix[i][j] = 2;
+        this.graphMatrix[j][i] = 1;
+        this.graphMatrix[i][j] = 2;
 
-        numEdges++;
+        this.numEdges++;
 
         return true;
     }
@@ -251,8 +251,8 @@ public class EndpointMatrixGraph implements Graph {
      * @param node1 the "from" node.
      * @param node2 the "to" node.
      */
-    public boolean addUndirectedEdge(Node node1, Node node2) {
-        return this.addEdge(Edges.undirectedEdge(node1, node2));
+    public boolean addUndirectedEdge(final Node node1, final Node node2) {
+        return addEdge(Edges.undirectedEdge(node1, node2));
     }
 
     /**
@@ -261,8 +261,8 @@ public class EndpointMatrixGraph implements Graph {
      * @param node1 the "from" node.
      * @param node2 the "to" node.
      */
-    public boolean addNondirectedEdge(Node node1, Node node2) {
-        return this.addEdge(Edges.nondirectedEdge(node1, node2));
+    public boolean addNondirectedEdge(final Node node1, final Node node2) {
+        return addEdge(Edges.nondirectedEdge(node1, node2));
     }
 
     /**
@@ -271,8 +271,8 @@ public class EndpointMatrixGraph implements Graph {
      * @param node1 the "from" node.
      * @param node2 the "to" node.
      */
-    public boolean addPartiallyOrientedEdge(Node node1, Node node2) {
-        return this.addEdge(Edges.partiallyOrientedEdge(node1, node2));
+    public boolean addPartiallyOrientedEdge(final Node node1, final Node node2) {
+        return addEdge(Edges.partiallyOrientedEdge(node1, node2));
     }
 
     /**
@@ -281,28 +281,28 @@ public class EndpointMatrixGraph implements Graph {
      * @param node1 the "from" node.
      * @param node2 the "to" node.
      */
-    public boolean addBidirectedEdge(Node node1, Node node2) {
-        return this.addEdge(Edges.bidirectedEdge(node1, node2));
+    public boolean addBidirectedEdge(final Node node1, final Node node2) {
+        return addEdge(Edges.bidirectedEdge(node1, node2));
     }
 
     public boolean existsDirectedCycle() {
-        for (Node node : this.getNodes()) {
-            if (this.existsDirectedPathFromTo(node, node)) {
+        for (final Node node : getNodes()) {
+            if (existsDirectedPathFromTo(node, node)) {
                 return true;
             }
         }
         return false;
     }
 
-    public boolean isDirectedFromTo(Node node1, Node node2) {
-        List<Edge> edges = this.getEdges(node1, node2);
+    public boolean isDirectedFromTo(final Node node1, final Node node2) {
+        final List<Edge> edges = getEdges(node1, node2);
         if (edges.size() != 1) return false;
-        Edge edge = edges.get(0);
+        final Edge edge = edges.get(0);
         return edge.pointsTowards(node2);
     }
 
-    public boolean isUndirectedFromTo(Node node1, Node node2) {
-        Edge edge = this.getEdge(node1, node2);
+    public boolean isUndirectedFromTo(final Node node1, final Node node2) {
+        final Edge edge = getEdge(node1, node2);
 
         return edge != null && edge.getEndpoint1() == Endpoint.TAIL && edge.getEndpoint2() == Endpoint.TAIL;
 
@@ -318,17 +318,17 @@ public class EndpointMatrixGraph implements Graph {
      * @throws IllegalArgumentException if the given edge is not a directed edge
      *                                  in the graph
      */
-    public boolean defVisible(Edge edge) {
-        if (this.containsEdge(edge)) {
+    public boolean defVisible(final Edge edge) {
+        if (containsEdge(edge)) {
 
-            Node A = Edges.getDirectedEdgeTail(edge);
-            Node B = Edges.getDirectedEdgeHead(edge);
-            List<Node> adjToA = this.getAdjacentNodes(A);
+            final Node A = Edges.getDirectedEdgeTail(edge);
+            final Node B = Edges.getDirectedEdgeHead(edge);
+            final List<Node> adjToA = getAdjacentNodes(A);
 
             while (!adjToA.isEmpty()) {
-                Node Curr = adjToA.remove(0);
-                if (!((this.getAdjacentNodes(Curr)).contains(B)) &&
-                        ((this.getEdge(Curr, A)).getProximalEndpoint(A) == Endpoint
+                final Node Curr = adjToA.remove(0);
+                if (!((getAdjacentNodes(Curr)).contains(B)) &&
+                        ((getEdge(Curr, A)).getProximalEndpoint(A) == Endpoint
                                 .ARROW)) {
                     return true;
                 }
@@ -344,21 +344,21 @@ public class EndpointMatrixGraph implements Graph {
      * IllegalArgument exception raised (by isDirectedFromTo(getEndpoint) or by
      * getEdge) if there are multiple edges between any of the node pairs.
      */
-    public boolean isDefNoncollider(Node node1, Node node2, Node node3) {
-        List<Edge> edges = this.getEdges(node2);
+    public boolean isDefNoncollider(final Node node1, final Node node2, final Node node3) {
+        final List<Edge> edges = getEdges(node2);
         boolean circle12 = false;
         boolean circle32 = false;
 
-        for (Edge edge : edges) {
-            boolean _node1 = edge.getDistalNode(node2) == node1;
-            boolean _node3 = edge.getDistalNode(node2) == node3;
+        for (final Edge edge : edges) {
+            final boolean _node1 = edge.getDistalNode(node2) == node1;
+            final boolean _node3 = edge.getDistalNode(node2) == node3;
 
             if (_node1 && edge.pointsTowards(node1)) return true;
             if (_node3 && edge.pointsTowards(node3)) return true;
 
             if (_node1 && edge.getProximalEndpoint(node2) == Endpoint.CIRCLE) circle12 = true;
             if (_node3 && edge.getProximalEndpoint(node2) == Endpoint.CIRCLE) circle32 = true;
-            if (circle12 && circle32 && !this.isAdjacentTo(node1, node2)) return true;
+            if (circle12 && circle32 && !isAdjacentTo(node1, node2)) return true;
         }
 
         return false;
@@ -376,9 +376,9 @@ public class EndpointMatrixGraph implements Graph {
 //        }
     }
 
-    public boolean isDefCollider(Node node1, Node node2, Node node3) {
-        Edge edge1 = this.getEdge(node1, node2);
-        Edge edge2 = this.getEdge(node2, node3);
+    public boolean isDefCollider(final Node node1, final Node node2, final Node node3) {
+        final Edge edge1 = getEdge(node1, node2);
+        final Edge edge2 = getEdge(node2, node3);
 
         if (edge1 == null) {
             throw new NullPointerException();
@@ -396,8 +396,8 @@ public class EndpointMatrixGraph implements Graph {
      * @return true iff there is a directed path from node1 to node2.
      * a
      */
-    public boolean existsDirectedPathFromTo(Node node1, Node node2) {
-        return this.existsDirectedPathVisit(node1, node2, new LinkedList<Node>());
+    public boolean existsDirectedPathFromTo(final Node node1, final Node node2) {
+        return existsDirectedPathVisit(node1, node2, new LinkedList<Node>());
     }
 
     @Override
@@ -405,12 +405,12 @@ public class EndpointMatrixGraph implements Graph {
         throw new UnsupportedOperationException();
     }
 
-    public boolean existsUndirectedPathFromTo(Node node1, Node node2) {
-        return this.existsUndirectedPathVisit(node1, node2, new LinkedList<Node>());
+    public boolean existsUndirectedPathFromTo(final Node node1, final Node node2) {
+        return existsUndirectedPathVisit(node1, node2, new LinkedList<Node>());
     }
 
-    public boolean existsSemiDirectedPathFromTo(Node node1, Set<Node> nodes) {
-        return this.existsSemiDirectedPathVisit(node1, nodes,
+    public boolean existsSemiDirectedPathFromTo(final Node node1, final Set<Node> nodes) {
+        return existsSemiDirectedPathVisit(node1, nodes,
                 new LinkedList<Node>());
     }
 
@@ -420,12 +420,12 @@ public class EndpointMatrixGraph implements Graph {
      * some third node in the graph, there is a path to each of the two nodes in
      * question.
      */
-    public boolean existsTrek(Node node1, Node node2) {
+    public boolean existsTrek(final Node node1, final Node node2) {
 
-        for (Node node3 : this.getNodes()) {
-            Node node = (node3);
+        for (final Node node3 : getNodes()) {
+            final Node node = (node3);
 
-            if (this.isAncestorOf(node, node1) && this.isAncestorOf(node, node2)) {
+            if (isAncestorOf(node, node1) && isAncestorOf(node, node2)) {
                 return true;
             }
 
@@ -437,15 +437,15 @@ public class EndpointMatrixGraph implements Graph {
     /**
      * @return the list of children for a node.
      */
-    public List<Node> getChildren(Node node) {
-        int i = nodesHash.get(node);
-        List<Node> children = new ArrayList<>();
+    public List<Node> getChildren(final Node node) {
+        final int i = this.nodesHash.get(node);
+        final List<Node> children = new ArrayList<>();
 
-        for (int j = 0; j < nodes.size(); j++) {
-            int m1 = graphMatrix[j][i];
-            int m2 = graphMatrix[i][j];
+        for (int j = 0; j < this.nodes.size(); j++) {
+            final int m1 = this.graphMatrix[j][i];
+            final int m2 = this.graphMatrix[i][j];
             if (m1 == 1 && m2 == 2) {
-                children.add(nodes.get(j));
+                children.add(this.nodes.get(j));
             }
         }
 
@@ -455,10 +455,10 @@ public class EndpointMatrixGraph implements Graph {
     public int getConnectivity() {
         int connectivity = 0;
 
-        List<Node> nodes = this.getNodes();
+        final List<Node> nodes = getNodes();
 
-        for (Node node : nodes) {
-            int n = this.getNumEdges(node);
+        for (final Node node : nodes) {
+            final int n = getNumEdges(node);
             if (n > connectivity) {
                 connectivity = n;
             }
@@ -467,12 +467,12 @@ public class EndpointMatrixGraph implements Graph {
         return connectivity;
     }
 
-    public List<Node> getDescendants(List<Node> nodes) {
-        HashSet<Node> descendants = new HashSet<>();
+    public List<Node> getDescendants(final List<Node> nodes) {
+        final HashSet<Node> descendants = new HashSet<>();
 
-        for (Object node1 : nodes) {
-            Node node = (Node) node1;
-            this.collectDescendantsVisit(node, descendants);
+        for (final Object node1 : nodes) {
+            final Node node = (Node) node1;
+            collectDescendantsVisit(node, descendants);
         }
 
         return new LinkedList<>(descendants);
@@ -482,12 +482,12 @@ public class EndpointMatrixGraph implements Graph {
      * @return the edge connecting node1 and node2, provided a unique such edge
      * exists.
      */
-    public Edge getEdge(Node node1, Node node2) {
-        int i = nodesHash.get(node1);
-        int j = nodesHash.get(node2);
+    public Edge getEdge(final Node node1, final Node node2) {
+        final int i = this.nodesHash.get(node1);
+        final int j = this.nodesHash.get(node2);
 
-        Endpoint e1 = shortsToEndpoints.get(graphMatrix[j][i]);
-        Endpoint e2 = shortsToEndpoints.get(graphMatrix[i][j]);
+        final Endpoint e1 = this.shortsToEndpoints.get(this.graphMatrix[j][i]);
+        final Endpoint e2 = this.shortsToEndpoints.get(this.graphMatrix[i][j]);
 
         if (e1 != null) {
             return new Edge(node1, node2, e1, e2);
@@ -496,8 +496,8 @@ public class EndpointMatrixGraph implements Graph {
         }
     }
 
-    public Edge getDirectedEdge(Node node1, Node node2) {
-        List<Edge> edges = this.getEdges(node1, node2);
+    public Edge getDirectedEdge(final Node node1, final Node node2) {
+        final List<Edge> edges = getEdges(node1, node2);
 
         if (edges == null) return null;
 
@@ -505,7 +505,7 @@ public class EndpointMatrixGraph implements Graph {
             return null;
         }
 
-        for (Edge edge : edges) {
+        for (final Edge edge : edges) {
             if (Edges.isDirectedEdge(edge) && edge.getProximalEndpoint(node2) == Endpoint.ARROW) {
                 return edge;
             }
@@ -517,15 +517,15 @@ public class EndpointMatrixGraph implements Graph {
     /**
      * @return the list of parents for a node.
      */
-    public List<Node> getParents(Node node) {
-        int j = nodesHash.get(node);
-        List<Node> parents = new ArrayList<>();
+    public List<Node> getParents(final Node node) {
+        final int j = this.nodesHash.get(node);
+        final List<Node> parents = new ArrayList<>();
 
-        for (int i = 0; i < nodes.size(); i++) {
-            int m1 = graphMatrix[j][i];
-            int m2 = graphMatrix[i][j];
+        for (int i = 0; i < this.nodes.size(); i++) {
+            final int m1 = this.graphMatrix[j][i];
+            final int m2 = this.graphMatrix[i][j];
             if (m1 == 1 && m2 == 2) {
-                parents.add(nodes.get(i));
+                parents.add(this.nodes.get(i));
             }
         }
 
@@ -535,41 +535,41 @@ public class EndpointMatrixGraph implements Graph {
     /**
      * @return the number of edges into the given node.
      */
-    public int getIndegree(Node node) {
-        return this.getParents(node).size();
+    public int getIndegree(final Node node) {
+        return getParents(node).size();
     }
 
     @Override
-    public int getDegree(Node node) {
+    public int getDegree(final Node node) {
         return 0;
     }
 
     /**
      * @return the number of edges out of the given node.
      */
-    public int getOutdegree(Node node) {
-        return this.getChildren(node).size();
+    public int getOutdegree(final Node node) {
+        return getChildren(node).size();
     }
 
     /**
      * Determines whether some edge or other exists between two nodes.
      */
-    public boolean isAdjacentTo(Node node1, Node node2) {
-        int i = nodesHash.get(node1);
-        int j = nodesHash.get(node2);
+    public boolean isAdjacentTo(final Node node1, final Node node2) {
+        final int i = this.nodesHash.get(node1);
+        final int j = this.nodesHash.get(node2);
 
-        return graphMatrix[i][j] != 0;
+        return this.graphMatrix[i][j] != 0;
     }
 
     /**
      * Determines whether one node is an ancestor of another.
      */
-    public boolean isAncestorOf(Node node1, Node node2) {
-        return (node1 == node2) || this.isProperAncestorOf(node1, node2);
+    public boolean isAncestorOf(final Node node1, final Node node2) {
+        return (node1 == node2) || isProperAncestorOf(node1, node2);
     }
 
-    public boolean possibleAncestor(Node node1, Node node2) {
-        return this.existsSemiDirectedPathFromTo(node1,
+    public boolean possibleAncestor(final Node node1, final Node node2) {
+        return existsSemiDirectedPathFromTo(node1,
                 Collections.singleton(node2));
     }
 
@@ -577,21 +577,21 @@ public class EndpointMatrixGraph implements Graph {
      * @return true iff node1 is a possible ancestor of at least one member of
      * nodes2
      */
-    private boolean possibleAncestorSet(Node node1, List<Node> nodes2) {
-        for (Object aNodes2 : nodes2) {
-            if (this.possibleAncestor(node1, (Node) aNodes2)) {
+    private boolean possibleAncestorSet(final Node node1, final List<Node> nodes2) {
+        for (final Object aNodes2 : nodes2) {
+            if (possibleAncestor(node1, (Node) aNodes2)) {
                 return true;
             }
         }
         return false;
     }
 
-    public List<Node> getAncestors(List<Node> nodes) {
-        HashSet<Node> ancestors = new HashSet<>();
+    public List<Node> getAncestors(final List<Node> nodes) {
+        final HashSet<Node> ancestors = new HashSet<>();
 
-        for (Object node1 : nodes) {
-            Node node = (Node) node1;
-            this.collectAncestorsVisit(node, ancestors);
+        for (final Object node1 : nodes) {
+            final Node node = (Node) node1;
+            collectAncestorsVisit(node, ancestors);
         }
 
         return new ArrayList<>(ancestors);
@@ -600,10 +600,10 @@ public class EndpointMatrixGraph implements Graph {
     /**
      * Determines whether one node is a child of another.
      */
-    public boolean isChildOf(Node node1, Node node2) {
-        for (Object o : this.getEdges(node2)) {
-            Edge edge = (Edge) (o);
-            Node sub = Edges.traverseDirected(node2, edge);
+    public boolean isChildOf(final Node node1, final Node node2) {
+        for (final Object o : getEdges(node2)) {
+            final Edge edge = (Edge) (o);
+            final Node sub = Edges.traverseDirected(node2, edge);
 
             if (sub == node1) {
                 return true;
@@ -615,8 +615,8 @@ public class EndpointMatrixGraph implements Graph {
     /**
      * Determines whether one node is a descendent of another.
      */
-    public boolean isDescendentOf(Node node1, Node node2) {
-        return (node1 == node2) || this.isProperDescendentOf(node1, node2);
+    public boolean isDescendentOf(final Node node1, final Node node2) {
+        return (node1 == node2) || isProperDescendentOf(node1, node2);
     }
 
     /**
@@ -624,39 +624,39 @@ public class EndpointMatrixGraph implements Graph {
      *
      * @return true iff node2 is a definite nondecendent of node1
      */
-    public boolean defNonDescendent(Node node1, Node node2) {
-        return !(this.possibleAncestor(node1, node2));
+    public boolean defNonDescendent(final Node node1, final Node node2) {
+        return !(possibleAncestor(node1, node2));
     }
 
     // Assume acyclicity.
-    public boolean isDConnectedTo(Node x, Node y, List<Node> z) {
-        Set<Node> zAncestors = this.zAncestors2(z);
+    public boolean isDConnectedTo(final Node x, final Node y, final List<Node> z) {
+        final Set<Node> zAncestors = zAncestors2(z);
 
-        Queue<Pair> Q = new ArrayDeque<>();
-        Set<Pair> V = new HashSet<>();
+        final Queue<Pair> Q = new ArrayDeque<>();
+        final Set<Pair> V = new HashSet<>();
 
-        for (Node node : this.getAdjacentNodes(x)) {
+        for (final Node node : getAdjacentNodes(x)) {
             if (node == y) return true;
-            Pair edge = new Pair(x, node);
+            final Pair edge = new Pair(x, node);
             Q.offer(edge);
             V.add(edge);
         }
 
         while (!Q.isEmpty()) {
-            Pair t = Q.poll();
+            final Pair t = Q.poll();
 
-            Node b = t.getY();
-            Node a = t.getX();
+            final Node b = t.getY();
+            final Node a = t.getX();
 
-            for (Node c : this.getAdjacentNodes(b)) {
+            for (final Node c : getAdjacentNodes(b)) {
                 if (c == a) continue;
 
-                boolean collider = this.isDefCollider(a, b, c);
+                final boolean collider = isDefCollider(a, b, c);
                 if (!((collider && zAncestors.contains(b)) || (!collider && !z.contains(b)))) continue;
 
                 if (c == y) return true;
 
-                Pair u = new Pair(b, c);
+                final Pair u = new Pair(b, c);
                 if (V.contains(u)) continue;
 
                 V.add(u);
@@ -667,17 +667,17 @@ public class EndpointMatrixGraph implements Graph {
         return false;
     }
 
-    private boolean isDConnectedTo(List<Node> x, List<Node> y, List<Node> z) {
-        Set<Node> zAncestors = this.zAncestors2(z);
+    private boolean isDConnectedTo(final List<Node> x, final List<Node> y, final List<Node> z) {
+        final Set<Node> zAncestors = zAncestors2(z);
 
-        Queue<Pair> Q = new ArrayDeque<>();
-        Set<Pair> V = new HashSet<>();
+        final Queue<Pair> Q = new ArrayDeque<>();
+        final Set<Pair> V = new HashSet<>();
 
-        for (Node _x : x) {
-            for (Node node : this.getAdjacentNodes(_x)) {
+        for (final Node _x : x) {
+            for (final Node node : getAdjacentNodes(_x)) {
 //                if (node == y) return true;
                 if (y.contains(node)) return true;
-                Pair edge = new Pair(_x, node);
+                final Pair edge = new Pair(_x, node);
 //                System.out.println("Edge " + edge);
                 Q.offer(edge);
                 V.add(edge);
@@ -685,21 +685,21 @@ public class EndpointMatrixGraph implements Graph {
         }
 
         while (!Q.isEmpty()) {
-            Pair t = Q.poll();
+            final Pair t = Q.poll();
 
-            Node b = t.getY();
-            Node a = t.getX();
+            final Node b = t.getY();
+            final Node a = t.getX();
 
-            for (Node c : this.getAdjacentNodes(b)) {
+            for (final Node c : getAdjacentNodes(b)) {
                 if (c == a) continue;
 
-                boolean collider = this.isDefCollider(a, b, c);
+                final boolean collider = isDefCollider(a, b, c);
                 if (!((collider && zAncestors.contains(b)) || (!collider && !z.contains(b)))) continue;
 
 //                if (c == y) return true;
                 if (y.contains(c)) return true;
 
-                Pair u = new Pair(b, c);
+                final Pair u = new Pair(b, c);
                 if (V.contains(u)) continue;
 
 //                System.out.println("u = " + u);
@@ -712,8 +712,8 @@ public class EndpointMatrixGraph implements Graph {
         return false;
     }
 
-    public boolean isDSeparatedFrom(List<Node> x, List<Node> y, List<Node> z) {
-        return !this.isDConnectedTo(x, y, z);
+    public boolean isDSeparatedFrom(final List<Node> x, final List<Node> y, final List<Node> z) {
+        return !isDConnectedTo(x, y, z);
     }
 
     @Override
@@ -722,27 +722,27 @@ public class EndpointMatrixGraph implements Graph {
     }
 
     @Override
-    public List<List<Triple>> getTriplesLists(Node node) {
+    public List<List<Triple>> getTriplesLists(final Node node) {
         return null;
     }
 
     @Override
     public boolean isPag() {
-        return pag;
+        return this.pag;
     }
 
     @Override
-    public void setPag(boolean pag) {
+    public void setPag(final boolean pag) {
         this.pag = pag;
     }
 
     @Override
     public boolean isCPDAG() {
-        return CPDAG;
+        return this.CPDAG;
     }
 
     @Override
-    public void setCPDAG(boolean CPDAG) {
+    public void setCPDAG(final boolean CPDAG) {
         this.CPDAG = CPDAG;
     }
 
@@ -750,48 +750,48 @@ public class EndpointMatrixGraph implements Graph {
         private final Node x;
         private final Node y;
 
-        public Pair(Node x, Node y) {
+        public Pair(final Node x, final Node y) {
             this.x = x;
             this.y = y;
         }
 
         public Node getX() {
-            return x;
+            return this.x;
         }
 
         public Node getY() {
-            return y;
+            return this.y;
         }
 
         public int hashCode() {
-            return x.hashCode() + 17 * y.hashCode();
+            return this.x.hashCode() + 17 * this.y.hashCode();
         }
 
-        public boolean equals(Object o) {
+        public boolean equals(final Object o) {
             if (o == this) return true;
             if (!(o instanceof Pair)) return false;
-            Pair pair = (Pair) o;
-            return x == pair.getX() && y == pair.getY();
+            final Pair pair = (Pair) o;
+            return this.x == pair.getX() && this.y == pair.getY();
         }
 
         public String toString() {
-            return "(" + x.toString() + ", " + y.toString() + ")";
+            return "(" + this.x.toString() + ", " + this.y.toString() + ")";
         }
     }
 
-    private Set<Node> zAncestors2(List<Node> z) {
-        Queue<Node> Q = new ArrayDeque<>();
-        Set<Node> V = new HashSet<>();
+    private Set<Node> zAncestors2(final List<Node> z) {
+        final Queue<Node> Q = new ArrayDeque<>();
+        final Set<Node> V = new HashSet<>();
 
-        for (Node node : z) {
+        for (final Node node : z) {
             Q.offer(node);
             V.add(node);
         }
 
         while (!Q.isEmpty()) {
-            Node t = Q.poll();
+            final Node t = Q.poll();
 
-            for (Node c : this.getParents(t)) {
+            for (final Node c : getParents(t)) {
                 if (V.contains(c)) continue;
                 V.add(c);
                 Q.offer(c);
@@ -819,20 +819,20 @@ public class EndpointMatrixGraph implements Graph {
      * @see #isDConnectedTo
      */
 
-    public boolean isDSeparatedFrom(Node node1, Node node2, List<Node> z) {
-        return !this.isDConnectedTo(node1, node2, z);
+    public boolean isDSeparatedFrom(final Node node1, final Node node2, final List<Node> z) {
+        return !isDConnectedTo(node1, node2, z);
     }
 
     //added by ekorber, June 2004
-    public boolean possDConnectedTo(Node node1, Node node2,
-                                    List<Node> condNodes) {
-        LinkedList<Node> allNodes = new LinkedList<>(this.getNodes());
-        int sz = allNodes.size();
-        int[][] edgeStage = new int[sz][sz];
+    public boolean possDConnectedTo(final Node node1, final Node node2,
+                                    final List<Node> condNodes) {
+        final LinkedList<Node> allNodes = new LinkedList<>(getNodes());
+        final int sz = allNodes.size();
+        final int[][] edgeStage = new int[sz][sz];
         int stage = 1;
 
-        int n1x = allNodes.indexOf(node1);
-        int n2x = allNodes.indexOf(node2);
+        final int n1x = allNodes.indexOf(node1);
+        final int n2x = allNodes.indexOf(node2);
 
         edgeStage[n1x][n1x] = 1;
         edgeStage[n2x][n2x] = 1;
@@ -840,12 +840,12 @@ public class EndpointMatrixGraph implements Graph {
         List<int[]> currEdges;
         List<int[]> nextEdges = new LinkedList<>();
 
-        int[] temp1 = new int[2];
+        final int[] temp1 = new int[2];
         temp1[0] = n1x;
         temp1[1] = n1x;
         nextEdges.add(temp1);
 
-        int[] temp2 = new int[2];
+        final int[] temp2 = new int[2];
         temp2[0] = n2x;
         temp2[1] = n2x;
         nextEdges.add(temp2);
@@ -853,13 +853,13 @@ public class EndpointMatrixGraph implements Graph {
         while (true) {
             currEdges = nextEdges;
             nextEdges = new LinkedList<>();
-            for (int[] edge : currEdges) {
-                Node center = allNodes.get(edge[1]);
-                List<Node> adj = new LinkedList<>(this.getAdjacentNodes(center));
+            for (final int[] edge : currEdges) {
+                final Node center = allNodes.get(edge[1]);
+                final List<Node> adj = new LinkedList<>(getAdjacentNodes(center));
 
-                for (Node anAdj : adj) {
+                for (final Node anAdj : adj) {
                     // check if we've hit this edge before
-                    int testIndex = allNodes.indexOf(anAdj);
+                    final int testIndex = allNodes.indexOf(anAdj);
                     if (edgeStage[edge[1]][testIndex] != 0) {
                         continue;
                     }
@@ -867,14 +867,14 @@ public class EndpointMatrixGraph implements Graph {
                     // if the edge pair violates possible d-connection,
                     // then go to the next adjacent node.
 
-                    Node X = allNodes.get(edge[0]);
-                    Node Y = allNodes.get(edge[1]);
-                    Node Z = allNodes.get(testIndex);
+                    final Node X = allNodes.get(edge[0]);
+                    final Node Y = allNodes.get(edge[1]);
+                    final Node Z = allNodes.get(testIndex);
 
-                    if (!((this.isDefNoncollider(X, Y, Z) &&
+                    if (!((isDefNoncollider(X, Y, Z) &&
                             !(condNodes.contains(Y))) || (
-                            this.isDefCollider(X, Y, Z) &&
-                                    this.possibleAncestorSet(Y, condNodes)))) {
+                            isDefCollider(X, Y, Z) &&
+                                    possibleAncestorSet(Y, condNodes)))) {
                         continue;
                     }
 
@@ -886,7 +886,7 @@ public class EndpointMatrixGraph implements Graph {
 
                     // (ii) if we need to keep going,
                     // add the edge to the nextEdges list
-                    int[] nextEdge = new int[2];
+                    final int[] nextEdge = new int[2];
                     nextEdge[0] = edge[1];
                     nextEdge[1] = testIndex;
                     nextEdges.add(nextEdge);
@@ -917,7 +917,7 @@ public class EndpointMatrixGraph implements Graph {
      * @param node2 the second node.
      * @return true if an inducing path exists, false if not.
      */
-    public boolean existsInducingPath(Node node1, Node node2) {
+    public boolean existsInducingPath(final Node node1, final Node node2) {
         return GraphUtils.existsInducingPath(node1, node2, this);
     }
 
@@ -931,10 +931,10 @@ public class EndpointMatrixGraph implements Graph {
      * @see #getParents
      * @see #getChildren
      */
-    public boolean isParentOf(Node node1, Node node2) {
-        for (Edge edge1 : this.getEdges(node1)) {
-            Edge edge = (edge1);
-            Node sub = Edges.traverseDirected(node1, edge);
+    public boolean isParentOf(final Node node1, final Node node2) {
+        for (final Edge edge1 : getEdges(node1)) {
+            final Edge edge = (edge1);
+            final Node sub = Edges.traverseDirected(node1, edge);
 
             if (sub == node2) {
                 return true;
@@ -947,15 +947,15 @@ public class EndpointMatrixGraph implements Graph {
     /**
      * Determines whether one node is a proper ancestor of another.
      */
-    public boolean isProperAncestorOf(Node node1, Node node2) {
-        return this.existsDirectedPathFromTo(node1, node2);
+    public boolean isProperAncestorOf(final Node node1, final Node node2) {
+        return existsDirectedPathFromTo(node1, node2);
     }
 
     /**
      * Determines whether one node is a proper decendent of another
      */
-    public boolean isProperDescendentOf(Node node1, Node node2) {
-        return this.existsDirectedPathFromTo(node2, node1);
+    public boolean isProperDescendentOf(final Node node1, final Node node2) {
+        return existsDirectedPathFromTo(node2, node1);
     }
 
     /**
@@ -969,7 +969,7 @@ public class EndpointMatrixGraph implements Graph {
      *                                  node or edge violates one of the
      *                                  basicConstraints of this graph.
      */
-    public void transferNodesAndEdges(Graph graph)
+    public void transferNodesAndEdges(final Graph graph)
             throws IllegalArgumentException {
         if (graph == null) {
             throw new NullPointerException("No graph was provided.");
@@ -977,17 +977,17 @@ public class EndpointMatrixGraph implements Graph {
 
 //        System.out.println("TANSFER BEFORE " + graph.getEdges());
 
-        for (Node node : graph.getNodes()) {
+        for (final Node node : graph.getNodes()) {
 
             node.getAllAttributes().clear();
 
-            if (!this.addNode(node)) {
+            if (!addNode(node)) {
                 throw new IllegalArgumentException();
             }
         }
 
-        for (Edge edge : graph.getEdges()) {
-            if (!this.addEdge(edge)) {
+        for (final Edge edge : graph.getEdges()) {
+            if (!addEdge(edge)) {
                 throw new IllegalArgumentException();
             }
         }
@@ -995,19 +995,19 @@ public class EndpointMatrixGraph implements Graph {
 //        System.out.println("TANSFER AFTER " + getEdges());
     }
 
-    public void transferAttributes(Graph graph)
+    public void transferAttributes(final Graph graph)
             throws IllegalArgumentException {
         if (graph == null) {
             throw new NullPointerException("No graph was provided.");
         }
-        attributes.putAll(graph.getAllAttributes());
+        this.attributes.putAll(graph.getAllAttributes());
     }
 
     /**
      * Determines whether a node in a graph is exogenous.
      */
-    public boolean isExogenous(Node node) {
-        return this.getIndegree(node) == 0;
+    public boolean isExogenous(final Node node) {
+        return getIndegree(node) == 0;
     }
 
     /**
@@ -1015,13 +1015,13 @@ public class EndpointMatrixGraph implements Graph {
      * up twice in the list of adjacencies for X, for optimality; simply create a list an and array from these to
      * eliminate the duplication.
      */
-    public List<Node> getAdjacentNodes(Node node) {
-        int j = nodesHash.get(node);
-        List<Node> adj = new ArrayList<>();
+    public List<Node> getAdjacentNodes(final Node node) {
+        final int j = this.nodesHash.get(node);
+        final List<Node> adj = new ArrayList<>();
 
-        for (int i = 0; i < nodes.size(); i++) {
-            if (graphMatrix[i][j] != (short) 0) {
-                adj.add(nodes.get(i));
+        for (int i = 0; i < this.nodes.size(); i++) {
+            if (this.graphMatrix[i][j] != (short) 0) {
+                adj.add(this.nodes.get(i));
             }
         }
 
@@ -1031,8 +1031,8 @@ public class EndpointMatrixGraph implements Graph {
     /**
      * Removes the edge connecting the two given nodes.
      */
-    public boolean removeEdge(Node node1, Node node2) {
-        List<Edge> edges = this.getEdges(node1, node2);
+    public boolean removeEdge(final Node node1, final Node node2) {
+        final List<Edge> edges = getEdges(node1, node2);
 
         if (edges.size() > 1) {
             throw new IllegalStateException(
@@ -1040,18 +1040,18 @@ public class EndpointMatrixGraph implements Graph {
                             node2);
         }
 
-        numEdges--;
+        this.numEdges--;
 
-        return this.removeEdges(edges);
+        return removeEdges(edges);
     }
 
     /**
      * @return the endpoint along the edge from node to node2 at the node2 end.
      */
-    public Endpoint getEndpoint(Node node1, Node node2) {
-        List<Edge> edges = this.getEdges(node2);
+    public Endpoint getEndpoint(final Node node1, final Node node2) {
+        final List<Edge> edges = getEdges(node2);
 
-        for (Edge edge : edges) {
+        for (final Edge edge : edges) {
             if (edge.getDistalNode(node2) == node1) return edge.getProximalEndpoint(node2);
         }
 
@@ -1082,25 +1082,25 @@ public class EndpointMatrixGraph implements Graph {
      * @throws IllegalArgumentException if the edge with the revised endpoint
      *                                  cannot be added to the graph.
      */
-    public boolean setEndpoint(Node from, Node to, Endpoint endPoint)
+    public boolean setEndpoint(final Node from, final Node to, final Endpoint endPoint)
             throws IllegalArgumentException {
-        List<Edge> edges = this.getEdges(from, to);
+        final List<Edge> edges = getEdges(from, to);
 
         if (endPoint == null) {
             throw new NullPointerException();
         } else if (edges.size() == 0) {
 //            removeEdge(from, to);
-            this.addEdge(new Edge(from, to, Endpoint.TAIL, endPoint));
+            addEdge(new Edge(from, to, Endpoint.TAIL, endPoint));
             return true;
         } else if (edges.size() == 1) {
-            Edge edge = edges.get(0);
-            Edge newEdge = new Edge(from, to, edge.getProximalEndpoint(from), endPoint);
+            final Edge edge = edges.get(0);
+            final Edge newEdge = new Edge(from, to, edge.getProximalEndpoint(from), endPoint);
 
             try {
-                this.removeEdge(edge);
-                this.addEdge(newEdge);
+                removeEdge(edge);
+                addEdge(newEdge);
                 return true;
-            } catch (IllegalArgumentException e) {
+            } catch (final IllegalArgumentException e) {
                 return false;
             }
         } else {
@@ -1114,12 +1114,12 @@ public class EndpointMatrixGraph implements Graph {
     /**
      * Nodes adjacent to the given node with the given proximal endpoint.
      */
-    public List<Node> getNodesInTo(Node node, Endpoint endpoint) {
-        List<Node> nodes = new ArrayList<>(4);
-        List<Edge> edges = this.getEdges(node);
+    public List<Node> getNodesInTo(final Node node, final Endpoint endpoint) {
+        final List<Node> nodes = new ArrayList<>(4);
+        final List<Edge> edges = getEdges(node);
 
-        for (Object edge1 : edges) {
-            Edge edge = (Edge) edge1;
+        for (final Object edge1 : edges) {
+            final Edge edge = (Edge) edge1;
 
             if (edge.getProximalEndpoint(node) == endpoint) {
                 nodes.add(edge.getDistalNode(node));
@@ -1132,12 +1132,12 @@ public class EndpointMatrixGraph implements Graph {
     /**
      * Nodes adjacent to the given node with the given distal endpoint.
      */
-    public List<Node> getNodesOutTo(Node node, Endpoint endpoint) {
-        List<Node> nodes = new ArrayList<>(4);
-        List<Edge> edges = this.getEdges(node);
+    public List<Node> getNodesOutTo(final Node node, final Endpoint endpoint) {
+        final List<Node> nodes = new ArrayList<>(4);
+        final List<Edge> edges = getEdges(node);
 
-        for (Object edge1 : edges) {
-            Edge edge = (Edge) edge1;
+        for (final Object edge1 : edges) {
+            final Edge edge = (Edge) edge1;
 
             if (edge.getDistalEndpoint(node) == endpoint) {
                 nodes.add(edge.getDistalNode(node));
@@ -1152,8 +1152,8 @@ public class EndpointMatrixGraph implements Graph {
      * the same order as getNodes().
      */
     public Endpoint[][] getEndpointMatrix() {
-        int size = nodes.size();
-        Endpoint[][] endpoints = new Endpoint[size][size];
+        final int size = this.nodes.size();
+        final Endpoint[][] endpoints = new Endpoint[size][size];
 
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
@@ -1161,10 +1161,10 @@ public class EndpointMatrixGraph implements Graph {
                     continue;
                 }
 
-                Node nodei = nodes.get(i);
-                Node nodej = nodes.get(j);
+                final Node nodei = this.nodes.get(i);
+                final Node nodej = this.nodes.get(j);
 
-                endpoints[i][j] = this.getEndpoint(nodei, nodej);
+                endpoints[i][j] = getEndpoint(nodei, nodej);
             }
         }
 
@@ -1177,21 +1177,21 @@ public class EndpointMatrixGraph implements Graph {
      * @param edge the edge to be added
      * @return true if the edge was added, false if not.
      */
-    public boolean addEdge(Edge edge) {
-        int i = nodesHash.get(edge.getNode1());
-        int j = nodesHash.get(edge.getNode2());
+    public boolean addEdge(final Edge edge) {
+        final int i = this.nodesHash.get(edge.getNode1());
+        final int j = this.nodesHash.get(edge.getNode2());
 
-        if (graphMatrix[i][j] != 0) {
+        if (this.graphMatrix[i][j] != 0) {
             return false;
         }
 
-        short e1 = endpointsToShorts.get(edge.getEndpoint1());
-        short e2 = endpointsToShorts.get(edge.getEndpoint2());
+        final short e1 = this.endpointsToShorts.get(edge.getEndpoint1());
+        final short e2 = this.endpointsToShorts.get(edge.getEndpoint2());
 
-        graphMatrix[j][i] = e1;
-        graphMatrix[i][j] = e2;
+        this.graphMatrix[j][i] = e1;
+        this.graphMatrix[i][j] = e2;
 
-        numEdges++;
+        this.numEdges++;
 
         return true;
     }
@@ -1199,7 +1199,7 @@ public class EndpointMatrixGraph implements Graph {
     /**
      * Throws unsupported operation exception.
      */
-    public void addPropertyChangeListener(PropertyChangeListener l) {
+    public void addPropertyChangeListener(final PropertyChangeListener l) {
         throw new UnsupportedOperationException();
     }
 
@@ -1210,12 +1210,12 @@ public class EndpointMatrixGraph implements Graph {
      * @param node the node to be added.
      * @return true if the the node was added, false if not.
      */
-    public boolean addNode(Node node) {
+    public boolean addNode(final Node node) {
         if (node == null) {
             throw new NullPointerException();
         }
 
-        if (!(this.getNode(node.getName()) == null)) {
+        if (!(getNode(node.getName()) == null)) {
             return false;
 
             // This is problematic for the sem updater. jdramsey 7/23/2005
@@ -1223,35 +1223,35 @@ public class EndpointMatrixGraph implements Graph {
 //                    node.getNode() + " has already been added to the graph.");
         }
 
-        if (nodes.contains(node)) {
+        if (this.nodes.contains(node)) {
             return false;
         }
 
-        List<Node> _nodes = new ArrayList<>();
-        nodes.add(node);
-        namesHash.put(node.getName(), node);
+        final List<Node> _nodes = new ArrayList<>();
+        this.nodes.add(node);
+        this.namesHash.put(node.getName(), node);
 
-        this.reconstituteGraphMatrix(_nodes, nodes);
+        reconstituteGraphMatrix(_nodes, this.nodes);
 
-        this.initHashes();
+        initHashes();
 
         return true;
     }
 
-    private void reconstituteGraphMatrix(List<Node> nodes, List<Node> nodes1) {
-        short[][] newGraphMatrix = new short[nodes1.size()][nodes1.size()];
+    private void reconstituteGraphMatrix(final List<Node> nodes, final List<Node> nodes1) {
+        final short[][] newGraphMatrix = new short[nodes1.size()][nodes1.size()];
 
         for (int i = 0; i < nodes1.size(); i++) {
             for (int j = 0; j < nodes1.size(); j++) {
-                int i1 = nodes.indexOf(nodes1.get(i));
-                int j1 = nodes.indexOf(nodes1.get(i));
+                final int i1 = nodes.indexOf(nodes1.get(i));
+                final int j1 = nodes.indexOf(nodes1.get(i));
 
                 if (i1 != -1 && j1 != -1)
-                    newGraphMatrix[i][j] = graphMatrix[i1][j1];
+                    newGraphMatrix[i][j] = this.graphMatrix[i1][j1];
             }
         }
 
-        graphMatrix = newGraphMatrix;
+        this.graphMatrix = newGraphMatrix;
     }
 
     /**
@@ -1259,11 +1259,11 @@ public class EndpointMatrixGraph implements Graph {
      * edges in the list is guaranteed.
      */
     public Set<Edge> getEdges() {
-        HashSet<Edge> edges = new HashSet<>();
+        final HashSet<Edge> edges = new HashSet<>();
 
-        for (int i = 0; i < nodes.size(); i++) {
-            for (int j = i + 1; j < nodes.size(); j++) {
-                Edge edge = this.getEdge(nodes.get(i), nodes.get(j));
+        for (int i = 0; i < this.nodes.size(); i++) {
+            for (int j = i + 1; j < this.nodes.size(); j++) {
+                final Edge edge = getEdge(this.nodes.get(i), this.nodes.get(j));
 
                 if (edge != null) {
                     edges.add(edge);
@@ -1277,31 +1277,31 @@ public class EndpointMatrixGraph implements Graph {
     /**
      * Determines if the graph contains a particular edge.
      */
-    public boolean containsEdge(Edge edge) {
-        int i = nodesHash.get(edge.getNode1());
-        int j = nodesHash.get(edge.getNode2());
+    public boolean containsEdge(final Edge edge) {
+        final int i = this.nodesHash.get(edge.getNode1());
+        final int j = this.nodesHash.get(edge.getNode2());
 
-        return graphMatrix[i][j] != 0;
+        return this.graphMatrix[i][j] != 0;
     }
 
     /**
      * Determines whether the graph contains a particular node.
      */
-    public boolean containsNode(Node node) {
-        return nodes.contains(node);
+    public boolean containsNode(final Node node) {
+        return this.nodes.contains(node);
     }
 
     /**
      * @return the list of edges connected to a particular node. No particular
      * ordering of the edges in the list is guaranteed.
      */
-    public List<Edge> getEdges(Node node) {
-        List<Node> adj = this.getAdjacentNodes(node);
+    public List<Edge> getEdges(final Node node) {
+        final List<Node> adj = getAdjacentNodes(node);
 
-        List<Edge> edges = new ArrayList<>();
+        final List<Edge> edges = new ArrayList<>();
 
-        for (Node _node : adj) {
-            edges.add(this.getEdge(node, _node));
+        for (final Node _node : adj) {
+            edges.add(getEdge(node, _node));
         }
 
         return edges;
@@ -1311,14 +1311,14 @@ public class EndpointMatrixGraph implements Graph {
         int hashCode = 0;
         int sum = 0;
 
-        for (Node node : this.getNodes()) {
+        for (final Node node : getNodes()) {
             sum += node.hashCode();
         }
 
         hashCode += 23 * sum;
         sum = 0;
 
-        for (Edge edge : this.getEdges()) {
+        for (final Edge edge : getEdges()) {
             sum += edge.hashCode();
         }
 
@@ -1332,18 +1332,18 @@ public class EndpointMatrixGraph implements Graph {
      * in the sense that it contains the same nodes and the edges are
      * isomorphic.
      */
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (!(o instanceof EndpointMatrixGraph)) {
             return false;
         }
 
-        EndpointMatrixGraph graph = (EndpointMatrixGraph) o;
+        final EndpointMatrixGraph graph = (EndpointMatrixGraph) o;
 
-        if (!graph.nodes.equals(nodes)) return false;
+        if (!graph.nodes.equals(this.nodes)) return false;
 
-        for (int i = 0; i < nodes.size(); i++) {
-            for (int j = 0; j < nodes.size(); j++) {
-                if (graph.graphMatrix[i][j] != graphMatrix[i][j]) {
+        for (int i = 0; i < this.nodes.size(); i++) {
+            for (int j = 0; j < this.nodes.size(); j++) {
+                if (graph.graphMatrix[i][j] != this.graphMatrix[i][j]) {
                     return false;
                 }
             }
@@ -1356,24 +1356,24 @@ public class EndpointMatrixGraph implements Graph {
      * Resets the graph so that it is fully connects it using #-# edges, where #
      * is the given endpoint.
      */
-    public void fullyConnect(Endpoint endpoint) {
-        short s = endpointsToShorts.get(endpoint);
+    public void fullyConnect(final Endpoint endpoint) {
+        final short s = this.endpointsToShorts.get(endpoint);
 
-        for (int i = 0; i < nodes.size(); i++) {
-            for (int j = 0; j < nodes.size(); j++) {
-                graphMatrix[i][j] = s;
+        for (int i = 0; i < this.nodes.size(); i++) {
+            for (int j = 0; j < this.nodes.size(); j++) {
+                this.graphMatrix[i][j] = s;
             }
         }
     }
 
-    public void reorientAllWith(Endpoint endpoint) {
-        short s = endpointsToShorts.get(endpoint);
+    public void reorientAllWith(final Endpoint endpoint) {
+        final short s = this.endpointsToShorts.get(endpoint);
 
-        for (int i = 0; i < nodes.size(); i++) {
-            for (int j = 0; j < nodes.size(); j++) {
+        for (int i = 0; i < this.nodes.size(); i++) {
+            for (int j = 0; j < this.nodes.size(); j++) {
                 if (i == j) continue;
-                if (graphMatrix[i][j] != 0) {
-                    graphMatrix[i][j] = s;
+                if (this.graphMatrix[i][j] != 0) {
+                    this.graphMatrix[i][j] = s;
                 }
             }
         }
@@ -1382,17 +1382,17 @@ public class EndpointMatrixGraph implements Graph {
     /**
      * @return the node with the given name, or null if no such node exists.
      */
-    public Node getNode(String name) {
-        Node node = namesHash.get(name);
+    public Node getNode(final String name) {
+        Node node = this.namesHash.get(name);
 
         if (node == null /*|| !name.equals(node.getNode())*/) {
-            namesHash = new HashMap<>();
+            this.namesHash = new HashMap<>();
 
-            for (Node _node : nodes) {
-                namesHash.put(_node.getName(), _node);
+            for (final Node _node : this.nodes) {
+                this.namesHash.put(_node.getName(), _node);
             }
 
-            node = namesHash.get(name);
+            node = this.namesHash.get(name);
         }
 
         return node;
@@ -1412,34 +1412,34 @@ public class EndpointMatrixGraph implements Graph {
      * @return the number of nodes in the graph.
      */
     public int getNumNodes() {
-        return nodes.size();
+        return this.nodes.size();
     }
 
     /**
      * @return the number of edges in the (entire) graph.
      */
     public int getNumEdges() {
-        return numEdges;
+        return this.numEdges;
     }
 
     /**
      * @return the number of edges connected to a particular node in the graph.
      */
-    public int getNumEdges(Node node) {
-        return this.getEdges(node).size();
+    public int getNumEdges(final Node node) {
+        return getEdges(node).size();
     }
 
     public List<Node> getNodes() {
-        return new ArrayList<>(nodes);
+        return new ArrayList<>(this.nodes);
     }
 
     /**
      * Removes all nodes (and therefore all edges) from the graph.
      */
     public void clear() {
-        for (int i = 0; i < nodes.size(); i++) {
-            for (int j = 0; j < nodes.size(); j++) {
-                graphMatrix[i][j] = 0;
+        for (int i = 0; i < this.nodes.size(); i++) {
+            for (int j = 0; j < this.nodes.size(); j++) {
+                this.graphMatrix[i][j] = 0;
             }
         }
     }
@@ -1455,12 +1455,12 @@ public class EndpointMatrixGraph implements Graph {
      * @param edge the edge to remove.
      * @return true if the edge was removed, false if not.
      */
-    public boolean removeEdge(Edge edge) {
-        int i = nodesHash.get(edge.getNode1());
-        int j = nodesHash.get(edge.getNode2());
+    public boolean removeEdge(final Edge edge) {
+        final int i = this.nodesHash.get(edge.getNode1());
+        final int j = this.nodesHash.get(edge.getNode2());
 
-        graphMatrix[i][j] = 0;
-        graphMatrix[j][i] = 0;
+        this.graphMatrix[i][j] = 0;
+        this.graphMatrix[j][i] = 0;
 
         return true;
     }
@@ -1471,11 +1471,11 @@ public class EndpointMatrixGraph implements Graph {
      * @param edges the collection of edges to remove.
      * @return true if any edges in the collection were removed, false if not.
      */
-    public boolean removeEdges(Collection<Edge> edges) {
+    public boolean removeEdges(final Collection<Edge> edges) {
         boolean change = false;
 
-        for (Edge edge : edges) {
-            boolean _change = this.removeEdge(edge);
+        for (final Edge edge : edges) {
+            final boolean _change = removeEdge(edge);
             change = change || _change;
         }
 
@@ -1489,27 +1489,27 @@ public class EndpointMatrixGraph implements Graph {
      * @param node2 the second node.
      * @return true if edges were removed between A and B, false if not.
      */
-    public boolean removeEdges(Node node1, Node node2) {
-        return this.removeEdges(this.getEdges(node1, node2));
+    public boolean removeEdges(final Node node1, final Node node2) {
+        return removeEdges(getEdges(node1, node2));
     }
 
     /**
      * Removes a node from the graph.
      */
-    public boolean removeNode(Node node) {
-        if (nodes.contains(node)) {
+    public boolean removeNode(final Node node) {
+        if (this.nodes.contains(node)) {
             return false;
         }
 
-        List<Node> _nodes = new ArrayList<>(nodes);
-        nodes.remove(node);
-        namesHash.remove(node.getName());
+        final List<Node> _nodes = new ArrayList<>(this.nodes);
+        this.nodes.remove(node);
+        this.namesHash.remove(node.getName());
 
-        this.reconstituteGraphMatrix(_nodes, nodes);
+        reconstituteGraphMatrix(_nodes, this.nodes);
 
-        this.initHashes();
+        initHashes();
 
-        stuffRemovedSinceLastTripleAccess = true;
+        this.stuffRemovedSinceLastTripleAccess = true;
 
         return true;
     }
@@ -1520,11 +1520,11 @@ public class EndpointMatrixGraph implements Graph {
      * @param newNodes the collection of nodes to remove.
      * @return true if nodes from the collection were removed, false if not.
      */
-    public boolean removeNodes(List<Node> newNodes) {
+    public boolean removeNodes(final List<Node> newNodes) {
         boolean changed = false;
 
-        for (Object newNode : newNodes) {
-            boolean _changed = this.removeNode((Node) newNode);
+        for (final Object newNode : newNodes) {
+            final boolean _changed = removeNode((Node) newNode);
             changed = changed || _changed;
         }
 
@@ -1535,23 +1535,23 @@ public class EndpointMatrixGraph implements Graph {
      * @return a string representation of the graph.
      */
     public String toString() {
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
 
         buf.append("\nGraph Nodes:\n");
 
-        for (int i = 0; i < nodes.size(); i++) {
+        for (int i = 0; i < this.nodes.size(); i++) {
 //            buf.append("\n" + (i + 1) + ". " + nodes.get(i));
-            buf.append(nodes.get(i)).append(" ");
+            buf.append(this.nodes.get(i)).append(" ");
             if ((i + 1) % 30 == 0) buf.append("\n");
         }
 
         buf.append("\n\nGraph Edges: ");
 
-        List<Edge> edges = new ArrayList<>(this.getEdges());
+        final List<Edge> edges = new ArrayList<>(getEdges());
         Edges.sortEdges(edges);
 
         for (int i = 0; i < edges.size(); i++) {
-            Edge edge = edges.get(i);
+            final Edge edge = edges.get(i);
             buf.append("\n").append(i + 1).append(". ").append(edge);
         }
 
@@ -1560,27 +1560,27 @@ public class EndpointMatrixGraph implements Graph {
 
 //        Set<Triple> ambiguousTriples = getAmbiguousTriples();
 
-        if (!ambiguousTriples.isEmpty()) {
+        if (!this.ambiguousTriples.isEmpty()) {
             buf.append("Ambiguous triples (i.e. list of triples for which there is ambiguous data" +
                     "\nabout whether they are colliders or not): \n");
 
-            for (Triple triple : ambiguousTriples) {
+            for (final Triple triple : this.ambiguousTriples) {
                 buf.append(triple).append("\n");
             }
         }
 
-        if (!underLineTriples.isEmpty()) {
+        if (!this.underLineTriples.isEmpty()) {
             buf.append("Underline triples: \n");
 
-            for (Triple triple : underLineTriples) {
+            for (final Triple triple : this.underLineTriples) {
                 buf.append(triple).append("\n");
             }
         }
 
-        if (!dottedUnderLineTriples.isEmpty()) {
+        if (!this.dottedUnderLineTriples.isEmpty()) {
             buf.append("Dotted underline triples: \n");
 
-            for (Triple triple : dottedUnderLineTriples) {
+            for (final Triple triple : this.dottedUnderLineTriples) {
                 buf.append(triple).append("\n");
             }
         }
@@ -1594,12 +1594,12 @@ public class EndpointMatrixGraph implements Graph {
         return buf.toString();
     }
 
-    public Graph subgraph(List<Node> nodes) {
-        Graph graph = new EndpointMatrixGraph(nodes);
-        Set<Edge> edges = this.getEdges();
+    public Graph subgraph(final List<Node> nodes) {
+        final Graph graph = new EndpointMatrixGraph(nodes);
+        final Set<Edge> edges = getEdges();
 
-        for (Object edge1 : edges) {
-            Edge edge = (Edge) edge1;
+        for (final Object edge1 : edges) {
+            final Edge edge = (Edge) edge1;
 
             if (nodes.contains(edge.getNode1()) &&
                     nodes.contains(edge.getNode2())) {
@@ -1613,11 +1613,11 @@ public class EndpointMatrixGraph implements Graph {
     /**
      * @return the edges connecting node1 and node2.
      */
-    public List<Edge> getEdges(Node node1, Node node2) {
-        List<Edge> edges = this.getEdges(node1);
-        List<Edge> _edges = new ArrayList<>();
+    public List<Edge> getEdges(final Node node1, final Node node2) {
+        final List<Edge> edges = getEdges(node1);
+        final List<Edge> _edges = new ArrayList<>();
 
-        for (Edge edge : edges) {
+        for (final Edge edge : edges) {
             if (edge.getDistalNode(node1) == node2) {
                 _edges.add(edge);
             }
@@ -1627,125 +1627,125 @@ public class EndpointMatrixGraph implements Graph {
     }
 
     public Set<Triple> getAmbiguousTriples() {
-        this.removeTriplesNotInGraph();
-        return new HashSet<>(ambiguousTriples);
+        removeTriplesNotInGraph();
+        return new HashSet<>(this.ambiguousTriples);
     }
 
     public Set<Triple> getUnderLines() {
-        this.removeTriplesNotInGraph();
-        return new HashSet<>(underLineTriples);
+        removeTriplesNotInGraph();
+        return new HashSet<>(this.underLineTriples);
     }
 
     public Set<Triple> getDottedUnderlines() {
-        this.removeTriplesNotInGraph();
-        return new HashSet<>(dottedUnderLineTriples);
+        removeTriplesNotInGraph();
+        return new HashSet<>(this.dottedUnderLineTriples);
     }
 
 
     /**
      * States whether r-s-r is an underline triple or not.
      */
-    public boolean isAmbiguousTriple(Node x, Node y, Node z) {
-        Triple triple = new Triple(x, y, z);
+    public boolean isAmbiguousTriple(final Node x, final Node y, final Node z) {
+        final Triple triple = new Triple(x, y, z);
         if (!triple.alongPathIn(this)) {
             throw new IllegalArgumentException("<" + x + ", " + y + ", " + z + "> is not along a path.");
         }
-        this.removeTriplesNotInGraph();
-        return ambiguousTriples.contains(triple);
+        removeTriplesNotInGraph();
+        return this.ambiguousTriples.contains(triple);
     }
 
     /**
      * States whether r-s-r is an underline triple or not.
      */
-    public boolean isUnderlineTriple(Node x, Node y, Node z) {
-        this.removeTriplesNotInGraph();
-        return underLineTriples.contains(new Triple(x, y, z));
+    public boolean isUnderlineTriple(final Node x, final Node y, final Node z) {
+        removeTriplesNotInGraph();
+        return this.underLineTriples.contains(new Triple(x, y, z));
     }
 
     /**
      * States whether r-s-r is an underline triple or not.
      */
-    public boolean isDottedUnderlineTriple(Node x, Node y, Node z) {
-        Triple triple = new Triple(x, y, z);
+    public boolean isDottedUnderlineTriple(final Node x, final Node y, final Node z) {
+        final Triple triple = new Triple(x, y, z);
         if (!triple.alongPathIn(this)) {
             throw new IllegalArgumentException("<" + x + ", " + y + ", " + z + "> is not along a path.");
         }
-        this.removeTriplesNotInGraph();
-        return dottedUnderLineTriples.contains(new Triple(x, y, z));
+        removeTriplesNotInGraph();
+        return this.dottedUnderLineTriples.contains(new Triple(x, y, z));
     }
 
-    public void addAmbiguousTriple(Node x, Node y, Node z) {
-        Triple triple = new Triple(x, y, z);
+    public void addAmbiguousTriple(final Node x, final Node y, final Node z) {
+        final Triple triple = new Triple(x, y, z);
 
         if (!triple.alongPathIn(this)) {
             throw new IllegalArgumentException("<" + x + ", " + y + ", " + z + "> must lie along a path in the graph.");
         }
 
-        ambiguousTriples.add(new Triple(x, y, z));
+        this.ambiguousTriples.add(new Triple(x, y, z));
     }
 
-    public void addUnderlineTriple(Node x, Node y, Node z) {
-        Triple triple = new Triple(x, y, z);
+    public void addUnderlineTriple(final Node x, final Node y, final Node z) {
+        final Triple triple = new Triple(x, y, z);
 
         if (!triple.alongPathIn(this)) {
             throw new IllegalArgumentException("<" + x + ", " + y + ", " + z + "> must lie along a path in the graph.");
         }
 
-        underLineTriples.add(new Triple(x, y, z));
+        this.underLineTriples.add(new Triple(x, y, z));
     }
 
-    public void addDottedUnderlineTriple(Node x, Node y, Node z) {
-        Triple triple = new Triple(x, y, z);
+    public void addDottedUnderlineTriple(final Node x, final Node y, final Node z) {
+        final Triple triple = new Triple(x, y, z);
 
         if (!triple.alongPathIn(this)) {
             throw new IllegalArgumentException("<" + x + ", " + y + ", " + z + "> must lie along a path in the graph.");
         }
 
-        dottedUnderLineTriples.add(triple);
+        this.dottedUnderLineTriples.add(triple);
     }
 
-    public void removeAmbiguousTriple(Node x, Node y, Node z) {
-        ambiguousTriples.remove(new Triple(x, y, z));
+    public void removeAmbiguousTriple(final Node x, final Node y, final Node z) {
+        this.ambiguousTriples.remove(new Triple(x, y, z));
     }
 
-    public void removeUnderlineTriple(Node x, Node y, Node z) {
-        underLineTriples.remove(new Triple(x, y, z));
+    public void removeUnderlineTriple(final Node x, final Node y, final Node z) {
+        this.underLineTriples.remove(new Triple(x, y, z));
     }
 
-    public void removeDottedUnderlineTriple(Node x, Node y, Node z) {
-        dottedUnderLineTriples.remove(new Triple(x, y, z));
+    public void removeDottedUnderlineTriple(final Node x, final Node y, final Node z) {
+        this.dottedUnderLineTriples.remove(new Triple(x, y, z));
     }
 
 
-    public void setAmbiguousTriples(Set<Triple> triples) {
-        ambiguousTriples.clear();
+    public void setAmbiguousTriples(final Set<Triple> triples) {
+        this.ambiguousTriples.clear();
 
-        for (Triple triple : triples) {
-            this.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+        for (final Triple triple : triples) {
+            addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
         }
     }
 
-    public void setUnderLineTriples(Set<Triple> triples) {
-        underLineTriples.clear();
+    public void setUnderLineTriples(final Set<Triple> triples) {
+        this.underLineTriples.clear();
 
-        for (Triple triple : triples) {
-            this.addUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
+        for (final Triple triple : triples) {
+            addUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
         }
     }
 
 
-    public void setDottedUnderLineTriples(Set<Triple> triples) {
-        dottedUnderLineTriples.clear();
+    public void setDottedUnderLineTriples(final Set<Triple> triples) {
+        this.dottedUnderLineTriples.clear();
 
-        for (Triple triple : triples) {
-            this.addDottedUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
+        for (final Triple triple : triples) {
+            addDottedUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
         }
     }
 
     public List<String> getNodeNames() {
-        List<String> names = new ArrayList<>();
+        final List<String> names = new ArrayList<>();
 
-        for (Node node : this.getNodes()) {
+        for (final Node node : getNodes()) {
             names.add(node.getName());
         }
 
@@ -1756,51 +1756,51 @@ public class EndpointMatrixGraph implements Graph {
     //===============================PRIVATE METHODS======================//
 
     public void removeTriplesNotInGraph() {
-        if (!stuffRemovedSinceLastTripleAccess) return;
+        if (!this.stuffRemovedSinceLastTripleAccess) return;
 
-        for (Triple triple : new HashSet<>(ambiguousTriples)) {
-            if (!this.containsNode(triple.getX()) || !this.containsNode(triple.getY()) || !this.containsNode(triple.getZ())) {
-                ambiguousTriples.remove(triple);
+        for (final Triple triple : new HashSet<>(this.ambiguousTriples)) {
+            if (!containsNode(triple.getX()) || !containsNode(triple.getY()) || !containsNode(triple.getZ())) {
+                this.ambiguousTriples.remove(triple);
                 continue;
             }
 
-            if (!this.isAdjacentTo(triple.getX(), triple.getY()) || !this.isAdjacentTo(triple.getY(), triple.getZ())) {
-                ambiguousTriples.remove(triple);
+            if (!isAdjacentTo(triple.getX(), triple.getY()) || !isAdjacentTo(triple.getY(), triple.getZ())) {
+                this.ambiguousTriples.remove(triple);
             }
         }
 
-        for (Triple triple : new HashSet<>(underLineTriples)) {
-            if (!this.containsNode(triple.getX()) || !this.containsNode(triple.getY()) || !this.containsNode(triple.getZ())) {
-                underLineTriples.remove(triple);
+        for (final Triple triple : new HashSet<>(this.underLineTriples)) {
+            if (!containsNode(triple.getX()) || !containsNode(triple.getY()) || !containsNode(triple.getZ())) {
+                this.underLineTriples.remove(triple);
                 continue;
             }
 
-            if (!this.isAdjacentTo(triple.getX(), triple.getY()) || !this.isAdjacentTo(triple.getY(), triple.getZ())) {
-                underLineTriples.remove(triple);
+            if (!isAdjacentTo(triple.getX(), triple.getY()) || !isAdjacentTo(triple.getY(), triple.getZ())) {
+                this.underLineTriples.remove(triple);
             }
         }
 
-        for (Triple triple : new HashSet<>(dottedUnderLineTriples)) {
-            if (!this.containsNode(triple.getX()) || !this.containsNode(triple.getY()) || !this.containsNode(triple.getZ())) {
-                dottedUnderLineTriples.remove(triple);
+        for (final Triple triple : new HashSet<>(this.dottedUnderLineTriples)) {
+            if (!containsNode(triple.getX()) || !containsNode(triple.getY()) || !containsNode(triple.getZ())) {
+                this.dottedUnderLineTriples.remove(triple);
                 continue;
             }
 
-            if (!this.isAdjacentTo(triple.getX(), triple.getY()) || !this.isAdjacentTo(triple.getY(), triple.getZ())) {
-                dottedUnderLineTriples.remove(triple);
+            if (!isAdjacentTo(triple.getX(), triple.getY()) || !isAdjacentTo(triple.getY(), triple.getZ())) {
+                this.dottedUnderLineTriples.remove(triple);
             }
         }
 
-        stuffRemovedSinceLastTripleAccess = false;
+        this.stuffRemovedSinceLastTripleAccess = false;
     }
 
     @Override
-    public List<Node> getSepset(Node n1, Node n2) {
+    public List<Node> getSepset(final Node n1, final Node n2) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void setNodes(List<Node> nodes) {
+    public void setNodes(final List<Node> nodes) {
         if (nodes.size() != this.nodes.size()) {
             throw new IllegalArgumentException("Sorry, there is a mismatch in the number of variables " +
                     "you are trying to set.");
@@ -1810,26 +1810,26 @@ public class EndpointMatrixGraph implements Graph {
     }
 
 
-    private void collectAncestorsVisit(Node node, Set<Node> ancestors) {
+    private void collectAncestorsVisit(final Node node, final Set<Node> ancestors) {
         ancestors.add(node);
-        List<Node> parents = this.getParents(node);
+        final List<Node> parents = getParents(node);
 
         if (!parents.isEmpty()) {
-            for (Object parent1 : parents) {
-                Node parent = (Node) parent1;
-                this.doParentClosureVisit(parent, ancestors);
+            for (final Object parent1 : parents) {
+                final Node parent = (Node) parent1;
+                doParentClosureVisit(parent, ancestors);
             }
         }
     }
 
-    private void collectDescendantsVisit(Node node, Set<Node> descendants) {
+    private void collectDescendantsVisit(final Node node, final Set<Node> descendants) {
         descendants.add(node);
-        List<Node> children = this.getChildren(node);
+        final List<Node> children = getChildren(node);
 
         if (!children.isEmpty()) {
-            for (Object aChildren : children) {
-                Node child = (Node) aChildren;
-                this.doChildClosureVisit(child, descendants);
+            for (final Object aChildren : children) {
+                final Node child = (Node) aChildren;
+                doChildClosureVisit(child, descendants);
             }
         }
     }
@@ -1837,18 +1837,18 @@ public class EndpointMatrixGraph implements Graph {
     /**
      * closure under the child relation
      */
-    private void doChildClosureVisit(Node node, Set<Node> closure) {
+    private void doChildClosureVisit(final Node node, final Set<Node> closure) {
         if (!closure.contains(node)) {
             closure.add(node);
 
-            for (Edge edge1 : this.getEdges(node)) {
-                Node sub = Edges.traverseDirected(node, edge1);
+            for (final Edge edge1 : getEdges(node)) {
+                final Node sub = Edges.traverseDirected(node, edge1);
 
                 if (sub == null) {
                     continue;
                 }
 
-                this.doChildClosureVisit(sub, closure);
+                doChildClosureVisit(sub, closure);
             }
         }
     }
@@ -1862,14 +1862,14 @@ public class EndpointMatrixGraph implements Graph {
      * @param closure the closure of the conditioning set uner the parent
      *                relation (to be calculated recursively).
      */
-    private void doParentClosureVisit(Node node, Set<Node> closure) {
+    private void doParentClosureVisit(final Node node, final Set<Node> closure) {
         if (closure.contains(node)) return;
         closure.add(node);
 
-        for (Edge edge : this.getEdges(node)) {
-            Node sub = Edges.traverseReverseDirected(node, edge);
+        for (final Edge edge : getEdges(node)) {
+            final Node sub = Edges.traverseReverseDirected(node, edge);
             if (sub != null) {
-                this.doParentClosureVisit(sub, closure);
+                doParentClosureVisit(sub, closure);
             }
         }
     }
@@ -1877,12 +1877,12 @@ public class EndpointMatrixGraph implements Graph {
     /**
      * @return true iff there is a directed path from node1 to node2.
      */
-    private boolean existsUndirectedPathVisit(Node node1, Node node2,
-                                              LinkedList<Node> path) {
+    private boolean existsUndirectedPathVisit(final Node node1, final Node node2,
+                                              final LinkedList<Node> path) {
         path.addLast(node1);
 
-        for (Edge edge : this.getEdges(node1)) {
-            Node child = Edges.traverse(node1, edge);
+        for (final Edge edge : getEdges(node1)) {
+            final Node child = Edges.traverse(node1, edge);
 
             if (child == null) {
                 continue;
@@ -1896,7 +1896,7 @@ public class EndpointMatrixGraph implements Graph {
                 continue;
             }
 
-            if (this.existsUndirectedPathVisit(child, node2, path)) {
+            if (existsUndirectedPathVisit(child, node2, path)) {
                 return true;
             }
         }
@@ -1905,12 +1905,12 @@ public class EndpointMatrixGraph implements Graph {
         return false;
     }
 
-    private boolean existsDirectedPathVisit(Node node1, Node node2,
-                                            LinkedList<Node> path) {
+    private boolean existsDirectedPathVisit(final Node node1, final Node node2,
+                                            final LinkedList<Node> path) {
         path.addLast(node1);
 
-        for (Edge edge : this.getEdges(node1)) {
-            Node child = Edges.traverseDirected(node1, edge);
+        for (final Edge edge : getEdges(node1)) {
+            final Node child = Edges.traverseDirected(node1, edge);
 
             if (child == null) {
                 continue;
@@ -1924,7 +1924,7 @@ public class EndpointMatrixGraph implements Graph {
                 continue;
             }
 
-            if (this.existsDirectedPathVisit(child, node2, path)) {
+            if (existsDirectedPathVisit(child, node2, path)) {
                 return true;
             }
         }
@@ -1936,12 +1936,12 @@ public class EndpointMatrixGraph implements Graph {
     /**
      * @return true iff there is a semi-directed path from node1 to node2
      */
-    private boolean existsSemiDirectedPathVisit(Node node1, Set<Node> nodes2,
-                                                LinkedList<Node> path) {
+    private boolean existsSemiDirectedPathVisit(final Node node1, final Set<Node> nodes2,
+                                                final LinkedList<Node> path) {
         path.addLast(node1);
 
-        for (Edge edge : this.getEdges(node1)) {
-            Node child = Edges.traverseSemiDirected(node1, edge);
+        for (final Edge edge : getEdges(node1)) {
+            final Node child = Edges.traverseSemiDirected(node1, edge);
 
             if (child == null) {
                 continue;
@@ -1955,7 +1955,7 @@ public class EndpointMatrixGraph implements Graph {
                 continue;
             }
 
-            if (this.existsSemiDirectedPathVisit(child, nodes2, path)) {
+            if (existsSemiDirectedPathVisit(child, nodes2, path)) {
                 return true;
             }
         }
@@ -1968,15 +1968,15 @@ public class EndpointMatrixGraph implements Graph {
         return GraphUtils.getCausalOrdering(this);
     }
 
-    public void setHighlighted(Edge edge, boolean highlighted) {
-        highlightedEdges.add(edge);
+    public void setHighlighted(final Edge edge, final boolean highlighted) {
+        this.highlightedEdges.add(edge);
     }
 
-    public boolean isHighlighted(Edge edge) {
-        return highlightedEdges.contains(edge);
+    public boolean isHighlighted(final Edge edge) {
+        return this.highlightedEdges.contains(edge);
     }
 
-    public boolean isParameterizable(Node node) {
+    public boolean isParameterizable(final Node node) {
         return true;
     }
 
@@ -2001,49 +2001,49 @@ public class EndpointMatrixGraph implements Graph {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(final ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (nodes == null) {
+        if (this.nodes == null) {
             throw new NullPointerException();
         }
 
-        if (ambiguousTriples == null) {
-            ambiguousTriples = new HashSet<>();
+        if (this.ambiguousTriples == null) {
+            this.ambiguousTriples = new HashSet<>();
         }
 
-        if (highlightedEdges == null) {
-            highlightedEdges = new HashSet<>();
+        if (this.highlightedEdges == null) {
+            this.highlightedEdges = new HashSet<>();
         }
 
-        if (underLineTriples == null) {
-            underLineTriples = new HashSet<>();
+        if (this.underLineTriples == null) {
+            this.underLineTriples = new HashSet<>();
         }
 
-        if (dottedUnderLineTriples == null) {
-            dottedUnderLineTriples = new HashSet<>();
+        if (this.dottedUnderLineTriples == null) {
+            this.dottedUnderLineTriples = new HashSet<>();
         }
     }
 
     @Override
     public Map<String, Object> getAllAttributes() {
-        return attributes;
+        return this.attributes;
     }
 
     @Override
-    public Object getAttribute(String key) {
-        return attributes.get(key);
+    public Object getAttribute(final String key) {
+        return this.attributes.get(key);
     }
 
     @Override
-    public void removeAttribute(String key) {
-        attributes.remove(key);
+    public void removeAttribute(final String key) {
+        this.attributes.remove(key);
     }
 
     @Override
-    public void addAttribute(String key, Object value) {
-        attributes.put(key, value);
+    public void addAttribute(final String key, final Object value) {
+        this.attributes.put(key, value);
     }
 
 }
