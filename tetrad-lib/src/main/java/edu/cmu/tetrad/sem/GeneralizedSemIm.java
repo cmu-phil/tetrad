@@ -158,7 +158,7 @@ public class GeneralizedSemIm implements IM, Simulator {
             throw new NullPointerException("Parameter not specified.");
         }
 
-        if (!(parameterValues.keySet().contains(parameter))) {
+        if (!(parameterValues.containsKey(parameter))) {
             throw new IllegalArgumentException("Not a parameter in this model: " + parameter);
         }
 
@@ -174,7 +174,7 @@ public class GeneralizedSemIm implements IM, Simulator {
             throw new NullPointerException("Parameter not specified.");
         }
 
-        if (!parameterValues.keySet().contains(parameter)) {
+        if (!parameterValues.containsKey(parameter)) {
             throw new IllegalArgumentException("Not a parameter in this model: " + parameter);
         }
 
@@ -1187,7 +1187,7 @@ public class GeneralizedSemIm implements IM, Simulator {
 
     public void setSubstitutions(Map<String, Double> parameterValues) {
         for (String parameter : parameterValues.keySet()) {
-            if (this.parameterValues.keySet().contains(parameter)) {
+            if (this.parameterValues.containsKey(parameter)) {
                 this.parameterValues.put(parameter, parameterValues.get(parameter));
             }
         }

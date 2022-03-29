@@ -109,7 +109,7 @@ public final class TestAndersonDarling {
             h += k;
         }
 
-        h /= (double) n;
+        h /= n;
 
         return h;
 

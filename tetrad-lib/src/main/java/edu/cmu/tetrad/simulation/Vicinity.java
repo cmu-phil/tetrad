@@ -83,7 +83,7 @@ public class Vicinity {
 
         //System.out.println("baserange: " +baserange);
         //since I'm searching in a cube but distance is usually measured euclidian, I increase range by sqrt(3)
-        int range = (int) Math.ceil(Math.sqrt((double) 3) * (double) baserange);
+        int range = (int) Math.ceil(Math.sqrt(3) * (double) baserange);
         //System.out.println(findEdges(edge,range));
         return this.findEdges(edge, range);
     }

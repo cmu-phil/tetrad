@@ -204,7 +204,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
                         exception.printStackTrace(System.err);
 
                         JOptionPane.showMessageDialog(
-                                (Window) GeneralAlgorithmEditor.this.getTopLevelAncestor(),
+                                GeneralAlgorithmEditor.this.getTopLevelAncestor(),
                                 "Stopped with error:\n"
                                         + exception.getMessage());
                     }
@@ -338,7 +338,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
                                         .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 );
 
-                layout.linkSize(SwingConstants.HORIZONTAL, new java.awt.Component[]{backButton, forwardButton});
+                layout.linkSize(SwingConstants.HORIZONTAL, backButton, forwardButton);
 
                 layout.setVerticalGroup(
                         layout.createParallelGroup(Alignment.LEADING)

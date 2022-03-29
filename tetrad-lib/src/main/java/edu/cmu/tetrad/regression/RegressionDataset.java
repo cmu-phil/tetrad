@@ -377,7 +377,7 @@ public class RegressionDataset implements Regression {
             mean += y.get(i, 0);
         }
 
-        mean /= (double) (y.rows());
+        mean /= y.rows();
 
         double ssm = 0.0;
 

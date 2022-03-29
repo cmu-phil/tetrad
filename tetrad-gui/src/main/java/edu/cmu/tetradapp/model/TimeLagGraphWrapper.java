@@ -117,7 +117,7 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
                 lag = 0;
                 laglist.add(lag);
             } else {
-                tmp = varName.substring(varName.indexOf(':') + 1, varName.length());
+                tmp = varName.substring(varName.indexOf(':') + 1);
                 lag = Integer.parseInt(tmp);
                 laglist.add(lag);
             }
@@ -130,7 +130,7 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
                 lag = 0;
                 laglist.add(lag);
             } else {
-                tmp = varName.substring(varName.indexOf(':') + 1, varName.length());
+                tmp = varName.substring(varName.indexOf(':') + 1);
                 lag = Integer.parseInt(tmp);
                 laglist.add(lag);
             }
@@ -231,7 +231,7 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
                 lag = 0;
                 laglist.add(lag);
             } else {
-                tmp = varName.substring(varName.indexOf(':') + 1, varName.length());
+                tmp = varName.substring(varName.indexOf(':') + 1);
                 lag = Integer.parseInt(tmp);
                 laglist.add(lag);
             }
@@ -244,7 +244,7 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
                 lag = 0;
                 laglist.add(lag);
             } else {
-                tmp = varName.substring(varName.indexOf(':') + 1, varName.length());
+                tmp = varName.substring(varName.indexOf(':') + 1);
                 lag = Integer.parseInt(tmp);
                 laglist.add(lag);
             }

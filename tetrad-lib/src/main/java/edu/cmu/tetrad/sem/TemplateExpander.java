@@ -234,12 +234,12 @@ public class TemplateExpander {
         formula = formula.trim();
 
         if (formula.startsWith("+")) {
-            formula = formula.substring(1, formula.length());
+            formula = formula.substring(1);
             formula = formula.trim();
         }
 
         if (formula.startsWith("*")) {
-            formula = formula.substring(1, formula.length());
+            formula = formula.substring(1);
             formula = formula.trim();
         }
 
@@ -295,10 +295,10 @@ public class TemplateExpander {
 
                         if (allStar) {
                             formula = formula.substring(0, first - 1) + " * " +
-                                    formula.substring(last + 1, formula.length());
+                                    formula.substring(last + 1);
                         } else {
                             formula = formula.substring(0, first - 1) + " + " +
-                                    formula.substring(last + 1, formula.length());
+                                    formula.substring(last + 1);
                         }
                     }
 

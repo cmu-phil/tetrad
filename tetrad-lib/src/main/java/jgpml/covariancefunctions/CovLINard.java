@@ -161,7 +161,7 @@ public class CovLINard implements CovarianceFunction {
 
         Matrix z = new Matrix(new double[][]{{1, 2, 3, 4, 5, 6}, {1, 2, 3, 4, 5, 6}});
 
-        System.out.println("");
+        System.out.println();
         //Matrix K = cf.compute(logtheta,X);
         //K.print(K.getColumnDimension(), 8);
 

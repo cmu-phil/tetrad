@@ -1468,7 +1468,7 @@ public final class StatUtils {
                 0.0000000000000014, 0.0000000000000001};
 
         for (int i = 0; i < c.length; i++) {
-            sum += c[i] * Math.pow(z, (double) (i + 1));
+            sum += c[i] * Math.pow(z, i + 1);
         }
 
         return (1.0 / sum);
@@ -1498,7 +1498,7 @@ public final class StatUtils {
 
         for (int i = 0; i < 100; i++) {
             sum += (gamma(a) / gamma(a + 1.0 + (double) i)) *
-                    Math.pow(x, (double) i);
+                    Math.pow(x, i);
         }
 
         return (coef * sum);

@@ -73,7 +73,7 @@ public class MeasuredDisplaySmallComp extends JComponent implements DisplayComp 
         int width = this.getPreferredSize().width;
         String name = this.getName();
 
-        if (name.startsWith("X")) name = name.substring(1, name.length());
+        if (name.startsWith("X")) name = name.substring(1);
 
         int stringWidth = fm.stringWidth(name);
         final int stringX = 2; //(width - stringWidth) / 2;

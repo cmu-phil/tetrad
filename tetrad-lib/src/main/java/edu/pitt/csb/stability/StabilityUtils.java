@@ -245,7 +245,7 @@ public class StabilityUtils {
         }
 
         final double lambda = .1;
-        MGMWrapper mgm = new MGMWrapper(new double[]{lambda, lambda, lambda});
+        MGMWrapper mgm = new MGMWrapper(lambda, lambda, lambda);
         long start = System.currentTimeMillis();
         DoubleMatrix2D xi = StabilitySearch(ds, mgm, 8, 200);
         long end = System.currentTimeMillis();

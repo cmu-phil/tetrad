@@ -421,9 +421,7 @@ public class KMeans implements ClusteringAlgorithm {
         while (indexSet.size() < numCenters) {
             int candidate = RandomUtil.getInstance().nextInt(data.rows());
 
-            if (!indexSet.contains(candidate)) {
-                indexSet.add(candidate);
-            }
+            indexSet.add(candidate);
         }
 
         int[] rows = new int[numCenters];

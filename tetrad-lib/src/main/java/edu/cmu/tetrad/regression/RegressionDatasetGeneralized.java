@@ -298,7 +298,7 @@ public class RegressionDatasetGeneralized implements Regression {
             mean += y.get(i);
         }
 
-        mean /= (double) (y.size());
+        mean /= y.size();
 
         double ssm = 0.0;
 

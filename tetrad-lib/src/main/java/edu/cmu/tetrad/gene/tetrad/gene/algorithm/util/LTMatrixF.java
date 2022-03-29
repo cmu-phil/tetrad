@@ -97,7 +97,7 @@ public class LTMatrixF extends BasicLTMatrix {
         if ((r >= n) || (c >= n) || (r < 0) || (c < 0)) {
             this.badIndexXcp(r, c);
         }
-        return (double) (r >= c ? A[r * (r + 1) / 2 + c] : 0);
+        return r >= c ? A[r * (r + 1) / 2 + c] : 0;
     }
 
     /**

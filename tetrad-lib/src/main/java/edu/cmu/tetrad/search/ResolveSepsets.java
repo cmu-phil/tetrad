@@ -394,7 +394,7 @@ public final class ResolveSepsets {
      */
     public static boolean isIndependentPooledMudholkerGeorge(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
         double alpha = independenceTests.get(0).getAlpha();
-        double c = Math.sqrt(3 * (5 * independenceTests.size() + 4) / (double) (independenceTests.size() * Math.pow(Math.PI, 2) * (5 * independenceTests.size() + 2)));
+        double c = Math.sqrt(3 * (5 * independenceTests.size() + 4) / (independenceTests.size() * Math.pow(Math.PI, 2) * (5 * independenceTests.size() + 2)));
         double tm = 0.0;
         for (IndependenceTest independenceTest : independenceTests) {
             List<Node> localCondSet = new ArrayList<>();
@@ -417,7 +417,7 @@ public final class ResolveSepsets {
     public static boolean isIndependentPooledMudholkerGeorge2(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
         double alpha = independenceTests.get(0).getAlpha();
         List<Double> pValues = getAvailablePValues(independenceTests, x, y, condSet);
-        double c = Math.sqrt(3 * (5 * pValues.size() + 4) / (double) (pValues.size() * Math.pow(Math.PI, 2) * (5 * pValues.size() + 2)));
+        double c = Math.sqrt(3 * (5 * pValues.size() + 4) / (pValues.size() * Math.pow(Math.PI, 2) * (5 * pValues.size() + 2)));
         double tm = 0.0;
         for (double pk : pValues) {
             tm += -c * Math.log(pk / (1 - pk));

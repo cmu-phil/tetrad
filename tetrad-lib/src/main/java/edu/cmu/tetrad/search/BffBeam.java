@@ -169,7 +169,7 @@ public final class BffBeam implements Bff {
                         continue;
                     }
 
-                    if (S.keySet().contains(graph)) {
+                    if (S.containsKey(graph)) {
                         continue;
                     }
 
@@ -237,7 +237,7 @@ public final class BffBeam implements Bff {
                     Score _score = this.scoreGraph(graph);
                     int dof = _score.getDof();
 
-                    if (S.keySet().contains(graph)) {
+                    if (S.containsKey(graph)) {
                         continue;
                     }
 

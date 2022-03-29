@@ -249,7 +249,7 @@ final class KnowledgeLoaderWizard extends JPanel {
 
             while ((line = in.readLine()) != null && (++lineNumber < numLines)) {
                 if (line.length() < numCols) {
-                    textArea.append(line.substring(0, line.length()) + "\n");
+                    textArea.append(line + "\n");
                 } else {
                     textArea.append(line.substring(0, numCols) + "...\n");
                 }

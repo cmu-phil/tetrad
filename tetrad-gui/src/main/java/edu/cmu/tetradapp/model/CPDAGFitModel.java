@@ -84,7 +84,7 @@ public final class CPDAGFitModel implements SessionModel {
             throw new IllegalArgumentException("Sorry, I was expecting the same number of data sets as result graphs.");
         }
 
-        if (((DataSet) dataModels.get(0)).isDiscrete()) {
+        if (dataModels.get(0).isDiscrete()) {
             bayesPms = new ArrayList<>();
             bayesIms = new ArrayList<>();
 
@@ -95,7 +95,7 @@ public final class CPDAGFitModel implements SessionModel {
                 bayesPms.add(pm);
                 bayesIms.add(this.estimate(dataSet, pm));
             }
-        } else if (((DataSet) dataModels.get(0)).isContinuous()) {
+        } else if (dataModels.get(0).isContinuous()) {
             semPms = new ArrayList<>();
             semIms = new ArrayList<>();
 

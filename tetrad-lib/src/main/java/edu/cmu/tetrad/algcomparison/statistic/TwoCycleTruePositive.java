@@ -29,7 +29,7 @@ public class TwoCycleTruePositive implements Statistic {
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         ArrowConfusion adjConfusion = new ArrowConfusion(trueGraph, estGraph);
         int twoCycleTp = adjConfusion.getTwoCycleTp();
-        return (double) twoCycleTp;
+        return twoCycleTp;
 
     }
 

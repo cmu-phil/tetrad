@@ -302,7 +302,7 @@ public class ItkPredictorSearch {
                 }
                 for (int k = 0; k < n; k++) {
                     //if(expression[j][ss[k]] != b[k]) continue row;
-                    if (this.differExpressions(expression[j][ss[k]], (int) b[k])) {
+                    if (this.differExpressions(expression[j][ss[k]], b[k])) {
                         continue row;
                     }
                 }

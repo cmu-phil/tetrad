@@ -93,7 +93,7 @@ public final class TsDagToPag {
                 lag = 0;
                 laglist.add(lag);
             } else {
-                tmp = varName.substring(varName.indexOf(':') + 1, varName.length());
+                tmp = varName.substring(varName.indexOf(':') + 1);
                 lag = Integer.parseInt(tmp);
                 laglist.add(lag);
             }
@@ -106,7 +106,7 @@ public final class TsDagToPag {
                 lag = 0;
                 laglist.add(lag);
             } else {
-                tmp = varName.substring(varName.indexOf(':') + 1, varName.length());
+                tmp = varName.substring(varName.indexOf(':') + 1);
                 lag = Integer.parseInt(tmp);
                 laglist.add(lag);
             }

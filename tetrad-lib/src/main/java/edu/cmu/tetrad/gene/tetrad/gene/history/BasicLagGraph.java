@@ -171,7 +171,7 @@ public final class BasicLagGraph implements LagGraph {
      * @return true if the given factor is in the graph, false if not.
      */
     public boolean existsFactor(String factor) {
-        return connectivity.keySet().contains(factor);
+        return connectivity.containsKey(factor);
     }
 
     /**

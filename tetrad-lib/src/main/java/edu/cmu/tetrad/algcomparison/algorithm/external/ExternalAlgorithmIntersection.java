@@ -2,7 +2,6 @@ package edu.cmu.tetrad.algcomparison.algorithm.external;
 
 import edu.cmu.tetrad.algcomparison.algorithm.ExternalAlgorithm;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -62,7 +61,7 @@ public class ExternalAlgorithmIntersection extends ExternalAlgorithm {
             algorithm.setPath(path);
             algorithm.setSimIndex(simIndex);
             algorithm.setSimulation(simulation);
-            elapsed += algorithm.getElapsedTime((DataSet) dataSet, parameters);
+            elapsed += algorithm.getElapsedTime(dataSet, parameters);
         }
 
         Graph graph0 = algorithms[0].search(dataSet, parameters);

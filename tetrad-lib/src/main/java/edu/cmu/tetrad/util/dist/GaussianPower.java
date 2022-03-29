@@ -44,7 +44,7 @@ public class GaussianPower implements Distribution {
     }
 
     public GaussianPower(double power) {
-        sd = (double) 1;
+        sd = 1;
         this.power = power;
         name = "N^" + power + "(" + 0 + "," + (double) 1 + ")";
     }

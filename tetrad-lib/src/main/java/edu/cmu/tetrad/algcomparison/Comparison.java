@@ -556,7 +556,7 @@ public class Comparison {
                     if (this.isSaveData()) {
                         File file = new File(dir2, "data." + (j + 1) + ".txt");
                         Writer out = new FileWriter(file);
-                        DataModel dataModel = (DataModel) simulationWrapper.getDataModel(j);
+                        DataModel dataModel = simulationWrapper.getDataModel(j);
                         DataWriter.writeRectangularData((DataSet) dataModel, out, '\t');
                         out.close();
                     }

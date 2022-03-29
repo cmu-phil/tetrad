@@ -67,9 +67,7 @@ public class SessionSupport {
      * Removes a listener for SessionEvents.
      */
     public void removeSessionListener(SessionListener l) {
-        if (sessionListeners.contains(l)) {
-            sessionListeners.remove(l);
-        }
+        sessionListeners.remove(l);
     }
 
     /**

@@ -141,7 +141,7 @@ public class TestSimpleRandomizer extends TestCase {
 
             // The mean of the nonhousekeeping genes should be the
             // specified indegree, to within 0.5.
-            TestCase.assertEquals((double) indegree, mean, 1.2);
+            TestCase.assertEquals(indegree, mean, 1.2);
         }
     }
 

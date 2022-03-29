@@ -235,7 +235,7 @@ public class FirstInflection implements Algorithm, TakesExternalGraph {
             this.high = high;
             this.paramName = paramName;
             this.dataSet = dataSet;
-            int numVars = Math.min(20, ((DataSet) dataSet).getNumColumns());
+            int numVars = Math.min(20, dataSet.getNumColumns());
 
             int[] cols = new int[numVars];
             for (int i = 0; i < numVars; i++) {

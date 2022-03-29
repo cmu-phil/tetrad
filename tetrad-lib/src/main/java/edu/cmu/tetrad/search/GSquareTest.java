@@ -118,7 +118,7 @@ public final class GSquareTest extends ChiSquareTest {
                 new CombinationIterator(condDims);
 
         while (combinationIterator.hasNext()) {
-            int[] combination = (int[]) combinationIterator.next();
+            int[] combination = combinationIterator.next();
 
             System.arraycopy(combination, 0, coords, 2, combination.length);
             Arrays.fill(attestedRows, true);

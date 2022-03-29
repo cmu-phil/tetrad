@@ -157,16 +157,12 @@ final class RegressionParamsPanel extends JPanel implements ActionListener {
         //List varListNames = params.getRegressorNames();
         List<Object> varListNames = new ArrayList<Object>(varNames);
         String targetName = params.getString("targetName", null);
-        if (varListNames.contains(targetName)) {
-            varListNames.remove(targetName);
-        }
+        varListNames.remove(targetName);
 
         List<String> regNames = (List<String>) params.get("regressorNames", null);
 
         for (String regName : regNames) {
-            if (varListNames.contains(regName)) {
-                varListNames.remove(regName);
-            }
+            varListNames.remove(regName);
         }
 
         DefaultListModel varsModel =

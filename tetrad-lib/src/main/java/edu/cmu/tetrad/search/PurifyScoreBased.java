@@ -387,7 +387,7 @@ public class PurifyScoreBased implements IPurify {
         bestCyz = new double[numObserved][numLatent];
         bestCzz = new double[numLatent][numLatent];
         covarianceMatrix =
-                ((ContinuousTetradTest) tetradTest).getCovMatrix();
+                tetradTest.getCovMatrix();
         String[] varNames =
                 covarianceMatrix.getVariableNames().toArray(new String[0]);
         double[][] cov = covarianceMatrix.getMatrix().toArray();

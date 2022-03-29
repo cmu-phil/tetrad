@@ -138,7 +138,7 @@ final class CausalOrder {
     }
 
     private void placeNodes(Node node, Map<Node, Integer> tiers, Graph graph) {
-        if (tiers.keySet().contains(node)) {
+        if (tiers.containsKey(node)) {
             return;
         }
 

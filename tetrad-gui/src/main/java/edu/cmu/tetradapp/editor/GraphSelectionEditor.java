@@ -849,7 +849,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
                                         .addComponent(textInputBnt))
                 );
 
-                layout.linkSize(SwingConstants.HORIZONTAL, new java.awt.Component[]{sortBnt, textInputBnt});
+                layout.linkSize(SwingConstants.HORIZONTAL, sortBnt, textInputBnt);
 
                 layout.setVerticalGroup(
                         layout.createParallelGroup(Alignment.LEADING)

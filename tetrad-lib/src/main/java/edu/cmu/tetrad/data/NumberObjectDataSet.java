@@ -783,7 +783,7 @@ public final class NumberObjectDataSet
     public final void setCaseId(int caseNumber, String id) {
         if (id == null) {
             caseIds.remove(caseNumber);
-        } else if (caseIds.values().contains(id)) {
+        } else if (caseIds.containsValue(id)) {
             throw new IllegalArgumentException("Case ID's must be unique; that one " +
                     "has already been used: " + id);
         } else {
@@ -1008,7 +1008,7 @@ public final class NumberObjectDataSet
                     } else {
                         String category = _variable.getCategory(value);
 
-                        if (category.indexOf((int) outputDelimiter) == -1) {
+                        if (category.indexOf(outputDelimiter) == -1) {
                             buf.append(category);
                         } else {
                             buf.append("\"").append(category).append("\"");

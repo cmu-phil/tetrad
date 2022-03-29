@@ -134,7 +134,7 @@ class GeneralizedSemPmParamsEditor extends JPanel {
     }
 
     private void beginParamEdit(String parameter, JLabel label, JComponent centering) {
-        if (launchedEditors.keySet().contains(parameter)) {
+        if (launchedEditors.containsKey(parameter)) {
             launchedEditors.get(parameter).moveToFront();
             return;
         }

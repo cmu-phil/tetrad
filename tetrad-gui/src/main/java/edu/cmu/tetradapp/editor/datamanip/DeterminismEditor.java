@@ -306,7 +306,7 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
         });
 
         // Now scan all the coloumns and create the data box
-        DataSet dataBox = (DataSet) this.createDataBoxData(nodeList, origIndexMap);
+        DataSet dataBox = this.createDataBoxData(nodeList, origIndexMap);
 
         // Finally convert to data model
         mergedDataSet = dataBox;

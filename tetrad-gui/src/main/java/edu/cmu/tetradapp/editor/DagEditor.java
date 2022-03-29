@@ -216,7 +216,7 @@ public final class DagEditor extends JPanel
 
             if (Arrays.asList(events).contains(propertyName)) {
                 if (this.getWorkbench() != null) {
-                    Graph targetGraph = (Graph) this.getWorkbench().getGraph();
+                    Graph targetGraph = this.getWorkbench().getGraph();
 
                     // Update the dagWrapper
                     dagWrapper.setGraph(targetGraph);

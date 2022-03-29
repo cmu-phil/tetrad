@@ -145,7 +145,7 @@ class GeneralizedSemImListEditor extends JPanel {
     }
 
     private void beginNodeEdit(Node node, JLabel label, JComponent centering) {
-        if (launchedEditors.keySet().contains(node)) {
+        if (launchedEditors.containsKey(node)) {
             launchedEditors.get(node).moveToFront();
             return;
         }

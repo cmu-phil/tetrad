@@ -40,7 +40,7 @@ public final class TestTransform {
 
     @Test
     public void testTransformWithNewColumnVariable() {
-        List<Node> list = Arrays.asList((Node) new ContinuousVariable("x"),
+        List<Node> list = Arrays.asList(new ContinuousVariable("x"),
                 new ContinuousVariable("y"));
         BoxDataSet data = new BoxDataSet(new VerticalDoubleDataBox(2, list.size()), list);
 
@@ -64,7 +64,7 @@ public final class TestTransform {
     @Test
     public void testSingleTransforms() {
         // build a dataset.
-        List<Node> list = Arrays.asList((Node) new ContinuousVariable("x"),
+        List<Node> list = Arrays.asList(new ContinuousVariable("x"),
                 new ContinuousVariable("y"),
                 new ContinuousVariable("z"));
         DataSet data = new BoxDataSet(new DoubleDataBox(3, list.size()), list);

@@ -417,7 +417,7 @@ public final class TestSearchGraph {
         final double p = 1;
         int degree = graph.getNumEdges(nodes.get(b));
         int t = degree + 1;
-        total += pow((double) t, p);
+        total += pow(t, p);
         return total;
     }
 

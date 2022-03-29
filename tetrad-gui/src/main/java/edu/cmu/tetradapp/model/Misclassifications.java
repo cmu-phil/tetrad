@@ -208,13 +208,13 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
 
         if (referenceName.equals(model1.getName())) {
             if (model1 instanceof Simulation && model2 instanceof GeneralAlgorithmRunner) {
-                referenceGraphs = ((GeneralAlgorithmRunner) model2).getCompareGraphs(((Simulation) model1).getGraphs());
+                referenceGraphs = ((GeneralAlgorithmRunner) model2).getCompareGraphs(model1.getGraphs());
             } else if (model1 instanceof MultipleGraphSource) {
-                referenceGraphs = ((MultipleGraphSource) model1).getGraphs();
+                referenceGraphs = model1.getGraphs();
             }
 
             if (model2 instanceof MultipleGraphSource) {
-                targetGraphs = ((MultipleGraphSource) model2).getGraphs();
+                targetGraphs = model2.getGraphs();
             }
 
             if (referenceGraphs.size() == 1 && targetGraphs.size() > 1) {
@@ -242,13 +242,13 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
             }
         } else if (referenceName.equals(model2.getName())) {
             if (model2 instanceof Simulation && model1 instanceof GeneralAlgorithmRunner) {
-                referenceGraphs = ((GeneralAlgorithmRunner) model1).getCompareGraphs(((Simulation) model2).getGraphs());
+                referenceGraphs = ((GeneralAlgorithmRunner) model1).getCompareGraphs(model2.getGraphs());
             } else if (model1 instanceof MultipleGraphSource) {
-                referenceGraphs = ((MultipleGraphSource) model2).getGraphs();
+                referenceGraphs = model2.getGraphs();
             }
 
             if (model1 instanceof MultipleGraphSource) {
-                targetGraphs = ((MultipleGraphSource) model1).getGraphs();
+                targetGraphs = model1.getGraphs();
             }
 
             if (referenceGraphs.size() == 1 && targetGraphs.size() > 1) {

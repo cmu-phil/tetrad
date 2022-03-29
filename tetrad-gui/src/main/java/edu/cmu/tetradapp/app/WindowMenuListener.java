@@ -137,7 +137,7 @@ final class WindowMenuListener implements MenuListener, ActionListener {
     public void actionPerformed(ActionEvent e) {
         System.out.println(e.getActionCommand());
         Object item = e.getSource();
-        JInternalFrame frame = (JInternalFrame) itemsToFrames.get(item);
+        JInternalFrame frame = itemsToFrames.get(item);
         frame.moveToFront();
         if (frame.getContentPane().getComponents().length > 0) {
             desktop.setMainTitle(frame.getContentPane().getComponent(0).getName());

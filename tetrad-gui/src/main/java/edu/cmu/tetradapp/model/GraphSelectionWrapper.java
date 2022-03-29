@@ -156,7 +156,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
     public List<Graph> getGraphs() {
 
         if (graphs == null || graphs.isEmpty()) {
-            List<Graph> _graphs = Collections.<Graph>singletonList(new EdgeListGraph());
+            List<Graph> _graphs = Collections.singletonList(new EdgeListGraph());
             params.set("graphs", _graphs);
             return _graphs;
         } else {

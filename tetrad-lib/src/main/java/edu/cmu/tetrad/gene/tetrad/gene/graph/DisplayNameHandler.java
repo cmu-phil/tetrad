@@ -80,7 +80,7 @@ public final class DisplayNameHandler {
 
         int colonIndex = laggedFactor.indexOf(":L");
         int lag = Integer.parseInt(
-                laggedFactor.substring(colonIndex + 2, laggedFactor.length()));
+                laggedFactor.substring(colonIndex + 2));
 
         return lag;
     }

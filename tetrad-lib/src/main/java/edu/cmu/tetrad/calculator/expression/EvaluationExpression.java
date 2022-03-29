@@ -84,7 +84,7 @@ public class EvaluationExpression implements Expression {
     }
 
     public List<Expression> getExpressions() {
-        return Collections.singletonList((Expression) variable);
+        return Collections.singletonList(variable);
     }
 
     @Override

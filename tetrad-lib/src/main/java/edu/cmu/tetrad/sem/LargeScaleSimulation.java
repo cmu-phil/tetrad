@@ -697,7 +697,7 @@ public final class LargeScaleSimulation {
                 lag = 0;
                 laglist.add(lag);
             } else {
-                tmp = varName.substring(varName.indexOf(':') + 1, varName.length());
+                tmp = varName.substring(varName.indexOf(':') + 1);
                 lag = Integer.parseInt(tmp);
                 laglist.add(lag);
             }
@@ -735,7 +735,7 @@ public final class LargeScaleSimulation {
             if (varName.indexOf(':') == -1) {
                 lag = 0;
             } else {
-                tmp = varName.substring(varName.indexOf(':') + 1, varName.length());
+                tmp = varName.substring(varName.indexOf(':') + 1);
                 lag = Integer.parseInt(tmp);
             }
 
@@ -766,7 +766,7 @@ public final class LargeScaleSimulation {
         if (s.indexOf(':') == -1) {
             return 0;
         }
-        String tmp = s.substring(s.indexOf(':') + 1, s.length());
+        String tmp = s.substring(s.indexOf(':') + 1);
         return (Integer.parseInt(tmp));
     }
 

@@ -150,7 +150,7 @@ final class EMBayesEstimatorEditorWizard extends JPanel {
             if (evt.getPropertyName().equals("selectedNodes")) {
                 List selection = (List) (evt.getNewValue());
                 if (selection.size() == 1) {
-                    varNamesComboBox.setSelectedItem((Node) selection.get(0));
+                    varNamesComboBox.setSelectedItem(selection.get(0));
                 }
             }
         });

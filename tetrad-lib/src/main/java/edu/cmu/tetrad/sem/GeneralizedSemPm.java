@@ -502,10 +502,8 @@ public final class GeneralizedSemPm implements PM, TetradSerializable {
         parameterNames.removeAll(variableNames);
 
         for (Node variable : nodes) {
-            if (parameterNames.contains(variable.getName())) {
-                parameterNames.remove(variable.getName());
-//                throw new IllegalArgumentException("The list of parameter names may not include variables: " + variable.getNode());
-            }
+            //                throw new IllegalArgumentException("The list of parameter names may not include variables: " + variable.getNode());
+            parameterNames.remove(variable.getName());
         }
 
         // Remove old parameter references.
@@ -514,9 +512,7 @@ public final class GeneralizedSemPm implements PM, TetradSerializable {
         for (String parameter : referencedParameters.keySet()) {
             Set<Node> nodes = referencedParameters.get(parameter);
 
-            if (nodes.contains(node)) {
-                nodes.remove(node);
-            }
+            nodes.remove(node);
 
             if (nodes.isEmpty()) {
                 parametersToRemove.add(parameter);
@@ -549,9 +545,7 @@ public final class GeneralizedSemPm implements PM, TetradSerializable {
         for (Node _node : referencedNodes.keySet()) {
             Set<Node> nodes = referencedNodes.get(_node);
 
-            if (nodes.contains(node)) {
-                nodes.remove(node);
-            }
+            nodes.remove(node);
 
             if (nodes.isEmpty()) {
                 nodesToRemove.add(_node);

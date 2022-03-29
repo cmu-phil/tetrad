@@ -226,7 +226,7 @@ public class StARS implements Algorithm, TakesExternalGraph {
             }
         }
 
-        D /= (double) count;
+        D /= count;
         return D;
     }
 

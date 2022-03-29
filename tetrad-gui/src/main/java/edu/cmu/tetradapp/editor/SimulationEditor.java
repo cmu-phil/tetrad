@@ -112,7 +112,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
     }
 
     private SimulationGraphEditor createSimulationGraphEditor(Simulation simulation) {
-        SimulationGraphEditor graphEditor = new SimulationGraphEditor(Collections.<Graph>emptyList());
+        SimulationGraphEditor graphEditor = new SimulationGraphEditor(Collections.emptyList());
         if (simulation.getSimulation() != null) {
             List<Graph> trueGraphs = new ArrayList<>();
             for (int i = 0; i < simulation.getSimulation().getNumDataModels(); i++) {

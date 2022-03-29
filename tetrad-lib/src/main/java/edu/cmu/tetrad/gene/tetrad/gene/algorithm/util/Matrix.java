@@ -91,7 +91,7 @@ public class Matrix extends BasicMatrix {
         if ((r >= n) || (c >= n) || (r < 0) || (c < 0)) {
             this.badIndexXcp(r, c);
         }
-        return (double) A[r][c];
+        return A[r][c];
     }
 
     /**

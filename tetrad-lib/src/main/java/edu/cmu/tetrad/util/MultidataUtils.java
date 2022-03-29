@@ -242,7 +242,7 @@ public final class MultidataUtils {
 
         int row = 0;
         for (DoubleDataBox dataBox : models) {
-            double[][] data = ((DoubleDataBox) dataBox).getData();
+            double[][] data = dataBox.getData();
             for (double[] rowData : data) {
                 System.arraycopy(rowData, 0, combinedData[row++], 0, rowData.length);
             }

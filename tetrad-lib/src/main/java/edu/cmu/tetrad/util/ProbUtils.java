@@ -447,7 +447,7 @@ public class ProbUtils {
             dp = (k < n) ? 0.0 : 1.0;
         } else {
             da = (double) k + 1.0;
-            db = (double) (n - k);
+            db = n - k;
             dp = 1.0 - betaCdf(p, da, db);
         }
 
@@ -845,7 +845,7 @@ public class ProbUtils {
 
         d_1 = -5.0 / (pp * pp) - 1.0 / (a * a) - 13.0;
         iex = (sae > d_1) ? (int) sae : (int) d_1;
-        acu = Math.pow(10.0, (double) iex);
+        acu = Math.pow(10.0, iex);
 
         do {
             y = betaCdf(ret_val, pp, qq);

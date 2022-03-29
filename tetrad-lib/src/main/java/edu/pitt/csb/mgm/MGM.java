@@ -655,12 +655,12 @@ public class MGM extends ConvexProximal implements GraphSearch {
                     alg.mult(tempLoss.viewColumn(i), xBeta.viewColumn(i).copy().assign(dTheta.viewColumn(i), Functions.plus)));
         }
 
-        gradOut.alpha1.assign(Functions.div((double) n));
-        gradOut.alpha2.assign(Functions.div((double) n));
-        gradOut.betad.assign(Functions.div((double) n));
-        gradOut.beta.assign(Functions.div((double) n));
-        gradOut.theta.assign(Functions.div((double) n));
-        gradOut.phi.assign(Functions.div((double) n));
+        gradOut.alpha1.assign(Functions.div(n));
+        gradOut.alpha2.assign(Functions.div(n));
+        gradOut.betad.assign(Functions.div(n));
+        gradOut.beta.assign(Functions.div(n));
+        gradOut.theta.assign(Functions.div(n));
+        gradOut.phi.assign(Functions.div(n));
 
         gradOutVec.assign(gradOut.toMatrix1D());
         return (sqloss + catloss) / ((double) n);
@@ -891,12 +891,12 @@ public class MGM extends ConvexProximal implements GraphSearch {
                     alg.mult(negLoss.viewColumn(i), xBeta.viewColumn(i).copy().assign(dTheta.viewColumn(i), Functions.plus)));
         }
 
-        grad.alpha1.assign(Functions.div((double) n));
-        grad.alpha2.assign(Functions.div((double) n));
-        grad.betad.assign(Functions.div((double) n));
-        grad.beta.assign(Functions.div((double) n));
-        grad.theta.assign(Functions.div((double) n));
-        grad.phi.assign(Functions.div((double) n));
+        grad.alpha1.assign(Functions.div(n));
+        grad.alpha2.assign(Functions.div(n));
+        grad.betad.assign(Functions.div(n));
+        grad.beta.assign(Functions.div(n));
+        grad.theta.assign(Functions.div(n));
+        grad.phi.assign(Functions.div(n));
 
         return grad.toMatrix1D();
     }

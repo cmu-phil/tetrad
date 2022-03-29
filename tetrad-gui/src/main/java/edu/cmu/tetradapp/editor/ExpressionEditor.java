@@ -280,7 +280,7 @@ class ExpressionEditor extends JPanel {
         // if empty add the sig with any selections.
         if (selection == null || !this.caretInSelection(selection)) {
             String newText = text.substring(0, caret) + signature.getSignature()
-                    + text.substring(caret, text.length());
+                    + text.substring(caret);
 
 
 //            String newText = text + signature.getSignature();

@@ -88,7 +88,7 @@ class GeneralizedSemPmGraphicalEditor extends JPanel {
 
     //========================PRIVATE PROTECTED METHODS======================//
     private void beginNodeEdit(Node node) {
-        if (launchedEditors.keySet().contains(node)) {
+        if (launchedEditors.containsKey(node)) {
             launchedEditors.get(node).moveToFront();
             return;
         }

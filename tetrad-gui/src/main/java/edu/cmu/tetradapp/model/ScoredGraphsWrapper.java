@@ -205,7 +205,7 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
      * Sets a selected graph. Must be one of the graphs in <code>getGraphToScore().keySet</code>.
      */
     public void setSelectedGraph(Graph graph) {
-        if (!graphsToScores.keySet().contains(graph)) {
+        if (!graphsToScores.containsKey(graph)) {
             throw new IllegalArgumentException("Not a graph in this set.");
         }
 

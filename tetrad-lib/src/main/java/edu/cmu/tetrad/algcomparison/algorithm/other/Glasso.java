@@ -55,7 +55,7 @@ public class Glasso implements Algorithm {
                     .getCovarianceMatrix().toArray());
 
             edu.cmu.tetrad.search.Glasso glasso = new edu.cmu.tetrad.search.Glasso(cov);
-            glasso.setMaxit((int) parameters.getInt(Params.MAXIT));
+            glasso.setMaxit(parameters.getInt(Params.MAXIT));
             glasso.setIa(parameters.getBoolean(Params.IA));
             glasso.setIs(parameters.getBoolean(Params.IS));
             glasso.setItr(parameters.getBoolean(Params.ITR));

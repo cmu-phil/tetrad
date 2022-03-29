@@ -1612,7 +1612,7 @@ public class SessionNode implements Node {
                 } catch (InvocationTargetException e) {
                     String packagePath = modelClass.getName();
                     int begin = packagePath.lastIndexOf('.') + 1;
-                    String name = packagePath.substring(begin, packagePath.length());
+                    String name = packagePath.substring(begin);
 
                     if (e.getTargetException() instanceof ThreadDeath) {
                         e.printStackTrace();

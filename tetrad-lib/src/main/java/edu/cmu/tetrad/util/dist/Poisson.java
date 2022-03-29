@@ -35,7 +35,7 @@ public class Poisson implements Distribution {
     private double mean;
 
     private Poisson() {
-        mean = (double) 1;
+        mean = 1;
     }
 
     /**

@@ -291,7 +291,7 @@ public class TsFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner
     private boolean allContinuous(List<DataModel> dataModels) {
         for (DataModel dataModel : dataModels) {
             if (dataModel instanceof DataSet) {
-                if (!((DataSet) dataModel).isContinuous() || dataModel instanceof ICovarianceMatrix) {
+                if (!dataModel.isContinuous() || dataModel instanceof ICovarianceMatrix) {
                     return false;
                 }
             }
@@ -303,7 +303,7 @@ public class TsFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner
     private boolean allDiscrete(List<DataModel> dataModels) {
         for (DataModel dataModel : dataModels) {
             if (dataModel instanceof DataSet) {
-                if (!((DataSet) dataModel).isDiscrete()) {
+                if (!dataModel.isDiscrete()) {
                     return false;
                 }
             }

@@ -196,7 +196,7 @@ public class StARS2 implements Algorithm, TakesExternalGraph {
             }
         }
 
-        D /= (double) (p * (p - 1) / 2);
+        D /= p * (p - 1) / 2;
         System.out.println(paramName + " = " + paramValue + " D = " + D);
         return D;
     }

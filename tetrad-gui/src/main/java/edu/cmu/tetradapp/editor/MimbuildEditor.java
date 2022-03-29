@@ -608,7 +608,7 @@ public class MimbuildEditor extends JPanel {
             boolean discreteData = false;
 
             if (runner.getData() instanceof DataSet) {
-                discreteData = ((DataSet) runner.getData()).isDiscrete();
+                discreteData = runner.getData().isDiscrete();
             }
 
             return new PurifyIndTestParamsEditor(params, discreteData);

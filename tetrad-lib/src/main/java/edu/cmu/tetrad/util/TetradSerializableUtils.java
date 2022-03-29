@@ -297,7 +297,7 @@ public class TetradSerializableUtils {
     private int getNumNonSerialVersionUIDFields(Class clazz) {
         Field[] declaredFields = clazz.getDeclaredFields();
         int numFields = declaredFields.length;
-        List<Field> fieldList = Arrays.asList(declaredFields);
+        Field[] fieldList = declaredFields;
 
 //        System.out.println(clazz);
 //
@@ -759,7 +759,7 @@ public class TetradSerializableUtils {
                 packagePath = packagePath.replace('\\', '.');
                 packagePath = packagePath.replace('/', '.');
                 packagePath = packagePath.substring(
-                        packagePath.indexOf("edu.cmu"), packagePath.length());
+                        packagePath.indexOf("edu.cmu"));
                 int index = packagePath.indexOf(".class");
 
                 if (index == -1) {

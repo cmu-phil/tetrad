@@ -29,7 +29,7 @@ public class ArrowheadFN implements Statistic {
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         ArrowConfusion confusion = new ArrowConfusion(trueGraph, estGraph);
-        return (double) confusion.getArrowsFn();
+        return confusion.getArrowsFn();
     }
 
     @Override

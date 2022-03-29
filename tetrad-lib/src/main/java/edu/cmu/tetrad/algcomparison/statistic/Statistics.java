@@ -66,7 +66,7 @@ public class Statistics {
      * @return The utility weight for it.
      */
     public double getWeight(Statistic statistic) {
-        if (weights.keySet().contains(statistic)) {
+        if (weights.containsKey(statistic)) {
             return weights.get(statistic);
         } else {
             return 0.0;

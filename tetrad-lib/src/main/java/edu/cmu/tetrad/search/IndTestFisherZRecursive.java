@@ -202,7 +202,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
         }
 
         double q = 0.5 * (log(1.0 + r) - Math.log(1.0 - r));
-        double fisherZ = sqrt((double) (n - 3 - z.size())) * abs(q);
+        double fisherZ = sqrt(n - 3 - z.size()) * abs(q);
         this.fisherZ = fisherZ;
         return fisherZ < cutoff;
     }

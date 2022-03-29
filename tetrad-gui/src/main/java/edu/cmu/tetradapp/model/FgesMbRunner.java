@@ -347,7 +347,7 @@ public class FgesMbRunner extends AbstractAlgorithmRunner implements
     private boolean allContinuous(List<DataModel> dataModels) {
         for (DataModel dataModel : dataModels) {
             if (dataModel instanceof DataSet) {
-                if (!((DataSet) dataModel).isContinuous() || dataModel instanceof ICovarianceMatrix) {
+                if (!dataModel.isContinuous() || dataModel instanceof ICovarianceMatrix) {
                     return false;
                 }
             }
@@ -359,7 +359,7 @@ public class FgesMbRunner extends AbstractAlgorithmRunner implements
     private boolean allDiscrete(List<DataModel> dataModels) {
         for (DataModel dataModel : dataModels) {
             if (dataModel instanceof DataSet) {
-                if (!((DataSet) dataModel).isDiscrete()) {
+                if (!dataModel.isDiscrete()) {
                     return false;
                 }
             }

@@ -68,8 +68,8 @@ public class TruncatedNormal implements Distribution {
     //=========================CONSTRUCTORS===========================//
 
     private TruncatedNormal() {
-        this.setParameter(0, (double) 0);
-        this.setParameter(1, (double) 1);
+        this.setParameter(0, 0);
+        this.setParameter(1, 1);
         this.setParameter(2, Double.NEGATIVE_INFINITY);
         this.setParameter(3, Double.POSITIVE_INFINITY);
     }

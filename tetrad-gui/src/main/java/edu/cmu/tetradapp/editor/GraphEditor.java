@@ -217,7 +217,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
             String propertyName = evt.getPropertyName();
             if (EVENTS.contains(propertyName)) {
                 if (this.getWorkbench() != null) {
-                    Graph targetGraph = (Graph) this.getWorkbench().getGraph();
+                    Graph targetGraph = this.getWorkbench().getGraph();
 
                     // Update the graphWrapper
                     graphWrapper.setGraph(targetGraph);

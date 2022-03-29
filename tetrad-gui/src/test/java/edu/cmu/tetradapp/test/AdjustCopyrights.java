@@ -72,7 +72,7 @@ public class AdjustCopyrights {
 
                 int from = matcher.start();
                 outStream.println(
-                        inContents.substring(from, inContents.length()));
+                        inContents.substring(from));
             } catch (IOException e) {
                 e.printStackTrace();
             }

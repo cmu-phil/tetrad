@@ -1059,7 +1059,7 @@ public final class LoadDataSettings extends JPanel {
                     tabularColumnValidationResults = tabularColumnValidation.validate(new int[]{1});
                 } else if (idLabeledColRadioButton.isSelected() && !idStringField.getText().isEmpty()) {
                     // Exclude the specified labled columns
-                    tabularColumnValidationResults = tabularColumnValidation.validate(new HashSet<>(Arrays.asList(new String[]{idStringField.getText()})));
+                    tabularColumnValidationResults = tabularColumnValidation.validate(new HashSet<>(Arrays.asList(idStringField.getText())));
                 }
 
                 // Step 2: Read in columns for later use if nothing wrong with the columns validation
@@ -1161,7 +1161,7 @@ public final class LoadDataSettings extends JPanel {
             dataColumns = columnReader.readInDataColumns(new int[]{1}, isDiscrete);
         } else if (idLabeledColRadioButton.isSelected() && !idStringField.getText().isEmpty()) {
             // Exclude the specified labled columns
-            dataColumns = columnReader.readInDataColumns(new HashSet<>(Arrays.asList(new String[]{idStringField.getText()})), isDiscrete);
+            dataColumns = columnReader.readInDataColumns(new HashSet<>(Arrays.asList(idStringField.getText())), isDiscrete);
         }
 
         return dataColumns;

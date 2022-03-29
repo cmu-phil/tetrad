@@ -313,7 +313,7 @@ public final class IndTestHsic implements IndependenceTest {
             }
         }
 
-        evalCdf /= (double) perms;
+        evalCdf /= perms;
         pValue = 1.0 - evalCdf;
 
         // reject if pvalue <= alpha

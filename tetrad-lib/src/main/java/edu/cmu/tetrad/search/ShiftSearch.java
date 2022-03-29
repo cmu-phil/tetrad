@@ -80,7 +80,7 @@ public class ShiftSearch {
             shifts = new int[nodes.size()];
 
             double zSize = Math.pow(this.getMaxShift(), choice.length);
-            int iIndex = dataSets.get(0).getVariables().indexOf(((DataSet) dataSets.get(0)).getVariable("I"));
+            int iIndex = dataSets.get(0).getVariables().indexOf(dataSets.get(0).getVariable("I"));
 
             Z:
             for (int z = 0; z < zSize; z++) {

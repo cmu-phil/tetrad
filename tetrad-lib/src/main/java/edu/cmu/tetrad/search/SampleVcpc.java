@@ -823,7 +823,7 @@ public final class SampleVcpc implements GraphSearch {
         }
 
         for (Edge edge : definitelyNonadjacencies) {
-            if (apparentlyNonadjacencies.keySet().contains(edge)) {
+            if (apparentlyNonadjacencies.containsKey(edge)) {
                 apparentlyNonadjacencies.keySet().remove(edge);
             }
         }
@@ -1300,9 +1300,7 @@ public final class SampleVcpc implements GraphSearch {
         Set<Node> futureNodes = new HashSet<>();
         LinkedList path = new LinkedList<>();
         futureNodeVisit(graph, x, path, futureNodes);
-        if (futureNodes.contains(x)) {
-            futureNodes.remove(x);
-        }
+        futureNodes.remove(x);
         List<Node> adj = graph.getAdjacentNodes(x);
         for (Node y : adj) {
             if (graph.isParentOf(y, x) || Edges.isUndirectedEdge(graph.getEdge(x, y))) {
