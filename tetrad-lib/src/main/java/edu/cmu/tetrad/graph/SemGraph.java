@@ -78,7 +78,7 @@ public final class SemGraph implements Graph, TetradSerializable {
      *
      * @serial
      */
-    private boolean showErrorTerms = false;
+    private boolean showErrorTerms;
 
     private boolean pag;
     private boolean cpdag;
@@ -91,13 +91,13 @@ public final class SemGraph implements Graph, TetradSerializable {
      * Constructs a new, empty SemGraph.
      */
     public SemGraph() {
-        this.graph = new EdgeListGraph();
+        graph = new EdgeListGraph();
     }
 
     /**
      * Constructs a new SemGraph from the nodes and edges of the given graph.
      */
-    public SemGraph(final Graph graph) {
+    public SemGraph(Graph graph) {
         if (graph instanceof SemGraph) {
             if (graph.isTimeLagModel()) {
                 this.graph = new TimeLagGraph((TimeLagGraph) ((SemGraph) graph).graph);
@@ -105,48 +105,48 @@ public final class SemGraph implements Graph, TetradSerializable {
                 this.graph = new EdgeListGraph(graph);
             }
 
-            this.errorNodes =
+            errorNodes =
                     new HashMap<>(((SemGraph) graph).errorNodes);
 
-            for (final Node node : graph.getNodes()) {
-                if (!this.errorNodes.containsKey(node)) {
-                    addErrorNode(node);
+            for (Node node : graph.getNodes()) {
+                if (!errorNodes.containsKey(node)) {
+                    this.addErrorNode(node);
                 }
             }
 
-            this.showErrorTerms = ((SemGraph) graph).showErrorTerms;
-            setShowErrorTerms(this.showErrorTerms);
+            showErrorTerms = ((SemGraph) graph).showErrorTerms;
+            this.setShowErrorTerms(showErrorTerms);
         } else if (graph instanceof TimeLagGraph) {
             this.graph = new TimeLagGraph((TimeLagGraph) graph);
         } else {
             this.graph = new EdgeListGraph(graph.getNodes());
 
-            for (final Node node : this.graph.getNodes()) {
-                addErrorNode(node);
+            for (Node node : this.graph.getNodes()) {
+                this.addErrorNode(node);
             }
 
-            setShowErrorTerms(true);
+            this.setShowErrorTerms(true);
 
-            for (final Edge edge : graph.getEdges()) {
+            for (Edge edge : graph.getEdges()) {
                 if (Edges.isDirectedEdge(edge)) {
-                    addEdge(edge);
+                    this.addEdge(edge);
                 } else if (Edges.isBidirectedEdge(edge)) {
-                    final Node node1 = edge.getNode1();
-                    final Node node2 = edge.getNode2();
+                    Node node1 = edge.getNode1();
+                    Node node2 = edge.getNode2();
 
-                    addBidirectedEdge(getExogenous(node1), getExogenous(node2));
+                    this.addBidirectedEdge(this.getExogenous(node1), this.getExogenous(node2));
                 } else {
                     throw new IllegalArgumentException("A SEM graph may contain " +
                             "only directed and bidirected edges: " + edge);
                 }
             }
 
-            setShowErrorTerms(false);
+            this.setShowErrorTerms(false);
         }
 
-        for (final Edge edge : graph.getEdges()) {
+        for (Edge edge : graph.getEdges()) {
             if (graph.isHighlighted(edge)) {
-                setHighlighted(edge, true);
+                this.setHighlighted(edge, true);
             }
         }
     }
@@ -154,29 +154,29 @@ public final class SemGraph implements Graph, TetradSerializable {
     /**
      * Copy constructor.
      */
-    public SemGraph(final SemGraph graph) {
+    public SemGraph(SemGraph graph) {
         if (graph.isTimeLagModel()) {
             this.graph = new TimeLagGraph((TimeLagGraph) graph.graph);
         } else {
             this.graph = new EdgeListGraph(graph.getGraph());
         }
 
-        this.errorNodes = new HashMap<>(graph.errorNodes);
+        errorNodes = new HashMap<>(graph.errorNodes);
 
         if (graph.showErrorTerms) {
-            for (final Node node : this.graph.getNodes()) {
-                if (!errorNodes().containsKey(node)) {
-                    addErrorNode(node);
+            for (Node node : this.graph.getNodes()) {
+                if (!this.errorNodes().containsKey(node)) {
+                    this.addErrorNode(node);
                 }
             }
         }
 
-        this.showErrorTerms = graph.showErrorTerms;
-        setShowErrorTerms(this.showErrorTerms);
+        showErrorTerms = graph.showErrorTerms;
+        this.setShowErrorTerms(showErrorTerms);
 
-        for (final Edge edge : graph.getEdges()) {
+        for (Edge edge : graph.getEdges()) {
             if (graph.isHighlighted(edge)) {
-                setHighlighted(edge, true);
+                this.setHighlighted(edge, true);
             }
         }
     }
@@ -194,8 +194,8 @@ public final class SemGraph implements Graph, TetradSerializable {
      * @return the error node associated with the given node, or null if the
      * node has no associated error node.
      */
-    public Node getErrorNode(final Node node) {
-        return this.errorNodes.get(node);
+    public Node getErrorNode(Node node) {
+        return errorNodes.get(node);
     }
 
     /**
@@ -209,16 +209,16 @@ public final class SemGraph implements Graph, TetradSerializable {
         return GraphUtils.getCausalOrdering(this);
     }
 
-    public void setHighlighted(final Edge edge, final boolean highlighted) {
-        getGraph().setHighlighted(edge, highlighted);
+    public void setHighlighted(Edge edge, boolean highlighted) {
+        this.getGraph().setHighlighted(edge, highlighted);
     }
 
-    public boolean isHighlighted(final Edge edge) {
-        return getGraph().isHighlighted(edge);
+    public boolean isHighlighted(Edge edge) {
+        return this.getGraph().isHighlighted(edge);
     }
 
-    public boolean isParameterizable(final Node node) {
-        return getGraph().isParameterizable(node);
+    public boolean isParameterizable(Node node) {
+        return this.getGraph().isParameterizable(node);
     }
 
     /**
@@ -226,12 +226,12 @@ public final class SemGraph implements Graph, TetradSerializable {
      * @throws IllegalStateException if the graph is cyclic.
      */
     public List<Node> getFullTierOrdering() {
-        if (existsDirectedCycle()) {
+        if (this.existsDirectedCycle()) {
             throw new IllegalStateException("The tier ordering method assumes acyclicity.");
         }
 
-        final List<Node> found = new LinkedList<>();
-        final Set<Node> notFound = new HashSet<>(getNodes());
+        List<Node> found = new LinkedList<>();
+        Set<Node> notFound = new HashSet<>(this.getNodes());
 
 //        for (Node node1 : getNodes()) {
 //            notFound.add(node1);
@@ -248,10 +248,10 @@ public final class SemGraph implements Graph, TetradSerializable {
 //        notFound.removeAll(errorTerms);
 
         while (!notFound.isEmpty()) {
-            for (final Iterator<Node> it = notFound.iterator(); it.hasNext(); ) {
-                final Node node = it.next();
+            for (Iterator<Node> it = notFound.iterator(); it.hasNext(); ) {
+                Node node = it.next();
 
-                final List<Node> parents = getParents(node);
+                List<Node> parents = this.getParents(node);
 //                parents.removeAll(errorTerms);
 
                 if (found.containsAll(parents)) {
@@ -267,7 +267,7 @@ public final class SemGraph implements Graph, TetradSerializable {
     /**
      * @return true iff either node associated with edge is an error term.
      */
-    public static boolean isErrorEdge(final Edge edge) {
+    public static boolean isErrorEdge(Edge edge) {
         return (edge.getNode1().getNodeType() == NodeType.ERROR ||
                 (edge.getNode2().getNodeType() == NodeType.ERROR));
     }
@@ -276,10 +276,10 @@ public final class SemGraph implements Graph, TetradSerializable {
      * @return the variable node for this node--that is, the associated node, if
      * this is an error node, or the node itself, if it is not.
      */
-    public Node getVarNode(final Node node) {
-        final boolean isError = node.getNodeType() == NodeType.ERROR;
+    public Node getVarNode(Node node) {
+        boolean isError = node.getNodeType() == NodeType.ERROR;
 
-        if (!containsNode(node)) {
+        if (!this.containsNode(node)) {
             throw new NullPointerException("Node is not in graph: " + node);
         }
 
@@ -294,127 +294,127 @@ public final class SemGraph implements Graph, TetradSerializable {
      * @param node the node you want the exogenous node for.
      * @return the exogenous node for that node.
      */
-    public Node getExogenous(final Node node) {
-        return isExogenous(node) ? node : this.errorNodes.get(node);
+    public Node getExogenous(Node node) {
+        return this.isExogenous(node) ? node : errorNodes.get(node);
     }
 
-    public final void transferNodesAndEdges(final Graph graph)
+    public final void transferNodesAndEdges(Graph graph)
             throws IllegalArgumentException {
         throw new UnsupportedOperationException();
     }
 
-    public final void transferAttributes(final Graph graph)
+    public final void transferAttributes(Graph graph)
             throws IllegalArgumentException {
         throw new UnsupportedOperationException();
     }
 
     public Set<Triple> getAmbiguousTriples() {
-        return getGraph().getAmbiguousTriples();
+        return this.getGraph().getAmbiguousTriples();
     }
 
     public Set<Triple> getUnderLines() {
-        return getGraph().getUnderLines();
+        return this.getGraph().getUnderLines();
     }
 
     public Set<Triple> getDottedUnderlines() {
-        return getGraph().getDottedUnderlines();
+        return this.getGraph().getDottedUnderlines();
     }
 
 
     /**
      * States whether x-y-x is an underline triple or not.
      */
-    public boolean isAmbiguousTriple(final Node x, final Node y, final Node z) {
-        return getGraph().isAmbiguousTriple(x, y, z);
+    public boolean isAmbiguousTriple(Node x, Node y, Node z) {
+        return this.getGraph().isAmbiguousTriple(x, y, z);
     }
 
     /**
      * States whether x-y-x is an underline triple or not.
      */
-    public boolean isUnderlineTriple(final Node x, final Node y, final Node z) {
-        return getGraph().isUnderlineTriple(x, y, z);
+    public boolean isUnderlineTriple(Node x, Node y, Node z) {
+        return this.getGraph().isUnderlineTriple(x, y, z);
     }
 
     /**
      * States whether x-y-x is an underline triple or not.
      */
-    public boolean isDottedUnderlineTriple(final Node x, final Node y, final Node z) {
-        return getGraph().isDottedUnderlineTriple(x, y, z);
+    public boolean isDottedUnderlineTriple(Node x, Node y, Node z) {
+        return this.getGraph().isDottedUnderlineTriple(x, y, z);
     }
 
-    public void addAmbiguousTriple(final Node x, final Node y, final Node z) {
-        getGraph().addAmbiguousTriple(x, y, z);
+    public void addAmbiguousTriple(Node x, Node y, Node z) {
+        this.getGraph().addAmbiguousTriple(x, y, z);
     }
 
-    public void addUnderlineTriple(final Node x, final Node y, final Node z) {
-        getGraph().addUnderlineTriple(x, y, z);
+    public void addUnderlineTriple(Node x, Node y, Node z) {
+        this.getGraph().addUnderlineTriple(x, y, z);
     }
 
-    public void addDottedUnderlineTriple(final Node x, final Node y, final Node z) {
-        getGraph().addDottedUnderlineTriple(x, y, z);
+    public void addDottedUnderlineTriple(Node x, Node y, Node z) {
+        this.getGraph().addDottedUnderlineTriple(x, y, z);
     }
 
-    public void removeAmbiguousTriple(final Node x, final Node y, final Node z) {
-        getGraph().removeAmbiguousTriple(x, y, z);
+    public void removeAmbiguousTriple(Node x, Node y, Node z) {
+        this.getGraph().removeAmbiguousTriple(x, y, z);
     }
 
-    public void removeUnderlineTriple(final Node x, final Node y, final Node z) {
-        getGraph().removeUnderlineTriple(x, y, z);
+    public void removeUnderlineTriple(Node x, Node y, Node z) {
+        this.getGraph().removeUnderlineTriple(x, y, z);
     }
 
-    public void removeDottedUnderlineTriple(final Node x, final Node y, final Node z) {
-        getGraph().removeDottedUnderlineTriple(x, y, z);
-    }
-
-
-    public void setAmbiguousTriples(final Set<Triple> triples) {
-        getGraph().setAmbiguousTriples(triples);
-    }
-
-    public void setUnderLineTriples(final Set<Triple> triples) {
-        getGraph().setUnderLineTriples(triples);
+    public void removeDottedUnderlineTriple(Node x, Node y, Node z) {
+        this.getGraph().removeDottedUnderlineTriple(x, y, z);
     }
 
 
-    public void setDottedUnderLineTriples(final Set<Triple> triples) {
-        getGraph().setDottedUnderLineTriples(triples);
+    public void setAmbiguousTriples(Set<Triple> triples) {
+        this.getGraph().setAmbiguousTriples(triples);
+    }
+
+    public void setUnderLineTriples(Set<Triple> triples) {
+        this.getGraph().setUnderLineTriples(triples);
+    }
+
+
+    public void setDottedUnderLineTriples(Set<Triple> triples) {
+        this.getGraph().setDottedUnderLineTriples(triples);
     }
 
     public List<String> getNodeNames() {
-        return getGraph().getNodeNames();
+        return this.getGraph().getNodeNames();
     }
 
 
-    public void fullyConnect(final Endpoint endpoint) {
+    public void fullyConnect(Endpoint endpoint) {
         throw new UnsupportedOperationException();
     }
 
-    public void reorientAllWith(final Endpoint endpoint) {
+    public void reorientAllWith(Endpoint endpoint) {
         throw new UnsupportedOperationException();
     }
 
     public Endpoint[][] getEndpointMatrix() {
-        return getGraph().getEndpointMatrix();
+        return this.getGraph().getEndpointMatrix();
     }
 
-    public List<Node> getAdjacentNodes(final Node node) {
-        return getGraph().getAdjacentNodes(node);
+    public List<Node> getAdjacentNodes(Node node) {
+        return this.getGraph().getAdjacentNodes(node);
     }
 
-    public List<Node> getNodesInTo(final Node node, final Endpoint endpoint) {
-        return getGraph().getNodesInTo(node, endpoint);
+    public List<Node> getNodesInTo(Node node, Endpoint endpoint) {
+        return this.getGraph().getNodesInTo(node, endpoint);
     }
 
-    public List<Node> getNodesOutTo(final Node node, final Endpoint n) {
-        return getGraph().getNodesOutTo(node, n);
+    public List<Node> getNodesOutTo(Node node, Endpoint n) {
+        return this.getGraph().getNodesOutTo(node, n);
     }
 
     public List<Node> getNodes() {
-        return getGraph().getNodes();
+        return this.getGraph().getNodes();
     }
 
-    public boolean removeEdge(final Node node1, final Node node2) {
-        final List<Edge> edges = getEdges(node1, node2);
+    public boolean removeEdge(Node node1, Node node2) {
+        List<Edge> edges = this.getEdges(node1, node2);
 
         if (edges.size() > 1) {
             throw new IllegalStateException(
@@ -422,75 +422,75 @@ public final class SemGraph implements Graph, TetradSerializable {
                             node2);
         }
 
-        return removeEdges(edges);
+        return this.removeEdges(edges);
     }
 
-    public boolean removeEdges(final Node node1, final Node node2) {
-        return removeEdges(getEdges(node1, node2));
+    public boolean removeEdges(Node node1, Node node2) {
+        return this.removeEdges(this.getEdges(node1, node2));
     }
 
-    public boolean isAdjacentTo(final Node nodeX, final Node nodeY) {
-        return getGraph().isAdjacentTo(nodeX, nodeY);
+    public boolean isAdjacentTo(Node nodeX, Node nodeY) {
+        return this.getGraph().isAdjacentTo(nodeX, nodeY);
     }
 
-    public boolean setEndpoint(final Node node1, final Node node2, final Endpoint endpoint) {
-        return getGraph().setEndpoint(node1, node2, endpoint);
+    public boolean setEndpoint(Node node1, Node node2, Endpoint endpoint) {
+        return this.getGraph().setEndpoint(node1, node2, endpoint);
     }
 
-    public Endpoint getEndpoint(final Node node1, final Node node2) {
-        return getGraph().getEndpoint(node1, node2);
+    public Endpoint getEndpoint(Node node1, Node node2) {
+        return this.getGraph().getEndpoint(node1, node2);
     }
 
-    public boolean equals(final Object o) {
-        return (o instanceof SemGraph) && getGraph().equals(o);
+    public boolean equals(Object o) {
+        return (o instanceof SemGraph) && this.getGraph().equals(o);
     }
 
-    public Graph subgraph(final List<Node> nodes) {
-        return getGraph().subgraph(nodes);
+    public Graph subgraph(List<Node> nodes) {
+        return this.getGraph().subgraph(nodes);
     }
 
-    public boolean existsDirectedPathFromTo(final Node node1, final Node node2) {
-        return getGraph().existsDirectedPathFromTo(node1, node2);
+    public boolean existsDirectedPathFromTo(Node node1, Node node2) {
+        return this.getGraph().existsDirectedPathFromTo(node1, node2);
     }
 
     @Override
     public List<Node> findCycle() {
-        return getGraph().findCycle();
+        return this.getGraph().findCycle();
     }
 
-    public boolean existsUndirectedPathFromTo(final Node node1, final Node node2) {
-        return getGraph().existsUndirectedPathFromTo(node1, node2);
+    public boolean existsUndirectedPathFromTo(Node node1, Node node2) {
+        return this.getGraph().existsUndirectedPathFromTo(node1, node2);
     }
 
-    public boolean existsSemiDirectedPathFromTo(final Node node1, final Set<Node> nodes2) {
-        return getGraph().existsSemiDirectedPathFromTo(node1, nodes2);
+    public boolean existsSemiDirectedPathFromTo(Node node1, Set<Node> nodes2) {
+        return this.getGraph().existsSemiDirectedPathFromTo(node1, nodes2);
     }
 
-    public boolean addDirectedEdge(final Node nodeA, final Node nodeB) {
-        return addEdge(Edges.directedEdge(nodeA, nodeB));
+    public boolean addDirectedEdge(Node nodeA, Node nodeB) {
+        return this.addEdge(Edges.directedEdge(nodeA, nodeB));
     }
 
-    public boolean addUndirectedEdge(final Node nodeA, final Node nodeB) {
+    public boolean addUndirectedEdge(Node nodeA, Node nodeB) {
         throw new UnsupportedOperationException();
     }
 
-    public boolean addNondirectedEdge(final Node nodeA, final Node nodeB) {
+    public boolean addNondirectedEdge(Node nodeA, Node nodeB) {
         throw new UnsupportedOperationException();
     }
 
-    public boolean addPartiallyOrientedEdge(final Node nodeA, final Node nodeB) {
+    public boolean addPartiallyOrientedEdge(Node nodeA, Node nodeB) {
         throw new UnsupportedOperationException();
     }
 
-    public boolean addBidirectedEdge(final Node nodeA, final Node nodeB) {
-        return addEdge(Edges.bidirectedEdge(nodeA, nodeB));
+    public boolean addBidirectedEdge(Node nodeA, Node nodeB) {
+        return this.addEdge(Edges.bidirectedEdge(nodeA, nodeB));
     }
 
-    public boolean addEdge(final Edge edge) {
-        final Node node1 = edge.getNode1();
-        final Node node2 = edge.getNode2();
+    public boolean addEdge(Edge edge) {
+        Node node1 = edge.getNode1();
+        Node node2 = edge.getNode2();
 
-        if (!getGraph().containsNode(node1) || !getGraph().containsNode(node2)) {
+        if (!this.getGraph().containsNode(node1) || !this.getGraph().containsNode(node2)) {
             if (node1.getNodeType() == NodeType.ERROR || node2.getNodeType() == NodeType.ERROR) {
                 return false;
             }
@@ -500,21 +500,21 @@ public final class SemGraph implements Graph, TetradSerializable {
         }
 
         if (Edges.isDirectedEdge(edge)) {
-            if (getGraph().containsEdge(edge)) {
+            if (this.getGraph().containsEdge(edge)) {
                 return false;
             }
 
-            final Node head = Edges.getDirectedEdgeHead(edge);
+            Node head = Edges.getDirectedEdgeHead(edge);
 
             if (head.getNodeType() == NodeType.ERROR) {
                 return false;
             }
 
-            getGraph().addEdge(edge);
-            adjustErrorForNode(head);
+            this.getGraph().addEdge(edge);
+            this.adjustErrorForNode(head);
             return true;
         } else if (Edges.isBidirectedEdge(edge)) {
-            if (getGraph().containsEdge(edge)) {
+            if (this.getGraph().containsEdge(edge)) {
                 return false;
             }
 
@@ -523,7 +523,7 @@ public final class SemGraph implements Graph, TetradSerializable {
 //                        "edge must be exogenous: " + edge);
 //            }
 
-            getGraph().addEdge(edge);
+            this.getGraph().addEdge(edge);
             return true;
         } else {
             throw new IllegalArgumentException(
@@ -531,94 +531,94 @@ public final class SemGraph implements Graph, TetradSerializable {
         }
     }
 
-    public boolean addNode(final Node node) {
+    public boolean addNode(Node node) {
         if (node.getNodeType() == NodeType.ERROR) {
             throw new IllegalArgumentException("Error nodes cannot be added " +
                     "directly to the graph: " + node);
         }
 
-        return getGraph().addNode(node);
+        return this.getGraph().addNode(node);
     }
 
-    public void addPropertyChangeListener(final PropertyChangeListener l) {
-        getGraph().addPropertyChangeListener(l);
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        this.getGraph().addPropertyChangeListener(l);
     }
 
-    public boolean containsEdge(final Edge edge) {
-        return getGraph().containsEdge(edge);
+    public boolean containsEdge(Edge edge) {
+        return this.getGraph().containsEdge(edge);
     }
 
-    public boolean containsNode(final Node node) {
-        return getGraph().containsNode(node);
+    public boolean containsNode(Node node) {
+        return this.getGraph().containsNode(node);
     }
 
     public Set<Edge> getEdges() {
-        return getGraph().getEdges();
+        return this.getGraph().getEdges();
     }
 
-    public List<Edge> getEdges(final Node node) {
-        return getGraph().getEdges(node);
+    public List<Edge> getEdges(Node node) {
+        return this.getGraph().getEdges(node);
     }
 
-    public List<Edge> getEdges(final Node node1, final Node node2) {
-        return getGraph().getEdges(node1, node2);
+    public List<Edge> getEdges(Node node1, Node node2) {
+        return this.getGraph().getEdges(node1, node2);
     }
 
-    public Node getNode(final String name) {
-        return getGraph().getNode(name);
+    public Node getNode(String name) {
+        return this.getGraph().getNode(name);
     }
 
     public int getNumEdges() {
-        return getGraph().getNumEdges();
+        return this.getGraph().getNumEdges();
     }
 
     public int getNumNodes() {
-        return getGraph().getNumNodes();
+        return this.getGraph().getNumNodes();
     }
 
-    public int getNumEdges(final Node node) {
-        return getGraph().getNumEdges(node);
+    public int getNumEdges(Node node) {
+        return this.getGraph().getNumEdges(node);
     }
 
-    public boolean removeEdge(final Edge edge) {
-        if (!getGraph().containsEdge(edge)) {
+    public boolean removeEdge(Edge edge) {
+        if (!this.getGraph().containsEdge(edge)) {
             throw new IllegalArgumentException(
                     "Can only remove edges that are " +
                             "already in the graph: " + edge);
         }
 
         if (Edges.isDirectedEdge(edge)) {
-            final Node head = Edges.getDirectedEdgeHead(edge);
-            final Node tail = Edges.getDirectedEdgeTail(edge);
+            Node head = Edges.getDirectedEdgeHead(edge);
+            Node tail = Edges.getDirectedEdgeTail(edge);
 
             if (tail.getNodeType() != NodeType.ERROR) {
-                getGraph().removeEdge(edge);
-                adjustErrorForNode(head);
+                this.getGraph().removeEdge(edge);
+                this.adjustErrorForNode(head);
                 return true;
             } else {
                 return false;
             }
         } else if (Edges.isBidirectedEdge(edge)) {
-            return getGraph().removeEdge(edge);
+            return this.getGraph().removeEdge(edge);
         } else {
             throw new IllegalArgumentException(
                     "Only directed and bidirected edges allowed.");
         }
     }
 
-    public boolean removeEdges(final Collection<Edge> edges) {
+    public boolean removeEdges(Collection<Edge> edges) {
         boolean change = false;
 
-        for (final Object edge : edges) {
-            final boolean _change = removeEdge((Edge) edge);
+        for (Object edge : edges) {
+            boolean _change = this.removeEdge((Edge) edge);
             change = change || _change;
         }
 
         return change;
     }
 
-    public boolean removeNode(final Node node) {
-        if (!getGraph().containsNode(node)) {
+    public boolean removeNode(Node node) {
+        if (!this.getGraph().containsNode(node)) {
             throw new IllegalArgumentException(
                     "Graph must contain node: " + node);
         }
@@ -629,190 +629,190 @@ public final class SemGraph implements Graph, TetradSerializable {
                             "directly from the graph: " + node);
         }
 
-        final Node errorNode = getErrorNode(node);
+        Node errorNode = this.getErrorNode(node);
 
         if (errorNode != null) {
-            getGraph().removeNode(errorNode);
-            this.errorNodes.remove(errorNode);
-            this.errorNodes.remove(node);
+            this.getGraph().removeNode(errorNode);
+            errorNodes.remove(errorNode);
+            errorNodes.remove(node);
         }
 
-        final List<Node> children = getGraph().getChildren(node);
-        getGraph().removeNode(node);
+        List<Node> children = this.getGraph().getChildren(node);
+        this.getGraph().removeNode(node);
 
         for (int i = 0; i > children.size(); i++) {
-            final Node child = children.get(i);
-            adjustErrorForNode(child);
+            Node child = children.get(i);
+            this.adjustErrorForNode(child);
         }
 
         return true;
     }
 
     public void clear() {
-        getGraph().clear();
+        this.getGraph().clear();
     }
 
-    public boolean removeNodes(final List<Node> nodes) {
-        return getGraph().removeNodes(nodes);
+    public boolean removeNodes(List<Node> nodes) {
+        return this.getGraph().removeNodes(nodes);
     }
 
     public boolean existsDirectedCycle() {
-        return getGraph().existsDirectedCycle();
+        return this.getGraph().existsDirectedCycle();
     }
 
-    public boolean isDirectedFromTo(final Node node1, final Node node2) {
-        return getGraph().isDirectedFromTo(node1, node2);
+    public boolean isDirectedFromTo(Node node1, Node node2) {
+        return this.getGraph().isDirectedFromTo(node1, node2);
     }
 
-    public boolean isUndirectedFromTo(final Node node1, final Node node2) {
-        return getGraph().isUndirectedFromTo(node1, node2);
+    public boolean isUndirectedFromTo(Node node1, Node node2) {
+        return this.getGraph().isUndirectedFromTo(node1, node2);
     }
 
-    public boolean defVisible(final Edge edge) {
-        return getGraph().defVisible(edge);
+    public boolean defVisible(Edge edge) {
+        return this.getGraph().defVisible(edge);
     }
 
-    public boolean isDefNoncollider(final Node node1, final Node node2, final Node node3) {
-        return getGraph().isDefNoncollider(node1, node2, node3);
+    public boolean isDefNoncollider(Node node1, Node node2, Node node3) {
+        return this.getGraph().isDefNoncollider(node1, node2, node3);
     }
 
-    public boolean isDefCollider(final Node node1, final Node node2, final Node node3) {
-        return getGraph().isDefCollider(node1, node2, node3);
+    public boolean isDefCollider(Node node1, Node node2, Node node3) {
+        return this.getGraph().isDefCollider(node1, node2, node3);
     }
 
-    public boolean existsTrek(final Node node1, final Node node2) {
-        return getGraph().existsTrek(node1, node2);
+    public boolean existsTrek(Node node1, Node node2) {
+        return this.getGraph().existsTrek(node1, node2);
     }
 
-    public List<Node> getChildren(final Node node) {
-        return getGraph().getChildren(node);
+    public List<Node> getChildren(Node node) {
+        return this.getGraph().getChildren(node);
     }
 
     public int getConnectivity() {
-        return getGraph().getConnectivity();
+        return this.getGraph().getConnectivity();
     }
 
-    public List<Node> getDescendants(final List<Node> nodes) {
-        return getGraph().getDescendants(nodes);
+    public List<Node> getDescendants(List<Node> nodes) {
+        return this.getGraph().getDescendants(nodes);
     }
 
-    public Edge getEdge(final Node node1, final Node node2) {
-        return getGraph().getEdge(node1, node2);
+    public Edge getEdge(Node node1, Node node2) {
+        return this.getGraph().getEdge(node1, node2);
     }
 
-    public Edge getDirectedEdge(final Node node1, final Node node2) {
-        return getGraph().getDirectedEdge(node1, node2);
+    public Edge getDirectedEdge(Node node1, Node node2) {
+        return this.getGraph().getDirectedEdge(node1, node2);
     }
 
-    public List<Node> getParents(final Node node) {
-        return getGraph().getParents(node);
+    public List<Node> getParents(Node node) {
+        return this.getGraph().getParents(node);
     }
 
-    public int getIndegree(final Node node) {
-        return getGraph().getIndegree(node);
+    public int getIndegree(Node node) {
+        return this.getGraph().getIndegree(node);
     }
 
     @Override
-    public int getDegree(final Node node) {
-        return getGraph().getDegree(node);
+    public int getDegree(Node node) {
+        return this.getGraph().getDegree(node);
     }
 
-    public int getOutdegree(final Node node) {
-        return getGraph().getOutdegree(node);
+    public int getOutdegree(Node node) {
+        return this.getGraph().getOutdegree(node);
     }
 
-    public boolean isAncestorOf(final Node node1, final Node node2) {
-        return getGraph().isAncestorOf(node1, node2);
+    public boolean isAncestorOf(Node node1, Node node2) {
+        return this.getGraph().isAncestorOf(node1, node2);
     }
 
-    public boolean possibleAncestor(final Node node1, final Node node2) {
-        return getGraph().possibleAncestor(node1, node2);
+    public boolean possibleAncestor(Node node1, Node node2) {
+        return this.getGraph().possibleAncestor(node1, node2);
     }
 
-    public List<Node> getAncestors(final List<Node> nodes) {
-        return getGraph().getAncestors(nodes);
+    public List<Node> getAncestors(List<Node> nodes) {
+        return this.getGraph().getAncestors(nodes);
     }
 
-    public boolean isChildOf(final Node node1, final Node node2) {
-        return getGraph().isChildOf(node1, node2);
+    public boolean isChildOf(Node node1, Node node2) {
+        return this.getGraph().isChildOf(node1, node2);
     }
 
-    public boolean isDescendentOf(final Node node1, final Node node2) {
-        return getGraph().isDescendentOf(node1, node2);
+    public boolean isDescendentOf(Node node1, Node node2) {
+        return this.getGraph().isDescendentOf(node1, node2);
     }
 
-    public boolean defNonDescendent(final Node node1, final Node node2) {
-        return getGraph().defNonDescendent(node1, node2);
+    public boolean defNonDescendent(Node node1, Node node2) {
+        return this.getGraph().defNonDescendent(node1, node2);
     }
 
-    public boolean isDConnectedTo(final Node node1, final Node node2,
-                                  final List<Node> conditioningNodes) {
-        return getGraph().isDConnectedTo(node1, node2, conditioningNodes);
+    public boolean isDConnectedTo(Node node1, Node node2,
+                                  List<Node> conditioningNodes) {
+        return this.getGraph().isDConnectedTo(node1, node2, conditioningNodes);
     }
 
-    public boolean isDSeparatedFrom(final Node node1, final Node node2, final List<Node> z) {
-        return getGraph().isDSeparatedFrom(node1, node2, z);
+    public boolean isDSeparatedFrom(Node node1, Node node2, List<Node> z) {
+        return this.getGraph().isDSeparatedFrom(node1, node2, z);
     }
 
-    public boolean possDConnectedTo(final Node node1, final Node node2, final List<Node> z) {
-        return getGraph().possDConnectedTo(node1, node2, z);
+    public boolean possDConnectedTo(Node node1, Node node2, List<Node> z) {
+        return this.getGraph().possDConnectedTo(node1, node2, z);
     }
 
-    public boolean existsInducingPath(final Node node1, final Node node2) {
-        return getGraph().existsInducingPath(node1, node2);
+    public boolean existsInducingPath(Node node1, Node node2) {
+        return this.getGraph().existsInducingPath(node1, node2);
     }
 
-    public boolean isParentOf(final Node node1, final Node node2) {
-        return getGraph().isParentOf(node1, node2);
+    public boolean isParentOf(Node node1, Node node2) {
+        return this.getGraph().isParentOf(node1, node2);
     }
 
-    public boolean isProperAncestorOf(final Node node1, final Node node2) {
-        return getGraph().isProperAncestorOf(node1, node2);
+    public boolean isProperAncestorOf(Node node1, Node node2) {
+        return this.getGraph().isProperAncestorOf(node1, node2);
     }
 
-    public boolean isProperDescendentOf(final Node node1, final Node node2) {
-        return getGraph().isProperDescendentOf(node1, node2);
+    public boolean isProperDescendentOf(Node node1, Node node2) {
+        return this.getGraph().isProperDescendentOf(node1, node2);
     }
 
-    public boolean isExogenous(final Node node) {
-        return getGraph().isExogenous(node) || isShowErrorTerms() && getErrorNode(node) == null;
+    public boolean isExogenous(Node node) {
+        return this.getGraph().isExogenous(node) || this.isShowErrorTerms() && this.getErrorNode(node) == null;
     }
 
     public String toString() {
-        return getGraph().toString();
+        return this.getGraph().toString();
     }
 
 
     public boolean isShowErrorTerms() {
-        return this.showErrorTerms;
+        return showErrorTerms;
     }
 
-    public void setShowErrorTerms(final boolean showErrorTerms) {
+    public void setShowErrorTerms(boolean showErrorTerms) {
         this.showErrorTerms = showErrorTerms;
 
-        final List<Node> nodes = getNodes();
+        List<Node> nodes = this.getNodes();
 
-        for (final Node node : nodes) {
-            if (!isParameterizable(node)) {
+        for (Node node : nodes) {
+            if (!this.isParameterizable(node)) {
                 continue;
             }
 
             if (!(node.getNodeType() == NodeType.ERROR)) {
-                adjustErrorForNode(node);
+                this.adjustErrorForNode(node);
             }
         }
     }
 
     public boolean isTimeLagModel() {
-        return this.graph instanceof TimeLagGraph;
+        return graph instanceof TimeLagGraph;
     }
 
     public TimeLagGraph getTimeLagGraph() {
-        if (!isTimeLagModel()) {
+        if (!this.isTimeLagModel()) {
             throw new IllegalArgumentException("Not a time lag model.");
         }
 
-        return new TimeLagGraph((TimeLagGraph) this.graph);
+        return new TimeLagGraph((TimeLagGraph) graph);
     }
 
     @Override
@@ -821,13 +821,13 @@ public final class SemGraph implements Graph, TetradSerializable {
     }
 
     @Override
-    public List<Node> getSepset(final Node n1, final Node n2) {
-        return this.graph.getSepset(n1, n2);
+    public List<Node> getSepset(Node n1, Node n2) {
+        return graph.getSepset(n1, n2);
     }
 
     @Override
-    public void setNodes(final List<Node> nodes) {
-        this.graph.setNodes(nodes);
+    public void setNodes(List<Node> nodes) {
+        graph.setNodes(nodes);
     }
 
     //========================PRIVATE METHODS===========================//
@@ -837,53 +837,53 @@ public final class SemGraph implements Graph, TetradSerializable {
      *
      * @param node the node which the new error node which be attached to.
      */
-    private void addErrorNode(final Node node) {
-        if (this.errorNodes.get(node) != null) {
+    private void addErrorNode(Node node) {
+        if (errorNodes.get(node) != null) {
             throw new IllegalArgumentException("Node already in map.");
         }
 
-        final List<Node> nodes = getGraph().getNodes();
+        List<Node> nodes = this.getGraph().getNodes();
 
-        Node error = errorNodes().get(node);
+        Node error = this.errorNodes().get(node);
 
         if (error == null) {
             error = new GraphNode("E" + "_" + node.getName());
             error.setCenter(node.getCenterX() + 50, node.getCenterY() + 50);
             error.setNodeType(NodeType.ERROR);
-            this.errorNodes.put(node, error);
+            errorNodes.put(node, error);
         }
 
-        for (final Node possibleError : nodes) {
+        for (Node possibleError : nodes) {
             if (error.getName().equals(possibleError.getName())) {
-                moveAttachedBidirectedEdges(possibleError, node);
-                if (getGraph().containsNode(possibleError)) {
-                    getGraph().removeNode(possibleError);
+                this.moveAttachedBidirectedEdges(possibleError, node);
+                if (this.getGraph().containsNode(possibleError)) {
+                    this.getGraph().removeNode(possibleError);
                 }
-                this.errorNodes.remove(node);
-                this.errorNodes.remove(possibleError);
+                errorNodes.remove(node);
+                errorNodes.remove(possibleError);
             }
         }
 
-        getGraph().addNode(error);
-        this.errorNodes.put(node, error);
-        this.errorNodes.put(error, error);
-        addDirectedEdge(error, node);
+        this.getGraph().addNode(error);
+        errorNodes.put(node, error);
+        errorNodes.put(error, error);
+        this.addDirectedEdge(error, node);
     }
 
     private Map<Node, Node> errorNodes() {
-        if (this.errorNodes == null) {
-            this.errorNodes = new HashMap<>();
+        if (errorNodes == null) {
+            errorNodes = new HashMap<>();
         }
 
-        return this.errorNodes;
+        return errorNodes;
     }
 
-    private void moveAttachedBidirectedEdges(final Node node1, final Node node2) {
+    private void moveAttachedBidirectedEdges(Node node1, Node node2) {
         if (node1 == null || node2 == null) {
             throw new IllegalArgumentException("Node must not be null.");
         }
 
-        final Graph graph = getGraph();
+        Graph graph = this.getGraph();
         List<Edge> edges = graph.getEdges(node1);
 
         if (edges == null) {
@@ -891,12 +891,12 @@ public final class SemGraph implements Graph, TetradSerializable {
             edges = new ArrayList<>();
         }
 
-        final List<Edge> attachedEdges = new LinkedList<>(edges);
+        List<Edge> attachedEdges = new LinkedList<>(edges);
 
-        for (final Edge edge : attachedEdges) {
+        for (Edge edge : attachedEdges) {
             if (Edges.isBidirectedEdge(edge)) {
                 graph.removeEdge(edge);
-                final Node distal = edge.getDistalNode(node1);
+                Node distal = edge.getDistalNode(node1);
                 graph.addBidirectedEdge(node2, distal);
             }
         }
@@ -909,36 +909,36 @@ public final class SemGraph implements Graph, TetradSerializable {
      * node and moves any bidirected edges attached to the node to its error
      * node.
      */
-    private void adjustErrorForNode(final Node node) {
-        if (!this.showErrorTerms) {
+    private void adjustErrorForNode(Node node) {
+        if (!showErrorTerms) {
 //            if (!isShowErrorTerms() || shouldBeExogenous(node)) {
-            final Node errorNode = getErrorNode(node);
+            Node errorNode = this.getErrorNode(node);
 
-            if (errorNode != null && this.graph.containsNode(errorNode)) {
-                moveAttachedBidirectedEdges(errorNode, node);
-                getGraph().removeNode(errorNode);
-                this.errorNodes.remove(node);
-                this.errorNodes.remove(errorNode);
+            if (errorNode != null && graph.containsNode(errorNode)) {
+                this.moveAttachedBidirectedEdges(errorNode, node);
+                this.getGraph().removeNode(errorNode);
+                errorNodes.remove(node);
+                errorNodes.remove(errorNode);
             }
         } else {
-            Node errorNode = getErrorNode(node);
+            Node errorNode = this.getErrorNode(node);
 
             if (errorNode == null) {
-                addErrorNode(node);
+                this.addErrorNode(node);
             }
 
-            errorNode = getErrorNode(node);
-            moveAttachedBidirectedEdges(node, errorNode);
+            errorNode = this.getErrorNode(node);
+            this.moveAttachedBidirectedEdges(node, errorNode);
         }
     }
 
     /**
      * @return true iff the given (non-error) term ought to be exogenous.
      */
-    private boolean shouldBeExogenous(final Node node) {
-        final List<Node> parents = getGraph().getParents(node);
+    private boolean shouldBeExogenous(Node node) {
+        List<Node> parents = this.getGraph().getParents(node);
 
-        for (final Node parent : parents) {
+        for (Node parent : parents) {
             if (parent.getNodeType() != NodeType.ERROR) {
                 return false;
             }
@@ -960,22 +960,22 @@ public final class SemGraph implements Graph, TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (getGraph() == null) {
+        if (this.getGraph() == null) {
             throw new NullPointerException();
         }
     }
 
     private Graph getGraph() {
-        return this.graph;
+        return graph;
     }
 
     public void resetErrorPositions() {
-        for (final Node node : getNodes()) {
-            final Node error = errorNodes().get(node);
+        for (Node node : this.getNodes()) {
+            Node error = this.errorNodes().get(node);
 
             if (error != null) {
                 error.setCenter(node.getCenterX() + 50, node.getCenterY() + 50);
@@ -989,48 +989,48 @@ public final class SemGraph implements Graph, TetradSerializable {
     }
 
     @Override
-    public List<List<Triple>> getTriplesLists(final Node node) {
+    public List<List<Triple>> getTriplesLists(Node node) {
         return null;
     }
 
     @Override
     public boolean isPag() {
-        return this.pag;
+        return pag;
     }
 
     @Override
-    public void setPag(final boolean pag) {
+    public void setPag(boolean pag) {
         this.pag = pag;
     }
 
     @Override
     public boolean isCPDAG() {
-        return this.cpdag;
+        return cpdag;
     }
 
     @Override
-    public void setCPDAG(final boolean cpdag) {
+    public void setCPDAG(boolean cpdag) {
         this.cpdag = cpdag;
     }
 
     @Override
     public Map<String, Object> getAllAttributes() {
-        return this.attributes;
+        return attributes;
     }
 
     @Override
-    public Object getAttribute(final String key) {
-        return this.attributes.get(key);
+    public Object getAttribute(String key) {
+        return attributes.get(key);
     }
 
     @Override
-    public void removeAttribute(final String key) {
-        this.attributes.remove(key);
+    public void removeAttribute(String key) {
+        attributes.remove(key);
     }
 
     @Override
-    public void addAttribute(final String key, final Object value) {
-        this.attributes.put(key, value);
+    public void addAttribute(String key, Object value) {
+        attributes.put(key, value);
     }
 
 }

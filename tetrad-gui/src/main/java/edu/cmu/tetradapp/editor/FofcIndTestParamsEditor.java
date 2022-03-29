@@ -21,10 +21,11 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.search.FindOneFactorClusters;
+import edu.cmu.tetrad.search.FindOneFactorClusters.Algorithm;
 import edu.cmu.tetrad.search.TestType;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
+import edu.cmu.tetradapp.util.DoubleTextField.Filter;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -41,29 +42,29 @@ import java.text.NumberFormat;
 class FofcIndTestParamsEditor extends JComponent {
     private final Parameters fofcParams;
 
-    public FofcIndTestParamsEditor(final Parameters params) {
-        this.fofcParams = params;
+    public FofcIndTestParamsEditor(Parameters params) {
+        fofcParams = params;
 
-        final NumberFormat smallNumberFormat = new DecimalFormat("0E00");
-        final DoubleTextField alphaField = new DoubleTextField(getParams().getDouble("alpha", 0.001), 8,
+        NumberFormat smallNumberFormat = new DecimalFormat("0E00");
+        DoubleTextField alphaField = new DoubleTextField(this.getParams().getDouble("alpha", 0.001), 8,
                 new DecimalFormat("0.0########"), smallNumberFormat, 1e-4);
 
-        alphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(final double value, final double oldValue) {
+        alphaField.setFilter(new Filter() {
+            public double filter(double value, double oldValue) {
                 try {
-                    getParams().set("alpha", 0.001);
+                    FofcIndTestParamsEditor.this.getParams().set("alpha", 0.001);
                     return value;
-                } catch (final IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
-        final JComboBox<TestType> testSelector = new JComboBox<>();
+        JComboBox<TestType> testSelector = new JComboBox<>();
         testSelector.addItem(TestType.TETRAD_DELTA);
         testSelector.addItem(TestType.TETRAD_WISHART);
 
-        TestType tetradTestType = (TestType) getParams().get("tetradTestType", TestType.TETRAD_WISHART);
+        TestType tetradTestType = (TestType) this.getParams().get("tetradTestType", TestType.TETRAD_WISHART);
         if (tetradTestType == TestType.TETRAD_DELTA || tetradTestType == TestType.TETRAD_WISHART) {
             testSelector.setSelectedItem(tetradTestType);
         } else {
@@ -72,65 +73,65 @@ class FofcIndTestParamsEditor extends JComponent {
         }
 
         testSelector.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final TestType index = (TestType) testSelector.getSelectedItem();
+            public void actionPerformed(ActionEvent e) {
+                TestType index = (TestType) testSelector.getSelectedItem();
                 if (index != null) {
-                    getParams().set("tetradTestType", index);
+                    FofcIndTestParamsEditor.this.getParams().set("tetradTestType", index);
                 }
             }
         });
 
-        final JComboBox<FindOneFactorClusters.Algorithm> algorithmSelector = new JComboBox<>();
-        algorithmSelector.addItem(FindOneFactorClusters.Algorithm.SAG);
-        algorithmSelector.addItem(FindOneFactorClusters.Algorithm.GAP);
+        JComboBox<Algorithm> algorithmSelector = new JComboBox<>();
+        algorithmSelector.addItem(Algorithm.SAG);
+        algorithmSelector.addItem(Algorithm.GAP);
 
-        final FindOneFactorClusters.Algorithm algorithmType = (FindOneFactorClusters.Algorithm) getParams().get("fofcAlgorithm",
-                FindOneFactorClusters.Algorithm.GAP);
+        Algorithm algorithmType = (Algorithm) this.getParams().get("fofcAlgorithm",
+                Algorithm.GAP);
         algorithmSelector.setSelectedItem(algorithmType);
 
         algorithmSelector.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final FindOneFactorClusters.Algorithm index = (FindOneFactorClusters.Algorithm) algorithmSelector.getSelectedItem();
+            public void actionPerformed(ActionEvent e) {
+                Algorithm index = (Algorithm) algorithmSelector.getSelectedItem();
                 if (index != null) {
-                    getParams().set("fofcAlgorithm", index);
+                    FofcIndTestParamsEditor.this.getParams().set("fofcAlgorithm", index);
                 }
             }
         });
 
         testSelector.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final JComboBox combo = (JComboBox) e.getSource();
-                final TestType type = (TestType) combo.getSelectedItem();
-                getParams().set("tetradTestType", type);
+            public void actionPerformed(ActionEvent e) {
+                JComboBox combo = (JComboBox) e.getSource();
+                TestType type = (TestType) combo.getSelectedItem();
+                FofcIndTestParamsEditor.this.getParams().set("tetradTestType", type);
             }
         });
 
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        final Box b1 = Box.createHorizontalBox();
+        Box b1 = Box.createHorizontalBox();
         b1.add(new JLabel("Test:"));
         b1.add(Box.createHorizontalGlue());
         b1.add(testSelector);
-        add(b1);
-        add(Box.createHorizontalGlue());
+        this.add(b1);
+        this.add(Box.createHorizontalGlue());
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("Algorithm:"));
         b2.add(Box.createHorizontalGlue());
         b2.add(algorithmSelector);
-        add(b2);
+        this.add(b2);
 
-        add(Box.createHorizontalGlue());
-        final Box b3 = Box.createHorizontalBox();
+        this.add(Box.createHorizontalGlue());
+        Box b3 = Box.createHorizontalBox();
         b3.add(new JLabel("Alpha:"));
         b3.add(Box.createHorizontalGlue());
         b3.add(alphaField);
-        add(b3);
-        add(Box.createHorizontalGlue());
+        this.add(b3);
+        this.add(Box.createHorizontalGlue());
     }
 
     private Parameters getParams() {
-        return this.fofcParams;
+        return fofcParams;
     }
 
 

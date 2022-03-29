@@ -42,12 +42,12 @@ public class TestCyclicity {
     private JDepend jdepend;
 
     private void setUp() {
-        this.jdepend = new JDepend();
+        jdepend = new JDepend();
 
         try {
-            this.jdepend.addDirectory(new File("target/classes/edu/cmu/tetrad").getAbsolutePath());
+            jdepend.addDirectory(new File("target/classes/edu/cmu/tetrad").getAbsolutePath());
 //            jdepend.addDirectory(new File("../../../tetrad/target/classes/edu/cmu/tetradapp").getAbsolutePath());
-        } catch (final IOException e) {
+        } catch (IOException e) {
             fail(e.getMessage());
         }
     }
@@ -58,12 +58,12 @@ public class TestCyclicity {
      */
     @Test
     public void testAllPackagesCycle() {
-        setUp();
+        this.setUp();
 
-        final Collection packages = this.jdepend.analyze();
+        Collection packages = jdepend.analyze();
 
-        for (final Object aPackage : packages) {
-            final JavaPackage p = (JavaPackage) aPackage;
+        for (Object aPackage : packages) {
+            JavaPackage p = (JavaPackage) aPackage;
 
             if (p.containsCycle()) {
                 System.out.println("\n***Package: " + p.getName() + ".");
@@ -73,12 +73,12 @@ public class TestCyclicity {
                                 "\nlist, for each i, some class in package i depends on some " +
                                 "\nclass in package i + 1. Please find the cycle and remove it.");
 
-                final List l = new LinkedList();
+                List l = new LinkedList();
                 p.collectCycle(l);
                 System.out.println();
 
                 for (int j = 0; j < l.size(); j++) {
-                    final JavaPackage pack = (JavaPackage) l.get(j);
+                    JavaPackage pack = (JavaPackage) l.get(j);
                     System.out.println((j + 1) + ".\t" + pack.getName());
                 }
 
@@ -86,7 +86,7 @@ public class TestCyclicity {
             }
         }
 
-        if (this.jdepend.containsCycles()) {
+        if (jdepend.containsCycles()) {
             fail("Package cycle(s) found!");
         }
     }

@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.GSquareTest.Result;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -89,7 +90,7 @@ public final class IndTestGSquare implements IndependenceTest {
     private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
 
-    private boolean verbose = false;
+    private boolean verbose;
 
     /**
      * Constructs a new independence checker to check conditional independence facts for discrete data using a g square
@@ -98,7 +99,7 @@ public final class IndTestGSquare implements IndependenceTest {
      * @param dataSet the discrete data set.
      * @param alpha   the significance level of the tests.
      */
-    public IndTestGSquare(final DataSet dataSet, final double alpha) {
+    public IndTestGSquare(DataSet dataSet, double alpha) {
 
         // The g square test requires as parameters: (a) the data set
         // itself, (b) an array containing the number of values for
@@ -114,53 +115,53 @@ public final class IndTestGSquare implements IndependenceTest {
         this.dataSet = dataSet;
         this.alpha = alpha;
 
-        this.variables = new ArrayList<>(dataSet.getVariables());
+        variables = new ArrayList<>(dataSet.getVariables());
 
-        final int[] numVals = new int[this.variables.size()];
+        int[] numVals = new int[variables.size()];
 
-        for (int i = 0; i < this.variables.size(); i++) {
-            final DiscreteVariable v = (DiscreteVariable) (this.variables.get(i));
+        for (int i = 0; i < variables.size(); i++) {
+            DiscreteVariable v = (DiscreteVariable) (variables.get(i));
             numVals[i] = v.getNumCategories();
         }
 
-        this.gSquareTest = new GSquareTest(dataSet, alpha);
+        gSquareTest = new GSquareTest(dataSet, alpha);
     }
 
     /**
      * Creates a new IndTestGSquare for a subset of the variables.
      */
-    public IndependenceTest indTestSubset(final List vars) {
+    public IndependenceTest indTestSubset(List vars) {
         if (vars.isEmpty()) {
             throw new IllegalArgumentException("Subset may not be empty.");
         }
 
-        final int[] indices = new int[vars.size()];
+        int[] indices = new int[vars.size()];
         int j = -1;
 
-        for (int i = 0; i < this.variables.size(); i++) {
-            if (!vars.contains(this.variables.get(i))) {
+        for (int i = 0; i < variables.size(); i++) {
+            if (!vars.contains(variables.get(i))) {
                 continue;
             }
 
             indices[++j] = i;
         }
 
-        final DataSet newDataSet = this.dataSet.subsetColumns(indices);
-        return new IndTestGSquare(newDataSet, this.alpha);
+        DataSet newDataSet = dataSet.subsetColumns(indices);
+        return new IndTestGSquare(newDataSet, alpha);
     }
 
     /**
      * @return the G Square value.
      */
     public double getGSquare() {
-        return this.gSquare;
+        return gSquare;
     }
 
     /**
      * @return the p value associated with the most recent call of isIndependent.
      */
     public double getPValue() {
-        return this.pValue;
+        return pValue;
     }
 
     /**
@@ -171,7 +172,7 @@ public final class IndTestGSquare implements IndependenceTest {
      * @param z the list of conditioning varNames.
      * @return true iff x _||_ y | z.
      */
-    public boolean isIndependent(final Node x, final Node y, final List<Node> z) {
+    public boolean isIndependent(Node x, Node y, List<Node> z) {
         if (x == null) {
             throw new NullPointerException();
         }
@@ -184,7 +185,7 @@ public final class IndTestGSquare implements IndependenceTest {
             throw new NullPointerException();
         }
 
-        for (final Node node : z) {
+        for (Node node : z) {
             if (node == null) {
                 throw new NullPointerException();
             }
@@ -192,13 +193,13 @@ public final class IndTestGSquare implements IndependenceTest {
 
         // For testing x, y given z1,...,zn, set up an array of length
         // n + 2 containing the indices of these variables in order.
-        final int[] testIndices = new int[2 + z.size()];
+        int[] testIndices = new int[2 + z.size()];
 
-        testIndices[0] = this.variables.indexOf(x);
-        testIndices[1] = this.variables.indexOf(y);
+        testIndices[0] = variables.indexOf(x);
+        testIndices[1] = variables.indexOf(y);
 
         for (int i = 0; i < z.size(); i++) {
-            testIndices[i + 2] = this.variables.indexOf(z.get(i));
+            testIndices[i + 2] = variables.indexOf(z.get(i));
         }
 
         // the following is lame code--need a better test
@@ -211,24 +212,24 @@ public final class IndTestGSquare implements IndependenceTest {
 
         //        System.out.println("Testing " + x + " _||_ " + y + " | " + z);
 
-        final GSquareTest.Result result = this.gSquareTest.calcGSquare(testIndices);
-        this.gSquare = result.getGSquare();
-        this.pValue = result.getPValue();
+        Result result = gSquareTest.calcGSquare(testIndices);
+        gSquare = result.getGSquare();
+        pValue = result.getPValue();
 
         if (result.isIndep()) {
-            final StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder();
             sb.append("INDEPENDENCE ACCEPTED: ");
             sb.append(SearchLogUtils.independenceFact(x, y, z));
-            sb.append("\tp = ").append(IndTestGSquare.nf.format(result.getPValue())).append(
-                    "\tg^2 = ").append(IndTestGSquare.nf.format(result.getGSquare())).append(
+            sb.append("\tp = ").append(nf.format(result.getPValue())).append(
+                    "\tg^2 = ").append(nf.format(result.getGSquare())).append(
                     "\tdf = ").append(result.getDf());
             TetradLogger.getInstance().log("independencies", sb.toString());
         } else {
-            final StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder();
             sb.append("Not independent: ");
             sb.append(SearchLogUtils.independenceFact(x, y, z));
-            sb.append("\tp = ").append(IndTestGSquare.nf.format(result.getPValue())).append(
-                    "\tg^2 = ").append(IndTestGSquare.nf.format(result.getGSquare())).append(
+            sb.append("\tp = ").append(nf.format(result.getPValue())).append(
+                    "\tg^2 = ").append(nf.format(result.getGSquare())).append(
                     "\tdf = ").append(result.getDf());
             TetradLogger.getInstance().log("independencies", sb.toString());
         }
@@ -236,18 +237,18 @@ public final class IndTestGSquare implements IndependenceTest {
         return result.isIndep();
     }
 
-    public boolean isIndependent(final Node x, final Node y, final Node... z) {
-        final List<Node> zList = Arrays.asList(z);
-        return isIndependent(x, y, zList);
+    public boolean isIndependent(Node x, Node y, Node... z) {
+        List<Node> zList = Arrays.asList(z);
+        return this.isIndependent(x, y, zList);
     }
 
-    public boolean isDependent(final Node x, final Node y, final List<Node> z) {
-        return !isIndependent(x, y, z);
+    public boolean isDependent(Node x, Node y, List<Node> z) {
+        return !this.isIndependent(x, y, z);
     }
 
-    public boolean isDependent(final Node x, final Node y, final Node... z) {
-        final List<Node> zList = Arrays.asList(z);
-        return isDependent(x, y, zList);
+    public boolean isDependent(Node x, Node y, Node... z) {
+        List<Node> zList = Arrays.asList(z);
+        return this.isDependent(x, y, zList);
     }
 
     /**
@@ -256,8 +257,8 @@ public final class IndTestGSquare implements IndependenceTest {
      *
      * @param alpha the new significance level.
      */
-    public void setAlpha(final double alpha) {
-        this.gSquareTest.setAlpha(alpha);
+    public void setAlpha(double alpha) {
+        gSquareTest.setAlpha(alpha);
     }
 
     /**
@@ -266,7 +267,7 @@ public final class IndTestGSquare implements IndependenceTest {
      * @return this number.
      */
     public double getAlpha() {
-        return this.gSquareTest.getAlpha();
+        return gSquareTest.getAlpha();
     }
 
     /**
@@ -274,24 +275,24 @@ public final class IndTestGSquare implements IndependenceTest {
      * relations-- that is, all the variables in the given graph or the given data set.
      */
     public List<Node> getVariables() {
-        return Collections.unmodifiableList(this.variables);
+        return Collections.unmodifiableList(variables);
     }
 
     /**
      * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
-        final List<Node> variables = getVariables();
-        final List<String> variableNames = new ArrayList<>();
-        for (final Node variable1 : variables) {
+        List<Node> variables = this.getVariables();
+        List<String> variableNames = new ArrayList<>();
+        for (Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }
         return variableNames;
     }
 
-    public Node getVariable(final String name) {
-        for (int i = 0; i < getVariables().size(); i++) {
-            final Node variable = getVariables().get(i);
+    public Node getVariable(String name) {
+        for (int i = 0; i < this.getVariables().size(); i++) {
+            Node variable = this.getVariables().get(i);
             if (variable.getName().equals(name)) {
                 return variable;
             }
@@ -301,7 +302,7 @@ public final class IndTestGSquare implements IndependenceTest {
     }
 
     public String toString() {
-        return "G Square, alpha = " + IndTestGSquare.nf.format(getAlpha());
+        return "G Square, alpha = " + nf.format(this.getAlpha());
     }
 
     /**
@@ -309,12 +310,12 @@ public final class IndTestGSquare implements IndependenceTest {
      * @param x1 The one variable whose determination by z we want to know.
      * @return true if it is estimated that z determines x or z determines y.
      */
-    public boolean determines(final List<Node> z, final Node x1) {
+    public boolean determines(List<Node> z, Node x1) {
         if (z == null) {
             throw new NullPointerException();
         }
 
-        for (final Node node : z) {
+        for (Node node : z) {
             if (node == null) {
                 throw new NullPointerException();
             }
@@ -322,11 +323,11 @@ public final class IndTestGSquare implements IndependenceTest {
 
         // For testing x, y given z1,...,zn, set up an array of length
         // n + 2 containing the indices of these variables in order.
-        final int[] testIndices = new int[1 + z.size()];
-        testIndices[0] = this.variables.indexOf(x1);
+        int[] testIndices = new int[1 + z.size()];
+        testIndices[0] = variables.indexOf(x1);
 
         for (int i = 0; i < z.size(); i++) {
-            testIndices[i + 1] = this.variables.indexOf(z.get(i));
+            testIndices[i + 1] = variables.indexOf(z.get(i));
         }
 
         // the following is lame code--need a better test
@@ -339,11 +340,11 @@ public final class IndTestGSquare implements IndependenceTest {
 
         //        System.out.println("Testing " + x + " _||_ " + y + " | " + z);
 
-        final boolean determined =
-                this.gSquareTest.isDetermined(testIndices, getDeterminationP());
+        boolean determined =
+                gSquareTest.isDetermined(testIndices, this.getDeterminationP());
 
         if (determined) {
-            final StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder();
             sb.append("Determination found: ").append(x1).append(
                     " is determined by {");
 
@@ -364,15 +365,15 @@ public final class IndTestGSquare implements IndependenceTest {
     }
 
     public double getDeterminationP() {
-        return this.determinationP;
+        return determinationP;
     }
 
-    public void setDeterminationP(final double determinationP) {
+    public void setDeterminationP(double determinationP) {
         this.determinationP = determinationP;
     }
 
     public DataSet getData() {
-        return this.dataSet;
+        return dataSet;
     }
 
     @Override
@@ -397,16 +398,16 @@ public final class IndTestGSquare implements IndependenceTest {
 
     @Override
     public double getScore() {
-        return getPValue();
+        return this.getPValue();
     }
 
     @Override
     public boolean isVerbose() {
-        return this.verbose;
+        return verbose;
     }
 
     @Override
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 }

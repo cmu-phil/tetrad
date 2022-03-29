@@ -42,20 +42,20 @@ public final class TestSessionEditorWorkbench extends TestCase {
     /**
      * Standard constructor for JUnit test cases.
      */
-    public TestSessionEditorWorkbench(final String name) {
+    public TestSessionEditorWorkbench(String name) {
         super(name);
     }
 
     public final void setUp() {
 
-        final Session session = new Session("Test");
-        final SessionWrapper sessionWrapper = new SessionWrapper(session);
+        Session session = new Session("Test");
+        SessionWrapper sessionWrapper = new SessionWrapper(session);
 
-        this.workbench = new SessionEditorWorkbench(sessionWrapper);
+        workbench = new SessionEditorWorkbench(sessionWrapper);
     }
 
     public final void testAddNodes() {
-        this.workbench.setNextButtonType("Graph");
+        workbench.setNextButtonType("Graph");
 
         //        Node tetradNode = this.workbench.getNewModelNode();
 

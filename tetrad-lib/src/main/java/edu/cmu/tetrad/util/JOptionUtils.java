@@ -30,26 +30,26 @@ import java.awt.*;
  * @author Joseph Ramsey
  */
 public class JOptionUtils {
-    private static JComponent COMPONENT = null;
+    private static JComponent COMPONENT;
 
     /**
      * Sets the centering component used throughout. May be null.
      *
      * @param component Ibid.
      */
-    public static void setCenteringComp(final JComponent component) {
-        JOptionUtils.COMPONENT = component;
+    public static void setCenteringComp(JComponent component) {
+        COMPONENT = component;
     }
 
     /**
      * @return Ibid.
      */
     public static JComponent centeringComp() {
-        return JOptionUtils.COMPONENT;
+        return COMPONENT;
     }
 
     public static Frame getCenteringFrame() {
-        for (Container c = JOptionUtils.COMPONENT; c != null; c = c.getParent()) {
+        for (Container c = COMPONENT; c != null; c = c.getParent()) {
             if (c instanceof Frame) {
                 return (Frame) c;
             }

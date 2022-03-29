@@ -11,6 +11,7 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Lofs2;
+import edu.cmu.tetrad.search.Lofs2.Rule;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -35,43 +36,43 @@ import java.util.List;
 public class Skew implements Algorithm, TakesExternalGraph {
 
     static final long serialVersionUID = 23L;
-    private Algorithm algorithm = null;
-    private Graph externalGraph = null;
+    private Algorithm algorithm;
+    private Graph externalGraph;
 
     public Skew() {
     }
 
-    public Skew(final Algorithm algorithm) {
+    public Skew(Algorithm algorithm) {
         this.algorithm = algorithm;
     }
 
     @Override
-    public Graph search(final DataModel dataSet, final Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            final Graph graph = this.algorithm.search(dataSet, parameters);
+            Graph graph = algorithm.search(dataSet, parameters);
 
             if (graph != null) {
-                this.externalGraph = graph;
+                externalGraph = graph;
             } else {
                 throw new IllegalArgumentException("This Skew algorithm needs both data and a graph source as inputs; it \n"
                         + "will orient the edges in the input graph using the data");
             }
 
-            final List<DataSet> dataSets = new ArrayList<>();
+            List<DataSet> dataSets = new ArrayList<>();
             dataSets.add(DataUtils.getContinuousDataSet(dataSet));
 
-            final Lofs2 lofs = new Lofs2(this.externalGraph, dataSets);
-            lofs.setRule(Lofs2.Rule.Skew);
+            Lofs2 lofs = new Lofs2(externalGraph, dataSets);
+            lofs.setRule(Rule.Skew);
 
             return lofs.orient();
         } else {
-            final Skew skew = new Skew(this.algorithm);
-            if (this.externalGraph != null) {
-                skew.setExternalGraph(this.externalGraph);
+            Skew skew = new Skew(algorithm);
+            if (externalGraph != null) {
+                skew.setExternalGraph(externalGraph);
             }
 
-            final DataSet data = (DataSet) dataSet;
-            final GeneralResamplingTest search = new GeneralResamplingTest(data, skew, parameters.getInt(Params.NUMBER_RESAMPLING));
+            DataSet data = (DataSet) dataSet;
+            GeneralResamplingTest search = new GeneralResamplingTest(data, skew, parameters.getInt(Params.NUMBER_RESAMPLING));
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -97,14 +98,14 @@ public class Skew implements Algorithm, TakesExternalGraph {
     }
 
     @Override
-    public Graph getComparisonGraph(final Graph graph) {
+    public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
     @Override
     public String getDescription() {
-        return "Skew" + (this.algorithm != null ? " with initial graph from "
-                + this.algorithm.getDescription() : "");
+        return "Skew" + (algorithm != null ? " with initial graph from "
+                + algorithm.getDescription() : "");
     }
 
     @Override
@@ -114,10 +115,10 @@ public class Skew implements Algorithm, TakesExternalGraph {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
 
-        if (this.algorithm != null && !this.algorithm.getParameters().isEmpty()) {
-            parameters.addAll(this.algorithm.getParameters());
+        if (algorithm != null && !algorithm.getParameters().isEmpty()) {
+            parameters.addAll(algorithm.getParameters());
         }
 
         parameters.add(Params.VERBOSE);
@@ -127,16 +128,16 @@ public class Skew implements Algorithm, TakesExternalGraph {
 
     @Override
     public Graph getExternalGraph() {
-        return this.externalGraph;
+        return externalGraph;
     }
 
     @Override
-    public void setExternalGraph(final Graph externalGraph) {
+    public void setExternalGraph(Graph externalGraph) {
         this.externalGraph = externalGraph;
     }
 
     @Override
-    public void setExternalGraph(final Algorithm algorithm) {
+    public void setExternalGraph(Algorithm algorithm) {
         if (algorithm == null) {
             throw new IllegalArgumentException("This Skew algorithm needs both data and a graph source as inputs; it \n"
                     + "will orient the edges in the input graph using the data.");

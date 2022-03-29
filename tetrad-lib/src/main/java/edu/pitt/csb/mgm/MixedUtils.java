@@ -47,34 +47,34 @@ import java.util.*;
  */
 public class MixedUtils {
 
-    public static int[] getDiscreteInds(final List<Node> nodes) {
-        final List<Integer> indList = new ArrayList<>();
+    public static int[] getDiscreteInds(List<Node> nodes) {
+        List<Integer> indList = new ArrayList<>();
         int curInd = 0;
-        for (final Node n : nodes) {
+        for (Node n : nodes) {
             if (n instanceof DiscreteVariable) {
                 indList.add(curInd);
             }
             curInd++;
         }
 
-        final int[] inds = new int[indList.size()];
+        int[] inds = new int[indList.size()];
         for (int i = 0; i < inds.length; i++) {
             inds[i] = indList.get(i);
         }
         return inds;
     }
 
-    public static int[] getContinuousInds(final List<Node> nodes) {
-        final List<Integer> indList = new ArrayList<>();
+    public static int[] getContinuousInds(List<Node> nodes) {
+        List<Integer> indList = new ArrayList<>();
         int curInd = 0;
-        for (final Node n : nodes) {
+        for (Node n : nodes) {
             if (n instanceof ContinuousVariable) {
                 indList.add(curInd);
             }
             curInd++;
         }
 
-        final int[] inds = new int[indList.size()];
+        int[] inds = new int[indList.size()];
         for (int i = 0; i < inds.length; i++) {
             inds[i] = indList.get(i);
         }
@@ -82,11 +82,11 @@ public class MixedUtils {
     }
 
     //Converts a Dataset with both ContinuousVariables and DiscreteVariables to only ContinuousVariables
-    public static DataSet makeContinuousData(final DataSet dsMix) {
-        final ArrayList<Node> contVars = new ArrayList<>();
-        for (final Node n : dsMix.getVariables()) {
+    public static DataSet makeContinuousData(DataSet dsMix) {
+        ArrayList<Node> contVars = new ArrayList<>();
+        for (Node n : dsMix.getVariables()) {
             if (n instanceof DiscreteVariable) {
-                final ContinuousVariable nc = new ContinuousVariable(n.getName());
+                ContinuousVariable nc = new ContinuousVariable(n.getName());
                 contVars.add(nc);
             } else {
                 contVars.add(n);
@@ -98,11 +98,11 @@ public class MixedUtils {
 
     //takes DataSet of all ContinuousVariables
     //convert variables to discrete if there is an entry with <NodeName, "Disc"> in nodeDists
-    public static DataSet makeMixedData(final DataSet dsCont, final Map<String, String> nodeDists, final int numCategories) {
-        final ArrayList<Node> mixVars = new ArrayList<>();
-        for (final Node n : dsCont.getVariables()) {
+    public static DataSet makeMixedData(DataSet dsCont, Map<String, String> nodeDists, int numCategories) {
+        ArrayList<Node> mixVars = new ArrayList<>();
+        for (Node n : dsCont.getVariables()) {
             if (nodeDists.get(n.getName()).equals("Disc")) {
-                final DiscreteVariable nd = new DiscreteVariable(n.getName(), numCategories);
+                DiscreteVariable nd = new DiscreteVariable(n.getName(), numCategories);
                 mixVars.add(nd);
             } else {
                 mixVars.add(n);
@@ -114,12 +114,12 @@ public class MixedUtils {
 
     //takes DataSet of all ContinuousVariables
     //convert variables to discrete if there is an entry with <NodeName, x> with x > 0, num categories set to x
-    public static DataSet makeMixedData(final DataSet dsCont, final Map<String, Integer> nodeDists) {
-        final ArrayList<Node> mixVars = new ArrayList<>();
-        for (final Node n : dsCont.getVariables()) {
-            final int nC = nodeDists.get(n.getName());
+    public static DataSet makeMixedData(DataSet dsCont, Map<String, Integer> nodeDists) {
+        ArrayList<Node> mixVars = new ArrayList<>();
+        for (Node n : dsCont.getVariables()) {
+            int nC = nodeDists.get(n.getName());
             if (nC > 0) {
-                final DiscreteVariable nd = new DiscreteVariable(n.getName(), nC);
+                DiscreteVariable nd = new DiscreteVariable(n.getName(), nC);
                 mixVars.add(nd);
             } else {
                 mixVars.add(n);
@@ -149,9 +149,9 @@ public class MixedUtils {
      * @param ds dataset to be copied
      * @return
      */
-    public static DataSet deepCopy(final DataSet ds) {
-        final List<Node> vars = new ArrayList<>(ds.getNumColumns());
-        for (final Node n : ds.getVariables()) {
+    public static DataSet deepCopy(DataSet ds) {
+        List<Node> vars = new ArrayList<>(ds.getNumColumns());
+        for (Node n : ds.getVariables()) {
             if (n instanceof ContinuousVariable)
                 vars.add(new ContinuousVariable((ContinuousVariable) n));
             else if (n instanceof DiscreteVariable)
@@ -159,15 +159,15 @@ public class MixedUtils {
             else
                 throw new IllegalArgumentException("Variable type of node " + n + "could not be determined");
         }
-        final DataSet out = new BoxDataSet(new DoubleDataBox(ds.getDoubleData().toArray()), vars);
+        DataSet out = new BoxDataSet(new DoubleDataBox(ds.getDoubleData().toArray()), vars);
 
         return out;
     }
 
     //Takes a mixed dataset and returns only data corresponding to ContinuousVariables in order
-    public static DataSet getContinousData(final DataSet ds) {
-        final ArrayList<Node> contVars = new ArrayList<>();
-        for (final Node n : ds.getVariables()) {
+    public static DataSet getContinousData(DataSet ds) {
+        ArrayList<Node> contVars = new ArrayList<>();
+        for (Node n : ds.getVariables()) {
             if (n instanceof ContinuousVariable)
                 contVars.add(n);
         }
@@ -175,21 +175,21 @@ public class MixedUtils {
     }
 
     //Takes a mixed dataset and returns only data corresponding to DiscreteVariables in order
-    public static DataSet getDiscreteData(final DataSet ds) {
-        final ArrayList<Node> discVars = new ArrayList<>();
-        for (final Node n : ds.getVariables()) {
+    public static DataSet getDiscreteData(DataSet ds) {
+        ArrayList<Node> discVars = new ArrayList<>();
+        for (Node n : ds.getVariables()) {
             if (n instanceof DiscreteVariable)
                 discVars.add(n);
         }
         return ds.subsetColumns(discVars);
     }
 
-    public static int[] getDiscLevels(final DataSet ds) {
+    public static int[] getDiscLevels(DataSet ds) {
         //ArrayList<Integer> levels = new ArrayList<Integer>[];
-        final DataSet discDs = MixedUtils.getDiscreteData(ds);
-        final int[] levels = new int[discDs.getNumColumns()];
+        DataSet discDs = getDiscreteData(ds);
+        int[] levels = new int[discDs.getNumColumns()];
         int i = 0;
-        for (final Node n : discDs.getVariables()) {
+        for (Node n : discDs.getVariables()) {
             levels[i] = ((DiscreteVariable) n).getNumCategories();
             i++;
         }
@@ -202,12 +202,12 @@ public class MixedUtils {
      * @param m
      * @return
      */
-    public static int[] colMax(final DoubleMatrix2D m) {
-        final int[] maxVec = new int[m.columns()];
+    public static int[] colMax(DoubleMatrix2D m) {
+        int[] maxVec = new int[m.columns()];
         for (int i = 0; i < m.columns(); i++) {
             double curmax = -1;
             for (int j = 0; j < m.rows(); j++) {
-                final double curval = m.getQuick(j, i);
+                double curval = m.getQuick(j, i);
                 if (curval > curmax) {
                     curmax = curval;
                 }
@@ -217,10 +217,10 @@ public class MixedUtils {
         return maxVec;
     }
 
-    public static double vecMax(final DoubleMatrix1D vec) {
+    public static double vecMax(DoubleMatrix1D vec) {
         double curMax = Double.NEGATIVE_INFINITY;
         for (int i = 0; i < vec.size(); i++) {
-            final double curVal = vec.getQuick(i);
+            double curVal = vec.getQuick(i);
             if (curVal > curMax) {
                 curMax = curVal;
             }
@@ -228,12 +228,12 @@ public class MixedUtils {
         return curMax;
     }
 
-    public static double numVals(final DoubleMatrix1D vec) {
-        return MixedUtils.valSet(vec).size();
+    public static double numVals(DoubleMatrix1D vec) {
+        return valSet(vec).size();
     }
 
-    public static Set<Double> valSet(final DoubleMatrix1D vec) {
-        final Set<Double> vals = new HashSet<>();
+    public static Set<Double> valSet(DoubleMatrix1D vec) {
+        Set<Double> vals = new HashSet<>();
         for (int i = 0; i < vec.size(); i++) {
             vals.add(vec.getQuick(i));
         }
@@ -242,12 +242,12 @@ public class MixedUtils {
 
     //generate PM from trueGraph for mixed Gaussian and Trinary variables
     //Don't use, buggy
-    public static GeneralizedSemPm GaussianTrinaryPm(final Graph trueGraph, final HashMap<String, String> nodeDists, final int maxSample, final String paramTemplate) throws IllegalStateException {
+    public static GeneralizedSemPm GaussianTrinaryPm(Graph trueGraph, HashMap<String, String> nodeDists, int maxSample, String paramTemplate) throws IllegalStateException {
 
-        final GeneralizedSemPm semPm = new GeneralizedSemPm(trueGraph);
+        GeneralizedSemPm semPm = new GeneralizedSemPm(trueGraph);
         try {
-            final List<Node> variableNodes = semPm.getVariableNodes();
-            final int numVars = variableNodes.size();
+            List<Node> variableNodes = semPm.getVariableNodes();
+            int numVars = variableNodes.size();
 
 
             semPm.setStartsWithParametersTemplate("B", paramTemplate);
@@ -263,11 +263,11 @@ public class MixedUtils {
             final String templateDisc0 = "DiscError(err, .001,.001,.001)";
 
 
-            for (final Node node : variableNodes) {
+            for (Node node : variableNodes) {
 
-                final List<Node> parents = trueGraph.getParents(node);
+                List<Node> parents = trueGraph.getParents(node);
                 //System.out.println("nParents: " + parents.size() );
-                final Node eNode = semPm.getErrorNode(node);
+                Node eNode = semPm.getErrorNode(node);
 
                 //normal and nb work like normal sems
                 String curEx = semPm.getNodeExpressionString(node);
@@ -291,11 +291,11 @@ public class MixedUtils {
                 //now for every discrete parent, swap for discrete params
                 newTemp = "";
                 if (parents.size() != 0) {
-                    for (final Node parNode : parents) {
+                    for (Node parNode : parents) {
                         if (nodeDists.get(parNode.getName()).equals("Disc")) {
                             //String curName = trueGraph.getParents(node).get(0).toString();
-                            final String curName = parNode.getName();
-                            final String disRep = "IF(" + curName + "=0,NEW(D),IF(" + curName + "=1,NEW(D),NEW(D)))";
+                            String curName = parNode.getName();
+                            String disRep = "IF(" + curName + "=0,NEW(D),IF(" + curName + "=1,NEW(D),NEW(D)))";
                             newTemp = curEx.replaceAll("(B[0-9]*\\*" + curName + ")(?![0-9])", disRep);
                         }
                     }
@@ -308,7 +308,7 @@ public class MixedUtils {
                 semPm.setNodeExpression(node, curEx);
                 semPm.setNodeExpression(eNode, errEx);
             }
-        } catch (final ParseException e) {
+        } catch (ParseException e) {
             throw new IllegalStateException("Parse error in fixing parameters.", e);
         }
 
@@ -317,14 +317,14 @@ public class MixedUtils {
 
     //generate PM from trueGraph for mixed Gaussian and Categorical variables
     //public static GeneralizedSemPm GaussianCategoricalPm(Graph trueGraph, HashMap<String, Integer> nodeDists, String paramTemplate) throws IllegalStateException{
-    public static GeneralizedSemPm GaussianCategoricalPm(final Graph trueGraph, final String paramTemplate) throws IllegalStateException {
+    public static GeneralizedSemPm GaussianCategoricalPm(Graph trueGraph, String paramTemplate) throws IllegalStateException {
 
-        final Map<String, Integer> nodeDists = MixedUtils.getNodeDists(trueGraph);
+        Map<String, Integer> nodeDists = getNodeDists(trueGraph);
 
-        final GeneralizedSemPm semPm = new GeneralizedSemPm(trueGraph);
+        GeneralizedSemPm semPm = new GeneralizedSemPm(trueGraph);
         try {
-            final List<Node> variableNodes = semPm.getVariableNodes();
-            final int numVars = variableNodes.size();
+            List<Node> variableNodes = semPm.getVariableNodes();
+            int numVars = variableNodes.size();
 
 
             semPm.setStartsWithParametersTemplate("B", paramTemplate);
@@ -340,11 +340,11 @@ public class MixedUtils {
 
             final String templateDisc0 = "DiscError(err, ";
 
-            for (final Node node : variableNodes) {
+            for (Node node : variableNodes) {
 
-                final List<Node> parents = trueGraph.getParents(node);
+                List<Node> parents = trueGraph.getParents(node);
                 //System.out.println("nParents: " + parents.size() );
-                final Node eNode = semPm.getErrorNode(node);
+                Node eNode = semPm.getErrorNode(node);
 
                 //normal and nb work like normal sems
                 String curEx = semPm.getNodeExpressionString(node);
@@ -354,7 +354,7 @@ public class MixedUtils {
                 //System.out.println("Node: " + node + "Type: " + nodeDists.get(node));
 
                 //dist of 0 means Gaussian
-                final int curDist = nodeDists.get(node.getName());
+                int curDist = nodeDists.get(node.getName());
                 if (curDist == 1)
                     throw new IllegalArgumentException("Dist for node " + node.getName() + " is set to one (i.e. constant) which is not supported.");
 
@@ -384,12 +384,12 @@ public class MixedUtils {
                 //now for every discrete parent, swap for discrete params
                 newTemp = curEx;
                 if (parents.size() != 0) {
-                    for (final Node parNode : parents) {
-                        final int parDist = nodeDists.get(parNode.getName());
+                    for (Node parNode : parents) {
+                        int parDist = nodeDists.get(parNode.getName());
 
                         if (parDist > 0) {
                             //String curName = trueGraph.getParents(node).get(0).toString();
-                            final String curName = parNode.getName();
+                            String curName = parNode.getName();
                             String disRep = "Switch(" + curName;
                             for (int l = 0; l < parDist; l++) {
                                 if (curDist > 0) {
@@ -418,7 +418,7 @@ public class MixedUtils {
                 semPm.setNodeExpression(node, curEx);
                 semPm.setNodeExpression(eNode, errEx);
             }
-        } catch (final ParseException e) {
+        } catch (ParseException e) {
             throw new IllegalStateException("Parse error in fixing parameters.", e);
         }
 
@@ -433,23 +433,23 @@ public class MixedUtils {
      * @param pm
      * @return
      */
-    public static void setStartsWith(final String sta, final String template, final GeneralizedSemPm pm) {
+    public static void setStartsWith(String sta, String template, GeneralizedSemPm pm) {
         try {
             pm.setStartsWithParametersTemplate(sta, template);
-            for (final String param : pm.getParameters()) {
+            for (String param : pm.getParameters()) {
                 if (param.startsWith(sta)) {
                     pm.setParameterExpression(param, template);
                 }
             }
-        } catch (final Throwable t) {
+        } catch (Throwable t) {
             t.printStackTrace();
         }
         return;
     }
 
     //legacy
-    public static GeneralizedSemIm GaussianCategoricalIm(final GeneralizedSemPm pm) {
-        return MixedUtils.GaussianCategoricalIm(pm, true);
+    public static GeneralizedSemIm GaussianCategoricalIm(GeneralizedSemPm pm) {
+        return GaussianCategoricalIm(pm, true);
     }
 
     /**
@@ -465,45 +465,45 @@ public class MixedUtils {
      * @param discParamRand true for random edge generation behavior, false for deterministic
      * @return
      */
-    public static GeneralizedSemIm GaussianCategoricalIm(final GeneralizedSemPm pm, final boolean discParamRand) {
+    public static GeneralizedSemIm GaussianCategoricalIm(GeneralizedSemPm pm, boolean discParamRand) {
 
-        final Map<String, Integer> nodeDists = MixedUtils.getNodeDists(pm.getGraph());
+        Map<String, Integer> nodeDists = getNodeDists(pm.getGraph());
 
-        final GeneralizedSemIm im = new GeneralizedSemIm(pm);
+        GeneralizedSemIm im = new GeneralizedSemIm(pm);
         //System.out.println(im);
-        final List<Node> nodes = pm.getVariableNodes();
+        List<Node> nodes = pm.getVariableNodes();
 
         //this needs to be changed for cyclic graphs...
-        for (final Node n : nodes) {
-            final Set<Node> parNodes = pm.getReferencedNodes(n);
+        for (Node n : nodes) {
+            Set<Node> parNodes = pm.getReferencedNodes(n);
             if (parNodes.size() == 0) {
                 continue;
             }
-            for (final Node par : parNodes) {
+            for (Node par : parNodes) {
                 if (par.getNodeType() == NodeType.ERROR) {
                     continue;
                 }
-                final int cL = nodeDists.get(n.getName());
-                final int pL = nodeDists.get(par.getName());
+                int cL = nodeDists.get(n.getName());
+                int pL = nodeDists.get(par.getName());
 
                 // c-c edges don't need params changed
                 if (cL == 0 && pL == 0) {
                     continue;
                 }
 
-                final List<String> params = MixedUtils.getEdgeParams(n, par, pm);
+                List<String> params = getEdgeParams(n, par, pm);
                 // just use the first parameter as the "weight" for the whole edge
                 double w = im.getParameterValue(params.get(0));
                 // double[] newWeights;
 
                 // d-d edges use one vector and permute edges, could use different strategy
                 if (cL > 0 && pL > 0) {
-                    final double[][] newWeights = new double[cL][pL];
+                    double[][] newWeights = new double[cL][pL];
                     //List<Integer> indices = new ArrayList<Integer>(pL);
                     //PermutationGenerator pg = new PermutationGenerator(pL);
                     //int[] permInd = pg.next();
                     w = Math.abs(w);
-                    final double bgW = w / ((double) pL - 1.0);
+                    double bgW = w / ((double) pL - 1.0);
                     double[] weightVals;
 
                     /*if(discParamRand)
@@ -520,12 +520,12 @@ public class MixedUtils {
                     }
 
                     if (discParamRand)
-                        weightInds = MixedUtils.arrayPermute(weightInds);
+                        weightInds = arrayPermute(weightInds);
 
 
                     for (int i = 0; i < cL; i++) {
                         for (int j = 0; j < pL; j++) {
-                            final int index = i * pL + j;
+                            int index = i * pL + j;
                             if (weightInds[i] == j)
                                 im.setParameterValue(params.get(index), w);
                             else
@@ -534,15 +534,15 @@ public class MixedUtils {
                     }
                     //params for c-d edges
                 } else {
-                    final double[] newWeights;
-                    final int curL = (pL > 0 ? pL : cL);
+                    double[] newWeights;
+                    int curL = (pL > 0 ? pL : cL);
                     if (discParamRand)
-                        newWeights = MixedUtils.generateMixedEdgeParams(w, curL);
+                        newWeights = generateMixedEdgeParams(w, curL);
                     else
-                        newWeights = MixedUtils.evenSplitVector(w, curL);
+                        newWeights = evenSplitVector(w, curL);
 
                     int count = 0;
-                    for (final String p : params) {
+                    for (String p : params) {
                         im.setParameterValue(p, newWeights[count]);
                         count++;
                     }
@@ -560,16 +560,16 @@ public class MixedUtils {
     }
 
     //Given two node names and a parameterized model return list of parameters corresponding to edge between them
-    public static List<String> getEdgeParams(final String s1, final String s2, final GeneralizedSemPm pm) {
-        final Node n1 = pm.getNode(s1);
-        final Node n2 = pm.getNode(s2);
-        return MixedUtils.getEdgeParams(n1, n2, pm);
+    public static List<String> getEdgeParams(String s1, String s2, GeneralizedSemPm pm) {
+        Node n1 = pm.getNode(s1);
+        Node n2 = pm.getNode(s2);
+        return getEdgeParams(n1, n2, pm);
     }
 
     //randomly permute an array of doubles
-    public static double[] arrayPermute(final double[] a) {
-        final double[] out = new double[a.length];
-        final List<Double> l = new ArrayList<>(a.length);
+    public static double[] arrayPermute(double[] a) {
+        double[] out = new double[a.length];
+        List<Double> l = new ArrayList<>(a.length);
         for (int i = 0; i < a.length; i++) {
             l.add(i, a[i]);
         }
@@ -581,9 +581,9 @@ public class MixedUtils {
     }
 
     //randomly permute array of ints
-    public static int[] arrayPermute(final int[] a) {
-        final int[] out = new int[a.length];
-        final List<Integer> l = new ArrayList<>(a.length);
+    public static int[] arrayPermute(int[] a) {
+        int[] out = new int[a.length];
+        List<Integer> l = new ArrayList<>(a.length);
         for (int i = 0; i < a.length; i++) {
             l.add(i, a[i]);
         }
@@ -595,9 +595,9 @@ public class MixedUtils {
     }
 
     //generates a vector of length L that starts with -w and increases with consistent steps to w
-    public static double[] evenSplitVector(final double w, final int L) {
-        final double[] vec = new double[L];
-        final double step = 2.0 * w / (L - 1.0);
+    public static double[] evenSplitVector(double w, int L) {
+        double[] vec = new double[L];
+        double step = 2.0 * w / (L - 1.0);
         for (int i = 0; i < L; i++) {
             vec[i] = -w + i * step;
         }
@@ -605,12 +605,12 @@ public class MixedUtils {
     }
 
     //Given two nodes and a parameterized model return list of parameters corresponding to edge between them
-    public static List<String> getEdgeParams(final Node n1, final Node n2, final GeneralizedSemPm pm) {
+    public static List<String> getEdgeParams(Node n1, Node n2, GeneralizedSemPm pm) {
         //there may be a better way to do this using recursive calls of Expression.getExpressions
-        final Set<String> allParams = pm.getParameters();
+        Set<String> allParams = pm.getParameters();
 
-        final Node child;
-        final Node parent;
+        Node child;
+        Node parent;
         if (pm.getReferencedNodes(n1).contains(n2)) {
             child = n1;
             parent = n2;
@@ -621,28 +621,28 @@ public class MixedUtils {
             return null;
         }
 
-        final java.util.regex.Pattern parPat;
+        java.util.regex.Pattern parPat;
         if (parent instanceof DiscreteVariable) {
             parPat = java.util.regex.Pattern.compile("Switch\\(" + parent.getName() + ",.*?\\)");
         } else {
             parPat = java.util.regex.Pattern.compile("([BC][0-9]*\\*" + parent.getName() + ")(?![0-9])");
         }
 
-        final ArrayList<String> paramList = new ArrayList<>();
-        final String ex = pm.getNodeExpressionString(child);
-        final java.util.regex.Matcher mat = parPat.matcher(ex);
+        ArrayList<String> paramList = new ArrayList<>();
+        String ex = pm.getNodeExpressionString(child);
+        java.util.regex.Matcher mat = parPat.matcher(ex);
         while (mat.find()) {
             String curGroup = mat.group();
             if (parent instanceof DiscreteVariable) {
                 curGroup = curGroup.substring(("Switch(" + parent.getName()).length() + 1, curGroup.length() - 1);
-                final String[] pars = curGroup.split(",");
-                for (final String p : pars) {
+                String[] pars = curGroup.split(",");
+                for (String p : pars) {
                     //if(!allParams.contains(p))
                     //    throw exception;
                     paramList.add(p);
                 }
             } else {
-                final String p = curGroup.split("\\*")[0];
+                String p = curGroup.split("\\*")[0];
                 paramList.add(p);
             }
         }
@@ -664,15 +664,15 @@ public class MixedUtils {
     }
 
     //generates a vector of length L with maximum value w that sums to 0
-    public static double[] generateMixedEdgeParams(final double w, final int L) {
-        final double[] vec = new double[L];
-        final RandomUtil ru = RandomUtil.getInstance();
+    public static double[] generateMixedEdgeParams(double w, int L) {
+        double[] vec = new double[L];
+        RandomUtil ru = RandomUtil.getInstance();
 
         for (int i = 0; i < L; i++) {
             vec[i] = ru.nextUniform(0, 1);
         }
 
-        final double vMean = StatUtils.mean(vec);
+        double vMean = StatUtils.mean(vec);
         double vMax = 0;
         for (int i = 0; i < L; i++) {
             vec[i] = vec[i] - vMean;
@@ -696,25 +696,25 @@ public class MixedUtils {
     public static final String EdgeStatHeader = "TD\tTU\tFL\tFD\tFU\tFPD\tFPU\tFND\tFNU\tBidir";
 
     //assumes Graphs have properly assigned variable types
-    public static int[][] allEdgeStats(final Graph pT, final Graph pE) {
-        final HashMap<String, String> nd = new HashMap<>();
+    public static int[][] allEdgeStats(Graph pT, Graph pE) {
+        HashMap<String, String> nd = new HashMap<>();
 
         //Estimated graph more likely to have correct node types...
-        for (final Node n : pE.getNodes()) {
+        for (Node n : pE.getNodes()) {
             if (n instanceof DiscreteVariable) {
                 nd.put(n.getName(), "Disc");
             } else {
                 nd.put(n.getName(), "Norm");
             }
         }
-        return MixedUtils.allEdgeStats(pT, pE, nd);
+        return allEdgeStats(pT, pE, nd);
     }
 
     // break out stats by node distributions, here only "Norm" and "Disc"
     // so three types of possible edges, cc, cd, dd, output is edge type by stat type
     // counts bidirected
-    public static int[][] allEdgeStats(final Graph pT, final Graph pE, final HashMap<String, String> nodeDists) {
-        final int[][] stats = new int[3][10];
+    public static int[][] allEdgeStats(Graph pT, Graph pE, HashMap<String, String> nodeDists) {
+        int[][] stats = new int[3][10];
         for (int i = 0; i < stats.length; i++) {
             for (int j = 0; j < stats[0].length; j++) {
                 stats[i][j] = 0;
@@ -726,16 +726,16 @@ public class MixedUtils {
 
         //check that variable names are the same...
 
-        final Set<Edge> edgesT = pT.getEdges();
-        final Set<Edge> edgesE = pE.getEdges();
+        Set<Edge> edgesT = pT.getEdges();
+        Set<Edge> edgesE = pE.getEdges();
 
         //differences += Math.abs(e1.size() - e2.size());
 
         //for (int i = 0; i < e1.size(); i++) {
         int edgeType;
-        for (final Edge eT : edgesT) {
-            final Node n1 = pE.getNode(eT.getNode1().getName());
-            final Node n2 = pE.getNode(eT.getNode2().getName());
+        for (Edge eT : edgesT) {
+            Node n1 = pE.getNode(eT.getNode1().getName());
+            Node n2 = pE.getNode(eT.getNode2().getName());
             if (nodeDists.get(n1.getName()).equals("Norm") && nodeDists.get(n2.getName()).equals("Norm")) {
                 edgeType = 0;
             } else if (nodeDists.get(n1.getName()).equals("Disc") && nodeDists.get(n2.getName()).equals("Disc")) {
@@ -744,7 +744,7 @@ public class MixedUtils {
                 edgeType = 1;
             }
 
-            final Edge eE = pE.getEdge(n1, n2);
+            Edge eE = pE.getEdge(n1, n2);
             if (eE == null) {
                 if (eT.isDirected()) {
                     stats[edgeType][7]++; //False Negative Directed -- FND
@@ -768,9 +768,9 @@ public class MixedUtils {
             }
         }
 
-        for (final Edge eE : edgesE) {
-            final Node n1 = pT.getNode(eE.getNode1().getName());
-            final Node n2 = pT.getNode(eE.getNode2().getName());
+        for (Edge eE : edgesE) {
+            Node n1 = pT.getNode(eE.getNode1().getName());
+            Node n2 = pT.getNode(eE.getNode2().getName());
 
             if (nodeDists.get(n1.getName()).equals("Norm") && nodeDists.get(n2.getName()).equals("Norm")) {
                 edgeType = 0;
@@ -783,7 +783,7 @@ public class MixedUtils {
             if (eE.getEndpoint1() == Endpoint.ARROW && eE.getEndpoint2() == Endpoint.ARROW)
                 stats[edgeType][9]++; //bidirected
 
-            final Edge eT = pT.getEdge(n1, n2);
+            Edge eT = pT.getEdge(n1, n2);
             if (eT == null) {
                 if (eE.isDirected()) {
                     stats[edgeType][5]++; //False Positive Directed -- FPD
@@ -796,29 +796,29 @@ public class MixedUtils {
     }
 
     //Utils
-    public static Graph makeMixedGraph(final Graph g, final Map<String, Integer> m) {
-        final List<Node> nodes = g.getNodes();
+    public static Graph makeMixedGraph(Graph g, Map<String, Integer> m) {
+        List<Node> nodes = g.getNodes();
         for (int i = 0; i < nodes.size(); i++) {
-            final Node n = nodes.get(i);
-            final int nL = m.get(n.getName());
+            Node n = nodes.get(i);
+            int nL = m.get(n.getName());
             if (nL > 0) {
-                final Node nNew = new DiscreteVariable(n.getName(), nL);
+                Node nNew = new DiscreteVariable(n.getName(), nL);
                 nodes.set(i, nNew);
             }
         }
 
-        final Graph outG = new EdgeListGraph(nodes);
-        for (final Edge e : g.getEdges()) {
-            final Node n1 = e.getNode1();
-            final Node n2 = e.getNode2();
-            final Edge eNew = new Edge(outG.getNode(n1.getName()), outG.getNode(n2.getName()), e.getEndpoint1(), e.getEndpoint2());
+        Graph outG = new EdgeListGraph(nodes);
+        for (Edge e : g.getEdges()) {
+            Node n1 = e.getNode1();
+            Node n2 = e.getNode2();
+            Edge eNew = new Edge(outG.getNode(n1.getName()), outG.getNode(n2.getName()), e.getEndpoint1(), e.getEndpoint2());
             outG.addEdge(eNew);
         }
 
         return outG;
     }
 
-    public static String stringFrom2dArray(final int[][] arr) {
+    public static String stringFrom2dArray(int[][] arr) {
         String outStr = "";
         for (int i = 0; i < arr.length; i++) {
             for (int j = 0; j < arr[i].length; j++) {
@@ -831,23 +831,23 @@ public class MixedUtils {
         return outStr;
     }
 
-    public static DataSet loadDataSet(final String dir, final String filename) throws IOException {
-        final File file = new File(dir, filename);
+    public static DataSet loadDataSet(String dir, String filename) throws IOException {
+        File file = new File(dir, filename);
         return DataUtils.loadContinuousData(file, "//", '\"' ,
                 "*", true, Delimiter.TAB);
     }
 
-    public static DataSet loadDelim(final String dir, final String filename) throws IOException {
-        final File file = new File(dir, filename);
+    public static DataSet loadDelim(String dir, String filename) throws IOException {
+        File file = new File(dir, filename);
         return DataUtils.loadContinuousData(file, "//", '\"' ,
                 "*", false, Delimiter.TAB);
     }
 
     //Gives a map of number of categories of DiscreteVariables in g. ContinuousVariables are mapped to 0
-    public static Map<String, Integer> getNodeDists(final Graph g) {
-        final HashMap<String, Integer> map = new HashMap<>();
-        final List<Node> nodes = g.getNodes();
-        for (final Node n : nodes) {
+    public static Map<String, Integer> getNodeDists(Graph g) {
+        HashMap<String, Integer> map = new HashMap<>();
+        List<Node> nodes = g.getNodes();
+        for (Node n : nodes) {
             if (n instanceof DiscreteVariable)
                 map.put(n.getName(), ((DiscreteVariable) n).getNumCategories());
             else
@@ -856,8 +856,8 @@ public class MixedUtils {
         return map;
     }
 
-    public static DataSet loadData(final String dir, final String filename) throws IOException {
-        final File file = new File(dir, filename);
+    public static DataSet loadData(String dir, String filename) throws IOException {
+        File file = new File(dir, filename);
         return DataUtils.loadContinuousData(file, "//", '\"' ,
                 "*", true, Delimiter.TAB);
     }
@@ -870,10 +870,10 @@ public class MixedUtils {
      * @param verbose
      * @return
      */
-    public static boolean isColinear(final DataSet ds, final boolean verbose) {
-        final List<Node> nodes = ds.getVariables();
+    public static boolean isColinear(DataSet ds, boolean verbose) {
+        List<Node> nodes = ds.getVariables();
         boolean isco = false;
-        final CorrelationMatrix cor = new CorrelationMatrix(MixedUtils.makeContinuousData(ds));
+        CorrelationMatrix cor = new CorrelationMatrix(makeContinuousData(ds));
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = i + 1; j < nodes.size(); j++) {
                 if (cor.getValue(i, j) == 1) {
@@ -889,24 +889,24 @@ public class MixedUtils {
         return isco;
     }
 
-    public static DoubleMatrix2D graphToMatrix(final Graph graph, final double undirectedWeight, final double directedWeight) {
+    public static DoubleMatrix2D graphToMatrix(Graph graph, double undirectedWeight, double directedWeight) {
         // initialize matrix
-        final int n = graph.getNumNodes();
-        final DoubleMatrix2D matrix = DoubleFactory2D.dense.make(n, n, 0.0);
+        int n = graph.getNumNodes();
+        DoubleMatrix2D matrix = DoubleFactory2D.dense.make(n, n, 0.0);
 
         // map node names in order of appearance
-        final HashMap<Node, Integer> map = new HashMap<>();
+        HashMap<Node, Integer> map = new HashMap<>();
         int i = 0;
-        for (final Node node : graph.getNodes()) {
+        for (Node node : graph.getNodes()) {
             map.put(node, i);
             i++;
         }
 
         // mark edges
-        for (final Edge edge : graph.getEdges()) {
+        for (Edge edge : graph.getEdges()) {
             // if directed find which is parent/child
-            final Node node1 = edge.getNode1();
-            final Node node2 = edge.getNode2();
+            Node node1 = edge.getNode1();
+            Node node2 = edge.getNode2();
 
             //treat bidirected as undirected...
             if (!edge.isDirected() || (edge.getEndpoint1() == Endpoint.ARROW && edge.getEndpoint2() == Endpoint.ARROW)) {
@@ -925,24 +925,24 @@ public class MixedUtils {
     }
 
     //returns undirected skeleton matrix (symmetric
-    public static DoubleMatrix2D skeletonToMatrix(final Graph graph) {
+    public static DoubleMatrix2D skeletonToMatrix(Graph graph) {
         // initialize matrix
-        final int n = graph.getNumNodes();
-        final DoubleMatrix2D matrix = DoubleFactory2D.dense.make(n, n, 0.0);
+        int n = graph.getNumNodes();
+        DoubleMatrix2D matrix = DoubleFactory2D.dense.make(n, n, 0.0);
 
         // map node names in order of appearance
-        final HashMap<Node, Integer> map = new HashMap<>();
+        HashMap<Node, Integer> map = new HashMap<>();
         int i = 0;
-        for (final Node node : graph.getNodes()) {
+        for (Node node : graph.getNodes()) {
             map.put(node, i);
             i++;
         }
 
         // mark edges
-        for (final Edge edge : graph.getEdges()) {
+        for (Edge edge : graph.getEdges()) {
             // if directed find which is parent/child
-            final Node node1 = edge.getNode1();
-            final Node node2 = edge.getNode2();
+            Node node1 = edge.getNode1();
+            Node node2 = edge.getNode2();
 
             matrix.set(map.get(node1), map.get(node2), 1.0);
             matrix.set(map.get(node2), map.get(node1), 1.0);
@@ -952,8 +952,8 @@ public class MixedUtils {
         return matrix;
     }
 
-    public static DoubleMatrix2D graphToMatrix(final Graph graph) {
-        return MixedUtils.graphToMatrix(graph, 1, 1);
+    public static DoubleMatrix2D graphToMatrix(Graph graph) {
+        return graphToMatrix(graph, 1, 1);
     }
 
     /**
@@ -963,7 +963,7 @@ public class MixedUtils {
      * @param name
      * @return
      */
-    public static IndependenceTest IndTestFromString(final String name, final DataSet data, final double alpha) {
+    public static IndependenceTest IndTestFromString(String name, DataSet data, double alpha) {
 
         IndependenceTest test = null;
 
@@ -981,28 +981,28 @@ public class MixedUtils {
             Class cl = null;
             try {
                 cl = Class.forName("edu.cmu.tetrad.search." + name);
-            } catch (final ClassNotFoundException e) {
+            } catch (ClassNotFoundException e) {
                 System.out.println("Not found: " + "edu.cmu.tetrad.search." + name);
-            } catch (final Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
 
             if (cl == null) {
                 try {
                     cl = Class.forName("edu.pitt.csb.mgm." + name);
-                } catch (final ClassNotFoundException e) {
+                } catch (ClassNotFoundException e) {
                     throw new IllegalArgumentException("-test argument not recognized");
-                } catch (final Exception e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
 
             try {
-                final Constructor con = cl.getConstructor(DataSet.class, double.class);
+                Constructor con = cl.getConstructor(DataSet.class, double.class);
                 test = (IndependenceTest) con.newInstance(data, alpha);
-            } catch (final NoSuchMethodException e) {
+            } catch (NoSuchMethodException e) {
                 System.err.println("Independence Test: " + name + " not found");
-            } catch (final Exception e) {
+            } catch (Exception e) {
                 System.err.println("Independence Test: " + name + " found but not constructed");
                 e.printStackTrace();
             }
@@ -1012,19 +1012,19 @@ public class MixedUtils {
     }
 
     //main for testing
-    public static void main(final String[] args) {
+    public static void main(String[] args) {
         //Graph g = GraphConverter.convert("X1-->X2,X2-->X3,X3-->X4");
         Graph g = GraphConverter.convert("X1-->X2,X2-->X3,X3-->X4, X5-->X4");
         //simple graph pm im gen example
 
-        final HashMap<String, Integer> nd = new HashMap<>();
+        HashMap<String, Integer> nd = new HashMap<>();
         nd.put("X1", 0);
         nd.put("X2", 0);
         nd.put("X3", 4);
         nd.put("X4", 4);
         nd.put("X5", 0);
 
-        g = MixedUtils.makeMixedGraph(g, nd);
+        g = makeMixedGraph(g, nd);
 
         /*Graph g = new EdgeListGraph();
         g.addNode(new ContinuousVariable("X1"));
@@ -1037,15 +1037,15 @@ public class MixedUtils {
         g.addDirectedEdge(g.getNode("X3"), g.getNode("X4"));
         g.addDirectedEdge(g.getNode("X4"), g.getNode("X5"));
         */
-        final GeneralizedSemPm pm = MixedUtils.GaussianCategoricalPm(g, "Split(-1.5,-1,1,1.5)");
+        GeneralizedSemPm pm = GaussianCategoricalPm(g, "Split(-1.5,-1,1,1.5)");
         System.out.println(pm);
 
         System.out.println("STARTS WITH");
         System.out.println(pm.getStartsWithParameterTemplate("C"));
 
         try {
-            MixedUtils.setStartsWith("C", "Split(-.9,-.5,.5,.9)", pm);
-        } catch (final Throwable t) {
+            setStartsWith("C", "Split(-.9,-.5,.5,.9)", pm);
+        } catch (Throwable t) {
             t.printStackTrace();
         }
 
@@ -1056,11 +1056,11 @@ public class MixedUtils {
         System.out.println(pm);
 
 
-        final GeneralizedSemIm im = MixedUtils.GaussianCategoricalIm(pm);
+        GeneralizedSemIm im = GaussianCategoricalIm(pm);
         System.out.println(im);
 
         final int samps = 15;
-        final DataSet ds = im.simulateDataFisher(samps);
+        DataSet ds = im.simulateDataFisher(samps);
         System.out.println(ds);
 
         System.out.println("num cats " + ((DiscreteVariable) g.getNode("X4")).getNumCategories());

@@ -69,52 +69,52 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
      *
      * @param simulation
      */
-    public SimulationEditor(final Simulation simulation) {
+    public SimulationEditor(Simulation simulation) {
         this.simulation = simulation;
-        this.dataEditor = createDataEditor(simulation);
-        this.simulationGraphEditor = createSimulationGraphEditor(simulation);
-        this.parameterTab = new ParameterTab(simulation);
+        dataEditor = this.createDataEditor(simulation);
+        simulationGraphEditor = this.createSimulationGraphEditor(simulation);
+        parameterTab = new ParameterTab(simulation);
 
-        initComponents();
-        showTab();
+        this.initComponents();
+        this.showTab();
     }
 
     private void initComponents() {
-        this.parameterTab.addPropertyChangeListener(this);
+        parameterTab.addPropertyChangeListener(this);
 
-        this.tabbedPane.addTab("Simulation Setup", new PaddingPanel(this.parameterTab));
-        this.tabbedPane.addTab("True Graph", this.simulationGraphEditor);
-        this.tabbedPane.addTab("Data", this.dataEditor);
-        this.tabbedPane.setPreferredSize(new Dimension(800, 600));
+        tabbedPane.addTab("Simulation Setup", new PaddingPanel(parameterTab));
+        tabbedPane.addTab("True Graph", simulationGraphEditor);
+        tabbedPane.addTab("Data", dataEditor);
+        tabbedPane.setPreferredSize(new Dimension(800, 600));
 
-        setLayout(new BorderLayout());
-        add(createMenuBar(), BorderLayout.NORTH);
-        add(this.tabbedPane, BorderLayout.CENTER);
+        this.setLayout(new BorderLayout());
+        this.add(this.createMenuBar(), BorderLayout.NORTH);
+        this.add(tabbedPane, BorderLayout.CENTER);
     }
 
     private void showTab() {
-        if (this.simulation.getSimulation() == null) {
-            this.tabbedPane.setEnabledAt(0, true);
-            this.tabbedPane.setEnabledAt(1, false);
-            this.tabbedPane.setEnabledAt(2, false);
+        if (simulation.getSimulation() == null) {
+            tabbedPane.setEnabledAt(0, true);
+            tabbedPane.setEnabledAt(1, false);
+            tabbedPane.setEnabledAt(2, false);
         } else {
-            if (this.simulation.getDataModelList().size() > 0) {
-                this.tabbedPane.setEnabledAt(0, true);
-                this.tabbedPane.setEnabledAt(1, true);
-                this.tabbedPane.setEnabledAt(2, true);
+            if (simulation.getDataModelList().size() > 0) {
+                tabbedPane.setEnabledAt(0, true);
+                tabbedPane.setEnabledAt(1, true);
+                tabbedPane.setEnabledAt(2, true);
 //                tabbedPane.setSelectedIndex(2);
             } else {
-                this.tabbedPane.setEnabledAt(0, true);
-                this.tabbedPane.setEnabledAt(1, false);
-                this.tabbedPane.setEnabledAt(2, false);
+                tabbedPane.setEnabledAt(0, true);
+                tabbedPane.setEnabledAt(1, false);
+                tabbedPane.setEnabledAt(2, false);
             }
         }
     }
 
-    private SimulationGraphEditor createSimulationGraphEditor(final Simulation simulation) {
-        final SimulationGraphEditor graphEditor = new SimulationGraphEditor(Collections.<Graph>emptyList());
+    private SimulationGraphEditor createSimulationGraphEditor(Simulation simulation) {
+        SimulationGraphEditor graphEditor = new SimulationGraphEditor(Collections.<Graph>emptyList());
         if (simulation.getSimulation() != null) {
-            final List<Graph> trueGraphs = new ArrayList<>();
+            List<Graph> trueGraphs = new ArrayList<>();
             for (int i = 0; i < simulation.getSimulation().getNumDataModels(); i++) {
                 trueGraphs.add(simulation.getSimulation().getTrueGraph(i));
             }
@@ -125,17 +125,17 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         return graphEditor;
     }
 
-    private DataEditor createDataEditor(final Simulation simulation) {
-        final edu.cmu.tetrad.algcomparison.simulation.Simulation sim = simulation.getSimulation();
+    private DataEditor createDataEditor(Simulation simulation) {
+        edu.cmu.tetrad.algcomparison.simulation.Simulation sim = simulation.getSimulation();
         if (sim == null) {
             return new DataEditor(JTabbedPane.LEFT);
         } else {
-            final DataModelList dataModelList = new DataModelList();
+            DataModelList dataModelList = new DataModelList();
             for (int i = 0; i < sim.getNumDataModels(); i++) {
                 dataModelList.add(sim.getDataModel(i));
             }
 
-            final DataWrapper wrapper = new DataWrapper(new Parameters());
+            DataWrapper wrapper = new DataWrapper(new Parameters());
             wrapper.setDataModelList(dataModelList);
 
             return new DataEditor(wrapper, false, JTabbedPane.LEFT);
@@ -143,13 +143,13 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
     }
 
     private JMenuBar createMenuBar() {
-        final JMenuItem saveSimulation = new JMenuItem("Save Simulation");
-        saveSimulation.addActionListener(createSaveSimulationActionListener());
+        JMenuItem saveSimulation = new JMenuItem("Save Simulation");
+        saveSimulation.addActionListener(this.createSaveSimulationActionListener());
 
-        final JMenu file = new JMenu("File");
+        JMenu file = new JMenu("File");
         file.add(saveSimulation);
 
-        final JMenuBar menuBar = new JMenuBar();
+        JMenuBar menuBar = new JMenuBar();
         menuBar.add(file);
 
         return menuBar;
@@ -157,44 +157,44 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
 
     private ActionListener createSaveSimulationActionListener() {
         return e -> {
-            final JFileChooser chooser = new JFileChooser();
-            final String sessionSaveLocation = Preferences.userRoot().get("fileSaveLocation", "");
+            JFileChooser chooser = new JFileChooser();
+            String sessionSaveLocation = Preferences.userRoot().get("fileSaveLocation", "");
             chooser.setCurrentDirectory(new File(sessionSaveLocation));
             chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-            final int ret = chooser.showSaveDialog(JOptionUtils.centeringComp());
+            int ret = chooser.showSaveDialog(JOptionUtils.centeringComp());
             if (!(ret == JFileChooser.APPROVE_OPTION)) {
                 return;
             }
 
-            final File selectedFile = chooser.getSelectedFile();
+            File selectedFile = chooser.getSelectedFile();
             if (selectedFile == null) {
                 return;
             }
 
-            new Comparison().saveToFilesSingleSimulation(selectedFile.getAbsolutePath(), this.simulation.getSimulation(),
-                    this.simulation.getParams());
+            new Comparison().saveToFilesSingleSimulation(selectedFile.getAbsolutePath(), simulation.getSimulation(),
+                    simulation.getParams());
         };
     }
 
     @Override
-    public void propertyChange(final PropertyChangeEvent evt) {
+    public void propertyChange(PropertyChangeEvent evt) {
         switch (evt.getPropertyName()) {
             case "modelChanged":
-                final List<Graph> trueGraphs = new ArrayList<>();
-                for (int i = 0; i < this.simulation.getSimulation().getNumDataModels(); i++) {
-                    trueGraphs.add(this.simulation.getSimulation().getTrueGraph(i));
+                List<Graph> trueGraphs = new ArrayList<>();
+                for (int i = 0; i < simulation.getSimulation().getNumDataModels(); i++) {
+                    trueGraphs.add(simulation.getSimulation().getTrueGraph(i));
                 }
-                this.simulationGraphEditor.replace(trueGraphs);
+                simulationGraphEditor.replace(trueGraphs);
 
-                final DataWrapper wrapper = new DataWrapper(new Parameters());
-                wrapper.setDataModelList(this.simulation.getDataModelList());
-                this.tabbedPane.setComponentAt(2, new DataEditor(wrapper, false, JTabbedPane.LEFT));
+                DataWrapper wrapper = new DataWrapper(new Parameters());
+                wrapper.setDataModelList(simulation.getDataModelList());
+                tabbedPane.setComponentAt(2, new DataEditor(wrapper, false, JTabbedPane.LEFT));
 
-                showTab();
-                firePropertyChange("modelChanged", null, null);
+                this.showTab();
+                this.firePropertyChange("modelChanged", null, null);
                 break;
             case "refreshParameters":
-                showTab();
+                this.showTab();
                 break;
         }
     }
@@ -205,7 +205,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
     }
 
     @Override
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
 
     }
 

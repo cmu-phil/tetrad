@@ -24,8 +24,8 @@ package edu.cmu.tetrad.gene.tetrad.gene.algorithm.urchin;
 import edu.cmu.tetrad.util.RandomUtil;
 
 public class NbGeneOr extends AbstractNbComponent {
-    public NbGeneOr(final double factor, final double power, final NbComponent[] parents,
-                    final int[] inhibitExcite, final String name, final double sd) {
+    public NbGeneOr(double factor, double power, NbComponent[] parents,
+                    int[] inhibitExcite, String name, double sd) {
         super(factor, power, parents, inhibitExcite, name);
     }
 
@@ -33,30 +33,30 @@ public class NbGeneOr extends AbstractNbComponent {
         //System.out.println("Updating " + name);
         double sum = 0.0;
 
-        if (getInhibitExcite()[0] > 0) {
-            sum = getParents()[0].getValue() /
-                    (getParents()[0].getValue() + 1.0);
+        if (this.getInhibitExcite()[0] > 0) {
+            sum = this.getParents()[0].getValue() /
+                    (this.getParents()[0].getValue() + 1.0);
         } else {
-            sum = 1.0 - (getParents()[0].getValue() /
-                    (getParents()[0].getValue() + 1.0));
+            sum = 1.0 - (this.getParents()[0].getValue() /
+                    (this.getParents()[0].getValue() + 1.0));
         }
 
-        for (int i = 1; i < getNparents(); i++) {
-            final double v = getParents()[i].getValue();
-            if (getInhibitExcite()[i] > 0) {
+        for (int i = 1; i < this.getNparents(); i++) {
+            double v = this.getParents()[i].getValue();
+            if (this.getInhibitExcite()[i] > 0) {
                 sum += v / (v + 1.0) * (1.0 - sum);
             } else {
                 sum += (1.0 - (v / (v + 1.0))) * (1.0 - sum);
             }
         }
-        setValue(sum * getFactor());
+        this.setValue(sum * this.getFactor());
 
-        if (getSd() == 0.0) {
+        if (this.getSd() == 0.0) {
             return;
         } else {
-            final double r = 1.0 +
-                    RandomUtil.getInstance().nextNormal(0, 1) * getSd();
-            setValue(getValue() * r);
+            double r = 1.0 +
+                    RandomUtil.getInstance().nextNormal(0, 1) * this.getSd();
+            this.setValue(this.getValue() * r);
         }
 
     }

@@ -102,7 +102,7 @@ public final class GraphGeneratorRandomNumEdges {
     /**
      * Parent of random edge. 0 is the default parent node.
      */
-    private int randomParent = 0;
+    private int randomParent;
 
     /**
      * Child of random edge. 0 is the default child node.
@@ -116,29 +116,29 @@ public final class GraphGeneratorRandomNumEdges {
      *
      * @param structure One of ANY_DAG, POLYTREE, or CONNECTED_DAG.
      */
-    public GraphGeneratorRandomNumEdges(final int structure) {
+    public GraphGeneratorRandomNumEdges(int structure) {
         switch (structure) {
-            case GraphGeneratorRandomNumEdges.ANY_DAG:
+            case ANY_DAG:
                 break;
             default:
                 throw new IllegalArgumentException("Unrecognized structure.");
         }
 
         this.structure = structure;
-        this.numNodes = 4;
-        this.minEdges = 0;
-        this.maxEdges = this.numNodes - 1;
+        numNodes = 4;
+        minEdges = 0;
+        maxEdges = numNodes - 1;
 
         // Determining the number of iterations for the chain to converge is a
         // difficult task. This value follows the DagAlea (see Melancon;Bousque,
         // 2000) suggestion, and we verified that this number is satisfatory. (Ide.)
-        this.numIterations = 6 * this.numNodes * this.numNodes;
+        numIterations = 6 * numNodes * numNodes;
     }
 
     //===============================PUBLIC METHODS========================//
 
     private int getNumNodes() {
-        return this.numNodes;
+        return numNodes;
     }
 
     /**
@@ -147,41 +147,41 @@ public final class GraphGeneratorRandomNumEdges {
      *
      * @param numNodes Must be an integer >= 4.
      */
-    public void setNumNodes(final int numNodes) {
+    public void setNumNodes(int numNodes) {
         if (numNodes < 4) {
             throw new IllegalArgumentException("Number of nodes must be >= 4.");
         }
 
         this.numNodes = numNodes;
-        this.maxEdges = numNodes - 1;
-        this.numIterations = 6 * numNodes * numNodes;
-        this.parentMatrix = null;
-        this.childMatrix = null;
+        maxEdges = numNodes - 1;
+        numIterations = 6 * numNodes * numNodes;
+        parentMatrix = null;
+        childMatrix = null;
     }
 
     private int getMaxEdges() {
-        return this.maxEdges;
+        return maxEdges;
     }
 
     private int getNumIterations() {
-        return this.numIterations;
+        return numIterations;
     }
 
     private int getStructure() {
-        return this.structure;
+        return structure;
     }
 
 
     private int getMinEdges() {
-        return this.minEdges;
+        return minEdges;
     }
 
-    public void setMinEdges(final int minEdges) {
+    public void setMinEdges(int minEdges) {
         if (minEdges < 0) {
             throw new IllegalArgumentException("Min edges must be >= 0.");
         }
 
-        if (minEdges >= this.maxEdges - 2) {
+        if (minEdges >= maxEdges - 2) {
             throw new IllegalArgumentException(
                     "Min edges must be < max edges - 1.");
         }
@@ -190,7 +190,7 @@ public final class GraphGeneratorRandomNumEdges {
     }
 
     private int getMaxPossibleEdges() {
-        return getNumNodes() * (getNumNodes() - 1) / 2;
+        return this.getNumNodes() * (this.getNumNodes() - 1) / 2;
     }
 
     public void setMaxEdges(int maxEdges) {
@@ -198,13 +198,13 @@ public final class GraphGeneratorRandomNumEdges {
             throw new IllegalArgumentException("Max edges must be >= 1.");
         }
 
-        if (maxEdges <= getMinEdges() + 2) {
+        if (maxEdges <= this.getMinEdges() + 2) {
             throw new IllegalArgumentException(
                     "Max edgs must be > max edges - 2.");
         }
 
-        if (maxEdges > getMaxPossibleEdges()) {
-            maxEdges = getMaxPossibleEdges();
+        if (maxEdges > this.getMaxPossibleEdges()) {
+            maxEdges = this.getMaxPossibleEdges();
 //            System.out.println("\nThe value maxEdges = " +
 //                    maxEdges + " is too high; it has been set to the maximum " +
 //                    "number of possible edges, which is " +
@@ -215,35 +215,35 @@ public final class GraphGeneratorRandomNumEdges {
     }
 
     public void generate() {
-        if (GraphGeneratorRandomNumEdges.ANY_DAG == getStructure()) {
-            generateArbitraryDag();
+        if (ANY_DAG == this.getStructure()) {
+            this.generateArbitraryDag();
         } else {
             throw new IllegalStateException("Unknown structure type.");
         }
     }
 
     public Dag getDag() {
-        final Dag dag = new Dag();
+        Dag dag = new Dag();
 
-        final List<Node> nodes = new ArrayList<>();
-        final NumberFormat nf = NumberFormat.getInstance();
+        List<Node> nodes = new ArrayList<>();
+        NumberFormat nf = NumberFormat.getInstance();
         nf.setMaximumFractionDigits(0);
 
-        final int numDigits = (int) Math.ceil(Math.log(this.numNodes) / Math.log(10.0));
+        int numDigits = (int) Math.ceil(Math.log(numNodes) / Math.log(10.0));
         nf.setMinimumIntegerDigits(numDigits);
 
-        for (int i = 1; i <= getNumNodes(); i++) {
-            final GraphNode node = new GraphNode("X" + nf.format(i));
+        for (int i = 1; i <= this.getNumNodes(); i++) {
+            GraphNode node = new GraphNode("X" + nf.format(i));
             dag.addNode(node);
             nodes.add(node);
         }
 
-        for (int i = 0; i < getNumNodes(); i++) {
-            final Node child = nodes.get(i);
+        for (int i = 0; i < this.getNumNodes(); i++) {
+            Node child = nodes.get(i);
 
-            if (this.parentMatrix[i][0] != 1) {
-                for (int j = 1; j < this.parentMatrix[i][0]; j++) {
-                    final Node parent = nodes.get(this.parentMatrix[i][j]);
+            if (parentMatrix[i][0] != 1) {
+                for (int j = 1; j < parentMatrix[i][0]; j++) {
+                    Node parent = nodes.get(parentMatrix[i][j]);
                     dag.addDirectedEdge(parent, child);
                 }
             }
@@ -254,9 +254,9 @@ public final class GraphGeneratorRandomNumEdges {
     }
 
     public String toString() {
-        final String buf = "\nStructural information for generated graph:" +
-                "\n\tNumber of nodes:" + getNumNodes() +
-                "\n\tNumber of transitions between samples:" + getNumIterations();
+        String buf = "\nStructural information for generated graph:" +
+                "\n\tNumber of nodes:" + this.getNumNodes() +
+                "\n\tNumber of transitions between samples:" + this.getNumIterations();
 
         return buf;
     }
@@ -264,21 +264,21 @@ public final class GraphGeneratorRandomNumEdges {
     //================================PRIVATE METHODS======================//
 
     private void generateArbitraryDag() {
-        initializeGraphAsEmpty();
+        this.initializeGraphAsEmpty();
 
         int numEdges = 0;
 
-        for (int i = 0; i < getNumIterations(); i++) {
-            sampleEdge();
+        for (int i = 0; i < this.getNumIterations(); i++) {
+            this.sampleEdge();
 
-            if (edgeExists()) {
-                if (numEdges > getMinEdges()) {
-                    removeEdge();
+            if (this.edgeExists()) {
+                if (numEdges > this.getMinEdges()) {
+                    this.removeEdge();
                     numEdges--;
                 }
             } else {
-                if ((numEdges < getMaxEdges() && isAcyclic())) {
-                    addEdge();
+                if ((numEdges < this.getMaxEdges() && this.isAcyclic())) {
+                    this.addEdge();
                     numEdges++;
                 }
             }
@@ -289,8 +289,8 @@ public final class GraphGeneratorRandomNumEdges {
      * @return true if the edge parent-->child exists in the graph.
      */
     private boolean edgeExists() {
-        for (int i = 1; i < this.parentMatrix[this.randomChild][0]; i++) {
-            if (this.parentMatrix[this.randomChild][i] == this.randomParent) {
+        for (int i = 1; i < parentMatrix[randomChild][0]; i++) {
+            if (parentMatrix[randomChild][i] == randomParent) {
                 return true;
             }
         }
@@ -302,27 +302,27 @@ public final class GraphGeneratorRandomNumEdges {
      * This method only works after adding an edge, not after removing an edge.
      */
     private boolean isAcyclic() {
-        final boolean[] visited = new boolean[getNumNodes()];
+        boolean[] visited = new boolean[this.getNumNodes()];
         boolean noCycle = true;
-        final int[] list = new int[getNumNodes() + 1];
+        int[] list = new int[this.getNumNodes() + 1];
         int index = 0;
         int lastIndex = 1;
-        list[0] = this.randomParent;
-        visited[this.randomParent] = true;
+        list[0] = randomParent;
+        visited[randomParent] = true;
         while (index < lastIndex && noCycle) {
-            final int currentNode = list[index];
+            int currentNode = list[index];
             int i = 1;
 
             // verify parents of getModel node
-            while ((i < this.parentMatrix[currentNode][0]) && noCycle) {
-                if (!visited[this.parentMatrix[currentNode][i]]) {
-                    if (this.parentMatrix[currentNode][i] != this.randomChild) {
-                        list[lastIndex] = this.parentMatrix[currentNode][i];
+            while ((i < parentMatrix[currentNode][0]) && noCycle) {
+                if (!visited[parentMatrix[currentNode][i]]) {
+                    if (parentMatrix[currentNode][i] != randomChild) {
+                        list[lastIndex] = parentMatrix[currentNode][i];
                         lastIndex++;
                     } else {
                         noCycle = false;
                     }
-                    visited[this.parentMatrix[currentNode][i]] = true;
+                    visited[parentMatrix[currentNode][i]] = true;
                 } // end of if(visited)
                 i++;
             }
@@ -336,20 +336,20 @@ public final class GraphGeneratorRandomNumEdges {
      * Initializes the graph to have no edges.
      */
     private void initializeGraphAsEmpty() {
-        final int max = getNumNodes();
+        int max = this.getNumNodes();
 
-        this.parentMatrix = new int[getNumNodes()][max];
-        this.childMatrix = new int[getNumNodes()][max];
+        parentMatrix = new int[this.getNumNodes()][max];
+        childMatrix = new int[this.getNumNodes()][max];
 
-        for (int i = 0; i < getNumNodes(); i++) {
-            this.parentMatrix[i][0] = 1; //set first node
-            this.childMatrix[i][0] = 1;
+        for (int i = 0; i < this.getNumNodes(); i++) {
+            parentMatrix[i][0] = 1; //set first node
+            childMatrix[i][0] = 1;
         }
 
-        for (int i = 0; i < getNumNodes(); i++) {
+        for (int i = 0; i < this.getNumNodes(); i++) {
             for (int j = 1; j < max; j++) {
-                this.parentMatrix[i][j] = -5; //set first node
-                this.childMatrix[i][j] = -5;
+                parentMatrix[i][j] = -5; //set first node
+                childMatrix[i][j] = -5;
             }
         }
     }
@@ -358,14 +358,14 @@ public final class GraphGeneratorRandomNumEdges {
      * Sets randomParent-->randomChild to a random edge, chosen uniformly.
      */
     private void sampleEdge() {
-        final int rand = RandomUtil.getInstance().nextInt(
-                getNumNodes() * (getNumNodes() - 1));
-        this.randomParent = rand / (getNumNodes() - 1);
-        final int rest = rand - this.randomParent * (getNumNodes() - 1);
-        if (rest >= this.randomParent) {
-            this.randomChild = rest + 1;
+        int rand = RandomUtil.getInstance().nextInt(
+                this.getNumNodes() * (this.getNumNodes() - 1));
+        randomParent = rand / (this.getNumNodes() - 1);
+        int rest = rand - randomParent * (this.getNumNodes() - 1);
+        if (rest >= randomParent) {
+            randomChild = rest + 1;
         } else {
-            this.randomChild = rest;
+            randomChild = rest;
         }
     }
 
@@ -373,10 +373,10 @@ public final class GraphGeneratorRandomNumEdges {
      * Adds the edge randomParent-->randomChild to the graph.
      */
     private void addEdge() {
-        this.childMatrix[this.randomParent][this.childMatrix[this.randomParent][0]] = this.randomChild;
-        this.childMatrix[this.randomParent][0]++;
-        this.parentMatrix[this.randomChild][this.parentMatrix[this.randomChild][0]] = this.randomParent;
-        this.parentMatrix[this.randomChild][0]++;
+        childMatrix[randomParent][childMatrix[randomParent][0]] = randomChild;
+        childMatrix[randomParent][0]++;
+        parentMatrix[randomChild][parentMatrix[randomChild][0]] = randomParent;
+        parentMatrix[randomChild][0]++;
     }
 
     /**
@@ -387,43 +387,43 @@ public final class GraphGeneratorRandomNumEdges {
         int lastNode;
         int proxNode;
         int atualNode;
-        if ((this.parentMatrix[this.randomChild][0] != 1) &&
-                (this.childMatrix[this.randomParent][0] != 1)) {
+        if ((parentMatrix[randomChild][0] != 1) &&
+                (childMatrix[randomParent][0] != 1)) {
             lastNode =
-                    this.parentMatrix[this.randomChild][this.parentMatrix[this.randomChild][0] - 1];
-            for (int i = (this.parentMatrix[this.randomChild][0] - 1); (i > 0 && go); i--) { // remove element from parentMatrix
-                atualNode = this.parentMatrix[this.randomChild][i];
-                if (atualNode != this.randomParent) {
+                    parentMatrix[randomChild][parentMatrix[randomChild][0] - 1];
+            for (int i = (parentMatrix[randomChild][0] - 1); (i > 0 && go); i--) { // remove element from parentMatrix
+                atualNode = parentMatrix[randomChild][i];
+                if (atualNode != randomParent) {
                     proxNode = atualNode;
-                    this.parentMatrix[this.randomChild][i] = lastNode;
+                    parentMatrix[randomChild][i] = lastNode;
                     lastNode = proxNode;
                 } else {
-                    this.parentMatrix[this.randomChild][i] = lastNode;
+                    parentMatrix[randomChild][i] = lastNode;
                     go = false;
                 }
             }
-            if ((this.childMatrix[this.randomParent][0] != 1) &&
-                    (this.childMatrix[this.randomParent][0] != 1)) {
-                lastNode = this.childMatrix[this.randomParent][
-                        this.childMatrix[this.randomParent][0] - 1];
+            if ((childMatrix[randomParent][0] != 1) &&
+                    (childMatrix[randomParent][0] != 1)) {
+                lastNode = childMatrix[randomParent][
+                        childMatrix[randomParent][0] - 1];
                 go = true;
-                for (int i = (this.childMatrix[this.randomParent][0] - 1); (i > 0 &&
+                for (int i = (childMatrix[randomParent][0] - 1); (i > 0 &&
                         go); i--) { // remove element from childMatrix
-                    atualNode = this.childMatrix[this.randomParent][i];
-                    if (atualNode != this.randomChild) {
+                    atualNode = childMatrix[randomParent][i];
+                    if (atualNode != randomChild) {
                         proxNode = atualNode;
-                        this.childMatrix[this.randomParent][i] = lastNode;
+                        childMatrix[randomParent][i] = lastNode;
                         lastNode = proxNode;
                     } else {
-                        this.childMatrix[this.randomParent][i] = lastNode;
+                        childMatrix[randomParent][i] = lastNode;
                         go = false;
                     }
                 } // end of for
             }
-            this.childMatrix[this.randomParent][(this.childMatrix[this.randomParent][0] - 1)] = -4;
-            this.childMatrix[this.randomParent][0]--;
-            this.parentMatrix[this.randomChild][(this.parentMatrix[this.randomChild][0] - 1)] = -4;
-            this.parentMatrix[this.randomChild][0]--;
+            childMatrix[randomParent][(childMatrix[randomParent][0] - 1)] = -4;
+            childMatrix[randomParent][0]--;
+            parentMatrix[randomChild][(parentMatrix[randomChild][0] - 1)] = -4;
+            parentMatrix[randomChild][0]--;
         }
     }
 }

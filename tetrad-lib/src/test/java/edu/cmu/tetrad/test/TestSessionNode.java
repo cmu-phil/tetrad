@@ -63,13 +63,13 @@ public class TestSessionNode {
      */
     @Test
     public void testExistsConstructor() {
-        final SessionNode node = new SessionNode(Type1.class);
-        final Class[] testSet1 = new Class[]{Type1.class};
-        final Class[] testSet2 = new Class[]{Type2.class};
-        final Class[] testSet3 = new Class[]{Type3.class};
-        final Class[] testSet4 = new Class[]{Type2.class, Type3.class};
-        final Class[] testSet5 = new Class[]{Type3.class, Type4.class};
-        final Class[] testSet6 = new Class[]{Type2.class, Type2.class};
+        SessionNode node = new SessionNode(Type1.class);
+        Class[] testSet1 = {Type1.class};
+        Class[] testSet2 = {Type2.class};
+        Class[] testSet3 = {Type3.class};
+        Class[] testSet4 = {Type2.class, Type3.class};
+        Class[] testSet5 = {Type3.class, Type4.class};
+        Class[] testSet6 = {Type2.class, Type2.class};
 
         assertTrue(!node.existsConstructor(Type1.class, testSet1));
         assertTrue(node.existsConstructor(Type1.class, testSet2));
@@ -85,23 +85,23 @@ public class TestSessionNode {
      */
     @Test
     public void testGetValueCombination() {
-        final SessionNode node = new SessionNode(Type1.class);
-        final int[] numValues = new int[]{2, 3, 4};
+        SessionNode node = new SessionNode(Type1.class);
+        int[] numValues = {2, 3, 4};
 
         assertEquals(24, node.getProduct(numValues));
-        assertTrue(isTheSame(node.getValueCombination(0, numValues), 0, 0, 0));
-        assertTrue(isTheSame(node.getValueCombination(5, numValues), 0, 1, 1));
-        assertTrue(isTheSame(node.getValueCombination(10, numValues), 0, 2, 2));
-        assertTrue(isTheSame(node.getValueCombination(15, numValues), 1, 0, 3));
-        assertTrue(isTheSame(node.getValueCombination(19, numValues), 1, 1, 3));
-        assertTrue(isTheSame(node.getValueCombination(23, numValues), 1, 2, 3));
+        assertTrue(this.isTheSame(node.getValueCombination(0, numValues), 0, 0, 0));
+        assertTrue(this.isTheSame(node.getValueCombination(5, numValues), 0, 1, 1));
+        assertTrue(this.isTheSame(node.getValueCombination(10, numValues), 0, 2, 2));
+        assertTrue(this.isTheSame(node.getValueCombination(15, numValues), 1, 0, 3));
+        assertTrue(this.isTheSame(node.getValueCombination(19, numValues), 1, 1, 3));
+        assertTrue(this.isTheSame(node.getValueCombination(23, numValues), 1, 2, 3));
     }
 
     /**
      * Helper method for testGetValueCombination to test whether the given array
      * has the given three values in it.
      */
-    private boolean isTheSame(final int[] arr, final int n1, final int n2, final int n3) {
+    private boolean isTheSame(int[] arr, int n1, int n2, int n3) {
         return (arr[0] == n1) && (arr[1] == n2) && (arr[2] == n3);
     }
 
@@ -122,19 +122,19 @@ public class TestSessionNode {
 
         // Set up a dummy session node to access the assign parameters
         // method.
-        final SessionNode node = new SessionNode(Type1.class);
+        SessionNode node = new SessionNode(Type1.class);
 
         // Set up a list of objects to get parameters from.
-        final Type2 object1 = new Type2(new Parameters());
-        final Type3 object2 = new Type3(object1, new Parameters());
-        final List objects = new ArrayList();
+        Type2 object1 = new Type2(new Parameters());
+        Type3 object2 = new Type3(object1, new Parameters());
+        List objects = new ArrayList();
 
         objects.add(object1);
         objects.add(object2);
 
         // Try it with the correct parameter types...
-        final Class[] parameterTypes1 = new Class[]{Type2.class, Type3.class};
-        final Object[] arguments1 = node.assignParameters(parameterTypes1, objects);
+        Class[] parameterTypes1 = {Type2.class, Type3.class};
+        Object[] arguments1 = node.assignParameters(parameterTypes1, objects);
 
         assertNotNull(arguments1);
 
@@ -143,26 +143,26 @@ public class TestSessionNode {
         }
 
         // Try it with the wrong set...
-        final Class[] parameterTypes2 = new Class[]{Type1.class, Type3.class};
-        final Object[] arguments2 = node.assignParameters(parameterTypes2, objects);
+        Class[] parameterTypes2 = {Type1.class, Type3.class};
+        Object[] arguments2 = node.assignParameters(parameterTypes2, objects);
 
         assertNull(arguments2);
 
         // Try it with the right set but with a null inserted.
         try {
-            final Class[] parameterTypes3 =
-                    new Class[]{Type2.class, Type3.class, null};
+            Class[] parameterTypes3 =
+                    {Type2.class, Type3.class, null};
             node.assignParameters(parameterTypes3, objects);
             fail("Should not have been able to assign parameters with a null " +
                     "parameter in the list.");
-        } catch (final NullPointerException e) {
+        } catch (NullPointerException e) {
             // What we wanted.
         }
 
         // Try it with too many types...
-        final Class[] parameterTypes4 =
-                new Class[]{Type2.class, Type3.class, Type4.class};
-        final Object[] arguments4 = node.assignParameters(parameterTypes4, objects);
+        Class[] parameterTypes4 =
+                {Type2.class, Type3.class, Type4.class};
+        Object[] arguments4 = node.assignParameters(parameterTypes4, objects);
 
         assertNull(arguments4);
     }
@@ -174,18 +174,18 @@ public class TestSessionNode {
     public void testIsConsistentModelClass() {
 
         // Test single model classes.
-        final SessionNode node1 = new SessionNode(Type1.class);
-        final SessionNode node2 = new SessionNode(Type2.class);
-        final SessionNode node3 = new SessionNode(Type3.class);
-        final SessionNode node4 =
+        SessionNode node1 = new SessionNode(Type1.class);
+        SessionNode node2 = new SessionNode(Type2.class);
+        SessionNode node3 = new SessionNode(Type3.class);
+        SessionNode node4 =
                 new SessionNode(new Class[]{Type1.class, Type2.class});
         //        SessionNode node5 = new SessionNode(new Class[]{Type1.class,
         //                                                        Type2.class});
-        final SessionNode node6 = new SessionNode(
+        SessionNode node6 = new SessionNode(
                 new Class[]{Type1.class, Type2.class, Type3.class});
-        final SessionNode node7 =
+        SessionNode node7 =
                 new SessionNode(new Class[]{Type1.class, Type4.class});
-        final List parents = new ArrayList();
+        List parents = new ArrayList();
 
         // An empty set of parents should always be consistent.s
         //assertTrue(node1.isConsistentModelClass(Type1.class, parents));
@@ -228,9 +228,9 @@ public class TestSessionNode {
      */
     @Test
     public void testGetAssignableClass() {
-        final SessionNode node1 = new SessionNode("???", "Node1", Type1.class);
+        SessionNode node1 = new SessionNode("???", "Node1", Type1.class);
 
-        final List list = new ArrayList();
+        List list = new ArrayList();
         list.add(List.class);
         list.add(Map.class);
         list.add(String.class);
@@ -245,10 +245,10 @@ public class TestSessionNode {
      */
 //    @Test
     public void testAddRemoveParents() {
-        final SessionNode node1 = new SessionNode("???", "Node1", Type1.class);
-        final SessionNode node2 = new SessionNode("???", "Node2", Type2.class);
-        final SessionNode node3 = new SessionNode("???", "Node2", Type3.class);
-        final SessionNode node4 = new SessionNode("???", "Node4", Type4.class);
+        SessionNode node1 = new SessionNode("???", "Node1", Type1.class);
+        SessionNode node2 = new SessionNode("???", "Node2", Type2.class);
+        SessionNode node3 = new SessionNode("???", "Node2", Type3.class);
+        SessionNode node4 = new SessionNode("???", "Node4", Type4.class);
 
         assertTrue(node1.addParent(node2));
         assertEquals(1, node2.getNumChildren());
@@ -267,10 +267,10 @@ public class TestSessionNode {
      */
 //    @Test
     public void testAddRemoveChildren() {
-        final SessionNode node1 = new SessionNode("???", "Node1", Type1.class);
-        final SessionNode node2 = new SessionNode("???", "Node2", Type2.class);
-        final SessionNode node3 = new SessionNode("???", "Node3", Type3.class);
-        final SessionNode node4 = new SessionNode("???", "Node4", Type4.class);
+        SessionNode node1 = new SessionNode("???", "Node1", Type1.class);
+        SessionNode node2 = new SessionNode("???", "Node2", Type2.class);
+        SessionNode node3 = new SessionNode("???", "Node3", Type3.class);
+        SessionNode node4 = new SessionNode("???", "Node4", Type4.class);
 
         assertTrue(node2.addChild(node1));
         assertEquals(1, node2.getNumChildren());
@@ -294,9 +294,9 @@ public class TestSessionNode {
     public void testGetConsistentModelClasses() throws Exception {
         final boolean simulation = true;
 
-        final SessionNode node1 = new SessionNode(new Class[]{Type1.class});
-        final SessionNode node2 = new SessionNode(new Class[]{Type2.class});
-        final SessionNode node3 = new SessionNode(new Class[]{Type3.class});
+        SessionNode node1 = new SessionNode(new Class[]{Type1.class});
+        SessionNode node2 = new SessionNode(new Class[]{Type2.class});
+        SessionNode node3 = new SessionNode(new Class[]{Type3.class});
 
         assertTrue(node1.addParent(node2));
         assertTrue(node1.addParent(node3));
@@ -309,7 +309,7 @@ public class TestSessionNode {
         try {
             node2.createModel(Type2.class, simulation);
             node3.createModel(Type3.class, simulation);
-        } catch (final RuntimeException e) {
+        } catch (RuntimeException e) {
             fail("Model not created.");
         }
 
@@ -326,9 +326,9 @@ public class TestSessionNode {
     public void testCreateModel() {
         final boolean simulation = true;
 
-        final SessionNode node1 = new SessionNode(Type1.class);
-        final SessionNode node2 = new SessionNode(Type2.class);
-        final SessionNode node3 = new SessionNode(Type3.class);
+        SessionNode node1 = new SessionNode(Type1.class);
+        SessionNode node2 = new SessionNode(Type2.class);
+        SessionNode node3 = new SessionNode(Type3.class);
 
         node3.addParent(node2);
         node1.addParent(node2);
@@ -338,7 +338,7 @@ public class TestSessionNode {
             node2.createModel(Type2.class, simulation);
             node3.createModel(Type3.class, simulation);
             node1.createModel(Type1.class, simulation);
-        } catch (final Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             fail("Model not created.");
         }
@@ -354,101 +354,101 @@ public class TestSessionNode {
     public void testEvents() {
         final boolean simulation = true;
 
-        final SessionListener listener = new SessionListener() {
+        SessionListener listener = new SessionListener() {
 
             /**
              * This method is called when a node is added.
              */
-            public void nodeAdded(final SessionEvent event) {
-                setEventId("nodeAdded");
+            public void nodeAdded(SessionEvent event) {
+                TestSessionNode.this.setEventId("nodeAdded");
             }
 
             /**
              * This method is called when a node is removed.
              */
-            public void nodeRemoved(final SessionEvent event) {
-                setEventId("nodeRemoved");
+            public void nodeRemoved(SessionEvent event) {
+                TestSessionNode.this.setEventId("nodeRemoved");
             }
 
             /**
              * This method is called when a parent is added.
              */
-            public void parentAdded(final SessionEvent event) {
-                setEventId("parentAdded");
+            public void parentAdded(SessionEvent event) {
+                TestSessionNode.this.setEventId("parentAdded");
             }
 
             /**
              * This method is called when a parent is removed.
              */
-            public void parentRemoved(final SessionEvent event) {
-                setEventId("parentRemoved");
+            public void parentRemoved(SessionEvent event) {
+                TestSessionNode.this.setEventId("parentRemoved");
             }
 
             /**
              * This method is called when a model is created for a node.
              */
-            public void modelCreated(final SessionEvent event) {
-                setEventId("modelCreated");
+            public void modelCreated(SessionEvent event) {
+                TestSessionNode.this.setEventId("modelCreated");
             }
 
             /**
              * This method is called when a model is destroyed for a node.
              */
-            public void modelDestroyed(final SessionEvent event) {
-                setEventId("modelDestroyed");
+            public void modelDestroyed(SessionEvent event) {
+                TestSessionNode.this.setEventId("modelDestroyed");
             }
 
             /**
              * This method is called when a model is destroyed for a node.
              */
-            public void modelUnclear(final SessionEvent event) {
-                setEventId("modelUnclear");
+            public void modelUnclear(SessionEvent event) {
+                TestSessionNode.this.setEventId("modelUnclear");
             }
 
             /**
              * This method is called when a node is executed manually.
              */
-            public void executionStarted(final SessionEvent event) {
-                setEventId("executionBegun");
+            public void executionStarted(SessionEvent event) {
+                TestSessionNode.this.setEventId("executionBegun");
             }
 
             /**
              * This method is called when a node is executed manually.
              */
-            public void repetitionChanged(final SessionEvent event) {
-                setEventId("repetitionChanged");
+            public void repetitionChanged(SessionEvent event) {
+                TestSessionNode.this.setEventId("repetitionChanged");
             }
 
             /**
              * This method is called when a node is executed manually.
              */
-            public void addingEdge(final SessionEvent event) {
-                setEventId("addingEdge");
+            public void addingEdge(SessionEvent event) {
+                TestSessionNode.this.setEventId("addingEdge");
             }
         };
 
         // Create up some nodes.
-        final SessionNode node1 = new SessionNode("???", "Node1", Type1.class);
-        final SessionNode node2 = new SessionNode("???", "Node2", Type2.class);
-        final SessionNode node3 = new SessionNode("???", "Node3", Type3.class);
+        SessionNode node1 = new SessionNode("???", "Node1", Type1.class);
+        SessionNode node2 = new SessionNode("???", "Node2", Type2.class);
+        SessionNode node3 = new SessionNode("???", "Node3", Type3.class);
 
         // Listen to node1.
         node1.addSessionListener(listener);
 
         // Test adding and removing parents and children.
         try {
-            setEventId(null);
+            this.setEventId(null);
             node1.addParent(node2);
-            assertEquals("parentAdded", getEventId());
-            setEventId(null);
+            assertEquals("parentAdded", this.getEventId());
+            this.setEventId(null);
             node1.removeParent(node2);
-            assertEquals("parentRemoved", getEventId());
-            setEventId(null);
+            assertEquals("parentRemoved", this.getEventId());
+            this.setEventId(null);
             node2.addChild(node1);
-            assertEquals("parentAdded", getEventId());
-            setEventId(null);
+            assertEquals("parentAdded", this.getEventId());
+            this.setEventId(null);
             node2.removeChild(node1);
-            assertEquals("parentRemoved", getEventId());
+            assertEquals("parentRemoved", this.getEventId());
 
             // Test model created.
             node1.addParent(node2);
@@ -456,29 +456,29 @@ public class TestSessionNode {
             node3.addParent(node2);
             node2.createModel(Type2.class, simulation);
             node3.createModel(Type3.class, simulation);
-            setEventId(null);
+            this.setEventId(null);
             node1.createModel(Type1.class, simulation);
-            assertEquals("modelCreated", getEventId());
-            setEventId(null);
+            assertEquals("modelCreated", this.getEventId());
+            this.setEventId(null);
             node1.destroyModel();
-            assertEquals("modelDestroyed", getEventId());
+            assertEquals("modelDestroyed", this.getEventId());
 
             // Test reassess model.
             node1.createModel(Type1.class, simulation);
             assertNotNull(node1.getModel());
             node2.destroyModel();
             assertNull(node1.getModel());
-        } catch (final Exception e) {
+        } catch (Exception e) {
             fail(e.getMessage());
         }
     }
 
-    private void setEventId(final String eventId) {
+    private void setEventId(String eventId) {
         this.eventId = eventId;
     }
 
     private String getEventId() {
-        return this.eventId;
+        return eventId;
     }
 
     /**
@@ -488,9 +488,9 @@ public class TestSessionNode {
     public void testStructuralIdentity() {
         final boolean simulation = true;
 
-        final SessionNode node1 = new SessionNode(Type1.class);
-        final SessionNode node2 = new SessionNode(Type2.class);
-        final SessionNode node3 = new SessionNode(Type3.class);
+        SessionNode node1 = new SessionNode(Type1.class);
+        SessionNode node2 = new SessionNode(Type2.class);
+        SessionNode node3 = new SessionNode(Type3.class);
 
         try {
             node1.addParent(node2);
@@ -501,7 +501,7 @@ public class TestSessionNode {
             node1.createModel(Type1.class, simulation);
             assertTrue(node1.isStructurallyIdentical(node1));
             assertTrue(!node1.isStructurallyIdentical(node2));
-        } catch (final Exception e) {
+        } catch (Exception e) {
             fail(e.getMessage());
         }
     }
@@ -518,9 +518,9 @@ public class TestSessionNode {
     public void testSerialization() {
         final boolean simulation = true;
 
-        final SessionNode node1 = new SessionNode(Type1.class);
-        final SessionNode node2 = new SessionNode(Type2.class);
-        final SessionNode node3 = new SessionNode(Type3.class);
+        SessionNode node1 = new SessionNode(Type1.class);
+        SessionNode node2 = new SessionNode(Type2.class);
+        SessionNode node3 = new SessionNode(Type3.class);
 
         node1.addParent(node2);
         node1.addParent(node3);
@@ -530,7 +530,7 @@ public class TestSessionNode {
             node2.createModel(Type2.class, simulation);
             node3.createModel(Type3.class, simulation);
             node1.createModel(Type1.class, simulation);
-        } catch (final Exception e) {
+        } catch (Exception e) {
             fail("Model not created.");
         }
 
@@ -538,7 +538,7 @@ public class TestSessionNode {
 
         try {
             node1Copy = (SessionNode) new MarshalledObject(node1).get();
-        } catch (final Exception e) {
+        } catch (Exception e) {
             fail("Serialization failed.");
         }
 
@@ -552,10 +552,10 @@ public class TestSessionNode {
     public void testParameterization() {
         final boolean simulation = true;
 
-        final SessionNode node1 = new SessionNode(Type1.class);
-        final SessionNode node2 = new SessionNode(Type2.class);
-        final SessionNode node3 = new SessionNode(Type3.class);
-        final Type2 param = new Type2(new Parameters());
+        SessionNode node1 = new SessionNode(Type1.class);
+        SessionNode node2 = new SessionNode(Type2.class);
+        SessionNode node3 = new SessionNode(Type3.class);
+        Type2 param = new Type2(new Parameters());
 
         node1.putParam(Type1.class, new Parameters());
         node1.addParent(node3);
@@ -565,7 +565,7 @@ public class TestSessionNode {
             node2.createModel(Type2.class, simulation);
             node3.createModel(Type3.class, simulation);
 //            node1.createModel(Type1.class, simulation);
-        } catch (final Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             fail("Model not created.");
         }
@@ -574,7 +574,7 @@ public class TestSessionNode {
 
         try {
             node1.createModel(simulation);
-        } catch (final Exception e) {
+        } catch (Exception e) {
             fail("Model not created.");
         }
     }
@@ -585,7 +585,7 @@ public class TestSessionNode {
     @Test
     public void testSetName() {
         final String name = "Test";
-        final SessionNode node1 = new SessionNode("???", name, Type1.class);
+        SessionNode node1 = new SessionNode("???", name, Type1.class);
         assertEquals(name, node1.getDisplayName());
     }
 }

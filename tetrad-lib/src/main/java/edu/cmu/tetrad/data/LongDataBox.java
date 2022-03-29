@@ -41,22 +41,22 @@ public class LongDataBox implements DataBox {
     /**
      * The number of rows (tracked because it may be zero).
      */
-    private int numRows = 0;
+    private int numRows;
 
     /**
      * The number of columns (tracked because it may be zero).
      */
-    private int numCols = 0;
+    private int numCols;
 
     /**
      * Constructs an 2D long array consisting entirely of missing values (-99).
      */
-    private LongDataBox(final int rows, final int cols) {
-        this.data = new long[rows][cols];
+    private LongDataBox(int rows, int cols) {
+        data = new long[rows][cols];
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                this.data[i][j] = -99L;
+                data[i][j] = -99L;
             }
         }
     }
@@ -64,10 +64,10 @@ public class LongDataBox implements DataBox {
     /**
      * Constructs a new data box using the given 2D long data array as data.
      */
-    public LongDataBox(final long[][] data) {
-        final int length = data[0].length;
+    public LongDataBox(long[][] data) {
+        int length = data[0].length;
 
-        for (final long[] datum : data) {
+        for (long[] datum : data) {
             if (datum.length != length) {
                 throw new IllegalArgumentException("All rows must have same length.");
             }
@@ -75,15 +75,15 @@ public class LongDataBox implements DataBox {
 
         this.data = data;
 
-        this.numCols = data[0].length;
-        this.numRows = data.length;
+        numCols = data[0].length;
+        numRows = data.length;
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
     public static BoxDataSet serializableInstance() {
-        final List<Node> vars = new ArrayList<>();
+        List<Node> vars = new ArrayList<>();
         for (int i = 0; i < 4; i++) vars.add(new ContinuousVariable("X" + i));
         return new BoxDataSet(new ShortDataBox(4, 4), vars);
     }
@@ -92,28 +92,28 @@ public class LongDataBox implements DataBox {
      * @return the number of rows in this data box.
      */
     public int numRows() {
-        return this.numRows;
+        return numRows;
     }
 
     /**
      * @return the number of columns in this data box.n
      */
     public int numCols() {
-        return this.numCols;
+        return numCols;
     }
 
     /**
      * Sets the value at the given row/column to the given Number value.
      * The value used is number.longValue().
      */
-    public void set(final int row, final int col, final Number value) {
+    public void set(int row, int col, Number value) {
         if (value == null) {
-            synchronized (this.data) {
-                this.data[row][col] = -99L;
+            synchronized (data) {
+                data[row][col] = -99L;
             }
         } else {
-            synchronized (this.data) {
-                this.data[row][col] = value.longValue();
+            synchronized (data) {
+                data[row][col] = value.longValue();
             }
         }
     }
@@ -122,8 +122,8 @@ public class LongDataBox implements DataBox {
      * @return the Number value at the given row and column. If the value
      * is missing (-99), null, is returned.
      */
-    public Number get(final int row, final int col) {
-        final long datum = this.data[row][col];
+    public Number get(int row, int col) {
+        long datum = data[row][col];
 
         if (datum == -99L) {
             return null;
@@ -136,11 +136,11 @@ public class LongDataBox implements DataBox {
      * @return a copy of this data box.
      */
     public DataBox copy() {
-        final LongDataBox box = new LongDataBox(numRows(), numCols());
+        LongDataBox box = new LongDataBox(this.numRows(), this.numCols());
 
-        for (int i = 0; i < numRows(); i++) {
-            for (int j = 0; j < numCols(); j++) {
-                box.set(i, j, get(i, j));
+        for (int i = 0; i < this.numRows(); i++) {
+            for (int j = 0; j < this.numCols(); j++) {
+                box.set(i, j, this.get(i, j));
             }
         }
 
@@ -151,22 +151,22 @@ public class LongDataBox implements DataBox {
      * @return a DataBox of type LongDataBox, but with the given dimensions.
      */
     public DataBox like() {
-        final int[] rows = new int[numRows()];
-        final int[] cols = new int[numCols()];
+        int[] rows = new int[this.numRows()];
+        int[] cols = new int[this.numCols()];
 
-        for (int i = 0; i < numRows(); i++) rows[i] = i;
-        for (int j = 0; j < numCols(); j++) cols[j] = j;
+        for (int i = 0; i < this.numRows(); i++) rows[i] = i;
+        for (int j = 0; j < this.numCols(); j++) cols[j] = j;
 
-        return viewSelection(rows, cols);
+        return this.viewSelection(rows, cols);
     }
 
     @Override
-    public DataBox viewSelection(final int[] rows, final int[] cols) {
-        final DataBox _dataBox = new LongDataBox(rows.length, cols.length);
+    public DataBox viewSelection(int[] rows, int[] cols) {
+        DataBox _dataBox = new LongDataBox(rows.length, cols.length);
 
         for (int i = 0; i < rows.length; i++) {
             for (int j = 0; j < cols.length; j++) {
-                _dataBox.set(i, j, get(rows[i], cols[j]));
+                _dataBox.set(i, j, this.get(rows[i], cols[j]));
             }
         }
 

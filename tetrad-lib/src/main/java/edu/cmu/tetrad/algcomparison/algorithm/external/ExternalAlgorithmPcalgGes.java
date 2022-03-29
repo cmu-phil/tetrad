@@ -49,58 +49,58 @@ import java.util.List;
 public class ExternalAlgorithmPcalgGes extends ExternalAlgorithm {
     static final long serialVersionUID = 23L;
     private final String extDir;
-    private String shortDescription = null;
+    private String shortDescription;
 
-    public ExternalAlgorithmPcalgGes(final String extDir) {
+    public ExternalAlgorithmPcalgGes(String extDir) {
         this.extDir = extDir;
-        this.shortDescription = new File(extDir).getName().replace("_", " ");
+        shortDescription = new File(extDir).getName().replace("_", " ");
     }
 
-    public ExternalAlgorithmPcalgGes(final String extDir, final String shortDecription) {
+    public ExternalAlgorithmPcalgGes(String extDir, String shortDecription) {
         this.extDir = extDir;
-        this.shortDescription = shortDecription;
+        shortDescription = shortDecription;
     }
 
     /**
      * Reads in the relevant graph from the file (see above) and returns it.
      */
-    public Graph search(final DataModel dataSet, final Parameters parameters) {
-        final int index = getIndex(dataSet);
+    public Graph search(DataModel dataSet, Parameters parameters) {
+        int index = this.getIndex(dataSet);
 
-        final File nodes = new File(this.path, "/results/" + this.extDir + "/" + (this.simIndex + 1) + "/nodes." + index + ".txt");
+        File nodes = new File(path, "/results/" + extDir + "/" + (simIndex + 1) + "/nodes." + index + ".txt");
         System.out.println(nodes.getAbsolutePath());
 
-        final List<Node> vars = new ArrayList<>();
+        List<Node> vars = new ArrayList<>();
 
         try {
-            final BufferedReader r = new BufferedReader(new FileReader(nodes));
+            BufferedReader r = new BufferedReader(new FileReader(nodes));
             String name;
 
             while ((name = r.readLine()) != null) {
-                final GraphNode node = new GraphNode(name.trim());
+                GraphNode node = new GraphNode(name.trim());
                 vars.add(node);
             }
-        } catch (final Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
-        final File inEdges = new File(this.path, "/results/" + this.extDir + "/" + (this.simIndex + 1) + "/in.edges." + index + ".txt");
+        File inEdges = new File(path, "/results/" + extDir + "/" + (simIndex + 1) + "/in.edges." + index + ".txt");
 
         try {
-            final BufferedReader r = new BufferedReader(new FileReader(inEdges));
+            BufferedReader r = new BufferedReader(new FileReader(inEdges));
             String line;
-            final Graph graph = new EdgeListGraph(vars);
+            Graph graph = new EdgeListGraph(vars);
 
             for (int i = 0; i < vars.size(); i++) {
                 line = r.readLine();
-                final String[] tokens = line.split(",");
+                String[] tokens = line.split(",");
 
-                for (final String token : tokens) {
-                    final String trim = token.trim();
+                for (String token : tokens) {
+                    String trim = token.trim();
                     if (trim.isEmpty()) continue;
-                    final int j = Integer.parseInt(trim) - 1;
-                    final Node v1 = vars.get(i);
-                    final Node v2 = vars.get(j);
+                    int j = Integer.parseInt(trim) - 1;
+                    Node v1 = vars.get(i);
+                    Node v2 = vars.get(j);
 
                     if (!graph.isAdjacentTo(v2, v1)) {
                         graph.addDirectedEdge(v2, v1);
@@ -112,7 +112,7 @@ public class ExternalAlgorithmPcalgGes extends ExternalAlgorithm {
             }
 
             return graph;
-        } catch (final Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -122,15 +122,15 @@ public class ExternalAlgorithmPcalgGes extends ExternalAlgorithm {
     /**
      * Returns the CPDAG of the supplied DAG.
      */
-    public Graph getComparisonGraph(final Graph graph) {
+    public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
     public String getDescription() {
-        if (this.shortDescription == null) {
-            return "Load data from " + this.path + "/" + this.extDir;
+        if (shortDescription == null) {
+            return "Load data from " + path + "/" + extDir;
         } else {
-            return this.shortDescription;
+            return shortDescription;
         }
     }
 
@@ -140,16 +140,16 @@ public class ExternalAlgorithmPcalgGes extends ExternalAlgorithm {
     }
 
     @Override
-    public long getElapsedTime(final DataModel dataSet, final Parameters parameters) {
-        final int index = getIndex(dataSet);
+    public long getElapsedTime(DataModel dataSet, Parameters parameters) {
+        int index = this.getIndex(dataSet);
 
-        final File file = new File(this.path, "/elapsed/" + this.extDir + "/" + (this.simIndex + 1) + "/graph." + index + ".txt");
+        File file = new File(path, "/elapsed/" + extDir + "/" + (simIndex + 1) + "/graph." + index + ".txt");
 
         try {
-            final BufferedReader r = new BufferedReader(new FileReader(file));
-            final String l = r.readLine(); // Skip the first line.
+            BufferedReader r = new BufferedReader(new FileReader(file));
+            String l = r.readLine(); // Skip the first line.
             return Long.parseLong(l);
-        } catch (final IOException e) {
+        } catch (IOException e) {
             return -99;
         }
     }

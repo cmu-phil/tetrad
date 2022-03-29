@@ -38,7 +38,7 @@ public class HideShowInterventionalAction extends AbstractAction implements Clip
      *
      * @param workbench
      */
-    public HideShowInterventionalAction(final GraphWorkbench workbench) {
+    public HideShowInterventionalAction(GraphWorkbench workbench) {
         super("Hide/Show Interventional Nodes");
 
         if (workbench == null) {
@@ -55,17 +55,17 @@ public class HideShowInterventionalAction extends AbstractAction implements Clip
      * @param e
      */
     @Override
-    public void actionPerformed(final ActionEvent e) {
-        for (final Component comp : this.workbench.getComponents()) {
+    public void actionPerformed(ActionEvent e) {
+        for (Component comp : workbench.getComponents()) {
             if (comp instanceof DisplayNode) {
-                final Node node = ((DisplayNode) comp).getModelNode();
+                Node node = ((DisplayNode) comp).getModelNode();
                 if (node.getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS || node.getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE) {
                     comp.setVisible(!comp.isVisible());
                 }
             }
 
             if (comp instanceof DisplayEdge) {
-                final Edge edge = ((DisplayEdge) comp).getModelEdge();
+                Edge edge = ((DisplayEdge) comp).getModelEdge();
                 if ((edge.getNode1().getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS || edge.getNode1().getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE)
                         || (edge.getNode2().getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS || edge.getNode2().getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE)) {
                     comp.setVisible(!comp.isVisible());
@@ -79,6 +79,6 @@ public class HideShowInterventionalAction extends AbstractAction implements Clip
      * Required by the AbstractAction interface; does nothing.
      */
     @Override
-    public void lostOwnership(final Clipboard clipboard, final Transferable contents) {
+    public void lostOwnership(Clipboard clipboard, Transferable contents) {
     }
 }

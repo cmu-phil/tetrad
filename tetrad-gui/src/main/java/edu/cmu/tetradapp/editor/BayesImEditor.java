@@ -56,20 +56,20 @@ public class BayesImEditor extends JPanel {
     /**
      * Constructs a new instanted model editor from a Bayes IM.
      */
-    public BayesImEditor(final BayesImWrapper wrapper) {
+    public BayesImEditor(BayesImWrapper wrapper) {
         this.wrapper = wrapper;
-        setLayout(new BorderLayout());
+        this.setLayout(new BorderLayout());
 
-        this.targetPanel = new JPanel();
-        this.targetPanel.setLayout(new BorderLayout());
+        targetPanel = new JPanel();
+        targetPanel.setLayout(new BorderLayout());
 
-        setEditorPanel();
+        this.setEditorPanel();
 
-        add(this.targetPanel, BorderLayout.CENTER);
-        validate();
+        this.add(targetPanel, BorderLayout.CENTER);
+        this.validate();
 
         if (wrapper.getNumModels() > 1) {
-            final JComboBox<Integer> comp = new JComboBox<>();
+            JComboBox<Integer> comp = new JComboBox<>();
 
             for (int i = 0; i < wrapper.getNumModels(); i++) {
                 comp.addItem(i + 1);
@@ -79,114 +79,114 @@ public class BayesImEditor extends JPanel {
 
             comp.addActionListener(new ActionListener() {
                 @Override
-                public void actionPerformed(final ActionEvent e) {
+                public void actionPerformed(ActionEvent e) {
                     wrapper.setModelIndex(comp.getSelectedIndex() - 1);
-                    setEditorPanel();
-                    validate();
+                    BayesImEditor.this.setEditorPanel();
+                    BayesImEditor.this.validate();
                 }
             });
 
             comp.setMaximumSize(comp.getPreferredSize());
 
-            final Box b = Box.createHorizontalBox();
+            Box b = Box.createHorizontalBox();
             b.add(new JLabel("Using model"));
             b.add(comp);
             b.add(new JLabel("from "));
             b.add(new JLabel(wrapper.getModelSourceName()));
             b.add(Box.createHorizontalGlue());
 
-            add(b, BorderLayout.NORTH);
+            this.add(b, BorderLayout.NORTH);
         }
     }
 
     private void setEditorPanel() {
-        final JPanel panel = new JPanel();
+        JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
 
-        final BayesIm bayesIm = this.wrapper.getBayesIm();
-        final Graph graph = bayesIm.getDag();
-        final GraphWorkbench workbench = new GraphWorkbench(graph);
+        BayesIm bayesIm = wrapper.getBayesIm();
+        Graph graph = bayesIm.getDag();
+        GraphWorkbench workbench = new GraphWorkbench(graph);
 
-        final JMenuBar menuBar = new JMenuBar();
-        final JMenu file = new JMenu("File");
+        JMenuBar menuBar = new JMenuBar();
+        JMenu file = new JMenu("File");
         menuBar.add(file);
         file.add(new SaveBayesImXmlAction(this));
-        file.add(new LoadBayesImXmlAction(this.wrapper, this));
-        file.add(new LoadBayesImXsdlXmlAction(this.wrapper, this));
+        file.add(new LoadBayesImXmlAction(wrapper, this));
+        file.add(new LoadBayesImXsdlXmlAction(wrapper, this));
         file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
         file.add(new SaveComponentImage(workbench, "Save Graph Image..."));
-        setLayout(new BorderLayout());
+        this.setLayout(new BorderLayout());
         panel.add(menuBar, BorderLayout.NORTH);
 
-        this.wizard = new BayesImEditorWizard(bayesIm, workbench);
-        this.wizard.enableEditing(false);
+        wizard = new BayesImEditorWizard(bayesIm, workbench);
+        wizard.enableEditing(false);
 
-        this.wizard.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(final PropertyChangeEvent evt) {
+        wizard.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
                 if ("editorValueChanged".equals(evt.getPropertyName())) {
-                    firePropertyChange("modelChanged", null, null);
+                    BayesImEditor.this.firePropertyChange("modelChanged", null, null);
                 }
             }
         });
 
-        final JScrollPane workbenchScroll = new JScrollPane(workbench);
-        final JScrollPane wizardScroll = new JScrollPane(getWizard());
+        JScrollPane workbenchScroll = new JScrollPane(workbench);
+        JScrollPane wizardScroll = new JScrollPane(this.getWizard());
 
         workbenchScroll.setPreferredSize(new Dimension(450, 450));
 
-        final JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                 workbenchScroll, wizardScroll);
         splitPane.setOneTouchExpandable(true);
         splitPane.setDividerLocation(workbenchScroll.getPreferredSize().width);
         panel.add(splitPane, BorderLayout.CENTER);
 
-        setName("Bayes IM Editor");
-        getWizard().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(final PropertyChangeEvent evt) {
+        this.setName("Bayes IM Editor");
+        this.getWizard().addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
                 if ("editorClosing".equals(evt.getPropertyName())) {
-                    firePropertyChange("editorClosing", null, getName());
+                    BayesImEditor.this.firePropertyChange("editorClosing", null, BayesImEditor.this.getName());
                 }
 
                 if ("closeFrame".equals(evt.getPropertyName())) {
-                    firePropertyChange("closeFrame", null, null);
-                    firePropertyChange("editorClosing", true, true);
+                    BayesImEditor.this.firePropertyChange("closeFrame", null, null);
+                    BayesImEditor.this.firePropertyChange("editorClosing", true, true);
                 }
 
                 if ("modelChanged".equals(evt.getPropertyName())) {
-                    firePropertyChange("modelChanged", evt.getOldValue(),
+                    BayesImEditor.this.firePropertyChange("modelChanged", evt.getOldValue(),
                             evt.getNewValue());
                 }
             }
         });
 
-        this.targetPanel.add(panel, BorderLayout.CENTER);
-        revalidate();
-        repaint();
+        targetPanel.add(panel, BorderLayout.CENTER);
+        this.revalidate();
+        this.repaint();
     }
 
     /**
      * Sets the name of this editor.
      */
-    public void setName(final String name) {
-        final String oldName = getName();
+    public void setName(String name) {
+        String oldName = this.getName();
         super.setName(name);
-        firePropertyChange("name", oldName, getName());
+        this.firePropertyChange("name", oldName, this.getName());
     }
 
     /**
      * @return a reference to this editor.
      */
     public BayesImEditorWizard getWizard() {
-        return this.wizard;
+        return wizard;
     }
 
-    public void getBayesIm(final BayesIm bayesIm) {
+    public void getBayesIm(BayesIm bayesIm) {
 //        this.wrapper.setBayesIm(bayesIm);
-        removeAll();
-        setEditorPanel();
-        revalidate();
-        repaint();
-        firePropertyChange("modelChanged", null, null);
+        this.removeAll();
+        this.setEditorPanel();
+        this.revalidate();
+        this.repaint();
+        this.firePropertyChange("modelChanged", null, null);
     }
 
 }

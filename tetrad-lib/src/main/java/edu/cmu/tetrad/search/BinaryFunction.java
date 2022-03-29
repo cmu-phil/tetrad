@@ -54,14 +54,14 @@ public class BinaryFunction {
      * @param functionIndex Represents the function column of the truth table. Should be a number from 0 to 2 ^ numArgs
      *                      - 1. The value for a given row in the truth table is calculated by the getValue() method.
      */
-    public BinaryFunction(final int numArgs, final long functionIndex) {
+    public BinaryFunction(int numArgs, long functionIndex) {
         this.numArgs = numArgs;
-        if (functionIndex > getNumFunctions()) {
+        if (functionIndex > this.getNumFunctions()) {
             throw new IllegalArgumentException("Function index out of range " +
                     "for " + numArgs + " arguments.");
         }
-        this.functionColumn = new int[getNumRows()];
-        resetFunction(functionIndex);
+        functionColumn = new int[this.getNumRows()];
+        this.resetFunction(functionIndex);
     }
 
     /**
@@ -71,15 +71,15 @@ public class BinaryFunction {
      *                       increasing period of alternation.
      * @param functionColumn The function column.
      */
-    public BinaryFunction(final int numArgs, final boolean[] functionColumn) {
+    public BinaryFunction(int numArgs, boolean[] functionColumn) {
         this.numArgs = numArgs;
-        if (functionColumn.length > getNumRows()) {
+        if (functionColumn.length > this.getNumRows()) {
             throw new IllegalArgumentException("Function column does not have " +
                     "the right number of rows for " + numArgs + " argument: " +
                     functionColumn.length);
         }
-        this.functionColumn = new int[getNumRows()];
-        resetFunction(getIndex(functionColumn));
+        this.functionColumn = new int[this.getNumRows()];
+        this.resetFunction(this.getIndex(functionColumn));
     }
 
     //=============================PUBLIC METHODS=========================//
@@ -87,8 +87,8 @@ public class BinaryFunction {
     public void resetFunction(long functionIndex) {
         this.functionIndex = functionIndex;
 
-        for (int i = 0; i < getNumRows(); i++) {
-            this.functionColumn[getNumRows() - i - 1] = (int) functionIndex % 2;
+        for (int i = 0; i < this.getNumRows(); i++) {
+            functionColumn[this.getNumRows() - i - 1] = (int) functionIndex % 2;
             functionIndex /= 2;
         }
     }
@@ -96,9 +96,9 @@ public class BinaryFunction {
     public long getOppositeFunction() {
         long functionIndex = 0;
 
-        for (int i = 0; i < getNumRows(); i++) {
+        for (int i = 0; i < this.getNumRows(); i++) {
             functionIndex *= 2;
-            functionIndex = getFunctionIndex(i, functionIndex);
+            functionIndex = this.getFunctionIndex(i, functionIndex);
         }
 
         return functionIndex;
@@ -107,9 +107,9 @@ public class BinaryFunction {
     public long getSymmetricFunction() {
         long functionIndex = 0;
 
-        for (int i = 0; i < getNumRows(); i++) {
+        for (int i = 0; i < this.getNumRows(); i++) {
             functionIndex *= 2;
-            functionIndex += this.functionColumn[getNumRows() - i - 1];
+            functionIndex += functionColumn[this.getNumRows() - i - 1];
         }
 
         return functionIndex;
@@ -118,9 +118,9 @@ public class BinaryFunction {
     public long getSymmetricOppositeFunction() {
         long functionIndex = 0;
 
-        for (int i = 0; i < getNumRows(); i++) {
+        for (int i = 0; i < this.getNumRows(); i++) {
             functionIndex *= 2;
-            functionIndex += 1 - this.functionColumn[getNumRows() - i - 1];
+            functionIndex += 1 - functionColumn[this.getNumRows() - i - 1];
         }
 
         return functionIndex;
@@ -143,37 +143,37 @@ public class BinaryFunction {
 //        return getIndex(functionColumn);
 //    }
 
-    public long switchColsFull(final int[] permutation) {
-        final int[] functionColumn = new int[getNumRows()];
+    public long switchColsFull(int[] permutation) {
+        int[] functionColumn = new int[this.getNumRows()];
 
-        for (int i = 0; i < getNumRows(); i++) {
-            final boolean[] row = getRow(i);
-            final boolean[] newRow = new boolean[row.length];
+        for (int i = 0; i < this.getNumRows(); i++) {
+            boolean[] row = this.getRow(i);
+            boolean[] newRow = new boolean[row.length];
 
             for (int j = 0; j < row.length; j++) {
                 newRow[permutation[j]] = row[j];
             }
 
-            final boolean b = getValue(newRow);
+            boolean b = this.getValue(newRow);
             functionColumn[i] = b ? 1 : 0;
         }
 
-        return getIndex(functionColumn);
+        return this.getIndex(functionColumn);
     }
 
-    public boolean getValue(final boolean[] values) {
-        if (values.length != this.numArgs) throw new IllegalArgumentException();
-        return this.functionColumn[getRowIndex(values)] == 1;
+    public boolean getValue(boolean[] values) {
+        if (values.length != numArgs) throw new IllegalArgumentException();
+        return functionColumn[this.getRowIndex(values)] == 1;
     }
 
-    public boolean getValue(final int row) {
-        return this.functionColumn[row] == 1;
+    public boolean getValue(int row) {
+        return functionColumn[row] == 1;
     }
 
     public boolean[] getRow(int rowIndex) {
-        final boolean[] values = new boolean[this.numArgs];
+        boolean[] values = new boolean[numArgs];
 
-        for (int i = 0; i < this.numArgs; i++) {
+        for (int i = 0; i < numArgs; i++) {
             values[i] = (rowIndex % 2) == 1;
             rowIndex /= 2;
         }
@@ -182,10 +182,10 @@ public class BinaryFunction {
     }
 
     public String toString() {
-        final StringBuilder buf = new StringBuilder();
+        StringBuilder buf = new StringBuilder();
         buf.append("\n");
 
-        for (int j = 0; j < this.numArgs; j++) {
+        for (int j = 0; j < numArgs; j++) {
             buf.append("v").append(j + 1).append("   \t");
         }
 
@@ -193,14 +193,14 @@ public class BinaryFunction {
 
         buf.append("\n");
 
-        for (int i = 0; i < (getNumRows()); i++) {
-            final boolean[] argumentVals = getRow(i);
+        for (int i = 0; i < (this.getNumRows()); i++) {
+            boolean[] argumentVals = this.getRow(i);
 
-            for (int j = 0; j < this.numArgs; j++) {
+            for (int j = 0; j < numArgs; j++) {
                 buf.append(argumentVals[j]).append("\t");
             }
 
-            buf.append(getValue(argumentVals));
+            buf.append(this.getValue(argumentVals));
 
             buf.append("\n");
         }
@@ -209,31 +209,31 @@ public class BinaryFunction {
         return buf.toString();
     }
 
-    public boolean equals(final Object o) {
-        return o instanceof BinaryFunction && this.functionIndex == ((BinaryFunction) o).getFunctionIndex();
+    public boolean equals(Object o) {
+        return o instanceof BinaryFunction && functionIndex == ((BinaryFunction) o).getFunctionIndex();
     }
 
     public int getNumRows() {
         int numRows = 1;
 
-        for (int i = 0; i < getNumArgs(); i++) {
+        for (int i = 0; i < this.getNumArgs(); i++) {
             numRows *= 2;
         }
         return numRows;
     }
 
     public int getNumArgs() {
-        return this.numArgs;
+        return numArgs;
     }
 
     public long getFunctionIndex() {
-        return this.functionIndex;
+        return functionIndex;
     }
 
     public long getNumFunctions() {
         long n = 1;
 
-        for (int i = 0; i < getNumRows(); i++) {
+        for (int i = 0; i < this.getNumRows(); i++) {
             n *= 2;
         }
 
@@ -242,10 +242,10 @@ public class BinaryFunction {
 
     //=============================PRIVATE METHODS=========================//
 
-    private long getIndex(final int[] functionColumn) {
+    private long getIndex(int[] functionColumn) {
         long functionIndex = 0;
 
-        for (int i = 0; i < getNumRows(); i++) {
+        for (int i = 0; i < this.getNumRows(); i++) {
             functionIndex *= 2;
             functionIndex += functionColumn[i];
         }
@@ -253,10 +253,10 @@ public class BinaryFunction {
         return functionIndex;
     }
 
-    private long getIndex(final boolean[] functionColumn) {
+    private long getIndex(boolean[] functionColumn) {
         long functionIndex = 0;
 
-        for (int i = 0; i < getNumRows(); i++) {
+        for (int i = 0; i < this.getNumRows(); i++) {
             functionIndex *= 2;
             functionIndex += functionColumn[i] ? 1 : 0;
         }
@@ -264,15 +264,15 @@ public class BinaryFunction {
         return functionIndex;
     }
 
-    private long getFunctionIndex(final int i, long functionIndex) {
-        functionIndex += 1 - this.functionColumn[i];
+    private long getFunctionIndex(int i, long functionIndex) {
+        functionIndex += 1 - functionColumn[i];
         return functionIndex;
     }
 
-    private int getRowIndex(final boolean[] values) {
+    private int getRowIndex(boolean[] values) {
         int rowIndex = 0;
 
-        for (int i = 0; i < this.numArgs; i++) {
+        for (int i = 0; i < numArgs; i++) {
             rowIndex *= 2;
             rowIndex += values[i] ? 1 : 0;
         }

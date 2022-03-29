@@ -56,82 +56,82 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
     private List<String> variableNames = new ArrayList<>();
     private Graph resultGraph = new EdgeListGraph();
 
-    public ForbiddenGraphModel(final BayesPmWrapper wrapper, final Parameters params) {
+    public ForbiddenGraphModel(BayesPmWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public ForbiddenGraphModel(final GraphWrapper wrapper, final Parameters params) {
+    public ForbiddenGraphModel(GraphWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public ForbiddenGraphModel(final StandardizedSemImWrapper wrapper, final Parameters params) {
+    public ForbiddenGraphModel(StandardizedSemImWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public ForbiddenGraphModel(final SemImWrapper wrapper, final Parameters params) {
+    public ForbiddenGraphModel(SemImWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public ForbiddenGraphModel(final SemPmWrapper wrapper, final Parameters params) {
+    public ForbiddenGraphModel(SemPmWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public ForbiddenGraphModel(final DataWrapper wrapper, final Parameters params) {
+    public ForbiddenGraphModel(DataWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public ForbiddenGraphModel(final TimeLagGraphWrapper wrapper, final Parameters params) {
+    public ForbiddenGraphModel(TimeLagGraphWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public ForbiddenGraphModel(final GeneralizedSemImWrapper wrapper, final Parameters params) {
+    public ForbiddenGraphModel(GeneralizedSemImWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public ForbiddenGraphModel(final BayesImWrapper wrapper, final Parameters params) {
+    public ForbiddenGraphModel(BayesImWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public ForbiddenGraphModel(final SemGraphWrapper wrapper, final Parameters params) {
+    public ForbiddenGraphModel(SemGraphWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public ForbiddenGraphModel(final GeneralizedSemPmWrapper wrapper, final Parameters params) {
+    public ForbiddenGraphModel(GeneralizedSemPmWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public ForbiddenGraphModel(final DagWrapper wrapper, final Parameters params) {
+    public ForbiddenGraphModel(DagWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public ForbiddenGraphModel(final DirichletBayesImWrapper wrapper, final Parameters params) {
+    public ForbiddenGraphModel(DirichletBayesImWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public ForbiddenGraphModel(final BuildPureClustersRunner wrapper, final Parameters params) {
+    public ForbiddenGraphModel(BuildPureClustersRunner wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public ForbiddenGraphModel(final PurifyRunner wrapper, final Parameters params) {
+    public ForbiddenGraphModel(PurifyRunner wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public ForbiddenGraphModel(final LofsRunner wrapper, final Parameters params) {
+    public ForbiddenGraphModel(LofsRunner wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public ForbiddenGraphModel(final MeasurementModelWrapper wrapper, final Parameters params) {
+    public ForbiddenGraphModel(MeasurementModelWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public ForbiddenGraphModel(final KnowledgeBoxInput input, final Parameters params) {
+    public ForbiddenGraphModel(KnowledgeBoxInput input, Parameters params) {
         this(params, input);
     }
 
     /**
      * Constructor from dataWrapper edge
      */
-    public ForbiddenGraphModel(final Parameters params, final KnowledgeBoxInput input) {
+    public ForbiddenGraphModel(Parameters params, KnowledgeBoxInput input) {
         super(new KnowledgeBoxInput[]{input}, params);
 
         if (params == null) {
@@ -142,24 +142,24 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
             throw new NullPointerException();
         }
 
-        final SortedSet<Node> variableNodes = new TreeSet<>();
-        final SortedSet<String> variableNames = new TreeSet<>();
+        SortedSet<Node> variableNodes = new TreeSet<>();
+        SortedSet<String> variableNames = new TreeSet<>();
 
         variableNodes.addAll(input.getVariables());
         variableNames.addAll(input.getVariableNames());
 
-        this.variables = new ArrayList<>(variableNodes);
+        variables = new ArrayList<>(variableNodes);
         this.variableNames = new ArrayList<>(variableNames);
 
-        this.resultGraph = input.getResultGraph();
+        resultGraph = input.getResultGraph();
 
-        this.knowledge = new Knowledge2();
+        knowledge = new Knowledge2();
 
-        for (final Node v : input.getVariables()) {
-            this.knowledge.addVariable(v.getName());
+        for (Node v : input.getVariables()) {
+            knowledge.addVariable(v.getName());
         }
 
-        createKnowledge(params);
+        this.createKnowledge(params);
 
         TetradLogger.getInstance().log("info", "Knowledge");
 
@@ -172,31 +172,31 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
         }
     }
 
-    private void createKnowledge(final Parameters params) {
-        final IKnowledge knwl = getKnowledge();
+    private void createKnowledge(Parameters params) {
+        IKnowledge knwl = this.getKnowledge();
         if (knwl == null) {
             return;
         }
 
         knwl.clear();
 
-        if (this.resultGraph == null) {
+        if (resultGraph == null) {
             throw new NullPointerException("I couldn't find a parent graph.");
         }
 
-        final List<Node> nodes = this.resultGraph.getNodes();
+        List<Node> nodes = resultGraph.getNodes();
 
-        final int numOfNodes = nodes.size();
+        int numOfNodes = nodes.size();
         for (int i = 0; i < numOfNodes; i++) {
             for (int j = i + 1; j < numOfNodes; j++) {
-                final Node n1 = nodes.get(i);
-                final Node n2 = nodes.get(j);
+                Node n1 = nodes.get(i);
+                Node n2 = nodes.get(j);
 
                 if (n1.getName().startsWith("E_") || n2.getName().startsWith("E_")) {
                     continue;
                 }
 
-                final Edge edge = this.resultGraph.getEdge(n1, n2);
+                Edge edge = resultGraph.getEdge(n1, n2);
                 if (edge != null && edge.isDirected()) {
                     knwl.setForbidden(edge.getNode2().getName(), edge.getNode1().getName());
                 }
@@ -214,7 +214,7 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
     }
 
     public Graph getResultGraph() {
-        return this.resultGraph;
+        return resultGraph;
     }
 
 }

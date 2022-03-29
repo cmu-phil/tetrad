@@ -58,17 +58,17 @@ public enum TestType implements TetradSerializable {
     static final long serialVersionUID = 23L;
 
     public static TestType serializableInstance() {
-        return TestType.GAUSSIAN_PVALUE;
+        return GAUSSIAN_PVALUE;
     }
 
 
     public static TestType[] getPurifyTestDescriptions() {
 
         return new TestType[]{
-                TestType.NONE,
-                TestType.TETRAD_BASED,
-                TestType.GAUSSIAN_PVALUE,
-                TestType.GAUSSIAN_SCORE_MARKS,
+                NONE,
+                TETRAD_BASED,
+                GAUSSIAN_PVALUE,
+                GAUSSIAN_SCORE_MARKS,
 //                TestType.GAUSSIAN_SCORE,
 //                TestType.POPULATION,
         };
@@ -76,9 +76,9 @@ public enum TestType implements TetradSerializable {
 
     public static TestType[] getTestDescriptions() {
         return new TestType[]{
-                TestType.TETRAD_WISHART,
+                TETRAD_WISHART,
 //                TestType.TETRAD_BOLLEN,
-                TestType.TETRAD_DELTA
+                TETRAD_DELTA
 //                TestType.GAUSSIAN_FACTOR
         };
 

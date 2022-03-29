@@ -36,8 +36,8 @@ public class Gamma implements Distribution {
     private double lambda;
 
     private Gamma() {
-        this.alpha = .5;
-        this.lambda = .7;
+        alpha = .5;
+        lambda = .7;
     }
 
     /**
@@ -57,27 +57,27 @@ public class Gamma implements Distribution {
         return "Gamma";
     }
 
-    public void setParameter(final int index, final double value) {
+    public void setParameter(int index, double value) {
         if (index == 0) {
-            this.alpha = value;
+            alpha = value;
         } else if (index == 1) {
-            this.lambda = value;
+            lambda = value;
         }
 
         throw new IllegalArgumentException();
     }
 
-    public double getParameter(final int index) {
+    public double getParameter(int index) {
         if (index == 0) {
-            return this.alpha;
+            return alpha;
         } else if (index == 1) {
-            return this.lambda;
+            return lambda;
         }
 
         throw new IllegalArgumentException();
     }
 
-    public String getParameterName(final int index) {
+    public String getParameterName(int index) {
         if (index == 0) {
             return "Alpha";
         } else if (index == 1) {
@@ -88,11 +88,11 @@ public class Gamma implements Distribution {
     }
 
     public double nextRandom() {
-        return RandomUtil.getInstance().nextGamma(this.alpha, this.lambda);
+        return RandomUtil.getInstance().nextGamma(alpha, lambda);
     }
 
     public String toString() {
-        return "Gamma(" + this.alpha + ", " + this.lambda + ")";
+        return "Gamma(" + alpha + ", " + lambda + ")";
     }
 }
 

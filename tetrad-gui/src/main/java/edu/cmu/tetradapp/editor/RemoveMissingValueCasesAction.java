@@ -44,37 +44,37 @@ final class RemoveMissingValueCasesAction extends AbstractAction {
     /**
      * Creates a new action to split by collinear columns.
      */
-    public RemoveMissingValueCasesAction(final DataEditor editor) {
+    public RemoveMissingValueCasesAction(DataEditor editor) {
         super("Remove Cases with Missing Values");
 
         if (editor == null) {
             throw new NullPointerException();
         }
 
-        this.dataEditor = editor;
+        dataEditor = editor;
     }
 
     /**
      * Performs the action of loading a session from a file.
      */
-    public void actionPerformed(final ActionEvent e) {
+    public void actionPerformed(ActionEvent e) {
 
-        final DataModel dataModel = getDataEditor().getSelectedDataModel();
-        final DataSet dataSet = (DataSet) dataModel;
-        final List<Node> variables = new LinkedList<>();
+        DataModel dataModel = this.getDataEditor().getSelectedDataModel();
+        DataSet dataSet = (DataSet) dataModel;
+        List<Node> variables = new LinkedList<>();
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             variables.add(dataSet.getVariable(j));
         }
 
-        final DataSet newDataSet = new BoxDataSet(new DoubleDataBox(0, variables.size()), variables);
+        DataSet newDataSet = new BoxDataSet(new DoubleDataBox(0, variables.size()), variables);
 
         int newRow = -1;
 
         ROWS:
         for (int i = 0; i < dataSet.getNumRows(); i++) {
             for (int j = 0; j < dataSet.getNumColumns(); j++) {
-                final Node variable = dataSet.getVariable(j);
+                Node variable = dataSet.getVariable(j);
 
                 if (((Variable) variable).isMissingValue(
                         dataSet.getObject(i, j))) {
@@ -89,14 +89,14 @@ final class RemoveMissingValueCasesAction extends AbstractAction {
             }
         }
 
-        final DataModelList list = new DataModelList();
+        DataModelList list = new DataModelList();
         list.add(newDataSet);
-        getDataEditor().reset(list);
-        getDataEditor().selectFirstTab();
+        this.getDataEditor().reset(list);
+        this.getDataEditor().selectFirstTab();
     }
 
     private DataEditor getDataEditor() {
-        return this.dataEditor;
+        return dataEditor;
     }
 }
 

@@ -34,13 +34,13 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 public class VariableSubsetterWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
 
-    private VariableSubsetterWrapper(final DataWrapper wrapper) {
-        final DataSet dataSet =
+    private VariableSubsetterWrapper(DataWrapper wrapper) {
+        DataSet dataSet =
                 (DataSet) wrapper.getSelectedDataModel();
-        final DataSet selection =
+        DataSet selection =
                 dataSet.subsetColumns(dataSet.getSelectedIndices());
 
-        final DataSet selectionCopy;
+        DataSet selectionCopy;
 
         if (selection.isDiscrete()) {
             selectionCopy = selection;
@@ -50,10 +50,10 @@ public class VariableSubsetterWrapper extends DataWrapper {
             selectionCopy = selection;
         }
 
-        setDataModel(selectionCopy);
-        setSourceGraph(wrapper.getSourceGraph());
+        this.setDataModel(selectionCopy);
+        this.setSourceGraph(wrapper.getSourceGraph());
 
-        LogDataUtils.logDataModelList("Restriction of parent data to selected variables.", getDataModelList());
+        LogDataUtils.logDataModelList("Restriction of parent data to selected variables.", this.getDataModelList());
 
     }
 

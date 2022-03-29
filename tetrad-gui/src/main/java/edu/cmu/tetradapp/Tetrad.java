@@ -21,6 +21,7 @@
 package edu.cmu.tetradapp;
 
 import edu.cmu.tetrad.graph.NodeEqualityMode;
+import edu.cmu.tetrad.graph.NodeEqualityMode.Type;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Version;
@@ -86,9 +87,9 @@ public final class Tetrad implements PropertyChangeListener {
      * @param e the property change event
      */
     @Override
-    public void propertyChange(final PropertyChangeEvent e) {
+    public void propertyChange(PropertyChangeEvent e) {
         if ("exitProgram".equals(e.getPropertyName())) {
-            exitApplication();
+            this.exitApplication();
         }
     }
 
@@ -105,15 +106,15 @@ public final class Tetrad implements PropertyChangeListener {
      *
      * @param argv --skip-latest argument will skip checking for latest version.
      */
-    public static void main(final String[] argv) {
+    public static void main(String[] argv) {
         if (argv != null && argv.length > 0) {
-            Tetrad.enableExperimental = Tetrad.EXP_OPT.equals(argv[0]);
+            enableExperimental = EXP_OPT.equals(argv[0]);
         }
 
         // Avoid updates to swing code that causes comparison-method-violates-its-general-contract warnings
         System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
 
-        Tetrad.setLookAndFeel();
+        setLookAndFeel();
 
         // This is needed to get numbers to be parsed and rendered uniformly, especially in the interface.
         Locale.setDefault(Locale.US);
@@ -128,7 +129,7 @@ public final class Tetrad implements PropertyChangeListener {
     //===============================PRIVATE METHODS=======================//
     private static void setLookAndFeel() {
         try {
-            final String os = System.getProperties().getProperty("os.name");
+            String os = System.getProperties().getProperty("os.name");
             if (os.equals("Windows XP")) {
                 // The only system look and feel that seems to work well is the
                 // one for Windows XP. When running on Mac the mac look and
@@ -139,7 +140,7 @@ public final class Tetrad implements PropertyChangeListener {
                 UIManager.setLookAndFeel(
                         UIManager.getSystemLookAndFeelClassName());
             }
-        } catch (final Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -150,13 +151,13 @@ public final class Tetrad implements PropertyChangeListener {
      */
     private void launchFrame() {
         System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
-        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
+        NodeEqualityMode.setEqualityMode(Type.OBJECT);
 
         // Set up the desktop.
-        this.desktop = new TetradDesktop();
-        getDesktop().addPropertyChangeListener(this);
-        JOptionUtils.setCenteringComp(getDesktop());
-        DesktopController.setReference(getDesktop());
+        desktop = new TetradDesktop();
+        this.getDesktop().addPropertyChangeListener(this);
+        JOptionUtils.setCenteringComp(this.getDesktop());
+        DesktopController.setReference(this.getDesktop());
 
         // Set up the frame. Note the order in which the next few steps
         // happen. First, the frame is given a preferred size, so that if
@@ -164,16 +165,16 @@ public final class Tetrad implements PropertyChangeListener {
         // corner. Next, the content pane is set. Next, it is packed. Finally,
         // it is maximized. For some reason, most of the details of this
         // order are important. jdramsey 12/14/02
-        this.frame = new JFrame(this.mainTitle) {
+        frame = new JFrame(mainTitle) {
 
             private static final long serialVersionUID = -9077349253115802418L;
 
             @Override
             public Dimension getPreferredSize() {
-                final Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
-                final double minLength = Math.min(size.getWidth(), size.getHeight());
-                final double height = minLength * 0.8;
-                final double width = height * (4.0 / 3);
+                Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
+                double minLength = Math.min(size.getWidth(), size.getHeight());
+                double height = minLength * 0.8;
+                double width = height * (4.0 / 3);
 
                 return new Dimension((int) width, (int) height);
 //                return Toolkit.getDefaultToolkit().getScreenSize();
@@ -195,30 +196,30 @@ public final class Tetrad implements PropertyChangeListener {
         // Fixing a bug caused by switch to Oracle Java (at least for Mac), although I must say the following
         // code is what should have worked to begin with. Bug was that sessions would appear only in the lower
         // left hand corner of the screen.
-        this.frame.setPreferredSize(Toolkit.getDefaultToolkit().getScreenSize());
+        frame.setPreferredSize(Toolkit.getDefaultToolkit().getScreenSize());
 //        this.frame.setMinimumSize(Toolkit.getDefaultToolkit().getScreenSize());
 //        this.frame.setMaximumSize(Toolkit.getDefaultToolkit().getScreenSize());
 
-        getFrame().setContentPane(getDesktop());
-        getFrame().pack();
-        getFrame().setLocationRelativeTo(null);
+        this.getFrame().setContentPane(this.getDesktop());
+        this.getFrame().pack();
+        this.getFrame().setLocationRelativeTo(null);
 
         // This doesn't let the user resize the main window.
 //        getFrame().setExtendedState(Frame.MAXIMIZED_BOTH);
-        final Image image = ImageUtils.getImage(this, "tyler16.png");
-        getFrame().setIconImage(image);
+        Image image = ImageUtils.getImage(this, "tyler16.png");
+        this.getFrame().setIconImage(image);
 
         // Add an initial session editor to the desktop. Must be done
         // from here, not in the constructor of TetradDesktop.
-        getDesktop().newSessionEditor();
-        getFrame().setVisible(true);
-        getFrame().setDefaultCloseOperation(
+        this.getDesktop().newSessionEditor();
+        this.getFrame().setVisible(true);
+        this.getFrame().setDefaultCloseOperation(
                 WindowConstants.DO_NOTHING_ON_CLOSE);
 
-        getFrame().addWindowListener(new WindowAdapter() {
+        this.getFrame().addWindowListener(new WindowAdapter() {
             @Override
-            public void windowClosing(final WindowEvent e) {
-                exitApplication();
+            public void windowClosing(WindowEvent e) {
+                Tetrad.this.exitApplication();
             }
         });
 
@@ -235,29 +236,29 @@ public final class Tetrad implements PropertyChangeListener {
      * Exits the application gracefully.
      */
     private void exitApplication() {
-        final boolean succeeded = getDesktop().closeAllSessions();
+        boolean succeeded = this.getDesktop().closeAllSessions();
 
         if (!succeeded) {
             return;
         }
 
-        getFrame().setVisible(false);
-        getFrame().dispose();
+        this.getFrame().setVisible(false);
+        this.getFrame().dispose();
         TetradLogger.getInstance().removeNextOutputStream();
 
         try {
             System.exit(0);
-        } catch (final Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     private JFrame getFrame() {
-        return this.frame;
+        return frame;
     }
 
     private TetradDesktop getDesktop() {
-        return this.desktop;
+        return desktop;
     }
 
 }

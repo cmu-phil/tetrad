@@ -46,8 +46,8 @@ public class SemPmWrapper implements SessionModel {
 
     static final long serialVersionUID = 23L;
     private int numModels = 1;
-    private int modelIndex = 0;
-    private String modelSourceName = null;
+    private int modelIndex;
+    private String modelSourceName;
 
     /**
      * @serial Can be null.
@@ -57,16 +57,16 @@ public class SemPmWrapper implements SessionModel {
     private List<SemPm> semPms;
 
     //==============================CONSTRUCTORS==========================//
-    public SemPmWrapper(final Graph graph) {
+    public SemPmWrapper(Graph graph) {
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");
         }
 
-        this.semPms = new ArrayList<>();
-        this.semPms.add(new SemPm(graph));
+        semPms = new ArrayList<>();
+        semPms.add(new SemPm(graph));
 
-        for (int i = 0; i < this.semPms.size(); i++) {
-            log(i, this.semPms.get(i));
+        for (int i = 0; i < semPms.size(); i++) {
+            this.log(i, semPms.get(i));
         }
     }
 
@@ -74,14 +74,14 @@ public class SemPmWrapper implements SessionModel {
      * Creates a new SemPm from the given workbench and uses it to construct a
      * new BayesPm.
      */
-    public SemPmWrapper(final Simulation simulation, final Parameters parameters) {
+    public SemPmWrapper(Simulation simulation, Parameters parameters) {
         List<SemIm> semIms = null;
 
         if (simulation == null) {
             throw new NullPointerException("The Simulation box does not contain a simulation.");
         }
 
-        final edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation = simulation.getSimulation();
+        edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation = simulation.getSimulation();
 
         if (_simulation == null) {
             throw new NullPointerException("No data sets have been simulated.");
@@ -102,95 +102,95 @@ public class SemPmWrapper implements SessionModel {
             throw new NullPointerException("It looks like you have not done a simulation.");
         }
 
-        this.semPms = new ArrayList<>();
+        semPms = new ArrayList<>();
 
-        for (final SemIm semIm : semIms) {
-            this.semPms.add(semIm.getSemPm());
+        for (SemIm semIm : semIms) {
+            semPms.add(semIm.getSemPm());
         }
 
-        this.numModels = simulation.getDataModelList().size();
-        this.modelIndex = 0;
-        this.modelSourceName = simulation.getName();
+        numModels = simulation.getDataModelList().size();
+        modelIndex = 0;
+        modelSourceName = simulation.getName();
     }
 
     /**
      * Creates a new SemPm from the given workbench and uses it to construct a
      * new BayesPm.
      */
-    public SemPmWrapper(final GraphSource graphWrapper, final Parameters parameters) {
+    public SemPmWrapper(GraphSource graphWrapper, Parameters parameters) {
         this(graphWrapper.getGraph() instanceof TimeLagGraph
                 ? new TimeLagGraph((TimeLagGraph) graphWrapper.getGraph())
                 : new EdgeListGraph(graphWrapper.getGraph()));
     }
 
-    public SemPmWrapper(final GraphSource graphSource, final DataWrapper dataWrapper, final Parameters parameters) {
+    public SemPmWrapper(GraphSource graphSource, DataWrapper dataWrapper, Parameters parameters) {
         this(new EdgeListGraph(graphSource.getGraph()));
     }
 
-    public SemPmWrapper(final SemEstimatorWrapper wrapper, final Parameters parameters) {
-        final SemPm oldSemPm = wrapper.getSemEstimator().getEstimatedSem()
+    public SemPmWrapper(SemEstimatorWrapper wrapper, Parameters parameters) {
+        SemPm oldSemPm = wrapper.getSemEstimator().getEstimatedSem()
                 .getSemPm();
-        setSemPm(oldSemPm);
+        this.setSemPm(oldSemPm);
     }
 
-    private void setSemPm(final SemPm oldSemPm) {
+    private void setSemPm(SemPm oldSemPm) {
         try {
-            final SemPm pm = (SemPm) new MarshalledObject(oldSemPm).get();
-            this.semPms = Collections.singletonList(pm);
-        } catch (final IOException e) {
+            SemPm pm = (SemPm) new MarshalledObject(oldSemPm).get();
+            semPms = Collections.singletonList(pm);
+        } catch (IOException e) {
             e.printStackTrace();
-        } catch (final ClassNotFoundException e) {
+        } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
     }
 
-    public SemPmWrapper(final SemImWrapper wrapper) {
-        final SemPm pm = wrapper.getSemIm().getSemPm();
-        setSemPm(pm);
+    public SemPmWrapper(SemImWrapper wrapper) {
+        SemPm pm = wrapper.getSemIm().getSemPm();
+        this.setSemPm(pm);
 
     }
 
-    public SemPmWrapper(final MimBuildRunner wrapper) {
-        final SemPm pm = wrapper.getSemPm();
-        setSemPm(pm);
+    public SemPmWrapper(MimBuildRunner wrapper) {
+        SemPm pm = wrapper.getSemPm();
+        this.setSemPm(pm);
 
     }
 
-    public SemPmWrapper(final BuildPureClustersRunner wrapper) {
-        final Graph graph = wrapper.getResultGraph();
+    public SemPmWrapper(BuildPureClustersRunner wrapper) {
+        Graph graph = wrapper.getResultGraph();
         if (graph == null) {
             throw new IllegalArgumentException("No graph to display.");
         }
-        final SemPm pm = new SemPm(graph);
-        setSemPm(pm);
+        SemPm pm = new SemPm(graph);
+        this.setSemPm(pm);
 
     }
 
-    public SemPmWrapper(final Simulation simulation) {
-        final List<Graph> graphs = simulation.getGraphs();
+    public SemPmWrapper(Simulation simulation) {
+        List<Graph> graphs = simulation.getGraphs();
 
         if (!(graphs.size() == 1)) {
             throw new IllegalArgumentException("Simulation must contain exactly one graph/data pair.");
         }
 
-        setSemPm(new SemPm(graphs.get(0)));
+        this.setSemPm(new SemPm(graphs.get(0)));
     }
 
-    public SemPmWrapper(final AlgorithmRunner wrapper) {
+    public SemPmWrapper(AlgorithmRunner wrapper) {
         this(new EdgeListGraph(wrapper.getGraph()));
     }
 
-    public SemPmWrapper(final DagInCPDAGWrapper wrapper) {
+    public SemPmWrapper(DagInCPDAGWrapper wrapper) {
         this(new EdgeListGraph(wrapper.getGraph()));
     }
 
-    public SemPmWrapper(final ScoredGraphsWrapper wrapper) {
+    public SemPmWrapper(ScoredGraphsWrapper wrapper) {
         this(new EdgeListGraph(wrapper.getGraph()));
     }
 
-    public SemPmWrapper(final PValueImproverWrapper wrapper) {
-        final SemPm oldSemPm = wrapper.getNewSemIm().getSemPm();
-        log(0, oldSemPm);
+    public SemPmWrapper(PValueImproverWrapper wrapper) {
+        SemPm oldSemPm = wrapper.getNewSemIm().getSemPm();
+        this.log(0, oldSemPm);
 
     }
 
@@ -205,7 +205,7 @@ public class SemPmWrapper implements SessionModel {
 
     //============================PUBLIC METHODS=========================//
     public SemPm getSemPm() {
-        return this.semPms.get(getModelIndex());
+        return semPms.get(this.getModelIndex());
     }
 
     /**
@@ -221,56 +221,56 @@ public class SemPmWrapper implements SessionModel {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
 
     public Graph getGraph() {
-        return this.semPms.get(this.modelIndex).getGraph();
+        return semPms.get(modelIndex).getGraph();
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
     //======================= Private methods ====================//
-    private void log(final int i, final SemPm pm) {
+    private void log(int i, SemPm pm) {
         TetradLogger.getInstance().log("info", "Linear Structural Equation Parametric Model (SEM PM)");
         TetradLogger.getInstance().log("info", "PM # " + (i + 1));
         TetradLogger.getInstance().log("pm", pm.toString());
     }
 
     public Graph getSourceGraph() {
-        return getGraph();
+        return this.getGraph();
     }
 
     public Graph getResultGraph() {
-        return getResultGraph();
+        return this.getResultGraph();
     }
 
     public List<String> getVariableNames() {
-        return getGraph().getNodeNames();
+        return this.getGraph().getNodeNames();
     }
 
     public List<Node> getVariables() {
-        return getGraph().getNodes();
+        return this.getGraph().getNodes();
     }
 
     public int getNumModels() {
-        return this.numModels;
+        return numModels;
     }
 
     public int getModelIndex() {
-        return this.modelIndex;
+        return modelIndex;
     }
 
     public String getModelSourceName() {
-        return this.modelSourceName;
+        return modelSourceName;
     }
 
     /**
@@ -279,10 +279,10 @@ public class SemPmWrapper implements SessionModel {
      * @serial Cannot be null.
      */
     public List<SemPm> getSemPms() {
-        return this.semPms;
+        return semPms;
     }
 
-    public void setModelIndex(final int modelIndex) {
+    public void setModelIndex(int modelIndex) {
         this.modelIndex = modelIndex;
     }
 }

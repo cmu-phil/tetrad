@@ -33,59 +33,59 @@ public class GeneralSemSimulation implements Simulation {
     private List<Graph> graphs = new ArrayList<>();
     private List<GeneralizedSemIm> ims = new ArrayList<>();
 
-    public GeneralSemSimulation(final RandomGraph graph) {
-        this.randomGraph = graph;
+    public GeneralSemSimulation(RandomGraph graph) {
+        randomGraph = graph;
     }
 
-    public GeneralSemSimulation(final GeneralizedSemPm pm) {
-        final SemGraph graph = pm.getGraph();
+    public GeneralSemSimulation(GeneralizedSemPm pm) {
+        SemGraph graph = pm.getGraph();
         graph.setShowErrorTerms(false);
-        this.randomGraph = new SingleGraph(graph);
+        randomGraph = new SingleGraph(graph);
         this.pm = pm;
     }
 
-    public GeneralSemSimulation(final GeneralizedSemIm im) {
-        final SemGraph graph = im.getSemPm().getGraph();
+    public GeneralSemSimulation(GeneralizedSemIm im) {
+        SemGraph graph = im.getSemPm().getGraph();
         graph.setShowErrorTerms(false);
-        this.randomGraph = new SingleGraph(graph);
+        randomGraph = new SingleGraph(graph);
         this.im = im;
-        this.ims = new ArrayList<>();
-        this.ims.add(im);
-        this.pm = im.getGeneralizedSemPm();
+        ims = new ArrayList<>();
+        ims.add(im);
+        pm = im.getGeneralizedSemPm();
     }
 
     @Override
-    public void createData(final Parameters parameters, final boolean newModel) {
+    public void createData(Parameters parameters, boolean newModel) {
 //        if (!newModel && !dataSets.isEmpty()) return;
 
-        Graph graph = this.randomGraph.createGraph(parameters);
+        Graph graph = randomGraph.createGraph(parameters);
 
-        this.dataSets = new ArrayList<>();
-        this.graphs = new ArrayList<>();
-        this.ims = new ArrayList<>();
+        dataSets = new ArrayList<>();
+        graphs = new ArrayList<>();
+        ims = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt(Params.NUM_RUNS); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
 
             if (parameters.getBoolean(Params.DIFFERENT_GRAPHS) && i > 0) {
-                graph = this.randomGraph.createGraph(parameters);
+                graph = randomGraph.createGraph(parameters);
             }
 
-            this.graphs.add(graph);
+            graphs.add(graph);
 
-            DataSet dataSet = simulate(graph, parameters);
+            DataSet dataSet = this.simulate(graph, parameters);
 
             if (parameters.getBoolean(Params.STANDARDIZE)) {
                 dataSet = DataUtils.standardizeData(dataSet);
             }
 
-            final double variance = parameters.getDouble(Params.MEASUREMENT_VARIANCE);
+            double variance = parameters.getDouble(Params.MEASUREMENT_VARIANCE);
 
             if (variance > 0) {
                 for (int k = 0; k < dataSet.getNumRows(); k++) {
                     for (int j = 0; j < dataSet.getNumColumns(); j++) {
-                        final double d = dataSet.getDouble(k, j);
-                        final double norm = RandomUtil.getInstance().nextNormal(0, Math.sqrt(variance));
+                        double d = dataSet.getDouble(k, j);
+                        double norm = RandomUtil.getInstance().nextNormal(0, Math.sqrt(variance));
                         dataSet.setDouble(k, j, d + norm);
                     }
                 }
@@ -96,39 +96,39 @@ public class GeneralSemSimulation implements Simulation {
             }
 
             dataSet.setName("" + (i + 1));
-            this.dataSets.add(DataUtils.restrictToMeasured(dataSet));
-            this.dataWithLatents.add(dataSet);
+            dataSets.add(DataUtils.restrictToMeasured(dataSet));
+            dataWithLatents.add(dataSet);
         }
     }
 
-    private synchronized DataSet simulate(final Graph graph, final Parameters parameters) {
-        if (this.pm == null) {
-            this.pm = getPm(graph, parameters);
+    private synchronized DataSet simulate(Graph graph, Parameters parameters) {
+        if (pm == null) {
+            pm = this.getPm(graph, parameters);
         }
 
-        System.out.println(this.pm);
+        System.out.println(pm);
 
-        this.im = new GeneralizedSemIm(this.pm);
+        im = new GeneralizedSemIm(pm);
 
-        System.out.println(this.im);
+        System.out.println(im);
 
-        this.ims.add(this.im);
-        return this.im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), true);
+        ims.add(im);
+        return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), true);
     }
 
     @Override
-    public Graph getTrueGraph(final int index) {
-        return this.graphs.get(index);
+    public Graph getTrueGraph(int index) {
+        return graphs.get(index);
     }
 
     @Override
     public int getNumDataModels() {
-        return this.dataSets.size();
+        return dataSets.size();
     }
 
     @Override
-    public DataModel getDataModel(final int index) {
-        return this.dataSets.get(index);
+    public DataModel getDataModel(int index) {
+        return dataSets.get(index);
     }
 
     @Override
@@ -137,18 +137,18 @@ public class GeneralSemSimulation implements Simulation {
     }
 
     public String getDescription() {
-        return "Nonlinear, non-Gaussian SEM simulation using " + this.randomGraph.getDescription();
+        return "Nonlinear, non-Gaussian SEM simulation using " + randomGraph.getDescription();
     }
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
 
-        if (!(this.randomGraph instanceof SingleGraph)) {
-            parameters.addAll(this.randomGraph.getParameters());
+        if (!(randomGraph instanceof SingleGraph)) {
+            parameters.addAll(randomGraph.getParameters());
         }
 
-        if (this.pm == null) {
+        if (pm == null) {
             parameters.addAll(GeneralizedSemPm.getParameterNames());
         }
 
@@ -159,27 +159,27 @@ public class GeneralSemSimulation implements Simulation {
         return parameters;
     }
 
-    private GeneralizedSemPm getPm(final Graph graph, final Parameters parameters) {
-        final GeneralizedSemPm pm = new GeneralizedSemPm(graph);
+    private GeneralizedSemPm getPm(Graph graph, Parameters parameters) {
+        GeneralizedSemPm pm = new GeneralizedSemPm(graph);
 
-        final List<Node> variablesNodes = pm.getVariableNodes();
-        final List<Node> errorNodes = pm.getErrorNodes();
+        List<Node> variablesNodes = pm.getVariableNodes();
+        List<Node> errorNodes = pm.getErrorNodes();
 
         try {
 
-            for (final Node node : variablesNodes) {
-                final String _template = TemplateExpander.getInstance().expandTemplate(
+            for (Node node : variablesNodes) {
+                String _template = TemplateExpander.getInstance().expandTemplate(
                         parameters.getString(Params.GENERAL_SEM_FUNCTION_TEMPLATE_MEASURED), pm, node);
                 pm.setNodeExpression(node, _template);
             }
 
-            for (final Node node : errorNodes) {
-                final String _template = TemplateExpander.getInstance().expandTemplate(
+            for (Node node : errorNodes) {
+                String _template = TemplateExpander.getInstance().expandTemplate(
                         parameters.getString(Params.GENERAL_SEM_ERROR_TEMPLATE), pm, node);
                 pm.setNodeExpression(node, _template);
             }
 
-            for (final String parameter : pm.getParameters()) {
+            for (String parameter : pm.getParameters()) {
                 pm.setParameterExpression(parameter, parameters.getString(Params.GENERAL_SEM_PARAMETER_TEMPLATE));
             }
 
@@ -187,7 +187,7 @@ public class GeneralSemSimulation implements Simulation {
             pm.setErrorsTemplate(parameters.getString(Params.GENERAL_SEM_ERROR_TEMPLATE));
             pm.setParametersTemplate(parameters.getString(Params.GENERAL_SEM_PARAMETER_TEMPLATE));
 
-        } catch (final ParseException e) {
+        } catch (ParseException e) {
             System.out.println(e);
         }
 
@@ -195,6 +195,6 @@ public class GeneralSemSimulation implements Simulation {
     }
 
     public List<GeneralizedSemIm> getIms() {
-        return this.ims;
+        return ims;
     }
 }

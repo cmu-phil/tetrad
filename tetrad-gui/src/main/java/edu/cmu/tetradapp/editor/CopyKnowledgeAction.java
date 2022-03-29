@@ -48,7 +48,7 @@ class CopyKnowledgeAction extends AbstractAction implements ClipboardOwner {
      * Creates a new copy subsession action for the given knowledgeEditable and
      * clipboard.
      */
-    public CopyKnowledgeAction(final KnowledgeEditable knowledgeEditable) {
+    public CopyKnowledgeAction(KnowledgeEditable knowledgeEditable) {
         super("Copy Knowledge");
 
         if (knowledgeEditable == null) {
@@ -62,16 +62,16 @@ class CopyKnowledgeAction extends AbstractAction implements ClipboardOwner {
      * Copies a parentally closed selection of session nodes in the frontmost
      * session editor to the clipboard.
      */
-    public void actionPerformed(final ActionEvent e) {
-        final IKnowledge knowledge = this.knowledgeEditable.getKnowledge();
-        final KnowledgeSelection selection = new KnowledgeSelection(knowledge);
+    public void actionPerformed(ActionEvent e) {
+        IKnowledge knowledge = knowledgeEditable.getKnowledge();
+        KnowledgeSelection selection = new KnowledgeSelection(knowledge);
         InternalClipboard.getInstance().setContents(selection, this);
     }
 
     /**
      * Required by the AbstractAction interface; does nothing.
      */
-    public void lostOwnership(final Clipboard clipboard, final Transferable contents) {
+    public void lostOwnership(Clipboard clipboard, Transferable contents) {
     }
 }
 

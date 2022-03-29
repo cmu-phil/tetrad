@@ -36,9 +36,9 @@ public class SepsetsMaxPValuePossDsep implements SepsetProducer {
     private int depth = 3;
     private int maxPathLength = 3;
     private double p = Double.NaN;
-    private boolean verbose = false;
+    private boolean verbose;
 
-    public SepsetsMaxPValuePossDsep(final Graph graph, final IndependenceTest independenceTest, final SepsetMap extraSepsets, final int depth, final int maxPathLength) {
+    public SepsetsMaxPValuePossDsep(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth, int maxPathLength) {
         this.graph = graph;
         this.independenceTest = independenceTest;
         this.extraSepsets = extraSepsets;
@@ -49,26 +49,26 @@ public class SepsetsMaxPValuePossDsep implements SepsetProducer {
     /**
      * Pick out the sepset from among adj(i) or adj(k) with the highest p value.
      */
-    public List<Node> getSepset(final Node i, final Node k) {
-        final List<Node> sepset = getMaxSepset(i, k);
-        if (getScore() < 0) {// getIndependenceTest().getAlpha()) {
+    public List<Node> getSepset(Node i, Node k) {
+        List<Node> sepset = this.getMaxSepset(i, k);
+        if (this.getScore() < 0) {// getIndependenceTest().getAlpha()) {
             return sepset;
         } else {
             return null;
         }
     }
 
-    public boolean isCollider(final Node i, final Node j, final Node k) {
-        final List<Node> _v = getMaxSepset(i, k);
+    public boolean isCollider(Node i, Node j, Node k) {
+        List<Node> _v = this.getMaxSepset(i, k);
         return _v != null && !_v.contains(j);
     }
 
-    public boolean isNoncollider(final Node i, final Node j, final Node k) {
-        final List<Node> _v = getMaxSepset(i, k);
+    public boolean isNoncollider(Node i, Node j, Node k) {
+        List<Node> _v = this.getMaxSepset(i, k);
         return _v != null && _v.contains(j);
     }
 
-    private List<Node> getMaxSepset(final Node i, final Node k) {
+    private List<Node> getMaxSepset(Node i, Node k) {
         double _p = 0.0;
         List<Node> _v = null;
 
@@ -87,21 +87,21 @@ public class SepsetsMaxPValuePossDsep implements SepsetProducer {
 
 //        List<Node> adji = graph.getAdjacentNodes(i);
 //        List<Node> adjk = graph.getAdjacentNodes(k);
-        final List<Node> adji = new ArrayList<>(SepsetsMaxPValuePossDsep.possibleDsep(i, k, this.graph, this.maxPathLength));
-        final List<Node> adjk = new ArrayList<>(SepsetsMaxPValuePossDsep.possibleDsep(k, i, this.graph, this.maxPathLength));
+        List<Node> adji = new ArrayList<>(possibleDsep(i, k, graph, maxPathLength));
+        List<Node> adjk = new ArrayList<>(possibleDsep(k, i, graph, maxPathLength));
         adji.remove(k);
         adjk.remove(i);
 
-        for (int d = 0; d <= Math.min((this.depth == -1 ? 1000 : this.depth), Math.max(adji.size(), adjk.size())); d++) {
+        for (int d = 0; d <= Math.min((depth == -1 ? 1000 : depth), Math.max(adji.size(), adjk.size())); d++) {
             if (d <= adji.size()) {
-                final ChoiceGenerator gen = new ChoiceGenerator(adji.size(), d);
+                ChoiceGenerator gen = new ChoiceGenerator(adji.size(), d);
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
-                    final List<Node> v = GraphUtils.asList(choice, adji);
+                    List<Node> v = GraphUtils.asList(choice, adji);
 
-                    getIndependenceTest().isIndependent(i, k, v);
-                    final double p = getIndependenceTest().getPValue();
+                    this.getIndependenceTest().isIndependent(i, k, v);
+                    double p = this.getIndependenceTest().getPValue();
 
                     if (p > _p) {
                         _p = p;
@@ -111,14 +111,14 @@ public class SepsetsMaxPValuePossDsep implements SepsetProducer {
             }
 
             if (d <= adjk.size()) {
-                final ChoiceGenerator gen = new ChoiceGenerator(adjk.size(), d);
+                ChoiceGenerator gen = new ChoiceGenerator(adjk.size(), d);
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
-                    final List<Node> v = GraphUtils.asList(choice, adjk);
+                    List<Node> v = GraphUtils.asList(choice, adjk);
 
-                    getIndependenceTest().isIndependent(i, k, v);
-                    final double p = getIndependenceTest().getPValue();
+                    this.getIndependenceTest().isIndependent(i, k, v);
+                    double p = this.getIndependenceTest().getPValue();
 
                     if (p > _p) {
                         _p = p;
@@ -128,34 +128,34 @@ public class SepsetsMaxPValuePossDsep implements SepsetProducer {
             }
         }
 
-        this.p = _p;
+        p = _p;
         return _v;
     }
 
-    public static Set<Node> possibleDsep(final Node x, final Node y, final Graph graph, final int maxPathLength) {
-        final Set<Node> dsep = new HashSet<>();
+    public static Set<Node> possibleDsep(Node x, Node y, Graph graph, int maxPathLength) {
+        Set<Node> dsep = new HashSet<>();
 
-        final Queue<OrderedPair<Node>> Q = new ArrayDeque<>();
-        final Set<OrderedPair<Node>> V = new HashSet<>();
+        Queue<OrderedPair<Node>> Q = new ArrayDeque<>();
+        Set<OrderedPair<Node>> V = new HashSet<>();
 
-        final Map<Node, List<Node>> previous = new HashMap<>();
+        Map<Node, List<Node>> previous = new HashMap<>();
         previous.put(x, null);
 
         OrderedPair e = null;
         int distance = 0;
 
-        for (final Node b : graph.getAdjacentNodes(x)) {
+        for (Node b : graph.getAdjacentNodes(x)) {
             if (b == y) continue;
-            final OrderedPair<Node> edge = new OrderedPair<>(x, b);
+            OrderedPair<Node> edge = new OrderedPair<>(x, b);
             if (e == null) e = edge;
             Q.offer(edge);
             V.add(edge);
-            SepsetsMaxPValuePossDsep.addToList(previous, b, x);
+            addToList(previous, b, x);
             dsep.add(b);
         }
 
         while (!Q.isEmpty()) {
-            final OrderedPair<Node> t = Q.poll();
+            OrderedPair<Node> t = Q.poll();
 
             if (e == t) {
                 e = null;
@@ -163,22 +163,22 @@ public class SepsetsMaxPValuePossDsep implements SepsetProducer {
                 if (distance > 0 && distance > (maxPathLength == -1 ? 1000 : maxPathLength)) break;
             }
 
-            final Node a = t.getFirst();
-            final Node b = t.getSecond();
+            Node a = t.getFirst();
+            Node b = t.getSecond();
 
-            if (SepsetsMaxPValuePossDsep.existOnePathWithPossibleParents(previous, b, x, b, graph)) {
+            if (existOnePathWithPossibleParents(previous, b, x, b, graph)) {
                 dsep.add(b);
             }
 
-            for (final Node c : graph.getAdjacentNodes(b)) {
+            for (Node c : graph.getAdjacentNodes(b)) {
                 if (c == a) continue;
                 if (c == x) continue;
                 if (c == y) continue;
 
-                SepsetsMaxPValuePossDsep.addToList(previous, b, c);
+                addToList(previous, b, c);
 
                 if (graph.isDefCollider(a, b, c) || graph.isAdjacentTo(a, c)) {
-                    final OrderedPair<Node> u = new OrderedPair<>(a, c);
+                    OrderedPair<Node> u = new OrderedPair<>(a, c);
                     if (V.contains(u)) continue;
 
                     V.add(u);
@@ -196,17 +196,17 @@ public class SepsetsMaxPValuePossDsep implements SepsetProducer {
         return dsep;
     }
 
-    private static boolean existOnePathWithPossibleParents(final Map<Node, List<Node>> previous, final Node w, final Node x, final Node b, final Graph graph) {
+    private static boolean existOnePathWithPossibleParents(Map<Node, List<Node>> previous, Node w, Node x, Node b, Graph graph) {
         if (w == x) return true;
-        final List<Node> p = previous.get(w);
+        List<Node> p = previous.get(w);
         if (p == null) return false;
 
-        for (final Node r : p) {
+        for (Node r : p) {
             if (r == b || r == x) continue;
 
-            if ((SepsetsMaxPValuePossDsep.existsSemidirectedPath(r, x, graph)) ||
-                    SepsetsMaxPValuePossDsep.existsSemidirectedPath(r, b, graph)) {
-                if (SepsetsMaxPValuePossDsep.existOnePathWithPossibleParents(previous, r, x, b, graph)) {
+            if ((existsSemidirectedPath(r, x, graph)) ||
+                    existsSemidirectedPath(r, b, graph)) {
+                if (existOnePathWithPossibleParents(previous, r, x, b, graph)) {
                     return true;
                 }
             }
@@ -215,7 +215,7 @@ public class SepsetsMaxPValuePossDsep implements SepsetProducer {
         return false;
     }
 
-    private static void addToList(final Map<Node, List<Node>> previous, final Node b, final Node c) {
+    private static void addToList(Map<Node, List<Node>> previous, Node b, Node c) {
         List<Node> list = previous.get(c);
 
         if (list == null) {
@@ -225,19 +225,19 @@ public class SepsetsMaxPValuePossDsep implements SepsetProducer {
         list.add(b);
     }
 
-    public static boolean existsSemidirectedPath(final Node from, final Node to, final Graph G) {
-        final Queue<Node> Q = new LinkedList<>();
-        final Set<Node> V = new HashSet<>();
+    public static boolean existsSemidirectedPath(Node from, Node to, Graph G) {
+        Queue<Node> Q = new LinkedList<>();
+        Set<Node> V = new HashSet<>();
         Q.offer(from);
         V.add(from);
 
         while (!Q.isEmpty()) {
-            final Node t = Q.remove();
+            Node t = Q.remove();
             if (t == to) return true;
 
-            for (final Node u : G.getAdjacentNodes(t)) {
-                final Edge edge = G.getEdge(t, u);
-                final Node c = Edges.traverseSemiDirected(t, edge);
+            for (Node u : G.getAdjacentNodes(t)) {
+                Edge edge = G.getEdge(t, u);
+                Node c = Edges.traverseSemiDirected(t, edge);
 
                 if (c == null) continue;
                 if (V.contains(c)) continue;
@@ -252,38 +252,38 @@ public class SepsetsMaxPValuePossDsep implements SepsetProducer {
 
 
     @Override
-    public boolean isIndependent(final Node a, final Node b, final List<Node> c) {
-        return this.independenceTest.isIndependent(a, b, c);
+    public boolean isIndependent(Node a, Node b, List<Node> c) {
+        return independenceTest.isIndependent(a, b, c);
     }
 
 
     @Override
     public double getPValue() {
-        return this.p;
+        return p;
     }
 
     @Override
     public double getScore() {
-        return this.independenceTest.getScore();
+        return independenceTest.getScore();
 
 //        return -(p - independenceTest.getAlpha());
     }
 
     @Override
     public List<Node> getVariables() {
-        return this.independenceTest.getVariables();
+        return independenceTest.getVariables();
     }
 
     private IndependenceTest getIndependenceTest() {
-        return this.independenceTest;
+        return independenceTest;
     }
 
     public boolean isVerbose() {
-        return this.verbose;
+        return verbose;
     }
 
     @Override
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 

@@ -31,8 +31,8 @@ public class SemBicTest implements IndependenceWrapper {
     static final long serialVersionUID = 23L;
 
     @Override
-    public IndependenceTest getTest(final DataModel dataSet, final Parameters parameters) {
-        final SemBicScore score;
+    public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+        SemBicScore score;
 
         if (dataSet instanceof ICovarianceMatrix) {
             score = new SemBicScore((ICovarianceMatrix) dataSet);
@@ -57,7 +57,7 @@ public class SemBicTest implements IndependenceWrapper {
 
     @Override
     public List<String> getParameters() {
-        final List<String> params = new ArrayList<>();
+        List<String> params = new ArrayList<>();
         params.add(Params.PENALTY_DISCOUNT);
         params.add(Params.STRUCTURE_PRIOR);
         return params;

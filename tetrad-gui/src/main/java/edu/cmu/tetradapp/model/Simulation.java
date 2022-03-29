@@ -64,146 +64,146 @@ public class Simulation extends DataWrapper implements SessionModel,
     private Simulation() {
     }
 
-    public Simulation(final Parameters parameters) {
-        if (this.simulation == null) {
+    public Simulation(Parameters parameters) {
+        if (simulation == null) {
             // By default there shouldn't be a simulation until the users create one - Zhou
             //this.simulation = new BayesNetSimulation(new RandomForward());
             this.parameters = parameters;
-            this.fixedGraph = false;
-            this.fixedSimulation = false;
+            fixedGraph = false;
+            fixedSimulation = false;
         }
     }
 
-    public Simulation(final GraphSource graphSource, final Parameters parameters) {
+    public Simulation(GraphSource graphSource, Parameters parameters) {
         if (graphSource instanceof Simulation) {
-            final Simulation simulation = (Simulation) graphSource;
+            Simulation simulation = (Simulation) graphSource;
             this.simulation = simulation.simulation;
             this.parameters = new Parameters(simulation.parameters);
-            this.name = simulation.name + ".copy";
-            this.fixedGraph = simulation.fixedGraph;
-            this.fixedSimulation = simulation.fixedSimulation;
-            createSimulation(); // The suggestion is that you should't actually simulate before the user clicks 'simulate'
+            name = simulation.name + ".copy";
+            fixedGraph = simulation.fixedGraph;
+            fixedSimulation = simulation.fixedSimulation;
+            this.createSimulation(); // The suggestion is that you should't actually simulate before the user clicks 'simulate'
         } else {
-            this.fixedGraph = true;
+            fixedGraph = true;
             this.parameters = parameters;
-            this.fixedSimulation = false;
-            setSourceGraph(graphSource.getGraph());
+            fixedSimulation = false;
+            this.setSourceGraph(graphSource.getGraph());
 
             if (parameters.getParametersNames().contains("simulationsDropdownPreference")) {
-                final String simulationType = String.valueOf(parameters.getValues("simulationsDropdownPreference")[0]);
-                this.simulation = SimulationUtils.create(simulationType, new SingleGraph(graphSource.getGraph()));
+                String simulationType = String.valueOf(parameters.getValues("simulationsDropdownPreference")[0]);
+                simulation = SimulationUtils.create(simulationType, new SingleGraph(graphSource.getGraph()));
 
                 // Re-simuation whenever graph source changed and "Execute" button is clicked.
-                createSimulation();
+                this.createSimulation();
             } else {
-                this.simulation = new BayesNetSimulation(new SingleGraph(graphSource.getGraph()));
+                simulation = new BayesNetSimulation(new SingleGraph(graphSource.getGraph()));
             }
         }
     }
 
-    public Simulation(final BayesImWrapper wrapper, final Parameters parameters) {
-        this.simulation = new BayesNetSimulation(wrapper.getBayesIm());
+    public Simulation(BayesImWrapper wrapper, Parameters parameters) {
+        simulation = new BayesNetSimulation(wrapper.getBayesIm());
         this.parameters = parameters;
-        createSimulation();
+        this.createSimulation();
     }
 
-    public Simulation(final BayesImWrapperObs wrapper, final Parameters parameters) {
-        this.simulation = new BayesNetSimulation(wrapper.getBayesIm());
+    public Simulation(BayesImWrapperObs wrapper, Parameters parameters) {
+        simulation = new BayesNetSimulation(wrapper.getBayesIm());
         this.parameters = parameters;
-        createSimulation();
+        this.createSimulation();
     }
 
-    public Simulation(final BayesPmWrapper wrapper, final Parameters parameters) {
-        this.simulation = new BayesNetSimulation(wrapper.getBayesPm());
+    public Simulation(BayesPmWrapper wrapper, Parameters parameters) {
+        simulation = new BayesNetSimulation(wrapper.getBayesPm());
         this.parameters = parameters;
-        createSimulation();
+        this.createSimulation();
     }
 
-    public Simulation(final BayesEstimatorWrapper wrapper, final Parameters parameters) {
-        this.simulation = new BayesNetSimulation(wrapper.getEstimatedBayesIm());
+    public Simulation(BayesEstimatorWrapper wrapper, Parameters parameters) {
+        simulation = new BayesNetSimulation(wrapper.getEstimatedBayesIm());
         this.parameters = parameters;
-        createSimulation();
+        this.createSimulation();
     }
 
-    public Simulation(final DirichletBayesImWrapper wrapper, final Parameters parameters) {
-        this.simulation = new BayesNetSimulation(wrapper.getDirichletBayesIm());
+    public Simulation(DirichletBayesImWrapper wrapper, Parameters parameters) {
+        simulation = new BayesNetSimulation(wrapper.getDirichletBayesIm());
         this.parameters = parameters;
-        createSimulation();
+        this.createSimulation();
     }
 
-    public Simulation(final DirichletEstimatorWrapper wrapper, final Parameters parameters) {
-        this.simulation = new BayesNetSimulation(wrapper.getEstimatedBayesIm());
+    public Simulation(DirichletEstimatorWrapper wrapper, Parameters parameters) {
+        simulation = new BayesNetSimulation(wrapper.getEstimatedBayesIm());
         this.parameters = parameters;
-        createSimulation();
+        this.createSimulation();
     }
 
-    public Simulation(final CptInvariantUpdaterWrapper wrapper, final Parameters parameters) {
-        this.simulation = new BayesNetSimulation(wrapper.getBayesUpdater().getManipulatedBayesIm());
+    public Simulation(CptInvariantUpdaterWrapper wrapper, Parameters parameters) {
+        simulation = new BayesNetSimulation(wrapper.getBayesUpdater().getManipulatedBayesIm());
         this.parameters = parameters;
-        createSimulation();
+        this.createSimulation();
     }
 
-    public Simulation(final SemPmWrapper wrapper, final Parameters parameters) {
-        this.simulation = new SemSimulation(wrapper.getSemPm());
+    public Simulation(SemPmWrapper wrapper, Parameters parameters) {
+        simulation = new SemSimulation(wrapper.getSemPm());
         this.parameters = parameters;
-        createSimulation();
+        this.createSimulation();
     }
 
-    public Simulation(final SemImWrapper wrapper, final Parameters parameters) {
-        this.simulation = new SemSimulation(wrapper.getSemIm());
+    public Simulation(SemImWrapper wrapper, Parameters parameters) {
+        simulation = new SemSimulation(wrapper.getSemIm());
         this.parameters = parameters;
-        createSimulation();
+        this.createSimulation();
     }
 
-    public Simulation(final StandardizedSemImWrapper wrapper, final Parameters parameters) {
-        this.simulation = new StandardizedSemSimulation(wrapper.getStandardizedSemIm());
+    public Simulation(StandardizedSemImWrapper wrapper, Parameters parameters) {
+        simulation = new StandardizedSemSimulation(wrapper.getStandardizedSemIm());
         this.parameters = parameters;
-        createSimulation();
+        this.createSimulation();
     }
 
-    public Simulation(final SemEstimatorWrapper wrapper, final Parameters parameters) {
-        this.simulation = new SemSimulation(wrapper.getEstimatedSemIm());
+    public Simulation(SemEstimatorWrapper wrapper, Parameters parameters) {
+        simulation = new SemSimulation(wrapper.getEstimatedSemIm());
         this.parameters = parameters;
-        createSimulation();
+        this.createSimulation();
     }
 
-    public Simulation(final SemUpdaterWrapper wrapper, final Parameters parameters) {
-        this.simulation = new SemSimulation(wrapper.getSemUpdater().getManipulatedSemIm());
+    public Simulation(SemUpdaterWrapper wrapper, Parameters parameters) {
+        simulation = new SemSimulation(wrapper.getSemUpdater().getManipulatedSemIm());
         this.parameters = parameters;
-        createSimulation();
+        this.createSimulation();
     }
 
-    public Simulation(final GeneralizedSemPmWrapper wrapper, final Parameters parameters) {
-        this.simulation = new GeneralSemSimulation(wrapper.getSemPm());
+    public Simulation(GeneralizedSemPmWrapper wrapper, Parameters parameters) {
+        simulation = new GeneralSemSimulation(wrapper.getSemPm());
         this.parameters = parameters;
-        createSimulation();
+        this.createSimulation();
     }
 
-    public Simulation(final GeneralizedSemImWrapper wrapper, final Parameters parameters) {
+    public Simulation(GeneralizedSemImWrapper wrapper, Parameters parameters) {
         if (wrapper.getSemIms().size() != 1) {
             throw new IllegalArgumentException("I'm sorry; this editor can only edit a single generalized SEM IM.");
         }
 
-        this.simulation = new GeneralSemSimulation(wrapper.getSemIms().get(0));
+        simulation = new GeneralSemSimulation(wrapper.getSemIms().get(0));
         this.parameters = parameters;
-        createSimulation();
+        this.createSimulation();
     }
 
-    public Simulation(final DataWrapper dataWrapper, final Parameters parameters) {
-        if (this.simulation == null) {
-            this.simulation = new LinearFisherModel(new RandomForward(), dataWrapper.getDataModelList());
-            this.inputDataModelList = dataWrapper.getDataModelList();
+    public Simulation(DataWrapper dataWrapper, Parameters parameters) {
+        if (simulation == null) {
+            simulation = new LinearFisherModel(new RandomForward(), dataWrapper.getDataModelList());
+            inputDataModelList = dataWrapper.getDataModelList();
             this.parameters = parameters;
-            this.fixedGraph = false;
-            this.fixedSimulation = false;
+            fixedGraph = false;
+            fixedSimulation = false;
         }
     }
 
     public edu.cmu.tetrad.algcomparison.simulation.Simulation getSimulation() {
-        return this.simulation;
+        return simulation;
     }
 
-    public void setSimulation(final edu.cmu.tetrad.algcomparison.simulation.Simulation simulation, final Parameters parameters) {
+    public void setSimulation(edu.cmu.tetrad.algcomparison.simulation.Simulation simulation, Parameters parameters) {
         this.simulation = simulation;
         this.parameters = parameters;
     }
@@ -218,31 +218,31 @@ public class Simulation extends DataWrapper implements SessionModel,
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
     public Parameters getParams() {
-        return this.parameters;
+        return parameters;
     }
 
     /**
      * Sets the data model.
      */
-    public void setDataModel(final DataModel dataModel) {
+    public void setDataModel(DataModel dataModel) {
     }
 
     /**
      * @return the list of models.
      */
     public DataModelList getDataModelList() {
-        final DataModelList list = new DataModelList();
+        DataModelList list = new DataModelList();
 
-        for (int i = 0; i < this.simulation.getNumDataModels(); i++) {
-            list.add(this.simulation.getDataModel(i));
+        for (int i = 0; i < simulation.getNumDataModels(); i++) {
+            list.add(simulation.getDataModel(i));
         }
 
         return list;
@@ -252,20 +252,20 @@ public class Simulation extends DataWrapper implements SessionModel,
      * @return the list of models.
      */
     public List<DataModel> getDataModels() {
-        final List<DataModel> list = new ArrayList<>();
+        List<DataModel> list = new ArrayList<>();
 
-        for (int i = 0; i < this.simulation.getNumDataModels(); i++) {
-            list.add(this.simulation.getDataModel(i));
+        for (int i = 0; i < simulation.getNumDataModels(); i++) {
+            list.add(simulation.getDataModel(i));
         }
 
         return list;
     }
 
-    public void setDataModelList(final DataModelList dataModelList) {
+    public void setDataModelList(DataModelList dataModelList) {
         throw new UnsupportedOperationException();
     }
 
-    public void setParameters(final Parameters parameters) {
+    public void setParameters(Parameters parameters) {
         this.parameters = parameters;
     }
 
@@ -278,7 +278,7 @@ public class Simulation extends DataWrapper implements SessionModel,
         // Every time the users click the Simulate button, new data needs to be created
         // regardless of already created data - Zhou
         //if (simulation.getNumDataModels() == 0) {
-        this.simulation.createData(this.parameters, false);
+        simulation.createData(parameters, false);
         //}
     }
 
@@ -287,51 +287,51 @@ public class Simulation extends DataWrapper implements SessionModel,
      * Returns all of the graphs in the simulation, in order.
      */
     public List<Graph> getGraphs() {
-        final List<Graph> graphs = new ArrayList<>();
+        List<Graph> graphs = new ArrayList<>();
 
-        for (int i = 0; i < this.simulation.getNumDataModels(); i++) {
-            graphs.add(this.simulation.getTrueGraph(i));
+        for (int i = 0; i < simulation.getNumDataModels(); i++) {
+            graphs.add(simulation.getTrueGraph(i));
         }
 
         return graphs;
     }
 
     public boolean isFixedSimulation() {
-        return this.fixedSimulation;
+        return fixedSimulation;
     }
 
-    public void setFixedSimulation(final boolean fixedSimulation) {
+    public void setFixedSimulation(boolean fixedSimulation) {
         this.fixedSimulation = fixedSimulation;
     }
 
     public boolean isFixedGraph() {
-        return this.fixedGraph;
+        return fixedGraph;
     }
 
-    public void setFixedGraph(final boolean fixedGraph) {
+    public void setFixedGraph(boolean fixedGraph) {
         this.fixedGraph = fixedGraph;
     }
 
     public IKnowledge getKnowledge() {
-        if (this.simulation instanceof HasKnowledge) {
-            return ((HasKnowledge) this.simulation).getKnowledge();
+        if (simulation instanceof HasKnowledge) {
+            return ((HasKnowledge) simulation).getKnowledge();
         } else {
             return new Knowledge2();
         }
     }
 
-    public void setSimulation(final edu.cmu.tetrad.algcomparison.simulation.Simulation simulation) {
+    public void setSimulation(edu.cmu.tetrad.algcomparison.simulation.Simulation simulation) {
         this.simulation = simulation;
     }
 
     public List<DataModel> getInputDataModelList() {
-        return this.inputDataModelList;
+        return inputDataModelList;
     }
 
     @Override
     public Graph getGraph() {
-        if (getGraphs().size() == 1) {
-            return getGraphs().get(0);
+        if (this.getGraphs().size() == 1) {
+            return this.getGraphs().get(0);
         }
 
         throw new IllegalArgumentException("Expecting one graph.");

@@ -34,7 +34,7 @@ import java.util.List;
 public class BDeScore implements LocalDiscreteScore {
     private final DataSet dataSet;
 
-    public BDeScore(final DataSet dataSet) {
+    public BDeScore(DataSet dataSet) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
@@ -46,16 +46,16 @@ public class BDeScore implements LocalDiscreteScore {
         this.dataSet = dataSet;
     }
 
-    public double localScore(final int i, final int[] parents) {
+    public double localScore(int i, int[] parents) {
 
         // Number of categories for i.
-        final int r = numCategories(i);
+        int r = this.numCategories(i);
 
         // Numbers of categories of parents.
-        final int[] dims = new int[parents.length];
+        int[] dims = new int[parents.length];
 
         for (int p = 0; p < parents.length; p++) {
-            dims[p] = numCategories(parents[p]);
+            dims[p] = this.numCategories(parents[p]);
         }
 
         // Number of parent states.
@@ -65,14 +65,14 @@ public class BDeScore implements LocalDiscreteScore {
         }
 
         // Conditional cell coefs of data for i given parents(i).
-        final int[][] n_ijk = new int[q][r];
-        final int[] n_ij = new int[q];
+        int[][] n_ijk = new int[q][r];
+        int[] n_ij = new int[q];
 
-        final int[] values = new int[parents.length];
+        int[] values = new int[parents.length];
 
-        for (int n = 0; n < sampleSize(); n++) {
+        for (int n = 0; n < this.sampleSize(); n++) {
             for (int p = 0; p < parents.length; p++) {
-                final int parentValue = dataSet().getInt(n, parents[p]);
+                int parentValue = this.dataSet().getInt(n, parents[p]);
 
                 if (parentValue == -99) {
                     throw new IllegalStateException("Please remove or impute " +
@@ -82,7 +82,7 @@ public class BDeScore implements LocalDiscreteScore {
                 values[p] = parentValue;
             }
 
-            final int childValue = dataSet().getInt(n, i);
+            int childValue = this.dataSet().getInt(n, i);
 
             if (childValue == -99) {
                 throw new IllegalStateException("Please remove or impute missing " +
@@ -90,7 +90,7 @@ public class BDeScore implements LocalDiscreteScore {
 
             }
 
-            final int rowIndex = getRowIndex(dims, values);
+            int rowIndex = this.getRowIndex(dims, values);
 
 //            for (int m = 0; m < dataSet().getMultiplier(n); m++) {
             n_ijk[rowIndex][childValue]++;
@@ -109,12 +109,12 @@ public class BDeScore implements LocalDiscreteScore {
 
         for (int j = 0; j < q; j++) {
             for (int k = 0; k < r; k++) {
-                final double nPrimeijk = 1. / (r * q);
+                double nPrimeijk = 1. / (r * q);
                 score += ProbUtils.lngamma(n_ijk[j][k] + nPrimeijk);
                 score -= ProbUtils.lngamma(nPrimeijk);
             }
 
-            final double nPrimeij = 1. / q;
+            double nPrimeij = 1. / q;
 
             score += ProbUtils.lngamma(nPrimeij);
             score -= ProbUtils.lngamma(n_ij[j] + nPrimeij);
@@ -124,37 +124,37 @@ public class BDeScore implements LocalDiscreteScore {
     }
 
     @Override
-    public double localScoreDiff(final int x, final int y, final int[] z) {
-        return localScore(y, append(z, x)) - localScore(y, z);
+    public double localScoreDiff(int x, int y, int[] z) {
+        return this.localScore(y, this.append(z, x)) - this.localScore(y, z);
     }
 
     @Override
-    public double localScoreDiff(final int x, final int y) {
-        return localScore(y, x) - localScore(y);
+    public double localScoreDiff(int x, int y) {
+        return this.localScore(y, x) - this.localScore(y);
     }
 
-    int[] append(final int[] parents, final int extra) {
-        final int[] all = new int[parents.length + 1];
+    int[] append(int[] parents, int extra) {
+        int[] all = new int[parents.length + 1];
         System.arraycopy(parents, 0, all, 0, parents.length);
         all[parents.length] = extra;
         return all;
     }
 
     @Override
-    public double localScore(final int i, final int parent) {
-        return localScore(i, new int[]{parent});
+    public double localScore(int i, int parent) {
+        return this.localScore(i, new int[]{parent});
     }
 
     @Override
-    public double localScore(final int i) {
-        return localScore(i, new int[0]);
+    public double localScore(int i) {
+        return this.localScore(i, new int[0]);
     }
 
     public DataSet getDataSet() {
-        return this.dataSet;
+        return dataSet;
     }
 
-    private int getRowIndex(final int[] dim, final int[] values) {
+    private int getRowIndex(int[] dim, int[] values) {
         int rowIndex = 0;
         for (int i = 0; i < dim.length; i++) {
             rowIndex *= dim[i];
@@ -164,40 +164,40 @@ public class BDeScore implements LocalDiscreteScore {
     }
 
     private int sampleSize() {
-        return dataSet().getNumRows();
+        return this.dataSet().getNumRows();
     }
 
-    private int numCategories(final int i) {
-        return ((DiscreteVariable) dataSet().getVariable(i)).getNumCategories();
+    private int numCategories(int i) {
+        return ((DiscreteVariable) this.dataSet().getVariable(i)).getNumCategories();
     }
 
     private DataSet dataSet() {
-        return this.dataSet;
+        return dataSet;
     }
 
-    public void setStructurePrior(final double structurePrior) {
+    public void setStructurePrior(double structurePrior) {
     }
 
-    public void setSamplePrior(final double samplePrior) {
+    public void setSamplePrior(double samplePrior) {
     }
 
     @Override
     public List<Node> getVariables() {
-        return this.dataSet.getVariables();
+        return dataSet.getVariables();
     }
 
     public int getSampleSize() {
-        return this.dataSet.getNumRows();
+        return dataSet.getNumRows();
     }
 
     @Override
-    public boolean isEffectEdge(final double bump) {
+    public boolean isEffectEdge(double bump) {
         return bump > -20;
     }
 
     @Override
-    public Node getVariable(final String targetName) {
-        for (final Node node : this.dataSet.getVariables()) {
+    public Node getVariable(String targetName) {
+        for (Node node : dataSet.getVariables()) {
             if (node.getName().equals(targetName)) {
                 return node;
             }
@@ -212,7 +212,7 @@ public class BDeScore implements LocalDiscreteScore {
     }
 
     @Override
-    public boolean determines(final List<Node> z, final Node y) {
+    public boolean determines(List<Node> z, Node y) {
         return false;
     }
 

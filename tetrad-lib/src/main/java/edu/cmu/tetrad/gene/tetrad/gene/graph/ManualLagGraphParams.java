@@ -73,13 +73,13 @@ public class ManualLagGraphParams implements TetradSerializable {
      * Returns the number of variables per individual.
      */
     public int getVarsPerInd() {
-        return this.varsPerInd;
+        return varsPerInd;
     }
 
     /**
      * Sets the number of variables per individual.
      */
-    public void setVarsPerInd(final int varsPerInd) {
+    public void setVarsPerInd(int varsPerInd) {
         if (varsPerInd <= 0) {
             throw new IllegalArgumentException();
         }
@@ -91,13 +91,13 @@ public class ManualLagGraphParams implements TetradSerializable {
      * Returns the maximum lag.
      */
     public int getMlag() {
-        return this.mlag;
+        return mlag;
     }
 
     /**
      * Sets the maximum lag.
      */
-    public void setMlag(final int mlag) {
+    public void setMlag(int mlag) {
         if (mlag <= 0) {
             throw new IllegalArgumentException();
         }
@@ -118,15 +118,15 @@ public class ManualLagGraphParams implements TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (this.varsPerInd <= 0) {
+        if (varsPerInd <= 0) {
             throw new IllegalStateException();
         }
 
-        if (this.mlag <= 0) {
+        if (mlag <= 0) {
             throw new IllegalStateException();
         }
     }

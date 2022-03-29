@@ -97,7 +97,7 @@ public class FofcSearchEditor extends JPanel {
 
     //============================CONSTRUCTORS===========================//
 
-    private FofcSearchEditor(final FofcRunner mimRunner, final String resultLabel) {
+    private FofcSearchEditor(FofcRunner mimRunner, String resultLabel) {
         if (mimRunner == null) {
             throw new NullPointerException();
         }
@@ -109,13 +109,13 @@ public class FofcSearchEditor extends JPanel {
         this.mimRunner = mimRunner;
         this.resultLabel = resultLabel;
 
-        setup(resultLabel);
+        this.setup(resultLabel);
     }
 
     /**
      * Allows the user to pop up an editor for a MimBuildRunner.
      */
-    public FofcSearchEditor(final FofcRunner runner) {
+    public FofcSearchEditor(FofcRunner runner) {
         this(runner, "Result MAG");
     }
 
@@ -125,24 +125,24 @@ public class FofcSearchEditor extends JPanel {
      * Construct the toolbar panel.
      */
     private JPanel getToolbar() {
-        final JPanel toolbar = new JPanel();
-        getExecuteButton().setText("Execute*");
-        getExecuteButton().addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                execute();
+        JPanel toolbar = new JPanel();
+        this.getExecuteButton().setText("Execute*");
+        this.getExecuteButton().addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                FofcSearchEditor.this.execute();
             }
         });
 
-        final Box b1 = Box.createVerticalBox();
-        b1.add(getParamsPanel());
+        Box b1 = Box.createVerticalBox();
+        b1.add(this.getParamsPanel());
         b1.add(Box.createVerticalStrut(10));
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(Box.createGlue());
-        b2.add(getExecuteButton());
+        b2.add(this.getExecuteButton());
         b1.add(b2);
 
-        final Box b3 = Box.createHorizontalBox();
-        final JLabel label = new JLabel("<html>" + "*Please note that some" +
+        Box b3 = Box.createHorizontalBox();
+        JLabel label = new JLabel("<html>" + "*Please note that some" +
                 "<br>searches may take a" + "<br>long time to complete." +
                 "</html>");
         label.setHorizontalAlignment(SwingConstants.CENTER);
@@ -153,10 +153,10 @@ public class FofcSearchEditor extends JPanel {
         b1.add(Box.createVerticalStrut(10));
         b1.add(b3);
 
-        addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(final PropertyChangeEvent evt) {
+        this.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
                 if ("algorithmFinished".equals(evt.getPropertyName())) {
-                    specialToolbarSetup();
+                    FofcSearchEditor.this.specialToolbarSetup();
                 }
             }
         });
@@ -169,19 +169,19 @@ public class FofcSearchEditor extends JPanel {
      * Executes the algorithm.
      */
     private void execute() {
-        final Runnable runnable = new Runnable() {
+        Runnable runnable = new Runnable() {
             public void run() {
-                getExecuteButton().setEnabled(false);
-                setErrorMessage(null);
+                FofcSearchEditor.this.getExecuteButton().setEnabled(false);
+                FofcSearchEditor.this.setErrorMessage(null);
 
                 try {
 //                    mimRunner.getParameters().setClusters(clusterEditor.getClusters());
-                    getMimRunner().execute();
-                } catch (final Exception e) {
-                    final CharArrayWriter writer1 = new CharArrayWriter();
-                    final PrintWriter writer2 = new PrintWriter(writer1);
+                    FofcSearchEditor.this.getMimRunner().execute();
+                } catch (Exception e) {
+                    CharArrayWriter writer1 = new CharArrayWriter();
+                    PrintWriter writer2 = new PrintWriter(writer1);
                     e.printStackTrace(writer2);
-                    final String message = writer1.toString();
+                    String message = writer1.toString();
                     writer2.close();
 
                     e.printStackTrace(System.out);
@@ -192,93 +192,93 @@ public class FofcSearchEditor extends JPanel {
                     if (messageString == null) {
                         messageString = message;
                     }
-                    setErrorMessage(messageString);
+                    FofcSearchEditor.this.setErrorMessage(messageString);
 
                     TetradLogger.getInstance().error("************Algorithm stopped!");
 
-                    getExecuteButton().setEnabled(true);
+                    FofcSearchEditor.this.getExecuteButton().setEnabled(true);
                     throw new RuntimeException(e);
                 }
 
-                updateDisplayPanel();
+                FofcSearchEditor.this.updateDisplayPanel();
 
-                getWorkbenchScroll().setBorder(
-                        new TitledBorder(getResultLabel()));
-                final Graph resultGraph = resultGraph();
+                FofcSearchEditor.this.getWorkbenchScroll().setBorder(
+                        new TitledBorder(FofcSearchEditor.this.getResultLabel()));
+                Graph resultGraph = FofcSearchEditor.this.resultGraph();
 
-                doDefaultArrangement(resultGraph);
+                FofcSearchEditor.this.doDefaultArrangement(resultGraph);
 
-                GraphUtils.arrangeBySourceGraph(resultGraph, getWorkbench().getGraph());
+                GraphUtils.arrangeBySourceGraph(resultGraph, FofcSearchEditor.this.getWorkbench().getGraph());
 
-                getWorkbench().setBackground(Color.WHITE);
-                getWorkbench().setGraph(resultGraph);
-                getWorkbench().repaint();
+                FofcSearchEditor.this.getWorkbench().setBackground(Color.WHITE);
+                FofcSearchEditor.this.getWorkbench().setGraph(resultGraph);
+                FofcSearchEditor.this.getWorkbench().repaint();
 
                 // For Mimbuild, e.g., that need to do a second stage.
-                firePropertyChange("algorithmFinished", null, null);
+                FofcSearchEditor.this.firePropertyChange("algorithmFinished", null, null);
 
-                getExecuteButton().setEnabled(true);
-                firePropertyChange("modelChanged", null, null);
+                FofcSearchEditor.this.getExecuteButton().setEnabled(true);
+                FofcSearchEditor.this.firePropertyChange("modelChanged", null, null);
             }
         };
 
-        final Thread thread = new Thread(runnable);
+        Thread thread = new Thread(runnable);
         thread.setPriority(Thread.NORM_PRIORITY + 1);
         this.thread = thread;
         thread.start();
 
-        final Thread watcher = new Thread() {
+        Thread watcher = new Thread() {
             public void run() {
                 try {
-                    Thread.sleep(FofcSearchEditor.this.delay);
-                } catch (final InterruptedException e) {
+                    Thread.sleep(delay);
+                } catch (InterruptedException e) {
                     return;
                 }
 
-                if (getErrorMessage() != null) {
+                if (FofcSearchEditor.this.getErrorMessage() != null) {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                            "Stopped with error:\n" + getErrorMessage());
+                            "Stopped with error:\n" + FofcSearchEditor.this.getErrorMessage());
                     return;
                 }
 
-                final JProgressBar progressBar = new JProgressBar(0, 100);
+                JProgressBar progressBar = new JProgressBar(0, 100);
                 progressBar.setIndeterminate(true);
 
-                final JButton stopButton = new JButton("Stop");
+                JButton stopButton = new JButton("Stop");
 
                 stopButton.addActionListener(new ActionListener() {
-                    public void actionPerformed(final ActionEvent e) {
-                        if (thread() != null) {
-                            thread().stop();
+                    public void actionPerformed(ActionEvent e) {
+                        if (FofcSearchEditor.this.thread() != null) {
+                            FofcSearchEditor.this.thread().stop();
                             TaskManager.getInstance().setCanceled(true);
 
                             JOptionPane.showMessageDialog(
                                     JOptionUtils.centeringComp(),
                                     "Algorithm stopped");
-                            getExecuteButton().setEnabled(true);
+                            FofcSearchEditor.this.getExecuteButton().setEnabled(true);
 
                             TetradLogger.getInstance().error("************Algorithm stopped!");
                         }
                     }
                 });
 
-                final Box b = Box.createHorizontalBox();
+                Box b = Box.createHorizontalBox();
                 b.add(progressBar);
                 b.add(stopButton);
 
-                final Frame ancestor =
+                Frame ancestor =
                         (Frame) JOptionUtils.centeringComp().getTopLevelAncestor();
-                final JDialog dialog = new JDialog(ancestor, "Searching...", false);
+                JDialog dialog = new JDialog(ancestor, "Searching...", false);
 
                 dialog.getContentPane().add(b);
                 dialog.pack();
                 dialog.setLocationRelativeTo(FofcSearchEditor.this);
                 dialog.setVisible(true);
 
-                while (thread().isAlive()) {
+                while (FofcSearchEditor.this.thread().isAlive()) {
                     try {
                         Thread.sleep(200);
-                    } catch (final InterruptedException e) {
+                    } catch (InterruptedException e) {
                         return;
                     }
                 }
@@ -287,9 +287,9 @@ public class FofcSearchEditor extends JPanel {
 
                 dialog.dispose();
 
-                if (getErrorMessage() != null) {
+                if (FofcSearchEditor.this.getErrorMessage() != null) {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                            "Stopped with error:\n" + getErrorMessage());
+                            "Stopped with error:\n" + FofcSearchEditor.this.getErrorMessage());
                 }
             }
         };
@@ -298,7 +298,7 @@ public class FofcSearchEditor extends JPanel {
         watcher.start();
     }
 
-    private void doDefaultArrangement(final Graph graph) {
+    private void doDefaultArrangement(Graph graph) {
         GraphUtils.circleLayout(graph, 200, 200, 150);
         GraphUtils.fruchtermanReingoldLayout(graph);
     }
@@ -307,46 +307,46 @@ public class FofcSearchEditor extends JPanel {
      * Makes the result workbench available to inner classes.
      */
     private GraphWorkbench getWorkbench() {
-        return this.workbench;
+        return workbench;
     }
 
     private JButton getExecuteButton() {
-        return this.executeButton;
+        return executeButton;
     }
 
     private MimRunner getMimRunner() {
-        return this.mimRunner;
+        return mimRunner;
     }
 
     /**
      * Sets up the editor, does the layout, and so on.
      */
-    private void setup(final String resultLabel) {
-        setLayout(new BorderLayout());
-        add(getToolbar(), BorderLayout.WEST);
-        add(workbenchScroll(resultLabel), BorderLayout.CENTER);
+    private void setup(String resultLabel) {
+        this.setLayout(new BorderLayout());
+        this.add(this.getToolbar(), BorderLayout.WEST);
+        this.add(this.workbenchScroll(resultLabel), BorderLayout.CENTER);
 
-        this.displayPanel = new JPanel();
-        this.displayPanel.setLayout(new BorderLayout());
-        this.displayPanel.setPreferredSize(new Dimension(500, 500));
+        displayPanel = new JPanel();
+        displayPanel.setLayout(new BorderLayout());
+        displayPanel.setPreferredSize(new Dimension(500, 500));
 
-        updateDisplayPanel();
+        this.updateDisplayPanel();
 
-        add(this.displayPanel, BorderLayout.CENTER);
-        add(menuBar(), BorderLayout.NORTH);
+        this.add(displayPanel, BorderLayout.CENTER);
+        this.add(this.menuBar(), BorderLayout.NORTH);
     }
 
     private void updateDisplayPanel() {
-        this.displayPanel.removeAll();
+        displayPanel.removeAll();
 
-        final JTabbedPane tabbedPane = new JTabbedPane();
+        JTabbedPane tabbedPane = new JTabbedPane();
 
-        if (getMimRunner().getStructureGraph() != null) {
-            if (getMimRunner().getStructureGraph() != null) {
+        if (this.getMimRunner().getStructureGraph() != null) {
+            if (this.getMimRunner().getStructureGraph() != null) {
 //                DataGraphUtils.circleLayout(structureGraph, 200, 200, 150);
-                final Graph structureGraph = getMimRunner().getStructureGraph();
-                doDefaultArrangement(structureGraph);
-                final GraphWorkbench structureWorkbench = new GraphWorkbench(structureGraph);
+                Graph structureGraph = this.getMimRunner().getStructureGraph();
+                this.doDefaultArrangement(structureGraph);
+                GraphWorkbench structureWorkbench = new GraphWorkbench(structureGraph);
                 structureWorkbench.setAllowDoubleClickActions(false);
 
                 tabbedPane.add("Structure Model",
@@ -354,28 +354,28 @@ public class FofcSearchEditor extends JPanel {
             }
         }
 
-        if (getMimRunner().getClusters() != null) {
-            final ClusterEditor editor = new ClusterEditor(getMimRunner().getClusters(),
-                    getMimRunner().getData().getVariableNames());
+        if (this.getMimRunner().getClusters() != null) {
+            ClusterEditor editor = new ClusterEditor(this.getMimRunner().getClusters(),
+                    this.getMimRunner().getData().getVariableNames());
             tabbedPane.add("Measurement Model", editor);
         }
 
-        if (getMimRunner().getFullGraph() != null) {
-            final Graph fullGraph = getMimRunner().getFullGraph();
-            doDefaultArrangement(fullGraph);
+        if (this.getMimRunner().getFullGraph() != null) {
+            Graph fullGraph = this.getMimRunner().getFullGraph();
+            this.doDefaultArrangement(fullGraph);
             GraphUtils.fruchtermanReingoldLayout(fullGraph);
 
-            final GraphWorkbench fullGraphBench = new GraphWorkbench(fullGraph);
+            GraphWorkbench fullGraphBench = new GraphWorkbench(fullGraph);
             tabbedPane.add("Full Graph", new JScrollPane(fullGraphBench));
         }
 
-        this.displayPanel.add(tabbedPane, BorderLayout.CENTER);
-        this.displayPanel.revalidate();
-        this.displayPanel.repaint();
+        displayPanel.add(tabbedPane, BorderLayout.CENTER);
+        displayPanel.revalidate();
+        displayPanel.repaint();
     }
 
     private Graph resultGraph() {
-        Graph resultGraph = getMimRunner().getResultGraph();
+        Graph resultGraph = this.getMimRunner().getResultGraph();
 
         if (resultGraph == null) {
             resultGraph = new EdgeListGraph();
@@ -384,93 +384,93 @@ public class FofcSearchEditor extends JPanel {
         return resultGraph;
     }
 
-    private JScrollPane workbenchScroll(final String resultLabel) {
-        final Graph resultGraph = resultGraph();
+    private JScrollPane workbenchScroll(String resultLabel) {
+        Graph resultGraph = this.resultGraph();
 
-        final Graph sourceGraph = getMimRunner().getSourceGraph();
-        final Graph latestWorkbenchGraph =
-                (Graph) getMimRunner().getParams().get("sourceGraph", null);
+        Graph sourceGraph = this.getMimRunner().getSourceGraph();
+        Graph latestWorkbenchGraph =
+                (Graph) this.getMimRunner().getParams().get("sourceGraph", null);
 
-        final boolean arrangedAll = GraphUtils.arrangeBySourceGraph(resultGraph,
+        boolean arrangedAll = GraphUtils.arrangeBySourceGraph(resultGraph,
                 latestWorkbenchGraph);
 
         if (!arrangedAll) {
             GraphUtils.arrangeBySourceGraph(resultGraph, sourceGraph);
         }
 
-        this.workbench = new GraphWorkbench(resultGraph);
-        this.workbench.setAllowDoubleClickActions(false);
-        this.workbenchScroll = new JScrollPane(getWorkbench());
-        getWorkbenchScroll().setPreferredSize(new Dimension(450, 450));
-        getWorkbenchScroll().setBorder(new TitledBorder(resultLabel));
+        workbench = new GraphWorkbench(resultGraph);
+        workbench.setAllowDoubleClickActions(false);
+        workbenchScroll = new JScrollPane(this.getWorkbench());
+        this.getWorkbenchScroll().setPreferredSize(new Dimension(450, 450));
+        this.getWorkbenchScroll().setBorder(new TitledBorder(resultLabel));
 
-        this.workbench.addMouseListener(new MouseAdapter() {
-            public void mouseExited(final MouseEvent e) {
-                storeLatestWorkbenchGraph();
+        workbench.addMouseListener(new MouseAdapter() {
+            public void mouseExited(MouseEvent e) {
+                FofcSearchEditor.this.storeLatestWorkbenchGraph();
             }
         });
 
-        return getWorkbenchScroll();
+        return this.getWorkbenchScroll();
     }
 
     private JMenuBar menuBar() {
-        final JMenuBar menuBar = new JMenuBar();
-        final JMenu file = new JMenu("File");
+        JMenuBar menuBar = new JMenuBar();
+        JMenu file = new JMenu("File");
         menuBar.add(file);
         return menuBar;
     }
 
     private Thread thread() {
-        return this.thread;
+        return thread;
     }
 
     private String getErrorMessage() {
-        return this.errorMessage;
+        return errorMessage;
     }
 
-    private void setErrorMessage(final String errorMessage) {
+    private void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
     }
 
     private String getResultLabel() {
-        return this.resultLabel;
+        return resultLabel;
     }
 
     private JScrollPane getWorkbenchScroll() {
-        return this.workbenchScroll;
+        return workbenchScroll;
     }
 
     public Graph getLatestWorkbenchGraph() {
-        final Graph graph = (Graph) getMimRunner().getParams().get("sourceGraph", null);
+        Graph graph = (Graph) this.getMimRunner().getParams().get("sourceGraph", null);
 
         if (graph == null) {
-            return getMimRunner().getSourceGraph();
+            return this.getMimRunner().getSourceGraph();
         }
 
         return graph;
     }
 
     private void storeLatestWorkbenchGraph() {
-        final Graph latestWorkbenchGraph = getWorkbench().getGraph();
+        Graph latestWorkbenchGraph = this.getWorkbench().getGraph();
 
         if (latestWorkbenchGraph.getNumNodes() == 0) {
             return;
         }
 
         try {
-            final Graph graph = new MarshalledObject<>(latestWorkbenchGraph).get();
-            getMimRunner().getParams().set("sourceGraph", graph);
-        } catch (final IOException e) {
-            getMimRunner().getParams().set("sourceGraph", (Graph) null);
-        } catch (final ClassNotFoundException e) {
-            getMimRunner().getParams().set("sourceGraph", (Graph) null);
+            Graph graph = new MarshalledObject<>(latestWorkbenchGraph).get();
+            this.getMimRunner().getParams().set("sourceGraph", graph);
+        } catch (IOException e) {
+            this.getMimRunner().getParams().set("sourceGraph", (Graph) null);
+        } catch (ClassNotFoundException e) {
+            this.getMimRunner().getParams().set("sourceGraph", (Graph) null);
             e.printStackTrace();
         }
     }
 
     private Box getParamsPanel() {
-        final Box b2 = Box.createVerticalBox();
-        b2.add(getIndTestParamBox());
+        Box b2 = Box.createVerticalBox();
+        b2.add(this.getIndTestParamBox());
         b2.setBorder(new TitledBorder("Parameters"));
         return b2;
     }
@@ -479,21 +479,21 @@ public class FofcSearchEditor extends JPanel {
     }
 
     private JComponent getIndTestParamBox() {
-        final Parameters params = getMimRunner().getParams();
-        return getIndTestParamBox(params);
+        Parameters params = this.getMimRunner().getParams();
+        return this.getIndTestParamBox(params);
     }
 
     /**
      * Factory to return the correct param editor for independence test params.
      * This will go in a little box in the search editor.
      */
-    private JComponent getIndTestParamBox(final Parameters params) {
+    private JComponent getIndTestParamBox(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
 
         if (params instanceof Parameters) {
-            final MimRunner runner = getMimRunner();
+            MimRunner runner = this.getMimRunner();
             params.set("varNames", runner.getParams().get("varNames", null));
             return new FofcIndTestParamsEditor(params);
         }

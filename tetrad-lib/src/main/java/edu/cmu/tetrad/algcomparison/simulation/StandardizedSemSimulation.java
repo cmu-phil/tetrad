@@ -27,68 +27,68 @@ public class StandardizedSemSimulation implements Simulation {
     private List<DataSet> dataSets = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();
 
-    public StandardizedSemSimulation(final RandomGraph graph) {
-        this.randomGraph = graph;
+    public StandardizedSemSimulation(RandomGraph graph) {
+        randomGraph = graph;
     }
 
-    public StandardizedSemSimulation(final SemPm pm) {
-        final SemGraph graph = pm.getGraph();
+    public StandardizedSemSimulation(SemPm pm) {
+        SemGraph graph = pm.getGraph();
         graph.setShowErrorTerms(false);
-        this.randomGraph = new SingleGraph(graph);
+        randomGraph = new SingleGraph(graph);
         this.pm = pm;
     }
 
-    public StandardizedSemSimulation(final StandardizedSemIm im) {
-        this.randomGraph = new SingleGraph(im.getSemPm().getGraph());
-        this.standardizedIm = im;
-        this.pm = im.getSemPm();
+    public StandardizedSemSimulation(StandardizedSemIm im) {
+        randomGraph = new SingleGraph(im.getSemPm().getGraph());
+        standardizedIm = im;
+        pm = im.getSemPm();
     }
 
     @Override
-    public void createData(final Parameters parameters, final boolean newModel) {
+    public void createData(Parameters parameters, boolean newModel) {
 //        if (!newModel && !dataSets.isEmpty()) return;
 
-        Graph graph = this.randomGraph.createGraph(parameters);
+        Graph graph = randomGraph.createGraph(parameters);
 
-        this.dataSets = new ArrayList<>();
-        this.graphs = new ArrayList<>();
+        dataSets = new ArrayList<>();
+        graphs = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
 
             if (parameters.getBoolean("differentGraphs") && i > 0) {
-                graph = this.randomGraph.createGraph(parameters);
+                graph = randomGraph.createGraph(parameters);
             }
 
-            this.graphs.add(graph);
+            graphs.add(graph);
 
-            final DataSet dataSet = simulate(graph, parameters);
+            DataSet dataSet = this.simulate(graph, parameters);
             dataSet.setName("" + (i + 1));
-            this.dataSets.add(dataSet);
+            dataSets.add(dataSet);
         }
     }
 
     @Override
-    public DataModel getDataModel(final int index) {
-        return this.dataSets.get(index);
+    public DataModel getDataModel(int index) {
+        return dataSets.get(index);
     }
 
     @Override
-    public Graph getTrueGraph(final int index) {
-        return this.graphs.get(index);
+    public Graph getTrueGraph(int index) {
+        return graphs.get(index);
     }
 
     @Override
     public String getDescription() {
-        return "Linear, Gaussian SEM simulation using " + this.randomGraph.getDescription();
+        return "Linear, Gaussian SEM simulation using " + randomGraph.getDescription();
     }
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
 
-        if (!(this.randomGraph instanceof SingleGraph)) {
-            parameters.addAll(this.randomGraph.getParameters());
+        if (!(randomGraph instanceof SingleGraph)) {
+            parameters.addAll(randomGraph.getParameters());
         }
 
         parameters.add(Params.NUM_RUNS);
@@ -99,7 +99,7 @@ public class StandardizedSemSimulation implements Simulation {
 
     @Override
     public int getNumDataModels() {
-        return this.dataSets.size();
+        return dataSets.size();
     }
 
     @Override
@@ -107,17 +107,17 @@ public class StandardizedSemSimulation implements Simulation {
         return DataType.Continuous;
     }
 
-    private DataSet simulate(final Graph graph, final Parameters parameters) {
-        if (this.standardizedIm == null) {
+    private DataSet simulate(Graph graph, Parameters parameters) {
+        if (standardizedIm == null) {
             SemPm pm = this.pm;
 
             if (pm == null) {
                 pm = new SemPm(graph);
             }
 
-            this.standardizedIm = new StandardizedSemIm(new SemIm(pm), parameters);
+            standardizedIm = new StandardizedSemIm(new SemIm(pm), parameters);
         }
 
-        return this.standardizedIm.simulateData(parameters.getInt(Params.SAMPLE_SIZE), false);
+        return standardizedIm.simulateData(parameters.getInt(Params.SAMPLE_SIZE), false);
     }
 }

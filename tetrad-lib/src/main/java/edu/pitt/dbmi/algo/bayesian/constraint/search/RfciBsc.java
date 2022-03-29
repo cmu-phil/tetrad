@@ -9,11 +9,9 @@ import edu.cmu.tetrad.bayes.DirichletBayesIm;
 import edu.cmu.tetrad.bayes.DirichletEstimator;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.graph.Edge.Property;
-import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference;
+import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference.OP;
 
 import java.io.PrintStream;
 import java.util.*;
@@ -33,9 +31,9 @@ public class RfciBsc implements GraphSearch {
 
     private final Rfci rfci;
 
-    private Graph graphRBD = null, graphRBI = null;
+    private Graph graphRBD, graphRBI;
 
-    private double bscD = 0.0, bscI = 0.0;
+    private double bscD, bscI;
 
     private final List<Graph> pAGs = Collections.synchronizedList(new ArrayList<>());
 
@@ -54,7 +52,7 @@ public class RfciBsc implements GraphSearch {
     /**
      * True if verbose output should be printed.
      */
-    private boolean verbose = false;
+    private boolean verbose;
 
     /**
      * The logger for this class. The config needs to be set.
@@ -64,11 +62,11 @@ public class RfciBsc implements GraphSearch {
     // Where printed output is sent.
     private PrintStream out = System.out;
 
-    private long start = 0;
+    private long start;
 
-    private long stop = 0;
+    private long stop;
 
-    private boolean thresholdNoRandomDataSearch = false;
+    private boolean thresholdNoRandomDataSearch;
     private double cutoffDataSearch = 0.5;
 
     private boolean thresholdNoRandomConstrainSearch = true;
@@ -76,28 +74,28 @@ public class RfciBsc implements GraphSearch {
 
     private final int numCandidatePagSearchTrial = 1000;
 
-    public RfciBsc(final Rfci rfci) {
+    public RfciBsc(Rfci rfci) {
         this.rfci = rfci;
     }
 
     @Override
     public Graph search() {
-        this.stop = 0;
-        this.start = System.currentTimeMillis();
+        stop = 0;
+        start = System.currentTimeMillis();
 
-        final IndTestProbabilistic _test = (IndTestProbabilistic) this.rfci.getIndependenceTest();
+        IndTestProbabilistic _test = (IndTestProbabilistic) rfci.getIndependenceTest();
 
         // create empirical data for constraints
-        final DataSet dataSet = DataUtils.getDiscreteDataSet(_test.getData());
+        DataSet dataSet = DataUtils.getDiscreteDataSet(_test.getData());
 
-        this.pAGs.clear();
+        pAGs.clear();
 
         // A map from independence facts to their probabilities of independence.
-        final List<Node> vars = Collections.synchronizedList(new ArrayList<>());
-        final List<String> var_lookup = Collections.synchronizedList(new ArrayList<>());
+        List<Node> vars = Collections.synchronizedList(new ArrayList<>());
+        List<String> var_lookup = Collections.synchronizedList(new ArrayList<>());
 
-        final Map<IndependenceFact, Double> h = new ConcurrentHashMap<>();
-        final Map<IndependenceFact, Double> hCopy = new ConcurrentHashMap<>();
+        Map<IndependenceFact, Double> h = new ConcurrentHashMap<>();
+        Map<IndependenceFact, Double> hCopy = new ConcurrentHashMap<>();
 
         // run RFCI-BSC (RB) search using BSC test and obtain constraints that
         // are queried during the search
@@ -107,35 +105,35 @@ public class RfciBsc implements GraphSearch {
             private final Rfci rfci;
 
             public SearchPagTask() {
-                this.test = new IndTestProbabilistic(dataSet);
-                this.test.setThreshold(RfciBsc.this.thresholdNoRandomDataSearch);
-                if (RfciBsc.this.thresholdNoRandomDataSearch) {
-                    this.test.setCutoff(RfciBsc.this.cutoffDataSearch);
+                test = new IndTestProbabilistic(dataSet);
+                test.setThreshold(thresholdNoRandomDataSearch);
+                if (thresholdNoRandomDataSearch) {
+                    test.setCutoff(cutoffDataSearch);
                 }
 
-                this.rfci = new Rfci(this.test);
+                rfci = new Rfci(test);
             }
 
             @Override
             public Boolean call() throws Exception {
 
-                Graph pag = this.rfci.search();
-                pag = GraphUtils.replaceNodes(pag, this.test.getVariables());
-                RfciBsc.this.pAGs.add(pag);
+                Graph pag = rfci.search();
+                pag = GraphUtils.replaceNodes(pag, test.getVariables());
+                pAGs.add(pag);
 
-                final Map<IndependenceFact, Double> _h = this.test.getH();
+                Map<IndependenceFact, Double> _h = test.getH();
 
-                for (final IndependenceFact f : _h.keySet()) {
-                    final String indFact = f.toString();
+                for (IndependenceFact f : _h.keySet()) {
+                    String indFact = f.toString();
 
 
                     if (!hCopy.containsKey(f)) {
 
                         h.put(f, _h.get(f));
 
-                        if (_h.get(f) > RfciBsc.this.lowerBound && _h.get(f) < RfciBsc.this.upperBound) {
+                        if (_h.get(f) > lowerBound && _h.get(f) < upperBound) {
                             hCopy.put(f, _h.get(f));
-                            final DiscreteVariable var = new DiscreteVariable(indFact);
+                            DiscreteVariable var = new DiscreteVariable(indFact);
 
                             if (!vars.contains(var)) {
                                 vars.add(var);
@@ -157,39 +155,39 @@ public class RfciBsc implements GraphSearch {
 
         }
 
-        final List<Callable<Boolean>> tasks = new ArrayList<>();
+        List<Callable<Boolean>> tasks = new ArrayList<>();
 
         int trial = 0;
 
-        while (vars.size() == 0 && trial < this.numCandidatePagSearchTrial) {
+        while (vars.size() == 0 && trial < numCandidatePagSearchTrial) {
             tasks.clear();
 
-            for (int i = 0; i < this.numRandomizedSearchModels; i++) {
+            for (int i = 0; i < numRandomizedSearchModels; i++) {
                 tasks.add(new SearchPagTask());
             }
 
-            final ExecutorService pool = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors());
+            ExecutorService pool = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors());
 
             try {
                 pool.invokeAll(tasks);
-            } catch (final InterruptedException exception) {
-                if (this.verbose) {
-                    this.logger.log("error", "Task has been interrupted");
+            } catch (InterruptedException exception) {
+                if (verbose) {
+                    logger.log("error", "Task has been interrupted");
                 }
                 Thread.currentThread().interrupt();
             }
 
-            shutdownAndAwaitTermination(pool);
+            this.shutdownAndAwaitTermination(pool);
             trial++;
         }
 
         // Failed to generate a list of qualified constraints
-        if (trial == this.numCandidatePagSearchTrial) {
+        if (trial == numCandidatePagSearchTrial) {
             return new EdgeListGraph(dataSet.getVariables());
         }
 
-        final DataBox dataBox = new VerticalIntDataBox(this.numBscBootstrapSamples, vars.size());
-        final DataSet depData = new BoxDataSet(dataBox, vars);
+        DataBox dataBox = new VerticalIntDataBox(numBscBootstrapSamples, vars.size());
+        DataSet depData = new BoxDataSet(dataBox, vars);
 
         class BootstrapDepDataTask implements Callable<Boolean> {
 
@@ -198,28 +196,28 @@ public class RfciBsc implements GraphSearch {
             private final DataSet bsData;
             private final IndTestProbabilistic bsTest;
 
-            public BootstrapDepDataTask(final int row_index, final int rows) {
+            public BootstrapDepDataTask(int row_index, int rows) {
                 this.row_index = row_index;
 
-                this.bsData = DataUtils.getBootstrapSample(dataSet, rows);
-                this.bsTest = new IndTestProbabilistic(this.bsData);
-                this.bsTest.setThreshold(RfciBsc.this.thresholdNoRandomConstrainSearch);
-                if (RfciBsc.this.thresholdNoRandomConstrainSearch) {
-                    this.bsTest.setCutoff(RfciBsc.this.cutoffConstrainSearch);
+                bsData = DataUtils.getBootstrapSample(dataSet, rows);
+                bsTest = new IndTestProbabilistic(bsData);
+                bsTest.setThreshold(thresholdNoRandomConstrainSearch);
+                if (thresholdNoRandomConstrainSearch) {
+                    bsTest.setCutoff(cutoffConstrainSearch);
                 }
             }
 
             @Override
             public Boolean call() throws Exception {
-                for (final IndependenceFact f : hCopy.keySet()) {
-                    final boolean ind = this.bsTest.isIndependent(f.getX(), f.getY(), f.getZ());
-                    final int value = ind ? 1 : 0;
+                for (IndependenceFact f : hCopy.keySet()) {
+                    boolean ind = bsTest.isIndependent(f.getX(), f.getY(), f.getZ());
+                    int value = ind ? 1 : 0;
 
-                    final String indFact = f.toString();
+                    String indFact = f.toString();
 
-                    final int col = var_lookup.indexOf(indFact);
+                    int col = var_lookup.indexOf(indFact);
                     synchronized (depData) {
-                        depData.setInt(this.row_index, col, value);
+                        depData.setInt(row_index, col, value);
                     }
 
                 }
@@ -230,8 +228,8 @@ public class RfciBsc implements GraphSearch {
 
         tasks.clear();
 
-        final int rows = dataSet.getNumRows();
-        for (int b = 0; b < this.numBscBootstrapSamples; b++) {
+        int rows = dataSet.getNumRows();
+        for (int b = 0; b < numBscBootstrapSamples; b++) {
             tasks.add(new BootstrapDepDataTask(b, rows));
         }
 
@@ -239,42 +237,42 @@ public class RfciBsc implements GraphSearch {
 
         try {
             pool.invokeAll(tasks);
-        } catch (final InterruptedException exception) {
-            if (this.verbose) {
-                this.logger.log("error", "Task has been interrupted");
+        } catch (InterruptedException exception) {
+            if (verbose) {
+                logger.log("error", "Task has been interrupted");
             }
             Thread.currentThread().interrupt();
         }
 
-        shutdownAndAwaitTermination(pool);
+        this.shutdownAndAwaitTermination(pool);
 
         // learn structure of constraints using empirical data => constraint data
-        final BDeuScore sd = new BDeuScore(depData);
+        BDeuScore sd = new BDeuScore(depData);
         sd.setSamplePrior(1.0);
         sd.setStructurePrior(1.0);
 
-        final Fges fges = new Fges(sd);
+        Fges fges = new Fges(sd);
         fges.setVerbose(false);
         fges.setFaithfulnessAssumed(true);
 
         Graph depPattern = fges.search();
         depPattern = GraphUtils.replaceNodes(depPattern, depData.getVariables());
-        final Graph estDepBN = SearchGraphUtils.dagFromCPDAG(depPattern);
+        Graph estDepBN = SearchGraphUtils.dagFromCPDAG(depPattern);
 
-        if (this.verbose) {
-            this.out.println("estDepBN:");
-            this.out.println(estDepBN);
+        if (verbose) {
+            out.println("estDepBN:");
+            out.println(estDepBN);
         }
 
         // estimate parameters of the graph learned for constraints
-        final BayesPm pmHat = new BayesPm(estDepBN, 2, 2);
-        final DirichletBayesIm prior = DirichletBayesIm.symmetricDirichletIm(pmHat, 0.5);
-        final BayesIm imHat = DirichletEstimator.estimate(prior, depData);
+        BayesPm pmHat = new BayesPm(estDepBN, 2, 2);
+        DirichletBayesIm prior = DirichletBayesIm.symmetricDirichletIm(pmHat, 0.5);
+        BayesIm imHat = DirichletEstimator.estimate(prior, depData);
 
         // compute scores of graphs that are output by RB search using
         // BSC-I and BSC-D methods
-        final Map<Graph, Double> pagLnBSCD = new ConcurrentHashMap<>();
-        final Map<Graph, Double> pagLnBSCI = new ConcurrentHashMap<>();
+        Map<Graph, Double> pagLnBSCD = new ConcurrentHashMap<>();
+        Map<Graph, Double> pagLnBSCI = new ConcurrentHashMap<>();
 
         double maxLnDep = -1, maxLnInd = -1;
 
@@ -282,20 +280,20 @@ public class RfciBsc implements GraphSearch {
 
             final Graph pagOrig;
 
-            public CalculateBscScoreTask(final Graph pagOrig) {
+            public CalculateBscScoreTask(Graph pagOrig) {
                 this.pagOrig = pagOrig;
             }
 
             @Override
             public Boolean call() throws Exception {
-                if (!pagLnBSCD.containsKey(this.pagOrig)) {
-                    final double lnInd = RfciBsc.getLnProb(this.pagOrig, h);
+                if (!pagLnBSCD.containsKey(pagOrig)) {
+                    double lnInd = getLnProb(pagOrig, h);
 
                     // Filtering
-                    final double lnDep = RfciBsc.getLnProbUsingDepFiltering(this.pagOrig, h, imHat, estDepBN);
+                    double lnDep = getLnProbUsingDepFiltering(pagOrig, h, imHat, estDepBN);
 
-                    pagLnBSCD.put(this.pagOrig, lnDep);
-                    pagLnBSCI.put(this.pagOrig, lnInd);
+                    pagLnBSCD.put(pagOrig, lnDep);
+                    pagLnBSCI.put(pagOrig, lnInd);
                 }
                 return true;
             }
@@ -304,8 +302,8 @@ public class RfciBsc implements GraphSearch {
 
         tasks.clear();
 
-        for (int i = 0; i < this.pAGs.size(); i++) {
-            final Graph pagOrig = this.pAGs.get(i);
+        for (int i = 0; i < pAGs.size(); i++) {
+            Graph pagOrig = pAGs.get(i);
             tasks.add(new CalculateBscScoreTask(pagOrig));
         }
 
@@ -313,89 +311,89 @@ public class RfciBsc implements GraphSearch {
 
         try {
             pool.invokeAll(tasks);
-        } catch (final InterruptedException exception) {
-            if (this.verbose) {
-                this.logger.log("error", "Task has been interrupted");
+        } catch (InterruptedException exception) {
+            if (verbose) {
+                logger.log("error", "Task has been interrupted");
             }
             Thread.currentThread().interrupt();
         }
 
-        shutdownAndAwaitTermination(pool);
+        this.shutdownAndAwaitTermination(pool);
 
-        for (int i = 0; i < this.pAGs.size(); i++) {
-            final Graph pagOrig = this.pAGs.get(i);
+        for (int i = 0; i < pAGs.size(); i++) {
+            Graph pagOrig = pAGs.get(i);
 
-            final double lnDep = pagLnBSCD.get(pagOrig);
-            final double lnInd = pagLnBSCI.get(pagOrig);
+            double lnDep = pagLnBSCD.get(pagOrig);
+            double lnInd = pagLnBSCI.get(pagOrig);
 
             if (lnInd > maxLnInd || i == 0) {
                 maxLnInd = lnInd;
-                this.graphRBI = pagOrig;
+                graphRBI = pagOrig;
             }
 
             if (lnDep > maxLnDep || i == 0) {
                 maxLnDep = lnDep;
-                this.graphRBD = pagOrig;
+                graphRBD = pagOrig;
             }
 
         }
 
-        if (this.verbose) {
-            this.out.println("maxLnDep: " + maxLnDep + " maxLnInd: " + maxLnInd);
+        if (verbose) {
+            out.println("maxLnDep: " + maxLnDep + " maxLnInd: " + maxLnInd);
         }
 
-        final double lnQBSCDTotal = RfciBsc.lnQTotal(pagLnBSCD);
-        final double lnQBSCITotal = RfciBsc.lnQTotal(pagLnBSCI);
+        double lnQBSCDTotal = lnQTotal(pagLnBSCD);
+        double lnQBSCITotal = lnQTotal(pagLnBSCI);
 
         // normalize the scores
-        this.bscD = maxLnDep - lnQBSCDTotal;
-        this.bscD = Math.exp(this.bscD);
-        this.graphRBD.addAttribute("bscD", this.bscD);
+        bscD = maxLnDep - lnQBSCDTotal;
+        bscD = exp(bscD);
+        graphRBD.addAttribute("bscD", bscD);
 
-        double _bscI = pagLnBSCI.get(this.graphRBD) - lnQBSCITotal;
-        _bscI = Math.exp(_bscI);
-        this.graphRBD.addAttribute("bscI", _bscI);
+        double _bscI = pagLnBSCI.get(graphRBD) - lnQBSCITotal;
+        _bscI = exp(_bscI);
+        graphRBD.addAttribute("bscI", _bscI);
 
 
-        double _bscD = pagLnBSCD.get(this.graphRBI) - lnQBSCDTotal;
-        _bscD = Math.exp(_bscD);
-        this.graphRBI.addAttribute("bscD", _bscD);
+        double _bscD = pagLnBSCD.get(graphRBI) - lnQBSCDTotal;
+        _bscD = exp(_bscD);
+        graphRBI.addAttribute("bscD", _bscD);
 
-        this.bscI = maxLnInd - lnQBSCITotal;
-        this.bscI = Math.exp(this.bscI);
-        this.graphRBI.addAttribute("bscI", this.bscI);
+        bscI = maxLnInd - lnQBSCITotal;
+        bscI = exp(bscI);
+        graphRBI.addAttribute("bscI", bscI);
 
-        if (this.verbose) {
+        if (verbose) {
 
-            this.out.println("bscD: " + this.bscD + " bscI: " + this.bscI);
+            out.println("bscD: " + bscD + " bscI: " + bscI);
 
-            this.out.println("graphRBD:\n" + this.graphRBD);
-            this.out.println("graphRBI:\n" + this.graphRBI);
+            out.println("graphRBD:\n" + graphRBD);
+            out.println("graphRBI:\n" + graphRBI);
 
-            this.stop = System.currentTimeMillis();
+            stop = System.currentTimeMillis();
 
-            this.out.println("Elapsed " + (this.stop - this.start) + " ms");
+            out.println("Elapsed " + (stop - start) + " ms");
         }
 
-        Graph output = this.graphRBD;
+        Graph output = graphRBD;
 
-        if (!this.outputRBD) {
-            output = this.graphRBI;
+        if (!outputRBD) {
+            output = graphRBI;
         }
 
-        return generateBootstrappingAttributes(output);
+        return this.generateBootstrappingAttributes(output);
 
 
     }
 
-    private Graph generateBootstrappingAttributes(final Graph graph) {
-        for (final Edge edge : graph.getEdges()) {
-            final Node nodeA = edge.getNode1();
-            final Node nodeB = edge.getNode2();
+    private Graph generateBootstrappingAttributes(Graph graph) {
+        for (Edge edge : graph.getEdges()) {
+            Node nodeA = edge.getNode1();
+            Node nodeB = edge.getNode2();
 
-            final List<EdgeTypeProbability> edgeTypeProbabilities = getProbability(nodeA, nodeB);
+            List<EdgeTypeProbability> edgeTypeProbabilities = this.getProbability(nodeA, nodeB);
 
-            for (final EdgeTypeProbability etp : edgeTypeProbabilities) {
+            for (EdgeTypeProbability etp : edgeTypeProbabilities) {
                 edge.addEdgeTypeProbability(etp);
             }
         }
@@ -403,16 +401,16 @@ public class RfciBsc implements GraphSearch {
         return graph;
     }
 
-    private List<EdgeTypeProbability> getProbability(final Node node1, final Node node2) {
-        final Map<String, Integer> edgeDist = new HashMap<>();
+    private List<EdgeTypeProbability> getProbability(Node node1, Node node2) {
+        Map<String, Integer> edgeDist = new HashMap<>();
         int no_edge_num = 0;
-        for (final Graph g : this.pAGs) {
-            final Edge e = g.getEdge(node1, node2);
+        for (Graph g : pAGs) {
+            Edge e = g.getEdge(node1, node2);
             if (e != null) {
                 String edgeString = e.toString();
                 if (e.getEndpoint1() == e.getEndpoint2() && node1.compareTo(e.getNode1()) != 0) {
-                    final Edge edge = new Edge(node1, node2, e.getEndpoint1(), e.getEndpoint2());
-                    for (final Property property : e.getProperties()) {
+                    Edge edge = new Edge(node1, node2, e.getEndpoint1(), e.getEndpoint2());
+                    for (Edge.Property property : e.getProperties()) {
                         edge.addProperty(property);
                     }
                     edgeString = edge.toString();
@@ -427,20 +425,20 @@ public class RfciBsc implements GraphSearch {
                 no_edge_num++;
             }
         }
-        final int n = this.pAGs.size();
+        int n = pAGs.size();
         // Normalization
-        final List<EdgeTypeProbability> edgeTypeProbabilities = edgeDist.size() == 0 ? null : new ArrayList<>();
-        for (final String edgeString : edgeDist.keySet()) {
-            final int edge_num = edgeDist.get(edgeString);
-            final double probability = (double) edge_num / n;
+        List<EdgeTypeProbability> edgeTypeProbabilities = edgeDist.size() == 0 ? null : new ArrayList<>();
+        for (String edgeString : edgeDist.keySet()) {
+            int edge_num = edgeDist.get(edgeString);
+            double probability = (double) edge_num / n;
 
-            final String[] token = edgeString.split("\\s+");
-            final String n1 = token[0];
-            final String arc = token[1];
-            final String n2 = token[2];
+            String[] token = edgeString.split("\\s+");
+            String n1 = token[0];
+            String arc = token[1];
+            String n2 = token[2];
 
-            final char end1 = arc.charAt(0);
-            final char end2 = arc.charAt(2);
+            char end1 = arc.charAt(0);
+            char end2 = arc.charAt(2);
 
             Endpoint _end1, _end2;
 
@@ -465,33 +463,33 @@ public class RfciBsc implements GraphSearch {
             }
 
             if (node1.getName().equalsIgnoreCase(n2) && node2.getName().equalsIgnoreCase(n1)) {
-                final Endpoint tmp = _end1;
+                Endpoint tmp = _end1;
                 _end1 = _end2;
                 _end2 = tmp;
             }
 
-            EdgeType edgeType = EdgeType.nil;
+            EdgeTypeProbability.EdgeType edgeType = EdgeTypeProbability.EdgeType.nil;
 
             if (_end1 == Endpoint.TAIL && _end2 == Endpoint.ARROW) {
-                edgeType = EdgeType.ta;
+                edgeType = EdgeTypeProbability.EdgeType.ta;
             }
             if (_end1 == Endpoint.ARROW && _end2 == Endpoint.TAIL) {
-                edgeType = EdgeType.at;
+                edgeType = EdgeTypeProbability.EdgeType.at;
             }
             if (_end1 == Endpoint.CIRCLE && _end2 == Endpoint.ARROW) {
-                edgeType = EdgeType.ca;
+                edgeType = EdgeTypeProbability.EdgeType.ca;
             }
             if (_end1 == Endpoint.ARROW && _end2 == Endpoint.CIRCLE) {
-                edgeType = EdgeType.ac;
+                edgeType = EdgeTypeProbability.EdgeType.ac;
             }
             if (_end1 == Endpoint.CIRCLE && _end2 == Endpoint.CIRCLE) {
-                edgeType = EdgeType.cc;
+                edgeType = EdgeTypeProbability.EdgeType.cc;
             }
             if (_end1 == Endpoint.ARROW && _end2 == Endpoint.ARROW) {
-                edgeType = EdgeType.aa;
+                edgeType = EdgeTypeProbability.EdgeType.aa;
             }
             if (_end1 == Endpoint.TAIL && _end2 == Endpoint.TAIL) {
-                edgeType = EdgeType.tt;
+                edgeType = EdgeTypeProbability.EdgeType.tt;
             }
 
             final EdgeTypeProbability etp = new EdgeTypeProbability(edgeType, probability);
@@ -506,15 +504,15 @@ public class RfciBsc implements GraphSearch {
         }
 
         if (no_edge_num < n && edgeTypeProbabilities != null) {
-            edgeTypeProbabilities.add(new EdgeTypeProbability(EdgeType.nil, (double) no_edge_num / n));
+            edgeTypeProbabilities.add(new EdgeTypeProbability(EdgeTypeProbability.EdgeType.nil, (double) no_edge_num / n));
         }
 
         return edgeTypeProbabilities;
     }
 
     private static double lnXplusY(double lnX, double lnY) {
-        final double lnYminusLnX;
-        final double temp;
+        double lnYminusLnX;
+        double temp;
 
         if (lnY > lnX) {
             temp = lnX;
@@ -524,66 +522,66 @@ public class RfciBsc implements GraphSearch {
 
         lnYminusLnX = lnY - lnX;
 
-        if (lnYminusLnX < RfciBsc.MININUM_EXPONENT) {
+        if (lnYminusLnX < MININUM_EXPONENT) {
             return lnX;
         } else {
-            final double w = Math.log1p(exp(lnYminusLnX));
+            double w = Math.log1p(exp(lnYminusLnX));
             return w + lnX;
         }
     }
 
-    private static double lnQTotal(final Map<Graph, Double> pagLnProb) {
-        final Set<Graph> pags = pagLnProb.keySet();
-        final Iterator<Graph> iter = pags.iterator();
+    private static double lnQTotal(Map<Graph, Double> pagLnProb) {
+        Set<Graph> pags = pagLnProb.keySet();
+        Iterator<Graph> iter = pags.iterator();
         double lnQTotal = pagLnProb.get(iter.next());
 
         while (iter.hasNext()) {
-            final Graph pag = iter.next();
-            final double lnQ = pagLnProb.get(pag);
-            lnQTotal = RfciBsc.lnXplusY(lnQTotal, lnQ);
+            Graph pag = iter.next();
+            double lnQ = pagLnProb.get(pag);
+            lnQTotal = lnXplusY(lnQTotal, lnQ);
         }
 
         return lnQTotal;
     }
 
-    private static double getLnProbUsingDepFiltering(final Graph pag, final Map<IndependenceFact, Double> H, final BayesIm im, final Graph dep) {
+    private static double getLnProbUsingDepFiltering(Graph pag, Map<IndependenceFact, Double> H, BayesIm im, Graph dep) {
         double lnQ = 0;
 
-        for (final IndependenceFact fact : H.keySet()) {
-            final BCInference.OP op;
+        for (IndependenceFact fact : H.keySet()) {
+            OP op;
             double p = 0.0;
 
             if (pag.isDSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
-                op = BCInference.OP.independent;
+                op = OP.independent;
             } else {
-                op = BCInference.OP.dependent;
+                op = OP.dependent;
             }
 
             if (im.getNode(fact.toString()) != null) {
-                final Node node = im.getNode(fact.toString());
+                Node node = im.getNode(fact.toString());
 
-                final int[] parents = im.getParents(im.getNodeIndex(node));
+                int[] parents = im.getParents(im.getNodeIndex(node));
 
                 if (parents.length > 0) {
 
-                    final int[] parentValues = new int[parents.length];
+                    int[] parentValues = new int[parents.length];
 
                     for (int parentIndex = 0; parentIndex < parentValues.length; parentIndex++) {
-                        final String parentName = im.getNode(parents[parentIndex]).getName();
-                        final String[] splitParent = parentName.split(Pattern.quote("_||_"));
-                        final Node _X = pag.getNode(splitParent[0].trim());
+                        String parentName = im.getNode(parents[parentIndex]).getName();
+                        String[] splitParent = parentName.split(Pattern.quote("_||_"));
+                        Node _X = pag.getNode(splitParent[0].trim());
 
-                        final String[] splitParent2 = splitParent[1].trim().split(Pattern.quote("|"));
-                        final Node _Y = pag.getNode(splitParent2[0].trim());
+                        String[] splitParent2 = splitParent[1].trim().split(Pattern.quote("|"));
+                        Node _Y = pag.getNode(splitParent2[0].trim());
 
-                        final List<Node> _Z = new ArrayList<>();
+                        List<Node> _Z = new ArrayList<>();
                         if (splitParent2.length > 1) {
-                            final String[] splitParent3 = splitParent2[1].trim().split(Pattern.quote(","));
-                            for (final String s : splitParent3) {
+                            String[] splitParent3 = splitParent2[1].trim().split(Pattern.quote(","));
+                            for (String s : splitParent3) {
                                 _Z.add(pag.getNode(s.trim()));
                             }
                         }
-                        final IndependenceFact parentFact = new IndependenceFact(_X, _Y, _Z);
+                        IndependenceFact parentFact = new IndependenceFact(_X, _Y, _Z);
                         if (pag.isDSeparatedFrom(parentFact.getX(), parentFact.getY(), parentFact.getZ())) {
                             parentValues[parentIndex] = 1;
                         } else {
@@ -591,15 +589,15 @@ public class RfciBsc implements GraphSearch {
                         }
                     }
 
-                    final int rowIndex = im.getRowIndex(im.getNodeIndex(node), parentValues);
+                    int rowIndex = im.getRowIndex(im.getNodeIndex(node), parentValues);
                     p = im.getProbability(im.getNodeIndex(node), rowIndex, 1);
 
-                    if (op == BCInference.OP.dependent) {
+                    if (op == OP.dependent) {
                         p = 1.0 - p;
                     }
                 } else {
                     p = im.getProbability(im.getNodeIndex(node), 0, 1);
-                    if (op == BCInference.OP.dependent) {
+                    if (op == OP.dependent) {
                         p = 1.0 - p;
                     }
                 }
@@ -608,7 +606,7 @@ public class RfciBsc implements GraphSearch {
                     throw new IllegalArgumentException("p illegally equals " + p);
                 }
 
-                final double v = lnQ + log(p);
+                double v = lnQ + log(p);
 
                 if (Double.isNaN(v) || Double.isInfinite(v)) {
                     continue;
@@ -622,11 +620,11 @@ public class RfciBsc implements GraphSearch {
                     throw new IllegalArgumentException("p illegally equals " + p);
                 }
 
-                if (op == BCInference.OP.dependent) {
+                if (op == OP.dependent) {
                     p = 1.0 - p;
                 }
 
-                final double v = lnQ + log(p);
+                double v = lnQ + log(p);
 
                 if (Double.isNaN(v) || Double.isInfinite(v)) {
                     continue;
@@ -639,15 +637,15 @@ public class RfciBsc implements GraphSearch {
         return lnQ;
     }
 
-    private static double getLnProb(final Graph pag, final Map<IndependenceFact, Double> H) {
+    private static double getLnProb(Graph pag, Map<IndependenceFact, Double> H) {
         double lnQ = 0;
-        for (final IndependenceFact fact : H.keySet()) {
-            final BCInference.OP op;
+        for (IndependenceFact fact : H.keySet()) {
+            OP op;
 
             if (pag.isDSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
-                op = BCInference.OP.independent;
+                op = OP.independent;
             } else {
-                op = BCInference.OP.dependent;
+                op = OP.dependent;
             }
 
             double p = H.get(fact);
@@ -656,11 +654,11 @@ public class RfciBsc implements GraphSearch {
                 throw new IllegalArgumentException("p illegally equals " + p);
             }
 
-            if (op == BCInference.OP.dependent) {
+            if (op == OP.dependent) {
                 p = 1.0 - p;
             }
 
-            final double v = lnQ + log(p);
+            double v = lnQ + log(p);
 
             if (Double.isNaN(v) || Double.isInfinite(v)) {
                 continue;
@@ -673,46 +671,46 @@ public class RfciBsc implements GraphSearch {
 
     @Override
     public long getElapsedTime() {
-        return (this.stop - this.start);
+        return (stop - start);
     }
 
-    public void setNumRandomizedSearchModels(final int numRandomizedSearchModels) {
+    public void setNumRandomizedSearchModels(int numRandomizedSearchModels) {
         this.numRandomizedSearchModels = numRandomizedSearchModels;
     }
 
-    public void setNumBscBootstrapSamples(final int numBscBootstrapSamples) {
+    public void setNumBscBootstrapSamples(int numBscBootstrapSamples) {
         this.numBscBootstrapSamples = numBscBootstrapSamples;
     }
 
-    public void setLowerBound(final double lowerBound) {
+    public void setLowerBound(double lowerBound) {
         this.lowerBound = lowerBound;
     }
 
-    public void setUpperBound(final double upperBound) {
+    public void setUpperBound(double upperBound) {
         this.upperBound = upperBound;
     }
 
-    public void setOutputRBD(final boolean outputRBD) {
+    public void setOutputRBD(boolean outputRBD) {
         this.outputRBD = outputRBD;
     }
 
     public Graph getGraphRBD() {
-        return this.graphRBD;
+        return graphRBD;
     }
 
     public Graph getGraphRBI() {
-        return this.graphRBI;
+        return graphRBI;
     }
 
     public double getBscD() {
-        return this.bscD;
+        return bscD;
     }
 
     public double getBscI() {
-        return this.bscI;
+        return bscI;
     }
 
-    private void shutdownAndAwaitTermination(final ExecutorService pool) {
+    private void shutdownAndAwaitTermination(ExecutorService pool) {
         pool.shutdown(); // Disable new tasks from being submitted
         try {
             // Wait a while for existing tasks to terminate
@@ -723,7 +721,7 @@ public class RfciBsc implements GraphSearch {
                     System.err.println("Pool did not terminate");
                 }
             }
-        } catch (final InterruptedException ie) {
+        } catch (InterruptedException ie) {
             // (Re-)Cancel if current thread also interrupted
             pool.shutdownNow();
             // Preserve interrupt status
@@ -734,7 +732,7 @@ public class RfciBsc implements GraphSearch {
     /**
      * Sets whether verbose output should be produced.
      */
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
@@ -742,7 +740,7 @@ public class RfciBsc implements GraphSearch {
      * Sets the output stream that output (except for log output) should be sent
      * to. By detault System.out.
      */
-    public void setOut(final PrintStream out) {
+    public void setOut(PrintStream out) {
         this.out = out;
     }
 
@@ -751,22 +749,22 @@ public class RfciBsc implements GraphSearch {
      * sent to.
      */
     public PrintStream getOut() {
-        return this.out;
+        return out;
     }
 
-    public void setThresholdNoRandomDataSearch(final boolean thresholdNoRandomDataSearch) {
+    public void setThresholdNoRandomDataSearch(boolean thresholdNoRandomDataSearch) {
         this.thresholdNoRandomDataSearch = thresholdNoRandomDataSearch;
     }
 
-    public void setCutoffDataSearch(final double cutoffDataSearch) {
+    public void setCutoffDataSearch(double cutoffDataSearch) {
         this.cutoffDataSearch = cutoffDataSearch;
     }
 
-    public void setThresholdNoRandomConstrainSearch(final boolean thresholdNoRandomConstrainSearch) {
+    public void setThresholdNoRandomConstrainSearch(boolean thresholdNoRandomConstrainSearch) {
         this.thresholdNoRandomConstrainSearch = thresholdNoRandomConstrainSearch;
     }
 
-    public void setCutoffConstrainSearch(final double cutoffConstrainSearch) {
+    public void setCutoffConstrainSearch(double cutoffConstrainSearch) {
         this.cutoffConstrainSearch = cutoffConstrainSearch;
     }
 

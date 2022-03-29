@@ -47,12 +47,12 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
 
     //============================CONSTRUCTORS============================//
 
-    private StoredCellProbs(final List<Node> variables) {
+    private StoredCellProbs(List<Node> variables) {
         if (variables == null) {
             throw new NullPointerException();
         }
 
-        for (final Object variable : variables) {
+        for (Object variable : variables) {
             if (variable == null) {
                 throw new NullPointerException();
             }
@@ -64,34 +64,34 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
         }
 
         this.variables = Collections.unmodifiableList(variables);
-        final Set<Object> variableSet = new HashSet<>(this.variables);
+        Set<Object> variableSet = new HashSet<>(this.variables);
         if (variableSet.size() < this.variables.size()) {
             throw new IllegalArgumentException("Duplicate variable.");
         }
 
-        this.parentDims = new int[getVariables().size()];
+        parentDims = new int[this.getVariables().size()];
 
-        for (int i = 0; i < getVariables().size(); i++) {
-            final DiscreteVariable var = (DiscreteVariable) getVariables().get(i);
-            this.parentDims[i] = var.getNumCategories();
+        for (int i = 0; i < this.getVariables().size(); i++) {
+            DiscreteVariable var = (DiscreteVariable) this.getVariables().get(i);
+            parentDims[i] = var.getNumCategories();
         }
 
         int numCells = 1;
 
-        for (final int parentDim : this.parentDims) {
+        for (int parentDim : parentDims) {
             numCells *= parentDim;
         }
 
-        this.probs = new double[numCells];
+        probs = new double[numCells];
     }
 
-    public static StoredCellProbs createRandomCellTable(final List<Node> variables) {
-        final StoredCellProbs cellProbs = new StoredCellProbs(variables);
+    public static StoredCellProbs createRandomCellTable(List<Node> variables) {
+        StoredCellProbs cellProbs = new StoredCellProbs(variables);
 
         double sum = 0.0;
 
         for (int i = 0; i < cellProbs.probs.length; i++) {
-            final double value = RandomUtil.getInstance().nextDouble();
+            double value = RandomUtil.getInstance().nextDouble();
             cellProbs.probs[i] = value;
             sum += value;
         }
@@ -103,18 +103,18 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
         return cellProbs;
     }
 
-    public static StoredCellProbs createCellTable(final BayesIm bayesIm) {
+    public static StoredCellProbs createCellTable(BayesIm bayesIm) {
         if (bayesIm == null) {
             throw new NullPointerException();
         }
 
-        final BayesImProbs cellProbsOnTheFly = new BayesImProbs(bayesIm);
-        final StoredCellProbs cellProbs =
+        BayesImProbs cellProbsOnTheFly = new BayesImProbs(bayesIm);
+        StoredCellProbs cellProbs =
                 new StoredCellProbs(cellProbsOnTheFly.getVariables());
 
         for (int i = 0; i < cellProbs.probs.length; i++) {
-            final int[] variableValues = cellProbs.getVariableValues(i);
-            final double p = cellProbsOnTheFly.getCellProb(variableValues);
+            int[] variableValues = cellProbs.getVariableValues(i);
+            double p = cellProbsOnTheFly.getCellProb(variableValues);
             cellProbs.setCellProbability(variableValues, p);
         }
 
@@ -135,17 +135,17 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
      * combination of variable values, for the list of variables (in order)
      * returned by get
      */
-    public double getCellProb(final int[] variableValues) {
-        return this.probs[getOffset(variableValues)];
+    public double getCellProb(int[] variableValues) {
+        return probs[this.getOffset(variableValues)];
     }
 
-    public double getProb(final Proposition assertion) {
+    public double getProb(Proposition assertion) {
 
         // Initialize to 0's.
-        final int[] variableValues = new int[assertion.getNumVariables()];
+        int[] variableValues = new int[assertion.getNumVariables()];
 
         for (int i = 0; i < assertion.getNumVariables(); i++) {
-            variableValues[i] = StoredCellProbs.nextValue(assertion, i, -1);
+            variableValues[i] = nextValue(assertion, i, -1);
         }
 
         variableValues[variableValues.length - 1] = -1;
@@ -154,19 +154,19 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
         loop:
         while (true) {
             for (int i = assertion.getNumVariables() - 1; i >= 0; i--) {
-                if (StoredCellProbs.hasNextValue(assertion, i, variableValues[i])) {
+                if (hasNextValue(assertion, i, variableValues[i])) {
                     variableValues[i] =
-                            StoredCellProbs.nextValue(assertion, i, variableValues[i]);
+                            nextValue(assertion, i, variableValues[i]);
 
                     for (int j = i + 1; j < assertion.getNumVariables(); j++) {
-                        if (StoredCellProbs.hasNextValue(assertion, j, -1)) {
-                            variableValues[j] = StoredCellProbs.nextValue(assertion, j, -1);
+                        if (hasNextValue(assertion, j, -1)) {
+                            variableValues[j] = nextValue(assertion, j, -1);
                         } else {
                             break loop;
                         }
                     }
 
-                    p += getCellProb(variableValues);
+                    p += this.getCellProb(variableValues);
                     continue loop;
                 }
             }
@@ -177,13 +177,13 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
         return p;
     }
 
-    private static boolean hasNextValue(final Proposition proposition, final int variable,
-                                        final int curIndex) {
-        return StoredCellProbs.nextValue(proposition, variable, curIndex) != -1;
+    private static boolean hasNextValue(Proposition proposition, int variable,
+                                        int curIndex) {
+        return nextValue(proposition, variable, curIndex) != -1;
     }
 
-    private static int nextValue(final Proposition proposition, final int variable,
-                                 final int curIndex) {
+    private static int nextValue(Proposition proposition, int variable,
+                                 int curIndex) {
         for (int i = curIndex + 1;
              i < proposition.getNumCategories(variable); i++) {
             if (proposition.isAllowed(variable, i)) {
@@ -194,8 +194,8 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
         return -1;
     }
 
-    public double getConditionalProb(final Proposition assertion,
-                                     final Proposition condition) {
+    public double getConditionalProb(Proposition assertion,
+                                     Proposition condition) {
         if (assertion.getVariableSource() != condition.getVariableSource()) {
             throw new IllegalArgumentException(
                     "Assertion and condition must be " +
@@ -203,10 +203,10 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
         }
 
         // Initialize to 0's.
-        final int[] variableValues = new int[condition.getNumVariables()];
+        int[] variableValues = new int[condition.getNumVariables()];
 
         for (int i = 0; i < condition.getNumVariables(); i++) {
-            variableValues[i] = StoredCellProbs.nextValue(condition, i, -1);
+            variableValues[i] = nextValue(condition, i, -1);
         }
 
         variableValues[variableValues.length - 1] = -1;
@@ -216,19 +216,19 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
         loop:
         while (true) {
             for (int i = condition.getNumVariables() - 1; i >= 0; i--) {
-                if (StoredCellProbs.hasNextValue(condition, i, variableValues[i])) {
+                if (hasNextValue(condition, i, variableValues[i])) {
                     variableValues[i] =
-                            StoredCellProbs.nextValue(condition, i, variableValues[i]);
+                            nextValue(condition, i, variableValues[i]);
 
                     for (int j = i + 1; j < condition.getNumVariables(); j++) {
-                        if (StoredCellProbs.hasNextValue(condition, j, -1)) {
-                            variableValues[j] = StoredCellProbs.nextValue(condition, j, -1);
+                        if (hasNextValue(condition, j, -1)) {
+                            variableValues[j] = nextValue(condition, j, -1);
                         } else {
                             break loop;
                         }
                     }
 
-                    final double cellProb = getCellProb(variableValues);
+                    double cellProb = this.getCellProb(variableValues);
                     boolean assertionHolds = true;
 
                     for (int j = 0; j < assertion.getNumVariables(); j++) {
@@ -254,25 +254,25 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
     }
 
     public List<Node> getVariables() {
-        return this.variables;
+        return variables;
     }
 
     public String toString() {
-        final StringBuilder buf = new StringBuilder();
-        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        StringBuilder buf = new StringBuilder();
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
         buf.append("\nCell Probabilities:");
 
         buf.append("\n");
 
-        for (final Node variable : this.variables) {
+        for (Node variable : variables) {
             buf.append(variable).append("\t");
         }
 
         double sum = 0.0;
         final int maxLines = 500;
 
-        for (int i = 0; i < this.probs.length; i++) {
+        for (int i = 0; i < probs.length; i++) {
             if (i >= maxLines) {
                 buf.append("\nCowardly refusing to print more than ")
                         .append(maxLines).append(" lines.");
@@ -281,14 +281,14 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
 
             buf.append("\n");
 
-            final int[] variableValues = getVariableValues(i);
+            int[] variableValues = this.getVariableValues(i);
 
-            for (final int variableValue : variableValues) {
+            for (int variableValue : variableValues) {
                 buf.append(variableValue).append("\t");
             }
 
-            buf.append(nf.format(this.probs[i]));
-            sum += this.probs[i];
+            buf.append(nf.format(probs[i]));
+            sum += probs[i];
         }
 
         buf.append("\n\nSum = ").append(nf.format(sum));
@@ -302,8 +302,8 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
      * @return the row in the table for the given node and combination of parent
      * values.
      */
-    private int getOffset(final int[] values) {
-        final int[] dim = getParentDims();
+    private int getOffset(int[] values) {
+        int[] dim = this.getParentDims();
         int offset = 0;
 
         for (int i = 0; i < dim.length; i++) {
@@ -319,8 +319,8 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
     }
 
     private int[] getVariableValues(int rowIndex) {
-        final int[] dims = getParentDims();
-        final int[] values = new int[dims.length];
+        int[] dims = this.getParentDims();
+        int[] values = new int[dims.length];
 
         for (int i = dims.length - 1; i >= 0; i--) {
             values[i] = rowIndex % dims[i];
@@ -335,7 +335,7 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
      * variable.
      */
     private int[] getParentDims() {
-        return this.parentDims;
+        return parentDims;
     }
 
     /**
@@ -343,13 +343,13 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
      * there's no way to guarantee the probabilities will add to 1.0 if they're
      * set one at a time.
      */
-    private void setCellProbability(final int[] variableValues, final double probability) {
+    private void setCellProbability(int[] variableValues, double probability) {
         if (probability < 0.0 || probability > 1.0) {
             throw new IllegalArgumentException(
                     "Probability not in [0.0, 1.0]: " + probability);
         }
 
-        this.probs[getOffset(variableValues)] = probability;
+        probs[this.getOffset(variableValues)] = probability;
     }
 }
 

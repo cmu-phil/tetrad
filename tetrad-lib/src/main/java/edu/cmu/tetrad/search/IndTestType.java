@@ -78,45 +78,45 @@ public final class IndTestType implements TetradSerializable {
     /**
      * Protected constructor for the types; this allows for extension in case anyone wants to add formula types.
      */
-    protected IndTestType(final String name, final DataType type) {
+    protected IndTestType(String name, DataType type) {
         this.name = name;
-        this.dataType = type;
+        dataType = type;
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
     public static IndTestType serializableInstance() {
-        return IndTestType.DEFAULT;
+        return DEFAULT;
     }
 
     /**
      * Prints out the name of the dataType.
      */
     public String toString() {
-        return this.name;
+        return name;
     }
 
     // Declarations required for serialization.
-    private static int nextOrdinal = 0;
-    private final int ordinal = IndTestType.nextOrdinal++;
-    private static final IndTestType[] TYPES = {IndTestType.DEFAULT, IndTestType.CORRELATION_T, IndTestType.FISHER_Z,
-            IndTestType.LINEAR_REGRESSION, IndTestType.CONDITIONAL_CORRELATION, IndTestType.SEM_BIC, IndTestType.LOGISTIC_REGRESSION,
-            IndTestType.MIXED_MLR, IndTestType.FISHER_ZD,
-            IndTestType.FISHER_Z_BOOTSTRAP,
-            IndTestType.G_SQUARE, IndTestType.CHI_SQUARE,
-            IndTestType.D_SEPARATION, IndTestType.TIME_SERIES,
+    private static int nextOrdinal;
+    private final int ordinal = nextOrdinal++;
+    private static final IndTestType[] TYPES = {DEFAULT, CORRELATION_T, FISHER_Z,
+            LINEAR_REGRESSION, CONDITIONAL_CORRELATION, SEM_BIC, LOGISTIC_REGRESSION,
+            MIXED_MLR, FISHER_ZD,
+            FISHER_Z_BOOTSTRAP,
+            G_SQUARE, CHI_SQUARE,
+            D_SEPARATION, TIME_SERIES,
 
-            IndTestType.INDEPENDENCE_FACTS, IndTestType.POOL_RESIDUALS_FISHER_Z, IndTestType.FISHER, IndTestType.TIPPETT,
+            INDEPENDENCE_FACTS, POOL_RESIDUALS_FISHER_Z, FISHER, TIPPETT,
 
     };
 
     Object readResolve() throws ObjectStreamException {
-        return IndTestType.TYPES[this.ordinal]; // Canonicalize.
+        return TYPES[ordinal]; // Canonicalize.
     }
 
     public DataType getDataType() {
-        return this.dataType;
+        return dataType;
     }
 }
 

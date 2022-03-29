@@ -84,7 +84,7 @@ public final class ChoiceGenerator {
      * @param a the number of objects being selected from.
      * @param b the number of objects in the desired selection.
      */
-    public ChoiceGenerator(final int a, final int b) {
+    public ChoiceGenerator(int a, int b) {
         if ((a < 0) || (b < 0) || (a < b)) {
             throw new IllegalArgumentException(
                     "For 'a choose b', a and b must be " +
@@ -94,23 +94,23 @@ public final class ChoiceGenerator {
 
         this.a = a;
         this.b = b;
-        this.choiceLocal = new int[b];
-        this.choiceReturned = new int[b];
-        this.diff = a - b;
+        choiceLocal = new int[b];
+        choiceReturned = new int[b];
+        diff = a - b;
 
         // Initialize the choice array with successive integers [0 1 2 ...].
         // Set the value at the last index one less than it would be in such
         // a series, ([0 1 2 ... b - 2]) so that on the first call to next()
         // the first combination ([0 1 2 ... b - 1]) is returned correctly.
         for (int i = 0; i < b - 1; i++) {
-            this.choiceLocal[i] = i;
+            choiceLocal[i] = i;
         }
 
         if (b > 0) {
-            this.choiceLocal[b - 1] = b - 2;
+            choiceLocal[b - 1] = b - 2;
         }
 
-        this.begun = false;
+        begun = false;
     }
 
     /**
@@ -118,30 +118,30 @@ public final class ChoiceGenerator {
      * finished.
      */
     public synchronized int[] next() {
-        int i = getB();
+        int i = this.getB();
 
         // Scan from the right for the first index whose value is less than
         // its expected maximum (i + diff) and perform the fill() operation
         // at that index.
         while (--i > -1) {
-            if (this.choiceLocal[i] < i + this.diff) {
+            if (choiceLocal[i] < i + diff) {
                 if (Thread.currentThread().isInterrupted()) {
                     break;
                 }
 
-                fill(i);
-                this.begun = true;
-                System.arraycopy(this.choiceLocal, 0, this.choiceReturned, 0, this.b);
-                return this.choiceReturned;
+                this.fill(i);
+                begun = true;
+                System.arraycopy(choiceLocal, 0, choiceReturned, 0, b);
+                return choiceReturned;
             }
         }
 
-        if (this.begun) {
+        if (begun) {
             return null;
         } else {
-            this.begun = true;
-            System.arraycopy(this.choiceLocal, 0, this.choiceReturned, 0, this.b);
-            return this.choiceReturned;
+            begun = true;
+            System.arraycopy(choiceLocal, 0, choiceReturned, 0, b);
+            return choiceReturned;
         }
     }
 
@@ -153,8 +153,8 @@ public final class ChoiceGenerator {
      * @param b the number of objects in the desired selection.
      */
     @SuppressWarnings({"SameParameterValue"})
-    public static void testPrint(final int a, final int b) {
-        final ChoiceGenerator cg = new ChoiceGenerator(a, b);
+    public static void testPrint(int a, int b) {
+        ChoiceGenerator cg = new ChoiceGenerator(a, b);
         int[] choice;
 
         System.out.println();
@@ -166,7 +166,7 @@ public final class ChoiceGenerator {
             if (choice.length == 0) {
                 System.out.println("zero-length array");
             } else {
-                for (final int aChoice : choice) {
+                for (int aChoice : choice) {
                     System.out.print(aChoice + "\t");
                 }
 
@@ -182,14 +182,14 @@ public final class ChoiceGenerator {
      */
     @SuppressWarnings({"UnusedDeclaration"})
     public int getA() {
-        return this.a;
+        return a;
     }
 
     /**
      * @return Ibid.
      */
     public int getB() {
-        return this.b;
+        return b;
     }
 
     /**
@@ -198,19 +198,19 @@ public final class ChoiceGenerator {
      *
      * @param index the index to begin this incrementing operation.
      */
-    private void fill(final int index) {
-        this.choiceLocal[index]++;
+    private void fill(int index) {
+        choiceLocal[index]++;
 
-        for (int i = index + 1; i < getB(); i++) {
-            this.choiceLocal[i] = this.choiceLocal[i - 1] + 1;
+        for (int i = index + 1; i < this.getB(); i++) {
+            choiceLocal[i] = choiceLocal[i - 1] + 1;
         }
     }
 
-    public static int getNumCombinations(final int a, final int b) {
-        return (int) round(exp(ChoiceGenerator.logCombinations(a, b)));
+    public static int getNumCombinations(int a, int b) {
+        return (int) round(exp(logCombinations(a, b)));
     }
 
-    public static double logCombinations(final int a, final int b) {
+    public static double logCombinations(int a, int b) {
         return lngamma(a + 1) - lngamma(b + 1) - lngamma((a - b) + 1);
     }
 }

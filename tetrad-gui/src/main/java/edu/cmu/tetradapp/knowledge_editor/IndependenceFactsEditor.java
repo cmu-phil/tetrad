@@ -59,39 +59,39 @@ public class IndependenceFactsEditor extends JPanel {
      * from object to object even for the same knowledge), and possible source
      * graph. The source graph is used only to arrange nodes in the edge panel.
      */
-    public IndependenceFactsEditor(final IndependenceFactsModel facts) {
+    public IndependenceFactsEditor(IndependenceFactsModel facts) {
         if (facts == null) {
             throw new NullPointerException();
         }
 
         this.facts = facts;
 
-        setLayout(new BorderLayout());
-        final JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.add("Text", textDisplay());
+        this.setLayout(new BorderLayout());
+        JTabbedPane tabbedPane = new JTabbedPane();
+        tabbedPane.add("Text", this.textDisplay());
 
         tabbedPane.addChangeListener(new ChangeListener() {
-            public void stateChanged(final ChangeEvent e) {
-                resetTextDisplay();
+            public void stateChanged(ChangeEvent e) {
+                IndependenceFactsEditor.this.resetTextDisplay();
             }
         });
 
-        add(tabbedPane, BorderLayout.CENTER);
-        setPreferredSize(new Dimension(550, 500));
+        this.add(tabbedPane, BorderLayout.CENTER);
+        this.setPreferredSize(new Dimension(550, 500));
     }
 
     private Component textDisplay() {
-        final JButton loadButton = new JButton("Load from File");
-        final JButton parseButton = new JButton("Parse Text");
+        JButton loadButton = new JButton("Load from File");
+        JButton parseButton = new JButton("Parse Text");
 
         loadButton.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
 
-                final JFileChooser chooser = IndependenceFactsEditor.getJFileChooser();
+                JFileChooser chooser = getJFileChooser();
                 chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
                 chooser.showOpenDialog(IndependenceFactsEditor.this);
 
-                final File file = chooser.getSelectedFile();
+                File file = chooser.getSelectedFile();
 
                 // Can this happen?
                 if (file == null) {
@@ -101,9 +101,9 @@ public class IndependenceFactsEditor extends JPanel {
                 Preferences.userRoot().put("fileSaveLocation", file.getParent());
 
                 try {
-                    IndependenceFactsEditor.this.facts.setFacts(IndependenceFactsModel.loadFacts(new FileReader(file)).getFacts());
-                    getTextArea().setText(IndependenceFactsEditor.this.facts.toString());
-                } catch (final IOException e1) {
+                    facts.setFacts(IndependenceFactsModel.loadFacts(new FileReader(file)).getFacts());
+                    IndependenceFactsEditor.this.getTextArea().setText(facts.toString());
+                } catch (IOException e1) {
                     throw new RuntimeException("Couldn't find that file: " + file.getAbsolutePath());
                 }
 
@@ -111,26 +111,26 @@ public class IndependenceFactsEditor extends JPanel {
         });
 
         parseButton.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 try {
-                    final String text = getTextArea().getText();
-                    IndependenceFactsEditor.this.facts.setFacts(IndependenceFactsModel.loadFacts(new CharArrayReader(text.toCharArray())).getFacts());
-                    getTextArea().setText(IndependenceFactsEditor.this.facts.toString());
-                } catch (final Exception e1) {
+                    String text = IndependenceFactsEditor.this.getTextArea().getText();
+                    facts.setFacts(IndependenceFactsModel.loadFacts(new CharArrayReader(text.toCharArray())).getFacts());
+                    IndependenceFactsEditor.this.getTextArea().setText(facts.toString());
+                } catch (Exception e1) {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                             e1.getMessage());
                 }
             }
         });
 
-        final Box b = Box.createVerticalBox();
+        Box b = Box.createVerticalBox();
 
-        this.textArea = new JTextArea();
-        resetTextDisplay();
+        textArea = new JTextArea();
+        this.resetTextDisplay();
 
-        b.add(getTextArea());
+        b.add(this.getTextArea());
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(Box.createHorizontalGlue());
         b2.add(loadButton);
         b2.add(parseButton);
@@ -140,20 +140,20 @@ public class IndependenceFactsEditor extends JPanel {
     }
 
     private void resetTextDisplay() {
-        getTextArea().setFont(new Font("Monospaced", Font.PLAIN, 12));
-        getTextArea().setBorder(new CompoundBorder(new LineBorder(Color.black),
+        this.getTextArea().setFont(new Font("Monospaced", Font.PLAIN, 12));
+        this.getTextArea().setBorder(new CompoundBorder(new LineBorder(Color.black),
                 new EmptyBorder(3, 3, 3, 3)));
-        getTextArea().setText(this.facts.toString());
+        this.getTextArea().setText(facts.toString());
     }
 
     private JTextArea getTextArea() {
-        return this.textArea;
+        return textArea;
     }
 
 
     private static JFileChooser getJFileChooser() {
-        final JFileChooser chooser = new JFileChooser();
-        final String sessionSaveLocation =
+        JFileChooser chooser = new JFileChooser();
+        String sessionSaveLocation =
                 Preferences.userRoot().get("fileSaveLocation", "");
         chooser.setCurrentDirectory(new File(sessionSaveLocation));
         chooser.resetChoosableFileFilters();

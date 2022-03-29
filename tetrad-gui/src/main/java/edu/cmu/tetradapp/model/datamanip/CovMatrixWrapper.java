@@ -38,31 +38,31 @@ public class CovMatrixWrapper extends DataWrapper {
     /**
      * Splits the given data set by collinear columns.
      */
-    public CovMatrixWrapper(final DataWrapper wrapper, final Parameters params) {
+    public CovMatrixWrapper(DataWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException("The given data must not be null");
         }
 
-        final DataModelList models = wrapper.getDataModelList();
-        final DataModelList out = new DataModelList();
+        DataModelList models = wrapper.getDataModelList();
+        DataModelList out = new DataModelList();
 
-        for (final DataModel model : models) {
+        for (DataModel model : models) {
             if (model instanceof DataSet) {
-                final DataSet dataSet = (DataSet) model;
+                DataSet dataSet = (DataSet) model;
 
                 if (!(dataSet.isContinuous())) {
                     throw new IllegalArgumentException("The data must be continuous");
                 }
 
-                final ICovarianceMatrix covarianceMatrix = new CovarianceMatrix(dataSet);
+                ICovarianceMatrix covarianceMatrix = new CovarianceMatrix(dataSet);
                 out.add(covarianceMatrix);
             } else if (model instanceof ICovarianceMatrix) {
-                final ICovarianceMatrix covarianceMatrix = new CovarianceMatrix((CovarianceMatrix) model);
+                ICovarianceMatrix covarianceMatrix = new CovarianceMatrix((CovarianceMatrix) model);
                 out.add(covarianceMatrix);
             }
         }
 
-        setDataModel(out);
+        this.setDataModel(out);
 
 //        setDataModel(out);
 //        setSourceGraph(wrapper.getSourceGraph());
@@ -85,7 +85,7 @@ public class CovMatrixWrapper extends DataWrapper {
 //            throw new IllegalArgumentException("Must be a dataset or a covariance  matrix");
 //        }
 
-        LogDataUtils.logDataModelList("Conversion of data to covariance matrix form.", getDataModelList());
+        LogDataUtils.logDataModelList("Conversion of data to covariance matrix form.", this.getDataModelList());
 
     }
 

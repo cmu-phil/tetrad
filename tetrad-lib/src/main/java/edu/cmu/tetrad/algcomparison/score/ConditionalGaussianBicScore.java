@@ -30,9 +30,9 @@ public class ConditionalGaussianBicScore implements ScoreWrapper {
     private DataModel dataSet;
 
     @Override
-    public Score getScore(final DataModel dataSet, final Parameters parameters) {
+    public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
-        final ConditionalGaussianScore conditionalGaussianScore =
+        ConditionalGaussianScore conditionalGaussianScore =
                 new ConditionalGaussianScore(DataUtils.getMixedDataSet(dataSet),
                         parameters.getDouble("penaltyDiscount"),
                         parameters.getDouble("structurePrior"),
@@ -53,7 +53,7 @@ public class ConditionalGaussianBicScore implements ScoreWrapper {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
 
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.STRUCTURE_PRIOR);
@@ -63,7 +63,7 @@ public class ConditionalGaussianBicScore implements ScoreWrapper {
     }
 
     @Override
-    public Node getVariable(final String name) {
-        return this.dataSet.getVariable(name);
+    public Node getVariable(String name) {
+        return dataSet.getVariable(name);
     }
 }

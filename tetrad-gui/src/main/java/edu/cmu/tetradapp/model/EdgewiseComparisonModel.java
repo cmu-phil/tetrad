@@ -67,8 +67,8 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
      * <code>countOmissionErrors</code> and <code>countCommissionErrors</code>.
      */
 
-    public EdgewiseComparisonModel(final MultipleGraphSource model1, final MultipleGraphSource model2,
-                                   final Parameters params) {
+    public EdgewiseComparisonModel(MultipleGraphSource model1, MultipleGraphSource model2,
+                                   Parameters params) {
         if (params == null) {
             throw new NullPointerException("Parameters must not be null");
         }
@@ -93,84 +93,84 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
         }
 
         if (model1 instanceof GeneralAlgorithmRunner) {
-            final GeneralAlgorithmRunner generalAlgorithmRunner = (GeneralAlgorithmRunner) model1;
-            this.algorithm = generalAlgorithmRunner.getAlgorithm();
+            GeneralAlgorithmRunner generalAlgorithmRunner = (GeneralAlgorithmRunner) model1;
+            algorithm = generalAlgorithmRunner.getAlgorithm();
         } else if (model2 instanceof GeneralAlgorithmRunner) {
-            final GeneralAlgorithmRunner generalAlgorithmRunner = (GeneralAlgorithmRunner) model2;
-            this.algorithm = generalAlgorithmRunner.getAlgorithm();
+            GeneralAlgorithmRunner generalAlgorithmRunner = (GeneralAlgorithmRunner) model2;
+            algorithm = generalAlgorithmRunner.getAlgorithm();
         }
 
         this.params = params;
 
-        final String referenceName = this.params.getString("referenceGraphName", null);
+        String referenceName = this.params.getString("referenceGraphName", null);
 
         if (referenceName.equals(model1.getName())) {
             if (model1 instanceof Simulation && model2 instanceof GeneralAlgorithmRunner) {
-                this.referenceGraphs = ((GeneralAlgorithmRunner) model2).getCompareGraphs(((Simulation) model1).getGraphs());
+                referenceGraphs = ((GeneralAlgorithmRunner) model2).getCompareGraphs(((Simulation) model1).getGraphs());
             } else if (model1 instanceof MultipleGraphSource) {
-                this.referenceGraphs = ((MultipleGraphSource) model1).getGraphs();
+                referenceGraphs = ((MultipleGraphSource) model1).getGraphs();
             }
 
             if (model2 instanceof MultipleGraphSource) {
-                this.targetGraphs = ((MultipleGraphSource) model2).getGraphs();
+                targetGraphs = ((MultipleGraphSource) model2).getGraphs();
             }
 
-            if (this.referenceGraphs.size() == 1 && this.targetGraphs.size() > 1) {
-                final Graph graph = this.referenceGraphs.get(0);
-                this.referenceGraphs = new ArrayList<>();
-                for (final Graph _graph : this.targetGraphs) {
-                    this.referenceGraphs.add(_graph);
+            if (referenceGraphs.size() == 1 && targetGraphs.size() > 1) {
+                Graph graph = referenceGraphs.get(0);
+                referenceGraphs = new ArrayList<>();
+                for (Graph _graph : targetGraphs) {
+                    referenceGraphs.add(_graph);
                 }
             }
 
-            if (this.targetGraphs.size() == 1 && this.referenceGraphs.size() > 1) {
-                final Graph graph = this.targetGraphs.get(0);
-                this.targetGraphs = new ArrayList<>();
-                for (final Graph _graph : this.referenceGraphs) {
-                    this.targetGraphs.add(graph);
+            if (targetGraphs.size() == 1 && referenceGraphs.size() > 1) {
+                Graph graph = targetGraphs.get(0);
+                targetGraphs = new ArrayList<>();
+                for (Graph _graph : referenceGraphs) {
+                    targetGraphs.add(graph);
                 }
             }
 
-            if (this.referenceGraphs == null) {
-                this.referenceGraphs = Collections.singletonList(((GraphSource) model1).getGraph());
+            if (referenceGraphs == null) {
+                referenceGraphs = Collections.singletonList(((GraphSource) model1).getGraph());
             }
 
-            if (this.targetGraphs == null) {
-                this.targetGraphs = Collections.singletonList(((GraphSource) model2).getGraph());
+            if (targetGraphs == null) {
+                targetGraphs = Collections.singletonList(((GraphSource) model2).getGraph());
             }
         } else if (referenceName.equals(model2.getName())) {
             if (model2 instanceof Simulation && model1 instanceof GeneralAlgorithmRunner) {
-                this.referenceGraphs = ((GeneralAlgorithmRunner) model1).getCompareGraphs(((Simulation) model2).getGraphs());
+                referenceGraphs = ((GeneralAlgorithmRunner) model1).getCompareGraphs(((Simulation) model2).getGraphs());
             } else if (model1 instanceof MultipleGraphSource) {
-                this.referenceGraphs = ((MultipleGraphSource) model2).getGraphs();
+                referenceGraphs = ((MultipleGraphSource) model2).getGraphs();
             }
 
             if (model1 instanceof MultipleGraphSource) {
-                this.targetGraphs = ((MultipleGraphSource) model1).getGraphs();
+                targetGraphs = ((MultipleGraphSource) model1).getGraphs();
             }
 
-            if (this.referenceGraphs.size() == 1 && this.targetGraphs.size() > 1) {
-                final Graph graph = this.referenceGraphs.get(0);
-                this.referenceGraphs = new ArrayList<>();
-                for (final Graph _graph : this.targetGraphs) {
-                    this.referenceGraphs.add(_graph);
+            if (referenceGraphs.size() == 1 && targetGraphs.size() > 1) {
+                Graph graph = referenceGraphs.get(0);
+                referenceGraphs = new ArrayList<>();
+                for (Graph _graph : targetGraphs) {
+                    referenceGraphs.add(_graph);
                 }
             }
 
-            if (this.targetGraphs.size() == 1 && this.referenceGraphs.size() > 1) {
-                final Graph graph = this.targetGraphs.get(0);
-                this.targetGraphs = new ArrayList<>();
-                for (final Graph _graph : this.referenceGraphs) {
-                    this.targetGraphs.add(graph);
+            if (targetGraphs.size() == 1 && referenceGraphs.size() > 1) {
+                Graph graph = targetGraphs.get(0);
+                targetGraphs = new ArrayList<>();
+                for (Graph _graph : referenceGraphs) {
+                    targetGraphs.add(graph);
                 }
             }
 
-            if (this.referenceGraphs == null) {
-                this.referenceGraphs = Collections.singletonList(((GraphSource) model2).getGraph());
+            if (referenceGraphs == null) {
+                referenceGraphs = Collections.singletonList(((GraphSource) model2).getGraph());
             }
 
-            if (this.targetGraphs == null) {
-                this.targetGraphs = Collections.singletonList(((GraphSource) model1).getGraph());
+            if (targetGraphs == null) {
+                targetGraphs = Collections.singletonList(((GraphSource) model1).getGraph());
             }
         } else {
             throw new IllegalArgumentException(
@@ -178,47 +178,47 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
                             referenceName + "'.");
         }
 
-        for (int i = 0; i < this.targetGraphs.size(); i++) {
-            this.targetGraphs.set(i, GraphUtils.replaceNodes(this.targetGraphs.get(i), this.referenceGraphs.get(i).getNodes()));
+        for (int i = 0; i < targetGraphs.size(); i++) {
+            targetGraphs.set(i, GraphUtils.replaceNodes(targetGraphs.get(i), referenceGraphs.get(i).getNodes()));
         }
 
-        if (this.algorithm != null) {
-            for (int i = 0; i < this.referenceGraphs.size(); i++) {
-                this.referenceGraphs.set(i, this.algorithm.getComparisonGraph(this.referenceGraphs.get(i)));
+        if (algorithm != null) {
+            for (int i = 0; i < referenceGraphs.size(); i++) {
+                referenceGraphs.set(i, algorithm.getComparisonGraph(referenceGraphs.get(i)));
             }
         }
 
-        if (this.referenceGraphs.size() != this.targetGraphs.size()) {
+        if (referenceGraphs.size() != targetGraphs.size()) {
             throw new IllegalArgumentException("I was expecting the same number of graphs in each parent.");
         }
 
         TetradLogger.getInstance().log("info", "Graph Comparison");
 
-        for (int i = 0; i < this.referenceGraphs.size(); i++) {
+        for (int i = 0; i < referenceGraphs.size(); i++) {
             TetradLogger.getInstance().log("comparison", "\nModel " + (i + 1));
-            TetradLogger.getInstance().log("comparison", getComparisonString(i));
+            TetradLogger.getInstance().log("comparison", this.getComparisonString(i));
         }
     }
 
     //==============================PUBLIC METHODS========================//
 
     public DataSet getDataSet() {
-        return (DataSet) this.params.get("dataSet", null);
+        return (DataSet) params.get("dataSet", null);
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
-    public String getComparisonString(final int i) {
-        final String refName = getParams().getString("referenceGraphName", null);
-        final String targetName = getParams().getString("targetGraphName", null);
-        return SearchGraphUtils.graphComparisonString(targetName, this.targetGraphs.get(i),
-                refName, this.referenceGraphs.get(i), false);
+    public String getComparisonString(int i) {
+        String refName = this.getParams().getString("referenceGraphName", null);
+        String targetName = this.getParams().getString("targetGraphName", null);
+        return SearchGraphUtils.graphComparisonString(targetName, targetGraphs.get(i),
+                refName, referenceGraphs.get(i), false);
     }
 
     /**
@@ -234,7 +234,7 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
@@ -248,18 +248,18 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
 //    }
 
     private Parameters getParams() {
-        return this.params;
+        return params;
     }
 
     public List<Graph> getTargetGraphs() {
-        return this.targetGraphs;
+        return targetGraphs;
     }
 
     public List<Graph> getReferenceGraphs() {
-        return this.referenceGraphs;
+        return referenceGraphs;
     }
 
-    public void setReferenceGraphs(final List<Graph> referenceGraphs) {
+    public void setReferenceGraphs(List<Graph> referenceGraphs) {
         this.referenceGraphs = referenceGraphs;
     }
 }

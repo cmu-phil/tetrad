@@ -37,40 +37,40 @@ import java.util.Set;
  */
 public abstract class AbstractTabularColumnFileReader extends DataFileReader {
 
-    public AbstractTabularColumnFileReader(final Path dataFile, final Delimiter delimiter) {
+    public AbstractTabularColumnFileReader(Path dataFile, Delimiter delimiter) {
         super(dataFile, delimiter);
     }
 
-    protected int[] toColumnNumbers(final Set<String> columnNames) throws IOException {
-        final List<Integer> colNums = new LinkedList<>();
+    protected int[] toColumnNumbers(Set<String> columnNames) throws IOException {
+        List<Integer> colNums = new LinkedList<>();
 
-        try (final InputStream in = Files.newInputStream(this.dataFile, StandardOpenOption.READ)) {
+        try (InputStream in = Files.newInputStream(dataFile, StandardOpenOption.READ)) {
             boolean skip = false;
             boolean hasSeenNonblankChar = false;
             boolean hasQuoteChar = false;
             boolean finished = false;
 
-            final byte delimChar = this.delimiter.getByteValue();
+            byte delimChar = delimiter.getByteValue();
             byte prevChar = -1;
 
             // comment marker check
-            final byte[] comment = this.commentMarker.getBytes();
+            byte[] comment = commentMarker.getBytes();
             int cmntIndex = 0;
             boolean checkForComment = comment.length > 0;
 
             int colNum = 0;
-            final StringBuilder dataBuilder = new StringBuilder();
+            StringBuilder dataBuilder = new StringBuilder();
 
-            final byte[] buffer = new byte[DataFileReader.BUFFER_SIZE];
+            byte[] buffer = new byte[DataFileReader.BUFFER_SIZE];
             int len;
             while ((len = in.read(buffer)) != -1 && !finished && !Thread.currentThread().isInterrupted()) {
                 for (int i = 0; i < len && !finished && !Thread.currentThread().isInterrupted(); i++) {
-                    final byte currChar = buffer[i];
+                    byte currChar = buffer[i];
 
                     if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
                         finished = hasSeenNonblankChar && !skip;
                         if (finished) {
-                            final String value = dataBuilder.toString().trim();
+                            String value = dataBuilder.toString().trim();
                             dataBuilder.delete(0, dataBuilder.length());
 
                             colNum++;
@@ -110,14 +110,14 @@ public abstract class AbstractTabularColumnFileReader extends DataFileReader {
                             }
                         }
 
-                        if (currChar == this.quoteCharacter) {
+                        if (currChar == quoteCharacter) {
                             hasQuoteChar = !hasQuoteChar;
                         } else {
                             if (hasQuoteChar) {
                                 dataBuilder.append((char) currChar);
                             } else {
-                                final boolean isDelimiter;
-                                switch (this.delimiter) {
+                                boolean isDelimiter;
+                                switch (delimiter) {
                                     case WHITESPACE:
                                         isDelimiter = (currChar <= DataFileReader.SPACE_CHAR) && (prevChar > DataFileReader.SPACE_CHAR);
                                         break;
@@ -126,7 +126,7 @@ public abstract class AbstractTabularColumnFileReader extends DataFileReader {
                                 }
 
                                 if (isDelimiter) {
-                                    final String value = dataBuilder.toString().trim();
+                                    String value = dataBuilder.toString().trim();
                                     dataBuilder.delete(0, dataBuilder.length());
 
                                     colNum++;
@@ -146,7 +146,7 @@ public abstract class AbstractTabularColumnFileReader extends DataFileReader {
 
             finished = hasSeenNonblankChar && !skip;
             if (finished) {
-                final String value = dataBuilder.toString().trim();
+                String value = dataBuilder.toString().trim();
                 dataBuilder.delete(0, dataBuilder.length());
 
                 colNum++;
@@ -159,9 +159,9 @@ public abstract class AbstractTabularColumnFileReader extends DataFileReader {
         return colNums.stream().mapToInt(e -> e).toArray();
     }
 
-    protected String stripCharacter(final String word, final byte character) {
-        final StringBuilder dataBuilder = new StringBuilder();
-        for (final byte currChar : word.getBytes()) {
+    protected String stripCharacter(String word, byte character) {
+        StringBuilder dataBuilder = new StringBuilder();
+        for (byte currChar : word.getBytes()) {
             if (currChar != character) {
                 dataBuilder.append((char) currChar);
             }

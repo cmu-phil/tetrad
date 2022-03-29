@@ -29,88 +29,88 @@ public class GraspTol {
     private long start;
     // flags
     private boolean useScore = true;
-    private boolean usePearl = false;
-    private boolean ordered = false;
-    private boolean verbose = false;
+    private boolean usePearl;
+    private boolean ordered;
+    private boolean verbose;
     private boolean cachingScores = true;
     private int uncoveredDepth = 1;
     private int nonSingularDepth = 1;
-    private int toleranceDepth = 0;
+    private int toleranceDepth;
     private boolean useDataOrder = true;
-    private boolean allowRandomnessInsideAlgorithm = false;
+    private boolean allowRandomnessInsideAlgorithm;
 
     // other params
     private int depth = 4;
     private int numStarts = 1;
 
-    public GraspTol(@NotNull final Score score) {
+    public GraspTol(@NotNull Score score) {
         this.score = score;
-        this.variables = new ArrayList<>(score.getVariables());
-        this.useScore = true;
+        variables = new ArrayList<>(score.getVariables());
+        useScore = true;
     }
 
-    public GraspTol(@NotNull final IndependenceTest test) {
+    public GraspTol(@NotNull IndependenceTest test) {
         this.test = test;
-        this.variables = new ArrayList<>(test.getVariables());
-        this.useScore = false;
+        variables = new ArrayList<>(test.getVariables());
+        useScore = false;
     }
 
-    public GraspTol(@NotNull final IndependenceTest test, final Score score) {
+    public GraspTol(@NotNull IndependenceTest test, Score score) {
         this.test = test;
         this.score = score;
-        this.variables = new ArrayList<>(test.getVariables());
+        variables = new ArrayList<>(test.getVariables());
     }
 
     public List<Node> bestOrder(@NotNull List<Node> order) {
-        final long start = System.currentTimeMillis();
+        long start = System.currentTimeMillis();
         order = new ArrayList<>(order);
 
-        this.scorer = new TeyssierScorer(this.test, this.score);
-        this.scorer.setUseVermaPearl(this.usePearl);
+        scorer = new TeyssierScorer(test, score);
+        scorer.setUseVermaPearl(usePearl);
 
-        if (this.usePearl) {
-            this.scorer.setUseScore(false);
+        if (usePearl) {
+            scorer.setUseScore(false);
         } else {
-            this.scorer.setUseScore(this.useScore && !(this.score instanceof GraphScore));
+            scorer.setUseScore(useScore && !(score instanceof GraphScore));
         }
 
-        this.scorer.setKnowledge(this.knowledge);
-        this.scorer.clearBookmarks();
+        scorer.setKnowledge(knowledge);
+        scorer.clearBookmarks();
 
-        this.scorer.setCachingScores(this.cachingScores);
+        scorer.setCachingScores(cachingScores);
 
         List<Node> bestPerm = null;
         double best = Double.NEGATIVE_INFINITY;
 
-        this.scorer.score(order);
+        scorer.score(order);
 
-        for (int r = 0; r < this.numStarts; r++) {
-            if ((r == 0 && !this.useDataOrder) || r > 0) {
+        for (int r = 0; r < numStarts; r++) {
+            if ((r == 0 && !useDataOrder) || r > 0) {
                 shuffle(order);
             }
 
             this.start = System.currentTimeMillis();
 
-            makeValidKnowledgeOrder(order);
+            this.makeValidKnowledgeOrder(order);
 
-            this.scorer.score(order);
+            scorer.score(order);
 
-            final List<Node> perm = grasp(this.scorer);
+            List<Node> perm = this.grasp(scorer);
 
-            this.scorer.score(perm);
+            scorer.score(perm);
 
-            if (this.scorer.score() > best) {
-                best = this.scorer.score();
+            if (scorer.score() > best) {
+                best = scorer.score();
                 bestPerm = perm;
             }
         }
 
-        this.scorer.score(bestPerm);
+        scorer.score(bestPerm);
 
-        final long stop = System.currentTimeMillis();
+        long stop = System.currentTimeMillis();
 
-        if (this.verbose) {
-            TetradLogger.getInstance().forceLogMessage("Final order = " + this.scorer.getPi());
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Final order = " + scorer.getPi());
             TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (stop - start) / 1000.0 + " s");
         }
 
@@ -118,21 +118,21 @@ public class GraspTol {
     }
 
     public int getNumEdges() {
-        return this.scorer.getNumEdges();
+        return scorer.getNumEdges();
     }
 
-    private void makeValidKnowledgeOrder(final List<Node> order) {
-        if (!this.knowledge.isEmpty()) {
+    private void makeValidKnowledgeOrder(List<Node> order) {
+        if (!knowledge.isEmpty()) {
             order.sort((o1, o2) -> {
                 if (o1.getName().equals(o2.getName())) {
                     return 0;
-                } else if (this.knowledge.isRequired(o1.getName(), o2.getName())) {
+                } else if (knowledge.isRequired(o1.getName(), o2.getName())) {
                     return 1;
-                } else if (this.knowledge.isRequired(o2.getName(), o1.getName())) {
+                } else if (knowledge.isRequired(o2.getName(), o1.getName())) {
                     return -1;
-                } else if (this.knowledge.isForbidden(o2.getName(), o1.getName())) {
+                } else if (knowledge.isForbidden(o2.getName(), o1.getName())) {
                     return -1;
-                } else if (this.knowledge.isForbidden(o1.getName(), o2.getName())) {
+                } else if (knowledge.isForbidden(o1.getName(), o2.getName())) {
                     return 1;
                 } else {
                     return 1;
@@ -141,93 +141,93 @@ public class GraspTol {
         }
     }
 
-    public List<Node> grasp(@NotNull final TeyssierScorer scorer) {
+    public List<Node> grasp(@NotNull TeyssierScorer scorer) {
         scorer.clearBookmarks();
-        final List<int[]> depths = new ArrayList<>();
+        List<int[]> depths = new ArrayList<>();
 
         // GRaSP-TSP
-        if (this.ordered && this.uncoveredDepth != 0 && this.nonSingularDepth != 0) {
-            depths.add(new int[]{this.depth < 1 ? Integer.MAX_VALUE : this.depth, 0, 0});
+        if (ordered && uncoveredDepth != 0 && nonSingularDepth != 0) {
+            depths.add(new int[]{depth < 1 ? Integer.MAX_VALUE : depth, 0, 0});
         }
 
         // GRaSP-ESP
-        if (this.ordered && this.nonSingularDepth != 0) {
-            depths.add(new int[]{this.depth < 1 ? Integer.MAX_VALUE : this.depth,
-                    this.uncoveredDepth < 0 ? Integer.MAX_VALUE : this.uncoveredDepth, 0});
+        if (ordered && nonSingularDepth != 0) {
+            depths.add(new int[]{depth < 1 ? Integer.MAX_VALUE : depth,
+                    uncoveredDepth < 0 ? Integer.MAX_VALUE : uncoveredDepth, 0});
         }
 
         // GRaSP
-        depths.add(new int[]{this.depth < 1 ? Integer.MAX_VALUE : this.depth,
-                this.uncoveredDepth < 0 ? Integer.MAX_VALUE : this.uncoveredDepth,
-                this.nonSingularDepth < 0 ? Integer.MAX_VALUE : this.nonSingularDepth});
+        depths.add(new int[]{depth < 1 ? Integer.MAX_VALUE : depth,
+                uncoveredDepth < 0 ? Integer.MAX_VALUE : uncoveredDepth,
+                nonSingularDepth < 0 ? Integer.MAX_VALUE : nonSingularDepth});
 
         double sNew = scorer.score();
         double sOld;
 
-        for (final int[] depth : depths) {
+        for (int[] depth : depths) {
             do {
                 sOld = sNew;
-                graspDfsTol(scorer, sOld, depth, 1, this.toleranceDepth, 0, new HashSet<>(), new HashSet<>());
+                this.graspDfsTol(scorer, sOld, depth, 1, toleranceDepth, 0, new HashSet<>(), new HashSet<>());
                 sNew = scorer.score();
             } while (sNew > sOld);
         }
 
-        if (this.verbose) {
+        if (verbose) {
             TetradLogger.getInstance().forceLogMessage("# Edges = " + scorer.getNumEdges()
                     + " Score = " + scorer.score()
                     + " (GRaSP)"
-                    + " Elapsed " + ((System.currentTimeMillis() - this.start) / 1000.0 + " s"));
+                    + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
         }
 
         return scorer.getPi();
     }
 
 
-    private void graspDfsTol(@NotNull final TeyssierScorer scorer, final double sOld, final int[] depth, final int currentDepth,
-                             final int tol, final int tolCur,
-                             final Set<Set<Node>> tucks, final Set<Set<Set<Node>>> dfsHistory) {
-        final List<Node> variables;
+    private void graspDfsTol(@NotNull TeyssierScorer scorer, double sOld, int[] depth, int currentDepth,
+                             int tol, int tolCur,
+                             Set<Set<Node>> tucks, Set<Set<Set<Node>>> dfsHistory) {
+        List<Node> variables;
 
-        if (this.allowRandomnessInsideAlgorithm) {
+        if (allowRandomnessInsideAlgorithm) {
             variables = scorer.getShuffledVariables();
         } else {
             variables = scorer.getPi();
         }
 
-        for (final Node y : variables) {
-            final Set<Node> ancestors = scorer.getAncestors(y);
-            final List<Node> parents = new ArrayList<>(scorer.getParents(y));
+        for (Node y : variables) {
+            Set<Node> ancestors = scorer.getAncestors(y);
+            List<Node> parents = new ArrayList<>(scorer.getParents(y));
 
-            if (this.allowRandomnessInsideAlgorithm) {
+            if (allowRandomnessInsideAlgorithm) {
                 shuffle(parents);
             }
 
-            for (final Node x : parents) {
+            for (Node x : parents) {
 
-                final boolean covered = scorer.coveredEdge(x, y);
+                boolean covered = scorer.coveredEdge(x, y);
                 boolean singular = true;
-                final Set<Node> tuck = new HashSet<>();
+                Set<Node> tuck = new HashSet<>();
                 tuck.add(x);
                 tuck.add(y);
 
                 if (covered && tucks.contains(tuck)) continue;
                 if (currentDepth > depth[1] && !covered) continue;
 
-                final int[] idcs = new int[]{scorer.index(x), scorer.index(y)};
+                int[] idcs = {scorer.index(x), scorer.index(y)};
 
                 int i = idcs[0];
                 scorer.bookmark(currentDepth);
 
                 boolean first = true;
-                final List<Node> Z = new ArrayList<>(scorer.getOrderShallow().subList(i + 1, idcs[1]));
-                final Iterator<Node> zItr = Z.iterator();
+                List<Node> Z = new ArrayList<>(scorer.getOrderShallow().subList(i + 1, idcs[1]));
+                Iterator<Node> zItr = Z.iterator();
                 do {
                     if (first) {
 //                        scorer.moveTo(y, i);
                         scorer.moveToNoUpdate(y, i);
                         first = false;
                     } else {
-                        final Node z = zItr.next();
+                        Node z = zItr.next();
                         if (ancestors.contains(z)) {
                             if (scorer.getParents(z).contains(x)) {
                                 singular = false;
@@ -245,12 +245,12 @@ public class GraspTol {
                     continue;
                 }
 
-                if (violatesKnowledge(scorer.getPi())) continue;
+                if (this.violatesKnowledge(scorer.getPi())) continue;
 
-                final double sNew = scorer.score();
+                double sNew = scorer.score();
 
                 if (sNew > sOld) {
-                    if (this.verbose) {
+                    if (verbose) {
                         System.out.printf("Edges: %d \t|\t Score Improvement: %f \t|\t Tucks Performed: %s %s \n",
                                 scorer.getNumEdges(), sNew - sOld, tucks, tuck);
                     }
@@ -260,13 +260,13 @@ public class GraspTol {
                     if (currentDepth > depth[1]) {
                         if (!dfsHistory.contains(tucks)) {
                             dfsHistory.add(new HashSet<>(tucks));
-                            graspDfsTol(scorer, sOld, depth, currentDepth + 1, tol, tolCur, tucks, dfsHistory);
+                            this.graspDfsTol(scorer, sOld, depth, currentDepth + 1, tol, tolCur, tucks, dfsHistory);
                         }
                     }
                     tucks.remove(tuck);
                 } else if (sNew < sOld && currentDepth < depth[0] && tolCur < tol) {
                     tucks.add(tuck);
-                    graspDfsTol(scorer, sOld, depth, currentDepth + 1, tol, tolCur + 1, tucks, dfsHistory);
+                    this.graspDfsTol(scorer, sOld, depth, currentDepth + 1, tol, tolCur + 1, tucks, dfsHistory);
                     tucks.remove(tuck);
                 }
 
@@ -278,64 +278,64 @@ public class GraspTol {
     }
 
     @NotNull
-    public Graph getGraph(final boolean cpDag) {
-        if (this.scorer == null) throw new IllegalArgumentException("Please run algorithm first.");
-        final Graph graph = this.scorer.getGraph(cpDag);
+    public Graph getGraph(boolean cpDag) {
+        if (scorer == null) throw new IllegalArgumentException("Please run algorithm first.");
+        Graph graph = scorer.getGraph(cpDag);
 
-        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-        graph.addAttribute("score ", nf.format(this.scorer.score()));
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        graph.addAttribute("score ", nf.format(scorer.score()));
         return graph;
     }
 
-    public void setCacheScores(final boolean cachingScores) {
+    public void setCacheScores(boolean cachingScores) {
         this.cachingScores = cachingScores;
     }
 
-    public void setNumStarts(final int numStarts) {
+    public void setNumStarts(int numStarts) {
         this.numStarts = numStarts;
     }
 
     public List<Node> getVariables() {
-        return this.variables;
+        return variables;
     }
 
     public boolean isVerbose() {
-        return this.verbose;
+        return verbose;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-        this.test.setVerbose(verbose);
+        test.setVerbose(verbose);
     }
 
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
-    public void setDepth(final int depth) {
+    public void setDepth(int depth) {
         if (depth < -1) throw new IllegalArgumentException("Depth should be >= -1.");
         this.depth = depth;
     }
 
-    public void setUncoveredDepth(final int uncoveredDepth) {
-        if (this.depth < -1) throw new IllegalArgumentException("Uncovered depth should be >= -1.");
+    public void setUncoveredDepth(int uncoveredDepth) {
+        if (depth < -1) throw new IllegalArgumentException("Uncovered depth should be >= -1.");
         this.uncoveredDepth = uncoveredDepth;
     }
 
-    public void setNonSingularDepth(final int nonSingularDepth) {
-        if (this.depth < -1) throw new IllegalArgumentException("Non-singular depth should be >= -1.");
+    public void setNonSingularDepth(int nonSingularDepth) {
+        if (depth < -1) throw new IllegalArgumentException("Non-singular depth should be >= -1.");
         this.nonSingularDepth = nonSingularDepth;
     }
 
-    public void setUseScore(final boolean useScore) {
+    public void setUseScore(boolean useScore) {
         this.useScore = useScore;
     }
 
-    private boolean violatesKnowledge(final List<Node> order) {
-        if (!this.knowledge.isEmpty()) {
+    private boolean violatesKnowledge(List<Node> order) {
+        if (!knowledge.isEmpty()) {
             for (int i = 0; i < order.size(); i++) {
                 for (int j = i + 1; j < order.size(); j++) {
-                    if (this.knowledge.isForbidden(order.get(i).getName(), order.get(j).getName())) {
+                    if (knowledge.isForbidden(order.get(i).getName(), order.get(j).getName())) {
                         return true;
                     }
                 }
@@ -345,23 +345,23 @@ public class GraspTol {
         return false;
     }
 
-    public void setOrdered(final boolean ordered) {
+    public void setOrdered(boolean ordered) {
         this.ordered = ordered;
     }
 
-    public void setUseRaskuttiUhler(final boolean usePearl) {
+    public void setUseRaskuttiUhler(boolean usePearl) {
         this.usePearl = usePearl;
     }
 
-    public void setUseDataOrder(final boolean useDataOrder) {
+    public void setUseDataOrder(boolean useDataOrder) {
         this.useDataOrder = useDataOrder;
     }
 
-    public void setAllowRandomnessInsideAlgorithm(final boolean allowRandomnessInsideAlgorithm) {
+    public void setAllowRandomnessInsideAlgorithm(boolean allowRandomnessInsideAlgorithm) {
         this.allowRandomnessInsideAlgorithm = allowRandomnessInsideAlgorithm;
     }
 
-    public void setToleranceDepth(final int toleranceDepth) {
+    public void setToleranceDepth(int toleranceDepth) {
         this.toleranceDepth = toleranceDepth;
     }
 }

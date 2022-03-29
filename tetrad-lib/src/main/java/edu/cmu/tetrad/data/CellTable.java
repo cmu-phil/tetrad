@@ -52,39 +52,39 @@ public final class CellTable {
      *
      * @param dims an <code>int[]</code> value
      */
-    public CellTable(final int[] dims) {
-        this.table = new MultiDimIntTable(dims);
+    public CellTable(int[] dims) {
+        table = new MultiDimIntTable(dims);
     }
 
-    public synchronized final void addToTable(final DataSet dataSet, final int[] indices) {
-        final int[] dims = new int[indices.length];
+    public final synchronized void addToTable(DataSet dataSet, int[] indices) {
+        int[] dims = new int[indices.length];
 
         for (int i = 0; i < indices.length; i++) {
-            final DiscreteVariable variable =
+            DiscreteVariable variable =
                     (DiscreteVariable) dataSet.getVariable(indices[i]);
             dims[i] = variable.getNumCategories();
         }
 
-        this.table.reset(dims);
+        table.reset(dims);
 
-        final int[] coords = new int[indices.length];
+        int[] coords = new int[indices.length];
 
         points:
         for (int i = 0; i < dataSet.getNumRows(); i++) {
             for (int j = 0; j < indices.length; j++) {
                 try {
                     coords[j] = dataSet.getInt(i, indices[j]);
-                } catch (final Exception e) {
+                } catch (Exception e) {
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                     coords[j] = dataSet.getInt(i, j);
                 }
 
-                if (coords[j] == getMissingValue()) {
+                if (coords[j] == this.getMissingValue()) {
                     continue points;
                 }
             }
 
-            this.table.increment(coords, 1);
+            table.increment(coords, 1);
         }
     }
 
@@ -92,8 +92,8 @@ public final class CellTable {
      * @param varIndex the index of the variable in question.
      * @return the number of dimensions of the variable.
      */
-    public final int getNumValues(final int varIndex) {
-        return this.table.getDims(varIndex);
+    public final int getNumValues(int varIndex) {
+        return table.getDims(varIndex);
     }
 
     /**
@@ -107,25 +107,25 @@ public final class CellTable {
      * @param coords an array of the sort described above.
      * @return the marginal sum specified.
      */
-    public synchronized final long calcMargin(final int[] coords) {
-        internalCoordCopy(coords);
+    public final synchronized long calcMargin(int[] coords) {
+        this.internalCoordCopy(coords);
 
         int sum = 0;
         int i = -1;
 
-        while (++i < this.coordCopy.length) {
-            if (this.coordCopy[i] == -1) {
-                for (int j = 0; j < this.table.getDimension(i); j++) {
-                    this.coordCopy[i] = j;
-                    sum += calcMargin(this.coordCopy);
+        while (++i < coordCopy.length) {
+            if (coordCopy[i] == -1) {
+                for (int j = 0; j < table.getDimension(i); j++) {
+                    coordCopy[i] = j;
+                    sum += this.calcMargin(coordCopy);
                 }
 
-                this.coordCopy[i] = -1;
+                coordCopy[i] = -1;
                 return sum;
             }
         }
 
-        return this.table.getValue(this.coordCopy);
+        return table.getValue(coordCopy);
     }
 
     /**
@@ -140,39 +140,39 @@ public final class CellTable {
      * @param marginVars an <code>int[]</code> value
      * @return an <code>int</code> value
      */
-    public synchronized final long calcMargin(final int[] coords, final int[] marginVars) {
-        internalCoordCopy(coords);
+    public final synchronized long calcMargin(int[] coords, int[] marginVars) {
+        this.internalCoordCopy(coords);
 
-        for (final int marginVar : marginVars) {
-            this.coordCopy[marginVar] = -1;
+        for (int marginVar : marginVars) {
+            coordCopy[marginVar] = -1;
         }
 
-        return calcMargin(this.coordCopy);
+        return this.calcMargin(coordCopy);
     }
 
     /**
      * Makes a copy of the coordinate array so that the original is not messed
      * up.
      */
-    private synchronized void internalCoordCopy(final int[] coords) {
-        if ((this.coordCopy == null) ||
-                (this.coordCopy.length != coords.length)) {
-            this.coordCopy = new int[coords.length];
+    private synchronized void internalCoordCopy(int[] coords) {
+        if ((coordCopy == null) ||
+                (coordCopy.length != coords.length)) {
+            coordCopy = new int[coords.length];
         }
 
-        System.arraycopy(coords, 0, this.coordCopy, 0, coords.length);
+        System.arraycopy(coords, 0, coordCopy, 0, coords.length);
     }
 
     private int getMissingValue() {
-        return this.missingValue;
+        return missingValue;
     }
 
-    public final void setMissingValue(final int missingValue) {
+    public final void setMissingValue(int missingValue) {
         this.missingValue = missingValue;
     }
 
-    public long getValue(final int[] testCell) {
-        return this.table.getValue(testCell);
+    public long getValue(int[] testCell) {
+        return table.getValue(testCell);
     }
 }
 

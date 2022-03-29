@@ -29,11 +29,11 @@ import java.text.NumberFormat;
 import java.util.StringTokenizer;
 
 public class LTestQnet3 {
-    public static void main(final String[] argv) {
+    public static void main(String[] argv) {
 
-        final String fileName = argv[0];
+        String fileName = argv[0];
 
-        final InputStream s;
+        InputStream s;
         StringTokenizer st;
 
         final int ngenes = 5;
@@ -46,17 +46,17 @@ public class LTestQnet3 {
         //                          27.6, 28.9, 30.1, 31.4, 32.7, 33.9, 35.2, 36.4,
         //                          37.7, 38.9, 40.1, 41.3, 42.6, 43.8};
 
-        final double[][] cases = new double[4][2004];
+        double[][] cases = new double[4][2004];
 
         try {
             s = new FileInputStream(fileName);
-        } catch (final IOException e) {
+        } catch (IOException e) {
             System.out.println("Cannot open file " + fileName);
             return;
         }
 
         //DataInputStream in = new DataInputStream(s);
-        final BufferedReader in = new BufferedReader(new InputStreamReader(s));
+        BufferedReader in = new BufferedReader(new InputStreamReader(s));
         for (int k = 0; k < nrecords; k++) {
             try {
                 st = new StringTokenizer(in.readLine());
@@ -68,7 +68,7 @@ public class LTestQnet3 {
                 for (int j = 0; j < ntimes * ngenes; j++) {
                     cases[k - 1][j] = Double.parseDouble(st.nextToken("\t"));
                 }
-            } catch (final IOException e) {
+            } catch (IOException e) {
                 System.out.println("Read error in " + fileName);
                 return;
             }
@@ -76,14 +76,14 @@ public class LTestQnet3 {
         //System.out.println("Read " + cases[0][0] + " " + cases[1][0] + " " +
         //                  cases[2][0] + " " + cases[3][0]);
 
-        final double[][] gene = new double[ntimes][ngenes];
-        final double[][] deriv = new double[ntimes][ngenes];
-        final double[] sum = new double[ngenes];
+        double[][] gene = new double[ntimes][ngenes];
+        double[][] deriv = new double[ntimes][ngenes];
+        double[] sum = new double[ngenes];
         //double[] prevSum = new double [ngenes];
 
         for (int j = 0; j < ntimes; j++) {
             for (int g = 0; g < ngenes; g++) {
-                final int icol = j * ngenes + g;
+                int icol = j * ngenes + g;
 
                 sum[g] = 0.0;
 
@@ -117,12 +117,12 @@ public class LTestQnet3 {
             */
         }
 
-        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
         for (int g = 0; g < ngenes; g++) {
             System.out.println("For gene " + g);
             final int k = 5;
-            final ChoiceGenerator cg = new ChoiceGenerator(ngenes, k);
+            ChoiceGenerator cg = new ChoiceGenerator(ngenes, k);
             int[] regs = new int[k];
 
             while ((regs = cg.next()) != null) {
@@ -131,11 +131,11 @@ public class LTestQnet3 {
                         " " + regs[3] + " " + regs[4]);
 
                 for (int t = 1; t < ntimes; t++) {
-                    final String g0 = nf.format(gene[t][regs[0]]);
-                    final String g1 = nf.format(gene[t][regs[1]]);
-                    final String g2 = nf.format(gene[t][regs[2]]);
-                    final String g3 = nf.format(gene[t][regs[3]]);
-                    final String g4 = nf.format(gene[t][regs[4]]);
+                    String g0 = nf.format(gene[t][regs[0]]);
+                    String g1 = nf.format(gene[t][regs[1]]);
+                    String g2 = nf.format(gene[t][regs[2]]);
+                    String g3 = nf.format(gene[t][regs[3]]);
+                    String g4 = nf.format(gene[t][regs[4]]);
 
                     if (deriv[t][g] > 0.3) {
 

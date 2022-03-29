@@ -50,104 +50,104 @@ public class IonDisplay extends JPanel implements GraphEditable {
     private final JSpinner spinner;
     private final JLabel totalLabel;
 
-    public IonDisplay(final List<Graph> storedGraphs, final IonRunner runner) {
+    public IonDisplay(List<Graph> storedGraphs, IonRunner runner) {
         this.storedGraphs = storedGraphs;
         int graphIndex = runner.getParams().getInt("graphIndex", 1);
 
         if (storedGraphs.size() == 0) {
-            this.workbench = new GraphWorkbench();
+            workbench = new GraphWorkbench();
         } else {
-            this.workbench = new GraphWorkbench(storedGraphs.get(0));
+            workbench = new GraphWorkbench(storedGraphs.get(0));
         }
 
-        this.indices = getAllIndices(storedGraphs);
+        indices = this.getAllIndices(storedGraphs);
 
-        final SpinnerNumberModel model =
-                new SpinnerNumberModel(this.indices.size() == 0 ? 0 : 1, this.indices.size() == 0 ? 0 : 1,
-                        this.indices.size(), 1);
+        SpinnerNumberModel model =
+                new SpinnerNumberModel(indices.size() == 0 ? 0 : 1, indices.size() == 0 ? 0 : 1,
+                        indices.size(), 1);
         model.addChangeListener(new ChangeListener() {
-            public void stateChanged(final ChangeEvent e) {
-                final int index = (Integer) model.getValue();
-                IonDisplay.this.workbench.setGraph(storedGraphs.get(IonDisplay.this.indices.get(index - 1)));
-                firePropertyChange("modelChanged", null, null);
-                runner.setResultGraph(IonDisplay.this.workbench.getGraph());
+            public void stateChanged(ChangeEvent e) {
+                int index = (Integer) model.getValue();
+                workbench.setGraph(storedGraphs.get(indices.get(index - 1)));
+                IonDisplay.this.firePropertyChange("modelChanged", null, null);
+                runner.setResultGraph(workbench.getGraph());
                 runner.getParams().set("graphIndex", index - 1);
             }
         });
 
-        if (graphIndex >= this.indices.size()) {
+        if (graphIndex >= indices.size()) {
             graphIndex = 0;
             runner.getParams().set("graphIndex", 0);
         }
 
-        if (this.indices.size() > 0) {
+        if (indices.size() > 0) {
             model.setValue(graphIndex + 1);
         }
 
-        this.spinner = new JSpinner();
-        this.spinner.setModel(model);
-        this.totalLabel = new JLabel(" of " + this.indices.size());
+        spinner = new JSpinner();
+        spinner.setModel(model);
+        totalLabel = new JLabel(" of " + indices.size());
 
 
-        this.spinner.setPreferredSize(new Dimension(50, 20));
-        this.spinner.setMaximumSize(this.spinner.getPreferredSize());
-        final Box b = Box.createVerticalBox();
-        final Box b1 = Box.createHorizontalBox();
+        spinner.setPreferredSize(new Dimension(50, 20));
+        spinner.setMaximumSize(spinner.getPreferredSize());
+        Box b = Box.createVerticalBox();
+        Box b1 = Box.createHorizontalBox();
 //        b1.add(Box.createHorizontalGlue());
 //        b1.add(Box.createHorizontalStrut(10));
         b1.add(Box.createHorizontalGlue());
         b1.add(new JLabel("DAG "));
-        b1.add(this.spinner);
-        b1.add(this.totalLabel);
+        b1.add(spinner);
+        b1.add(totalLabel);
 
         b.add(b1);
 
-        final Box b2 = Box.createHorizontalBox();
-        final JPanel graphPanel = new JPanel();
+        Box b2 = Box.createHorizontalBox();
+        JPanel graphPanel = new JPanel();
         graphPanel.setLayout(new BorderLayout());
-        final JScrollPane jScrollPane = new JScrollPane(this.workbench);
+        JScrollPane jScrollPane = new JScrollPane(workbench);
 //        jScrollPane.setPreferredSize(new Dimension(400, 400));
         graphPanel.add(jScrollPane);
 //        graphPanel.setBorder(new TitledBorder("DAG"));
         b2.add(graphPanel);
         b.add(b2);
 
-        setLayout(new BorderLayout());
+        this.setLayout(new BorderLayout());
 //        add(menuBar(), BorderLayout.NORTH);
-        add(b, BorderLayout.CENTER);
+        this.add(b, BorderLayout.CENTER);
     }
 
     private void resetDisplay() {
-        final List<Integer> _subsetIndices = getAllIndices(getStoredGraphs());
-        this.indices.clear();
-        this.indices.addAll(_subsetIndices);
+        List<Integer> _subsetIndices = this.getAllIndices(this.getStoredGraphs());
+        indices.clear();
+        indices.addAll(_subsetIndices);
 
-        final int min = this.indices.size() == 0 ? 0 : 1;
-        final SpinnerNumberModel model = new SpinnerNumberModel(min, min, this.indices.size(), 1);
+        int min = indices.size() == 0 ? 0 : 1;
+        SpinnerNumberModel model = new SpinnerNumberModel(min, min, indices.size(), 1);
         model.addChangeListener(new ChangeListener() {
-            public void stateChanged(final ChangeEvent e) {
-                final int index = model.getNumber().intValue();
-                IonDisplay.this.workbench.setGraph(IonDisplay.this.storedGraphs.get(IonDisplay.this.indices.get(index - 1)));
+            public void stateChanged(ChangeEvent e) {
+                int index = model.getNumber().intValue();
+                workbench.setGraph(storedGraphs.get(indices.get(index - 1)));
             }
         });
 
-        this.spinner.setModel(model);
-        this.totalLabel.setText(" of " + _subsetIndices.size());
+        spinner.setModel(model);
+        totalLabel.setText(" of " + _subsetIndices.size());
 
-        if (this.indices.isEmpty()) {
-            this.workbench.setGraph(new EdgeListGraph());
+        if (indices.isEmpty()) {
+            workbench.setGraph(new EdgeListGraph());
         } else {
-            this.workbench.setGraph(this.storedGraphs.get(this.indices.get(0)));
+            workbench.setGraph(storedGraphs.get(indices.get(0)));
         }
     }
 
-    public void resetGraphs(final List<Graph> storedGraphs) {
+    public void resetGraphs(List<Graph> storedGraphs) {
         this.storedGraphs = storedGraphs;
-        resetDisplay();
+        this.resetDisplay();
     }
 
-    private List<Integer> getAllIndices(final List<Graph> storedGraphs) {
-        final List<Integer> indices = new ArrayList<>();
+    private List<Integer> getAllIndices(List<Graph> storedGraphs) {
+        List<Integer> indices = new ArrayList<>();
 
         for (int i = 0; i < storedGraphs.size(); i++) {
             indices.add(i);
@@ -157,11 +157,11 @@ public class IonDisplay extends JPanel implements GraphEditable {
     }
 
     public List getSelectedModelComponents() {
-        final Component[] components = getWorkbench().getComponents();
-        final List<TetradSerializable> selectedModelComponents =
+        Component[] components = this.getWorkbench().getComponents();
+        List<TetradSerializable> selectedModelComponents =
                 new ArrayList<>();
 
-        for (final Component comp : components) {
+        for (Component comp : components) {
             if (comp instanceof DisplayNode) {
                 selectedModelComponents.add(
                         ((DisplayNode) comp).getModelNode());
@@ -174,37 +174,37 @@ public class IonDisplay extends JPanel implements GraphEditable {
         return selectedModelComponents;
     }
 
-    public void pasteSubsession(final List sessionElements, final Point upperLeft) {
-        getWorkbench().pasteSubgraph(sessionElements, upperLeft);
-        getWorkbench().deselectAll();
+    public void pasteSubsession(List sessionElements, Point upperLeft) {
+        this.getWorkbench().pasteSubgraph(sessionElements, upperLeft);
+        this.getWorkbench().deselectAll();
 
         for (int i = 0; i < sessionElements.size(); i++) {
 
-            final Object o = sessionElements.get(i);
+            Object o = sessionElements.get(i);
 
             if (o instanceof GraphNode) {
-                final Node modelNode = (Node) o;
-                getWorkbench().selectNode(modelNode);
+                Node modelNode = (Node) o;
+                this.getWorkbench().selectNode(modelNode);
             }
         }
 
-        getWorkbench().selectConnectingEdges();
+        this.getWorkbench().selectConnectingEdges();
     }
 
     public GraphWorkbench getWorkbench() {
-        return this.workbench;
+        return workbench;
     }
 
     public Graph getGraph() {
-        return this.workbench.getGraph();
+        return workbench.getGraph();
     }
 
-    public void setGraph(final Graph graph) {
-        this.workbench.setGraph(graph);
+    public void setGraph(Graph graph) {
+        workbench.setGraph(graph);
     }
 
     private List<Graph> getStoredGraphs() {
-        return this.storedGraphs;
+        return storedGraphs;
     }
 }
 

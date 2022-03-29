@@ -30,44 +30,44 @@ public class StatsListEditor extends JPanel {
     private Graph referenceGraph;
     private JTextArea area;
 
-    public StatsListEditor(final TabularComparison comparison) {
+    public StatsListEditor(TabularComparison comparison) {
         this.comparison = comparison;
-        this.params = comparison.getParams();
-        this.targetGraph = comparison.getTargetGraph();
-        this.referenceGraph = getComparisonGraph(comparison.getReferenceGraph(), this.params);
-        this.dataModel = comparison.getDataModel();
-        setup();
+        params = comparison.getParams();
+        targetGraph = comparison.getTargetGraph();
+        referenceGraph = getComparisonGraph(comparison.getReferenceGraph(), params);
+        dataModel = comparison.getDataModel();
+        this.setup();
     }
 
     private void setup() {
-        final JMenuBar menubar = menubar();
-        show(menubar);
+        JMenuBar menubar = this.menubar();
+        this.show(menubar);
     }
 
-    private void show(final JMenuBar menubar) {
-        setLayout(new BorderLayout());
-        add(menubar, BorderLayout.NORTH);
-        add(getTableDisplay(), BorderLayout.CENTER);
-        revalidate();
-        repaint();
+    private void show(JMenuBar menubar) {
+        this.setLayout(new BorderLayout());
+        this.add(menubar, BorderLayout.NORTH);
+        this.add(this.getTableDisplay(), BorderLayout.CENTER);
+        this.revalidate();
+        this.repaint();
     }
 
     private JComponent getTableDisplay() {
-        this.area = new JTextArea();
-        this.area.setText(tableTextWithHeader());
-        this.area.moveCaretPosition(0);
-        this.area.setSelectionStart(0);
-        this.area.setSelectionEnd(0);
+        area = new JTextArea();
+        area.setText(this.tableTextWithHeader());
+        area.moveCaretPosition(0);
+        area.setSelectionStart(0);
+        area.setSelectionEnd(0);
 
-        this.area.setBorder(new EmptyBorder(5, 5, 5, 5));
+        area.setBorder(new EmptyBorder(5, 5, 5, 5));
 
-        this.area.setFont(new Font(Font.MONOSPACED, Font.BOLD, 14));
-        this.area.setPreferredSize(new Dimension(700, 1200));
+        area.setFont(new Font(Font.MONOSPACED, Font.BOLD, 14));
+        area.setPreferredSize(new Dimension(700, 1200));
 
-        final JScrollPane pane = new JScrollPane(this.area);
+        JScrollPane pane = new JScrollPane(area);
         pane.setPreferredSize(new Dimension(700, 700));
 
-        final Box b = Box.createVerticalBox();
+        Box b = Box.createVerticalBox();
         b.add(pane);
 
         return b;
@@ -75,39 +75,39 @@ public class StatsListEditor extends JPanel {
 
     @NotNull
     private String tableTextWithHeader() {
-        final TextTable table = tableText();
-        return "Comparing target " + this.comparison.getTargetName() + " to reference " + this.comparison.getReferenceName()
+        TextTable table = this.tableText();
+        return "Comparing target " + comparison.getTargetName() + " to reference " + comparison.getReferenceName()
                 + "\n\n" + table;
     }
 
     @NotNull
     private TextTable tableText() {
-        if (this.targetGraph == this.referenceGraph) {
+        if (targetGraph == referenceGraph) {
             throw new IllegalArgumentException();
         }
 
-        final Graph _targetGraph = GraphUtils.replaceNodes(this.targetGraph, this.referenceGraph.getNodes());
+        Graph _targetGraph = GraphUtils.replaceNodes(targetGraph, referenceGraph.getNodes());
 
-        final List<Statistic> statistics = statistics();
+        List<Statistic> statistics = this.statistics();
 
-        final TextTable table = new TextTable(statistics.size(), 3);
-        final NumberFormat nf = new DecimalFormat("0.###");
+        TextTable table = new TextTable(statistics.size(), 3);
+        NumberFormat nf = new DecimalFormat("0.###");
 
-        final List<String> abbr = new ArrayList<>();
-        final List<String> desc = new ArrayList<>();
-        final List<Double> vals = new ArrayList<>();
+        List<String> abbr = new ArrayList<>();
+        List<String> desc = new ArrayList<>();
+        List<Double> vals = new ArrayList<>();
 
-        for (final Statistic statistic : statistics) {
+        for (Statistic statistic : statistics) {
             try {
-                vals.add(statistic.getValue(this.referenceGraph, _targetGraph, this.dataModel));
+                vals.add(statistic.getValue(referenceGraph, _targetGraph, dataModel));
                 abbr.add(statistic.getAbbreviation());
                 desc.add(statistic.getDescription());
-            } catch (final Exception ignored) {
+            } catch (Exception ignored) {
             }
         }
 
         for (int i = 0; i < abbr.size(); i++) {
-            final double value = vals.get(i);
+            double value = vals.get(i);
             table.setToken(i, 2, Double.isNaN(value) ? "-" : "" + nf.format(value));
             table.setToken(i, 0, abbr.get(i));
             table.setToken(i, 1, desc.get(i));
@@ -119,7 +119,7 @@ public class StatsListEditor extends JPanel {
 
     @NotNull
     private List<Statistic> statistics() {
-        final List<Statistic> statistics = new ArrayList<>();
+        List<Statistic> statistics = new ArrayList<>();
 
         statistics.add(new BicTrue());
         statistics.add(new BicEst());
@@ -166,16 +166,16 @@ public class StatsListEditor extends JPanel {
 
     @NotNull
     private JMenuBar menubar() {
-        final JMenuBar menubar = new JMenuBar();
-        final JMenu menu = new JMenu("Compare To...");
-        final JMenuItem graph = new JCheckBoxMenuItem("DAG");
+        JMenuBar menubar = new JMenuBar();
+        JMenu menu = new JMenu("Compare To...");
+        JMenuItem graph = new JCheckBoxMenuItem("DAG");
         graph.setBackground(Color.WHITE);
-        final JMenuItem cpdag = new JCheckBoxMenuItem("CPDAG");
+        JMenuItem cpdag = new JCheckBoxMenuItem("CPDAG");
         cpdag.setBackground(Color.YELLOW);
-        final JMenuItem pag = new JCheckBoxMenuItem("PAG");
+        JMenuItem pag = new JCheckBoxMenuItem("PAG");
         pag.setBackground(Color.GREEN.brighter().brighter());
 
-        final ButtonGroup group = new ButtonGroup();
+        ButtonGroup group = new ButtonGroup();
         group.add(graph);
         group.add(cpdag);
         group.add(pag);
@@ -186,7 +186,7 @@ public class StatsListEditor extends JPanel {
 
         menubar.add(menu);
 
-        switch (this.params.getString("graphComparisonType")) {
+        switch (params.getString("graphComparisonType")) {
             case "CPDAG":
                 menu.setText("Compare to CPDAG...");
                 cpdag.setSelected(true);
@@ -202,46 +202,46 @@ public class StatsListEditor extends JPanel {
         }
 
         graph.addActionListener(e -> {
-            this.params.set("graphComparisonType", "DAG");
+            params.set("graphComparisonType", "DAG");
             menu.setText("Compare to DAG...");
             menu.setBackground(Color.WHITE);
-            this.referenceGraph = getComparisonGraph(this.comparison.getReferenceGraph(), this.params);
+            referenceGraph = getComparisonGraph(comparison.getReferenceGraph(), params);
 
-            this.area.setText(tableTextWithHeader());
-            this.area.moveCaretPosition(0);
-            this.area.setSelectionStart(0);
-            this.area.setSelectionEnd(0);
+            area.setText(this.tableTextWithHeader());
+            area.moveCaretPosition(0);
+            area.setSelectionStart(0);
+            area.setSelectionEnd(0);
 
-            this.area.repaint();
+            area.repaint();
 
         });
 
         cpdag.addActionListener(e -> {
-            this.params.set("graphComparisonType", "CPDAG");
+            params.set("graphComparisonType", "CPDAG");
             menu.setText("Compare to CPDAG...");
             menu.setBackground(Color.YELLOW);
-            this.referenceGraph = getComparisonGraph(this.comparison.getReferenceGraph(), this.params);
+            referenceGraph = getComparisonGraph(comparison.getReferenceGraph(), params);
 
-            this.area.setText(tableTextWithHeader());
-            this.area.moveCaretPosition(0);
-            this.area.setSelectionStart(0);
-            this.area.setSelectionEnd(0);
+            area.setText(this.tableTextWithHeader());
+            area.moveCaretPosition(0);
+            area.setSelectionStart(0);
+            area.setSelectionEnd(0);
 
-            this.area.repaint();
+            area.repaint();
 
         });
 
         pag.addActionListener(e -> {
-            this.params.set("graphComparisonType", "PAG");
+            params.set("graphComparisonType", "PAG");
             menu.setText("Compare to PAG...");
             menu.setBackground(Color.GREEN.brighter().brighter());
-            this.referenceGraph = getComparisonGraph(this.comparison.getReferenceGraph(), this.params);
+            referenceGraph = getComparisonGraph(comparison.getReferenceGraph(), params);
 
-            this.area.setText(tableTextWithHeader());
-            this.area.moveCaretPosition(0);
-            this.area.setSelectionStart(0);
-            this.area.setSelectionEnd(0);
-            this.area.repaint();
+            area.setText(this.tableTextWithHeader());
+            area.moveCaretPosition(0);
+            area.setSelectionStart(0);
+            area.setSelectionEnd(0);
+            area.repaint();
         });
 
         return menubar;

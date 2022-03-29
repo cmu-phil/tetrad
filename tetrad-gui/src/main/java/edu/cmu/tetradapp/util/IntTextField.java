@@ -60,39 +60,39 @@ public final class IntTextField extends JTextField {
      *              upperBound.
      * @param size  the number of columns in the textfield.
      */
-    public IntTextField(final int value, final int size) {
+    public IntTextField(int value, int size) {
         super(size);
 
-        setValue(value);
-        setText(Integer.toString(value));
+        this.setValue(value);
+        this.setText(Integer.toString(value));
 
-        setHorizontalAlignment(JTextField.RIGHT);
-        addActionListener(new ActionListener() {
+        this.setHorizontalAlignment(JTextField.RIGHT);
+        this.addActionListener(new ActionListener() {
 
             /**
              * Reacts to somebody pressing the return key in this field by
              * attempting to set the value displayed. If the value
              * displayed cannot be set, the set value is reinstated.
              */
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 try {
-                    final int n = Integer.parseInt(e.getActionCommand());
-                    setValue(n);
-                } catch (final NumberFormatException e1) {
-                    setText(Integer.toString(getValue()));
+                    int n = Integer.parseInt(e.getActionCommand());
+                    IntTextField.this.setValue(n);
+                } catch (NumberFormatException e1) {
+                    IntTextField.this.setText(Integer.toString(IntTextField.this.getValue()));
                 }
             }
         });
 
-        addFocusListener(new FocusAdapter() {
+        this.addFocusListener(new FocusAdapter() {
             /**
              * Nothing need be done when focus is gained, but this method is
              * required by the FocusListener interface.
              *
              * @param e the event.
              */
-            public void focusGained(final FocusEvent e) {
-                final IntTextField source = (IntTextField) e.getSource();
+            public void focusGained(FocusEvent e) {
+                IntTextField source = (IntTextField) e.getSource();
                 source.selectAll();
             }
 
@@ -101,12 +101,12 @@ public final class IntTextField extends JTextField {
              * displayed as int; if this cannot be done, restore the previous
              * value.
              */
-            public void focusLost(final FocusEvent e) {
+            public void focusLost(FocusEvent e) {
                 try {
-                    final int n = Integer.parseInt(getText());
-                    setValue(n);
-                } catch (final NumberFormatException e1) {
-                    setText(Integer.toString(getValue()));
+                    int n = Integer.parseInt(IntTextField.this.getText());
+                    IntTextField.this.setValue(n);
+                } catch (NumberFormatException e1) {
+                    IntTextField.this.setText(Integer.toString(IntTextField.this.getValue()));
                 }
             }
         });
@@ -114,27 +114,27 @@ public final class IntTextField extends JTextField {
 
     //=============================PUBLIC METHODS=======================//
 
-    public void setUnfilteredValue(final int value) {
-        setText(String.valueOf(value));
+    public void setUnfilteredValue(int value) {
+        this.setText(String.valueOf(value));
     }
 
 
     /**
      * Sets the value of the text field to the given int value.
      */
-    public void setValue(final int value) {
+    public void setValue(int value) {
         if (value == this.value) {
             return;
         }
 
-        final int newValue = filter(value, this.value);
+        int newValue = this.filter(value, this.value);
 
         if (newValue == this.value) {
-            setText(Integer.toString(this.value));
+            this.setText(Integer.toString(this.value));
         } else {
             this.value = newValue;
-            setText(Integer.toString(this.value));
-            firePropertyChange("newValue", null, this.value);
+            this.setText(Integer.toString(this.value));
+            this.firePropertyChange("newValue", null, this.value);
         }
     }
 
@@ -142,13 +142,13 @@ public final class IntTextField extends JTextField {
      * @return the int value currently displayed.
      */
     public int getValue() {
-        return this.value;
+        return value;
     }
 
     /**
      * Sets whether the given value should be accepted.
      */
-    public void setFilter(final Filter filter) {
+    public void setFilter(Filter filter) {
         this.filter = filter;
     }
 
@@ -159,7 +159,7 @@ public final class IntTextField extends JTextField {
      * @return the maximum size.
      */
     public Dimension getMaximumSize() {
-        return getPreferredSize();
+        return this.getPreferredSize();
     }
 
     /**
@@ -169,7 +169,7 @@ public final class IntTextField extends JTextField {
      * @return the maximum size.
      */
     public Dimension getMinimumSize() {
-        return getPreferredSize();
+        return this.getPreferredSize();
     }
 
     //==============================PRIVATE METHODS======================//
@@ -183,12 +183,12 @@ public final class IntTextField extends JTextField {
      * setLabel() is overridden in a way that doesn't make a call to
      * checkValue().
      */
-    private int filter(final int value, final int oldValue) {
-        if (this.filter == null) {
+    private int filter(int value, int oldValue) {
+        if (filter == null) {
             return value;
         }
 
-        return this.filter.filter(value, oldValue);
+        return filter.filter(value, oldValue);
     }
 
     //==============================Interfaces============================//

@@ -50,7 +50,7 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
      *
      * @param events The events that the logger reports.
      */
-    public DefaultTetradLoggerConfig(final List<Event> events) {
+    public DefaultTetradLoggerConfig(List<Event> events) {
         if (events == null) {
             throw new NullPointerException("The given list of events must not be null");
         }
@@ -64,19 +64,19 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
      *
      * @param events The events that the logger reports.
      */
-    public DefaultTetradLoggerConfig(final String... events) {
+    public DefaultTetradLoggerConfig(String... events) {
         this.events = new ArrayList<>(events.length);
-        this.active = new HashSet<>();
-        for (final String event : events) {
+        active = new HashSet<>();
+        for (String event : events) {
             this.events.add(new DefaultEvent(event, "No Description"));
-            this.active.add(event);
+            active.add(event);
         }
     }
 
     public TetradLoggerConfig copy() {
-        final DefaultTetradLoggerConfig copy = new DefaultTetradLoggerConfig();
-        copy.events = new ArrayList<>(this.events);
-        copy.active = new HashSet<>(this.active);
+        DefaultTetradLoggerConfig copy = new DefaultTetradLoggerConfig();
+        copy.events = new ArrayList<>(events);
+        copy.active = new HashSet<>(active);
         return copy;
     }
 
@@ -89,20 +89,20 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
 
     //=========================== public methods ================================//
 
-    public boolean isEventActive(final String id) {
-        return this.active.contains(id);
+    public boolean isEventActive(String id) {
+        return active.contains(id);
     }
 
     public boolean isActive() {
-        return !this.active.isEmpty();
+        return !active.isEmpty();
     }
 
     public List<Event> getSupportedEvents() {
-        return Collections.unmodifiableList(this.events);
+        return Collections.unmodifiableList(events);
     }
 
-    public void setEventActive(final String id, final boolean active) {
-        if (!contains(id)) {
+    public void setEventActive(String id, boolean active) {
+        if (!this.contains(id)) {
             throw new IllegalArgumentException("There is no event known under the given id: " + id);
         }
         if (active) {
@@ -113,11 +113,11 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
     }
 
     public String toString() {
-        final StringBuilder buf = new StringBuilder();
+        StringBuilder buf = new StringBuilder();
         buf.append("\nDefaultTetradLoggerConfig: events as follows:");
 
-        for (final Event event : this.events) {
-            buf.append("\n").append(event).append(this.active.contains(event.getId()) ? " (active)" : "");
+        for (Event event : events) {
+            buf.append("\n").append(event).append(active.contains(event.getId()) ? " (active)" : "");
         }
 
         return buf.toString();
@@ -125,8 +125,8 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
 
     //======================= Private Methods ==================================//
 
-    private boolean contains(final String id) {
-        for (final Event event : this.events) {
+    private boolean contains(String id) {
+        for (Event event : events) {
             if (id.equals(event.getId())) {
                 return true;
             }
@@ -136,14 +136,14 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
 
     //================================= Inner class ==================================//
 
-    public static class DefaultEvent implements TetradLoggerConfig.Event {
+    public static class DefaultEvent implements Event {
         static final long serialVersionUID = 23L;
 
         private final String id;
         private final String description;
 
 
-        public DefaultEvent(final String id, final String description) {
+        public DefaultEvent(String id, String description) {
             if (id == null) {
                 throw new NullPointerException("The given id must not be null");
             }
@@ -163,15 +163,15 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
         }
 
         public String getId() {
-            return this.id;
+            return id;
         }
 
         public String getDescription() {
-            return this.description;
+            return description;
         }
 
         public String toString() {
-            return "Event(" + this.id + ", " + this.description + ")";
+            return "Event(" + id + ", " + description + ")";
         }
     }
 

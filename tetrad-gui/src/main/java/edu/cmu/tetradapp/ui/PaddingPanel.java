@@ -19,6 +19,7 @@
 package edu.cmu.tetradapp.ui;
 
 import javax.swing.*;
+import javax.swing.GroupLayout.Alignment;
 
 /**
  * This a wrapper panel that puts gaps around the wrapped panel.
@@ -34,40 +35,40 @@ public class PaddingPanel extends JPanel {
     private final JComponent innerComponent;
     private final JLayeredPane layeredPane;
 
-    public PaddingPanel(final JComponent innerComponent) {
+    public PaddingPanel(JComponent innerComponent) {
         this.innerComponent = (innerComponent == null) ? new JPanel() : innerComponent;
-        this.layeredPane = new JLayeredPane();
+        layeredPane = new JLayeredPane();
 
-        initComponents();
+        this.initComponents();
     }
 
     private void initComponents() {
-        this.layeredPane.setLayer(this.innerComponent, JLayeredPane.DEFAULT_LAYER);
+        layeredPane.setLayer(innerComponent, JLayeredPane.DEFAULT_LAYER);
 
-        final GroupLayout layeredPaneLayout = new GroupLayout(this.layeredPane);
-        this.layeredPane.setLayout(layeredPaneLayout);
-        layeredPaneLayout.setHorizontalGroup(layeredPaneLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+        GroupLayout layeredPaneLayout = new GroupLayout(layeredPane);
+        layeredPane.setLayout(layeredPaneLayout);
+        layeredPaneLayout.setHorizontalGroup(layeredPaneLayout.createParallelGroup(Alignment.LEADING)
                 .addGroup(layeredPaneLayout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(this.innerComponent, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(innerComponent, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addContainerGap())
         );
-        layeredPaneLayout.setVerticalGroup(layeredPaneLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+        layeredPaneLayout.setVerticalGroup(layeredPaneLayout.createParallelGroup(Alignment.LEADING)
                 .addGroup(layeredPaneLayout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(this.innerComponent, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(innerComponent, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addContainerGap())
         );
 
-        final GroupLayout layout = new GroupLayout(this);
-        this.setLayout(layout);
+        GroupLayout layout = new GroupLayout(this);
+        setLayout(layout);
         layout.setHorizontalGroup(
-                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addComponent(this.layeredPane, GroupLayout.Alignment.TRAILING)
+                layout.createParallelGroup(Alignment.LEADING)
+                        .addComponent(layeredPane, Alignment.TRAILING)
         );
         layout.setVerticalGroup(
-                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addComponent(this.layeredPane, GroupLayout.Alignment.TRAILING)
+                layout.createParallelGroup(Alignment.LEADING)
+                        .addComponent(layeredPane, Alignment.TRAILING)
         );
     }
 

@@ -54,12 +54,12 @@ public class DirichletBayesImWrapper implements SessionModel, KnowledgeBoxInput 
     private final DirichletBayesIm dirichletBayesIm;
 
     //===========================CONSTRUCTORS=============================//
-    public DirichletBayesImWrapper(final Simulation simulation) {
+    public DirichletBayesImWrapper(Simulation simulation) {
         throw new NullPointerException("Sorry, that was not a Dirichlet Bayes IM simulation.");
     }
 
-    public DirichletBayesImWrapper(final BayesPmWrapper bayesPmWrapper,
-                                   final Parameters params) {
+    public DirichletBayesImWrapper(BayesPmWrapper bayesPmWrapper,
+                                   Parameters params) {
         if (bayesPmWrapper == null) {
             throw new NullPointerException("BayesPmWrapper must not be null.");
         }
@@ -68,18 +68,18 @@ public class DirichletBayesImWrapper implements SessionModel, KnowledgeBoxInput 
             throw new NullPointerException("Parameters must not be null.");
         }
 
-        final BayesPm bayesPm = new BayesPm(bayesPmWrapper.getBayesPm());
+        BayesPm bayesPm = new BayesPm(bayesPmWrapper.getBayesPm());
 
         if (params.getString("initializationMode", "manual").equals("manual")) {
-            this.dirichletBayesIm = DirichletBayesIm.blankDirichletIm(bayesPm);
+            dirichletBayesIm = DirichletBayesIm.blankDirichletIm(bayesPm);
         } else if (params.getString("initializationMode", "manual").equals("symmetricPrior")) {
-            this.dirichletBayesIm = DirichletBayesIm.symmetricDirichletIm(
+            dirichletBayesIm = DirichletBayesIm.symmetricDirichletIm(
                     bayesPm, params.getDouble("symmetricAlpha", 1.0));
         } else {
             throw new IllegalStateException("Expecting 'manual' or 'symmetricPrior");
         }
 
-        log(this.dirichletBayesIm);
+        this.log(dirichletBayesIm);
 
     }
 
@@ -109,12 +109,12 @@ public class DirichletBayesImWrapper implements SessionModel, KnowledgeBoxInput 
 //    public DirichletBayesImWrapper(BayesPmWrapper bayesPmWrapper, Simulation simulation) {
 //        this(bayesPmWrapper, (DataWrapper) simulation);
 //    }
-    public DirichletBayesImWrapper(final DirichletEstimatorWrapper wrapper) {
+    public DirichletBayesImWrapper(DirichletEstimatorWrapper wrapper) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
-        this.dirichletBayesIm = wrapper.getEstimatedBayesIm();
-        log(this.dirichletBayesIm);
+        dirichletBayesIm = wrapper.getEstimatedBayesIm();
+        this.log(dirichletBayesIm);
     }
 
     /**
@@ -130,7 +130,7 @@ public class DirichletBayesImWrapper implements SessionModel, KnowledgeBoxInput 
 
     //================================PUBLIC METHODS=======================//
     public DirichletBayesIm getDirichletBayesIm() {
-        return this.dirichletBayesIm;
+        return dirichletBayesIm;
     }
 
     /**
@@ -146,44 +146,44 @@ public class DirichletBayesImWrapper implements SessionModel, KnowledgeBoxInput 
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (this.dirichletBayesIm == null) {
+        if (dirichletBayesIm == null) {
             throw new NullPointerException();
         }
     }
 
     public Graph getGraph() {
-        return this.dirichletBayesIm.getBayesPm().getDag();
+        return dirichletBayesIm.getBayesPm().getDag();
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
     public Graph getSourceGraph() {
-        return getGraph();
+        return this.getGraph();
     }
 
     public Graph getResultGraph() {
-        return getGraph();
+        return this.getGraph();
     }
 
     public List<String> getVariableNames() {
-        return getGraph().getNodeNames();
+        return this.getGraph().getNodeNames();
     }
 
     public List<Node> getVariables() {
-        return getGraph().getNodes();
+        return this.getGraph().getNodes();
     }
 
-    private void log(final DirichletBayesIm im) {
+    private void log(DirichletBayesIm im) {
         TetradLogger.getInstance().log("info", "Dirichlet Bayes IM");
         TetradLogger.getInstance().log("im", im.toString());
     }

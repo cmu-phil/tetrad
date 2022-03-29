@@ -53,19 +53,19 @@ final class CopySubsessionAction extends AbstractAction
      * Copies a parentally closed selection of session nodes in the frontmost
      * session editor to the clipboard.
      */
-    public void actionPerformed(final ActionEvent e) {
-        final SessionEditorIndirectRef sessionEditorRef =
+    public void actionPerformed(ActionEvent e) {
+        SessionEditorIndirectRef sessionEditorRef =
                 DesktopController.getInstance().getFrontmostSessionEditor();
-        final SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        final List modelNodes = sessionEditor.getSelectedModelComponents();
-        final SubsessionSelection selection = new SubsessionSelection(modelNodes);
+        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
+        List modelNodes = sessionEditor.getSelectedModelComponents();
+        SubsessionSelection selection = new SubsessionSelection(modelNodes);
         InternalClipboard.getInstance().setContents(selection, this);
     }
 
     /**
      * Required by the AbstractAction interface; does nothing.
      */
-    public void lostOwnership(final Clipboard clipboard, final Transferable contents) {
+    public void lostOwnership(Clipboard clipboard, Transferable contents) {
     }
 }
 

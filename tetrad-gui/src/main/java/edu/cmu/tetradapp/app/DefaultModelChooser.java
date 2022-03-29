@@ -73,102 +73,102 @@ class DefaultModelChooser extends JComponent implements ModelChooser {
     }
 
     public String getTitle() {
-        return this.title;
+        return title;
     }
 
     public Class getSelectedModel() {
-        final ClassWrapper wrapper = (ClassWrapper) this.modelClassesBox.getSelectedItem();
+        ClassWrapper wrapper = (ClassWrapper) modelClassesBox.getSelectedItem();
         return wrapper.getWrappedClass();
     }
 
-    public void setTitle(final String title) {
+    public void setTitle(String title) {
         if (title == null) {
             throw new NullPointerException("The given title must not be null");
         }
         this.title = title;
     }
 
-    public void setModelConfigs(final List<SessionNodeModelConfig> configs) {
-        final List<ClassWrapper> wrapperList = new LinkedList<>();
+    public void setModelConfigs(List<SessionNodeModelConfig> configs) {
+        List<ClassWrapper> wrapperList = new LinkedList<>();
 
-        for (final SessionNodeModelConfig config : configs) {
-            final Class modelClass = config.getModel();
+        for (SessionNodeModelConfig config : configs) {
+            Class modelClass = config.getModel();
             if (!(UnlistedSessionModel.class.isAssignableFrom(modelClass))) {
                 wrapperList.add(new ClassWrapper(modelClass, config.getName()));
             }
         }
 
-        final ClassWrapper[] wrappers = wrapperList.toArray(new ClassWrapper[0]);
-        this.modelClassesBox = new JComboBox(wrappers);
+        ClassWrapper[] wrappers = wrapperList.toArray(new ClassWrapper[0]);
+        modelClassesBox = new JComboBox(wrappers);
 
-        this.modelClassesBox.addItemListener(new ItemListener() {
-            public void itemStateChanged(final ItemEvent e) {
+        modelClassesBox.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
-                    final int selectedIndex = DefaultModelChooser.this.modelClassesBox.getSelectedIndex();
-                    final String selectedModelType = DefaultModelChooser.this.modelClassesBox.getItemAt(
+                    int selectedIndex = modelClassesBox.getSelectedIndex();
+                    String selectedModelType = modelClassesBox.getItemAt(
                             selectedIndex).toString();
-                    Preferences.userRoot().put(DefaultModelChooser.this.id, selectedModelType);
+                    Preferences.userRoot().put(id, selectedModelType);
                 }
             }
         });
 
-        final String storedModelType = Preferences.userRoot().get(this.id, "");
-        for (int i = 0; i < this.modelClassesBox.getItemCount(); i++) {
-            final String currModelType = this.modelClassesBox.getItemAt(i).toString();
+        String storedModelType = Preferences.userRoot().get(id, "");
+        for (int i = 0; i < modelClassesBox.getItemCount(); i++) {
+            String currModelType = modelClassesBox.getItemAt(i).toString();
             if (storedModelType.equals(currModelType)) {
-                this.modelClassesBox.setSelectedIndex(i);
+                modelClassesBox.setSelectedIndex(i);
             }
         }
     }
 
-    public void setNodeId(final String id) {
+    public void setNodeId(String id) {
         if (id == null) {
             throw new NullPointerException("The given id must not be null");
         }
         this.id = id;
     }
 
-    public void setSessionNode(final SessionNode sessionNode) {
+    public void setSessionNode(SessionNode sessionNode) {
         /*(
       The session node for the getModel node.
      */
-        final SessionNode sessionNode1 = sessionNode;
-        this.nodeName = sessionNode.getDisplayName();
+        SessionNode sessionNode1 = sessionNode;
+        nodeName = sessionNode.getDisplayName();
     }
 
     public void setup() {
-        final JButton info = new JButton("Help");
+        JButton info = new JButton("Help");
 
         info.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                SessionUtils.showPermissibleParentsDialog(getSelectedModel(),
-                        DefaultModelChooser.this.modelClassesBox, false, false);
+            public void actionPerformed(ActionEvent e) {
+                SessionUtils.showPermissibleParentsDialog(DefaultModelChooser.this.getSelectedModel(),
+                        modelClassesBox, false, false);
             }
         });
 
-        final JLabel l1 = new JLabel("Node name: " + this.nodeName);
+        JLabel l1 = new JLabel("Node name: " + nodeName);
         l1.setForeground(Color.black);
 
-        setLayout(new BorderLayout());
+        this.setLayout(new BorderLayout());
 
-        final Box b1 = Box.createVerticalBox();
-        final Box b2 = Box.createHorizontalBox();
+        Box b1 = Box.createVerticalBox();
+        Box b2 = Box.createHorizontalBox();
 
         b2.add(l1);
         b2.add(Box.createHorizontalGlue());
         b1.add(b2);
         b1.add(Box.createVerticalStrut(5));
 
-        final Box b3 = Box.createHorizontalBox();
+        Box b3 = Box.createHorizontalBox();
 
-        b3.add(this.modelClassesBox);
-        final Font font = this.modelClassesBox.getFont();
+        b3.add(modelClassesBox);
+        Font font = modelClassesBox.getFont();
 
         l1.setFont(font);
         b3.add(Box.createGlue());
         b3.add(info);
         b1.add(b3);
-        add(b1, BorderLayout.CENTER);
+        this.add(b1, BorderLayout.CENTER);
     }
 
     //============================= Private Methods ================================//
@@ -177,21 +177,21 @@ class DefaultModelChooser extends JComponent implements ModelChooser {
     /**
      * Basic wrapper class.
      */
-    private final static class ClassWrapper {
+    private static final class ClassWrapper {
         private final Class wrappedClass;
         private final String name;
 
-        public ClassWrapper(final Class wrappedClass, final String name) {
+        public ClassWrapper(Class wrappedClass, String name) {
             this.wrappedClass = wrappedClass;
             this.name = name;
         }
 
         public Class getWrappedClass() {
-            return this.wrappedClass;
+            return wrappedClass;
         }
 
         public String toString() {
-            return this.name;
+            return name;
         }
     }
 }

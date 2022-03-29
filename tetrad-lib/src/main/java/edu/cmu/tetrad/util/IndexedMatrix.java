@@ -46,17 +46,17 @@ public final class IndexedMatrix {
      *
      * @param matrix The wrapped matrix.
      */
-    public IndexedMatrix(final double[][] matrix) {
+    public IndexedMatrix(double[][] matrix) {
         assert MatrixUtils.isSquare(matrix);
         this.matrix = new Matrix(matrix).toArray();
-        setIndices(new int[0]);
+        this.setIndices(new int[0]);
     }
 
     /**
      * @return Ibid.
      */
     public final int[] getIndices() {
-        return this.indices;
+        return indices;
     }
 
     /**
@@ -66,11 +66,11 @@ public final class IndexedMatrix {
      *
      * @param indices The indices of the submatrix desired.
      */
-    public final void setIndices(final int[] indices) {
+    public final void setIndices(int[] indices) {
         if (indices == null) {
             throw new NullPointerException("Permutation must not be null.");
         }
-        if (!isLegal(indices)) {
+        if (!this.isLegal(indices)) {
             throw new IllegalArgumentException(
                     "Illegal index array: " + ArrUtils.toString(indices));
         }
@@ -82,8 +82,8 @@ public final class IndexedMatrix {
      * @param j The column value in teh remapped indices of the cell desired.
      * @return Ibid.
      */
-    public final double getValue(final int i, final int j) {
-        return this.matrix[this.indices[i]][this.indices[j]];
+    public final double getValue(int i, int j) {
+        return matrix[indices[i]][indices[j]];
     }
 
     /**
@@ -91,16 +91,16 @@ public final class IndexedMatrix {
      * @return Ibid.
      */
     @SuppressWarnings({"BooleanMethodIsAlwaysInverted"})
-    private boolean isLegal(final int[] indices) {
-        final int[] check = new int[this.matrix.length];
-        for (final int indice : indices) {
-            if (indice < 0 || indice >= this.matrix.length) {
+    private boolean isLegal(int[] indices) {
+        int[] check = new int[matrix.length];
+        for (int indice : indices) {
+            if (indice < 0 || indice >= matrix.length) {
                 return false;
             }
             check[indice]++;
         }
 
-        for (int i = 0; i < this.matrix.length; i++) {
+        for (int i = 0; i < matrix.length; i++) {
             if (check[i] > 1) {
                 return false;
             }

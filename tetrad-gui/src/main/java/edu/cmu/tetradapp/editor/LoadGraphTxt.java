@@ -42,7 +42,7 @@ class LoadGraphTxt extends AbstractAction {
      */
     private final GraphEditable graphEditable;
 
-    public LoadGraphTxt(final GraphEditable graphEditable, final String title) {
+    public LoadGraphTxt(GraphEditable graphEditable, String title) {
         super(title);
 
         if (graphEditable == null) {
@@ -55,12 +55,12 @@ class LoadGraphTxt extends AbstractAction {
     /**
      * Performs the action of loading a session from a file.
      */
-    public void actionPerformed(final ActionEvent e) {
-        final JFileChooser chooser = LoadGraphTxt.getJFileChooser();
+    public void actionPerformed(ActionEvent e) {
+        JFileChooser chooser = getJFileChooser();
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-        chooser.showOpenDialog((Component) this.graphEditable);
+        chooser.showOpenDialog((Component) graphEditable);
 
-        final File file = chooser.getSelectedFile();
+        File file = chooser.getSelectedFile();
 
         if (file == null) {
             System.out.println("File was null.");
@@ -69,14 +69,14 @@ class LoadGraphTxt extends AbstractAction {
 
         Preferences.userRoot().put("fileSaveLocation", file.getParent());
 
-        final Graph graph = GraphUtils.loadGraphTxt(file);
+        Graph graph = GraphUtils.loadGraphTxt(file);
         GraphUtils.circleLayout(graph, 200, 200, 150);
-        this.graphEditable.setGraph(graph);
+        graphEditable.setGraph(graph);
     }
 
     private static JFileChooser getJFileChooser() {
-        final JFileChooser chooser = new JFileChooser();
-        final String sessionSaveLocation =
+        JFileChooser chooser = new JFileChooser();
+        String sessionSaveLocation =
                 Preferences.userRoot().get("fileSaveLocation", "");
         chooser.setCurrentDirectory(new File(sessionSaveLocation));
         chooser.resetChoosableFileFilters();
@@ -85,7 +85,7 @@ class LoadGraphTxt extends AbstractAction {
     }
 
     private GraphEditable getGraphEditable() {
-        return this.graphEditable;
+        return graphEditable;
     }
 }
 

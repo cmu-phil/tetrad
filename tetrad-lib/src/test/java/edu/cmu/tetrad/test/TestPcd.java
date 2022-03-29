@@ -47,7 +47,7 @@ public class TestPcd {
      */
 //    @Test
     public void testSearch1() {
-        checkSearch("X1-->X2,X1-->X3,X2-->X4,X3-->X4",
+        this.checkSearch("X1-->X2,X1-->X3,X2-->X4,X3-->X4",
                 "X1---X2,X1---X3,X2-->X4,X3-->X4");
     }
 
@@ -56,7 +56,7 @@ public class TestPcd {
      */
 //    @Test
     public void testSearch2() {
-        checkSearch("A-->D,A-->B,B-->D,C-->D,D-->E",
+        this.checkSearch("A-->D,A-->B,B-->D,C-->D,D-->E",
                 "A-->D,A---B,B-->D,C-->D,D-->E");
     }
 
@@ -65,10 +65,10 @@ public class TestPcd {
      */
 //    @Test
     public void testSearch3() {
-        final IKnowledge knowledge = new Knowledge2();
+        IKnowledge knowledge = new Knowledge2();
         knowledge.setForbidden("B", "D");
         knowledge.setForbidden("D", "B");
-        checkWithKnowledge("A-->B,C-->B,B-->D", "A-->B,C-->B,D",
+        this.checkWithKnowledge("A-->B,C-->B,B-->D", "A-->B,C-->B,D",
                 knowledge);
     }
 
@@ -76,20 +76,20 @@ public class TestPcd {
      * Presents the input graph to FCI and checks to make sure the output of FCI is equivalent to the given output
      * graph.
      */
-    private void checkSearch(final String inputGraph, final String outputGraph) {
+    private void checkSearch(String inputGraph, String outputGraph) {
 
         // Set up graph and node objects.
-        final Graph graph = GraphConverter.convert(inputGraph);
+        Graph graph = GraphConverter.convert(inputGraph);
 
         // Set up search.
-        final IndependenceTest independence = new IndTestDSep(graph);
-        final Pcd pc = new Pcd(independence);
+        IndependenceTest independence = new IndTestDSep(graph);
+        Pcd pc = new Pcd(independence);
 
         // Run search
         Graph resultGraph = pc.search();
 
         // Build comparison graph.
-        final Graph trueGraph = GraphConverter.convert(outputGraph);
+        Graph trueGraph = GraphConverter.convert(outputGraph);
 
         resultGraph = GraphUtils.replaceNodes(resultGraph, trueGraph.getNodes());
 
@@ -101,22 +101,22 @@ public class TestPcd {
      * Presents the input graph to FCI and checks to make sure the output of FCI is equivalent to the given output
      * graph.
      */
-    private void checkWithKnowledge(final String inputGraph, final String outputGraph,
-                                    final IKnowledge knowledge) {
+    private void checkWithKnowledge(String inputGraph, String outputGraph,
+                                    IKnowledge knowledge) {
 
         // Set up graph and node objects.
-        final Graph graph = GraphConverter.convert(inputGraph);
+        Graph graph = GraphConverter.convert(inputGraph);
 
         // Set up search.
-        final IndependenceTest independence = new IndTestDSep(graph);
-        final Pc pc = new Pc(independence);
+        IndependenceTest independence = new IndTestDSep(graph);
+        Pc pc = new Pc(independence);
         pc.setKnowledge(knowledge);
 
         // Run search
         Graph resultGraph = pc.search();
 
         // Build comparison graph.
-        final Graph trueGraph = GraphConverter.convert(outputGraph);
+        Graph trueGraph = GraphConverter.convert(outputGraph);
 
         resultGraph = GraphUtils.replaceNodes(resultGraph, trueGraph.getNodes());
 

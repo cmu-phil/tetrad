@@ -10,6 +10,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.Ling.StoredGraphs;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -35,12 +36,12 @@ public class Ling implements Algorithm {
 
     static final long serialVersionUID = 23L;
 
-    public Graph search(final DataModel dataSet, final Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            final DataSet _dataSet = DataUtils.getContinuousDataSet(dataSet);
-            final edu.cmu.tetrad.search.Ling lingam = new edu.cmu.tetrad.search.Ling(_dataSet);
+            DataSet _dataSet = DataUtils.getContinuousDataSet(dataSet);
+            edu.cmu.tetrad.search.Ling lingam = new edu.cmu.tetrad.search.Ling(_dataSet);
 //            lingam.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-            final edu.cmu.tetrad.search.Ling.StoredGraphs search = lingam.search();
+            StoredGraphs search = lingam.search();
 
             if (search.getNumGraphs() > 0) {
                 return search.getGraph(0);
@@ -48,10 +49,10 @@ public class Ling implements Algorithm {
                 return new EdgeListGraph();
             }
         } else {
-            final Ling algorithm = new Ling();
+            Ling algorithm = new Ling();
 
-            final DataSet data = (DataSet) dataSet;
-            final GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
+            DataSet data = (DataSet) dataSet;
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -77,7 +78,7 @@ public class Ling implements Algorithm {
     }
 
     @Override
-    public Graph getComparisonGraph(final Graph graph) {
+    public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
@@ -92,7 +93,7 @@ public class Ling implements Algorithm {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.VERBOSE);
         return parameters;

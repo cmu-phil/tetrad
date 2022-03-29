@@ -41,46 +41,46 @@ public class AlgorithmModel implements Serializable, Comparable<AlgorithmModel> 
     private final boolean requiredScore;
     private final boolean requiredTest;
 
-    public AlgorithmModel(final AnnotatedClass<Algorithm> algorithm) {
+    public AlgorithmModel(AnnotatedClass<Algorithm> algorithm) {
         if (algorithm == null) {
             throw new IllegalArgumentException("Algorithm annotation cannot be null.");
         }
 
         this.algorithm = algorithm;
-        this.name = algorithm.getAnnotation().name();
-        this.description = AlgorithmDescriptions.getInstance().get(algorithm.getAnnotation().command());
-        this.requiredScore = UsesScoreWrapper.class.isAssignableFrom(algorithm.getClazz());
-        this.requiredTest = TakesIndependenceWrapper.class.isAssignableFrom(algorithm.getClazz());
+        name = algorithm.getAnnotation().name();
+        description = AlgorithmDescriptions.getInstance().get(algorithm.getAnnotation().command());
+        requiredScore = UsesScoreWrapper.class.isAssignableFrom(algorithm.getClazz());
+        requiredTest = TakesIndependenceWrapper.class.isAssignableFrom(algorithm.getClazz());
     }
 
     @Override
-    public int compareTo(final AlgorithmModel other) {
-        return this.name.compareTo(other.name);
+    public int compareTo(AlgorithmModel other) {
+        return name.compareTo(other.name);
     }
 
     @Override
     public String toString() {
-        return this.name;
+        return name;
     }
 
     public AnnotatedClass<Algorithm> getAlgorithm() {
-        return this.algorithm;
+        return algorithm;
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 
     public String getDescription() {
-        return this.description;
+        return description;
     }
 
     public boolean isRequiredScore() {
-        return this.requiredScore;
+        return requiredScore;
     }
 
     public boolean isRequiredTest() {
-        return this.requiredTest;
+        return requiredTest;
     }
 
 }

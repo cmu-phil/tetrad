@@ -35,7 +35,7 @@ public class RocCalculator {
     public static final int ASCENDING = 0;
     private static final int DESCENDING = 1;
 
-    private int direction = RocCalculator.ASCENDING;
+    private int direction = ASCENDING;
 
     private int[][] points;
     private final ScoreCategoryPair[] scoreCatPairs;
@@ -48,7 +48,7 @@ public class RocCalculator {
      *                   not. Must be an array of the same length as scores.
      * @param direction  Either RocCalculator.ASCENDING or RocCalculator.DESCENDING.
      */
-    public RocCalculator(final double[] scores, final boolean[] inCategory, final int direction) {
+    public RocCalculator(double[] scores, boolean[] inCategory, int direction) {
         if (scores == null) {
             throw new NullPointerException();
         }
@@ -62,7 +62,7 @@ public class RocCalculator {
                     "number of items as inCategory array.");
         }
 
-        if (direction != RocCalculator.ASCENDING && direction != RocCalculator.DESCENDING) {
+        if (direction != ASCENDING && direction != DESCENDING) {
             throw new IllegalArgumentException(
                     "Direction must be ASCENDING or " + "DESCENDING.");
         }
@@ -70,10 +70,10 @@ public class RocCalculator {
         this.direction = direction;
 
         //Create an array of scores and inCategory pairs for sorting.
-        this.scoreCatPairs = new ScoreCategoryPair[scores.length];
+        scoreCatPairs = new ScoreCategoryPair[scores.length];
 
         for (int i = 0; i < scores.length; i++) {
-            this.scoreCatPairs[i] = new ScoreCategoryPair(scores[i], inCategory[i]);
+            scoreCatPairs[i] = new ScoreCategoryPair(scores[i], inCategory[i]);
         }
     }
 
@@ -84,25 +84,25 @@ public class RocCalculator {
      */
     public double getAuc() {
 
-        if (this.points == null) {
-            getUnscaledRocPlot();
+        if (points == null) {
+            this.getUnscaledRocPlot();
         }
 
-        final int lastPoint = this.points.length - 1;
+        int lastPoint = points.length - 1;
 
         int height = 0;
         int area = 0;
 
-        for (int i = 1; i < this.points.length; i++) {
+        for (int i = 1; i < points.length; i++) {
 
-            if (this.points[i][1] > this.points[i - 1][1]) {
+            if (points[i][1] > points[i - 1][1]) {
                 height += 1;
-            } else if (this.points[i][0] > this.points[i - 1][0]) {
+            } else if (points[i][0] > points[i - 1][0]) {
                 area += height;
             }
         }
 
-        return ((double) area) / (this.points[lastPoint][0] * this.points[lastPoint][1]);
+        return ((double) area) / (points[lastPoint][0] * points[lastPoint][1]);
     }
 
     /**
@@ -112,16 +112,16 @@ public class RocCalculator {
      * values.
      */
     private void getUnscaledRocPlot() {
-        sortCases();
+        this.sortCases();
 
         OrderedPairInt p0 = new OrderedPairInt(0, 0);
         OrderedPairInt pPrime;
-        final List<OrderedPairInt> plot = new LinkedList<>();
+        List<OrderedPairInt> plot = new LinkedList<>();
         plot.add(p0);
-        final int numPairs = this.scoreCatPairs.length;
+        int numPairs = scoreCatPairs.length;
 
         for (int i = numPairs - 1; i >= 0; i--) {
-            final ScoreCategoryPair tPrime = this.scoreCatPairs[i];
+            ScoreCategoryPair tPrime = scoreCatPairs[i];
 
             if (tPrime.getHasProperty()) {
                 pPrime = new OrderedPairInt(p0.getFirst(), p0.getSecond() + 1);
@@ -134,29 +134,29 @@ public class RocCalculator {
             }
         }
 
-        this.points = new int[plot.size()][2];
+        points = new int[plot.size()][2];
 
         for (int i = 0; i < plot.size(); i++) {
-            final OrderedPairInt point = plot.get(i);
-            this.points[i][0] = point.getFirst();
-            this.points[i][1] = point.getSecond();
+            OrderedPairInt point = plot.get(i);
+            points[i][0] = point.getFirst();
+            points[i][1] = point.getSecond();
         }
     }
 
     public double[][] getScaledRocPlot() {
-        if (this.points == null) {
-            getUnscaledRocPlot();
+        if (points == null) {
+            this.getUnscaledRocPlot();
         }
 
-        final int numPoints = this.points.length;
-        final double[][] pointsDouble = new double[numPoints][2];
+        int numPoints = points.length;
+        double[][] pointsDouble = new double[numPoints][2];
 
         for (int i = 0; i < numPoints; i++) {
             //System.out.println(plot[i][0] + " " + plot[i][1]);
-            pointsDouble[i][0] = ((double) this.points[i][0]) /
-                    ((double) this.points[numPoints - 1][0]);
-            pointsDouble[i][1] = ((double) this.points[i][1]) /
-                    ((double) this.points[numPoints - 1][1]);
+            pointsDouble[i][0] = ((double) points[i][0]) /
+                    ((double) points[numPoints - 1][0]);
+            pointsDouble[i][1] = ((double) points[i][1]) /
+                    ((double) points[numPoints - 1][1]);
         }
 
         return pointsDouble;
@@ -164,19 +164,19 @@ public class RocCalculator {
 
     private void sortCases() {
         //Sort the score-category pairs.  They will be in increasing order by score.
-        Arrays.sort(this.scoreCatPairs);
+        Arrays.sort(scoreCatPairs);
 
         //If a higher score implies a lower probability that the case has property P
         //reverse the order.
-        if (this.direction == RocCalculator.DESCENDING) {
-            final int numPairs = this.scoreCatPairs.length;
-            final ScoreCategoryPair[] scpRev = new ScoreCategoryPair[numPairs];
+        if (direction == DESCENDING) {
+            int numPairs = scoreCatPairs.length;
+            ScoreCategoryPair[] scpRev = new ScoreCategoryPair[numPairs];
 
             for (int i = 0; i < numPairs; i++) {
-                scpRev[i] = this.scoreCatPairs[numPairs - i - 1];
+                scpRev[i] = scoreCatPairs[numPairs - i - 1];
             }
 
-            System.arraycopy(scpRev, 0, this.scoreCatPairs, 0, numPairs);
+            System.arraycopy(scpRev, 0, scoreCatPairs, 0, numPairs);
         }
     }
 
@@ -184,24 +184,24 @@ public class RocCalculator {
         private int first;
         private int second;
 
-        public OrderedPairInt(final int first, final int second) {
+        public OrderedPairInt(int first, int second) {
             this.first = first;
             this.second = second;
         }
 
         public int getFirst() {
-            return this.first;
+            return first;
         }
 
-        public void setFirst(final int first) {
+        public void setFirst(int first) {
             this.first = first;
         }
 
         public int getSecond() {
-            return this.second;
+            return second;
         }
 
-        public void setSecond(final int second) {
+        public void setSecond(int second) {
             this.second = second;
         }
     }
@@ -210,7 +210,7 @@ public class RocCalculator {
         private final double score;
         private final boolean hasProperty;
 
-        public ScoreCategoryPair(final double score, final boolean hasProperty) {
+        public ScoreCategoryPair(double score, boolean hasProperty) {
 
             this.score = score;
             this.hasProperty = hasProperty;
@@ -218,17 +218,17 @@ public class RocCalculator {
         }
 
         public double getScore() {
-            return this.score;
+            return score;
         }
 
         public boolean getHasProperty() {
-            return this.hasProperty;
+            return hasProperty;
         }
 
-        public int compareTo(final Object other) {
-            if (getScore() < ((ScoreCategoryPair) other).getScore()) {
+        public int compareTo(Object other) {
+            if (this.getScore() < ((ScoreCategoryPair) other).getScore()) {
                 return -1;
-            } else if (getScore() == ((ScoreCategoryPair) other).getScore()) {
+            } else if (this.getScore() == ((ScoreCategoryPair) other).getScore()) {
                 return 0;
             } else {
                 return 1;

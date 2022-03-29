@@ -37,14 +37,14 @@ public class PartialCorrelationPdf implements Function, TetradSerializable {
      *
      * @serial
      */
-    private int n = 0;
+    private int n;
 
     /**
      * Number of compared variables--that is, 2 + (#conditioning variables).
      *
      * @serial
      */
-    private int k = 0;
+    private int k;
 
     /**
      * The aggregate value of the constant expression in the distribution
@@ -60,7 +60,7 @@ public class PartialCorrelationPdf implements Function, TetradSerializable {
      *
      * @serial
      */
-    private double outsideExp = 0.0;
+    private double outsideExp;
 
     //===========================CONSTRUCTORS========================//
 
@@ -71,7 +71,7 @@ public class PartialCorrelationPdf implements Function, TetradSerializable {
      * @param n sample size
      * @param k the number of variables being compared.
      */
-    public PartialCorrelationPdf(final int n, final int k) {
+    public PartialCorrelationPdf(int n, int k) {
         this.n = n;
         this.k = k;
         /*
@@ -79,9 +79,9 @@ public class PartialCorrelationPdf implements Function, TetradSerializable {
       zero partial correlation.
 
       */
-        final double gammaRatio = gammaRatio(n, k);
-        this.constant = (1 / Math.pow(Math.PI, 0.5)) * gammaRatio;
-        this.outsideExp = (double) (n - k - 2) / 2.0;
+        double gammaRatio = this.gammaRatio(n, k);
+        constant = (1 / Math.pow(Math.PI, 0.5)) * gammaRatio;
+        outsideExp = (double) (n - k - 2) / 2.0;
     }
 
     /**
@@ -102,8 +102,8 @@ public class PartialCorrelationPdf implements Function, TetradSerializable {
      * @param x the domain point.
      * @return the value of the function at x.
      */
-    public double valueAt(final double x) {
-        return this.constant * Math.pow(1 - x * x, this.outsideExp);
+    public double valueAt(double x) {
+        return constant * Math.pow(1 - x * x, outsideExp);
     }
 
     /**
@@ -113,10 +113,10 @@ public class PartialCorrelationPdf implements Function, TetradSerializable {
      * @param k the number of variables being compared.
      * @return this ratio.
      */
-    private double gammaRatio(final int n, final int k) {
-        final double top = (n - k + 1) / 2.0;
-        final double bottom = (n - k) / 2.0;
-        final double lngamma = ProbUtils.lngamma(top) - ProbUtils.lngamma(bottom);
+    private double gammaRatio(int n, int k) {
+        double top = (n - k + 1) / 2.0;
+        double bottom = (n - k) / 2.0;
+        double lngamma = ProbUtils.lngamma(top) - ProbUtils.lngamma(bottom);
         return Math.exp(lngamma);
     }
 
@@ -124,19 +124,19 @@ public class PartialCorrelationPdf implements Function, TetradSerializable {
      * @return a description of the function.
      */
     public String toString() {
-        return "Zero partial correlation distribution with n = " + getN() +
-                " and k = " + getK() + "\n\n";
+        return "Zero partial correlation distribution with n = " + this.getN() +
+                " and k = " + this.getK() + "\n\n";
     }
 
     private int getN() {
-        return this.n;
+        return n;
     }
 
     /**
      * @return Ibid.
      */
     public int getK() {
-        return this.k;
+        return k;
     }
 }
 

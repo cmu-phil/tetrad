@@ -28,8 +28,8 @@ public class ConditionalGaussianOtherBicScore implements ScoreWrapper {
     static final long serialVersionUID = 23L;
 
     @Override
-    public Score getScore(final DataModel dataSet, final Parameters parameters) {
-        final ConditionalGaussianOtherScore conditionalGaussianScore
+    public Score getScore(DataModel dataSet, Parameters parameters) {
+        ConditionalGaussianOtherScore conditionalGaussianScore
                 = new ConditionalGaussianOtherScore(DataUtils.getMixedDataSet(dataSet), parameters.getDouble("structurePrior"), parameters.getInt("discretize") > 0);
         conditionalGaussianScore.setNumCategoriesToDiscretize(parameters.getInt("numCategoriesToDiscretize"));
         return conditionalGaussianScore;
@@ -47,7 +47,7 @@ public class ConditionalGaussianOtherBicScore implements ScoreWrapper {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
 
         parameters.add("structurePrior");
         parameters.add("discretize");
@@ -55,7 +55,7 @@ public class ConditionalGaussianOtherBicScore implements ScoreWrapper {
     }
 
     @Override
-    public Node getVariable(final String name) {
+    public Node getVariable(String name) {
         return null;
     }
 }

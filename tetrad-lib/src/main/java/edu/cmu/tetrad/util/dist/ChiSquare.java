@@ -46,7 +46,7 @@ public class ChiSquare implements Distribution {
      * Constructs a new Chi Square distribution.
      */
     private ChiSquare() {
-        this.df = 5.0;
+        df = 5.0;
     }
 
     /**
@@ -59,23 +59,23 @@ public class ChiSquare implements Distribution {
         return new ChiSquare();
     }
 
-    public void setParameter(final int index, final double value) {
+    public void setParameter(int index, double value) {
         if (index == 0 && value >= 0.0) {
-            this.df = value;
+            df = value;
         } else {
             throw new IllegalArgumentException("Illegal value: " + index + " = " + value);
         }
     }
 
-    public double getParameter(final int index) {
+    public double getParameter(int index) {
         if (index == 0) {
-            return this.df;
+            return df;
         } else {
             throw new IllegalArgumentException("Illegal index: " + index);
         }
     }
 
-    public String getParameterName(final int index) {
+    public String getParameterName(int index) {
         if (index == 0) {
             return "DF";
         } else {
@@ -92,11 +92,11 @@ public class ChiSquare implements Distribution {
     }
 
     public double nextRandom() {
-        return RandomUtil.getInstance().nextChiSquare(this.df);
+        return RandomUtil.getInstance().nextChiSquare(df);
     }
 
     public String toString() {
-        return "ChiSquare(" + this.df + ")";
+        return "ChiSquare(" + df + ")";
     }
 
     /**
@@ -114,7 +114,7 @@ public class ChiSquare implements Distribution {
      * @throws ClassNotFoundException If the class of an object in the stream
      *                                is not in the project.
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }

@@ -2,7 +2,7 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.GraphUtils.GraphComparison;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 
 /**
@@ -25,8 +25,8 @@ public class SHD implements Statistic {
     }
 
     @Override
-    public double getValue(final Graph trueGraph, final Graph estGraph, final DataModel dataModel) {
-        final GraphUtils.GraphComparison comparison = SearchGraphUtils.getGraphComparison(estGraph, trueGraph);
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+        GraphComparison comparison = SearchGraphUtils.getGraphComparison(estGraph, trueGraph);
         return comparison.getShd();
     }
 
@@ -34,7 +34,7 @@ public class SHD implements Statistic {
     /**
      * This will be given the index of the SHD stat.
      */
-    public double getNormValue(final double value) {
+    public double getNormValue(double value) {
         return 1.0 - Math.tanh(0.001 * value);
     }
 }

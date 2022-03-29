@@ -65,13 +65,13 @@ public class SemSimulationParams implements TetradSerializable {
      * @return the number of samples to simulate.
      */
     public int getSampleSize() {
-        return this.sampleSize;
+        return sampleSize;
     }
 
     /**
      * Sets the number of samples to generate.
      */
-    public void setSampleSize(final int sampleSize) {
+    public void setSampleSize(int sampleSize) {
         if (sampleSize <= 0) {
             throw new IllegalArgumentException();
         }
@@ -92,12 +92,12 @@ public class SemSimulationParams implements TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (this.sampleSize < 1) {
-            throw new IllegalStateException("Sample size < 1: " + this.sampleSize);
+        if (sampleSize < 1) {
+            throw new IllegalStateException("Sample size < 1: " + sampleSize);
         }
     }
 }

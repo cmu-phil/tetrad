@@ -46,45 +46,45 @@ public class ShiftSearch {
     private int c = 4;
     private int maxNumShifts;
     private PrintStream out = System.out;
-    private boolean scheduleStop = false;
+    private boolean scheduleStop;
     private boolean forwardSearch;
 
-    public ShiftSearch(final List<DataModel> dataSets) {
+    public ShiftSearch(List<DataModel> dataSets) {
         this(dataSets, null);
     }
 
-    public ShiftSearch(final List<DataModel> dataSets, final Graph measuredDag) {
+    public ShiftSearch(List<DataModel> dataSets, Graph measuredDag) {
         this.dataSets = dataSets;
     }
 
     public int[] search() {
-        if (this.maxShift < 1) {
-            throw new IllegalStateException("Max shift should be >= 1: " + this.maxShift);
+        if (maxShift < 1) {
+            throw new IllegalStateException("Max shift should be >= 1: " + maxShift);
         }
 
-        final int numVars = ((DataSet) this.dataSets.get(0)).getNumColumns();
-        final List<Node> nodes = this.dataSets.get(0).getVariables();
+        int numVars = ((DataSet) dataSets.get(0)).getNumColumns();
+        List<Node> nodes = dataSets.get(0).getVariables();
         int[] shifts;
-        final int[] bestshifts = new int[numVars];
-        final int maxNumRows = ((DataSet) this.dataSets.get(0)).getNumRows() - this.maxShift;
+        int[] bestshifts = new int[numVars];
+        int maxNumRows = ((DataSet) dataSets.get(0)).getNumRows() - maxShift;
 
-        double b = getAvgBic(this.dataSets);
+        double b = this.getAvgBic(dataSets);
 
-        printShifts(bestshifts, b, nodes);
+        this.printShifts(bestshifts, b, nodes);
 
-        final DepthChoiceGenerator generator = new DepthChoiceGenerator(nodes.size(), getMaxNumShifts());
+        DepthChoiceGenerator generator = new DepthChoiceGenerator(nodes.size(), this.getMaxNumShifts());
         int[] choice;
 
         CHOICE:
         while ((choice = generator.next()) != null) {
             shifts = new int[nodes.size()];
 
-            final double zSize = Math.pow(getMaxShift(), choice.length);
-            final int iIndex = this.dataSets.get(0).getVariables().indexOf(((DataSet) this.dataSets.get(0)).getVariable("I"));
+            double zSize = Math.pow(this.getMaxShift(), choice.length);
+            int iIndex = dataSets.get(0).getVariables().indexOf(((DataSet) dataSets.get(0)).getVariable("I"));
 
             Z:
             for (int z = 0; z < zSize; z++) {
-                if (this.scheduleStop) break;
+                if (scheduleStop) break;
 
                 int _z = z;
 
@@ -93,143 +93,143 @@ public class ShiftSearch {
                         continue;
                     }
 
-                    shifts[choice[i]] = (_z % (getMaxShift()) + 1);
+                    shifts[choice[i]] = (_z % (this.getMaxShift()) + 1);
 
-                    if (!this.forwardSearch) {
+                    if (!forwardSearch) {
                         shifts[choice[i]] = -shifts[choice[i]];
                     }
 
-                    _z /= getMaxShift();
+                    _z /= this.getMaxShift();
 
                 }
 
-                final List<DataModel> _shiftedDataSets = getShiftedDataSets(shifts, maxNumRows);
-                final double _b = getAvgBic(_shiftedDataSets);
+                List<DataModel> _shiftedDataSets = this.getShiftedDataSets(shifts, maxNumRows);
+                double _b = this.getAvgBic(_shiftedDataSets);
 
                 if (_b < 0.999 * b) {
                     b = _b;
 
-                    printShifts(shifts, b, nodes);
+                    this.printShifts(shifts, b, nodes);
 
                     System.arraycopy(shifts, 0, bestshifts, 0, shifts.length);
                 }
             }
         }
 
-        println("\nShifts with the lowest BIC score: ");
-        printShifts(bestshifts, b, nodes);
+        this.println("\nShifts with the lowest BIC score: ");
+        this.printShifts(bestshifts, b, nodes);
 
         return bestshifts;
     }
 
-    private void printShifts(final int[] shifts, final double b, final List<Node> nodes) {
-        final StringBuilder buf = new StringBuilder();
+    private void printShifts(int[] shifts, double b, List<Node> nodes) {
+        StringBuilder buf = new StringBuilder();
 
         for (int i = 0; i < shifts.length; i++) {
             buf.append(nodes.get(i) + "=" + shifts[i] + " ");
         }
 
         buf.append(b);
-        println(buf.toString());
+        this.println(buf.toString());
     }
 
-    private void println(final String s) {
+    private void println(String s) {
         System.out.println(s);
 
-        if (this.out != null) {
-            this.out.println(s);
-            this.out.flush();
+        if (out != null) {
+            out.println(s);
+            out.flush();
         }
     }
 
-    private List<DataModel> getShiftedDataSets(final int[] shifts, final int maxNumRows) {
-        final List<DataModel> shiftedDataSets2 = new ArrayList<>();
+    private List<DataModel> getShiftedDataSets(int[] shifts, int maxNumRows) {
+        List<DataModel> shiftedDataSets2 = new ArrayList<>();
 
-        for (final DataModel dataSet : this.dataSets) {
-            final DataSet shiftedData = TimeSeriesUtils.createShiftedData((DataSet) dataSet, shifts);
+        for (DataModel dataSet : dataSets) {
+            DataSet shiftedData = TimeSeriesUtils.createShiftedData((DataSet) dataSet, shifts);
             shiftedDataSets2.add(shiftedData);
         }
 
-        return ensureNumRows(shiftedDataSets2, maxNumRows);
+        return this.ensureNumRows(shiftedDataSets2, maxNumRows);
 
 //        return shiftedDataSets2;
     }
 
-    private List<DataSet> truncateDataSets(final List<DataSet> dataSets, final int topMargin, final int bottomMargin) {
-        final List<DataSet> truncatedData = new ArrayList<>();
+    private List<DataSet> truncateDataSets(List<DataSet> dataSets, int topMargin, int bottomMargin) {
+        List<DataSet> truncatedData = new ArrayList<>();
 
-        for (final DataSet dataSet : dataSets) {
-            final Matrix mat = dataSet.getDoubleData();
-            final Matrix mat2 = mat.getPart(topMargin, mat.rows() - topMargin - bottomMargin - 1, 0, mat.columns() - 1);
+        for (DataSet dataSet : dataSets) {
+            Matrix mat = dataSet.getDoubleData();
+            Matrix mat2 = mat.getPart(topMargin, mat.rows() - topMargin - bottomMargin - 1, 0, mat.columns() - 1);
             truncatedData.add(new BoxDataSet(new DoubleDataBox(mat2.toArray()), dataSet.getVariables()));
         }
 
         return truncatedData;
     }
 
-    private List<DataModel> ensureNumRows(final List<DataModel> dataSets, final int numRows) {
-        final List<DataModel> truncatedData = new ArrayList<>();
+    private List<DataModel> ensureNumRows(List<DataModel> dataSets, int numRows) {
+        List<DataModel> truncatedData = new ArrayList<>();
 
-        for (final DataModel _dataSet : dataSets) {
-            final DataSet dataSet = (DataSet) _dataSet;
-            final Matrix mat = dataSet.getDoubleData();
-            final Matrix mat2 = mat.getPart(0, numRows - 1, 0, mat.columns() - 1);
+        for (DataModel _dataSet : dataSets) {
+            DataSet dataSet = (DataSet) _dataSet;
+            Matrix mat = dataSet.getDoubleData();
+            Matrix mat2 = mat.getPart(0, numRows - 1, 0, mat.columns() - 1);
             truncatedData.add(new BoxDataSet(new DoubleDataBox(mat2.toArray()), dataSet.getVariables()));
         }
 
         return truncatedData;
     }
 
-    private double getAvgBic(final List<DataModel> dataSets) {
-        final SemBicScoreImages fgesScore = new SemBicScoreImages(dataSets);
-        fgesScore.setPenaltyDiscount(this.c);
-        final Fges images = new Fges(fgesScore);
-        images.setKnowledge(this.knowledge);
+    private double getAvgBic(List<DataModel> dataSets) {
+        SemBicScoreImages fgesScore = new SemBicScoreImages(dataSets);
+        fgesScore.setPenaltyDiscount(c);
+        Fges images = new Fges(fgesScore);
+        images.setKnowledge(knowledge);
         images.search();
         return -images.getModelScore() / dataSets.size();
     }
 
     public int getMaxShift() {
-        return this.maxShift;
+        return maxShift;
     }
 
-    public void setMaxShift(final int maxShift) {
+    public void setMaxShift(int maxShift) {
         this.maxShift = maxShift;
     }
 
     public IKnowledge getKnowledge() {
-        return this.knowledge;
+        return knowledge;
     }
 
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
     public int getC() {
-        return this.c;
+        return c;
     }
 
-    public void setC(final int c) {
+    public void setC(int c) {
         this.c = c;
     }
 
     public int getMaxNumShifts() {
-        return this.maxNumShifts;
+        return maxNumShifts;
     }
 
-    public void setMaxNumShifts(final int maxNumShifts) {
+    public void setMaxNumShifts(int maxNumShifts) {
         this.maxNumShifts = maxNumShifts;
     }
 
-    public void setOut(final OutputStream out) {
+    public void setOut(OutputStream out) {
         this.out = new PrintStream(out);
     }
 
     public void stop() {
-        this.scheduleStop = true;
+        scheduleStop = true;
     }
 
-    public void setForwardSearch(final boolean forwardSearch) {
+    public void setForwardSearch(boolean forwardSearch) {
         this.forwardSearch = forwardSearch;
     }
 }

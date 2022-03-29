@@ -50,7 +50,7 @@ class PossibleGraphicalChangeFinder {
     /**
      * Constructs the finder given the undirectedPaths that must be blocked.
      */
-    public PossibleGraphicalChangeFinder(final Graph pag, final Collection<Collection<Node>> separations) {
+    public PossibleGraphicalChangeFinder(Graph pag, Collection<Collection<Node>> separations) {
         if (pag == null) {
             throw new NullPointerException("The given pag must not be null.");
         }
@@ -59,7 +59,7 @@ class PossibleGraphicalChangeFinder {
         }
         this.pag = pag;
         this.separations = new ArrayList<>();
-        for (final Collection<Node> sep : separations) {
+        for (Collection<Node> sep : separations) {
             this.separations.add(new ArrayList<>(sep));
         }
     }

@@ -29,6 +29,7 @@ import edu.cmu.tetrad.session.DelegatesEditing;
 import edu.cmu.tetradapp.model.GeneralizedSemEstimatorWrapper;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.IntTextField;
+import edu.cmu.tetradapp.util.IntTextField.Filter;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.workbench.LayoutMenu;
 
@@ -73,83 +74,83 @@ public final class GeneralizedSemEstimatorEditor extends JPanel implements Deleg
     private final GeneralizedSemEstimatorWrapper wrapper;
 
     //========================CONSTRUCTORS===========================//
-    public GeneralizedSemEstimatorEditor(final GeneralizedSemEstimatorWrapper wrapper) {
-        setLayout(new BorderLayout());
+    public GeneralizedSemEstimatorEditor(GeneralizedSemEstimatorWrapper wrapper) {
+        this.setLayout(new BorderLayout());
 
         this.wrapper = wrapper;
 
-        final JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.add("Variables", listEditor());
-        tabbedPane.add("Graph", graphicalEditor());
-        tabbedPane.add("Report", estimationReport());
+        JTabbedPane tabbedPane = new JTabbedPane();
+        tabbedPane.add("Variables", this.listEditor());
+        tabbedPane.add("Graph", this.graphicalEditor());
+        tabbedPane.add("Report", this.estimationReport());
 
-        add(tabbedPane, BorderLayout.CENTER);
+        this.add(tabbedPane, BorderLayout.CENTER);
 
-        final Box b = Box.createHorizontalBox();
+        Box b = Box.createHorizontalBox();
         b.add(Box.createHorizontalGlue());
-        final JButton execute = new JButton("Execute");
+        JButton execute = new JButton("Execute");
 
         execute.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 wrapper.execute();
                 tabbedPane.removeAll();
-                tabbedPane.add("Variables", listEditor());
-                tabbedPane.add("Graph", graphicalEditor());
-                tabbedPane.add("Report", estimationReport());
+                tabbedPane.add("Variables", GeneralizedSemEstimatorEditor.this.listEditor());
+                tabbedPane.add("Graph", GeneralizedSemEstimatorEditor.this.graphicalEditor());
+                tabbedPane.add("Report", GeneralizedSemEstimatorEditor.this.estimationReport());
             }
         });
 
         b.add(execute);
-        add(b, BorderLayout.SOUTH);
+        this.add(b, BorderLayout.SOUTH);
 
-        final JMenuBar menuBar = new JMenuBar();
-        final JMenu file = new JMenu("File");
+        JMenuBar menuBar = new JMenuBar();
+        JMenu file = new JMenu("File");
         menuBar.add(file);
-        file.add(new SaveComponentImage(this.graphicalEditor.getWorkbench(),
+        file.add(new SaveComponentImage(graphicalEditor.getWorkbench(),
                 "Save Graph Image..."));
 
-        final SemGraph graph = (SemGraph) this.graphicalEditor.getWorkbench().getGraph();
-        final boolean shown = wrapper.isShowErrors();
+        SemGraph graph = (SemGraph) graphicalEditor.getWorkbench().getGraph();
+        boolean shown = wrapper.isShowErrors();
         graph.setShowErrorTerms(shown);
 
-        this.errorTerms = new JMenuItem();
+        errorTerms = new JMenuItem();
 
         if (shown) {
-            this.errorTerms.setText("Hide Error Terms");
+            errorTerms.setText("Hide Error Terms");
         } else {
-            this.errorTerms.setText("Show Error Terms");
+            errorTerms.setText("Show Error Terms");
         }
 
-        this.errorTerms.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final JMenuItem menuItem = (JMenuItem) e.getSource();
+        errorTerms.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                JMenuItem menuItem = (JMenuItem) e.getSource();
 
                 if ("Hide Error Terms".equals(menuItem.getText())) {
                     menuItem.setText("Show Error Terms");
-                    final SemGraph graph = (SemGraph) GeneralizedSemEstimatorEditor.this.graphicalEditor.getWorkbench().getGraph();
+                    SemGraph graph = (SemGraph) graphicalEditor.getWorkbench().getGraph();
                     graph.setShowErrorTerms(false);
                     wrapper.setShowErrors(false);
-                    graphicalEditor().refreshLabels();
+                    GeneralizedSemEstimatorEditor.this.graphicalEditor().refreshLabels();
                 } else if ("Show Error Terms".equals(menuItem.getText())) {
                     menuItem.setText("Hide Error Terms");
-                    final SemGraph graph = (SemGraph) GeneralizedSemEstimatorEditor.this.graphicalEditor.getWorkbench().getGraph();
+                    SemGraph graph = (SemGraph) graphicalEditor.getWorkbench().getGraph();
                     graph.setShowErrorTerms(true);
                     wrapper.setShowErrors(true);
-                    graphicalEditor().refreshLabels();
+                    GeneralizedSemEstimatorEditor.this.graphicalEditor().refreshLabels();
                 }
             }
         });
 
-        final JMenuItem lengthCutoff = new JMenuItem("Formula Cutoff");
+        JMenuItem lengthCutoff = new JMenuItem("Formula Cutoff");
 
         lengthCutoff.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent event) {
-                final int length = Preferences.userRoot().getInt("maxExpressionLength", 25);
+            public void actionPerformed(ActionEvent event) {
+                int length = Preferences.userRoot().getInt("maxExpressionLength", 25);
 
-                final IntTextField lengthField = new IntTextField(length, 4);
-                lengthField.setFilter(new IntTextField.Filter() {
-                    public int filter(final int value, final int oldValue) {
+                IntTextField lengthField = new IntTextField(length, 4);
+                lengthField.setFilter(new Filter() {
+                    public int filter(int value, int oldValue) {
                         try {
                             if (value > 0) {
                                 Preferences.userRoot().putInt("maxExpressionLength", value);
@@ -157,15 +158,15 @@ public final class GeneralizedSemEstimatorEditor extends JPanel implements Deleg
                             } else {
                                 return 0;
                             }
-                        } catch (final Exception e) {
+                        } catch (Exception e) {
                             return oldValue;
                         }
                     }
                 });
 
-                final Box b = Box.createVerticalBox();
+                Box b = Box.createVerticalBox();
 
-                final Box b1 = Box.createHorizontalBox();
+                Box b1 = Box.createHorizontalBox();
                 b1.add(new JLabel("Formulas longer than "));
                 b1.add(lengthField);
                 b1.add(new JLabel(" will be replaced in the graph by \"--long formula--\"."));
@@ -173,16 +174,16 @@ public final class GeneralizedSemEstimatorEditor extends JPanel implements Deleg
 
                 b.setBorder(new EmptyBorder(5, 5, 5, 5));
 
-                final JPanel panel = new JPanel();
+                JPanel panel = new JPanel();
                 panel.setLayout(new BorderLayout());
                 panel.add(b, BorderLayout.CENTER);
 
-                final EditorWindow editorWindow
+                EditorWindow editorWindow
                         = new EditorWindow(panel, "Apply Templates", "OK", false, GeneralizedSemEstimatorEditor.this);
 
                 editorWindow.addInternalFrameListener(new InternalFrameAdapter() {
-                    public void internalFrameClosing(final InternalFrameEvent event) {
-                        GeneralizedSemEstimatorEditor.this.graphicalEditor.refreshLabels();
+                    public void internalFrameClosing(InternalFrameEvent event) {
+                        graphicalEditor.refreshLabels();
                     }
                 });
 
@@ -192,93 +193,93 @@ public final class GeneralizedSemEstimatorEditor extends JPanel implements Deleg
             }
         });
 
-        final JMenu tools = new JMenu("Tools");
-        tools.add(this.errorTerms);
+        JMenu tools = new JMenu("Tools");
+        tools.add(errorTerms);
         tools.add(lengthCutoff);
         menuBar.add(tools);
 
         menuBar.add(new LayoutMenu(this));
 
-        add(menuBar, BorderLayout.NORTH);
+        this.add(menuBar, BorderLayout.NORTH);
 
         // When the dialog closes, we want to close all generalized expression editors. We do this by
         // detecting when the ancestor of this editor has been removed.
-        addAncestorListener(new AncestorListener() {
-            public void ancestorAdded(final AncestorEvent ancestorEvent) {
+        this.addAncestorListener(new AncestorListener() {
+            public void ancestorAdded(AncestorEvent ancestorEvent) {
             }
 
-            public void ancestorRemoved(final AncestorEvent ancestorEvent) {
-                for (final Object o : GeneralizedSemEstimatorEditor.this.launchedEditors.keySet()) {
-                    final EditorWindow window = GeneralizedSemEstimatorEditor.this.launchedEditors.get(o);
+            public void ancestorRemoved(AncestorEvent ancestorEvent) {
+                for (Object o : launchedEditors.keySet()) {
+                    EditorWindow window = launchedEditors.get(o);
                     window.closeDialog();
                 }
             }
 
-            public void ancestorMoved(final AncestorEvent ancestorEvent) {
+            public void ancestorMoved(AncestorEvent ancestorEvent) {
             }
         });
     }
 
     private SemGraph getSemGraph() {
-        return getSemPm().getGraph();
+        return this.getSemPm().getGraph();
     }
 
     public JComponent getEditDelegate() {
-        return graphicalEditor();
+        return this.graphicalEditor();
     }
 
     public Graph getGraph() {
-        return graphicalEditor().getWorkbench().getGraph();
+        return this.graphicalEditor().getWorkbench().getGraph();
     }
 
     @Override
     public Map getModelEdgesToDisplay() {
-        return graphicalEditor().getWorkbench().getModelEdgesToDisplay();
+        return this.graphicalEditor().getWorkbench().getModelEdgesToDisplay();
     }
 
     public Map getModelNodesToDisplay() {
-        return graphicalEditor().getWorkbench().getModelNodesToDisplay();
+        return this.graphicalEditor().getWorkbench().getModelNodesToDisplay();
     }
 
     public IKnowledge getKnowledge() {
-        return graphicalEditor().getWorkbench().getKnowledge();
+        return this.graphicalEditor().getWorkbench().getKnowledge();
     }
 
     public Graph getSourceGraph() {
-        return graphicalEditor().getWorkbench().getSourceGraph();
+        return this.graphicalEditor().getWorkbench().getSourceGraph();
     }
 
-    public void layoutByGraph(final Graph graph) {
-        final SemGraph _graph = (SemGraph) graphicalEditor().getWorkbench().getGraph();
+    public void layoutByGraph(Graph graph) {
+        SemGraph _graph = (SemGraph) this.graphicalEditor().getWorkbench().getGraph();
         _graph.setShowErrorTerms(false);
-        graphicalEditor().getWorkbench().layoutByGraph(graph);
+        this.graphicalEditor().getWorkbench().layoutByGraph(graph);
         _graph.resetErrorPositions();
 //        graphicalEditor().getWorkbench().setGraph(_graph);
-        this.errorTerms.setText("Show Error Terms");
+        errorTerms.setText("Show Error Terms");
     }
 
     public void layoutByKnowledge() {
-        final SemGraph _graph = (SemGraph) graphicalEditor().getWorkbench().getGraph();
+        SemGraph _graph = (SemGraph) this.graphicalEditor().getWorkbench().getGraph();
         _graph.setShowErrorTerms(false);
-        graphicalEditor().getWorkbench().layoutByKnowledge();
+        this.graphicalEditor().getWorkbench().layoutByKnowledge();
         _graph.resetErrorPositions();
 //        graphicalEditor().getWorkbench().setGraph(_graph);
-        this.errorTerms.setText("Show Error Terms");
+        errorTerms.setText("Show Error Terms");
     }
 
     //========================PRIVATE METHODS===========================//
     private GeneralizedSemImGraphicalEditor graphicalEditor() {
-        this.graphicalEditor = new GeneralizedSemImGraphicalEditor(getEstIm(), this.launchedEditors);
-        this.graphicalEditor.enableEditing(false);
+        graphicalEditor = new GeneralizedSemImGraphicalEditor(this.getEstIm(), launchedEditors);
+        graphicalEditor.enableEditing(false);
 
-        return this.graphicalEditor;
+        return graphicalEditor;
     }
 
     private GeneralizedSemImListEditor listEditor() {
         /*
       The graphical editor for the SemIm.
          */
-        final GeneralizedSemImListEditor listEditor = new GeneralizedSemImListEditor(getEstIm(), this.launchedEditors);
+        GeneralizedSemImListEditor listEditor = new GeneralizedSemImListEditor(this.getEstIm(), launchedEditors);
         return listEditor;
     }
 
@@ -286,18 +287,18 @@ public final class GeneralizedSemEstimatorEditor extends JPanel implements Deleg
         /*
       Edits the initial distributions of the parameters.
          */
-        final GeneralizedSemImParamsEditor paramsEditor = new GeneralizedSemImParamsEditor(getEstIm(), this.launchedEditors);
+        GeneralizedSemImParamsEditor paramsEditor = new GeneralizedSemImParamsEditor(this.getEstIm(), launchedEditors);
         return paramsEditor;
     }
 
     private JPanel estimationReport() {
-        final JPanel p = new JPanel();
+        JPanel p = new JPanel();
         p.setLayout(new BorderLayout());
 
         /*
 
          */
-        final JTextArea report = new JTextArea(this.wrapper.getReport());
+        JTextArea report = new JTextArea(wrapper.getReport());
         p.add(report, BorderLayout.CENTER);
 
         return p;
@@ -307,10 +308,10 @@ public final class GeneralizedSemEstimatorEditor extends JPanel implements Deleg
      * The SemPm being edited.
      */
     private GeneralizedSemPm getSemPm() {
-        return this.wrapper.getSemPm();
+        return wrapper.getSemPm();
     }
 
     private GeneralizedSemIm getEstIm() {
-        return this.wrapper.getSemIm();
+        return wrapper.getSemIm();
     }
 }

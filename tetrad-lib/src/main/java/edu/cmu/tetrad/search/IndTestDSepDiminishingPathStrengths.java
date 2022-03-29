@@ -53,29 +53,29 @@ public class IndTestDSepDiminishingPathStrengths implements IndependenceTest {
     private Set<Node> observedVars;
     private List<Node> _observedVars;
     private HashSet<IndependenceFact> facts;
-    private boolean verbose = false;
-    private double pvalue = 0;
+    private boolean verbose;
+    private double pvalue;
     private double alpha = 0.001;
 
-    public IndTestDSepDiminishingPathStrengths(final StandardizedSemIm semIm, final double alpha) {
+    public IndTestDSepDiminishingPathStrengths(StandardizedSemIm semIm, double alpha) {
         this(semIm, false, alpha);
     }
 
     /**
      * Constructs a new independence test that returns d-separation facts for the given semIm as independence results.
      */
-    public IndTestDSepDiminishingPathStrengths(final StandardizedSemIm semIm, final boolean keepLatents, final double alpha) {
+    public IndTestDSepDiminishingPathStrengths(StandardizedSemIm semIm, boolean keepLatents, double alpha) {
         if (semIm == null) {
             throw new NullPointerException();
         }
 
-        this.graph = semIm.getSemPm().getGraph();
-        this.graph.setShowErrorTerms(false);
+        graph = semIm.getSemPm().getGraph();
+        graph.setShowErrorTerms(false);
 
         this.semIm = semIm;
 
-        this._observedVars = calcVars(this.graph, keepLatents);
-        this.observedVars = new HashSet<>(this._observedVars);
+        _observedVars = this.calcVars(graph, keepLatents);
+        observedVars = new HashSet<>(_observedVars);
 
         this.alpha = alpha;
     }
@@ -83,15 +83,15 @@ public class IndTestDSepDiminishingPathStrengths implements IndependenceTest {
     /**
      * Required by IndependenceTest.
      */
-    public IndependenceTest indTestSubset(final List<Node> vars) {
+    public IndependenceTest indTestSubset(List<Node> vars) {
         if (vars.isEmpty()) {
             throw new IllegalArgumentException("Subset may not be empty.");
         }
 
-        final List<Node> _vars = new ArrayList<>();
+        List<Node> _vars = new ArrayList<>();
 
-        for (final Node var : vars) {
-            final Node _var = getVariable(var.getName());
+        for (Node var : vars) {
+            Node _var = this.getVariable(var.getName());
 
             if (_var == null) {
                 throw new IllegalArgumentException(
@@ -101,10 +101,10 @@ public class IndTestDSepDiminishingPathStrengths implements IndependenceTest {
             _vars.add(_var);
         }
 
-        this._observedVars = _vars;
-        this.observedVars = new HashSet<>(this._observedVars);
+        _observedVars = _vars;
+        observedVars = new HashSet<>(_observedVars);
 
-        this.facts = new HashSet<>();
+        facts = new HashSet<>();
 
         return this;
     }
@@ -112,13 +112,13 @@ public class IndTestDSepDiminishingPathStrengths implements IndependenceTest {
     /**
      * @return the list of observed nodes in the given graph.
      */
-    private List<Node> calcVars(final Graph graph, final boolean keepLatents) {
+    private List<Node> calcVars(Graph graph, boolean keepLatents) {
         if (keepLatents) {
             return graph.getNodes();
         } else {
-            final List<Node> observedVars = new ArrayList<>();
+            List<Node> observedVars = new ArrayList<>();
 
-            for (final Node node : graph.getNodes()) {
+            for (Node node : graph.getNodes()) {
                 if (node.getNodeType() == NodeType.MEASURED) {
                     observedVars.add(node);
                 }
@@ -136,36 +136,36 @@ public class IndTestDSepDiminishingPathStrengths implements IndependenceTest {
      * @param z a List of nodes (conditioning variables)
      * @return true iff x _||_ y | z
      */
-    public boolean isIndependent(final Node x, final Node y, final List<Node> z) {
+    public boolean isIndependent(Node x, Node y, List<Node> z) {
         if (z == null) {
             throw new NullPointerException();
         }
 
-        for (final Node node : z) {
+        for (Node node : z) {
             if (node == null) {
                 throw new NullPointerException();
             }
         }
 
-        if (!this.observedVars.contains(x)) {
+        if (!observedVars.contains(x)) {
             throw new IllegalArgumentException("Not an observed variable: " + x);
         }
 
-        if (!this.observedVars.contains(y)) {
+        if (!observedVars.contains(y)) {
             throw new IllegalArgumentException("Not an observed variable: " + y);
         }
 
-        for (final Node _z : z) {
-            if (!this.observedVars.contains(_z)) {
+        for (Node _z : z) {
+            if (!observedVars.contains(_z)) {
                 throw new IllegalArgumentException("Not an observed variable: " + _z);
             }
         }
 
-        final boolean dSeparated = !isDConnectedTo4(x, y, z, this.graph, getAlpha());
+        boolean dSeparated = !this.isDConnectedTo4(x, y, z, graph, this.getAlpha());
 
         System.out.println("Dseparated = " + dSeparated);
 
-        if (this.verbose) {
+        if (verbose) {
             if (dSeparated) {
                 final double pValue = 1.0;
                 TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, pValue));
@@ -178,54 +178,54 @@ public class IndTestDSepDiminishingPathStrengths implements IndependenceTest {
         }
 
         if (dSeparated) {
-            if (this.facts != null) {
-                this.facts.add(new IndependenceFact(x, y, z));
+            if (facts != null) {
+                facts.add(new IndependenceFact(x, y, z));
             }
 
-            this.pvalue = 1.0;
+            pvalue = 1.0;
         } else {
-            this.pvalue = 0.0;
+            pvalue = 0.0;
         }
 
         return dSeparated;
     }
 
-    public boolean isIndependent(final Node x, final Node y, final Node... z) {
-        final List<Node> zList = Arrays.asList(z);
-        return isIndependent(x, y, zList);
+    public boolean isIndependent(Node x, Node y, Node... z) {
+        List<Node> zList = Arrays.asList(z);
+        return this.isIndependent(x, y, zList);
     }
 
-    public boolean isDependent(final Node x, final Node y, final List<Node> z) {
-        return !isIndependent(x, y, z);
+    public boolean isDependent(Node x, Node y, List<Node> z) {
+        return !this.isIndependent(x, y, z);
     }
 
-    public boolean isDependent(final Node x, final Node y, final Node... z) {
-        final List<Node> zList = Arrays.asList(z);
-        return isDependent(x, y, zList);
+    public boolean isDependent(Node x, Node y, Node... z) {
+        List<Node> zList = Arrays.asList(z);
+        return this.isDependent(x, y, zList);
     }
 
     /**
      * Auxiliary method to calculate dseparation facts directly from nodes instead of from variables.
      */
-    public boolean isDSeparated(final Node x, final Node y, final List<Node> z) {
+    public boolean isDSeparated(Node x, Node y, List<Node> z) {
         if (z == null) {
             throw new NullPointerException();
         }
 
-        for (final Node aZ : z) {
+        for (Node aZ : z) {
             if (aZ == null) {
                 throw new NullPointerException();
             }
         }
 
-        return getGraph().isDSeparatedFrom(x, y, z);
+        return this.getGraph().isDSeparatedFrom(x, y, z);
     }
 
     /**
      * Needed for IndependenceTest interface. P value is not meaningful here.
      */
     public double getPValue() {
-        return this.pvalue;
+        return pvalue;
     }
 
     /**
@@ -233,35 +233,35 @@ public class IndTestDSepDiminishingPathStrengths implements IndependenceTest {
      * relations-- that is, all the variables in the given graph or the given data set.
      */
     public List<Node> getVariables() {
-        return Collections.unmodifiableList(this._observedVars);
+        return Collections.unmodifiableList(_observedVars);
     }
 
     /**
      * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
-        final List<Node> nodes = this._observedVars;
-        final List<String> nodeNames = new ArrayList<>();
-        for (final Node var : nodes) {
+        List<Node> nodes = _observedVars;
+        List<String> nodeNames = new ArrayList<>();
+        for (Node var : nodes) {
             nodeNames.add(var.getName());
         }
         return nodeNames;
     }
 
-    public boolean determines(final List z, final Node x1) {
+    public boolean determines(List z, Node x1) {
         return false; //z.contains(x1);
     }
 
     public double getAlpha() {
-        return this.alpha;
+        return alpha;
     }
 
-    public void setAlpha(final double alpha) {
+    public void setAlpha(double alpha) {
         //
     }
 
-    public Node getVariable(final String name) {
-        for (final Node variable : this.observedVars) {
+    public Node getVariable(String name) {
+        for (Node variable : observedVars) {
             if (variable.getName().equals(name)) {
                 return variable;
             }
@@ -271,13 +271,13 @@ public class IndTestDSepDiminishingPathStrengths implements IndependenceTest {
     }
 
     // Depth first.
-    public boolean isDConnectedTo4(final Node x, final Node y, final List<Node> z, final Graph graph, final double alpha) {
-        final LinkedList<Node> path = new LinkedList<>();
+    public boolean isDConnectedTo4(Node x, Node y, List<Node> z, Graph graph, double alpha) {
+        LinkedList<Node> path = new LinkedList<>();
 
         path.add(x);
 
-        for (final Node c : graph.getAdjacentNodes(x)) {
-            if (isDConnectedToVisit4(x, c, y, path, z, graph, alpha)) {
+        for (Node c : graph.getAdjacentNodes(x)) {
+            if (this.isDConnectedToVisit4(x, c, y, path, z, graph, alpha)) {
                 return true;
             }
         }
@@ -285,8 +285,8 @@ public class IndTestDSepDiminishingPathStrengths implements IndependenceTest {
         return false;
     }
 
-    private boolean isDConnectedToVisit4(final Node a, final Node b, final Node y, final LinkedList<Node> path, final List<Node> z,
-                                         final Graph graph, final double alpha) {
+    private boolean isDConnectedToVisit4(Node a, Node b, Node y, LinkedList<Node> path, List<Node> z,
+                                         Graph graph, double alpha) {
 
 
         double r = 1;
@@ -294,8 +294,8 @@ public class IndTestDSepDiminishingPathStrengths implements IndependenceTest {
 
         for (int i = 0; i < path.size() - 1; i++) {
             double edgeCoef = 0;
-            edgeCoef = this.semIm.getEdgeCoef(path.get(i), path.get(i + 1));
-            if (Double.isNaN(edgeCoef)) edgeCoef = this.semIm.getEdgeCoef(path.get(i + 1), path.get(i));
+            edgeCoef = semIm.getEdgeCoef(path.get(i), path.get(i + 1));
+            if (Double.isNaN(edgeCoef)) edgeCoef = semIm.getEdgeCoef(path.get(i + 1), path.get(i));
 
             if (!Double.isNaN(edgeCoef)) {
                 r *= edgeCoef;
@@ -309,10 +309,10 @@ public class IndTestDSepDiminishingPathStrengths implements IndependenceTest {
 
         final int n = 100;
 
-        final double fisherZ = Math.sqrt(n - 3 - z.size()) * 0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
+        double fisherZ = Math.sqrt(n - 3 - z.size()) * 0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
 
 
-        final double pvalue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, abs(fisherZ)));
+        double pvalue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, abs(fisherZ)));
         System.out.println("Fisher Z = " + fisherZ + " p = " + pvalue);
 
         if (pvalue > alpha || Double.isNaN(pvalue)) {
@@ -342,11 +342,11 @@ public class IndTestDSepDiminishingPathStrengths implements IndependenceTest {
 
         System.out.println("R = " + r + " !!!");
 
-        for (final Node c : graph.getAdjacentNodes(b)) {
+        for (Node c : graph.getAdjacentNodes(b)) {
             if (a == c) continue;
 
-            if (IndTestDSepDiminishingPathStrengths.reachable(a, b, c, z, graph)) {
-                if (isDConnectedToVisit4(b, c, y, path, z, graph, alpha)) {
+            if (reachable(a, b, c, z, graph)) {
+                if (this.isDConnectedToVisit4(b, c, y, path, z, graph, alpha)) {
 //                    path.removeLast();
                     return true;
                 }
@@ -357,21 +357,21 @@ public class IndTestDSepDiminishingPathStrengths implements IndependenceTest {
         return false;
     }
 
-    private static boolean reachable(final Node a, final Node b, final Node c, final List<Node> z, final Graph graph) {
-        final boolean collider = graph.isDefCollider(a, b, c);
+    private static boolean reachable(Node a, Node b, Node c, List<Node> z, Graph graph) {
+        boolean collider = graph.isDefCollider(a, b, c);
 
         if ((!collider || graph.isUnderlineTriple(a, b, c)) && !z.contains(b)) {
             return true;
         }
 
-        final boolean ancestor = IndTestDSepDiminishingPathStrengths.isAncestor(b, z, graph);
+        boolean ancestor = isAncestor(b, z, graph);
         return collider && ancestor;
     }
 
-    private static boolean isAncestor(final Node b, final List<Node> z, final Graph graph) {
+    private static boolean isAncestor(Node b, List<Node> z, Graph graph) {
         boolean ancestor = false;
 
-        for (final Node n : z) {
+        for (Node n : z) {
             if (graph.isAncestorOf(b, n)) {
                 ancestor = true;
                 break;
@@ -385,7 +385,7 @@ public class IndTestDSepDiminishingPathStrengths implements IndependenceTest {
      * @return the underlying graph.
      */
     public Graph getGraph() {
-        return this.graph;
+        return graph;
     }
 
     public String toString() {
@@ -418,22 +418,22 @@ public class IndTestDSepDiminishingPathStrengths implements IndependenceTest {
 
     @Override
     public double getScore() {
-        return -(getPValue() - getAlpha());
+        return -(this.getPValue() - this.getAlpha());
     }
 
     public void startRecordingFacts() {
-        this.facts = new HashSet<>();
+        facts = new HashSet<>();
     }
 
     public HashSet<IndependenceFact> getFacts() {
-        return this.facts;
+        return facts;
     }
 
     public boolean isVerbose() {
-        return this.verbose;
+        return verbose;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 }

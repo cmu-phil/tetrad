@@ -48,8 +48,8 @@ class SaveScreenshot extends AbstractAction {
      */
     private final boolean editorWindowUsed;
 
-    public SaveScreenshot(final JComponent comp, final boolean editorWindowUsed,
-                          final String title) {
+    public SaveScreenshot(JComponent comp, boolean editorWindowUsed,
+                          String title) {
         super(title);
 
         if (comp == null) {
@@ -63,33 +63,33 @@ class SaveScreenshot extends AbstractAction {
     /**
      * Performs the action of loading a session from a file.
      */
-    public void actionPerformed(final ActionEvent e) {
-        final File file = EditorUtils.getSaveFile("image", "png", getComp(), false, "Save");
+    public void actionPerformed(ActionEvent e) {
+        File file = EditorUtils.getSaveFile("image", "png", this.getComp(), false, "Save");
 
         // Create the image.
-        final Dimension size = getComp().getSize();
-        final BufferedImage image = new BufferedImage(size.width, size.height,
+        Dimension size = this.getComp().getSize();
+        BufferedImage image = new BufferedImage(size.width, size.height,
                 BufferedImage.TYPE_INT_ARGB);
-        final Graphics graphics = image.getGraphics();
-        getComp().paint(graphics);
+        Graphics graphics = image.getGraphics();
+        this.getComp().paint(graphics);
 
         // Write the image to file.
         try {
             ImageIO.write(image, "png", file);
-        } catch (final IOException e1) {
+        } catch (IOException e1) {
             throw new RuntimeException(e1);
         }
     }
 
     private Component getComp() {
-        final EditorWindow editorWindow =
+        EditorWindow editorWindow =
                 (EditorWindow) SwingUtilities.getAncestorOfClass(
-                        EditorWindow.class, this.comp);
+                        EditorWindow.class, comp);
 
-        if (this.editorWindowUsed && editorWindow != null) {
+        if (editorWindowUsed && editorWindow != null) {
             return editorWindow.getRootPane().getContentPane();
         } else {
-            return this.comp;
+            return comp;
         }
     }
 

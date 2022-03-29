@@ -51,44 +51,44 @@ public final class TestSemXml extends TestCase {
     /**
      * Standard constructor for JUnit test cases.
      */
-    public TestSemXml(final String name) {
+    public TestSemXml(String name) {
         super(name);
     }
 
     public static void testRosemIm2undtrip() {
-        final SemIm semIm = TestSemXml.sampleSemIm1();
-        final Element element = SemXmlRenderer.getElement(semIm);
+        SemIm semIm = sampleSemIm1();
+        Element element = SemXmlRenderer.getElement(semIm);
 
-        final SemXmlParser parser = new SemXmlParser();
-        final SemIm semIm2 = SemXmlParser.getSemIm(element);
+        SemXmlParser parser = new SemXmlParser();
+        SemIm semIm2 = SemXmlParser.getSemIm(element);
     }
 
     public void testRoundtrip2() {
-        final SemIm semIm = TestSemXml.sampleSemIm1();
-        final Element element = SemXmlRenderer.getElement(semIm);
+        SemIm semIm = sampleSemIm1();
+        Element element = SemXmlRenderer.getElement(semIm);
 
-        final SemXmlParser parser = new SemXmlParser();
-        final SemIm semIm2 = SemXmlParser.getSemIm(element);
+        SemXmlParser parser = new SemXmlParser();
+        SemIm semIm2 = SemXmlParser.getSemIm(element);
     }
 
     public void testRoundtrip3() {
-        final SemIm semIm = TestSemXml.sampleSemIm1();
-        final Element element = SemXmlRenderer.getElement(semIm);
+        SemIm semIm = sampleSemIm1();
+        Element element = SemXmlRenderer.getElement(semIm);
 
-        final SemXmlParser parser = new SemXmlParser();
-        final SemIm semIm2 = SemXmlParser.getSemIm(element);
+        SemXmlParser parser = new SemXmlParser();
+        SemIm semIm2 = SemXmlParser.getSemIm(element);
     }
 
     private static SemIm sampleSemIm1() {
-        final List<Node> nodes = new ArrayList<>();
+        List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < 5; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        final Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 5,
+        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 5,
                 30, 15, 15, true));
-        final SemPm pm = new SemPm(graph);
+        SemPm pm = new SemPm(graph);
         return new SemIm(pm);
     }
 
@@ -97,19 +97,19 @@ public final class TestSemXml extends TestCase {
      *
      * @param element the element to print.
      */
-    private static void printElement(final Element element) {
-        TestSemXml.printDocument(new Document(element));
+    private static void printElement(Element element) {
+        printDocument(new Document(element));
     }
 
-    private static void printDocument(final Document document) {
-        final Serializer serializer = new Serializer(System.out);
+    private static void printDocument(Document document) {
+        Serializer serializer = new Serializer(System.out);
 
         serializer.setLineSeparator("\n");
         serializer.setIndent(2);
 
         try {
             serializer.write(document);
-        } catch (final IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

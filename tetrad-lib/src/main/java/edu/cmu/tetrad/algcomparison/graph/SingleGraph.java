@@ -16,13 +16,13 @@ public class SingleGraph implements RandomGraph {
 
     private final Graph graph;
 
-    public SingleGraph(final Graph graph) {
+    public SingleGraph(Graph graph) {
         this.graph = graph;
     }
 
     @Override
-    public Graph createGraph(final Parameters parameters) {
-        return this.graph;
+    public Graph createGraph(Parameters parameters) {
+        return graph;
     }
 
     @Override

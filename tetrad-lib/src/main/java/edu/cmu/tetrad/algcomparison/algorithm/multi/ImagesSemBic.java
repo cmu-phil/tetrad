@@ -45,24 +45,24 @@ public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
     }
 
     @Override
-    public Graph search(final List<DataModel> dataSets, final Parameters parameters) {
+    public Graph search(List<DataModel> dataSets, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            final SemBicScoreImages score = new SemBicScoreImages(dataSets);
+            SemBicScoreImages score = new SemBicScoreImages(dataSets);
             score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-            final edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(score);
-            search.setKnowledge(this.knowledge);
+            edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(score);
+            search.setKnowledge(knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         } else {
-            final ImagesSemBic imagesSemBic = new ImagesSemBic();
+            ImagesSemBic imagesSemBic = new ImagesSemBic();
 
-            final List<DataSet> datasets = new ArrayList<>();
+            List<DataSet> datasets = new ArrayList<>();
 
-            for (final DataModel dataModel : dataSets) {
+            for (DataModel dataModel : dataSets) {
                 datasets.add((DataSet) dataModel);
             }
-            final GeneralResamplingTest search = new GeneralResamplingTest(datasets, imagesSemBic, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(this.knowledge);
+            GeneralResamplingTest search = new GeneralResamplingTest(datasets, imagesSemBic, parameters.getInt(Params.NUMBER_RESAMPLING));
+            search.setKnowledge(knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -88,15 +88,15 @@ public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
     }
 
     @Override
-    public Graph search(final DataModel dataSet, final Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
+            return this.search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
         } else {
-            final ImagesSemBic imagesSemBic = new ImagesSemBic();
+            ImagesSemBic imagesSemBic = new ImagesSemBic();
 
-            final List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
-            final GeneralResamplingTest search = new GeneralResamplingTest(dataSets, imagesSemBic, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(this.knowledge);
+            List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
+            GeneralResamplingTest search = new GeneralResamplingTest(dataSets, imagesSemBic, parameters.getInt(Params.NUMBER_RESAMPLING));
+            search.setKnowledge(knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -122,7 +122,7 @@ public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
     }
 
     @Override
-    public Graph getComparisonGraph(final Graph graph) {
+    public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
 //        return SearchGraphUtils.cpdagForDag(graph);
 //        return new TsDagToPag(new EdgeListGraph(graph)).convert();
@@ -140,7 +140,7 @@ public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new LinkedList<>();
+        List<String> parameters = new LinkedList<>();
         parameters.addAll(new SemBicScore().getParameters());
 
         parameters.addAll((new Fges()).getParameters());
@@ -155,11 +155,11 @@ public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public IKnowledge getKnowledge() {
-        return this.knowledge;
+        return knowledge;
     }
 
     @Override
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 }

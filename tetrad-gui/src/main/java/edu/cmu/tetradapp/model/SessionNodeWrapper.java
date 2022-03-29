@@ -65,10 +65,10 @@ public class SessionNodeWrapper extends GraphNode
      * SessionWrapper. The name of the SessionNode is used as the name of the
      * SessionNodeWrapper. A button type may optionally be set.
      */
-    public SessionNodeWrapper(final SessionNode sessionNode) {
+    public SessionNodeWrapper(SessionNode sessionNode) {
         super(sessionNode.getDisplayName());
         this.sessionNode = sessionNode;
-        setNodeType(NodeType.SESSION);
+        this.setNodeType(NodeType.SESSION);
     }
 
     /**
@@ -86,14 +86,14 @@ public class SessionNodeWrapper extends GraphNode
      * @return the session name. (Should return the same as getNode.)
      */
     public String getSessionName() {
-        return this.sessionNode.getDisplayName();
+        return sessionNode.getDisplayName();
     }
 
     /**
      * Sets the session name. This method should be used in preference to
      * setName, which only sets the name in the superclass.
      */
-    public void setSessionName(final String name) {
+    public void setSessionName(String name) {
 //        if (!NamingProtocol.isLegalName(name)) {
 //            throw new IllegalArgumentException(
 //                    NamingProtocol.getProtocolDescription() + ": " + name);
@@ -103,9 +103,9 @@ public class SessionNodeWrapper extends GraphNode
         // account for the fact that when first constructed the
         // session node cannot be set before the superclass calls this
         // (overriding) method. jdramsey 12/29/01
-        if (this.sessionNode != null) {
-            super.setName(name);
-            this.sessionNode.setDisplayName(name);
+        if (sessionNode != null) {
+            setName(name);
+            sessionNode.setDisplayName(name);
         }
     }
 
@@ -114,14 +114,14 @@ public class SessionNodeWrapper extends GraphNode
      * SessionNode.
      */
     public String getButtonType() {
-        return this.buttonType;
+        return buttonType;
     }
 
     /**
      * Sets the buttonType of the node, which is the buttonType of the wrapped
      * SessionNode.
      */
-    public void setButtonType(final String buttonType) {
+    public void setButtonType(String buttonType) {
         if (buttonType == null) {
             throw new NullPointerException("Button type cannot be null.");
         }
@@ -133,15 +133,15 @@ public class SessionNodeWrapper extends GraphNode
      * @return the SessionNode being wrapped.
      */
     public SessionNode getSessionNode() {
-        return this.sessionNode;
+        return sessionNode;
     }
 
     public int getRepetition() {
-        return this.sessionNode.getRepetition();
+        return sessionNode.getRepetition();
     }
 
-    public void setRepetition(final int repetition) {
-        this.sessionNode.setRepetition(repetition);
+    public void setRepetition(int repetition) {
+        sessionNode.setRepetition(repetition);
     }
 
     /**
@@ -158,7 +158,7 @@ public class SessionNodeWrapper extends GraphNode
      * identity. In particular, change of name does not constitute change of
      * identity.
      */
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         return this == o;
     }
 
@@ -166,8 +166,8 @@ public class SessionNodeWrapper extends GraphNode
      * @return a string representation of the node.
      */
     public String toString() {
-        return "SessionNodewrapper (type " + getButtonType() + ", name " +
-                getSessionName() + ")";
+        return "SessionNodewrapper (type " + this.getButtonType() + ", name " +
+                this.getSessionName() + ")";
     }
 
     /**
@@ -183,19 +183,19 @@ public class SessionNodeWrapper extends GraphNode
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (this.sessionNode == null) {
+        if (sessionNode == null) {
             throw new NullPointerException();
         }
 
-        if (this.buttonType == null) {
+        if (buttonType == null) {
             throw new NullPointerException();
         }
 
-        setNodeType(NodeType.SESSION);
+        this.setNodeType(NodeType.SESSION);
     }
 }
 

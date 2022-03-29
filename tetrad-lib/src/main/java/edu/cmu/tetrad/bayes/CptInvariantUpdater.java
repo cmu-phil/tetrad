@@ -79,25 +79,25 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
 
     //==============================CONSTRUCTORS===========================//
 
-    public CptInvariantUpdater(final BayesIm bayesIm) {
+    public CptInvariantUpdater(BayesIm bayesIm) {
         if (bayesIm == null) {
             throw new NullPointerException();
         }
 
         this.bayesIm = bayesIm;
-        setEvidence(Evidence.tautology(this.bayesIm));
+        this.setEvidence(Evidence.tautology(this.bayesIm));
     }
 
     /**
      * Constructs a new updater for the given Bayes net.
      */
-    public CptInvariantUpdater(final BayesIm bayesIm, final Evidence evidence) {
+    public CptInvariantUpdater(BayesIm bayesIm, Evidence evidence) {
         if (bayesIm == null) {
             throw new NullPointerException();
         }
 
         this.bayesIm = bayesIm;
-        setEvidence(evidence);
+        this.setEvidence(evidence);
     }
 
     /**
@@ -110,31 +110,31 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
     //============================PUBLIC METHODS==========================//
 
     public BayesIm getBayesIm() {
-        return this.bayesIm;
+        return bayesIm;
     }
 
     public BayesIm getManipulatedBayesIm() {
-        return this.manipulatedBayesIm;
+        return manipulatedBayesIm;
     }
 
     public Graph getManipulatedGraph() {
-        return getManipulatedBayesIm().getDag();
+        return this.getManipulatedBayesIm().getDag();
     }
 
     public BayesIm getUpdatedBayesIm() {
-        return this.updatedBayesIm;
+        return updatedBayesIm;
     }
 
     public Evidence getEvidence() {
-        return new Evidence(this.evidence);
+        return new Evidence(evidence);
     }
 
-    public void setEvidence(final Evidence evidence) {
+    public void setEvidence(Evidence evidence) {
         if (evidence == null) {
             throw new NullPointerException();
         }
 
-        if (evidence.isIncompatibleWith(this.bayesIm)) {
+        if (evidence.isIncompatibleWith(bayesIm)) {
             throw new IllegalArgumentException("The variable list for this evidence " +
                     "must be compatible with the variable list of the stored IM.");
         }
@@ -142,54 +142,54 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
         this.evidence = evidence;
 
         // Create the manipulated Bayes Im.
-        final Graph graph = this.bayesIm.getBayesPm().getDag();
-        final Dag manipulatedGraph = createManipulatedGraph(graph);
-        final BayesPm manipulatedBayesPm = createManipulatedBayesPm(manipulatedGraph);
-        this.manipulatedBayesIm = createdManipulatedBayesIm(manipulatedBayesPm);
+        Graph graph = bayesIm.getBayesPm().getDag();
+        Dag manipulatedGraph = this.createManipulatedGraph(graph);
+        BayesPm manipulatedBayesPm = this.createManipulatedBayesPm(manipulatedGraph);
+        manipulatedBayesIm = this.createdManipulatedBayesIm(manipulatedBayesPm);
 
         // Create the updated BayesIm from the manipulated Bayes Im.
-        final Evidence evidence2 = new Evidence(evidence, this.manipulatedBayesIm);
-        this.updatedBayesIm = new UpdatedBayesIm(this.manipulatedBayesIm, evidence2);
+        Evidence evidence2 = new Evidence(evidence, manipulatedBayesIm);
+        updatedBayesIm = new UpdatedBayesIm(manipulatedBayesIm, evidence2);
 
         // Create the marginal calculator from the updated Bayes Im.
-        this.cptInvariantMarginalCalculator =
-                new CptInvariantMarginalCalculator(this.bayesIm,
+        cptInvariantMarginalCalculator =
+                new CptInvariantMarginalCalculator(bayesIm,
                         evidence2);
     }
 
-    public double getMarginal(final int variable, final int value) {
-        return this.cptInvariantMarginalCalculator.getMarginal(variable, value);
+    public double getMarginal(int variable, int value) {
+        return cptInvariantMarginalCalculator.getMarginal(variable, value);
     }
 
     public boolean isJointMarginalSupported() {
         return false;
     }
 
-    public double getJointMarginal(final int[] variables, final int[] values) {
+    public double getJointMarginal(int[] variables, int[] values) {
         throw new UnsupportedOperationException();
     }
 
-    public double[] calculatePriorMarginals(final int nodeIndex) {
-        final Evidence evidence = getEvidence();
-        setEvidence(Evidence.tautology(evidence.getVariableSource()));
+    public double[] calculatePriorMarginals(int nodeIndex) {
+        Evidence evidence = this.getEvidence();
+        this.setEvidence(Evidence.tautology(evidence.getVariableSource()));
 
-        final double[] marginals = new double[evidence.getNumCategories(nodeIndex)];
+        double[] marginals = new double[evidence.getNumCategories(nodeIndex)];
 
         for (int i = 0;
-             i < getBayesIm().getNumColumns(nodeIndex); i++) {
-            marginals[i] = getMarginal(nodeIndex, i);
+             i < this.getBayesIm().getNumColumns(nodeIndex); i++) {
+            marginals[i] = this.getMarginal(nodeIndex, i);
         }
 
-        setEvidence(evidence);
+        this.setEvidence(evidence);
         return marginals;
     }
 
-    public double[] calculateUpdatedMarginals(final int nodeIndex) {
-        final double[] marginals = new double[this.evidence.getNumCategories(nodeIndex)];
+    public double[] calculateUpdatedMarginals(int nodeIndex) {
+        double[] marginals = new double[evidence.getNumCategories(nodeIndex)];
 
         for (int i = 0;
-             i < getBayesIm().getNumColumns(nodeIndex); i++) {
-            marginals[i] = getMarginal(nodeIndex, i);
+             i < this.getBayesIm().getNumColumns(nodeIndex); i++) {
+            marginals[i] = this.getMarginal(nodeIndex, i);
         }
 
         return marginals;
@@ -199,29 +199,29 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
      * Prints out the most recent marginal.
      */
     public String toString() {
-        return "CPT Invariant Updater, evidence = " + this.evidence;
+        return "CPT Invariant Updater, evidence = " + evidence;
     }
 
     //==============================PRIVATE METHODS=======================//
 
-    private BayesIm createdManipulatedBayesIm(final BayesPm updatedBayesPm) {
-        return new MlBayesIm(updatedBayesPm, this.bayesIm, MlBayesIm.MANUAL);
+    private BayesIm createdManipulatedBayesIm(BayesPm updatedBayesPm) {
+        return new MlBayesIm(updatedBayesPm, bayesIm, MlBayesIm.MANUAL);
     }
 
-    private BayesPm createManipulatedBayesPm(final Dag updatedGraph) {
-        return new BayesPm(updatedGraph, this.bayesIm.getBayesPm());
+    private BayesPm createManipulatedBayesPm(Dag updatedGraph) {
+        return new BayesPm(updatedGraph, bayesIm.getBayesPm());
     }
 
-    private Dag createManipulatedGraph(final Graph graph) {
-        final Dag updatedGraph = new Dag(graph);
+    private Dag createManipulatedGraph(Graph graph) {
+        Dag updatedGraph = new Dag(graph);
 
         // alters graph for manipulated evidenceItems
-        for (int i = 0; i < this.evidence.getNumNodes(); ++i) {
-            if (this.evidence.isManipulated(i)) {
-                final Node node = updatedGraph.getNode(this.evidence.getNode(i).getName());
-                final List<Node> parents = updatedGraph.getParents(node);
+        for (int i = 0; i < evidence.getNumNodes(); ++i) {
+            if (evidence.isManipulated(i)) {
+                Node node = updatedGraph.getNode(evidence.getNode(i).getName());
+                List<Node> parents = updatedGraph.getParents(node);
 
-                for (final Node parent1 : parents) {
+                for (Node parent1 : parents) {
                     updatedGraph.removeEdge(node, parent1);
                 }
             }
@@ -240,15 +240,15 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (this.bayesIm == null) {
+        if (bayesIm == null) {
             throw new NullPointerException();
         }
 
-        if (this.evidence == null) {
+        if (evidence == null) {
             throw new NullPointerException();
         }
     }

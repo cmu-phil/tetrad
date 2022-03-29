@@ -37,14 +37,14 @@ import java.util.prefs.Preferences;
  * @author Joseph Ramsey
  */
 public class EditorUtils {
-    public static Point getTopLeftPoint(final List<Object> modelElements) {
+    public static Point getTopLeftPoint(List<Object> modelElements) {
         int x = Integer.MAX_VALUE;
         int y = Integer.MAX_VALUE;
 
-        for (final Object modelElement : modelElements) {
+        for (Object modelElement : modelElements) {
             if (modelElement instanceof SessionNodeWrapper) {
-                final int _x = ((SessionNodeWrapper) modelElement).getCenterX();
-                final int _y = ((SessionNodeWrapper) modelElement).getCenterY();
+                int _x = ((SessionNodeWrapper) modelElement).getCenterX();
+                int _y = ((SessionNodeWrapper) modelElement).getCenterY();
                 if (_x < x) {
                     x = _x;
                 }
@@ -57,16 +57,16 @@ public class EditorUtils {
         return new Point(x, y);
     }
 
-    private static File nextFile(final String _directory, String prefix, final String suffix,
-                                 final boolean overwrite) {
+    private static File nextFile(String _directory, String prefix, String suffix,
+                                 boolean overwrite) {
         if (prefix.endsWith(suffix)) {
             prefix = prefix.substring(0, prefix.lastIndexOf('.'));
         }
 
-        final File directory = new File(_directory);
+        File directory = new File(_directory);
 
         if (!directory.exists()) {
-            final boolean success = directory.mkdir();
+            boolean success = directory.mkdir();
 
             if (!success) {
                 return null;
@@ -77,7 +77,7 @@ public class EditorUtils {
             return new File(directory, prefix + "." + suffix);
         }
 
-        final List<String> files = Arrays.asList(Objects.requireNonNull(directory.list()));
+        List<String> files = Arrays.asList(Objects.requireNonNull(directory.list()));
         String name;
         int i = 0;
 
@@ -92,7 +92,7 @@ public class EditorUtils {
      * Modifies the name of the given file if necessary to ensure that it has
      * the given suffix.
      */
-    private static File ensureSuffix(final File file, final String suffix) {
+    private static File ensureSuffix(File file, String suffix) {
         String fileName = file.getName();
 
         if (!fileName.endsWith(suffix)) {
@@ -103,28 +103,28 @@ public class EditorUtils {
         }
     }
 
-    public static File getSaveFileWithPath(final String prefix, final String suffix,
-                                           final Component parent, final boolean overwrite, final String dialogName, final String saveLocation) {
-        final JFileChooser chooser = EditorUtils.createJFileChooser(dialogName, saveLocation);
+    public static File getSaveFileWithPath(String prefix, String suffix,
+                                           Component parent, boolean overwrite, String dialogName, String saveLocation) {
+        JFileChooser chooser = createJFileChooser(dialogName, saveLocation);
 
-        final String fileSaveLocation;
+        String fileSaveLocation;
         if (saveLocation == null) {
             fileSaveLocation = Preferences.userRoot().get(
                     "fileSaveLocation", Preferences.userRoot().absolutePath());
         } else {
             fileSaveLocation = saveLocation;
         }
-        final File dir = new File(fileSaveLocation);
+        File dir = new File(fileSaveLocation);
         chooser.setCurrentDirectory(dir);
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
-        final File selectedFile = EditorUtils.nextFile(fileSaveLocation, prefix, suffix, overwrite);
+        File selectedFile = nextFile(fileSaveLocation, prefix, suffix, overwrite);
 
         chooser.setSelectedFile(selectedFile);
         File outfile;
 
         while (true) {
-            final int ret = chooser.showSaveDialog(parent);
+            int ret = chooser.showSaveDialog(parent);
 
             if (ret == JFileChooser.ERROR_OPTION) {
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
@@ -137,7 +137,7 @@ public class EditorUtils {
             outfile = chooser.getSelectedFile();
 
             if (outfile.exists()) {
-                final int ret2 = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
+                int ret2 = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
                         "Overwrite existing file?", "", JOptionPane.YES_NO_OPTION);
                 if (ret2 == JOptionPane.YES_OPTION) {
                     break;
@@ -146,7 +146,7 @@ public class EditorUtils {
                 continue;
             }
 
-            final int ret3 = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
+            int ret3 = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
                     "Save session to directory " + outfile.getParent() + "?",
                     "Confirm", JOptionPane.OK_CANCEL_OPTION);
             if (ret3 == JOptionPane.OK_OPTION) {
@@ -154,7 +154,7 @@ public class EditorUtils {
             }
         }
 
-        outfile = EditorUtils.ensureSuffix(outfile, suffix);
+        outfile = ensureSuffix(outfile, suffix);
         if (saveLocation == null) {
             Preferences.userRoot().put("fileSaveLocation", outfile.getParent());
         } else {
@@ -177,20 +177,20 @@ public class EditorUtils {
      *                  prefix{n}.suffix will be suggested.
      * @return null, if the selection was cancelled or there was an error.
      */
-    public static File getSaveFile(final String prefix, final String suffix,
-                                   final Component parent, final boolean overwrite, final String dialogName) {
-        return EditorUtils.getSaveFileWithPath(prefix, suffix, parent, overwrite, dialogName, null);
+    public static File getSaveFile(String prefix, String suffix,
+                                   Component parent, boolean overwrite, String dialogName) {
+        return getSaveFileWithPath(prefix, suffix, parent, overwrite, dialogName, null);
     }
 
     /**
      * @return a new JFileChooser properly set up for Tetrad.
      */
-    private static JFileChooser createJFileChooser(String name, final String path) {
+    private static JFileChooser createJFileChooser(String name, String path) {
         if (name == null) {
             name = "Save";
         }
 
-        final JFileChooser chooser = new JFileChooser();
+        JFileChooser chooser = new JFileChooser();
         String fileSaveLocation =
                 Preferences.userRoot().get("fileSaveLocation", "");
         if (path != null) {

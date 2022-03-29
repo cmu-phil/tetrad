@@ -36,8 +36,8 @@ import java.text.DecimalFormat;
  * @author jdramsey
  */
 public class ExampleSave {
-    public static void main(final String... args) {
-        final Parameters parameters = new Parameters();
+    public static void main(String... args) {
+        Parameters parameters = new Parameters();
 
         parameters.set("numRuns", 10);
         parameters.set("numMeasures", 50, 100, 500);
@@ -58,8 +58,8 @@ public class ExampleSave {
 
         NumberFormatUtil.getInstance().setNumberFormat(new DecimalFormat("0.000000"));
 
-        final Simulation simulation = new SemSimulation(new RandomForward());
-        final Comparison comparison = new Comparison();
+        Simulation simulation = new SemSimulation(new RandomForward());
+        Comparison comparison = new Comparison();
         comparison.saveToFiles("/Users/user/comparison-data/condition_2", simulation, parameters);
 
     }

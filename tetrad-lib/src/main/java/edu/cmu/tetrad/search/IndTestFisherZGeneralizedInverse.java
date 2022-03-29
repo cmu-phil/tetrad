@@ -77,7 +77,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
      */
     private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     private final DataSet dataSet;
-    private boolean verbose = false;
+    private boolean verbose;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -88,15 +88,15 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
      * @param dataSet A data set containing only continuous columns.
      * @param alpha   The alpha level of the test.
      */
-    public IndTestFisherZGeneralizedInverse(final DataSet dataSet, final double alpha) {
+    public IndTestFisherZGeneralizedInverse(DataSet dataSet, double alpha) {
         if (!(alpha >= 0 && alpha <= 1)) {
             throw new IllegalArgumentException("Alpha mut be in [0, 1]");
         }
 
         this.dataSet = dataSet;
-        this.data = new DenseDoubleMatrix2D(dataSet.getDoubleData().toArray());
-        this.variables = Collections.unmodifiableList(dataSet.getVariables());
-        setAlpha(alpha);
+        data = new DenseDoubleMatrix2D(dataSet.getDoubleData().toArray());
+        variables = Collections.unmodifiableList(dataSet.getVariables());
+        this.setAlpha(alpha);
     }
 
     //==========================PUBLIC METHODS=============================//
@@ -104,7 +104,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
     /**
      * Creates a new IndTestCramerT instance for a subset of the variables.
      */
-    public IndependenceTest indTestSubset(final List vars) {
+    public IndependenceTest indTestSubset(List vars) {
 //        if (vars.isEmpty()) {
 //            throw new IllegalArgumentException("Subset may not be empty.");
 //        }
@@ -147,64 +147,64 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public boolean isIndependent(final Node xVar, final Node yVar, final List<Node> z) {
+    public boolean isIndependent(Node xVar, Node yVar, List<Node> z) {
         if (z == null) {
             throw new NullPointerException();
         }
 
-        for (final Node node : z) {
+        for (Node node : z) {
             if (node == null) {
                 throw new NullPointerException();
             }
         }
 
-        final int size = z.size();
-        final int[] zCols = new int[size];
+        int size = z.size();
+        int[] zCols = new int[size];
 
-        final int xIndex = getVariables().indexOf(xVar);
-        final int yIndex = getVariables().indexOf(yVar);
+        int xIndex = this.getVariables().indexOf(xVar);
+        int yIndex = this.getVariables().indexOf(yVar);
 
         for (int i = 0; i < z.size(); i++) {
-            zCols[i] = getVariables().indexOf(z.get(i));
+            zCols[i] = this.getVariables().indexOf(z.get(i));
         }
 
-        final int[] zRows = new int[this.data.rows()];
-        for (int i = 0; i < this.data.rows(); i++) {
+        int[] zRows = new int[data.rows()];
+        for (int i = 0; i < data.rows(); i++) {
             zRows[i] = i;
         }
 
-        final DoubleMatrix2D Z = this.data.viewSelection(zRows, zCols);
-        final DoubleMatrix1D x = this.data.viewColumn(xIndex);
-        final DoubleMatrix1D y = this.data.viewColumn(yIndex);
-        final DoubleMatrix2D Zt = new Algebra().transpose(Z);
-        final DoubleMatrix2D ZtZ = new Algebra().mult(Zt, Z);
-        final Matrix _ZtZ = new Matrix(ZtZ.toArray());
-        final Matrix ginverse = _ZtZ.inverse();
-        final DoubleMatrix2D G = new DenseDoubleMatrix2D(ginverse.toArray());
+        DoubleMatrix2D Z = data.viewSelection(zRows, zCols);
+        DoubleMatrix1D x = data.viewColumn(xIndex);
+        DoubleMatrix1D y = data.viewColumn(yIndex);
+        DoubleMatrix2D Zt = new Algebra().transpose(Z);
+        DoubleMatrix2D ZtZ = new Algebra().mult(Zt, Z);
+        Matrix _ZtZ = new Matrix(ZtZ.toArray());
+        Matrix ginverse = _ZtZ.inverse();
+        DoubleMatrix2D G = new DenseDoubleMatrix2D(ginverse.toArray());
 
-        final DoubleMatrix2D Zt2 = Zt.like();
+        DoubleMatrix2D Zt2 = Zt.like();
         Zt2.assign(Zt);
-        final DoubleMatrix2D GZt = new Algebra().mult(G, Zt2);
+        DoubleMatrix2D GZt = new Algebra().mult(G, Zt2);
 
-        final DoubleMatrix1D b_x = new Algebra().mult(GZt, x);
-        final DoubleMatrix1D b_y = new Algebra().mult(GZt, y);
+        DoubleMatrix1D b_x = new Algebra().mult(GZt, x);
+        DoubleMatrix1D b_y = new Algebra().mult(GZt, y);
 
-        final DoubleMatrix1D xPred = new Algebra().mult(Z, b_x);
-        final DoubleMatrix1D yPred = new Algebra().mult(Z, b_y);
+        DoubleMatrix1D xPred = new Algebra().mult(Z, b_x);
+        DoubleMatrix1D yPred = new Algebra().mult(Z, b_y);
 
-        final DoubleMatrix1D xRes = xPred.copy().assign(x, Functions.minus);
-        final DoubleMatrix1D yRes = yPred.copy().assign(y, Functions.minus);
+        DoubleMatrix1D xRes = xPred.copy().assign(x, Functions.minus);
+        DoubleMatrix1D yRes = yPred.copy().assign(y, Functions.minus);
 
         // Note that r will be NaN if either xRes or yRes is constant.
         double r = StatUtils.correlation(xRes.toArray(), yRes.toArray());
 
-        if (Double.isNaN(this.thresh)) {
-            this.thresh = cutoffGaussian();
+        if (Double.isNaN(thresh)) {
+            thresh = this.cutoffGaussian();
         }
 
         if (Double.isNaN(r)) {
-            if (this.verbose) {
-                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(xVar, yVar, z, getPValue()));
+            if (verbose) {
+                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(xVar, yVar, z, this.getPValue()));
             }
             return true;
         }
@@ -212,13 +212,13 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
         if (r > 1) r = 1;
         if (r < -1) r = -1;
 
-        this.fishersZ = Math.sqrt(sampleSize() - z.size() - 3.0) *
+        fishersZ = Math.sqrt(this.sampleSize() - z.size() - 3.0) *
                 0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
 
 //        this.fishersZ = 0.5 * Math.sqrt(sampleSize() - z.size() - 3.0) *
 //                Math.log(Math.abs(1.0 + r) / Math.abs(1.0 - r));
 
-        if (Double.isNaN(this.fishersZ)) {
+        if (Double.isNaN(fishersZ)) {
             throw new IllegalArgumentException("The Fisher's Z " +
                     "score for independence fact " + xVar + " _||_ " + yVar +
                     " | " + z + " is undefined.");
@@ -228,40 +228,40 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
 
         //System.out.println("thresh = " + thresh);
         //if(Math.abs(fishersZ) > 1.96) indFisher = false; //Two sided with alpha = 0.05
-        if (Math.abs(this.fishersZ) > this.thresh) {
+        if (Math.abs(fishersZ) > thresh) {
             indFisher = false;  //Two sided
         }
 
-        if (this.verbose) {
+        if (verbose) {
             if (indFisher) {
-                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(xVar, yVar, z, getPValue()));
+                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(xVar, yVar, z, this.getPValue()));
             } else {
-                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(xVar, yVar, z, getPValue()));
+                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(xVar, yVar, z, this.getPValue()));
             }
         }
 
         return indFisher;
     }
 
-    public boolean isIndependent(final Node x, final Node y, final Node... z) {
-        final List<Node> zList = Arrays.asList(z);
-        return isIndependent(x, y, zList);
+    public boolean isIndependent(Node x, Node y, Node... z) {
+        List<Node> zList = Arrays.asList(z);
+        return this.isIndependent(x, y, zList);
     }
 
-    public boolean isDependent(final Node x, final Node y, final List<Node> z) {
-        return !isIndependent(x, y, z);
+    public boolean isDependent(Node x, Node y, List<Node> z) {
+        return !this.isIndependent(x, y, z);
     }
 
-    public boolean isDependent(final Node x, final Node y, final Node... z) {
-        final List<Node> zList = Arrays.asList(z);
-        return isDependent(x, y, zList);
+    public boolean isDependent(Node x, Node y, Node... z) {
+        List<Node> zList = Arrays.asList(z);
+        return this.isDependent(x, y, zList);
     }
 
     /**
      * @return the probability associated with the most recently computed independence test.
      */
     public double getPValue() {
-        return 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, Math.abs(this.fishersZ)));
+        return 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, Math.abs(fishersZ)));
 
 //        double q = 2.0 * Integrator.getArea(npdf, 0.0, Math.abs(fishersZ), 100);
 //        if (q > 1.0) {
@@ -274,7 +274,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
-    public void setAlpha(final double alpha) {
+    public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
             throw new IllegalArgumentException("Significance out of range.");
         }
@@ -286,7 +286,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
      * Gets the getModel significance level.
      */
     public double getAlpha() {
-        return this.alpha;
+        return alpha;
     }
 
     /**
@@ -294,15 +294,15 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
      * relations-- that is, all the variables in the given graph or the given data set.
      */
     public List<Node> getVariables() {
-        return this.variables;
+        return variables;
     }
 
     /**
      * @return the variable with the given name.
      */
-    public Node getVariable(final String name) {
-        for (int i = 0; i < getVariables().size(); i++) {
-            final Node variable = getVariables().get(i);
+    public Node getVariable(String name) {
+        for (int i = 0; i < this.getVariables().size(); i++) {
+            Node variable = this.getVariables().get(i);
             if (variable.getName().equals(name)) {
                 return variable;
             }
@@ -315,16 +315,16 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
      * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
-        final List<Node> variables = getVariables();
-        final List<String> variableNames = new ArrayList<>();
-        for (final Node variable1 : variables) {
+        List<Node> variables = this.getVariables();
+        List<String> variableNames = new ArrayList<>();
+        for (Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }
         return variableNames;
     }
 
     public String toString() {
-        return "Fisher's Z - Generalized Inverse, alpha = " + IndTestFisherZGeneralizedInverse.nf.format(getAlpha());
+        return "Fisher's Z - Generalized Inverse, alpha = " + nf.format(this.getAlpha());
     }
 
     //==========================PRIVATE METHODS============================//
@@ -334,7 +334,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
      * hypothesis that the Fisher's Z value, which is distributed as N(0,1) is not equal to 0.0.
      */
     private double cutoffGaussian() {
-        final double upperTail = 1.0 - getAlpha() / 2.0;
+        double upperTail = 1.0 - this.getAlpha() / 2.0;
         final double epsilon = 1e-14;
 
         // Find an upper bound.
@@ -347,7 +347,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
         }
 
         while (upperBound >= lowerBound + epsilon) {
-            final double midPoint = lowerBound + (upperBound - lowerBound) / 2.0;
+            double midPoint = lowerBound + (upperBound - lowerBound) / 2.0;
 
             if (RandomUtil.getInstance().normalCdf(0, 1, midPoint) <= upperTail) {
                 lowerBound = midPoint;
@@ -366,10 +366,10 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
     }
 
     private int sampleSize() {
-        return this.data.rows();
+        return data.rows();
     }
 
-    public boolean determines(final List<Node> zList, final Node xVar) {
+    public boolean determines(List<Node> zList, Node xVar) {
         if (zList == null) {
             throw new NullPointerException();
         }
@@ -378,44 +378,44 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
             return false;
         }
 
-        for (final Node node : zList) {
+        for (Node node : zList) {
             if (node == null) {
                 throw new NullPointerException();
             }
         }
 
-        final int size = zList.size();
-        final int[] zCols = new int[size];
+        int size = zList.size();
+        int[] zCols = new int[size];
 
-        final int xIndex = getVariables().indexOf(xVar);
+        int xIndex = this.getVariables().indexOf(xVar);
 
         for (int i = 0; i < zList.size(); i++) {
-            zCols[i] = getVariables().indexOf(zList.get(i));
+            zCols[i] = this.getVariables().indexOf(zList.get(i));
         }
 
-        final int[] zRows = new int[this.data.rows()];
-        for (int i = 0; i < this.data.rows(); i++) {
+        int[] zRows = new int[data.rows()];
+        for (int i = 0; i < data.rows(); i++) {
             zRows[i] = i;
         }
 
-        final DoubleMatrix2D Z = this.data.viewSelection(zRows, zCols);
-        final DoubleMatrix1D x = this.data.viewColumn(xIndex);
-        final DoubleMatrix2D Zt = new Algebra().transpose(Z);
-        final DoubleMatrix2D ZtZ = new Algebra().mult(Zt, Z);
+        DoubleMatrix2D Z = data.viewSelection(zRows, zCols);
+        DoubleMatrix1D x = data.viewColumn(xIndex);
+        DoubleMatrix2D Zt = new Algebra().transpose(Z);
+        DoubleMatrix2D ZtZ = new Algebra().mult(Zt, Z);
 
-        final Matrix _ZtZ = new Matrix(ZtZ.toArray());
-        final Matrix ginverse = _ZtZ.inverse();
-        final DoubleMatrix2D G = new DenseDoubleMatrix2D(ginverse.toArray());
+        Matrix _ZtZ = new Matrix(ZtZ.toArray());
+        Matrix ginverse = _ZtZ.inverse();
+        DoubleMatrix2D G = new DenseDoubleMatrix2D(ginverse.toArray());
 
 //        DoubleMatrix2D G = MatrixUtils.ginverse(ZtZ);
-        final DoubleMatrix2D Zt2 = Zt.copy();
-        final DoubleMatrix2D GZt = new Algebra().mult(G, Zt2);
-        final DoubleMatrix1D b_x = new Algebra().mult(GZt, x);
-        final DoubleMatrix1D xPred = new Algebra().mult(Z, b_x);
-        final DoubleMatrix1D xRes = xPred.copy().assign(x, Functions.minus);
-        final double SSE = xRes.aggregate(Functions.plus, Functions.square);
+        DoubleMatrix2D Zt2 = Zt.copy();
+        DoubleMatrix2D GZt = new Algebra().mult(G, Zt2);
+        DoubleMatrix1D b_x = new Algebra().mult(GZt, x);
+        DoubleMatrix1D xPred = new Algebra().mult(Z, b_x);
+        DoubleMatrix1D xRes = xPred.copy().assign(x, Functions.minus);
+        double SSE = xRes.aggregate(Functions.plus, Functions.square);
 
-        final double variance = SSE / (this.data.rows() - (zList.size() + 1));
+        double variance = SSE / (data.rows() - (zList.size() + 1));
 
 //        ChiSquare chiSquare = new ChiSquare(data.rows(),
 //                PersistentRandomUtil.getInstance().getEngine());
@@ -423,10 +423,10 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
 //        double p = chiSquare.cdf(sum);
 //        boolean determined = p < 1 - getAlternativePenalty();
 //
-        final boolean determined = variance < getAlpha();
+        boolean determined = variance < this.getAlpha();
 
         if (determined) {
-            final StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder();
             sb.append("Determination found: ").append(xVar).append(
                     " is determined by {");
 
@@ -441,7 +441,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
             sb.append("}");
 
 //            sb.append(" p = ").append(nf.format(p));
-            sb.append(" SSE = ").append(IndTestFisherZGeneralizedInverse.nf.format(SSE));
+            sb.append(" SSE = ").append(nf.format(SSE));
 
             TetradLogger.getInstance().log("independencies", sb.toString());
             System.out.println(sb);
@@ -451,7 +451,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
     }
 
     public DataSet getData() {
-        return this.dataSet;
+        return dataSet;
     }
 
     @Override
@@ -476,14 +476,14 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
 
     @Override
     public double getScore() {
-        return getPValue();
+        return this.getPValue();
     }
 
     public boolean isVerbose() {
-        return this.verbose;
+        return verbose;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 }

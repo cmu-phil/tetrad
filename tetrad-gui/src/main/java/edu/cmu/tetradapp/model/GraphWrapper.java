@@ -53,8 +53,8 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
         SimulationParamsSource, GraphSettable, MultipleGraphSource {
     static final long serialVersionUID = 23L;
     private int numModels = 1;
-    private int modelIndex = 0;
-    private String modelSourceName = null;
+    private int modelIndex;
+    private String modelSourceName;
 
     /**
      * @serial Can be null.
@@ -73,69 +73,69 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     private GraphWrapper() {
     }
 
-    public GraphWrapper(final GraphSource graphSource, final Parameters parameters) {
+    public GraphWrapper(GraphSource graphSource, Parameters parameters) {
         if (graphSource instanceof Simulation) {
-            final Simulation simulation = (Simulation) graphSource;
-            this.graphs = simulation.getGraphs();
-            this.numModels = this.graphs.size();
-            this.modelIndex = 0;
-            this.modelSourceName = simulation.getName();
+            Simulation simulation = (Simulation) graphSource;
+            graphs = simulation.getGraphs();
+            numModels = graphs.size();
+            modelIndex = 0;
+            modelSourceName = simulation.getName();
         } else {
-            setGraph(new EdgeListGraph(graphSource.getGraph()));
+            this.setGraph(new EdgeListGraph(graphSource.getGraph()));
         }
 
-        log();
+        this.log();
     }
 
-    public GraphWrapper(final Graph graph) {
+    public GraphWrapper(Graph graph) {
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");
         }
-        setGraph(graph);
-        log();
+        this.setGraph(graph);
+        this.log();
     }
 
-    public GraphWrapper(final Graph graph, final String message) {
+    public GraphWrapper(Graph graph, String message) {
         TetradLogger.getInstance().log("info", message);
 
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");
         }
 
-        setGraph(graph);
+        this.setGraph(graph);
     }
 
-    public GraphWrapper(final Parameters parameters) {
+    public GraphWrapper(Parameters parameters) {
         this.parameters = parameters;
-        setGraph(new EdgeListGraph());
-        log();
+        this.setGraph(new EdgeListGraph());
+        this.log();
     }
 
-    public GraphWrapper(final Simulation simulation, final Parameters parameters) {
-        this.graphs = simulation.getGraphs();
-        this.numModels = this.graphs.size();
-        this.modelIndex = 0;
-        this.modelSourceName = simulation.getName();
+    public GraphWrapper(Simulation simulation, Parameters parameters) {
+        graphs = simulation.getGraphs();
+        numModels = graphs.size();
+        modelIndex = 0;
+        modelSourceName = simulation.getName();
 
-        log();
+        this.log();
     }
 
-    public GraphWrapper(final DataWrapper wrapper) {
+    public GraphWrapper(DataWrapper wrapper) {
         if (wrapper instanceof Simulation) {
-            final Simulation simulation = (Simulation) wrapper;
-            this.graphs = simulation.getGraphs();
-            this.numModels = this.graphs.size();
-            this.modelIndex = 0;
-            this.modelSourceName = simulation.getName();
+            Simulation simulation = (Simulation) wrapper;
+            graphs = simulation.getGraphs();
+            numModels = graphs.size();
+            modelIndex = 0;
+            modelSourceName = simulation.getName();
         } else {
-            setGraph(new EdgeListGraph(wrapper.getVariables()));
+            this.setGraph(new EdgeListGraph(wrapper.getVariables()));
         }
 
-        GraphUtils.circleLayout(getGraph(), 200, 200, 150);
+        GraphUtils.circleLayout(this.getGraph(), 200, 200, 150);
     }
 
-    public GraphWrapper(final GeneralizedSemImWrapper wrapper) {
-        this(GraphWrapper.getStrongestInfluenceGraph(wrapper.getSemIms().get(0)));
+    public GraphWrapper(GeneralizedSemImWrapper wrapper) {
+        this(getStrongestInfluenceGraph(wrapper.getSemIms().get(0)));
         if (wrapper.getSemIms() == null || wrapper.getSemIms().size() > 1) {
             throw new IllegalArgumentException("I'm sorry; this editor can only edit a single generalized SEM IM.");
         }
@@ -153,13 +153,13 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     //==============================PUBLIC METHODS======================//
 
     public Graph getGraph() {
-        return this.graphs.get(getModelIndex());
+        return graphs.get(this.getModelIndex());
     }
 
-    public void setGraph(final Graph graph) {
-        this.graphs = new ArrayList<>();
-        this.graphs.add(new EdgeListGraph(graph));
-        log();
+    public void setGraph(Graph graph) {
+        graphs = new ArrayList<>();
+        graphs.add(new EdgeListGraph(graph));
+        this.log();
     }
 
     public boolean allowRandomGraph() {
@@ -168,74 +168,74 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
 
     @Override
     public IndependenceTest getIndependenceTest() {
-        return new IndTestDSep(getGraph());
+        return new IndTestDSep(this.getGraph());
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
     public Graph getSourceGraph() {
-        return getGraph();
+        return this.getGraph();
     }
 
     public Graph getResultGraph() {
-        return getGraph();
+        return this.getGraph();
     }
 
     public List<String> getVariableNames() {
-        return getGraph().getNodeNames();
+        return this.getGraph().getNodeNames();
     }
 
     public List<Node> getVariables() {
-        return getGraph().getNodes();
+        return this.getGraph().getNodes();
     }
 
     @Override
     public Map<String, String> getParamSettings() {
-        final Map<String, String> paramSettings = new HashMap<>();
-        paramSettings.put("# Vars", Integer.toString(getGraph().getNumNodes()));
-        paramSettings.put("# Edges", Integer.toString(getGraph().getNumEdges()));
-        if (getGraph().existsDirectedCycle()) paramSettings.put("Cyclic", null);
+        Map<String, String> paramSettings = new HashMap<>();
+        paramSettings.put("# Vars", Integer.toString(this.getGraph().getNumNodes()));
+        paramSettings.put("# Edges", Integer.toString(this.getGraph().getNumEdges()));
+        if (this.getGraph().existsDirectedCycle()) paramSettings.put("Cyclic", null);
         return paramSettings;
     }
 
     @Override
-    public void setAllParamSettings(final Map<String, String> paramSettings) {
-        this.allParamSettings = paramSettings;
+    public void setAllParamSettings(Map<String, String> paramSettings) {
+        allParamSettings = paramSettings;
     }
 
     @Override
     public Map<String, String> getAllParamSettings() {
-        return this.allParamSettings;
+        return allParamSettings;
     }
 
     public Parameters getParameters() {
-        return this.parameters;
+        return parameters;
     }
 
     //==========================PRIVATE METaHODS===========================//
 
-    private static String findParameter(final Expression expression, final String name) {
-        final List<Expression> expressions = expression.getExpressions();
+    private static String findParameter(Expression expression, String name) {
+        List<Expression> expressions = expression.getExpressions();
 
         if (expression.getToken().equals("*")) {
-            final Expression expression1 = expressions.get(1);
-            final VariableExpression varExpr = (VariableExpression) expression1;
+            Expression expression1 = expressions.get(1);
+            VariableExpression varExpr = (VariableExpression) expression1;
 
             if (varExpr.getVariable().equals(name)) {
-                final Expression expression2 = expressions.get(0);
-                final VariableExpression constExpr = (VariableExpression) expression2;
+                Expression expression2 = expressions.get(0);
+                VariableExpression constExpr = (VariableExpression) expression2;
                 return constExpr.getVariable();
             }
         }
 
-        for (final Expression _expression : expressions) {
-            final String param = GraphWrapper.findParameter(_expression, name);
+        for (Expression _expression : expressions) {
+            String param = findParameter(_expression, name);
 
             if (param != null) {
                 return param;
@@ -245,23 +245,23 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
         return null;
     }
 
-    private static Graph getStrongestInfluenceGraph(final GeneralizedSemIm im) {
-        final GeneralizedSemPm pm = im.getGeneralizedSemPm();
-        final Graph imGraph = im.getGeneralizedSemPm().getGraph();
+    private static Graph getStrongestInfluenceGraph(GeneralizedSemIm im) {
+        GeneralizedSemPm pm = im.getGeneralizedSemPm();
+        Graph imGraph = im.getGeneralizedSemPm().getGraph();
 
-        final List<Node> nodes = new ArrayList<>();
+        List<Node> nodes = new ArrayList<>();
 
-        for (final Node node : imGraph.getNodes()) {
+        for (Node node : imGraph.getNodes()) {
             if (!(node.getNodeType() == NodeType.ERROR)) {
                 nodes.add(node);
             }
         }
 
-        final Graph graph2 = new EdgeListGraph(nodes);
+        Graph graph2 = new EdgeListGraph(nodes);
 
-        for (final Edge edge : imGraph.getEdges()) {
-            final Node node1 = edge.getNode1();
-            final Node node2 = edge.getNode2();
+        for (Edge edge : imGraph.getEdges()) {
+            Node node1 = edge.getNode1();
+            Node node2 = edge.getNode2();
 
             if (!graph2.containsNode(node1)) continue;
             if (!graph2.containsNode(node2)) continue;
@@ -270,23 +270,23 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
                 continue;
             }
 
-            final List<Edge> edges = imGraph.getEdges(node1, node2);
+            List<Edge> edges = imGraph.getEdges(node1, node2);
 
             if (edges.size() == 1) {
                 graph2.addEdge(edges.get(0));
             } else {
-                final Expression expression1 = pm.getNodeExpression(node1);
-                final Expression expression2 = pm.getNodeExpression(node2);
+                Expression expression1 = pm.getNodeExpression(node1);
+                Expression expression2 = pm.getNodeExpression(node2);
 
-                final String param1 = GraphWrapper.findParameter(expression1, node2.getName());
-                final String param2 = GraphWrapper.findParameter(expression2, node1.getName());
+                String param1 = findParameter(expression1, node2.getName());
+                String param2 = findParameter(expression2, node1.getName());
 
                 if (param1 == null || param2 == null) {
                     continue;
                 }
 
-                final double value1 = im.getParameterValue(param1);
-                final double value2 = im.getParameterValue(param2);
+                double value1 = im.getParameterValue(param1);
+                double value2 = im.getParameterValue(param2);
 
                 if (value2 > value1) {
                     graph2.addDirectedEdge(node1, node2);
@@ -302,7 +302,7 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
 
     private void log() {
         TetradLogger.getInstance().log("info", "General Graph");
-        TetradLogger.getInstance().log("graph", "" + getGraph());
+        TetradLogger.getInstance().log("graph", "" + this.getGraph());
     }
 
     /**
@@ -318,30 +318,30 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
 
     public int getNumModels() {
-        return this.numModels;
+        return numModels;
     }
 
     public int getModelIndex() {
-        return this.modelIndex;
+        return modelIndex;
     }
 
     public String getModelSourceName() {
-        return this.modelSourceName;
+        return modelSourceName;
     }
 
-    public void setModelIndex(final int modelIndex) {
+    public void setModelIndex(int modelIndex) {
         this.modelIndex = modelIndex;
     }
 
     @Override
     public List<Graph> getGraphs() {
-        return this.graphs;
+        return graphs;
     }
 }
 

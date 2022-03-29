@@ -52,21 +52,21 @@ class ScatterPlotAction extends AbstractAction {
      * Constructs the <code>QQPlotAction</code> given the <code>DataEditor</code>
      * that its attached to.
      */
-    public ScatterPlotAction(final DataEditor editor) {
+    public ScatterPlotAction(DataEditor editor) {
         super("Scatter Plots...");
-        this.dataEditor = editor;
+        dataEditor = editor;
     }
 
 
-    public void actionPerformed(final ActionEvent e) {
-        final DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
+    public void actionPerformed(ActionEvent e) {
+        DataSet dataSet = (DataSet) dataEditor.getSelectedDataModel();
         if (dataSet == null || dataSet.getNumColumns() == 0) {
-            JOptionPane.showMessageDialog(findOwner(), "Cannot display a scatter plot for an empty data set.");
+            JOptionPane.showMessageDialog(this.findOwner(), "Cannot display a scatter plot for an empty data set.");
             return;
         }
 
-        final JPanel panel = new ScatterPlotView(dataSet);
-        final EditorWindow editorWindow = new EditorWindow(panel, "Scatter Plots", "Save", true, this.dataEditor);
+        JPanel panel = new ScatterPlotView(dataSet);
+        EditorWindow editorWindow = new EditorWindow(panel, "Scatter Plots", "Save", true, dataEditor);
 
 //        JPanel dialog = createScatterPlotDialog(null, null);
 //        EditorWindow editorWindow = new EditorWindow(dialog, "Scatter Plots", "Save", true, dataEditor);
@@ -82,10 +82,10 @@ class ScatterPlotAction extends AbstractAction {
     /**
      * Sets the location on the given dialog for the given index.
      */
-    private void setLocation(final JDialog dialog, final int index) {
-        final Rectangle bounds = dialog.getBounds();
-        final JFrame frame = findOwner();
-        final Dimension dim;
+    private void setLocation(JDialog dialog, int index) {
+        Rectangle bounds = dialog.getBounds();
+        JFrame frame = this.findOwner();
+        Dimension dim;
         if (frame == null) {
             dim = Toolkit.getDefaultToolkit().getScreenSize();
         } else {
@@ -104,24 +104,24 @@ class ScatterPlotAction extends AbstractAction {
      * Creates a dialog that is showing the histogram for the given node (if null
      * one is selected for you)
      */
-    private JPanel createScatterPlotDialog(final ContinuousVariable yVariable, final ContinuousVariable xVariable) {
+    private JPanel createScatterPlotDialog(ContinuousVariable yVariable, ContinuousVariable xVariable) {
         final String dialogTitle = "Scatter Plots";
-        final JPanel panel = new JPanel();
+        JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
 
-        final DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
+        DataSet dataSet = (DataSet) dataEditor.getSelectedDataModel();
 
-        final ScatterPlotOld scatterPlot = new ScatterPlotOld(dataSet, yVariable, xVariable);
-        final ScatterPlotEditorPanel editorPanel = new ScatterPlotEditorPanel(scatterPlot, dataSet);
-        final ScatterPlotDisplayPanelOld display = new ScatterPlotDisplayPanelOld(scatterPlot);
+        ScatterPlotOld scatterPlot = new ScatterPlotOld(dataSet, yVariable, xVariable);
+        ScatterPlotEditorPanel editorPanel = new ScatterPlotEditorPanel(scatterPlot, dataSet);
+        ScatterPlotDisplayPanelOld display = new ScatterPlotDisplayPanelOld(scatterPlot);
         editorPanel.addPropertyChangeListener(new ScatterPlotListener(display));
 
-        final JMenuBar bar = new JMenuBar();
-        final JMenu menu = new JMenu("File");
+        JMenuBar bar = new JMenuBar();
+        JMenu menu = new JMenu("File");
         menu.add(new JMenuItem(new SaveComponentImage(display, "Save Scatter Plot")));
         bar.add(menu);
 
-        final Box box = Box.createHorizontalBox();
+        Box box = Box.createHorizontalBox();
         box.add(display);
 
         box.add(Box.createHorizontalStrut(3));
@@ -129,7 +129,7 @@ class ScatterPlotAction extends AbstractAction {
         box.add(Box.createHorizontalStrut(5));
         box.add(Box.createHorizontalGlue());
 
-        final Box vBox = Box.createVerticalBox();
+        Box vBox = Box.createVerticalBox();
         vBox.add(Box.createVerticalStrut(15));
         vBox.add(box);
         vBox.add(Box.createVerticalStrut(5));
@@ -146,7 +146,7 @@ class ScatterPlotAction extends AbstractAction {
 
     private JFrame findOwner() {
         return (JFrame) SwingUtilities.getAncestorOfClass(
-                JFrame.class, this.dataEditor);
+                JFrame.class, dataEditor);
     }
 
     //================================= Inner Class ======================================//
@@ -160,14 +160,14 @@ class ScatterPlotAction extends AbstractAction {
         private final ScatterPlotDisplayPanelOld display;
 
 
-        public ScatterPlotListener(final ScatterPlotDisplayPanelOld display) {
+        public ScatterPlotListener(ScatterPlotDisplayPanelOld display) {
             this.display = display;
         }
 
 
-        public void propertyChange(final PropertyChangeEvent evt) {
+        public void propertyChange(PropertyChangeEvent evt) {
             if ("histogramChange".equals(evt.getPropertyName())) {
-                this.display.updateScatterPlot((ScatterPlotOld) evt.getNewValue());
+                display.updateScatterPlot((ScatterPlotOld) evt.getNewValue());
             }
         }
     }

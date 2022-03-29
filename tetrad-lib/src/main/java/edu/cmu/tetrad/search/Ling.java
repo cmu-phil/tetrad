@@ -27,6 +27,7 @@ import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphGroup;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.FastIca.IcaResult;
 import edu.cmu.tetrad.util.LingUtils;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -76,7 +77,7 @@ public class Ling {
     /**
      * Time needed to process the search method.
      */
-    private long elapsedTime = 0L;
+    private long elapsedTime;
 
     /**
      * Either passed in through the constructor or simulated using a graph.
@@ -93,8 +94,8 @@ public class Ling {
      *
      * @param d a DataSet over which the algorithm can process
      */
-    public Ling(final DataSet d) {
-        this.dataSet = d;
+    public Ling(DataSet d) {
+        dataSet = d;
     }
 
     /**
@@ -104,9 +105,9 @@ public class Ling {
      * @param graphWP a graph with parameters from GraphWithParameters
      * @param samples the number of samples the algorithm draws in order to generate a DataSet
      */
-    public Ling(final GraphWithParameters graphWP, final int samples) {
-        this.numSamples = samples;
-        makeDataSet(graphWP);
+    public Ling(GraphWithParameters graphWP, int samples) {
+        numSamples = samples;
+        this.makeDataSet(graphWP);
     }
 
     /**
@@ -116,10 +117,10 @@ public class Ling {
      * @param g       a graph from Graph
      * @param samples the number of samples the algorithm draws in order to generate a DataSet
      */
-    public Ling(final Graph g, final int samples) {
-        this.numSamples = samples;
-        final GraphWithParameters graphWP = new GraphWithParameters(g);
-        makeDataSet(graphWP);
+    public Ling(Graph g, int samples) {
+        numSamples = samples;
+        GraphWithParameters graphWP = new GraphWithParameters(g);
+        this.makeDataSet(graphWP);
     }
 
     //==============================PUBLIC METHODS=========================//
@@ -128,44 +129,44 @@ public class Ling {
      * @return DataSet   Returns a dataset of the data used by the algorithm.
      */
     public DataSet getData() {
-        return this.dataSet;
+        return dataSet;
     }
 
     /**
      * The search method is used to process LiNG. Call search when you want to run the algorithm.
      */
     public StoredGraphs search() {
-        final Matrix W;
+        Matrix W;
         StoredGraphs graphs = new StoredGraphs();
 
         try {
-            final long sTime = (new Date()).getTime();
+            long sTime = (new Date()).getTime();
 
             final boolean fastIca = true;
 
             if (fastIca) {
-                W = getWFastIca();
+                W = this.getWFastIca();
 
                 System.out.println("W = " + W);
 
                 //this is the heart of our method:
-                graphs = findCandidateModels(this.dataSet.getVariables(), W, true);
+                graphs = this.findCandidateModels(dataSet.getVariables(), W, true);
             } else {
                 final double zeta = 1;
 
-                final List<Mapping> allMappings = createMappings(null, null, this.dataSet.getNumColumns());
+                List<Mapping> allMappings = this.createMappings(null, null, dataSet.getNumColumns());
 
-                W = estimateW(new Matrix(this.dataSet.getDoubleData().transpose()),
-                        this.dataSet.getNumColumns(), -zeta, zeta, allMappings);
+                W = this.estimateW(new Matrix(dataSet.getDoubleData().transpose()),
+                        dataSet.getNumColumns(), -zeta, zeta, allMappings);
 
                 System.out.println("W = " + W);
 
                 //this is the heart of our method:
-                graphs = findCandidateModel(this.dataSet.getVariables(), W, true);
+                graphs = this.findCandidateModel(dataSet.getVariables(), W, true);
             }
 
-            this.elapsedTime = (new Date()).getTime() - sTime;
-        } catch (final Exception e) {
+            elapsedTime = (new Date()).getTime() - sTime;
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -173,39 +174,39 @@ public class Ling {
     }
 
 
-    private Matrix estimateW(final Matrix matrix, final int numNodes, final double min, final double max, final List<Mapping> allMappings) {
-        final Matrix W = initializeW(numNodes);
-        maxMappings(matrix, min, max, W, allMappings);
+    private Matrix estimateW(Matrix matrix, int numNodes, double min, double max, List<Mapping> allMappings) {
+        Matrix W = this.initializeW(numNodes);
+        this.maxMappings(matrix, min, max, W, allMappings);
         return W;
     }
 
-    private void maxMappings(final Matrix matrix, final double min,
-                             final double max, final Matrix W, final List<Mapping> allMappings) {
+    private void maxMappings(Matrix matrix, double min,
+                             double max, Matrix W, List<Mapping> allMappings) {
 
-        final int numNodes = W.rows();
+        int numNodes = W.rows();
 
         for (int i = 0; i < numNodes; i++) {
             final double maxScore = Double.NEGATIVE_INFINITY;
             double[] maxRow = new double[numNodes];
 
-            for (final Mapping mapping : mappingsForRow(i, allMappings)) {
+            for (Mapping mapping : this.mappingsForRow(i, allMappings)) {
                 W.set(mapping.getI(), mapping.getJ(), 0);
             }
 
             try {
-                optimizeNonGaussianity(i, matrix, W, allMappings);
+                this.optimizeNonGaussianity(i, matrix, W, allMappings);
 //                optimizeOrthogonality(i, min, max, W, allMappings, W.length);
-            } catch (final IllegalStateException e) {
+            } catch (IllegalStateException e) {
                 e.printStackTrace();
                 continue;
             }
 
-            final double v = ngFullData(i, matrix, W);
+            double v = this.ngFullData(i, matrix, W);
 
             if (Double.isNaN(v)) continue;
             if (v >= 9999) continue;
 
-            final double[] row = new double[numNodes];
+            double[] row = new double[numNodes];
             for (int k = 0; k < numNodes; k++) row[k] = W.get(i, k);
 
             if (v > maxScore) {
@@ -216,18 +217,18 @@ public class Ling {
         }
     }
 
-    private void optimizeNonGaussianity(final int rowIndex, final Matrix dataSetTetradMatrix,
-                                        final Matrix W, final List<Mapping> allMappings) {
-        final List<Mapping> mappings = mappingsForRow(rowIndex, allMappings);
+    private void optimizeNonGaussianity(int rowIndex, Matrix dataSetTetradMatrix,
+                                        Matrix W, List<Mapping> allMappings) {
+        List<Mapping> mappings = this.mappingsForRow(rowIndex, allMappings);
 
-        final MultivariateFunction function = new MultivariateFunction() {
-            public double value(final double[] values) {
+        MultivariateFunction function = new MultivariateFunction() {
+            public double value(double[] values) {
                 for (int i = 0; i < values.length; i++) {
-                    final Mapping mapping = mappings.get(i);
+                    Mapping mapping = mappings.get(i);
                     W.set(mapping.getI(), mapping.getJ(), values[i]);
                 }
 
-                final double v = ngFullData(rowIndex, dataSetTetradMatrix, W);
+                double v = Ling.this.ngFullData(rowIndex, dataSetTetradMatrix, W);
 
                 if (Double.isNaN(v)) return 10000;
 
@@ -239,13 +240,13 @@ public class Ling {
             double[] values = new double[mappings.size()];
 
             for (int k = 0; k < mappings.size(); k++) {
-                final Mapping mapping = mappings.get(k);
+                Mapping mapping = mappings.get(k);
                 values[k] = W.get(mapping.getI(), mapping.getJ());
             }
 
-            final MultivariateOptimizer search = new PowellOptimizer(1e-7, 1e-7);
+            MultivariateOptimizer search = new PowellOptimizer(1e-7, 1e-7);
 
-            final PointValuePair pair = search.optimize(
+            PointValuePair pair = search.optimize(
                     new InitialGuess(values),
                     new ObjectiveFunction(function),
                     GoalType.MINIMIZE,
@@ -254,14 +255,14 @@ public class Ling {
             values = pair.getPoint();
 
             for (int k = 0; k < mappings.size(); k++) {
-                final Mapping mapping = mappings.get(k);
+                Mapping mapping = mappings.get(k);
                 W.set(mapping.getI(), mapping.getJ(), values[k]);
             }
         }
 
     }
 
-    public double ngFullData(final int rowIndex, final Matrix data, final Matrix W) {
+    public double ngFullData(int rowIndex, Matrix data, Matrix W) {
         double[] col = new double[data.rows()];
 
         for (int i = 0; i < data.rows(); i++) {
@@ -270,15 +271,15 @@ public class Ling {
             // Node _x given parents. Its coefficient is fixed at 1. Also, coefficients for all
             // other variables not neighbors of _x are fixed at zero.
             for (int j = 0; j < data.columns(); j++) {
-                final double coef = W.get(rowIndex, j);
-                final double value = data.get(i, j);
+                double coef = W.get(rowIndex, j);
+                double value = data.get(i, j);
                 d += coef * value;
             }
 
             col[i] = d;
         }
 
-        col = removeNaN(col);
+        col = this.removeNaN(col);
 
         if (col.length == 0) {
             System.out.println();
@@ -295,8 +296,8 @@ public class Ling {
 //        return new AndersonDarlingTest(col).getASquaredStar();
     }
 
-    private double[] removeNaN(final double[] data) {
-        final List<Double> _leaveOutMissing = new ArrayList<>();
+    private double[] removeNaN(double[] data) {
+        List<Double> _leaveOutMissing = new ArrayList<>();
 
         for (int i = 0; i < data.length; i++) {
             if (!Double.isNaN(data[i])) {
@@ -304,26 +305,26 @@ public class Ling {
             }
         }
 
-        final double[] _data = new double[_leaveOutMissing.size()];
+        double[] _data = new double[_leaveOutMissing.size()];
 
         for (int i = 0; i < _leaveOutMissing.size(); i++) _data[i] = _leaveOutMissing.get(i);
 
         return _data;
     }
 
-    private List<Mapping> mappingsForRow(final int rowIndex, final List<Mapping> allMappings) {
-        final List<Mapping> mappings = new ArrayList<>();
+    private List<Mapping> mappingsForRow(int rowIndex, List<Mapping> allMappings) {
+        List<Mapping> mappings = new ArrayList<>();
 
-        for (final Mapping mapping : allMappings) {
+        for (Mapping mapping : allMappings) {
             if (mapping.getI() == rowIndex) mappings.add(mapping);
         }
         return mappings;
     }
 
-    private Matrix initializeW(final int numNodes) {
+    private Matrix initializeW(int numNodes) {
 
         // Initialize W to I.
-        final Matrix W = new Matrix(numNodes, numNodes);
+        Matrix W = new Matrix(numNodes, numNodes);
 
         for (int i = 0; i < numNodes; i++) {
             for (int j = 0; j < numNodes; j++) {
@@ -337,10 +338,10 @@ public class Ling {
         return W;
     }
 
-    private List<Mapping> createMappings(final Graph graph, final List<Node> nodes, final int numNodes) {
+    private List<Mapping> createMappings(Graph graph, List<Node> nodes, int numNodes) {
 
         // Mark as parameters all non-adjacencies from the graph, excluding self edges.
-        final List<Mapping> allMappings = new ArrayList<>();
+        List<Mapping> allMappings = new ArrayList<>();
 
         for (int i = 0; i < numNodes; i++) {
             for (int j = 0; j < numNodes; j++) {
@@ -356,31 +357,31 @@ public class Ling {
         private int i = -1;
         private int j = -1;
 
-        public Mapping(final int i, final int j) {
+        public Mapping(int i, int j) {
             this.i = i;
             this.j = j;
         }
 
         public int getI() {
-            return this.i;
+            return i;
         }
 
         public int getJ() {
-            return this.j;
+            return j;
         }
     }
 
     private Matrix getWFastIca() {
-        final Matrix W;// Using this Fast ICA to get the logging.
-        final Matrix data = new Matrix(this.dataSet.getDoubleData().toArray()).transpose();
-        final FastIca fastIca = new FastIca(data, 30);
+        Matrix W;// Using this Fast ICA to get the logging.
+        Matrix data = new Matrix(dataSet.getDoubleData().toArray()).transpose();
+        FastIca fastIca = new FastIca(data, 30);
         fastIca.setVerbose(false);
         fastIca.setAlgorithmType(FastIca.DEFLATION);
         fastIca.setFunction(FastIca.LOGCOSH);
         fastIca.setTolerance(.01);
         fastIca.setMaxIterations(1000);
         fastIca.setAlpha(1.0);
-        final FastIca.IcaResult result = fastIca.findComponents();
+        IcaResult result = fastIca.findComponents();
         W = new Matrix(result.getW());
         return W.transpose();
     }
@@ -389,7 +390,7 @@ public class Ling {
      * Calculates the time used when processing the search method.
      */
     public long getElapsedTime() {
-        return this.elapsedTime;
+        return elapsedTime;
     }
 
     /**
@@ -397,8 +398,8 @@ public class Ling {
      *
      * @param t The value at which the thresholding is set
      */
-    public void setThreshold(final double t) {
-        this.threshold = t;
+    public void setThreshold(double t) {
+        threshold = t;
     }
 
     //==============================PRIVATE METHODS====================//
@@ -406,29 +407,29 @@ public class Ling {
     /**
      * This is the method used in Patrik's code.
      */
-    public Matrix pruneEdgesByResampling(final Matrix data) {
-        final Matrix X = new Matrix(data.transpose().toArray());
+    public Matrix pruneEdgesByResampling(Matrix data) {
+        Matrix X = new Matrix(data.transpose().toArray());
 
         final int npieces = 10;
-        final int cols = X.columns();
-        final int rows = X.rows();
-        final int piecesize = (int) Math.floor(cols / npieces);
+        int cols = X.columns();
+        int rows = X.rows();
+        int piecesize = (int) floor(cols / npieces);
 
-        final List<Matrix> bpieces = new ArrayList<>();
-        final List<Vector> diststdpieces = new ArrayList<>();
-        final List<Vector> cpieces = new ArrayList<>();
+        List<Matrix> bpieces = new ArrayList<>();
+        List<Vector> diststdpieces = new ArrayList<>();
+        List<Vector> cpieces = new ArrayList<>();
 
         for (int p = 0; p < npieces; p++) {
 
 //          % Select subset of data, and permute the variables to the causal order
 //          Xp = X(k,((p-1)*piecesize+1):(p*piecesize));
 
-            final int p0 = (p) * piecesize;
-            final int p1 = (p + 1) * piecesize - 1;
-            final int[] range = range(p0, p1);
+            int p0 = (p) * piecesize;
+            int p1 = (p + 1) * piecesize - 1;
+            int[] range = this.range(p0, p1);
 
 
-            final Matrix Xp = X;
+            Matrix Xp = X;
 
 //          % Remember to subract out the mean
 //          Xpm = mean(Xp,2);
@@ -437,7 +438,7 @@ public class Ling {
 //          % Calculate covariance matrix
 //          cov = (Xp*Xp')/size(Xp,2);
 
-            final Vector Xpm = new Vector(rows);
+            Vector Xpm = new Vector(rows);
 
             for (int i = 0; i < rows; i++) {
                 double sum = 0.0;
@@ -456,9 +457,9 @@ public class Ling {
             }
 
 
-            final Matrix Xpt = Xp.transpose();
+            Matrix Xpt = Xp.transpose();
 
-            final Matrix cov = Xp.times(Xpt);
+            Matrix cov = Xp.times(Xpt);
 
             for (int i = 0; i < cov.rows(); i++) {
                 for (int j = 0; j < cov.columns(); j++) {
@@ -469,29 +470,29 @@ public class Ling {
 //          % Do QL decomposition on the inverse square root of cov
 //          [Q,L] = tridecomp(cov^(-0.5),'ql');
 
-            final boolean posDef = LingUtils.isPositiveDefinite(cov);
+            boolean posDef = LingUtils.isPositiveDefinite(cov);
 //            TetradLogger.getInstance().log("lingamDetails","Positive definite = " + posDef);
 
             if (!posDef) {
                 System.out.println("Covariance matrix is not positive definite.");
             }
 
-            final Matrix sqrt = cov.sqrt();
+            Matrix sqrt = cov.sqrt();
 
-            final Matrix I = Matrix.identity(rows);
-            final Matrix AI = I.copy();
-            final Matrix invSqrt = sqrt.inverse();
+            Matrix I = Matrix.identity(rows);
+            Matrix AI = I.copy();
+            Matrix invSqrt = sqrt.inverse();
 
-            final QRDecomposition qr = new QRDecomposition(new BlockRealMatrix(invSqrt.toArray()));
-            final RealMatrix r = qr.getR();
+            QRDecomposition qr = new QRDecomposition(new BlockRealMatrix(invSqrt.toArray()));
+            RealMatrix r = qr.getR();
 
 //          % The estimated disturbance-stds are one over the abs of the diag of L
 //          newestdisturbancestd = 1./diag(abs(L));
 
-            final Vector newestdisturbancestd = new Vector(rows);
+            Vector newestdisturbancestd = new Vector(rows);
 
             for (int t = 0; t < rows; t++) {
-                newestdisturbancestd.set(t, 1.0 / Math.abs(r.getEntry(t, t)));
+                newestdisturbancestd.set(t, 1.0 / abs(r.getEntry(t, t)));
             }
 
 //          % Normalize rows of L to unit diagonal
@@ -509,7 +510,7 @@ public class Ling {
             Matrix bnewest = Matrix.identity(rows);
             bnewest = bnewest.minus(new Matrix(r.getData()));
 
-            final Vector cnewest = new Matrix(r.getData()).times(Xpm);
+            Vector cnewest = new Matrix(r.getData()).times(Xpm);
 
             bpieces.add(bnewest);
             diststdpieces.add(newestdisturbancestd);
@@ -532,10 +533,10 @@ public class Ling {
 //          end
 //        end
 
-        final Matrix means = new Matrix(rows, rows);
-        final Matrix stds = new Matrix(rows, rows);
+        Matrix means = new Matrix(rows, rows);
+        Matrix stds = new Matrix(rows, rows);
 
-        final Matrix BFinal = new Matrix(rows, rows);
+        Matrix BFinal = new Matrix(rows, rows);
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < rows; j++) {
@@ -545,20 +546,20 @@ public class Ling {
                     sum += bpieces.get(y).get(i, j);
                 }
 
-                final double themean = sum / (npieces);
+                double themean = sum / (npieces);
 
                 double sumVar = 0.0;
 
                 for (int y = 0; y < npieces; y++) {
-                    sumVar += Math.pow((bpieces.get(y).get(i, j)) - themean, 2);
+                    sumVar += pow((bpieces.get(y).get(i, j)) - themean, 2);
                 }
 
-                final double thestd = Math.sqrt(sumVar / (npieces));
+                double thestd = sqrt(sumVar / (npieces));
 
                 means.set(i, j, themean);
                 stds.set(i, j, thestd);
 
-                if (Math.abs(themean) < this.threshold * thestd) {//  getPruneFactor() * thestd) {
+                if (abs(themean) < threshold * thestd) {//  getPruneFactor() * thestd) {
                     BFinal.set(i, j, 0);
                 } else {
                     BFinal.set(i, j, themean);
@@ -569,24 +570,24 @@ public class Ling {
         return BFinal;
     }
 
-    private void makeDataSet(final GraphWithParameters graphWP) {
+    private void makeDataSet(GraphWithParameters graphWP) {
 
         //define the "Gaussian-squared" distribution
-        final Distribution gp2 = new GaussianPower(2);
+        Distribution gp2 = new GaussianPower(2);
 
         //the coefficients of the error terms  (here, all 1s)
-        final Vector errorCoefficients = Ling.getErrorCoeffsIdentity(graphWP.getGraph().getNumNodes());
+        Vector errorCoefficients = getErrorCoeffsIdentity(graphWP.getGraph().getNumNodes());
 
         //generate data from the SEM
-        final Matrix inVectors = Ling.simulateCyclic(graphWP, errorCoefficients, this.numSamples, gp2);
+        Matrix inVectors = simulateCyclic(graphWP, errorCoefficients, numSamples, gp2);
 
         //reformat it
-        this.dataSet = new BoxDataSet(new DoubleDataBox(inVectors.transpose().toArray()), graphWP.getGraph().getNodes());
+        dataSet = new BoxDataSet(new DoubleDataBox(inVectors.transpose().toArray()), graphWP.getGraph().getNodes());
     }
 
-    private int[] range(final int i1, final int i2) {
+    private int[] range(int i1, int i2) {
         if (i2 < i1) throw new IllegalArgumentException("i2 must be >=  i2 " + i1 + ", " + i2);
-        final int[] series = new int[i2 - i1 + 1];
+        int[] series = new int[i2 - i1 + 1];
         for (int j = i1; j <= i2; j++) series[j - i1] = j;
         return series;
     }
@@ -597,8 +598,8 @@ public class Ling {
      * @param n The number of variables.
      * @return StoredGraphs
      */
-    private static Vector getErrorCoeffsIdentity(final int n) {
-        final Vector errorCoefficients = new Vector(n);
+    private static Vector getErrorCoeffsIdentity(int n) {
+        Vector errorCoefficients = new Vector(n);
         for (int i = 0; i < n; i++) {
             errorCoefficients.set(i, 1);
         }
@@ -607,12 +608,12 @@ public class Ling {
 
     // used to produce dataset if one is not provided as the input to the constructor
 
-    private static Matrix simulateCyclic(final GraphWithParameters dwp, final Vector errorCoefficients, final int n, final Distribution distribution) {
-        final Matrix reducedForm = Ling.reducedForm(dwp);
+    private static Matrix simulateCyclic(GraphWithParameters dwp, Vector errorCoefficients, int n, Distribution distribution) {
+        Matrix reducedForm = reducedForm(dwp);
 
-        final Matrix vectors = new Matrix(dwp.getGraph().getNumNodes(), n);
+        Matrix vectors = new Matrix(dwp.getGraph().getNumNodes(), n);
         for (int j = 0; j < n; j++) {
-            final Vector vector = Ling.simulateReducedForm(reducedForm, errorCoefficients, distribution);
+            Vector vector = simulateReducedForm(reducedForm, errorCoefficients, distribution);
             vectors.assignColumn(j, vector);
         }
         return vectors;
@@ -621,32 +622,32 @@ public class Ling {
     // graph matrix is B
     // mixing matrix (reduced form) is A
 
-    private static Matrix reducedForm(final GraphWithParameters graph) {
-        final Matrix graphMatrix = new Matrix(graph.getGraphMatrix().getDoubleData().toArray());
-        final int n = graphMatrix.rows();
+    private static Matrix reducedForm(GraphWithParameters graph) {
+        Matrix graphMatrix = new Matrix(graph.getGraphMatrix().getDoubleData().toArray());
+        int n = graphMatrix.rows();
 //        TetradMatrix identityMinusGraphTetradMatrix = TetradMatrixUtils.linearCombination(TetradMatrixUtils.identityTetradMatrix(n), 1, graphTetradMatrix, -1);
-        final Matrix identityMinusGraphTetradMatrix = Matrix.identity(n).minus(graphMatrix);
+        Matrix identityMinusGraphTetradMatrix = Matrix.identity(n).minus(graphMatrix);
         return identityMinusGraphTetradMatrix.inverse();
     }
 
     //check against model in which: A =  ..... / (1 - xyzw)
 
-    private static Vector simulateReducedForm(final Matrix reducedForm, final Vector errorCoefficients, final Distribution distr) {
-        final int n = reducedForm.rows();
-        final Vector vector = new Vector(n);
-        final Vector samples = new Vector(n);
+    private static Vector simulateReducedForm(Matrix reducedForm, Vector errorCoefficients, Distribution distr) {
+        int n = reducedForm.rows();
+        Vector vector = new Vector(n);
+        Vector samples = new Vector(n);
 
         for (int j = 0; j < n; j++) { //sample from each noise term
-            final double sample = distr.nextRandom();
-            final double errorCoefficient = errorCoefficients.get(j);
+            double sample = distr.nextRandom();
+            double errorCoefficient = errorCoefficients.get(j);
             samples.set(j, sample * errorCoefficient);
         }
 
         for (int i = 0; i < n; i++) { //for each observed variable, i.e. dimension
             double sum = 0;
             for (int j = 0; j < n; j++) {
-                final double coefficient = reducedForm.get(i, j);
-                final double sample = samples.get(j);
+                double coefficient = reducedForm.get(i, j);
+                double sample = samples.get(j);
                 sum += coefficient * sample;
             }
             vector.set(i, sum);
@@ -656,31 +657,31 @@ public class Ling {
 
     //given the W matrix, outputs the list of SEMs consistent with the observed distribution.
 
-    private StoredGraphs findCandidateModels(final List<Node> variables, final Matrix matrixW, final boolean approximateZeros) {
+    private StoredGraphs findCandidateModels(List<Node> variables, Matrix matrixW, boolean approximateZeros) {
 
         Matrix normalizedZldW;
-        final List<PermutationMatrixPair> zldPerms;
+        List<PermutationMatrixPair> zldPerms;
 
-        final StoredGraphs gs = new StoredGraphs();
+        StoredGraphs gs = new StoredGraphs();
 
         System.out.println("Calculating zeroless diagonal permutations...");
 
         TetradLogger.getInstance().log("lingDetails", "Calculating zeroless diagonal permutations.");
-        zldPerms = zerolessDiagonalPermutations(matrixW, approximateZeros, variables, this.dataSet);
+        zldPerms = this.zerolessDiagonalPermutations(matrixW, approximateZeros, variables, dataSet);
 
         System.out.println("Calculated zeroless diagonal permutations.");
 
         //for each W~, compute a candidate B, and score it
-        for (final PermutationMatrixPair zldPerm : zldPerms) {
+        for (PermutationMatrixPair zldPerm : zldPerms) {
             TetradLogger.getInstance().log("lingDetails", "" + zldPerm);
             System.out.println(zldPerm);
 
             normalizedZldW = LingUtils.normalizeDiagonal(zldPerm.getMatrixW());
             // Note: add method to deal with this data
-            zldPerm.setMatrixBhat(Ling.computeBhatTetradMatrix(normalizedZldW, variables)); //B~ = I - W~
-            final Matrix doubleData = zldPerm.getMatrixBhat().getDoubleData();
-            final boolean isStableTetradMatrix = Ling.allEigenvaluesAreSmallerThanOneInModulus(new Matrix(doubleData.toArray()));
-            final GraphWithParameters graph = new GraphWithParameters(zldPerm.getMatrixBhat());
+            zldPerm.setMatrixBhat(computeBhatTetradMatrix(normalizedZldW, variables)); //B~ = I - W~
+            Matrix doubleData = zldPerm.getMatrixBhat().getDoubleData();
+            boolean isStableTetradMatrix = allEigenvaluesAreSmallerThanOneInModulus(new Matrix(doubleData.toArray()));
+            GraphWithParameters graph = new GraphWithParameters(zldPerm.getMatrixBhat());
 
             gs.addGraph(graph.getGraph());
             gs.addStable(isStableTetradMatrix);
@@ -721,17 +722,17 @@ public class Ling {
         return gs;
     }
 
-    private StoredGraphs findCandidateModel(final List<Node> variables, final Matrix matrixW, final boolean approximateZeros) {
+    private StoredGraphs findCandidateModel(List<Node> variables, Matrix matrixW, boolean approximateZeros) {
 
         Matrix normalizedZldW;
-        final List<PermutationMatrixPair> zldPerms;
+        List<PermutationMatrixPair> zldPerms;
 
-        final StoredGraphs gs = new StoredGraphs();
+        StoredGraphs gs = new StoredGraphs();
 
         System.out.println("Calculating zeroless diagonal permutations...");
 
         TetradLogger.getInstance().log("lingDetails", "Calculating zeroless diagonal permutations.");
-        zldPerms = zerolessDiagonalPermutation(matrixW, approximateZeros, variables, this.dataSet);
+        zldPerms = this.zerolessDiagonalPermutation(matrixW, approximateZeros, variables, dataSet);
 
 
 //        zldPerms = zerolessDiagonalPermutations(matrixW, approximateZeros, variables, dataSet);
@@ -739,16 +740,16 @@ public class Ling {
         System.out.println("Calculated zeroless diagonal permutations.");
 
         //for each W~, compute a candidate B, and score it
-        for (final PermutationMatrixPair zldPerm : zldPerms) {
+        for (PermutationMatrixPair zldPerm : zldPerms) {
             TetradLogger.getInstance().log("lingDetails", "" + zldPerm);
             System.out.println(zldPerm);
 
             normalizedZldW = LingUtils.normalizeDiagonal(zldPerm.getMatrixW());
             // Note: add method to deal with this data
-            zldPerm.setMatrixBhat(Ling.computeBhatTetradMatrix(normalizedZldW, variables)); //B~ = I - W~
-            final Matrix doubleData = zldPerm.getMatrixBhat().getDoubleData();
-            final boolean isStableTetradMatrix = Ling.allEigenvaluesAreSmallerThanOneInModulus(new Matrix(doubleData.toArray()));
-            final GraphWithParameters graph = new GraphWithParameters(zldPerm.getMatrixBhat());
+            zldPerm.setMatrixBhat(computeBhatTetradMatrix(normalizedZldW, variables)); //B~ = I - W~
+            Matrix doubleData = zldPerm.getMatrixBhat().getDoubleData();
+            boolean isStableTetradMatrix = allEigenvaluesAreSmallerThanOneInModulus(new Matrix(doubleData.toArray()));
+            GraphWithParameters graph = new GraphWithParameters(zldPerm.getMatrixBhat());
 
             gs.addGraph(graph.getGraph());
             gs.addStable(isStableTetradMatrix);
@@ -790,53 +791,53 @@ public class Ling {
     }
 
 
-    private List<PermutationMatrixPair> zerolessDiagonalPermutations(Matrix ica_W, final boolean approximateZeros,
-                                                                     final List<Node> vars, final DataSet dataSet) {
+    private List<PermutationMatrixPair> zerolessDiagonalPermutations(Matrix ica_W, boolean approximateZeros,
+                                                                     List<Node> vars, DataSet dataSet) {
 
-        final List<PermutationMatrixPair> permutations = new java.util.Vector();
+        List<PermutationMatrixPair> permutations = new java.util.Vector();
 
         if (approximateZeros) {
 //            setInsignificantEntriesToZero(ica_W);
-            pruneEdgesByResampling(dataSet.getDoubleData());
-            ica_W = removeZeroRowsAndCols(ica_W, vars);
+            this.pruneEdgesByResampling(dataSet.getDoubleData());
+            ica_W = this.removeZeroRowsAndCols(ica_W, vars);
         }
 
         //find assignments
-        final Matrix mat = ica_W.transpose();
+        Matrix mat = ica_W.transpose();
         //returns all zeroless-diagonal column-permutations
 
-        final List<List<Integer>> nRookAssignments = Ling.nRookColumnAssignments(mat, Ling.makeAllRows(mat.rows()));
+        List<List<Integer>> nRookAssignments = nRookColumnAssignments(mat, makeAllRows(mat.rows()));
 
         //for each assignment, add the corresponding permutation to 'permutations'
-        for (final List<Integer> permutation : nRookAssignments) {
-            final Matrix matrixW = Ling.permuteRows(ica_W, permutation).transpose();
-            final PermutationMatrixPair permTetradMatrixPair = new PermutationMatrixPair(permutation, matrixW);
+        for (List<Integer> permutation : nRookAssignments) {
+            Matrix matrixW = permuteRows(ica_W, permutation).transpose();
+            PermutationMatrixPair permTetradMatrixPair = new PermutationMatrixPair(permutation, matrixW);
             permutations.add(permTetradMatrixPair);
         }
 
         return permutations;
     }
 
-    private List<PermutationMatrixPair> zerolessDiagonalPermutation(Matrix ica_W, final boolean approximateZeros,
-                                                                    final List<Node> vars, final DataSet dataSet) {
+    private List<PermutationMatrixPair> zerolessDiagonalPermutation(Matrix ica_W, boolean approximateZeros,
+                                                                    List<Node> vars, DataSet dataSet) {
 
-        final List<PermutationMatrixPair> permutations = new java.util.Vector();
+        List<PermutationMatrixPair> permutations = new java.util.Vector();
 
         if (approximateZeros) {
 //            setInsignificantEntriesToZero(ica_W);
-            ica_W = pruneEdgesByResampling(ica_W);
-            ica_W = removeZeroRowsAndCols(ica_W, vars);
+            ica_W = this.pruneEdgesByResampling(ica_W);
+            ica_W = this.removeZeroRowsAndCols(ica_W, vars);
         }
 
 //        List<PermutationMatrixPair > zldPerms = new ArrayList<PermutationMatrixPair >();
 
-        final List<Integer> perm = new ArrayList<>();
+        List<Integer> perm = new ArrayList<>();
 
         for (int i = 0; i < vars.size(); i++) perm.add(i);
 
-        final Matrix matrixW = ica_W.transpose();
+        Matrix matrixW = ica_W.transpose();
 
-        final PermutationMatrixPair pair = new PermutationMatrixPair(perm, matrixW);
+        PermutationMatrixPair pair = new PermutationMatrixPair(perm, matrixW);
 
         permutations.add(pair);
 
@@ -857,15 +858,15 @@ public class Ling {
         return permutations;
     }
 
-    private Matrix removeZeroRowsAndCols(Matrix w, final List<Node> variables) {
+    private Matrix removeZeroRowsAndCols(Matrix w, List<Node> variables) {
 
-        final Matrix _W = w.copy();
-        final List<Node> _variables = new ArrayList<>(variables);
-        final List<Integer> remove = new ArrayList<>();
+        Matrix _W = w.copy();
+        List<Node> _variables = new ArrayList<>(variables);
+        List<Integer> remove = new ArrayList<>();
 
         ROW:
         for (int i = 0; i < _W.rows(); i++) {
-            final Vector row = _W.getRow(i);
+            Vector row = _W.getRow(i);
 
             for (int j = 0; j < row.size(); j++) {
                 if (row.get(j) != 0) continue ROW;
@@ -877,7 +878,7 @@ public class Ling {
 
         COLUMN:
         for (int i = 0; i < _W.rows(); i++) {
-            final Vector col = _W.getColumn(i);
+            Vector col = _W.getColumn(i);
 
             for (int j = 0; j < col.size(); j++) {
                 if (col.get(j) != 0) continue COLUMN;
@@ -888,7 +889,7 @@ public class Ling {
             }
         }
 
-        final int[] rows = new int[_W.rows() - remove.size()];
+        int[] rows = new int[_W.rows() - remove.size()];
 
         int count = -1;
         for (int k = 0; k < w.rows(); k++) {
@@ -906,11 +907,11 @@ public class Ling {
 
     // uses the thresholding criterion
 
-    private void setInsignificantEntriesToZero(final Matrix mat) {
-        final int n = mat.rows();
+    private void setInsignificantEntriesToZero(Matrix mat) {
+        int n = mat.rows();
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                if (Math.abs(mat.get(i, j)) < this.threshold) {
+                if (abs(mat.get(i, j)) < threshold) {
                     mat.set(i, j, 0);
                 }
             }
@@ -919,37 +920,37 @@ public class Ling {
         System.out.println("Thresholded W = " + mat);
     }
 
-    private static List<Integer> makeAllRows(final int n) {
-        final List<Integer> l = new ArrayList<>();
+    private static List<Integer> makeAllRows(int n) {
+        List<Integer> l = new ArrayList<>();
         for (int i = 0; i < n; i++) {
             l.add(i);
         }
         return l;
     }
 
-    private static List<List<Integer>> nRookColumnAssignments(final Matrix mat, final List<Integer> availableRows) {
-        final List<List<Integer>> concats = new ArrayList<>();
+    private static List<List<Integer>> nRookColumnAssignments(Matrix mat, List<Integer> availableRows) {
+        List<List<Integer>> concats = new ArrayList<>();
 
         System.out.println("mat = " + mat);
 
-        final int n = availableRows.size();
+        int n = availableRows.size();
 
         for (int i = 0; i < n; i++) {
-            final int currentRowIndex = availableRows.get(i);
+            int currentRowIndex = availableRows.get(i);
 
             if (mat.get(currentRowIndex, 0) != 0) {
                 if (mat.columns() > 1) {
-                    final java.util.Vector newAvailableRows = (new java.util.Vector(availableRows));
+                    java.util.Vector newAvailableRows = (new java.util.Vector(availableRows));
                     newAvailableRows.removeElement(currentRowIndex);
-                    final Matrix subMat = mat.getPart(0, mat.rows() - 1, 1, mat.columns() - 2);
-                    final List<List<Integer>> allLater = Ling.nRookColumnAssignments(subMat, newAvailableRows);
+                    Matrix subMat = mat.getPart(0, mat.rows() - 1, 1, mat.columns() - 2);
+                    List<List<Integer>> allLater = nRookColumnAssignments(subMat, newAvailableRows);
 
-                    for (final List<Integer> laterPerm : allLater) {
+                    for (List<Integer> laterPerm : allLater) {
                         laterPerm.add(0, currentRowIndex);
                         concats.add(laterPerm);
                     }
                 } else {
-                    final List<Integer> l = new ArrayList<>();
+                    List<Integer> l = new ArrayList<>();
                     l.add(currentRowIndex);
                     concats.add(l);
                 }
@@ -959,11 +960,11 @@ public class Ling {
         return concats;
     }
 
-    private static Matrix permuteRows(final Matrix mat, final List<Integer> permutation) {
-        final Matrix permutedMat = mat.like();
+    private static Matrix permuteRows(Matrix mat, List<Integer> permutation) {
+        Matrix permutedMat = mat.like();
 
         for (int j = 0; j < mat.rows(); j++) {
-            final Vector row = mat.getRow(j);
+            Vector row = mat.getRow(j);
             permutedMat.assignRow(permutation.get(j), row);
         }
 
@@ -972,25 +973,25 @@ public class Ling {
 
     //	B^ = I - W~'
 
-    private static DataSet computeBhatTetradMatrix(final Matrix normalizedZldW, final List<Node> nodes) {//, List<Integer> perm) {
-        final int size = normalizedZldW.rows();
-        final Matrix mat = Matrix.identity(size).minus(normalizedZldW);
+    private static DataSet computeBhatTetradMatrix(Matrix normalizedZldW, List<Node> nodes) {//, List<Integer> perm) {
+        int size = normalizedZldW.rows();
+        Matrix mat = Matrix.identity(size).minus(normalizedZldW);
         return new BoxDataSet(new DoubleDataBox(mat.toArray()), nodes);
     }
 
-    private static boolean allEigenvaluesAreSmallerThanOneInModulus(final Matrix mat) {
+    private static boolean allEigenvaluesAreSmallerThanOneInModulus(Matrix mat) {
 
-        final EigenDecomposition dec = new EigenDecomposition(new BlockRealMatrix(mat.toArray()));
-        final double[] realEigenvalues = dec.getRealEigenvalues();
-        final double[] imagEigenvalues = dec.getImagEigenvalues();
+        EigenDecomposition dec = new EigenDecomposition(new BlockRealMatrix(mat.toArray()));
+        double[] realEigenvalues = dec.getRealEigenvalues();
+        double[] imagEigenvalues = dec.getImagEigenvalues();
 
         double sum = 0.0;
 
 //        boolean allEigenvaluesSmallerThanOneInModulus = true;
         for (int i = 0; i < realEigenvalues.length; i++) {
-            final double realEigenvalue = realEigenvalues[i];
-            final double imagEigenvalue = imagEigenvalues[i];
-            final double modulus = Math.sqrt(Math.pow(realEigenvalue, 2) + Math.pow(imagEigenvalue, 2));
+            double realEigenvalue = realEigenvalues[i];
+            double imagEigenvalue = imagEigenvalues[i];
+            double modulus = sqrt(pow(realEigenvalue, 2) + pow(imagEigenvalue, 2));
 //			double argument = Math.atan(imagEigenvalue/realEigenvalue);
 //			double modulusCubed = Math.pow(modulus, 3);
 //			System.out.println("eigenvalue #"+i+" = " + realEigenvalue + "+" + imagEigenvalue + "i");
@@ -1022,7 +1023,7 @@ public class Ling {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
@@ -1063,31 +1064,31 @@ public class Ling {
          * @return Returns the number of graphs stored in the class
          */
         public int getNumGraphs() {
-            return this.graphs.size();
+            return graphs.size();
         }
 
         /**
          * @param g The index of the graph to be returned
          * @return Returns a Graph
          */
-        public Graph getGraph(final int g) {
-            return this.graphs.get(g);
+        public Graph getGraph(int g) {
+            return graphs.get(g);
         }
 
         /**
          * @param d The index of the graph for which the DataSet is being returned
          * @return Returns a DataSet
          */
-        public DataSet getData(final int d) {
-            return this.dataSet.get(d);
+        public DataSet getData(int d) {
+            return dataSet.get(d);
         }
 
         /**
          * @param s The index of the graph at which to return the boolean stability information for the permutation
          * @return Returns the shriknig variable value for a specific graph.
          */
-        public boolean isStable(final int s) {
-            return this.stable.get(s);
+        public boolean isStable(int s) {
+            return stable.get(s);
         }
 
         /**
@@ -1095,8 +1096,8 @@ public class Ling {
          *
          * @param g The graph to add
          */
-        public void addGraph(final Graph g) {
-            this.graphs.add(g);
+        public void addGraph(Graph g) {
+            graphs.add(g);
         }
 
         /**
@@ -1104,8 +1105,8 @@ public class Ling {
          *
          * @param d The graph to add
          */
-        public void addData(final DataSet d) {
-            this.dataSet.add(d);
+        public void addData(DataSet d) {
+            dataSet.add(d);
         }
 
         /**
@@ -1114,8 +1115,8 @@ public class Ling {
          *
          * @param s The stability value to set for a graph.
          */
-        public void addStable(final Boolean s) {
-            this.stable.add(s);
+        public void addStable(Boolean s) {
+            stable.add(s);
         }
     }
 

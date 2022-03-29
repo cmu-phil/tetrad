@@ -53,17 +53,17 @@ public class ExpressionManager {
     /**
      * Singleton instance.
      */
-    private final static ExpressionManager INSTANCE = new ExpressionManager();
+    private static final ExpressionManager INSTANCE = new ExpressionManager();
 
 
     private ExpressionManager() {
-        this.descriptors = new ArrayList<>(ExpressionManager.listDescriptors());
-        for (final ExpressionDescriptor exp : this.descriptors) {
-            if (this.tokenMap.containsKey(exp.getToken())) {
+        descriptors = new ArrayList<>(listDescriptors());
+        for (ExpressionDescriptor exp : descriptors) {
+            if (tokenMap.containsKey(exp.getToken())) {
                 throw new IllegalStateException("Expression descriptors must have unique tokens, but " + exp.getToken()
                         + " is not unique.");
             }
-            this.tokenMap.put(exp.getToken(), exp);
+            tokenMap.put(exp.getToken(), exp);
         }
     }
 
@@ -74,21 +74,21 @@ public class ExpressionManager {
      * @return an instanceo of the manager.
      */
     public static ExpressionManager getInstance() {
-        return ExpressionManager.INSTANCE;
+        return INSTANCE;
     }
 
     /**
      * @return a list of all the descriptions.
      */
     public List<ExpressionDescriptor> getDescriptors() {
-        return Collections.unmodifiableList(this.descriptors);
+        return Collections.unmodifiableList(descriptors);
     }
 
     /**
      * @return the descriptor to use for the given token.
      */
-    public ExpressionDescriptor getDescriptorFromToken(final String token) {
-        return this.tokenMap.get(token);
+    public ExpressionDescriptor getDescriptorFromToken(String token) {
+        return tokenMap.get(token);
     }
 
     //======================================= Private methods ===============================//
@@ -98,7 +98,7 @@ public class ExpressionManager {
      * Builds all the descriptors.
      */
     private static List<ExpressionDescriptor> listDescriptors() {
-        final List<ExpressionDescriptor> descriptors = new LinkedList<>();
+        List<ExpressionDescriptor> descriptors = new LinkedList<>();
 
         // For templating. "NEW" has to come before "N".
         descriptors.add(new NewExpressionDescriptor());
@@ -202,22 +202,22 @@ public class ExpressionManager {
 
 
         public AdditionExpressionDescriptor() {
-            super("Addition", "+", Position.BOTH, true);
+            super("Addition", "+", ExpressionDescriptor.Position.BOTH, true);
         }
 
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length > 0) {
-                return new AbstractExpression("+", Position.BOTH, expressions) {
+                return new AbstractExpression("+", ExpressionDescriptor.Position.BOTH, expressions) {
                     static final long serialVersionUID = 23L;
 
-                    public double evaluate(final Context context) {
+                    public double evaluate(Context context) {
                         double value = 0.0;
-                        for (final Expression exp : getExpressions()) {
+                        for (Expression exp : this.getExpressions()) {
                             double evaluate = 0;
                             try {
                                 evaluate = exp.evaluate(context);
-                            } catch (final Exception e) {
+                            } catch (Exception e) {
 //                                e.printStackTrace();
                             }
                             value += evaluate;
@@ -242,25 +242,25 @@ public class ExpressionManager {
 
 
         public SubtractionExpressionDescriptor() {
-            super("Subtraction", "-", Position.INFIX, false);
+            super("Subtraction", "-", ExpressionDescriptor.Position.INFIX, false);
         }
 
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length == 1) {
-                return new AbstractExpression("-", Position.INFIX, expressions) {
+                return new AbstractExpression("-", ExpressionDescriptor.Position.INFIX, expressions) {
                     static final long serialVersionUID = 23L;
 
-                    public double evaluate(final Context context) {
-                        return -getExpressions().get(0).evaluate(context);
+                    public double evaluate(Context context) {
+                        return -this.getExpressions().get(0).evaluate(context);
                     }
                 };
             } else if (expressions.length == 2) {
-                return new AbstractExpression("-", Position.INFIX, expressions) {
+                return new AbstractExpression("-", ExpressionDescriptor.Position.INFIX, expressions) {
                     static final long serialVersionUID = 23L;
 
-                    public double evaluate(final Context context) {
-                        return getExpressions().get(0).evaluate(context) - getExpressions().get(1).evaluate(context);
+                    public double evaluate(Context context) {
+                        return this.getExpressions().get(0).evaluate(context) - this.getExpressions().get(1).evaluate(context);
                     }
                 };
             }
@@ -278,20 +278,20 @@ public class ExpressionManager {
 
 
         public CeilExpressionDescriptor() {
-            super("Ceil", "ceil", Position.PREFIX, false);
+            super("Ceil", "ceil", ExpressionDescriptor.Position.PREFIX, false);
         }
 
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Ceil must have one and only one" +
                         " argument.");
             }
-            return new AbstractExpression("ceil", Position.PREFIX, expressions) {
+            return new AbstractExpression("ceil", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    return Math.ceil(getExpressions().get(0).evaluate(context));
+                public double evaluate(Context context) {
+                    return Math.ceil(this.getExpressions().get(0).evaluate(context));
                 }
             };
         }
@@ -302,20 +302,20 @@ public class ExpressionManager {
 
 
         public SignumExpressionDescriptor() {
-            super("Signum", "signum", Position.PREFIX, false);
+            super("Signum", "signum", ExpressionDescriptor.Position.PREFIX, false);
         }
 
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Signum must have one and only one" +
                         " argument.");
             }
-            return new AbstractExpression("signum", Position.PREFIX, expressions) {
+            return new AbstractExpression("signum", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    return Math.signum(getExpressions().get(0).evaluate(context));
+                public double evaluate(Context context) {
+                    return Math.signum(this.getExpressions().get(0).evaluate(context));
                 }
             };
         }
@@ -329,20 +329,20 @@ public class ExpressionManager {
 
 
         public CosExpressionDescriptor() {
-            super("Cosine", "cos", Position.PREFIX, false);
+            super("Cosine", "cos", ExpressionDescriptor.Position.PREFIX, false);
         }
 
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Cos must have one and only one" +
                         " argument.");
             }
-            return new AbstractExpression("cos", Position.PREFIX, expressions) {
+            return new AbstractExpression("cos", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    return Math.cos(getExpressions().get(0).evaluate(context));
+                public double evaluate(Context context) {
+                    return Math.cos(this.getExpressions().get(0).evaluate(context));
                 }
             };
         }
@@ -353,20 +353,20 @@ public class ExpressionManager {
 
 
         public CoshExpressionDescriptor() {
-            super("Hyperbolic Cosine", "cosh", Position.PREFIX, false);
+            super("Hyperbolic Cosine", "cosh", ExpressionDescriptor.Position.PREFIX, false);
         }
 
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Cosh must have one and only one" +
                         " argument.");
             }
-            return new AbstractExpression("cosh", Position.PREFIX, expressions) {
+            return new AbstractExpression("cosh", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    return Math.cosh(getExpressions().get(0).evaluate(context));
+                public double evaluate(Context context) {
+                    return Math.cosh(this.getExpressions().get(0).evaluate(context));
                 }
             };
         }
@@ -377,20 +377,20 @@ public class ExpressionManager {
 
 
         public AcosExpressionDescriptor() {
-            super("Arc Cosine", "acos", Position.PREFIX, false);
+            super("Arc Cosine", "acos", ExpressionDescriptor.Position.PREFIX, false);
         }
 
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Acos must have one and only one" +
                         " argument.");
             }
-            return new AbstractExpression("acos", Position.PREFIX, expressions) {
+            return new AbstractExpression("acos", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    return Math.acos(getExpressions().get(0).evaluate(context));
+                public double evaluate(Context context) {
+                    return Math.acos(this.getExpressions().get(0).evaluate(context));
                 }
             };
         }
@@ -405,20 +405,20 @@ public class ExpressionManager {
 
 
         public FloorExpressionDescriptor() {
-            super("Floor", "floor", Position.PREFIX, false);
+            super("Floor", "floor", ExpressionDescriptor.Position.PREFIX, false);
         }
 
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Floor must have one and only one" +
                         " argument.");
             }
-            return new AbstractExpression("floor", Position.PREFIX, expressions) {
+            return new AbstractExpression("floor", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    return Math.floor(getExpressions().get(0).evaluate(context));
+                public double evaluate(Context context) {
+                    return Math.floor(this.getExpressions().get(0).evaluate(context));
                 }
             };
         }
@@ -432,20 +432,20 @@ public class ExpressionManager {
 
 
         public AbsoluteValueExpressionDescriptor() {
-            super("Abs", "abs", Position.PREFIX, false);
+            super("Abs", "abs", ExpressionDescriptor.Position.PREFIX, false);
         }
 
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Floor must have one and only one" +
                         " argument.");
             }
-            return new AbstractExpression("abs", Position.PREFIX, expressions) {
+            return new AbstractExpression("abs", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    return Math.abs(getExpressions().get(0).evaluate(context));
+                public double evaluate(Context context) {
+                    return Math.abs(this.getExpressions().get(0).evaluate(context));
                 }
             };
         }
@@ -456,20 +456,20 @@ public class ExpressionManager {
 
 
         public Log10ExpressionDescriptor() {
-            super("Log base 10", "log10", Position.PREFIX, false);
+            super("Log base 10", "log10", ExpressionDescriptor.Position.PREFIX, false);
         }
 
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Log10 must have one and only one" +
                         " argument.");
             }
-            return new AbstractExpression("log10", Position.PREFIX, expressions) {
+            return new AbstractExpression("log10", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    return Math.log10(getExpressions().get(0).evaluate(context));
+                public double evaluate(Context context) {
+                    return Math.log10(this.getExpressions().get(0).evaluate(context));
                 }
             };
         }
@@ -484,20 +484,20 @@ public class ExpressionManager {
 
 
         public MultiplicationExpressionDescriptor() {
-            super("Multiplication", "*", Position.BOTH, true);
+            super("Multiplication", "*", ExpressionDescriptor.Position.BOTH, true);
         }
 
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length < 2) {
                 throw new ExpressionInitializationException("Must have at least two arguments.");
             }
-            return new AbstractExpression("*", Position.BOTH, expressions) {
+            return new AbstractExpression("*", ExpressionDescriptor.Position.BOTH, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
+                public double evaluate(Context context) {
                     double value = 1.0;
-                    for (final Expression exp : getExpressions()) {
+                    for (Expression exp : this.getExpressions()) {
                         value = value * exp.evaluate(context);
                     }
                     return value;
@@ -515,20 +515,20 @@ public class ExpressionManager {
 
 
         public DivisionExpressionDescriptor() {
-            super("Division", "/", Position.BOTH, true);
+            super("Division", "/", ExpressionDescriptor.Position.BOTH, true);
         }
 
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 2) {
                 throw new ExpressionInitializationException("Must have two arguments.");
             }
-            return new AbstractExpression("/", Position.BOTH, expressions) {
+            return new AbstractExpression("/", ExpressionDescriptor.Position.BOTH, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    return getExpressions().get(0).evaluate(context)
-                            / getExpressions().get(1).evaluate(context);
+                public double evaluate(Context context) {
+                    return this.getExpressions().get(0).evaluate(context)
+                            / this.getExpressions().get(1).evaluate(context);
                 }
             };
         }
@@ -543,20 +543,20 @@ public class ExpressionManager {
 
 
         public NaturalLogExpressionDescriptor() {
-            super("Log base e", "ln", Position.PREFIX, false);
+            super("Log base e", "ln", ExpressionDescriptor.Position.PREFIX, false);
         }
 
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("log must have one and only one" +
                         " argument.");
             }
-            return new AbstractExpression("ln", Position.PREFIX, expressions) {
+            return new AbstractExpression("ln", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    return Math.log(getExpressions().get(0).evaluate(context));
+                public double evaluate(Context context) {
+                    return Math.log(this.getExpressions().get(0).evaluate(context));
                 }
             };
         }
@@ -570,18 +570,18 @@ public class ExpressionManager {
 
 
         public RandomExpressionDescriptor() {
-            super("Random", "random", Position.PREFIX, false);
+            super("Random", "random", ExpressionDescriptor.Position.PREFIX, false);
         }
 
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 0) {
                 throw new ExpressionInitializationException("Random must have no arguments.");
             }
-            return new AbstractExpression("random", Position.PREFIX, expressions) {
+            return new AbstractExpression("random", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
+                public double evaluate(Context context) {
                     return Math.random();
                 }
             };
@@ -596,20 +596,20 @@ public class ExpressionManager {
 
 
         public RoundExpressionDescriptor() {
-            super("Round", "round", Position.PREFIX, false);
+            super("Round", "round", ExpressionDescriptor.Position.PREFIX, false);
         }
 
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Round must have one and only one" +
                         " argument.");
             }
-            return new AbstractExpression("round", Position.PREFIX, expressions) {
+            return new AbstractExpression("round", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    return Math.round(getExpressions().get(0).evaluate(context));
+                public double evaluate(Context context) {
+                    return Math.round(this.getExpressions().get(0).evaluate(context));
                 }
             };
         }
@@ -624,20 +624,20 @@ public class ExpressionManager {
 
 
         public TanExpressionDescriptor() {
-            super("Tangent", "tan", Position.PREFIX, false);
+            super("Tangent", "tan", ExpressionDescriptor.Position.PREFIX, false);
         }
 
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Tan must have one and only one" +
                         " argument.");
             }
-            return new AbstractExpression("tan", Position.PREFIX, expressions) {
+            return new AbstractExpression("tan", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    return Math.tan(getExpressions().get(0).evaluate(context));
+                public double evaluate(Context context) {
+                    return Math.tan(this.getExpressions().get(0).evaluate(context));
                 }
             };
         }
@@ -648,20 +648,20 @@ public class ExpressionManager {
 
 
         public TanhExpressionDescriptor() {
-            super("Hyperbolic tangent", "tanh", Position.PREFIX, false);
+            super("Hyperbolic tangent", "tanh", ExpressionDescriptor.Position.PREFIX, false);
         }
 
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Hyperbolic tangent must have one and only one" +
                         " argument.");
             }
-            return new AbstractExpression("tanh", Position.PREFIX, expressions) {
+            return new AbstractExpression("tanh", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    return Math.tanh(getExpressions().get(0).evaluate(context));
+                public double evaluate(Context context) {
+                    return Math.tanh(this.getExpressions().get(0).evaluate(context));
                 }
             };
         }
@@ -672,20 +672,20 @@ public class ExpressionManager {
 
 
         public AtanExpressionDescriptor() {
-            super("Arc Tangent", "atan", Position.PREFIX, false);
+            super("Arc Tangent", "atan", ExpressionDescriptor.Position.PREFIX, false);
         }
 
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Atan must have one and only one" +
                         " argument.");
             }
-            return new AbstractExpression("atan", Position.PREFIX, expressions) {
+            return new AbstractExpression("atan", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    return Math.atan(getExpressions().get(0).evaluate(context));
+                public double evaluate(Context context) {
+                    return Math.atan(this.getExpressions().get(0).evaluate(context));
                 }
             };
         }
@@ -696,20 +696,20 @@ public class ExpressionManager {
 
 
         public LogisticExpressionDescriptor() {
-            super("Logistic", "logistic", Position.PREFIX, false);
+            super("Logistic", "logistic", ExpressionDescriptor.Position.PREFIX, false);
         }
 
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Logistic function must have one and only one" +
                         " argument.");
             }
-            return new AbstractExpression("logistic", Position.PREFIX, expressions) {
+            return new AbstractExpression("logistic", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    final double t = getExpressions().get(0).evaluate(context);
+                public double evaluate(Context context) {
+                    double t = this.getExpressions().get(0).evaluate(context);
                     return 1.0 / (1.0 + Math.exp(-t));
                 }
             };
@@ -724,20 +724,20 @@ public class ExpressionManager {
 
 
         public SquareRootExpressionDescriptor() {
-            super("Square Root", "sqrt", Position.PREFIX, false);
+            super("Square Root", "sqrt", ExpressionDescriptor.Position.PREFIX, false);
         }
 
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Square Root must have one and only one" +
                         " argument.");
             }
-            return new AbstractExpression("sqrt", Position.PREFIX, expressions) {
+            return new AbstractExpression("sqrt", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    return Math.sqrt(getExpressions().get(0).evaluate(context));
+                public double evaluate(Context context) {
+                    return Math.sqrt(this.getExpressions().get(0).evaluate(context));
                 }
             };
         }
@@ -751,20 +751,20 @@ public class ExpressionManager {
 
 
         public SinExpressionDescriptor() {
-            super("Sine", "sin", Position.PREFIX, false);
+            super("Sine", "sin", ExpressionDescriptor.Position.PREFIX, false);
         }
 
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Sine must have one and only one" +
                         " argument.");
             }
-            return new AbstractExpression("sin", Position.PREFIX, expressions) {
+            return new AbstractExpression("sin", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    return Math.sin(getExpressions().get(0).evaluate(context));
+                public double evaluate(Context context) {
+                    return Math.sin(this.getExpressions().get(0).evaluate(context));
                 }
             };
         }
@@ -775,20 +775,20 @@ public class ExpressionManager {
 
 
         public SinhExpressionDescriptor() {
-            super("Sinh", "sinh", Position.PREFIX, false);
+            super("Sinh", "sinh", ExpressionDescriptor.Position.PREFIX, false);
         }
 
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Sinh must have one and only one" +
                         " argument.");
             }
-            return new AbstractExpression("sinh", Position.PREFIX, expressions) {
+            return new AbstractExpression("sinh", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    return Math.sinh(getExpressions().get(0).evaluate(context));
+                public double evaluate(Context context) {
+                    return Math.sinh(this.getExpressions().get(0).evaluate(context));
                 }
             };
         }
@@ -799,20 +799,20 @@ public class ExpressionManager {
 
 
         public AsinExpressionDescriptor() {
-            super("Arc Sine", "asin", Position.PREFIX, false);
+            super("Arc Sine", "asin", ExpressionDescriptor.Position.PREFIX, false);
         }
 
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Asin must have one and only one" +
                         " argument.");
             }
-            return new AbstractExpression("asin", Position.PREFIX, expressions) {
+            return new AbstractExpression("asin", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    return Math.asin(getExpressions().get(0).evaluate(context));
+                public double evaluate(Context context) {
+                    return Math.asin(this.getExpressions().get(0).evaluate(context));
                 }
             };
         }
@@ -828,22 +828,22 @@ public class ExpressionManager {
 
 
         public PowExpressionDescriptor() {
-            super("Power", "pow", Position.PREFIX, false);
+            super("Power", "pow", ExpressionDescriptor.Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 2) {
                 throw new ExpressionInitializationException("Pow must have two arguments.");
             }
 
-            return new AbstractExpression("pow", Position.PREFIX, expressions) {
+            return new AbstractExpression("pow", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    final Expression exp1 = getExpressions().get(0);
-                    final Expression exp2 = getExpressions().get(1);
+                public double evaluate(Context context) {
+                    Expression exp1 = this.getExpressions().get(0);
+                    Expression exp2 = this.getExpressions().get(1);
 
                     return Math.pow(exp1.evaluate(context), exp2.evaluate(context));
                 }
@@ -856,22 +856,22 @@ public class ExpressionManager {
 
 
         public PowExpressionDescriptor2() {
-            super("Power", "^", Position.INFIX, false);
+            super("Power", "^", ExpressionDescriptor.Position.INFIX, false);
         }
 
         //=========================== Public Methods =========================//
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 2) {
                 throw new ExpressionInitializationException("Pow must have two arguments.");
             }
 
-            return new AbstractExpression("^", Position.INFIX, expressions) {
+            return new AbstractExpression("^", ExpressionDescriptor.Position.INFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    final Expression exp1 = getExpressions().get(0);
-                    final Expression exp2 = getExpressions().get(1);
+                public double evaluate(Context context) {
+                    Expression exp1 = this.getExpressions().get(0);
+                    Expression exp2 = this.getExpressions().get(1);
 
                     return /*signum(exp1.evaluate(context)) **/ Math.pow(exp1.evaluate(context), exp2.evaluate(context));
                 }
@@ -883,21 +883,21 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public ExpExpressionDescriptor() {
-            super("Exponential", "exp", Position.PREFIX, false);
+            super("Exponential", "exp", ExpressionDescriptor.Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Exp must have one argument.");
             }
 
-            return new AbstractExpression("exp", Position.PREFIX, expressions) {
+            return new AbstractExpression("exp", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    final Expression exp1 = getExpressions().get(0);
+                public double evaluate(Context context) {
+                    Expression exp1 = this.getExpressions().get(0);
                     return Math.exp(exp1.evaluate(context));
                 }
             };
@@ -909,21 +909,21 @@ public class ExpressionManager {
 
 
         public MaxExpressionDescriptor() {
-            super("Maximum", "max", Position.PREFIX, true);
+            super("Maximum", "max", ExpressionDescriptor.Position.PREFIX, true);
         }
 
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length < 2) {
                 throw new ExpressionInitializationException("max must have two or more arguments.");
             }
-            return new AbstractExpression("max", Position.PREFIX, expressions) {
+            return new AbstractExpression("max", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    double max = getExpressions().get(0).evaluate(context);
-                    for (int i = 1; i < getExpressions().size(); i++) {
-                        final double d = getExpressions().get(i).evaluate(context);
+                public double evaluate(Context context) {
+                    double max = this.getExpressions().get(0).evaluate(context);
+                    for (int i = 1; i < this.getExpressions().size(); i++) {
+                        double d = this.getExpressions().get(i).evaluate(context);
                         if (max < d) {
                             max = d;
                         }
@@ -939,21 +939,21 @@ public class ExpressionManager {
 
 
         public MinExpressionDescriptor() {
-            super("Minimum", "min", Position.PREFIX, true);
+            super("Minimum", "min", ExpressionDescriptor.Position.PREFIX, true);
         }
 
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length < 2) {
                 throw new ExpressionInitializationException("min must have two or more arguments.");
             }
-            return new AbstractExpression("min", Position.PREFIX, expressions) {
+            return new AbstractExpression("min", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    double min = getExpressions().get(0).evaluate(context);
-                    for (int i = 1; i < getExpressions().size(); i++) {
-                        final double d = getExpressions().get(i).evaluate(context);
+                public double evaluate(Context context) {
+                    double min = this.getExpressions().get(0).evaluate(context);
+                    for (int i = 1; i < this.getExpressions().size(); i++) {
+                        double d = this.getExpressions().get(i).evaluate(context);
                         if (d < min) {
                             min = d;
                         }
@@ -968,29 +968,29 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public ChiSquareExpressionDescriptor() {
-            super("Chi Square", "ChiSquare", Position.PREFIX, false);
+            super("Chi Square", "ChiSquare", ExpressionDescriptor.Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("ChiSquare must have one argument.");
             }
 
-            return new AbstractExpression("ChiSquare", Position.PREFIX, expressions) {
+            return new AbstractExpression("ChiSquare", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final double e1 = getExpressions().get(0).evaluate(context);
-                    final ChiSquaredDistribution distribution = new ChiSquaredDistribution(randomGenerator, e1);
+                public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    double e1 = this.getExpressions().get(0).evaluate(context);
+                    ChiSquaredDistribution distribution = new ChiSquaredDistribution(randomGenerator, e1);
                     return distribution.sample();
                 }
 
-                public RealDistribution getRealDistribution(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final double e1 = getExpressions().get(0).evaluate(context);
+                public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    double e1 = this.getExpressions().get(0).evaluate(context);
                     return new ChiSquaredDistribution(randomGenerator, e1);
                 }
             };
@@ -1001,31 +1001,31 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public GammaExpressionDescriptor() {
-            super("Gamma", "Gamma", Position.PREFIX, false);
+            super("Gamma", "Gamma", ExpressionDescriptor.Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 2) {
                 throw new ExpressionInitializationException("Gamma must have two arguments.");
             }
 
-            return new AbstractExpression("Gamma", Position.PREFIX, expressions) {
+            return new AbstractExpression("Gamma", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final double e1 = getExpressions().get(0).evaluate(context);
-                    final double e2 = getExpressions().get(1).evaluate(context);
-                    final GammaDistribution distribution = new GammaDistribution(randomGenerator, e1, e2);
+                public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    double e1 = this.getExpressions().get(0).evaluate(context);
+                    double e2 = this.getExpressions().get(1).evaluate(context);
+                    GammaDistribution distribution = new GammaDistribution(randomGenerator, e1, e2);
                     return distribution.sample();
                 }
 
-                public RealDistribution getRealDistribution(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final double e1 = getExpressions().get(0).evaluate(context);
-                    final double e2 = getExpressions().get(1).evaluate(context);
+                public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    double e1 = this.getExpressions().get(0).evaluate(context);
+                    double e2 = this.getExpressions().get(1).evaluate(context);
                     return new GammaDistribution(randomGenerator, e1, e2);
                 }
             };
@@ -1036,30 +1036,30 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public BetaExpressionDescriptor() {
-            super("Beta", "Beta", Position.PREFIX, false);
+            super("Beta", "Beta", ExpressionDescriptor.Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 2) {
                 throw new ExpressionInitializationException("Beta must have two arguments.");
             }
 
-            return new AbstractExpression("Beta", Position.PREFIX, expressions) {
+            return new AbstractExpression("Beta", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final double e1 = getExpressions().get(0).evaluate(context);
-                    final double e2 = getExpressions().get(1).evaluate(context);
+                public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    double e1 = this.getExpressions().get(0).evaluate(context);
+                    double e2 = this.getExpressions().get(1).evaluate(context);
                     return new BetaDistribution(randomGenerator, e1, e2).sample();
                 }
 
-                public RealDistribution getRealDistribution(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final double e1 = getExpressions().get(0).evaluate(context);
-                    final double e2 = getExpressions().get(1).evaluate(context);
+                public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    double e1 = this.getExpressions().get(0).evaluate(context);
+                    double e2 = this.getExpressions().get(1).evaluate(context);
                     return new BetaDistribution(randomGenerator, e1, e2);
                 }
             };
@@ -1070,30 +1070,30 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public CauchyExpressionDescriptor() {
-            super("Cauchy", "Cauchy", Position.PREFIX, false);
+            super("Cauchy", "Cauchy", ExpressionDescriptor.Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 2) {
                 throw new ExpressionInitializationException("Normal must have two arguments.");
             }
 
-            return new AbstractExpression("Cauchy", Position.PREFIX, expressions) {
+            return new AbstractExpression("Cauchy", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final double e1 = getExpressions().get(0).evaluate(context);
-                    final double e2 = getExpressions().get(1).evaluate(context);
+                public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    double e1 = this.getExpressions().get(0).evaluate(context);
+                    double e2 = this.getExpressions().get(1).evaluate(context);
                     return new CauchyDistribution(randomGenerator, e1, e2).sample();
                 }
 
-                public RealDistribution getRealDistribution(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final double e1 = getExpressions().get(0).evaluate(context);
-                    final double e2 = getExpressions().get(1).evaluate(context);
+                public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    double e1 = this.getExpressions().get(0).evaluate(context);
+                    double e2 = this.getExpressions().get(1).evaluate(context);
                     return new CauchyDistribution(randomGenerator, e1, e2);
                 }
             };
@@ -1105,30 +1105,30 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public FExpressionDescriptor() {
-            super("FDist", "FDist", Position.PREFIX, false);
+            super("FDist", "FDist", ExpressionDescriptor.Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 2) {
                 throw new ExpressionInitializationException("Normal must have two arguments.");
             }
 
-            return new AbstractExpression("FDist", Position.PREFIX, expressions) {
+            return new AbstractExpression("FDist", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final double e1 = getExpressions().get(0).evaluate(context);
-                    final double e2 = getExpressions().get(1).evaluate(context);
+                public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    double e1 = this.getExpressions().get(0).evaluate(context);
+                    double e2 = this.getExpressions().get(1).evaluate(context);
                     return new FDistribution(randomGenerator, e1, e2).sample();
                 }
 
-                public RealDistribution getRealDistribution(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final double e1 = getExpressions().get(0).evaluate(context);
-                    final double e2 = getExpressions().get(1).evaluate(context);
+                public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    double e1 = this.getExpressions().get(0).evaluate(context);
+                    double e2 = this.getExpressions().get(1).evaluate(context);
                     return new FDistribution(randomGenerator, e1, e2);
                 }
             };
@@ -1139,30 +1139,30 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public GumbelExpressionDescriptor() {
-            super("Gumbel", "Gumbel", Position.PREFIX, false);
+            super("Gumbel", "Gumbel", ExpressionDescriptor.Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 2) {
                 throw new ExpressionInitializationException("Normal must have two arguments.");
             }
 
-            return new AbstractExpression("Gumbel", Position.PREFIX, expressions) {
+            return new AbstractExpression("Gumbel", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final double e1 = getExpressions().get(0).evaluate(context);
-                    final double e2 = getExpressions().get(1).evaluate(context);
+                public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    double e1 = this.getExpressions().get(0).evaluate(context);
+                    double e2 = this.getExpressions().get(1).evaluate(context);
                     return new GumbelDistribution(randomGenerator, e1, e2).sample();
                 }
 
-                public RealDistribution getRealDistribution(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final double e1 = getExpressions().get(0).evaluate(context);
-                    final double e2 = getExpressions().get(1).evaluate(context);
+                public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    double e1 = this.getExpressions().get(0).evaluate(context);
+                    double e2 = this.getExpressions().get(1).evaluate(context);
                     return new GumbelDistribution(randomGenerator, e1, e2);
                 }
             };
@@ -1173,30 +1173,30 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public LaplaceExpressionDescriptor() {
-            super("Laplace", "Laplace", Position.PREFIX, false);
+            super("Laplace", "Laplace", ExpressionDescriptor.Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 2) {
                 throw new ExpressionInitializationException("Laplace must have two arguments.");
             }
 
-            return new AbstractExpression("Laplace", Position.PREFIX, expressions) {
+            return new AbstractExpression("Laplace", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final double e1 = getExpressions().get(0).evaluate(context);
-                    final double e2 = getExpressions().get(1).evaluate(context);
+                public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    double e1 = this.getExpressions().get(0).evaluate(context);
+                    double e2 = this.getExpressions().get(1).evaluate(context);
                     return new LaplaceDistribution(randomGenerator, e1, e2).sample();
                 }
 
-                public RealDistribution getRealDistribution(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final double e1 = getExpressions().get(0).evaluate(context);
-                    final double e2 = getExpressions().get(1).evaluate(context);
+                public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    double e1 = this.getExpressions().get(0).evaluate(context);
+                    double e2 = this.getExpressions().get(1).evaluate(context);
                     return new LaplaceDistribution(randomGenerator, e1, e2);
                 }
             };
@@ -1207,30 +1207,30 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public LevyExpressionDescriptor() {
-            super("Levy", "Levy", Position.PREFIX, false);
+            super("Levy", "Levy", ExpressionDescriptor.Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 2) {
                 throw new ExpressionInitializationException("Levy must have two arguments.");
             }
 
-            return new AbstractExpression("Levy", Position.PREFIX, expressions) {
+            return new AbstractExpression("Levy", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final double e1 = getExpressions().get(0).evaluate(context);
-                    final double e2 = getExpressions().get(1).evaluate(context);
+                public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    double e1 = this.getExpressions().get(0).evaluate(context);
+                    double e2 = this.getExpressions().get(1).evaluate(context);
                     return new LevyDistribution(randomGenerator, e1, e2).sample();
                 }
 
-                public RealDistribution getRealDistribution(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final double e1 = getExpressions().get(0).evaluate(context);
-                    final double e2 = getExpressions().get(1).evaluate(context);
+                public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    double e1 = this.getExpressions().get(0).evaluate(context);
+                    double e2 = this.getExpressions().get(1).evaluate(context);
                     return new LevyDistribution(randomGenerator, e1, e2);
                 }
             };
@@ -1241,30 +1241,30 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public NakagamiExpressionDescriptor() {
-            super("Nakagami", "Nakagami", Position.PREFIX, false);
+            super("Nakagami", "Nakagami", ExpressionDescriptor.Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 2) {
                 throw new ExpressionInitializationException("Nakagami must have two arguments.");
             }
 
-            return new AbstractExpression("Nakagami", Position.PREFIX, expressions) {
+            return new AbstractExpression("Nakagami", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final double e1 = getExpressions().get(0).evaluate(context);
-                    final double e2 = getExpressions().get(1).evaluate(context);
+                public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    double e1 = this.getExpressions().get(0).evaluate(context);
+                    double e2 = this.getExpressions().get(1).evaluate(context);
                     return new NakagamiDistribution(randomGenerator, e1, e2, 1.0E-9D).sample();
                 }
 
-                public RealDistribution getRealDistribution(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final double e1 = getExpressions().get(0).evaluate(context);
-                    final double e2 = getExpressions().get(1).evaluate(context);
+                public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    double e1 = this.getExpressions().get(0).evaluate(context);
+                    double e2 = this.getExpressions().get(1).evaluate(context);
                     return new NakagamiDistribution(randomGenerator, e1, e2, 1.0E-9D);
                 }
             };
@@ -1275,30 +1275,30 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public ParetoExpressionDescriptor() {
-            super("Pareto", "Pareto", Position.PREFIX, false);
+            super("Pareto", "Pareto", ExpressionDescriptor.Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 2) {
                 throw new ExpressionInitializationException("Pareto must have two arguments.");
             }
 
-            return new AbstractExpression("Pareto", Position.PREFIX, expressions) {
+            return new AbstractExpression("Pareto", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final double e1 = getExpressions().get(0).evaluate(context);
-                    final double e2 = getExpressions().get(1).evaluate(context);
+                public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    double e1 = this.getExpressions().get(0).evaluate(context);
+                    double e2 = this.getExpressions().get(1).evaluate(context);
                     return new ParetoDistribution(randomGenerator, e1, e2).sample();
                 }
 
-                public RealDistribution getRealDistribution(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final double e1 = getExpressions().get(0).evaluate(context);
-                    final double e2 = getExpressions().get(1).evaluate(context);
+                public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    double e1 = this.getExpressions().get(0).evaluate(context);
+                    double e2 = this.getExpressions().get(1).evaluate(context);
                     return new ParetoDistribution(randomGenerator, e1, e2);
                 }
             };
@@ -1309,32 +1309,32 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public TriangularExpressionDescriptor() {
-            super("Triangular", "Triangular", Position.PREFIX, false);
+            super("Triangular", "Triangular", ExpressionDescriptor.Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 3) {
                 throw new ExpressionInitializationException("Triangular must have three arguments.");
             }
 
-            return new AbstractExpression("Triangular", Position.PREFIX, expressions) {
+            return new AbstractExpression("Triangular", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final double e1 = getExpressions().get(0).evaluate(context);
-                    final double e2 = getExpressions().get(1).evaluate(context);
-                    final double e3 = getExpressions().get(2).evaluate(context);
+                public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    double e1 = this.getExpressions().get(0).evaluate(context);
+                    double e2 = this.getExpressions().get(1).evaluate(context);
+                    double e3 = this.getExpressions().get(2).evaluate(context);
                     return new TriangularDistribution(randomGenerator, e1, e2, e3).sample();
                 }
 
-                public RealDistribution getRealDistribution(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final double e1 = getExpressions().get(0).evaluate(context);
-                    final double e2 = getExpressions().get(1).evaluate(context);
-                    final double e3 = getExpressions().get(2).evaluate(context);
+                public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    double e1 = this.getExpressions().get(0).evaluate(context);
+                    double e2 = this.getExpressions().get(1).evaluate(context);
+                    double e3 = this.getExpressions().get(2).evaluate(context);
                     return new TriangularDistribution(randomGenerator, e1, e2, e3);
                 }
             };
@@ -1345,30 +1345,30 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public UniformExpressionDescriptor() {
-            super("Uniform", "Uniform", Position.PREFIX, false);
+            super("Uniform", "Uniform", ExpressionDescriptor.Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 2) {
                 throw new ExpressionInitializationException("Uniform must have two arguments.");
             }
 
-            return new AbstractExpression("Uniform", Position.PREFIX, expressions) {
+            return new AbstractExpression("Uniform", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final double e1 = getExpressions().get(0).evaluate(context);
-                    final double e2 = getExpressions().get(1).evaluate(context);
+                public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    double e1 = this.getExpressions().get(0).evaluate(context);
+                    double e2 = this.getExpressions().get(1).evaluate(context);
                     return new UniformRealDistribution(randomGenerator, e1, e2).sample();
                 }
 
-                public RealDistribution getRealDistribution(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final double e1 = getExpressions().get(0).evaluate(context);
-                    final double e2 = getExpressions().get(1).evaluate(context);
+                public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    double e1 = this.getExpressions().get(0).evaluate(context);
+                    double e2 = this.getExpressions().get(1).evaluate(context);
                     return new UniformRealDistribution(randomGenerator, e1, e2);
                 }
             };
@@ -1379,30 +1379,30 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public UExpressionDescriptor() {
-            super("Uniform", "U", Position.PREFIX, false);
+            super("Uniform", "U", ExpressionDescriptor.Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 2) {
                 throw new ExpressionInitializationException("Uniform must have two arguments.");
             }
 
-            return new AbstractExpression("Uniform", Position.PREFIX, expressions) {
+            return new AbstractExpression("Uniform", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final double e1 = getExpressions().get(0).evaluate(context);
-                    final double e2 = getExpressions().get(1).evaluate(context);
+                public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    double e1 = this.getExpressions().get(0).evaluate(context);
+                    double e2 = this.getExpressions().get(1).evaluate(context);
                     return new UniformRealDistribution(randomGenerator, e1, e2).sample();
                 }
 
-                public RealDistribution getRealDistribution(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final double e1 = getExpressions().get(0).evaluate(context);
-                    final double e2 = getExpressions().get(1).evaluate(context);
+                public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    double e1 = this.getExpressions().get(0).evaluate(context);
+                    double e2 = this.getExpressions().get(1).evaluate(context);
                     return new UniformRealDistribution(randomGenerator, e1, e2);
                 }
             };
@@ -1413,30 +1413,30 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public WeibullExpressionDescriptor() {
-            super("Weibull", "Weibull", Position.PREFIX, false);
+            super("Weibull", "Weibull", ExpressionDescriptor.Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 2) {
                 throw new ExpressionInitializationException("Weibull must have two arguments.");
             }
 
-            return new AbstractExpression("Weibull", Position.PREFIX, expressions) {
+            return new AbstractExpression("Weibull", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final double e1 = getExpressions().get(0).evaluate(context);
-                    final double e2 = getExpressions().get(1).evaluate(context);
+                public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    double e1 = this.getExpressions().get(0).evaluate(context);
+                    double e2 = this.getExpressions().get(1).evaluate(context);
                     return new WeibullDistribution(randomGenerator, e1, e2).sample();
                 }
 
-                public RealDistribution getRealDistribution(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final double e1 = getExpressions().get(0).evaluate(context);
-                    final double e2 = getExpressions().get(1).evaluate(context);
+                public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    double e1 = this.getExpressions().get(0).evaluate(context);
+                    double e2 = this.getExpressions().get(1).evaluate(context);
                     return new WeibullDistribution(randomGenerator, e1, e2);
                 }
             };
@@ -1447,34 +1447,34 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public PoissonExpressionDescriptor() {
-            super("Poisson", "Poisson", Position.PREFIX, false);
+            super("Poisson", "Poisson", ExpressionDescriptor.Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Poisson must have one argument.");
             }
 
-            return new AbstractExpression("Poisson", Position.PREFIX, expressions) {
+            return new AbstractExpression("Poisson", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final Expression exp1 = getExpressions().get(0);
-                    final double e1 = exp1.evaluate(context);
+                public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    Expression exp1 = this.getExpressions().get(0);
+                    double e1 = exp1.evaluate(context);
                     return new PoissonDistribution(randomGenerator, e1, 1.0E-12D, 10000000).sample();
                 }
 
-                public RealDistribution getRealDistribution(final Context context) {
+                public RealDistribution getRealDistribution(Context context) {
                     throw new IllegalArgumentException("Poisson does not have a p.d.f.");
                 }
 
-                public IntegerDistribution getIntegerDistribution(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final Expression exp1 = getExpressions().get(0);
-                    final double e1 = exp1.evaluate(context);
+                public IntegerDistribution getIntegerDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    Expression exp1 = this.getExpressions().get(0);
+                    double e1 = exp1.evaluate(context);
                     return new PoissonDistribution(randomGenerator, e1, 1.0E-12D, 10000000);
                 }
             };
@@ -1485,22 +1485,22 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public IndicatorExpressionDescriptor() {
-            super("Indicator", "Indicator", Position.PREFIX, false);
+            super("Indicator", "Indicator", ExpressionDescriptor.Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Exp must have one argument.");
             }
 
-            return new AbstractExpression("Indicator", Position.PREFIX, expressions) {
+            return new AbstractExpression("Indicator", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    final Expression exp1 = getExpressions().get(0);
-                    final double p = exp1.evaluate(context);
+                public double evaluate(Context context) {
+                    Expression exp1 = this.getExpressions().get(0);
+                    double p = exp1.evaluate(context);
 
                     if (p < 0 || p > 1) throw new IllegalArgumentException("p must be in [0, 1]: " + p);
 
@@ -1514,34 +1514,34 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public ExponentialExpressionDescriptor() {
-            super("ExponentialDist", "ExponentialDist", Position.PREFIX, false);
+            super("ExponentialDist", "ExponentialDist", ExpressionDescriptor.Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Exp must have one argument.");
             }
 
-            return new AbstractExpression("ExponentialDist", Position.PREFIX, expressions) {
+            return new AbstractExpression("ExponentialDist", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final Expression exp1 = getExpressions().get(0);
+                public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    Expression exp1 = this.getExpressions().get(0);
 
-                    final double e1 = exp1.evaluate(context);
+                    double e1 = exp1.evaluate(context);
 
-                    final ExponentialDistribution distribution = new ExponentialDistribution(randomGenerator, e1);
+                    ExponentialDistribution distribution = new ExponentialDistribution(randomGenerator, e1);
                     return distribution.sample();
                 }
 
-                public RealDistribution getRealDistribution(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final Expression exp1 = getExpressions().get(0);
+                public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    Expression exp1 = this.getExpressions().get(0);
 
-                    final double e1 = exp1.evaluate(context);
+                    double e1 = exp1.evaluate(context);
 
                     return new ExponentialDistribution(randomGenerator, e1);
                 }
@@ -1556,38 +1556,38 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public LogNormalExpressionDescriptor() {
-            super("LogNormal", "LogNormal", Position.PREFIX, false);
+            super("LogNormal", "LogNormal", ExpressionDescriptor.Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 2) {
                 throw new ExpressionInitializationException("Exp must have two arguments.");
             }
 
-            return new AbstractExpression("LogNormal", Position.PREFIX, expressions) {
+            return new AbstractExpression("LogNormal", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final Expression exp1 = getExpressions().get(0);
-                    final Expression exp2 = getExpressions().get(1);
+                public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    Expression exp1 = this.getExpressions().get(0);
+                    Expression exp2 = this.getExpressions().get(1);
 
-                    final double e1 = exp1.evaluate(context);
-                    final double e2 = exp2.evaluate(context);
+                    double e1 = exp1.evaluate(context);
+                    double e2 = exp2.evaluate(context);
 
-                    final LogNormalDistribution distribution = new LogNormalDistribution(randomGenerator, e1, e2);
+                    LogNormalDistribution distribution = new LogNormalDistribution(randomGenerator, e1, e2);
                     return distribution.sample();
                 }
 
-                public RealDistribution getRealDistribution(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final Expression exp1 = getExpressions().get(0);
-                    final Expression exp2 = getExpressions().get(1);
+                public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    Expression exp1 = this.getExpressions().get(0);
+                    Expression exp2 = this.getExpressions().get(1);
 
-                    final double e1 = exp1.evaluate(context);
-                    final double e2 = exp2.evaluate(context);
+                    double e1 = exp1.evaluate(context);
+                    double e2 = exp2.evaluate(context);
 
                     if (e1 <= 0 || e2 <= 0) {
                         return null;
@@ -1606,30 +1606,30 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public NormalExpressionDescriptor() {
-            super("Normal", "Normal", Position.PREFIX, false);
+            super("Normal", "Normal", ExpressionDescriptor.Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 2) {
                 throw new ExpressionInitializationException("Normal must have two arguments.");
             }
 
-            return new AbstractExpression("Normal", Position.PREFIX, expressions) {
+            return new AbstractExpression("Normal", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final double e1 = getExpressions().get(0).evaluate(context);
-                    final double e2 = getExpressions().get(1).evaluate(context);
+                public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    double e1 = this.getExpressions().get(0).evaluate(context);
+                    double e2 = this.getExpressions().get(1).evaluate(context);
                     return new NormalDistribution(randomGenerator, e1, e2).sample();
                 }
 
-                public RealDistribution getRealDistribution(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final double e1 = getExpressions().get(0).evaluate(context);
-                    final double e2 = getExpressions().get(1).evaluate(context);
+                public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    double e1 = this.getExpressions().get(0).evaluate(context);
+                    double e2 = this.getExpressions().get(1).evaluate(context);
                     return new NormalDistribution(randomGenerator, e1, e2);
                 }
             };
@@ -1640,28 +1640,28 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public TruncNormalExpressionDescriptor() {
-            super("TruncNormal", "TruncNormal", Position.PREFIX, false);
+            super("TruncNormal", "TruncNormal", ExpressionDescriptor.Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 4) {
                 throw new ExpressionInitializationException("TruncNormal must have four arguments.");
             }
 
-            return new AbstractExpression("TruncNormal", Position.PREFIX, expressions) {
+            return new AbstractExpression("TruncNormal", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    final Expression exp1 = getExpressions().get(0);
-                    final Expression exp2 = getExpressions().get(1);
-                    final Expression exp3 = getExpressions().get(2);
-                    final Expression exp4 = getExpressions().get(3);
-                    final double mean = exp1.evaluate(context);
-                    final double sd = exp2.evaluate(context);
-                    final double low = exp3.evaluate(context);
-                    final double high = exp4.evaluate(context);
+                public double evaluate(Context context) {
+                    Expression exp1 = this.getExpressions().get(0);
+                    Expression exp2 = this.getExpressions().get(1);
+                    Expression exp3 = this.getExpressions().get(2);
+                    Expression exp4 = this.getExpressions().get(3);
+                    double mean = exp1.evaluate(context);
+                    double sd = exp2.evaluate(context);
+                    double low = exp3.evaluate(context);
+                    double high = exp4.evaluate(context);
 
                     if (sd < 0) {
                         return Double.NaN;
@@ -1681,33 +1681,33 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public NExpressionDescriptor() {
-            super("Normal", "N", Position.PREFIX, false);
+            super("Normal", "N", ExpressionDescriptor.Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 2) {
                 throw new ExpressionInitializationException("Normal must have two arguments.");
             }
 
-            return new AbstractExpression("N", Position.PREFIX, expressions) {
+            return new AbstractExpression("N", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final double e1 = getExpressions().get(0).evaluate(context);
-                    final double e2 = getExpressions().get(1).evaluate(context);
-                    final NormalDistribution distribution = new NormalDistribution(randomGenerator, e1, e2);
+                public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    double e1 = this.getExpressions().get(0).evaluate(context);
+                    double e2 = this.getExpressions().get(1).evaluate(context);
+                    NormalDistribution distribution = new NormalDistribution(randomGenerator, e1, e2);
                     return distribution.sample();
 //                    faster
 //                    return RandomUtil.getInstance().nextNormal(e1, e2);
                 }
 
-                public RealDistribution getRealDistribution(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final double e1 = getExpressions().get(0).evaluate(context);
-                    final double e2 = getExpressions().get(1).evaluate(context);
+                public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    double e1 = this.getExpressions().get(0).evaluate(context);
+                    double e2 = this.getExpressions().get(1).evaluate(context);
                     return new NormalDistribution(randomGenerator, e1, e2);
                 }
             };
@@ -1718,30 +1718,30 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public DiscreteExpressionDescriptor() {
-            super("Discrete", "Discrete", Position.PREFIX, false);
+            super("Discrete", "Discrete", ExpressionDescriptor.Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length < 1) {
                 throw new ExpressionInitializationException("Discrete distribution must have at least one argument.");
             }
 
-            return new AbstractExpression("Discrete", Position.PREFIX, expressions) {
+            return new AbstractExpression("Discrete", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    double[] p = new double[getExpressions().size()];
+                public double evaluate(Context context) {
+                    double[] p = new double[this.getExpressions().size()];
 
-                    for (int i = 0; i < getExpressions().size(); i++) {
-                        final Expression exp = getExpressions().get(i);
+                    for (int i = 0; i < this.getExpressions().size(); i++) {
+                        Expression exp = this.getExpressions().get(i);
                         p[i] = exp.evaluate(context);
                     }
 
-                    p = convert(p);
+                    p = this.convert(p);
 
-                    final double r = RandomUtil.getInstance().nextDouble();
+                    double r = RandomUtil.getInstance().nextDouble();
 
                     for (int i = 0; i < p.length; i++) {
                         if (r < p[i]) return i;
@@ -1750,14 +1750,14 @@ public class ExpressionManager {
                     throw new IllegalArgumentException();
                 }
 
-                private double[] convert(final double... p) {
-                    for (final double _p : p) {
+                private double[] convert(double... p) {
+                    for (double _p : p) {
                         if (_p < 0) throw new IllegalArgumentException("All arguments must be >= 0: " + _p);
                     }
 
                     double sum = 0.0;
 
-                    for (final double _p : p) {
+                    for (double _p : p) {
                         sum += _p;
                     }
 
@@ -1780,24 +1780,24 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public MixtureDescriptor() {
-            super("Mixture", "Mixture", Position.PREFIX, false);
+            super("Mixture", "Mixture", ExpressionDescriptor.Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (!(expressions.length > 0 && expressions.length % 2 == 0)) {
                 throw new ExpressionInitializationException("Mixture must have an even expr of arguments, 2 or more.");
             }
 
-            return new AbstractExpression("Mixture", Position.PREFIX, expressions) {
+            return new AbstractExpression("Mixture", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    final List<Expression> exp = getExpressions();
+                public double evaluate(Context context) {
+                    List<Expression> exp = this.getExpressions();
 
-                    final int numMixed = exp.size() / 2;
-                    final double[] a = new double[numMixed];
+                    int numMixed = exp.size() / 2;
+                    double[] a = new double[numMixed];
                     double totalA = 0;
 
                     for (int i = 0; i < numMixed; i++) {
@@ -1814,7 +1814,7 @@ public class ExpressionManager {
                         a[i] /= totalA;
                     }
 
-                    final double r = RandomUtil.getInstance().nextDouble();
+                    double r = RandomUtil.getInstance().nextDouble();
                     double sum = 0.0;
 
                     for (int i = 0; i < numMixed; i++) {
@@ -1835,30 +1835,30 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public StudentTExpressionDescriptor() {
-            super("StudentT", "StudentT", Position.PREFIX, false);
+            super("StudentT", "StudentT", ExpressionDescriptor.Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("StudentT must have one argument.");
             }
 
-            return new AbstractExpression("StudentT", Position.PREFIX, expressions) {
+            return new AbstractExpression("StudentT", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final Expression exp1 = getExpressions().get(0);
-                    final double e1 = exp1.evaluate(context);
+                public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    Expression exp1 = this.getExpressions().get(0);
+                    double e1 = exp1.evaluate(context);
                     return new TDistribution(randomGenerator, e1).sample();
                 }
 
-                public RealDistribution getRealDistribution(final Context context) {
-                    final RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-                    final Expression exp1 = getExpressions().get(0);
-                    final double e1 = exp1.evaluate(context);
+                public RealDistribution getRealDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    Expression exp1 = this.getExpressions().get(0);
+                    double e1 = exp1.evaluate(context);
                     return new TDistribution(randomGenerator, e1);
                 }
             };
@@ -1873,35 +1873,35 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public SplitExpressionDescriptor() {
-            super("Split", "Split", Position.PREFIX, false);
+            super("Split", "Split", ExpressionDescriptor.Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length % 2 != 0) {
                 throw new ExpressionInitializationException("Split must have an even number of arguments.");
             }
 
-            return new AbstractExpression("Split", Position.PREFIX, expressions) {
+            return new AbstractExpression("Split", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    if (getExpressions().size() < 2) {
+                public double evaluate(Context context) {
+                    if (this.getExpressions().size() < 2) {
                         throw new IllegalArgumentException("Split must have at least two arguments, Split(a, b).");
                     }
 
-                    if (getExpressions().size() % 2 != 0) {
+                    if (this.getExpressions().size() % 2 != 0) {
                         throw new IllegalArgumentException("Must have an even number of arguments for Split.");
                     }
 
-                    final double[] endpoints = new double[getExpressions().size()];
+                    double[] endpoints = new double[this.getExpressions().size()];
 
-                    for (int i = 0; i < getExpressions().size(); i++) {
-                        endpoints[i] = getExpressions().get(i).evaluate(context);
+                    for (int i = 0; i < this.getExpressions().size(); i++) {
+                        endpoints[i] = this.getExpressions().get(i).evaluate(context);
                     }
 
-                    final double[] lengths = new double[endpoints.length / 2];
+                    double[] lengths = new double[endpoints.length / 2];
                     double totalLength = 0;
 
                     for (int i = 0; i < endpoints.length / 2; i++) {
@@ -1940,21 +1940,21 @@ public class ExpressionManager {
 
 
         public AndExpressionDescriptor() {
-            super("And", "AND", Position.PREFIX, true);
+            super("And", "AND", ExpressionDescriptor.Position.PREFIX, true);
         }
 
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length < 2) {
                 throw new ExpressionInitializationException("Must have at least two arguments.");
             }
-            return new AbstractExpression("AND", Position.PREFIX, expressions) {
+            return new AbstractExpression("AND", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
+                public double evaluate(Context context) {
                     boolean allOnes = true;
 
-                    for (final Expression exp : getExpressions()) {
+                    for (Expression exp : this.getExpressions()) {
                         if (exp.evaluate(context) != 1.0) {
                             allOnes = false;
                         }
@@ -1974,18 +1974,18 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public OrExpressionDescriptor() {
-            super("Or", "OR", Position.PREFIX, true);
+            super("Or", "OR", ExpressionDescriptor.Position.PREFIX, true);
         }
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length < 2) {
                 throw new ExpressionInitializationException("Must have at least two arguments.");
             }
-            return new AbstractExpression("OR", Position.PREFIX, expressions) {
+            return new AbstractExpression("OR", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    for (final Expression exp : getExpressions()) {
+                public double evaluate(Context context) {
+                    for (Expression exp : this.getExpressions()) {
                         if (exp.evaluate(context) == 1.0) {
                             return 1.0;
                         }
@@ -2003,19 +2003,19 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public XOrExpressionDescriptor() {
-            super("Exclusive or", "XOR", Position.PREFIX, false);
+            super("Exclusive or", "XOR", ExpressionDescriptor.Position.PREFIX, false);
         }
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 2) {
                 throw new ExpressionInitializationException("Must have two arguments.");
             }
-            return new AbstractExpression("XOR", Position.PREFIX, expressions) {
+            return new AbstractExpression("XOR", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    double first = getExpressions().get(0).evaluate(context);
-                    double second = getExpressions().get(1).evaluate(context);
+                public double evaluate(Context context) {
+                    double first = this.getExpressions().get(0).evaluate(context);
+                    double second = this.getExpressions().get(1).evaluate(context);
                     first = first == 1.0 ? 1.0 : 0.0;
                     second = second == 1.0 ? 1.0 : 0.0;
 
@@ -2029,21 +2029,21 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public LessThanExpressionDescriptor() {
-            super("Less Than", "<", Position.BOTH, true);
+            super("Less Than", "<", ExpressionDescriptor.Position.BOTH, true);
         }
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 2) {
                 throw new ExpressionInitializationException("Must have two arguments.");
             }
 
-            return new AbstractExpression("<", Position.BOTH, expressions) {
+            return new AbstractExpression("<", ExpressionDescriptor.Position.BOTH, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    final List<Expression> expressions = getExpressions();
-                    final double a = expressions.get(0).evaluate(context);
-                    final double b = expressions.get(1).evaluate(context);
+                public double evaluate(Context context) {
+                    List<Expression> expressions = this.getExpressions();
+                    double a = expressions.get(0).evaluate(context);
+                    double b = expressions.get(1).evaluate(context);
                     return a < b ? 1.0 : 0.0;
                 }
             };
@@ -2054,21 +2054,21 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public LessThanOrEqualExpressionDescriptor() {
-            super("Less Than Or Equals", "<=", Position.BOTH, true);
+            super("Less Than Or Equals", "<=", ExpressionDescriptor.Position.BOTH, true);
         }
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 2) {
                 throw new ExpressionInitializationException("Must have two arguments.");
             }
 
-            return new AbstractExpression("<=", Position.BOTH, expressions) {
+            return new AbstractExpression("<=", ExpressionDescriptor.Position.BOTH, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    final List<Expression> expressions = getExpressions();
-                    final double a = expressions.get(0).evaluate(context);
-                    final double b = expressions.get(1).evaluate(context);
+                public double evaluate(Context context) {
+                    List<Expression> expressions = this.getExpressions();
+                    double a = expressions.get(0).evaluate(context);
+                    double b = expressions.get(1).evaluate(context);
                     return a <= b ? 1.0 : 0.0;
                 }
             };
@@ -2079,21 +2079,21 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public EqualsExpressionDescriptor() {
-            super("Equals", "=", Position.BOTH, true);
+            super("Equals", "=", ExpressionDescriptor.Position.BOTH, true);
         }
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 2) {
                 throw new ExpressionInitializationException("Must have two arguments.");
             }
 
-            return new AbstractExpression("=", Position.BOTH, expressions) {
+            return new AbstractExpression("=", ExpressionDescriptor.Position.BOTH, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    final List<Expression> expressions = getExpressions();
-                    final double a = expressions.get(0).evaluate(context);
-                    final double b = expressions.get(1).evaluate(context);
+                public double evaluate(Context context) {
+                    List<Expression> expressions = this.getExpressions();
+                    double a = expressions.get(0).evaluate(context);
+                    double b = expressions.get(1).evaluate(context);
                     return a == b ? 1.0 : 0.0;
                 }
             };
@@ -2104,21 +2104,21 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public GreaterThanExpressionDescriptor() {
-            super("Greater Than", ">", Position.BOTH, true);
+            super("Greater Than", ">", ExpressionDescriptor.Position.BOTH, true);
         }
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 2) {
                 throw new ExpressionInitializationException("Must have two arguments.");
             }
 
-            return new AbstractExpression("<", Position.BOTH, expressions) {
+            return new AbstractExpression("<", ExpressionDescriptor.Position.BOTH, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    final List<Expression> expressions = getExpressions();
-                    final double a = expressions.get(0).evaluate(context);
-                    final double b = expressions.get(1).evaluate(context);
+                public double evaluate(Context context) {
+                    List<Expression> expressions = this.getExpressions();
+                    double a = expressions.get(0).evaluate(context);
+                    double b = expressions.get(1).evaluate(context);
                     return a > b ? 1.0 : 0.0;
                 }
             };
@@ -2129,21 +2129,21 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public GreaterThanOrEqualExpressionDescriptor() {
-            super("Greater Than Or Equals", ">=", Position.BOTH, true);
+            super("Greater Than Or Equals", ">=", ExpressionDescriptor.Position.BOTH, true);
         }
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 2) {
                 throw new ExpressionInitializationException("Must have two arguments.");
             }
 
-            return new AbstractExpression("<", Position.BOTH, expressions) {
+            return new AbstractExpression("<", ExpressionDescriptor.Position.BOTH, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    final List<Expression> expressions = getExpressions();
-                    final double a = expressions.get(0).evaluate(context);
-                    final double b = expressions.get(1).evaluate(context);
+                public double evaluate(Context context) {
+                    List<Expression> expressions = this.getExpressions();
+                    double a = expressions.get(0).evaluate(context);
+                    double b = expressions.get(1).evaluate(context);
                     return a >= b ? 1.0 : 0.0;
                 }
             };
@@ -2154,22 +2154,22 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public IfExpressionDescriptor() {
-            super("If", "IF", Position.PREFIX, true);
+            super("If", "IF", ExpressionDescriptor.Position.PREFIX, true);
         }
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 3) {
                 throw new ExpressionInitializationException("Must have three arguments.");
             }
 
-            return new AbstractExpression("IF", Position.BOTH, expressions) {
+            return new AbstractExpression("IF", ExpressionDescriptor.Position.BOTH, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    final List<Expression> expressions = getExpressions();
-                    final double a = expressions.get(0).evaluate(context);
-                    final double b = expressions.get(1).evaluate(context);
-                    final double c = expressions.get(2).evaluate(context);
+                public double evaluate(Context context) {
+                    List<Expression> expressions = this.getExpressions();
+                    double a = expressions.get(0).evaluate(context);
+                    double b = expressions.get(1).evaluate(context);
+                    double c = expressions.get(2).evaluate(context);
                     return a == 1.0 ? b : c;
                 }
             };
@@ -2180,10 +2180,10 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public NewExpressionDescriptor() {
-            super("New Parameter", "NEW", Position.PREFIX, true);
+            super("New Parameter", "NEW", ExpressionDescriptor.Position.PREFIX, true);
         }
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Must have one argument, a parameter.");
             }
@@ -2192,10 +2192,10 @@ public class ExpressionManager {
                 throw new ExpressionInitializationException("Expecting a parameter name as argument.");
             }
 
-            return new AbstractExpression("NEW", Position.BOTH, expressions) {
+            return new AbstractExpression("NEW", ExpressionDescriptor.Position.BOTH, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
+                public double evaluate(Context context) {
                     return Double.NaN;
                 }
             };
@@ -2206,10 +2206,10 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public NewExpressionDescriptor2() {
-            super("New Parameter", "new", Position.PREFIX, true);
+            super("New Parameter", "new", ExpressionDescriptor.Position.PREFIX, true);
         }
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Must have one argument, a parameter.");
             }
@@ -2218,10 +2218,10 @@ public class ExpressionManager {
                 throw new ExpressionInitializationException("Expecting a parameter name as argument.");
             }
 
-            return new AbstractExpression("new", Position.BOTH, expressions) {
+            return new AbstractExpression("new", ExpressionDescriptor.Position.BOTH, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
+                public double evaluate(Context context) {
                     return Double.NaN;
                 }
             };
@@ -2232,18 +2232,18 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public TSumExpressionDescriptor() {
-            super("Template Sum", "TSUM", Position.PREFIX, true);
+            super("Template Sum", "TSUM", ExpressionDescriptor.Position.PREFIX, true);
         }
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Must have one argument, a parameter.");
             }
 
-            return new AbstractExpression("TSUM", Position.PREFIX, expressions) {
+            return new AbstractExpression("TSUM", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
+                public double evaluate(Context context) {
                     return Double.NaN;
                 }
             };
@@ -2254,18 +2254,18 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public TSumExpressionDescriptor2() {
-            super("Template Sum", "tsum", Position.PREFIX, true);
+            super("Template Sum", "tsum", ExpressionDescriptor.Position.PREFIX, true);
         }
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Must have one argument, a parameter.");
             }
 
-            return new AbstractExpression("tsum", Position.PREFIX, expressions) {
+            return new AbstractExpression("tsum", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
+                public double evaluate(Context context) {
                     return Double.NaN;
                 }
             };
@@ -2276,18 +2276,18 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public TProductExpressionDescriptor() {
-            super("Template Product", "TPROD", Position.PREFIX, true);
+            super("Template Product", "TPROD", ExpressionDescriptor.Position.PREFIX, true);
         }
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Must have one argument, a parameter.");
             }
 
-            return new AbstractExpression("TPROD", Position.PREFIX, expressions) {
+            return new AbstractExpression("TPROD", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
+                public double evaluate(Context context) {
                     return Double.NaN;
                 }
             };
@@ -2298,18 +2298,18 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public TProductExpressionDescriptor2() {
-            super("Template Product", "tprod", Position.PREFIX, true);
+            super("Template Product", "tprod", ExpressionDescriptor.Position.PREFIX, true);
         }
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Must have one argument, a parameter.");
             }
 
-            return new AbstractExpression("tprod", Position.PREFIX, expressions) {
+            return new AbstractExpression("tprod", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
+                public double evaluate(Context context) {
                     return Double.NaN;
                 }
             };
@@ -2323,31 +2323,31 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public DiscErrorExpressionDescriptor() {
-            super("DiscError", "DiscError", Position.PREFIX, false);
+            super("DiscError", "DiscError", ExpressionDescriptor.Position.PREFIX, false);
         }
 
         //=========================== Public Methods =========================//
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length < 2) {
                 throw new ExpressionInitializationException("Discrete error distribution must have at least two arguments.");
             }
 
-            return new AbstractExpression("DiscError", Position.PREFIX, expressions) {
+            return new AbstractExpression("DiscError", ExpressionDescriptor.Position.PREFIX, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    final double[] p = new double[getExpressions().size() - 1];
-                    final Expression errExp = getExpressions().get(0);
-                    final double err = errExp.evaluate(context);
+                public double evaluate(Context context) {
+                    double[] p = new double[this.getExpressions().size() - 1];
+                    Expression errExp = this.getExpressions().get(0);
+                    double err = errExp.evaluate(context);
                     String expPrint = "";
-                    for (int i = 0; i < getExpressions().size() - 1; i++) {
-                        final Expression exp = getExpressions().get(i + 1);
+                    for (int i = 0; i < this.getExpressions().size() - 1; i++) {
+                        Expression exp = this.getExpressions().get(i + 1);
                         p[i] = exp.evaluate(context);
                         expPrint += exp + "\n";
                     }
 
-                    final double[] p2 = convert(p);
+                    double[] p2 = this.convert(p);
 
                     //double r = RandomUtil.getInstance().nextDouble();
 
@@ -2359,10 +2359,10 @@ public class ExpressionManager {
                             + " p2: " + Arrays.toString(p2));
                 }
 
-                private double[] convert(final double... p) {
+                private double[] convert(double... p) {
 
                     double sum = 0.0;
-                    final double[] pout = new double[p.length];
+                    double[] pout = new double[p.length];
 
                     for (int i = 0; i < p.length; i++) {
                         pout[i] = Math.exp(p[i]);
@@ -2389,21 +2389,21 @@ public class ExpressionManager {
         static final long serialVersionUID = 23L;
 
         public SwitchExpressionDescriptor() {
-            super("Switch", "Switch", Position.PREFIX, true);
+            super("Switch", "Switch", ExpressionDescriptor.Position.PREFIX, true);
         }
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length < 3) {
                 //should use IF for three args...
                 throw new ExpressionInitializationException("Must have at least four arguments.");
             }
 
-            return new AbstractExpression("Switch", Position.BOTH, expressions) {
+            return new AbstractExpression("Switch", ExpressionDescriptor.Position.BOTH, expressions) {
                 static final long serialVersionUID = 23L;
 
-                public double evaluate(final Context context) {
-                    final List<Expression> expressions = getExpressions();
-                    final double a = expressions.get(0).evaluate(context);
+                public double evaluate(Context context) {
+                    List<Expression> expressions = this.getExpressions();
+                    double a = expressions.get(0).evaluate(context);
 
                     if (a % 1 != 0 || a < 0) {
                         throw new IllegalArgumentException("First term index must be non-negative integer");

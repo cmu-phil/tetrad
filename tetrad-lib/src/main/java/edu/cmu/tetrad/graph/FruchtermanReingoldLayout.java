@@ -71,7 +71,7 @@ public final class FruchtermanReingoldLayout {
 
     //==============================CONSTRUCTORS===========================//
 
-    public FruchtermanReingoldLayout(final Graph graph) {
+    public FruchtermanReingoldLayout(Graph graph) {
         if (graph == null) {
             throw new NullPointerException();
         }
@@ -82,42 +82,42 @@ public final class FruchtermanReingoldLayout {
     //============================PUBLIC METHODS==========================//
 
     public void doLayout() {
-        GraphUtils.circleLayout(this.graph, 300, 300, 200);
+        GraphUtils.circleLayout(graph, 300, 300, 200);
 
-        final List<List<Node>> components =
-                GraphUtils.connectedComponents(this.graph());
+        List<List<Node>> components =
+                GraphUtils.connectedComponents(graph());
 
         Collections.sort(components, new Comparator<List<Node>>() {
-            public int compare(final List<Node> o1, final List<Node> o2) {
-                final int i1 = o1.size();
-                final int i2 = o2.size();
+            public int compare(List<Node> o1, List<Node> o2) {
+                int i1 = o1.size();
+                int i2 = o2.size();
                 return i2 < i1 ? -1 : i2 == i1 ? 0 : 1;
             }
         });
 
-        for (final List<Node> component1 : components) {
-            layoutComponent(component1);
+        for (List<Node> component1 : components) {
+            this.layoutComponent(component1);
         }
     }
 
-    private void layoutComponent(final List<Node> nodes) {
-        final int numNodes = nodes.size();
-        this.nodePosition = new double[numNodes][2];
-        this.nodeDisposition = new double[numNodes][2];
+    private void layoutComponent(List<Node> nodes) {
+        int numNodes = nodes.size();
+        nodePosition = new double[numNodes][2];
+        nodeDisposition = new double[numNodes][2];
 
         for (int i = 0; i < numNodes; i++) {
-            final Node node = nodes.get(i);
-            nodePosition()[i][0] = node.getCenterX();
-            nodePosition()[i][1] = node.getCenterY();
+            Node node = nodes.get(i);
+            this.nodePosition()[i][0] = node.getCenterX();
+            this.nodePosition()[i][1] = node.getCenterY();
 
             //pos[i][0] = RandomUtil.nextInt(600);
             //pos[i][1] = RandomUtil.nextInt(600);
         }
 
-        final List<Edge> edges = new ArrayList<>(GraphUtils.undirectedGraph(graph()).getEdges());
+        List<Edge> edges = new ArrayList<>(GraphUtils.undirectedGraph(this.graph()).getEdges());
 
-        for (final Iterator<Edge> i = edges.iterator(); i.hasNext(); ) {
-            final Edge edge = i.next();
+        for (Iterator<Edge> i = edges.iterator(); i.hasNext(); ) {
+            Edge edge = i.next();
             if (!nodes.contains(edge.getNode1()) ||
                     !nodes.contains(edge.getNode2())) {
                 i.remove();
@@ -127,30 +127,30 @@ public final class FruchtermanReingoldLayout {
         this.edges = new int[edges.size()][2];
 
         for (int i = 0; i < edges.size(); i++) {
-            final Edge edge = edges.get(i);
-            final int v = nodes.indexOf(edge.getNode1());
-            final int u = nodes.indexOf(edge.getNode2());
-            this.edges()[i][0] = v;
-            this.edges()[i][1] = u;
+            Edge edge = edges.get(i);
+            int v = nodes.indexOf(edge.getNode1());
+            int u = nodes.indexOf(edge.getNode2());
+            edges()[i][0] = v;
+            edges()[i][1] = u;
         }
 
-        final double avgDegree = 2 * this.graph.getNumEdges() / this.graph.getNumNodes();
+        double avgDegree = 2 * graph.getNumEdges() / graph.getNumNodes();
 
-        setOptimalDistance(20.0 + 20.0 * avgDegree);
-        setTemperature(5.0);
+        this.setOptimalDistance(20.0 + 20.0 * avgDegree);
+        this.setTemperature(5.0);
 
-        for (int i = 0; i < numIterations(); i++) {
+        for (int i = 0; i < this.numIterations(); i++) {
 
             // Calculate repulsive forces.
             for (int v = 0; v < numNodes; v++) {
-                nodeDisposition()[v][0] = 0.1;
-                nodeDisposition()[v][1] = 0.1;
+                this.nodeDisposition()[v][0] = 0.1;
+                this.nodeDisposition()[v][1] = 0.1;
 
                 for (int u = 0; u < numNodes; u++) {
-                    final double deltaX = nodePosition()[u][0] - nodePosition()[v][0];
-                    final double deltaY = nodePosition()[u][1] - nodePosition()[v][1];
+                    double deltaX = this.nodePosition()[u][0] - this.nodePosition()[v][0];
+                    double deltaY = this.nodePosition()[u][1] - this.nodePosition()[v][1];
 
-                    double norm = norm(deltaX, deltaY);
+                    double norm = this.norm(deltaX, deltaY);
 
                     if (norm == 0.0) {
                         norm = 0.1;
@@ -161,22 +161,22 @@ public final class FruchtermanReingoldLayout {
 //                        continue;
 //                    }
 
-                    final double repulsiveForce = fr(norm);
+                    double repulsiveForce = this.fr(norm);
 
-                    nodeDisposition()[v][0] += (deltaX / norm) * repulsiveForce;
-                    nodeDisposition()[v][1] += (deltaY / norm) * repulsiveForce;
+                    this.nodeDisposition()[v][0] += (deltaX / norm) * repulsiveForce;
+                    this.nodeDisposition()[v][1] += (deltaY / norm) * repulsiveForce;
                 }
             }
 
             // Calculate attractive forces.
             for (int j = 0; j < edges.size(); j++) {
-                final int u = this.edges()[j][0];
-                final int v = this.edges()[j][1];
+                int u = edges()[j][0];
+                int v = edges()[j][1];
 
-                final double deltaX = nodePosition()[v][0] - nodePosition()[u][0];
-                final double deltaY = nodePosition()[v][1] - nodePosition()[u][1];
+                double deltaX = this.nodePosition()[v][0] - this.nodePosition()[u][0];
+                double deltaY = this.nodePosition()[v][1] - this.nodePosition()[u][1];
 
-                double norm = norm(deltaX, deltaY);
+                double norm = this.norm(deltaX, deltaY);
 
                 if (norm == 0.0) {
                     norm = 0.1;
@@ -187,109 +187,109 @@ public final class FruchtermanReingoldLayout {
 //                    continue;
 //                }
 
-                final double attractiveForce = fa(norm);
-                final double attractX = (deltaX / norm) * attractiveForce;
-                final double attractY = (deltaY / norm) * attractiveForce;
+                double attractiveForce = this.fa(norm);
+                double attractX = (deltaX / norm) * attractiveForce;
+                double attractY = (deltaY / norm) * attractiveForce;
 
-                nodeDisposition()[v][0] -= attractX;
-                nodeDisposition()[v][1] -= attractY;
+                this.nodeDisposition()[v][0] -= attractX;
+                this.nodeDisposition()[v][1] -= attractY;
 
-                if (Double.isNaN(nodeDisposition()[v][0]) ||
-                        Double.isNaN(nodeDisposition()[v][1])) {
+                if (Double.isNaN(this.nodeDisposition()[v][0]) ||
+                        Double.isNaN(this.nodeDisposition()[v][1])) {
                     throw new IllegalStateException("Undefined disposition.");
                 }
 
-                nodeDisposition()[u][0] += attractX;
-                nodeDisposition()[u][1] += attractY;
+                this.nodeDisposition()[u][0] += attractX;
+                this.nodeDisposition()[u][1] += attractY;
 
-                if (Double.isNaN(nodeDisposition()[u][0]) ||
-                        Double.isNaN(nodeDisposition()[u][1])) {
+                if (Double.isNaN(this.nodeDisposition()[u][0]) ||
+                        Double.isNaN(this.nodeDisposition()[u][1])) {
                     throw new IllegalStateException("Undefined disposition.");
                 }
             }
 
             for (int v = 0; v < numNodes; v++) {
-                final double norm = norm(nodeDisposition()[v][0], nodeDisposition()[v][1]);
+                double norm = this.norm(this.nodeDisposition()[v][0], this.nodeDisposition()[v][1]);
 
 //                if (norm == 0.0) {
 //                    continue;
 //                }
 
-                nodePosition()[v][0] += (nodeDisposition()[v][0] / norm) *
-                        Math.min(norm, getTemperature());
-                nodePosition()[v][1] += (nodeDisposition()[v][1] / norm) *
-                        Math.min(norm, getTemperature());
+                this.nodePosition()[v][0] += (this.nodeDisposition()[v][0] / norm) *
+                        Math.min(norm, this.getTemperature());
+                this.nodePosition()[v][1] += (this.nodeDisposition()[v][1] / norm) *
+                        Math.min(norm, this.getTemperature());
 
-                if (Double.isNaN(nodePosition()[v][0]) ||
-                        Double.isNaN(nodePosition()[v][1])) {
+                if (Double.isNaN(this.nodePosition()[v][0]) ||
+                        Double.isNaN(this.nodePosition()[v][1])) {
                     throw new IllegalStateException("Undefined position.");
                 }
             }
         }
 
-        shiftComponentToRight(nodes);
+        this.shiftComponentToRight(nodes);
     }
 
-    private void shiftComponentToRight(final List<Node> componentNodes) {
+    private void shiftComponentToRight(List<Node> componentNodes) {
         double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE;
 
         for (int i = 0; i < componentNodes.size(); i++) {
-            if (nodePosition()[i][0] < minX) {
-                minX = nodePosition()[i][0];
+            if (this.nodePosition()[i][0] < minX) {
+                minX = this.nodePosition()[i][0];
             }
-            if (nodePosition()[i][1] < minY) {
-                minY = nodePosition()[i][1];
-            }
-        }
-
-        this.leftmostX = leftmostX() + 100.;
-
-        for (int i = 0; i < componentNodes.size(); i++) {
-            nodePosition()[i][0] += leftmostX() - minX;
-            nodePosition()[i][1] += 40.0 - minY;
-        }
-
-        for (int i = 0; i < componentNodes.size(); i++) {
-            if (nodePosition()[i][0] > leftmostX()) {
-                this.leftmostX = nodePosition()[i][0];
+            if (this.nodePosition()[i][1] < minY) {
+                minY = this.nodePosition()[i][1];
             }
         }
 
+        leftmostX = this.leftmostX() + 100.;
+
         for (int i = 0; i < componentNodes.size(); i++) {
-            final Node node = componentNodes.get(i);
-            node.setCenterX((int) nodePosition()[i][0]);
-            node.setCenterY((int) nodePosition()[i][1]);
+            this.nodePosition()[i][0] += this.leftmostX() - minX;
+            this.nodePosition()[i][1] += 40.0 - minY;
+        }
+
+        for (int i = 0; i < componentNodes.size(); i++) {
+            if (this.nodePosition()[i][0] > this.leftmostX()) {
+                leftmostX = this.nodePosition()[i][0];
+            }
+        }
+
+        for (int i = 0; i < componentNodes.size(); i++) {
+            Node node = componentNodes.get(i);
+            node.setCenterX((int) this.nodePosition()[i][0]);
+            node.setCenterY((int) this.nodePosition()[i][1]);
         }
     }
 
     //============================PRIVATE METHODS=========================//  \
 
-    private double fa(final double d) {
-        return (d * d) / getOptimalDistance();
+    private double fa(double d) {
+        return (d * d) / this.getOptimalDistance();
     }
 
-    private double fr(final double d) {
-        return -(getOptimalDistance() * getOptimalDistance()) / d;
+    private double fr(double d) {
+        return -(this.getOptimalDistance() * this.getOptimalDistance()) / d;
     }
 
-    private double norm(final double x, final double y) {
+    private double norm(double x, double y) {
         return Math.sqrt(x * x + y * y);
     }
 
     private Graph graph() {
-        return this.graph;
+        return graph;
     }
 
     private int[][] edges() {
-        return this.edges;
+        return edges;
     }
 
     private double[][] nodePosition() {
-        return this.nodePosition;
+        return nodePosition;
     }
 
     private double[][] nodeDisposition() {
-        return this.nodeDisposition;
+        return nodeDisposition;
     }
 
     private int numIterations() {
@@ -297,22 +297,22 @@ public final class FruchtermanReingoldLayout {
     }
 
     private double leftmostX() {
-        return this.leftmostX;
+        return leftmostX;
     }
 
     private double getOptimalDistance() {
-        return this.optimalDistance;
+        return optimalDistance;
     }
 
-    private void setOptimalDistance(final double optimalDistance) {
+    private void setOptimalDistance(double optimalDistance) {
         this.optimalDistance = optimalDistance;
     }
 
     private double getTemperature() {
-        return this.temperature;
+        return temperature;
     }
 
-    private void setTemperature(final double temperature) {
+    private void setTemperature(double temperature) {
         this.temperature = temperature;
     }
 }

@@ -34,19 +34,18 @@ public class ParameterCard extends AlgorithmParameterPanel {
 
     private final GeneralAlgorithmRunner algorithmRunner;
 
-    public ParameterCard(final GeneralAlgorithmRunner algorithmRunner) {
-        super();
+    public ParameterCard(GeneralAlgorithmRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
 
-        initComponents();
+        this.initComponents();
     }
 
     private void initComponents() {
-        setPreferredSize(new Dimension(800, 506));
+        this.setPreferredSize(new Dimension(800, 506));
     }
 
     public void refresh() {
-        addToPanel(this.algorithmRunner);
+        this.addToPanel(algorithmRunner);
     }
 
 }

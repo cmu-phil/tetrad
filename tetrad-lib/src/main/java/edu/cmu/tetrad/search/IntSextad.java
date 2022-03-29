@@ -15,8 +15,8 @@ public class IntSextad implements TetradSerializable {
     private final int m;
     private final int n;
 
-    public IntSextad(final int i, final int j, final int k, final int l, final int m, final int n) {
-        testDistinctness(i, j, k, l, m, n);
+    public IntSextad(int i, int j, int k, int l, int m, int n) {
+        this.testDistinctness(i, j, k, l, m, n);
         this.i = i;
         this.j = j;
         this.k = k;
@@ -33,7 +33,7 @@ public class IntSextad implements TetradSerializable {
     }
 
 
-    private void testDistinctness(final int i, final int j, final int k, final int l, final int m, final int n) {
+    private void testDistinctness(int i, int j, int k, int l, int m, int n) {
         if (i == j || i == k || i == l || i == m || i == n) {
             throw new IllegalArgumentException("Nodes not distinct.");
         }
@@ -56,67 +56,67 @@ public class IntSextad implements TetradSerializable {
     }
 
     public int getI() {
-        return this.i;
+        return i;
     }
 
     public int getJ() {
-        return this.j;
+        return j;
     }
 
     public int getK() {
-        return this.k;
+        return k;
     }
 
     public int getL() {
-        return this.l;
+        return l;
     }
 
     public int getM() {
-        return this.m;
+        return m;
     }
 
     public int getN() {
-        return this.n;
+        return n;
     }
 
     public int hashCode() {
-        int hash = this.i * this.j * this.k;
-        hash += this.l * this.m * this.n;
+        int hash = i * j * k;
+        hash += l * m * n;
         return hash;
     }
 
-    public boolean equals(final Object o) {
-        final IntSextad sextad = (IntSextad) o;
+    public boolean equals(Object o) {
+        IntSextad sextad = (IntSextad) o;
 
-        final boolean leftEquals = this.i == sextad.i && this.j == sextad.j && this.k == sextad.k ||
-                this.i == sextad.i && this.j == sextad.k && this.k == sextad.j ||
-                this.i == sextad.j && this.j == sextad.i && this.k == sextad.k ||
-                this.i == sextad.j && this.j == sextad.k && this.k == sextad.i ||
-                this.i == sextad.k && this.j == sextad.i && this.k == sextad.j ||
-                this.i == sextad.k && this.j == sextad.j && this.k == sextad.i;
+        boolean leftEquals = i == sextad.i && j == sextad.j && k == sextad.k ||
+                i == sextad.i && j == sextad.k && k == sextad.j ||
+                i == sextad.j && j == sextad.i && k == sextad.k ||
+                i == sextad.j && j == sextad.k && k == sextad.i ||
+                i == sextad.k && j == sextad.i && k == sextad.j ||
+                i == sextad.k && j == sextad.j && k == sextad.i;
 
-        final boolean rightEquals = this.l == sextad.l && this.m == sextad.m && this.n == sextad.n ||
-                this.l == sextad.l && this.m == sextad.n && this.n == sextad.m ||
-                this.l == sextad.m && this.m == sextad.l && this.n == sextad.n ||
-                this.l == sextad.m && this.m == sextad.n && this.n == sextad.l ||
-                this.l == sextad.n && this.m == sextad.l && this.n == sextad.m ||
-                this.l == sextad.n && this.m == sextad.m && this.n == sextad.l;
+        boolean rightEquals = l == sextad.l && m == sextad.m && n == sextad.n ||
+                l == sextad.l && m == sextad.n && n == sextad.m ||
+                l == sextad.m && m == sextad.l && n == sextad.n ||
+                l == sextad.m && m == sextad.n && n == sextad.l ||
+                l == sextad.n && m == sextad.l && n == sextad.m ||
+                l == sextad.n && m == sextad.m && n == sextad.l;
 
         return leftEquals && rightEquals;
     }
 
     public String toString() {
-        return "<" + this.i + ", " + this.j + ", " + this.k + "; " + this.l + ", " + this.m + ", " + this.n + ">";
+        return "<" + i + ", " + j + ", " + k + "; " + l + ", " + m + ", " + n + ">";
     }
 
     public List<Integer> getNodes() {
-        final List<Integer> nodes = new ArrayList<>();
-        nodes.add(this.i);
-        nodes.add(this.j);
-        nodes.add(this.k);
-        nodes.add(this.l);
-        nodes.add(this.m);
-        nodes.add(this.n);
+        List<Integer> nodes = new ArrayList<>();
+        nodes.add(i);
+        nodes.add(j);
+        nodes.add(k);
+        nodes.add(l);
+        nodes.add(m);
+        nodes.add(n);
         return nodes;
     }
 }

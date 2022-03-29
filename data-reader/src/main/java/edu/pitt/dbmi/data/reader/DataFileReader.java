@@ -43,11 +43,11 @@ public abstract class DataFileReader implements DataReader {
     protected final Path dataFile;
     protected final Delimiter delimiter;
 
-    public DataFileReader(final Path dataFile, final Delimiter delimiter) {
+    public DataFileReader(Path dataFile, Delimiter delimiter) {
         this.dataFile = dataFile;
         this.delimiter = delimiter;
-        this.quoteCharacter = -1;
-        this.commentMarker = "";
+        quoteCharacter = -1;
+        commentMarker = "";
     }
 
     /**
@@ -59,27 +59,27 @@ public abstract class DataFileReader implements DataReader {
     protected int countNumberOfColumns() throws IOException {
         int count = 0;
 
-        try (final InputStream in = Files.newInputStream(this.dataFile, StandardOpenOption.READ)) {
+        try (InputStream in = Files.newInputStream(dataFile, StandardOpenOption.READ)) {
             boolean skip = false;
             boolean hasSeenNonblankChar = false;
             boolean hasQuoteChar = false;
             boolean finished = false;
 
-            final byte delimChar = this.delimiter.getByteValue();
+            byte delimChar = delimiter.getByteValue();
             byte prevChar = -1;
 
             // comment marker check
-            final byte[] comment = this.commentMarker.getBytes();
+            byte[] comment = commentMarker.getBytes();
             int cmntIndex = 0;
             boolean checkForComment = comment.length > 0;
 
-            final byte[] buffer = new byte[DataFileReader.BUFFER_SIZE];
+            byte[] buffer = new byte[BUFFER_SIZE];
             int len;
             while ((len = in.read(buffer)) != -1 && !finished && !Thread.currentThread().isInterrupted()) {
                 for (int i = 0; i < len && !finished && !Thread.currentThread().isInterrupted(); i++) {
-                    final byte currChar = buffer[i];
+                    byte currChar = buffer[i];
 
-                    if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
+                    if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
                         finished = hasSeenNonblankChar && !skip;
                         if (finished) {
                             count++;
@@ -91,12 +91,12 @@ public abstract class DataFileReader implements DataReader {
                         cmntIndex = 0;
                         checkForComment = comment.length > 0;
                     } else if (!skip) {
-                        if (currChar > DataFileReader.SPACE_CHAR) {
+                        if (currChar > SPACE_CHAR) {
                             hasSeenNonblankChar = true;
                         }
 
                         // skip blank chars at the begining of the line
-                        if (currChar <= DataFileReader.SPACE_CHAR && !hasSeenNonblankChar) {
+                        if (currChar <= SPACE_CHAR && !hasSeenNonblankChar) {
                             continue;
                         }
 
@@ -115,13 +115,13 @@ public abstract class DataFileReader implements DataReader {
                             }
                         }
 
-                        if (currChar == this.quoteCharacter) {
+                        if (currChar == quoteCharacter) {
                             hasQuoteChar = !hasQuoteChar;
                         } else {
                             if (!hasQuoteChar) {
-                                switch (this.delimiter) {
+                                switch (delimiter) {
                                     case WHITESPACE:
-                                        if (currChar <= DataFileReader.SPACE_CHAR && prevChar > DataFileReader.SPACE_CHAR) {
+                                        if (currChar <= SPACE_CHAR && prevChar > SPACE_CHAR) {
                                             count++;
                                         }
                                         break;
@@ -157,21 +157,21 @@ public abstract class DataFileReader implements DataReader {
     protected int countNumberOfLines() throws IOException {
         int count = 0;
 
-        try (final InputStream in = Files.newInputStream(this.dataFile, StandardOpenOption.READ)) {
+        try (InputStream in = Files.newInputStream(dataFile, StandardOpenOption.READ)) {
             boolean skip = false;
             boolean hasSeenNonblankChar = false;
 
             // comment marker check
-            final byte[] comment = this.commentMarker.getBytes();
+            byte[] comment = commentMarker.getBytes();
             int cmntIndex = 0;
-            final boolean checkForComment = comment.length > 0;
+            boolean checkForComment = comment.length > 0;
 
-            final byte[] buffer = new byte[DataFileReader.BUFFER_SIZE];
+            byte[] buffer = new byte[BUFFER_SIZE];
             int len;
             while ((len = in.read(buffer)) != -1 && !Thread.currentThread().isInterrupted()) {
                 for (int i = 0; i < len; i++) {
-                    final byte currChar = buffer[i];
-                    if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
+                    byte currChar = buffer[i];
+                    if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
                         if (!skip && cmntIndex > 0) {
                             count++;
                         }
@@ -182,12 +182,12 @@ public abstract class DataFileReader implements DataReader {
                         cmntIndex = 0;
                     } else {
                         if (!skip) {
-                            if (currChar > DataFileReader.SPACE_CHAR) {
+                            if (currChar > SPACE_CHAR) {
                                 hasSeenNonblankChar = true;
                             }
 
                             // skip blank chars at the begining of the line
-                            if (currChar <= DataFileReader.SPACE_CHAR && !hasSeenNonblankChar) {
+                            if (currChar <= SPACE_CHAR && !hasSeenNonblankChar) {
                                 continue;
                             }
 
@@ -219,14 +219,14 @@ public abstract class DataFileReader implements DataReader {
     }
 
     @Override
-    public void setQuoteCharacter(final char quoteCharacter) {
+    public void setQuoteCharacter(char quoteCharacter) {
         this.quoteCharacter = Character.isDefined(quoteCharacter)
                 ? (byte) quoteCharacter
                 : (byte) -1;
     }
 
     @Override
-    public void setCommentMarker(final String commentMarker) {
+    public void setCommentMarker(String commentMarker) {
         this.commentMarker = (commentMarker == null)
                 ? ""
                 : commentMarker.trim();

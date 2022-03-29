@@ -70,18 +70,18 @@ public final class IndTestCramerT implements IndependenceTest {
     /**
      * The cutoff value for 'alpha' area in the two tails of the partial correlation distribution function.
      */
-    private double cutoff = 0.;
+    private double cutoff;
 
     /**
      * The last calculated partial correlation, needed to calculate relative strength.
      */
-    private double storedR = 0.;
+    private double storedR;
 
     /**
      * Formats as 0.0000.
      */
     private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-    private boolean verbose = false;
+    private boolean verbose;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -92,27 +92,27 @@ public final class IndTestCramerT implements IndependenceTest {
      * @param dataSet A data set with all continuous columns.
      * @param alpha   the alpha level of the test.
      */
-    public IndTestCramerT(final DataSet dataSet, final double alpha) {
+    public IndTestCramerT(DataSet dataSet, double alpha) {
         if (!(dataSet.isContinuous())) {
             throw new IllegalArgumentException("Data set must be continuous.");
         }
 
         this.dataSet = dataSet;
-        this.covMatrix = new CorrelationMatrix(dataSet);
-        this.variables =
-                Collections.unmodifiableList(this.covMatrix.getVariables());
-        setAlpha(alpha);
-    }
-
-    /**
-     * Constructs a new independence test that will determine conditional independence facts using the given correlation
-     * matrix and the given significance level.
-     */
-    public IndTestCramerT(final CorrelationMatrix covMatrix, final double alpha) {
-        this.covMatrix = covMatrix;
-        this.variables =
+        covMatrix = new CorrelationMatrix(dataSet);
+        variables =
                 Collections.unmodifiableList(covMatrix.getVariables());
-        setAlpha(alpha);
+        this.setAlpha(alpha);
+    }
+
+    /**
+     * Constructs a new independence test that will determine conditional independence facts using the given correlation
+     * matrix and the given significance level.
+     */
+    public IndTestCramerT(CorrelationMatrix covMatrix, double alpha) {
+        this.covMatrix = covMatrix;
+        variables =
+                Collections.unmodifiableList(covMatrix.getVariables());
+        this.setAlpha(alpha);
     }
 
 
@@ -120,12 +120,12 @@ public final class IndTestCramerT implements IndependenceTest {
      * Constructs a new independence test that will determine conditional independence facts using the given correlation
      * matrix and the given significance level.
      */
-    public IndTestCramerT(final ICovarianceMatrix covMatrix, final double alpha) {
-        final CorrelationMatrix corrMatrix = new CorrelationMatrix(covMatrix);
-        this.variables =
+    public IndTestCramerT(ICovarianceMatrix covMatrix, double alpha) {
+        CorrelationMatrix corrMatrix = new CorrelationMatrix(covMatrix);
+        variables =
                 Collections.unmodifiableList(corrMatrix.getVariables());
         this.covMatrix = corrMatrix;
-        setAlpha(alpha);
+        this.setAlpha(alpha);
     }
 
     //==========================PUBLIC METHODS=============================//
@@ -133,27 +133,27 @@ public final class IndTestCramerT implements IndependenceTest {
     /**
      * Creates a new IndTestCramerT instance for a subset of the variables.
      */
-    public IndependenceTest indTestSubset(final List<Node> vars) {
+    public IndependenceTest indTestSubset(List<Node> vars) {
         if (vars.isEmpty()) {
             throw new IllegalArgumentException("Subset may not be empty.");
         }
 
-        for (final Node var : vars) {
-            if (!this.variables.contains(var)) {
+        for (Node var : vars) {
+            if (!variables.contains(var)) {
                 throw new IllegalArgumentException(
                         "All vars must be original vars");
             }
         }
 
-        final int[] indices = new int[vars.size()];
+        int[] indices = new int[vars.size()];
 
         for (int i = 0; i < indices.length; i++) {
-            indices[i] = this.variables.indexOf(vars.get(i));
+            indices[i] = variables.indexOf(vars.get(i));
         }
 
-        final ICovarianceMatrix newCorrMatrix = this.covMatrix.getSubmatrix(indices);
+        ICovarianceMatrix newCorrMatrix = covMatrix.getSubmatrix(indices);
 
-        final double alphaNew = getAlpha();
+        double alphaNew = this.getAlpha();
         return new IndTestCramerT(newCorrMatrix, alphaNew);
     }
 
@@ -166,12 +166,12 @@ public final class IndTestCramerT implements IndependenceTest {
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public boolean isIndependent(final Node x, final Node y, final List<Node> z) {
+    public boolean isIndependent(Node x, Node y, List<Node> z) {
         if (z == null) {
             throw new NullPointerException();
         }
 
-        for (final Node node : z) {
+        for (Node node : z) {
             if (node == null) {
                 throw new NullPointerException();
             }
@@ -197,19 +197,19 @@ public final class IndTestCramerT implements IndependenceTest {
         // arrays and inverting submatrix in place.
 
         // Create index array for the given variables.
-        final int size = z.size() + 2;
-        final int[] indices = new int[size];
+        int size = z.size() + 2;
+        int[] indices = new int[size];
 
-        indices[0] = getVariables().indexOf(x);
-        indices[1] = getVariables().indexOf(y);
+        indices[0] = this.getVariables().indexOf(x);
+        indices[1] = this.getVariables().indexOf(y);
 
         for (int i = 0; i < z.size(); i++) {
-            indices[i + 2] = getVariables().indexOf(z.get(i));
+            indices[i + 2] = this.getVariables().indexOf(z.get(i));
         }
 
         // Extract submatrix of correlation matrix using this index array.
         Matrix submatrix =
-                covMatrix().getMatrix().getSelection(indices, indices);
+                this.covMatrix().getMatrix().getSelection(indices, indices);
 
         // Check for missing values.
         if (DataUtils.containsMissingValue(submatrix)) {
@@ -229,25 +229,25 @@ public final class IndTestCramerT implements IndependenceTest {
 
         submatrix = submatrix.inverse();
 
-        final double a = -1.0 * submatrix.get(0, 1);
-        final double b = Math.sqrt(submatrix.get(0, 0) * submatrix.get(1, 1));
+        double a = -1.0 * submatrix.get(0, 1);
+        double b = Math.sqrt(submatrix.get(0, 0) * submatrix.get(1, 1));
 
-        this.storedR = a / b; // Store R so P value can be calculated.
+        storedR = a / b; // Store R so P value can be calculated.
 
-        if (Math.abs(this.storedR) > 1) {
-            this.storedR = Math.signum(this.storedR);
+        if (Math.abs(storedR) > 1) {
+            storedR = Math.signum(storedR);
         }
 
-        if (Double.isNaN(this.storedR)) {
+        if (Double.isNaN(storedR)) {
             throw new IllegalArgumentException("Conditional correlation cannot be computed: " + SearchLogUtils.independenceFact(x, y, z));
         }
 
         // Determine whether this partial correlation is statistically
         // nondifferent from zero.
-        final boolean independent = isZero(this.storedR, size, getAlpha());
-        final double pValue = getPValue();
+        boolean independent = this.isZero(storedR, size, this.getAlpha());
+        double pValue = this.getPValue();
 
-        if (this.verbose) {
+        if (verbose) {
             if (independent) {
                 TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, pValue));
             } else {
@@ -258,31 +258,31 @@ public final class IndTestCramerT implements IndependenceTest {
         return independent;
     }
 
-    public boolean isIndependent(final Node x, final Node y, final Node... z) {
-        final List<Node> zList = Arrays.asList(z);
-        return isIndependent(x, y, zList);
+    public boolean isIndependent(Node x, Node y, Node... z) {
+        List<Node> zList = Arrays.asList(z);
+        return this.isIndependent(x, y, zList);
     }
 
-    public boolean isDependent(final Node x, final Node y, final List<Node> z) {
-        return !isIndependent(x, y, z);
+    public boolean isDependent(Node x, Node y, List<Node> z) {
+        return !this.isIndependent(x, y, z);
     }
 
-    public boolean isDependent(final Node x, final Node y, final Node... z) {
-        final List<Node> zList = Arrays.asList(z);
-        return isDependent(x, y, zList);
+    public boolean isDependent(Node x, Node y, Node... z) {
+        List<Node> zList = Arrays.asList(z);
+        return this.isDependent(x, y, zList);
     }
 
     /**
      * @return the probability associated with the most recently computed independence test.
      */
     public double getPValue() {
-        return 2.0 * Integrator.getArea(pdf(), Math.abs(this.storedR), 1.0, 100);
+        return 2.0 * Integrator.getArea(this.pdf(), Math.abs(storedR), 1.0, 100);
     }
 
     /**
      * Sets the significance level for future tests.
      */
-    public void setAlpha(final double alpha) {
+    public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
             throw new IllegalArgumentException("Significance out of range.");
         }
@@ -294,11 +294,11 @@ public final class IndTestCramerT implements IndependenceTest {
      * @return the getModel significance level.
      */
     public double getAlpha() {
-        return this.alpha;
+        return alpha;
     }
 
     private ICovarianceMatrix covMatrix() {
-        return this.covMatrix;
+        return covMatrix;
     }
 
     /**
@@ -306,15 +306,15 @@ public final class IndTestCramerT implements IndependenceTest {
      * relations-- that is, all the variables in the given graph or the given data set.
      */
     public List<Node> getVariables() {
-        return this.variables;
+        return variables;
     }
 
     /**
      * @return the variable with the given name, or null if there is no such variable.
      */
-    public Node getVariable(final String name) {
-        for (int i = 0; i < getVariables().size(); i++) {
-            final Node variable = getVariables().get(i);
+    public Node getVariable(String name) {
+        for (int i = 0; i < this.getVariables().size(); i++) {
+            Node variable = this.getVariables().get(i);
             if (variable.getName().equals(name)) {
                 return variable;
             }
@@ -323,34 +323,34 @@ public final class IndTestCramerT implements IndependenceTest {
         return null;
     }
 
-    public boolean determines(final List z, final Node x) throws UnsupportedOperationException {
-        final int[] parents = new int[z.size()];
+    public boolean determines(List z, Node x) throws UnsupportedOperationException {
+        int[] parents = new int[z.size()];
 
         for (int j = 0; j < parents.length; j++) {
-            parents[j] = this.covMatrix.getVariables().indexOf(z.get(j));
+            parents[j] = covMatrix.getVariables().indexOf(z.get(j));
         }
 
-        final int i = this.covMatrix.getVariables().indexOf(x);
+        int i = covMatrix.getVariables().indexOf(x);
 
-        final Matrix matrix2D = this.covMatrix.getMatrix();
+        Matrix matrix2D = covMatrix.getMatrix();
         double variance = matrix2D.get(i, i);
 
         if (parents.length > 0) {
 
             // Regress z onto i, yielding regression coefficients b.
-            final Matrix Czz =
+            Matrix Czz =
                     matrix2D.getSelection(parents, parents);
-            final Matrix inverse;
+            Matrix inverse;
             try {
                 inverse = Czz.inverse();
 //                inverse = MatrixUtils.ginverse(Czz);
-            } catch (final Exception e) {
+            } catch (Exception e) {
                 return true;
             }
 
             Vector Cyz = matrix2D.getColumn(i);
             Cyz = Cyz.viewSelection(parents);
-            final Vector b = inverse.times(Cyz);
+            Vector b = inverse.times(Cyz);
 
             variance -= Cyz.dotProduct(b);
         }
@@ -359,7 +359,7 @@ public final class IndTestCramerT implements IndependenceTest {
     }
 
     public DataSet getData() {
-        return this.dataSet;
+        return dataSet;
     }
 
     @Override
@@ -384,17 +384,17 @@ public final class IndTestCramerT implements IndependenceTest {
 
     @Override
     public double getScore() {
-        return -(getPValue() - getAlpha());
+        return -(this.getPValue() - this.getAlpha());
     }
 
     /**
      * @return the list of variable names
      */
     public List<String> getVariableNames() {
-        final List<Node> variables = getVariables();
-        final List<String> variableNames = new ArrayList<>();
+        List<Node> variables = this.getVariables();
+        List<String> variableNames = new ArrayList<>();
 
-        for (final Node variable : variables) {
+        for (Node variable : variables) {
             variableNames.add(variable.getName());
         }
 
@@ -405,7 +405,7 @@ public final class IndTestCramerT implements IndependenceTest {
      * @return a string representation of this test.
      */
     public String toString() {
-        return "Partial Correlation T Test, alpha = " + IndTestCramerT.nf.format(getAlpha());
+        return "Partial Correlation T Test, alpha = " + nf.format(this.getAlpha());
     }
 
     //==========================PRIVATE METHODS============================//
@@ -420,33 +420,33 @@ public final class IndTestCramerT implements IndependenceTest {
      * @param alpha the alpha level.
      * @return true if the sample correlation is statically non-different from zero, false if not.
      */
-    private boolean isZero(final double r, final int k, final double alpha) {
-        if (pdf() == null || pdf().getK() != k) {
-            this.cutoff = cutoff(k, alpha);
+    private boolean isZero(double r, int k, double alpha) {
+        if (this.pdf() == null || this.pdf().getK() != k) {
+            cutoff = this.cutoff(k, alpha);
         }
-        return Math.abs(r) <= this.cutoff;
+        return Math.abs(r) <= cutoff;
     }
 
-    private double cutoff(final int k, final double alpha) {
-        this.pdf = new PartialCorrelationPdf(sampleSize() - 1, k);
+    private double cutoff(int k, double alpha) {
+        pdf = new PartialCorrelationPdf(this.sampleSize() - 1, k);
         final double upperBound = 1.0;
         final double delta = 0.00001;
-        return CutoffFinder.getCutoff(pdf(), upperBound, alpha, delta);
+        return CutoffFinder.getCutoff(this.pdf(), upperBound, alpha, delta);
     }
 
     private int sampleSize() {
-        return covMatrix().getSampleSize();
+        return this.covMatrix().getSampleSize();
     }
 
     private PartialCorrelationPdf pdf() {
-        return this.pdf;
+        return pdf;
     }
 
     public boolean isVerbose() {
-        return this.verbose;
+        return verbose;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 }

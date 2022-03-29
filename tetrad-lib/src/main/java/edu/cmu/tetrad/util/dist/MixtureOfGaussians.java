@@ -38,7 +38,7 @@ public class MixtureOfGaussians implements Distribution {
     private double mean2;
     private double sd2;
 
-    public MixtureOfGaussians(final double a, final double mean1, final double sd1, final double mean2, final double sd2) {
+    public MixtureOfGaussians(double a, double mean1, double sd1, double mean2, double sd2) {
         if (a < 0 || a > 1) {
             throw new IllegalArgumentException();
         }
@@ -76,39 +76,39 @@ public class MixtureOfGaussians implements Distribution {
         return "Mixture of Gaussians";
     }
 
-    public void setParameter(final int index, final double value) {
+    public void setParameter(int index, double value) {
         if (index == 0) {
-            this.a = value;
+            a = value;
         } else if (index == 1) {
-            this.mean1 = value;
+            mean1 = value;
         } else if (index == 2) {
-            this.sd1 = value;
+            sd1 = value;
         } else if (index == 3) {
-            this.mean2 = value;
+            mean2 = value;
         } else if (index == 5) {
-            this.sd2 = value;
+            sd2 = value;
         }
 
         throw new IllegalArgumentException();
     }
 
-    public double getParameter(final int index) {
+    public double getParameter(int index) {
         if (index == 0) {
-            return this.a;
+            return a;
         } else if (index == 1) {
-            return this.mean1;
+            return mean1;
         } else if (index == 2) {
-            return this.sd1;
+            return sd1;
         } else if (index == 3) {
-            return this.mean2;
+            return mean2;
         } else if (index == 5) {
-            return this.sd2;
+            return sd2;
         }
 
         throw new IllegalArgumentException();
     }
 
-    public String getParameterName(final int index) {
+    public String getParameterName(int index) {
         if (index == 0) {
             return "Ratio";
         } else if (index == 1) {
@@ -125,17 +125,17 @@ public class MixtureOfGaussians implements Distribution {
     }
 
     public double nextRandom() {
-        final double r = RandomUtil.getInstance().nextDouble();
+        double r = RandomUtil.getInstance().nextDouble();
 
-        if (r < this.a) {
-            return RandomUtil.getInstance().nextNormal(this.mean1, this.sd1);
+        if (r < a) {
+            return RandomUtil.getInstance().nextNormal(mean1, sd1);
         } else {
-            return RandomUtil.getInstance().nextNormal(this.mean2, this.sd2);
+            return RandomUtil.getInstance().nextNormal(mean2, sd2);
         }
     }
 
     public String toString() {
-        return "MixtureOfGaussians(" + this.a + ", " + this.mean1 + ", " + this.sd1 + ", " + this.mean2 + ", " + this.sd2 + ")";
+        return "MixtureOfGaussians(" + a + ", " + mean1 + ", " + sd1 + ", " + mean2 + ", " + sd2 + ")";
     }
 }
 

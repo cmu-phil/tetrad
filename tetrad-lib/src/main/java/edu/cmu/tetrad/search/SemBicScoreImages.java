@@ -48,39 +48,39 @@ public class SemBicScoreImages implements ISemBicScore, Score {
     private double penaltyDiscount = 2.0;
 
     // True if verbose output should be sent to out.
-    private boolean verbose = false;
+    private boolean verbose;
 
     /**
      * Constructs the score using a covariance matrix.
      */
-    public SemBicScoreImages(final List<DataModel> dataModels) {
+    public SemBicScoreImages(List<DataModel> dataModels) {
         if (dataModels == null) {
             throw new NullPointerException();
         }
 
-        final List<SemBicScore> semBicScores = new ArrayList<>();
+        List<SemBicScore> semBicScores = new ArrayList<>();
 
-        for (final DataModel model : dataModels) {
+        for (DataModel model : dataModels) {
             if (model instanceof DataSet) {
-                final DataSet dataSet = (DataSet) model;
+                DataSet dataSet = (DataSet) model;
 
                 if (!dataSet.isContinuous()) {
                     throw new IllegalArgumentException("Datasets must be continuous.");
                 }
 
-                final SemBicScore semBicScore = new SemBicScore(dataSet);
-                semBicScore.setPenaltyDiscount(this.penaltyDiscount);
+                SemBicScore semBicScore = new SemBicScore(dataSet);
+                semBicScore.setPenaltyDiscount(penaltyDiscount);
                 semBicScores.add(semBicScore);
             } else if (model instanceof ICovarianceMatrix) {
-                final SemBicScore semBicScore = new SemBicScore((ICovarianceMatrix) model);
-                semBicScore.setPenaltyDiscount(this.penaltyDiscount);
+                SemBicScore semBicScore = new SemBicScore((ICovarianceMatrix) model);
+                semBicScore.setPenaltyDiscount(penaltyDiscount);
                 semBicScores.add(semBicScore);
             } else {
                 throw new IllegalArgumentException("Only continuous data sets and covariance matrices may be used as input.");
             }
         }
 
-        final List<Node> variables = semBicScores.get(0).getVariables();
+        List<Node> variables = semBicScores.get(0).getVariables();
 
         for (int i = 2; i < semBicScores.size(); i++) {
             semBicScores.get(i).setVariables(variables);
@@ -88,35 +88,35 @@ public class SemBicScoreImages implements ISemBicScore, Score {
 
         this.semBicScores = semBicScores;
         this.variables = variables;
-        this.sampleSize = semBicScores.get(0).getSampleSize();
+        sampleSize = semBicScores.get(0).getSampleSize();
     }
 
 
     @Override
-    public double localScoreDiff(final int x, final int y, final int[] z) {
+    public double localScoreDiff(int x, int y, int[] z) {
         double sum = 0.0;
 
-        for (final SemBicScore score : this.semBicScores) {
+        for (SemBicScore score : semBicScores) {
             sum += score.localScoreDiff(x, y, z);
         }
 
-        return sum / this.semBicScores.size();
+        return sum / semBicScores.size();
     }
 
     @Override
-    public double localScoreDiff(final int x, final int y) {
-        return localScoreDiff(x, y, new int[0]);
+    public double localScoreDiff(int x, int y) {
+        return this.localScoreDiff(x, y, new int[0]);
     }
 
     /**
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */
-    public double localScore(final int i, final int[] parents) {
+    public double localScore(int i, int[] parents) {
         double sum = 0.0;
         int count = 0;
 
-        for (final SemBicScore score : this.semBicScores) {
-            final double _score = score.localScore(i, parents);
+        for (SemBicScore score : semBicScores) {
+            double _score = score.localScore(i, parents);
 
             if (!Double.isNaN(_score)) {
                 sum += _score;
@@ -127,23 +127,23 @@ public class SemBicScoreImages implements ISemBicScore, Score {
         return sum / count;
     }
 
-    public double localScore(final int i, final int[] parents, final int index) {
-        return localScoreOneDataSet(i, parents, index);
+    public double localScore(int i, int[] parents, int index) {
+        return this.localScoreOneDataSet(i, parents, index);
     }
 
-    private double localScoreOneDataSet(final int i, final int[] parents, final int index) {
-        return this.semBicScores.get(index).localScore(i, parents);
+    private double localScoreOneDataSet(int i, int[] parents, int index) {
+        return semBicScores.get(index).localScore(i, parents);
     }
 
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
-    public double localScore(final int i, final int parent) {
+    public double localScore(int i, int parent) {
         double sum = 0.0;
         int count = 0;
 
-        for (final SemBicScore score : this.semBicScores) {
-            final double _score = score.localScore(i, parent);
+        for (SemBicScore score : semBicScores) {
+            double _score = score.localScore(i, parent);
 
             if (!Double.isNaN(_score)) {
                 sum += _score;
@@ -157,12 +157,12 @@ public class SemBicScoreImages implements ISemBicScore, Score {
     /**
      * Specialized scoring method for no parents. Used to speed up the effect edges search.
      */
-    public double localScore(final int i) {
+    public double localScore(int i) {
         double sum = 0.0;
         int count = 0;
 
-        for (final SemBicScore score : this.semBicScores) {
-            final double _score = score.localScore(i);
+        for (SemBicScore score : semBicScores) {
+            double _score = score.localScore(i);
 
             if (!Double.isNaN(_score)) {
                 sum += _score;
@@ -174,41 +174,41 @@ public class SemBicScoreImages implements ISemBicScore, Score {
     }
 
     public double getPenaltyDiscount() {
-        return this.penaltyDiscount;
+        return penaltyDiscount;
     }
 
     @Override
-    public boolean isEffectEdge(final double bump) {
-        return bump > -0.25 * getPenaltyDiscount() * Math.log(this.sampleSize);
+    public boolean isEffectEdge(double bump) {
+        return bump > -0.25 * this.getPenaltyDiscount() * Math.log(sampleSize);
     }
 
     public DataSet getDataSet() {
         throw new UnsupportedOperationException();
     }
 
-    public void setPenaltyDiscount(final double penaltyDiscount) {
+    public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
-        for (final SemBicScore score : this.semBicScores) {
+        for (SemBicScore score : semBicScores) {
             score.setPenaltyDiscount(penaltyDiscount);
         }
     }
 
     public boolean isVerbose() {
-        return this.verbose;
+        return verbose;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     @Override
     public List<Node> getVariables() {
-        return this.variables;
+        return variables;
     }
 
     @Override
     public int getSampleSize() {
-        return this.sampleSize;
+        return sampleSize;
     }
 
     // Prints a smallest subset of parents that causes a singular matrix exception.
@@ -238,8 +238,8 @@ public class SemBicScoreImages implements ISemBicScore, Score {
 //    }
 
     @Override
-    public Node getVariable(final String targetName) {
-        for (final Node node : this.variables) {
+    public Node getVariable(String targetName) {
+        for (Node node : variables) {
             if (node.getName().equals(targetName)) {
                 return node;
             }
@@ -254,7 +254,7 @@ public class SemBicScoreImages implements ISemBicScore, Score {
     }
 
     @Override
-    public boolean determines(final List<Node> z, final Node y) {
+    public boolean determines(List<Node> z, Node y) {
         return false;
     }
 }

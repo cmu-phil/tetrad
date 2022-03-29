@@ -47,12 +47,12 @@ public class TestSemIm {
     @Test
     public void test2() {
         RandomUtil.getInstance().setSeed(49489384L);
-        final Graph graph = constructGraph1();
-        final SemPm semPm = new SemPm(graph);
-        final SemIm semIm = new SemIm(semPm);
+        Graph graph = this.constructGraph1();
+        SemPm semPm = new SemPm(graph);
+        SemIm semIm = new SemIm(semPm);
 
-        final Node x1 = graph.getNode("X1");
-        final Node x2 = graph.getNode("X2");
+        Node x1 = graph.getNode("X1");
+        Node x2 = graph.getNode("X2");
         semIm.setEdgeCoef(x1, x2, 100.0);
         assertEquals(100.0, semIm.getEdgeCoef(x1, x2), 0.1);
 
@@ -62,63 +62,63 @@ public class TestSemIm {
 
     @Test
     public void test3() {
-        final Graph graph = constructGraph1();
-        final SemPm semPm = new SemPm(graph);
-        final SemIm semIm = new SemIm(semPm);
+        Graph graph = this.constructGraph1();
+        SemPm semPm = new SemPm(graph);
+        SemIm semIm = new SemIm(semPm);
 
-        final DataSet dataSetContColumnContinuous =
+        DataSet dataSetContColumnContinuous =
                 semIm.simulateData(500, false);
-        final ICovarianceMatrix covMatrix =
+        ICovarianceMatrix covMatrix =
                 new CovarianceMatrix(dataSetContColumnContinuous);
-        final SemEstimator estimator2 = new SemEstimator(covMatrix, semPm);
+        SemEstimator estimator2 = new SemEstimator(covMatrix, semPm);
         estimator2.estimate();
         estimator2.getEstimatedSem();
 
-        final SemEstimator estimator3 = new SemEstimator(covMatrix, semPm);
+        SemEstimator estimator3 = new SemEstimator(covMatrix, semPm);
         estimator3.estimate();
         estimator3.getEstimatedSem();
 
-        final SemPm semPm4 = new SemPm(graph);
-        final SemEstimator estimator4 = new SemEstimator(covMatrix, semPm4);
+        SemPm semPm4 = new SemPm(graph);
+        SemEstimator estimator4 = new SemEstimator(covMatrix, semPm4);
         estimator4.estimate();
         estimator4.getEstimatedSem();
 
-        final SemPm semPm5 = new SemPm(graph);
-        final SemEstimator estimator5 = new SemEstimator(covMatrix, semPm5);
+        SemPm semPm5 = new SemPm(graph);
+        SemEstimator estimator5 = new SemEstimator(covMatrix, semPm5);
         estimator5.estimate();
         estimator5.getEstimatedSem();
     }
 
     @Test
     public void testCovariancesOfSimulated() {
-        final List<Node> nodes = new ArrayList<>();
+        List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < 5; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        final Graph randomGraph = new Dag(GraphUtils.randomGraph(nodes, 0, 8, 30, 15, 15, false));
-        final SemPm semPm1 = new SemPm(randomGraph);
-        final SemIm semIm1 = new SemIm(semPm1);
+        Graph randomGraph = new Dag(GraphUtils.randomGraph(nodes, 0, 8, 30, 15, 15, false));
+        SemPm semPm1 = new SemPm(randomGraph);
+        SemIm semIm1 = new SemIm(semPm1);
 
-        final Matrix implCovarC = semIm1.getImplCovar(true);
+        Matrix implCovarC = semIm1.getImplCovar(true);
         implCovarC.toArray();
 
-        final DataSet dataSet = semIm1.simulateDataRecursive(1000, false);
+        DataSet dataSet = semIm1.simulateDataRecursive(1000, false);
         new CovarianceMatrix(dataSet);
     }
 
     @Test
     public void testIntercepts() {
-        final List<Node> nodes = new ArrayList<>();
+        List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < 5; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        final Graph randomGraph = new Dag(GraphUtils.randomGraph(nodes, 0, 8, 30, 15, 15, false));
-        final SemPm semPm = new SemPm(randomGraph);
-        final SemIm semIm = new SemIm(semPm);
+        Graph randomGraph = new Dag(GraphUtils.randomGraph(nodes, 0, 8, 30, 15, 15, false));
+        SemPm semPm = new SemPm(randomGraph);
+        SemIm semIm = new SemIm(semPm);
 
         semIm.setIntercept(semIm.getVariableNodes().get(0), 1.0);
         semIm.setIntercept(semIm.getVariableNodes().get(1), 3.0);
@@ -139,40 +139,40 @@ public class TestSemIm {
      */
     @Test
     public void testCholesky() {
-        final Graph graph = constructGraph2();
-        final SemPm semPm = new SemPm(graph);
-        final SemIm semIm = new SemIm(semPm);
+        Graph graph = this.constructGraph2();
+        SemPm semPm = new SemPm(graph);
+        SemIm semIm = new SemIm(semPm);
 
-        final DataSet dataSet = semIm.simulateData(500, false);
+        DataSet dataSet = semIm.simulateData(500, false);
 
-        final Matrix data = dataSet.getDoubleData();
-        final ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
-        final double[][] a = cov.getMatrix().toArray();
+        Matrix data = dataSet.getDoubleData();
+        ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
+        double[][] a = cov.getMatrix().toArray();
 
-        final double[][] l = MatrixUtils.cholesky(new Matrix(a)).toArray();
-        final double[][] lT = MatrixUtils.transpose(l);
-        final double[][] product = MatrixUtils.product(l, lT);
+        double[][] l = MatrixUtils.cholesky(new Matrix(a)).toArray();
+        double[][] lT = MatrixUtils.transpose(l);
+        double[][] product = MatrixUtils.product(l, lT);
 
         assertTrue(MatrixUtils.equals(a, product, 1.e-10));
     }
 
     @Test
     public void test5() {
-        final Graph graph = new EdgeListGraph();
+        Graph graph = new EdgeListGraph();
 
-        final Node x = new GraphNode("X");
-        final Node y = new GraphNode("Y");
-        final Node z = new GraphNode("Z");
+        Node x = new GraphNode("X");
+        Node y = new GraphNode("Y");
+        Node z = new GraphNode("Z");
 
         graph.addNode(x);
         graph.addNode(y);
         graph.addNode(z);
 
-        final Node lx = new GraphNode("LX");
+        Node lx = new GraphNode("LX");
         lx.setNodeType(NodeType.LATENT);
-        final Node ly = new GraphNode("LY");
+        Node ly = new GraphNode("LY");
         ly.setNodeType(NodeType.LATENT);
-        final Node lz = new GraphNode("LZ");
+        Node lz = new GraphNode("LZ");
         lz.setNodeType(NodeType.LATENT);
 
         graph.addNode(lx);
@@ -186,11 +186,11 @@ public class TestSemIm {
         graph.addDirectedEdge(lx, ly);
         graph.addDirectedEdge(ly, lz);
 
-        final SemPm pm = new SemPm(graph);
-        final SemIm im = new SemIm(pm);
+        SemPm pm = new SemPm(graph);
+        SemIm im = new SemIm(pm);
 
 //        DataSet data = im.simulateDataCholesky(1000, true);
-        final DataSet data = im.simulateDataReducedForm(1000, true);
+        DataSet data = im.simulateDataReducedForm(1000, true);
 //        DataSet data = im.simulateDataRecursive(1000, true);
 
         data.getCovarianceMatrix();
@@ -204,34 +204,34 @@ public class TestSemIm {
         // X1 = e1
         // X2 = aX1 + e2
 
-        final Matrix B = new Matrix(2, 2);
+        Matrix B = new Matrix(2, 2);
         B.set(0, 0, 0);
         B.set(0, 1, 0);
         B.set(1, 0, 5);
         B.set(1, 1, 0);
 
-        final Matrix I = TetradAlgebra.identity(2);
-        final Matrix iMinusB = TetradAlgebra.identity(2).minus(B);
-        final Matrix reduced = iMinusB.inverse();
-        final Vector e = new Vector(2);
+        Matrix I = TetradAlgebra.identity(2);
+        Matrix iMinusB = TetradAlgebra.identity(2).minus(B);
+        Matrix reduced = iMinusB.inverse();
+        Vector e = new Vector(2);
 
         e.set(0, 0.5);
         e.set(1, -2);
 
-        final Vector x = reduced.times(e);
+        Vector x = reduced.times(e);
         Vector d1 = B.times(x);
 //        d1.assign(e, PlusMult.plusMult(1));
         d1 = d1.plus(e);
     }
 
     private Graph constructGraph1() {
-        final Graph graph = new EdgeListGraph();
+        Graph graph = new EdgeListGraph();
 
-        final Node x1 = new GraphNode("X1");
-        final Node x2 = new GraphNode("X2");
-        final Node x3 = new GraphNode("X3");
-        final Node x4 = new GraphNode("X4");
-        final Node x5 = new GraphNode("X5");
+        Node x1 = new GraphNode("X1");
+        Node x2 = new GraphNode("X2");
+        Node x3 = new GraphNode("X3");
+        Node x4 = new GraphNode("X4");
+        Node x5 = new GraphNode("X5");
 
         x1.setNodeType(NodeType.LATENT);
         x2.setNodeType(NodeType.LATENT);
@@ -252,13 +252,13 @@ public class TestSemIm {
     }
 
     private Graph constructGraph2() {
-        final Graph graph = new EdgeListGraph();
+        Graph graph = new EdgeListGraph();
 
-        final Node x1 = new GraphNode("X1");
-        final Node x2 = new GraphNode("X2");
-        final Node x3 = new GraphNode("X3");
-        final Node x4 = new GraphNode("X4");
-        final Node x5 = new GraphNode("X5");
+        Node x1 = new GraphNode("X1");
+        Node x2 = new GraphNode("X2");
+        Node x3 = new GraphNode("X3");
+        Node x4 = new GraphNode("X4");
+        Node x5 = new GraphNode("X5");
 
         graph.addNode(x1);
         graph.addNode(x2);
@@ -277,12 +277,12 @@ public class TestSemIm {
 
     @Test
     public void test7() {
-        final Graph graph = new EdgeListGraph();
+        Graph graph = new EdgeListGraph();
 
-        final Node z = new GraphNode("z");
-        final Node p = new GraphNode("P");
-        final Node y = new GraphNode("Y");
-        final Node x = new GraphNode("X");
+        Node z = new GraphNode("z");
+        Node p = new GraphNode("P");
+        Node y = new GraphNode("Y");
+        Node x = new GraphNode("X");
 
         graph.addNode(z);
         graph.addNode(p);
@@ -294,32 +294,32 @@ public class TestSemIm {
         graph.addDirectedEdge(x, p);
         graph.addDirectedEdge(y, x);
 
-        final SemPm pm = new SemPm(graph);
+        SemPm pm = new SemPm(graph);
 
-        final SemIm im = new SemIm(pm);
+        SemIm im = new SemIm(pm);
 
         im.setEdgeCoef(z, p, 0.5);
         im.setEdgeCoef(p, y, 0.5);
         im.setEdgeCoef(x, p, 0.5);
         im.setEdgeCoef(y, x, 0.5);
 
-        final DataSet data = im.simulateData(1000, false);
+        DataSet data = im.simulateData(1000, false);
 
-        final SemEstimator est = new SemEstimator(data, pm, new SemOptimizerPowell());
+        SemEstimator est = new SemEstimator(data, pm, new SemOptimizerPowell());
 
-        final SemIm estSem = est.estimate();
+        SemIm estSem = est.estimate();
 
         estSem.getBicScore();
     }
 
     @Test
     public void test8() {
-        final Node x1 = new GraphNode("X1");
-        final Node x2 = new GraphNode("X2");
-        final Node x3 = new GraphNode("X3");
-        final Node x4 = new GraphNode("X4");
+        Node x1 = new GraphNode("X1");
+        Node x2 = new GraphNode("X2");
+        Node x3 = new GraphNode("X3");
+        Node x4 = new GraphNode("X4");
 
-        final Graph g = new SemGraph();
+        Graph g = new SemGraph();
         g.addNode(x1);
         g.addNode(x2);
         g.addNode(x3);
@@ -330,48 +330,48 @@ public class TestSemIm {
         g.addDirectedEdge(x3, x4);
         g.addBidirectedEdge(x1, x2);
 
-        final SemPm semPm = new SemPm(g);
-        final Parameters params = new Parameters();
-        final SemIm semIm = new SemIm(semPm, params);
+        SemPm semPm = new SemPm(g);
+        Parameters params = new Parameters();
+        SemIm semIm = new SemIm(semPm, params);
 
-        final SemIm modified = TestSemIm.modifySemImStandardizedInterventionOnTargetParents(semIm, x4);
+        SemIm modified = modifySemImStandardizedInterventionOnTargetParents(semIm, x4);
 
         modified.simulateData(1000, false);
 
     }
 
-    public static SemIm modifySemImStandardizedInterventionOnTargetParents(final SemIm semIm, final Node
+    public static SemIm modifySemImStandardizedInterventionOnTargetParents(SemIm semIm, Node
             target) {
-        final SemIm modifiedSemIm = new SemIm(semIm);
-        final SemGraph graph = new SemGraph(modifiedSemIm.getSemPm().getGraph());
+        SemIm modifiedSemIm = new SemIm(semIm);
+        SemGraph graph = new SemGraph(modifiedSemIm.getSemPm().getGraph());
 
         // remove <--> arrows from a copy of the graph so we can use the getParents function to get Nodes with edges into target
-        final SemGraph removedDoubleArrowEdges = new SemGraph(graph);
-        final ArrayList<Edge> edgesToRemove = new ArrayList<>();
-        for (final Edge e : removedDoubleArrowEdges.getEdges()) {
+        SemGraph removedDoubleArrowEdges = new SemGraph(graph);
+        ArrayList<Edge> edgesToRemove = new ArrayList<>();
+        for (Edge e : removedDoubleArrowEdges.getEdges()) {
             if ((e.getEndpoint1().equals(Endpoint.ARROW)) &&
                     (e.getEndpoint2().equals(Endpoint.ARROW))) {
                 edgesToRemove.add(e);
             }
         }
-        for (final Edge e : edgesToRemove) {
+        for (Edge e : edgesToRemove) {
             removedDoubleArrowEdges.removeEdge(e);
         }
 
-        final ArrayList<Node> targetParents = new
+        ArrayList<Node> targetParents = new
                 ArrayList<>(removedDoubleArrowEdges.getParents(removedDoubleArrowEdges.getNode(target.getName())));
 
-        final SemEvidence semEvidence = new SemEvidence(modifiedSemIm);
-        for (final Node n : targetParents) {
+        SemEvidence semEvidence = new SemEvidence(modifiedSemIm);
+        for (Node n : targetParents) {
             semEvidence.setManipulated(semEvidence.getNodeIndex(n.getName()),
                     true);
         }
-        final SemUpdater semUpdater = new SemUpdater(modifiedSemIm);
+        SemUpdater semUpdater = new SemUpdater(modifiedSemIm);
         semUpdater.setEvidence(semEvidence);
-        final SemIm modifiedAndUpdatedSemIm = new
+        SemIm modifiedAndUpdatedSemIm = new
                 SemIm(semUpdater.getUpdatedSemIm());
 
-        for (final Node n : targetParents) {
+        for (Node n : targetParents) {
             modifiedAndUpdatedSemIm.setErrVar(modifiedAndUpdatedSemIm.getVariableNode(n.getName()),
                     1.0);
             modifiedAndUpdatedSemIm.setMean(modifiedAndUpdatedSemIm.getVariableNode(n.getName()),
@@ -379,20 +379,20 @@ public class TestSemIm {
         }
 
         double varianceToAddToTargetAfterEdgeRemoval = 0.0;
-        for (final Node n : targetParents) {
-            final ArrayList<Node> nodesIntoTarget = new
+        for (Node n : targetParents) {
+            ArrayList<Node> nodesIntoTarget = new
                     ArrayList<>(graph.getNodesInTo(graph.getNode(target.getName()),
                     Endpoint.ARROW));
 
-            for (final Node nodeIntoTarget : nodesIntoTarget) {
-                final ArrayList<Edge> edgesConnectingParentAndTarget = new
+            for (Node nodeIntoTarget : nodesIntoTarget) {
+                ArrayList<Edge> edgesConnectingParentAndTarget = new
                         ArrayList<>(modifiedAndUpdatedSemIm.getSemPm().getGraph().getEdges(modifiedAndUpdatedSemIm.getVariableNode(nodeIntoTarget.getName()),
                         modifiedAndUpdatedSemIm.getVariableNode(target.getName())));
                 if (edgesConnectingParentAndTarget.size() > 1) {
-                    for (final Edge e : edgesConnectingParentAndTarget) {
+                    for (Edge e : edgesConnectingParentAndTarget) {
                         if ((e.getEndpoint1().equals(Endpoint.ARROW)) &&
                                 (e.getEndpoint2().equals(Endpoint.ARROW))) {
-                            final Edge directedEdge1 = new
+                            Edge directedEdge1 = new
                                     Edge(modifiedAndUpdatedSemIm.getVariableNode(e.getNode1().getName()),
                                     modifiedAndUpdatedSemIm.getVariableNode(e.getNode2().getName()),
                                     Endpoint.TAIL, Endpoint.ARROW);
@@ -418,7 +418,7 @@ public class TestSemIm {
                 }
             }
         }
-        final double oldTargetVariance =
+        double oldTargetVariance =
                 modifiedAndUpdatedSemIm.getErrVar(modifiedAndUpdatedSemIm.getVariableNode(target.getName()));
         modifiedAndUpdatedSemIm.setErrVar(modifiedAndUpdatedSemIm.getVariableNode(target.getName()),
                 (oldTargetVariance + varianceToAddToTargetAfterEdgeRemoval));

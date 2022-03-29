@@ -85,43 +85,43 @@ public class Version implements TetradSerializable {
      *
      * @param spec A string of the form a.b.c-d.
      */
-    public Version(final String spec) {
+    public Version(String spec) {
         if (spec == null) {
             throw new NullPointerException();
         }
 
-        final Pattern pattern2 = Pattern.compile("(\\d*)\\.(\\d*)\\.(\\d*)");
-        final Matcher matcher2 = pattern2.matcher(spec);
+        Pattern pattern2 = Pattern.compile("(\\d*)\\.(\\d*)\\.(\\d*)");
+        Matcher matcher2 = pattern2.matcher(spec);
 
-        final Pattern pattern3 = Pattern.compile("(\\d*)\\.(\\d*)\\.(\\d*)-(\\d*)");
-        final Matcher matcher3 = pattern3.matcher(spec);
+        Pattern pattern3 = Pattern.compile("(\\d*)\\.(\\d*)\\.(\\d*)-(\\d*)");
+        Matcher matcher3 = pattern3.matcher(spec);
 
-        final Pattern pattern4 = Pattern.compile("(\\d*)\\.(\\d*)\\.(\\d*)-SNAPSHOT");
-        final Matcher matcher4 = pattern4.matcher(spec);
+        Pattern pattern4 = Pattern.compile("(\\d*)\\.(\\d*)\\.(\\d*)-SNAPSHOT");
+        Matcher matcher4 = pattern4.matcher(spec);
 
-        final Pattern pattern5 = Pattern.compile("(\\d*)\\.(\\d*)\\.(\\d*)-(\\d*)\\.(\\d*)");
-        final Matcher matcher5 = pattern5.matcher(spec);
+        Pattern pattern5 = Pattern.compile("(\\d*)\\.(\\d*)\\.(\\d*)-(\\d*)\\.(\\d*)");
+        Matcher matcher5 = pattern5.matcher(spec);
 
         if (matcher2.matches()) {
-            this.majorVersion = Integer.parseInt(matcher2.group(1));
-            this.minorVersion = Integer.parseInt(matcher2.group(2));
-            this.minorSubversion = Integer.parseInt(matcher2.group(3));
-            this.incrementalRelease = 0;
+            majorVersion = Integer.parseInt(matcher2.group(1));
+            minorVersion = Integer.parseInt(matcher2.group(2));
+            minorSubversion = Integer.parseInt(matcher2.group(3));
+            incrementalRelease = 0;
         } else if (matcher3.matches()) {
-            this.majorVersion = Integer.parseInt(matcher3.group(1));
-            this.minorVersion = Integer.parseInt(matcher3.group(2));
-            this.minorSubversion = Integer.parseInt(matcher3.group(3));
-            this.incrementalRelease = Integer.parseInt(matcher3.group(4));
+            majorVersion = Integer.parseInt(matcher3.group(1));
+            minorVersion = Integer.parseInt(matcher3.group(2));
+            minorSubversion = Integer.parseInt(matcher3.group(3));
+            incrementalRelease = Integer.parseInt(matcher3.group(4));
         } else if (matcher4.matches()) {
-            this.majorVersion = Integer.parseInt(matcher4.group(1));
-            this.minorVersion = Integer.parseInt(matcher4.group(2));
-            this.minorSubversion = Integer.parseInt(matcher4.group(3));
-            this.incrementalRelease = 0;
+            majorVersion = Integer.parseInt(matcher4.group(1));
+            minorVersion = Integer.parseInt(matcher4.group(2));
+            minorSubversion = Integer.parseInt(matcher4.group(3));
+            incrementalRelease = 0;
         } else if (matcher5.matches()) {
-            this.majorVersion = Integer.parseInt(matcher5.group(1));
-            this.minorVersion = Integer.parseInt(matcher5.group(2));
-            this.minorSubversion = Integer.parseInt(matcher5.group(3));
-            this.incrementalRelease = Integer.parseInt(matcher5.group(4));
+            majorVersion = Integer.parseInt(matcher5.group(1));
+            minorVersion = Integer.parseInt(matcher5.group(2));
+            minorSubversion = Integer.parseInt(matcher5.group(3));
+            incrementalRelease = Integer.parseInt(matcher5.group(4));
         } else {
             throw new IllegalArgumentException("Version should be either of the " +
                     "form a.b.c or a.b.c-d or a.b.c-SNAPSHOT or a.b.c-d.e " + spec);
@@ -129,8 +129,8 @@ public class Version implements TetradSerializable {
 
     }
 
-    private Version(final int majorVersion, final int minorVersion, final int minorSubversion,
-                    final int incrementalRelease) {
+    private Version(int majorVersion, int minorVersion, int minorSubversion,
+                    int incrementalRelease) {
         if (majorVersion < 0) {
             throw new IllegalArgumentException();
         }
@@ -160,13 +160,13 @@ public class Version implements TetradSerializable {
      */
     public static Version currentRepositoryVersion() {
         try {
-            final File file = new File("project_tetrad/resources/version");
-            final FileReader fileReader = new FileReader(file);
-            final BufferedReader bufReader = new BufferedReader(fileReader);
-            final String spec = bufReader.readLine();
+            File file = new File("project_tetrad/resources/version");
+            FileReader fileReader = new FileReader(file);
+            BufferedReader bufReader = new BufferedReader(fileReader);
+            String spec = bufReader.readLine();
             bufReader.close();
             return new Version(spec);
-        } catch (final IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(
                     "Please correct the file project/resources/version " +
                             "\nso that it contains a version number of the form " +
@@ -183,7 +183,7 @@ public class Version implements TetradSerializable {
     public static Version currentViewableVersion() {
         try {
             final String path = "/resources/version";
-            final URL url = Version.class.getResource(path);
+            URL url = Version.class.getResource(path);
 
             if (url == null) {
                 throw new RuntimeException(
@@ -194,15 +194,15 @@ public class Version implements TetradSerializable {
                                 "\nsystem.");
             }
 
-            final InputStream inStream = url.openStream();
-            final Reader reader = new InputStreamReader(inStream);
-            final BufferedReader bufReader = new BufferedReader(reader);
-            final String spec = bufReader.readLine();
+            InputStream inStream = url.openStream();
+            Reader reader = new InputStreamReader(inStream);
+            BufferedReader bufReader = new BufferedReader(reader);
+            String spec = bufReader.readLine();
 
             bufReader.close();
 
             return new Version(spec);
-        } catch (final IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -224,31 +224,31 @@ public class Version implements TetradSerializable {
     //==========================PUBLIC METHODS===========================//
 
     private int majorVersion() {
-        return this.majorVersion;
+        return majorVersion;
     }
 
     private int minorVersion() {
-        return this.minorVersion;
+        return minorVersion;
     }
 
     private int minorSubversion() {
-        return this.minorSubversion;
+        return minorSubversion;
     }
 
     private int incrementalRelease() {
-        return this.incrementalRelease;
+        return incrementalRelease;
     }
 
     public int hashCode() {
         int hashCode = 61;
-        hashCode += 61 * this.majorVersion;
-        hashCode += 61 * this.minorVersion;
-        hashCode += 61 * this.minorSubversion;
-        hashCode += this.incrementalRelease;
+        hashCode += 61 * majorVersion;
+        hashCode += 61 * minorVersion;
+        hashCode += 61 * minorSubversion;
+        hashCode += incrementalRelease;
         return hashCode;
     }
 
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         if (o == this) {
             return true;
         }
@@ -257,21 +257,21 @@ public class Version implements TetradSerializable {
             return false;
         }
 
-        final Version other = (Version) o;
+        Version other = (Version) o;
 
-        if (!(this.majorVersion == other.majorVersion)) {
+        if (!(majorVersion == other.majorVersion)) {
             return false;
         }
 
-        if (!(this.minorVersion == other.minorVersion)) {
+        if (!(minorVersion == other.minorVersion)) {
             return false;
         }
 
-        if (!(this.minorSubversion == other.minorSubversion)) {
+        if (!(minorSubversion == other.minorSubversion)) {
             return false;
         }
 
-        if (!(this.incrementalRelease == other.incrementalRelease)) {
+        if (!(incrementalRelease == other.incrementalRelease)) {
             return false;
         }
 
@@ -280,8 +280,8 @@ public class Version implements TetradSerializable {
 
 
     public String toString() {
-        return majorVersion() + "." + minorVersion() + "." + minorSubversion()
-                + "-" + incrementalRelease();
+        return this.majorVersion() + "." + this.minorVersion() + "." + this.minorSubversion()
+                + "-" + this.incrementalRelease();
     }
 
     //===========================PRIVATE METHODS=========================//
@@ -299,29 +299,29 @@ public class Version implements TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (this.majorVersion < 0) {
+        if (majorVersion < 0) {
             throw new IllegalStateException();
         }
 
-        if (this.minorVersion < 0) {
+        if (minorVersion < 0) {
             throw new IllegalStateException();
         }
 
-        if (this.minorSubversion < 0) {
+        if (minorSubversion < 0) {
             throw new IllegalStateException();
         }
 
-        if (this.incrementalRelease < 0) {
+        if (incrementalRelease < 0) {
             throw new IllegalStateException();
         }
     }
 
     public Version nextMajorVersion() {
-        final int majorVersion = this.majorVersion + 1;
+        int majorVersion = this.majorVersion + 1;
         final int minorVersion = 0;
         final int minorSubversion = 0;
         final int incrementalRelease = 0;
@@ -331,8 +331,8 @@ public class Version implements TetradSerializable {
     }
 
     public Version nextMinorVersion() {
-        final int majorVersion = this.majorVersion;
-        final int minorVersion = this.minorVersion + 1;
+        int majorVersion = this.majorVersion;
+        int minorVersion = this.minorVersion + 1;
         final int minorSubversion = 0;
         final int incrementalRelease = 0;
 
@@ -341,9 +341,9 @@ public class Version implements TetradSerializable {
     }
 
     public Version nextMinorSubversion() {
-        final int majorVersion = this.majorVersion;
-        final int minorVersion = this.minorVersion;
-        final int minorSubversion = this.minorSubversion + 1;
+        int majorVersion = this.majorVersion;
+        int minorVersion = this.minorVersion;
+        int minorSubversion = this.minorSubversion + 1;
         final int incrementalRelease = 0;
 
         return new Version(majorVersion, minorVersion, minorSubversion,
@@ -351,10 +351,10 @@ public class Version implements TetradSerializable {
     }
 
     public Version nextIncrementalRelease() {
-        final int majorVersion = this.majorVersion;
-        final int minorVersion = this.minorVersion;
-        final int minorSubversion = this.minorSubversion;
-        final int incrementalRelease = this.incrementalRelease + 1;
+        int majorVersion = this.majorVersion;
+        int minorVersion = this.minorVersion;
+        int minorSubversion = this.minorSubversion;
+        int incrementalRelease = this.incrementalRelease + 1;
 
         return new Version(majorVersion, minorVersion, minorSubversion,
                 incrementalRelease);

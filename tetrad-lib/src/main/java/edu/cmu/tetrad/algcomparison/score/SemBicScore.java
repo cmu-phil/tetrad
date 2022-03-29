@@ -7,6 +7,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Score;
+import edu.cmu.tetrad.search.SemBicScore.RuleType;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -30,10 +31,10 @@ public class SemBicScore implements ScoreWrapper {
     private DataModel dataSet;
 
     @Override
-    public Score getScore(final DataModel dataSet, final Parameters parameters) {
+    public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
 
-        final edu.cmu.tetrad.search.SemBicScore semBicScore;
+        edu.cmu.tetrad.search.SemBicScore semBicScore;
 
         if (dataSet instanceof DataSet) {
             semBicScore = new edu.cmu.tetrad.search.SemBicScore((DataSet) this.dataSet);
@@ -48,10 +49,10 @@ public class SemBicScore implements ScoreWrapper {
 
         switch (parameters.getInt(Params.SEM_BIC_RULE)) {
             case 1:
-                semBicScore.setRuleType(edu.cmu.tetrad.search.SemBicScore.RuleType.CHICKERING);
+                semBicScore.setRuleType(RuleType.CHICKERING);
                 break;
             case 2:
-                semBicScore.setRuleType(edu.cmu.tetrad.search.SemBicScore.RuleType.NANDY);
+                semBicScore.setRuleType(RuleType.NANDY);
                 break;
             default:
                 throw new IllegalStateException("Expecting 1 or 2: " + parameters.getInt(Params.SEM_BIC_RULE));
@@ -72,7 +73,7 @@ public class SemBicScore implements ScoreWrapper {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.SEM_BIC_STRUCTURE_PRIOR);
         parameters.add(Params.SEM_BIC_RULE);
@@ -80,8 +81,8 @@ public class SemBicScore implements ScoreWrapper {
     }
 
     @Override
-    public Node getVariable(final String name) {
-        return this.dataSet.getVariable(name);
+    public Node getVariable(String name) {
+        return dataSet.getVariable(name);
     }
 
 }

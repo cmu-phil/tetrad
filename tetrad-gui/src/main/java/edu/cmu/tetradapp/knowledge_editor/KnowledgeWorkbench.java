@@ -45,16 +45,16 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
     public static final int REQUIRED_EDGE = 2;
 
     //====================PRIVATE FIELDS=================================//
-    private int edgeMode = KnowledgeWorkbench.FORBIDDEN_EDGE;
+    private int edgeMode = FORBIDDEN_EDGE;
 
     /**
      * Constructs a new workbench workbench for the given workbench model.
      */
-    public KnowledgeWorkbench(final KnowledgeGraph graph) {
+    public KnowledgeWorkbench(KnowledgeGraph graph) {
         super(graph);
-        setNodeEdgeErrorsReported(true);
-        setRightClickPopupAllowed(false);
-        this.setAllowEdgeReorientations(false);
+        this.setNodeEdgeErrorsReported(true);
+        this.setRightClickPopupAllowed(false);
+        setAllowEdgeReorientations(false);
     }
 
     /**
@@ -65,7 +65,7 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
      * @see #REQUIRED_EDGE
      */
     public int getEdgeMode() {
-        return this.edgeMode;
+        return edgeMode;
     }
 
     /**
@@ -83,15 +83,15 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
      * @param modelNode the model node.
      * @return the new display node.
      */
-    public DisplayNode getNewDisplayNode(final Node modelNode) {
-        final DisplayNode displayNode = new KnowledgeDisplayNode(modelNode);
+    public DisplayNode getNewDisplayNode(Node modelNode) {
+        DisplayNode displayNode = new KnowledgeDisplayNode(modelNode);
 
         displayNode.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(final PropertyChangeEvent evt) {
+            public void propertyChange(PropertyChangeEvent evt) {
                 if ("resetGraph".equals(evt.getPropertyName())) {
-                    setGraph(getGraph());
+                    KnowledgeWorkbench.this.setGraph(KnowledgeWorkbench.this.getGraph());
                 } else if ("editingValueChanged".equals(evt.getPropertyName())) {
-                    firePropertyChange("modelChanged", null, null);
+                    KnowledgeWorkbench.this.firePropertyChange("modelChanged", null, null);
                 }
             }
         });
@@ -107,15 +107,15 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
      * @param node2 the other model node.
      * @return the new model edge.
      */
-    public Edge getNewModelEdge(final Node node1, final Node node2) {
-        final KnowledgeModelNode _node1 = (KnowledgeModelNode) node1;
-        final KnowledgeModelNode _node2 = (KnowledgeModelNode) node2;
+    public Edge getNewModelEdge(Node node1, Node node2) {
+        KnowledgeModelNode _node1 = (KnowledgeModelNode) node1;
+        KnowledgeModelNode _node2 = (KnowledgeModelNode) node2;
 
-        switch (this.edgeMode) {
-            case KnowledgeWorkbench.FORBIDDEN_EDGE:
+        switch (edgeMode) {
+            case FORBIDDEN_EDGE:
                 return new KnowledgeModelEdge(_node1, _node2,
                         KnowledgeModelEdge.FORBIDDEN_EXPLICITLY);
-            case KnowledgeWorkbench.REQUIRED_EDGE:
+            case REQUIRED_EDGE:
                 return new KnowledgeModelEdge(_node1, _node2,
                         KnowledgeModelEdge.REQUIRED);
             default:
@@ -130,16 +130,16 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
      * @param modelEdge the model edge.
      * @return the new display edge.
      */
-    public IDisplayEdge getNewDisplayEdge(final Edge modelEdge) {
-        final Node node1 = modelEdge.getNode1();
-        final Node node2 = modelEdge.getNode2();
+    public IDisplayEdge getNewDisplayEdge(Edge modelEdge) {
+        Node node1 = modelEdge.getNode1();
+        Node node2 = modelEdge.getNode2();
 
         if (node1 == node2) {
             throw new IllegalArgumentException("Edges to self not supported.");
         }
 
-        final DisplayNode displayNodeA = (DisplayNode) getModelNodesToDisplay().get(node1);
-        final DisplayNode displayNodeB = (DisplayNode) getModelNodesToDisplay().get(node2);
+        DisplayNode displayNodeA = (DisplayNode) this.getModelNodesToDisplay().get(node1);
+        DisplayNode displayNodeB = (DisplayNode) this.getModelNodesToDisplay().get(node2);
 
         if ((displayNodeA == null) || (displayNodeB == null)) {
             return null;
@@ -157,12 +157,12 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
      * @param mouseLoc the location of the mouse.
      * @return the new tracking edge (a display edge).
      */
-    public IDisplayEdge getNewTrackingEdge(final DisplayNode node, final Point mouseLoc) {
-        switch (this.edgeMode) {
-            case KnowledgeWorkbench.FORBIDDEN_EDGE:
+    public IDisplayEdge getNewTrackingEdge(DisplayNode node, Point mouseLoc) {
+        switch (edgeMode) {
+            case FORBIDDEN_EDGE:
                 return new KnowledgeDisplayEdge(node, mouseLoc,
                         KnowledgeDisplayEdge.FORBIDDEN_EXPLICITLY);
-            case KnowledgeWorkbench.REQUIRED_EDGE:
+            case REQUIRED_EDGE:
                 return new KnowledgeDisplayEdge(node, mouseLoc,
                         KnowledgeDisplayEdge.REQUIRED);
             default:
@@ -178,16 +178,16 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
      * @param base the base string.
      * @return the first string in the sequence not already being used.
      */
-    public String nextVariableName(final String base) {
+    public String nextVariableName(String base) {
 
         // Variable names should start with "1."
         int i = 0;
 
         loop:
         while (true) {
-            final String name = base + (++i);
+            String name = base + (++i);
 
-            for (final Node node1 : getGraph().getNodes()) {
+            for (Node node1 : this.getGraph().getNodes()) {
                 if (node1.getName().equals(name)) {
                     continue loop;
                 }
@@ -202,11 +202,11 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
     /**
      * Sets the edge mode to the given mode.
      */
-    public void setEdgeMode(final int edgeMode) {
+    public void setEdgeMode(int edgeMode) {
         switch (edgeMode) {
-            case KnowledgeWorkbench.FORBIDDEN_EDGE:
+            case FORBIDDEN_EDGE:
                 // Falls through!
-            case KnowledgeWorkbench.REQUIRED_EDGE:
+            case REQUIRED_EDGE:
                 this.edgeMode = edgeMode;
                 break;
             default:

@@ -22,12 +22,12 @@ public class NumberOfEdgesTrue implements Statistic {
     }
 
     @Override
-    public double getValue(final Graph trueGraph, final Graph estGraph, final DataModel dataModel) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         return trueGraph.getNumEdges();
     }
 
     @Override
-    public double getNormValue(final double value) {
+    public double getNormValue(double value) {
         return Math.tanh(value);
     }
 }

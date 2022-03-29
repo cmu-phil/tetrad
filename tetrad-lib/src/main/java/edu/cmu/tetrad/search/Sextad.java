@@ -41,8 +41,8 @@ public class Sextad implements TetradSerializable {
     private final Node m;
     private final Node n;
 
-    public Sextad(final Node i, final Node j, final Node k, final Node l, final Node m, final Node n) {
-        testDistinctness(i, j, k, l, m, n);
+    public Sextad(Node i, Node j, Node k, Node l, Node m, Node n) {
+        this.testDistinctness(i, j, k, l, m, n);
         this.i = i;
         this.j = j;
         this.k = k;
@@ -51,17 +51,17 @@ public class Sextad implements TetradSerializable {
         this.n = n;
     }
 
-    public Sextad(final Node[] nodes) {
+    public Sextad(Node[] nodes) {
         if (nodes.length != 6) throw new IllegalArgumentException("Must provide exactly 6 nodes.");
 
-        this.i = nodes[0];
-        this.j = nodes[1];
-        this.k = nodes[2];
-        this.l = nodes[3];
-        this.m = nodes[4];
-        this.n = nodes[5];
+        i = nodes[0];
+        j = nodes[1];
+        k = nodes[2];
+        l = nodes[3];
+        m = nodes[4];
+        n = nodes[5];
 
-        testDistinctness(this.i, this.j, this.k, this.l, this.m, this.n);
+        this.testDistinctness(i, j, k, l, m, n);
 
     }
 
@@ -69,16 +69,16 @@ public class Sextad implements TetradSerializable {
      * Generates a simple exemplar of this class to test serialization.
      */
     public static Sextad serializableInstance() {
-        final Node i = new GraphNode("i");
-        final Node j = new GraphNode("j");
-        final Node k = new GraphNode("k");
-        final Node l = new GraphNode("l");
-        final Node m = new GraphNode("m");
-        final Node n = new GraphNode("n");
+        Node i = new GraphNode("i");
+        Node j = new GraphNode("j");
+        Node k = new GraphNode("k");
+        Node l = new GraphNode("l");
+        Node m = new GraphNode("m");
+        Node n = new GraphNode("n");
         return new Sextad(i, j, k, l, m, n);
     }
 
-    private void testDistinctness(final Node i, final Node j, final Node k, final Node l, final Node m, final Node n) {
+    private void testDistinctness(Node i, Node j, Node k, Node l, Node m, Node n) {
         if (i == j || i == k || i == l || i == m || i == n) {
             throw new IllegalArgumentException("Nodes not distinct.");
         }
@@ -101,70 +101,70 @@ public class Sextad implements TetradSerializable {
     }
 
     public Node getI() {
-        return this.i;
+        return i;
     }
 
     public Node getJ() {
-        return this.j;
+        return j;
     }
 
     public Node getK() {
-        return this.k;
+        return k;
     }
 
     public Node getL() {
-        return this.l;
+        return l;
     }
 
     public Node getM() {
-        return this.m;
+        return m;
     }
 
     public Node getN() {
-        return this.n;
+        return n;
     }
 
     public int hashCode() {
-        int hash = 17 * this.i.hashCode() * this.j.hashCode() * this.k.hashCode();
-        hash += 29 * this.l.hashCode() * this.m.hashCode() * this.n.hashCode();
+        int hash = 17 * i.hashCode() * j.hashCode() * k.hashCode();
+        hash += 29 * l.hashCode() * m.hashCode() * n.hashCode();
 
         return hash;
     }
 
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         if (!(o instanceof Sextad)) throw new IllegalArgumentException();
         if (o == null) return false;
-        final Sextad sextad = (Sextad) o;
+        Sextad sextad = (Sextad) o;
 
-        final boolean leftEquals = this.i == sextad.i && this.j == sextad.j && this.k == sextad.k ||
-                this.i == sextad.i && this.j == sextad.k && this.k == sextad.j ||
-                this.i == sextad.j && this.j == sextad.i && this.k == sextad.k ||
-                this.i == sextad.j && this.j == sextad.k && this.k == sextad.i ||
-                this.i == sextad.k && this.j == sextad.i && this.k == sextad.j ||
-                this.i == sextad.k && this.j == sextad.j && this.k == sextad.i;
+        boolean leftEquals = i == sextad.i && j == sextad.j && k == sextad.k ||
+                i == sextad.i && j == sextad.k && k == sextad.j ||
+                i == sextad.j && j == sextad.i && k == sextad.k ||
+                i == sextad.j && j == sextad.k && k == sextad.i ||
+                i == sextad.k && j == sextad.i && k == sextad.j ||
+                i == sextad.k && j == sextad.j && k == sextad.i;
 
-        final boolean rightEquals = this.l == sextad.l && this.m == sextad.m && this.n == sextad.n ||
-                this.l == sextad.l && this.m == sextad.n && this.n == sextad.m ||
-                this.l == sextad.m && this.m == sextad.l && this.n == sextad.n ||
-                this.l == sextad.m && this.m == sextad.n && this.n == sextad.l ||
-                this.l == sextad.n && this.m == sextad.l && this.n == sextad.m ||
-                this.l == sextad.n && this.m == sextad.m && this.n == sextad.l;
+        boolean rightEquals = l == sextad.l && m == sextad.m && n == sextad.n ||
+                l == sextad.l && m == sextad.n && n == sextad.m ||
+                l == sextad.m && m == sextad.l && n == sextad.n ||
+                l == sextad.m && m == sextad.n && n == sextad.l ||
+                l == sextad.n && m == sextad.l && n == sextad.m ||
+                l == sextad.n && m == sextad.m && n == sextad.l;
 
         return leftEquals && rightEquals;
     }
 
     public String toString() {
-        return "<" + this.i + ", " + this.j + ", " + this.k + "; " + this.l + ", " + this.m + ", " + this.n + ">";
+        return "<" + i + ", " + j + ", " + k + "; " + l + ", " + m + ", " + n + ">";
     }
 
     public List<Node> getNodes() {
-        final List<Node> nodes = new ArrayList<>();
-        nodes.add(this.i);
-        nodes.add(this.j);
-        nodes.add(this.k);
-        nodes.add(this.l);
-        nodes.add(this.m);
-        nodes.add(this.n);
+        List<Node> nodes = new ArrayList<>();
+        nodes.add(i);
+        nodes.add(j);
+        nodes.add(k);
+        nodes.add(l);
+        nodes.add(m);
+        nodes.add(n);
         return nodes;
     }
 }

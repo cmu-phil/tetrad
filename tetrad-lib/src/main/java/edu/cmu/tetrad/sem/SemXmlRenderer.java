@@ -42,21 +42,21 @@ public class SemXmlRenderer {
      * @param semIm the instantiated structural equation model to convert
      * @return xml representation
      */
-    public static Element getElement(final SemIm semIm) {
-        final Element semElement = new Element(SemXmlConstants.SEM);
-        semElement.appendChild(SemXmlRenderer.makeVariables(semIm));
-        semElement.appendChild(SemXmlRenderer.makeEdges(semIm));
-        semElement.appendChild(SemXmlRenderer.makeMarginalErrorDistribution(semIm));
-        semElement.appendChild(SemXmlRenderer.makeJointErrorDistribution(semIm));
+    public static Element getElement(SemIm semIm) {
+        Element semElement = new Element(SemXmlConstants.SEM);
+        semElement.appendChild(makeVariables(semIm));
+        semElement.appendChild(makeEdges(semIm));
+        semElement.appendChild(makeMarginalErrorDistribution(semIm));
+        semElement.appendChild(makeJointErrorDistribution(semIm));
         return semElement;
     }
 
 
-    private static Element makeVariables(final SemIm semIm) {
-        final Element variablesElement = new Element(SemXmlConstants.SEM_VARIABLES);
+    private static Element makeVariables(SemIm semIm) {
+        Element variablesElement = new Element(SemXmlConstants.SEM_VARIABLES);
         Element variable;
         Node measuredNode, latentNode;
-        for (final Node node1 : semIm.getSemPm().getMeasuredNodes()) {
+        for (Node node1 : semIm.getSemPm().getMeasuredNodes()) {
             measuredNode = node1;
             variable = new Element(SemXmlConstants.CONTINUOUS_VARIABLE);
             variable.addAttribute(new Attribute(SemXmlConstants.NAME, measuredNode.getName()));
@@ -66,7 +66,7 @@ public class SemXmlRenderer {
             variable.addAttribute(new Attribute(SemXmlConstants.Y, Integer.toString(measuredNode.getCenterY())));
             variablesElement.appendChild(variable);
         }
-        for (final Node node : semIm.getSemPm().getLatentNodes()) {
+        for (Node node : semIm.getSemPm().getLatentNodes()) {
             latentNode = node;
             variable = new Element(SemXmlConstants.CONTINUOUS_VARIABLE);
             variable.addAttribute(new Attribute(SemXmlConstants.NAME, latentNode.getName()));
@@ -79,12 +79,12 @@ public class SemXmlRenderer {
         return variablesElement;
     }
 
-    private static Element makeEdges(final SemIm semIm) {
-        final Element edgesElement = new Element(SemXmlConstants.EDGES);
+    private static Element makeEdges(SemIm semIm) {
+        Element edgesElement = new Element(SemXmlConstants.EDGES);
         Parameter param;
         Element edge;
 
-        for (final Parameter parameter : semIm.getSemPm().getParameters()) {
+        for (Parameter parameter : semIm.getSemPm().getParameters()) {
             param = parameter;
             if (param.getType() == ParamType.COEF) {
                 edge = new Element(SemXmlConstants.EDGE);
@@ -99,14 +99,14 @@ public class SemXmlRenderer {
     }
 
 
-    private static Element makeMarginalErrorDistribution(final SemIm semIm) {
-        final Element marginalErrorElement = new Element(SemXmlConstants.MARGINAL_ERROR_DISTRIBUTION);
+    private static Element makeMarginalErrorDistribution(SemIm semIm) {
+        Element marginalErrorElement = new Element(SemXmlConstants.MARGINAL_ERROR_DISTRIBUTION);
         Element normal;
 
-        final SemGraph semGraph = semIm.getSemPm().getGraph();
+        SemGraph semGraph = semIm.getSemPm().getGraph();
         semGraph.setShowErrorTerms(true);
 
-        for (final Node node : SemXmlRenderer.getExogenousNodes(semGraph)) {
+        for (Node node : getExogenousNodes(semGraph)) {
 //            Node graphNode = semGraph.getChildren(node).get(0);
             normal = new Element(SemXmlConstants.NORMAL);
             normal.addAttribute(new Attribute(SemXmlConstants.VARIABLE, node.getName()));
@@ -117,10 +117,10 @@ public class SemXmlRenderer {
         return marginalErrorElement;
     }
 
-    private static List<Node> getExogenousNodes(final SemGraph graph) {
-        final List<Node> exogenousNodes = new ArrayList<>();
+    private static List<Node> getExogenousNodes(SemGraph graph) {
+        List<Node> exogenousNodes = new ArrayList<>();
 
-        for (final Node node : graph.getNodes()) {
+        for (Node node : graph.getNodes()) {
             exogenousNodes.add(graph.getExogenous(node));
         }
 
@@ -128,12 +128,12 @@ public class SemXmlRenderer {
     }
 
 
-    private static Element makeJointErrorDistribution(final SemIm semIm) {
-        final Element jointErrorElement = new Element(SemXmlConstants.JOINT_ERROR_DISTRIBUTION);
+    private static Element makeJointErrorDistribution(SemIm semIm) {
+        Element jointErrorElement = new Element(SemXmlConstants.JOINT_ERROR_DISTRIBUTION);
         Element normal;
         Parameter param;
 
-        for (final Parameter parameter : semIm.getSemPm().getParameters()) {
+        for (Parameter parameter : semIm.getSemPm().getParameters()) {
             param = parameter;
             if (param.getType() == ParamType.COVAR) {
                 normal = new Element(SemXmlConstants.NORMAL);

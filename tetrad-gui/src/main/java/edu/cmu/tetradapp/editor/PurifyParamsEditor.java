@@ -30,6 +30,7 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.util.DoubleTextField;
+import edu.cmu.tetradapp.util.DoubleTextField.Filter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -58,7 +59,7 @@ public class PurifyParamsEditor extends JPanel implements ParameterEditor {
     public PurifyParamsEditor() {
     }
 
-    public void setParams(final Parameters params) {
+    public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
@@ -66,93 +67,93 @@ public class PurifyParamsEditor extends JPanel implements ParameterEditor {
         this.params = params;
     }
 
-    public void setParentModels(final Object[] parentModels) {
+    public void setParentModels(Object[] parentModels) {
         this.parentModels = parentModels;
     }
 
     public void setup() {
-        final DoubleTextField alphaField = new DoubleTextField(this.params.getDouble("alpha", 0.001), 4,
+        DoubleTextField alphaField = new DoubleTextField(params.getDouble("alpha", 0.001), 4,
                 NumberFormatUtil.getInstance().getNumberFormat());
-        alphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(final double value, final double oldValue) {
+        alphaField.setFilter(new Filter() {
+            public double filter(double value, double oldValue) {
                 try {
-                    getParams().set("alpha", 0.001);
+                    PurifyParamsEditor.this.getParams().set("alpha", 0.001);
                     return value;
-                } catch (final Exception e) {
+                } catch (Exception e) {
                     return oldValue;
                 }
             }
         });
 
-        final TestType[] descriptions = TestType.getTestDescriptions();
-        final JComboBox testSelector = new JComboBox(descriptions);
-        testSelector.setSelectedItem(this.params.get("tetradTestType", TestType.TETRAD_WISHART));
+        TestType[] descriptions = TestType.getTestDescriptions();
+        JComboBox testSelector = new JComboBox(descriptions);
+        testSelector.setSelectedItem(params.get("tetradTestType", TestType.TETRAD_WISHART));
 
         testSelector.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final JComboBox combo = (JComboBox) e.getSource();
-                final TestType testType = (TestType) combo.getSelectedItem();
-                getParams().set("tetradTestType", testType);
+            public void actionPerformed(ActionEvent e) {
+                JComboBox combo = (JComboBox) e.getSource();
+                TestType testType = (TestType) combo.getSelectedItem();
+                PurifyParamsEditor.this.getParams().set("tetradTestType", testType);
             }
         });
 
-        final boolean discreteModel = setVarNames(this.parentModels, this.params);
+        boolean discreteModel = this.setVarNames(parentModels, params);
 
-        this.editClusters = new JButton("Edit");
-        this.editClusters.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                openClusterEditor();
+        editClusters = new JButton("Edit");
+        editClusters.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                PurifyParamsEditor.this.openClusterEditor();
             }
         });
 
-        final Box b = Box.createVerticalBox();
+        Box b = Box.createVerticalBox();
 
-        final Box b1 = Box.createHorizontalBox();
+        Box b1 = Box.createHorizontalBox();
         b1.add(new JLabel("Alpha:"));
         b1.add(Box.createHorizontalGlue());
         b1.add(alphaField);
         b.add(b1);
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("search_for_structure_over_latents Assignments:"));
         b2.add(Box.createHorizontalGlue());
-        b2.add(this.editClusters);
+        b2.add(editClusters);
         b.add(b2);
 
         if (!discreteModel) {
-            final Box b3 = Box.createHorizontalBox();
+            Box b3 = Box.createHorizontalBox();
             b3.add(new JLabel("Statistical Test:"));
             b3.add(Box.createHorizontalGlue());
             b3.add(testSelector);
             b.add(b3);
         } else {
-            this.params.set("tetradTestType", TestType.DISCRETE_LRT);
+            params.set("tetradTestType", TestType.DISCRETE_LRT);
         }
 
-        setLayout(new BorderLayout());
-        add(b, BorderLayout.CENTER);
+        this.setLayout(new BorderLayout());
+        this.add(b, BorderLayout.CENTER);
     }
 
     public boolean mustBeShown() {
         return false;
     }
 
-    private boolean setVarNames(final Object[] parentModels, final Parameters params) {
+    private boolean setVarNames(Object[] parentModels, Parameters params) {
         DataModel dataModel = null;
 
-        for (final Object parentModel : parentModels) {
+        for (Object parentModel : parentModels) {
             if (parentModel instanceof DataWrapper) {
-                final DataWrapper dataWrapper = (DataWrapper) parentModel;
+                DataWrapper dataWrapper = (DataWrapper) parentModel;
                 dataModel = dataWrapper.getSelectedDataModel();
             }
         }
 
-        final boolean discreteModel;
+        boolean discreteModel;
 
         if (dataModel instanceof ICovarianceMatrix) {
             discreteModel = false;
         } else {
-            final DataSet dataSet = (DataSet) dataModel;
+            DataSet dataSet = (DataSet) dataModel;
             assert dataSet != null;
             discreteModel = dataSet.isDiscrete();
 
@@ -165,7 +166,7 @@ public class PurifyParamsEditor extends JPanel implements ParameterEditor {
 //            }
         }
 
-        getParams().set("varNames", params.get("varNames", null));
+        this.getParams().set("varNames", params.get("varNames", null));
         return discreteModel;
     }
 
@@ -174,10 +175,10 @@ public class PurifyParamsEditor extends JPanel implements ParameterEditor {
      * object.
      */
     private void openClusterEditor() {
-        final ClusterEditor clusterEditor = new ClusterEditor(
-                (Clusters) getParams().get("clusters", null), (java.util.List<String>) getParams().get("varNames", null));
+        ClusterEditor clusterEditor = new ClusterEditor(
+                (Clusters) this.getParams().get("clusters", null), (java.util.List<String>) this.getParams().get("varNames", null));
 
-        JOptionPane.showMessageDialog(this.editClusters, clusterEditor);
+        JOptionPane.showMessageDialog(editClusters, clusterEditor);
 
 //        EditorWindow window = new EditorWindow(clusterEditor,
 //                clusterEditor.getNode(), "Save", false, PurifyParamsEditor.this);
@@ -186,7 +187,7 @@ public class PurifyParamsEditor extends JPanel implements ParameterEditor {
     }
 
     private Parameters getParams() {
-        return this.params;
+        return params;
     }
 }
 

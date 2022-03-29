@@ -5,6 +5,7 @@
  */
 package edu.pitt.dbmi.algo.bayesian.constraint.inference;
 
+import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCCausalInference.OP;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -32,40 +33,40 @@ public class BCCausalInferenceTest {
      */
     @Test
     public void testProbConstraint() throws IOException {
-        final Path casFile = Paths.get(getClass().getResource("/cooper.data/small_data.cas").getFile());
-        final int[] nodeDimension = BCCausalInferenceTest.readInNodeDimension(casFile);
-        final int[][] dataset = BCCausalInferenceTest.readInDataset(casFile);
+        Path casFile = Paths.get(this.getClass().getResource("/cooper.data/small_data.cas").getFile());
+        int[] nodeDimension = readInNodeDimension(casFile);
+        int[][] dataset = readInDataset(casFile);
 
         float expected = 0.7650975f;
         float result = (float) (new BCCausalInference(nodeDimension, dataset))
-                .probConstraint(BCCausalInference.OP.DEPENDENT, 3, 5, new int[]{0});  // returns P(node3 dependent node5 given {} | data)
+                .probConstraint(OP.DEPENDENT, 3, 5, new int[]{0});  // returns P(node3 dependent node5 given {} | data)
         Assert.assertEquals(expected, result, 0);
 
         expected = 0.34093106f;
         result = (float) (new BCCausalInference(nodeDimension, dataset))
-                .probConstraint(BCCausalInference.OP.INDEPENDENT, 1, 4, new int[]{2, 2, 3});
+                .probConstraint(OP.INDEPENDENT, 1, 4, new int[]{2, 2, 3});
         Assert.assertEquals(expected, result, 0);
 
         expected = 0.9353456f;
         result = (float) (new BCCausalInference(nodeDimension, dataset))
-                .probConstraint(BCCausalInference.OP.INDEPENDENT, 1, 5, new int[]{1, 3});
+                .probConstraint(OP.INDEPENDENT, 1, 5, new int[]{1, 3});
         Assert.assertEquals(expected, result, 0);
     }
 
-    private static int[][] readInDataset(final Path casFile) throws IOException {
-        try (final BufferedReader reader = Files.newBufferedReader(casFile)) {
-            final int numOfNodes = Integer.parseInt(reader.readLine().trim());
+    private static int[][] readInDataset(Path casFile) throws IOException {
+        try (BufferedReader reader = Files.newBufferedReader(casFile)) {
+            int numOfNodes = Integer.parseInt(reader.readLine().trim());
 
             // skip node dimesion
             reader.readLine();
 
-            final int numOfCases = Integer.parseInt(reader.readLine().trim());
-            final int[][] dataset = new int[numOfCases + 1][numOfNodes + 2];
-            final Pattern spaceDelim = Pattern.compile("\\s+");
+            int numOfCases = Integer.parseInt(reader.readLine().trim());
+            int[][] dataset = new int[numOfCases + 1][numOfNodes + 2];
+            Pattern spaceDelim = Pattern.compile("\\s+");
             for (int i = 1; i <= numOfCases; i++) {
-                final String[] data = spaceDelim.split(reader.readLine().trim());
+                String[] data = spaceDelim.split(reader.readLine().trim());
                 int j = 0;
-                for (final String d : data) {
+                for (String d : data) {
                     dataset[i][++j] = Integer.parseInt(d);
                 }
             }
@@ -74,12 +75,12 @@ public class BCCausalInferenceTest {
         }
     }
 
-    private static int[] readInNodeDimension(final Path casFile) throws IOException {
-        try (final BufferedReader reader = Files.newBufferedReader(casFile)) {
-            final int numOfNodes = Integer.parseInt(reader.readLine().trim());
-            final String[] data = reader.readLine().trim().split("\\s+");
+    private static int[] readInNodeDimension(Path casFile) throws IOException {
+        try (BufferedReader reader = Files.newBufferedReader(casFile)) {
+            int numOfNodes = Integer.parseInt(reader.readLine().trim());
+            String[] data = reader.readLine().trim().split("\\s+");
 
-            final int[] nodeDimension = new int[numOfNodes + 2];
+            int[] nodeDimension = new int[numOfNodes + 2];
             for (int i = 0; i < data.length; i++) {
                 nodeDimension[i + 1] = Integer.parseInt(data[i].trim());
             }

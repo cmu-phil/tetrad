@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.PcAll.ConflictRule;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -41,13 +42,13 @@ public final class OrientCollidersMaxP {
     private int depth = -1;
     private final long elapsed = 0;
     private IKnowledge knowledge = new Knowledge2();
-    private boolean useHeuristic = false;
+    private boolean useHeuristic;
     private int maxPathLength = 3;
-    private PcAll.ConflictRule conflictRule = PcAll.ConflictRule.OVERWRITE;
+    private ConflictRule conflictRule = ConflictRule.OVERWRITE;
 
-    public OrientCollidersMaxP(final IndependenceTest test) {
+    public OrientCollidersMaxP(IndependenceTest test) {
         if (test == null) throw new NullPointerException();
-        this.independenceTest = test;
+        independenceTest = test;
     }
 
     //======================================== PUBLIC METHODS ====================================//
@@ -56,21 +57,21 @@ public final class OrientCollidersMaxP {
      * Searches for a PAG satisfying the description in Thomas Richardson (1997), dissertation,
      * Carnegie Mellon University. Uses a simplification of that algorithm.
      */
-    public synchronized void orient(final Graph graph) {
-        addColliders(graph);
+    public synchronized void orient(Graph graph) {
+        this.addColliders(graph);
     }
 
     /**
      * @return The depth of search for the Fast Adjacency Search.
      */
     public int getDepth() {
-        return this.depth;
+        return depth;
     }
 
     /**
      * @param depth The depth of search for the Fast Adjacency Search.
      */
-    public void setDepth(final int depth) {
+    public void setDepth(int depth) {
         this.depth = depth;
     }
 
@@ -78,15 +79,15 @@ public final class OrientCollidersMaxP {
      * @return The elapsed time in milliseconds.
      */
     public long getElapsedTime() {
-        return this.elapsed;
+        return elapsed;
     }
 
     //======================================== PRIVATE METHODS ====================================//
 
-    private void addColliders(final Graph graph) {
-        final Map<Triple, Double> scores = new ConcurrentHashMap<>();
+    private void addColliders(Graph graph) {
+        Map<Triple, Double> scores = new ConcurrentHashMap<>();
 
-        final List<Node> nodes = graph.getNodes();
+        List<Node> nodes = graph.getNodes();
 
 //        class Task extends RecursiveTask<Boolean> {
 //            int from;
@@ -134,35 +135,35 @@ public final class OrientCollidersMaxP {
 //        ForkJoinPoolInstance.getInstance().getPool().invoke(task);
 //
         for (int i = 0; i < nodes.size(); i++) {
-            doNode(graph, scores, nodes.get(i));
+            this.doNode(graph, scores, nodes.get(i));
         }
 
-        final List<Triple> tripleList = new ArrayList<>(scores.keySet());
+        List<Triple> tripleList = new ArrayList<>(scores.keySet());
 
         // Most independent ones first.
         tripleList.sort((o1, o2) -> Double.compare(scores.get(o2), scores.get(o1)));
 
-        for (final Triple triple : tripleList) {
+        for (Triple triple : tripleList) {
             System.out.println(triple + " score = " + scores.get(triple));
         }
 
-        for (final Triple triple : tripleList) {
-            final Node a = triple.getX();
-            final Node b = triple.getY();
-            final Node c = triple.getZ();
+        for (Triple triple : tripleList) {
+            Node a = triple.getX();
+            Node b = triple.getY();
+            Node c = triple.getZ();
 
-            orientCollider(graph, a, b, c, getConflictRule());
+            this.orientCollider(graph, a, b, c, this.getConflictRule());
         }
     }
 
-    private void doNode(final Graph graph, final Map<Triple, Double> scores, final Node b) {
-        final List<Node> adjacentNodes = graph.getAdjacentNodes(b);
+    private void doNode(Graph graph, Map<Triple, Double> scores, Node b) {
+        List<Node> adjacentNodes = graph.getAdjacentNodes(b);
 
         if (adjacentNodes.size() < 2) {
             return;
         }
 
-        final ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+        ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
         int[] combination;
 
         while ((combination = cg.next()) != null) {
@@ -170,29 +171,29 @@ public final class OrientCollidersMaxP {
                 break;
             }
 
-            final Node a = adjacentNodes.get(combination[0]);
-            final Node c = adjacentNodes.get(combination[1]);
+            Node a = adjacentNodes.get(combination[0]);
+            Node c = adjacentNodes.get(combination[1]);
 
             // Skip triples that are shielded.
             if (graph.isAdjacentTo(a, c)) {
                 continue;
             }
 
-            if (this.useHeuristic) {
-                if (existsShortPath(a, c, this.maxPathLength, graph)) {
-                    testColliderMaxP(graph, scores, a, b, c);
+            if (useHeuristic) {
+                if (this.existsShortPath(a, c, maxPathLength, graph)) {
+                    this.testColliderMaxP(graph, scores, a, b, c);
                 } else {
-                    testColliderHeuristic(graph, scores, a, b, c);
+                    this.testColliderHeuristic(graph, scores, a, b, c);
                 }
             } else {
-                testColliderMaxP(graph, scores, a, b, c);
+                this.testColliderMaxP(graph, scores, a, b, c);
             }
         }
     }
 
-    private void testColliderMaxP(final Graph graph, final Map<Triple, Double> scores, final Node a, final Node b, final Node c) {
-        final List<Node> adja = graph.getAdjacentNodes(a);
-        final List<Node> adjc = graph.getAdjacentNodes(c);
+    private void testColliderMaxP(Graph graph, Map<Triple, Double> scores, Node a, Node b, Node c) {
+        List<Node> adja = graph.getAdjacentNodes(a);
+        List<Node> adjc = graph.getAdjacentNodes(c);
         adja.remove(c);
         adjc.remove(a);
 
@@ -205,7 +206,7 @@ public final class OrientCollidersMaxP {
         int count1 = 0;
         int count2 = 0;
 
-        final DepthChoiceGenerator cg1 = new DepthChoiceGenerator(adja.size(), this.depth);
+        DepthChoiceGenerator cg1 = new DepthChoiceGenerator(adja.size(), depth);
         int[] comb2;
 
         while ((comb2 = cg1.next()) != null) {
@@ -213,17 +214,17 @@ public final class OrientCollidersMaxP {
                 break;
             }
 
-            final List<Node> s = GraphUtils.asList(comb2, adja);
+            List<Node> s = GraphUtils.asList(comb2, adja);
 
-            this.independenceTest.isIndependent(a, c, s);
-            final double _p = this.independenceTest.getPValue();
+            independenceTest.isIndependent(a, c, s);
+            double _p = independenceTest.getPValue();
 
             if (_p > p) {
                 p = _p;
                 S = s;
             }
 
-            if (_p < this.independenceTest.getAlpha()) continue;
+            if (_p < independenceTest.getAlpha()) continue;
 
             if (s.contains(b)) {
                 pSum1 += p;
@@ -234,7 +235,7 @@ public final class OrientCollidersMaxP {
             }
         }
 
-        final DepthChoiceGenerator cg2 = new DepthChoiceGenerator(adjc.size(), this.depth);
+        DepthChoiceGenerator cg2 = new DepthChoiceGenerator(adjc.size(), depth);
         int[] comb3;
 
         while ((comb3 = cg2.next()) != null) {
@@ -242,17 +243,17 @@ public final class OrientCollidersMaxP {
                 break;
             }
 
-            final List<Node> s = GraphUtils.asList(comb3, adjc);
+            List<Node> s = GraphUtils.asList(comb3, adjc);
 
-            this.independenceTest.isIndependent(a, c, s);
-            final double _p = this.independenceTest.getPValue();
+            independenceTest.isIndependent(a, c, s);
+            double _p = independenceTest.getPValue();
 
             if (_p > p) {
                 p = _p;
                 S = s;
             }
 
-            if (_p < this.independenceTest.getAlpha()) continue;
+            if (_p < independenceTest.getAlpha()) continue;
 
             if (s.contains(b)) {
                 pSum1 += p;
@@ -263,8 +264,8 @@ public final class OrientCollidersMaxP {
             }
         }
 
-        final double avg1 = pSum1 / count1;
-        final double avg2 = pSum2 / count2;
+        double avg1 = pSum1 / count1;
+        double avg2 = pSum2 / count2;
 
 //        if (avg2 > avg1) {
 //            scores.put(new Triple(a, b, c), avg2);
@@ -275,21 +276,21 @@ public final class OrientCollidersMaxP {
         }
     }
 
-    private void testColliderHeuristic(final Graph graph, final Map<Triple, Double> colliders, final Node a, final Node b, final Node c) {
-        if (this.knowledge.isForbidden(a.getName(), b.getName())) {
+    private void testColliderHeuristic(Graph graph, Map<Triple, Double> colliders, Node a, Node b, Node c) {
+        if (knowledge.isForbidden(a.getName(), b.getName())) {
             return;
         }
 
-        if (this.knowledge.isForbidden(c.getName(), b.getName())) {
+        if (knowledge.isForbidden(c.getName(), b.getName())) {
             return;
         }
 
-        this.independenceTest.isIndependent(a, c);
-        final double s1 = this.independenceTest.getScore();
-        this.independenceTest.isIndependent(a, c, b);
-        final double s2 = this.independenceTest.getScore();
+        independenceTest.isIndependent(a, c);
+        double s1 = independenceTest.getScore();
+        independenceTest.isIndependent(a, c, b);
+        double s2 = independenceTest.getScore();
 
-        final boolean mycollider2 = s2 > s1;
+        boolean mycollider2 = s2 > s1;
 
         // Skip triples that are shielded.
         if (graph.isAdjacentTo(a, c)) {
@@ -305,19 +306,19 @@ public final class OrientCollidersMaxP {
         }
     }
 
-    private void orientCollider(final Graph graph, final Node a, final Node b, final Node c, final PcAll.ConflictRule conflictRule) {
-        if (this.knowledge.isForbidden(a.getName(), b.getName())) return;
-        if (this.knowledge.isForbidden(c.getName(), b.getName())) return;
-        OrientCollidersMaxP.orientCollider(a, b, c, conflictRule, graph);
+    private void orientCollider(Graph graph, Node a, Node b, Node c, ConflictRule conflictRule) {
+        if (knowledge.isForbidden(a.getName(), b.getName())) return;
+        if (knowledge.isForbidden(c.getName(), b.getName())) return;
+        orientCollider(a, b, c, conflictRule, graph);
     }
 
-    private boolean wouldCreateBadCollider(final Graph graph, final Node x, final Node y) {
-        for (final Node z : graph.getAdjacentNodes(y)) {
+    private boolean wouldCreateBadCollider(Graph graph, Node x, Node y) {
+        for (Node z : graph.getAdjacentNodes(y)) {
             if (x == z) continue;
 
             if (!graph.isAdjacentTo(x, z) &&
                     graph.getEndpoint(z, y) == Endpoint.ARROW &&
-                    sepset(graph, x, z, set(), set(y)) == null) {
+                    this.sepset(graph, x, z, this.set(), this.set(y)) == null) {
                 return true;
             }
         }
@@ -326,20 +327,20 @@ public final class OrientCollidersMaxP {
     }
 
     public IKnowledge getKnowledge() {
-        return this.knowledge;
+        return knowledge;
     }
 
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
-    private boolean isForbidden(final Node i, final Node k, final List<Node> v) {
-        for (final Node w : v) {
-            if (this.knowledge.isForbidden(w.getName(), i.getName())) {
+    private boolean isForbidden(Node i, Node k, List<Node> v) {
+        for (Node w : v) {
+            if (knowledge.isForbidden(w.getName(), i.getName())) {
                 return true;
             }
 
-            if (this.knowledge.isForbidden(w.getName(), k.getName())) {
+            if (knowledge.isForbidden(w.getName(), k.getName())) {
                 return true;
             }
         }
@@ -349,14 +350,14 @@ public final class OrientCollidersMaxP {
 
     // Returns a sepset containing the nodes in 'containing' but not the nodes in 'notContaining', or
     // null if there is no such sepset.
-    private List<Node> sepset(final Graph graph, final Node a, final Node c, final Set<Node> containing, final Set<Node> notContaining) {
-        final List<Node> adj = graph.getAdjacentNodes(a);
+    private List<Node> sepset(Graph graph, Node a, Node c, Set<Node> containing, Set<Node> notContaining) {
+        List<Node> adj = graph.getAdjacentNodes(a);
         adj.addAll(graph.getAdjacentNodes(c));
         adj.remove(c);
         adj.remove(a);
 
-        for (int d = 0; d <= Math.min((this.depth == -1 ? 1000 : this.depth), adj.size()); d++) {
-            final ChoiceGenerator gen = new ChoiceGenerator(adj.size(), d);
+        for (int d = 0; d <= Math.min((depth == -1 ? 1000 : depth), adj.size()); d++) {
+            ChoiceGenerator gen = new ChoiceGenerator(adj.size(), d);
             int[] choice;
 
             while ((choice = gen.next()) != null) {
@@ -364,14 +365,14 @@ public final class OrientCollidersMaxP {
                     break;
                 }
 
-                final Set<Node> v2 = GraphUtils.asSet(choice, adj);
+                Set<Node> v2 = GraphUtils.asSet(choice, adj);
                 v2.addAll(containing);
                 v2.removeAll(notContaining);
                 v2.remove(a);
                 v2.remove(c);
 
-                getIndependenceTest().isIndependent(a, c, new ArrayList<>(v2));
-                final double p2 = getIndependenceTest().getScore();
+                this.getIndependenceTest().isIndependent(a, c, new ArrayList<>(v2));
+                double p2 = this.getIndependenceTest().getScore();
 
                 if (p2 < 0) {
                     return new ArrayList<>(v2);
@@ -382,20 +383,20 @@ public final class OrientCollidersMaxP {
         return null;
     }
 
-    private Set<Node> set(final Node... n) {
-        final Set<Node> S = new HashSet<>();
+    private Set<Node> set(Node... n) {
+        Set<Node> S = new HashSet<>();
         Collections.addAll(S, n);
         return S;
     }
 
     private IndependenceTest getIndependenceTest() {
-        return this.independenceTest;
+        return independenceTest;
     }
 
     // Returns true if there is an undirected path from x to either y or z within the given number of steps.
-    private boolean existsShortPath(final Node x, final Node z, final int bound, final Graph graph) {
-        final Queue<Node> Q = new LinkedList<>();
-        final Set<Node> V = new HashSet<>();
+    private boolean existsShortPath(Node x, Node z, int bound, Graph graph) {
+        Queue<Node> Q = new LinkedList<>();
+        Set<Node> V = new HashSet<>();
         Q.offer(x);
         V.add(x);
         Node e = null;
@@ -406,7 +407,7 @@ public final class OrientCollidersMaxP {
                 break;
             }
 
-            final Node t = Q.remove();
+            Node t = Q.remove();
 
             if (e == t) {
                 e = null;
@@ -414,9 +415,9 @@ public final class OrientCollidersMaxP {
                 if (distance > (bound == -1 ? 1000 : bound)) return false;
             }
 
-            for (final Node u : graph.getAdjacentNodes(t)) {
-                final Edge edge = graph.getEdge(t, u);
-                final Node c = Edges.traverse(t, edge);
+            for (Node u : graph.getAdjacentNodes(t)) {
+                Edge edge = graph.getEdge(t, u);
+                Node c = Edges.traverse(t, edge);
                 if (c == null) continue;
                 if (c == z && distance > 2) return true;
 
@@ -435,33 +436,33 @@ public final class OrientCollidersMaxP {
     }
 
     public boolean isUseHeuristic() {
-        return this.useHeuristic;
+        return useHeuristic;
     }
 
-    public void setUseHeuristic(final boolean useHeuristic) {
+    public void setUseHeuristic(boolean useHeuristic) {
         this.useHeuristic = useHeuristic;
     }
 
     public int getMaxPathLength() {
-        return this.maxPathLength;
+        return maxPathLength;
     }
 
-    public void setMaxPathLength(final int maxPathLength) {
+    public void setMaxPathLength(int maxPathLength) {
         this.maxPathLength = maxPathLength;
     }
 
-    public static void orientCollider(final Node x, final Node y, final Node z, final PcAll.ConflictRule conflictRule, final Graph graph) {
-        if (conflictRule == PcAll.ConflictRule.PRIORITY) {
+    public static void orientCollider(Node x, Node y, Node z, ConflictRule conflictRule, Graph graph) {
+        if (conflictRule == ConflictRule.PRIORITY) {
             if (!(graph.getEndpoint(y, x) == Endpoint.ARROW || graph.getEndpoint(y, z) == Endpoint.ARROW)) {
                 graph.removeEdge(x, y);
                 graph.removeEdge(z, y);
                 graph.addDirectedEdge(x, y);
                 graph.addDirectedEdge(z, y);
             }
-        } else if (conflictRule == PcAll.ConflictRule.BIDIRECTED) {
+        } else if (conflictRule == ConflictRule.BIDIRECTED) {
             graph.setEndpoint(x, y, Endpoint.ARROW);
             graph.setEndpoint(z, y, Endpoint.ARROW);
-        } else if (conflictRule == PcAll.ConflictRule.OVERWRITE) {
+        } else if (conflictRule == ConflictRule.OVERWRITE) {
             graph.removeEdge(x, y);
             graph.removeEdge(z, y);
             graph.addDirectedEdge(x, y);
@@ -471,11 +472,11 @@ public final class OrientCollidersMaxP {
         TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(x, y, z));
     }
 
-    public PcAll.ConflictRule getConflictRule() {
-        return this.conflictRule;
+    public ConflictRule getConflictRule() {
+        return conflictRule;
     }
 
-    public void setConflictRule(final PcAll.ConflictRule conflictRule) {
+    public void setConflictRule(ConflictRule conflictRule) {
         this.conflictRule = conflictRule;
     }
 }

@@ -99,7 +99,7 @@ public class TetradLogger {
     /**
      * Forces the logger to log all output.
      */
-    private boolean forceLog = false;
+    private boolean forceLog;
 
 
     /**
@@ -127,15 +127,15 @@ public class TetradLogger {
      * @return - instance
      */
     public static TetradLogger getInstance() {
-        return TetradLogger.INSTANCE;
+        return INSTANCE;
     }
 
 
     /**
      * Adds the given listener to the logger.
      */
-    public void addTetradLoggerListener(final TetradLoggerListener l) {
-        this.listeners.add(l);
+    public void addTetradLoggerListener(TetradLoggerListener l) {
+        listeners.add(l);
     }
 
 
@@ -143,8 +143,8 @@ public class TetradLogger {
      * Removes the given listener from the logger.
      */
     @SuppressWarnings({"UnusedDeclaration"})
-    public void removeTetradLoggerListener(final TetradLoggerListener l) {
-        this.listeners.remove(l);
+    public void removeTetradLoggerListener(TetradLoggerListener l) {
+        listeners.remove(l);
     }
 
 
@@ -152,16 +152,16 @@ public class TetradLogger {
      * Sets what configuration should be used to determine which events to log. Null can be
      * given to remove a previously set configuration from the logger.
      */
-    public void setTetradLoggerConfig(final TetradLoggerConfig config) {
-        final TetradLoggerConfig previous = this.config;
+    public void setTetradLoggerConfig(TetradLoggerConfig config) {
+        TetradLoggerConfig previous = this.config;
         if (config == null) {
             this.config = null;
             if (previous != null) {
-                this.fireDeactived();
+                fireDeactived();
             }
         } else {
             this.config = config;
-            this.fireActived(this.config);
+            fireActived(this.config);
 
 //            TetradLogger.getInstance().info("Supported events");
 //
@@ -177,18 +177,18 @@ public class TetradLogger {
      * to first define a <code>TetradLoggerConfig</code>.
      */
     @SuppressWarnings({"UnusedDeclaration"})
-    public void setEventsToLog(final String... events) {
-        setTetradLoggerConfig(new DefaultTetradLoggerConfig(events));
+    public void setEventsToLog(String... events) {
+        this.setTetradLoggerConfig(new DefaultTetradLoggerConfig(events));
     }
 
 
     /**
      * Forces the logger to log all events, useful for testing.
      */
-    public void setForceLog(final boolean force) {
-        this.forceLog = force;
+    public void setForceLog(boolean force) {
+        forceLog = force;
         if (!force) {
-            flush();
+            this.flush();
         }
     }
 
@@ -197,25 +197,25 @@ public class TetradLogger {
      * If there is a pre-defined configuration for the given model it is set, otherwise
      * an exception is thrown.
      */
-    public void setConfigForClass(final Class model) {
-        final TetradLoggerConfig config = this.classConfigMap.get(model);
+    public void setConfigForClass(Class model) {
+        TetradLoggerConfig config = classConfigMap.get(model);
 //        if (config == null) {
 //            System.out.println("There is no pre-defined logger config for the model " + model);
 //        }
-        setTetradLoggerConfig(config);
+        this.setTetradLoggerConfig(config);
     }
 
     /**
      * Adds the given <code>TetradLoggerConfig</code> to the logger, so that it can be used
      * throughout the life of the application.
      */
-    public void addTetradLoggerConfig(final Class model, final TetradLoggerConfig config) {
-        this.classConfigMap.put(model, config);
+    public void addTetradLoggerConfig(Class model, TetradLoggerConfig config) {
+        classConfigMap.put(model, config);
     }
 
 
-    public TetradLoggerConfig getLoggerForClass(final Class clazz) {
-        final TetradLoggerConfig config = this.classConfigMap.get(clazz);
+    public TetradLoggerConfig getLoggerForClass(Class clazz) {
+        TetradLoggerConfig config = classConfigMap.get(clazz);
 
         if (config == null) {
             return null;
@@ -229,8 +229,8 @@ public class TetradLogger {
      * Resets the logger by removing any configuration info set with <code>setTetradLoggerConfig</code>.
      */
     public void reset() {
-        this.config = null;
-        flush();
+        config = null;
+        this.flush();
     }
 
 
@@ -240,14 +240,14 @@ public class TetradLogger {
      * @return true iff the logger is logging.
      */
     public boolean isLogging() {
-        return this.logging;
+        return logging;
     }
 
 
     /**
      * Sets whether the logger is on or not.
      */
-    public void setLogging(final boolean logging) {
+    public void setLogging(boolean logging) {
         Preferences.userRoot().putBoolean("loggingActivated", logging);
         this.logging = logging;
     }
@@ -257,18 +257,18 @@ public class TetradLogger {
      * Flushes the writers.
      */
     public void flush() {
-        if (this.logging) {
+        if (logging) {
             try {
-                for (final Writer writer : this.writers.values()) {
+                for (Writer writer : writers.values()) {
                     writer.flush();
                 }
-            } catch (final IOException ex) {
+            } catch (IOException ex) {
                 ex.printStackTrace();
             }
         }
-        for (final OutputStream stream : this.writers.keySet()) {
+        for (OutputStream stream : writers.keySet()) {
             if (stream instanceof LogDisplayOutputStream) {
-                final LogDisplayOutputStream logStream = (LogDisplayOutputStream) stream;
+                LogDisplayOutputStream logStream = (LogDisplayOutputStream) stream;
                 logStream.moveToEnd();
             }
         }
@@ -280,18 +280,18 @@ public class TetradLogger {
      * @param event   - The name of the log event.
      * @param message - The messag eto be logged.
      */
-    public void log(final String event, final String message) {
+    public void log(String event, String message) {
 
-        final boolean eventActive = isEventActive(event);
+        boolean eventActive = this.isEventActive(event);
 
-        if ((this.logging && eventActive && !this.writers.isEmpty())) {
+        if ((logging && eventActive && !writers.isEmpty())) {
             try {
-                for (final Writer writer : this.writers.values()) {
+                for (Writer writer : writers.values()) {
                     writer.write(message);
                     writer.write("\n");
                     writer.flush();
                 }
-            } catch (final IOException e) {
+            } catch (IOException e) {
                 // should be an error stream too?
                 e.printStackTrace();
             }
@@ -304,14 +304,14 @@ public class TetradLogger {
      * Although it won't be logged if the logger is off and of course if there are no streams
      * attached.
      */
-    public void error(final String message) {
-        if (this.logging) {
+    public void error(String message) {
+        if (logging) {
             try {
-                for (final Writer writer : this.writers.values()) {
+                for (Writer writer : writers.values()) {
                     writer.write(message);
                     writer.write("\n");
                 }
-            } catch (final IOException e) {
+            } catch (IOException e) {
                 // should be an error stream too?
                 e.printStackTrace();
             }
@@ -323,20 +323,20 @@ public class TetradLogger {
      * Logs the given message regardless of the logger's getModel settings. Although nothing
      * will be logged if the logger has been turned off.
      */
-    public void forceLogMessage(final String message) {
-        if (this.logging) {
+    public void forceLogMessage(String message) {
+        if (logging) {
             System.out.println(message);
 
-            if (this.config == null) {
-                this.fireActived(new EmptyConfig(true));
+            if (config == null) {
+                fireActived(new EmptyConfig(true));
             }
             try {
-                for (final Writer writer : this.writers.values()) {
+                for (Writer writer : writers.values()) {
                     writer.write(message);
                     writer.write("\n");
                     writer.flush();
                 }
-            } catch (final IOException e) {
+            } catch (IOException e) {
                 // should be an error stream too?
                 e.printStackTrace();
             }
@@ -346,17 +346,17 @@ public class TetradLogger {
     /**
      * Sets the <code>OutputStream</code> that is used to log matters out to.
      */
-    public void addOutputStream(final OutputStream stream) {
-        final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(stream));
-        this.writers.put(stream, writer);
+    public void addOutputStream(OutputStream stream) {
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(stream));
+        writers.put(stream, writer);
     }
 
 
     /**
      * Removes the given stream from the logger.
      */
-    public void removeOutputStream(final OutputStream stream) {
-        this.writers.remove(stream);
+    public void removeOutputStream(OutputStream stream) {
+        writers.remove(stream);
     }
 
 
@@ -364,17 +364,17 @@ public class TetradLogger {
      * Removes all streams from the logger.
      */
     public void clear() {
-        for (final OutputStream stream : this.writers.keySet()) {
+        for (OutputStream stream : writers.keySet()) {
             if (stream != System.out) {
                 try {
                     stream.close();
-                } catch (final IOException e) {
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         }
-        this.writers.clear();
-        this.stream = null;
+        writers.clear();
+        stream = null;
     }
 
 
@@ -387,8 +387,8 @@ public class TetradLogger {
      *                               the nature of the error.
      */
     public void setNextOutputStream() {
-        if (this.logging && this.isFileLoggingEnabled()) {
-            final File dir = new File(getLoggingDirectory());
+        if (logging && isFileLoggingEnabled()) {
+            File dir = new File(this.getLoggingDirectory());
             if (!dir.exists()) {
                 if (!dir.mkdir()) {
                     throw new IllegalStateException("Could not create the output directory "
@@ -400,29 +400,29 @@ public class TetradLogger {
                         " logs (" + dir.getAbsolutePath() + "). Please pick another directory.");
             }
             // get the next file name to use.
-            final String prefix = getLoggingFilePrefix();
-            final List<String> files = Arrays.asList(dir.list());
+            String prefix = this.getLoggingFilePrefix();
+            List<String> files = Arrays.asList(dir.list());
             int index = 1;
             String name = prefix + (index++) + ".txt";
             while (files.contains(name)) {
                 name = prefix + (index++) + ".txt";
             }
             // finally create log file and add a stream to the logger
-            final String latestFilePath = dir.getAbsolutePath() + "/" + name;
-            final File logFile = new File(latestFilePath);
+            String latestFilePath = dir.getAbsolutePath() + "/" + name;
+            File logFile = new File(latestFilePath);
 
-            final OutputStream old = this.stream;
+            OutputStream old = stream;
             try {
-                this.stream = new FileOutputStream(logFile);
-            } catch (final FileNotFoundException e) {
-                this.stream = old;
+                stream = new FileOutputStream(logFile);
+            } catch (FileNotFoundException e) {
+                stream = old;
                 throw new IllegalStateException("Could not create file in output directory ("
                         + dir.getAbsolutePath() + ").");
             }
             if (old != null) {
-                removeOutputStream(old);
+                this.removeOutputStream(old);
             }
-            addOutputStream(this.stream);
+            this.addOutputStream(stream);
 
             this.latestFilePath = latestFilePath;
         }
@@ -430,15 +430,15 @@ public class TetradLogger {
 
 
     public void removeNextOutputStream() {
-        flush();
-        if (this.stream != null) {
-            removeOutputStream(this.stream);
+        this.flush();
+        if (stream != null) {
+            this.removeOutputStream(stream);
             try {
-                this.stream.close();
-            } catch (final IOException e) {
+                stream.close();
+            } catch (IOException e) {
                 // do nothing.
             }
-            this.stream = null;
+            stream = null;
         }
     }
 
@@ -453,7 +453,7 @@ public class TetradLogger {
     /**
      * Sets whether the display log should be used or not.
      */
-    public void setDisplayLogEnabled(final boolean enabled) {
+    public void setDisplayLogEnabled(boolean enabled) {
         Preferences.userRoot().putBoolean("enableDisplayLogging", enabled);
     }
 
@@ -469,7 +469,7 @@ public class TetradLogger {
     /**
      * Sets the logging prefix.
      */
-    public void setLoggingFilePrefix(final String loggingFilePrefix) {
+    public void setLoggingFilePrefix(String loggingFilePrefix) {
         if (loggingFilePrefix == null) {
             throw new NullPointerException();
         }
@@ -478,7 +478,7 @@ public class TetradLogger {
             throw new IllegalArgumentException("Empty prefix name; ignored.");
         }
 
-        Preferences.userRoot().put("loggingPrefix", normalize(loggingFilePrefix));
+        Preferences.userRoot().put("loggingPrefix", this.normalize(loggingFilePrefix));
     }
 
 
@@ -494,7 +494,7 @@ public class TetradLogger {
      * Sets whether "file logging" is enabled or not, that is whether
      * calls to <code>setNextOutputStream</code> will be respected.
      */
-    public void setFileLoggingEnabled(final boolean enabled) {
+    public void setFileLoggingEnabled(boolean enabled) {
         Preferences.userRoot().putBoolean("enableFileLogging", enabled);
     }
 
@@ -518,7 +518,7 @@ public class TetradLogger {
     /**
      * States whether log displays should be automatically displayed or not.
      */
-    public void setAutomaticLogDisplayEnabled(final boolean enable) {
+    public void setAutomaticLogDisplayEnabled(boolean enable) {
         Preferences.userRoot().put("allowAutomaticLogDisplay", enable ? "allow" : "disallow");
     }
 
@@ -537,8 +537,8 @@ public class TetradLogger {
      * @param directory - The directory to set.
      * @throws IllegalStateException if there is a problem with the directory.
      */
-    public void setLoggingDirectory(final String directory) {
-        final File selectedFile = new File(directory);
+    public void setLoggingDirectory(String directory) {
+        File selectedFile = new File(directory);
 
         if (selectedFile.exists() && !selectedFile.isDirectory()) {
             throw new IllegalStateException("That 'output directory' is actually a file, not a directory");
@@ -549,7 +549,7 @@ public class TetradLogger {
         }
 
         if (!selectedFile.exists()) {
-            final boolean created = selectedFile.mkdir();
+            boolean created = selectedFile.mkdir();
 
             if (!created) {
                 throw new IllegalStateException("The output directory cannot be created. ");
@@ -572,20 +572,20 @@ public class TetradLogger {
     /**
      * States whether the given event is active or not.
      */
-    public boolean isEventActive(final String id) {
-        return this.forceLog || (this.config != null && this.config.isEventActive(id));
+    public boolean isEventActive(String id) {
+        return forceLog || (config != null && config.isEventActive(id));
     }
 
 
     /**
      * Normalizes the prefix.
      */
-    private String normalize(final String prefix) {
-        final StringBuilder buf = new StringBuilder();
-        final Pattern pattern = Pattern.compile("[a-zA-Z_]");
+    private String normalize(String prefix) {
+        StringBuilder buf = new StringBuilder();
+        Pattern pattern = Pattern.compile("[a-zA-Z_]");
         for (int i = 0; i < prefix.length(); i++) {
-            final String s = prefix.substring(i, i + 1);
-            final Matcher matcher = pattern.matcher(s);
+            String s = prefix.substring(i, i + 1);
+            Matcher matcher = pattern.matcher(s);
             if (matcher.matches()) {
                 buf.append(s);
             }
@@ -594,10 +594,10 @@ public class TetradLogger {
     }
 
 
-    private void fireActived(final TetradLoggerConfig config) {
-        if (this.logging && !this.listeners.isEmpty()) {
-            final TetradLoggerEvent evt = new TetradLoggerEvent(this, config);
-            for (final TetradLoggerListener l : this.listeners) {
+    private void fireActived(TetradLoggerConfig config) {
+        if (logging && !listeners.isEmpty()) {
+            TetradLoggerEvent evt = new TetradLoggerEvent(this, config);
+            for (TetradLoggerListener l : listeners) {
                 l.configurationActived(evt);
             }
         }
@@ -605,20 +605,20 @@ public class TetradLogger {
 
 
     private void fireDeactived() {
-        if (this.logging && !this.listeners.isEmpty() && this.config == null) {
-            final TetradLoggerEvent evt = new TetradLoggerEvent(this, null);
-            for (final TetradLoggerListener l : this.listeners) {
+        if (logging && !listeners.isEmpty() && config == null) {
+            TetradLoggerEvent evt = new TetradLoggerEvent(this, null);
+            for (TetradLoggerListener l : listeners) {
                 l.configurationDeactived(evt);
             }
         }
     }
 
     public String getLatestFilePath() {
-        return this.latestFilePath;
+        return latestFilePath;
     }
 
     public TetradLoggerConfig getLoggerConfig() {
-        return this.config;
+        return config;
     }
 
     //================================ Inner classes ====================================//
@@ -633,7 +633,7 @@ public class TetradLogger {
 
 
         @SuppressWarnings({"SameParameterValue"})
-        public EmptyConfig(final boolean active) {
+        public EmptyConfig(boolean active) {
             this.active = active;
         }
 
@@ -646,26 +646,26 @@ public class TetradLogger {
         }
 
 
-        public boolean isEventActive(final String id) {
-            return this.active;
+        public boolean isEventActive(String id) {
+            return active;
         }
 
         public boolean isActive() {
-            return this.active;
+            return active;
         }
 
         public TetradLoggerConfig copy() {
-            return new EmptyConfig(this.active);
+            return new EmptyConfig(active);
         }
 
         public List<Event> getSupportedEvents() {
-            if (!this.active) {
+            if (!active) {
                 return Collections.emptyList();
             }
             throw new UnsupportedOperationException("Not supported if active is true");
         }
 
-        public void setEventActive(final String id, final boolean active) {
+        public void setEventActive(String id, boolean active) {
             throw new UnsupportedOperationException("Can't modify the logger config");
         }
     }

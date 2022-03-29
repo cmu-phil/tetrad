@@ -19,8 +19,8 @@ public class Algorithms {
      *
      * @param algorithm The algorithmt to add.
      */
-    public void add(final Algorithm algorithm) {
-        this.algorithms.add(algorithm);
+    public void add(Algorithm algorithm) {
+        algorithms.add(algorithm);
     }
 
     /**
@@ -29,6 +29,6 @@ public class Algorithms {
      * @return A copy of the list of algorithm that have been added, in that order.
      */
     public List<Algorithm> getAlgorithms() {
-        return new ArrayList<>(this.algorithms);
+        return new ArrayList<>(algorithms);
     }
 }

@@ -46,42 +46,42 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Ta
 
     }
 
-    public FaskConcatenated(final ScoreWrapper score, final IndependenceWrapper test) {
+    public FaskConcatenated(ScoreWrapper score, IndependenceWrapper test) {
         this.score = score;
         this.test = test;
     }
 
     @Override
-    public Graph search(final List<DataModel> dataSets, final Parameters parameters) {
+    public Graph search(List<DataModel> dataSets, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            final List<DataSet> centered = new ArrayList<>();
+            List<DataSet> centered = new ArrayList<>();
 
-            for (final DataModel dataSet : dataSets) {
+            for (DataModel dataSet : dataSets) {
                 centered.add(DataUtils.standardizeData((DataSet) dataSet));
             }
 
-            final DataSet dataSet = DataUtils.concatenate(centered);
+            DataSet dataSet = DataUtils.concatenate(centered);
 
             dataSet.setNumberFormat(new DecimalFormat("0.000000000000000000"));
 
-            final Fask search = new Fask(dataSet,
-                    this.score.getScore(dataSet, parameters),
-                    this.test.getTest(dataSet, parameters));
+            Fask search = new Fask(dataSet,
+                    score.getScore(dataSet, parameters),
+                    test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setSkewEdgeThreshold(parameters.getDouble(Params.SKEW_EDGE_THRESHOLD));
-            search.setKnowledge(this.knowledge);
+            search.setKnowledge(knowledge);
 
             return search.search();
         } else {
-            final FaskConcatenated algorithm = new FaskConcatenated(this.score, this.test);
+            FaskConcatenated algorithm = new FaskConcatenated(score, test);
 
-            final List<DataSet> datasets = new ArrayList<>();
+            List<DataSet> datasets = new ArrayList<>();
 
-            for (final DataModel dataModel : dataSets) {
+            for (DataModel dataModel : dataSets) {
                 datasets.add((DataSet) dataModel);
             }
-            final GeneralResamplingTest search = new GeneralResamplingTest(datasets, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(this.knowledge);
+            GeneralResamplingTest search = new GeneralResamplingTest(datasets, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
+            search.setKnowledge(knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -107,15 +107,15 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Ta
     }
 
     @Override
-    public Graph search(final DataModel dataSet, final Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
+            return this.search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
         } else {
-            final FaskConcatenated algorithm = new FaskConcatenated(this.score, this.test);
+            FaskConcatenated algorithm = new FaskConcatenated(score, test);
 
-            final List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
-            final GeneralResamplingTest search = new GeneralResamplingTest(dataSets, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(this.knowledge);
+            List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
+            GeneralResamplingTest search = new GeneralResamplingTest(dataSets, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
+            search.setKnowledge(knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -141,7 +141,7 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Ta
     }
 
     @Override
-    public Graph getComparisonGraph(final Graph graph) {
+    public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
@@ -157,7 +157,7 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Ta
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
         parameters.add(Params.DEPTH);
         parameters.add(Params.TWO_CYCLE_ALPHA);
         parameters.add(Params.SKEW_EDGE_THRESHOLD);
@@ -172,21 +172,21 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Ta
 
     @Override
     public IKnowledge getKnowledge() {
-        return this.knowledge;
+        return knowledge;
     }
 
     @Override
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
     @Override
-    public void setIndependenceWrapper(final IndependenceWrapper independenceWrapper) {
-        this.test = independenceWrapper;
+    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
+        test = independenceWrapper;
     }
 
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
-        return this.test;
+        return test;
     }
 }

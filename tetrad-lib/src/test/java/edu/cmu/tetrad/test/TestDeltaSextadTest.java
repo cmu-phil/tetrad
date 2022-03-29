@@ -53,10 +53,10 @@ public class TestDeltaSextadTest {
 
     @Test
     public void testBollenExample1() {
-        final SemIm sem = getSem1();
-        final DataSet data = sem.simulateData(3000, false);
+        SemIm sem = this.getSem1();
+        DataSet data = sem.simulateData(3000, false);
 
-        final List<Node> variables = data.getVariables();
+        List<Node> variables = data.getVariables();
 
 
         final int m1 = 0;
@@ -66,18 +66,18 @@ public class TestDeltaSextadTest {
         final int m5 = 4;
         final int m6 = 5;
 
-        final IntSextad t1 = new IntSextad(m1, m2, m3, m4, m5, m6);
-        final IntSextad t2 = new IntSextad(m1, m2, m4, m3, m5, m6);
-        final IntSextad t3 = new IntSextad(m1, m2, m5, m3, m4, m6);
-        final IntSextad t4 = new IntSextad(m1, m2, m6, m3, m4, m5);
-        final IntSextad t5 = new IntSextad(m1, m3, m4, m2, m5, m6);
-        final IntSextad t6 = new IntSextad(m1, m3, m5, m2, m4, m6);
-        final IntSextad t7 = new IntSextad(m1, m3, m6, m2, m4, m5);
-        final IntSextad t8 = new IntSextad(m1, m4, m5, m2, m3, m6);
-        final IntSextad t9 = new IntSextad(m1, m4, m6, m2, m3, m5);
-        final IntSextad t10 = new IntSextad(m1, m5, m6, m2, m3, m4);
+        IntSextad t1 = new IntSextad(m1, m2, m3, m4, m5, m6);
+        IntSextad t2 = new IntSextad(m1, m2, m4, m3, m5, m6);
+        IntSextad t3 = new IntSextad(m1, m2, m5, m3, m4, m6);
+        IntSextad t4 = new IntSextad(m1, m2, m6, m3, m4, m5);
+        IntSextad t5 = new IntSextad(m1, m3, m4, m2, m5, m6);
+        IntSextad t6 = new IntSextad(m1, m3, m5, m2, m4, m6);
+        IntSextad t7 = new IntSextad(m1, m3, m6, m2, m4, m5);
+        IntSextad t8 = new IntSextad(m1, m4, m5, m2, m3, m6);
+        IntSextad t9 = new IntSextad(m1, m4, m6, m2, m3, m5);
+        IntSextad t10 = new IntSextad(m1, m5, m6, m2, m3, m4);
 
-        final List<IntSextad> sextads = new ArrayList<>();
+        List<IntSextad> sextads = new ArrayList<>();
 
         sextads.add(t1);
         sextads.add(t2);
@@ -91,22 +91,22 @@ public class TestDeltaSextadTest {
         sextads.add(t10);
 
 
-        final DeltaSextadTest test = new DeltaSextadTest(data);
+        DeltaSextadTest test = new DeltaSextadTest(data);
 
         final int numSextads = 3;
         final double alpha = 0.001;
 
-        final ChoiceGenerator gen = new ChoiceGenerator(sextads.size(), numSextads);
+        ChoiceGenerator gen = new ChoiceGenerator(sextads.size(), numSextads);
         int[] choice;
 
         while ((choice = gen.next()) != null) {
-            final IntSextad[] _sextads = new IntSextad[numSextads];
+            IntSextad[] _sextads = new IntSextad[numSextads];
 
             for (int i = 0; i < numSextads; i++) {
                 _sextads[i] = sextads.get(choice[i]);
             }
 
-            final double p = test.getPValue(_sextads);
+            double p = test.getPValue(_sextads);
         }
 
     }
@@ -119,7 +119,7 @@ public class TestDeltaSextadTest {
             final String name = "src/test/resources/dataLG.txt";
             data = DataUtils.loadContinuousData(new File(name), "//", '\"' ,
                     "*", true, Delimiter.TAB);
-        } catch (final IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -130,18 +130,18 @@ public class TestDeltaSextadTest {
         final int m5 = 4;
         final int m6 = 5;
 
-        final IntSextad t1 = new IntSextad(m1, m2, m3, m4, m5, m6);
-        final IntSextad t2 = new IntSextad(m1, m2, m4, m3, m5, m6);
-        final IntSextad t3 = new IntSextad(m1, m2, m5, m3, m4, m6);
-        final IntSextad t4 = new IntSextad(m1, m2, m6, m3, m4, m5);
-        final IntSextad t5 = new IntSextad(m1, m3, m4, m2, m5, m6);
-        final IntSextad t6 = new IntSextad(m1, m3, m5, m2, m4, m6);
-        final IntSextad t7 = new IntSextad(m1, m3, m6, m2, m4, m5);
-        final IntSextad t8 = new IntSextad(m1, m4, m5, m2, m3, m6);
-        final IntSextad t9 = new IntSextad(m1, m4, m6, m2, m3, m5);
-        final IntSextad t10 = new IntSextad(m1, m5, m6, m2, m3, m4);
+        IntSextad t1 = new IntSextad(m1, m2, m3, m4, m5, m6);
+        IntSextad t2 = new IntSextad(m1, m2, m4, m3, m5, m6);
+        IntSextad t3 = new IntSextad(m1, m2, m5, m3, m4, m6);
+        IntSextad t4 = new IntSextad(m1, m2, m6, m3, m4, m5);
+        IntSextad t5 = new IntSextad(m1, m3, m4, m2, m5, m6);
+        IntSextad t6 = new IntSextad(m1, m3, m5, m2, m4, m6);
+        IntSextad t7 = new IntSextad(m1, m3, m6, m2, m4, m5);
+        IntSextad t8 = new IntSextad(m1, m4, m5, m2, m3, m6);
+        IntSextad t9 = new IntSextad(m1, m4, m6, m2, m3, m5);
+        IntSextad t10 = new IntSextad(m1, m5, m6, m2, m3, m4);
 
-        final DeltaSextadTest test = new DeltaSextadTest(data);
+        DeltaSextadTest test = new DeltaSextadTest(data);
 
         IntSextad[] _sextads = {t2, t5, t10, t3, t6};
         double p = test.getPValue(_sextads);
@@ -162,11 +162,11 @@ public class TestDeltaSextadTest {
         final int m = 2;
         final int p = 6;
 
-        final Graph g = new EdgeListGraph();
-        final List<List<Node>> varClusters = new ArrayList<>();
-        final List<List<Node>> latents = new ArrayList<>();
+        Graph g = new EdgeListGraph();
+        List<List<Node>> varClusters = new ArrayList<>();
+        List<List<Node>> latents = new ArrayList<>();
 
-        final List<Node> vars = new ArrayList<>();
+        List<Node> vars = new ArrayList<>();
 
         for (int y = 0; y < c; y++) {
             varClusters.add(new ArrayList<Node>());
@@ -177,20 +177,20 @@ public class TestDeltaSextadTest {
 
         for (int y = 0; y < c; y++) {
             for (int i = 0; i < p; i++) {
-                final GraphNode n = new GraphNode("V" + ++e);
+                GraphNode n = new GraphNode("V" + ++e);
                 vars.add(n);
                 varClusters.get(y).add(n);
                 g.addNode(n);
             }
         }
 
-        final List<Node> l = new ArrayList<>();
+        List<Node> l = new ArrayList<>();
 
         int f = 0;
 
         for (int y = 0; y < c; y++) {
             for (int j = 0; j < m; j++) {
-                final Node _l = new GraphNode("L" + ++f);
+                Node _l = new GraphNode("L" + ++f);
                 _l.setNodeType(NodeType.LATENT);
                 l.add(_l);
                 latents.get(y).add(_l);
@@ -212,11 +212,11 @@ public class TestDeltaSextadTest {
             }
         }
 
-        final SemPm pm = new SemPm(g);
-        final SemIm im = new SemIm(pm);
-        final DataSet data = im.simulateData(1000, false);
+        SemPm pm = new SemPm(g);
+        SemIm im = new SemIm(pm);
+        DataSet data = im.simulateData(1000, false);
 
-        final List<Integer> indices = new ArrayList<>();
+        List<Integer> indices = new ArrayList<>();
         indices.add(0);
         indices.add(1);
         indices.add(2);
@@ -233,32 +233,32 @@ public class TestDeltaSextadTest {
 //        Node x5 = data.getVariable(indices.get(4));
 //        Node x6 = data.getVariable(indices.get(5));
 
-        final int x1 = indices.get(0);
-        final int x2 = indices.get(1);
-        final int x3 = indices.get(2);
-        final int x4 = indices.get(3);
-        final int x5 = indices.get(4);
-        final int x6 = indices.get(5);
+        int x1 = indices.get(0);
+        int x2 = indices.get(1);
+        int x3 = indices.get(2);
+        int x4 = indices.get(3);
+        int x5 = indices.get(4);
+        int x6 = indices.get(5);
 
-        final DeltaSextadTest test = new DeltaSextadTest(data);
+        DeltaSextadTest test = new DeltaSextadTest(data);
 
         // Should be invariant to changes or order of the first three or of the last three variables.
-        final double a = test.getPValue(new IntSextad(x1, x2, x3, x4, x5, x6));
-        final double b = test.getPValue(new IntSextad(x2, x3, x1, x5, x4, x6));
+        double a = test.getPValue(new IntSextad(x1, x2, x3, x4, x5, x6));
+        double b = test.getPValue(new IntSextad(x2, x3, x1, x5, x4, x6));
 
         assertEquals(a, b, 1e-7);
     }
 
     private SemIm getSem1() {
-        final Graph graph = new EdgeListGraph();
+        Graph graph = new EdgeListGraph();
 
-        final Node l1 = new GraphNode("l1");
-        final Node l2 = new GraphNode("l2");
+        Node l1 = new GraphNode("l1");
+        Node l2 = new GraphNode("l2");
 
         l1.setNodeType(NodeType.LATENT);
         l2.setNodeType(NodeType.LATENT);
 
-        final List<Node> measures = new ArrayList<>();
+        List<Node> measures = new ArrayList<>();
         final int numMeasures = 8;
 
         for (int i = 0; i < numMeasures; i++) {
@@ -274,9 +274,9 @@ public class TestDeltaSextadTest {
             graph.addDirectedEdge(l2, measures.get(i));
         }
 
-        final SemPm pm = new SemPm(graph);
+        SemPm pm = new SemPm(graph);
 
-        final Parameters params = new Parameters();
+        Parameters params = new Parameters();
 //        params.setCoefRange(0.3, 0.8);
 
         return new SemIm(pm, params);

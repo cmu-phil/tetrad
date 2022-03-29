@@ -47,24 +47,24 @@ public class ShiftDataWrapper extends DataWrapper {
     /**
      * Constructs the wrapper given some data and the params.
      */
-    public ShiftDataWrapper(final DataWrapper data, final Parameters params) {
+    public ShiftDataWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
             throw new NullPointerException("The given data must not be null");
         }
 
-        final DataModelList dataModelList = data.getDataModelList();
+        DataModelList dataModelList = data.getDataModelList();
 
         final int rows = -1;
         final int cols = -1;
 
-        for (final DataModel model : dataModelList) {
+        for (DataModel model : dataModelList) {
             if (!(model instanceof DataSet)) {
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "For the shift search, all of the data in the data box must be in the form of data sets.");
                 return;
             }
 
-            final DataSet dataSet = (DataSet) model;
+            DataSet dataSet = (DataSet) model;
 
 //            if (rows == -1) {
 //                rows = dataSet.getNumRows();
@@ -78,37 +78,37 @@ public class ShiftDataWrapper extends DataWrapper {
 //            }
         }
 
-        final List<DataSet> dataSets = new ArrayList<>();
+        List<DataSet> dataSets = new ArrayList<>();
 
         for (int i = 0; i < dataModelList.size(); i++) {
             dataSets.add((DataSet) dataModelList.get(i));
         }
 
-        final int[] backshifts = (int[]) params.get("shifts", null);
+        int[] backshifts = (int[]) params.get("shifts", null);
 
         if (backshifts.length < dataSets.get(0).getNumColumns()) {
             return;
         }
 
-        final List<DataSet> backshiftedDataSets = shiftDataSets(dataSets, backshifts);
+        List<DataSet> backshiftedDataSets = this.shiftDataSets(dataSets, backshifts);
 
-        final DataModelList _list = new DataModelList();
+        DataModelList _list = new DataModelList();
 
-        for (final DataSet dataSet : backshiftedDataSets) {
+        for (DataSet dataSet : backshiftedDataSets) {
             _list.add(dataSet);
         }
 
-        this.setDataModel(_list);
-        this.setSourceGraph(data.getSourceGraph());
+        setDataModel(_list);
+        setSourceGraph(data.getSourceGraph());
         params.set("shifts", backshifts);
 
-        LogDataUtils.logDataModelList("Data in which variables have been shifted in time.", getDataModelList());
+        LogDataUtils.logDataModelList("Data in which variables have been shifted in time.", this.getDataModelList());
     }
 
-    private List<DataSet> shiftDataSets(final List<DataSet> dataSets, final int[] shifts) {
-        final List<DataSet> shiftedDataSets = new ArrayList<>();
+    private List<DataSet> shiftDataSets(List<DataSet> dataSets, int[] shifts) {
+        List<DataSet> shiftedDataSets = new ArrayList<>();
 
-        for (final DataSet dataSet : dataSets) {
+        for (DataSet dataSet : dataSets) {
             shiftedDataSets.add(TimeSeriesUtils.createShiftedData(dataSet, shifts));
         }
         return shiftedDataSets;

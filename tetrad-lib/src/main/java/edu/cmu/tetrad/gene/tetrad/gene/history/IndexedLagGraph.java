@@ -61,7 +61,7 @@ public class IndexedLagGraph implements TetradSerializable {
      * Constructs an indexed lag graph for the getModel state of the given lag
      * graph, including all edges.
      */
-    public IndexedLagGraph(final LagGraph lagGraph) {
+    public IndexedLagGraph(LagGraph lagGraph) {
         this(lagGraph, false);
     }
 
@@ -73,39 +73,39 @@ public class IndexedLagGraph implements TetradSerializable {
      *                           gene one time step back to the same gene in the
      *                           getModel time step.
      */
-    public IndexedLagGraph(final LagGraph lagGraph, final boolean excludeSelfOneBack) {
+    public IndexedLagGraph(LagGraph lagGraph, boolean excludeSelfOneBack) {
         if (lagGraph == null) {
             throw new NullPointerException("Lag graph must not be null.");
         }
 
         // Construct factor and parent lists in fixed order.
-        this.factors = new ArrayList<>(lagGraph.getFactors());
-        this.parents = new IndexedParent[this.factors.size()][];
+        factors = new ArrayList<>(lagGraph.getFactors());
+        parents = new IndexedParent[factors.size()][];
 
-        for (int i = 0; i < this.factors.size(); i++) {
-            final String factor = this.factors.get(i);
-            final SortedSet<LaggedFactor> factorParents = lagGraph.getParents(factor);
-            final List<IndexedParent> list = new ArrayList<>();
+        for (int i = 0; i < factors.size(); i++) {
+            String factor = factors.get(i);
+            SortedSet<LaggedFactor> factorParents = lagGraph.getParents(factor);
+            List<IndexedParent> list = new ArrayList<>();
 
-            for (final LaggedFactor factorParent1 : factorParents) {
-                final int index = this.factors.indexOf(factorParent1.getFactor());
-                final int lag = factorParent1.getLag();
+            for (LaggedFactor factorParent1 : factorParents) {
+                int index = factors.indexOf(factorParent1.getFactor());
+                int lag = factorParent1.getLag();
 
                 if (excludeSelfOneBack && index == i && lag == 1) {
                     continue;
                 }
 
-                final IndexedParent parent = new IndexedParent(index, lag);
+                IndexedParent parent = new IndexedParent(index, lag);
                 list.add(parent);
             }
 
-            final IndexedParent[] _parents = new IndexedParent[list.size()];
+            IndexedParent[] _parents = new IndexedParent[list.size()];
 
             for (int i2 = 0; i2 < list.size(); i2++) {
                 _parents[i2] = list.get(i2);
             }
 
-            this.parents[i] = _parents;
+            parents[i] = _parents;
         }
     }
 
@@ -125,32 +125,32 @@ public class IndexedLagGraph implements TetradSerializable {
      * Returns the number of factors.
      */
     public int getNumFactors() {
-        return this.factors.size();
+        return factors.size();
     }
 
     /**
      * Returns the (string name of) the factor at the given index.
      */
-    public String getFactor(final int factor) {
-        return this.factors.get(factor);
+    public String getFactor(int factor) {
+        return factors.get(factor);
     }
 
     /**
      * Returns the index of the given String factor.
      */
-    public int getIndex(final String factor) {
-        return this.factors.indexOf(factor);
+    public int getIndex(String factor) {
+        return factors.indexOf(factor);
     }
 
     /**
      * Returns the index of the given parent for the given factor.
      */
-    public int getIndex(final String factor, final LaggedFactor parent) {
-        final int factorIndex = this.factors.indexOf(factor);
-        final int parentIndex = this.factors.indexOf(parent.getFactor());
-        final IndexedParent indexedParent =
+    public int getIndex(String factor, LaggedFactor parent) {
+        int factorIndex = factors.indexOf(factor);
+        int parentIndex = factors.indexOf(parent.getFactor());
+        IndexedParent indexedParent =
                 new IndexedParent(parentIndex, parent.getLag());
-        return getIndex(factorIndex, indexedParent);
+        return this.getIndex(factorIndex, indexedParent);
     }
 
     /**
@@ -158,9 +158,9 @@ public class IndexedLagGraph implements TetradSerializable {
      * given IndexedParent, or -1 if the given IndexedParent is not equal to any
      * parent.
      */
-    public int getIndex(final int factor, final IndexedParent parent) {
-        for (int i = 0; i < this.parents[factor].length; i++) {
-            if (parent.equals(this.parents[factor][i])) {
+    public int getIndex(int factor, IndexedParent parent) {
+        for (int i = 0; i < parents[factor].length; i++) {
+            if (parent.equals(parents[factor][i])) {
                 return i;
             }
         }
@@ -171,15 +171,15 @@ public class IndexedLagGraph implements TetradSerializable {
      * Returns the number of parents of the given factor. Each parent is a
      * factor at a given lag.
      */
-    public int getNumParents(final int factor) {
-        return this.parents[factor].length;
+    public int getNumParents(int factor) {
+        return parents[factor].length;
     }
 
     /**
      * Returns the given parent as an IndexedParent.
      */
-    public IndexedParent getParent(final int factor, final int parent) {
-        return this.parents[factor][parent];
+    public IndexedParent getParent(int factor, int parent) {
+        return parents[factor][parent];
     }
 
     /**
@@ -190,21 +190,21 @@ public class IndexedLagGraph implements TetradSerializable {
      */
     public String toString() {
 
-        final StringBuilder buf = new StringBuilder();
+        StringBuilder buf = new StringBuilder();
 
         buf.append("\nIndexedLagGraph:\n");
 
-        for (int i = 0; i < getNumFactors(); i++) {
-            final String factor = getFactor(i);
+        for (int i = 0; i < this.getNumFactors(); i++) {
+            String factor = this.getFactor(i);
 
             buf.append("\n");
             buf.append(factor);
             buf.append("\t<-- ");
 
-            for (int j = 0; j < getNumParents(i); j++) {
-                final IndexedParent parent = getParent(i, j);
+            for (int j = 0; j < this.getNumParents(i); j++) {
+                IndexedParent parent = this.getParent(i, j);
                 buf.append("\t");
-                buf.append(getFactor(parent.getIndex()));
+                buf.append(this.getFactor(parent.getIndex()));
                 buf.append(":");
                 buf.append(parent.getLag());
             }
@@ -228,15 +228,15 @@ public class IndexedLagGraph implements TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (this.factors == null) {
+        if (factors == null) {
             throw new NullPointerException();
         }
 
-        if (this.parents == null) {
+        if (parents == null) {
             throw new IllegalStateException();
         }
 

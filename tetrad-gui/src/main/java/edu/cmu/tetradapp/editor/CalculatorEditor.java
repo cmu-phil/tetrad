@@ -108,7 +108,7 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
      * @return the data set that the editor is working with.
      */
     public DataSet getDataSet() {
-        return this.dataSet;
+        return dataSet;
     }
 
 
@@ -117,7 +117,7 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
      *
      * @param params
      */
-    public void setParams(final Parameters params) {
+    public void setParams(Parameters params) {
         this.params = params;
     }
 
@@ -125,12 +125,12 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
     /**
      * Grabs the data set that the calculator is working on.
      */
-    public void setParentModels(final Object[] parentModels) {
+    public void setParentModels(Object[] parentModels) {
         if (parentModels == null || parentModels.length == 0) {
             throw new IllegalArgumentException("There must be parent model");
         }
         DataWrapper data = null;
-        for (final Object parent : parentModels) {
+        for (Object parent : parentModels) {
             if (parent instanceof DataWrapper) {
                 data = (DataWrapper) parent;
             }
@@ -138,11 +138,11 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
         if (data == null) {
             throw new IllegalArgumentException("Should have have a data wrapper as a parent");
         }
-        final DataModel model = data.getSelectedDataModel();
+        DataModel model = data.getSelectedDataModel();
         if (!(model instanceof DataSet)) {
             throw new IllegalArgumentException("The data must be tabular");
         }
-        this.dataSet = (DataSet) model;
+        dataSet = (DataSet) model;
     }
 
     /**
@@ -150,7 +150,7 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
      */
     public void setup() {
 //        getContentPane().setLayout(new BorderLayout());
-        final JComponent calculator = buildCalculator();
+        JComponent calculator = this.buildCalculator();
 
 //        JButton close = new JButton("Close");
 //        close.addActionListener(new ActionListener() {
@@ -172,7 +172,7 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
 //            }
 //        });
 
-        final Box box = Box.createVerticalBox();
+        Box box = Box.createVerticalBox();
         box.setBorder(new EmptyBorder(5, 5, 5, 5));
 
 //        Box buttonBox = Box.createHorizontalBox();
@@ -186,7 +186,7 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
 //        box.add(Box.createVerticalStrut(10));
 //        box.add(buttonBox);
 
-        add(box);
+        this.add(box);
 
 //        getContentPane().add(box, BorderLayout.CENTER);
 //        pack();
@@ -203,18 +203,18 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
 
 
     public boolean finalizeEdit() {
-        if (this.canceled) {
+        if (canceled) {
             return false;
         }
-        final List<Equation> equations = parseEquations();
+        List<Equation> equations = this.parseEquations();
         if (equations == null) {
             return false;
         }
 
-        final StringBuilder buf = new StringBuilder();
+        StringBuilder buf = new StringBuilder();
 
         for (int i = 0; i < equations.size(); i++) {
-            final Equation eq = equations.get(i);
+            Equation eq = equations.get(i);
 
             buf.append(eq.getUnparsedExpression());
 
@@ -223,17 +223,17 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
             }
         }
 
-        this.params.set("calculator_equations", buf.toString());
+        params.set("calculator_equations", buf.toString());
 
-        if (this.params != null) {
-            final List<String> _equations = new ArrayList<>();
+        if (params != null) {
+            List<String> _equations = new ArrayList<>();
 
-            for (final Equation eq : equations) {
+            for (Equation eq : equations) {
                 _equations.add(eq.getUnparsedExpression());
 //                this.params.addEquation(eq.getUnparsedExpression());
             }
 
-            this.params.set("equations", _equations);
+            params.set("equations", _equations);
         }
 
         return true;
@@ -248,18 +248,18 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
      * the parsed equations are returned.
      */
     private List<Equation> parseEquations() {
-        final List<Equation> equations = new ArrayList<>();
-        for (final ExpressionEditor editor : this.editors) {
+        List<Equation> equations = new ArrayList<>();
+        for (ExpressionEditor editor : editors) {
             try {
                 System.out.println(editor.getEquation());
-            } catch (final ParseException e) {
+            } catch (ParseException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
 
             try {
                 equations.add(editor.getEquation());
-            } catch (final ParseException e) {
-                final String s = e.getMessage();
+            } catch (ParseException e) {
+                String s = e.getMessage();
 
                 if (!"".equals(s)) {
                     JOptionPane.showMessageDialog(this, s);
@@ -281,9 +281,9 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
      *
      * @param window - component whos location is set.
      */
-    private static void setLocation(final Window window) {
-        final Dimension screenDim = Toolkit.getDefaultToolkit().getScreenSize();
-        final Rectangle bounds = window.getBounds();
+    private static void setLocation(Window window) {
+        Dimension screenDim = Toolkit.getDefaultToolkit().getScreenSize();
+        Rectangle bounds = window.getBounds();
         window.setLocation((screenDim.width - bounds.width) / 2,
                 (screenDim.height - bounds.height) / 2);
     }
@@ -293,41 +293,41 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
      * Builds the GUI.
      */
     private JComponent buildCalculator() {
-        final Box mainBox = Box.createHorizontalBox();
+        Box mainBox = Box.createHorizontalBox();
 
         // create variable box.
-        final Box varBox = Box.createVerticalBox();
-        varBox.add(CalculatorEditor.createLabel("Variables:"));
-        varBox.add(createVariableList());
+        Box varBox = Box.createVerticalBox();
+        varBox.add(createLabel("Variables:"));
+        varBox.add(this.createVariableList());
         varBox.add(Box.createVerticalGlue());
 
         // create expression box.
-        final Box expressionBox = Box.createVerticalBox();
-        final Box equationEditors = Box.createVerticalBox();
+        Box expressionBox = Box.createVerticalBox();
+        Box equationEditors = Box.createVerticalBox();
         equationEditors.setBorder(new TitledBorder("Edit Expressions"));
 
-        final JPanel editors1 = initializeExpressionEditors();
-        final JScrollPane pane = new JScrollPane(editors1);
+        JPanel editors1 = this.initializeExpressionEditors();
+        JScrollPane pane = new JScrollPane(editors1);
         pane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         LayoutUtils.setAllSizes(pane, new Dimension(editors1.getPreferredSize().width + 25, 100));
 
         equationEditors.add(pane);
 
-        final Box b = Box.createHorizontalBox();
-        final JLabel label = new JLabel("Example using wildcard: New$ = $ + 1");
+        Box b = Box.createHorizontalBox();
+        JLabel label = new JLabel("Example using wildcard: New$ = $ + 1");
         label.setFont(new Font("Dialog", Font.BOLD, 10));
         b.add(label);
         b.add(Box.createHorizontalGlue());
         equationEditors.add(b);
 
         equationEditors.add(Box.createVerticalStrut(10));
-        equationEditors.add(createAddRemoveButtons());
+        equationEditors.add(this.createAddRemoveButtons());
         equationEditors.add(Box.createVerticalGlue());
 
-        final Box box = Box.createHorizontalBox();
-        box.add(createCalculatorNumberPad());
+        Box box = Box.createHorizontalBox();
+        box.add(this.createCalculatorNumberPad());
         box.add(Box.createHorizontalStrut(40));
-        box.add(createFunctionList());
+        box.add(this.createFunctionList());
         box.add(Box.createHorizontalStrut(10));
         box.add(Box.createHorizontalGlue());
 
@@ -339,7 +339,7 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
 
         mainBox.add(varBox);
         mainBox.add(Box.createHorizontalStrut(3));
-        mainBox.add(createSelectVariableButton());
+        mainBox.add(this.createSelectVariableButton());
         mainBox.add(Box.createHorizontalStrut(3));
         mainBox.add(expressionBox);
         mainBox.add(Box.createHorizontalGlue());
@@ -352,13 +352,13 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
      * Creates the select variable button.
      */
     private JComponent createSelectVariableButton() {
-        final Box box = Box.createVerticalBox();
-        final JButton selectVariable = new JButton(">");
+        Box box = Box.createVerticalBox();
+        JButton selectVariable = new JButton(">");
         selectVariable.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final Node node = (Node) CalculatorEditor.this.variableList.getSelectedValue();
+            public void actionPerformed(ActionEvent e) {
+                Node node = (Node) variableList.getSelectedValue();
                 if (node != null) {
-                    insertSymbol(node.getName());
+                    CalculatorEditor.this.insertSymbol(node.getName());
                 }
             }
         });
@@ -373,21 +373,21 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
 
 
     private JComponent createAddRemoveButtons() {
-        final Box box = Box.createHorizontalBox();
-        final JButton remove = new JButton("Remove Selected Expressions");
+        Box box = Box.createHorizontalBox();
+        JButton remove = new JButton("Remove Selected Expressions");
         remove.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                removeSelected();
+            public void actionPerformed(ActionEvent e) {
+                CalculatorEditor.this.removeSelected();
             }
         });
 
-        final JButton add = new JButton("Add Expression");
+        JButton add = new JButton("Add Expression");
         add.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                CalculatorEditor.this.editors.add(new ExpressionEditor(CalculatorEditor.this.dataSet, "", ""));
-                createExpressionEditors();
-                CalculatorEditor.this.expressionsPanel.revalidate();
-                CalculatorEditor.this.expressionsPanel.repaint();
+            public void actionPerformed(ActionEvent e) {
+                editors.add(new ExpressionEditor(dataSet, "", ""));
+                CalculatorEditor.this.createExpressionEditors();
+                expressionsPanel.revalidate();
+                expressionsPanel.repaint();
 
             }
         });
@@ -403,75 +403,75 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
      * Builds the expression editors.
      */
     private JPanel initializeExpressionEditors() {
-        if (this.expressionsPanel == null) {
-            this.expressionsPanel = new JPanel();
-            this.expressionsPanel.setLayout(new BoxLayout(this.expressionsPanel, BoxLayout.Y_AXIS));
+        if (expressionsPanel == null) {
+            expressionsPanel = new JPanel();
+            expressionsPanel.setLayout(new BoxLayout(expressionsPanel, BoxLayout.Y_AXIS));
         }
-        this.expressionsPanel.removeAll();
-        final String[] displayEquations;
+        expressionsPanel.removeAll();
+        String[] displayEquations;
 
-        if (this.params != null) {
-            final List<String> equations = (List<String>) this.params.get("equations", new ArrayList<String>());
-            final int size = equations.size();
+        if (params != null) {
+            List<String> equations = (List<String>) params.get("equations", new ArrayList<String>());
+            int size = equations.size();
             displayEquations = equations.toArray(new String[size]);
         } else {
-            final String _displayEquations = (String) this.params.get("calculator_equations", "");
+            String _displayEquations = (String) params.get("calculator_equations", "");
             displayEquations = _displayEquations.split("///");
         }
 
-        for (final String expression : displayEquations) {
+        for (String expression : displayEquations) {
             if (!(expression.contains("="))) {
                 continue;
             }
 
-            final String[] sides = expression.split("=");
-            this.editors.add(new ExpressionEditor(this.dataSet, sides[0], sides[1]));
+            String[] sides = expression.split("=");
+            editors.add(new ExpressionEditor(dataSet, sides[0], sides[1]));
         }
 
-        if (this.editors.isEmpty()) {
-            this.editors.add(new ExpressionEditor(this.dataSet, "", ""));
+        if (editors.isEmpty()) {
+            editors.add(new ExpressionEditor(dataSet, "", ""));
         }
 
-        final FocusListener listener = new FocusAdapter() {
-            public void focusGained(final FocusEvent evt) {
-                CalculatorEditor.this.focused = (ExpressionEditor) evt.getSource();
+        FocusListener listener = new FocusAdapter() {
+            public void focusGained(FocusEvent evt) {
+                focused = (ExpressionEditor) evt.getSource();
             }
         };
 
-        for (final ExpressionEditor editor : this.editors) {
+        for (ExpressionEditor editor : editors) {
             editor.addFieldFocusListener(listener);
-            this.expressionsPanel.add(editor);
+            expressionsPanel.add(editor);
 
         }
-        this.expressionsPanel.add(Box.createVerticalGlue());
+        expressionsPanel.add(Box.createVerticalGlue());
 
-        return this.expressionsPanel;
+        return expressionsPanel;
     }
 
     private JPanel createExpressionEditors() {
-        if (this.expressionsPanel == null) {
-            this.expressionsPanel = new JPanel();
-            this.expressionsPanel.setLayout(new BoxLayout(this.expressionsPanel, BoxLayout.Y_AXIS));
+        if (expressionsPanel == null) {
+            expressionsPanel = new JPanel();
+            expressionsPanel.setLayout(new BoxLayout(expressionsPanel, BoxLayout.Y_AXIS));
         }
-        this.expressionsPanel.removeAll();
+        expressionsPanel.removeAll();
 
-        if (this.editors.isEmpty()) {
-            this.editors.add(new ExpressionEditor(this.dataSet, "", ""));
+        if (editors.isEmpty()) {
+            editors.add(new ExpressionEditor(dataSet, "", ""));
         }
-        final FocusListener listener = new FocusAdapter() {
-            public void focusGained(final FocusEvent evt) {
-                CalculatorEditor.this.focused = (ExpressionEditor) evt.getSource();
+        FocusListener listener = new FocusAdapter() {
+            public void focusGained(FocusEvent evt) {
+                focused = (ExpressionEditor) evt.getSource();
             }
         };
 
-        for (final ExpressionEditor editor : this.editors) {
+        for (ExpressionEditor editor : editors) {
             editor.addFieldFocusListener(listener);
-            this.expressionsPanel.add(editor);
+            expressionsPanel.add(editor);
 
         }
-        this.expressionsPanel.add(Box.createVerticalGlue());
+        expressionsPanel.add(Box.createVerticalGlue());
 
-        return this.expressionsPanel;
+        return expressionsPanel;
     }
 
 
@@ -479,28 +479,28 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
      * Creates the variable selection list.
      */
     private JComponent createVariableList() {
-        final List<Node> nodes = this.dataSet.getVariables();
-        this.variableList = new JList(new DefaultListModel());
-        this.variableList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        final DefaultListModel model = (DefaultListModel) this.variableList.getModel();
-        for (final Node node : nodes) {
+        List<Node> nodes = dataSet.getVariables();
+        variableList = new JList(new DefaultListModel());
+        variableList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        DefaultListModel model = (DefaultListModel) variableList.getModel();
+        for (Node node : nodes) {
             model.addElement(node);
         }
-        this.variableList.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(final MouseEvent evt) {
+        variableList.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent evt) {
                 if (evt.getButton() == MouseEvent.BUTTON1 && evt.getClickCount() % 2 == 0) {
-                    final int index = CalculatorEditor.this.variableList.locationToIndex(evt.getPoint());
+                    int index = variableList.locationToIndex(evt.getPoint());
                     if (0 <= index) {
-                        final ListModel model = CalculatorEditor.this.variableList.getModel();
-                        final Node node = (Node) model.getElementAt(index);
+                        ListModel model = variableList.getModel();
+                        Node node = (Node) model.getElementAt(index);
                         if (node != null) {
-                            insertSymbol(node.getName());
+                            CalculatorEditor.this.insertSymbol(node.getName());
                         }
                     }
                 }
             }
         });
-        final JScrollPane pane = new JScrollPane(this.variableList);
+        JScrollPane pane = new JScrollPane(variableList);
         pane.setPreferredSize(new Dimension(100, 300));
 
         return pane;
@@ -510,8 +510,8 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
     /**
      * Creates a left-aligned label.
      */
-    private static Box createLabel(final String text) {
-        final Box box = Box.createHorizontalBox();
+    private static Box createLabel(String text) {
+        Box box = Box.createHorizontalBox();
         box.add(new JLabel(text));
         box.add(Box.createHorizontalGlue());
         return box;
@@ -523,7 +523,7 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
      */
     private void removeSelected() {
         boolean allSelected = true;
-        for (final ExpressionEditor e : this.editors) {
+        for (ExpressionEditor e : editors) {
             if (!e.removeSelected()) {
                 allSelected = false;
             }
@@ -531,15 +531,15 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
         if (allSelected) {
             JOptionPane.showMessageDialog(this, "Cannot delete all expression editors.");
         } else {
-            for (int i = this.editors.size() - 1; 0 <= i; i--) {
-                final ExpressionEditor e = this.editors.get(i);
+            for (int i = editors.size() - 1; 0 <= i; i--) {
+                ExpressionEditor e = editors.get(i);
                 if (e.removeSelected()) {
-                    this.editors.remove(i);
+                    editors.remove(i);
                 }
             }
-            createExpressionEditors();
-            this.expressionsPanel.revalidate();
-            this.expressionsPanel.repaint();
+            this.createExpressionEditors();
+            expressionsPanel.revalidate();
+            expressionsPanel.repaint();
         }
     }
 
@@ -548,12 +548,12 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
      * Inserts the given symbol in the last focused field in the expressions editor or
      * if there isn't such a field then the top expression field.
      */
-    private void insertSymbol(final String symbol) {
-        final ExpressionEditor editor = this.focused;
+    private void insertSymbol(String symbol) {
+        ExpressionEditor editor = focused;
         if (editor != null) {
             editor.insertLastFocused(symbol, true);
         } else {
-            this.editors.get(0).insertLastFocused(symbol, true);
+            editors.get(0).insertLastFocused(symbol, true);
         }
     }
 
@@ -561,12 +561,12 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
     /**
      * Inserts the given expression fragment in the last focused expression field.
      */
-    private void insertExpression(final ExpressionSignature sig) {
-        final ExpressionEditor editor = this.focused;
+    private void insertExpression(ExpressionSignature sig) {
+        ExpressionEditor editor = focused;
         if (editor != null) {
             editor.addExpressionSignature(sig);
         } else {
-            this.editors.get(0).addExpressionSignature(sig);
+            editors.get(0).addExpressionSignature(sig);
         }
     }
 
@@ -575,28 +575,28 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
      * Creates the calculator's "number pad".
      */
     private JComponent createCalculatorNumberPad() {
-        final JPanel panel = new JPanel();
+        JPanel panel = new JPanel();
         panel.setLayout(new GridLayout(4, 4));
 
-        panel.add(createCalculatorButton("7"));
-        panel.add(createCalculatorButton("8"));
-        panel.add(createCalculatorButton("9"));
-        panel.add(createCalculatorButton("+"));
+        panel.add(this.createCalculatorButton("7"));
+        panel.add(this.createCalculatorButton("8"));
+        panel.add(this.createCalculatorButton("9"));
+        panel.add(this.createCalculatorButton("+"));
 
-        panel.add(createCalculatorButton("4"));
-        panel.add(createCalculatorButton("5"));
-        panel.add(createCalculatorButton("6"));
-        panel.add(createCalculatorButton("-"));
+        panel.add(this.createCalculatorButton("4"));
+        panel.add(this.createCalculatorButton("5"));
+        panel.add(this.createCalculatorButton("6"));
+        panel.add(this.createCalculatorButton("-"));
 
-        panel.add(createCalculatorButton("1"));
-        panel.add(createCalculatorButton("2"));
-        panel.add(createCalculatorButton("3"));
-        panel.add(createCalculatorButton("*"));
+        panel.add(this.createCalculatorButton("1"));
+        panel.add(this.createCalculatorButton("2"));
+        panel.add(this.createCalculatorButton("3"));
+        panel.add(this.createCalculatorButton("*"));
 
-        panel.add(createCalculatorButton("0"));
-        panel.add(createCalculatorButton("."));
-        panel.add(createCalculatorButton(ConstantExpression.E.getName()));
-        panel.add(createCalculatorButton(ConstantExpression.PI.getName()));
+        panel.add(this.createCalculatorButton("0"));
+        panel.add(this.createCalculatorButton("."));
+        panel.add(this.createCalculatorButton(ConstantExpression.E.getName()));
+        panel.add(this.createCalculatorButton(ConstantExpression.PI.getName()));
 
         panel.setPreferredSize(new Dimension(150, 150));
 
@@ -607,14 +607,14 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
     /**
      * Creates a button for the given symbol.
      */
-    private JButton createCalculatorButton(final String symbol) {
-        final JButton button = new JButton(symbol);
-        final Font font = button.getFont();
+    private JButton createCalculatorButton(String symbol) {
+        JButton button = new JButton(symbol);
+        Font font = button.getFont();
         button.setFont(new Font("Dialog", font.getStyle(), font.getSize()));
         button.setMargin(new Insets(4, 4, 4, 4));
         button.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                insertSymbol(symbol);
+            public void actionPerformed(ActionEvent e) {
+                CalculatorEditor.this.insertSymbol(symbol);
             }
         });
         return button;
@@ -625,45 +625,45 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
      * Creates the list of functions.
      */
     private JComponent createFunctionList() {
-        final List<ExpressionDescriptor> des = ExpressionManager.getInstance().getDescriptors();
-        final Object[] descriptors = des.toArray(new Object[des.size()]);
-        final JList list = new JList(descriptors);
+        List<ExpressionDescriptor> des = ExpressionManager.getInstance().getDescriptors();
+        Object[] descriptors = des.toArray(new Object[des.size()]);
+        JList list = new JList(descriptors);
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.setCellRenderer(new Renderer());
         list.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(final MouseEvent evt) {
+            public void mouseClicked(MouseEvent evt) {
                 if (evt.getButton() == MouseEvent.BUTTON1 && evt.getClickCount() % 2 == 0) {
-                    final int index = list.locationToIndex(evt.getPoint());
+                    int index = list.locationToIndex(evt.getPoint());
                     if (0 <= index) {
-                        final ListModel model = list.getModel();
-                        final ExpressionDescriptor des = (ExpressionDescriptor) model.getElementAt(index);
-                        insertExpression(des.getSignature());
+                        ListModel model = list.getModel();
+                        ExpressionDescriptor des = (ExpressionDescriptor) model.getElementAt(index);
+                        CalculatorEditor.this.insertExpression(des.getSignature());
                     }
                 }
             }
         });
 
-        final JScrollPane pane = new JScrollPane(list);
+        JScrollPane pane = new JScrollPane(list);
         LayoutUtils.setAllSizes(pane, new Dimension(150, 130));
         pane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
 
-        final JButton select = new JButton("Select");
+        JButton select = new JButton("Select");
         select.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final ExpressionDescriptor des = (ExpressionDescriptor) list.getSelectedValue();
+            public void actionPerformed(ActionEvent e) {
+                ExpressionDescriptor des = (ExpressionDescriptor) list.getSelectedValue();
                 if (des != null) {
-                    insertExpression(des.getSignature());
+                    CalculatorEditor.this.insertExpression(des.getSignature());
                 }
             }
         });
-        final Box selectBox = Box.createHorizontalBox();
+        Box selectBox = Box.createHorizontalBox();
         selectBox.add(Box.createHorizontalGlue());
         selectBox.add(select);
         selectBox.add(Box.createHorizontalGlue());
 
 
-        final JPanel panel = new JPanel(new BorderLayout());
+        JPanel panel = new JPanel(new BorderLayout());
         panel.add(new JLabel("Functions:"), BorderLayout.NORTH);
         panel.add(pane, BorderLayout.CENTER);
         panel.add(selectBox, BorderLayout.SOUTH);
@@ -680,18 +680,18 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
     private static class Renderer extends DefaultListCellRenderer {
 
         public Component getListCellRendererComponent(
-                final JList list,
-                final Object value,
-                final int index,
-                final boolean isSelected,
-                final boolean cellHasFocus) {
+                JList list,
+                Object value,
+                int index,
+                boolean isSelected,
+                boolean cellHasFocus) {
             super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 
             if (value == null) {
-                setText("");
+                this.setText("");
             } else {
-                final ExpressionDescriptor des = (ExpressionDescriptor) value;
-                setText(des.getToken());
+                ExpressionDescriptor des = (ExpressionDescriptor) value;
+                this.setText(des.getToken());
             }
 
             return this;

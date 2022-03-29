@@ -42,32 +42,32 @@ final class MeanInterpolatorAction extends AbstractAction {
     /**
      * Creates a new action to split by collinear columns.
      */
-    public MeanInterpolatorAction(final DataEditor editor) {
+    public MeanInterpolatorAction(DataEditor editor) {
         super("Replace Missing Values with Column Mean");
 
         if (editor == null) {
             throw new NullPointerException();
         }
 
-        this.dataEditor = editor;
+        dataEditor = editor;
     }
 
     /**
      * Performs the action of loading a session from a file.
      */
-    public void actionPerformed(final ActionEvent e) {
-        final DataModel dataModel = getDataEditor().getSelectedDataModel();
+    public void actionPerformed(ActionEvent e) {
+        DataModel dataModel = this.getDataEditor().getSelectedDataModel();
 
         if (dataModel instanceof DataSet) {
-            final DataSet dataSet = (DataSet) dataModel;
+            DataSet dataSet = (DataSet) dataModel;
 
-            final DataFilter interpolator = new MeanInterpolator();
-            final DataSet newDataSet = interpolator.filter(dataSet);
+            DataFilter interpolator = new MeanInterpolator();
+            DataSet newDataSet = interpolator.filter(dataSet);
 
-            final DataModelList list = new DataModelList();
+            DataModelList list = new DataModelList();
             list.add(newDataSet);
-            getDataEditor().reset(list);
-            getDataEditor().selectFirstTab();
+            this.getDataEditor().reset(list);
+            this.getDataEditor().selectFirstTab();
         } else if (dataModel instanceof ICovarianceMatrix) {
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     "Must be a tabular data set.");
@@ -75,7 +75,7 @@ final class MeanInterpolatorAction extends AbstractAction {
     }
 
     private DataEditor getDataEditor() {
-        return this.dataEditor;
+        return dataEditor;
     }
 }
 

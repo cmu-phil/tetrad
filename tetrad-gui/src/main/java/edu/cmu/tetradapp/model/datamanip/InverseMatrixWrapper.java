@@ -39,34 +39,34 @@ public class InverseMatrixWrapper extends DataWrapper {
     /**
      * Splits the given data set by collinear columns.
      */
-    public InverseMatrixWrapper(final DataWrapper wrapper, final Parameters params) {
+    public InverseMatrixWrapper(DataWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException("The given data must not be null");
         }
-        final DataModel model = wrapper.getSelectedDataModel();
+        DataModel model = wrapper.getSelectedDataModel();
         if (model instanceof DataSet) {
-            final DataSet dataSet = (DataSet) model;
+            DataSet dataSet = (DataSet) model;
             if (!(dataSet.isContinuous())) {
                 throw new IllegalArgumentException("The data must be continuous");
             }
 
-            final Matrix _data = dataSet.getDoubleData();
-            final Matrix _data2 = _data.inverse();
-            final DataSet inverse = new BoxDataSet(new DoubleDataBox(_data2.toArray()), dataSet.getVariables());
-            setDataModel(inverse);
-            setSourceGraph(wrapper.getSourceGraph());
+            Matrix _data = dataSet.getDoubleData();
+            Matrix _data2 = _data.inverse();
+            DataSet inverse = new BoxDataSet(new DoubleDataBox(_data2.toArray()), dataSet.getVariables());
+            this.setDataModel(inverse);
+            this.setSourceGraph(wrapper.getSourceGraph());
         } else if (model instanceof ICovarianceMatrix) {
-            final ICovarianceMatrix cov = (ICovarianceMatrix) model;
-            final Matrix _data = cov.getMatrix();
-            final Matrix _data2 = _data.inverse();
-            final DataSet inverse = new BoxDataSet(new DoubleDataBox(_data2.toArray()), cov.getVariables());
-            setDataModel(inverse);
-            setSourceGraph(wrapper.getSourceGraph());
+            ICovarianceMatrix cov = (ICovarianceMatrix) model;
+            Matrix _data = cov.getMatrix();
+            Matrix _data2 = _data.inverse();
+            DataSet inverse = new BoxDataSet(new DoubleDataBox(_data2.toArray()), cov.getVariables());
+            this.setDataModel(inverse);
+            this.setSourceGraph(wrapper.getSourceGraph());
         } else {
             throw new IllegalArgumentException("Must be a dataset or a covariance  matrix");
         }
 
-        LogDataUtils.logDataModelList("Conversion of data to covariance matrix form.", getDataModelList());
+        LogDataUtils.logDataModelList("Conversion of data to covariance matrix form.", this.getDataModelList());
 
     }
 

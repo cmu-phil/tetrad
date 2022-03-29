@@ -45,7 +45,7 @@ public final class Triple implements TetradSerializable {
     /**
      * Constructs a triple of nodes.
      */
-    public Triple(final Node x, final Node y, final Node z) {
+    public Triple(Node x, Node y, Node z) {
         if (x == null || y == null || z == null) {
             throw new NullPointerException();
         }
@@ -63,34 +63,34 @@ public final class Triple implements TetradSerializable {
     }
 
     public final Node getX() {
-        return this.x;
+        return x;
     }
 
     public final Node getY() {
-        return this.y;
+        return y;
     }
 
     public final Node getZ() {
-        return this.z;
+        return z;
     }
 
     public final int hashCode() {
         int hash = 17;
-        hash += 19 * this.x.hashCode() * this.z.hashCode();
-        hash += 23 * this.y.hashCode();
+        hash += 19 * x.hashCode() * z.hashCode();
+        hash += 23 * y.hashCode();
         return hash;
     }
 
-    public final boolean equals(final Object obj) {
+    public final boolean equals(Object obj) {
         if (!(obj instanceof Triple)) {
             return false;
         }
 
-        final Triple triple = (Triple) obj;
-        return (this.x == triple.x && this.y == triple.y &&
-                this.z == triple.z)
-                || (this.x == triple.z && this.y == triple.y &&
-                this.z == triple.x);
+        Triple triple = (Triple) obj;
+        return (x == triple.x && y == triple.y &&
+                z == triple.z)
+                || (x == triple.z && y == triple.y &&
+                z == triple.x);
 //        return (x.equals(triple.x) && y.equals(triple.y) &&
 //                z.equals(triple.z))
 //                || (x.equals(triple.z) && y.equals(triple.y) &&
@@ -98,15 +98,15 @@ public final class Triple implements TetradSerializable {
     }
 
     public String toString() {
-        return "<" + this.x + ", " + this.y + ", " + this.z + ">";
+        return "<" + x + ", " + y + ", " + z + ">";
     }
 
-    public boolean alongPathIn(final Graph graph) {
-        return graph.isAdjacentTo(this.x, this.y) && graph.isAdjacentTo(this.y, this.z) && this.x != this.z;
+    public boolean alongPathIn(Graph graph) {
+        return graph.isAdjacentTo(x, y) && graph.isAdjacentTo(y, z) && x != z;
     }
 
-    public static String pathString(final Graph graph, final Node x, final Node y, final Node z) {
-        final List<Node> path = new ArrayList<>();
+    public static String pathString(Graph graph, Node x, Node y, Node z) {
+        List<Node> path = new ArrayList<>();
         path.add(x);
         path.add(y);
         path.add(z);

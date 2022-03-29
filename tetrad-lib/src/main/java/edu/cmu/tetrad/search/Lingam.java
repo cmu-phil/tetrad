@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.FastIca.IcaResult;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.PermutationGenerator;
 
@@ -55,7 +56,7 @@ public class Lingam {
     public Lingam() {
     }
 
-    public Graph search(final DataSet data) {
+    public Graph search(DataSet data) {
         for (int j = 0; j < data.getNumColumns(); j++) {
             for (int i = 0; i < data.getNumRows(); i++) {
                 if (Double.isNaN(data.getDouble(i, j))) {
@@ -67,18 +68,18 @@ public class Lingam {
 
         Matrix X = data.getDoubleData();
         X = DataUtils.centerData(X).transpose();
-        final FastIca fastIca = new FastIca(X, X.rows());
+        FastIca fastIca = new FastIca(X, X.rows());
         fastIca.setVerbose(false);
-        fastIca.setMaxIterations(this.fastIcaMaxIter);
+        fastIca.setMaxIterations(fastIcaMaxIter);
         fastIca.setAlgorithmType(FastIca.PARALLEL);
-        fastIca.setTolerance(this.fastIcaTolerance);
+        fastIca.setTolerance(fastIcaTolerance);
         fastIca.setFunction(FastIca.EXP);
         fastIca.setRowNorm(false);
-        fastIca.setAlpha(this.fastIcaA);
-        final FastIca.IcaResult result11 = fastIca.findComponents();
-        final Matrix W = result11.getW();
+        fastIca.setAlpha(fastIcaA);
+        IcaResult result11 = fastIca.findComponents();
+        Matrix W = result11.getW();
 
-        final PermutationGenerator gen1 = new PermutationGenerator(W.columns());
+        PermutationGenerator gen1 = new PermutationGenerator(W.columns());
         int[] perm1 = new int[0];
         double sum1 = Double.NEGATIVE_INFINITY;
         int[] choice1;
@@ -87,7 +88,7 @@ public class Lingam {
             double sum = 0.0;
 
             for (int i = 0; i < W.columns(); i++) {
-                final double wii = W.get(choice1[i], i);
+                double wii = W.get(choice1[i], i);
                 sum += abs(wii);
             }
 
@@ -97,12 +98,12 @@ public class Lingam {
             }
         }
 
-        final int[] cols = new int[W.columns()];
+        int[] cols = new int[W.columns()];
         for (int i = 0; i < cols.length; i++) cols[i] = i;
 
-        final Matrix WTilde = W.getSelection(perm1, cols);
+        Matrix WTilde = W.getSelection(perm1, cols);
 
-        final Matrix WPrime = WTilde.copy();
+        Matrix WPrime = WTilde.copy();
 
         for (int i = 0; i < WPrime.rows(); i++) {
             for (int j = 0; j < WPrime.columns(); j++) {
@@ -112,10 +113,10 @@ public class Lingam {
 
 //        System.out.println("WPrime = " + WPrime);
 
-        final int m = data.getNumColumns();
-        final Matrix BHat = Matrix.identity(m).minus(WPrime);
+        int m = data.getNumColumns();
+        Matrix BHat = Matrix.identity(m).minus(WPrime);
 
-        final PermutationGenerator gen2 = new PermutationGenerator(BHat.rows());
+        PermutationGenerator gen2 = new PermutationGenerator(BHat.rows());
         int[] perm2 = new int[0];
         double sum2 = Double.NEGATIVE_INFINITY;
         int[] choice2;
@@ -125,7 +126,7 @@ public class Lingam {
 
             for (int i = 0; i < W.rows(); i++) {
                 for (int j = 0; j < i; j++) {
-                    final double c = BHat.get(choice2[i], choice2[j]);
+                    double c = BHat.get(choice2[i], choice2[j]);
                     sum += abs(c);
                 }
             }
@@ -140,12 +141,12 @@ public class Lingam {
 //
 //        System.out.println("BTilde = " + BTilde);
 
-        final SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
-        score.setPenaltyDiscount(this.penaltyDiscount);
-        final Fges fges = new Fges(score);
+        SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
+        score.setPenaltyDiscount(penaltyDiscount);
+        Fges fges = new Fges(score);
 
-        final IKnowledge knowledge = new Knowledge2();
-        final List<Node> variables = data.getVariables();
+        IKnowledge knowledge = new Knowledge2();
+        List<Node> variables = data.getVariables();
 
         for (int i = 0; i < variables.size(); i++) {
             knowledge.addToTier(i, variables.get(perm2[i]).getName());
@@ -153,7 +154,7 @@ public class Lingam {
 
         fges.setKnowledge(knowledge);
 
-        final Graph graph = fges.search();
+        Graph graph = fges.search();
         System.out.println("graph Returning this graph: " + graph);
 
 //        Graph graph2 = new EdgeListGraph(variables);
@@ -191,20 +192,20 @@ public class Lingam {
 
     //================================PUBLIC METHODS========================//
 
-    public void setPenaltyDiscount(final double penaltyDiscount) {
+    public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
     }
 
-    public void setFastIcaA(final double fastIcaA) {
+    public void setFastIcaA(double fastIcaA) {
         this.fastIcaA = fastIcaA;
     }
 
-    public void setFastMaxIter(final int maxIter) {
-        this.fastIcaMaxIter = maxIter;
+    public void setFastMaxIter(int maxIter) {
+        fastIcaMaxIter = maxIter;
     }
 
-    public void setFastIcaTolerance(final double tolerance) {
-        this.fastIcaTolerance = tolerance;
+    public void setFastIcaTolerance(double tolerance) {
+        fastIcaTolerance = tolerance;
     }
 
 //    /**

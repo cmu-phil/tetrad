@@ -65,14 +65,14 @@ public class GeneralizedSemPmWrapper implements SessionModel, KnowledgeBoxInput 
     private boolean showErrors;
 
     //==============================CONSTRUCTORS==========================//
-    public GeneralizedSemPmWrapper(final Simulation simulation) {
+    public GeneralizedSemPmWrapper(Simulation simulation) {
         GeneralizedSemPm semPm = null;
 
         if (simulation == null) {
             throw new NullPointerException("The Simulation box does not contain a simulation.");
         }
 
-        final edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation = simulation.getSimulation();
+        edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation = simulation.getSimulation();
 
         if (_simulation == null) {
             throw new NullPointerException("No data sets have been simulated.");
@@ -82,7 +82,7 @@ public class GeneralizedSemPmWrapper implements SessionModel, KnowledgeBoxInput 
             throw new IllegalArgumentException("That was not a Generalized SEM simulation.");
         }
 
-        final List<GeneralizedSemIm> ims = ((GeneralSemSimulation) _simulation).getIms();
+        List<GeneralizedSemIm> ims = ((GeneralSemSimulation) _simulation).getIms();
 
         if (ims == null || ims.size() == 0) {
             throw new NullPointerException("It looks like you have not done a simulation.");
@@ -93,139 +93,139 @@ public class GeneralizedSemPmWrapper implements SessionModel, KnowledgeBoxInput 
         this.semPm = semPm;
     }
 
-    public GeneralizedSemPmWrapper(final Graph graph) {
+    public GeneralizedSemPmWrapper(Graph graph) {
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");
         }
 
         if (graph instanceof SemGraph) {
-            this.semPm = new GeneralizedSemPm(graph);
+            semPm = new GeneralizedSemPm(graph);
         } else {
             try {
-                this.semPm = new GeneralizedSemPm(new SemGraph(graph));
-            } catch (final Exception e) {
+                semPm = new GeneralizedSemPm(new SemGraph(graph));
+            } catch (Exception e) {
                 e.printStackTrace();
                 throw new RuntimeException(e);
             }
         }
-        log(this.semPm);
+        this.log(semPm);
     }
 
-    public GeneralizedSemPmWrapper(final Graph graph, final GeneralizedSemPm oldPm) {
+    public GeneralizedSemPmWrapper(Graph graph, GeneralizedSemPm oldPm) {
         this(graph);
 
         // We can keep the old expression if the node exists in the old pm and all of the node expressions
         // in the old expression are parents of the node in the new pm.
         try {
-            this.semPm.setVariablesTemplate(oldPm.getVariablesTemplate());
-            this.semPm.setParametersTemplate(oldPm.getParametersTemplate());
-            this.semPm.setErrorsTemplate(oldPm.getErrorsTemplate());
+            semPm.setVariablesTemplate(oldPm.getVariablesTemplate());
+            semPm.setParametersTemplate(oldPm.getParametersTemplate());
+            semPm.setErrorsTemplate(oldPm.getErrorsTemplate());
 
-            for (final Node node : this.semPm.getNodes()) {
-                final Set<String> parents = new HashSet<>();
+            for (Node node : semPm.getNodes()) {
+                Set<String> parents = new HashSet<>();
 
-                for (final Node parent : this.semPm.getParents(node)) {
+                for (Node parent : semPm.getParents(node)) {
                     parents.add(parent.getName());
                 }
 
-                final Node _node = oldPm.getNode(node.getName());
+                Node _node = oldPm.getNode(node.getName());
 
-                final Set<Node> oldReferencedNodes = oldPm.getReferencedNodes(_node);
-                final Set<String> oldReferencedNames = new HashSet<>();
+                Set<Node> oldReferencedNodes = oldPm.getReferencedNodes(_node);
+                Set<String> oldReferencedNames = new HashSet<>();
 
-                for (final Node node2 : oldReferencedNodes) {
+                for (Node node2 : oldReferencedNodes) {
                     oldReferencedNames.add(node2.getName());
                 }
 
 //                System.out.println("\nnode = " + node);
 //                System.out.println("Parents = " + parents);
 //                System.out.println("Old referenced names = " + oldReferencedNames);
-                final String template;
+                String template;
 
-                if (this.semPm.getVariableNodes().contains(node)) {
-                    template = this.semPm.getVariablesTemplate();
+                if (semPm.getVariableNodes().contains(node)) {
+                    template = semPm.getVariablesTemplate();
                 } else {
-                    template = this.semPm.getErrorsTemplate();
+                    template = semPm.getErrorsTemplate();
                 }
 
                 String newExpression = "";
 
                 try {
-                    newExpression = TemplateExpander.getInstance().expandTemplate(template, this.semPm, node);
-                } catch (final ParseException e) {
+                    newExpression = TemplateExpander.getInstance().expandTemplate(template, semPm, node);
+                } catch (ParseException e) {
                     //
                 }
 
-                this.semPm.setNodeExpression(node, newExpression);
+                semPm.setNodeExpression(node, newExpression);
 
                 if (_node == null || !parents.equals(oldReferencedNames)) {
-                    this.semPm.setNodeExpression(node, newExpression);
-                    setReferencedParameters(node, this.semPm, oldPm);
+                    semPm.setNodeExpression(node, newExpression);
+                    this.setReferencedParameters(node, semPm, oldPm);
                 } else {
                     try {
-                        this.semPm.setNodeExpression(node, oldPm.getNodeExpressionString(node));
-                    } catch (final Exception e) {
-                        this.semPm.setNodeExpression(node, newExpression);
+                        semPm.setNodeExpression(node, oldPm.getNodeExpressionString(node));
+                    } catch (Exception e) {
+                        semPm.setNodeExpression(node, newExpression);
                     }
                 }
             }
 
-            for (final String startsWith : oldPm.startsWithPrefixes()) {
+            for (String startsWith : oldPm.startsWithPrefixes()) {
                 try {
-                    this.semPm.setStartsWithParametersTemplate(startsWith, oldPm.getStartsWithParameterTemplate(startsWith));
-                } catch (final ParseException e) {
+                    semPm.setStartsWithParametersTemplate(startsWith, oldPm.getStartsWithParameterTemplate(startsWith));
+                } catch (ParseException e) {
                     throw new RuntimeException(e);
                 }
             }
 
-            for (final String parameter : this.semPm.getParameters()) {
+            for (String parameter : semPm.getParameters()) {
                 boolean found = false;
 
-                final Set<String> prefixes = oldPm.startsWithPrefixes();
+                Set<String> prefixes = oldPm.startsWithPrefixes();
 
-                for (final String startsWith : prefixes) {
+                for (String startsWith : prefixes) {
                     if (parameter.startsWith(startsWith)) {
-                        this.semPm.setParameterExpression(parameter, oldPm.getStartsWithParameterTemplate(startsWith));
+                        semPm.setParameterExpression(parameter, oldPm.getStartsWithParameterTemplate(startsWith));
                         found = true;
                         break;
                     }
                 }
 
                 if (!found) {
-                    this.semPm.setParameterExpression(parameter, this.semPm.getParameterExpressionString(parameter));
+                    semPm.setParameterExpression(parameter, semPm.getParameterExpressionString(parameter));
                 }
             }
 
-        } catch (final ParseException e) {
+        } catch (ParseException e) {
             throw new RuntimeException("Couldn't parse expression.", e);
         }
     }
 
-    public void setReferencedParameters(final Node node, final GeneralizedSemPm oldPm, final GeneralizedSemPm newPm) {
-        final Set<String> parameters = this.semPm.getReferencedParameters(node);
+    public void setReferencedParameters(Node node, GeneralizedSemPm oldPm, GeneralizedSemPm newPm) {
+        Set<String> parameters = semPm.getReferencedParameters(node);
 
-        for (final String parameter : parameters) {
+        for (String parameter : parameters) {
 
         }
     }
 
-    public GeneralizedSemPmWrapper(final SemPmWrapper pmWrapper) {
+    public GeneralizedSemPmWrapper(SemPmWrapper pmWrapper) {
         if (pmWrapper == null) {
             throw new NullPointerException();
         }
 
-        this.semPm = new GeneralizedSemPm(pmWrapper.getSemPm());
+        semPm = new GeneralizedSemPm(pmWrapper.getSemPm());
     }
 
     /**
      * Creates a new BayesPm from the given workbench and uses it to construct a
      * new BayesPm.
      */
-    public GeneralizedSemPmWrapper(final GraphSource graphWrapper) {
+    public GeneralizedSemPmWrapper(GraphSource graphWrapper) {
         this(new EdgeListGraph(graphWrapper.getGraph()));
     }
 
-    public GeneralizedSemPmWrapper(final GraphSource graphWrapper, final DataWrapper dataWrapper) {
+    public GeneralizedSemPmWrapper(GraphSource graphWrapper, DataWrapper dataWrapper) {
         this(new EdgeListGraph(graphWrapper.getGraph()));
     }
 
@@ -233,7 +233,7 @@ public class GeneralizedSemPmWrapper implements SessionModel, KnowledgeBoxInput 
      * Creates a new BayesPm from the given workbench and uses it to construct a
      * new BayesPm.
      */
-    public GeneralizedSemPmWrapper(final GraphSource graphWrapper, final GeneralizedSemPmWrapper wrapper) {
+    public GeneralizedSemPmWrapper(GraphSource graphWrapper, GeneralizedSemPmWrapper wrapper) {
         this(new EdgeListGraph(graphWrapper.getGraph()), wrapper.getSemPm());
     }
 
@@ -241,7 +241,7 @@ public class GeneralizedSemPmWrapper implements SessionModel, KnowledgeBoxInput 
      * Creates a new BayesPm from the given workbench and uses it to construct a
      * new BayesPm.
      */
-    public GeneralizedSemPmWrapper(final DagWrapper dagWrapper, final GeneralizedSemPmWrapper wrapper) {
+    public GeneralizedSemPmWrapper(DagWrapper dagWrapper, GeneralizedSemPmWrapper wrapper) {
         this(new EdgeListGraph(dagWrapper.getDag()), wrapper.getSemPm());
     }
 
@@ -249,56 +249,56 @@ public class GeneralizedSemPmWrapper implements SessionModel, KnowledgeBoxInput 
      * Creates a new BayesPm from the given workbench and uses it to construct a
      * new BayesPm.
      */
-    public GeneralizedSemPmWrapper(final SemGraphWrapper semGraphWrapper, final GeneralizedSemPmWrapper wrapper) {
+    public GeneralizedSemPmWrapper(SemGraphWrapper semGraphWrapper, GeneralizedSemPmWrapper wrapper) {
         this(semGraphWrapper.getSemGraph(), wrapper.getSemPm());
     }
 
-    public GeneralizedSemPmWrapper(final GeneralizedSemPmWrapper pmWrapper) {
-        this.semPm = new GeneralizedSemPm(pmWrapper.getSemPm());
+    public GeneralizedSemPmWrapper(GeneralizedSemPmWrapper pmWrapper) {
+        semPm = new GeneralizedSemPm(pmWrapper.getSemPm());
     }
 
     /**
      * Creates a new SemPm from the given workbench and uses it to construct a
      * new BayesPm.
      */
-    public GeneralizedSemPmWrapper(final TimeLagGraphWrapper wrapper) {
+    public GeneralizedSemPmWrapper(TimeLagGraphWrapper wrapper) {
         this(wrapper.getGraph());
     }
 
-    public GeneralizedSemPmWrapper(final SemEstimatorWrapper wrapper) {
+    public GeneralizedSemPmWrapper(SemEstimatorWrapper wrapper) {
         try {
-            final SemPm oldSemPm = wrapper.getSemEstimator().getEstimatedSem()
+            SemPm oldSemPm = wrapper.getSemEstimator().getEstimatedSem()
                     .getSemPm();
-            this.semPm = new GeneralizedSemPm(oldSemPm);
-        } catch (final Exception e) {
+            semPm = new GeneralizedSemPm(oldSemPm);
+        } catch (Exception e) {
             throw new RuntimeException("SemPm could not be deep cloned.", e);
         }
-        log(this.semPm);
+        this.log(semPm);
     }
 
-    public GeneralizedSemPmWrapper(final SemImWrapper wrapper) {
-        final SemPm oldSemPm = wrapper.getSemIm().getSemPm();
-        this.semPm = new GeneralizedSemPm(oldSemPm);
-        log(this.semPm);
+    public GeneralizedSemPmWrapper(SemImWrapper wrapper) {
+        SemPm oldSemPm = wrapper.getSemIm().getSemPm();
+        semPm = new GeneralizedSemPm(oldSemPm);
+        this.log(semPm);
     }
 
-    public GeneralizedSemPmWrapper(final MimBuildRunner wrapper) {
-        final SemPm oldSemPm = wrapper.getSemPm();
-        this.semPm = new GeneralizedSemPm(oldSemPm);
-        log(this.semPm);
+    public GeneralizedSemPmWrapper(MimBuildRunner wrapper) {
+        SemPm oldSemPm = wrapper.getSemPm();
+        semPm = new GeneralizedSemPm(oldSemPm);
+        this.log(semPm);
     }
 
-    public GeneralizedSemPmWrapper(final BuildPureClustersRunner wrapper) {
-        final Graph graph = wrapper.getResultGraph();
+    public GeneralizedSemPmWrapper(BuildPureClustersRunner wrapper) {
+        Graph graph = wrapper.getResultGraph();
         if (graph == null) {
             throw new IllegalArgumentException("No graph to display.");
         }
-        final SemPm oldSemPm = new SemPm(graph);
-        this.semPm = new GeneralizedSemPm(oldSemPm);
-        log(this.semPm);
+        SemPm oldSemPm = new SemPm(graph);
+        semPm = new GeneralizedSemPm(oldSemPm);
+        this.log(semPm);
     }
 
-    public GeneralizedSemPmWrapper(final AlgorithmRunner wrapper) {
+    public GeneralizedSemPmWrapper(AlgorithmRunner wrapper) {
         this(new EdgeListGraph(wrapper.getGraph()));
     }
 
@@ -313,7 +313,7 @@ public class GeneralizedSemPmWrapper implements SessionModel, KnowledgeBoxInput 
 
     //============================PUBLIC METHODS=========================//
     public GeneralizedSemPm getSemPm() {
-        return this.semPm;
+        return semPm;
     }
 
     /**
@@ -329,55 +329,55 @@ public class GeneralizedSemPmWrapper implements SessionModel, KnowledgeBoxInput 
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (this.semPm == null) {
+        if (semPm == null) {
             throw new NullPointerException();
         }
     }
 
     public Graph getGraph() {
-        return this.semPm.getGraph();
+        return semPm.getGraph();
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
     public boolean isShowErrors() {
-        return this.showErrors;
+        return showErrors;
     }
 
-    public void setShowErrors(final boolean showErrors) {
+    public void setShowErrors(boolean showErrors) {
         this.showErrors = showErrors;
     }
 
     //======================= Private methods ====================//
-    private void log(final GeneralizedSemPm pm) {
+    private void log(GeneralizedSemPm pm) {
         TetradLogger.getInstance().log("info", "Generalized Structural Equation Parameter Model (Generalized SEM PM)");
         TetradLogger.getInstance().log("pm", pm.toString());
     }
 
     public Graph getSourceGraph() {
-        return getGraph();
+        return this.getGraph();
     }
 
     public Graph getResultGraph() {
-        return getGraph();
+        return this.getGraph();
     }
 
     public List<String> getVariableNames() {
-        return getGraph().getNodeNames();
+        return this.getGraph().getNodeNames();
     }
 
     public List<Node> getVariables() {
-        return getGraph().getNodes();
+        return this.getGraph().getNodes();
     }
 
 }

@@ -41,44 +41,44 @@ class LoadBayesImXsdlXmlAction extends AbstractAction {
     private final BayesImWrapper bayesImWrapper;
     private final BayesImEditor bayesImEditor;
 
-    public LoadBayesImXsdlXmlAction(final BayesImWrapper wrapper, final BayesImEditor bayesImEditor) {
+    public LoadBayesImXsdlXmlAction(BayesImWrapper wrapper, BayesImEditor bayesImEditor) {
         super("Load Bayes IM (XDSL format) as XML");
         if (bayesImEditor == null) {
             throw new NullPointerException(
                     "BayesImEditorWizard must not be null.");
         }
-        this.bayesImWrapper = wrapper;
+        bayesImWrapper = wrapper;
         this.bayesImEditor = bayesImEditor;
     }
 
-    public void actionPerformed(final ActionEvent e) {
-        if (this.bayesImWrapper == null) {
+    public void actionPerformed(ActionEvent e) {
+        if (bayesImWrapper == null) {
             throw new RuntimeException("Not a Bayes IM.");
         }
 
-        final JFileChooser chooser = LoadBayesImXsdlXmlAction.getJFileChooser();
+        JFileChooser chooser = getJFileChooser();
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
         chooser.showOpenDialog(null);
 
-        final File file = chooser.getSelectedFile();
+        File file = chooser.getSelectedFile();
 
         if (file != null) {
             Preferences.userRoot().put("fileSaveLocation", file.getParent());
         }
 
         try {
-            final Builder builder = new Builder();
-            final Document document = builder.build(file);
-            LoadBayesImXsdlXmlAction.printDocument(document);
+            Builder builder = new Builder();
+            Document document = builder.build(file);
+            printDocument(document);
 
-            final XdslXmlParser parser = new XdslXmlParser();
-            final BayesIm bayesIm = parser.getBayesIm(document.getRootElement());
+            XdslXmlParser parser = new XdslXmlParser();
+            BayesIm bayesIm = parser.getBayesIm(document.getRootElement());
             System.out.println(bayesIm);
 
             boolean allSpecified = true;
 
-            for (final edu.cmu.tetrad.graph.Node node : bayesIm.getBayesPm().getDag().getNodes()) {
+            for (edu.cmu.tetrad.graph.Node node : bayesIm.getBayesPm().getDag().getNodes()) {
                 if (node.getCenterX() == -1 || node.getCenterY() == -1) {
                     allSpecified = false;
                 }
@@ -88,20 +88,20 @@ class LoadBayesImXsdlXmlAction extends AbstractAction {
                 GraphUtils.circleLayout(bayesIm.getBayesPm().getDag(), 200, 200, 150);
             }
 
-            this.bayesImWrapper.setBayesIm(bayesIm);
-            this.bayesImEditor.getBayesIm(bayesIm);
-        } catch (final ParsingException e2) {
+            bayesImWrapper.setBayesIm(bayesIm);
+            bayesImEditor.getBayesIm(bayesIm);
+        } catch (ParsingException e2) {
             e2.printStackTrace();
             throw new RuntimeException("Had trouble parsing that...");
-        } catch (final IOException e2) {
+        } catch (IOException e2) {
             e2.printStackTrace();
             throw new RuntimeException("Had trouble reading the file...");
         }
     }
 
     private static JFileChooser getJFileChooser() {
-        final JFileChooser chooser = new JFileChooser();
-        final String sessionSaveLocation = Preferences.userRoot().get(
+        JFileChooser chooser = new JFileChooser();
+        String sessionSaveLocation = Preferences.userRoot().get(
                 "fileSaveLocation", Preferences.userRoot().absolutePath());
         chooser.setCurrentDirectory(new File(sessionSaveLocation));
         chooser.resetChoosableFileFilters();
@@ -109,15 +109,15 @@ class LoadBayesImXsdlXmlAction extends AbstractAction {
         return chooser;
     }
 
-    private static void printDocument(final Document document) {
-        final Serializer serializer = new Serializer(System.out);
+    private static void printDocument(Document document) {
+        Serializer serializer = new Serializer(System.out);
 
         serializer.setLineSeparator("\n");
         serializer.setIndent(2);
 
         try {
             serializer.write(document);
-        } catch (final IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

@@ -53,39 +53,39 @@ public class TestDeltaTetradTest {
 
         final int numTrials = 10;
         final double alpha = 0.2;
-        final SemIm sem = getFigure4aSem();
+        SemIm sem = this.getFigure4aSem();
 
-        final int[] sampleSizes = new int[]{100, 500, 1000, 5000};
+        int[] sampleSizes = {100, 500, 1000, 5000};
 
-        final double[][] answers = {{.1, .5, .2, .1, .1, .1},
+        double[][] answers = {{.1, .5, .2, .1, .1, .1},
                 {0.1, 0.6, 0.0, 0.0, 0.0, 0.0},
                 {0.1, 0.7, 0.2, 0.2, 0.2, 0.2},
                 {0.3, 0.7, 0.2, 0.1, 0.1, 0.1}};
 
         for (int i = 0; i < 4; i++) {
             System.out.println("i = " + i);
-            final int sampleSize = sampleSizes[i];
-            final int[] count = new int[6];
+            int sampleSize = sampleSizes[i];
+            int[] count = new int[6];
 
             for (int k = 0; k < numTrials; k++) {
-                final DataSet data = sem.simulateData(sampleSize, false);
-                final Node x1 = data.getVariable("x1");
-                final Node x2 = data.getVariable("x2");
-                final Node x3 = data.getVariable("x3");
-                final Node x4 = data.getVariable("x4");
+                DataSet data = sem.simulateData(sampleSize, false);
+                Node x1 = data.getVariable("x1");
+                Node x2 = data.getVariable("x2");
+                Node x3 = data.getVariable("x3");
+                Node x4 = data.getVariable("x4");
 
-                final Tetrad t1234 = new Tetrad(x1, x2, x3, x4);
-                final Tetrad t1342 = new Tetrad(x1, x3, x4, x2);
-                final Tetrad t1423 = new Tetrad(x1, x4, x2, x3);
+                Tetrad t1234 = new Tetrad(x1, x2, x3, x4);
+                Tetrad t1342 = new Tetrad(x1, x3, x4, x2);
+                Tetrad t1423 = new Tetrad(x1, x4, x2, x3);
 
-                final DeltaTetradTest test = new DeltaTetradTest(new CorrelationMatrix(data));
+                DeltaTetradTest test = new DeltaTetradTest(new CorrelationMatrix(data));
 
-                final double p1 = test.getPValue(t1234);
-                final double p2 = test.getPValue(t1342);
-                final double p3 = test.getPValue(t1423);
-                final double p4 = test.getPValue(t1234, t1342);
-                final double p5 = test.getPValue(t1234, t1423);
-                final double p6 = test.getPValue(t1342, t1423);
+                double p1 = test.getPValue(t1234);
+                double p2 = test.getPValue(t1342);
+                double p3 = test.getPValue(t1423);
+                double p4 = test.getPValue(t1234, t1342);
+                double p5 = test.getPValue(t1234, t1423);
+                double p6 = test.getPValue(t1342, t1423);
 
                 if (p1 < alpha) count[0]++;
                 if (p2 < alpha) count[1]++;
@@ -95,10 +95,10 @@ public class TestDeltaTetradTest {
                 if (p6 < alpha) count[5]++;
             }
 
-            final double[] _answer = new double[6];
+            double[] _answer = new double[6];
 
             for (int j = 0; j < 6; j++) {
-                final double v = count[j] / (double) numTrials;
+                double v = count[j] / (double) numTrials;
                 _answer[j] = v;
             }
 
@@ -113,30 +113,30 @@ public class TestDeltaTetradTest {
 
     @Test
     public void testBollenExample1() {
-        final CovarianceMatrix cov = getBollenExample1Data();
-        final List<Node> variables = cov.getVariables();
+        CovarianceMatrix cov = this.getBollenExample1Data();
+        List<Node> variables = cov.getVariables();
 
-        final Node v1 = variables.get(0);
-        final Node v2 = variables.get(1);
-        final Node v3 = variables.get(2);
-        final Node v4 = variables.get(3);
-        final Node v5 = variables.get(4);
-        final Node v6 = variables.get(5);
+        Node v1 = variables.get(0);
+        Node v2 = variables.get(1);
+        Node v3 = variables.get(2);
+        Node v4 = variables.get(3);
+        Node v5 = variables.get(4);
+        Node v6 = variables.get(5);
 
-        final Tetrad t1 = new Tetrad(v1, v2, v3, v4);
-        final Tetrad t2 = new Tetrad(v1, v2, v3, v5);
-        final Tetrad t3 = new Tetrad(v1, v2, v3, v6);
-        final Tetrad t4 = new Tetrad(v1, v4, v5, v6);
-        final Tetrad t5 = new Tetrad(v1, v4, v2, v3);
-        final Tetrad t6 = new Tetrad(v1, v5, v2, v3);
-        final Tetrad t7 = new Tetrad(v1, v6, v2, v3);
-        final Tetrad t8 = new Tetrad(v1, v6, v4, v5);
+        Tetrad t1 = new Tetrad(v1, v2, v3, v4);
+        Tetrad t2 = new Tetrad(v1, v2, v3, v5);
+        Tetrad t3 = new Tetrad(v1, v2, v3, v6);
+        Tetrad t4 = new Tetrad(v1, v4, v5, v6);
+        Tetrad t5 = new Tetrad(v1, v4, v2, v3);
+        Tetrad t6 = new Tetrad(v1, v5, v2, v3);
+        Tetrad t7 = new Tetrad(v1, v6, v2, v3);
+        Tetrad t8 = new Tetrad(v1, v6, v4, v5);
 
-        final DeltaTetradTest test = new DeltaTetradTest(cov);
+        DeltaTetradTest test = new DeltaTetradTest(cov);
 //        DeltaTetradTest test = new DeltaTetradTest(new CorrelationMatrix(cov));
 
-        final double chiSq = test.calcChiSquare(t1, t2, t3, t4, t5, t6, t7, t8);
-        final double pValue = test.getPValue();
+        double chiSq = test.calcChiSquare(t1, t2, t3, t4, t5, t6, t7, t8);
+        double pValue = test.getPValue();
 
         // They get chi square = 6.71 p = .57 8 df but using the raw data which they don't provide here.
         // Just using the covariance matrix provided, I get chi square = 8.46, p = 0.39, df = 8.
@@ -149,21 +149,21 @@ public class TestDeltaTetradTest {
 
     @Test
     public void testBollenExample2() {
-        final CovarianceMatrix cov = getBollenExample2Data();
-        final List<Node> variables = cov.getVariables();
+        CovarianceMatrix cov = this.getBollenExample2Data();
+        List<Node> variables = cov.getVariables();
 
-        final Node y1 = variables.get(0);
-        final Node y2 = variables.get(1);
-        final Node y3 = variables.get(2);
-        final Node x1 = variables.get(3);
-        final Node x2 = variables.get(4);
+        Node y1 = variables.get(0);
+        Node y2 = variables.get(1);
+        Node y3 = variables.get(2);
+        Node x1 = variables.get(3);
+        Node x2 = variables.get(4);
 
-        final Tetrad t1 = new Tetrad(y1, x1, x2, y2);
+        Tetrad t1 = new Tetrad(y1, x1, x2, y2);
 
-        final DeltaTetradTest test = new DeltaTetradTest(cov);
+        DeltaTetradTest test = new DeltaTetradTest(cov);
 
-        final double chiSq = test.calcChiSquare(t1);
-        final double pValue = test.getPValue();
+        double chiSq = test.calcChiSquare(t1);
+        double pValue = test.getPValue();
 
         assertEquals(.68, chiSq, 0.01);
         assertEquals(0.40, pValue, 0.01);
@@ -175,35 +175,35 @@ public class TestDeltaTetradTest {
 
     @Test
     public void testBollenSimulationExample() {
-        final CovarianceMatrix cov = getBollenSimulationExampleData();
+        CovarianceMatrix cov = this.getBollenSimulationExampleData();
 
-        final List<Node> variables = cov.getVariables();
+        List<Node> variables = cov.getVariables();
 
-        final Node y1 = variables.get(0);
-        final Node y2 = variables.get(1);
-        final Node y3 = variables.get(2);
-        final Node y4 = variables.get(3);
-        final Node y5 = variables.get(4);
+        Node y1 = variables.get(0);
+        Node y2 = variables.get(1);
+        Node y3 = variables.get(2);
+        Node y4 = variables.get(3);
+        Node y5 = variables.get(4);
 
-        final Tetrad t1 = new Tetrad(y1, y2, y3, y4);
-        final Tetrad t2 = new Tetrad(y1, y2, y4, y3);
-        final Tetrad t3 = new Tetrad(y1, y3, y4, y2);
-        final Tetrad t4 = new Tetrad(y1, y2, y3, y5);
-        final Tetrad t5 = new Tetrad(y1, y2, y5, y3);
-        final Tetrad t6 = new Tetrad(y1, y3, y5, y2);
-        final Tetrad t7 = new Tetrad(y1, y2, y4, y5);
-        final Tetrad t8 = new Tetrad(y1, y2, y5, y4);
-        final Tetrad t9 = new Tetrad(y1, y4, y5, y2);
-        final Tetrad t10 = new Tetrad(y1, y3, y4, y5);
-        final Tetrad t11 = new Tetrad(y1, y3, y5, y4);
-        final Tetrad t12 = new Tetrad(y1, y4, y5, y3);
-        final Tetrad t13 = new Tetrad(y2, y3, y4, y5);
-        final Tetrad t14 = new Tetrad(y2, y3, y5, y4);
-        final Tetrad t15 = new Tetrad(y2, y4, y5, y3);
+        Tetrad t1 = new Tetrad(y1, y2, y3, y4);
+        Tetrad t2 = new Tetrad(y1, y2, y4, y3);
+        Tetrad t3 = new Tetrad(y1, y3, y4, y2);
+        Tetrad t4 = new Tetrad(y1, y2, y3, y5);
+        Tetrad t5 = new Tetrad(y1, y2, y5, y3);
+        Tetrad t6 = new Tetrad(y1, y3, y5, y2);
+        Tetrad t7 = new Tetrad(y1, y2, y4, y5);
+        Tetrad t8 = new Tetrad(y1, y2, y5, y4);
+        Tetrad t9 = new Tetrad(y1, y4, y5, y2);
+        Tetrad t10 = new Tetrad(y1, y3, y4, y5);
+        Tetrad t11 = new Tetrad(y1, y3, y5, y4);
+        Tetrad t12 = new Tetrad(y1, y4, y5, y3);
+        Tetrad t13 = new Tetrad(y2, y3, y4, y5);
+        Tetrad t14 = new Tetrad(y2, y3, y5, y4);
+        Tetrad t15 = new Tetrad(y2, y4, y5, y3);
 
-        final Tetrad[] tetrads = new Tetrad[]{t1, t2, t3, t4};
+        Tetrad[] tetrads = {t1, t2, t3, t4};
 
-        final DeltaTetradTest test = new DeltaTetradTest(cov);
+        DeltaTetradTest test = new DeltaTetradTest(cov);
 
         double chiSq = test.calcChiSquare(tetrads[0]);
         double pValue = test.getPValue();
@@ -211,7 +211,7 @@ public class TestDeltaTetradTest {
         assertEquals(58.1, chiSq, 0.1);
         assertEquals(2.46E-14, pValue, .1E-14);
 
-        final Tetrad[] independentTetrads = new Tetrad[]{t1, t2, t4, t6, t10};
+        Tetrad[] independentTetrads = {t1, t2, t4, t6, t10};
 
         chiSq = test.calcChiSquare(independentTetrads[0]);
         pValue = test.getPValue();
@@ -232,40 +232,40 @@ public class TestDeltaTetradTest {
 
     @Test
     public void test3() {
-        final SemPm pm = makePm();
-        final DataSet data = new SemIm(pm).simulateData(1000, false);
+        SemPm pm = this.makePm();
+        DataSet data = new SemIm(pm).simulateData(1000, false);
 
-        final CovarianceMatrix cov = new CovarianceMatrix(data);
+        CovarianceMatrix cov = new CovarianceMatrix(data);
 
-        final List<Node> variables = data.getVariables();
-        final Node x1 = variables.get(0);
-        final Node x2 = variables.get(1);
-        final Node x3 = variables.get(2);
-        final Node x4 = variables.get(3);
-        final Node x5 = variables.get(4);
+        List<Node> variables = data.getVariables();
+        Node x1 = variables.get(0);
+        Node x2 = variables.get(1);
+        Node x3 = variables.get(2);
+        Node x4 = variables.get(3);
+        Node x5 = variables.get(4);
 
-        final Tetrad t1234 = new Tetrad(x1, x2, x3, x4);
-        final Tetrad t1342 = new Tetrad(x1, x3, x4, x2);
-        final Tetrad t1423 = new Tetrad(x1, x4, x2, x3);
+        Tetrad t1234 = new Tetrad(x1, x2, x3, x4);
+        Tetrad t1342 = new Tetrad(x1, x3, x4, x2);
+        Tetrad t1423 = new Tetrad(x1, x4, x2, x3);
 
-        final DeltaTetradTest test1 = new DeltaTetradTest(data);
+        DeltaTetradTest test1 = new DeltaTetradTest(data);
 //        DeltaTetradTest test = new DeltaTetradTest(new CorrelationMatrix(cov));
 
-        final double chiSq1 = test1.calcChiSquare(t1234, t1342);
+        double chiSq1 = test1.calcChiSquare(t1234, t1342);
 
-        final DeltaTetradTest test2 = new DeltaTetradTest(cov);
+        DeltaTetradTest test2 = new DeltaTetradTest(cov);
 //        DeltaTetradTest test = new DeltaTetradTest(new CorrelationMatrix(cov));
 
-        final double chiSq2 = test2.calcChiSquare(t1234, t1342);
+        double chiSq2 = test2.calcChiSquare(t1234, t1342);
     }
 
     private SemPm makePm() {
-        final List<Node> variableNodes = new ArrayList<>();
-        final ContinuousVariable x1 = new ContinuousVariable("X1");
-        final ContinuousVariable x2 = new ContinuousVariable("X2");
-        final ContinuousVariable x3 = new ContinuousVariable("X3");
-        final ContinuousVariable x4 = new ContinuousVariable("X4");
-        final ContinuousVariable x5 = new ContinuousVariable("X5");
+        List<Node> variableNodes = new ArrayList<>();
+        ContinuousVariable x1 = new ContinuousVariable("X1");
+        ContinuousVariable x2 = new ContinuousVariable("X2");
+        ContinuousVariable x3 = new ContinuousVariable("X3");
+        ContinuousVariable x4 = new ContinuousVariable("X4");
+        ContinuousVariable x5 = new ContinuousVariable("X5");
 
         variableNodes.add(x1);
         variableNodes.add(x2);
@@ -273,8 +273,8 @@ public class TestDeltaTetradTest {
         variableNodes.add(x4);
         variableNodes.add(x5);
 
-        final Graph _graph = new EdgeListGraph(variableNodes);
-        final SemGraph graph = new SemGraph(_graph);
+        Graph _graph = new EdgeListGraph(variableNodes);
+        SemGraph graph = new SemGraph(_graph);
         graph.addDirectedEdge(x5, x1);
         graph.addDirectedEdge(x5, x2);
         graph.addDirectedEdge(x5, x3);
@@ -284,13 +284,13 @@ public class TestDeltaTetradTest {
     }
 
     private SemIm getFigure4aSem() {
-        final Graph graph = new EdgeListGraph();
+        Graph graph = new EdgeListGraph();
 
-        final Node xi1 = new GraphNode("xi1");
-        final Node x1 = new GraphNode("x1");
-        final Node x2 = new GraphNode("x2");
-        final Node x3 = new GraphNode("x3");
-        final Node x4 = new GraphNode("x4");
+        Node xi1 = new GraphNode("xi1");
+        Node x1 = new GraphNode("x1");
+        Node x2 = new GraphNode("x2");
+        Node x3 = new GraphNode("x3");
+        Node x4 = new GraphNode("x4");
 
         graph.addNode(xi1);
         graph.addNode(x1);
@@ -303,23 +303,23 @@ public class TestDeltaTetradTest {
         graph.addDirectedEdge(xi1, x3);
         graph.addDirectedEdge(xi1, x4);
 
-        final SemPm pm = new SemPm(graph);
+        SemPm pm = new SemPm(graph);
 
-        final Parameters params = new Parameters();
+        Parameters params = new Parameters();
 //        params.setCoefRange(0.3, 0.8);
 
         return new SemIm(pm, params);
     }
 
     private SemIm getFigure4bSem() {
-        final Graph graph = new EdgeListGraph();
+        Graph graph = new EdgeListGraph();
 
-        final Node xi1 = new GraphNode("xi1");
-        final Node xi2 = new GraphNode("xi2");
-        final Node x1 = new GraphNode("x1");
-        final Node x2 = new GraphNode("x2");
-        final Node x3 = new GraphNode("x3");
-        final Node x4 = new GraphNode("x4");
+        Node xi1 = new GraphNode("xi1");
+        Node xi2 = new GraphNode("xi2");
+        Node x1 = new GraphNode("x1");
+        Node x2 = new GraphNode("x2");
+        Node x3 = new GraphNode("x3");
+        Node x4 = new GraphNode("x4");
 
         graph.addNode(xi1);
         graph.addNode(xi2);
@@ -334,7 +334,7 @@ public class TestDeltaTetradTest {
         graph.addDirectedEdge(xi2, x4);
         graph.addDirectedEdge(xi1, xi2);
 
-        final SemPm pm = new SemPm(graph);
+        SemPm pm = new SemPm(graph);
         return new SemIm(pm);
     }
 
@@ -342,7 +342,7 @@ public class TestDeltaTetradTest {
 
         // Sympathy and anger, p. 164.
 
-        final double[][] d = new double[][]{
+        double[][] d = {
                 {6.982},
                 {4.686, 6.047},
                 {4.335, 3.307, 5.037},
@@ -351,14 +351,14 @@ public class TestDeltaTetradTest {
                 {-1.671, -1.401, -1.564, 3.915, 3.601, 4.977}
         };
 
-        final Node v1 = new ContinuousVariable("v1");
-        final Node v2 = new ContinuousVariable("v2");
-        final Node v3 = new ContinuousVariable("v3");
-        final Node v4 = new ContinuousVariable("v4");
-        final Node v5 = new ContinuousVariable("v5");
-        final Node v6 = new ContinuousVariable("v6");
+        Node v1 = new ContinuousVariable("v1");
+        Node v2 = new ContinuousVariable("v2");
+        Node v3 = new ContinuousVariable("v3");
+        Node v4 = new ContinuousVariable("v4");
+        Node v5 = new ContinuousVariable("v5");
+        Node v6 = new ContinuousVariable("v6");
 
-        final List<Node> nodes = new ArrayList<>();
+        List<Node> nodes = new ArrayList<>();
         nodes.add(v1);
         nodes.add(v2);
         nodes.add(v3);
@@ -366,7 +366,7 @@ public class TestDeltaTetradTest {
         nodes.add(v5);
         nodes.add(v6);
 
-        final Matrix matrix = new Matrix(6, 6);
+        Matrix matrix = new Matrix(6, 6);
 
         for (int i = 0; i < 6; i++) {
             for (int j = 0; j <= i; j++) {
@@ -382,7 +382,7 @@ public class TestDeltaTetradTest {
 
         // Union sentiment.
 
-        final double[][] d = new double[][]{
+        double[][] d = {
                 {14.610},
                 {-5.250, 11.017},
                 {-8.057, 11.087, 31.971},
@@ -390,20 +390,20 @@ public class TestDeltaTetradTest {
                 {-18.857, 17.861, 28.250, 7.139, 215.662},
         };
 
-        final Node y1 = new ContinuousVariable("y1");
-        final Node y2 = new ContinuousVariable("y2");
-        final Node y3 = new ContinuousVariable("y3");
-        final Node x1 = new ContinuousVariable("x1");
-        final Node x2 = new ContinuousVariable("x2");
+        Node y1 = new ContinuousVariable("y1");
+        Node y2 = new ContinuousVariable("y2");
+        Node y3 = new ContinuousVariable("y3");
+        Node x1 = new ContinuousVariable("x1");
+        Node x2 = new ContinuousVariable("x2");
 
-        final List<Node> nodes = new ArrayList<>();
+        List<Node> nodes = new ArrayList<>();
         nodes.add(y1);
         nodes.add(y2);
         nodes.add(y3);
         nodes.add(x1);
         nodes.add(x2);
 
-        final Matrix matrix = new Matrix(5, 5);
+        Matrix matrix = new Matrix(5, 5);
 
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j <= i; j++) {
@@ -417,7 +417,7 @@ public class TestDeltaTetradTest {
 
     private CovarianceMatrix getBollenSimulationExampleData() {
 
-        final double[][] d = new double[][]{
+        double[][] d = {
                 {2.034},
                 {0.113, 1.281},
                 {0.510, 0.093, 1.572},
@@ -425,20 +425,20 @@ public class TestDeltaTetradTest {
                 {0.998, 0.228, 0.170, 0.345, 1.651},
         };
 
-        final Node y1 = new ContinuousVariable("y1");
-        final Node y2 = new ContinuousVariable("y2");
-        final Node y3 = new ContinuousVariable("y3");
-        final Node y4 = new ContinuousVariable("y4");
-        final Node y5 = new ContinuousVariable("y5");
+        Node y1 = new ContinuousVariable("y1");
+        Node y2 = new ContinuousVariable("y2");
+        Node y3 = new ContinuousVariable("y3");
+        Node y4 = new ContinuousVariable("y4");
+        Node y5 = new ContinuousVariable("y5");
 
-        final List<Node> nodes = new ArrayList<>();
+        List<Node> nodes = new ArrayList<>();
         nodes.add(y1);
         nodes.add(y2);
         nodes.add(y3);
         nodes.add(y4);
         nodes.add(y5);
 
-        final Matrix matrix = new Matrix(5, 5);
+        Matrix matrix = new Matrix(5, 5);
 
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j <= i; j++) {

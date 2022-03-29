@@ -46,21 +46,21 @@ class KnowledgeSelection implements Transferable {
     /**
      * Supported dataflavors--only one.
      */
-    private final DataFlavor[] dataFlavors = new DataFlavor[]{
+    private final DataFlavor[] dataFlavors = {
             new DataFlavor(KnowledgeSelection.class, "Knowledge")};
 
     /**
      * Constructs a new selection with the given list of session nodes.
      */
-    public KnowledgeSelection(final IKnowledge knowledge) {
+    public KnowledgeSelection(IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException("Knowledge must not be null.");
         }
 
-        final Object result;
+        Object result;
         try {
             result = new MarshalledObject(knowledge).get();
-        } catch (final Exception e1) {
+        } catch (Exception e1) {
             e1.printStackTrace();
             throw new IllegalStateException("Could not clone.");
         }
@@ -78,13 +78,13 @@ class KnowledgeSelection implements Transferable {
      *                                                          supported.
      * @see java.awt.datatransfer.DataFlavor#getRepresentationClass
      */
-    public Object getTransferData(final DataFlavor flavor)
+    public Object getTransferData(DataFlavor flavor)
             throws UnsupportedFlavorException, IOException {
-        if (!isDataFlavorSupported(flavor)) {
+        if (!this.isDataFlavorSupported(flavor)) {
             throw new UnsupportedFlavorException(flavor);
         }
 
-        return this.knowledge;
+        return knowledge;
     }
 
     /**
@@ -92,8 +92,8 @@ class KnowledgeSelection implements Transferable {
      * @return whether or not the specified data flavor is supported for this
      * object.
      */
-    public boolean isDataFlavorSupported(final DataFlavor flavor) {
-        return flavor.equals(getTransferDataFlavors()[0]);
+    public boolean isDataFlavorSupported(DataFlavor flavor) {
+        return flavor.equals(this.getTransferDataFlavors()[0]);
     }
 
     /**
@@ -103,7 +103,7 @@ class KnowledgeSelection implements Transferable {
      * descriptive).
      */
     public DataFlavor[] getTransferDataFlavors() {
-        return this.dataFlavors;
+        return dataFlavors;
     }
 }
 

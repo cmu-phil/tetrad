@@ -49,7 +49,7 @@ class TreksAction extends AbstractAction implements ClipboardOwner {
      * Creates a new copy subsession action for the given LayoutEditable and
      * clipboard.
      */
-    public TreksAction(final GraphWorkbench workbench) {
+    public TreksAction(GraphWorkbench workbench) {
         super("Treks");
         this.workbench = workbench;
     }
@@ -58,30 +58,30 @@ class TreksAction extends AbstractAction implements ClipboardOwner {
      * Copies a parentally closed selection of session nodes in the frontmost
      * session editor to the clipboard.
      */
-    public void actionPerformed(final ActionEvent e) {
-        final Box b = Box.createVerticalBox();
-        final Graph graph = this.workbench.getGraph();
+    public void actionPerformed(ActionEvent e) {
+        Box b = Box.createVerticalBox();
+        Graph graph = workbench.getGraph();
 
-        final JTextArea textArea = new JTextArea();
-        final JScrollPane scroll = new JScrollPane(textArea);
+        JTextArea textArea = new JTextArea();
+        JScrollPane scroll = new JScrollPane(textArea);
         scroll.setPreferredSize(new Dimension(600, 600));
 
         textArea.append("Treks:");
 
-        if (allTreks(graph, textArea)) return;
+        if (this.allTreks(graph, textArea)) return;
 
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(scroll);
         textArea.setCaretPosition(0);
         b.add(b2);
 
-        final JPanel panel = new JPanel();
+        JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.add(b);
 
-        final EditorWindow window = new EditorWindow(panel,
-                "Treks", "Close", false, this.workbench);
+        EditorWindow window = new EditorWindow(panel,
+                "Treks", "Close", false, workbench);
         DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
         window.setVisible(true);
 
@@ -89,13 +89,13 @@ class TreksAction extends AbstractAction implements ClipboardOwner {
                 "Treks", JOptionPane.PLAIN_MESSAGE);
     }
 
-    private boolean allTreks(final Graph graph, final JTextArea textArea) {
+    private boolean allTreks(Graph graph, JTextArea textArea) {
         for (int i = 0; i < graph.getNodes().size(); i++) {
             for (int j = 0; j < graph.getNodes().size(); j++) {
-                final Node node1 = graph.getNodes().get(i);
-                final Node node2 = graph.getNodes().get(j);
+                Node node1 = graph.getNodes().get(i);
+                Node node2 = graph.getNodes().get(j);
 
-                final List<List<Node>> treks = GraphUtils.treks(graph, node1, node2, -1);
+                List<List<Node>> treks = GraphUtils.treks(graph, node1, node2, -1);
 
                 if (treks.isEmpty()) {
                     return true;
@@ -105,7 +105,7 @@ class TreksAction extends AbstractAction implements ClipboardOwner {
 
                 for (int k = 0; k < treks.size(); k++) {
 //                    textArea.append("\nTrek " + k + ": ");
-                    final List<Node> trek = treks.get(k);
+                    List<Node> trek = treks.get(k);
 
                     textArea.append("\n    " + GraphUtils.pathString(trek, graph));
                 }
@@ -117,7 +117,7 @@ class TreksAction extends AbstractAction implements ClipboardOwner {
     /**
      * Required by the AbstractAction interface; does nothing.
      */
-    public void lostOwnership(final Clipboard clipboard, final Transferable contents) {
+    public void lostOwnership(Clipboard clipboard, Transferable contents) {
     }
 
 

@@ -80,7 +80,7 @@ public final class IndTestDrton implements IndependenceTest {
     private PrintStream pValueLogger;
     private final Map<Node, Integer> indexMap;
     private final Map<String, Node> nameMap;
-    private boolean verbose = false;
+    private boolean verbose;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -91,19 +91,19 @@ public final class IndTestDrton implements IndependenceTest {
      * @param dataSet A data set containing only continuous columns.
      * @param alpha   The alpha level of the test.
      */
-    public IndTestDrton(final DataSet dataSet, final double alpha) {
+    public IndTestDrton(DataSet dataSet, double alpha) {
         if (!(dataSet.isContinuous())) {
             throw new IllegalArgumentException("Data set must be continuous.");
         }
 
-        this.covMatrix = DataUtils.covarianceNonparanormalDrton(dataSet);
-        this._covMatrix = this.covMatrix.getMatrix();
-        final List<Node> nodes = this.covMatrix.getVariables();
+        covMatrix = DataUtils.covarianceNonparanormalDrton(dataSet);
+        _covMatrix = covMatrix.getMatrix();
+        List<Node> nodes = covMatrix.getVariables();
 
-        this.variables = Collections.unmodifiableList(nodes);
-        this.indexMap = indexMap(this.variables);
-        this.nameMap = mapNames(this.variables);
-        setAlpha(alpha);
+        variables = Collections.unmodifiableList(nodes);
+        indexMap = this.indexMap(variables);
+        nameMap = this.mapNames(variables);
+        this.setAlpha(alpha);
 
         this.dataSet = DataUtils.center(this.dataSet);
     }
@@ -114,7 +114,7 @@ public final class IndTestDrton implements IndependenceTest {
      * Creates a new independence test instance for a subset of the variables.
      */
 
-    public IndependenceTest indTestSubset(final List<Node> vars) {
+    public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
@@ -127,30 +127,30 @@ public final class IndTestDrton implements IndependenceTest {
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public boolean isIndependent(final Node x, final Node y, final List<Node> z) {
+    public boolean isIndependent(Node x, Node y, List<Node> z) {
         double r;
-        final int n = sampleSize();
+        int n = this.sampleSize();
 
         if (z.isEmpty()) {
-            Integer xi = this.indexMap.get(x);
-            Integer yi = this.indexMap.get(y);
+            Integer xi = indexMap.get(x);
+            Integer yi = indexMap.get(y);
 
             if (xi == null || yi == null) {
-                xi = this.indexMap.get(this.nameMap.get(x.getName()));
-                yi = this.indexMap.get(this.nameMap.get(y.getName()));
+                xi = indexMap.get(nameMap.get(x.getName()));
+                yi = indexMap.get(nameMap.get(y.getName()));
 
                 if (xi == null || yi == null) {
                     throw new IllegalArgumentException("Node not in map");
                 }
             }
 
-            final double a = this._covMatrix.get(xi, xi);
-            final double b = this._covMatrix.get(xi, yi);
-            final double d = this._covMatrix.get(yi, yi);
+            double a = _covMatrix.get(xi, xi);
+            double b = _covMatrix.get(xi, yi);
+            double d = _covMatrix.get(yi, yi);
 
             r = -b / Math.sqrt(a * d);
         } else {
-            final Matrix submatrix = DataUtils.subMatrix(this._covMatrix, this.indexMap, x, y, z);
+            Matrix submatrix = DataUtils.subMatrix(_covMatrix, indexMap, x, y, z);
             r = StatUtils.partialCorrelation(submatrix);
         }
 
@@ -186,7 +186,7 @@ public final class IndTestDrton implements IndependenceTest {
         if (r > 1.) r = 1.;
         if (r < -1.) r = -1.;
 
-        final double fisherZ = Math.sqrt(n - z.size() - 3.0) *
+        double fisherZ = Math.sqrt(n - z.size() - 3.0) *
                 0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
 
         this.fisherZ = fisherZ;
@@ -195,36 +195,36 @@ public final class IndTestDrton implements IndependenceTest {
             return true;
         }
 
-        final double pValue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, Math.abs(fisherZ)));
+        double pValue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, Math.abs(fisherZ)));
 
-        return pValue > this.alpha;
+        return pValue > alpha;
     }
 
-    public boolean isIndependent(final Node x, final Node y, final Node... z) {
-        return isIndependent(x, y, Arrays.asList(z));
+    public boolean isIndependent(Node x, Node y, Node... z) {
+        return this.isIndependent(x, y, Arrays.asList(z));
     }
 
-    public boolean isDependent(final Node x, final Node y, final List<Node> z) {
-        return !isIndependent(x, y, z);
+    public boolean isDependent(Node x, Node y, List<Node> z) {
+        return !this.isIndependent(x, y, z);
     }
 
-    public boolean isDependent(final Node x, final Node y, final Node... z) {
-        final List<Node> zList = Arrays.asList(z);
-        return isDependent(x, y, zList);
+    public boolean isDependent(Node x, Node y, Node... z) {
+        List<Node> zList = Arrays.asList(z);
+        return this.isDependent(x, y, zList);
     }
 
     /**
      * @return the probability associated with the most recently computed independence test.
      */
     public double getPValue() {
-        return 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, Math.abs(this.fisherZ)));
+        return 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, Math.abs(fisherZ)));
     }
 
     /**
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
-    public void setAlpha(final double alpha) {
+    public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
             throw new IllegalArgumentException("Significance out of range.");
         }
@@ -236,7 +236,7 @@ public final class IndTestDrton implements IndependenceTest {
      * Gets the getModel significance level.
      */
     public double getAlpha() {
-        return this.alpha;
+        return alpha;
     }
 
     /**
@@ -244,23 +244,23 @@ public final class IndTestDrton implements IndependenceTest {
      * relations-- that is, all the variables in the given graph or the given data set.
      */
     public List<Node> getVariables() {
-        return this.variables;
+        return variables;
     }
 
     /**
      * @return the variable with the given name.
      */
-    public Node getVariable(final String name) {
-        return this.nameMap.get(name);
+    public Node getVariable(String name) {
+        return nameMap.get(name);
     }
 
     /**
      * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
-        final List<Node> variables = getVariables();
-        final List<String> variableNames = new ArrayList<>();
-        for (final Node variable1 : variables) {
+        List<Node> variables = this.getVariables();
+        List<String> variableNames = new ArrayList<>();
+        for (Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }
         return variableNames;
@@ -270,33 +270,33 @@ public final class IndTestDrton implements IndependenceTest {
      * If <code>isDeterminismAllowed()</code>, deters to IndTestFisherZD; otherwise throws
      * UnsupportedOperationException.
      */
-    public boolean determines(final List<Node> z, final Node x) throws UnsupportedOperationException {
-        final int[] parents = new int[z.size()];
+    public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
+        int[] parents = new int[z.size()];
 
         for (int j = 0; j < parents.length; j++) {
-            parents[j] = this.covMatrix.getVariables().indexOf(z.get(j));
+            parents[j] = covMatrix.getVariables().indexOf(z.get(j));
         }
 
-        final int i = this.covMatrix.getVariables().indexOf(x);
+        int i = covMatrix.getVariables().indexOf(x);
 
-        final Matrix matrix2D = this.covMatrix.getMatrix();
+        Matrix matrix2D = covMatrix.getMatrix();
         double variance = matrix2D.get(i, i);
 
         if (parents.length > 0) {
 
             // Regress z onto i, yielding regression coefficients b.
-            final Matrix Czz = matrix2D.getSelection(parents, parents);
-            final Matrix inverse;
+            Matrix Czz = matrix2D.getSelection(parents, parents);
+            Matrix inverse;
 
             try {
                 inverse = Czz.inverse();
-            } catch (final Exception e) {
+            } catch (Exception e) {
                 return true;
             }
 
             Vector Cyz = matrix2D.getColumn(i);
             Cyz = Cyz.viewSelection(parents);
-            final Vector b = inverse.times(Cyz);
+            Vector b = inverse.times(Cyz);
 
             variance -= Cyz.dotProduct(b);
         }
@@ -308,7 +308,7 @@ public final class IndTestDrton implements IndependenceTest {
      * @return the data set being analyzed.
      */
     public DataSet getData() {
-        return this.dataSet;
+        return dataSet;
     }
 
     @Override
@@ -333,48 +333,48 @@ public final class IndTestDrton implements IndependenceTest {
 
     @Override
     public double getScore() {
-        return -(getPValue() - getAlpha());
+        return -(this.getPValue() - this.getAlpha());
     }
 
     public void shuffleVariables() {
-        final ArrayList<Node> nodes = new ArrayList<>(this.variables);
+        ArrayList<Node> nodes = new ArrayList<>(variables);
         Collections.shuffle(nodes);
-        this.variables = Collections.unmodifiableList(nodes);
+        variables = Collections.unmodifiableList(nodes);
     }
 
     /**
      * @return a string representation of this test.
      */
     public String toString() {
-        return "Drton, alpha = " + IndTestDrton.nf.format(getAlpha());
+        return "Drton, alpha = " + nf.format(this.getAlpha());
     }
 
-    public void setPValueLogger(final PrintStream pValueLogger) {
+    public void setPValueLogger(PrintStream pValueLogger) {
         this.pValueLogger = pValueLogger;
     }
 
     //==========================PRIVATE METHODS============================//
 
     private int sampleSize() {
-        return covMatrix().getSampleSize();
+        return this.covMatrix().getSampleSize();
     }
 
     private ICovarianceMatrix covMatrix() {
-        return this.covMatrix;
+        return covMatrix;
     }
 
-    private Map<String, Node> mapNames(final List<Node> variables) {
-        final Map<String, Node> nameMap = new ConcurrentHashMap<>();
+    private Map<String, Node> mapNames(List<Node> variables) {
+        Map<String, Node> nameMap = new ConcurrentHashMap<>();
 
-        for (final Node node : variables) {
+        for (Node node : variables) {
             nameMap.put(node.getName(), node);
         }
 
         return nameMap;
     }
 
-    private Map<Node, Integer> indexMap(final List<Node> variables) {
-        final Map<Node, Integer> indexMap = new ConcurrentHashMap<>();
+    private Map<Node, Integer> indexMap(List<Node> variables) {
+        Map<Node, Integer> indexMap = new ConcurrentHashMap<>();
 
         for (int i = 0; i < variables.size(); i++) {
             indexMap.put(variables.get(i), i);
@@ -385,11 +385,11 @@ public final class IndTestDrton implements IndependenceTest {
 
     @Override
     public boolean isVerbose() {
-        return this.verbose;
+        return verbose;
     }
 
     @Override
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 }

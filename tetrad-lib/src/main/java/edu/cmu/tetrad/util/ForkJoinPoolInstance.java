@@ -36,11 +36,11 @@ public class ForkJoinPoolInstance {
     }
 
     public static ForkJoinPoolInstance getInstance() {
-        return ForkJoinPoolInstance.INSTANCE;
+        return INSTANCE;
     }
 
     public ForkJoinPool getPool() {
-        return this.pool;
+        return pool;
     }
 }
 

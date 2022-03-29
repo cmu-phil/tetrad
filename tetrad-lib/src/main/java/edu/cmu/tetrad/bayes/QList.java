@@ -43,42 +43,42 @@ final class QList {
 
     /////////////////////////////////////////////////////////////////
     // intialize an empty QList: Q(emptyset) = 1
-    public QList(final int nVariables) {
+    public QList(int nVariables) {
         this.nVariables = nVariables;
-        initialize();
+        this.initialize();
     }
 
     /////////////////////////////////////////////////////////////////
     // initialize with a probability term
-    public QList(final int nVariables, final int[] probTerm) {
+    public QList(int nVariables, int[] probTerm) {
         this.nVariables = nVariables;
-        initialize();
+        this.initialize();
 
         System.arraycopy(probTerm, 0, this.probTerm, 0, nVariables);
 
-        this.inNumerator = true;
+        inNumerator = true;
     }
 
     /////////////////////////////////////////////////////////////////
     // copy an existing QList
     //
-    private QList(final QList q) {
-        this.nVariables = q.nVariables;
-        initialize();
+    private QList(QList q) {
+        nVariables = q.nVariables;
+        this.initialize();
 
-        for (int i = 0; i < this.nVariables; i++) {
-            this.sumOverVariables[i] = q.sumOverVariables[i];
-            this.probTerm[i] = q.probTerm[i];
+        for (int i = 0; i < nVariables; i++) {
+            sumOverVariables[i] = q.sumOverVariables[i];
+            probTerm[i] = q.probTerm[i];
         }
 
-        this.inNumerator = q.inNumerator;
+        inNumerator = q.inNumerator;
 
         if (q.subList != null) {
-            this.subList = new QList(q.subList);
+            subList = new QList(q.subList);
         }
 
         if (q.nextTerm != null) {
-            this.nextTerm = new QList(q.nextTerm);
+            nextTerm = new QList(q.nextTerm);
         }
 
     }
@@ -89,20 +89,20 @@ final class QList {
     /////////////////////////////////////////////////////////////////
     // append a term to the end
     //
-    public void add(final QList q, final int[] sumOverVariables, final boolean inNumerator) {
-        final QList qAdd = new QList(this.nVariables);
+    public void add(QList q, int[] sumOverVariables, boolean inNumerator) {
+        QList qAdd = new QList(nVariables);
 
         qAdd.initialize();
 
         qAdd.inNumerator = inNumerator;
-        System.arraycopy(sumOverVariables, 0, qAdd.sumOverVariables, 0, this.nVariables);
+        System.arraycopy(sumOverVariables, 0, qAdd.sumOverVariables, 0, nVariables);
         qAdd.subList = new QList(q);
 
         // append qAdd
-        if (this.nextTerm == null) {
-            this.nextTerm = new QList(qAdd);
+        if (nextTerm == null) {
+            nextTerm = new QList(qAdd);
         } else {
-            QList curTerm = this.nextTerm;
+            QList curTerm = nextTerm;
             while (curTerm.nextTerm != null) {
                 curTerm = curTerm.nextTerm;
             }
@@ -115,22 +115,22 @@ final class QList {
     // index1: the numbering of terms in the linked list
     // index2: the depth of recursive sublists
     //
-    public void printQList(final int index1, int index2) {
+    public void printQList(int index1, int index2) {
         System.out.println("======= " + index1 + "  " + index2 +
                 ": printQList");
-        System.out.println("inNumerator: " + this.inNumerator);
+        System.out.println("inNumerator: " + inNumerator);
 
         System.out.print("sumOverVariables: ");
-        for (int i = 0; i < this.nVariables; i++) {
-            System.out.print(this.sumOverVariables[i] + "  ");
+        for (int i = 0; i < nVariables; i++) {
+            System.out.print(sumOverVariables[i] + "  ");
         }
         System.out.println();
 
-        if (this.subList == null)    // probTerm is instantiated
+        if (subList == null)    // probTerm is instantiated
         {
             System.out.print("probTerm: ");
-            for (int i = 0; i < this.nVariables; i++) {
-                System.out.print(this.probTerm[i] + "  ");
+            for (int i = 0; i < nVariables; i++) {
+                System.out.print(probTerm[i] + "  ");
             }
             System.out.println();
         } else
@@ -140,15 +140,15 @@ final class QList {
             System.out.println("--------------------------------------- "
                     + (index1 + 1) + "  " + 0 +
                     ": subList");
-            this.subList.printQList(index1 + 1, 0);
+            subList.printQList(index1 + 1, 0);
         }
 
-        if (this.nextTerm != null) {
+        if (nextTerm != null) {
             index2++;
             System.out.println("---------------------------- "
                     + index1 + "  " + index2 +
                     ": nextTerm");
-            this.nextTerm.printQList(index1, index2);
+            nextTerm.printQList(index1, index2);
         }
     }
 
@@ -156,16 +156,16 @@ final class QList {
     // compute the numeric value of the expression in qPTS
     // by using the RowSummingExactUpdater
     //
-    public double computeValue(final BayesIm bayesIm, final int[] fixedVarValues) {
+    public double computeValue(BayesIm bayesIm, int[] fixedVarValues) {
         double resultAll = 0.0;
         double resultOneConfig;
         double resultNextTerm = 1.0;
 
         // updater with no evidence
 
-        final int nNodes = bayesIm.getNumNodes();
+        int nNodes = bayesIm.getNumNodes();
 
-        final int[] loopVarValues = new int[nNodes];
+        int[] loopVarValues = new int[nNodes];
 
         // starting loop variable configuration
         for (int i = 0; i < nNodes; i++) {
@@ -173,7 +173,7 @@ final class QList {
             loopVarValues[i] = fixedVarValues[i];
 
             // reset the values of the variables to be summed
-            if (this.sumOverVariables[i] == 1) {
+            if (sumOverVariables[i] == 1) {
                 // Set node i to its first value
                 // It is possible (and legal) to overwrite given values
                 // in S and T (and fixedVarValues)
@@ -189,22 +189,22 @@ final class QList {
             // one iteration of computing with this variable value
             // configuration
 
-            if (this.subList == null)   // probTerm is instantiated
+            if (subList == null)   // probTerm is instantiated
             {
 
                 // the number of variables represented in probTerm
                 int nVarInMarginal = 0;
                 for (int i = 0; i < nNodes; i++) {
-                    if (this.probTerm[i] == 1) {
+                    if (probTerm[i] == 1) {
                         nVarInMarginal++;
                     }
                 }
 
-                final int[] pVar = new int[nVarInMarginal];
-                final int[] pValues = new int[nVarInMarginal];
+                int[] pVar = new int[nVarInMarginal];
+                int[] pValues = new int[nVarInMarginal];
                 int pIndex = 0;
                 for (int i = 0; i < nNodes; i++) {
-                    if (this.probTerm[i] == 1) {
+                    if (probTerm[i] == 1) {
                         pVar[pIndex] = i;
 
                         // This variable does not have an instantiated value
@@ -249,12 +249,12 @@ final class QList {
 				if (flag)
 				{
 				 */
-                final Proposition prop = Proposition.tautology(bayesIm);
+                Proposition prop = Proposition.tautology(bayesIm);
                 for (int i = 0; i < nVarInMarginal; i++) {
                     prop.setCategory(pVar[i], pValues[i]);
                 }
                 // restrict the proposition to only observed variables
-                final Proposition propObs =
+                Proposition propObs =
                         new Proposition(((MlBayesImObs) bayesIm).getBayesImObs(), prop);
 
                 resultOneConfig = ((MlBayesImObs) bayesIm).getJPD().getProb(propObs);
@@ -270,7 +270,7 @@ final class QList {
             } else // process subList
             {
 
-                resultOneConfig = this.subList.computeValue(bayesIm, loopVarValues);
+                resultOneConfig = subList.computeValue(bayesIm, loopVarValues);
             }
 
             // sum the result from this iteration
@@ -279,14 +279,14 @@ final class QList {
             // reset
 
             // compose next variable value configuration
-            if ((this.sumOverVariables[curVar] == 1) &&
+            if ((sumOverVariables[curVar] == 1) &&
                     (loopVarValues[curVar] < bayesIm.getNumColumns(curVar) - 1)
             ) {
                 loopVarValues[curVar]++;
             } else {
                 while ((curVar >= 0)
                         &&
-                        ((this.sumOverVariables[curVar] != 1)
+                        ((sumOverVariables[curVar] != 1)
                                 ||
                                 (loopVarValues[curVar] ==
                                         bayesIm.getNumColumns(curVar) - 1))
@@ -298,7 +298,7 @@ final class QList {
                     loopVarValues[curVar]++;
 
                     for (int j = curVar + 1; j < nNodes; j++) {
-                        if (this.sumOverVariables[j] == 1) {
+                        if (sumOverVariables[j] == 1) {
                             loopVarValues[j] = 0;
                         }
                     }
@@ -308,15 +308,15 @@ final class QList {
             }
         }
 
-        if (this.nextTerm != null)  // next term
+        if (nextTerm != null)  // next term
         {
 
-            resultNextTerm = this.nextTerm.computeValue(bayesIm, fixedVarValues);
+            resultNextTerm = nextTerm.computeValue(bayesIm, fixedVarValues);
 
         }
 
 
-        if (this.inNumerator) {
+        if (inNumerator) {
             return (resultAll * resultNextTerm);
         } else // in the denominator
         {
@@ -332,18 +332,18 @@ final class QList {
     // initialization
     //
     private void initialize() {
-        this.sumOverVariables = new int[this.nVariables];
-        this.probTerm = new int[this.nVariables];
+        sumOverVariables = new int[nVariables];
+        probTerm = new int[nVariables];
 
-        for (int i = 0; i < this.nVariables; i++) {
-            this.sumOverVariables[i] = 0;
-            this.probTerm[i] = 0;   // Q(emptyset) = 1
+        for (int i = 0; i < nVariables; i++) {
+            sumOverVariables[i] = 0;
+            probTerm[i] = 0;   // Q(emptyset) = 1
         }
 
-        this.inNumerator = true;
+        inNumerator = true;
 
-        this.subList = null;
-        this.nextTerm = null;
+        subList = null;
+        nextTerm = null;
     }
 }
 

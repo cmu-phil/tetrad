@@ -26,9 +26,11 @@ import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetradapp.editor.IndependenceFactsAction.Result.Type;
 import edu.cmu.tetradapp.model.IndTestProducer;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.IntTextField;
+import edu.cmu.tetradapp.util.IntTextField.Filter;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -67,24 +69,24 @@ public class IndependenceFactsAction extends AbstractAction {
      * @param indTestProducer The gadget you get the independence test from.
      * @param menuName        The name that appears in the menu.
      */
-    public IndependenceFactsAction(final Component comp,
-                                   final IndTestProducer indTestProducer,
-                                   final String menuName) {
+    public IndependenceFactsAction(Component comp,
+                                   IndTestProducer indTestProducer,
+                                   String menuName) {
         super(menuName);
 
         if (indTestProducer == null) {
             throw new NullPointerException();
         }
 
-        this.centeringComp = comp;
+        centeringComp = comp;
         this.indTestProducer = indTestProducer;
-        this.vars = new LinkedList<>();
-        this.textField = new JTextField(40);
-        this.textField.setEditable(false);
-        this.textField.setFont(new Font("Serif", Font.BOLD, 14));
-        this.textField.setBackground(new Color(250, 250, 250));
+        vars = new LinkedList<>();
+        textField = new JTextField(40);
+        textField.setEditable(false);
+        textField.setFont(new Font("Serif", Font.BOLD, 14));
+        textField.setBackground(new Color(250, 250, 250));
 
-        resetText();
+        this.resetText();
     }
 
     //========================PUBLIC METHODS==========================//
@@ -92,16 +94,16 @@ public class IndependenceFactsAction extends AbstractAction {
     /**
      * Performs the action of opening a session from a file.
      */
-    public void actionPerformed(final ActionEvent e) {
-        this.independenceTest = getIndTestProducer().getIndependenceTest();
-        final List<String> varNames = new ArrayList<>();
+    public void actionPerformed(ActionEvent e) {
+        independenceTest = this.getIndTestProducer().getIndependenceTest();
+        List<String> varNames = new ArrayList<>();
         varNames.add("VAR");
-        varNames.addAll(getDataVars());
+        varNames.addAll(this.getDataVars());
         varNames.add("?");
         varNames.add("+");
 
-        final JComboBox variableBox = new JComboBox();
-        final DefaultComboBoxModel aModel1 = new DefaultComboBoxModel(varNames.toArray(new String[varNames.size()]));
+        JComboBox variableBox = new JComboBox();
+        DefaultComboBoxModel aModel1 = new DefaultComboBoxModel(varNames.toArray(new String[varNames.size()]));
         aModel1.setSelectedItem("VAR");
         variableBox.setModel(aModel1);
 
@@ -112,21 +114,21 @@ public class IndependenceFactsAction extends AbstractAction {
 //        });
 
         variableBox.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final JComboBox box = (JComboBox) e.getSource();
+            public void actionPerformed(ActionEvent e) {
+                JComboBox box = (JComboBox) e.getSource();
 
-                final String var = (String) box.getSelectedItem();
-                final LinkedList<String> vars = getVars();
-                final int size = vars.size();
+                String var = (String) box.getSelectedItem();
+                LinkedList<String> vars = IndependenceFactsAction.this.getVars();
+                int size = vars.size();
 
                 if ("VAR".equals(var)) {
                     return;
                 }
 
-                for (int i = 2; i < getVars().size() - 1; i++) {
-                    if (wildcard(i)) {
+                for (int i = 2; i < IndependenceFactsAction.this.getVars().size() - 1; i++) {
+                    if (IndependenceFactsAction.this.wildcard(i)) {
                         if (!("?".equals(var) || "+".equals(var))) {
-                            JOptionPane.showMessageDialog(IndependenceFactsAction.this.centeringComp, "Please specify wildcards after other variables (e.g. X _||_ ? | Y, +)");
+                            JOptionPane.showMessageDialog(centeringComp, "Please specify wildcards after other variables (e.g. X _||_ ? | Y, +)");
                             return;
                         }
                     }
@@ -145,43 +147,43 @@ public class IndependenceFactsAction extends AbstractAction {
                     vars.add(var);
                 }
 
-                if (wildcard(0) && vars.size() >= 2 && !wildcard(1)) {
-                    JOptionPane.showMessageDialog(IndependenceFactsAction.this.centeringComp, "Please specify wildcards after other variables (e.g. X _||_ ? | Y, +)");
+                if (IndependenceFactsAction.this.wildcard(0) && vars.size() >= 2 && !IndependenceFactsAction.this.wildcard(1)) {
+                    JOptionPane.showMessageDialog(centeringComp, "Please specify wildcards after other variables (e.g. X _||_ ? | Y, +)");
                     return;
                 }
 
-                resetText();
+                IndependenceFactsAction.this.resetText();
 
                 // This is a workaround to an introduced bug in the JDK whereby
                 // repeated selections of the same item send out just one
                 // action event.
-                final DefaultComboBoxModel aModel = new DefaultComboBoxModel(
+                DefaultComboBoxModel aModel = new DefaultComboBoxModel(
                         varNames.toArray(new String[varNames.size()]));
                 aModel.setSelectedItem("VAR");
                 variableBox.setModel(aModel);
             }
         });
 
-        final JButton delete = new JButton("Delete");
+        JButton delete = new JButton("Delete");
 
         delete.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                if (!getVars().isEmpty()) {
-                    getVars().removeLast();
-                    resetText();
+            public void actionPerformed(ActionEvent e) {
+                if (!IndependenceFactsAction.this.getVars().isEmpty()) {
+                    IndependenceFactsAction.this.getVars().removeLast();
+                    IndependenceFactsAction.this.resetText();
                 }
             }
         });
 
-        this.textField.addKeyListener(new KeyAdapter() {
-            public void keyTyped(final KeyEvent e) {
+        textField.addKeyListener(new KeyAdapter() {
+            public void keyTyped(KeyEvent e) {
                 if ('?' == e.getKeyChar()) {
                     variableBox.setSelectedItem("?");
                 } else if ('+' == e.getKeyChar()) {
                     variableBox.setSelectedItem("+");
                 } else if ('\b' == e.getKeyChar()) {
-                    IndependenceFactsAction.this.vars.removeLast();
-                    resetText();
+                    vars.removeLast();
+                    IndependenceFactsAction.this.resetText();
                 }
 
                 e.consume();
@@ -189,61 +191,61 @@ public class IndependenceFactsAction extends AbstractAction {
         });
 
         delete.addKeyListener(new KeyAdapter() {
-            public void keyTyped(final KeyEvent e) {
+            public void keyTyped(KeyEvent e) {
                 if ('?' == e.getKeyChar()) {
                     variableBox.setSelectedItem("?");
                 } else if ('+' == e.getKeyChar()) {
                     variableBox.setSelectedItem("+");
                 } else if ('\b' == e.getKeyChar()) {
-                    IndependenceFactsAction.this.vars.removeLast();
-                    resetText();
+                    vars.removeLast();
+                    IndependenceFactsAction.this.resetText();
                 }
             }
         });
 
         variableBox.addKeyListener(new KeyAdapter() {
-            public void keyTyped(final KeyEvent e) {
+            public void keyTyped(KeyEvent e) {
                 super.keyTyped(e);
 
                 if ('\b' == e.getKeyChar()) {
-                    IndependenceFactsAction.this.vars.removeLast();
-                    resetText();
+                    vars.removeLast();
+                    IndependenceFactsAction.this.resetText();
                 }
             }
         });
 
-        final JButton list = new JButton("LIST");
+        JButton list = new JButton("LIST");
         list.setFont(new Font("Dialog", Font.BOLD, 14));
 
         list.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                generateResults();
+            public void actionPerformed(ActionEvent e) {
+                IndependenceFactsAction.this.generateResults();
             }
         });
 
-        final Box b1 = Box.createVerticalBox();
+        Box b1 = Box.createVerticalBox();
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("Test: "));
-        b2.add(new JLabel(getIndependenceTest().toString()));
+        b2.add(new JLabel(this.getIndependenceTest().toString()));
         b2.add(Box.createHorizontalGlue());
         b1.add(b2);
         b1.add(Box.createVerticalStrut(10));
 
-        final Box b3 = Box.createHorizontalBox();
-        b3.add(getTextField());
+        Box b3 = Box.createHorizontalBox();
+        b3.add(this.getTextField());
         b3.add(variableBox);
         b3.add(delete);
         b1.add(b3);
         b1.add(Box.createVerticalStrut(10));
 
-        this.tableModel = new AbstractTableModel() {
-            public String getColumnName(final int column) {
+        tableModel = new AbstractTableModel() {
+            public String getColumnName(int column) {
                 if (column == 0) {
                     return "Index";
                 }
                 if (column == 1) {
-                    if (IndependenceFactsAction.this.independenceTest instanceof IndTestDSep) {
+                    if (independenceTest instanceof IndTestDSep) {
                         return "D-Separation Relation";
                     } else {
                         return "Independence Relation";
@@ -258,7 +260,7 @@ public class IndependenceFactsAction extends AbstractAction {
             }
 
             public int getColumnCount() {
-                if (usesDSeparation()) {
+                if (IndependenceFactsAction.this.usesDSeparation()) {
                     return 3;
                 } else {
                     return 4;
@@ -266,11 +268,11 @@ public class IndependenceFactsAction extends AbstractAction {
             }
 
             public int getRowCount() {
-                return getResults().size();
+                return IndependenceFactsAction.this.getResults().size();
             }
 
-            public Object getValueAt(final int rowIndex, final int columnIndex) {
-                final Result result = getResults().get(rowIndex);
+            public Object getValueAt(int rowIndex, int columnIndex) {
+                Result result = IndependenceFactsAction.this.getResults().get(rowIndex);
 
                 if (columnIndex == 0) {
                     return result.getIndex() + 1;
@@ -278,34 +280,34 @@ public class IndependenceFactsAction extends AbstractAction {
                 if (columnIndex == 1) {
                     return result.getFact();
                 } else if (columnIndex == 2) {
-                    if (IndependenceFactsAction.this.independenceTest instanceof IndTestDSep) {
-                        if (result.getType() == Result.Type.INDEPENDENT) {
+                    if (independenceTest instanceof IndTestDSep) {
+                        if (result.getType() == Type.INDEPENDENT) {
                             return "D-Separated";
-                        } else if (result.getType() == Result.Type.DEPENDENT) {
+                        } else if (result.getType() == Type.DEPENDENT) {
                             return "D-Connected";
-                        } else if (result.getType() == Result.Type.UNDETERMINED) {
+                        } else if (result.getType() == Type.UNDETERMINED) {
                             return "*";
                         }
 
 //                        return result.getType() ? "D-Separated" : "D-Connected";
                     } else {
-                        if (result.getType() == Result.Type.INDEPENDENT) {
+                        if (result.getType() == Type.INDEPENDENT) {
                             return "Independent";
-                        } else if (result.getType() == Result.Type.DEPENDENT) {
+                        } else if (result.getType() == Type.DEPENDENT) {
                             return "Dependent";
-                        } else if (result.getType() == Result.Type.UNDETERMINED) {
+                        } else if (result.getType() == Type.UNDETERMINED) {
                             return "*";
                         }
 //                        return result.getType() ? "Independent" : "Dependent";
                     }
                 } else if (columnIndex == 3) {
-                    return IndependenceFactsAction.nf.format(result.getpValue());
+                    return nf.format(result.getpValue());
                 }
 
                 return null;
             }
 
-            public Class getColumnClass(final int columnIndex) {
+            public Class getColumnClass(int columnIndex) {
                 if (columnIndex == 0) {
                     return Number.class;
                 }
@@ -321,47 +323,47 @@ public class IndependenceFactsAction extends AbstractAction {
             }
         };
 
-        final JTable table = new JTable(this.tableModel);
+        JTable table = new JTable(tableModel);
         table.getColumnModel().getColumn(0).setMinWidth(40);
         table.getColumnModel().getColumn(0).setMaxWidth(40);
         table.getColumnModel().getColumn(1).setMinWidth(200);
         table.getColumnModel().getColumn(2).setMinWidth(100);
         table.getColumnModel().getColumn(2).setMaxWidth(100);
 
-        if (!(usesDSeparation())) {
+        if (!(this.usesDSeparation())) {
             table.getColumnModel().getColumn(3).setMinWidth(80);
             table.getColumnModel().getColumn(3).setMaxWidth(80);
         }
 
-        final JTableHeader header = table.getTableHeader();
+        JTableHeader header = table.getTableHeader();
 
         header.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(final MouseEvent e) {
-                final JTableHeader header = (JTableHeader) e.getSource();
-                final Point point = e.getPoint();
-                final int col = header.columnAtPoint(point);
-                final int sortCol = header.getTable().convertColumnIndexToModel(col);
+            public void mouseClicked(MouseEvent e) {
+                JTableHeader header = (JTableHeader) e.getSource();
+                Point point = e.getPoint();
+                int col = header.columnAtPoint(point);
+                int sortCol = header.getTable().convertColumnIndexToModel(col);
 
-                sortByColumn(sortCol, true);
+                IndependenceFactsAction.this.sortByColumn(sortCol, true);
             }
         });
 
-        final JScrollPane scroll = new JScrollPane(table);
+        JScrollPane scroll = new JScrollPane(table);
         scroll.setPreferredSize(new Dimension(400, 400));
         b1.add(scroll);
 
-        final Box b4 = Box.createHorizontalBox();
+        Box b4 = Box.createHorizontalBox();
         b4.add(new JLabel("Limit list to "));
 
 
-        final IntTextField field = new IntTextField(getListLimit(), 7);
+        IntTextField field = new IntTextField(this.getListLimit(), 7);
 
-        field.setFilter(new IntTextField.Filter() {
-            public int filter(final int value, final int oldValue) {
+        field.setFilter(new Filter() {
+            public int filter(int value, int oldValue) {
                 try {
-                    setListLimit(value);
+                    IndependenceFactsAction.this.setListLimit(value);
                     return value;
-                } catch (final Exception e) {
+                } catch (Exception e) {
                     return oldValue;
                 }
             }
@@ -375,19 +377,19 @@ public class IndependenceFactsAction extends AbstractAction {
         b1.add(b4);
         b1.add(Box.createVerticalStrut(10));
 
-        final JPanel panel = new JPanel();
+        JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.add(b1, BorderLayout.CENTER);
         panel.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        final EditorWindow editorWindow =
-                new EditorWindow(panel, "Independence Facts", "Save", false, this.centeringComp);
+        EditorWindow editorWindow =
+                new EditorWindow(panel, "Independence Facts", "Save", false, centeringComp);
         DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
         editorWindow.setVisible(true);
 
         // Set the ok button so that pressing enter activates it.
         // jdramsey 5/5/02
-        final JRootPane root = SwingUtilities.getRootPane(editorWindow);
+        JRootPane root = SwingUtilities.getRootPane(editorWindow);
         if (root != null) {
             root.setDefaultButton(list);
         }
@@ -396,41 +398,41 @@ public class IndependenceFactsAction extends AbstractAction {
     //=============================PRIVATE METHODS=======================//
 
     private boolean usesDSeparation() {
-        return getIndependenceTest() instanceof IndTestDSep;
+        return this.getIndependenceTest() instanceof IndTestDSep;
     }
 
-    private void sortByColumn(final int sortCol, final boolean allowReverse) {
-        if (allowReverse && sortCol == getLastSortCol()) {
-            setSortDir(-1 * getSortDir());
+    private void sortByColumn(int sortCol, boolean allowReverse) {
+        if (allowReverse && sortCol == this.getLastSortCol()) {
+            this.setSortDir(-1 * this.getSortDir());
         } else {
-            setSortDir(1);
+            this.setSortDir(1);
         }
 
-        setLastSortCol(sortCol);
+        this.setLastSortCol(sortCol);
 
-        Collections.sort(this.results, new Comparator<Result>() {
-            public int compare(final Result r1, final Result r2) {
+        Collections.sort(results, new Comparator<Result>() {
+            public int compare(Result r1, Result r2) {
 
                 switch (sortCol) {
                     case 0:
-                        return getSortDir() * (r1.getIndex() - r2.getIndex());
+                        return IndependenceFactsAction.this.getSortDir() * (r1.getIndex() - r2.getIndex());
                     case 1:
-                        return getSortDir() * (r1.getIndex() - r2.getIndex());
+                        return IndependenceFactsAction.this.getSortDir() * (r1.getIndex() - r2.getIndex());
                     case 2:
-                        final int ind1;
-                        final int ind2;
+                        int ind1;
+                        int ind2;
 
-                        if (r1.getType() == Result.Type.UNDETERMINED) {
+                        if (r1.getType() == Type.UNDETERMINED) {
                             ind1 = 0;
-                        } else if (r1.getType() == Result.Type.DEPENDENT) {
+                        } else if (r1.getType() == Type.DEPENDENT) {
                             ind1 = 1;
                         } else {
                             ind1 = 2;
                         }
 
-                        if (r2.getType() == Result.Type.UNDETERMINED) {
+                        if (r2.getType() == Type.UNDETERMINED) {
                             ind2 = 0;
-                        } else if (r2.getType() == Result.Type.DEPENDENT) {
+                        } else if (r2.getType() == Type.DEPENDENT) {
                             ind2 = 1;
                         } else {
                             ind2 = 2;
@@ -438,9 +440,9 @@ public class IndependenceFactsAction extends AbstractAction {
 
 //                        int ind1 = r1.getType() ? 1 : 0;
 //                        int ind2 = r2.getType() ? 1 : 0;
-                        return getSortDir() * (ind1 - ind2);
+                        return IndependenceFactsAction.this.getSortDir() * (ind1 - ind2);
                     case 3:
-                        final double difference = getSortDir() *
+                        double difference = IndependenceFactsAction.this.getSortDir() *
                                 (r1.getpValue() - r2.getpValue());
 
                         if (difference < 0) {
@@ -456,58 +458,58 @@ public class IndependenceFactsAction extends AbstractAction {
             }
         });
 
-        this.tableModel.fireTableDataChanged();
+        tableModel.fireTableDataChanged();
     }
 
     private List<String> getDataVars() {
-        return getIndependenceTest().getVariableNames();
+        return this.getIndependenceTest().getVariableNames();
     }
 
     private void resetText() {
-        final StringBuilder buf = new StringBuilder();
+        StringBuilder buf = new StringBuilder();
 
-        if (getVars().size() == 0) {
+        if (this.getVars().size() == 0) {
             buf.append("Choose variables and wildcards from dropdown-->");
         }
 
-        if (getVars().size() > 0) {
-            buf.append(" ").append(getVars().get(0));
+        if (this.getVars().size() > 0) {
+            buf.append(" ").append(this.getVars().get(0));
             buf.append(" _||_ ");
         }
 
-        if (getVars().size() > 1) {
-            buf.append(getVars().get(1));
+        if (this.getVars().size() > 1) {
+            buf.append(this.getVars().get(1));
         }
 
-        if (getVars().size() > 2) {
+        if (this.getVars().size() > 2) {
             buf.append(" | ");
         }
 
-        for (int i = 2; i < getVars().size() - 1; i++) {
-            buf.append(getVars().get(i));
+        for (int i = 2; i < this.getVars().size() - 1; i++) {
+            buf.append(this.getVars().get(i));
             buf.append(", ");
         }
 
-        if (getVars().size() > 2) {
-            buf.append(getVars().get(getVars().size() - 1));
+        if (this.getVars().size() > 2) {
+            buf.append(this.getVars().get(this.getVars().size() - 1));
         }
 
-        this.textField.setText(buf.toString());
+        textField.setText(buf.toString());
     }
 
     private void generateResults() {
-        this.getResults().clear();
-        final List<String> dataVars = getDataVars();
+        getResults().clear();
+        List<String> dataVars = this.getDataVars();
 
-        if (getVars().size() < 2) {
-            this.tableModel.fireTableDataChanged();
+        if (this.getVars().size() < 2) {
+            tableModel.fireTableDataChanged();
             return;
         }
 
         int minQuestionMark = 0, minPlus = 0, maxPlus = 0;
 
-        for (int i = 2; i < getVars().size(); i++) {
-            final String var = getVars().get(i);
+        for (int i = 2; i < this.getVars().size(); i++) {
+            String var = this.getVars().get(i);
 
             if ("?".equals(var)) {
                 minPlus++;
@@ -522,10 +524,10 @@ public class IndependenceFactsAction extends AbstractAction {
         }
 
         int resultIndex = -1;
-        final Set<Set<String>> alreadySeen = new HashSet<>();
+        Set<Set<String>> alreadySeen = new HashSet<>();
 
-        int xIndex = dataVars.indexOf(this.vars.get(0));
-        int yIndex = dataVars.indexOf(this.vars.get(1));
+        int xIndex = dataVars.indexOf(vars.get(0));
+        int yIndex = dataVars.indexOf(vars.get(1));
 
         if (xIndex == -1 || yIndex == -1) {
             xIndex = 0;
@@ -535,8 +537,8 @@ public class IndependenceFactsAction extends AbstractAction {
         for (int _i = 0; _i < dataVars.size(); _i++) {
             for (int _j = _i + 1; _j < dataVars.size(); _j++) {
 
-                final String _x;
-                final String _y;
+                String _x;
+                String _y;
 
                 if (xIndex < yIndex) {
                     _x = dataVars.get(_i);
@@ -546,15 +548,15 @@ public class IndependenceFactsAction extends AbstractAction {
                     _x = dataVars.get(_j);
                 }
 
-                if (!(this.vars.get(0).equals("?")) && !(this.vars.get(0).equals("+")) && !(this.vars.get(0).equals(_x))) {
+                if (!(vars.get(0).equals("?")) && !(vars.get(0).equals("+")) && !(vars.get(0).equals(_x))) {
                     continue;
                 }
 
-                if (!(this.vars.get(1).equals("?")) && !(this.vars.get(1).equals("+")) && !(this.vars.get(1).equals(_y))) {
+                if (!(vars.get(1).equals("?")) && !(vars.get(1).equals("+")) && !(vars.get(1).equals(_y))) {
                     continue;
                 }
 
-                final Set<String> seen = new HashSet<>();
+                Set<String> seen = new HashSet<>();
                 seen.add(_x);
                 seen.add(_y);
 
@@ -565,91 +567,91 @@ public class IndependenceFactsAction extends AbstractAction {
 //                    continue;
 //                }
 
-                if (!wildcard(1) && !getVars().get(1).equals(_y)) {
+                if (!this.wildcard(1) && !this.getVars().get(1).equals(_y)) {
                     continue;
                 }
 
-                final List<String> unspecifiedVars = new ArrayList<>(dataVars);
+                List<String> unspecifiedVars = new ArrayList<>(dataVars);
                 unspecifiedVars.remove(_x);
                 unspecifiedVars.remove(_y);
 
-                final Node x = getIndependenceTest().getVariable(_x);
-                final Node y = getIndependenceTest().getVariable(_y);
+                Node x = this.getIndependenceTest().getVariable(_x);
+                Node y = this.getIndependenceTest().getVariable(_y);
 
-                for (int j = 2; j < getVars().size(); j++) {
-                    if (!wildcard(j)) {
-                        unspecifiedVars.remove(getVars().get(j));
+                for (int j = 2; j < this.getVars().size(); j++) {
+                    if (!this.wildcard(j)) {
+                        unspecifiedVars.remove(this.getVars().get(j));
                     }
                 }
 
                 for (int n = minPlus; n <= maxPlus; n++) {
-                    final ChoiceGenerator gen2 = new ChoiceGenerator(unspecifiedVars.size(), n - minQuestionMark);
+                    ChoiceGenerator gen2 = new ChoiceGenerator(unspecifiedVars.size(), n - minQuestionMark);
                     int[] choice2;
 
                     while ((choice2 = gen2.next()) != null) {
-                        final List<Node> z = new ArrayList<>();
+                        List<Node> z = new ArrayList<>();
 
                         for (int i = 0; i < minQuestionMark; i++) {
-                            final String _z = getVars().get(i + 2);
-                            z.add(getIndependenceTest().getVariable(_z));
+                            String _z = this.getVars().get(i + 2);
+                            z.add(this.getIndependenceTest().getVariable(_z));
                         }
 
-                        for (final int choice : choice2) {
-                            final String _z = unspecifiedVars.get(choice);
-                            z.add(getIndependenceTest().getVariable(_z));
+                        for (int choice : choice2) {
+                            String _z = unspecifiedVars.get(choice);
+                            z.add(this.getIndependenceTest().getVariable(_z));
                         }
 
-                        Result.Type indep;
+                        Type indep;
                         double pValue;
 
                         try {
-                            indep = getIndependenceTest().isIndependent(x, y, z) ? Result.Type.INDEPENDENT : Result.Type.DEPENDENT;
-                        } catch (final Exception e) {
-                            indep = Result.Type.UNDETERMINED;
+                            indep = this.getIndependenceTest().isIndependent(x, y, z) ? Type.INDEPENDENT : Type.DEPENDENT;
+                        } catch (Exception e) {
+                            indep = Type.UNDETERMINED;
                         }
 
                         try {
-                            pValue = getIndependenceTest().getPValue();
-                        } catch (final Exception e) {
+                            pValue = this.getIndependenceTest().getPValue();
+                        } catch (Exception e) {
                             pValue = Double.NaN;
                         }
 
-                        if (usesDSeparation()) {
-                            getResults().add(new Result(++resultIndex,
-                                    IndependenceFactsAction.dsepFactString(x, y, z), indep, pValue));
+                        if (this.usesDSeparation()) {
+                            this.getResults().add(new Result(++resultIndex,
+                                    dsepFactString(x, y, z), indep, pValue));
                         } else {
-                            getResults().add(new Result(++resultIndex,
-                                    IndependenceFactsAction.independenceFactString(x, y, z), indep, pValue));
+                            this.getResults().add(new Result(++resultIndex,
+                                    independenceFactString(x, y, z), indep, pValue));
                         }
                     }
                 }
             }
         }
 
-        this.tableModel.fireTableDataChanged();
+        tableModel.fireTableDataChanged();
     }
 
-    private boolean wildcard(final int index) {
-        return index < getVars().size() && (getVars().get(index).equals("?") || getVars().get(index).equals("+"));
+    private boolean wildcard(int index) {
+        return index < this.getVars().size() && (this.getVars().get(index).equals("?") || this.getVars().get(index).equals("+"));
     }
 
     private LinkedList<String> getVars() {
-        return this.vars;
+        return vars;
     }
 
     private JTextField getTextField() {
-        return this.textField;
+        return textField;
     }
 
     private IndTestProducer getIndTestProducer() {
-        return this.indTestProducer;
+        return indTestProducer;
     }
 
     private List<Result> getResults() {
-        return this.results;
+        return results;
     }
 
-    private static final class Result {
+    public static final class Result {
         public enum Type {
             INDEPENDENT, DEPENDENT, UNDETERMINED
         }
@@ -661,7 +663,7 @@ public class IndependenceFactsAction extends AbstractAction {
         private final Type indep;
         private final double pValue;
 
-        public Result(final int index, final String fact, final Type indep, final double pValue) {
+        public Result(int index, String fact, Type indep, double pValue) {
             this.index = index;
             this.fact = fact;
             this.indep = indep;
@@ -669,40 +671,40 @@ public class IndependenceFactsAction extends AbstractAction {
         }
 
         public int getIndex() {
-            return this.index;
+            return index;
         }
 
         public String getFact() {
-            return this.fact;
+            return fact;
         }
 
         public Type getType() {
-            return this.indep;
+            return indep;
         }
 
         public double getpValue() {
-            return this.pValue;
+            return pValue;
         }
 
         public String toString() {
-            final StringBuilder buf = new StringBuilder();
+            StringBuilder buf = new StringBuilder();
             buf.append("Result: ");
-            buf.append(getFact()).append("\t");
-            buf.append(getType()).append("\t");
-            buf.append(Result.nf.format(getpValue()));
+            buf.append(this.getFact()).append("\t");
+            buf.append(this.getType()).append("\t");
+            buf.append(nf.format(this.getpValue()));
             return buf.toString();
         }
     }
 
-    private static String independenceFactString(final Node x, final Node y,
-                                                 final List<Node> condSet) {
-        final StringBuilder sb = new StringBuilder();
+    private static String independenceFactString(Node x, Node y,
+                                                 List<Node> condSet) {
+        StringBuilder sb = new StringBuilder();
 
         sb.append(" ").append(x.getName());
         sb.append(" _||_ ");
         sb.append(y.getName());
 
-        final Iterator<Node> it = condSet.iterator();
+        Iterator<Node> it = condSet.iterator();
 
         if (it.hasNext()) {
             sb.append(" | ");
@@ -717,15 +719,15 @@ public class IndependenceFactsAction extends AbstractAction {
         return sb.toString();
     }
 
-    private static String dsepFactString(final Node x, final Node y, final List<Node> condSet) {
-        final StringBuilder sb = new StringBuilder();
+    private static String dsepFactString(Node x, Node y, List<Node> condSet) {
+        StringBuilder sb = new StringBuilder();
 
         sb.append(" ").append("dsep(");
         sb.append(x.getName());
         sb.append(", ");
         sb.append(y.getName());
 
-        final Iterator<Node> it = condSet.iterator();
+        Iterator<Node> it = condSet.iterator();
 
         if (it.hasNext()) {
             sb.append(" | ");
@@ -743,14 +745,14 @@ public class IndependenceFactsAction extends AbstractAction {
     }
 
     private IndependenceTest getIndependenceTest() {
-        return this.independenceTest;
+        return independenceTest;
     }
 
     private int getLastSortCol() {
-        return this.lastSortCol;
+        return lastSortCol;
     }
 
-    private void setLastSortCol(final int lastSortCol) {
+    private void setLastSortCol(int lastSortCol) {
         if (lastSortCol < 0 || lastSortCol > 4) {
             throw new IllegalArgumentException();
         }
@@ -759,10 +761,10 @@ public class IndependenceFactsAction extends AbstractAction {
     }
 
     private int getSortDir() {
-        return this.sortDir;
+        return sortDir;
     }
 
-    private void setSortDir(final int sortDir) {
+    private void setSortDir(int sortDir) {
         if (!(sortDir == 1 || sortDir == -1)) {
             throw new IllegalArgumentException();
         }
@@ -774,7 +776,7 @@ public class IndependenceFactsAction extends AbstractAction {
         return Preferences.userRoot().getInt("indFactsListLimit", 10000);
     }
 
-    private void setListLimit(final int listLimit) {
+    private void setListLimit(int listLimit) {
         if (listLimit < 1) {
             throw new IllegalArgumentException();
         }

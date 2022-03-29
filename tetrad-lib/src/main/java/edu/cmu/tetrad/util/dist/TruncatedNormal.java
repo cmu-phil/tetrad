@@ -68,10 +68,10 @@ public class TruncatedNormal implements Distribution {
     //=========================CONSTRUCTORS===========================//
 
     private TruncatedNormal() {
-        setParameter(0, (double) 0);
-        setParameter(1, (double) 1);
-        setParameter(2, Double.NEGATIVE_INFINITY);
-        setParameter(3, Double.POSITIVE_INFINITY);
+        this.setParameter(0, (double) 0);
+        this.setParameter(1, (double) 1);
+        this.setParameter(2, Double.NEGATIVE_INFINITY);
+        this.setParameter(3, Double.POSITIVE_INFINITY);
     }
 
     /**
@@ -89,32 +89,32 @@ public class TruncatedNormal implements Distribution {
         return "TruncNormal";
     }
 
-    public void setParameter(final int index, final double value) {
+    public void setParameter(int index, double value) {
         if (index == 0) {
-            this.mean = value;
+            mean = value;
         } else if (index == 1 && value >= 0) {
-            this.sd = value;
+            sd = value;
         } else if (index == 2) {
-            this.low = value;
+            low = value;
         } else if (index == 3) {
-            this.high = value;
+            high = value;
         } else {
             throw new IllegalArgumentException("Illegal value for parameter " +
                     index + ": " + value);
         }
     }
 
-    public double getParameter(final int index) {
+    public double getParameter(int index) {
         if (index == 0) {
-            return this.mean;
+            return mean;
         } else if (index == 1) {
-            return this.sd;
+            return sd;
         } else {
             throw new IllegalArgumentException("Illegal index: " + index);
         }
     }
 
-    public String getParameterName(final int index) {
+    public String getParameterName(int index) {
         if (index == 0) {
             return "Mean";
         } else if (index == 1) {
@@ -139,12 +139,12 @@ public class TruncatedNormal implements Distribution {
      * @return the next random sample from the distribution.
      */
     public double nextRandom() {
-        return RandomUtil.getInstance().nextTruncatedNormal(this.mean, this.sd, this.low, this.high);
+        return RandomUtil.getInstance().nextTruncatedNormal(mean, sd, low, high);
     }
 
     public String toString() {
-        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-        return "TruncNormal(" + nf.format(this.mean) + ", " + nf.format(this.sd) + ", " + nf.format(this.low) + ", " + nf.format(this.high) + ")";
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        return "TruncNormal(" + nf.format(mean) + ", " + nf.format(sd) + ", " + nf.format(low) + ", " + nf.format(high) + ")";
     }
 
     //========================PRIVATE METHODS===========================//
@@ -164,11 +164,11 @@ public class TruncatedNormal implements Distribution {
      * @throws ClassNotFoundException if a the class of an object in the input cannot
      *                                be found.
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (this.sd <= 0) {
+        if (sd <= 0) {
             throw new IllegalStateException();
         }
 

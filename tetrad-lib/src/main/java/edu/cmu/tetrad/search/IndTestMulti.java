@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.ResolveSepsets.Method;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -51,29 +52,29 @@ public final class IndTestMulti implements IndependenceTest {
     /**
      * Pooling method
      */
-    private final ResolveSepsets.Method method;
+    private final Method method;
     private double p = Double.NaN;
-    private boolean verbose = false;
+    private boolean verbose;
 
 //    private DataSet concatenatedData;
 
     //==========================CONSTRUCTORS=============================//
 
-    public IndTestMulti(final List<IndependenceTest> independenceTests, final ResolveSepsets.Method method) {
-        final Set<String> nodeNames = new HashSet<>();
-        for (final IndependenceTest independenceTest : independenceTests) {
+    public IndTestMulti(List<IndependenceTest> independenceTests, Method method) {
+        Set<String> nodeNames = new HashSet<>();
+        for (IndependenceTest independenceTest : independenceTests) {
             nodeNames.addAll(independenceTest.getVariableNames());
         }
         if (independenceTests.get(0).getVariables().size() != nodeNames.size()) {
             throw new IllegalArgumentException("Data sets must have same variables.");
         }
-        this.variables = independenceTests.get(0).getVariables();
+        variables = independenceTests.get(0).getVariables();
         this.independenceTests = independenceTests;
         this.method = method;
 
-        final List<DataSet> dataSets = new ArrayList<>();
+        List<DataSet> dataSets = new ArrayList<>();
 
-        for (final IndependenceTest test : independenceTests) {
+        for (IndependenceTest test : independenceTests) {
             dataSets.add((DataSet) test.getData());
         }
 
@@ -82,7 +83,7 @@ public final class IndTestMulti implements IndependenceTest {
 
     //==========================PUBLIC METHODS=============================//
 
-    public IndependenceTest indTestSubset(final List<Node> vars) {
+    public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
@@ -95,8 +96,8 @@ public final class IndTestMulti implements IndependenceTest {
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public boolean isIndependent(final Node x, final Node y, final List<Node> z) {
-        final boolean independent = ResolveSepsets.isIndependentPooled(this.method, this.independenceTests, x, y, z);
+    public boolean isIndependent(Node x, Node y, List<Node> z) {
+        boolean independent = ResolveSepsets.isIndependentPooled(method, independenceTests, x, y, z);
 
 
         if (independent) {
@@ -108,39 +109,39 @@ public final class IndTestMulti implements IndependenceTest {
         return independent;
     }
 
-    public boolean isIndependentPooledFisher2(final List<IndependenceTest> independenceTests, final Node x, final Node y, final List<Node> condSet) {
-        final double alpha = independenceTests.get(0).getAlpha();
-        final List<Double> pValues = IndTestMulti.getAvailablePValues(independenceTests, x, y, condSet);
+    public boolean isIndependentPooledFisher2(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
+        double alpha = independenceTests.get(0).getAlpha();
+        List<Double> pValues = getAvailablePValues(independenceTests, x, y, condSet);
 
         double tf = 0.0;
         int numPValues = 0;
 
-        for (final double p : pValues) {
+        for (double p : pValues) {
 //            if (p > 0) {
             tf += -2.0 * Math.log(p);
             numPValues++;
 //            }
         }
 
-        final double p = 1.0 - ProbUtils.chisqCdf(tf, 2 * numPValues);
+        double p = 1.0 - ProbUtils.chisqCdf(tf, 2 * numPValues);
         this.p = p;
 
         return (p > alpha);
     }
 
-    private static List<Double> getAvailablePValues(final List<IndependenceTest> independenceTests, final Node x, final Node y, final List<Node> condSet) {
-        final List<Double> allPValues = new ArrayList<>();
+    private static List<Double> getAvailablePValues(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
+        List<Double> allPValues = new ArrayList<>();
 
-        for (final IndependenceTest test : independenceTests) {
-            final List<Node> localCondSet = new ArrayList<>();
-            for (final Node node : condSet) {
+        for (IndependenceTest test : independenceTests) {
+            List<Node> localCondSet = new ArrayList<>();
+            for (Node node : condSet) {
                 localCondSet.add(test.getVariable(node.getName()));
             }
 
             try {
                 test.isIndependent(test.getVariable(x.getName()), test.getVariable(y.getName()), localCondSet);
                 allPValues.add(test.getPValue());
-            } catch (final Exception e) {
+            } catch (Exception e) {
                 // Skip that test.
             }
         }
@@ -148,31 +149,31 @@ public final class IndTestMulti implements IndependenceTest {
         return allPValues;
     }
 
-    public boolean isIndependent(final Node x, final Node y, final Node... z) {
-        final List<Node> zList = Arrays.asList(z);
-        return isIndependent(x, y, zList);
+    public boolean isIndependent(Node x, Node y, Node... z) {
+        List<Node> zList = Arrays.asList(z);
+        return this.isIndependent(x, y, zList);
     }
 
-    public boolean isDependent(final Node x, final Node y, final List<Node> z) {
-        return !isIndependent(x, y, z);
+    public boolean isDependent(Node x, Node y, List<Node> z) {
+        return !this.isIndependent(x, y, z);
     }
 
-    public boolean isDependent(final Node x, final Node y, final Node... z) {
-        final List<Node> zList = Arrays.asList(z);
-        return isDependent(x, y, zList);
+    public boolean isDependent(Node x, Node y, Node... z) {
+        List<Node> zList = Arrays.asList(z);
+        return this.isDependent(x, y, zList);
     }
 
     /**
      * @throws UnsupportedOperationException
      */
     public double getPValue() {
-        return this.p;
+        return p;
     }
 
     /**
      * @throws UnsupportedOperationException
      */
-    public void setAlpha(final double alpha) {
+    public void setAlpha(double alpha) {
         throw new UnsupportedOperationException();
     }
 
@@ -188,15 +189,15 @@ public final class IndTestMulti implements IndependenceTest {
      * relations-- that is, all the variables in the given graph or the given data set.
      */
     public List<Node> getVariables() {
-        return this.variables;
+        return variables;
     }
 
     /**
      * @return the variable with the given name.
      */
-    public Node getVariable(final String name) {
-        for (int i = 0; i < getVariables().size(); i++) {
-            final Node variable = getVariables().get(i);
+    public Node getVariable(String name) {
+        for (int i = 0; i < this.getVariables().size(); i++) {
+            Node variable = this.getVariables().get(i);
             if (variable.getName().equals(name)) {
                 return variable;
             }
@@ -209,9 +210,9 @@ public final class IndTestMulti implements IndependenceTest {
      * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
-        final List<Node> variables = getVariables();
-        final List<String> variableNames = new ArrayList<>();
-        for (final Node variable1 : variables) {
+        List<Node> variables = this.getVariables();
+        List<String> variableNames = new ArrayList<>();
+        for (Node variable1 : variables) {
             variableNames.add(variable1.getName());
         }
         return variableNames;
@@ -220,7 +221,7 @@ public final class IndTestMulti implements IndependenceTest {
     /**
      * @throws UnsupportedOperationException
      */
-    public boolean determines(final List z, final Node x) throws UnsupportedOperationException {
+    public boolean determines(List z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
 
@@ -254,23 +255,23 @@ public final class IndTestMulti implements IndependenceTest {
 
     @Override
     public double getScore() {
-        return getPValue();
+        return this.getPValue();
     }
 
     /**
      * @return a string representation of this test.
      */
     public String toString() {
-        return "Pooled Independence Test:  alpha = " + this.independenceTests.get(0).getAlpha();
+        return "Pooled Independence Test:  alpha = " + independenceTests.get(0).getAlpha();
     }
 
     @Override
     public boolean isVerbose() {
-        return this.verbose;
+        return verbose;
     }
 
     @Override
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 }

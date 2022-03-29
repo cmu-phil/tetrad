@@ -37,14 +37,14 @@ public final class TestDelimiterTokenizer {
     @Test
     public void testTokenizer() {
         final String line2 = "a,b,c,d";
-        final String[] tokens = {"a", "b", "c", "d"};
-        final DelimiterType delimiterType = DelimiterType.COMMA;
-        final RegexTokenizer tokenizer =
+        String[] tokens = {"a", "b", "c", "d"};
+        DelimiterType delimiterType = DelimiterType.COMMA;
+        RegexTokenizer tokenizer =
                 new RegexTokenizer(line2, delimiterType.getPattern(), '"');
 
         int index = 0;
         while (tokenizer.hasMoreTokens()) {
-            final String s = tokenizer.nextToken();
+            String s = tokenizer.nextToken();
             assertEquals(tokens[index++], s);
         }
     }

@@ -32,33 +32,33 @@ public class FaskGraphs {
      * @param parameters Parameters for the FASK search.
      * @param contains   Some string(s) the data filenames must include. May be  blank.
      */
-    public FaskGraphs(final String path, final Parameters parameters, final String... contains) {
-        loadFiles(path, parameters, contains);
+    public FaskGraphs(String path, Parameters parameters, String... contains) {
+        this.loadFiles(path, parameters, contains);
     }
 
     public List<String> getFilenames() {
-        return this.filenames;
+        return filenames;
     }
 
     public List<Graph> getGraphs() {
-        return this.graphs;
+        return graphs;
     }
 
-    public void setGraphs(final List<Graph> graphs) {
+    public void setGraphs(List<Graph> graphs) {
         this.graphs = graphs;
     }
 
     public List<Boolean> getTypes() {
-        return this.types;
+        return types;
     }
 
-    public void reconcileNames(final FaskGraphs... files) {
-        final Set<String> allNames = new HashSet<>();
-        final List<Node> nodes = new ArrayList<>();
+    public void reconcileNames(FaskGraphs... files) {
+        Set<String> allNames = new HashSet<>();
+        List<Node> nodes = new ArrayList<>();
 
-        for (final FaskGraphs file : files) {
-            for (final Graph graph : file.getGraphs()) {
-                for (final Node node : graph.getNodes()) {
+        for (FaskGraphs file : files) {
+            for (Graph graph : file.getGraphs()) {
+                for (Node node : graph.getNodes()) {
                     if (!allNames.contains(node.getName())) {
                         nodes.add(node);
                         allNames.add(node.getName());
@@ -67,70 +67,70 @@ public class FaskGraphs {
             }
         }
 
-        final List<Graph> graphs2 = new ArrayList<>();
+        List<Graph> graphs2 = new ArrayList<>();
 
-        for (final Graph graph : this.graphs) {
+        for (Graph graph : graphs) {
             graphs2.add(GraphUtils.replaceNodes(graph, nodes));
         }
 
-        this.graphs = graphs2;
+        graphs = graphs2;
     }
 
     public List<DataSet> getDatasets() {
-        return this.datasets;
+        return datasets;
     }
 
-    public void setDatasets(final List<DataSet> datasets) {
+    public void setDatasets(List<DataSet> datasets) {
         this.datasets = datasets;
     }
 
-    private void loadFiles(final String path, final Parameters parameters, final String... contains) {
-        final File dir = new File(path);
+    private void loadFiles(String path, Parameters parameters, String... contains) {
+        File dir = new File(path);
 
-        final File[] files = dir.listFiles();
+        File[] files = dir.listFiles();
 
         if (files == null) {
             throw new NullPointerException();
         }
 
         FILE:
-        for (final File file : files) {
-            final String name = file.getName();
+        for (File file : files) {
+            String name = file.getName();
 
-            for (final String s : contains) {
+            for (String s : contains) {
                 if (!name.contains(s)) continue FILE;
             }
 
             if (!name.contains("graph")) {
                 try {
                     if (name.contains("autistic")) {
-                        this.types.add(true);
-                        final DataSet dataSet = DataUtils.loadContinuousData(new File(path, name), "//", '\"' ,
+                        types.add(true);
+                        DataSet dataSet = DataUtils.loadContinuousData(new File(path, name), "//", '\"' ,
                                 "*", true, Delimiter.TAB);
-                        this.filenames.add(name);
-                        this.datasets.add(dataSet);
-                        final Fask fask = new Fask();
-                        final Graph search = fask.search(dataSet, parameters);
-                        this.graphs.add(search);
+                        filenames.add(name);
+                        datasets.add(dataSet);
+                        Fask fask = new Fask();
+                        Graph search = fask.search(dataSet, parameters);
+                        graphs.add(search);
                     } else if (name.contains("typical")) {
-                        this.types.add(false);
-                        final DataSet dataSet = DataUtils.loadContinuousData(new File(path, name), "//", '\"' ,
+                        types.add(false);
+                        DataSet dataSet = DataUtils.loadContinuousData(new File(path, name), "//", '\"' ,
                                 "*", true, Delimiter.TAB);
-                        this.filenames.add(name);
-                        this.datasets.add(dataSet);
-                        final Fask fask = new Fask();
-                        final Graph search = fask.search(dataSet, parameters);
-                        this.graphs.add(search);
+                        filenames.add(name);
+                        datasets.add(dataSet);
+                        Fask fask = new Fask();
+                        Graph search = fask.search(dataSet, parameters);
+                        graphs.add(search);
                     }
 
                     System.out.println("Loaded " + name);
-                } catch (final IOException e) {
+                } catch (IOException e) {
                     System.out.println("File " + name + " could not be parsed.");
                 }
             }
         }
 
-        reconcileNames();
+        this.reconcileNames();
     }
 
 }

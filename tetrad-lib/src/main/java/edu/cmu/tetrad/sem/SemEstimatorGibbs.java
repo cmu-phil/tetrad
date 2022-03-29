@@ -101,7 +101,7 @@ public final class SemEstimatorGibbs {
     //	this.semPm = semPm;
     //	this.params = params;
     //}
-    public SemEstimatorGibbs(final SemPm semPm, final SemIm startIm, final double[][] sampleCovars, final boolean flatPrior, final double stretch, final int numIterations) {
+    public SemEstimatorGibbs(SemPm semPm, SemIm startIm, double[][] sampleCovars, boolean flatPrior, double stretch, int numIterations) {
         /*
       For now, we are moving SemEstimatorGibbsParams variables into this
       class for easier testing
@@ -109,12 +109,12 @@ public final class SemEstimatorGibbs {
         this.semPm = semPm;
         this.startIm = startIm;
         this.flatPrior = flatPrior;
-        this.stretch1 = stretch;
-        this.stretch2 = 1.0;
+        stretch1 = stretch;
+        stretch2 = 1.0;
         this.numIterations = numIterations;
-        this.tolerance = 0.0001;
-        this.priorVariance = 16;
-        this.priorCov = new Matrix(sampleCovars);
+        tolerance = 0.0001;
+        priorVariance = 16;
+        priorCov = new Matrix(sampleCovars);
     }
 
     //==============================PUBLIC METHODS=========================//
@@ -131,40 +131,40 @@ public final class SemEstimatorGibbs {
         //as brent, neglogpost, etc.
 
         // Initialize method variables
-        final List<Parameter> parameters = this.semPm.getParameters();
+        List<Parameter> parameters = semPm.getParameters();
 
-        final int numParameters = parameters.size();
-        final double[][] parameterCovariances = new double[numParameters][numParameters];
-        this.parameterMeans = new double[numParameters];
-        this.paramConstraints = new ParamConstraint[numParameters];
+        int numParameters = parameters.size();
+        double[][] parameterCovariances = new double[numParameters][numParameters];
+        parameterMeans = new double[numParameters];
+        paramConstraints = new ParamConstraint[numParameters];
 
-        final Matrix data = new Matrix(parameters.size(), this.numIterations / 50);
+        Matrix data = new Matrix(parameters.size(), numIterations / 50);
 
         //PRIORINIT
-        if (this.flatPrior) {
+        if (flatPrior) {
             // this is used to construct the prior covariance matrix, means
             for (int i = 0; i < numParameters; i++) {
-                final Parameter param = parameters.get(i);
+                Parameter param = parameters.get(i);
 
-                this.parameterMeans[i] = (param.isFixed())
+                parameterMeans[i] = (param.isFixed())
                         ? 0.0
-                        : this.priorVariance;
+                        : priorVariance;
 
                 //Default parameter constraints.  The user should have the
                 // option to change these via the GUI
 
-                this.paramConstraints[i] = (param.getType() == ParamType.VAR) // ParamType.VAR = 'Error Variance'
-                        ? new ParamConstraint(this.startIm, param, ParamConstraintType.GT, 0.0)
-                        : new ParamConstraint(this.startIm, param, ParamConstraintType.NONE, 0.0);
+                paramConstraints[i] = (param.getType() == ParamType.VAR) // ParamType.VAR = 'Error Variance'
+                        ? new ParamConstraint(startIm, param, ParamConstraintType.GT, 0.0)
+                        : new ParamConstraint(startIm, param, ParamConstraintType.NONE, 0.0);
 
                 for (int j = 0; j < numParameters; j++) {
                     parameterCovariances[i][j] = (i == j && !param.isFixed())
-                            ? this.priorVariance
+                            ? priorVariance
                             : 0.0;
                 }
             }
 
-            this.priorCov = new Matrix(parameterCovariances);
+            priorCov = new Matrix(parameterCovariances);
 
         } else {
             System.out.println("Informative Prior. Exiting.");
@@ -173,29 +173,29 @@ public final class SemEstimatorGibbs {
         //END PRIORINIT
 
         //GIBBSINIT
-        final SemIm posteriorIm = new SemIm(this.startIm);
+        SemIm posteriorIm = new SemIm(startIm);
 
-        final List postFreeParams = posteriorIm.getFreeParameters();
+        List postFreeParams = posteriorIm.getFreeParameters();
 
         System.out.println("entering main loop");
 
-        for (int iter = 1; iter <= this.numIterations; iter++) {
+        for (int iter = 1; iter <= numIterations; iter++) {
             System.out.println(iter);
 
             for (int param = 0; param < postFreeParams.size(); param++) {
 
-                final Parameter p = parameters.get(param);
-                final ParamConstraint constraint = this.paramConstraints[param];
+                Parameter p = parameters.get(param);
+                ParamConstraint constraint = paramConstraints[param];
 
                 if (!p.isFixed()) {
                     //FORMAPPROXDIST begin
-                    final double number = (constraint.getParam2() == null)
+                    double number = (constraint.getParam2() == null)
                             ? constraint.getNumber()
-                            : this.startIm.getParamValue(constraint.getParam2());
+                            : startIm.getParamValue(constraint.getParam2());
 
-                    final double ax;
-                    final double bx;
-                    final double cx;
+                    double ax;
+                    double bx;
+                    double cx;
 
                     // Mark - these constraints follow pascal code
                     if (constraint.getType() == ParamConstraintType.NONE) {
@@ -220,9 +220,9 @@ public final class SemEstimatorGibbs {
                         cx = 500.0;
                     }
 
-                    final double[] mean = new double[1];
+                    double[] mean = new double[1];
                     // dmean is the density at the mean
-                    final double dmean = -brent(param, ax, bx, cx, this.tolerance, mean, parameters);
+                    double dmean = -this.brent(param, ax, bx, cx, tolerance, mean, parameters);
                     double gap = 0.005;
                     double denom;
 
@@ -239,7 +239,7 @@ public final class SemEstimatorGibbs {
 
                         System.out.println(p.getNodeA() + " " + p.getNodeA().getNodeType());
                         System.out.println(p.getNodeB() + " " + p.getNodeB().getNodeType());
-                        final double dmeanplus = neglogpost(param, mean[0] + gap, parameters);
+                        double dmeanplus = this.neglogpost(param, mean[0] + gap, parameters);
                         denom = dmean + dmeanplus;
 
                         if (denom < minDenom) denom = minDenom;
@@ -247,7 +247,7 @@ public final class SemEstimatorGibbs {
 //						System.out.println("gap = "+gap+"; denom = "+denom+"; dmean = "+dmean+"; dmeanplus = "+dmeanplus);
                     } while (denom < 0.0);
 
-                    final double vr = (this.stretch1 * 0.5 * gap * gap) / denom;
+                    double vr = (stretch1 * 0.5 * gap * gap) / denom;
 
                     //System.out.println("vr = "+vr+" param = "+param);
 
@@ -264,11 +264,11 @@ public final class SemEstimatorGibbs {
 
 //							System.out.println("dcand start");
 
-                            final double dcand = -1.0 * neglogpost(param, cand, parameters);
+                            double dcand = -1.0 * this.neglogpost(param, cand, parameters);
 //							System.out.println("dcand end");
-                            final double numer = dcand - dmean;
-                            final double denom1 = (-1.0 * Math.sqrt(cand - mean[0]) /
-                                    (2.0 * vr)) - Math.log(this.stretch2);
+                            double numer = dcand - dmean;
+                            double denom1 = (-1.0 * Math.sqrt(cand - mean[0]) /
+                                    (2.0 * vr)) - Math.log(stretch2);
                             rj = numer - denom1;
                             accept = Math.log(RandomUtil.getInstance().nextDouble());
 
@@ -285,7 +285,7 @@ public final class SemEstimatorGibbs {
                     //System.out.println("end of iteration");
 
                     //UPDATEPARM
-                    final Parameter ppost = (Parameter) postFreeParams.get(param);
+                    Parameter ppost = (Parameter) postFreeParams.get(param);
                     if (ppost.isFixed())
                         posteriorIm.setFixedParamValue(ppost, cand);
                     else
@@ -299,19 +299,19 @@ public final class SemEstimatorGibbs {
 
             if (iter % subsampleStride == 0 && iter > 0) {
                 for (int i = 0; i < numParameters; i++) {
-                    final Parameter ppost = (posteriorIm.getSemPm()).getParameters().get(i);
+                    Parameter ppost = (posteriorIm.getSemPm()).getParameters().get(i);
                     data.set(i, iter / subsampleStride - 1, posteriorIm.getParamValue(ppost));
                 }
             }
         }
 
-        this.dataSet = data;
-        this.estimatedSem = posteriorIm;
+        dataSet = data;
+        estimatedSem = posteriorIm;
         //setMeans(posteriorIm, data);
 
     }
 
-    private double brent(final int param, final double ax, final double bx, final double cx, final double tol, final double[] xmin, final List<Parameter> parameters) {
+    private double brent(int param, double ax, double bx, double cx, double tol, double[] xmin, List<Parameter> parameters) {
 
         final int ITMAX = 100;
         int iter;
@@ -324,7 +324,7 @@ public final class SemEstimatorGibbs {
         e = d = 0.0;
         a = (ax < cx) ? ax : cx;
         b = (ax > cx) ? ax : cx;
-        fw = fv = fx = neglogpost(param, x, parameters);
+        fw = fv = fx = this.neglogpost(param, x, parameters);
 
         for (iter = 1; iter <= ITMAX; iter++) {
             xm = 0.5 * (a + b);
@@ -363,9 +363,9 @@ public final class SemEstimatorGibbs {
                 d = CGOLD * e;
             }
 
-            final double s = (tol1 > -0.0) ? Math.abs(d) : -Math.abs(d);
+            double s = (tol1 > -0.0) ? Math.abs(d) : -Math.abs(d);
             u = (Math.abs(d) >= tol1) ? x + d : x + s;
-            fu = neglogpost(param, u, parameters);
+            fu = this.neglogpost(param, u, parameters);
             if (fu <= fx) {
                 if (u >= x) a = x;
                 else b = x;
@@ -397,59 +397,59 @@ public final class SemEstimatorGibbs {
 
     }
 
-    private double neglogpost(final int param, final double x, final List<Parameter> parameters) {
-        final double a = negloglike(param, x);
+    private double neglogpost(int param, double x, List<Parameter> parameters) {
+        double a = this.negloglike(param, x);
         double b = 0.0;
 
         // this is never called since flatprior is never false
-        if (!this.flatPrior) b = neglogprior(param, x, parameters);
+        if (!flatPrior) b = this.neglogprior(param, x, parameters);
 
         return a + b;
     }
 
-    private double negloglike(final int param, final double x) {
+    private double negloglike(int param, double x) {
         // Mark - I'm not entirely sure about this method
 
-        final Parameter p = this.semPm.getParameters().get(param);
+        Parameter p = semPm.getParameters().get(param);
 
-        final double tparm = this.startIm.getParamValue(p);
+        double tparm = startIm.getParamValue(p);
 
 //		System.out.println(tparm);
 
-        if ((p.getType() == ParamType.VAR || p.getType() == ParamType.COEF) && this.paramConstraints[param].wouldBeSatisfied(x)) {
-            this.startIm.setParamValue(p, x);
+        if ((p.getType() == ParamType.VAR || p.getType() == ParamType.COEF) && paramConstraints[param].wouldBeSatisfied(x)) {
+            startIm.setParamValue(p, x);
         }
 
 
-        final double nll = -this.startIm.getTruncLL();
+        double nll = -startIm.getTruncLL();
 
-        this.startIm.setParamValue(p, tparm);
+        startIm.setParamValue(p, tparm);
 
         return nll;
 
     }
 
-    private double negchi2(final int param, final double x, final List<Parameter> parameters) {
+    private double negchi2(int param, double x, List<Parameter> parameters) {
         // Mark - I modified some code in here that I thought to be inaccurate based on pascal code
         // this is only called when flatprior is false, which it will never be with the getModel code
 
         double answer = 0.0;
-        final int n = this.dataSet.columns();
-        final int numParameters = parameters.size();
-        final double[] xvec = new double[numParameters];
-        final double[] temp = new double[numParameters];
+        int n = dataSet.columns();
+        int numParameters = parameters.size();
+        double[] xvec = new double[numParameters];
+        double[] temp = new double[numParameters];
 
         for (int i = 0; i < numParameters; i++) {
-            final Parameter p = parameters.get(i);
+            Parameter p = parameters.get(i);
 
             if (p.isFixed()) continue;
 
             xvec[n] = (i == param)
-                    ? x - this.parameterMeans[i]
-                    : this.startIm.getParamValue(p) - this.parameterMeans[i];
+                    ? x - parameterMeans[i]
+                    : startIm.getParamValue(p) - parameterMeans[i];
         }
 
-        final Matrix invPrior = this.priorCov.inverse();
+        Matrix invPrior = priorCov.inverse();
 
         for (int i = 0; i < n; i++) temp[i] = 0.0;
         for (int col = 0; col < n; col++) {
@@ -465,30 +465,30 @@ public final class SemEstimatorGibbs {
         return -answer;
     }
 
-    private double neglogprior(final int param, final double x, final List<Parameter> parameters) {
-        return -negchi2(param, x, parameters) / 2.0;
+    private double neglogprior(int param, double x, List<Parameter> parameters) {
+        return -this.negchi2(param, x, parameters) / 2.0;
     }
 
     /**
      * @return SemIm
      */
     public SemIm getEstimatedSem() {
-        return this.estimatedSem;
+        return estimatedSem;
     }
 
     /**
      * @return a string representation of the Sem.
      */
     public String toString() {
-        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-        final StringBuilder buf = new StringBuilder();
+        StringBuilder buf = new StringBuilder();
         buf.append("\nSemEstimator");
 
-        if (this.getEstimatedSem() == null) {
+        if (getEstimatedSem() == null) {
             buf.append("\n\t...SemIm has not been estimated yet.");
         } else {
-            final SemIm sem = this.getEstimatedSem();
+            SemIm sem = getEstimatedSem();
             buf.append("\n\n\tfml = ");
 
             buf.append("\n\n\tnegtruncll = ");
@@ -556,11 +556,11 @@ public final class SemEstimatorGibbs {
 //    }
 
     public SemPm getSemPm() {
-        return this.semPm;
+        return semPm;
     }
 
     public Matrix getDataSet() {
-        return this.dataSet;
+        return dataSet;
     }
 
 
@@ -577,7 +577,7 @@ public final class SemEstimatorGibbs {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 

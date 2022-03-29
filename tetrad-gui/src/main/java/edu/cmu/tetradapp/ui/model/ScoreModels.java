@@ -43,76 +43,76 @@ public final class ScoreModels {
     private final Map<DataType, ScoreModel> defaultModelMap = new EnumMap<>(DataType.class);
 
     private ScoreModels() {
-        final ScoreAnnotations scoreAnno = ScoreAnnotations.getInstance();
-        final List<AnnotatedClass<Score>> list = Tetrad.enableExperimental
+        ScoreAnnotations scoreAnno = ScoreAnnotations.getInstance();
+        List<AnnotatedClass<Score>> list = Tetrad.enableExperimental
                 ? scoreAnno.getAnnotatedClasses()
                 : scoreAnno.filterOutExperimental(scoreAnno.getAnnotatedClasses());
 
-        this.models = Collections.unmodifiableList(
+        models = Collections.unmodifiableList(
                 list.stream()
                         .map(e -> new ScoreModel(e))
                         .sorted()
                         .collect(Collectors.toList()));
 
-        initModelMap();
-        initDefaultModelMap();
+        this.initModelMap();
+        this.initDefaultModelMap();
     }
 
     private void initModelMap() {
         // initialize enum map
-        final DataType[] dataTypes = DataType.values();
-        for (final DataType dataType : dataTypes) {
-            this.modelMap.put(dataType, new LinkedList<>());
+        DataType[] dataTypes = DataType.values();
+        for (DataType dataType : dataTypes) {
+            modelMap.put(dataType, new LinkedList<>());
         }
 
         // group by datatype
-        this.models.stream().forEach(e -> {
-            final DataType[] types = e.getScore().getAnnotation().dataType();
-            for (final DataType dataType : types) {
-                this.modelMap.get(dataType).add(e);
+        models.stream().forEach(e -> {
+            DataType[] types = e.getScore().getAnnotation().dataType();
+            for (DataType dataType : types) {
+                modelMap.get(dataType).add(e);
             }
         });
 
         // merge continuous datatype with mixed datatype
-        List<ScoreModel> mergedModels = Stream.concat(this.modelMap.get(DataType.Continuous).stream(), this.modelMap.get(DataType.Mixed).stream())
+        List<ScoreModel> mergedModels = Stream.concat(modelMap.get(DataType.Continuous).stream(), modelMap.get(DataType.Mixed).stream())
                 .sorted()
                 .collect(Collectors.toList());
-        this.modelMap.put(DataType.Continuous, mergedModels);
+        modelMap.put(DataType.Continuous, mergedModels);
 
         // merge discrete datatype with mixed datatype
-        mergedModels = Stream.concat(this.modelMap.get(DataType.Discrete).stream(), this.modelMap.get(DataType.Mixed).stream())
+        mergedModels = Stream.concat(modelMap.get(DataType.Discrete).stream(), modelMap.get(DataType.Mixed).stream())
                 .sorted()
                 .collect(Collectors.toList());
-        this.modelMap.put(DataType.Discrete, mergedModels);
+        modelMap.put(DataType.Discrete, mergedModels);
 
         // make map values unmodifiable
-        this.modelMap.forEach((k, v) -> this.modelMap.put(k, Collections.unmodifiableList(v)));
+        modelMap.forEach((k, v) -> modelMap.put(k, Collections.unmodifiableList(v)));
     }
 
     private void initDefaultModelMap() {
-        final DataType[] dataTypes = DataType.values();
-        for (final DataType dataType : dataTypes) {
-            final List<ScoreModel> list = getModels(dataType);
+        DataType[] dataTypes = DataType.values();
+        for (DataType dataType : dataTypes) {
+            List<ScoreModel> list = this.getModels(dataType);
             if (!list.isEmpty()) {
-                final String property = getProperty(dataType);
+                String property = this.getProperty(dataType);
                 if (property == null) {
-                    this.defaultModelMap.put(dataType, list.get(0));
+                    defaultModelMap.put(dataType, list.get(0));
                 } else {
-                    final String value = TetradProperties.getInstance().getValue(property);
+                    String value = TetradProperties.getInstance().getValue(property);
                     if (value == null) {
-                        this.defaultModelMap.put(dataType, list.get(0));
+                        defaultModelMap.put(dataType, list.get(0));
                     } else {
-                        final Optional<ScoreModel> result = list.stream()
+                        Optional<ScoreModel> result = list.stream()
                                 .filter(e -> e.getScore().getClazz().getName().equals(value))
                                 .findFirst();
-                        this.defaultModelMap.put(dataType, result.isPresent() ? result.get() : list.get(0));
+                        defaultModelMap.put(dataType, result.isPresent() ? result.get() : list.get(0));
                     }
                 }
             }
         }
     }
 
-    private String getProperty(final DataType dataType) {
+    private String getProperty(DataType dataType) {
         switch (dataType) {
             case Continuous:
                 return "datatype.continuous.score.default";
@@ -126,21 +126,21 @@ public final class ScoreModels {
     }
 
     public static ScoreModels getInstance() {
-        return ScoreModels.INSTANCE;
+        return INSTANCE;
     }
 
     public List<ScoreModel> getModels() {
-        return this.models;
+        return models;
     }
 
-    public List<ScoreModel> getModels(final DataType dataType) {
-        return this.modelMap.containsKey(dataType)
-                ? this.modelMap.get(dataType)
+    public List<ScoreModel> getModels(DataType dataType) {
+        return modelMap.containsKey(dataType)
+                ? modelMap.get(dataType)
                 : Collections.EMPTY_LIST;
     }
 
-    public ScoreModel getDefaultModel(final DataType dataType) {
-        return this.defaultModelMap.get(dataType);
+    public ScoreModel getDefaultModel(DataType dataType) {
+        return defaultModelMap.get(dataType);
     }
 
 }

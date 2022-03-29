@@ -48,19 +48,19 @@ public class CPDAGFitEditor extends JPanel {
     /**
      * Constructs the editor given the model
      */
-    public CPDAGFitEditor(final CPDAGFitModel comparison) {
+    public CPDAGFitEditor(CPDAGFitModel comparison) {
         this.comparison = comparison;
-        setup();
+        this.setup();
     }
 
     //============================ Private Methods =========================//
 
     private void setup() {
-        final JTabbedPane pane = new JTabbedPane(JTabbedPane.LEFT);
+        JTabbedPane pane = new JTabbedPane(JTabbedPane.LEFT);
 
-        final DataModelList data = this.comparison.getDataModelList();
-        final List<BayesIm> bayesIms = this.comparison.getBayesIms();
-        final List<SemPm> semPms = this.comparison.getSemPms();
+        DataModelList data = comparison.getDataModelList();
+        List<BayesIm> bayesIms = comparison.getBayesIms();
+        List<SemPm> semPms = comparison.getSemPms();
 
         if (bayesIms != null && semPms != null) {
             throw new IllegalArgumentException("That's weird; both Bayes and SEM estimations were done. Please complain.");
@@ -68,25 +68,25 @@ public class CPDAGFitEditor extends JPanel {
 
         if (bayesIms != null) {
             for (int i = 0; i < bayesIms.size(); i++) {
-                final BayesEstimatorEditor editor = new BayesEstimatorEditor(bayesIms.get(i), (DataSet) data.get(i));
+                BayesEstimatorEditor editor = new BayesEstimatorEditor(bayesIms.get(i), (DataSet) data.get(i));
 
-                final JPanel panel = new JPanel();
+                JPanel panel = new JPanel();
 
-                final JScrollPane scroll = new JScrollPane(editor);
+                JScrollPane scroll = new JScrollPane(editor);
                 scroll.setPreferredSize(new Dimension(900, 600));
 
                 panel.add(Box.createVerticalStrut(10));
 
-                final Box box = Box.createHorizontalBox();
+                Box box = Box.createHorizontalBox();
                 panel.add(box);
                 panel.add(Box.createVerticalStrut(10));
 
-                final Box box1 = Box.createHorizontalBox();
+                Box box1 = Box.createHorizontalBox();
                 box1.add(new JLabel("Graph Comparison: "));
                 box1.add(Box.createHorizontalGlue());
 
-                add(box1);
-                setLayout(new BorderLayout());
+                this.add(box1);
+                this.setLayout(new BorderLayout());
 
                 pane.add("" + (i + 1), scroll);
             }
@@ -94,12 +94,12 @@ public class CPDAGFitEditor extends JPanel {
 
         if (semPms != null) {
             for (int i = 0; i < semPms.size(); i++) {
-                final SemEstimatorEditor editor = new SemEstimatorEditor(semPms.get(i), (DataSet) data.get(i));
+                SemEstimatorEditor editor = new SemEstimatorEditor(semPms.get(i), (DataSet) data.get(i));
                 pane.add("" + (i + 1), editor);
             }
         }
 
-        add(pane);
+        this.add(pane);
     }
 
 }

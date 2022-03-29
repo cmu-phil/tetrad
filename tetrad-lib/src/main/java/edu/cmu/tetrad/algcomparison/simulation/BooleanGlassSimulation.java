@@ -12,6 +12,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.TimeLagGraph;
+import edu.cmu.tetrad.graph.TimeLagGraph.NodeId;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.*;
@@ -29,89 +30,89 @@ public class BooleanGlassSimulation implements Simulation {
     private List<DataSet> dataSets = new ArrayList<>();
     private Graph graph = new EdgeListGraph();
 
-    public BooleanGlassSimulation(final RandomGraph graph) {
-        this.randomGraph = graph;
+    public BooleanGlassSimulation(RandomGraph graph) {
+        randomGraph = graph;
     }
 
     @Override
-    public void createData(final Parameters parameters, final boolean newModel) {
+    public void createData(Parameters parameters, boolean newModel) {
 //        if (!newModel && !dataSets.isEmpty()) return;
 
-        this.graph = this.randomGraph.createGraph(parameters);
+        graph = randomGraph.createGraph(parameters);
 
-        final LagGraphParams params = new LagGraphParams(parameters);
+        LagGraphParams params = new LagGraphParams(parameters);
 
         params.setIndegree(2);
         params.setMlag(1);
 
-        final RandomActiveLagGraph _graph = new RandomActiveLagGraph(params);
-        final BooleanGlassGenePm pm = new BooleanGlassGenePm(_graph);
-        final BooleanGlassGeneIm im = new BooleanGlassGeneIm(pm, parameters);
-        final DataModelList data = im.simulateData();
+        RandomActiveLagGraph _graph = new RandomActiveLagGraph(params);
+        BooleanGlassGenePm pm = new BooleanGlassGenePm(_graph);
+        BooleanGlassGeneIm im = new BooleanGlassGeneIm(pm, parameters);
+        DataModelList data = im.simulateData();
 
-        final List<DataSet> dataSets = new ArrayList<>();
+        List<DataSet> dataSets = new ArrayList<>();
 
-        for (final DataModel model : data) {
+        for (DataModel model : data) {
             dataSets.add((DataSet) model);
         }
 
         this.dataSets = dataSets;
 
-        final List<String> factors = new ArrayList<>(_graph.getFactors());
+        List<String> factors = new ArrayList<>(_graph.getFactors());
 
-        final Map<String, Node> nodes = new HashMap<>();
+        Map<String, Node> nodes = new HashMap<>();
 
-        for (final String factor : factors) {
+        for (String factor : factors) {
             nodes.put(factor, new ContinuousVariable(factor));
         }
 
-        final TimeLagGraph graph = new TimeLagGraph();
+        TimeLagGraph graph = new TimeLagGraph();
         graph.setMaxLag(_graph.getMaxLag());
 
-        for (final String factor : factors) {
+        for (String factor : factors) {
             graph.addNode(nodes.get(factor));
         }
 
-        for (final String factor : factors) {
-            for (final Object o : _graph.getParents(factor)) {
-                final LaggedFactor laggedFactor = (LaggedFactor) o;
-                final String _factor = laggedFactor.getFactor();
-                final int lag = laggedFactor.getLag();
-                final Node node1 = graph.getNode(_factor + ":" + lag);
-                final Node node2 = graph.getNode(factor);
+        for (String factor : factors) {
+            for (Object o : _graph.getParents(factor)) {
+                LaggedFactor laggedFactor = (LaggedFactor) o;
+                String _factor = laggedFactor.getFactor();
+                int lag = laggedFactor.getLag();
+                Node node1 = graph.getNode(_factor + ":" + lag);
+                Node node2 = graph.getNode(factor);
                 graph.addDirectedEdge(node1, node2);
             }
         }
 
-        BooleanGlassSimulation.topToBottomLayout(graph);
+        topToBottomLayout(graph);
 
         this.graph = graph;
     }
 
-    public static void topToBottomLayout(final TimeLagGraph graph) {
+    public static void topToBottomLayout(TimeLagGraph graph) {
 
         final int xStart = 65;
         final int yStart = 50;
         final int xSpace = 100;
         final int ySpace = 100;
-        final List<Node> lag0Nodes = graph.getLag0Nodes();
+        List<Node> lag0Nodes = graph.getLag0Nodes();
 
         Collections.sort(lag0Nodes, new Comparator<Node>() {
-            public int compare(final Node o1, final Node o2) {
+            public int compare(Node o1, Node o2) {
                 return o1.getCenterX() - o2.getCenterX();
             }
         });
 
         int x = xStart - xSpace;
 
-        for (final Node node : lag0Nodes) {
+        for (Node node : lag0Nodes) {
             x += xSpace;
             int y = yStart - ySpace;
-            final TimeLagGraph.NodeId id = graph.getNodeId(node);
+            NodeId id = graph.getNodeId(node);
 
             for (int lag = graph.getMaxLag(); lag >= 0; lag--) {
                 y += ySpace;
-                final Node _node = graph.getNode(id.getName(), lag);
+                Node _node = graph.getNode(id.getName(), lag);
 
                 if (_node == null) {
                     System.out.println("Couldn't find " + _node);
@@ -125,23 +126,23 @@ public class BooleanGlassSimulation implements Simulation {
     }
 
     @Override
-    public Graph getTrueGraph(final int index) {
-        return this.graph;
+    public Graph getTrueGraph(int index) {
+        return graph;
     }
 
     @Override
-    public DataModel getDataModel(final int index) {
-        return this.dataSets.get(index);
+    public DataModel getDataModel(int index) {
+        return dataSets.get(index);
     }
 
     @Override
     public String getDescription() {
-        return "Boolean Glass Simulation " + this.randomGraph.getDescription();
+        return "Boolean Glass Simulation " + randomGraph.getDescription();
     }
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
         parameters.add("lagGraphVarsPerInd");
         parameters.add("lagGraphMlag");
         parameters.add("lagGraphIndegree");
@@ -166,7 +167,7 @@ public class BooleanGlassSimulation implements Simulation {
 
     @Override
     public int getNumDataModels() {
-        return this.dataSets.size();
+        return dataSets.size();
     }
 
     @Override

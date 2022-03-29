@@ -39,33 +39,33 @@ public class SvarFci implements Algorithm, HasKnowledge, TakesIndependenceWrappe
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
-    private IKnowledge knowledge = null;
+    private IKnowledge knowledge;
 
     public SvarFci() {
     }
 
-    public SvarFci(final IndependenceWrapper test) {
+    public SvarFci(IndependenceWrapper test) {
         this.test = test;
     }
 
     @Override
-    public Graph search(final DataModel dataSet, final Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            if (this.knowledge != null) {
-                dataSet.setKnowledge(this.knowledge);
+            if (knowledge != null) {
+                dataSet.setKnowledge(knowledge);
             }
-            final edu.cmu.tetrad.search.SvarFci search = new edu.cmu.tetrad.search.SvarFci(this.test.getTest(dataSet, parameters));
+            edu.cmu.tetrad.search.SvarFci search = new edu.cmu.tetrad.search.SvarFci(test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
-            search.setKnowledge(this.knowledge);
+            search.setKnowledge(knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             return search.search();
         } else {
-            final SvarFci svarFci = new SvarFci(this.test);
+            SvarFci svarFci = new SvarFci(test);
 
-            final DataSet data = (DataSet) dataSet;
-            final GeneralResamplingTest search = new GeneralResamplingTest(data, svarFci, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(this.knowledge);
+            DataSet data = (DataSet) dataSet;
+            GeneralResamplingTest search = new GeneralResamplingTest(data, svarFci, parameters.getInt(Params.NUMBER_RESAMPLING));
+            search.setKnowledge(knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -91,22 +91,22 @@ public class SvarFci implements Algorithm, HasKnowledge, TakesIndependenceWrappe
     }
 
     @Override
-    public Graph getComparisonGraph(final Graph graph) {
+    public Graph getComparisonGraph(Graph graph) {
         return new TsDagToPag(new EdgeListGraph(graph)).convert();
     }
 
     public String getDescription() {
-        return "SvarFCI (SVAR Fast Causal Inference) using " + this.test.getDescription();
+        return "SvarFCI (SVAR Fast Causal Inference) using " + test.getDescription();
     }
 
     @Override
     public DataType getDataType() {
-        return this.test.getDataType();
+        return test.getDataType();
     }
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
 
         parameters.add(Params.VERBOSE);
         return parameters;
@@ -114,21 +114,21 @@ public class SvarFci implements Algorithm, HasKnowledge, TakesIndependenceWrappe
 
     @Override
     public IKnowledge getKnowledge() {
-        return this.knowledge;
+        return knowledge;
     }
 
     @Override
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
-        return this.test;
+        return test;
     }
 
     @Override
-    public void setIndependenceWrapper(final IndependenceWrapper test) {
+    public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;
     }
 }

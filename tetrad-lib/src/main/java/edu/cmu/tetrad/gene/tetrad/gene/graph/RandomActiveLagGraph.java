@@ -43,11 +43,11 @@ public class RandomActiveLagGraph extends ActiveLagGraph
      *
      * @param params an LagGraphParams object.
      */
-    public RandomActiveLagGraph(final LagGraphParams params) {
+    public RandomActiveLagGraph(LagGraphParams params) {
 
-        addFactors("Gene", params.getVarsPerInd());
+        this.addFactors("Gene", params.getVarsPerInd());
 
-        final int indegreeType;
+        int indegreeType;
 
         switch (params.getIndegreeType()) {
             case LagGraphParams.CONSTANT:
@@ -66,9 +66,9 @@ public class RandomActiveLagGraph extends ActiveLagGraph
                 throw new IllegalArgumentException();
         }
 
-        setMaxLagAllowable(params.getMlag());
+        this.setMaxLagAllowable(params.getMlag());
 
-        final SimpleRandomizer randomizer = new SimpleRandomizer(params.getIndegree(),
+        SimpleRandomizer randomizer = new SimpleRandomizer(params.getIndegree(),
                 indegreeType, params.getMlag(), params.getPercentUnregulated());
 
         randomizer.initialize(this);
@@ -82,10 +82,10 @@ public class RandomActiveLagGraph extends ActiveLagGraph
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 }

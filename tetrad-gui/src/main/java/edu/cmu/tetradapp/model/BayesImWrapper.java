@@ -46,8 +46,8 @@ public class BayesImWrapper implements SessionModel, Memorable {
     static final long serialVersionUID = 23L;
 
     private int numModels = 1;
-    private int modelIndex = 0;
-    private String modelSourceName = null;
+    private int modelIndex;
+    private String modelSourceName;
 
     /**
      * @serial Can be null.
@@ -60,7 +60,7 @@ public class BayesImWrapper implements SessionModel, Memorable {
     private List<BayesIm> bayesIms;
 
     //===========================CONSTRUCTORS===========================//
-    public BayesImWrapper(final BayesPmWrapper bayesPmWrapper, final BayesImWrapper oldBayesImwrapper, final Parameters params) {
+    public BayesImWrapper(BayesPmWrapper bayesPmWrapper, BayesImWrapper oldBayesImwrapper, Parameters params) {
         if (bayesPmWrapper == null) {
             throw new NullPointerException("BayesPmWrapper must not be null.");
         }
@@ -69,32 +69,32 @@ public class BayesImWrapper implements SessionModel, Memorable {
             throw new NullPointerException("Parameters must not be null.");
         }
 
-        final BayesPm bayesPm = new BayesPm(bayesPmWrapper.getBayesPm());
-        final BayesIm oldBayesIm = oldBayesImwrapper.getBayesIm();
+        BayesPm bayesPm = new BayesPm(bayesPmWrapper.getBayesPm());
+        BayesIm oldBayesIm = oldBayesImwrapper.getBayesIm();
 
         if (params.getString("initializationMode", "manualRetain").equals("manualRetain")) {
-            setBayesIm(bayesPm, oldBayesIm, MlBayesIm.MANUAL);
+            this.setBayesIm(bayesPm, oldBayesIm, MlBayesIm.MANUAL);
         } else if (params.getString("initializationMode", "manualRetain").equals("randomRetain")) {
-            setBayesIm(bayesPm, oldBayesIm, MlBayesIm.RANDOM);
+            this.setBayesIm(bayesPm, oldBayesIm, MlBayesIm.RANDOM);
         } else if (params.getString("initializationMode", "manualRetain").equals("randomOverwrite")) {
-            setBayesIm(new MlBayesIm(bayesPm, MlBayesIm.RANDOM));
+            this.setBayesIm(new MlBayesIm(bayesPm, MlBayesIm.RANDOM));
         }
 //        log(bayesIm);
     }
 
-    private void setBayesIm(final BayesPm bayesPm, final BayesIm oldBayesIm, final int manual) {
-        this.bayesIms = new ArrayList<>();
-        this.bayesIms.add(new MlBayesIm(bayesPm, oldBayesIm, manual));
+    private void setBayesIm(BayesPm bayesPm, BayesIm oldBayesIm, int manual) {
+        bayesIms = new ArrayList<>();
+        bayesIms.add(new MlBayesIm(bayesPm, oldBayesIm, manual));
     }
 
-    public BayesImWrapper(final Simulation simulation) {
+    public BayesImWrapper(Simulation simulation) {
         List<BayesIm> bayesIms = null;
 
         if (simulation == null) {
             throw new NullPointerException("The Simulation box does not contain a simulation.");
         }
 
-        final edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation = simulation.getSimulation();
+        edu.cmu.tetrad.algcomparison.simulation.Simulation _simulation = simulation.getSimulation();
 
         if (_simulation == null) {
             throw new NullPointerException("No data sets have been simulated.");
@@ -112,9 +112,9 @@ public class BayesImWrapper implements SessionModel, Memorable {
 
         this.bayesIms = bayesIms;
 
-        this.numModels = simulation.getDataModelList().size();
-        this.modelIndex = 0;
-        this.modelSourceName = simulation.getName();
+        numModels = simulation.getDataModelList().size();
+        modelIndex = 0;
+        modelSourceName = simulation.getName();
     }
 
 //    public BayesImWrapper(BayesEstimatorWrapper wrapper, Parameters parameters) {
@@ -141,31 +141,31 @@ public class BayesImWrapper implements SessionModel, Memorable {
 ////        log(bayesIm);
 //    }
 
-    public BayesImWrapper(final RowSummingExactWrapper wrapper, final Parameters parameters) {
+    public BayesImWrapper(RowSummingExactWrapper wrapper, Parameters parameters) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
-        setBayesIm(wrapper.getBayesUpdater().getUpdatedBayesIm());
+        this.setBayesIm(wrapper.getBayesUpdater().getUpdatedBayesIm());
 //        log(bayesIm);
     }
 
-    public BayesImWrapper(final CptInvariantUpdaterWrapper wrapper, final Parameters parameters) {
+    public BayesImWrapper(CptInvariantUpdaterWrapper wrapper, Parameters parameters) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
-        setBayesIm(wrapper.getBayesUpdater().getUpdatedBayesIm());
+        this.setBayesIm(wrapper.getBayesUpdater().getUpdatedBayesIm());
 //        log(bayesIm);
     }
 
-    public BayesImWrapper(final ApproximateUpdaterWrapper wrapper, final Parameters parameters) {
+    public BayesImWrapper(ApproximateUpdaterWrapper wrapper, Parameters parameters) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
-        setBayesIm(wrapper.getBayesUpdater().getUpdatedBayesIm());
+        this.setBayesIm(wrapper.getBayesUpdater().getUpdatedBayesIm());
 //        log(bayesIm);
     }
 
-    public BayesImWrapper(final BayesPmWrapper bayesPmWrapper, final Parameters params) {
+    public BayesImWrapper(BayesPmWrapper bayesPmWrapper, Parameters params) {
         if (bayesPmWrapper == null) {
             throw new NullPointerException("BayesPmWrapper must not be null.");
         }
@@ -174,14 +174,14 @@ public class BayesImWrapper implements SessionModel, Memorable {
             throw new NullPointerException("Parameters must not be null.");
         }
 
-        final BayesPm bayesPm = new BayesPm(bayesPmWrapper.getBayesPm());
+        BayesPm bayesPm = new BayesPm(bayesPmWrapper.getBayesPm());
 
         if (params.getString("initializationMode", "manualRetain").equals("manualRetain")) {
-            setBayesIm(new MlBayesIm(bayesPm));
+            this.setBayesIm(new MlBayesIm(bayesPm));
         } else if (params.getString("initializationMode", "manualRetain").equals("randomRetain")) {
-            setBayesIm(new MlBayesIm(bayesPm, MlBayesIm.RANDOM));
+            this.setBayesIm(new MlBayesIm(bayesPm, MlBayesIm.RANDOM));
         } else if (params.getString("initializationMode", "manualRetain").equals("randomOverwrite")) {
-            setBayesIm(new MlBayesIm(bayesPm, MlBayesIm.RANDOM));
+            this.setBayesIm(new MlBayesIm(bayesPm, MlBayesIm.RANDOM));
         }
 //        log(bayesIm);
     }
@@ -196,11 +196,11 @@ public class BayesImWrapper implements SessionModel, Memorable {
 //    }
 
 
-    public BayesImWrapper(final BayesIm bayesIm) {
+    public BayesImWrapper(BayesIm bayesIm) {
         if (bayesIm == null) {
             throw new NullPointerException("Bayes IM must not be null.");
         }
-        setBayesIm(new MlBayesIm(bayesIm));
+        this.setBayesIm(new MlBayesIm(bayesIm));
     }
 
     /**
@@ -215,55 +215,55 @@ public class BayesImWrapper implements SessionModel, Memorable {
 
     //=============================PUBLIC METHODS=========================//
     public BayesIm getBayesIm() {
-        return this.bayesIms.get(getModelIndex());
+        return bayesIms.get(this.getModelIndex());
     }
 
     public Graph getGraph() {
-        return getBayesIm().getBayesPm().getDag();
+        return this.getBayesIm().getBayesPm().getDag();
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
     public Graph getSourceGraph() {
-        return getGraph();
+        return this.getGraph();
     }
 
     public Graph getResultGraph() {
-        return getGraph();
+        return this.getGraph();
     }
 
     public List<String> getVariableNames() {
-        return getGraph().getNodeNames();
+        return this.getGraph().getNodeNames();
     }
 
     public List<Node> getVariables() {
-        return getGraph().getNodes();
+        return this.getGraph().getNodes();
     }
 
-    public void setBayesIm(final BayesIm bayesIm) {
-        this.bayesIms = new ArrayList<>();
-        this.bayesIms.add(bayesIm);
+    public void setBayesIm(BayesIm bayesIm) {
+        bayesIms = new ArrayList<>();
+        bayesIms.add(bayesIm);
     }
 
     public int getNumModels() {
-        return this.numModels;
+        return numModels;
     }
 
     public int getModelIndex() {
-        return this.modelIndex;
+        return modelIndex;
     }
 
     public String getModelSourceName() {
-        return this.modelSourceName;
+        return modelSourceName;
     }
 
-    public void setModelIndex(final int modelIndex) {
+    public void setModelIndex(int modelIndex) {
         this.modelIndex = modelIndex;
     }
 
@@ -286,7 +286,7 @@ public class BayesImWrapper implements SessionModel, Memorable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }

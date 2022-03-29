@@ -21,6 +21,8 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetradapp.editor.SaveGraph.Type;
+
 import javax.swing.*;
 
 
@@ -35,29 +37,29 @@ final class GraphFileMenu extends JMenu {
 
     private static final long serialVersionUID = 8003709852565658589L;
 
-    public GraphFileMenu(final GraphEditable editable, final JComponent comp) {
+    public GraphFileMenu(GraphEditable editable, JComponent comp) {
         super("File");
 
-        final JMenu load = new JMenu("Load...");
-        add(load);
+        JMenu load = new JMenu("Load...");
+        this.add(load);
 
         load.add(new LoadGraph(editable, "XML..."));
         load.add(new LoadGraphTxt(editable, "Text..."));
         load.add(new LoadGraphJson(editable, "Json..."));
 
-        final JMenu save = new JMenu("Save...");
-        add(save);
+        JMenu save = new JMenu("Save...");
+        this.add(save);
 
-        save.add(new SaveGraph(editable, "XML...", SaveGraph.Type.xml));
-        save.add(new SaveGraph(editable, "Text...", SaveGraph.Type.text));
-        save.add(new SaveGraph(editable, "Json...", SaveGraph.Type.json));
-        save.add(new SaveGraph(editable, "R...", SaveGraph.Type.r));
-        save.add(new SaveGraph(editable, "Dot...", SaveGraph.Type.dot));
+        save.add(new SaveGraph(editable, "XML...", Type.xml));
+        save.add(new SaveGraph(editable, "Text...", Type.text));
+        save.add(new SaveGraph(editable, "Json...", Type.json));
+        save.add(new SaveGraph(editable, "R...", Type.r));
+        save.add(new SaveGraph(editable, "Dot...", Type.dot));
 
 //        add(new SaveGraph(editable, "Save Graph..."));
 //        file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
-        addSeparator();
-        add(new SaveComponentImage(comp, "Save Graph Image..."));
+        this.addSeparator();
+        this.add(new SaveComponentImage(comp, "Save Graph Image..."));
     }
 }
 

@@ -10,6 +10,7 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.TimeLagGraph;
+import edu.cmu.tetrad.graph.TimeLagGraph.NodeId;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -33,7 +34,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
     private List<DataSet> dataSets = new ArrayList<>();
     private IKnowledge knowledge;
 
-    public TimeSeriesSemSimulation(final RandomGraph randomGraph) {
+    public TimeSeriesSemSimulation(RandomGraph randomGraph) {
         if (randomGraph == null) {
             throw new NullPointerException();
         }
@@ -41,40 +42,40 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
     }
 
     @Override
-    public void createData(final Parameters parameters, final boolean newModel) {
+    public void createData(Parameters parameters, boolean newModel) {
 //        if (!newModel && !dataSets.isEmpty()) return;
-        this.dataSets = new ArrayList<>();
-        this.graphs = new ArrayList<>();
+        dataSets = new ArrayList<>();
+        graphs = new ArrayList<>();
 
-        Graph graph = this.randomGraph.createGraph(parameters);
+        Graph graph = randomGraph.createGraph(parameters);
         graph = TimeSeriesUtils.graphToLagGraph(graph, parameters.getInt(Params.NUM_LAGS));
-        TimeSeriesSemSimulation.topToBottomLayout((TimeLagGraph) graph);
-        this.knowledge = TimeSeriesUtils.getKnowledge(graph);
+        topToBottomLayout((TimeLagGraph) graph);
+        knowledge = TimeSeriesUtils.getKnowledge(graph);
 
         for (int i = 0; i < parameters.getInt(Params.NUM_RUNS); i++) {
             if (parameters.getBoolean(Params.DIFFERENT_GRAPHS) && i > 0) {
-                graph = this.randomGraph.createGraph(parameters);
+                graph = randomGraph.createGraph(parameters);
                 graph = TimeSeriesUtils.graphToLagGraph(graph, 2);
-                TimeSeriesSemSimulation.topToBottomLayout((TimeLagGraph) graph);
+                topToBottomLayout((TimeLagGraph) graph);
             }
 
-            this.graphs.add(graph);
+            graphs.add(graph);
 
-            final SemPm pm = new SemPm(graph);
-            final SemIm im = new SemIm(pm, parameters);
+            SemPm pm = new SemPm(graph);
+            SemIm im = new SemIm(pm, parameters);
 
-            final int sampleSize = parameters.getInt(Params.SAMPLE_SIZE);
+            int sampleSize = parameters.getInt(Params.SAMPLE_SIZE);
 
-            final boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
+            boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
             DataSet dataSet = im.simulateData(sampleSize, saveLatentVars);
 
-            final int numLags = ((TimeLagGraph) graph).getMaxLag();
+            int numLags = ((TimeLagGraph) graph).getMaxLag();
 
             dataSet = TimeSeriesUtils.createLagData(dataSet, numLags);
 
             dataSet.setName("" + (i + 1));
-            dataSet.setKnowledge(this.knowledge.copy());
-            this.dataSets.add(dataSet);
+            dataSet.setKnowledge(knowledge.copy());
+            dataSets.add(dataSet);
 
 //            LargeScaleSimulation sim = new LargeScaleSimulation(graph);
 //            if (parameters.getDouble("coefHigh") > 0.80) {
@@ -118,13 +119,13 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
     }
 
     @Override
-    public DataModel getDataModel(final int index) {
-        return this.dataSets.get(index);
+    public DataModel getDataModel(int index) {
+        return dataSets.get(index);
     }
 
     @Override
-    public Graph getTrueGraph(final int index) {
-        return this.graphs.get(index);
+    public Graph getTrueGraph(int index) {
+        return graphs.get(index);
     }
 
     @Override
@@ -134,12 +135,12 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
 
         parameters.add(Params.NUM_LAGS);
 
-        if (!(this.randomGraph instanceof SingleGraph)) {
-            parameters.addAll(this.randomGraph.getParameters());
+        if (!(randomGraph instanceof SingleGraph)) {
+            parameters.addAll(randomGraph.getParameters());
         }
 
         parameters.addAll(SemIm.getParameterNames());
@@ -157,7 +158,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 
     @Override
     public int getNumDataModels() {
-        return this.dataSets.size();
+        return dataSets.size();
     }
 
     @Override
@@ -167,38 +168,38 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 
     @Override
     public IKnowledge getKnowledge() {
-        return this.knowledge;
+        return knowledge;
     }
 
     @Override
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
-    public static void topToBottomLayout(final TimeLagGraph graph) {
+    public static void topToBottomLayout(TimeLagGraph graph) {
 
         final int xStart = 65;
         final int yStart = 50;
         final int xSpace = 100;
         final int ySpace = 100;
-        final List<Node> lag0Nodes = graph.getLag0Nodes();
+        List<Node> lag0Nodes = graph.getLag0Nodes();
 
         Collections.sort(lag0Nodes, new Comparator<Node>() {
-            public int compare(final Node o1, final Node o2) {
+            public int compare(Node o1, Node o2) {
                 return o1.getCenterX() - o2.getCenterX();
             }
         });
 
         int x = xStart - xSpace;
 
-        for (final Node node : lag0Nodes) {
+        for (Node node : lag0Nodes) {
             x += xSpace;
             int y = yStart - ySpace;
-            final TimeLagGraph.NodeId id = graph.getNodeId(node);
+            NodeId id = graph.getNodeId(node);
 
             for (int lag = graph.getMaxLag(); lag >= 0; lag--) {
                 y += ySpace;
-                final Node _node = graph.getNode(id.getName(), lag);
+                Node _node = graph.getNode(id.getName(), lag);
 
                 if (_node == null) {
                     System.out.println("Couldn't find " + _node);

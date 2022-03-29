@@ -32,6 +32,7 @@ import edu.cmu.tetradapp.model.DagWrapper;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.GraphWrapper;
 import edu.cmu.tetradapp.util.DoubleTextField;
+import edu.cmu.tetradapp.util.DoubleTextField.Filter;
 import edu.cmu.tetradapp.util.StringTextField;
 
 import javax.swing.*;
@@ -82,25 +83,25 @@ final class LogisticRegressionParamsPanel extends JPanel
 
     private final ArrowButton responseButton;
 
-    final private static String INCLUDE_RESPONSE = "includeResponse";
-    final private static String INCLUDE_PREDICTOR = "includePredictor";
-    final private static String EXCLUDE_PREDICTOR = "excludePredictor";
+    private static final String INCLUDE_RESPONSE = "includeResponse";
+    private static final String INCLUDE_PREDICTOR = "includePredictor";
+    private static final String EXCLUDE_PREDICTOR = "excludePredictor";
 
     /**
      * Opens up an editor to let the user view the given RegressionRunner.
      */
-    public LogisticRegressionParamsPanel(final Parameters params,
-                                         final Object[] parentModels) {
-        for (final Object parentModel : parentModels) {
+    public LogisticRegressionParamsPanel(Parameters params,
+                                         Object[] parentModels) {
+        for (Object parentModel : parentModels) {
             if (parentModel instanceof DataWrapper) {
-                final DataWrapper dataWrapper = (DataWrapper) parentModel;
-                this.dataModel = dataWrapper.getSelectedDataModel();
+                DataWrapper dataWrapper = (DataWrapper) parentModel;
+                dataModel = dataWrapper.getSelectedDataModel();
             } else if (parentModel instanceof DataModel) {
-                this.dataModel = (DataModel) parentModel;
+                dataModel = (DataModel) parentModel;
             }
         }
 
-        if (this.dataModel == null) {
+        if (dataModel == null) {
             new JOptionPane("Null DataModel");
         }
 
@@ -111,17 +112,17 @@ final class LogisticRegressionParamsPanel extends JPanel
 
         this.params = params;
 
-        final Object varNames = params.get("varNames", null);
+        Object varNames = params.get("varNames", null);
 
         if (varNames != null) {
             this.varNames = (List<String>) varNames;
         }
 
         if (this.varNames == null) {
-            this.varNames = getVarsFromData(parentModels);
+            this.varNames = this.getVarsFromData(parentModels);
 
             if (this.varNames == null) {
-                this.varNames = getVarsFromGraph(parentModels);
+                this.varNames = this.getVarsFromGraph(parentModels);
             }
 
             params.set("varNames", this.varNames);
@@ -131,104 +132,104 @@ final class LogisticRegressionParamsPanel extends JPanel
                         "Variables are not accessible.");
             }
 
-            params().set("varNames", this.varNames);
+            this.params().set("varNames", this.varNames);
         }
 
-        final JLabel instructions =
+        JLabel instructions =
                 new JLabel("Select response and predictor variables:");
-        final JLabel varsLabel = new JLabel("Variables");
-        final JLabel responseLabel = new JLabel("Response");
-        final JLabel predictorLabel = new JLabel("Predictor(s)");
+        JLabel varsLabel = new JLabel("Variables");
+        JLabel responseLabel = new JLabel("Response");
+        JLabel predictorLabel = new JLabel("Predictor(s)");
 
-        final JScrollPane varListbox = (JScrollPane) createVarListbox();
-        final JScrollPane predictorListbox =
-                (JScrollPane) createPredictorVarListbox();
+        JScrollPane varListbox = (JScrollPane) this.createVarListbox();
+        JScrollPane predictorListbox =
+                (JScrollPane) this.createPredictorVarListbox();
 
-        this.responseButton = new ArrowButton(this, LogisticRegressionParamsPanel.INCLUDE_RESPONSE);
-        final ArrowButton predictorInButton =
-                new ArrowButton(this, LogisticRegressionParamsPanel.INCLUDE_PREDICTOR);
-        final ArrowButton predictorOutButton =
-                new ArrowButton(this, LogisticRegressionParamsPanel.EXCLUDE_PREDICTOR, false);
+        responseButton = new ArrowButton(this, INCLUDE_RESPONSE);
+        ArrowButton predictorInButton =
+                new ArrowButton(this, INCLUDE_PREDICTOR);
+        ArrowButton predictorOutButton =
+                new ArrowButton(this, EXCLUDE_PREDICTOR, false);
 
-        this.responseVar = new StringTextField("", 10);
-        this.responseVar.setEditable(false);
-        this.responseVar.setBackground(Color.white);
-        this.responseVar.setPreferredSize(new Dimension(150, 30));
-        this.responseVar.setFont(new Font("SanSerif", Font.BOLD, 12));
+        responseVar = new StringTextField("", 10);
+        responseVar.setEditable(false);
+        responseVar.setBackground(Color.white);
+        responseVar.setPreferredSize(new Dimension(150, 30));
+        responseVar.setFont(new Font("SanSerif", Font.BOLD, 12));
 
         //TEST
-        this.responseVar.setText(params.getString("targetName", null));
-        if (!this.responseVar.getText().equals("") &&
-                this.responseButton.getText().equals(">")) {
-            this.responseButton.toggleInclude();
+        responseVar.setText(params.getString("targetName", null));
+        if (!responseVar.getText().equals("") &&
+                responseButton.getText().equals(">")) {
+            responseButton.toggleInclude();
         }
 
-        final DefaultListModel predsModel =
-                (DefaultListModel) this.predictorVarListbox.getModel();
-        final List<String> paramNames = (List<String>) params.get("regressorNames", null);
-        for (final String paramName : paramNames) {
+        DefaultListModel predsModel =
+                (DefaultListModel) predictorVarListbox.getModel();
+        List<String> paramNames = (List<String>) params.get("regressorNames", null);
+        for (String paramName : paramNames) {
             predsModel.addElement(paramName);
         }
 
         //Construct availableVarsList of variable names not response nor in predictors.
-        final List<String> varListNames = new ArrayList<>(this.varNames);
-        final String targetName = params.getString("targetName", null);
+        List<String> varListNames = new ArrayList<>(this.varNames);
+        String targetName = params.getString("targetName", null);
         if (varListNames.contains(targetName)) {
             varListNames.remove(targetName);
         }
 
-        final List<String> regNames = (List<String>) params.get("regressorNames", null);
-        for (final String regName : regNames) {
+        List<String> regNames = (List<String>) params.get("regressorNames", null);
+        for (String regName : regNames) {
             if (varListNames.contains(regName)) {
                 varListNames.remove(regName);
             }
         }
 
-        final DefaultListModel varsModel =
-                (DefaultListModel) this.availableVarsList.getModel();
+        DefaultListModel varsModel =
+                (DefaultListModel) availableVarsList.getModel();
         varsModel.clear();
-        for (final String varListName : varListNames) {
+        for (String varListName : varListNames) {
             varsModel.addElement(varListName);
         }
 
-        this.varsSelModel = this.availableVarsList.getSelectionModel();
-        this.varsSelModel.setSelectionMode(
+        varsSelModel = availableVarsList.getSelectionModel();
+        varsSelModel.setSelectionMode(
                 ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 
-        this.predsSelModel = this.predictorVarListbox.getSelectionModel();
-        this.predsSelModel.setSelectionMode(
+        predsSelModel = predictorVarListbox.getSelectionModel();
+        predsSelModel.setSelectionMode(
                 ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 
 
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        final Box b = Box.createVerticalBox();
+        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        Box b = Box.createVerticalBox();
 
-        final Box b0 = Box.createHorizontalBox();
+        Box b0 = Box.createHorizontalBox();
         b0.add(instructions);
 
-        final Box b1 = Box.createHorizontalBox();
+        Box b1 = Box.createHorizontalBox();
 
-        final Box b2 = Box.createVerticalBox();
-        final Box b3 = Box.createVerticalBox();
-        final Box b4 = Box.createVerticalBox();
-        final Box b5 = Box.createVerticalBox();
+        Box b2 = Box.createVerticalBox();
+        Box b3 = Box.createVerticalBox();
+        Box b4 = Box.createVerticalBox();
+        Box b5 = Box.createVerticalBox();
 
-        final DoubleTextField alphaField = new DoubleTextField(params.getDouble("alpha", 0.001), 4,
+        DoubleTextField alphaField = new DoubleTextField(params.getDouble("alpha", 0.001), 4,
                 NumberFormatUtil.getInstance().getNumberFormat());
-        alphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(final double value, final double oldValue) {
+        alphaField.setFilter(new Filter() {
+            public double filter(double value, double oldValue) {
                 try {
-                    params().set("alpha", 0.001);
+                    LogisticRegressionParamsPanel.this.params().set("alpha", 0.001);
                     Preferences.userRoot().putDouble("alpha",
-                            params().getDouble("alpha", 0.001));
+                            LogisticRegressionParamsPanel.this.params().getDouble("alpha", 0.001));
                     return value;
-                } catch (final Exception e) {
+                } catch (Exception e) {
                     return oldValue;
                 }
             }
         });
 
-        final JLabel alphaLabel = new JLabel("Alpha:");
+        JLabel alphaLabel = new JLabel("Alpha:");
 
         b2.add(varsLabel);
         b2.add(varListbox);
@@ -236,20 +237,20 @@ final class LogisticRegressionParamsPanel extends JPanel
         b2.add(alphaLabel);
         b2.add(alphaField);
 
-        b3.add(this.responseButton);
-        final Component strut3 = Box.createVerticalStrut(90);
+        b3.add(responseButton);
+        Component strut3 = Box.createVerticalStrut(90);
         b3.add(strut3);
         b3.add(predictorInButton);
         b3.add(predictorOutButton);
 
         responseLabel.setPreferredSize(new Dimension(80, 30));
         b4.add(responseLabel);
-        final Component strut42 = Box.createVerticalStrut(120);
+        Component strut42 = Box.createVerticalStrut(120);
         b4.add(strut42);
         b4.add(predictorLabel);
 
-        b5.add(this.responseVar);
-        final Component strut5 = Box.createVerticalStrut(10);
+        b5.add(responseVar);
+        Component strut5 = Box.createVerticalStrut(10);
         b5.add(strut5);
         b5.add(predictorListbox);
 
@@ -261,44 +262,44 @@ final class LogisticRegressionParamsPanel extends JPanel
         b.add(b0);
         b.add(b1);
 
-        add(b);
+        this.add(b);
     }
 
     private JComponent createVarListbox() {
-        this.availableVarsList = new JList(new DefaultListModel());
-        final DefaultListModel varsModel =
-                (DefaultListModel) this.availableVarsList.getModel();
+        availableVarsList = new JList(new DefaultListModel());
+        DefaultListModel varsModel =
+                (DefaultListModel) availableVarsList.getModel();
 
-        for (final String varName : this.varNames) {
+        for (String varName : varNames) {
             varsModel.addElement(varName);
         }
 
-        this.availableVarsList.setVisibleRowCount(5);
-        this.availableVarsList.setFixedCellWidth(100);
-        this.availableVarsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        this.availableVarsList.setSelectedIndex(0);
+        availableVarsList.setVisibleRowCount(5);
+        availableVarsList.setFixedCellWidth(100);
+        availableVarsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        availableVarsList.setSelectedIndex(0);
 
-        return new JScrollPane(this.availableVarsList);
+        return new JScrollPane(availableVarsList);
     }
 
     private JComponent createPredictorVarListbox() {
-        this.predictorVarListbox = new JList(new DefaultListModel());
-        this.predictorVarListbox.setVisibleRowCount(4);
-        this.predictorVarListbox.setFixedCellWidth(100);
-        this.predictorVarListbox.setSelectionMode(
+        predictorVarListbox = new JList(new DefaultListModel());
+        predictorVarListbox.setVisibleRowCount(4);
+        predictorVarListbox.setFixedCellWidth(100);
+        predictorVarListbox.setSelectionMode(
                 ListSelectionModel.SINGLE_SELECTION);
-        this.predictorVarListbox.setSelectedIndex(0);
+        predictorVarListbox.setSelectedIndex(0);
 
-        return new JScrollPane(this.predictorVarListbox);
+        return new JScrollPane(predictorVarListbox);
     }
 
 
-    private List<String> getVarsFromData(final Object[] parentModels) {
+    private List<String> getVarsFromData(Object[] parentModels) {
         DataModel dataModel = null;
 
-        for (final Object parentModel : parentModels) {
+        for (Object parentModel : parentModels) {
             if (parentModel instanceof DataWrapper) {
-                final DataWrapper dataWrapper = (DataWrapper) parentModel;
+                DataWrapper dataWrapper = (DataWrapper) parentModel;
                 dataModel = dataWrapper.getSelectedDataModel();
             }
         }
@@ -310,10 +311,10 @@ final class LogisticRegressionParamsPanel extends JPanel
         }
     }
 
-    private List<String> getVarsFromGraph(final Object[] parentModels) {
+    private List<String> getVarsFromGraph(Object[] parentModels) {
         Object graphWrapper = null;
 
-        for (final Object parentModel : parentModels) {
+        for (Object parentModel : parentModels) {
             if (parentModel instanceof GraphWrapper) {
                 graphWrapper = parentModel;
             } else if (parentModel instanceof DagWrapper) {
@@ -332,10 +333,10 @@ final class LogisticRegressionParamsPanel extends JPanel
                 graph = ((DagWrapper) graphWrapper).getDag();
             }
 
-            final List<Node> nodes = graph.getNodes();
-            final List<String> nodeNames = new LinkedList<>();
+            List<Node> nodes = graph.getNodes();
+            List<String> nodeNames = new LinkedList<>();
 
-            for (final Node node : nodes) {
+            for (Node node : nodes) {
                 nodeNames.add(node.getName());
             }
 
@@ -343,74 +344,74 @@ final class LogisticRegressionParamsPanel extends JPanel
         }
     }
 
-    private void setRegressorNames(final List<String> names) {
-        this.regressorNames = names;
+    private void setRegressorNames(List<String> names) {
+        regressorNames = names;
     }
 
     private Parameters params() {
-        return this.params;
+        return params;
     }
 
     private String targetName() {
-        return this.targetName;
+        return targetName;
     }
 
-    private void setTargetName(final String targetName) {
+    private void setTargetName(String targetName) {
         this.targetName = targetName;
     }
 
-    public void valueChanged(final ListSelectionEvent e) {
+    public void valueChanged(ListSelectionEvent e) {
 
     }
 
-    public void actionPerformed(final ActionEvent e) {
-        final String varName;
+    public void actionPerformed(ActionEvent e) {
+        String varName;
         int varSelectionIndex, predictorVarSelectionIndex;
 
-        final DefaultListModel varsModel =
-                (DefaultListModel) this.availableVarsList.getModel();
-        final DefaultListModel predsModel =
-                (DefaultListModel) this.predictorVarListbox.getModel();
+        DefaultListModel varsModel =
+                (DefaultListModel) availableVarsList.getModel();
+        DefaultListModel predsModel =
+                (DefaultListModel) predictorVarListbox.getModel();
 
-        final int startIndexVars = this.varsSelModel.getMinSelectionIndex();
-        final int endIndexVars = this.varsSelModel.getMaxSelectionIndex();
+        int startIndexVars = varsSelModel.getMinSelectionIndex();
+        int endIndexVars = varsSelModel.getMaxSelectionIndex();
 
-        final int startIndexPreds = this.predsSelModel.getMinSelectionIndex();
-        final int endIndexPreds = this.predsSelModel.getMaxSelectionIndex();
+        int startIndexPreds = predsSelModel.getMinSelectionIndex();
+        int endIndexPreds = predsSelModel.getMaxSelectionIndex();
 
-        final String[] varSelectedNames =
+        String[] varSelectedNames =
                 new String[endIndexVars - startIndexVars + 1];
-        final String[] predSelectedNames =
+        String[] predSelectedNames =
                 new String[endIndexPreds - startIndexPreds + 1];
 
         if (varsModel.size() != 0) {
-            varName = (String) this.availableVarsList.getSelectedValue();
+            varName = (String) availableVarsList.getSelectedValue();
         } else {
             varName = "";
         }
 
         /* include/exclude response variable */
-        if (e.getActionCommand().equals(LogisticRegressionParamsPanel.INCLUDE_RESPONSE)) {
-            if ((this.availableVarsList.isSelectionEmpty()) &&
-                    (this.responseButton.getIsIncluded())) {
+        if (e.getActionCommand().equals(INCLUDE_RESPONSE)) {
+            if ((availableVarsList.isSelectionEmpty()) &&
+                    (responseButton.getIsIncluded())) {
                 return;
             }
             //if(varsSelModel.getMaxSelectionIndex() == -1 && responseButton.getIsIncluded()) return;
 
 
-            if (this.responseButton.getIsIncluded()) {
+            if (responseButton.getIsIncluded()) {
 
                 //Make sure response variable is dichotomous
-                final DataSet cds = (DataSet) this.dataModel;
-                final int nrows = cds.getNumRows();
-                final Node variable = cds.getVariable(varName);
+                DataSet cds = (DataSet) dataModel;
+                int nrows = cds.getNumRows();
+                Node variable = cds.getVariable(varName);
 
-                final int varIndex = cds.getVariables().indexOf(variable);
+                int varIndex = cds.getVariables().indexOf(variable);
 
                 // make sure the variable is binary.
                 if (variable instanceof DiscreteVariable) {
                     for (int i = 0; i < nrows; i++) {
-                        final int value = cds.getInt(i, varIndex);
+                        int value = cds.getInt(i, varIndex);
                         if (value != 0 && value != 1) {
                             JOptionPane.showMessageDialog(this, "The given target was discrete but not binary");
                             return;
@@ -418,7 +419,7 @@ final class LogisticRegressionParamsPanel extends JPanel
                     }
                 } else {
                     for (int i = 0; i < nrows; i++) {
-                        final double value = cds.getDouble(i, varIndex);
+                        double value = cds.getDouble(i, varIndex);
                         if (value != 0.0d && value != 1.0d) {
                             JOptionPane.showMessageDialog(this, "Target must be a dictotomous variable");
                             return;
@@ -426,33 +427,33 @@ final class LogisticRegressionParamsPanel extends JPanel
                     }
                 }
 
-                this.responseVar.setText(varName);
+                responseVar.setText(varName);
                 varsModel.removeElement(varName);
 
             } else {
-                varsModel.addElement(this.responseVar.getText());
+                varsModel.addElement(responseVar.getText());
 
-                this.responseVar.setText("");
-                this.responseButton.toggleInclude();  //Test
+                responseVar.setText("");
+                responseButton.toggleInclude();  //Test
                 return;                          //Test
             }
-            this.responseButton.toggleInclude();
+            responseButton.toggleInclude();
 
-            final String newTargetName = this.responseVar.getText();
-            setTargetName(newTargetName);
-            params().set("targetName", targetName());
+            String newTargetName = responseVar.getText();
+            this.setTargetName(newTargetName);
+            this.params().set("targetName", this.targetName());
         }
 
         // include predictor variable.
-        else if (e.getActionCommand().equals(LogisticRegressionParamsPanel.INCLUDE_PREDICTOR)) {
-            if (this.availableVarsList.isSelectionEmpty()) {
+        else if (e.getActionCommand().equals(INCLUDE_PREDICTOR)) {
+            if (availableVarsList.isSelectionEmpty()) {
                 return;
             }
 
-            final int intervalSize = endIndexVars - startIndexVars + 1;
+            int intervalSize = endIndexVars - startIndexVars + 1;
             for (int i = 0; i < intervalSize; i++) {
                 varSelectedNames[i] =
-                        (String) this.availableVarsList.getSelectedValuesList().get(i);
+                        (String) availableVarsList.getSelectedValuesList().get(i);
             }
 
             for (int i = 0; i < intervalSize; i++) {
@@ -461,15 +462,15 @@ final class LogisticRegressionParamsPanel extends JPanel
             }
         }
         // exclude predictor variable.
-        else if (e.getActionCommand().equals(LogisticRegressionParamsPanel.EXCLUDE_PREDICTOR)) {
-            if (this.predictorVarListbox.isSelectionEmpty()) {
+        else if (e.getActionCommand().equals(EXCLUDE_PREDICTOR)) {
+            if (predictorVarListbox.isSelectionEmpty()) {
                 return;
             }
 
-            final int intervalSize = endIndexPreds - startIndexPreds + 1;
+            int intervalSize = endIndexPreds - startIndexPreds + 1;
             for (int i = 0; i < intervalSize; i++) {
                 predSelectedNames[i] =
-                        (String) this.predictorVarListbox.getSelectedValuesList().get(i);
+                        (String) predictorVarListbox.getSelectedValuesList().get(i);
             }
 
             for (int i = 0; i < intervalSize; i++) {
@@ -482,36 +483,36 @@ final class LogisticRegressionParamsPanel extends JPanel
         }
 
         // updates expt variables and predictor listbox.
-        varSelectionIndex = this.availableVarsList.getSelectedIndex();
-        predictorVarSelectionIndex = this.predictorVarListbox.getSelectedIndex();
+        varSelectionIndex = availableVarsList.getSelectedIndex();
+        predictorVarSelectionIndex = predictorVarListbox.getSelectedIndex();
 
         if (varSelectionIndex > 0) {
             varSelectionIndex--;
         }
         if (varSelectionIndex != -1) {
-            this.availableVarsList.setSelectedIndex(varSelectionIndex);
+            availableVarsList.setSelectedIndex(varSelectionIndex);
         }
 
         if (predictorVarSelectionIndex > 0) {
             predictorVarSelectionIndex--;
         }
         if (predictorVarSelectionIndex != -1) {
-            this.predictorVarListbox.setSelectedIndex(predictorVarSelectionIndex);
+            predictorVarListbox.setSelectedIndex(predictorVarSelectionIndex);
         }
 
-        final int numPredictors = predsModel.size();
-        final Object[] predictors = new Object[numPredictors];
+        int numPredictors = predsModel.size();
+        Object[] predictors = new Object[numPredictors];
 
-        final List<String> regNames = new ArrayList<>();
+        List<String> regNames = new ArrayList<>();
 
         for (int i = 0; i < numPredictors; i++) {
             predictors[i] = predsModel.getElementAt(i);
             regNames.add((String) predsModel.getElementAt(i));
         }
 
-        setRegressorNames(regNames);
+        this.setRegressorNames(regNames);
 
-        params().set("regressorNames", this.regressorNames);
+        this.params().set("regressorNames", regressorNames);
     }
 
 
@@ -522,36 +523,36 @@ final class LogisticRegressionParamsPanel extends JPanel
     public class ArrowButton extends JButton {
         private boolean isInclude;
 
-        public ArrowButton(final LogisticRegressionParamsPanel listener,
-                           final String command) {
+        public ArrowButton(LogisticRegressionParamsPanel listener,
+                           String command) {
             this(listener, command, true);
         }
 
-        public ArrowButton(final LogisticRegressionParamsPanel listener,
-                           final String command, final boolean isInclude) {
+        public ArrowButton(LogisticRegressionParamsPanel listener,
+                           String command, boolean isInclude) {
             this.isInclude = isInclude;
-            addActionListener(listener);
-            setActionCommand(command);
+            this.addActionListener(listener);
+            this.setActionCommand(command);
 
             if (isInclude) {
-                setText(">");
+                this.setText(">");
             } else {
-                setText("<");
+                this.setText("<");
             }
         }
 
         public void toggleInclude() {
-            if (this.isInclude) {
-                setText("<");
-                this.isInclude = false;
+            if (isInclude) {
+                this.setText("<");
+                isInclude = false;
             } else {
-                setText(">");
-                this.isInclude = true;
+                this.setText(">");
+                isInclude = true;
             }
         }
 
         public boolean getIsIncluded() {
-            return this.isInclude;
+            return isInclude;
         }
     }
 }

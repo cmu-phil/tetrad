@@ -6,6 +6,7 @@ import edu.cmu.tetrad.data.VerticalIntDataBox;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.GraphUtils.GraphComparison;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.TextTable;
@@ -20,21 +21,21 @@ import java.util.Set;
  */
 public class HsimUtils {
     //this method will trim an input graph down to the nodes and edges that are used for evaluation
-    public static Graph evalEdges(final Graph inputgraph, final Set<Node> simnodes, final Set<Node> realnodes) {
+    public static Graph evalEdges(Graph inputgraph, Set<Node> simnodes, Set<Node> realnodes) {
         //first, restrict down to subgraph containing only simnods and realnodes
-        final Set<Node> aNodes = new HashSet<Node>();
+        Set<Node> aNodes = new HashSet<Node>();
         aNodes.addAll(simnodes);
         aNodes.addAll(realnodes);
         //need a List as input for subgraph method, but mbAll is a Set
-        final List<Node> relevantNodes = new ArrayList<Node>(aNodes);
-        final Graph subgraph = inputgraph.subgraph(relevantNodes);
+        List<Node> relevantNodes = new ArrayList<Node>(aNodes);
+        Graph subgraph = inputgraph.subgraph(relevantNodes);
 
         //then remove edges connecting realnodes to other realnodes:
 
         //loop through all edges
-        final Set<Edge> edges = subgraph.getEdges();
+        Set<Edge> edges = subgraph.getEdges();
 
-        for (final Edge edge : edges) {
+        for (Edge edge : edges) {
             //if the edge connects realnodes to realnodes, remove it
             if (realnodes.contains(edge.getNode1())) {
                 if (realnodes.contains(edge.getNode2())) {
@@ -46,12 +47,12 @@ public class HsimUtils {
     }
 
     //this method returns the set of all parents of a provided set of parents, given a provided graph
-    public static Set<Node> getAllParents(final Graph inputgraph, final Set<Node> inputnodes) {
-        final List<Node> parents = new ArrayList<Node>();
+    public static Set<Node> getAllParents(Graph inputgraph, Set<Node> inputnodes) {
+        List<Node> parents = new ArrayList<Node>();
         List<Node> pAdd = new ArrayList<Node>();
 
         //loop through inputnodes
-        for (final Node node : inputnodes) {
+        for (Node node : inputnodes) {
             //get its parents from graph
             pAdd = inputgraph.getParents(node);
             //merge parents into output
@@ -61,34 +62,34 @@ public class HsimUtils {
         //remove any of the input nodes from the output set
         parents.removeAll(inputnodes);
         //turn list into set
-        final Set<Node> output = new HashSet<Node>(parents);
+        Set<Node> output = new HashSet<Node>(parents);
         return output;
     }
 
     //this method returns an array of doubles, which are standard error metrics for graph learning
-    public static double[] errorEval(Graph estCPDAG, final Graph truePattern) {
-        final GraphUtils.GraphComparison comparison = SearchGraphUtils.getGraphComparison2(estCPDAG, truePattern);
+    public static double[] errorEval(Graph estCPDAG, Graph truePattern) {
+        GraphComparison comparison = SearchGraphUtils.getGraphComparison2(estCPDAG, truePattern);
 
-        final int adjTp = comparison.getAdjCor();
-        final int adjFp = comparison.getAdjFp();
-        final int adjFn = comparison.getAdjFn();
+        int adjTp = comparison.getAdjCor();
+        int adjFp = comparison.getAdjFp();
+        int adjFn = comparison.getAdjFn();
 
-        final int arrowptTp = comparison.getAhdCor();
-        final int arrowptFp = comparison.getAhdFp();
-        final int arrowptFn = comparison.getAhdFn();
+        int arrowptTp = comparison.getAhdCor();
+        int arrowptFp = comparison.getAhdFp();
+        int arrowptFn = comparison.getAhdFn();
 
         estCPDAG = GraphUtils.replaceNodes(estCPDAG, truePattern.getNodes());
 
-        final int[][] counts = GraphUtils.edgeMisclassificationCounts(truePattern, estCPDAG, false);
+        int[][] counts = GraphUtils.edgeMisclassificationCounts(truePattern, estCPDAG, false);
 
-        final double edgeRatio = HsimUtils.correctnessRatio(counts);
+        double edgeRatio = correctnessRatio(counts);
 
-        final double adjRecall = adjTp / (double) (adjTp + adjFn);
-        final double adjPrecision = adjTp / (double) (adjTp + adjFp);
-        final double arrowRecall = arrowptTp / (double) (arrowptTp + arrowptFn);
-        final double arrowPrecision = arrowptTp / (double) (arrowptTp + arrowptFp);
+        double adjRecall = adjTp / (double) (adjTp + adjFn);
+        double adjPrecision = adjTp / (double) (adjTp + adjFp);
+        double arrowRecall = arrowptTp / (double) (arrowptTp + arrowptFn);
+        double arrowPrecision = arrowptTp / (double) (arrowptTp + arrowptFp);
 
-        final double[] output;
+        double[] output;
         output = new double[5];
         output[0] = edgeRatio;
         output[1] = adjRecall;
@@ -99,10 +100,10 @@ public class HsimUtils {
         return output;
     }
 
-    public static double correctnessRatio(final int[][] counts) {
+    public static double correctnessRatio(int[][] counts) {
         //StringBuilder builder = new StringBuilder();
 
-        final TextTable table2 = new TextTable(9, 7);
+        TextTable table2 = new TextTable(9, 7);
 
         table2.setToken(1, 0, "---");
         table2.setToken(2, 0, "o-o");
@@ -150,9 +151,9 @@ public class HsimUtils {
     }
 
     //this method makes a VerticalIntDataBox from a regular data set
-    public static VerticalIntDataBox makeVertIntBox(final DataSet dataset) {
+    public static VerticalIntDataBox makeVertIntBox(DataSet dataset) {
         //this is for turning regular data set into verticalintbox (not doublebox...)
-        final int[][] data = new int[dataset.getNumColumns()][dataset.getNumRows()];
+        int[][] data = new int[dataset.getNumColumns()][dataset.getNumRows()];
         for (int i = 0; i < dataset.getNumRows(); i++) {
             for (int j = 0; j < dataset.getNumColumns(); j++) {
                 data[j][i] = dataset.getInt(i, j);
@@ -162,12 +163,12 @@ public class HsimUtils {
     }
 
     //returns a String formatted as a latex table, which can be pasted directly into a latex document
-    public static String makeLatexTable(final String[][] tablevalues) {
-        final String nl = System.lineSeparator();
+    public static String makeLatexTable(String[][] tablevalues) {
+        String nl = System.lineSeparator();
         String output = "\\begin{table}[ht]" + nl;
         output = output + "\\begin{center}" + nl;
-        final int dim1 = tablevalues.length;
-        final int dim2 = tablevalues[0].length;
+        int dim1 = tablevalues.length;
+        int dim2 = tablevalues[0].length;
         //determines number of columns in the table
         output = output + "\\begin{tabular}{|";
         for (int c = 0; c < dim2; c++) {
@@ -191,8 +192,8 @@ public class HsimUtils {
 
     //this turns an array of doubles into an array of strings, formatted for easier reading
     //the input String should be formatted appropriately for the String.format method
-    public static String[] formatErrorsArray(final double[] inputArray, final String formatting) {
-        final String[] output = new String[inputArray.length];
+    public static String[] formatErrorsArray(double[] inputArray, String formatting) {
+        String[] output = new String[inputArray.length];
         for (int i = 0; i < inputArray.length; i++) {
             output[i] = String.format(formatting, inputArray[i]);
         }
@@ -200,8 +201,8 @@ public class HsimUtils {
     }
 
     //used for making random graphs for SEMS without having to manually constuct the variable set each time
-    public static Graph mkRandSEMDAG(final int numVars, final int numEdges) {
-        final List<Node> varslist = new ArrayList<>();
+    public static Graph mkRandSEMDAG(int numVars, int numEdges) {
+        List<Node> varslist = new ArrayList<>();
         for (int i = 0; i < numVars; i++) {
             varslist.add(new ContinuousVariable("X" + i));
         }

@@ -45,12 +45,12 @@ class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
      * Creates a new copy subsession action for the given LayoutEditable and
      * clipboard.
      */
-    public GraphPropertiesAction(final GraphWorkbench workbench) {
+    public GraphPropertiesAction(GraphWorkbench workbench) {
         super("Graph Properties");
         this.workbench = workbench;
     }
 
-    public GraphPropertiesAction(final Graph graph, final GraphWorkbench workbench) {
+    public GraphPropertiesAction(Graph graph, GraphWorkbench workbench) {
         super("Graph Properties");
         this.workbench = workbench;
     }
@@ -59,19 +59,19 @@ class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
      * Copies a parentally closed selection of session nodes in the frontmost
      * session editor to the clipboard.
      */
-    public void actionPerformed(final ActionEvent e) {
-        final Box b = Box.createVerticalBox();
+    public void actionPerformed(ActionEvent e) {
+        Box b = Box.createVerticalBox();
 
         int numLatents = 0;
-        for (final Node node : getGraph().getNodes()) {
+        for (Node node : this.getGraph().getNodes()) {
             if (node.getNodeType() == NodeType.LATENT) {
                 numLatents++;
             }
         }
 
         int maxIndegree = 0;
-        for (final Node node : getGraph().getNodes()) {
-            final int indegree = getGraph().getNodesInTo(node, Endpoint.ARROW).size();
+        for (Node node : this.getGraph().getNodes()) {
+            int indegree = this.getGraph().getNodesInTo(node, Endpoint.ARROW).size();
 
             if (indegree > maxIndegree) {
                 maxIndegree = indegree;
@@ -79,8 +79,8 @@ class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
         }
 
         int maxOutdegree = 0;
-        for (final Node node : getGraph().getNodes()) {
-            final int outdegree = getGraph().getNodesOutTo(node, Endpoint.ARROW).size();
+        for (Node node : this.getGraph().getNodes()) {
+            int outdegree = this.getGraph().getNodesOutTo(node, Endpoint.ARROW).size();
 
             if (outdegree > maxOutdegree) {
                 maxOutdegree = outdegree;
@@ -91,41 +91,41 @@ class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
         int numBidirectedEdges = 0;
         int numUndirectedEdges = 0;
 
-        for (final Edge edge : getGraph().getEdges()) {
+        for (Edge edge : this.getGraph().getEdges()) {
             if (Edges.isDirectedEdge(edge)) numDirectedEdges++;
             else if (Edges.isBidirectedEdge(edge)) numBidirectedEdges++;
             else if (Edges.isUndirectedEdge(edge)) numUndirectedEdges++;
         }
 
-        final boolean cyclic = getGraph().existsDirectedCycle();
+        boolean cyclic = this.getGraph().existsDirectedCycle();
 
-        final JTextArea textArea = new JTextArea();
-        final JScrollPane scroll = new JScrollPane(textArea);
+        JTextArea textArea = new JTextArea();
+        JScrollPane scroll = new JScrollPane(textArea);
         scroll.setPreferredSize(new Dimension(300, 300));
 
-        textArea.append("\nNumber of nodes: " + getGraph().getNumNodes());
+        textArea.append("\nNumber of nodes: " + this.getGraph().getNumNodes());
         textArea.append("\nNumber of latents: " + numLatents);
-        textArea.append("\nNumber of edges: " + getGraph().getNumEdges());
+        textArea.append("\nNumber of edges: " + this.getGraph().getNumEdges());
         textArea.append("\nNumber of directed edges: " + numDirectedEdges);
         textArea.append("\nNumber of bidirected edges: " + numBidirectedEdges);
         textArea.append("\nNumber of undirected edges: " + numUndirectedEdges);
-        textArea.append("\nMax degree: " + getGraph().getConnectivity());
+        textArea.append("\nMax degree: " + this.getGraph().getConnectivity());
         textArea.append("\nMax indegree: " + maxIndegree);
         textArea.append("\nMax outdegree: " + maxOutdegree);
         textArea.append("\nNumber of latents: " + numLatents);
         textArea.append("\n" + (cyclic ? "Cyclic" : "Acyclic"));
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(scroll);
         textArea.setCaretPosition(0);
         b.add(b2);
 
-        final JPanel panel = new JPanel();
+        JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.add(b);
 
-        final EditorWindow window = new EditorWindow(panel,
-                "Graph Properties", "Close", false, this.workbench);
+        EditorWindow window = new EditorWindow(panel,
+                "Graph Properties", "Close", false, workbench);
         DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
         window.setVisible(true);
     }
@@ -133,17 +133,17 @@ class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
     /**
      * Required by the AbstractAction interface; does nothing.
      */
-    public void lostOwnership(final Clipboard clipboard, final Transferable contents) {
+    public void lostOwnership(Clipboard clipboard, Transferable contents) {
     }
 
 
-    public void setGraph(final Graph graph, final GraphWorkbench workbench) {
+    public void setGraph(Graph graph, GraphWorkbench workbench) {
         workbench.setGraph(graph);
         this.workbench = workbench;
     }
 
     public Graph getGraph() {
-        return this.workbench.getGraph();
+        return workbench.getGraph();
     }
 }
 

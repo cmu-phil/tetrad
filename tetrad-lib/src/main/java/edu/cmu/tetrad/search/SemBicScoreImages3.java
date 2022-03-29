@@ -57,7 +57,7 @@ public class SemBicScoreImages3 implements ISemBicScore, Score {
     private double penaltyDiscount = 1.0;
 
     // True if verbose output should be sent to out.
-    private boolean verbose = false;
+    private boolean verbose;
 
     // Covariances for each of the input data sets.
     private final List<Matrix> covs = new ArrayList<>();
@@ -65,59 +65,59 @@ public class SemBicScoreImages3 implements ISemBicScore, Score {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public SemBicScoreImages3(final List<DataSet> dataSets) {
-        this.sampleSizes = new int[dataSets.size()];
+    public SemBicScoreImages3(List<DataSet> dataSets) {
+        sampleSizes = new int[dataSets.size()];
         int N = 0;
 
         for (int i = 0; i < dataSets.size(); i++) {
-            final DataSet dataSet = dataSets.get(i);
-            this.covs.add(cov(dataSet));
-            this.sampleSizes[i] = dataSet.getNumRows();
-            N += this.sampleSizes[i];
+            DataSet dataSet = dataSets.get(i);
+            covs.add(this.cov(dataSet));
+            sampleSizes[i] = dataSet.getNumRows();
+            N += sampleSizes[i];
         }
 
-        this.variables = dataSets.get(0).getVariables();
+        variables = dataSets.get(0).getVariables();
         this.N = N;
     }
 
     @Override
-    public double localScoreDiff(final int x, final int y, final int[] z) {
-        return localScore(y, append(z, x)) - localScore(y, z);
+    public double localScoreDiff(int x, int y, int[] z) {
+        return this.localScore(y, this.append(z, x)) - this.localScore(y, z);
     }
 
     @Override
-    public double localScoreDiff(final int x, final int y) {
-        return localScore(y, x) - localScore(y);
+    public double localScoreDiff(int x, int y) {
+        return this.localScore(y, x) - this.localScore(y);
     }
 
     /**
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */
-    public double localScore(final int i, final int... parents) {
-        return score1(i, parents);
+    public double localScore(int i, int... parents) {
+        return this.score1(i, parents);
     }
 
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
-    public double localScore(final int i, final int parent) {
-        return localScore(i, new int[]{parent});
+    public double localScore(int i, int parent) {
+        return this.localScore(i, new int[]{parent});
     }
 
     /**
      * Specialized scoring method for no parents. Used to speed up the effect edges search.
      */
-    public double localScore(final int i) {
-        return localScore(i, new int[0]);
+    public double localScore(int i) {
+        return this.localScore(i, new int[0]);
     }
 
     public double getPenaltyDiscount() {
-        return this.penaltyDiscount;
+        return penaltyDiscount;
     }
 
     @Override
-    public boolean isEffectEdge(final double bump) {
-        return bump > -0.25 * getPenaltyDiscount() * log(this.N);
+    public boolean isEffectEdge(double bump) {
+        return bump > -0.25 * this.getPenaltyDiscount() * log(N);
     }
 
     public DataSet getDataSet() {
@@ -125,40 +125,40 @@ public class SemBicScoreImages3 implements ISemBicScore, Score {
     }
 
     public boolean isVerbose() {
-        return this.verbose;
+        return verbose;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     @Override
     public List<Node> getVariables() {
-        return this.variables;
+        return variables;
     }
 
     public boolean getAlternativePenalty() {
         return false;
     }
 
-    public void setAlternativePenalty(final double alpha) {
+    public void setAlternativePenalty(double alpha) {
         //
     }
 
     @Override
-    public void setPenaltyDiscount(final double value) {
-        this.penaltyDiscount = value;
+    public void setPenaltyDiscount(double value) {
+        penaltyDiscount = value;
     }
 
     @Override
     public int getSampleSize() {
-        return this.N;
+        return N;
     }
 
 
     @Override
-    public Node getVariable(final String targetName) {
-        for (final Node node : this.variables) {
+    public Node getVariable(String targetName) {
+        for (Node node : variables) {
             if (node.getName().equals(targetName)) {
                 return node;
             }
@@ -173,74 +173,74 @@ public class SemBicScoreImages3 implements ISemBicScore, Score {
     }
 
     @Override
-    public boolean determines(final List<Node> z, final Node y) {
+    public boolean determines(List<Node> z, Node y) {
         return false;
     }
 
-    private double score1(final int i, final int[] parents) {
-        final int p = parents.length;
+    private double score1(int i, int[] parents) {
+        int p = parents.length;
 
         double lik = 0.0;
         int dof = 0;
 
-        for (int k = 0; k < this.covs.size(); k++) {
-            final Matrix cov = this.covs.get(k);
-            final int[] parentsPlus = append(parents, i);
-            final int a = this.sampleSizes[k];
-            final double lik1 = gaussianLikelihood(cov.getSelection(parentsPlus, parentsPlus), a);
-            final double lik2 = gaussianLikelihood(cov.getSelection(parents, parents), a);
+        for (int k = 0; k < covs.size(); k++) {
+            Matrix cov = covs.get(k);
+            int[] parentsPlus = this.append(parents, i);
+            int a = sampleSizes[k];
+            double lik1 = this.gaussianLikelihood(cov.getSelection(parentsPlus, parentsPlus), a);
+            double lik2 = this.gaussianLikelihood(cov.getSelection(parents, parents), a);
             lik += lik1 - lik2;
             dof += p + 1;
         }
 
-        return 2.0 * lik - getPenaltyDiscount() * dof * log(this.N); //getPriorForStructure(p, 2);
+        return 2.0 * lik - this.getPenaltyDiscount() * dof * log(N); //getPriorForStructure(p, 2);
     }
 
-    public double score2(final int i, final int[] parents) {
+    public double score2(int i, int[] parents) {
         double lik = 0.0;
 
-        for (int k = 0; k < this.covs.size(); k++) {
-            final int a = this.sampleSizes[k];
-            final Matrix cov = this.covs.get(k);
+        for (int k = 0; k < covs.size(); k++) {
+            int a = sampleSizes[k];
+            Matrix cov = covs.get(k);
             double residualVariance = cov.get(i, i);
-            final Matrix covxx = cov.getSelection(parents, parents);
-            final Matrix covxxInv = covxx.inverse();
-            final Vector covxy = cov.getSelection(parents, new int[]{i}).getColumn(0);
-            final Vector b = covxxInv.times(covxy);
+            Matrix covxx = cov.getSelection(parents, parents);
+            Matrix covxxInv = covxx.inverse();
+            Vector covxy = cov.getSelection(parents, new int[]{i}).getColumn(0);
+            Vector b = covxxInv.times(covxy);
             residualVariance -= covxy.dotProduct(b);
             lik += -(a / 2.0) * log(residualVariance) - (a / 2.0) - (a / 2.0) * log(2 * PI);
         }
 
 //        System.out.println(lik);
 
-        return 2.0 * lik - getPenaltyDiscount() * (parents.length + 1) * log(this.N);
+        return 2.0 * lik - this.getPenaltyDiscount() * (parents.length + 1) * log(N);
     }
 
-    private Matrix cov(final DataSet x) {
-        final Matrix M = x.getDoubleData();
-        final RealMatrix covarianceMatrix = new Covariance(new BlockRealMatrix(M.toArray()), true).getCovarianceMatrix();
+    private Matrix cov(DataSet x) {
+        Matrix M = x.getDoubleData();
+        RealMatrix covarianceMatrix = new Covariance(new BlockRealMatrix(M.toArray()), true).getCovarianceMatrix();
         return new Matrix(covarianceMatrix.getData());
     }
 
-    private int h(final int p) {
+    private int h(int p) {
         return p * (p + 1) / 2;
     }
 
-    private double getPriorForStructure(final int numParents, final double e) {
-        final int vm = this.variables.size() - 1;
+    private double getPriorForStructure(int numParents, double e) {
+        int vm = variables.size() - 1;
         return numParents * log(e / (vm)) + (vm - numParents) * log(1.0 - (e / (vm)));
     }
 
-    private double gaussianLikelihood(final Matrix sigma, final int n) {
+    private double gaussianLikelihood(Matrix sigma, int n) {
         if (sigma.columns() == 0 || n == 0) return 0;
-        final int k = sigma.columns();
+        int k = sigma.columns();
         return -0.5 * n * log(sigma.det()) - 0.5 * n * k - 0.5 * n * k * log(2.0 * PI);
     }
 
-    private double logdet(final Matrix m) {
-        final RealMatrix M = new BlockRealMatrix(m.toArray());
+    private double logdet(Matrix m) {
+        RealMatrix M = new BlockRealMatrix(m.toArray());
         final double tol = 1e-9;
-        final RealMatrix LT = new org.apache.commons.math3.linear.CholeskyDecomposition(M, tol, tol).getLT();
+        RealMatrix LT = new org.apache.commons.math3.linear.CholeskyDecomposition(M, tol, tol).getLT();
 
         double sum = 0.0;
 
@@ -251,14 +251,14 @@ public class SemBicScoreImages3 implements ISemBicScore, Score {
         return 2.0 * sum;
     }
 
-    private double logdet2(final Matrix m) {
+    private double logdet2(Matrix m) {
         if (m.rows() == 0) return 0.0;
 
-        final RealMatrix M = new BlockRealMatrix(m.toArray());
-        final LUDecomposition luDecomposition = new LUDecomposition(M);
-        final RealMatrix L = luDecomposition.getL();
-        final RealMatrix U = luDecomposition.getU();
-        final RealMatrix P = luDecomposition.getP();
+        RealMatrix M = new BlockRealMatrix(m.toArray());
+        LUDecomposition luDecomposition = new LUDecomposition(M);
+        RealMatrix L = luDecomposition.getL();
+        RealMatrix U = luDecomposition.getU();
+        RealMatrix P = luDecomposition.getP();
 
 //        System.out.println(new TetradMatrix(L.multiply(U)));
 //        System.out.println(new TetradMatrix(m));
@@ -283,8 +283,8 @@ public class SemBicScoreImages3 implements ISemBicScore, Score {
         return sum;
     }
 
-    private int[] append(final int[] parents, final int i) {
-        final int[] all = new int[parents.length + 1];
+    private int[] append(int[] parents, int i) {
+        int[] all = new int[parents.length + 1];
         System.arraycopy(parents, 0, all, 0, parents.length);
         all[all.length - 1] = i;
         return all;

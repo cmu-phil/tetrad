@@ -47,54 +47,54 @@ public final class ExploreAutisticsNeurotypicals {
     public void printEdgeData() {
         final String path = "/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_108_Variable";
 //        String path = "/Users/jdramsey/Documents/LAB_NOTEBOOee.2012.04.20/data/USM_Datasets";
-        final List<List<DataSet>> allDatasets = loadData(path, "autistic", "typical");
-        final List<List<Graph>> allGraphs = runAlgorithm(path, allDatasets, 10);
-        final List<List<Graph>> graphs = ExploreAutisticsNeurotypicals.reconcileNodes(allGraphs);
-        final List<Edge> _edges = ExploreAutisticsNeurotypicals.getAllEdges(allGraphs);
-        final DataSet dataSet = ExploreAutisticsNeurotypicals.createEdgeDataSet(graphs, _edges);
+        List<List<DataSet>> allDatasets = this.loadData(path, "autistic", "typical");
+        List<List<Graph>> allGraphs = this.runAlgorithm(path, allDatasets, 10);
+        List<List<Graph>> graphs = reconcileNodes(allGraphs);
+        List<Edge> _edges = getAllEdges(allGraphs);
+        DataSet dataSet = createEdgeDataSet(graphs, _edges);
 //        dataSet = restrictDataRange(dataSet, .1, .9);
-        ExploreAutisticsNeurotypicals.printData(path, "edgedata", dataSet);
+        printData(path, "edgedata", dataSet);
     }
 
     public void printTrekNodeData() {
         final String path = "/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_90_Variable";
-        final List<List<DataSet>> allDatasets = loadData(path, "autistic", "typical");
-        final List<List<Graph>> allGraphs = runAlgorithm(path, allDatasets, 10);
+        List<List<DataSet>> allDatasets = this.loadData(path, "autistic", "typical");
+        List<List<Graph>> allGraphs = this.runAlgorithm(path, allDatasets, 10);
 
-        final DataSet dataSet = ExploreAutisticsNeurotypicals.getTrekNodeDataSet(allGraphs);
+        DataSet dataSet = getTrekNodeDataSet(allGraphs);
 
-        ExploreAutisticsNeurotypicals.printData(path, "treknodedata", dataSet);
+        printData(path, "treknodedata", dataSet);
     }
 
     public void printTrekEdgeData() {
         final String path = "/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_90_Variable";
-        final List<List<DataSet>> allDatasets = loadData(path, "autistic", "typical");
+        List<List<DataSet>> allDatasets = this.loadData(path, "autistic", "typical");
 
-        List<List<Graph>> allGraphs = runAlgorithm(path, allDatasets, 10);
+        List<List<Graph>> allGraphs = this.runAlgorithm(path, allDatasets, 10);
 
-        final List<Node> nodes = allGraphs.get(0).get(0).getNodes();
-        allGraphs = ExploreAutisticsNeurotypicals.reconcileNodes(allGraphs);
-        final List<Edge> allTrekEdges = ExploreAutisticsNeurotypicals.getAllTrekEdges(allGraphs, 5);
-        DataSet dataSet = ExploreAutisticsNeurotypicals.createEdgeDataSet(allGraphs, allTrekEdges);
-        dataSet = ExploreAutisticsNeurotypicals.restrictDataRange(dataSet, .3, .7);
-        ExploreAutisticsNeurotypicals.printData(path, "trekedgedata", dataSet);
+        List<Node> nodes = allGraphs.get(0).get(0).getNodes();
+        allGraphs = reconcileNodes(allGraphs);
+        List<Edge> allTrekEdges = getAllTrekEdges(allGraphs, 5);
+        DataSet dataSet = createEdgeDataSet(allGraphs, allTrekEdges);
+        dataSet = restrictDataRange(dataSet, .3, .7);
+        printData(path, "trekedgedata", dataSet);
     }
 
-    private List<List<Graph>> runAlgorithm(final String path, final List<List<DataSet>> allDatasets, final double penaltyDiscount) {
-        final List<List<Graph>> allGraphs = new ArrayList<>();
+    private List<List<Graph>> runAlgorithm(String path, List<List<DataSet>> allDatasets, double penaltyDiscount) {
+        List<List<Graph>> allGraphs = new ArrayList<>();
 
-        for (final List<DataSet> dataSets : allDatasets) {
-            final List<Graph> graphs = new ArrayList<>();
+        for (List<DataSet> dataSets : allDatasets) {
+            List<Graph> graphs = new ArrayList<>();
 
-            for (final DataSet dataSet : dataSets) {
-                final String name = dataSet.getName() + "." + penaltyDiscount + ".graph.txt";
-                final File file = new File(path, name);
+            for (DataSet dataSet : dataSets) {
+                String name = dataSet.getName() + "." + penaltyDiscount + ".graph.txt";
+                File file = new File(path, name);
 
-                final SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
+                SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
                 score.setPenaltyDiscount(penaltyDiscount);
-                final Fges search = new Fges(score);
+                Fges search = new Fges(score);
                 search.setVerbose(false);
-                final Graph graph = search.search();
+                Graph graph = search.search();
                 GraphUtils.saveGraph(graph, file, false);
                 graphs.add(GraphUtils.undirectedGraph(GraphUtils.loadGraphTxt(file)));
             }
@@ -105,8 +105,8 @@ public final class ExploreAutisticsNeurotypicals {
         return allGraphs;
     }
 
-    private List<List<DataSet>> loadData(final String path, final String... prefixes) {
-        final List<List<DataSet>> allDataSets = new ArrayList<>();
+    private List<List<DataSet>> loadData(String path, String... prefixes) {
+        List<List<DataSet>> allDataSets = new ArrayList<>();
 
         int numDataSets = 0;
 
@@ -115,18 +115,18 @@ public final class ExploreAutisticsNeurotypicals {
                 allDataSets.add(new ArrayList<DataSet>());
             }
 
-            final File dir = new File(path);
-            final File[] files = dir.listFiles();
+            File dir = new File(path);
+            File[] files = dir.listFiles();
 
             if (files == null) throw new NullPointerException("No files in " + path);
 
-            for (final File file : files) {
+            for (File file : files) {
                 boolean attested = false;
 
                 for (int i = 0; i < prefixes.length; i++) {
                     if (file.getName().startsWith(prefixes[i]) && !file.getName().endsWith(".graph.txt")
                             && !file.getName().contains("tet")) {
-                        final DataSet data = DataUtils.loadContinuousData(file, "//", '\"' ,
+                        DataSet data = DataUtils.loadContinuousData(file, "//", '\"' ,
                                 "*", true, Delimiter.TAB);
 
                         allDataSets.get(i).add(data);
@@ -142,7 +142,7 @@ public final class ExploreAutisticsNeurotypicals {
             }
 
             System.out.println("# data sets = " + numDataSets);
-        } catch (final IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -153,26 +153,26 @@ public final class ExploreAutisticsNeurotypicals {
     public void printDegreeData() {
 //        String path = "/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_108_Variable";
         final String path = "/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/USM_Datasets/all";
-        final List<List<DataSet>> allDatasets = loadData(path, "ROI_data_autistic", "ROI_data_typical");
-        final List<List<Graph>> allGraphs = runAlgorithm(path, allDatasets, 10);
-        final List<List<Graph>> graphs = ExploreAutisticsNeurotypicals.reconcileNodes(allGraphs);
-        final List<Node> nodes = graphs.get(0).get(0).getNodes();
+        List<List<DataSet>> allDatasets = this.loadData(path, "ROI_data_autistic", "ROI_data_typical");
+        List<List<Graph>> allGraphs = this.runAlgorithm(path, allDatasets, 10);
+        List<List<Graph>> graphs = reconcileNodes(allGraphs);
+        List<Node> nodes = graphs.get(0).get(0).getNodes();
 
         System.out.print("Group\t");
 
-        for (final Node node : nodes) {
+        for (Node node : nodes) {
             System.out.print(node.getName() + "\t");
         }
 
         System.out.println();
 
         for (int i = 0; i < graphs.size(); i++) {
-            final List<Graph> _graphs = graphs.get(i);
+            List<Graph> _graphs = graphs.get(i);
 
-            for (final Graph _graph : _graphs) {
+            for (Graph _graph : _graphs) {
                 System.out.print(i + "\t");
 
-                for (final Node node : nodes) {
+                for (Node node : nodes) {
                     System.out.print(_graph.getAdjacentNodes(node).size() + "\t");
                 }
 
@@ -183,26 +183,26 @@ public final class ExploreAutisticsNeurotypicals {
 
 
     public static DataSet getTrekNodeDataSet(List<List<Graph>> graphs) {
-        final List<Node> graphNodes = new ArrayList<>(graphs.get(0).get(0).getNodes());
+        List<Node> graphNodes = new ArrayList<>(graphs.get(0).get(0).getNodes());
 
-        final List<Node> nodes = new ArrayList<>();
+        List<Node> nodes = new ArrayList<>();
 
-        for (final Node node : graphNodes) {
+        for (Node node : graphNodes) {
             nodes.add(new ContinuousVariable(node.getName()));
         }
 
-        graphs = ExploreAutisticsNeurotypicals.reconcileNodes(graphs);
+        graphs = reconcileNodes(graphs);
 
-        final Node fusiformLeft = graphs.get(0).get(0).getNode("Fusiform_L");
-        final Node fusiformRight = graphs.get(0).get(0).getNode("Fusiform_R");
-        final ContinuousVariable group = new ContinuousVariable("Group");
+        Node fusiformLeft = graphs.get(0).get(0).getNode("Fusiform_L");
+        Node fusiformRight = graphs.get(0).get(0).getNode("Fusiform_R");
+        ContinuousVariable group = new ContinuousVariable("Group");
         nodes.add(group);
-        final int numGraphs = ExploreAutisticsNeurotypicals.getNumGraphs(graphs);
+        int numGraphs = getNumGraphs(graphs);
         nodes.remove(fusiformLeft);
         nodes.remove(fusiformRight);
-        final DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(numGraphs, nodes.size()), nodes);
+        DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(numGraphs, nodes.size()), nodes);
 
-        final int numRows = dataSet.getNumRows();
+        int numRows = dataSet.getNumRows();
         for (int i = 0; i < numRows; i++) {
             for (int j = 0; j < dataSet.getNumColumns(); j++) {
                 dataSet.setDouble(i, j, 0);
@@ -212,13 +212,13 @@ public final class ExploreAutisticsNeurotypicals {
         int row = -1;
 
         for (int _group = 0; _group < graphs.size(); _group++) {
-            final List<Graph> __graphs = graphs.get(_group);
+            List<Graph> __graphs = graphs.get(_group);
 
-            for (final Graph graph : __graphs) {
+            for (Graph graph : __graphs) {
                 row++;
-                final List<List<Node>> treks = GraphUtils.treks(graph, fusiformLeft, fusiformRight, 7);
+                List<List<Node>> treks = GraphUtils.treks(graph, fusiformLeft, fusiformRight, 7);
 
-                for (final List<Node> trek : treks) {
+                for (List<Node> trek : treks) {
 //                    Node n1 = trek.get(1);
 //                    Node n2 = trek.get(trek.size() - 2);
 //
@@ -236,8 +236,8 @@ public final class ExploreAutisticsNeurotypicals {
 
 
                     for (int i = 1; i < trek.size() - 1; i++) {
-                        final Node node = trek.get(i);
-                        final int col = nodes.indexOf(node);
+                        Node node = trek.get(i);
+                        int col = nodes.indexOf(node);
 //                        dataSet.setDouble(row, col, dataSet.getInt(row, col) + 1);
                         dataSet.setDouble(row, col, 1);
                     }
@@ -252,11 +252,11 @@ public final class ExploreAutisticsNeurotypicals {
 //        return restrictDataRange(nodes, dataSet, 0.1, 1.0);
     }
 
-    private static Node getTrekSource(final List<Node> trek, final Graph graph) {
-        final Node n1 = trek.get(0);
-        final Node n2 = trek.get(trek.size() - 1);
+    private static Node getTrekSource(List<Node> trek, Graph graph) {
+        Node n1 = trek.get(0);
+        Node n2 = trek.get(trek.size() - 1);
 
-        for (final Node n : trek) {
+        for (Node n : trek) {
             if (graph.isAncestorOf(n, n1) && graph.isAncestorOf(n, n2)) {
                 return n;
             }
@@ -265,16 +265,16 @@ public final class ExploreAutisticsNeurotypicals {
         return null;
     }
 
-    private static DataSet restrictDataRange(final DataSet dataSet, final double lowerRange, final double upperRange) {
-        final int total = dataSet.getNumRows();
+    private static DataSet restrictDataRange(DataSet dataSet, double lowerRange, double upperRange) {
+        int total = dataSet.getNumRows();
 
-        final List<Node> nodes = dataSet.getVariables();
+        List<Node> nodes = dataSet.getVariables();
 
-        for (final Node node : new ArrayList<>(nodes)) {
+        for (Node node : new ArrayList<>(nodes)) {
             if ("Group".equals(node.getName())) {
                 continue;
             }
-            final int col = dataSet.getColumn(node);
+            int col = dataSet.getColumn(node);
             int count = 0;
 
             for (int i = 0; i < total; i++) {
@@ -291,13 +291,13 @@ public final class ExploreAutisticsNeurotypicals {
         return dataSet.subsetColumns(nodes);
     }
 
-    public static List<Edge> getAllTrekEdges(List<List<Graph>> graphs, final int maxLength) {
-        final List<Node> nodes = graphs.get(0).get(0).getNodes();
-        final ContinuousVariable group = new ContinuousVariable("Group");
+    public static List<Edge> getAllTrekEdges(List<List<Graph>> graphs, int maxLength) {
+        List<Node> nodes = graphs.get(0).get(0).getNodes();
+        ContinuousVariable group = new ContinuousVariable("Group");
         nodes.add(group);
-        graphs = ExploreAutisticsNeurotypicals.reconcileNodes(graphs);
-        final int numGraphs = ExploreAutisticsNeurotypicals.getNumGraphs(graphs);
-        final DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(numGraphs, nodes.size()), nodes);
+        graphs = reconcileNodes(graphs);
+        int numGraphs = getNumGraphs(graphs);
+        DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(numGraphs, nodes.size()), nodes);
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
             for (int j = 0; j < dataSet.getNumColumns(); j++) {
@@ -305,18 +305,18 @@ public final class ExploreAutisticsNeurotypicals {
             }
         }
 
-        final Node fusiformLeft = graphs.get(0).get(0).getNode("Fusiform_L");
-        final Node fusiformRight = graphs.get(0).get(0).getNode("Fusiform_R");
+        Node fusiformLeft = graphs.get(0).get(0).getNode("Fusiform_L");
+        Node fusiformRight = graphs.get(0).get(0).getNode("Fusiform_R");
 
-        final Set<Edge> trekEdges = new HashSet<>();
+        Set<Edge> trekEdges = new HashSet<>();
 
         for (int _group = 0; _group < graphs.size(); _group++) {
-            final List<Graph> __graphs = graphs.get(_group);
+            List<Graph> __graphs = graphs.get(_group);
 
-            for (final Graph graph : __graphs) {
-                final List<List<Node>> treks = GraphUtils.treks(graph, fusiformLeft, fusiformRight, maxLength);
+            for (Graph graph : __graphs) {
+                List<List<Node>> treks = GraphUtils.treks(graph, fusiformLeft, fusiformRight, maxLength);
 
-                for (final List<Node> trek : treks) {
+                for (List<Node> trek : treks) {
                     for (int i = 0; i < trek.size() - 2; i++) {
                         trekEdges.add(graph.getEdge(trek.get(i), trek.get(i + 1)));
                     }
@@ -327,29 +327,29 @@ public final class ExploreAutisticsNeurotypicals {
         return new ArrayList<>(trekEdges);
     }
 
-    private static List<Edge> getAllEdges(final List<List<Graph>> graphs) {
-        final Set<Edge> _edges = new HashSet<>();
+    private static List<Edge> getAllEdges(List<List<Graph>> graphs) {
+        Set<Edge> _edges = new HashSet<>();
 
-        for (final List<Graph> _graphs : graphs) {
-            for (final Graph graph : _graphs) {
+        for (List<Graph> _graphs : graphs) {
+            for (Graph graph : _graphs) {
                 _edges.addAll(graph.getEdges());
             }
         }
         return new ArrayList<>(_edges);
     }
 
-    private static List<List<Graph>> reconcileNodes(final List<List<Graph>> graphs) {
-        final List<Node> _nodes = new ArrayList<>(ExploreAutisticsNeurotypicals.getAllNodes(graphs));
+    private static List<List<Graph>> reconcileNodes(List<List<Graph>> graphs) {
+        List<Node> _nodes = new ArrayList<>(getAllNodes(graphs));
 
         int count = 0;
 
-        final List<List<Graph>> graphs2 = new ArrayList<>();
+        List<List<Graph>> graphs2 = new ArrayList<>();
 
-        for (final List<Graph> _graphs : graphs) {
-            final List<Graph> _graphs2 = new ArrayList<>();
+        for (List<Graph> _graphs : graphs) {
+            List<Graph> _graphs2 = new ArrayList<>();
 
-            for (final Graph graph : _graphs) {
-                final Graph graph2 = GraphUtils.replaceNodes(graph, _nodes);
+            for (Graph graph : _graphs) {
+                Graph graph2 = GraphUtils.replaceNodes(graph, _nodes);
                 _graphs2.add(graph2);
                 count++;
             }
@@ -362,14 +362,14 @@ public final class ExploreAutisticsNeurotypicals {
         return graphs2;
     }
 
-    private static Set<Node> getAllNodes(final List<List<Graph>> graphs) {
-        final Set<Node> _nodes = new HashSet<>();
-        for (final List<Graph> _graphs : graphs) {
-            for (final Graph graph : _graphs) {
-                for (final Node node : graph.getNodes()) {
+    private static Set<Node> getAllNodes(List<List<Graph>> graphs) {
+        Set<Node> _nodes = new HashSet<>();
+        for (List<Graph> _graphs : graphs) {
+            for (Graph graph : _graphs) {
+                for (Node node : graph.getNodes()) {
                     boolean found = false;
 
-                    for (final Node _node : _nodes) {
+                    for (Node _node : _nodes) {
                         if (_node.getName().equals(node.getName())) {
                             found = true;
                         }
@@ -384,22 +384,22 @@ public final class ExploreAutisticsNeurotypicals {
         return _nodes;
     }
 
-    private static int getNumGraphs(final List<List<Graph>> graphs) {
+    private static int getNumGraphs(List<List<Graph>> graphs) {
         int numGraphs = 0;
 
-        for (final List<Graph> _graphs : graphs) {
+        for (List<Graph> _graphs : graphs) {
             numGraphs += _graphs.size();
         }
 
         return numGraphs;
     }
 
-    private static DataSet createEdgeDataSet(final List<List<Graph>> graphs2, final List<Edge> edges) {
+    private static DataSet createEdgeDataSet(List<List<Graph>> graphs2, List<Edge> edges) {
         System.out.println("# edges = " + edges.size());
 
-        final int numGraphs = ExploreAutisticsNeurotypicals.getNumGraphs(graphs2);
+        int numGraphs = getNumGraphs(graphs2);
 
-        final List<Node> edgeVars = new ArrayList<>();
+        List<Node> edgeVars = new ArrayList<>();
 
         for (int i = 0; i < edges.size(); i++) {
             edgeVars.add(new ContinuousVariable(edges.get(i).toString()));
@@ -407,12 +407,12 @@ public final class ExploreAutisticsNeurotypicals {
 
         edgeVars.add(new ContinuousVariable("Group"));
 
-        final DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(numGraphs, edges.size()), edgeVars);
+        DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(numGraphs, edges.size()), edgeVars);
 
         int row = -1;
 
         for (int i = 0; i < graphs2.size(); i++) {
-            final List<Graph> graphs3 = graphs2.get(i);
+            List<Graph> graphs3 = graphs2.get(i);
 
             for (int k = 0; k < graphs3.size(); k++) {
                 row++;
@@ -428,11 +428,11 @@ public final class ExploreAutisticsNeurotypicals {
         return dataSet;
     }
 
-    private static void printData(final String path, final String prefix, DataSet dataSet) {
-        final List<Node> nodes = dataSet.getVariables();
-        final Node group = dataSet.getVariable("Group");
+    private static void printData(String path, String prefix, DataSet dataSet) {
+        List<Node> nodes = dataSet.getVariables();
+        Node group = dataSet.getVariable("Group");
 
-        final List<Node> _nodes = new ArrayList<>();
+        List<Node> _nodes = new ArrayList<>();
 
         for (int i = 0; i < nodes.size(); i++) {
             if (nodes.get(i) == group) {
@@ -445,12 +445,12 @@ public final class ExploreAutisticsNeurotypicals {
         dataSet = new BoxDataSet(new DoubleDataBox(dataSet.getDoubleData().toArray()), _nodes);
         dataSet.setNumberFormat(new DecimalFormat("0"));
 
-        final File file1 = new File(path, prefix + ".data.txt");
-        final File file2 = new File(path, prefix + ".dict.txt");
+        File file1 = new File(path, prefix + ".data.txt");
+        File file2 = new File(path, prefix + ".dict.txt");
 
         try {
-            final PrintStream out1 = new PrintStream(new FileOutputStream(file1));
-            final PrintStream out2 = new PrintStream(new FileOutputStream(file2));
+            PrintStream out1 = new PrintStream(new FileOutputStream(file1));
+            PrintStream out2 = new PrintStream(new FileOutputStream(file2));
 
             out1.println(dataSet);
             out1.close();
@@ -462,17 +462,17 @@ public final class ExploreAutisticsNeurotypicals {
             out2.println("Group");
 
             out2.close();
-        } catch (final FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
             throw new RuntimeException();
         }
     }
 
-    private static void printDataTranspose(final String path, final String prefix, DataSet dataSet) {
-        final List<Node> nodes = dataSet.getVariables();
-        final Node group = dataSet.getVariable("Group");
+    private static void printDataTranspose(String path, String prefix, DataSet dataSet) {
+        List<Node> nodes = dataSet.getVariables();
+        Node group = dataSet.getVariable("Group");
 
-        final List<Node> _nodes = new ArrayList<>();
+        List<Node> _nodes = new ArrayList<>();
 
         for (int i = 0; i < nodes.size(); i++) {
             if (nodes.get(i) == group) {
@@ -482,11 +482,11 @@ public final class ExploreAutisticsNeurotypicals {
             }
         }
 
-        final Matrix m = dataSet.getDoubleData();
+        Matrix m = dataSet.getDoubleData();
 
-        final Matrix mt = m.transpose();
+        Matrix mt = m.transpose();
 
-        final List<Node> tvars = new ArrayList<>();
+        List<Node> tvars = new ArrayList<>();
 
         for (int i = 0; i < mt.columns(); i++) tvars.add(new ContinuousVariable("S" + (i + 1)));
 
@@ -495,12 +495,12 @@ public final class ExploreAutisticsNeurotypicals {
 //        dataSet = new BoxDataSet(new DoubleDataBox(dataSet.getDoubleData().toArray()), _nodes);
         dataSet.setNumberFormat(new DecimalFormat("0"));
 
-        final File file1 = new File(path, prefix + ".data.txt");
-        final File file2 = new File(path, prefix + ".dict.txt");
+        File file1 = new File(path, prefix + ".data.txt");
+        File file2 = new File(path, prefix + ".dict.txt");
 
         try {
-            final PrintStream out1 = new PrintStream(new FileOutputStream(file1));
-            final PrintStream out2 = new PrintStream(new FileOutputStream(file2));
+            PrintStream out1 = new PrintStream(new FileOutputStream(file1));
+            PrintStream out2 = new PrintStream(new FileOutputStream(file2));
 
             out1.println(dataSet);
             out1.close();
@@ -512,7 +512,7 @@ public final class ExploreAutisticsNeurotypicals {
             out2.println("Group");
 
             out2.close();
-        } catch (final FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
             throw new RuntimeException();
         }
@@ -521,11 +521,11 @@ public final class ExploreAutisticsNeurotypicals {
     public void makeDataSpecial() {
         try {
             final String path = "/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/USM_Datasets";
-            final File file = new File(path, "concat_usm_dataset_madelyn.txt");
-            final DataSet data = DataUtils.loadContinuousData(file, "//", '\"' ,
+            File file = new File(path, "concat_usm_dataset_madelyn.txt");
+            DataSet data = DataUtils.loadContinuousData(file, "//", '\"' ,
                     "*", true, Delimiter.TAB);
 
-            final ContinuousVariable avg = new ContinuousVariable("Avg");
+            ContinuousVariable avg = new ContinuousVariable("Avg");
             data.addVariable(avg);
 
             for (int i = 0; i < data.getNumRows(); i++) {
@@ -538,22 +538,22 @@ public final class ExploreAutisticsNeurotypicals {
                 sum = data.getDouble(i, data.getNumColumns() - 2) == 1 ? 10 + RandomUtil.getInstance().nextUniform(-1, 1)
                         : -10 + RandomUtil.getInstance().nextUniform(-1, 1);
 
-                final double _avg = sum / data.getNumColumns() - 2;
+                double _avg = sum / data.getNumColumns() - 2;
 
                 data.setDouble(i, data.getNumColumns() - 1, _avg);
             }
 
-            final File file2 = new File(path, "concat_usm_dataset_madelynB.txt");
+            File file2 = new File(path, "concat_usm_dataset_madelynB.txt");
 
-            final PrintStream out = new PrintStream(new FileOutputStream(file2));
+            PrintStream out = new PrintStream(new FileOutputStream(file2));
             out.println(data);
             out.close();
-        } catch (final Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public static void main(final String... args) {
+    public static void main(String... args) {
         new ExploreAutisticsNeurotypicals().printDegreeData();
     }
 }

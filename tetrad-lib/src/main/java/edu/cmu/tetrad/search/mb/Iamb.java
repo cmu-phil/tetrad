@@ -48,33 +48,33 @@ public class Iamb implements MbSearch {
      *
      * @param test The source of conditional independence information for the search.
      */
-    public Iamb(final IndependenceTest test) {
+    public Iamb(IndependenceTest test) {
         if (test == null) {
             throw new NullPointerException();
         }
 
-        this.independenceTest = test;
-        this.variables = test.getVariables();
+        independenceTest = test;
+        variables = test.getVariables();
     }
 
-    public List<Node> findMb(final String targetName) {
-        final Node target = getVariableForName(targetName);
-        final List<Node> cmb = new LinkedList<>();
+    public List<Node> findMb(String targetName) {
+        Node target = this.getVariableForName(targetName);
+        List<Node> cmb = new LinkedList<>();
         boolean cont = true;
 
         // Forward phase.
         while (cont) {
             cont = false;
 
-            final List<Node> remaining = new LinkedList<>(this.variables);
+            List<Node> remaining = new LinkedList<>(variables);
             remaining.removeAll(cmb);
             remaining.remove(target);
 
             double strength = Double.NEGATIVE_INFINITY;
             Node f = null;
 
-            for (final Node v : remaining) {
-                final double _strength = associationStrength(v, target, cmb);
+            for (Node v : remaining) {
+                double _strength = this.associationStrength(v, target, cmb);
 
                 if (_strength > strength) {
                     strength = _strength;
@@ -86,7 +86,7 @@ public class Iamb implements MbSearch {
                 break;
             }
 
-            if (!this.independenceTest.isIndependent(f, target, cmb)) {
+            if (!independenceTest.isIndependent(f, target, cmb)) {
                 cmb.add(f);
                 cont = true;
             }
@@ -94,10 +94,10 @@ public class Iamb implements MbSearch {
 
         // Backward phase.
 
-        for (final Node f : new LinkedList<>(cmb)) {
+        for (Node f : new LinkedList<>(cmb)) {
             cmb.remove(f);
 
-            if (this.independenceTest.isIndependent(f, target, cmb)) {
+            if (independenceTest.isIndependent(f, target, cmb)) {
                 continue;
             }
 
@@ -124,9 +124,9 @@ public class Iamb implements MbSearch {
         return cmb;
     }
 
-    private double associationStrength(final Node v, final Node target, final List<Node> cmb) {
-        this.independenceTest.isIndependent(v, target, cmb);
-        return 1.0 - this.independenceTest.getPValue();
+    private double associationStrength(Node v, Node target, List<Node> cmb) {
+        independenceTest.isIndependent(v, target, cmb);
+        return 1.0 - independenceTest.getPValue();
     }
 
     public String getAlgorithmName() {
@@ -137,10 +137,10 @@ public class Iamb implements MbSearch {
         return 0;
     }
 
-    private Node getVariableForName(final String targetName) {
+    private Node getVariableForName(String targetName) {
         Node target = null;
 
-        for (final Node V : this.variables) {
+        for (Node V : variables) {
             if (V.getName().equals(targetName)) {
                 target = V;
                 break;

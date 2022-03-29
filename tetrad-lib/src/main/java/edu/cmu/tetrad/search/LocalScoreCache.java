@@ -35,32 +35,32 @@ public class LocalScoreCache {
     private final MultiKeyMap map;
 
     public LocalScoreCache() {
-        this.map = new MultiKeyMap();
+        map = new MultiKeyMap();
     }
 
-    public void add(final int variable, final int[] parents, final double score) {
-        final Set<Integer> _parents = new HashSet<>(parents.length);
+    public void add(int variable, int[] parents, double score) {
+        Set<Integer> _parents = new HashSet<>(parents.length);
 
-        for (final int parent : parents) {
+        for (int parent : parents) {
             _parents.add(parent);
         }
 
-        this.map.put(variable, _parents, score);
+        map.put(variable, _parents, score);
     }
 
-    public double get(final int variable, final int[] parents) {
-        final Set<Integer> _parents = new HashSet<>(parents.length);
+    public double get(int variable, int[] parents) {
+        Set<Integer> _parents = new HashSet<>(parents.length);
 
-        for (final int parent : parents) {
+        for (int parent : parents) {
             _parents.add(parent);
         }
 
-        final Double _score = (Double) this.map.get(variable, _parents);
+        Double _score = (Double) map.get(variable, _parents);
         return _score == null ? Double.NaN : (_score);
     }
 
     public void clear() {
-        this.map.clear();
+        map.clear();
     }
 }
 

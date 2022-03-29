@@ -42,24 +42,24 @@ final class ConvertToCorrMatixAction extends AbstractAction {
     /**
      * Creates a new action to split by collinear columns.
      */
-    public ConvertToCorrMatixAction(final DataEditor editor) {
+    public ConvertToCorrMatixAction(DataEditor editor) {
         super("Correlation Matrix");
 
         if (editor == null) {
             throw new NullPointerException();
         }
 
-        this.dataEditor = editor;
+        dataEditor = editor;
     }
 
     /**
      * Performs the action of loading a session from a file.
      */
-    public void actionPerformed(final ActionEvent e) {
-        final DataModel dataModel = getDataEditor().getSelectedDataModel();
+    public void actionPerformed(ActionEvent e) {
+        DataModel dataModel = this.getDataEditor().getSelectedDataModel();
 
         if (dataModel instanceof DataSet) {
-            final DataSet dataSet = (DataSet) dataModel;
+            DataSet dataSet = (DataSet) dataModel;
 
             if (!(dataSet.isContinuous())) {
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
@@ -68,21 +68,21 @@ final class ConvertToCorrMatixAction extends AbstractAction {
                 return;
             }
 
-            final CorrelationMatrix corrMatrix = new CorrelationMatrix(dataSet);
+            CorrelationMatrix corrMatrix = new CorrelationMatrix(dataSet);
 
-            final DataModelList list = new DataModelList();
+            DataModelList list = new DataModelList();
             list.add(corrMatrix);
-            getDataEditor().reset(list);
-            getDataEditor().selectFirstTab();
+            this.getDataEditor().reset(list);
+            this.getDataEditor().selectFirstTab();
         } else if (dataModel instanceof ICovarianceMatrix) {
-            final ICovarianceMatrix covarianceMatrix = (ICovarianceMatrix) dataModel;
-            final CorrelationMatrix corrMatrix =
+            ICovarianceMatrix covarianceMatrix = (ICovarianceMatrix) dataModel;
+            CorrelationMatrix corrMatrix =
                     new CorrelationMatrix(covarianceMatrix);
 
-            final DataModelList list = new DataModelList();
+            DataModelList list = new DataModelList();
             list.add(corrMatrix);
-            getDataEditor().reset(list);
-            getDataEditor().selectFirstTab();
+            this.getDataEditor().reset(list);
+            this.getDataEditor().selectFirstTab();
         } else {
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     "Must be a continuous data set " +
@@ -91,7 +91,7 @@ final class ConvertToCorrMatixAction extends AbstractAction {
     }
 
     private DataEditor getDataEditor() {
-        return this.dataEditor;
+        return dataEditor;
     }
 }
 

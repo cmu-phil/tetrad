@@ -45,7 +45,7 @@ public abstract class GenePm implements TetradSerializable {
     /**
      * Construct a new gene pm, wrapping the given lag workbench.
      */
-    public GenePm(final LagGraph lagGraph) {
+    public GenePm(LagGraph lagGraph) {
         if (lagGraph == null) {
             throw new NullPointerException();
         }
@@ -57,7 +57,7 @@ public abstract class GenePm implements TetradSerializable {
      * Gets the lag workbench that is wrapped.
      */
     public LagGraph getLagGraph() {
-        return this.lagGraph;
+        return lagGraph;
     }
 
     /**
@@ -73,11 +73,11 @@ public abstract class GenePm implements TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (this.lagGraph == null) {
+        if (lagGraph == null) {
             throw new NullPointerException();
         }
     }

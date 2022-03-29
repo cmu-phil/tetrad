@@ -51,7 +51,7 @@ public class Glasso {
      * False by default.
      */
     private Rho rho = new Rho() {
-        public double get(final int i, final int j) {
+        public double get(int i, int j) {
             return 0;
         }
     };
@@ -67,25 +67,25 @@ public class Glasso {
      * Approximation flag. False if exact solution, true if Meinhausen-Buhlman approximation.
      * False by default.
      */
-    private boolean ia = false;
+    private boolean ia;
 
     /**
      * Initialization flag. false if cold start, initialize using ss. True if warm start, initialize with
      * previous solution stored in ww and wwi. False by default.
      */
-    private boolean is = false;
+    private boolean is;
 
     /**
      * Trace flag. True if trace information printed. False if trace information not printed.
      * False by default.
      */
-    private boolean itr = false;
+    private boolean itr;
 
     /**
      * Diagonal penalty flag. True if diagonal is penalized. False if diagonal is not penalized.
      * False by default.
      */
-    private boolean ipen = false;
+    private boolean ipen;
 
     /**
      * Convergence threshold: Iterations stop when absolute average parameter change is less than
@@ -120,7 +120,7 @@ public class Glasso {
          */
         private final double del;
 
-        public Result(final DoubleMatrix2D ww, final DoubleMatrix2D wwi, final int niter, final double del) {
+        public Result(DoubleMatrix2D ww, DoubleMatrix2D wwi, int niter, double del) {
             this.ww = ww;
             this.wwi = wwi;
             this.niter = niter;
@@ -128,63 +128,63 @@ public class Glasso {
         }
 
         public DoubleMatrix2D getWw() {
-            return this.ww;
+            return ww;
         }
 
         public DoubleMatrix2D getWwi() {
-            return this.wwi;
+            return wwi;
         }
 
         public int getNiter() {
-            return this.niter;
+            return niter;
         }
 
         public double getDel() {
-            return this.del;
+            return del;
         }
     }
 
-    public Glasso(final DoubleMatrix2D cov) {
+    public Glasso(DoubleMatrix2D cov) {
 
-        this.n = cov.rows();
-        this.ss = cov;
+        n = cov.rows();
+        ss = cov;
     }
 
     public Result search() {
         int niter = 0;
         final double eps = 1.0e-7;
-        final int n = getN();
-        final DoubleMatrix2D ss = getSs();
+        int n = this.getN();
+        DoubleMatrix2D ss = this.getSs();
 
-        final boolean approximateAlgorithm = isIa();
-        final boolean warmStart = isIs();
-        final boolean itr = isItr();
-        final boolean pen = isIpen();
-        final double thr = getThr();
+        boolean approximateAlgorithm = this.isIa();
+        boolean warmStart = this.isIs();
+        boolean itr = this.isItr();
+        boolean pen = this.isIpen();
+        double thr = this.getThr();
 
 //        System.out.println(ss);
 
-        final Rho rho = getRho();
-        final DoubleMatrix2D ww = new DenseDoubleMatrix2D(n, n);
-        final DoubleMatrix2D wwi = new DenseDoubleMatrix2D(n, n);
+        Rho rho = this.getRho();
+        DoubleMatrix2D ww = new DenseDoubleMatrix2D(n, n);
+        DoubleMatrix2D wwi = new DenseDoubleMatrix2D(n, n);
 
         double dlx;
-        final double del;
+        double del;
 
-        final int nm1 = n - 1;
+        int nm1 = n - 1;
 
-        final DoubleMatrix2D vv = new DenseDoubleMatrix2D(nm1, nm1);
+        DoubleMatrix2D vv = new DenseDoubleMatrix2D(nm1, nm1);
         DoubleMatrix2D xs = null;
         if (!approximateAlgorithm) {
             xs = new DenseDoubleMatrix2D(nm1, n);
         }
-        final DoubleMatrix1D s = new DenseDoubleMatrix1D(nm1);
-        final DoubleMatrix1D so = new DenseDoubleMatrix1D(nm1);
+        DoubleMatrix1D s = new DenseDoubleMatrix1D(nm1);
+        DoubleMatrix1D so = new DenseDoubleMatrix1D(nm1);
         DoubleMatrix1D x = new DenseDoubleMatrix1D(n - 1);
         DoubleMatrix1D ws;
-        final DoubleMatrix1D z = new DenseDoubleMatrix1D(nm1);
-        final int[] mm = new int[nm1];
-        final DoubleMatrix1D ro = new DenseDoubleMatrix1D(nm1);
+        DoubleMatrix1D z = new DenseDoubleMatrix1D(nm1);
+        int[] mm = new int[nm1];
+        DoubleMatrix1D ro = new DenseDoubleMatrix1D(nm1);
 
         // shr warmStart sum(abs(offdiagonal(ss))).
         double shr = 0.0;
@@ -218,18 +218,18 @@ public class Glasso {
         }
 
 
-        shr = getThr() * shr / nm1;
+        shr = this.getThr() * shr / nm1;
 
         if (approximateAlgorithm) {
             if (!warmStart) {
-                zero(wwi);
+                this.zero(wwi);
             }
 
             for (int m = 0; m < n; m++) {
                 System.out.println("m = " + m);
 
                 // This sets up vv, s, and r--i.e., W.11, s.12, and r.12.
-                setup(m, n, ss, rho, ss, vv, s, ro);
+                this.setup(m, n, ss, rho, ss, vv, s, ro);
 
                 // This sets up x.12--i.e. theta.12.
                 int l = -1;
@@ -244,7 +244,7 @@ public class Glasso {
                     x.set(l, wwi.get(j, m));
                 }
 
-                lasso(ro, nm1, vv, s, shr / n, x, z, mm);
+                this.lasso(ro, nm1, vv, s, shr / n, x, z, mm);
 
                 l = -1;
                 for (int j = 0; j < n; j++) {
@@ -269,11 +269,11 @@ public class Glasso {
             ww.assign(ss);
 
             if (xs != null) {
-                zero(xs);
+                this.zero(xs);
             }
         } else {
             for (int j = 0; j < n; j++) {
-                final double xjj = -wwi.get(j, j);
+                double xjj = -wwi.get(j, j);
 //                System.out.println("xjj = " + xjj);
                 int l = -1;
 
@@ -317,7 +317,7 @@ public class Glasso {
                 ws = ww.viewColumn(m);
 
                 // This sets up vv, s, and ro--i.e., W.11, s.12, and r.12.
-                setup(m, n, ss, rho, ww, vv, s, ro);
+                this.setup(m, n, ss, rho, ww, vv, s, ro);
 
 
                 so.assign(s);
@@ -326,7 +326,7 @@ public class Glasso {
 
                 // This updates s and x--the estimated correlation matrix and the reduced form of the
                 // estimated inverse covariance.
-                lasso(ro, nm1, vv, s, shr / sum_abs(vv), x, z, mm);
+                this.lasso(ro, nm1, vv, s, shr / this.sum_abs(vv), x, z, mm);
 //                lasso(ro,nm1,vv,s,thr/sum_abs(vv),x,z,mm);
                 int l = -1;
 
@@ -341,23 +341,23 @@ public class Glasso {
                     ww.set(m, j, ww.get(j, m));
                 }
 
-                dlx = Math.max(dlx, sum_abs_diff(ww.viewColumn(m), ws));
+                dlx = Math.max(dlx, this.sum_abs_diff(ww.viewColumn(m), ws));
 //                xs(:,m)=x
                 xs.viewColumn(m).assign(x);
             }
 
             niter = niter + 1;
-            if (niter < getMaxit()) break;
+            if (niter < this.getMaxit()) break;
             if (dlx < shr) break;
         }
 
         del = dlx / nm1;
-        inv(n, ww, xs, wwi);
+        this.inv(n, ww, xs, wwi);
 
         return new Result(ww, wwi, niter, del);
     }
 
-    private double sum_abs(final DoubleMatrix2D m) {
+    private double sum_abs(DoubleMatrix2D m) {
         double sum = 0.0;
 
         for (int i = 0; i < m.rows(); i++) {
@@ -369,7 +369,7 @@ public class Glasso {
         return sum;
     }
 
-    private double sum_abs_diff(final DoubleMatrix1D x, final DoubleMatrix1D y) {
+    private double sum_abs_diff(DoubleMatrix1D x, DoubleMatrix1D y) {
         double sum = 0.0;
 
         for (int i = 0; i < x.size(); i++) {
@@ -379,8 +379,8 @@ public class Glasso {
         return sum;
     }
 
-    private void setup(final int m, final int n, final DoubleMatrix2D ss, final Rho rho, final DoubleMatrix2D ww, final DoubleMatrix2D vv,
-                       final DoubleMatrix1D s, final DoubleMatrix1D r) {
+    private void setup(int m, int n, DoubleMatrix2D ss, Rho rho, DoubleMatrix2D ww, DoubleMatrix2D vv,
+                       DoubleMatrix1D s, DoubleMatrix1D r) {
         int l = -1;
 
         for (int j = 0; j < n; j++) {
@@ -401,8 +401,8 @@ public class Glasso {
         }
     }
 
-    private void lasso(final DoubleMatrix1D ro, final int n, final DoubleMatrix2D vv, final DoubleMatrix1D s, final double thr,
-                       final DoubleMatrix1D x, final DoubleMatrix1D z, final int[] mm) {
+    private void lasso(DoubleMatrix1D ro, int n, DoubleMatrix2D vv, DoubleMatrix1D s, double thr,
+                       DoubleMatrix1D x, DoubleMatrix1D z, int[] mm) {
         // vv = W.11
         // s = s.12
         // ro = r.12
@@ -411,7 +411,7 @@ public class Glasso {
         // z is just passed in to avoid reallocating an array. It's only used in fatmul. Could be global.
 
         // s = vv * x, or s12 = Theta.1 * Theta.12
-        fatmul(2, n, vv, x, s, z, mm);
+        this.fatmul(2, n, vv, x, s, z, mm);
 
         while (true) {
 
@@ -419,12 +419,12 @@ public class Glasso {
             double dlx = 0.0;
 
             for (int j = 0; j < n; j++) {
-                final double xj = x.get(j);
+                double xj = x.get(j);
                 x.set(j, 0.0);
 
                 // There is no sum. In the paper there is a sum. Also, there is a minus instead of
                 // a plus in the paper.
-                final double t = s.get(j) + vv.get(j, j) * xj;
+                double t = s.get(j) + vv.get(j, j) * xj;
 
 //                double _vv = 0.0;
 //
@@ -440,7 +440,7 @@ public class Glasso {
                 }
 
                 if (x.get(j) == xj) continue;
-                final double del = x.get(j) - xj;
+                double del = x.get(j) - xj;
                 dlx = Math.max(dlx, Math.abs(del));
 
                 for (int i = 0; i < s.size(); i++) {
@@ -459,8 +459,8 @@ public class Glasso {
     }
 
     // s = vv * x, or s12 = Theta.1 * Theta.12
-    private void fatmul(final int it, final int n, final DoubleMatrix2D vv, final DoubleMatrix1D x, final DoubleMatrix1D s,
-                        final DoubleMatrix1D z, final int[] m) {
+    private void fatmul(int it, int n, DoubleMatrix2D vv, DoubleMatrix1D x, DoubleMatrix1D s,
+                        DoubleMatrix1D z, int[] m) {
         final double fac = 0.2;
 
         // z consists of the nonzero entries of x. m indexes these. If there are enough zeroes in x,
@@ -474,7 +474,7 @@ public class Glasso {
         }
 
         if (l < (int) (fac * n)) {
-            final int[] indices = new int[l];
+            int[] indices = new int[l];
             for (int i = 0; i < indices.length; i++) indices[i] = i;
 
             if (it == 1) {
@@ -516,9 +516,9 @@ public class Glasso {
         return;
     }
 
-    private void inv(final int n, final DoubleMatrix2D ww, final DoubleMatrix2D xs, final DoubleMatrix2D wwi) {
+    private void inv(int n, DoubleMatrix2D ww, DoubleMatrix2D xs, DoubleMatrix2D wwi) {
         xs.assign(Mult.mult(-1));
-        final int nm1 = n - 1;
+        int nm1 = n - 1;
 
         double dp3 = 0.0;
 
@@ -547,8 +547,8 @@ public class Glasso {
                 break;
             }
 
-            final int jm1 = j - 1;
-            final int jp1 = j + 1;
+            int jm1 = j - 1;
+            int jp1 = j + 1;
 
             double dp1 = 0.0;
 
@@ -572,7 +572,7 @@ public class Glasso {
         }
     }
 
-    private void zero(final DoubleMatrix2D wwi) {
+    private void zero(DoubleMatrix2D wwi) {
         for (int i = 0; i < wwi.rows(); i++) {
             for (int j = 0; j < wwi.columns(); j++) {
                 wwi.set(i, j, 0.0);
@@ -581,8 +581,8 @@ public class Glasso {
     }
 
     public DoubleMatrix2D estimateInvCov() {
-        setIa(false);
-        final Result result = search();
+        this.setIa(false);
+        Result result = this.search();
         return result.getWwi();
     }
 
@@ -591,59 +591,59 @@ public class Glasso {
     }
 
     public boolean isIa() {
-        return this.ia;
+        return ia;
     }
 
-    public void setIa(final boolean ia) {
+    public void setIa(boolean ia) {
         this.ia = ia;
     }
 
     public boolean isIs() {
-        return this.is;
+        return is;
     }
 
-    public void setIs(final boolean is) {
+    public void setIs(boolean is) {
         this.is = is;
     }
 
     public boolean isItr() {
-        return this.itr;
+        return itr;
     }
 
-    public void setItr(final boolean itr) {
+    public void setItr(boolean itr) {
         this.itr = itr;
     }
 
     public boolean isIpen() {
-        return this.ipen;
+        return ipen;
     }
 
-    public void setIpen(final boolean ipen) {
+    public void setIpen(boolean ipen) {
         this.ipen = ipen;
     }
 
     public double getThr() {
-        return this.thr;
+        return thr;
     }
 
     public int getN() {
-        return this.n;
+        return n;
     }
 
-    public void setN(final int n) {
+    public void setN(int n) {
         if (n < 0) throw new IllegalArgumentException("Dimension >= 0: " + n);
 
         this.n = n;
     }
 
     public DoubleMatrix2D getSs() {
-        return this.ss;
+        return ss;
     }
 
-    public void setSs(final DoubleMatrix2D ss) {
-        if (this.n == -1) throw new IllegalArgumentException("N (dimension) not set.");
+    public void setSs(DoubleMatrix2D ss) {
+        if (n == -1) throw new IllegalArgumentException("N (dimension) not set.");
 
-        if (!(ss.rows() == this.n && ss.columns() == this.n)) {
+        if (!(ss.rows() == n && ss.columns() == n)) {
             throw new IllegalArgumentException("ss not square of dimension n.");
         }
 
@@ -651,35 +651,35 @@ public class Glasso {
     }
 
     public Rho getRho() {
-        return this.rho;
+        return rho;
     }
 
-    public void setRhoIndividually(final DoubleMatrix2D rho) {
-        if (this.n == -1) throw new IllegalArgumentException("N (dimension) not set.");
+    public void setRhoIndividually(DoubleMatrix2D rho) {
+        if (n == -1) throw new IllegalArgumentException("N (dimension) not set.");
 
-        if (!(rho.rows() == this.n && rho.columns() == this.n)) {
+        if (!(rho.rows() == n && rho.columns() == n)) {
             throw new IllegalArgumentException("rho not square of dimension n.");
         }
 
         this.rho = new Rho() {
-            public double get(final int i, final int j) {
+            public double get(int i, int j) {
                 return rho.get(i, j);
             }
         };
     }
 
-    public void setRhoDiagonal(final double rho) {
+    public void setRhoDiagonal(double rho) {
         this.rho = new Rho() {
-            public double get(final int i, final int j) {
+            public double get(int i, int j) {
                 if (i == j) return rho;
                 else return 0;
             }
         };
     }
 
-    public void setRhoAllEqual(final double rho) {
+    public void setRhoAllEqual(double rho) {
         this.rho = new Rho() {
-            public double get(final int i, final int j) {
+            public double get(int i, int j) {
                 return rho;
             }
         };
@@ -687,17 +687,17 @@ public class Glasso {
 
 
     public int getMaxit() {
-        return this.maxit;
+        return maxit;
     }
 
-    public void setMaxit(final int maxit) {
+    public void setMaxit(int maxit) {
         if (maxit <= 0) throw new IllegalArgumentException("Max iterations must be > 0: " + maxit);
 
         this.maxit = maxit;
     }
 
 
-    public void setThr(final double thr) {
+    public void setThr(double thr) {
         if (thr < 0) throw new IllegalArgumentException("Threshold must be >= 0: " + thr);
 
         this.thr = thr;

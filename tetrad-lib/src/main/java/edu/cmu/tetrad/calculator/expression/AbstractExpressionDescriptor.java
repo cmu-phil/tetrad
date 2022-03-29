@@ -63,7 +63,7 @@ abstract class AbstractExpressionDescriptor implements ExpressionDescriptor {
      * @param position  The position that the expression can occur in.
      * @param unlimited States whether an unlimited number of arguments is allowed.
      */
-    public AbstractExpressionDescriptor(final String name, final String token, final Position position, final boolean unlimited) {
+    public AbstractExpressionDescriptor(String name, String token, Position position, boolean unlimited) {
         if (name == null) {
             throw new NullPointerException("name was null.");
         }
@@ -74,34 +74,34 @@ abstract class AbstractExpressionDescriptor implements ExpressionDescriptor {
             throw new NullPointerException("position was null.");
         }
 
-        this.signature = new Signature(token, unlimited, false, token, "expr");
+        signature = new Signature(token, unlimited, false, token, "expr");
         this.name = name;
         this.token = token;
         this.position = position;
-        this.display = true;
+        display = true;
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 
 
     public String getToken() {
-        return this.token;
+        return token;
     }
 
 
     public ExpressionSignature getSignature() {
-        return this.signature;
+        return signature;
     }
 
 
     public Position getPosition() {
-        return this.position;
+        return position;
     }
 
     public boolean isDisplay() {
-        return this.display;
+        return display;
     }
 
     //=============================== Inner Class ==============================================//
@@ -116,42 +116,42 @@ abstract class AbstractExpressionDescriptor implements ExpressionDescriptor {
         private String signature;
         private final String[] arguments;
 
-        public Signature(final String function, final boolean unlimited, final boolean commulative, final String... arguments) {
+        public Signature(String function, boolean unlimited, boolean commulative, String... arguments) {
             if (function == null) {
                 throw new NullPointerException("function was null.");
             }
             this.arguments = arguments;
-            this.signature = function;
+            signature = function;
             // create signature string.
             if (!commulative) {
-                this.signature += "(";
+                signature += "(";
                 for (int i = 0; i < arguments.length; i++) {
                     if (i != 0) {
-                        this.signature += ", ";
+                        signature += ", ";
                     }
-                    this.signature += arguments[i];
+                    signature += arguments[i];
                 }
                 if (unlimited) {
                     if (arguments.length != 0) {
-                        this.signature += ", ";
+                        signature += ", ";
                     }
-                    this.signature += "...";
+                    signature += "...";
                 }
-                this.signature += ")";
+                signature += ")";
             }
         }
 
 
         public String getSignature() {
-            return this.signature;
+            return signature;
         }
 
         public int getNumberOfArguments() {
-            return this.arguments.length;
+            return arguments.length;
         }
 
-        public String getArgument(final int index) {
-            return this.arguments[index];
+        public String getArgument(int index) {
+            return arguments[index];
         }
 
         /**

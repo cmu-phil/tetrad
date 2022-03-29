@@ -40,17 +40,17 @@ public class EdgeWeightComparison implements SessionModel {
     private final SemIm reference;
     private final SemIm target;
 
-    public EdgeWeightComparison(final SemEstimatorWrapper reference, final SemEstimatorWrapper target, final Parameters parameters) {
+    public EdgeWeightComparison(SemEstimatorWrapper reference, SemEstimatorWrapper target, Parameters parameters) {
         this.reference = reference.getEstimatedSemIm();
         this.target = target.getEstimatedSemIm();
     }
 
-    public EdgeWeightComparison(final SemImWrapper reference, final SemEstimatorWrapper target, final Parameters parameters) {
+    public EdgeWeightComparison(SemImWrapper reference, SemEstimatorWrapper target, Parameters parameters) {
         this.reference = reference.getSemIm();
         this.target = target.getEstimatedSemIm();
     }
 
-    public EdgeWeightComparison(final SemImWrapper reference, final SemImWrapper target, final Parameters parameters) {
+    public EdgeWeightComparison(SemImWrapper reference, SemImWrapper target, Parameters parameters) {
         this.reference = reference.getSemIm();
         this.target = target.getSemIm();
     }
@@ -58,9 +58,9 @@ public class EdgeWeightComparison implements SessionModel {
     public String getDisplayString() {
         String displayString = "";
 
-        final SemIm ref = this.reference;
-        final Matrix referenceMatrix = ref.getEdgeCoef();
-        final Matrix targetMatrix = this.target.getEdgeCoef();
+        SemIm ref = reference;
+        Matrix referenceMatrix = ref.getEdgeCoef();
+        Matrix targetMatrix = target.getEdgeCoef();
 
         if (targetMatrix.columns() != referenceMatrix.columns() || targetMatrix.rows() != referenceMatrix.rows())
             return "The SEM IM's you selected don't have the same number of variables!  No comparison is possible here.";
@@ -73,18 +73,18 @@ public class EdgeWeightComparison implements SessionModel {
             }
         }
 
-        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
         displayString += "Sum of squared differences of corresponding\nedge weights:\n\n" + nf.format(score);
         return displayString;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 
 

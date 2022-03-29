@@ -32,97 +32,97 @@ public class Vector implements TetradSerializable {
 
     private final RealVector data;
 
-    public Vector(final double[] data) {
+    public Vector(double[] data) {
         this.data = new ArrayRealVector(data);
     }
 
-    public Vector(final int size) {
-        this.data = new ArrayRealVector(size);
+    public Vector(int size) {
+        data = new ArrayRealVector(size);
     }
 
-    public void assign(final double value) {
-        for (int i = 0; i < this.data.getDimension(); i++) {
-            this.data.setEntry(i, value);
+    public void assign(double value) {
+        for (int i = 0; i < data.getDimension(); i++) {
+            data.setEntry(i, value);
         }
     }
 
     public Vector copy() {
-        return new Vector(this.data.copy().toArray());
+        return new Vector(data.copy().toArray());
     }
 
     public Matrix diag() {
-        final Matrix m = new Matrix(this.data.getDimension(), this.data.getDimension());
+        Matrix m = new Matrix(data.getDimension(), data.getDimension());
 
-        for (int i = 0; i < this.data.getDimension(); i++) {
-            m.set(i, i, this.data.getEntry(i));
+        for (int i = 0; i < data.getDimension(); i++) {
+            m.set(i, i, data.getEntry(i));
         }
 
         return m;
     }
 
-    public double dotProduct(final Vector v2) {
-        return this.data.dotProduct(v2.data);
+    public double dotProduct(Vector v2) {
+        return data.dotProduct(v2.data);
     }
 
-    public double get(final int i) {
-        return this.data.getEntry(i);
+    public double get(int i) {
+        return data.getEntry(i);
     }
 
     public Vector like() {
-        return new Vector(size());
+        return new Vector(this.size());
     }
 
-    public Vector minus(final Vector mb) {
-        return new Vector(this.data.subtract(mb.data).toArray());
+    public Vector minus(Vector mb) {
+        return new Vector(data.subtract(mb.data).toArray());
     }
 
-    public Vector plus(final Vector mb) {
-        return new Vector(this.data.add(mb.data).toArray());
+    public Vector plus(Vector mb) {
+        return new Vector(data.add(mb.data).toArray());
     }
 
-    public Vector scalarMult(final double scalar) {
-        final Vector newMatrix = copy();
-        for (int i = 0; i < size(); i++) {
-            newMatrix.set(i, get(i) * scalar);
+    public Vector scalarMult(double scalar) {
+        Vector newMatrix = this.copy();
+        for (int i = 0; i < this.size(); i++) {
+            newMatrix.set(i, this.get(i) * scalar);
         }
 
         return newMatrix;
     }
 
-    public void set(final int j, final double v) {
-        this.data.setEntry(j, v);
+    public void set(int j, double v) {
+        data.setEntry(j, v);
     }
 
     public int size() {
-        return this.data.getDimension();
+        return data.getDimension();
     }
 
     public double[] toArray() {
-        return this.data.toArray();
+        return data.toArray();
     }
 
     public String toString() {
-        return MatrixUtils.toString(this.data.toArray());
+        return MatrixUtils.toString(data.toArray());
     }
 
-    public Vector viewSelection(final int[] selection) {
-        final double[] _selection = new double[selection.length];
+    public Vector viewSelection(int[] selection) {
+        double[] _selection = new double[selection.length];
 
         for (int i = 0; i < selection.length; i++) {
-            _selection[i] = this.data.getEntry(selection[i]);
+            _selection[i] = data.getEntry(selection[i]);
         }
 
         return new Vector(_selection);
     }
 
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         if (o == this) return true;
 
         if (!(o instanceof Vector)) return false;
 
-        final Vector v = (Vector) o;
+        Vector v = (Vector) o;
 
-        return MatrixUtils.equals(v.toArray(), this.toArray());
+        return MatrixUtils.equals(v.toArray(), toArray());
     }
 
     /**

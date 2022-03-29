@@ -42,66 +42,66 @@ public class VerticalIntDataBox implements DataBox {
     /**
      * The number of rows (tracked because it may be zero).
      */
-    private int numRows = 0;
+    private int numRows;
 
     /**
      * The number of columns (tracked because it may be zero).
      */
-    private int numCols = 0;
+    private int numCols;
 
     /**
      * Constructs an 2D int array consisting entirely of missing values
      * (int.NaN).
      */
-    public VerticalIntDataBox(final int rows, final int cols) {
-        this.data = new int[cols][rows];
+    public VerticalIntDataBox(int rows, int cols) {
+        data = new int[cols][rows];
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                this.data[j][i] = -99;
+                data[j][i] = -99;
             }
         }
 
-        this.numRows = rows;
-        this.numCols = cols;
+        numRows = rows;
+        numCols = cols;
     }
 
     /**
      * Constructs a new data box using the given 2D int data array as data.
      */
-    public VerticalIntDataBox(final int[][] data) {
-        final int length = data[0].length;
+    public VerticalIntDataBox(int[][] data) {
+        int length = data[0].length;
 
-        for (final int[] datum : data) {
+        for (int[] datum : data) {
             if (datum.length != length) {
                 throw new IllegalArgumentException("All columns must have same length.");
             }
         }
 
-        this.numRows = data[0].length;
-        this.numCols = data.length;
+        numRows = data[0].length;
+        numCols = data.length;
 
         this.data = data;
     }
 
-    public VerticalIntDataBox(final DataBox dataBox) {
-        this.data = new int[dataBox.numCols()][dataBox.numRows()];
+    public VerticalIntDataBox(DataBox dataBox) {
+        data = new int[dataBox.numCols()][dataBox.numRows()];
 
         for (int i = 0; i < dataBox.numRows(); i++) {
             for (int j = 0; j < dataBox.numCols(); j++) {
-                this.data[j][i] = dataBox.get(i, j).intValue();
+                data[j][i] = dataBox.get(i, j).intValue();
             }
         }
 
-        this.numRows = dataBox.numRows();
-        this.numCols = dataBox.numCols();
+        numRows = dataBox.numRows();
+        numCols = dataBox.numCols();
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
     public static BoxDataSet serializableInstance() {
-        final List<Node> vars = new ArrayList<>();
+        List<Node> vars = new ArrayList<>();
         for (int i = 0; i < 4; i++) vars.add(new ContinuousVariable("X" + i));
         return new BoxDataSet(new ShortDataBox(4, 4), vars);
     }
@@ -110,22 +110,22 @@ public class VerticalIntDataBox implements DataBox {
      * @return the number of rows in this data box.
      */
     public int numRows() {
-        return this.numRows;
+        return numRows;
     }
 
     /**
      * @return the number of columns in this data box.
      */
     public int numCols() {
-        return this.numCols;
+        return numCols;
     }
 
     /**
      * Sets the value at the given row/column to the given Number value.
      * The value used is number.intValue().
      */
-    public void set(final int row, final int col, final Number value) {
-        final int[] ints = this.data[col];
+    public void set(int row, int col, Number value) {
+        int[] ints = data[col];
 
         if (value == null) {
             synchronized (ints) {
@@ -142,8 +142,8 @@ public class VerticalIntDataBox implements DataBox {
      * @return the Number value at the given row and column. If the value
      * is missing (-99), null, is returned.
      */
-    public Number get(final int row, final int col) {
-        final int datum = this.data[col][row];
+    public Number get(int row, int col) {
+        int datum = data[col][row];
 
         if (datum == -99) {
             return null;
@@ -153,18 +153,18 @@ public class VerticalIntDataBox implements DataBox {
     }
 
     public int[][] getVariableVectors() {
-        return this.data;
+        return data;
     }
 
     /**
      * @return a copy of this data box.
      */
     public DataBox copy() {
-        final double[][] copy = new double[numCols()][numRows()];
+        double[][] copy = new double[this.numCols()][this.numRows()];
 
-        for (int i = 0; i < numRows(); i++) {
-            for (int j = 0; j < numCols(); j++) {
-                copy[j][i] = this.data[j][i];
+        for (int i = 0; i < this.numRows(); i++) {
+            for (int j = 0; j < this.numCols(); j++) {
+                copy[j][i] = data[j][i];
             }
         }
 
@@ -175,16 +175,16 @@ public class VerticalIntDataBox implements DataBox {
      * @return a DataBox of type intDataBox, but with the given dimensions.
      */
     public DataBox like() {
-        return new VerticalIntDataBox(this.numRows, this.numCols);
+        return new VerticalIntDataBox(numRows, numCols);
     }
 
     @Override
-    public DataBox viewSelection(final int[] rows, final int[] cols) {
-        final DataBox _dataBox = new VerticalIntDataBox(rows.length, cols.length);
+    public DataBox viewSelection(int[] rows, int[] cols) {
+        DataBox _dataBox = new VerticalIntDataBox(rows.length, cols.length);
 
         for (int i = 0; i < rows.length; i++) {
             for (int j = 0; j < cols.length; j++) {
-                _dataBox.set(i, j, get(rows[i], cols[j]));
+                _dataBox.set(i, j, this.get(rows[i], cols[j]));
             }
         }
 

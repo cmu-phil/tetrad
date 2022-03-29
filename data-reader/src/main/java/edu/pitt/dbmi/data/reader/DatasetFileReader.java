@@ -29,14 +29,14 @@ public abstract class DatasetFileReader extends DataFileReader implements Datase
 
     protected String missingDataMarker;
 
-    public DatasetFileReader(final Path dataFile, final Delimiter delimiter) {
+    public DatasetFileReader(Path dataFile, Delimiter delimiter) {
         super(dataFile, delimiter);
 
-        this.missingDataMarker = "";
+        missingDataMarker = "";
     }
 
     @Override
-    public void setMissingDataMarker(final String missingDataMarker) {
+    public void setMissingDataMarker(String missingDataMarker) {
         this.missingDataMarker = (missingDataMarker == null)
                 ? ""
                 : missingDataMarker.trim();

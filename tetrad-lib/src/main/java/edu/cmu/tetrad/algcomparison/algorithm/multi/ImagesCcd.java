@@ -40,18 +40,18 @@ public class ImagesCcd implements MultiDataSetAlgorithm, HasKnowledge {
     }
 
     @Override
-    public Graph search(final List<DataModel> dataModels, final Parameters parameters) {
+    public Graph search(List<DataModel> dataModels, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            final List<DataSet> dataSets = new ArrayList<>();
+            List<DataSet> dataSets = new ArrayList<>();
 
-            for (final DataModel dataModel : dataModels) {
+            for (DataModel dataModel : dataModels) {
                 dataSets.add((DataSet) dataModel);
             }
 
-            final SemBicScoreImages score = new SemBicScoreImages(dataModels);
+            SemBicScoreImages score = new SemBicScoreImages(dataModels);
             score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-            final IndependenceTest test = new IndTestScore(score);
-            final edu.cmu.tetrad.search.CcdMax search = new edu.cmu.tetrad.search.CcdMax(test);
+            IndependenceTest test = new IndTestScore(score);
+            edu.cmu.tetrad.search.CcdMax search = new edu.cmu.tetrad.search.CcdMax(test);
             search.setCollapseTiers(parameters.getBoolean("collapseTiers"));
             search.setOrientConcurrentFeedbackLoops(parameters.getBoolean(Params.ORIENT_VISIBLE_FEEDBACK_LOOPS));
             search.setDoColliderOrientations(parameters.getBoolean(Params.DO_COLLIDER_ORIENTATION));
@@ -60,19 +60,19 @@ public class ImagesCcd implements MultiDataSetAlgorithm, HasKnowledge {
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setApplyOrientAwayFromCollider(parameters.getBoolean(Params.APPLY_R1));
             search.setUseOrientTowardDConnections(parameters.getBoolean(Params.ORIENT_TOWARD_DCONNECTIONS));
-            search.setKnowledge(this.knowledge);
+            search.setKnowledge(knowledge);
             search.setDepth(parameters.getInt(Params.DEPTH));
             return search.search();
         } else {
-            final ImagesCcd imagesCcd = new ImagesCcd();
+            ImagesCcd imagesCcd = new ImagesCcd();
 
-            final List<DataSet> datasets = new ArrayList<>();
+            List<DataSet> datasets = new ArrayList<>();
 
-            for (final DataModel dataModel : dataModels) {
+            for (DataModel dataModel : dataModels) {
                 datasets.add((DataSet) dataModel);
             }
-            final GeneralResamplingTest search = new GeneralResamplingTest(datasets, imagesCcd, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(this.knowledge);
+            GeneralResamplingTest search = new GeneralResamplingTest(datasets, imagesCcd, parameters.getInt(Params.NUMBER_RESAMPLING));
+            search.setKnowledge(knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -98,15 +98,15 @@ public class ImagesCcd implements MultiDataSetAlgorithm, HasKnowledge {
     }
 
     @Override
-    public Graph search(final DataModel dataSet, final Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
+            return this.search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
         } else {
-            final ImagesCcd imagesCcd = new ImagesCcd();
+            ImagesCcd imagesCcd = new ImagesCcd();
 
-            final List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
-            final GeneralResamplingTest search = new GeneralResamplingTest(dataSets, imagesCcd, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(this.knowledge);
+            List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
+            GeneralResamplingTest search = new GeneralResamplingTest(dataSets, imagesCcd, parameters.getInt(Params.NUMBER_RESAMPLING));
+            search.setKnowledge(knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -132,7 +132,7 @@ public class ImagesCcd implements MultiDataSetAlgorithm, HasKnowledge {
     }
 
     @Override
-    public Graph getComparisonGraph(final Graph graph) {
+    public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
@@ -148,7 +148,7 @@ public class ImagesCcd implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
         parameters.add(Params.PENALTY_DISCOUNT);
 
         parameters.add(Params.DEPTH);
@@ -168,11 +168,11 @@ public class ImagesCcd implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public IKnowledge getKnowledge() {
-        return this.knowledge;
+        return knowledge;
     }
 
     @Override
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 }

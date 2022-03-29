@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.channels.FileChannel.MapMode;
 
 /**
  * Fast data loader for continuous or discrete data.
@@ -49,23 +50,23 @@ public class DataUtility {
      * @return the number of column of the first line in the file.
      * @throws IOException
      */
-    public static int countColumn(final File file, final char delimiter) throws IOException {
+    public static int countColumn(File file, char delimiter) throws IOException {
         int count = 0;
 
-        final byte delim = (byte) delimiter;
-        try (final FileChannel fc = new RandomAccessFile(file, "r").getChannel()) {
-            final MappedByteBuffer buffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
+        byte delim = (byte) delimiter;
+        try (FileChannel fc = new RandomAccessFile(file, "r").getChannel()) {
+            MappedByteBuffer buffer = fc.map(MapMode.READ_ONLY, 0, fc.size());
             byte currentChar = -1;
-            byte prevChar = DataUtility.NEW_LINE;
+            byte prevChar = NEW_LINE;
             while (buffer.hasRemaining()) {
                 currentChar = buffer.get();
-                if (currentChar == DataUtility.CARRIAGE_RETURN) {
-                    currentChar = DataUtility.NEW_LINE;
+                if (currentChar == CARRIAGE_RETURN) {
+                    currentChar = NEW_LINE;
                 }
 
-                if (currentChar == delim || (currentChar == DataUtility.NEW_LINE && prevChar != DataUtility.NEW_LINE)) {
+                if (currentChar == delim || (currentChar == NEW_LINE && prevChar != NEW_LINE)) {
                     count++;
-                    if (currentChar == DataUtility.NEW_LINE) {
+                    if (currentChar == NEW_LINE) {
                         break;
                     }
                 }
@@ -74,7 +75,7 @@ public class DataUtility {
             }
 
             // take care of cases where there's no newline at the end of the file
-            if (!(currentChar == -1 || currentChar == DataUtility.NEW_LINE)) {
+            if (!(currentChar == -1 || currentChar == NEW_LINE)) {
                 count++;
             }
         }
@@ -87,26 +88,26 @@ public class DataUtility {
      * @return the number of lines that contain data.
      * @throws IOException
      */
-    public static int countLine(final File file) throws IOException {
+    public static int countLine(File file) throws IOException {
         int count = 0;
 
-        try (final FileChannel fc = new RandomAccessFile(file, "r").getChannel()) {
-            final MappedByteBuffer buffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
-            byte prevChar = DataUtility.NEW_LINE;
+        try (FileChannel fc = new RandomAccessFile(file, "r").getChannel()) {
+            MappedByteBuffer buffer = fc.map(MapMode.READ_ONLY, 0, fc.size());
+            byte prevChar = NEW_LINE;
             while (buffer.hasRemaining()) {
                 byte currentChar = buffer.get();
-                if (currentChar == DataUtility.CARRIAGE_RETURN) {
-                    currentChar = DataUtility.NEW_LINE;
+                if (currentChar == CARRIAGE_RETURN) {
+                    currentChar = NEW_LINE;
                 }
 
-                if (currentChar == DataUtility.NEW_LINE && prevChar != DataUtility.NEW_LINE) {
+                if (currentChar == NEW_LINE && prevChar != NEW_LINE) {
                     count++;
                 }
 
                 prevChar = currentChar;
             }
 
-            if (prevChar != DataUtility.NEW_LINE) {
+            if (prevChar != NEW_LINE) {
                 count++;
             }
         }

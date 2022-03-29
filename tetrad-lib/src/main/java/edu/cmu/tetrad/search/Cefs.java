@@ -133,7 +133,7 @@ public final class Cefs {
      * True if cycles are to be aggressively prevented. May be expensive for large graphs (but also useful for large
      * graphs).
      */
-    private boolean aggressivelyPreventCycles = false;
+    private boolean aggressivelyPreventCycles;
 
     /**
      * The logger for this class. The config needs to be set.
@@ -149,7 +149,7 @@ public final class Cefs {
      * @param test  The source of conditional independence information for the search.
      * @param depth The maximum number of variables conditioned on for any independence test in the search.
      */
-    public Cefs(final IndependenceTest test, int depth) {
+    public Cefs(IndependenceTest test, int depth) {
         if (test == null) {
             throw new NullPointerException();
         }
@@ -164,17 +164,17 @@ public final class Cefs {
 
         this.test = test;
         this.depth = depth;
-        this.variables = test.getVariables();
+        variables = test.getVariables();
     }
 
     //===============================PUBLIC METHODS=======================//
 
 
     public boolean isAggressivelyPreventCycles() {
-        return this.aggressivelyPreventCycles;
+        return aggressivelyPreventCycles;
     }
 
-    public void setAggressivelyPreventCycles(final boolean aggressivelyPreventCycles) {
+    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
         this.aggressivelyPreventCycles = aggressivelyPreventCycles;
     }
 
@@ -184,30 +184,30 @@ public final class Cefs {
      *
      * @param targetName The name of the target variable.
      */
-    public Graph search(final String targetName) {
-        final long start = System.currentTimeMillis();
-        this.numIndependenceTests = 0;
-        this.allTriples = new HashSet<>();
-        this.ambiguousTriples = new HashSet<>();
-        this.colliderTriples = new HashSet<>();
-        this.noncolliderTriples = new HashSet<>();
+    public Graph search(String targetName) {
+        long start = System.currentTimeMillis();
+        numIndependenceTests = 0;
+        allTriples = new HashSet<>();
+        ambiguousTriples = new HashSet<>();
+        colliderTriples = new HashSet<>();
+        noncolliderTriples = new HashSet<>();
 
         if (targetName == null) {
             throw new IllegalArgumentException(
                     "Null target name not permitted");
         }
 
-        this.target = getVariableForName(targetName);
+        target = this.getVariableForName(targetName);
 
         // Some statistics.
-        this.maxRemainingAtDepth = new int[20];
-        this.maxVariableAtDepth = new Node[20];
-        Arrays.fill(this.maxRemainingAtDepth, -1);
-        Arrays.fill(this.maxVariableAtDepth, null);
+        maxRemainingAtDepth = new int[20];
+        maxVariableAtDepth = new Node[20];
+        Arrays.fill(maxRemainingAtDepth, -1);
+        Arrays.fill(maxVariableAtDepth, null);
 
-        TetradLogger.getInstance().log("info", "target = " + getTarget());
+        TetradLogger.getInstance().log("info", "target = " + this.getTarget());
 
-        final Graph graph = new EdgeListGraph();
+        Graph graph = new EdgeListGraph();
 
         // Each time the addDepthZeroAssociates method is called for a node
         // v, v is added to this set, and edges to elements in this set are
@@ -217,13 +217,13 @@ public final class Cefs {
         // remove it by conditioning on nodes adjacent to v2. Once an edge
         // is removed, it should not be re-added to the graph.
         // jdramsey 8/6/04
-        this.visited = new HashSet<>();
+        visited = new HashSet<>();
 
         // Step 1. Get associates for the target.
         TetradLogger.getInstance().log("info", "BEGINNING step 1 (prune target).");
 
-        graph.addNode(getTarget());
-        constructFan(getTarget(), graph);
+        graph.addNode(this.getTarget());
+        this.constructFan(this.getTarget(), graph);
 
         TetradLogger.getInstance().log("graph", "After step 1 (prune target)" + graph);
 
@@ -233,8 +233,8 @@ public final class Cefs {
         // Call this set PC.
         TetradLogger.getInstance().log("info", "BEGINNING step 2 (prune PC).");
 
-        for (final Node v : graph.getAdjacentNodes(getTarget())) {
-            constructFan(v, graph);
+        for (Node v : graph.getAdjacentNodes(this.getTarget())) {
+            this.constructFan(v, graph);
         }
 
         TetradLogger.getInstance().log("graph", "After step 2 (prune PC)" + graph);
@@ -259,14 +259,14 @@ public final class Cefs {
 
         TetradLogger.getInstance().log("info", "BEGINNING step 4 (PC Orient).");
 
-        SearchGraphUtils.pcOrientbk(this.knowledge, graph, graph.getNodes());
+        SearchGraphUtils.pcOrientbk(knowledge, graph, graph.getNodes());
 
-        final List<Node> _visited = new LinkedList<>(getVisited());
-        orientUnshieldedTriples(this.knowledge, graph, getTest(), getDepth(), _visited);
+        List<Node> _visited = new LinkedList<>(this.getVisited());
+        this.orientUnshieldedTriples(knowledge, graph, this.getTest(), this.getDepth(), _visited);
 
-        final MeekRules meekRules = new MeekRules();
-        meekRules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
-        meekRules.setKnowledge(this.knowledge);
+        MeekRules meekRules = new MeekRules();
+        meekRules.setAggressivelyPreventCycles(aggressivelyPreventCycles);
+        meekRules.setKnowledge(knowledge);
         meekRules.orientImplied(graph);
 
         TetradLogger.getInstance().log("graph", "After step 4 (PC Orient)" + graph);
@@ -275,7 +275,7 @@ public final class Cefs {
 //                "{Parents(Children(T))}).");
 
 //        MbUtils.trimToMbNodes(graph, getTarget());
-        MbUtils.trimToAdjacents(graph, this.target);
+        MbUtils.trimToAdjacents(graph, target);
 
 //        LogUtils.getInstance().fine(
 //                "After step 5 (Trim graph to {T} U PC U {Parents(Children(T))})" +
@@ -296,9 +296,9 @@ public final class Cefs {
 //            }
 //        }
 
-        finishUp(start, graph);
+        this.finishUp(start, graph);
 
-        this.logger.log("graph", "\nReturning this graph: " + graph);
+        logger.log("graph", "\nReturning this graph: " + graph);
 
         this.graph = graph;
         return graph;
@@ -308,55 +308,55 @@ public final class Cefs {
      * @return the set of triples identified as ambiguous by the CPC algorithm during the most recent search.
      */
     public Set<Triple> getAmbiguousTriples() {
-        return new HashSet<>(this.ambiguousTriples);
+        return new HashSet<>(ambiguousTriples);
     }
 
     /**
      * @return the set of triples identified as colliders by the CPC algorithm during the most recent search.
      */
     public Set<Triple> getColliderTriples() {
-        return this.colliderTriples;
+        return colliderTriples;
     }
 
     /**
      * @return the set of triples identified as noncolliders by the CPC algorithm during the most recent search.
      */
     public Set<Triple> getNoncolliderTriples() {
-        return this.noncolliderTriples;
+        return noncolliderTriples;
     }
 
     /**
      * @return the number of independence tests performed during the most recent search.
      */
     public long getNumIndependenceTests() {
-        return this.numIndependenceTests;
+        return numIndependenceTests;
     }
 
     /**
      * @return the target of the most recent search.
      */
     public Node getTarget() {
-        return this.target;
+        return target;
     }
 
     /**
      * @return the elapsed time of the most recent search.
      */
     public double getElapsedTime() {
-        return this.elapsedTime;
+        return elapsedTime;
     }
 
     /**
      * If a true MB was set before running the search, this returns it.
      */
     public Dag getTrueMb() {
-        return this.trueMb;
+        return trueMb;
     }
 
     /**
      * Sets the true MB; should be done before running the search to get on-the-fly comparisons.
      */
-    public void setTrueMb(final Dag trueMb) {
+    public void setTrueMb(Dag trueMb) {
         this.trueMb = trueMb;
     }
 
@@ -364,23 +364,23 @@ public final class Cefs {
      * @return the depth of the most recent search.
      */
     public int getDepth() {
-        return this.depth;
+        return depth;
     }
 
     /**
      * @return the result graph of the most recent search.
      */
     public Graph resultGraph() {
-        return this.resultGraph;
+        return resultGraph;
     }
 
     /**
      * @return just the Markov blanket (not the Markov blanket DAG).
      */
-    public List<Node> findMb(final String targetName) {
-        final Graph graph = search(targetName);
-        final List<Node> nodes = graph.getNodes();
-        nodes.remove(this.target);
+    public List<Node> findMb(String targetName) {
+        Graph graph = this.search(targetName);
+        List<Node> nodes = graph.getNodes();
+        nodes.remove(target);
         return nodes;
     }
 
@@ -388,47 +388,47 @@ public final class Cefs {
      * @return the independence test set in the constructor.
      */
     public IndependenceTest getTest() {
-        return this.test;
+        return test;
     }
 
     /**
      * @return the most recently set Knowledge object.
      */
     public IKnowledge getKnowledge() {
-        return this.knowledge;
+        return knowledge;
     }
 
     /**
      * Sets knowledge, to which the algorithm is in fact sensitive.
      */
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
     public Graph getGraph() {
-        return this.graph;
+        return graph;
     }
 
     //================================PRIVATE METHODS====================//
 
     private Set<Node> getVisited() {
-        return this.visited;
+        return visited;
     }
 
     /**
      * Adds associates of the target and prunes edges using subsets of adjacencies to the target.
      */
-    private void constructFan(final Node target, final Graph graph) {
-        addAllowableAssociates(target, graph);
-        prune(target, graph);
+    private void constructFan(Node target, Graph graph) {
+        this.addAllowableAssociates(target, graph);
+        this.prune(target, graph);
     }
 
-    private void addAllowableAssociates(final Node v, final Graph graph) {
-        this.getVisited().add(v);
+    private void addAllowableAssociates(Node v, Graph graph) {
+        getVisited().add(v);
         int numAssociated = 0;
 
-        for (final Node w : this.variables) {
-            if (getVisited().contains(w)) {
+        for (Node w : variables) {
+            if (this.getVisited().contains(w)) {
                 continue;
             }
 
@@ -436,22 +436,22 @@ public final class Cefs {
                 continue;
             }
 
-            if (!independent(v, w, new LinkedList<Node>()) && !edgeForbidden(v, w)) {
-                addEdge(graph, w, v);
+            if (!this.independent(v, w, new LinkedList<Node>()) && !this.edgeForbidden(v, w)) {
+                this.addEdge(graph, w, v);
                 numAssociated++;
             }
         }
 
-        noteMaxAtDepth(0, numAssociated, v);
+        this.noteMaxAtDepth(0, numAssociated, v);
     }
 
-    private void prune(final Node node, final Graph graph) {
-        for (int depth = 1; depth <= getDepth(); depth++) {
+    private void prune(Node node, Graph graph) {
+        for (int depth = 1; depth <= this.getDepth(); depth++) {
             if (graph.getAdjacentNodes(node).size() < depth) {
                 return;
             }
 
-            prune(node, graph, depth);
+            this.prune(node, graph, depth);
         }
     }
 
@@ -460,36 +460,36 @@ public final class Cefs {
      * edge adjacent node 'from' using remaining edges adjacent node 'from.' If the edge 'node' is removed, the method
      * immediately returns.
      */
-    private void prune(final Node node, final Graph graph, final int depth) {
+    private void prune(Node node, Graph graph, int depth) {
         TetradLogger.getInstance().log("pruning", "Trying to remove edges adjacent to node " + node +
                 ", depth = " + depth + ".");
 
         // Otherwise, try removing all other edges adjacent node node. Return
         // true if more edges could be removed at the next depth.
-        final List<Node> a = new LinkedList<>(graph.getAdjacentNodes(node));
+        List<Node> a = new LinkedList<>(graph.getAdjacentNodes(node));
 
         NEXT_EDGE:
-        for (final Node y : a) {
+        for (Node y : a) {
             List<Node> adjNode =
                     new LinkedList<>(graph.getAdjacentNodes(node));
             adjNode.remove(y);
-            adjNode = possibleParents(node, adjNode);
+            adjNode = this.possibleParents(node, adjNode);
 
             if (adjNode.size() < depth) {
                 continue;
             }
 
-            final ChoiceGenerator cg = new ChoiceGenerator(adjNode.size(), depth);
+            ChoiceGenerator cg = new ChoiceGenerator(adjNode.size(), depth);
             int[] choice;
 
             while ((choice = cg.next()) != null) {
-                final List<Node> condSet = GraphUtils.asList(choice, adjNode);
+                List<Node> condSet = GraphUtils.asList(choice, adjNode);
 
-                if (independent(node, y, condSet) && !edgeRequired(node, y)) {
+                if (this.independent(node, y, condSet) && !this.edgeRequired(node, y)) {
                     graph.removeEdge(node, y);
 
                     // The target itself must not be removed.
-                    if (graph.getEdges(y).isEmpty() && y != getTarget()) {
+                    if (graph.getEdges(y).isEmpty() && y != this.getTarget()) {
                         graph.removeNode(y);
                     }
 
@@ -498,53 +498,53 @@ public final class Cefs {
             }
         }
 
-        final int numAdjacents = graph.getAdjacentNodes(node).size();
-        noteMaxAtDepth(depth, numAdjacents, node);
+        int numAdjacents = graph.getAdjacentNodes(node).size();
+        this.noteMaxAtDepth(depth, numAdjacents, node);
     }
 
-    private void finishUp(final long start, final Graph graph) {
-        final long stop = System.currentTimeMillis();
-        this.elapsedTime = stop - start;
-        final double seconds = this.elapsedTime / 1000d;
+    private void finishUp(long start, Graph graph) {
+        long stop = System.currentTimeMillis();
+        elapsedTime = stop - start;
+        double seconds = elapsedTime / 1000d;
 
-        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         TetradLogger.getInstance().log("info", "MB fan search took " + nf.format(seconds) + " seconds.");
         TetradLogger.getInstance().log("info", "Number of independence tests performed = " +
-                getNumIndependenceTests());
+                this.getNumIndependenceTests());
 
-        this.resultGraph = graph;
+        resultGraph = graph;
     }
 
-    private boolean independent(final Node v, final Node w, final List<Node> z) {
-        final boolean independent = getTest().isIndependent(v, w, z);
+    private boolean independent(Node v, Node w, List<Node> z) {
+        boolean independent = this.getTest().isIndependent(v, w, z);
 
         if (independent) {
-            if (getTrueMb() != null) {
-                final Node node1 = getTrueMb().getNode(v.getName());
-                final Node node2 = getTrueMb().getNode(w.getName());
+            if (this.getTrueMb() != null) {
+                Node node1 = this.getTrueMb().getNode(v.getName());
+                Node node2 = this.getTrueMb().getNode(w.getName());
 
                 if (node1 != null && node2 != null) {
-                    final Edge edge = getTrueMb().getEdge(node1, node2);
+                    Edge edge = this.getTrueMb().getEdge(node1, node2);
 
                     if (edge != null) {
-                        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+                        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
                         System.out.println(
                                 "Edge removed that was in the true MB:");
                         System.out.println("\tTrue edge = " + edge);
                         System.out.println("\t" +
                                 SearchLogUtils.independenceFact(v, w, z) +
                                 "\tp = " +
-                                nf.format(getTest().getPValue()));
+                                nf.format(this.getTest().getPValue()));
                     }
                 }
             }
         }
 
-        this.numIndependenceTests++;
+        numIndependenceTests++;
         return independent;
     }
 
-    private void addEdge(final Graph graph, final Node w, final Node v) {
+    private void addEdge(Graph graph, Node w, Node v) {
         if (!graph.containsNode(w)) {
             graph.addNode(w);
         }
@@ -552,10 +552,10 @@ public final class Cefs {
         graph.addUndirectedEdge(v, w);
     }
 
-    private Node getVariableForName(final String targetVariableName) {
+    private Node getVariableForName(String targetVariableName) {
         Node target = null;
 
-        for (final Node V : this.variables) {
+        for (Node V : variables) {
             if (V.getName().equals(targetVariableName)) {
                 target = V;
                 break;
@@ -570,64 +570,64 @@ public final class Cefs {
         return target;
     }
 
-    private void noteMaxAtDepth(final int depth, final int numAdjacents, final Node to) {
-        if (depth < this.maxRemainingAtDepth.length &&
-                numAdjacents > this.maxRemainingAtDepth[depth]) {
-            this.maxRemainingAtDepth[depth] = numAdjacents;
-            this.maxVariableAtDepth[depth] = to;
+    private void noteMaxAtDepth(int depth, int numAdjacents, Node to) {
+        if (depth < maxRemainingAtDepth.length &&
+                numAdjacents > maxRemainingAtDepth[depth]) {
+            maxRemainingAtDepth[depth] = numAdjacents;
+            maxVariableAtDepth[depth] = to;
         }
     }
 
-    private void orientUnshieldedTriples(final IKnowledge knowledge, final Graph graph,
-                                         final IndependenceTest test, final int depth, List<Node> nodes) {
+    private void orientUnshieldedTriples(IKnowledge knowledge, Graph graph,
+                                         IndependenceTest test, int depth, List<Node> nodes) {
         TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
 
-        this.colliderTriples = new HashSet<>();
-        this.noncolliderTriples = new HashSet<>();
-        this.ambiguousTriples = new HashSet<>();
+        colliderTriples = new HashSet<>();
+        noncolliderTriples = new HashSet<>();
+        ambiguousTriples = new HashSet<>();
 
         if (nodes == null) {
             nodes = graph.getNodes();
         }
 
-        for (final Node y : nodes) {
-            final List<Node> adjacentNodes = graph.getAdjacentNodes(y);
+        for (Node y : nodes) {
+            List<Node> adjacentNodes = graph.getAdjacentNodes(y);
 
             if (adjacentNodes.size() < 2) {
                 continue;
             }
 
-            final ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
             int[] combination;
 
             while ((combination = cg.next()) != null) {
-                final Node x = adjacentNodes.get(combination[0]);
-                final Node z = adjacentNodes.get(combination[1]);
+                Node x = adjacentNodes.get(combination[0]);
+                Node z = adjacentNodes.get(combination[1]);
 
                 if (graph.isAdjacentTo(x, z)) {
                     continue;
                 }
 
-                this.allTriples.add(new Triple(x, y, z));
+                allTriples.add(new Triple(x, y, z));
 
-                final TripleType type = getTripleType(graph, x, y, z, test, depth);
+                TripleType type = this.getTripleType(graph, x, y, z, test, depth);
 
                 if (type == TripleType.COLLIDER) {
-                    if (colliderAllowed(x, y, z, knowledge)) {
+                    if (this.colliderAllowed(x, y, z, knowledge)) {
                         graph.setEndpoint(x, y, Endpoint.ARROW);
                         graph.setEndpoint(z, y, Endpoint.ARROW);
-                        this.logger.log("tripleClassifications", "Collider oriented: " + Triple.pathString(graph, x, y, z));
+                        logger.log("tripleClassifications", "Collider oriented: " + Triple.pathString(graph, x, y, z));
                     }
 
-                    this.colliderTriples.add(new Triple(x, y, z));
+                    colliderTriples.add(new Triple(x, y, z));
                 } else if (type == TripleType.AMBIGUOUS) {
-                    final Triple triple = new Triple(x, y, z);
-                    this.ambiguousTriples.add(triple);
+                    Triple triple = new Triple(x, y, z);
+                    ambiguousTriples.add(triple);
                     graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
-                    this.logger.log("tripleClassifications", "Ambiguous triple oriented: " + Triple.pathString(graph, x, y, z));
+                    logger.log("tripleClassifications", "Ambiguous triple oriented: " + Triple.pathString(graph, x, y, z));
                 } else {
-                    this.noncolliderTriples.add(new Triple(x, y, z));
-                    this.logger.log("tripleClassifications", "Noncollider oriented: " + Triple.pathString(graph, x, y, z));
+                    noncolliderTriples.add(new Triple(x, y, z));
+                    logger.log("tripleClassifications", "Noncollider oriented: " + Triple.pathString(graph, x, y, z));
                 }
             }
         }
@@ -635,8 +635,8 @@ public final class Cefs {
         TetradLogger.getInstance().log("info", "Finishing Collider Orientation.");
     }
 
-    private TripleType getTripleType(final Graph graph, final Node x, final Node y, final Node z,
-                                     final IndependenceTest test, final int depth) {
+    private TripleType getTripleType(Graph graph, Node x, Node y, Node z,
+                                     IndependenceTest test, int depth) {
         boolean existsSepsetContainingY = false;
         boolean existsSepsetNotContainingY = false;
 
@@ -653,11 +653,11 @@ public final class Cefs {
         _depth = Math.min(_depth, _nodes.size());
 
         for (int d = 0; d <= _depth; d++) {
-            final ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);
+            ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);
             int[] choice;
 
             while ((choice = cg.next()) != null) {
-                final List<Node> condSet = Cefs.asList(choice, _nodes);
+                List<Node> condSet = asList(choice, _nodes);
 
                 if (test.isIndependent(x, z, condSet)) {
                     if (condSet.contains(y)) {
@@ -682,11 +682,11 @@ public final class Cefs {
         _depth = Math.min(_depth, _nodes.size());
 
         for (int d = 0; d <= _depth; d++) {
-            final ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);
+            ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);
             int[] choice;
 
             while ((choice = cg.next()) != null) {
-                final List<Node> condSet = Cefs.asList(choice, _nodes);
+                List<Node> condSet = asList(choice, _nodes);
 
                 if (test.isIndependent(x, z, condSet)) {
                     if (condSet.contains(y)) {
@@ -707,27 +707,27 @@ public final class Cefs {
         }
     }
 
-    private boolean edgeForbidden(final Node x1, final Node x2) {
-        return getKnowledge().isForbidden(x1.toString(), x2.toString()) &&
-                getKnowledge().isForbidden(x2.toString(), x1.toString());
+    private boolean edgeForbidden(Node x1, Node x2) {
+        return this.getKnowledge().isForbidden(x1.toString(), x2.toString()) &&
+                this.getKnowledge().isForbidden(x2.toString(), x1.toString());
     }
 
-    private boolean edgeRequired(final Node x1, final Node x2) {
-        return getKnowledge().isRequired(x1.toString(), x2.toString()) ||
-                getKnowledge().isRequired(x2.toString(), x1.toString());
+    private boolean edgeRequired(Node x1, Node x2) {
+        return this.getKnowledge().isRequired(x1.toString(), x2.toString()) ||
+                this.getKnowledge().isRequired(x2.toString(), x1.toString());
     }
 
     /**
      * Removes from adjx any that cannot be parents of x given the background knowledge.
      */
-    private List<Node> possibleParents(final Node node, final List<Node> adjNode) {
-        final List<Node> possibleParents = new LinkedList<>();
-        final String _x = node.getName();
+    private List<Node> possibleParents(Node node, List<Node> adjNode) {
+        List<Node> possibleParents = new LinkedList<>();
+        String _x = node.getName();
 
-        for (final Node z : adjNode) {
-            final String _z = z.getName();
+        for (Node z : adjNode) {
+            String _z = z.getName();
 
-            if (possibleParentOf(_z, _x, this.knowledge)) {
+            if (this.possibleParentOf(_z, _x, knowledge)) {
                 possibleParents.add(z);
             }
         }
@@ -739,27 +739,27 @@ public final class Cefs {
      * @return true just in case z is a possible parent of x, in the sense that edges are not forbidden from z to x, and
      * edges are not required from either x to z, according to background knowledge.
      */
-    private boolean possibleParentOf(final String z, final String x, final IKnowledge knowledge) {
+    private boolean possibleParentOf(String z, String x, IKnowledge knowledge) {
         return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
     }
 
-    private static List<Node> asList(final int[] indices, final List<Node> nodes) {
-        final List<Node> list = new LinkedList<>();
+    private static List<Node> asList(int[] indices, List<Node> nodes) {
+        List<Node> list = new LinkedList<>();
 
-        for (final int i : indices) {
+        for (int i : indices) {
             list.add(nodes.get(i));
         }
 
         return list;
     }
 
-    private boolean colliderAllowed(final Node x, final Node y, final Node z, final IKnowledge knowledge) {
-        return Cefs.isArrowpointAllowed1(x, y, knowledge) &&
-                Cefs.isArrowpointAllowed1(z, y, knowledge);
+    private boolean colliderAllowed(Node x, Node y, Node z, IKnowledge knowledge) {
+        return isArrowpointAllowed1(x, y, knowledge) &&
+                isArrowpointAllowed1(z, y, knowledge);
     }
 
-    private static boolean isArrowpointAllowed1(final Node from, final Node to,
-                                                final IKnowledge knowledge) {
+    private static boolean isArrowpointAllowed1(Node from, Node to,
+                                                IKnowledge knowledge) {
         if (knowledge == null) {
             return true;
         }

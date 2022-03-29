@@ -77,7 +77,7 @@ public final class DiscreteTetradTest implements TetradTest {
     //private static final double FUNC_TOLERANCE = 1.0e-4;
     //private static final double PARAM_TOLERANCE = 1.0e-3;
 
-    public boolean verbose = false;
+    public boolean verbose;
 
     //Gaussian-Hermite points and weights (Stroud and Secrest, 1966)
     /*double GHY[] = {4.49999070730939155366438053053, 3.66995037340445253472922383312, 2.9671669279056032484,
@@ -146,74 +146,74 @@ public final class DiscreteTetradTest implements TetradTest {
      */
     int[][][][] twoFactor4Tests;
 
-    boolean highPrecisionIntegral = false;
+    boolean highPrecisionIntegral;
 
-    public DiscreteTetradTest(final DataSet dataSet, final double sig) {
+    public DiscreteTetradTest(DataSet dataSet, double sig) {
         this.dataSet = dataSet;
         this.sig = sig;
-        initialization();
+        this.initialization();
     }
 
     public String[] getVarNames() {
-        return this.dataSet.getVariableNames().toArray(new String[0]);
+        return dataSet.getVariableNames().toArray(new String[0]);
     }
 
     public List<Node> getVariables() {
-        return this.dataSet.getVariables();
+        return dataSet.getVariables();
     }
 
     public DataSet getDataSet() {
-        return this.dataSet;
+        return dataSet;
     }
 
     private void initialization() {
-        for (int i = 0; i < DiscreteTetradTest.GHY.length; i++) {
-            DiscreteTetradTest.GHY[i] *= Math.sqrt(2);
-            DiscreteTetradTest.GHW[i] /= Math.sqrt(Math.PI);
+        for (int i = 0; i < GHY.length; i++) {
+            GHY[i] *= Math.sqrt(2);
+            GHW[i] /= Math.sqrt(Math.PI);
         }
-        final int numRows = this.dataSet.getNumRows();
-        final int numColumns = this.dataSet.getNumColumns();
+        int numRows = dataSet.getNumRows();
+        int numColumns = dataSet.getNumColumns();
 
-        this.prob = new double[3];
-        this.bvalues = new boolean[3];
-        this.sig1 = this.sig / 3.;
-        this.sig2 = 2. * this.sig / 3.;
-        this.sig3 = this.sig;
+        prob = new double[3];
+        bvalues = new boolean[3];
+        sig1 = sig / 3.;
+        sig2 = 2. * sig / 3.;
+        sig3 = sig;
 
-        this.rhoGrid = new double[DiscreteTetradTest.RHO_GRID_SIZE];
-        for (int i = 1; i < DiscreteTetradTest.RHO_GRID_SIZE; i++) {
-            this.rhoGrid[i - 1] = -1. + (2. / DiscreteTetradTest.RHO_GRID_SIZE) * i;
+        rhoGrid = new double[RHO_GRID_SIZE];
+        for (int i = 1; i < RHO_GRID_SIZE; i++) {
+            rhoGrid[i - 1] = -1. + (2. / RHO_GRID_SIZE) * i;
         }
 
 //        this.rawdata = this.dataSet.getIntMatrixTransposed();
 
         // Store and order possible values
-        this.values = new int[numColumns][];
-        this.valueIndices = new int[numColumns];
-        final int[] tempValues = new int[DiscreteTetradTest.MAX_VALUES];
-        final boolean[] marked = new boolean[DiscreteTetradTest.MAX_VALUES];
+        values = new int[numColumns][];
+        valueIndices = new int[numColumns];
+        int[] tempValues = new int[MAX_VALUES];
+        boolean[] marked = new boolean[MAX_VALUES];
         for (int i = 0; i < numColumns; i++) {
             int vSize = 0;
             rowloop:
             for (int j = 0; j < numRows; j++) {
-                final int value = this.dataSet.getInt(j, i);
+                int value = dataSet.getInt(j, i);
                 for (int k = 0; k < vSize; k++) {
                     if (tempValues[k] == value) {
                         continue rowloop;
                     }
                 }
-                if (vSize < DiscreteTetradTest.MAX_VALUES - 1) {
+                if (vSize < MAX_VALUES - 1) {
                     tempValues[vSize++] = value;
                 } else {
                     throw new RuntimeException(
                             "Maximum number of distinct values for a discrete variable exceeded!");
                 }
             }
-            this.values[i] = new int[vSize];
+            values[i] = new int[vSize];
             if (i == 0) {
-                this.valueIndices[i] = 0;
+                valueIndices[i] = 0;
             } else {
-                this.valueIndices[i] = this.valueIndices[i - 1] + vSize - 1;
+                valueIndices[i] = valueIndices[i - 1] + vSize - 1;
             }
             for (int j = 0; j < vSize; j++) {
                 marked[j] = false;
@@ -227,46 +227,46 @@ public final class DiscreteTetradTest implements TetradTest {
                         minIndexValue = k;
                     }
                 }
-                this.values[i][j] = minValue;
+                values[i][j] = minValue;
                 marked[minIndexValue] = true;
             }
         }
 
-        this.thresholds = new double[numColumns][];
+        thresholds = new double[numColumns][];
         for (int i = 0; i < numColumns; i++) {
-            this.thresholds[i] = new double[this.values[i].length - 1];
+            thresholds[i] = new double[values[i].length - 1];
         }
 
-        this.counts = new int[numColumns][numColumns][][];
+        counts = new int[numColumns][numColumns][][];
 //        computeCounts(this.coefs, this.rawdata);
-        computeCounts(this.counts, this.dataSet);
-        this.currentCounts = this.counts;
-        this.polyCorr = getUnderlyingCorr(this.counts);
-        this.oneFactor4Tests =
-                new int[this.values.length][this.values.length][this.values.length][this.values.length];
-        this.twoFactor4Tests =
-                new int[this.values.length][this.values.length][this.values.length][this.values.length];
+        this.computeCounts(counts, dataSet);
+        currentCounts = counts;
+        polyCorr = this.getUnderlyingCorr(counts);
+        oneFactor4Tests =
+                new int[values.length][values.length][values.length][values.length];
+        twoFactor4Tests =
+                new int[values.length][values.length][values.length][values.length];
         //this.oneFactor5Tests = new int[this.values.length][this.values.length][this.values.length][this.values.length][this.values.length];
-        resetCache();
+        this.resetCache();
     }
 
     public void resetCache() {
-        for (int v1 = 0; v1 < this.values.length; v1++) {
-            for (int v2 = v1 + 1; v2 < this.values.length; v2++) {
-                for (int v3 = v2 + 1; v3 < this.values.length; v3++) {
-                    for (int v4 = v3 + 1; v4 < this.values.length; v4++) {
-                        this.oneFactor4Tests[v1][v2][v3][v4] = 0;
+        for (int v1 = 0; v1 < values.length; v1++) {
+            for (int v2 = v1 + 1; v2 < values.length; v2++) {
+                for (int v3 = v2 + 1; v3 < values.length; v3++) {
+                    for (int v4 = v3 + 1; v4 < values.length; v4++) {
+                        oneFactor4Tests[v1][v2][v3][v4] = 0;
                         //for (int v5 = v4 + 1; v5 < this.values.length; v5++)
                         //    this.oneFactor5Tests[v1][v2][v3][v4][v5] = 0;
                     }
                 }
             }
         }
-        for (int v1 = 0; v1 < this.values.length - 1; v1++) {
-            for (int v2 = v1 + 1; v2 < this.values.length; v2++) {
-                for (int v3 = 0; v3 < this.values.length - 1; v3++) {
-                    for (int v4 = v3 + 1; v4 < this.values.length; v4++) {
-                        this.twoFactor4Tests[v1][v2][v3][v4] = 0;
+        for (int v1 = 0; v1 < values.length - 1; v1++) {
+            for (int v2 = v1 + 1; v2 < values.length; v2++) {
+                for (int v3 = 0; v3 < values.length - 1; v3++) {
+                    for (int v4 = v3 + 1; v4 < values.length; v4++) {
+                        twoFactor4Tests[v1][v2][v3][v4] = 0;
                     }
                 }
             }
@@ -274,56 +274,56 @@ public final class DiscreteTetradTest implements TetradTest {
     }
 
     public double getSignificance() {
-        return this.sig;
+        return sig;
     }
 
-    public void setSignificance(final double sig) {
+    public void setSignificance(double sig) {
         this.sig = sig;
     }
 
-    public void setHighPrecision(final boolean p) {
-        this.highPrecisionIntegral = p;
+    public void setHighPrecision(boolean p) {
+        highPrecisionIntegral = p;
     }
 
     public boolean getHighPrecision() {
-        return this.highPrecisionIntegral;
+        return highPrecisionIntegral;
     }
 
-    public int tetradScore(final int i, final int j, final int k, final int l) {
-        if (oneFactorTest(i, j, k, l)) {
+    public int tetradScore(int i, int j, int k, int l) {
+        if (this.oneFactorTest(i, j, k, l)) {
             return 3;
         } else {
-            twoFactorTest(i, l, j, k);
-            this.prob[0] = this.tempProb;
-            twoFactorTest(i, k, j, l);
-            this.prob[1] = this.tempProb;
-            twoFactorTest(i, j, k, l);
-            this.prob[2] = this.tempProb;
+            this.twoFactorTest(i, l, j, k);
+            prob[0] = tempProb;
+            this.twoFactorTest(i, k, j, l);
+            prob[1] = tempProb;
+            this.twoFactorTest(i, j, k, l);
+            prob[2] = tempProb;
             for (int c = 0; c < 3; c++) {
-                this.bvalues[c] = (this.prob[c] >= this.sig);
+                bvalues[c] = (prob[c] >= sig);
             }
             //Order p-values for FDR (false discovery rate) decision
-            if (this.prob[1] < this.prob[0] && this.prob[1] < this.prob[2]) {
-                this.tempProb = this.prob[0];
-                this.prob[0] = this.prob[1];
-                this.prob[1] = this.tempProb;
-            } else if (this.prob[2] < this.prob[0] && this.prob[2] < this.prob[0]) {
-                this.tempProb = this.prob[0];
-                this.prob[0] = this.prob[2];
-                this.prob[2] = this.tempProb;
+            if (prob[1] < prob[0] && prob[1] < prob[2]) {
+                tempProb = prob[0];
+                prob[0] = prob[1];
+                prob[1] = tempProb;
+            } else if (prob[2] < prob[0] && prob[2] < prob[0]) {
+                tempProb = prob[0];
+                prob[0] = prob[2];
+                prob[2] = tempProb;
             }
-            if (this.prob[2] < this.prob[1]) {
-                this.tempProb = this.prob[1];
-                this.prob[1] = this.prob[2];
-                this.prob[2] = this.tempProb;
+            if (prob[2] < prob[1]) {
+                tempProb = prob[1];
+                prob[1] = prob[2];
+                prob[2] = tempProb;
             }
-            if (this.prob[2] <= this.sig3) {
+            if (prob[2] <= sig3) {
                 return 0;
             }
-            if (this.prob[1] <= this.sig2) {
+            if (prob[1] <= sig2) {
                 return 1;
             }
-            if (this.prob[0] <= this.sig1) {
+            if (prob[0] <= sig1) {
                 //This is the case of 2 tetrad constraints holding, which is
                 //a logical impossibility. On a future version we may come up with
                 //better, more powerful ways of deciding what to do. Right now,
@@ -338,35 +338,35 @@ public final class DiscreteTetradTest implements TetradTest {
      * Tests the tetrad (v1, v3) x (v2, v4) = (v1, v4) x (v2, v3), and only that.
      */
 
-    public boolean tetradScore1(final int v1, final int v2, final int v3, final int v4) {
-        if (oneFactorTest(v1, v2, v3, v4)) {
+    public boolean tetradScore1(int v1, int v2, int v3, int v4) {
+        if (this.oneFactorTest(v1, v2, v3, v4)) {
             return false;
         }
-        return twoFactorTest(v1, v2, v3, v4);
+        return this.twoFactorTest(v1, v2, v3, v4);
     }
 
     /**
      * Tests if all tetrad constraints hold
      */
 
-    public boolean tetradScore3(final int v1, final int v2, final int v3, final int v4) {
-        return oneFactorTest(v1, v2, v3, v4);
+    public boolean tetradScore3(int v1, int v2, int v3, int v4) {
+        return this.oneFactorTest(v1, v2, v3, v4);
     }
 
-    public double tetradPValue(final int v1, final int v2, final int v3, final int v4) {
-        twoFactorTest(v1, v2, v3, v4);
-        return this.tempProb;
+    public double tetradPValue(int v1, int v2, int v3, int v4) {
+        this.twoFactorTest(v1, v2, v3, v4);
+        return tempProb;
     }
 
-    public double tetradPValue(final int i1, final int j1, final int k1, final int l1, final int i2, final int j2, final int k2, final int l2) {
+    public double tetradPValue(int i1, int j1, int k1, int l1, int i2, int j2, int k2, int l2) {
         return 0;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public boolean tetradHolds(final int i, final int j, final int k, final int l) {
-        twoFactorTest(i, l, j, k);
-        this.prob[0] = this.tempProb;
-        this.bvalues[0] = (this.prob[0] >= this.sig);
-        return this.bvalues[0];
+    public boolean tetradHolds(int i, int j, int k, int l) {
+        this.twoFactorTest(i, l, j, k);
+        prob[0] = tempProb;
+        bvalues[0] = (prob[0] >= sig);
+        return bvalues[0];
     }
 
 //    private void computeCounts(int coefs[][][][], int data[][]) {
@@ -405,17 +405,17 @@ public final class DiscreteTetradTest implements TetradTest {
 //        }
 //    }
 
-    private void computeCounts(final int[][][][] counts, final DataSet data) {
-        final int numRows = this.dataSet.getNumRows();
-        final int numColumns = this.dataSet.getNumColumns();
+    private void computeCounts(int[][][][] counts, DataSet data) {
+        int numRows = dataSet.getNumRows();
+        int numColumns = dataSet.getNumColumns();
         for (int i = 0; i < numColumns; i++) {
             for (int j = i; j < numColumns; j++) {
                 counts[i][j] =
-                        new int[this.values[i].length][this.values[j].length];
+                        new int[values[i].length][values[j].length];
                 counts[j][i] =
-                        new int[this.values[j].length][this.values[i].length];
-                for (int k = 0; k < this.values[i].length; k++) {
-                    for (int q = 0; q < this.values[j].length; q++) {
+                        new int[values[j].length][values[i].length];
+                for (int k = 0; k < values[i].length; k++) {
+                    for (int q = 0; q < values[j].length; q++) {
                         counts[i][j][k][q] = counts[j][i][q][k] = 0;
                     }
                 }
@@ -427,15 +427,15 @@ public final class DiscreteTetradTest implements TetradTest {
                 for (int j = i; j < numColumns; j++) {
 //                    coefs[i][j][getValuePosition(data[i][r], i)][getValuePosition(
 //                            data[j][r], j)]++;
-                    counts[i][j][getValuePosition(data.getInt(r, i),
-                            i)][getValuePosition(data.getInt(r, j), j)]++;
+                    counts[i][j][this.getValuePosition(data.getInt(r, i),
+                            i)][this.getValuePosition(data.getInt(r, j), j)]++;
                 }
             }
         }
         for (int i = 0; i < numColumns - 1; i++) {
             for (int j = i + 1; j < numColumns; j++) {
-                for (int k = 0; k < this.values[i].length; k++) {
-                    for (int q = 0; q < this.values[j].length; q++) {
+                for (int k = 0; k < values[i].length; k++) {
+                    for (int q = 0; q < values[j].length; q++) {
                         counts[j][i][q][k] = counts[i][j][k][q];
                     }
                 }
@@ -443,16 +443,16 @@ public final class DiscreteTetradTest implements TetradTest {
         }
     }
 
-    private int[][][][] computeCounts4(final int i, final int j, final int k, final int l) {
-        final int[][][][] newCounts =
-                new int[this.values[i].length][this.values[j].length][this.values[k].length][this.values[l].length];
+    private int[][][][] computeCounts4(int i, int j, int k, int l) {
+        int[][][][] newCounts =
+                new int[values[i].length][values[j].length][values[k].length][values[l].length];
 
-        final int numRows = this.dataSet.getNumRows();
-        for (int v1 = 0; v1 < this.values[this.indices[0]].length; v1++) {
-            for (int v2 = 0; v2 < this.values[this.indices[1]].length; v2++) {
-                for (int v3 = 0; v3 < this.values[this.indices[2]].length; v3++) {
+        int numRows = dataSet.getNumRows();
+        for (int v1 = 0; v1 < values[indices[0]].length; v1++) {
+            for (int v2 = 0; v2 < values[indices[1]].length; v2++) {
+                for (int v3 = 0; v3 < values[indices[2]].length; v3++) {
                     for (int v4 = 0;
-                         v4 < this.values[this.indices[3]].length; v4++) {
+                         v4 < values[indices[3]].length; v4++) {
                         newCounts[v1][v2][v3][v4] = 0;
                     }
                 }
@@ -464,26 +464,26 @@ public final class DiscreteTetradTest implements TetradTest {
 //                    this.rawdata[j][r], j)][getValuePosition(
 //                            this.rawdata[k][r], k)][getValuePosition(
 //                                    this.rawdata[l][r], l)]++;
-            newCounts[getValuePosition(this.dataSet.getInt(r, i),
-                    i)][getValuePosition(this.dataSet.getInt(r, j),
-                    j)][getValuePosition(this.dataSet.getInt(r, k),
-                    k)][getValuePosition(this.dataSet.getInt(r, l), l)]++;
+            newCounts[this.getValuePosition(dataSet.getInt(r, i),
+                    i)][this.getValuePosition(dataSet.getInt(r, j),
+                    j)][this.getValuePosition(dataSet.getInt(r, k),
+                    k)][this.getValuePosition(dataSet.getInt(r, l), l)]++;
         }
 
         return newCounts;
     }
 
-    private int[][][][][] computeCounts5(final int i, final int j, final int k, final int l, final int x) {
-        final int numRows = this.dataSet.getNumRows();
-        final int[][][][][] newCounts =
-                new int[this.values[i].length][this.values[j].length][this.values[k].length][this.values[l].length][this.values[x].length];
+    private int[][][][][] computeCounts5(int i, int j, int k, int l, int x) {
+        int numRows = dataSet.getNumRows();
+        int[][][][][] newCounts =
+                new int[values[i].length][values[j].length][values[k].length][values[l].length][values[x].length];
 
-        for (int v1 = 0; v1 < this.values[this.indices[0]].length; v1++) {
-            for (int v2 = 0; v2 < this.values[this.indices[1]].length; v2++) {
-                for (int v3 = 0; v3 < this.values[this.indices[2]].length; v3++) {
-                    for (int v4 = 0; v4 < this.values[this.indices[3]].length; v4++) {
+        for (int v1 = 0; v1 < values[indices[0]].length; v1++) {
+            for (int v2 = 0; v2 < values[indices[1]].length; v2++) {
+                for (int v3 = 0; v3 < values[indices[2]].length; v3++) {
+                    for (int v4 = 0; v4 < values[indices[3]].length; v4++) {
                         for (int v5 = 0;
-                             v5 < this.values[this.indices[4]].length; v5++) {
+                             v5 < values[indices[4]].length; v5++) {
                             newCounts[v1][v2][v3][v4][v5] = 0;
                         }
                     }
@@ -497,30 +497,30 @@ public final class DiscreteTetradTest implements TetradTest {
 //                            this.rawdata[k][r], k)][getValuePosition(
 //                                    this.rawdata[l][r], l)][getValuePosition(
 //                                            this.rawdata[x][r], x)]++;
-            newCounts[getValuePosition(this.dataSet.getInt(r, i),
-                    i)][getValuePosition(this.dataSet.getInt(r, j),
-                    j)][getValuePosition(this.dataSet.getInt(r, k),
-                    k)][getValuePosition(this.dataSet.getInt(r, l),
-                    l)][getValuePosition(this.dataSet.getInt(r, x), x)]++;
+            newCounts[this.getValuePosition(dataSet.getInt(r, i),
+                    i)][this.getValuePosition(dataSet.getInt(r, j),
+                    j)][this.getValuePosition(dataSet.getInt(r, k),
+                    k)][this.getValuePosition(dataSet.getInt(r, l),
+                    l)][this.getValuePosition(dataSet.getInt(r, x), x)]++;
         }
 
         return newCounts;
     }
 
-    private int[][][][][][] computeCounts6(final int i, final int j, final int k, final int l, final int x,
-                                           final int y) {
-        final int numRows = this.dataSet.getNumRows();
-        final int[][][][][][] newCounts =
-                new int[this.values[i].length][this.values[j].length][this.values[k].length][this.values[l].length][this.values[x].length][this.values[y].length];
+    private int[][][][][][] computeCounts6(int i, int j, int k, int l, int x,
+                                           int y) {
+        int numRows = dataSet.getNumRows();
+        int[][][][][][] newCounts =
+                new int[values[i].length][values[j].length][values[k].length][values[l].length][values[x].length][values[y].length];
 
-        for (int v1 = 0; v1 < this.values[this.indices[0]].length; v1++) {
-            for (int v2 = 0; v2 < this.values[this.indices[1]].length; v2++) {
-                for (int v3 = 0; v3 < this.values[this.indices[2]].length; v3++) {
-                    for (int v4 = 0; v4 < this.values[this.indices[3]].length; v4++) {
+        for (int v1 = 0; v1 < values[indices[0]].length; v1++) {
+            for (int v2 = 0; v2 < values[indices[1]].length; v2++) {
+                for (int v3 = 0; v3 < values[indices[2]].length; v3++) {
+                    for (int v4 = 0; v4 < values[indices[3]].length; v4++) {
                         for (int v5 = 0;
-                             v5 < this.values[this.indices[4]].length; v5++) {
+                             v5 < values[indices[4]].length; v5++) {
                             for (int v6 = 0;
-                                 v6 < this.values[this.indices[5]].length; v6++) {
+                                 v6 < values[indices[5]].length; v6++) {
                                 newCounts[v1][v2][v3][v4][v5][v6] = 0;
                             }
                         }
@@ -536,12 +536,12 @@ public final class DiscreteTetradTest implements TetradTest {
 //                                    this.rawdata[l][r], l)][getValuePosition(
 //                                            this.rawdata[x][r], x)][getValuePosition(
 //                                                    this.rawdata[y][r], y)]++;
-            newCounts[getValuePosition(this.dataSet.getInt(r, i),
-                    i)][getValuePosition(this.dataSet.getInt(r, j),
-                    j)][getValuePosition(this.dataSet.getInt(r, k),
-                    k)][getValuePosition(this.dataSet.getInt(r, l),
-                    l)][getValuePosition(this.dataSet.getInt(r, x),
-                    x)][getValuePosition(this.dataSet.getInt(r, y), y)]++;
+            newCounts[this.getValuePosition(dataSet.getInt(r, i),
+                    i)][this.getValuePosition(dataSet.getInt(r, j),
+                    j)][this.getValuePosition(dataSet.getInt(r, k),
+                    k)][this.getValuePosition(dataSet.getInt(r, l),
+                    l)][this.getValuePosition(dataSet.getInt(r, x),
+                    x)][this.getValuePosition(dataSet.getInt(r, y), y)]++;
         }
 
         return newCounts;
@@ -551,9 +551,9 @@ public final class DiscreteTetradTest implements TetradTest {
      * @return the position of a specific value in a natural (0, 1, 2, ...) scale for a given variable.
      */
 
-    private int getValuePosition(final int value, final int varNumber) {
-        for (int i = 0; i < this.values[varNumber].length; i++) {
-            if (this.values[varNumber][i] == value) {
+    private int getValuePosition(int value, int varNumber) {
+        for (int i = 0; i < values[varNumber].length; i++) {
+            if (values[varNumber][i] == value) {
                 return i;
             }
         }
@@ -569,33 +569,33 @@ public final class DiscreteTetradTest implements TetradTest {
      * See Olsson (1979) for details.
      */
 
-    private double[][] getUnderlyingCorr(final int[][][][] nextCounts) {
-        final double[][] outputCorr =
-                new double[this.dataSet.getNumColumns()][this.dataSet.getNumColumns()];
-        this.currentCounts = nextCounts;
+    private double[][] getUnderlyingCorr(int[][][][] nextCounts) {
+        double[][] outputCorr =
+                new double[dataSet.getNumColumns()][dataSet.getNumColumns()];
+        currentCounts = nextCounts;
 
         //Stage 1: estimation of thresholds
-        for (int i = 0; i < this.dataSet.getNumColumns(); i++) {
+        for (int i = 0; i < dataSet.getNumColumns(); i++) {
             int c = 0;
-            for (int j = 0; j < this.values[i].length - 1; j++) {
-                c += this.currentCounts[i][i][j][j];
-                this.thresholds[i][j] = ProbUtils.normalQuantile(
-                        (double) c / this.dataSet.getNumRows());
+            for (int j = 0; j < values[i].length - 1; j++) {
+                c += currentCounts[i][i][j][j];
+                thresholds[i][j] = ProbUtils.normalQuantile(
+                        (double) c / dataSet.getNumRows());
             }
         }
 
         //Stage 2: estimation of polychoric correlations
-        final int[] indices = new int[2];
-        for (int i = 0; i < this.dataSet.getNumColumns(); i++) {
+        int[] indices = new int[2];
+        for (int i = 0; i < dataSet.getNumColumns(); i++) {
             outputCorr[i][i] = 1.;
-            for (int j = i + 1; j < this.dataSet.getNumColumns(); j++) {
+            for (int j = i + 1; j < dataSet.getNumColumns(); j++) {
                 indices[0] = i;
                 indices[1] = j;
                 outputCorr[i][j] =
-                        outputCorr[j][i] = estimatePolychoric(indices);
+                        outputCorr[j][i] = this.estimatePolychoric(indices);
             }
         }
-        final String[] dummyNames = new String[outputCorr.length];
+        String[] dummyNames = new String[outputCorr.length];
         for (int i = 0; i < outputCorr.length; i++) {
             dummyNames[i] = "L" + i;
             for (int j = 0; j <= i; j++) {
@@ -612,20 +612,20 @@ public final class DiscreteTetradTest implements TetradTest {
      * Estimate the polychoric correlation of two variables.
      */
 
-    private double estimatePolychoric(final int[] indices) {
+    private double estimatePolychoric(int[] indices) {
         this.indices = indices;
-        final double[] start = new double[1];
-        final RandomUtil r = RandomUtil.getInstance();
-        this.currentVar1 = indices[0];
-        this.currentVar2 = indices[1];
-        this.currentFiBuffer = new double[this.values[this.currentVar1].length + 1][
-                this.values[this.currentVar2].length + 1];
-        this.currentPi =
-                new double[this.values[this.currentVar1].length][this.values[this.currentVar2].length];
-        this.currentRho = start[0] = r.nextDouble() / 2. +
+        double[] start = new double[1];
+        RandomUtil r = RandomUtil.getInstance();
+        currentVar1 = indices[0];
+        currentVar2 = indices[1];
+        currentFiBuffer = new double[values[currentVar1].length + 1][
+                values[currentVar2].length + 1];
+        currentPi =
+                new double[values[currentVar1].length][values[currentVar2].length];
+        currentRho = start[0] = r.nextDouble() / 2. +
                 0.2; //choose random correlation between 0.2 and 0.7
-        this.currentRho = gridOptimizer();
-        return this.currentRho;
+        currentRho = this.gridOptimizer();
+        return currentRho;
     }
 
     /**
@@ -633,34 +633,34 @@ public final class DiscreteTetradTest implements TetradTest {
      */
 
     private void computeFiBuffer() {
-        for (int i = 0; i < this.values[this.currentVar1].length + 1; i++) {
-            this.currentFiBuffer[i][0] = 0.;
+        for (int i = 0; i < values[currentVar1].length + 1; i++) {
+            currentFiBuffer[i][0] = 0.;
             if (i == 0) {
                 for (int j = 1;
-                     j < this.values[this.currentVar2].length + 1; j++) {
-                    this.currentFiBuffer[i][j] = 0.;
+                     j < values[currentVar2].length + 1; j++) {
+                    currentFiBuffer[i][j] = 0.;
                 }
-            } else if (i < this.values[this.currentVar1].length) {
+            } else if (i < values[currentVar1].length) {
                 for (int j = 1;
-                     j < this.values[this.currentVar2].length + 1; j++) {
-                    if (j < this.values[this.currentVar2].length) {
-                        this.currentFiBuffer[i][j] = ProbUtils.biNormalCdf(
-                                this.thresholds[this.currentVar1][i - 1],
-                                this.thresholds[this.currentVar2][j - 1],
-                                this.currentRho);
+                     j < values[currentVar2].length + 1; j++) {
+                    if (j < values[currentVar2].length) {
+                        currentFiBuffer[i][j] = ProbUtils.biNormalCdf(
+                                thresholds[currentVar1][i - 1],
+                                thresholds[currentVar2][j - 1],
+                                currentRho);
                     } else {
-                        this.currentFiBuffer[i][j] = ProbUtils.normalCdf(
-                                this.thresholds[this.currentVar1][i - 1]);
+                        currentFiBuffer[i][j] = ProbUtils.normalCdf(
+                                thresholds[currentVar1][i - 1]);
                     }
                 }
             } else {
                 for (int j = 1;
-                     j < this.values[this.currentVar2].length + 1; j++) {
-                    if (j < this.values[this.currentVar2].length) {
-                        this.currentFiBuffer[i][j] = ProbUtils.normalCdf(
-                                this.thresholds[this.currentVar2][j - 1]);
+                     j < values[currentVar2].length + 1; j++) {
+                    if (j < values[currentVar2].length) {
+                        currentFiBuffer[i][j] = ProbUtils.normalCdf(
+                                thresholds[currentVar2][j - 1]);
                     } else {
-                        this.currentFiBuffer[i][j] = 1.;
+                        currentFiBuffer[i][j] = 1.;
                     }
                 }
             }
@@ -675,11 +675,11 @@ public final class DiscreteTetradTest implements TetradTest {
     protected double currentScoreFunction() {
         double score = 0.;
 
-        for (int i = 0; i < this.values[this.currentVar1].length; i++) {
-            for (int j = 0; j < this.values[this.currentVar2].length; j++) {
+        for (int i = 0; i < values[currentVar1].length; i++) {
+            for (int j = 0; j < values[currentVar2].length; j++) {
                 score -=
-                        this.currentCounts[this.currentVar1][this.currentVar2][i][j] *
-                                Math.log(this.currentPi[i][j]);
+                        currentCounts[currentVar1][currentVar2][i][j] *
+                                Math.log(currentPi[i][j]);
             }
         }
         return score;
@@ -690,12 +690,12 @@ public final class DiscreteTetradTest implements TetradTest {
      */
 
     private void computeCurrentPi() {
-        for (int i = 0; i < this.values[this.currentVar1].length; i++) {
-            for (int j = 0; j < this.values[this.currentVar2].length; j++) {
-                this.currentPi[i][j] = this.currentFiBuffer[i + 1][j + 1] -
-                        this.currentFiBuffer[i][j + 1] -
-                        this.currentFiBuffer[i + 1][j] +
-                        this.currentFiBuffer[i][j];
+        for (int i = 0; i < values[currentVar1].length; i++) {
+            for (int j = 0; j < values[currentVar2].length; j++) {
+                currentPi[i][j] = currentFiBuffer[i + 1][j + 1] -
+                        currentFiBuffer[i][j + 1] -
+                        currentFiBuffer[i + 1][j] +
+                        currentFiBuffer[i][j];
             }
         }
     }
@@ -707,21 +707,21 @@ public final class DiscreteTetradTest implements TetradTest {
     private double gridOptimizer() {
         double minValue = Double.MAX_VALUE;
         double bestRho = -1.;
-        for (int i = 0; i < this.rhoGrid.length; i++) {
-            this.currentRho = this.rhoGrid[i];
-            computeFiBuffer();
-            computeCurrentPi();
-            final double score = currentScoreFunction();
+        for (int i = 0; i < rhoGrid.length; i++) {
+            currentRho = rhoGrid[i];
+            this.computeFiBuffer();
+            this.computeCurrentPi();
+            double score = this.currentScoreFunction();
             if (score < minValue) {
                 minValue = score;
-                bestRho = this.currentRho;
+                bestRho = currentRho;
             }
         }
         return bestRho;
     }
 
-    private int oneFactorCached(final int[] indices) {
-        final int[] ordered = new int[indices.length];
+    private int oneFactorCached(int[] indices) {
+        int[] ordered = new int[indices.length];
         System.arraycopy(indices, 0, ordered, 0, indices.length);
         for (int i = 0; i < indices.length - 1; i++) {
             int min = ordered[i], minIndex = i;
@@ -731,12 +731,12 @@ public final class DiscreteTetradTest implements TetradTest {
                     minIndex = j;
                 }
             }
-            final int temp = ordered[i];
+            int temp = ordered[i];
             ordered[i] = min;
             ordered[minIndex] = temp;
         }
         if (indices.length == 4) {
-            return this.oneFactor4Tests[ordered[0]][ordered[1]][ordered[2]][ordered[3]];
+            return oneFactor4Tests[ordered[0]][ordered[1]][ordered[2]][ordered[3]];
         } else
         //return  this.oneFactor5Tests[ordered[0]][ordered[1]][ordered[2]][ordered[3]][ordered[4]];
         {
@@ -744,27 +744,27 @@ public final class DiscreteTetradTest implements TetradTest {
         }
     }
 
-    private int twoFactorCached(final int[] indices) {
-        final int[] ordered = new int[indices.length];
+    private int twoFactorCached(int[] indices) {
+        int[] ordered = new int[indices.length];
         System.arraycopy(indices, 0, ordered, 0, indices.length);
         if (ordered[1] < ordered[0]) {
-            final int temp = ordered[1];
+            int temp = ordered[1];
             ordered[1] = ordered[0];
             ordered[0] = temp;
         }
         if (ordered[3] < ordered[2]) {
-            final int temp = ordered[3];
+            int temp = ordered[3];
             ordered[3] = ordered[2];
             ordered[2] = temp;
         }
-        return this.twoFactor4Tests[ordered[0]][ordered[1]][ordered[2]][ordered[3]];
+        return twoFactor4Tests[ordered[0]][ordered[1]][ordered[2]][ordered[3]];
     }
 
-    private void cacheOneFactorTest(final int[] indices, final boolean result) {
+    private void cacheOneFactorTest(int[] indices, boolean result) {
         if (indices.length > 4) {
             return;
         }
-        final int[] ordered = new int[indices.length];
+        int[] ordered = new int[indices.length];
         System.arraycopy(indices, 0, ordered, 0, indices.length);
         for (int i = 0; i < indices.length - 1; i++) {
             int min = ordered[i], minIndex = i;
@@ -774,47 +774,47 @@ public final class DiscreteTetradTest implements TetradTest {
                     minIndex = j;
                 }
             }
-            final int temp = ordered[i];
+            int temp = ordered[i];
             ordered[i] = min;
             ordered[minIndex] = temp;
         }
-        final int intResult;
+        int intResult;
         if (result) {
             intResult = 1;
         } else {
             intResult = -1;
         }
         //if (indices.length == 4)
-        this.oneFactor4Tests[ordered[0]][ordered[1]][ordered[2]][ordered[3]] =
+        oneFactor4Tests[ordered[0]][ordered[1]][ordered[2]][ordered[3]] =
                 intResult;
         //else
         //    this.oneFactor5Tests[ordered[0]][ordered[1]][ordered[2]][ordered[3]][ordered[4]] = intResult;
     }
 
-    private void cacheTwoFactorTest(final int[] indices, final boolean result) {
-        final int[] ordered = new int[indices.length];
+    private void cacheTwoFactorTest(int[] indices, boolean result) {
+        int[] ordered = new int[indices.length];
         System.arraycopy(indices, 0, ordered, 0, indices.length);
         if (ordered[1] < ordered[0]) {
-            final int temp = ordered[1];
+            int temp = ordered[1];
             ordered[1] = ordered[0];
             ordered[0] = temp;
         }
         if (ordered[3] < ordered[2]) {
-            final int temp = ordered[3];
+            int temp = ordered[3];
             ordered[3] = ordered[2];
             ordered[2] = temp;
         }
-        final int intResult;
+        int intResult;
         if (result) {
             intResult = 1;
         } else {
             intResult = -1;
         }
-        this.twoFactor4Tests[ordered[0]][ordered[1]][ordered[2]][ordered[3]] =
+        twoFactor4Tests[ordered[0]][ordered[1]][ordered[2]][ordered[3]] =
                 intResult;
     }
 
-    public boolean oneFactorTest(final int i, final int j, final int k, final int l) {
+    public boolean oneFactorTest(int i, int j, int k, int l) {
         throw new UnsupportedOperationException(); // Need to remove dependence on PAL.
 //        //System.out.println("oneFactorTest: " + i + " " + j + " " + k + " " + l);
 //
@@ -977,7 +977,7 @@ public final class DiscreteTetradTest implements TetradTest {
 //        return est.getEstimatedSem().getLikelihoodRatioP() > this.sig;*/
     }
 
-    public boolean oneFactorTest(final int i, final int j, final int k, final int l, final int x) {
+    public boolean oneFactorTest(int i, int j, int k, int l, int x) {
         throw new UnsupportedOperationException(); // Need to remove dependence on PAL.
 //        //System.out.println("oneFactorTest: " + i + " " + j + " " + k + " " + l + " " + x);
 //
@@ -1098,7 +1098,7 @@ public final class DiscreteTetradTest implements TetradTest {
 //        return (1. - ProbUtils.chisqCdf(chisq, df)) > this.sig;
     }
 
-    public boolean oneFactorTest(final int i, final int j, final int k, final int l, final int x, final int y) {
+    public boolean oneFactorTest(int i, int j, int k, int l, int x, int y) {
         throw new UnsupportedOperationException(); // Need to remove dependence on PAL.
 //        //System.out.println("oneFactorTest: " + i + " " + j + " " + k + " " + l + " " + x + " " + y);
 //
@@ -1216,7 +1216,7 @@ public final class DiscreteTetradTest implements TetradTest {
 //        return 1. - ProbUtils.chisqCdf(chisq, df) > sig;
     }
 
-    public boolean twoFactorTest(final int i, final int j, final int k, final int l) {
+    public boolean twoFactorTest(int i, int j, int k, int l) {
         throw new UnsupportedOperationException(); // Need to remove dependence on PAL.
 //        //System.out.println("twoFactorTest: " + i + " " + j + " " + k + " " + l);
 //
@@ -1372,7 +1372,7 @@ public final class DiscreteTetradTest implements TetradTest {
 //        return tempProb > sig;
     }
 
-    public boolean twoFactorTest(final int i, final int j, final int k, final int l, final int x) {
+    public boolean twoFactorTest(int i, int j, int k, int l, int x) {
         throw new UnsupportedOperationException(); // Need to remove dependence on PAL.
 
 //        //System.out.println("twoFactorTest: " + i + " " + j + " " + k + " " + l + " " + x);
@@ -1495,7 +1495,7 @@ public final class DiscreteTetradTest implements TetradTest {
 //        return (1. - ProbUtils.chisqCdf(chisq, df)) > sig;
     }
 
-    public boolean twoFactorTest(final int i, final int j, final int k, final int l, final int x, final int y) {
+    public boolean twoFactorTest(int i, int j, int k, int l, int x, int y) {
         throw new UnsupportedOperationException(); // Need to remove dependence on PAL.
 //        //System.out.println("twoFactorTest: " + i + " " + j + " " + k + " " + l + " " + x + " " + y);
 //
@@ -1623,23 +1623,23 @@ public final class DiscreteTetradTest implements TetradTest {
 //        return 1. - ProbUtils.chisqCdf(chisq, df) > sig;
     }
 
-    private double piHat0(final int[] indices, final int[] v, final double[][] m) {
-        final double[] a = new double[indices.length];
-        final double[] b = new double[indices.length];
+    private double piHat0(int[] indices, int[] v, double[][] m) {
+        double[] a = new double[indices.length];
+        double[] b = new double[indices.length];
         for (int i = 0; i < indices.length; i++) {
             if (v[i] == 0) {
                 a[i] = Double.NEGATIVE_INFINITY;
             } else {
-                a[i] = this.thresholds[indices[i]][v[i] - 1];
+                a[i] = thresholds[indices[i]][v[i] - 1];
             }
-            if (v[i] == this.values[indices[i]].length - 1) {
+            if (v[i] == values[indices[i]].length - 1) {
                 b[i] = Double.POSITIVE_INFINITY;
             } else {
-                b[i] = this.thresholds[indices[i]][v[i]];
+                b[i] = thresholds[indices[i]][v[i]];
             }
         }
         //create copy of m, since the next method modifies it
-        final double[][] mScratch = new double[m.length][m.length];
+        double[][] mScratch = new double[m.length][m.length];
         for (int i = 0; i < m.length; i++) {
             for (int j = 0; j < m.length; j++) {
                 mScratch[i][j] = m[i][j];
@@ -1651,20 +1651,20 @@ public final class DiscreteTetradTest implements TetradTest {
     /**
      * For one-factor models.
      */
-    private double piHat1(final int[] indices, final int[] v, final SemIm semIm) {
-        final double[] stdE = new double[indices.length];
-        final double[] stdU = new double[indices.length];
-        final double[] coeff = new double[indices.length];
-        final Node etaNode = semIm.getSemPm().getGraph().getNode("eta");
-        final double varEta = semIm.getParamValue(etaNode, etaNode);
-        final double stdEta = Math.sqrt(semIm.getParamValue(etaNode, etaNode));
+    private double piHat1(int[] indices, int[] v, SemIm semIm) {
+        double[] stdE = new double[indices.length];
+        double[] stdU = new double[indices.length];
+        double[] coeff = new double[indices.length];
+        Node etaNode = semIm.getSemPm().getGraph().getNode("eta");
+        double varEta = semIm.getParamValue(etaNode, etaNode);
+        double stdEta = Math.sqrt(semIm.getParamValue(etaNode, etaNode));
         for (int i = 0; i < indices.length; i++) {
-            final Node uNode = semIm.getSemPm().getGraph().getNode("xi" + i);
+            Node uNode = semIm.getSemPm().getGraph().getNode("xi" + i);
             Node uParent = null, uError = null;
-            for (final Iterator<Node> it =
+            for (Iterator<Node> it =
                  semIm.getSemPm().getGraph().getParents(uNode)
                          .iterator(); it.hasNext(); ) {
-                final Node parent = it.next();
+                Node parent = it.next();
                 if (parent.getNodeType() == NodeType.LATENT) {
                     uParent = parent;
                 } else {
@@ -1682,26 +1682,26 @@ public final class DiscreteTetradTest implements TetradTest {
         }
 
         double l = 0.;
-        for (int t = 0; t < DiscreteTetradTest.GHY.length; t++) {
-            double tValue = DiscreteTetradTest.GHW[t];
+        for (int t = 0; t < GHY.length; t++) {
+            double tValue = GHW[t];
             for (int i = 0; i < indices.length; i++) {
-                final int numValues = this.values[indices[i]].length;
+                int numValues = values[indices[i]].length;
                 if (v[i] == 0) {
                     tValue *= ProbUtils.normalCdf((
-                            this.thresholds[indices[i]][0] * stdU[i] -
-                                    coeff[i] * DiscreteTetradTest.GHY[t] * stdEta) / stdE[i]);
+                            thresholds[indices[i]][0] * stdU[i] -
+                                    coeff[i] * GHY[t] * stdEta) / stdE[i]);
                 } else if (v[i] == numValues - 1) {
                     tValue *= (1. - ProbUtils.normalCdf((
-                            this.thresholds[indices[i]][numValues - 2] *
-                                    stdU[i] - coeff[i] * DiscreteTetradTest.GHY[t] * stdEta) /
+                            thresholds[indices[i]][numValues - 2] *
+                                    stdU[i] - coeff[i] * GHY[t] * stdEta) /
                             stdE[i]));
                 } else {
                     tValue *= ProbUtils.normalCdf((
-                            this.thresholds[indices[i]][v[i]] * stdU[i] -
-                                    coeff[i] * DiscreteTetradTest.GHY[t] * stdEta) / stdE[i]) -
-                            ProbUtils.normalCdf((this.thresholds[indices[i]][
+                            thresholds[indices[i]][v[i]] * stdU[i] -
+                                    coeff[i] * GHY[t] * stdEta) / stdE[i]) -
+                            ProbUtils.normalCdf((thresholds[indices[i]][
                                     v[i] - 1] * stdU[i] -
-                                    coeff[i] * DiscreteTetradTest.GHY[t] * stdEta) / stdE[i]);
+                                    coeff[i] * GHY[t] * stdEta) / stdE[i]);
                 }
             }
             l += tValue;
@@ -1713,16 +1713,16 @@ public final class DiscreteTetradTest implements TetradTest {
     /**
      * For two factor models.
      */
-    private double piHat2(final int[] indices, final int[] v, final SemIm semIm) {
-        final SemGraph graph = semIm.getSemPm().getGraph();
+    private double piHat2(int[] indices, int[] v, SemIm semIm) {
+        SemGraph graph = semIm.getSemPm().getGraph();
         graph.setShowErrorTerms(true);
 
-        final Node etaNode1 = graph.getNode("eta1");
-        final double varEta1 = semIm.getParamValue(etaNode1, etaNode1);
-        final double stdEta1 = Math.sqrt(semIm.getParamValue(etaNode1, etaNode1));
-        final Node etaNode2 = graph.getNode("eta2");
-        final double coeffEta = semIm.getParamValue(etaNode1, etaNode2);
-        final Node errorEta2;
+        Node etaNode1 = graph.getNode("eta1");
+        double varEta1 = semIm.getParamValue(etaNode1, etaNode1);
+        double stdEta1 = Math.sqrt(semIm.getParamValue(etaNode1, etaNode1));
+        Node etaNode2 = graph.getNode("eta2");
+        double coeffEta = semIm.getParamValue(etaNode1, etaNode2);
+        Node errorEta2;
         if (graph.getParents(etaNode2).get(0) == etaNode1) {
             errorEta2 = graph.getParents(etaNode2)
                     .get(1);
@@ -1730,21 +1730,21 @@ public final class DiscreteTetradTest implements TetradTest {
             errorEta2 = graph.getParents(etaNode2)
                     .get(0);
         }
-        final double varEta2 = coeffEta * coeffEta * varEta1 +
+        double varEta2 = coeffEta * coeffEta * varEta1 +
                 semIm.getParamValue(errorEta2, errorEta2);
-        final double stdEtaError2 =
+        double stdEtaError2 =
                 Math.sqrt(semIm.getParamValue(errorEta2, errorEta2));
 
-        final double[] stdE = new double[indices.length];
-        final double[] varEta = new double[indices.length];
-        final double[] stdU = new double[indices.length];
-        final double[] coeff = new double[indices.length];
+        double[] stdE = new double[indices.length];
+        double[] varEta = new double[indices.length];
+        double[] stdU = new double[indices.length];
+        double[] coeff = new double[indices.length];
 
         for (int i = 0; i < indices.length; i++) {
-            final Node uNode = graph.getNode("xi" + i);
+            Node uNode = graph.getNode("xi" + i);
             Node uParent = null, uError = null;
-            for (final Node node : graph.getParents(uNode)) {
-                final Node parent = node;
+            for (Node node : graph.getParents(uNode)) {
+                Node parent = node;
                 if (parent.getNodeType() == NodeType.LATENT) {
                     uParent = parent;
                 } else {
@@ -1768,13 +1768,13 @@ public final class DiscreteTetradTest implements TetradTest {
         }
 
         double l = 0.;
-        for (int t1 = 0; t1 < DiscreteTetradTest.GHY.length; t1++) {
-            for (int t2 = 0; t2 < DiscreteTetradTest.GHY.length; t2++) {
-                double tValue = DiscreteTetradTest.GHW[t1] * DiscreteTetradTest.GHW[t2];
-                final double eta1 = DiscreteTetradTest.GHY[t1] * stdEta1;
-                final double eta2 = eta1 * coeffEta + DiscreteTetradTest.GHY[t2] * stdEtaError2;
+        for (int t1 = 0; t1 < GHY.length; t1++) {
+            for (int t2 = 0; t2 < GHY.length; t2++) {
+                double tValue = GHW[t1] * GHW[t2];
+                double eta1 = GHY[t1] * stdEta1;
+                double eta2 = eta1 * coeffEta + GHY[t2] * stdEtaError2;
                 for (int i = 0; i < indices.length; i++) {
-                    final double eta;
+                    double eta;
                     if (indices.length == 4) {
                         if (i < 2) {
                             eta = eta1;
@@ -1788,21 +1788,21 @@ public final class DiscreteTetradTest implements TetradTest {
                             eta = eta2;
                         }
                     }
-                    final int numValues = this.values[indices[i]].length;
+                    int numValues = values[indices[i]].length;
                     if (v[i] == 0) {
                         tValue *= ProbUtils.normalCdf((
-                                this.thresholds[indices[i]][0] * stdU[i] -
+                                thresholds[indices[i]][0] * stdU[i] -
                                         coeff[i] * eta) / stdE[i]);
                     } else if (v[i] == numValues - 1) {
                         tValue *= (1. - ProbUtils.normalCdf((
-                                this.thresholds[indices[i]][numValues - 2] *
+                                thresholds[indices[i]][numValues - 2] *
                                         stdU[i] - coeff[i] * eta) / stdE[i]));
                     } else {
                         tValue *= ProbUtils.normalCdf((
-                                this.thresholds[indices[i]][v[i]] * stdU[i] -
+                                thresholds[indices[i]][v[i]] * stdU[i] -
                                         coeff[i] * eta) / stdE[i]) -
                                 ProbUtils.normalCdf((
-                                        this.thresholds[indices[i]][v[i] - 1] *
+                                        thresholds[indices[i]][v[i] - 1] *
                                                 stdU[i] - coeff[i] * eta) /
                                         stdE[i]);
                     }

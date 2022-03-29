@@ -50,8 +50,8 @@ public class BayesUpdaterClassifierWrapper implements SessionModel {
 
     //==============================CONSTRUCTORS===========================//
 
-    public BayesUpdaterClassifierWrapper(final BayesImWrapper bayesImWrapper,
-                                         final DataWrapper dataWrapper) {
+    public BayesUpdaterClassifierWrapper(BayesImWrapper bayesImWrapper,
+                                         DataWrapper dataWrapper) {
         if (bayesImWrapper == null) {
             throw new NullPointerException();
         }
@@ -60,15 +60,15 @@ public class BayesUpdaterClassifierWrapper implements SessionModel {
             throw new NullPointerException();
         }
 
-        final DataSet dataSet =
+        DataSet dataSet =
                 (DataSet) dataWrapper.getSelectedDataModel();
-        final BayesIm bayesIm = bayesImWrapper.getBayesIm();
+        BayesIm bayesIm = bayesImWrapper.getBayesIm();
 
-        this.classifier = new BayesUpdaterClassifier(bayesIm, dataSet);
+        classifier = new BayesUpdaterClassifier(bayesIm, dataSet);
     }
 
-    public BayesUpdaterClassifierWrapper(final DirichletBayesImWrapper bayesImWrapper,
-                                         final DataWrapper dataWrapper) {
+    public BayesUpdaterClassifierWrapper(DirichletBayesImWrapper bayesImWrapper,
+                                         DataWrapper dataWrapper) {
         if (bayesImWrapper == null) {
             throw new NullPointerException();
         }
@@ -77,11 +77,11 @@ public class BayesUpdaterClassifierWrapper implements SessionModel {
             throw new NullPointerException();
         }
 
-        final DataSet dataSet =
+        DataSet dataSet =
                 (DataSet) dataWrapper.getSelectedDataModel();
-        final BayesIm bayesIm = bayesImWrapper.getDirichletBayesIm();
+        BayesIm bayesIm = bayesImWrapper.getDirichletBayesIm();
 
-        this.classifier = new BayesUpdaterClassifier(bayesIm, dataSet);
+        classifier = new BayesUpdaterClassifier(bayesIm, dataSet);
     }
 
     /**
@@ -96,23 +96,23 @@ public class BayesUpdaterClassifierWrapper implements SessionModel {
     //==============================PUBLIC METHODS=======================//
 
     public BayesUpdaterClassifier getClassifier() {
-        return this.classifier;
+        return classifier;
     }
 
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (this.classifier == null) {
+        if (classifier == null) {
             throw new NullPointerException();
         }
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 }

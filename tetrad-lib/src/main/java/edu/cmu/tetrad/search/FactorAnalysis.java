@@ -51,12 +51,12 @@ public class FactorAnalysis {
     private int numFactors = 2;
     private Matrix residual;
 
-    public FactorAnalysis(final ICovarianceMatrix covarianceMatrix) {
-        this.covariance = new CovarianceMatrix(covarianceMatrix);
+    public FactorAnalysis(ICovarianceMatrix covarianceMatrix) {
+        covariance = new CovarianceMatrix(covarianceMatrix);
     }
 
-    public FactorAnalysis(final DataSet dataSet) {
-        this.covariance = new CovarianceMatrix(dataSet);
+    public FactorAnalysis(DataSet dataSet) {
+        covariance = new CovarianceMatrix(dataSet);
     }
 
     //================= COMMUNALITY ESTIMATES =================//
@@ -99,32 +99,32 @@ public class FactorAnalysis {
      * At the end of the method, the list of column vectors is actually assembled into a TetradMatrix.
      */
     public Matrix successiveResidual() {
-        this.factorLoadingVectors = new LinkedList<>();
-        this.dValues = new LinkedList<>();
+        factorLoadingVectors = new LinkedList<>();
+        dValues = new LinkedList<>();
 
-        Matrix residual = this.covariance.getMatrix().copy();
-        final Matrix unitVector = new Matrix(residual.rows(), 1);
+        Matrix residual = covariance.getMatrix().copy();
+        Matrix unitVector = new Matrix(residual.rows(), 1);
 
         for (int i = 0; i < unitVector.rows(); i++) {
             unitVector.set(i, 0, 1);
         }
 
-        for (int i = 0; i < getNumFactors(); i++) {
-            final boolean found = successiveResidualHelper(residual, unitVector);
+        for (int i = 0; i < this.getNumFactors(); i++) {
+            boolean found = this.successiveResidualHelper(residual, unitVector);
 
             if (!found) break;
 
-            final Matrix f = this.factorLoadingVectors.getLast();
+            Matrix f = factorLoadingVectors.getLast();
             residual = residual.minus(f.times(f.transpose()));
         }
 
-        this.factorLoadingVectors.removeFirst();
+        factorLoadingVectors.removeFirst();
 
-        final Matrix result = new Matrix(residual.rows(), this.factorLoadingVectors.size());
+        Matrix result = new Matrix(residual.rows(), factorLoadingVectors.size());
 
         for (int i = 0; i < result.rows(); i++) {
             for (int j = 0; j < result.columns(); j++) {
-                result.set(i, j, this.factorLoadingVectors.get(j).get(i, 0));
+                result.set(i, j, factorLoadingVectors.get(j).get(i, 0));
             }
         }
 
@@ -133,17 +133,17 @@ public class FactorAnalysis {
         return result;
     }
 
-    public Matrix successiveFactorVarimax(final Matrix factorLoadingMatrix) {
+    public Matrix successiveFactorVarimax(Matrix factorLoadingMatrix) {
         if (factorLoadingMatrix.columns() == 1)
             return factorLoadingMatrix;
 
-        final LinkedList<Matrix> residuals = new LinkedList<>();
-        final LinkedList<Matrix> rotatedFactorVectors = new LinkedList<>();
+        LinkedList<Matrix> residuals = new LinkedList<>();
+        LinkedList<Matrix> rotatedFactorVectors = new LinkedList<>();
 
-        final Matrix normalizedFactorLoadings = FactorAnalysis.normalizeRows(factorLoadingMatrix);
+        Matrix normalizedFactorLoadings = normalizeRows(factorLoadingMatrix);
         residuals.add(normalizedFactorLoadings);
 
-        final Matrix unitColumn = new Matrix(factorLoadingMatrix.rows(), 1);
+        Matrix unitColumn = new Matrix(factorLoadingMatrix.rows(), 1);
 
         for (int i = 0; i < factorLoadingMatrix.rows(); i++) {
             unitColumn.set(i, 0, 1);
@@ -151,9 +151,9 @@ public class FactorAnalysis {
 
         Matrix r = residuals.getLast();
 
-        final Matrix sumCols = r.transpose().times(unitColumn);
-        final Matrix wVector = sumCols.scalarMult(1.0 / Math.sqrt(unitColumn.transpose().times(r).times(sumCols).get(0, 0)));
-        final Matrix vVector = r.times(wVector);
+        Matrix sumCols = r.transpose().times(unitColumn);
+        Matrix wVector = sumCols.scalarMult(1.0 / Math.sqrt(unitColumn.transpose().times(r).times(sumCols).get(0, 0)));
+        Matrix vVector = r.times(wVector);
 
         for (int k = 0; k < normalizedFactorLoadings.columns(); k++) {
 
@@ -168,46 +168,46 @@ public class FactorAnalysis {
                 }
             }
 
-            final LinkedList<Matrix> hVectors = new LinkedList<>();
-            final LinkedList<Matrix> bVectors = new LinkedList<>();
+            LinkedList<Matrix> hVectors = new LinkedList<>();
+            LinkedList<Matrix> bVectors = new LinkedList<>();
             double alpha1 = Double.NaN;
 
             r = residuals.getLast();
 
             hVectors.add(new Matrix(r.columns(), 1));
-            final Vector rowFromFactorLoading = r.getRow(lIndex);
+            Vector rowFromFactorLoading = r.getRow(lIndex);
 
             for (int j = 0; j < hVectors.getLast().rows(); j++) {
                 hVectors.getLast().set(j, 0, rowFromFactorLoading.get(j));
             }
 
             for (int i = 0; i < 200; i++) {
-                final Matrix bVector = r.times(hVectors.get(i));
-                final double averageSumSquaresBVector = unitColumn.transpose().times(FactorAnalysis.matrixExp(bVector, 2))
+                Matrix bVector = r.times(hVectors.get(i));
+                double averageSumSquaresBVector = unitColumn.transpose().times(matrixExp(bVector, 2))
                         .scalarMult(1.0 / (double) bVector.rows()).get(0, 0);
 
-                final Matrix betaVector = FactorAnalysis.matrixExp(bVector, 3).minus(bVector.scalarMult(averageSumSquaresBVector));
-                final Matrix uVector = r.transpose().times(betaVector);
+                Matrix betaVector = matrixExp(bVector, 3).minus(bVector.scalarMult(averageSumSquaresBVector));
+                Matrix uVector = r.transpose().times(betaVector);
 
-                final double alpha2 = (Math.sqrt(uVector.transpose().times(uVector).get(0, 0)));
+                double alpha2 = (Math.sqrt(uVector.transpose().times(uVector).get(0, 0)));
                 bVectors.add(bVector);
 
                 hVectors.add(uVector.scalarMult(1.0 / alpha2));
 
-                if (!Double.isNaN(alpha1) && abs((alpha2 - alpha1)) < getThreshold()) {
+                if (!Double.isNaN(alpha1) && abs((alpha2 - alpha1)) < this.getThreshold()) {
                     break;
                 }
 
                 alpha1 = alpha2;
             }
 
-            final Matrix b = bVectors.getLast();
+            Matrix b = bVectors.getLast();
 
             rotatedFactorVectors.add(b);
             residuals.add(r.minus(b.times(hVectors.getLast().transpose())));
         }
 
-        final Matrix result = factorLoadingMatrix.like();
+        Matrix result = factorLoadingMatrix.like();
 
         if (!rotatedFactorVectors.isEmpty()) {
             for (int i = 0; i < rotatedFactorVectors.get(0).rows(); i++) {
@@ -220,7 +220,7 @@ public class FactorAnalysis {
         return result;
     }
 
-    public void setThreshold(final double threshold) {
+    public void setThreshold(double threshold) {
         this.threshold = threshold;
     }
 
@@ -261,8 +261,8 @@ public class FactorAnalysis {
      * <p>
      * Return the final i'th factor loading as our best approximation.
      */
-    private boolean successiveResidualHelper(final Matrix residual, final Matrix approximationVector) {
-        final Matrix l0 = approximationVector.transpose().times(residual).times(approximationVector);
+    private boolean successiveResidualHelper(Matrix residual, Matrix approximationVector) {
+        Matrix l0 = approximationVector.transpose().times(residual).times(approximationVector);
 
         if (l0.get(0, 0) < 0) {
             return false;
@@ -272,11 +272,11 @@ public class FactorAnalysis {
         Matrix f = residual.times(approximationVector).scalarMult(1.0 / d);
 
         for (int i = 0; i < 100; i++) {
-            final Matrix ui = residual.times(f);
-            final Matrix li = f.transpose().times(ui);
-            final double di = Math.sqrt(li.get(0, 0));
+            Matrix ui = residual.times(f);
+            Matrix li = f.transpose().times(ui);
+            double di = Math.sqrt(li.get(0, 0));
 
-            if (abs((d - di)) <= getThreshold()) {
+            if (abs((d - di)) <= this.getThreshold()) {
                 break;
             }
 
@@ -284,28 +284,28 @@ public class FactorAnalysis {
             f = ui.scalarMult(1.0 / d);
         }
 
-        this.dValues.add(d);
-        this.factorLoadingVectors.add(f);
+        dValues.add(d);
+        factorLoadingVectors.add(f);
         return true;
     }
 
 
     //designed for normalizing a vector.
     //as usual, vectors are treated as matrices to simplify operations elsewhere
-    private static Matrix normalizeRows(final Matrix matrix) {
-        final LinkedList<Matrix> normalizedRows = new LinkedList<>();
+    private static Matrix normalizeRows(Matrix matrix) {
+        LinkedList<Matrix> normalizedRows = new LinkedList<>();
         for (int i = 0; i < matrix.rows(); i++) {
-            final Vector vector = matrix.getRow(i);
-            final Matrix colVector = new Matrix(matrix.columns(), 1);
+            Vector vector = matrix.getRow(i);
+            Matrix colVector = new Matrix(matrix.columns(), 1);
             for (int j = 0; j < matrix.columns(); j++)
                 colVector.set(j, 0, vector.get(j));
 
-            normalizedRows.add(FactorAnalysis.normalizeVector(colVector));
+            normalizedRows.add(normalizeVector(colVector));
         }
 
-        final Matrix result = new Matrix(matrix.rows(), matrix.columns());
+        Matrix result = new Matrix(matrix.rows(), matrix.columns());
         for (int i = 0; i < matrix.rows(); i++) {
-            final Matrix normalizedRow = normalizedRows.get(i);
+            Matrix normalizedRow = normalizedRows.get(i);
             for (int j = 0; j < matrix.columns(); j++) {
                 result.set(i, j, normalizedRow.get(j, 0));
             }
@@ -314,13 +314,13 @@ public class FactorAnalysis {
         return result;
     }
 
-    private static Matrix normalizeVector(final Matrix vector) {
-        final double scalar = Math.sqrt(vector.transpose().times(vector).get(0, 0));
+    private static Matrix normalizeVector(Matrix vector) {
+        double scalar = Math.sqrt(vector.transpose().times(vector).get(0, 0));
         return vector.scalarMult(1.0 / scalar);
     }
 
-    private static Matrix matrixExp(final Matrix matrix, final double exponent) {
-        final Matrix result = new Matrix(matrix.rows(), matrix.columns());
+    private static Matrix matrixExp(Matrix matrix, double exponent) {
+        Matrix result = new Matrix(matrix.rows(), matrix.columns());
         for (int i = 0; i < matrix.rows(); i++) {
             for (int j = 0; j < matrix.columns(); j++) {
                 result.set(i, j, Math.pow(matrix.get(i, j), exponent));
@@ -330,19 +330,19 @@ public class FactorAnalysis {
     }
 
     public double getThreshold() {
-        return this.threshold;
+        return threshold;
     }
 
     public int getNumFactors() {
-        return this.numFactors;
+        return numFactors;
     }
 
-    public void setNumFactors(final int numFactors) {
+    public void setNumFactors(int numFactors) {
         this.numFactors = numFactors;
     }
 
     public Matrix getResidual() {
-        return this.residual;
+        return residual;
     }
 
     // factanal in R:

@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.VerticalDoubleDataBox;
-import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.GraphUtils.GraphComparison;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.session.ExecutionRestarter;
 import edu.cmu.tetrad.session.SessionAdapter;
@@ -67,7 +67,7 @@ public class GraphComparisonParams extends SessionAdapter
      *
      * @serial True, false both OK.
      */
-    private boolean keepLatents = false;
+    private boolean keepLatents;
 
     /**
      * The name of the session model that has the true graph in it.
@@ -90,7 +90,7 @@ public class GraphComparisonParams extends SessionAdapter
      * Constructs a getMappings object with no file set.
      */
     private GraphComparisonParams() {
-        newExecution();
+        this.newExecution();
     }
 
     /**
@@ -107,25 +107,25 @@ public class GraphComparisonParams extends SessionAdapter
     //==========================PUBLIC METHODS===========================//
 
     public final void newExecution() {
-        final ContinuousVariable adjCorrect = new ContinuousVariable("ADJ_COR");
-        final ContinuousVariable adjFn = new ContinuousVariable("ADJ_FN");
-        final ContinuousVariable adjFp = new ContinuousVariable("ADJ_FP");
+        ContinuousVariable adjCorrect = new ContinuousVariable("ADJ_COR");
+        ContinuousVariable adjFn = new ContinuousVariable("ADJ_FN");
+        ContinuousVariable adjFp = new ContinuousVariable("ADJ_FP");
 
-        final ContinuousVariable arrowptCorrect = new ContinuousVariable("AHD_COR");
-        final ContinuousVariable arrowptFn = new ContinuousVariable("AHD_FN");
-        final ContinuousVariable arrowptFp = new ContinuousVariable("AHD_FP");
+        ContinuousVariable arrowptCorrect = new ContinuousVariable("AHD_COR");
+        ContinuousVariable arrowptFn = new ContinuousVariable("AHD_FN");
+        ContinuousVariable arrowptFp = new ContinuousVariable("AHD_FP");
 
-        final ContinuousVariable adjPrec = new ContinuousVariable("ADJ_PREC");
-        final ContinuousVariable adjRec = new ContinuousVariable("ADJ_REC");
-        final ContinuousVariable arrowptPrec = new ContinuousVariable("ARROWPT_PREC");
-        final ContinuousVariable arrowptRec = new ContinuousVariable("ARROWPT_REC");
-        final ContinuousVariable shd = new ContinuousVariable("SHD");
+        ContinuousVariable adjPrec = new ContinuousVariable("ADJ_PREC");
+        ContinuousVariable adjRec = new ContinuousVariable("ADJ_REC");
+        ContinuousVariable arrowptPrec = new ContinuousVariable("ARROWPT_PREC");
+        ContinuousVariable arrowptRec = new ContinuousVariable("ARROWPT_REC");
+        ContinuousVariable shd = new ContinuousVariable("SHD");
 
 //        ContinuousVariable twoCycleCorrect = new ContinuousVariable("TC_COR");
 //        ContinuousVariable twoCycleFn = new ContinuousVariable("TC_FN");
 //        ContinuousVariable twoCycleFp = new ContinuousVariable("TC_FP");
 
-        final List<Node> variables = new LinkedList<>();
+        List<Node> variables = new LinkedList<>();
         variables.add(adjCorrect);
         variables.add(adjFn);
         variables.add(adjFp);
@@ -141,52 +141,52 @@ public class GraphComparisonParams extends SessionAdapter
 //        variables.add(twoCycleFn);
 //        variables.add(twoCycleFp);
 
-        this.dataSet = new BoxDataSet(new VerticalDoubleDataBox(0, variables.size()), variables);
-        this.dataSet.setNumberFormat(new DecimalFormat("0"));
+        dataSet = new BoxDataSet(new VerticalDoubleDataBox(0, variables.size()), variables);
+        dataSet.setNumberFormat(new DecimalFormat("0"));
     }
 
-    public void addRecord(final GraphUtils.GraphComparison comparison) {
-        final int newRow = this.dataSet.getNumRows();
-        this.dataSet.setDouble(newRow, 0, comparison.getAdjCor());
-        this.dataSet.setDouble(newRow, 1, comparison.getAdjFn());
-        this.dataSet.setDouble(newRow, 2, comparison.getAdjFp());
-        this.dataSet.setDouble(newRow, 3, comparison.getAhdCor());
-        this.dataSet.setDouble(newRow, 4, comparison.getAhdFn());
-        this.dataSet.setDouble(newRow, 5, comparison.getAhdFp());
-        this.dataSet.setDouble(newRow, 6, comparison.getAdjPrec());
-        this.dataSet.setDouble(newRow, 7, comparison.getAdjRec());
-        this.dataSet.setDouble(newRow, 8, comparison.getAhdPrec());
-        this.dataSet.setDouble(newRow, 9, comparison.getAhdRec());
-        this.dataSet.setDouble(newRow, 10, comparison.getShd());
+    public void addRecord(GraphComparison comparison) {
+        int newRow = dataSet.getNumRows();
+        dataSet.setDouble(newRow, 0, comparison.getAdjCor());
+        dataSet.setDouble(newRow, 1, comparison.getAdjFn());
+        dataSet.setDouble(newRow, 2, comparison.getAdjFp());
+        dataSet.setDouble(newRow, 3, comparison.getAhdCor());
+        dataSet.setDouble(newRow, 4, comparison.getAhdFn());
+        dataSet.setDouble(newRow, 5, comparison.getAhdFp());
+        dataSet.setDouble(newRow, 6, comparison.getAdjPrec());
+        dataSet.setDouble(newRow, 7, comparison.getAdjRec());
+        dataSet.setDouble(newRow, 8, comparison.getAhdPrec());
+        dataSet.setDouble(newRow, 9, comparison.getAhdRec());
+        dataSet.setDouble(newRow, 10, comparison.getShd());
     }
 
     public DataSet getDataSet() {
-        return this.dataSet;
+        return dataSet;
     }
 
 
     public boolean isResetTableOnExecute() {
-        return this.resetTableOnExecute;
+        return resetTableOnExecute;
     }
 
-    public void setResetTableOnExecute(final boolean resetTableOnExecute) {
+    public void setResetTableOnExecute(boolean resetTableOnExecute) {
         this.resetTableOnExecute = resetTableOnExecute;
     }
 
     public boolean isKeepLatents() {
-        return this.keepLatents;
+        return keepLatents;
     }
 
-    public void setKeepLatents(final boolean keepLatents) {
+    public void setKeepLatents(boolean keepLatents) {
         this.keepLatents = keepLatents;
     }
 
-    public void setReferenceGraphName(final String name) {
-        this.referenceGraphName = name;
+    public void setReferenceGraphName(String name) {
+        referenceGraphName = name;
     }
 
     public String getReferenceGraphName() {
-        return this.referenceGraphName;
+        return referenceGraphName;
     }
 
     /**
@@ -202,17 +202,17 @@ public class GraphComparisonParams extends SessionAdapter
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
 
-    public void setTargetGraphName(final String targetGraphName) {
+    public void setTargetGraphName(String targetGraphName) {
         this.targetGraphName = targetGraphName;
     }
 
     public String getTargetGraphName() {
-        return this.targetGraphName;
+        return targetGraphName;
     }
 }
 

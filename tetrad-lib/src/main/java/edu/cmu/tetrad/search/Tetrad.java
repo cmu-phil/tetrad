@@ -38,16 +38,16 @@ public class Tetrad {
     private final Node l;
     private final double pValue;
 
-    public Tetrad(final Node i, final Node j, final Node k, final Node l) {
+    public Tetrad(Node i, Node j, Node k, Node l) {
 //        testDistinctness(i, j, k, l);
         this.i = i;
         this.j = j;
         this.k = k;
         this.l = l;
-        this.pValue = Double.NaN;
+        pValue = Double.NaN;
     }
 
-    public Tetrad(final Node i, final Node j, final Node k, final Node l, final double pValue) {
+    public Tetrad(Node i, Node j, Node k, Node l, double pValue) {
 //        testDistinctness(i, j, k, l);
         this.i = i;
         this.j = j;
@@ -71,19 +71,19 @@ public class Tetrad {
 //    }
 
     public Node getI() {
-        return this.i;
+        return i;
     }
 
     public Node getJ() {
-        return this.j;
+        return j;
     }
 
     public Node getK() {
-        return this.k;
+        return k;
     }
 
     public Node getL() {
-        return this.l;
+        return l;
     }
 
     public int hashCode() {
@@ -92,45 +92,45 @@ public class Tetrad {
 //        hash += 17 * hash + k.hashCode();
 //        hash += 17 * hash + l.hashCode();
 
-        int hash = 17 * this.i.hashCode() * this.j.hashCode();
-        hash += 29 * this.k.hashCode() * this.l.hashCode();
+        int hash = 17 * i.hashCode() * j.hashCode();
+        hash += 29 * k.hashCode() * l.hashCode();
 
         return hash;
     }
 
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         if (o == null) return false;
-        final Tetrad tetrad = (Tetrad) o;
-        return (this.i == tetrad.i && this.j == tetrad.j && this.k == tetrad.k && this.l == tetrad.l)
-                || (this.i == tetrad.j && this.j == tetrad.i && this.k == tetrad.k && this.l == tetrad.l)
-                || (this.i == tetrad.i && this.j == tetrad.j && this.k == tetrad.l && this.l == tetrad.k)
-                || (this.i == tetrad.j && this.j == tetrad.i && this.k == tetrad.l && this.l == tetrad.k)
-                || (this.i == tetrad.k && this.j == tetrad.l && this.k == tetrad.i && this.l == tetrad.j)
-                || (this.i == tetrad.k && this.j == tetrad.l && this.k == tetrad.j && this.l == tetrad.i)
-                || (this.i == tetrad.l && this.j == tetrad.k && this.k == tetrad.i && this.l == tetrad.j)
-                || (this.i == tetrad.l && this.j == tetrad.k && this.k == tetrad.j && this.l == tetrad.i);
+        Tetrad tetrad = (Tetrad) o;
+        return (i == tetrad.i && j == tetrad.j && k == tetrad.k && l == tetrad.l)
+                || (i == tetrad.j && j == tetrad.i && k == tetrad.k && l == tetrad.l)
+                || (i == tetrad.i && j == tetrad.j && k == tetrad.l && l == tetrad.k)
+                || (i == tetrad.j && j == tetrad.i && k == tetrad.l && l == tetrad.k)
+                || (i == tetrad.k && j == tetrad.l && k == tetrad.i && l == tetrad.j)
+                || (i == tetrad.k && j == tetrad.l && k == tetrad.j && l == tetrad.i)
+                || (i == tetrad.l && j == tetrad.k && k == tetrad.i && l == tetrad.j)
+                || (i == tetrad.l && j == tetrad.k && k == tetrad.j && l == tetrad.i);
     }
 
     public String toString() {
-        final NumberFormat nf = new DecimalFormat("0.0000");
+        NumberFormat nf = new DecimalFormat("0.0000");
 
-        if (Double.isNaN(this.pValue)) {
-            return "s(" + this.i + "," + this.j + ")*s(" + this.k + "," + this.l + ")-s(" + this.i + "," + this.k + ")*s(" + this.j + "," + this.l + ")";
+        if (Double.isNaN(pValue)) {
+            return "s(" + i + "," + j + ")*s(" + k + "," + l + ")-s(" + i + "," + k + ")*s(" + j + "," + l + ")";
         } else {
-            return "<" + this.i + ", " + this.j + ", " + this.k + ", " + this.l + ", " + nf.format(this.pValue) + ">";
+            return "<" + i + ", " + j + ", " + k + ", " + l + ", " + nf.format(pValue) + ">";
         }
     }
 
     public double getPValue() {
-        return this.pValue;
+        return pValue;
     }
 
     public Set<Node> getNodes() {
-        final Set<Node> nodes = new HashSet<>();
-        nodes.add(this.i);
-        nodes.add(this.j);
-        nodes.add(this.k);
-        nodes.add(this.l);
+        Set<Node> nodes = new HashSet<>();
+        nodes.add(i);
+        nodes.add(j);
+        nodes.add(k);
+        nodes.add(l);
         return nodes;
     }
 }

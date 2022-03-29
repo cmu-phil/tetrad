@@ -36,6 +36,7 @@ import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.GraphUtils.GraphComparison;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.Parameters;
@@ -78,44 +79,44 @@ public class TestFges {
 
         final int numEdges = (int) (numVars * edgesPerNode);
 
-        final List<Node> vars = new ArrayList<>();
+        List<Node> vars = new ArrayList<>();
 
         for (int i = 0; i < numVars; i++) {
             vars.add(new ContinuousVariable("X" + i));
         }
 
-        final Graph dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, numEdges, 30, 15, 15, false, true);
+        Graph dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, numEdges, 30, 15, 15, false, true);
 //        printDegreeDistribution(dag, System.out);
 
-        final int[] causalOrdering = new int[vars.size()];
+        int[] causalOrdering = new int[vars.size()];
 
         for (int i = 0; i < vars.size(); i++) {
             causalOrdering[i] = i;
         }
 
-        final LargeScaleSimulation simulator = new LargeScaleSimulation(dag, vars, causalOrdering);
-        simulator.setOut(this.out);
-        final DataSet data = simulator.simulateDataFisher(numCases);
+        LargeScaleSimulation simulator = new LargeScaleSimulation(dag, vars, causalOrdering);
+        simulator.setOut(out);
+        DataSet data = simulator.simulateDataFisher(numCases);
 
 //        ICovarianceMatrix cov = new CovarianceMatrix(data);
-        final ICovarianceMatrix cov = new CovarianceMatrix(data);
-        final SemBicScore score = new SemBicScore(cov);
+        ICovarianceMatrix cov = new CovarianceMatrix(data);
+        SemBicScore score = new SemBicScore(cov);
         score.setPenaltyDiscount(penaltyDiscount);
 
-        final Fges fges = new Fges(score);
+        Fges fges = new Fges(score);
         fges.setVerbose(false);
-        fges.setOut(this.out);
+        fges.setOut(out);
         fges.setFaithfulnessAssumed(true);
 
-        final Graph estCPDAG = fges.search();
+        Graph estCPDAG = fges.search();
 
 //        printDegreeDistribution(estCPDAG, out);
 
-        final Graph trueCPDAG = SearchGraphUtils.cpdagForDag(dag);
+        Graph trueCPDAG = SearchGraphUtils.cpdagForDag(dag);
 
-        final int[][] counts = SearchGraphUtils.graphComparison(estCPDAG, trueCPDAG, null);
+        int[][] counts = SearchGraphUtils.graphComparison(estCPDAG, trueCPDAG, null);
 
-        final int[][] expectedCounts = {
+        int[][] expectedCounts = {
                 {2, 0, 0, 0, 0, 0},
                 {0, 0, 0, 0, 0, 0},
                 {0, 0, 0, 0, 0, 0},
@@ -146,37 +147,37 @@ public class TestFges {
         final double structurePrior = 1;
         final double samplePrior = 1;
 
-        final List<Node> vars = new ArrayList<>();
+        List<Node> vars = new ArrayList<>();
 
         for (int i = 0; i < numVars; i++) {
             vars.add(new ContinuousVariable("X" + i));
         }
 
-        final Graph dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
+        Graph dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
                 30, 15, 15, false, true);
 //        printDegreeDistribution(dag, out);
 
-        final BayesPm pm = new BayesPm(dag, 2, 3);
-        final BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
-        final DataSet data = im.simulateData(numCases, false);
+        BayesPm pm = new BayesPm(dag, 2, 3);
+        BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+        DataSet data = im.simulateData(numCases, false);
 
 //        out.println("Finishing simulation");
 
-        final BDeScore score = new BDeScore(data);
+        BDeScore score = new BDeScore(data);
         score.setSamplePrior(samplePrior);
         score.setStructurePrior(structurePrior);
 
-        final Fges ges = new Fges(score);
+        Fges ges = new Fges(score);
         ges.setVerbose(false);
         ges.setFaithfulnessAssumed(false);
 
-        final Graph estCPDAG = ges.search();
+        Graph estCPDAG = ges.search();
 
-        final Graph trueCPDAG = SearchGraphUtils.cpdagForDag(dag);
+        Graph trueCPDAG = SearchGraphUtils.cpdagForDag(dag);
 
-        final int[][] counts = SearchGraphUtils.graphComparison(estCPDAG, trueCPDAG, null);
+        int[][] counts = SearchGraphUtils.graphComparison(estCPDAG, trueCPDAG, null);
 
-        final int[][] expectedCounts = {
+        int[][] expectedCounts = {
                 {2, 0, 0, 0, 0, 1},
                 {0, 0, 0, 0, 0, 0},
                 {0, 0, 0, 0, 0, 0},
@@ -199,26 +200,26 @@ public class TestFges {
 
     @Test
     public void testExplore3() {
-        final Graph graph = GraphConverter.convert("A-->B,A-->C,B-->D,C-->D");
-        final Fges fges = new Fges(new GraphScore(graph));
-        final Graph CPDAG = fges.search();
+        Graph graph = GraphConverter.convert("A-->B,A-->C,B-->D,C-->D");
+        Fges fges = new Fges(new GraphScore(graph));
+        Graph CPDAG = fges.search();
         assertEquals(SearchGraphUtils.cpdagForDag(graph), CPDAG);
     }
 
     @Test
     public void testExplore4() {
-        final Graph graph = GraphConverter.convert("A-->B,A-->C,A-->D,B-->E,C-->E,D-->E");
-        final Fges fges = new Fges(new GraphScore(graph));
-        final Graph CPDAG = fges.search();
+        Graph graph = GraphConverter.convert("A-->B,A-->C,A-->D,B-->E,C-->E,D-->E");
+        Fges fges = new Fges(new GraphScore(graph));
+        Graph CPDAG = fges.search();
         assertEquals(SearchGraphUtils.cpdagForDag(graph), CPDAG);
     }
 
     @Test
     public void testExplore5() {
-        final Graph graph = GraphConverter.convert("A-->B,A-->C,A-->D,A->E,B-->F,C-->F,D-->F,E-->F");
-        final Fges fges = new Fges(new GraphScore(graph));
+        Graph graph = GraphConverter.convert("A-->B,A-->C,A-->D,A->E,B-->F,C-->F,D-->F,E-->F");
+        Fges fges = new Fges(new GraphScore(graph));
         fges.setFaithfulnessAssumed(false);
-        final Graph CPDAG = fges.search();
+        Graph CPDAG = fges.search();
         assertEquals(SearchGraphUtils.cpdagForDag(graph), CPDAG);
     }
 
@@ -228,12 +229,12 @@ public class TestFges {
 
         // This may fail if faithfulness is assumed but should pass if not.
 
-        final Node x1 = new GraphNode("X1");
-        final Node x2 = new GraphNode("X2");
-        final Node x3 = new GraphNode("X3");
-        final Node x4 = new GraphNode("X4");
+        Node x1 = new GraphNode("X1");
+        Node x2 = new GraphNode("X2");
+        Node x3 = new GraphNode("X3");
+        Node x4 = new GraphNode("X4");
 
-        final Graph g = new EdgeListGraph();
+        Graph g = new EdgeListGraph();
         g.addNode(x1);
         g.addNode(x2);
         g.addNode(x3);
@@ -244,10 +245,10 @@ public class TestFges {
         g.addDirectedEdge(x4, x2);
         g.addDirectedEdge(x4, x3);
 
-        final Graph CPDAG1 = new Pc(new IndTestDSep(g)).search();
-        final Fges fges = new Fges(new GraphScore(g));
+        Graph CPDAG1 = new Pc(new IndTestDSep(g)).search();
+        Fges fges = new Fges(new GraphScore(g));
         fges.setFaithfulnessAssumed(true);
-        final Graph CPDAG2 = fges.search();
+        Graph CPDAG2 = fges.search();
 
 //        System.out.println(CPDAG1);
 //        System.out.println(CPDAG2);
@@ -260,12 +261,12 @@ public class TestFges {
 
         // This may fail if faithfulness is assumed but should pass if not.
 
-        final Node x1 = new GraphNode("X1");
-        final Node x2 = new GraphNode("X2");
-        final Node x3 = new GraphNode("X3");
-        final Node x4 = new GraphNode("X4");
+        Node x1 = new GraphNode("X1");
+        Node x2 = new GraphNode("X2");
+        Node x3 = new GraphNode("X3");
+        Node x4 = new GraphNode("X4");
 
-        final Graph dag = new EdgeListGraph();
+        Graph dag = new EdgeListGraph();
         dag.addNode(x1);
         dag.addNode(x2);
         dag.addNode(x3);
@@ -276,24 +277,24 @@ public class TestFges {
         dag.addDirectedEdge(x4, x2);
         dag.addDirectedEdge(x4, x3);
 
-        final GraphScore fgesScore = new GraphScore(dag);
+        GraphScore fgesScore = new GraphScore(dag);
 
-        final Fges fges = new Fges(fgesScore);
-        final Graph CPDAG1 = fges.search();
+        Fges fges = new Fges(fgesScore);
+        Graph CPDAG1 = fges.search();
 
-        final Set<Node> mb = new HashSet<>();
+        Set<Node> mb = new HashSet<>();
         mb.add(x1);
 
         mb.addAll(CPDAG1.getAdjacentNodes(x1));
 
-        for (final Node child : CPDAG1.getChildren(x1)) {
+        for (Node child : CPDAG1.getChildren(x1)) {
             mb.addAll(CPDAG1.getParents(child));
         }
 
-        final Graph mb1 = CPDAG1.subgraph(new ArrayList<>(mb));
+        Graph mb1 = CPDAG1.subgraph(new ArrayList<>(mb));
 
-        final FgesMb fgesMb = new FgesMb(fgesScore);
-        final Graph mb2 = fgesMb.search(x1);
+        FgesMb fgesMb = new FgesMb(fgesScore);
+        Graph mb2 = fgesMb.search(x1);
 
         assertEquals(mb1, mb2);
     }
@@ -307,50 +308,50 @@ public class TestFges {
 
         for (int i = 0; i < numIterations; i++) {
             System.out.println("Iteration " + (i + 1));
-            final Graph dag = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
-            final GraphScore fgesScore = new GraphScore(dag);
+            Graph dag = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
+            GraphScore fgesScore = new GraphScore(dag);
 
-            final Fges fges = new Fges(fgesScore);
-            final Graph CPDAG1 = fges.search();
+            Fges fges = new Fges(fgesScore);
+            Graph CPDAG1 = fges.search();
 
-            final Node x1 = fgesScore.getVariable("X1");
+            Node x1 = fgesScore.getVariable("X1");
 
-            final Set<Node> mb = new HashSet<>();
+            Set<Node> mb = new HashSet<>();
             mb.add(x1);
 
             mb.addAll(CPDAG1.getAdjacentNodes(x1));
 
-            for (final Node child : CPDAG1.getChildren(x1)) {
+            for (Node child : CPDAG1.getChildren(x1)) {
                 mb.addAll(CPDAG1.getParents(child));
             }
 
-            final Graph mb1 = CPDAG1.subgraph(new ArrayList<>(mb));
+            Graph mb1 = CPDAG1.subgraph(new ArrayList<>(mb));
 
-            final FgesMb fgesMb = new FgesMb(fgesScore);
-            final Graph mb2 = fgesMb.search(x1);
+            FgesMb fgesMb = new FgesMb(fgesScore);
+            Graph mb2 = fgesMb.search(x1);
 
             assertEquals(mb1, mb2);
         }
     }
 
 
-    private void printDegreeDistribution(final Graph dag, final PrintStream out) {
+    private void printDegreeDistribution(Graph dag, PrintStream out) {
         int max = 0;
 
-        for (final Node node : dag.getNodes()) {
-            final int degree = dag.getAdjacentNodes(node).size();
+        for (Node node : dag.getNodes()) {
+            int degree = dag.getAdjacentNodes(node).size();
             if (degree > max) max = degree;
         }
 
-        final int[] counts = new int[max + 1];
-        final Map<Integer, List<Node>> names = new HashMap<>();
+        int[] counts = new int[max + 1];
+        Map<Integer, List<Node>> names = new HashMap<>();
 
         for (int i = 0; i <= max; i++) {
             names.put(i, new ArrayList<Node>());
         }
 
-        for (final Node node : dag.getNodes()) {
-            final int degree = dag.getAdjacentNodes(node).size();
+        for (Node node : dag.getNodes()) {
+            int degree = dag.getAdjacentNodes(node).size();
             counts[degree]++;
             names.get(degree).add(node);
         }
@@ -360,7 +361,7 @@ public class TestFges {
 
             out.print(k + " " + counts[k]);
 
-            for (final Node node : names.get(k)) {
+            for (Node node : names.get(k)) {
                 out.print(" " + node.getName());
             }
 
@@ -370,11 +371,11 @@ public class TestFges {
 
     @Test
     public void clarkTest() {
-        final RandomGraph randomGraph = new RandomForward();
+        RandomGraph randomGraph = new RandomForward();
 
-        final Simulation simulation = new LinearFisherModel(randomGraph);
+        Simulation simulation = new LinearFisherModel(randomGraph);
 
-        final Parameters parameters = new Parameters();
+        Parameters parameters = new Parameters();
 
         parameters.set(Params.NUM_MEASURES, 100);
         parameters.set(Params.NUM_LATENTS, 0);
@@ -398,33 +399,33 @@ public class TestFges {
 
         simulation.createData(parameters, false);
 
-        final DataSet dataSet = (DataSet) simulation.getDataModel(0);
-        final Graph trueGraph = simulation.getTrueGraph(0);
+        DataSet dataSet = (DataSet) simulation.getDataModel(0);
+        Graph trueGraph = simulation.getTrueGraph(0);
 
 //        trueGraph = SearchGraphUtils.CPDAGForDag(trueGraph);
 
-        final ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
-        final IndependenceWrapper test = new FisherZ();
+        ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
+        IndependenceWrapper test = new FisherZ();
 
-        final Algorithm fges = new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(score);
+        Algorithm fges = new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(score);
 
-        final Graph fgesGraph = fges.search(dataSet, parameters);
+        Graph fgesGraph = fges.search(dataSet, parameters);
 
-        clarkTestForAlpha(0.05, parameters, dataSet, trueGraph, fgesGraph, test);
-        clarkTestForAlpha(0.01, parameters, dataSet, trueGraph, fgesGraph, test);
+        this.clarkTestForAlpha(0.05, parameters, dataSet, trueGraph, fgesGraph, test);
+        this.clarkTestForAlpha(0.01, parameters, dataSet, trueGraph, fgesGraph, test);
 
     }
 
-    private void clarkTestForAlpha(final double alpha, final Parameters parameters, final DataSet dataSet, Graph trueGraph,
-                                   Graph CPDAG, final IndependenceWrapper test) {
+    private void clarkTestForAlpha(double alpha, Parameters parameters, DataSet dataSet, Graph trueGraph,
+                                   Graph CPDAG, IndependenceWrapper test) {
         parameters.set(Params.ALPHA, alpha);
 
-        final List<Node> nodes = dataSet.getVariables();
+        List<Node> nodes = dataSet.getVariables();
 
         trueGraph = GraphUtils.replaceNodes(trueGraph, nodes);
         CPDAG = GraphUtils.replaceNodes(CPDAG, nodes);
 
-        final IndependenceTest _test = test.getTest(dataSet, parameters);
+        IndependenceTest _test = test.getTest(dataSet, parameters);
 
         System.out.println(parameters);
 
@@ -442,11 +443,11 @@ public class TestFges {
 
         for (int i = 0; i < numSamples; i++) {
             Collections.shuffle(nodes);
-            final Node x = nodes.get(0);
-            final Node y = nodes.get(1);
+            Node x = nodes.get(0);
+            Node y = nodes.get(1);
 
-            final boolean trueAncestral = ancestral(x, y, trueGraph);
-            final boolean estAncestral = ancestral(x, y, CPDAG);
+            boolean trueAncestral = this.ancestral(x, y, trueGraph);
+            boolean estAncestral = this.ancestral(x, y, CPDAG);
 
             if (trueAncestral && estAncestral) {
                 tp1++;
@@ -460,7 +461,7 @@ public class TestFges {
                 fp1++;
             }
 
-            final boolean dependent = !_test.isIndependent(x, y);
+            boolean dependent = !_test.isIndependent(x, y);
 
             if (trueAncestral && dependent) {
                 tp2++;
@@ -475,11 +476,11 @@ public class TestFges {
             }
         }
 
-        final double prec1 = tp1 / (double) (tp1 + fp1);
-        final double rec1 = tp1 / (double) (tp1 + fn1);
+        double prec1 = tp1 / (double) (tp1 + fp1);
+        double rec1 = tp1 / (double) (tp1 + fn1);
 
-        final double prec2 = tp2 / (double) (tp2 + fp2);
-        final double rec2 = tp2 / (double) (tp2 + fn2);
+        double prec2 = tp2 / (double) (tp2 + fp2);
+        double rec2 = tp2 / (double) (tp2 + fn2);
 
         System.out.println("Experiment 1: Comparing ancestral connection in true DAG versus estimated CPDAG");
 
@@ -490,7 +491,7 @@ public class TestFges {
         System.out.println("Precision = " + prec2 + " recall = " + rec2);
     }
 
-    private boolean ancestral(final Node x, final Node y, final Graph graph) {
+    private boolean ancestral(Node x, Node y, Graph graph) {
         return graph.isAncestorOf(x, y) || graph.isAncestorOf(y, x);
     }
 
@@ -500,7 +501,7 @@ public class TestFges {
      */
     @Test
     public void testSearch1() {
-        checkSearch("X1-->X2,X1-->X3,X2-->X4,X3-->X4",
+        this.checkSearch("X1-->X2,X1-->X3,X2-->X4,X3-->X4",
                 "X1---X2,X1---X3,X2-->X4,X3-->X4");
     }
 
@@ -510,7 +511,7 @@ public class TestFges {
      */
     @Test
     public void testSearch2() {
-        checkSearch("X1-->X2,X1-->X3,X2-->X4,X3-->X4",
+        this.checkSearch("X1-->X2,X1-->X3,X2-->X4,X3-->X4",
                 "X1---X2,X1---X3,X2-->X4,X3-->X4");
     }
 
@@ -519,7 +520,7 @@ public class TestFges {
      */
     @Test
     public void testSearch3() {
-        checkSearch("A-->D,A-->B,B-->D,C-->D,D-->E",
+        this.checkSearch("A-->D,A-->B,B-->D,C-->D,D-->E",
                 "A-->D,A---B,B-->D,C-->D,D-->E");
     }
 
@@ -528,22 +529,22 @@ public class TestFges {
      */
     @Test
     public void testSearch4() {
-        final IKnowledge knowledge = new Knowledge2();
+        IKnowledge knowledge = new Knowledge2();
         knowledge.setForbidden("B", "D");
         knowledge.setForbidden("D", "B");
         knowledge.setForbidden("C", "B");
 
-        checkWithKnowledge("A-->B,C-->B,B-->D", "A---D,B---A,B-->C,C---A",
+        this.checkWithKnowledge("A-->B,C-->B,B-->D", "A---D,B---A,B-->C,C---A",
                 knowledge);
     }
 
     @Test
     public void testSearch5() {
-        final IKnowledge knowledge = new Knowledge2();
+        IKnowledge knowledge = new Knowledge2();
         knowledge.setTier(1, Collections.singletonList("A"));
         knowledge.setTier(2, Collections.singletonList("B"));
 
-        checkWithKnowledge("A-->B", "A-->B", knowledge);
+        this.checkWithKnowledge("A-->B", "A-->B", knowledge);
     }
 
     @Test
@@ -558,10 +559,10 @@ public class TestFges {
                 ".29\t.25\t.34\t.37\t.13\t1.0\n" +
                 ".18\t.15\t.19\t.41\t.43\t.55\t1.0";
 
-        final char[] citesChars = citesString.toCharArray();
-        final ICovarianceMatrix cov = DataUtils.parseCovariance(citesChars, "//", DelimiterType.WHITESPACE, '\"', "*");
+        char[] citesChars = citesString.toCharArray();
+        ICovarianceMatrix cov = DataUtils.parseCovariance(citesChars, "//", DelimiterType.WHITESPACE, '\"', "*");
 
-        final IKnowledge knowledge = new Knowledge2();
+        IKnowledge knowledge = new Knowledge2();
 
         knowledge.addToTier(1, "ABILITY");
         knowledge.addToTier(2, "GPQ");
@@ -571,11 +572,11 @@ public class TestFges {
         knowledge.addToTier(5, "PUBS");
         knowledge.addToTier(6, "CITES");
 
-        final SemBicScore score = new SemBicScore(cov);
+        SemBicScore score = new SemBicScore(cov);
 //        score.setRuleType(SemBicScore.RuleType.NANDY);
 //        score.setPenaltyDiscount(1);
 //        score.setStructurePrior(0);
-        final Fges fges = new Fges(score);
+        Fges fges = new Fges(score);
         fges.setKnowledge(knowledge);
 
         fges.setVerbose(true);
@@ -606,7 +607,7 @@ public class TestFges {
             trueGraph = GraphUtils.readerToGraphTxt(trueString);
             CPDAG = GraphUtils.replaceNodes(CPDAG, trueGraph.getNodes());
             assertEquals(trueGraph, CPDAG);
-        } catch (final IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -616,19 +617,19 @@ public class TestFges {
      * Presents the input graph to FCI and checks to make sure the output of FCI is equivalent to the given output
      * graph.
      */
-    private void checkSearch(final String inputGraph, final String outputGraph) {
+    private void checkSearch(String inputGraph, String outputGraph) {
 
         // Set up graph and node objects.
-        final Graph graph = GraphConverter.convert(inputGraph);
+        Graph graph = GraphConverter.convert(inputGraph);
 
         // Set up search.
-        final Fges fges = new Fges(new GraphScore(graph));
+        Fges fges = new Fges(new GraphScore(graph));
 
         // Run search
         Graph resultGraph = fges.search();
 
         // Build comparison graph.
-        final Graph trueGraph = GraphConverter.convert(outputGraph);
+        Graph trueGraph = GraphConverter.convert(outputGraph);
 
         // PrintUtil out problem and graphs.
 //        System.out.println("\nInput graph:");
@@ -648,22 +649,22 @@ public class TestFges {
      * Presents the input graph to FCI and checks to make sure the output of FCI is equivalent to the given output
      * graph.
      */
-    private void checkWithKnowledge(final String inputGraph, final String answerGraph,
-                                    final IKnowledge knowledge) {
+    private void checkWithKnowledge(String inputGraph, String answerGraph,
+                                    IKnowledge knowledge) {
         // Set up graph and node objects.
-        final Graph input = GraphConverter.convert(inputGraph);
+        Graph input = GraphConverter.convert(inputGraph);
 
         // Set up search.
-        final Fges fges = new Fges(new GraphScore(input));
+        Fges fges = new Fges(new GraphScore(input));
 
         // Set up search.
         fges.setKnowledge(knowledge);
 
         // Run search
-        final Graph result = fges.search();
+        Graph result = fges.search();
 
         // Build comparison graph.
-        final Graph answer = GraphConverter.convert(answerGraph);
+        Graph answer = GraphConverter.convert(answerGraph);
 //        Graph answer = new PC(new IndTestDSep(input)).search();
 
 //        System.out.println("Input = " + input);
@@ -682,12 +683,12 @@ public class TestFges {
         final int numIterations = 1;
 
         for (int i = 0; i < numIterations; i++) {
-            final Graph dag = GraphUtils.randomDag(numNodes, 0, aveDegree * numNodes / 2, 10, 10, 10, false);
-            final Fges fges = new Fges(new GraphScore(dag));
+            Graph dag = GraphUtils.randomDag(numNodes, 0, aveDegree * numNodes / 2, 10, 10, 10, false);
+            Fges fges = new Fges(new GraphScore(dag));
             fges.setFaithfulnessAssumed(true);
             fges.setVerbose(true);
-            final Graph CPDAG1 = fges.search();
-            final Graph CPDAG2 = new Pc(new IndTestDSep(dag)).search();
+            Graph CPDAG1 = fges.search();
+            Graph CPDAG2 = new Pc(new IndTestDSep(dag)).search();
             assertEquals(CPDAG2, CPDAG1);
         }
     }
@@ -696,15 +697,15 @@ public class TestFges {
     public void testFromData() {
         final int numIterations = 1;
 
-        final Parameters params = new Parameters();
+        Parameters params = new Parameters();
 
-        final int[] nodeOptions = {5, 10, 20, 30, 40, 50, 75, 100};
-        final int[] avgDegreeOptions = {2, 4, 6};
-        final int[] sampleSizeOptions = {100, 500, 1000, 10000, 100000};
+        int[] nodeOptions = {5, 10, 20, 30, 40, 50, 75, 100};
+        int[] avgDegreeOptions = {2, 4, 6};
+        int[] sampleSizeOptions = {100, 500, 1000, 10000, 100000};
 
-        final int numRowsInTable = nodeOptions.length * avgDegreeOptions.length * sampleSizeOptions.length;
+        int numRowsInTable = nodeOptions.length * avgDegreeOptions.length * sampleSizeOptions.length;
 
-        final TextTable table = new TextTable(numRowsInTable + 1, 5);
+        TextTable table = new TextTable(numRowsInTable + 1, 5);
 
         table.setToken(0, 0, "# Nodes");
         table.setToken(0, 1, "Avg Degree");
@@ -714,22 +715,22 @@ public class TestFges {
 
         int count = 0;
 
-        for (final int numNodes : nodeOptions) {
-            for (final int avgDegree : avgDegreeOptions) {
-                for (final int sampleSize : sampleSizeOptions) {
+        for (int numNodes : nodeOptions) {
+            for (int avgDegree : avgDegreeOptions) {
+                for (int sampleSize : sampleSizeOptions) {
                     for (int q = 0; q < 1; q++) {
                         for (int i = 0; i < numIterations; i++) {
-                            final Graph dag = GraphUtils.randomDag(numNodes, 0,
+                            Graph dag = GraphUtils.randomDag(numNodes, 0,
                                     (avgDegree * numNodes) / 2, 100, 100, 100, false);
-                            final SemPm pm = new SemPm(dag);
-                            final SemIm im = new SemIm(pm, params);
-                            final DataSet data = im.simulateData(sampleSize, false);
-                            final SemBicScore score = new SemBicScore(data);
+                            SemPm pm = new SemPm(dag);
+                            SemIm im = new SemIm(pm, params);
+                            DataSet data = im.simulateData(sampleSize, false);
+                            SemBicScore score = new SemBicScore(data);
                             score.setPenaltyDiscount(.5);
-                            final Fges fges = new Fges(score);
+                            Fges fges = new Fges(score);
                             fges.setFaithfulnessAssumed(false);
                             fges.setVerbose(false);
-                            final Graph CPDAG1 = fges.search();
+                            Graph CPDAG1 = fges.search();
                             System.out.println("num nodes = " + numNodes + " avg degree = " + avgDegree
                                     + " sample size = " + sampleSize
                                     + " true # edges = " + dag.getNumEdges()
@@ -761,20 +762,20 @@ public class TestFges {
 
         for (int i = 0; i < numIterations; i++) {
             System.out.println("Iteration " + (i + 1));
-            final Graph dag = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
+            Graph dag = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
             Graph knowledgeGraph = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
             knowledgeGraph = GraphUtils.replaceNodes(knowledgeGraph, dag.getNodes());
 
-            final IKnowledge knowledge = forbiddenKnowledge(knowledgeGraph);
+            IKnowledge knowledge = this.forbiddenKnowledge(knowledgeGraph);
 
-            final Fges fges = new Fges(new GraphScore(dag));
+            Fges fges = new Fges(new GraphScore(dag));
             fges.setFaithfulnessAssumed(true);
             fges.setKnowledge(knowledge);
-            final Graph CPDAG1 = fges.search();
+            Graph CPDAG1 = fges.search();
 
-            for (final Edge edge : knowledgeGraph.getEdges()) {
-                final Node x = Edges.getDirectedEdgeTail(edge);
-                final Node y = Edges.getDirectedEdgeHead(edge);
+            for (Edge edge : knowledgeGraph.getEdges()) {
+                Node x = Edges.getDirectedEdgeTail(edge);
+                Node y = Edges.getDirectedEdgeHead(edge);
 
                 if (CPDAG1.isParentOf(x, y)) {
                     System.out.println("Knowledge violated: " + edge + " x = " + x + " y = " + y);
@@ -792,20 +793,20 @@ public class TestFges {
 
         for (int i = 0; i < numIterations; i++) {
             System.out.println("Iteration " + (i + 1));
-            final Graph dag = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
+            Graph dag = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
             Graph knowledgeGraph = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
             knowledgeGraph = GraphUtils.replaceNodes(knowledgeGraph, dag.getNodes());
 
-            final IKnowledge knowledge = requiredKnowledge(knowledgeGraph);
+            IKnowledge knowledge = this.requiredKnowledge(knowledgeGraph);
 
-            final Fges fges = new Fges(new GraphScore(dag));
+            Fges fges = new Fges(new GraphScore(dag));
             fges.setFaithfulnessAssumed(true);
             fges.setKnowledge(knowledge);
-            final Graph CPDAG1 = fges.search();
+            Graph CPDAG1 = fges.search();
 
-            for (final Edge edge : knowledgeGraph.getEdges()) {
-                final Node x = Edges.getDirectedEdgeTail(edge);
-                final Node y = Edges.getDirectedEdgeHead(edge);
+            for (Edge edge : knowledgeGraph.getEdges()) {
+                Node x = Edges.getDirectedEdgeTail(edge);
+                Node y = Edges.getDirectedEdgeHead(edge);
 
                 if (!CPDAG1.isParentOf(x, y)) {
                     System.out.println("Knowledge violated: " + edge + " x = " + x + " y = " + y);
@@ -817,14 +818,14 @@ public class TestFges {
     }
 
 
-    private IKnowledge forbiddenKnowledge(final Graph graph) {
-        final IKnowledge knowledge = new Knowledge2(graph.getNodeNames());
+    private IKnowledge forbiddenKnowledge(Graph graph) {
+        IKnowledge knowledge = new Knowledge2(graph.getNodeNames());
 
-        final List<Node> nodes = graph.getNodes();
+        List<Node> nodes = graph.getNodes();
 
-        for (final Edge edge : graph.getEdges()) {
-            final Node n1 = Edges.getDirectedEdgeTail(edge);
-            final Node n2 = Edges.getDirectedEdgeHead(edge);
+        for (Edge edge : graph.getEdges()) {
+            Node n1 = Edges.getDirectedEdgeTail(edge);
+            Node n2 = Edges.getDirectedEdgeHead(edge);
 
             if (n1.getName().startsWith("E_") || n2.getName().startsWith("E_")) {
                 continue;
@@ -836,13 +837,13 @@ public class TestFges {
         return knowledge;
     }
 
-    private IKnowledge requiredKnowledge(final Graph graph) {
+    private IKnowledge requiredKnowledge(Graph graph) {
 
-        final IKnowledge knowledge = new Knowledge2(graph.getNodeNames());
+        IKnowledge knowledge = new Knowledge2(graph.getNodeNames());
 
-        for (final Edge edge : graph.getEdges()) {
-            final Node n1 = Edges.getDirectedEdgeTail(edge);
-            final Node n2 = Edges.getDirectedEdgeHead(edge);
+        for (Edge edge : graph.getEdges()) {
+            Node n1 = Edges.getDirectedEdgeTail(edge);
+            Node n2 = Edges.getDirectedEdgeHead(edge);
 
             if (n1.getName().startsWith("E_") || n2.getName().startsWith("E_")) {
                 continue;
@@ -911,12 +912,12 @@ public class TestFges {
 //
 //    }
 
-    private Graph getSubgraph(final Graph graph, final boolean discrete1, final boolean discrete2, final DataSet dataSet) {
-        final Graph newGraph = new EdgeListGraph(graph.getNodes());
+    private Graph getSubgraph(Graph graph, boolean discrete1, boolean discrete2, DataSet dataSet) {
+        Graph newGraph = new EdgeListGraph(graph.getNodes());
 
-        for (final Edge edge : graph.getEdges()) {
-            final Node node1 = dataSet.getVariable(edge.getNode1().getName());
-            final Node node2 = dataSet.getVariable(edge.getNode2().getName());
+        for (Edge edge : graph.getEdges()) {
+            Node node1 = dataSet.getVariable(edge.getNode1().getName());
+            Node node2 = dataSet.getVariable(edge.getNode2().getName());
 
             if (discrete1 && node1 instanceof DiscreteVariable) {
                 if (discrete2 && node2 instanceof DiscreteVariable) {
@@ -945,31 +946,31 @@ public class TestFges {
         try {
 
             for (int i = 0; i < 50; i++) {
-                final File dataPath = new File("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/2016.05.25/" +
+                File dataPath = new File("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/2016.05.25/" +
                         "Simulated_data_for_Madelyn/simulation/data/DAG_" + i + "_data.txt");
-                final DataSet Dk = DataUtils.loadContinuousData(dataPath, "//", '\"' ,
+                DataSet Dk = DataUtils.loadContinuousData(dataPath, "//", '\"' ,
                         "*", true, Delimiter.TAB);
 
-                final File graphPath = new File("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/2016.05.25/" +
+                File graphPath = new File("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/2016.05.25/" +
                         "Simulated_data_for_Madelyn/simulation/networks/DAG_" + i + "_graph.txt");
 
-                final Graph dag = GraphUtils.loadGraphTxt(graphPath);
+                Graph dag = GraphUtils.loadGraphTxt(graphPath);
 
-                final long start = System.currentTimeMillis();
+                long start = System.currentTimeMillis();
 
 //            Graph CPDAG = searchSemFges(Dk);
 //            Graph CPDAG = searchBdeuFges(Dk, k);
-                final Graph CPDAG = searchMixedFges(Dk, penalty);
+                Graph CPDAG = this.searchMixedFges(Dk, penalty);
 
-                final long stop = System.currentTimeMillis();
+                long stop = System.currentTimeMillis();
 
-                final long elapsed = stop - start;
-                final long elapsedSeconds = elapsed / 1000;
+                long elapsed = stop - start;
+                long elapsedSeconds = elapsed / 1000;
 
-                final Graph trueCPDAG = SearchGraphUtils.cpdagForDag(dag);
+                Graph trueCPDAG = SearchGraphUtils.cpdagForDag(dag);
 
-                final GraphUtils.GraphComparison comparison = SearchGraphUtils.getGraphComparison(CPDAG, trueCPDAG);
-                final NumberFormat nf = new DecimalFormat("0.00");
+                GraphComparison comparison = SearchGraphUtils.getGraphComparison(CPDAG, trueCPDAG);
+                NumberFormat nf = new DecimalFormat("0.00");
 
                 System.out.println(i +
                         "\t" + nf.format(comparison.getAdjPrec()) +
@@ -978,24 +979,24 @@ public class TestFges {
                         "\t" + nf.format(comparison.getAhdRec()) +
                         "\t" + elapsedSeconds);
             }
-        } catch (final IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private Graph searchSemFges(DataSet Dk, final double penalty) {
+    private Graph searchSemFges(DataSet Dk, double penalty) {
         Dk = DataUtils.convertNumericalDiscreteToContinuous(Dk);
-        final SemBicScore score = new SemBicScore(new CovarianceMatrix(Dk));
+        SemBicScore score = new SemBicScore(new CovarianceMatrix(Dk));
         score.setPenaltyDiscount(penalty);
-        final Fges fges = new Fges(score);
+        Fges fges = new Fges(score);
         return fges.search();
     }
 
-    private Graph searchBdeuFges(DataSet Dk, final int k) {
-        final Discretizer discretizer = new Discretizer(Dk);
-        final List<Node> nodes = Dk.getVariables();
+    private Graph searchBdeuFges(DataSet Dk, int k) {
+        Discretizer discretizer = new Discretizer(Dk);
+        List<Node> nodes = Dk.getVariables();
 
-        for (final Node node : nodes) {
+        for (Node node : nodes) {
             if (node instanceof ContinuousVariable) {
                 discretizer.equalIntervals(node, k);
             }
@@ -1003,38 +1004,38 @@ public class TestFges {
 
         Dk = discretizer.discretize();
 
-        final BDeuScore score = new BDeuScore(Dk);
+        BDeuScore score = new BDeuScore(Dk);
         score.setSamplePrior(1.0);
         score.setStructurePrior(1.0);
-        final Fges fges = new Fges(score);
+        Fges fges = new Fges(score);
         return fges.search();
     }
 
-    private Graph searchMixedFges(final DataSet dk, final double penalty) {
-        final MixedBicScore score = new MixedBicScore(dk);
+    private Graph searchMixedFges(DataSet dk, double penalty) {
+        MixedBicScore score = new MixedBicScore(dk);
         score.setPenaltyDiscount(penalty);
-        final Fges fges = new Fges(score);
+        Fges fges = new Fges(score);
         return fges.search();
     }
 
-    public Graph searchMGMFges(final DataSet ds, final double penalty) {
-        final MGM m = new MGM(ds, new double[]{0.1, 0.1, 0.1});
+    public Graph searchMGMFges(DataSet ds, double penalty) {
+        MGM m = new MGM(ds, new double[]{0.1, 0.1, 0.1});
         //m.setVerbose(this.verbose);
-        final Graph gm = m.search();
-        final DataSet dataSet = MixedUtils.makeContinuousData(ds);
-        final SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
+        Graph gm = m.search();
+        DataSet dataSet = MixedUtils.makeContinuousData(ds);
+        SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
         score.setPenaltyDiscount(penalty);
-        final Fges fg = new Fges(score);
+        Fges fg = new Fges(score);
         fg.setBoundGraph(gm);
         fg.setVerbose(false);
         return fg.search();
     }
 
-    public DataSet getMixedDataAjStyle(Graph g, final int k, final int samps) {
+    public DataSet getMixedDataAjStyle(Graph g, int k, int samps) {
 
-        final HashMap<String, Integer> nd = new HashMap<>();
+        HashMap<String, Integer> nd = new HashMap<>();
 
-        final List<Node> nodes = g.getNodes();
+        List<Node> nodes = g.getNodes();
 
         Collections.shuffle(nodes);
 
@@ -1049,20 +1050,20 @@ public class TestFges {
         g = MixedUtils.makeMixedGraph(g, nd);
 
 
-        final GeneralizedSemPm pm = MixedUtils.GaussianCategoricalPm(g, "Split(-1.5,-.5,.5,1.5)");
+        GeneralizedSemPm pm = MixedUtils.GaussianCategoricalPm(g, "Split(-1.5,-.5,.5,1.5)");
 //        System.out.println(pm);
 
-        final GeneralizedSemIm im = MixedUtils.GaussianCategoricalIm(pm);
+        GeneralizedSemIm im = MixedUtils.GaussianCategoricalIm(pm);
 //        System.out.println(im);
 
-        final DataSet ds = im.simulateDataFisher(samps);
+        DataSet ds = im.simulateDataFisher(samps);
         return MixedUtils.makeMixedData(ds, nd);
     }
 
     //    @Test
     public void testBestAlgorithms() {
-        final String[] algorithms = {"SemFGES", "BDeuFGES", "MixedFGES", "PC", "PCS", "CPC", "MGMFges", "MGMPcs"};
-        final String[] statLabels = {"AP", "AR", "OP", "OR", "SUM", "McAdj", "McOr", "F1Adj", "F1Or", "E"};
+        String[] algorithms = {"SemFGES", "BDeuFGES", "MixedFGES", "PC", "PCS", "CPC", "MGMFges", "MGMPcs"};
+        String[] statLabels = {"AP", "AR", "OP", "OR", "SUM", "McAdj", "McOr", "F1Adj", "F1Or", "E"};
 
         final int numMeasures = 30;
         final int numEdges = 60;
@@ -1073,7 +1074,7 @@ public class TestFges {
         final double penaltyDiscount = 4.0;
         final double ofInterestCutoff = 0.05;
 
-        final double[][][][] allAllRet = new double[maxCategories][][][];
+        double[][][][] allAllRet = new double[maxCategories][][][];
         int latentIndex = -1;
 
         for (int numCategories = 2; numCategories <= maxCategories; numCategories++) {
@@ -1088,10 +1089,10 @@ public class TestFges {
             System.out.println("penaltyDiscount = " + penaltyDiscount);
             System.out.println("num runs = " + numRuns);
 
-            final double[][][] allRet = new double[algorithms.length][][];
+            double[][][] allRet = new double[algorithms.length][][];
 
             for (int t = 0; t < algorithms.length; t++) {
-                allRet[t] = printStats(algorithms, t, numRuns, sampleSize, numMeasures,
+                allRet[t] = this.printStats(algorithms, t, numRuns, sampleSize, numMeasures,
                         numCategories, numEdges);
             }
 
@@ -1117,64 +1118,64 @@ public class TestFges {
         System.out.println("num measures = " + numMeasures);
         System.out.println("num edges = " + numEdges);
 
-        printBestStats(allAllRet, algorithms, statLabels, maxCategories, ofInterestCutoff);
+        this.printBestStats(allAllRet, algorithms, statLabels, maxCategories, ofInterestCutoff);
     }
 
-    private double[][] printStats(final String[] algorithms, final int t, final int numRuns,
-                                  final int sampleSize, final int numMeasures, final int numCategories,
-                                  final int numEdges) {
-        final NumberFormat nf = new DecimalFormat("0.00");
+    private double[][] printStats(String[] algorithms, int t, int numRuns,
+                                  int sampleSize, int numMeasures, int numCategories,
+                                  int numEdges) {
+        NumberFormat nf = new DecimalFormat("0.00");
 
-        final double[] sumAdjPrecision = new double[4];
-        final double[] sumAdjRecall = new double[4];
-        final double[] sumArrowPrecision = new double[4];
-        final double[] sumArrowRecall = new double[4];
-        final double[] sumSum = new double[4];
-        final double[] sumMcAdj = new double[4];
-        final double[] sumMcOr = new double[4];
-        final double[] sumF1Adj = new double[4];
-        final double[] sumF1Or = new double[4];
+        double[] sumAdjPrecision = new double[4];
+        double[] sumAdjRecall = new double[4];
+        double[] sumArrowPrecision = new double[4];
+        double[] sumArrowRecall = new double[4];
+        double[] sumSum = new double[4];
+        double[] sumMcAdj = new double[4];
+        double[] sumMcOr = new double[4];
+        double[] sumF1Adj = new double[4];
+        double[] sumF1Or = new double[4];
         double totalElapsed = 0.0;
 
-        final int[] countAP = new int[4];
-        final int[] countAR = new int[4];
-        final int[] countOP = new int[4];
-        final int[] countOR = new int[4];
-        final int[] countSum = new int[4];
-        final int[] countMcAdj = new int[4];
-        final int[] countMcOr = new int[4];
-        final int[] countF1Adj = new int[4];
-        final int[] countF1Or = new int[4];
+        int[] countAP = new int[4];
+        int[] countAR = new int[4];
+        int[] countOP = new int[4];
+        int[] countOR = new int[4];
+        int[] countSum = new int[4];
+        int[] countMcAdj = new int[4];
+        int[] countMcOr = new int[4];
+        int[] countF1Adj = new int[4];
+        int[] countF1Or = new int[4];
 
         for (int i = 0; i < numRuns; i++) {
-            final List<Node> nodes = new ArrayList<>();
+            List<Node> nodes = new ArrayList<>();
 
             for (int r = 0; r < numMeasures; r++) {
-                final String name = "X" + (r + 1);
+                String name = "X" + (r + 1);
                 nodes.add(new ContinuousVariable(name));
             }
 
-            final Graph dag = GraphUtils.randomGraphRandomForwardEdges(nodes, 0, numEdges,
+            Graph dag = GraphUtils.randomGraphRandomForwardEdges(nodes, 0, numEdges,
                     10, 10, 10, false);
-            final DataSet data = getMixedDataAjStyle(dag, numCategories, sampleSize);
+            DataSet data = this.getMixedDataAjStyle(dag, numCategories, sampleSize);
 
             Graph out;
             final double penalty = 4;
 
-            final long start = System.currentTimeMillis();
+            long start = System.currentTimeMillis();
 
             switch (t) {
                 case 0:
-                    out = searchSemFges(data, penalty);
+                    out = this.searchSemFges(data, penalty);
                     break;
                 case 1:
-                    out = searchBdeuFges(data, numCategories);
+                    out = this.searchBdeuFges(data, numCategories);
                     break;
                 case 2:
-                    out = searchMixedFges(data, penalty);
+                    out = this.searchMixedFges(data, penalty);
                     break;
                 case 3:
-                    out = searchMGMFges(data, penalty);
+                    out = this.searchMGMFges(data, penalty);
                     break;
                 default:
                     throw new IllegalStateException();
@@ -1182,36 +1183,36 @@ public class TestFges {
 
             out = GraphUtils.replaceNodes(out, dag.getNodes());
 
-            final Graph[] est = new Graph[4];
+            Graph[] est = new Graph[4];
 
             est[0] = out;
-            est[1] = getSubgraph(out, true, true, data);
-            est[2] = getSubgraph(out, true, false, data);
-            est[3] = getSubgraph(out, false, false, data);
+            est[1] = this.getSubgraph(out, true, true, data);
+            est[2] = this.getSubgraph(out, true, false, data);
+            est[3] = this.getSubgraph(out, false, false, data);
 
-            final Graph[] truth = new Graph[4];
+            Graph[] truth = new Graph[4];
 
             truth[0] = dag;
-            truth[1] = getSubgraph(dag, true, true, data);
-            truth[2] = getSubgraph(dag, true, false, data);
-            truth[3] = getSubgraph(dag, false, false, data);
+            truth[1] = this.getSubgraph(dag, true, true, data);
+            truth[2] = this.getSubgraph(dag, true, false, data);
+            truth[3] = this.getSubgraph(dag, false, false, data);
 
-            final long stop = System.currentTimeMillis();
+            long stop = System.currentTimeMillis();
 
-            final long elapsed = stop - start;
+            long elapsed = stop - start;
             totalElapsed += elapsed;
 
             for (int u = 0; u < 4; u++) {
                 int adjTp = 0;
                 int adjFp = 0;
-                final int adjTn;
+                int adjTn;
                 int adjFn = 0;
                 int arrowsTp = 0;
                 int arrowsFp = 0;
                 int arrowsTn = 0;
                 int arrowsFn = 0;
 
-                for (final Edge edge : est[u].getEdges()) {
+                for (Edge edge : est[u].getEdges()) {
                     if (truth[u].isAdjacentTo(edge.getNode1(), edge.getNode2())) {
                         adjTp++;
                     } else {
@@ -1219,7 +1220,7 @@ public class TestFges {
                     }
 
                     if (edge.isDirected()) {
-                        final Edge _edge = truth[u].getEdge(edge.getNode1(), edge.getNode2());
+                        Edge _edge = truth[u].getEdge(edge.getNode1(), edge.getNode2());
 
                         if (edge != null && edge.equals(_edge)) {
                             arrowsTp++;
@@ -1229,28 +1230,28 @@ public class TestFges {
                     }
                 }
 
-                final List<Node> nodes1 = truth[u].getNodes();
+                List<Node> nodes1 = truth[u].getNodes();
 
                 for (int w = 0; w < nodes1.size(); w++) {
-                    for (final int s = w + 1; w < nodes1.size(); w++) {
-                        final Node W = nodes1.get(w);
-                        final Node S = nodes1.get(s);
+                    for (int s = w + 1; w < nodes1.size(); w++) {
+                        Node W = nodes1.get(w);
+                        Node S = nodes1.get(s);
 
                         if (truth[u].isAdjacentTo(W, S)) {
                             if (!est[u].isAdjacentTo(W, S)) {
                                 adjFn++;
                             }
 
-                            final Edge e1 = truth[u].getEdge(W, S);
-                            final Edge e2 = est[u].getEdge(W, S);
+                            Edge e1 = truth[u].getEdge(W, S);
+                            Edge e2 = est[u].getEdge(W, S);
 
                             if (!(e2 != null && e2.equals(e1))) {
                                 arrowsFn++;
                             }
                         }
 
-                        final Edge e1 = truth[u].getEdge(W, S);
-                        final Edge e2 = est[u].getEdge(W, S);
+                        Edge e1 = truth[u].getEdge(W, S);
+                        Edge e2 = est[u].getEdge(W, S);
 
                         if (!(e1 != null && e2 == null) || (e1 != null && e2 != null && !e1.equals(e2))) {
                             arrowsFn++;
@@ -1258,16 +1259,16 @@ public class TestFges {
                     }
                 }
 
-                final int allEdges = truth[u].getNumNodes() * (truth[u].getNumNodes() - 1);
+                int allEdges = truth[u].getNumNodes() * (truth[u].getNumNodes() - 1);
 
                 adjTn = allEdges / 2 - (adjFn + adjFp + adjTp);
                 arrowsTn = allEdges - (arrowsFn + arrowsFp + arrowsTp);
 
-                final double adjPrecision = adjTp / (double) (adjTp + adjFp);
-                final double adjRecall = adjTp / (double) (adjTp + adjFn);
+                double adjPrecision = adjTp / (double) (adjTp + adjFp);
+                double adjRecall = adjTp / (double) (adjTp + adjFn);
 
-                final double arrowPrecision = arrowsTp / (double) (arrowsTp + arrowsFp);
-                final double arrowRecall = arrowsTp / (double) (arrowsTp + arrowsFn);
+                double arrowPrecision = arrowsTp / (double) (arrowsTp + arrowsFp);
+                double arrowRecall = arrowsTp / (double) (arrowsTp + arrowsFn);
 
                 if (!Double.isNaN(adjPrecision)) {
                     sumAdjPrecision[u] += adjPrecision;
@@ -1289,14 +1290,14 @@ public class TestFges {
                     countOR[u]++;
                 }
 
-                final double sum = adjPrecision + adjRecall + arrowPrecision + arrowRecall;
-                final double mcAdj = (adjTp * adjTn - adjFp * adjFn) /
+                double sum = adjPrecision + adjRecall + arrowPrecision + arrowRecall;
+                double mcAdj = (adjTp * adjTn - adjFp * adjFn) /
                         Math.sqrt((adjTp + adjFp) * (adjTp + adjFn) * (adjTn + adjFp) * (adjTn + adjFn));
-                final double mcOr = (arrowsTp * arrowsTn - arrowsFp * arrowsFn) /
+                double mcOr = (arrowsTp * arrowsTn - arrowsFp * arrowsFn) /
                         Math.sqrt((arrowsTp + arrowsFp) * (arrowsTp + arrowsFn) *
                                 (arrowsTn + arrowsFp) * (arrowsTn + arrowsFn));
-                final double f1Adj = 2 * (adjPrecision * adjRecall) / (adjPrecision + adjRecall);
-                final double f1Arrows = 2 * (arrowPrecision * arrowRecall) / (arrowPrecision + arrowRecall);
+                double f1Adj = 2 * (adjPrecision * adjRecall) / (adjPrecision + adjRecall);
+                double f1Arrows = 2 * (arrowPrecision * arrowRecall) / (arrowPrecision + arrowRecall);
 
                 if (f1Arrows < 0) {
                     System.out.println();
@@ -1329,16 +1330,16 @@ public class TestFges {
             }
         }
 
-        final double[] avgAdjPrecision = new double[4];
-        final double[] avgAdjRecall = new double[4];
-        final double[] avgArrowPrecision = new double[4];
-        final double[] avgArrowRecall = new double[4];
-        final double[] avgSum = new double[4];
-        final double[] avgMcAdj = new double[4];
-        final double[] avgMcOr = new double[4];
-        final double[] avgF1Adj = new double[4];
-        final double[] avgF1Or = new double[4];
-        final double[] avgElapsed = new double[4];
+        double[] avgAdjPrecision = new double[4];
+        double[] avgAdjRecall = new double[4];
+        double[] avgArrowPrecision = new double[4];
+        double[] avgArrowRecall = new double[4];
+        double[] avgSum = new double[4];
+        double[] avgMcAdj = new double[4];
+        double[] avgMcOr = new double[4];
+        double[] avgF1Adj = new double[4];
+        double[] avgF1Or = new double[4];
+        double[] avgElapsed = new double[4];
 
         for (int u = 0; u < 4; u++) {
             avgAdjPrecision[u] = sumAdjPrecision[u] / (double) countAP[u];
@@ -1353,7 +1354,7 @@ public class TestFges {
             avgElapsed[u] = -totalElapsed / (double) numRuns;
         }
 
-        final double[][] ret = new double[][]{
+        double[][] ret = {
                 avgAdjPrecision,
                 avgAdjRecall,
                 avgArrowPrecision,
@@ -1369,7 +1370,7 @@ public class TestFges {
         System.out.println();
 
         for (int u = 0; u < 4; u++) {
-            final String header = getHeader(u);
+            String header = this.getHeader(u);
 
             System.out.println("\n" + header + "\n");
 
@@ -1389,8 +1390,8 @@ public class TestFges {
         return ret;
     }
 
-    private String getHeader(final int u) {
-        final String header;
+    private String getHeader(int u) {
+        String header;
 
         switch (u) {
             case 0:
@@ -1411,26 +1412,26 @@ public class TestFges {
         return header;
     }
 
-    private void printBestStats(final double[][][][] allAllRet, final String[] algorithms, final String[] statLabels,
-                                final int maxCategories, final double ofInterestCutoff) {
-        final TextTable table = new TextTable(allAllRet.length + 1, allAllRet[0][0].length + 1);
+    private void printBestStats(double[][][][] allAllRet, String[] algorithms, String[] statLabels,
+                                int maxCategories, double ofInterestCutoff) {
+        TextTable table = new TextTable(allAllRet.length + 1, allAllRet[0][0].length + 1);
 
 
         class Pair {
             private final String algorithm;
             private final double stat;
 
-            public Pair(final String algorithm, final double stat) {
+            public Pair(String algorithm, double stat) {
                 this.algorithm = algorithm;
                 this.stat = stat;
             }
 
             public String getAlgorithm() {
-                return this.algorithm;
+                return algorithm;
             }
 
             public double getStat() {
-                return this.stat;
+                return stat;
             }
         }
 
@@ -1447,10 +1448,10 @@ public class TestFges {
 //                double maxStat = Double.NaN;
                     String maxAlg = "-";
 
-                    final List<Pair> algStats = new ArrayList<>();
+                    List<Pair> algStats = new ArrayList<>();
 
                     for (int t = 0; t < algorithms.length; t++) {
-                        final double stat = allAllRet[numCategories - 2][t][statIndex][u];
+                        double stat = allAllRet[numCategories - 2][t][statIndex][u];
                         if (!Double.isNaN(stat)) {
                             algStats.add(new Pair(algorithms[t], stat));
                         }
@@ -1462,18 +1463,18 @@ public class TestFges {
                         Collections.sort(algStats, new Comparator<Pair>() {
 
                             @Override
-                            public int compare(final Pair o1, final Pair o2) {
+                            public int compare(Pair o1, Pair o2) {
                                 return -Double.compare(o1.getStat(), o2.getStat());
                             }
                         });
 
-                        final double maxStat = algStats.get(0).getStat();
+                        double maxStat = algStats.get(0).getStat();
                         maxAlg = algStats.get(0).getAlgorithm();
 
-                        final double minStat = algStats.get(algStats.size() - 1).getStat();
+                        double minStat = algStats.get(algStats.size() - 1).getStat();
 
-                        final double diff = maxStat - minStat;
-                        final double ofInterest = maxStat - ofInterestCutoff * (diff);
+                        double diff = maxStat - minStat;
+                        double ofInterest = maxStat - ofInterestCutoff * (diff);
 
                         for (int i = 1; i < algStats.size(); i++) {
                             if (algStats.get(i).getStat() >= ofInterest) {
@@ -1491,14 +1492,14 @@ public class TestFges {
             }
 
             System.out.println();
-            System.out.println(getHeader(u));
+            System.out.println(this.getHeader(u));
             System.out.println();
 
             System.out.println(table);
         }
 
 
-        final NumberFormat nf = new DecimalFormat("0.00");
+        NumberFormat nf = new DecimalFormat("0.00");
 
         System.out.println();
         System.out.println("Details:");
@@ -1507,21 +1508,21 @@ public class TestFges {
 
         for (int u = 0; u < 4; u++) {
             System.out.println();
-            System.out.println(getHeader(u));
+            System.out.println(this.getHeader(u));
             System.out.println();
 
             for (int numCategories = 2; numCategories <= maxCategories; numCategories++) {
                 System.out.println("\n# categories = " + numCategories);
 
                 for (int t = 0; t < algorithms.length; t++) {
-                    final String algorithm = algorithms[t];
+                    String algorithm = algorithms[t];
 
                     System.out.println("\nAlgorithm = " + algorithm);
                     System.out.println();
 
                     for (int statIndex = 0; statIndex < allAllRet[numCategories - 2][0].length; statIndex++) {
-                        final String statLabel = statLabels[statIndex];
-                        final double stat = allAllRet[numCategories - 2][t][statIndex][u];
+                        String statLabel = statLabels[statIndex];
+                        double stat = allAllRet[numCategories - 2][t][statIndex][u];
                         System.out.println("\tAverage" + statLabel + " = " + nf.format(stat));
                     }
                 }
@@ -1534,51 +1535,51 @@ public class TestFges {
     public void test7() {
         for (int i = 0; i < 10; i++) {
 
-            final Graph graph = GraphUtils.randomGraph(10, 0,
+            Graph graph = GraphUtils.randomGraph(10, 0,
                     10, 10, 10, 10, false);
-            final SemPm semPm = new SemPm(graph);
-            final SemIm semIm = new SemIm(semPm);
-            final DataSet dataSet = semIm.simulateData(1000, false);
+            SemPm semPm = new SemPm(graph);
+            SemIm semIm = new SemIm(semPm);
+            DataSet dataSet = semIm.simulateData(1000, false);
 
-            final Fges fges = new Fges(new SemBicScore(new CovarianceMatrix(dataSet)));
-            final Graph CPDAG = fges.search();
+            Fges fges = new Fges(new SemBicScore(new CovarianceMatrix(dataSet)));
+            Graph CPDAG = fges.search();
 
-            final Graph dag = dagFromCPDAG(CPDAG);
+            Graph dag = this.dagFromCPDAG(CPDAG);
 
             assertFalse(dag.existsDirectedCycle());
         }
     }
 
-    private Graph dagFromCPDAG(final Graph CPDAG) {
-        final Graph dag = new EdgeListGraph(CPDAG);
+    private Graph dagFromCPDAG(Graph CPDAG) {
+        Graph dag = new EdgeListGraph(CPDAG);
 
-        final MeekRules rules = new MeekRules();
+        MeekRules rules = new MeekRules();
 
         WHILE:
         while (true) {
-            final List<Edge> edges = new ArrayList<>(dag.getEdges());
+            List<Edge> edges = new ArrayList<>(dag.getEdges());
 
-            for (final Edge edge : edges) {
+            for (Edge edge : edges) {
                 if (Edges.isUndirectedEdge(edge)) {
-                    final Node x = edge.getNode1();
-                    final Node y = edge.getNode2();
+                    Node x = edge.getNode1();
+                    Node y = edge.getNode2();
 
-                    final List<Node> okx = dag.getAdjacentNodes(x);
+                    List<Node> okx = dag.getAdjacentNodes(x);
                     okx.removeAll(dag.getChildren(x));
                     okx.remove(y);
 
-                    final List<Node> oky = dag.getAdjacentNodes(y);
+                    List<Node> oky = dag.getAdjacentNodes(y);
                     oky.removeAll(dag.getChildren(y));
                     oky.remove(x);
 
                     if (!okx.isEmpty()) {
-                        final Node other = okx.get(0);
+                        Node other = okx.get(0);
                         dag.removeEdge(other, x);
                         dag.removeEdge(y, x);
                         dag.addDirectedEdge(other, x);
                         dag.addDirectedEdge(y, x);
                     } else if (!oky.isEmpty()) {
-                        final Node other = oky.get(0);
+                        Node other = oky.get(0);
                         dag.removeEdge(other, y);
                         dag.removeEdge(x, y);
                         dag.addDirectedEdge(other, y);
@@ -1601,7 +1602,7 @@ public class TestFges {
 
     public void test9() {
 
-        final Parameters parameters = new Parameters();
+        Parameters parameters = new Parameters();
 
         parameters.set(Params.NUM_MEASURES, 50);
         parameters.set(Params.NUM_LATENTS, 0);
@@ -1627,8 +1628,8 @@ public class TestFges {
         parameters.set(Params.FISHER_EPSILON, 0.001);
         parameters.set(Params.RANDOMIZE_COLUMNS, true);
 
-        final RandomGraph graph = new RandomForward();
-        final LinearFisherModel sim = new LinearFisherModel(graph);
+        RandomGraph graph = new RandomForward();
+        LinearFisherModel sim = new LinearFisherModel(graph);
         sim.createData(parameters, false);
         Graph previous = null;
         int prevDiff = Integer.MAX_VALUE;
@@ -1641,20 +1642,20 @@ public class TestFges {
 //            ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
 //            Algorithm alg = new edu.cmu.tetrad.algcomparison.algorithm.oracle.CPDAG.Fges(score);
 
-            final ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
-            final Algorithm alg = new CPC(new FisherZ());
+            ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
+            Algorithm alg = new CPC(new FisherZ());
 
-            final Graph out = alg.search(sim.getDataModel(0), parameters);
+            Graph out = alg.search(sim.getDataModel(0), parameters);
 //            Graph out = GraphUtils.undirectedGraph(alg.search(sim.getDataModel(0), parameters));
 
-            final Set<Edge> edges1 = out.getEdges();
+            Set<Edge> edges1 = out.getEdges();
 
-            final int numEdges = edges1.size();
+            int numEdges = edges1.size();
 
             if (previous != null) {
-                final Set<Edge> edges2 = previous.getEdges();
+                Set<Edge> edges2 = previous.getEdges();
                 edges2.removeAll(edges1);
-                final int diff = edges2.size();
+                int diff = edges2.size();
 //
                 System.out.println("Penalty discount =" + parameters.getDouble(Params.PENALTY_DISCOUNT)
                         + " # edges = " + numEdges
@@ -1669,14 +1670,14 @@ public class TestFges {
         }
 
         Graph estGraph = previous;
-        final Graph trueGraph = sim.getTrueGraph(0);
+        Graph trueGraph = sim.getTrueGraph(0);
 
         estGraph = GraphUtils.replaceNodes(estGraph, trueGraph.getNodes());
 
-        final Statistic ap = new AdjacencyPrecision();
-        final Statistic ar = new AdjacencyRecall();
-        final Statistic ahp = new ArrowheadPrecision();
-        final Statistic ahr = new ArrowheadRecall();
+        Statistic ap = new AdjacencyPrecision();
+        Statistic ar = new AdjacencyRecall();
+        Statistic ahp = new ArrowheadPrecision();
+        Statistic ahr = new ArrowheadRecall();
 
         System.out.println("AP = " + ap.getValue(trueGraph, estGraph, null));
         System.out.println("AR = " + ar.getValue(trueGraph, estGraph, null));
@@ -1689,32 +1690,32 @@ public class TestFges {
         final int N = 1000;
         final int numCond = 3;
 
-        final Graph graph = GraphUtils.randomGraph(10, 0, 20, 100,
+        Graph graph = GraphUtils.randomGraph(10, 0, 20, 100,
                 100, 100, false);
-        final List<Node> nodes = graph.getNodes();
-        buildIndexing(nodes);
-        final SemPm pm = new SemPm(graph);
-        final SemIm im = new SemIm(pm);
-        final DataSet dataSet = im.simulateData(N, false);
-        final SemBicScore score = new SemBicScore(dataSet);
+        List<Node> nodes = graph.getNodes();
+        this.buildIndexing(nodes);
+        SemPm pm = new SemPm(graph);
+        SemIm im = new SemIm(pm);
+        DataSet dataSet = im.simulateData(N, false);
+        SemBicScore score = new SemBicScore(dataSet);
 
-        final IndTestDSep dsep = new IndTestDSep(graph);
+        IndTestDSep dsep = new IndTestDSep(graph);
         int count = 1;
 
         for (int i = 0; i < 10000; i++) {
             Collections.shuffle(nodes);
 
-            final Node x = nodes.get(0);
-            final Node y = nodes.get(1);
-            final Set<Node> z = new HashSet<>();
+            Node x = nodes.get(0);
+            Node y = nodes.get(1);
+            Set<Node> z = new HashSet<>();
 
             for (int c = 3; c <= 2 + numCond; c++) {
                 z.add(nodes.get(c));
             }
 
-            final boolean _dsep = dsep.isIndependent(x, y, new ArrayList<>(z));
-            final double diff = scoreGraphChange(x, y, z, this.hashIndices, score);
-            final boolean diffNegative = diff < 0;
+            boolean _dsep = dsep.isIndependent(x, y, new ArrayList<>(z));
+            double diff = this.scoreGraphChange(x, y, z, hashIndices, score);
+            boolean diffNegative = diff < 0;
 
             if (!_dsep && _dsep != diffNegative) {
                 System.out.println(count++ + "\t" + (_dsep ? "dsep" : "dconn") + "\t" + (diffNegative ? "indep" : "dep") + "\tdiff = " + diff);
@@ -1723,9 +1724,9 @@ public class TestFges {
 
     }
 
-    private double scoreGraphChange(final Node x, final Node y, final Set<Node> parents,
-                                    final Map<Node, Integer> hashIndices, final SemBicScore score) {
-        final int yIndex = hashIndices.get(y);
+    private double scoreGraphChange(Node x, Node y, Set<Node> parents,
+                                    Map<Node, Integer> hashIndices, SemBicScore score) {
+        int yIndex = hashIndices.get(y);
 
         if (x == y) {
             throw new IllegalArgumentException();
@@ -1738,10 +1739,10 @@ public class TestFges {
             throw new IllegalArgumentException();
         }
 
-        final int[] parentIndices = new int[parents.size()];
+        int[] parentIndices = new int[parents.size()];
 
         int count = 0;
-        for (final Node parent : parents) {
+        for (Node parent : parents) {
             parentIndices[count++] = hashIndices.get(parent);
         }
 
@@ -1751,22 +1752,22 @@ public class TestFges {
     private HashMap<Node, Integer> hashIndices;
 
     // Maps adj to their indices for quick lookup.
-    private void buildIndexing(final List<Node> nodes) {
-        this.hashIndices = new HashMap<>();
+    private void buildIndexing(List<Node> nodes) {
+        hashIndices = new HashMap<>();
 
         int i = -1;
 
-        for (final Node n : nodes) {
-            this.hashIndices.put(n, ++i);
+        for (Node n : nodes) {
+            hashIndices.put(n, ++i);
         }
     }
 
-    public static void main(final String... args) {
+    public static void main(String... args) {
         if (args.length > 0) {
-            final int numMeasures = Integer.parseInt(args[0]);
-            final int avgDegree = Integer.parseInt(args[1]);
+            int numMeasures = Integer.parseInt(args[0]);
+            int avgDegree = Integer.parseInt(args[1]);
 
-            final Parameters parameters = new Parameters();
+            Parameters parameters = new Parameters();
 
             parameters.set(Params.NUM_MEASURES, numMeasures);
             parameters.set(Params.NUM_LATENTS, 0);
@@ -1792,16 +1793,16 @@ public class TestFges {
             parameters.set(Params.FISHER_EPSILON, 0.001);
             parameters.set(Params.RANDOMIZE_COLUMNS, true);
 
-            final RandomGraph graph = new RandomForward();
-            final LinearFisherModel sim = new LinearFisherModel(graph);
+            RandomGraph graph = new RandomForward();
+            LinearFisherModel sim = new LinearFisherModel(graph);
             sim.createData(parameters, false);
-            final ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
-            final Algorithm alg = new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(score);
+            ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
+            Algorithm alg = new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(score);
 
             parameters.set(Params.ALPHA, 1e-8);
 
             for (int i = 0; i < 5; i++) {
-                final Graph out1 = alg.search(sim.getDataModel(0), parameters);
+                Graph out1 = alg.search(sim.getDataModel(0), parameters);
                 System.out.println(out1);
             }
 

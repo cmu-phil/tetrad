@@ -31,6 +31,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.Glasso.Result;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -53,7 +54,7 @@ public class GlassoRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    private GlassoRunner(final DataWrapper dataWrapper, final Parameters params) {
+    private GlassoRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
@@ -68,9 +69,9 @@ public class GlassoRunner extends AbstractAlgorithmRunner
     }
 
     public ImpliedOrientation getMeekRules() {
-        final MeekRules rules = new MeekRules();
-        rules.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
-        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
+        MeekRules rules = new MeekRules();
+        rules.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
+        rules.setKnowledge((IKnowledge) this.getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
 
@@ -82,15 +83,15 @@ public class GlassoRunner extends AbstractAlgorithmRunner
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     public void execute() {
-        final Object dataModel = getDataModel();
-        final Parameters params = getParams();
+        Object dataModel = this.getDataModel();
+        Parameters params = this.getParams();
 
         if (dataModel instanceof DataSet) {
-            final DataSet dataSet = (DataSet) dataModel;
+            DataSet dataSet = (DataSet) dataModel;
 
-            final DoubleMatrix2D cov = new DenseDoubleMatrix2D(dataSet.getCovarianceMatrix().toArray());
+            DoubleMatrix2D cov = new DenseDoubleMatrix2D(dataSet.getCovarianceMatrix().toArray());
 
-            final Glasso glasso = new Glasso(cov);
+            Glasso glasso = new Glasso(cov);
             glasso.setMaxit((int) params.get("maxit", 10000));
             glasso.setIa(params.getBoolean("ia", false));
             glasso.setIs(params.getBoolean("is", false));
@@ -99,11 +100,11 @@ public class GlassoRunner extends AbstractAlgorithmRunner
             glasso.setThr(params.getDouble("thr", 1e-4));
             glasso.setRhoAllEqual(1.0);
 
-            final Glasso.Result result = glasso.search();
-            final Matrix wwi = new Matrix(result.getWwi().toArray());
+            Result result = glasso.search();
+            Matrix wwi = new Matrix(result.getWwi().toArray());
 
-            final List<Node> variables = dataSet.getVariables();
-            final Graph resultGraph = new EdgeListGraph(variables);
+            List<Node> variables = dataSet.getVariables();
+            Graph resultGraph = new EdgeListGraph(variables);
 
             for (int i = 0; i < variables.size(); i++) {
                 for (int j = i + 1; j < variables.size(); j++) {
@@ -113,30 +114,30 @@ public class GlassoRunner extends AbstractAlgorithmRunner
                 }
             }
 
-            setResultGraph(resultGraph);
+            this.setResultGraph(resultGraph);
         }
     }
 
     public IndependenceTest getIndependenceTest() {
-        Object dataModel = getDataModel();
+        Object dataModel = this.getDataModel();
 
         if (dataModel == null) {
-            dataModel = getSourceGraph();
+            dataModel = this.getSourceGraph();
         }
 
-        final IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
-        return new IndTestChooser().getTest(dataModel, getParams(), testType);
+        IndTestType testType = (IndTestType) (this.getParams()).get("indTestType", IndTestType.FISHER_Z);
+        return new IndTestChooser().getTest(dataModel, this.getParams(), testType);
     }
 
     public Graph getGraph() {
-        return getResultGraph();
+        return this.getResultGraph();
     }
 
     /**
      * @return the names of the triple classifications. Coordinates with getTriplesList.
      */
     public List<String> getTriplesClassificationTypes() {
-        final List<String> names = new ArrayList<>();
+        List<String> names = new ArrayList<>();
 //        names.add("ColliderDiscovery");
 //        names.add("Noncolliders");
         return names;
@@ -146,8 +147,8 @@ public class GlassoRunner extends AbstractAlgorithmRunner
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>
      * for the given node.
      */
-    public List<List<Triple>> getTriplesLists(final Node node) {
-        final List<List<Triple>> triplesList = new ArrayList<>();
+    public List<List<Triple>> getTriplesLists(Node node) {
+        List<List<Triple>> triplesList = new ArrayList<>();
 //        Graph graph = getGraph();
 //        triplesList.add(DataGraphUtils.getCollidersFromGraph(node, graph));
 //        triplesList.add(DataGraphUtils.getNoncollidersFromGraph(node, graph));
@@ -161,7 +162,7 @@ public class GlassoRunner extends AbstractAlgorithmRunner
     //========================== Private Methods ===============================//
 
     private boolean isAggressivelyPreventCycles() {
-        final Parameters params = getParams();
+        Parameters params = this.getParams();
         if (params instanceof Parameters) {
             return params.getBoolean("aggressivelyPreventCycles", false);
         }

@@ -34,26 +34,26 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 public class MergeDatasetsWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
 
-    public MergeDatasetsWrapper(final DataWrapper[] data, final Parameters params) {
-        construct(data);
+    public MergeDatasetsWrapper(DataWrapper[] data, Parameters params) {
+        this.construct(data);
     }
 
-    private void construct(final DataWrapper... dataWrappers) {
-        for (final DataWrapper wrapper : dataWrappers) {
+    private void construct(DataWrapper... dataWrappers) {
+        for (DataWrapper wrapper : dataWrappers) {
             if (wrapper == null) {
                 throw new NullPointerException("The given data must not be null");
             }
         }
 
-        final DataModelList merged = new DataModelList();
+        DataModelList merged = new DataModelList();
 
-        for (final DataWrapper wrapper : dataWrappers) {
+        for (DataWrapper wrapper : dataWrappers) {
             merged.addAll(wrapper.getDataModelList());
         }
 
-        this.setDataModel(merged);
+        setDataModel(merged);
 
-        LogDataUtils.logDataModelList("Parent data in which constant columns have been removed.", getDataModelList());
+        LogDataUtils.logDataModelList("Parent data in which constant columns have been removed.", this.getDataModelList());
     }
 
     /**

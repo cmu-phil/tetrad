@@ -29,6 +29,7 @@ import edu.cmu.tetrad.session.DelegatesEditing;
 import edu.cmu.tetradapp.model.GeneralizedSemPmWrapper;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.IntTextField;
+import edu.cmu.tetradapp.util.IntTextField.Filter;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.workbench.LayoutMenu;
 
@@ -85,87 +86,87 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
      */
     private final Map<Object, EditorWindow> launchedEditors = new HashMap<>();
 
-    public GeneralizedSemPmEditor(final GeneralizedSemPmWrapper wrapper) {
-        final GeneralizedSemPm semPm = wrapper.getSemPm();
+    public GeneralizedSemPmEditor(GeneralizedSemPmWrapper wrapper) {
+        GeneralizedSemPm semPm = wrapper.getSemPm();
         if (semPm == null) {
             throw new NullPointerException("Generalized SEM PM must not be null.");
         }
 
         this.semPm = semPm;
-        setLayout(new BorderLayout());
+        this.setLayout(new BorderLayout());
 
-        final JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.add("Variables", listEditor());
-        tabbedPane.add("Parameters", initialValuesEditor());
-        tabbedPane.add("Graph", graphicalEditor());
+        JTabbedPane tabbedPane = new JTabbedPane();
+        tabbedPane.add("Variables", this.listEditor());
+        tabbedPane.add("Parameters", this.initialValuesEditor());
+        tabbedPane.add("Graph", this.graphicalEditor());
 
         tabbedPane.addChangeListener(new ChangeListener() {
-            public void stateChanged(final ChangeEvent changeEvent) {
-                GeneralizedSemPmEditor.this.graphicalEditor.refreshLabels();
-                GeneralizedSemPmEditor.this.listEditor.refreshLabels();
-                GeneralizedSemPmEditor.this.parameterEditor.refreshLabels();
+            public void stateChanged(ChangeEvent changeEvent) {
+                graphicalEditor.refreshLabels();
+                listEditor.refreshLabels();
+                parameterEditor.refreshLabels();
             }
         });
 
-        add(tabbedPane, BorderLayout.CENTER);
+        this.add(tabbedPane, BorderLayout.CENTER);
 
-        final JMenuBar menuBar = new JMenuBar();
-        final JMenu file = new JMenu("File");
+        JMenuBar menuBar = new JMenuBar();
+        JMenu file = new JMenu("File");
         menuBar.add(file);
 //        file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
-        file.add(new SaveComponentImage(this.graphicalEditor.getWorkbench(),
+        file.add(new SaveComponentImage(graphicalEditor.getWorkbench(),
                 "Save Graph Image..."));
 
         // By default, hide the error terms.
-        final SemGraph graph = (SemGraph) this.graphicalEditor.getWorkbench().getGraph();
-        final boolean shown = wrapper.isShowErrors();
+        SemGraph graph = (SemGraph) graphicalEditor.getWorkbench().getGraph();
+        boolean shown = wrapper.isShowErrors();
         graph.setShowErrorTerms(shown);
 
-        this.errorTerms = new JMenuItem();
+        errorTerms = new JMenuItem();
 
         if (shown) {
-            this.errorTerms.setText("Hide Error Terms");
+            errorTerms.setText("Hide Error Terms");
         } else {
-            this.errorTerms.setText("Show Error Terms");
+            errorTerms.setText("Show Error Terms");
         }
 
-        this.errorTerms.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final JMenuItem menuItem = (JMenuItem) e.getSource();
+        errorTerms.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                JMenuItem menuItem = (JMenuItem) e.getSource();
 
                 if ("Hide Error Terms".equals(menuItem.getText())) {
                     menuItem.setText("Show Error Terms");
-                    final SemGraph graph = (SemGraph) GeneralizedSemPmEditor.this.graphicalEditor.getWorkbench().getGraph();
+                    SemGraph graph = (SemGraph) graphicalEditor.getWorkbench().getGraph();
                     graph.setShowErrorTerms(false);
                     wrapper.setShowErrors(false);
-                    graphicalEditor().refreshLabels();
+                    GeneralizedSemPmEditor.this.graphicalEditor().refreshLabels();
                 } else if ("Show Error Terms".equals(menuItem.getText())) {
                     menuItem.setText("Hide Error Terms");
-                    final SemGraph graph = (SemGraph) GeneralizedSemPmEditor.this.graphicalEditor.getWorkbench().getGraph();
+                    SemGraph graph = (SemGraph) graphicalEditor.getWorkbench().getGraph();
                     graph.setShowErrorTerms(true);
                     wrapper.setShowErrors(true);
-                    graphicalEditor().refreshLabels();
+                    GeneralizedSemPmEditor.this.graphicalEditor().refreshLabels();
                 }
             }
         });
 
-        final JMenuItem templateMenu = new JMenuItem("Apply Templates...");
+        JMenuItem templateMenu = new JMenuItem("Apply Templates...");
 
         templateMenu.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent actionEvent) {
-                final GeneralizedTemplateEditor editor = new GeneralizedTemplateEditor(getSemPm());
+            public void actionPerformed(ActionEvent actionEvent) {
+                GeneralizedTemplateEditor editor = new GeneralizedTemplateEditor(GeneralizedSemPmEditor.this.getSemPm());
 
-                final String tabTitle = tabbedPane.getTitleAt(tabbedPane.getSelectedIndex());
+                String tabTitle = tabbedPane.getTitleAt(tabbedPane.getSelectedIndex());
 
                 if ("Parameters".equals(tabTitle)) {
 //                    editor.useParametersAsStartup();
                 }
 
-                final JPanel panel = new JPanel();
+                JPanel panel = new JPanel();
                 panel.setLayout(new BorderLayout());
                 panel.add(editor, BorderLayout.CENTER);
 
-                final EditorWindow editorWindow
+                EditorWindow editorWindow
                         = new EditorWindow(panel, "Apply Templates", "OK", false, GeneralizedSemPmEditor.this);
 
                 DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
@@ -173,36 +174,36 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
                 editorWindow.setVisible(true);
 
                 editorWindow.addInternalFrameListener(new InternalFrameAdapter() {
-                    public void internalFrameClosing(final InternalFrameEvent internalFrameEvent) {
+                    public void internalFrameClosing(InternalFrameEvent internalFrameEvent) {
                         if (!editorWindow.isCanceled()) {
-                            final GeneralizedSemPm _semPm = editor.getSemPm();
-                            final GeneralizedSemPm semPm = GeneralizedSemPmEditor.this.semPm;
+                            GeneralizedSemPm _semPm = editor.getSemPm();
+                            GeneralizedSemPm semPm = GeneralizedSemPmEditor.this.semPm;
 
-                            for (final Node node : _semPm.getNodes()) {
+                            for (Node node : _semPm.getNodes()) {
                                 try {
                                     semPm.setNodeExpression(node, _semPm.getNodeExpressionString(node));
-                                } catch (final ParseException e) {
+                                } catch (ParseException e) {
                                     JOptionPane.showMessageDialog(GeneralizedSemPmEditor.this,
                                             "Could not set the expression for " + node + " to "
                                                     + _semPm.getNodeExpressionString(node));
                                 }
                             }
 
-                            for (final String startsWith : _semPm.startsWithPrefixes()) {
+                            for (String startsWith : _semPm.startsWithPrefixes()) {
                                 try {
                                     semPm.setStartsWithParametersTemplate(startsWith, _semPm.getStartsWithParameterTemplate(startsWith));
-                                } catch (final ParseException e) {
+                                } catch (ParseException e) {
                                     JOptionPane.showMessageDialog(GeneralizedSemPmEditor.this,
                                             "Could not set the expression for " + startsWith + " to "
                                                     + _semPm.getParameterExpressionString(_semPm.getStartsWithParameterTemplate(startsWith)));
                                 }
                             }
 
-                            for (final String parameter : _semPm.getParameters()) {
+                            for (String parameter : _semPm.getParameters()) {
                                 try {
                                     boolean found = false;
 
-                                    for (final String startsWith : _semPm.startsWithPrefixes()) {
+                                    for (String startsWith : _semPm.startsWithPrefixes()) {
                                         if (parameter.startsWith(startsWith)) {
                                             semPm.setParameterExpression(parameter, _semPm.getStartsWithParameterTemplate(startsWith));
                                             found = true;
@@ -213,7 +214,7 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
                                     if (!found) {
                                         semPm.setParameterExpression(parameter, _semPm.getParameterExpressionString(parameter));
                                     }
-                                } catch (final ParseException e) {
+                                } catch (ParseException e) {
                                     JOptionPane.showMessageDialog(GeneralizedSemPmEditor.this,
                                             "Could not set the expression for " + parameter + " to "
                                                     + _semPm.getParameterExpressionString(parameter));
@@ -224,16 +225,16 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
                                 semPm.setVariablesTemplate(_semPm.getVariablesTemplate());
                                 semPm.setErrorsTemplate(_semPm.getErrorsTemplate());
                                 semPm.setParametersTemplate(_semPm.getParametersTemplate());
-                            } catch (final ParseException e) {
+                            } catch (ParseException e) {
                                 throw new RuntimeException("Could not set templates from copy of GeneralizedPm to "
                                         + "actual GeneralizedPm.");
                             }
 
-                            GeneralizedSemPmEditor.this.graphicalEditor.refreshLabels();
-                            GeneralizedSemPmEditor.this.listEditor.refreshLabels();
-                            GeneralizedSemPmEditor.this.parameterEditor.refreshLabels();
+                            graphicalEditor.refreshLabels();
+                            listEditor.refreshLabels();
+                            parameterEditor.refreshLabels();
 
-                            firePropertyChange("modelChanged", null, null);
+                            GeneralizedSemPmEditor.this.firePropertyChange("modelChanged", null, null);
                         }
                     }
                 });
@@ -241,15 +242,15 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
             }
         });
 
-        final JMenuItem lengthCutoff = new JMenuItem("Formula Cutoff");
+        JMenuItem lengthCutoff = new JMenuItem("Formula Cutoff");
 
         lengthCutoff.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent event) {
-                final int length = Preferences.userRoot().getInt("maxExpressionLength", 25);
+            public void actionPerformed(ActionEvent event) {
+                int length = Preferences.userRoot().getInt("maxExpressionLength", 25);
 
-                final IntTextField lengthField = new IntTextField(length, 4);
-                lengthField.setFilter(new IntTextField.Filter() {
-                    public int filter(final int value, final int oldValue) {
+                IntTextField lengthField = new IntTextField(length, 4);
+                lengthField.setFilter(new Filter() {
+                    public int filter(int value, int oldValue) {
                         try {
                             if (value > 0) {
                                 Preferences.userRoot().putInt("maxExpressionLength", value);
@@ -257,15 +258,15 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
                             } else {
                                 return 0;
                             }
-                        } catch (final Exception e) {
+                        } catch (Exception e) {
                             return oldValue;
                         }
                     }
                 });
 
-                final Box b = Box.createVerticalBox();
+                Box b = Box.createVerticalBox();
 
-                final Box b1 = Box.createHorizontalBox();
+                Box b1 = Box.createHorizontalBox();
                 b1.add(new JLabel("Formulas longer than "));
                 b1.add(lengthField);
                 b1.add(new JLabel(" will be replaced in the graph by \"--long formula--\"."));
@@ -273,16 +274,16 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
 
                 b.setBorder(new EmptyBorder(5, 5, 5, 5));
 
-                final JPanel panel = new JPanel();
+                JPanel panel = new JPanel();
                 panel.setLayout(new BorderLayout());
                 panel.add(b, BorderLayout.CENTER);
 
-                final EditorWindow editorWindow
+                EditorWindow editorWindow
                         = new EditorWindow(panel, "Apply Templates", "OK", false, GeneralizedSemPmEditor.this);
 
                 editorWindow.addInternalFrameListener(new InternalFrameAdapter() {
-                    public void internalFrameClosing(final InternalFrameEvent event) {
-                        GeneralizedSemPmEditor.this.graphicalEditor.refreshLabels();
+                    public void internalFrameClosing(InternalFrameEvent event) {
+                        graphicalEditor.refreshLabels();
                     }
                 });
 
@@ -292,124 +293,124 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
             }
         });
 
-        final JMenu params = new JMenu("Tools");
-        params.add(this.errorTerms);
+        JMenu params = new JMenu("Tools");
+        params.add(errorTerms);
         params.add(templateMenu);
         params.add(lengthCutoff);
         menuBar.add(params);
 
         menuBar.add(new LayoutMenu(this));
 
-        add(menuBar, BorderLayout.NORTH);
+        this.add(menuBar, BorderLayout.NORTH);
 
         // When the dialog closes, we want to close all generalized expression editors. We do this by
         // detecting when the ancestor of this editor has been removed.
-        addAncestorListener(new AncestorListener() {
-            public void ancestorAdded(final AncestorEvent ancestorEvent) {
+        this.addAncestorListener(new AncestorListener() {
+            public void ancestorAdded(AncestorEvent ancestorEvent) {
             }
 
-            public void ancestorRemoved(final AncestorEvent ancestorEvent) {
-                for (final Object o : GeneralizedSemPmEditor.this.launchedEditors.keySet()) {
-                    final EditorWindow window = GeneralizedSemPmEditor.this.launchedEditors.get(o);
+            public void ancestorRemoved(AncestorEvent ancestorEvent) {
+                for (Object o : launchedEditors.keySet()) {
+                    EditorWindow window = launchedEditors.get(o);
                     window.closeDialog();
                 }
             }
 
-            public void ancestorMoved(final AncestorEvent ancestorEvent) {
+            public void ancestorMoved(AncestorEvent ancestorEvent) {
             }
         });
 
     }
 
     private SemGraph getSemGraph() {
-        return this.semPm.getGraph();
+        return semPm.getGraph();
     }
 
     public JComponent getEditDelegate() {
-        return graphicalEditor();
+        return this.graphicalEditor();
     }
 
     public Graph getGraph() {
-        return graphicalEditor().getWorkbench().getGraph();
+        return this.graphicalEditor().getWorkbench().getGraph();
     }
 
     @Override
     public Map getModelEdgesToDisplay() {
-        return graphicalEditor().getWorkbench().getModelEdgesToDisplay();
+        return this.graphicalEditor().getWorkbench().getModelEdgesToDisplay();
     }
 
     public Map getModelNodesToDisplay() {
-        return graphicalEditor().getWorkbench().getModelNodesToDisplay();
+        return this.graphicalEditor().getWorkbench().getModelNodesToDisplay();
     }
 
     public IKnowledge getKnowledge() {
-        return graphicalEditor().getWorkbench().getKnowledge();
+        return this.graphicalEditor().getWorkbench().getKnowledge();
     }
 
     public Graph getSourceGraph() {
-        return graphicalEditor().getWorkbench().getSourceGraph();
+        return this.graphicalEditor().getWorkbench().getSourceGraph();
     }
 
-    public void layoutByGraph(final Graph graph) {
-        final SemGraph _graph = (SemGraph) graphicalEditor().getWorkbench().getGraph();
+    public void layoutByGraph(Graph graph) {
+        SemGraph _graph = (SemGraph) this.graphicalEditor().getWorkbench().getGraph();
         _graph.setShowErrorTerms(false);
-        graphicalEditor().getWorkbench().layoutByGraph(graph);
+        this.graphicalEditor().getWorkbench().layoutByGraph(graph);
         _graph.resetErrorPositions();
 
         // Oh no do't you dare do this! You will lose all labels! jdramsey 4/17/10
 //        graphicalEditor().getWorkbench().setGraph(_graph);
-        this.errorTerms.setText("Show Error Terms");
+        errorTerms.setText("Show Error Terms");
     }
 
     public void layoutByKnowledge() {
-        final SemGraph _graph = (SemGraph) graphicalEditor().getWorkbench().getGraph();
+        SemGraph _graph = (SemGraph) this.graphicalEditor().getWorkbench().getGraph();
         _graph.setShowErrorTerms(false);
-        graphicalEditor().getWorkbench().layoutByKnowledge();
+        this.graphicalEditor().getWorkbench().layoutByKnowledge();
         _graph.resetErrorPositions();
 //        graphicalEditor().getWorkbench().setGraph(_graph);
-        this.errorTerms.setText("Show Error Terms");
+        errorTerms.setText("Show Error Terms");
     }
 
     //========================PRIVATE METHODS===========================//
     private GeneralizedSemPm getSemPm() {
-        return this.semPm;
+        return semPm;
     }
 
     private GeneralizedSemPmGraphicalEditor graphicalEditor() {
-        if (this.graphicalEditor == null) {
-            this.graphicalEditor = new GeneralizedSemPmGraphicalEditor(getSemPm(), this.launchedEditors);
-            this.graphicalEditor.enableEditing(false);
+        if (graphicalEditor == null) {
+            graphicalEditor = new GeneralizedSemPmGraphicalEditor(this.getSemPm(), launchedEditors);
+            graphicalEditor.enableEditing(false);
 
-            this.graphicalEditor.addPropertyChangeListener(new PropertyChangeListener() {
-                public void propertyChange(final PropertyChangeEvent event) {
+            graphicalEditor.addPropertyChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent event) {
                     if ("modelChanged".equals(event.getPropertyName())) {
-                        firePropertyChange("modelChanged", null, null);
+                        GeneralizedSemPmEditor.this.firePropertyChange("modelChanged", null, null);
                     }
                 }
             });
         }
-        return this.graphicalEditor;
+        return graphicalEditor;
     }
 
     private GeneralizedSemPmListEditor listEditor() {
-        if (this.listEditor == null) {
-            this.listEditor = new GeneralizedSemPmListEditor(getSemPm(), initialValuesEditor(), this.launchedEditors);
+        if (listEditor == null) {
+            listEditor = new GeneralizedSemPmListEditor(this.getSemPm(), this.initialValuesEditor(), launchedEditors);
 
-            this.listEditor.addPropertyChangeListener(new PropertyChangeListener() {
-                public void propertyChange(final PropertyChangeEvent event) {
+            listEditor.addPropertyChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent event) {
                     if ("modelChanged".equals(event.getPropertyName())) {
-                        firePropertyChange("modelChanged", null, null);
+                        GeneralizedSemPmEditor.this.firePropertyChange("modelChanged", null, null);
                     }
                 }
             });
         }
-        return this.listEditor;
+        return listEditor;
     }
 
     private GeneralizedSemPmParamsEditor initialValuesEditor() {
-        if (this.parameterEditor == null) {
-            this.parameterEditor = new GeneralizedSemPmParamsEditor(getSemPm(), this.launchedEditors);
+        if (parameterEditor == null) {
+            parameterEditor = new GeneralizedSemPmParamsEditor(this.getSemPm(), launchedEditors);
         }
-        return this.parameterEditor;
+        return parameterEditor;
     }
 }

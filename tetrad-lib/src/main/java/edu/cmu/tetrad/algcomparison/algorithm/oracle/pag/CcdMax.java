@@ -33,29 +33,29 @@ public class CcdMax implements Algorithm, HasKnowledge {
     private final IndependenceWrapper test;
     private IKnowledge knowledge = new Knowledge2();
 
-    public CcdMax(final IndependenceWrapper test) {
+    public CcdMax(IndependenceWrapper test) {
         this.test = test;
     }
 
     @Override
-    public Graph search(final DataModel dataSet, final Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            final IndependenceTest test = this.test.getTest(dataSet, parameters);
-            final edu.cmu.tetrad.search.CcdMax search = new edu.cmu.tetrad.search.CcdMax(test);
+            IndependenceTest test = this.test.getTest(dataSet, parameters);
+            edu.cmu.tetrad.search.CcdMax search = new edu.cmu.tetrad.search.CcdMax(test);
             search.setDoColliderOrientations(parameters.getBoolean(Params.DO_COLLIDER_ORIENTATION));
             search.setUseHeuristic(parameters.getBoolean(Params.USE_MAX_P_ORIENTATION_HEURISTIC));
             search.setMaxPathLength(parameters.getInt(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH));
-            search.setKnowledge(this.knowledge);
+            search.setKnowledge(knowledge);
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setApplyOrientAwayFromCollider(parameters.getBoolean(Params.APPLY_R1));
             search.setUseOrientTowardDConnections(parameters.getBoolean(Params.ORIENT_TOWARD_DCONNECTIONS));
             return search.search();
         } else {
-            final CcdMax algorithm = new CcdMax(this.test);
+            CcdMax algorithm = new CcdMax(test);
 
-            final DataSet data = (DataSet) dataSet;
-            final GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(this.knowledge);
+            DataSet data = (DataSet) dataSet;
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
+            search.setKnowledge(knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -81,25 +81,25 @@ public class CcdMax implements Algorithm, HasKnowledge {
     }
 
     @Override
-    public Graph getComparisonGraph(final Graph graph) {
+    public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
     @Override
     public String getDescription() {
-        return "CCD-Max (Cyclic Discovery Search Max) using " + this.test.getDescription();
+        return "CCD-Max (Cyclic Discovery Search Max) using " + test.getDescription();
     }
 
     @Override
     public DataType getDataType() {
-        return this.test.getDataType();
+        return test.getDataType();
     }
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new LinkedList<>();
-        if (this.test != null) {
-            parameters.addAll(this.test.getParameters());
+        List<String> parameters = new LinkedList<>();
+        if (test != null) {
+            parameters.addAll(test.getParameters());
         }
         parameters.add(Params.DEPTH);
         parameters.add(Params.ORIENT_VISIBLE_FEEDBACK_LOOPS);
@@ -115,11 +115,11 @@ public class CcdMax implements Algorithm, HasKnowledge {
 
     @Override
     public IKnowledge getKnowledge() {
-        return this.knowledge;
+        return knowledge;
     }
 
     @Override
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 }

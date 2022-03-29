@@ -46,14 +46,14 @@ public final class CorrelationMatrix extends CovarianceMatrix
      * Constructs a new correlation matrix using the covariances in the given
      * covariance matrix.
      */
-    public CorrelationMatrix(final ICovarianceMatrix matrix) {
+    public CorrelationMatrix(ICovarianceMatrix matrix) {
         this(matrix.getVariables(), MatrixUtils.convertCovToCorr(matrix.getMatrix()), matrix.getSampleSize());
     }
 
     /**
      * Constructs a new correlation matrix from the the given DataSet.
      */
-    public CorrelationMatrix(final DataSet dataSet) {
+    public CorrelationMatrix(DataSet dataSet) {
         super(Collections.unmodifiableList(dataSet.getVariables()),
                 dataSet.getCorrelationMatrix(), dataSet.getNumRows());
 
@@ -71,8 +71,8 @@ public final class CorrelationMatrix extends CovarianceMatrix
      * Constructs a correlation matrix data set using the given information. The
      * matrix matrix is internally converted to a correlation matrix.
      */
-    public CorrelationMatrix(final List<Node> variables, final Matrix matrix,
-                             final int sampleSize) {
+    public CorrelationMatrix(List<Node> variables, Matrix matrix,
+                             int sampleSize) {
         super(variables, MatrixUtils.convertCovToCorr(matrix).copy(), sampleSize);
     }
 
@@ -86,7 +86,7 @@ public final class CorrelationMatrix extends CovarianceMatrix
 
     //=================================PUBLIC METHODS======================//
 
-    public final void setMatrix(final Matrix matrix) {
+    public final void setMatrix(Matrix matrix) {
         if (!matrix.isSquare()) {
             throw new IllegalArgumentException("Matrix must be square.");
         }
@@ -103,16 +103,16 @@ public final class CorrelationMatrix extends CovarianceMatrix
     }
 
     @Override
-    public Matrix getSelection(final int[] rows, final int[] cols) {
-        return getMatrix().getSelection(rows, cols);
+    public Matrix getSelection(int[] rows, int[] cols) {
+        return this.getMatrix().getSelection(rows, cols);
     }
 
     /**
      * @return a submatrix, returning as a correlation matrix, with variables
      * in the given order.
      */
-    public CorrelationMatrix getSubCorrMatrix(final String[] submatrixVarNames) {
-        final ICovarianceMatrix covarianceMatrix = getSubmatrix(submatrixVarNames);
+    public CorrelationMatrix getSubCorrMatrix(String[] submatrixVarNames) {
+        ICovarianceMatrix covarianceMatrix = this.getSubmatrix(submatrixVarNames);
         return new CorrelationMatrix(covarianceMatrix);
     }
 
@@ -120,8 +120,8 @@ public final class CorrelationMatrix extends CovarianceMatrix
      * @return a submatrix, returning as a correlation matrix, with variables
      * in the given order.
      */
-    public CorrelationMatrix getSubCorrMatrix(final int[] indices) {
-        final ICovarianceMatrix covarianceMatrix = getSubmatrix(indices);
+    public CorrelationMatrix getSubCorrMatrix(int[] indices) {
+        ICovarianceMatrix covarianceMatrix = this.getSubmatrix(indices);
         return new CorrelationMatrix(covarianceMatrix);
     }
 }

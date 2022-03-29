@@ -33,7 +33,7 @@ import java.util.List;
  */
 public class MetadataFileReaderTest {
 
-    private final Path metadataFile = Paths.get(getClass().getResource("/data/metadata/sim_mixed_intervention_metadata.json").getFile());
+    private final Path metadataFile = Paths.get(this.getClass().getResource("/data/metadata/sim_mixed_intervention_metadata.json").getFile());
 
     public MetadataFileReaderTest() {
     }
@@ -45,11 +45,11 @@ public class MetadataFileReaderTest {
      */
     @Test
     public void testRead() throws IOException {
-        final MetadataReader metadataReader = new MetadataFileReader(this.metadataFile);
-        final Metadata metadata = metadataReader.read();
+        MetadataReader metadataReader = new MetadataFileReader(metadataFile);
+        Metadata metadata = metadataReader.read();
 
-        final List<ColumnMetadata> domainCols = metadata.getDomainColumnns();
-        final List<InterventionalColumn> intervCols = metadata.getInterventionalColumns();
+        List<ColumnMetadata> domainCols = metadata.getDomainColumnns();
+        List<InterventionalColumn> intervCols = metadata.getInterventionalColumns();
 
         long expected = 2;
         long actual = domainCols.size();

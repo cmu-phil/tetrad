@@ -31,8 +31,8 @@ public class TestIntegrator {
     private Function function;
 
     private void setUp() {
-        this.function = new Function() {
-            public double valueAt(final double x) {
+        function = new Function() {
+            public double valueAt(double x) {
                 return x;
             }
 
@@ -44,9 +44,9 @@ public class TestIntegrator {
 
     @Test
     public void testPdfIntegration() {
-        setUp();
+        this.setUp();
         assertEquals("Integrator not integrate properly under the function: " +
-                        this.function, 0.5, Integrator.getArea(this.function, 0.0, 1.0, 10000),
+                        function, 0.5, Integrator.getArea(function, 0.0, 1.0, 10000),
                 0.000000001);
     }
 }

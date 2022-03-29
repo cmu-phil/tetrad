@@ -62,12 +62,12 @@ public class Biolingua {
     private static int targetParent;
 
     private static float emtempG;
-    private static float emCurrentModel = 0;
-    private static float em1StepBest = 0;
+    private static float emCurrentModel;
+    private static float em1StepBest;
 
-    private static int bestEnode1 = 0;
-    private static int bestEnode2 = 0;
-    private static int bestChange = 0;
+    private static int bestEnode1;
+    private static int bestEnode2;
+    private static int bestChange;
 
     private static int pos;
     private static int neg;
@@ -85,14 +85,14 @@ public class Biolingua {
      * Javadoc explanations of k*
      */
     public static synchronized BiolinguaDigraph BiolinguaAlgorithm(
-            final SymMatrixF correlMatrix, final BiolinguaDigraph initGraph) {
+            SymMatrixF correlMatrix, BiolinguaDigraph initGraph) {
         // Run with some (quite arbitrary so far) default coefficients
         // TODO:  Make these coefficients a function of the # of vars
         final float ka = (float) 0.1;
         final float ke = (float) 3.0;
         final float kl = (float) 4.0;
         final float kp = (float) 3.0;
-        return Biolingua.doBiolinguaAlgorithm(correlMatrix, null, initGraph, ka, ke, kl,
+        return doBiolinguaAlgorithm(correlMatrix, null, initGraph, ka, ke, kl,
                 kp);
     }
 
@@ -104,10 +104,10 @@ public class Biolingua {
      * metric.
      */
     public static synchronized BiolinguaDigraph BiolinguaAlgorithm(
-            final SymMatrixF correlMatrix, final BiolinguaDigraph initGraph,
-            final float vBitsAnnotat, final float vBitsErrors, final float vbitsLinks,
-            final float vBitsPredic) {
-        return Biolingua.doBiolinguaAlgorithm(correlMatrix, null, initGraph, vbitsLinks,
+            SymMatrixF correlMatrix, BiolinguaDigraph initGraph,
+            float vBitsAnnotat, float vBitsErrors, float vbitsLinks,
+            float vBitsPredic) {
+        return doBiolinguaAlgorithm(correlMatrix, null, initGraph, vbitsLinks,
                 vBitsPredic, vBitsAnnotat, vBitsErrors);
     }
 
@@ -119,59 +119,59 @@ public class Biolingua {
      * metric.
      */
     public static synchronized BiolinguaDigraph BiolinguaAlgorithm(
-            final SymMatrixF correlMatrix, final SymMatrixF signifMatrix,
-            final BiolinguaDigraph initGraph, final float vBitsAnnotat, final float vBitsErrors,
-            final float vbitsLinks, final float vBitsPredic) {
-        return Biolingua.doBiolinguaAlgorithm(correlMatrix, signifMatrix, initGraph,
+            SymMatrixF correlMatrix, SymMatrixF signifMatrix,
+            BiolinguaDigraph initGraph, float vBitsAnnotat, float vBitsErrors,
+            float vbitsLinks, float vBitsPredic) {
+        return doBiolinguaAlgorithm(correlMatrix, signifMatrix, initGraph,
                 vbitsLinks, vBitsPredic, vBitsAnnotat, vBitsErrors);
     }
 
     private static BiolinguaDigraph doBiolinguaAlgorithm(
-            final SymMatrixF correlMatrix, final SymMatrixF signifMatrix,
-            final BiolinguaDigraph initGraph, final float vBitsAnnotat, final float vBitsErrors,
-            final float vbitsLinks, final float vBitsPredic) {
+            SymMatrixF correlMatrix, SymMatrixF signifMatrix,
+            BiolinguaDigraph initGraph, float vBitsAnnotat, float vBitsErrors,
+            float vbitsLinks, float vBitsPredic) {
         /*
         // A null pointer exception will be thrown anyway if some of the
         // arguments are null, so this test is really not that necessary
         if ((correlMatrix==null) || (initGraph==null))
             throw new IllegalArgumentException ("Null argument");
         */
-        Biolingua.nvars = correlMatrix.getSize();
-        Biolingua.bitsAnnotat = vBitsAnnotat;
-        Biolingua.bitsErrors = vBitsErrors;
-        Biolingua.bitsLinks = vbitsLinks;
-        Biolingua.bitsPredic = vBitsPredic;
+        nvars = correlMatrix.getSize();
+        bitsAnnotat = vBitsAnnotat;
+        bitsErrors = vBitsErrors;
+        bitsLinks = vbitsLinks;
+        bitsPredic = vBitsPredic;
 
-        if (Biolingua.nvars != initGraph.getSize()) {
+        if (nvars != initGraph.getSize()) {
             throw new IllegalArgumentException("Incompatible # vars.: " +
-                    Biolingua.nvars + " in Correl.Matrix, " + initGraph.getSize() +
+                    nvars + " in Correl.Matrix, " + initGraph.getSize() +
                     " in initial graph.");
         }
-        if ((signifMatrix != null) && (signifMatrix.getSize() != Biolingua.nvars)) {
+        if ((signifMatrix != null) && (signifMatrix.getSize() != nvars)) {
             throw new IllegalArgumentException("Incompatible # vars.: " +
-                    Biolingua.nvars + " in Correl.Matrix, " + signifMatrix.getSize() +
+                    nvars + " in Correl.Matrix, " + signifMatrix.getSize() +
                     " in Significance Matrix.");
         }
 
-        Biolingua.path = new int[Biolingua.nvars];
-        Biolingua.visited = new boolean[Biolingua.nvars];
+        path = new int[nvars];
+        visited = new boolean[nvars];
         //        origG = initGraph;
-        Biolingua.g = new BiolinguaDigraph(initGraph);
-        Biolingua.cm = correlMatrix;
-        Biolingua.sm = signifMatrix;
+        g = new BiolinguaDigraph(initGraph);
+        cm = correlMatrix;
+        sm = signifMatrix;
 
-        Biolingua.emCurrentModel = 0;
-        Biolingua.em1StepBest = 0;
-        Biolingua.bestEnode1 = 0;
-        Biolingua.bestEnode2 = 0;
-        Biolingua.bestChange = 0;
+        emCurrentModel = 0;
+        em1StepBest = 0;
+        bestEnode1 = 0;
+        bestEnode2 = 0;
+        bestChange = 0;
 
-        Biolingua.emCurrentModel = Biolingua.evalCurrentModel();
-        if (Biolingua.cycle) {
+        emCurrentModel = evalCurrentModel();
+        if (cycle) {
             throw new IllegalArgumentException("Starting graph has a cycle");
         }
 
-        System.out.println("Initial eval metric = " + Biolingua.emCurrentModel);
+        System.out.println("Initial eval metric = " + emCurrentModel);
 
         while (true) {
             // Go through all 1 step changes on getModel model,
@@ -189,14 +189,14 @@ public class Biolingua {
             // is always in one of the 5 states mentioned above,
             // there are 4 possible changes to try for each pair, so in total
             // there are (n-1)*n*2 one-step changes to try.
-            Biolingua.em1StepBest = Biolingua.emCurrentModel;
+            em1StepBest = emCurrentModel;
             //            int w = nvars - 1;
-            for (int vi = 0; vi < Biolingua.nvars; vi++) {
-                for (int vj = 0; vj < Biolingua.nvars; vj++) {
+            for (int vi = 0; vi < nvars; vi++) {
+                for (int vj = 0; vj < nvars; vj++) {
                     if (vi == vj) {
                         continue;
                     }
-                    final int origState = (int) Biolingua.g.getEdge(vi, vj);
+                    int origState = (int) g.getEdge(vi, vj);
 
                     // Try all 2 possible changes for this edge:
                     //
@@ -206,26 +206,26 @@ public class Biolingua {
                         if (state == origState) {
                             continue;
                         }
-                        Biolingua.g.setEdge(vi, vj, state);
+                        g.setEdge(vi, vj, state);
 
                         //if (g.getNumParents (vj) > 1) {
                         //    System.out.println ("Node "+vj+" being tested with "+g.getNumParents(vj)+" parents");
                         //}
 
-                        Biolingua.emtempG = Biolingua.evalCurrentModel();
+                        emtempG = evalCurrentModel();
 
                         // Check whether there is improvement to
                         // update our currently best one-step change
-                        if ((!Biolingua.cycle) && (Biolingua.emtempG < Biolingua.em1StepBest)) {
-                            Biolingua.bestEnode1 = vi;
-                            Biolingua.bestEnode2 = vj;
-                            Biolingua.bestChange = state;
-                            Biolingua.em1StepBest = Biolingua.emtempG;
+                        if ((!cycle) && (emtempG < em1StepBest)) {
+                            bestEnode1 = vi;
+                            bestEnode2 = vj;
+                            bestChange = state;
+                            em1StepBest = emtempG;
                         }
                     }
 
                     // Restore original edge state
-                    Biolingua.g.setEdge(vi, vj, origState);
+                    g.setEdge(vi, vj, origState);
                 }
             }
 
@@ -233,7 +233,7 @@ public class Biolingua {
             // changes on getModel model, we find no improvement in the
             // evaluation metric
             //
-            if (Biolingua.em1StepBest >= Biolingua.emCurrentModel) {
+            if (em1StepBest >= emCurrentModel) {
                 break;
             }
 
@@ -242,15 +242,15 @@ public class Biolingua {
             // the evaluation metric.  Let's change the model applying
             // that one step change, and let's update its eval metric
             // accordingly
-            Biolingua.g.setEdge(Biolingua.bestEnode1, Biolingua.bestEnode2, Biolingua.bestChange);
-            Biolingua.emCurrentModel = Biolingua.em1StepBest;
-            System.out.println("Best eval metric so far = " + Biolingua.emCurrentModel);
+            g.setEdge(bestEnode1, bestEnode2, bestChange);
+            emCurrentModel = em1StepBest;
+            System.out.println("Best eval metric so far = " + emCurrentModel);
         }
         // at this point G has best model found according to this
         // greedy search, and given the chosen eval. metric, the initial
         // graph, and the correlational data
-        Biolingua.g.setGraphName("Biolingua result");
-        return Biolingua.g;
+        g.setGraphName("Biolingua result");
+        return g;
     }
 
     /**
@@ -270,59 +270,59 @@ public class Biolingua {
         int annotations = 0;
         int predictions = 0;
         int errors = 0;
-        Biolingua.cycle = false;
+        cycle = false;
         //        int w = nvars - 1;
-        for (int i = 0; i < Biolingua.nvars; i++) {
-            Biolingua.visited[i] = false;
+        for (int i = 0; i < nvars; i++) {
+            visited[i] = false;
         }
-        for (int vi = 0; vi < Biolingua.nvars; vi++) {
-            for (int vj = 0; vj < Biolingua.nvars; vj++) {
+        for (int vi = 0; vi < nvars; vi++) {
+            for (int vj = 0; vj < nvars; vj++) {
                 if (vi == vj) {
                     continue;
                 }
 
                 // Find all undirectedPaths from vi to vj, counting the number of undirectedPaths
                 // with a positive and negative predicted signs
-                Biolingua.targetParent = vi;
-                Biolingua.pos = 0;
-                Biolingua.neg = 0;
-                Biolingua.findPaths(vj, 0);
+                targetParent = vi;
+                pos = 0;
+                neg = 0;
+                findPaths(vj, 0);
 
                 // A cycle was found is this graph, return
-                if (Biolingua.cycle) {
+                if (cycle) {
                     return -1;
                 }
 
                 // Predict correlation
-                if (Biolingua.pos + Biolingua.neg > 0) {
+                if (pos + neg > 0) {
                     // There is at least one path between the target parent
                     // and variable vj.
 
                     // If there are positive as well as negative undirectedPaths,
                     // increment the # of annotations by 1
-                    if ((Biolingua.pos > 0) && (Biolingua.neg > 0)) {
+                    if ((pos > 0) && (neg > 0)) {
                         annotations++;
                     }
 
                     // Determine the predicted sign according to all undirectedPaths
                     // between these variables
-                    final int predictedSign =
-                            ((Biolingua.pos == Biolingua.neg) ? 0 : (Biolingua.pos > Biolingua.neg ? 1 : -1));
+                    int predictedSign =
+                            ((pos == neg) ? 0 : (pos > neg ? 1 : -1));
 
                     // Value of edge between vi and vj in the correlation matrix
-                    float correlValue = Biolingua.cm.getValue(vi, vj);
+                    float correlValue = cm.getValue(vi, vj);
 
-                    if (Biolingua.sm != null) {
+                    if (sm != null) {
                         // Significance matrix is not null, so use the value
                         // from the correlation matrix if it's significant,
                         // otherwise use a zero
-                        if (Biolingua.sm.getValue(vi, vj) > Biolingua.SIGNIF_LEVEL) {
+                        if (sm.getValue(vi, vj) > SIGNIF_LEVEL) {
                             correlValue = 0;
                         }
                     }
 
                     // Sign of that value
-                    final int correlMSign = (Biolingua.isZero(correlValue) ? 0 : (
+                    int correlMSign = (isZero(correlValue) ? 0 : (
                             correlValue > 0 ? 1 : -1));
 
                     if (correlMSign == predictedSign) {
@@ -336,7 +336,7 @@ public class Biolingua {
                     // If there is a non-zero correlation among those 2
                     // variables, then increment the # of errors in this
                     // model by 1
-                    if (!Biolingua.isZero(Biolingua.cm.getValue(vi, vj))) {
+                    if (!isZero(cm.getValue(vi, vj))) {
                         errors++;
                     }
                 }
@@ -344,30 +344,30 @@ public class Biolingua {
             }
         }
         // Compute evaluation metric for this model and return that value
-        final int nEdges = Biolingua.g.getNumEdges();
-        final float evalMetric = Biolingua.bitsLinks * nEdges + Biolingua.bitsAnnotat * annotations +
-                Biolingua.bitsErrors * errors - Biolingua.bitsPredic * predictions;
+        int nEdges = g.getNumEdges();
+        float evalMetric = bitsLinks * nEdges + bitsAnnotat * annotations +
+                bitsErrors * errors - bitsPredic * predictions;
 
         return evalMetric;
     }
 
     // Think about a new name for this method, since it not only "finds"
     // undirectedPaths, but updates all these counters used  in the eval. metric.
-    private static void findPaths(final int vj, final int pathLen) {
+    private static void findPaths(int vj, int pathLen) {
 
-        if (Biolingua.visited[vj]) {
+        if (visited[vj]) {
             // That node is already in the path,
             // so there is a cycle in this graph
-            Biolingua.cycle = true;
+            cycle = true;
             return;
         }
-        Biolingua.path[pathLen] = vj;
-        if (vj == Biolingua.targetParent) {
+        path[pathLen] = vj;
+        if (vj == targetParent) {
             // Debugged: 01/14/2002
             // This check is still needed to see whether there is a
             // closed loop between targetParent and path[0]
-            if (Biolingua.g.isParent(Biolingua.path[0], Biolingua.targetParent)) {
-                Biolingua.cycle = true;
+            if (g.isParent(path[0], targetParent)) {
+                cycle = true;
                 return;
             }
 
@@ -379,30 +379,30 @@ public class Biolingua {
             // Count the number of negative edges
             int negEdges = 0;
             for (int i = 1; i <= pathLen; i++) {
-                if (Biolingua.g.getEdge(Biolingua.path[i], Biolingua.path[i - 1]) < 0) {
+                if (g.getEdge(path[i], path[i - 1]) < 0) {
                     negEdges++;
                 }
             }
             // Update the appropriate counter (pos, or neg) depending on
             // whether the whole path ends up positive or negative
             if (negEdges % 2 == 0) {
-                Biolingua.pos++;  // It's a positive path (even # of negative edges)
+                pos++;  // It's a positive path (even # of negative edges)
             } else {
-                Biolingua.neg++;  // It's a negative path
+                neg++;  // It's a negative path
             }
         } else {
             // Get parents of this node
-            final int[] parent = Biolingua.g.getParents(vj);
-            Biolingua.visited[vj] = true;
-            final int np = parent.length;
+            int[] parent = g.getParents(vj);
+            visited[vj] = true;
+            int np = parent.length;
             for (int p = 0; p < np; p++) {
                 // Recursive call to findPaths()
-                Biolingua.findPaths(parent[p], pathLen + 1);
-                if (Biolingua.cycle) {
+                findPaths(parent[p], pathLen + 1);
+                if (cycle) {
                     return;
                 }
             }
-            Biolingua.visited[vj] = false;
+            visited[vj] = false;
         }
     }
 
@@ -421,8 +421,8 @@ public class Biolingua {
     //    }
 
 
-    private static boolean isZero(final float x) {
-        return (Math.abs(x) <= Biolingua.ALMOST_ZERO);
+    private static boolean isZero(float x) {
+        return (Math.abs(x) <= ALMOST_ZERO);
     }
 
 }

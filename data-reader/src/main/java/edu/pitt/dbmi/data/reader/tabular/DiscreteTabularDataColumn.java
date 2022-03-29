@@ -34,54 +34,54 @@ public class DiscreteTabularDataColumn implements DiscreteDataColumn {
     private final Map<String, Integer> values;
     private List<String> categories;
 
-    public DiscreteTabularDataColumn(final DataColumn dataColumn) {
+    public DiscreteTabularDataColumn(DataColumn dataColumn) {
         this.dataColumn = dataColumn;
-        this.values = new TreeMap<>();
+        values = new TreeMap<>();
     }
 
     @Override
     public String toString() {
-        return "DiscreteTabularDataColumn{" + "dataColumn=" + this.dataColumn + ", values=" + this.values + ", categories=" + this.categories + '}';
+        return "DiscreteTabularDataColumn{" + "dataColumn=" + dataColumn + ", values=" + values + ", categories=" + categories + '}';
     }
 
     @Override
-    public Integer getEncodeValue(final String value) {
-        return this.values.get(value);
+    public Integer getEncodeValue(String value) {
+        return values.get(value);
     }
 
     @Override
     public void recategorize() {
-        final Set<String> keyset = this.values.keySet();
-        this.categories = new ArrayList<>(keyset.size());
+        Set<String> keyset = values.keySet();
+        categories = new ArrayList<>(keyset.size());
         int count = 0;
-        for (final String key : keyset) {
-            this.values.put(key, count++);
-            this.categories.add(key);
+        for (String key : keyset) {
+            values.put(key, count++);
+            categories.add(key);
         }
     }
 
     @Override
-    public void setValue(final String value) {
-        this.values.put(value, null);
+    public void setValue(String value) {
+        values.put(value, null);
     }
 
     @Override
     public DataColumn getDataColumn() {
-        return this.dataColumn;
+        return dataColumn;
     }
 
     public Map<String, Integer> getValues() {
-        return this.values;
+        return values;
     }
 
     @Override
     public List<String> getCategories() {
-        return (this.categories == null)
+        return (categories == null)
                 ? Collections.EMPTY_LIST
-                : this.categories;
+                : categories;
     }
 
-    public void setCategories(final List<String> categories) {
+    public void setCategories(List<String> categories) {
         this.categories = categories;
     }
 

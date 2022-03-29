@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.DiscreteDiscretizationSpec;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.DiscretizationSpec;
 import edu.cmu.tetradapp.util.StringTextField;
+import edu.cmu.tetradapp.util.StringTextField.Filter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -42,17 +43,17 @@ class DiscreteDiscretizationEditor extends JPanel implements DiscretizationEdito
     private RemapEditor remapEditor;
     private final DiscreteVariable variable;
 
-    public DiscreteDiscretizationEditor(final DiscreteVariable variable) {
+    public DiscreteDiscretizationEditor(DiscreteVariable variable) {
         if (variable == null) {
             throw new NullPointerException();
         }
 
-        final int numCategories = variable.getNumCategories();
+        int numCategories = variable.getNumCategories();
         this.variable = variable;
 
         //String name = variable.getNode();
 
-        final Box b1 = Box.createVerticalBox();
+        Box b1 = Box.createVerticalBox();
 
 //        Box b2 = Box.createHorizontalBox();
 //        b2.add(Box.createRigidArea(new Dimension(5, 0)));
@@ -62,7 +63,7 @@ class DiscreteDiscretizationEditor extends JPanel implements DiscretizationEdito
 
         b1.add(Box.createVerticalStrut(10));
 
-        final Box b6 = Box.createHorizontalBox();
+        Box b6 = Box.createHorizontalBox();
         b6.add(Box.createRigidArea(new Dimension(10, 0)));
         b6.add(new JLabel(
                 "Edit new categories that old categories should map to:"));
@@ -70,45 +71,45 @@ class DiscreteDiscretizationEditor extends JPanel implements DiscretizationEdito
         b1.add(b6);
 
         b1.add(Box.createVerticalStrut(10));
-        b1.add(createRemapEditor());
+        b1.add(this.createRemapEditor());
 
         b1.add(Box.createVerticalGlue());
 
-        setLayout(new BorderLayout());
-        add(b1, BorderLayout.CENTER);
+        this.setLayout(new BorderLayout());
+        this.add(b1, BorderLayout.CENTER);
     }
 
     //===========================PUBLIC METHODS==========================//
 
     public DiscretizationSpec getDiscretizationSpec() {
-        return this.remapEditor.getDiscretizationSpec();
+        return remapEditor.getDiscretizationSpec();
     }
 
-    public void setDiscretizationSpec(final DiscretizationSpec spec) {
-        this.remapEditor.setDiscretizationSpec((DiscreteDiscretizationSpec) spec);
+    public void setDiscretizationSpec(DiscretizationSpec spec) {
+        remapEditor.setDiscretizationSpec((DiscreteDiscretizationSpec) spec);
     }
 
     //===========================PRIVATE METHODS=========================//
 
     private RemapEditor createRemapEditor() {
-        final List<String> categories = DiscreteDiscretizationEditor.defaultCategories(this.variable);
-        final int[] remap = DiscreteDiscretizationEditor.defaultRemap(categories);
-        final DiscreteDiscretizationSpec discretizationSpec =
+        List<String> categories = defaultCategories(variable);
+        int[] remap = defaultRemap(categories);
+        DiscreteDiscretizationSpec discretizationSpec =
                 new DiscreteDiscretizationSpec(remap, categories);
-        this.remapEditor = new RemapEditor(this.variable, discretizationSpec);
-        return this.remapEditor;
+        remapEditor = new RemapEditor(variable, discretizationSpec);
+        return remapEditor;
     }
 
-    private static int[] defaultRemap(final List<String> categories) {
-        final int[] remap = new int[categories.size()];
+    private static int[] defaultRemap(List<String> categories) {
+        int[] remap = new int[categories.size()];
         for (int i = 0; i < remap.length; i++) {
             remap[i] = i;
         }
         return remap;
     }
 
-    private static List<String> defaultCategories(final DiscreteVariable variable) {
-        final List<String> categories = new LinkedList<>();
+    private static List<String> defaultCategories(DiscreteVariable variable) {
+        List<String> categories = new LinkedList<>();
         for (int i = 0; i < variable.getNumCategories(); i++) {
             categories.add(variable.getCategory(i));
         }
@@ -117,16 +118,16 @@ class DiscreteDiscretizationEditor extends JPanel implements DiscretizationEdito
 
     //================================CLASSES============================//
 
-    final static class BigLabel extends JLabel {
+    static final class BigLabel extends JLabel {
         private static final Font FONT = new Font("Dialog", Font.BOLD, 20);
 
         public BigLabel() {
             super(" --> ");
-            setFont(BigLabel.FONT);
+            this.setFont(FONT);
         }
     }
 
-    final static class RemapEditor extends JComponent {
+    static final class RemapEditor extends JComponent {
         private final DiscreteVariable variable;
         private final List<String> newCategories = new LinkedList<>();
         private StringTextField[] categoryFields;
@@ -137,8 +138,8 @@ class DiscreteDiscretizationEditor extends JPanel implements DiscretizationEdito
                 new LinkedList<>();
         private final DiscreteVariable oldVariable;
 
-        public RemapEditor(final DiscreteVariable variable,
-                           final DiscreteDiscretizationSpec spec) {
+        public RemapEditor(DiscreteVariable variable,
+                           DiscreteDiscretizationSpec spec) {
             this.variable = variable;
 
             if (variable == null) {
@@ -149,149 +150,149 @@ class DiscreteDiscretizationEditor extends JPanel implements DiscretizationEdito
                 throw new NullPointerException();
             }
 
-            this.oldVariable = variable;
+            oldVariable = variable;
 
-            final int[] remap = spec.getRemap();
-            final List<String> categories = spec.getCategories();
+            int[] remap = spec.getRemap();
+            List<String> categories = spec.getCategories();
 
-            for (int i = 0; i < this.oldVariable.getNumCategories(); i++) {
-                this.newCategories.add(categories.get(remap[i]));
+            for (int i = 0; i < oldVariable.getNumCategories(); i++) {
+                newCategories.add(categories.get(remap[i]));
             }
 
-            final Box panel = Box.createVerticalBox();
+            Box panel = Box.createVerticalBox();
 
-            createCategoryFields();
-            createRangeFields();
+            this.createCategoryFields();
+            this.createRangeFields();
 
             for (int i = 0; i < categories.size(); i++) {
-                final Box row = Box.createHorizontalBox();
+                Box row = Box.createHorizontalBox();
                 row.add(Box.createRigidArea(new Dimension(10, 0)));
 
                 row.add(new JLabel((i + 1) + ". "));
-                row.add(this.categoryFields[i]);
+                row.add(categoryFields[i]);
                 row.add(new BigLabel());
-                row.add(this.rangeFields[i]);
+                row.add(rangeFields[i]);
 
                 row.add(Box.createHorizontalGlue());
                 panel.add(row);
             }
 
-            setLayout(new BorderLayout());
-            add(panel, BorderLayout.CENTER);
+            this.setLayout(new BorderLayout());
+            this.add(panel, BorderLayout.CENTER);
 
-            setFocusTraversalPolicy(new FocusTraversalPolicy() {
-                public Component getComponentAfter(final Container focusCycleRoot,
-                                                   final Component aComponent) {
-                    final int index = RemapEditor.this.focusTraveralOrder.indexOf(aComponent);
-                    final int size = RemapEditor.this.focusTraveralOrder.size();
+            this.setFocusTraversalPolicy(new FocusTraversalPolicy() {
+                public Component getComponentAfter(Container focusCycleRoot,
+                                                   Component aComponent) {
+                    int index = focusTraveralOrder.indexOf(aComponent);
+                    int size = focusTraveralOrder.size();
 
                     if (index != -1) {
-                        return RemapEditor.this.focusTraveralOrder.get(
+                        return focusTraveralOrder.get(
                                 (index + 1) % size);
                     } else {
-                        return getFirstComponent(focusCycleRoot);
+                        return this.getFirstComponent(focusCycleRoot);
                     }
                 }
 
-                public Component getComponentBefore(final Container focusCycleRoot,
-                                                    final Component aComponent) {
-                    final int index = RemapEditor.this.focusTraveralOrder.indexOf(aComponent);
-                    final int size = RemapEditor.this.focusTraveralOrder.size();
+                public Component getComponentBefore(Container focusCycleRoot,
+                                                    Component aComponent) {
+                    int index = focusTraveralOrder.indexOf(aComponent);
+                    int size = focusTraveralOrder.size();
 
                     if (index != -1) {
-                        return RemapEditor.this.focusTraveralOrder.get((index - 1) % size);
+                        return focusTraveralOrder.get((index - 1) % size);
                     } else {
-                        return getFirstComponent(focusCycleRoot);
+                        return this.getFirstComponent(focusCycleRoot);
                     }
                 }
 
-                public Component getFirstComponent(final Container focusCycleRoot) {
-                    return RemapEditor.this.focusTraveralOrder.getFirst();
+                public Component getFirstComponent(Container focusCycleRoot) {
+                    return focusTraveralOrder.getFirst();
                 }
 
-                public Component getLastComponent(final Container focusCycleRoot) {
-                    return RemapEditor.this.focusTraveralOrder.getLast();
+                public Component getLastComponent(Container focusCycleRoot) {
+                    return focusTraveralOrder.getLast();
                 }
 
-                public Component getDefaultComponent(final Container focusCycleRoot) {
-                    return getFirstComponent(focusCycleRoot);
+                public Component getDefaultComponent(Container focusCycleRoot) {
+                    return this.getFirstComponent(focusCycleRoot);
                 }
             });
 
-            setFocusCycleRoot(true);
+            this.setFocusCycleRoot(true);
         }
 
         private void createCategoryFields() {
-            this.categoryFields =
-                    new StringTextField[this.oldVariable.getNumCategories()];
+            categoryFields =
+                    new StringTextField[oldVariable.getNumCategories()];
 
-            for (int i = 0; i < this.oldVariable.getNumCategories(); i++) {
-                this.categoryFields[i] =
-                        new StringTextField(this.oldVariable.getCategory(i), 6);
-                this.labels.put(this.categoryFields[i], i);
-                this.categoryFields[i].setEditable(false);
+            for (int i = 0; i < oldVariable.getNumCategories(); i++) {
+                categoryFields[i] =
+                        new StringTextField(oldVariable.getCategory(i), 6);
+                labels.put(categoryFields[i], i);
+                categoryFields[i].setEditable(false);
             }
         }
 
         private void createRangeFields() {
-            this.rangeFields =
-                    new StringTextField[this.oldVariable.getNumCategories()];
+            rangeFields =
+                    new StringTextField[oldVariable.getNumCategories()];
 
-            for (int i = 0; i < this.oldVariable.getNumCategories(); i++) {
-                this.rangeFields[i] =
-                        new StringTextField(this.oldVariable.getCategory(i), 6);
-                final StringTextField _field = this.rangeFields[i];
+            for (int i = 0; i < oldVariable.getNumCategories(); i++) {
+                rangeFields[i] =
+                        new StringTextField(oldVariable.getCategory(i), 6);
+                StringTextField _field = rangeFields[i];
 
-                this.rangeFields[i].setFilter(new StringTextField.Filter() {
-                    public String filter(String value, final String oldValue) {
-                        if (RemapEditor.this.labels.get(_field) != null) {
-                            final int index = RemapEditor.this.labels.get(_field);
+                rangeFields[i].setFilter(new Filter() {
+                    public String filter(String value, String oldValue) {
+                        if (labels.get(_field) != null) {
+                            int index = labels.get(_field);
 
                             if (value == null) {
-                                value = RemapEditor.this.oldVariable.getCategory(index);
+                                value = oldVariable.getCategory(index);
                             }
 
-                            RemapEditor.this.newCategories.set(index, value);
+                            newCategories.set(index, value);
                         }
 
                         return value;
                     }
                 });
 
-                this.labels.put(this.rangeFields[i], i);
-                this.focusTraveralOrder.add(this.rangeFields[i]);
+                labels.put(rangeFields[i], i);
+                focusTraveralOrder.add(rangeFields[i]);
             }
         }
 
         public DiscreteVariable getVariable() {
-            return this.variable;
+            return variable;
         }
 
         public DiscreteDiscretizationSpec getDiscretizationSpec() {
-            final List<String> categoryList = new LinkedList<>();
+            List<String> categoryList = new LinkedList<>();
 
-            for (final String newCategory : this.newCategories) {
+            for (String newCategory : newCategories) {
                 if (!categoryList.contains(newCategory)) {
                     categoryList.add(newCategory);
                 }
             }
 
-            final int[] remap = new int[this.oldVariable.getNumCategories()];
+            int[] remap = new int[oldVariable.getNumCategories()];
 
             for (int i = 0; i < remap.length; i++) {
-                final String value = this.newCategories.get(i);
+                String value = newCategories.get(i);
                 remap[i] = categoryList.indexOf(value);
             }
 
             return new DiscreteDiscretizationSpec(remap, categoryList);
         }
 
-        public void setDiscretizationSpec(final DiscreteDiscretizationSpec spec) {
-            final int[] remap = spec.getRemap();
-            final List categories = spec.getCategories();
+        public void setDiscretizationSpec(DiscreteDiscretizationSpec spec) {
+            int[] remap = spec.getRemap();
+            List categories = spec.getCategories();
 
-            for (int i = 0; i < this.oldVariable.getNumCategories(); i++) {
-                this.rangeFields[i].setValue((String) categories.get(remap[i]));
+            for (int i = 0; i < oldVariable.getNumCategories(); i++) {
+                rangeFields[i].setValue((String) categories.get(remap[i]));
             }
         }
     }

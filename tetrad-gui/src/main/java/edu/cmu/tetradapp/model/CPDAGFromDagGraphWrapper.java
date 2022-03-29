@@ -36,23 +36,23 @@ public class CPDAGFromDagGraphWrapper extends GraphWrapper implements DoNotAddOl
     static final long serialVersionUID = 23L;
 
 
-    public CPDAGFromDagGraphWrapper(final GraphSource source, final Parameters parameters) {
+    public CPDAGFromDagGraphWrapper(GraphSource source, Parameters parameters) {
         this(source.getGraph());
     }
 
 
-    public CPDAGFromDagGraphWrapper(final Graph graph) {
+    public CPDAGFromDagGraphWrapper(Graph graph) {
         super(new EdgeListGraph());
 
         // make sure the given graph is a dag.
         try {
             new Dag(graph);
-        } catch (final Exception e) {
+        } catch (Exception e) {
             throw new IllegalArgumentException("The source graph is not a DAG.");
         }
 
-        final Graph CPDAG = CPDAGFromDagGraphWrapper.getCPDAG(new EdgeListGraph(graph));
-        setGraph(CPDAG);
+        Graph CPDAG = getCPDAG(new EdgeListGraph(graph));
+        this.setGraph(CPDAG);
 
         TetradLogger.getInstance().log("info", "\nGenerating CPDAG from DAG.");
         TetradLogger.getInstance().log("CPDAG", CPDAG + "");
@@ -65,7 +65,7 @@ public class CPDAGFromDagGraphWrapper extends GraphWrapper implements DoNotAddOl
     //======================== Private Method ======================//
 
 
-    private static Graph getCPDAG(final Graph graph) {
+    private static Graph getCPDAG(Graph graph) {
         return SearchGraphUtils.cpdagFromDag(graph);
     }
 

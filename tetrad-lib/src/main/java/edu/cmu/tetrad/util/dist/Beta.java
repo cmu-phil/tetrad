@@ -46,8 +46,8 @@ public class Beta implements Distribution {
      * Ibid.
      */
     private Beta() {
-        this.alpha = .5;
-        this.beta = .5;
+        alpha = .5;
+        beta = .5;
     }
 
     /**
@@ -61,17 +61,17 @@ public class Beta implements Distribution {
      * See interface.
      */
     public double nextRandom() {
-        return RandomUtil.getInstance().nextBeta(this.alpha, this.beta);
+        return RandomUtil.getInstance().nextBeta(alpha, beta);
     }
 
     /**
      * The order of parameters is alpha = 0, beta = 1.
      */
-    public void setParameter(final int index, final double value) {
+    public void setParameter(int index, double value) {
         if (index == 0) {
-            this.alpha = value;
+            alpha = value;
         } else if (index == 1 && value >= 0) {
-            this.beta = value;
+            beta = value;
         } else {
             throw new IllegalArgumentException("Illegal value: " + value);
         }
@@ -80,11 +80,11 @@ public class Beta implements Distribution {
     /**
      * The order of parameters is alpha = 0, beta = 1.
      */
-    public double getParameter(final int index) {
+    public double getParameter(int index) {
         if (index == 0) {
-            return this.alpha;
+            return alpha;
         } else if (index == 1) {
-            return this.beta;
+            return beta;
         } else {
             throw new IllegalArgumentException("Illegal index: " + index);
         }
@@ -93,7 +93,7 @@ public class Beta implements Distribution {
     /**
      * The order of parameters is alpha = 0, beta = 1.
      */
-    public String getParameterName(final int index) {
+    public String getParameterName(int index) {
         if (index == 0) {
             return "Alpha";
         } else if (index == 1) {
@@ -123,7 +123,7 @@ public class Beta implements Distribution {
      * A string representation of the distribution.
      */
     public String toString() {
-        return "B(" + this.alpha + ", " + this.beta + ")";
+        return "B(" + alpha + ", " + beta + ")";
     }
 }
 

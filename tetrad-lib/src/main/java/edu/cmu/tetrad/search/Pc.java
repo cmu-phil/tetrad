@@ -73,7 +73,7 @@ public class Pc implements GraphSearch {
      * True if cycles are to be aggressively prevented. May be expensive for large graphs (but also useful for large
      * graphs).
      */
-    private boolean aggressivelyPreventCycles = false;
+    private boolean aggressivelyPreventCycles;
 
     /**
      * The logger for this class. The config needs to be set.
@@ -108,11 +108,11 @@ public class Pc implements GraphSearch {
     /**
      * The initial graph for the Fast Adjacency Search, or null if there is none.
      */
-    private Graph externalGraph = null;
+    private Graph externalGraph;
 
-    private boolean verbose = false;
+    private boolean verbose;
 
-    private boolean fdr = false;
+    private boolean fdr;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -122,7 +122,7 @@ public class Pc implements GraphSearch {
      * @param independenceTest The oracle for conditional independence facts. This does not make a copy of the
      *                         independence test, for fear of duplicating the data set!
      */
-    public Pc(final IndependenceTest independenceTest) {
+    public Pc(IndependenceTest independenceTest) {
         if (independenceTest == null) {
             throw new NullPointerException();
         }
@@ -136,13 +136,13 @@ public class Pc implements GraphSearch {
      * @return true iff edges will not be added if they would create cycles.
      */
     public boolean isAggressivelyPreventCycles() {
-        return this.aggressivelyPreventCycles;
+        return aggressivelyPreventCycles;
     }
 
     /**
      * @param aggressivelyPreventCycles Set to true just in case edges will not be addeds if they would create cycles.
      */
-    public void setAggressivelyPreventCycles(final boolean aggressivelyPreventCycles) {
+    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
         this.aggressivelyPreventCycles = aggressivelyPreventCycles;
     }
 
@@ -150,20 +150,20 @@ public class Pc implements GraphSearch {
      * @return the independence test being used in the search.
      */
     public IndependenceTest getIndependenceTest() {
-        return this.independenceTest;
+        return independenceTest;
     }
 
     /**
      * @return the knowledge specification used in the search. Non-null.
      */
     public IKnowledge getKnowledge() {
-        return this.knowledge;
+        return knowledge;
     }
 
     /**
      * Sets the knowledge specification to be used in the search. May not be null.
      */
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -175,7 +175,7 @@ public class Pc implements GraphSearch {
      * @return the sepset map from the most recent search. Non-null after the first call to <code>search()</code>.
      */
     public SepsetMap getSepsets() {
-        return this.sepsets;
+        return sepsets;
     }
 
     /**
@@ -183,7 +183,7 @@ public class Pc implements GraphSearch {
      * independence checked.
      */
     public int getDepth() {
-        return this.depth;
+        return depth;
     }
 
     /**
@@ -194,7 +194,7 @@ public class Pc implements GraphSearch {
      *              should be high (1000). A value of Integer.MAX_VALUE may not be used, due to a bug on multi-core
      *              machines.
      */
-    public void setDepth(final int depth) {
+    public void setDepth(int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException("Depth must be -1 or >= 0: " + depth);
         }
@@ -215,7 +215,7 @@ public class Pc implements GraphSearch {
      */
     @Override
     public Graph search() {
-        return search(this.independenceTest.getVariables());
+        return this.search(independenceTest.getVariables());
     }
 
     /**
@@ -227,78 +227,78 @@ public class Pc implements GraphSearch {
      * <p>
      * All of the given nodes must be in the domatein of the given conditional independence test.
      */
-    public Graph search(final List<Node> nodes) {
+    public Graph search(List<Node> nodes) {
         IFas fas = null;
 
-        if (this.externalGraph == null) {
-            fas = new Fas(getIndependenceTest());
+        if (externalGraph == null) {
+            fas = new Fas(this.getIndependenceTest());
         } else {
-            fas = new Fas(getIndependenceTest());
+            fas = new Fas(this.getIndependenceTest());
         }
-        fas.setVerbose(this.verbose);
-        return search(fas, nodes);
+        fas.setVerbose(verbose);
+        return this.search(fas, nodes);
     }
 
-    public Graph search(final IFas fas, final List<Node> nodes) {
-        this.logger.log("info", "Starting PC algorithm");
-        this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
+    public Graph search(IFas fas, List<Node> nodes) {
+        logger.log("info", "Starting PC algorithm");
+        logger.log("info", "Independence test = " + this.getIndependenceTest() + ".");
 
 //        this.logger.log("info", "Variables " + independenceTest.getVariable());
 
-        final long startTime = System.currentTimeMillis();
+        long startTime = System.currentTimeMillis();
 
-        if (getIndependenceTest() == null) {
+        if (this.getIndependenceTest() == null) {
             throw new NullPointerException();
         }
 
-        final List<Node> allNodes = getIndependenceTest().getVariables();
+        List<Node> allNodes = this.getIndependenceTest().getVariables();
         if (!allNodes.containsAll(nodes)) {
             throw new IllegalArgumentException("All of the given nodes must " +
                     "be in the domain of the independence test provided.");
         }
 
-        fas.setKnowledge(getKnowledge());
-        fas.setDepth(getDepth());
-        fas.setVerbose(this.verbose);
+        fas.setKnowledge(this.getKnowledge());
+        fas.setDepth(this.getDepth());
+        fas.setVerbose(verbose);
 
-        this.graph = fas.search();
-        this.sepsets = fas.getSepsets();
+        graph = fas.search();
+        sepsets = fas.getSepsets();
 
-        this.numIndependenceTests = fas.getNumIndependenceTests();
-        this.numDependenceJudgements = fas.getNumDependenceJudgments();
+        numIndependenceTests = fas.getNumIndependenceTests();
+        numDependenceJudgements = fas.getNumDependenceJudgments();
 
 //        enumerateTriples();
 
-        SearchGraphUtils.pcOrientbk(this.knowledge, this.graph, nodes);
-        SearchGraphUtils.orientCollidersUsingSepsets(this.sepsets, this.knowledge, this.graph, this.verbose, false);
+        SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
+        SearchGraphUtils.orientCollidersUsingSepsets(sepsets, knowledge, graph, verbose, false);
 
-        for (final Edge edge : this.graph.getEdges()) {
+        for (Edge edge : graph.getEdges()) {
             if (Edges.isBidirectedEdge(edge)) {
-                this.graph.removeEdge(edge.getNode1(), edge.getNode2());
-                this.graph.addUndirectedEdge(edge.getNode1(), edge.getNode2());
+                graph.removeEdge(edge.getNode1(), edge.getNode2());
+                graph.addUndirectedEdge(edge.getNode1(), edge.getNode2());
             }
         }
 
-        final MeekRules rules = new MeekRules();
-        rules.setKnowledge(this.knowledge);
-        rules.orientImplied(this.graph);
+        MeekRules rules = new MeekRules();
+        rules.setKnowledge(knowledge);
+        rules.orientImplied(graph);
 
-        this.logger.log("graph", "\nReturning this graph: " + this.graph);
+        logger.log("graph", "\nReturning this graph: " + graph);
 
-        this.elapsedTime = System.currentTimeMillis() - startTime;
+        elapsedTime = System.currentTimeMillis() - startTime;
 
-        this.logger.log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
-        this.logger.log("info", "Finishing PC Algorithm.");
-        this.logger.flush();
+        logger.log("info", "Elapsed time = " + (elapsedTime) / 1000. + " s");
+        logger.log("info", "Finishing PC Algorithm.");
+        logger.flush();
 
-        return this.graph;
+        return graph;
     }
 
     /**
      * @return the elapsed time of the search, in milliseconds.
      */
     public long getElapsedTime() {
-        return this.elapsedTime;
+        return elapsedTime;
     }
 
     /**
@@ -306,7 +306,7 @@ public class Pc implements GraphSearch {
      * <code>search</code> is called.
      */
     public Set<Triple> getUnshieldedColliders() {
-        return this.unshieldedColliders;
+        return unshieldedColliders;
     }
 
     /**
@@ -314,21 +314,21 @@ public class Pc implements GraphSearch {
      * <code>search</code> is called.
      */
     public Set<Triple> getUnshieldedNoncolliders() {
-        return this.unshieldedNoncolliders;
+        return unshieldedNoncolliders;
     }
 
     public Set<Edge> getAdjacencies() {
-        final Set<Edge> adjacencies = new HashSet<>();
-        for (final Edge edge : this.graph.getEdges()) {
+        Set<Edge> adjacencies = new HashSet<>();
+        for (Edge edge : graph.getEdges()) {
             adjacencies.add(edge);
         }
         return adjacencies;
     }
 
     public Set<Edge> getNonadjacencies() {
-        final Graph complete = GraphUtils.completeGraph(this.graph);
-        final Set<Edge> nonAdjacencies = complete.getEdges();
-        final Graph undirected = GraphUtils.undirectedGraph(this.graph);
+        Graph complete = GraphUtils.completeGraph(graph);
+        Set<Edge> nonAdjacencies = complete.getEdges();
+        Graph undirected = GraphUtils.undirectedGraph(graph);
         nonAdjacencies.removeAll(undirected.getEdges());
         return new HashSet<>(nonAdjacencies);
     }
@@ -371,50 +371,50 @@ public class Pc implements GraphSearch {
 //    }
 
     public int getNumIndependenceTests() {
-        return this.numIndependenceTests;
+        return numIndependenceTests;
     }
 
-    public void setTrueGraph(final Graph trueGraph) {
+    public void setTrueGraph(Graph trueGraph) {
         this.trueGraph = trueGraph;
     }
 
     public int getNumDependenceJudgements() {
-        return this.numDependenceJudgements;
+        return numDependenceJudgements;
     }
 
     public List<Node> getNodes() {
-        return this.graph.getNodes();
+        return graph.getNodes();
     }
 
-    public List<Triple> getColliders(final Node node) {
+    public List<Triple> getColliders(Node node) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public List<Triple> getNoncolliders(final Node node) {
+    public List<Triple> getNoncolliders(Node node) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public List<Triple> getAmbiguousTriples(final Node node) {
+    public List<Triple> getAmbiguousTriples(Node node) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public List<Triple> getUnderlineTriples(final Node node) {
+    public List<Triple> getUnderlineTriples(Node node) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public List<Triple> getDottedUnderlineTriples(final Node node) {
+    public List<Triple> getDottedUnderlineTriples(Node node) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public void setExternalGraph(final Graph externalGraph) {
+    public void setExternalGraph(Graph externalGraph) {
         this.externalGraph = externalGraph;
     }
 
     public boolean isVerbose() {
-        return this.verbose;
+        return verbose;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
@@ -422,14 +422,14 @@ public class Pc implements GraphSearch {
      * True iff the algorithm should be run with False Discovery Rate tests.
      */
     public boolean isFdr() {
-        return this.fdr;
+        return fdr;
     }
 
-    public void setFdr(final boolean fdr) {
+    public void setFdr(boolean fdr) {
         this.fdr = fdr;
     }
 
-    public void setEnforceCPDAG(final boolean enforceCPDAG) {
+    public void setEnforceCPDAG(boolean enforceCPDAG) {
     }
 }
 

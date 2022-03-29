@@ -32,47 +32,47 @@ import java.awt.geom.Rectangle2D;
  */
 public class ErrorDisplayComp extends JComponent
         implements DisplayComp {
-    private boolean selected = false;
+    private boolean selected;
 
-    public ErrorDisplayComp(final String name) {
-        setBackground(DisplayNodeUtils.getNodeFillColor());
-        setFont(DisplayNodeUtils.getFont());
-        setName(name);
+    public ErrorDisplayComp(String name) {
+        this.setBackground(DisplayNodeUtils.getNodeFillColor());
+        this.setFont(DisplayNodeUtils.getFont());
+        this.setName(name);
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         super.setName(name);
-        setSize(getPreferredSize());
+        this.setSize(this.getPreferredSize());
     }
 
-    public void setSelected(final boolean selected) {
+    public void setSelected(boolean selected) {
         this.selected = selected;
     }
 
-    public boolean contains(final int x, final int y) {
-        return getShape().contains(x, y);
+    public boolean contains(int x, int y) {
+        return this.getShape().contains(x, y);
     }
 
     /**
      * @return the shape of the component.
      */
     private Shape getShape() {
-        return new Rectangle2D.Double(0, 0, getPreferredSize().width - 1,
-                getPreferredSize().height - 1);
+        return new Rectangle2D.Double(0, 0, this.getPreferredSize().width - 1,
+                this.getPreferredSize().height - 1);
     }
 
     /**
      * Paints the component.
      */
-    public void paint(final Graphics g) {
-        final FontMetrics fm = getFontMetrics(DisplayNodeUtils.getFont());
-        final Dimension size = getPreferredSize();
-        final int stringWidth = fm.stringWidth(getName());
-        final int stringX = (size.width - stringWidth) / 2;
-        final int stringY = fm.getAscent() + (size.height - fm.getHeight()) / 2;
+    public void paint(Graphics g) {
+        FontMetrics fm = this.getFontMetrics(DisplayNodeUtils.getFont());
+        Dimension size = this.getPreferredSize();
+        int stringWidth = fm.stringWidth(this.getName());
+        int stringX = (size.width - stringWidth) / 2;
+        int stringY = fm.getAscent() + (size.height - fm.getHeight()) / 2;
 
         g.setColor(DisplayNodeUtils.getNodeTextColor());
-        g.drawString(getName(), stringX, stringY);
+        g.drawString(this.getName(), stringX, stringY);
     }
 
 
@@ -80,15 +80,15 @@ public class ErrorDisplayComp extends JComponent
      * Calculates the size of the component based on its name.
      */
     public Dimension getPreferredSize() {
-        final FontMetrics fm = getFontMetrics(DisplayNodeUtils.getFont());
-        final int width = fm.stringWidth(getName()) + fm.getMaxAdvance();
-        final int height = 2 * DisplayNodeUtils.getPixelGap() + fm.getAscent();
+        FontMetrics fm = this.getFontMetrics(DisplayNodeUtils.getFont());
+        int width = fm.stringWidth(this.getName()) + fm.getMaxAdvance();
+        int height = 2 * DisplayNodeUtils.getPixelGap() + fm.getAscent();
 
         return new Dimension(width, height);
     }
 
     public boolean isSelected() {
-        return this.selected;
+        return selected;
     }
 }
 

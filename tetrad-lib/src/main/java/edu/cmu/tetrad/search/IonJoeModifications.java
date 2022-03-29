@@ -29,6 +29,7 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * Implements the ION (Integration of Overlapping Networks) algorithm for distributed causal inference. The algorithm
@@ -45,7 +46,7 @@ public class IonJoeModifications {
     private boolean pathLengthSearch = true;
 
     // prune using adjacencies
-    private boolean adjacencySearch = false;
+    private boolean adjacencySearch;
 
     /**
      * The input PAGs being to be intergrated, possibly FCI outputs.
@@ -99,18 +100,18 @@ public class IonJoeModifications {
      *
      * @param pags The PAGs to be integrated
      */
-    public IonJoeModifications(final List<Graph> pags) {
-        for (final Graph pag : pags) {
-            this.input.add(pag);
+    public IonJoeModifications(List<Graph> pags) {
+        for (Graph pag : pags) {
+            input.add(pag);
 
         }
-        for (final Graph pag : this.input) {
-            for (final Node node : pag.getNodes()) {
-                if (!this.variables.contains(node.getName())) {
-                    this.variables.add(node.getName());
+        for (Graph pag : input) {
+            for (Node node : pag.getNodes()) {
+                if (!variables.contains(node.getName())) {
+                    variables.add(node.getName());
                 }
             }
-            for (final Triple triple : getAllTriples(pag)) {
+            for (Triple triple : this.getAllTriples(pag)) {
                 if (pag.isDefNoncollider(triple.getX(), triple.getY(), triple.getZ())) {
                     pag.addUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
                 }
@@ -123,18 +124,18 @@ public class IonJoeModifications {
     /**
      * Sets path length search on or off
      */
-    public void setPathLengthSearch(final boolean b) {
-        this.pathLengthSearch = b;
+    public void setPathLengthSearch(boolean b) {
+        pathLengthSearch = b;
     }
 
     /**
      * Sets adjacency search on or off
      */
-    public void setAdjacencySearch(final boolean b) {
-        this.adjacencySearch = b;
+    public void setAdjacencySearch(boolean b) {
+        adjacencySearch = b;
     }
 
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException("Knowledge must not be null.");
         }
@@ -147,29 +148,29 @@ public class IonJoeModifications {
      */
     public List<Graph> search() {
 
-        final long start = System.currentTimeMillis();
+        long start = System.currentTimeMillis();
         TetradLogger.getInstance().log("info", "Starting ION Search.");
-        logGraphs("\nInitial Pags: ", this.input);
+        this.logGraphs("\nInitial Pags: ", input);
         TetradLogger.getInstance().log("info", "Transfering local information.");
         long steps = System.currentTimeMillis();
 
         /*
          * Step 1 - Create the empty graph
          */
-        final List<Node> varNodes = new ArrayList<>();
-        for (final String varName : this.variables) {
+        List<Node> varNodes = new ArrayList<>();
+        for (String varName : variables) {
             varNodes.add(new GraphNode(varName));
         }
-        final Graph graph = new EdgeListGraph(varNodes);
+        Graph graph = new EdgeListGraph(varNodes);
 
         /*
          * Step 2 - Transfer local information from the PAGs (adjacencies
          * and edge orientations)
          */
         // transfers edges from each graph and finds definite noncolliders
-        transferLocal(graph);
+        this.transferLocal(graph);
         // adds edges for variables never jointly measured
-        for (final NodePair pair : nonIntersection(graph)) {
+        for (NodePair pair : this.nonIntersection(graph)) {
             graph.addEdge(new Edge(pair.getFirst(), pair.getSecond(), Endpoint.CIRCLE, Endpoint.CIRCLE));
         }
         TetradLogger.getInstance().log("info", "Steps 1-2: " + (System.currentTimeMillis() - steps) / 1000. + "s");
@@ -182,62 +183,62 @@ public class IonJoeModifications {
          * Branch and prune step that blocks problematic undirectedPaths, possibly d-connecting undirectedPaths
          */
         steps = System.currentTimeMillis();
-        final Queue<Graph> searchPags = new LinkedList<>();
+        Queue<Graph> searchPags = new LinkedList<>();
         // place graph constructed in step 2 into the queue
         searchPags.offer(graph);
         // get d-separations and d-connections
-        final List<Set<IonIndependenceFacts>> sepAndAssoc = findSepAndAssoc(graph);
-        this.separations = sepAndAssoc.get(0);
-        this.associations = sepAndAssoc.get(1);
+        List<Set<IonIndependenceFacts>> sepAndAssoc = this.findSepAndAssoc(graph);
+        separations = sepAndAssoc.get(0);
+        associations = sepAndAssoc.get(1);
         Map<Collection<Node>, List<PossibleDConnectingPath>> paths;
 //        Queue<Graph> step3PagsSet = new LinkedList<Graph>();
-        final HashSet<Graph> step3PagsSet = new HashSet<>();
-        final Set<Graph> reject = new HashSet<>();
+        HashSet<Graph> step3PagsSet = new HashSet<>();
+        Set<Graph> reject = new HashSet<>();
         // if no d-separations, nothing left to search
-        if (this.separations.isEmpty()) {
+        if (separations.isEmpty()) {
             // makes orientations preventing definite noncolliders from becoming colliders
             // do final orientations
 //            doFinalOrientation(graph);
             step3PagsSet.add(graph);
         }
         // sets length to iterate once if search over path lengths not enabled, otherwise set to 2
-        final int numNodes = graph.getNumNodes();
+        int numNodes = graph.getNumNodes();
         int pl = numNodes - 1;
-        if (this.pathLengthSearch) {
+        if (pathLengthSearch) {
             pl = 2;
         }
         // iterates over path length, then adjacencies
         for (int l = pl; l < numNodes; l++) {
-            if (this.pathLengthSearch) {
+            if (pathLengthSearch) {
                 TetradLogger.getInstance().log("info", "Braching over path lengths: " + l + " of " + (numNodes - 1));
             }
-            int seps = this.separations.size();
+            int seps = separations.size();
             final int currentSep = 1;
-            final int numAdjacencies = this.separations.size();
-            for (final IonIndependenceFacts fact : this.separations) {
-                if (this.adjacencySearch) {
+            int numAdjacencies = separations.size();
+            for (IonIndependenceFacts fact : separations) {
+                if (adjacencySearch) {
                     TetradLogger.getInstance().log("info", "Braching over path nonadjacencies: " + currentSep + " of " + numAdjacencies);
                 }
                 seps--;
                 // uses two queues to keep up with which PAGs are being iterated and which have been
                 // accepted to be iterated over in the next iteration of the above for loop
                 searchPags.addAll(step3PagsSet);
-                this.recGraphs.add(searchPags.size());
+                recGraphs.add(searchPags.size());
                 step3PagsSet.clear();
                 while (!searchPags.isEmpty()) {
                     System.out.println("ION Step 3 size: " + searchPags.size());
-                    final double currentUsage = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-                    if (currentUsage > this.maxMemory) this.maxMemory = currentUsage;
+                    double currentUsage = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+                    if (currentUsage > maxMemory) maxMemory = currentUsage;
                     // deques first PAG from searchPags
-                    final Graph pag = searchPags.poll();
+                    Graph pag = searchPags.poll();
                     // Part 3.a - finds possibly d-connecting undirectedPaths between each pair of nodes
                     // known to be d-separated
-                    final List<PossibleDConnectingPath> dConnections = new ArrayList<>();
+                    List<PossibleDConnectingPath> dConnections = new ArrayList<>();
                     // checks to see if looping over adjacencies
-                    if (this.adjacencySearch) {
-                        for (final Collection<Node> conditions : fact.getZ()) {
+                    if (adjacencySearch) {
+                        for (Collection<Node> conditions : fact.getZ()) {
                             // checks to see if looping over path lengths
-                            if (this.pathLengthSearch) {
+                            if (pathLengthSearch) {
                                 dConnections.addAll(PossibleDConnectingPath.findDConnectingPathsOfLength
                                         (pag, fact.getX(), fact.getY(), conditions, l));
                             } else {
@@ -246,10 +247,10 @@ public class IonJoeModifications {
                             }
                         }
                     } else {
-                        for (final IonIndependenceFacts allfact : this.separations) {
-                            for (final Collection<Node> conditions : allfact.getZ()) {
+                        for (IonIndependenceFacts allfact : separations) {
+                            for (Collection<Node> conditions : allfact.getZ()) {
                                 // checks to see if looping over path lengths
-                                if (this.pathLengthSearch) {
+                                if (pathLengthSearch) {
                                     dConnections.addAll(PossibleDConnectingPath.findDConnectingPathsOfLength
                                             (pag, allfact.getX(), allfact.getY(), conditions, l));
                                 } else {
@@ -269,7 +270,7 @@ public class IonJoeModifications {
                     }
                     // maps conditioning sets to list of possibly d-connecting undirectedPaths
                     paths = new HashMap<>();
-                    for (final PossibleDConnectingPath path : dConnections) {
+                    for (PossibleDConnectingPath path : dConnections) {
                         List<PossibleDConnectingPath> p = paths.get(path.getConditions());
                         if (p == null) {
                             p = new LinkedList<>();
@@ -278,12 +279,12 @@ public class IonJoeModifications {
                         paths.put(path.getConditions(), p);
                     }
                     // Part 3.b - finds minimal graphical changes to block possibly d-connecting undirectedPaths
-                    final List<Set<GraphChange>> possibleChanges = new ArrayList<>();
-                    for (final Set<GraphChange> changes : findChanges(paths)) {
-                        final Set<GraphChange> newChanges = new HashSet<>();
-                        for (final GraphChange gc : changes) {
+                    List<Set<GraphChange>> possibleChanges = new ArrayList<>();
+                    for (Set<GraphChange> changes : this.findChanges(paths)) {
+                        Set<GraphChange> newChanges = new HashSet<>();
+                        for (GraphChange gc : changes) {
                             boolean okay = true;
-                            for (final Triple collider : gc.getColliders()) {
+                            for (Triple collider : gc.getColliders()) {
 
                                 if (pag.isUnderlineTriple(collider.getX(), collider.getY(), collider.getZ())) {
                                     okay = false;
@@ -294,7 +295,7 @@ public class IonJoeModifications {
                             if (!okay) {
                                 continue;
                             }
-                            for (final Triple collider : gc.getNoncolliders()) {
+                            for (Triple collider : gc.getNoncolliders()) {
                                 if (pag.isDefCollider(collider.getX(), collider.getY(), collider.getZ())) {
                                     okay = false;
                                     break;
@@ -311,25 +312,25 @@ public class IonJoeModifications {
                             break;
                         }
                     }
-                    final float starthitset = System.currentTimeMillis();
-                    final Collection<GraphChange> hittingSets = IonHittingSet.findHittingSet(possibleChanges);
-                    this.recHitTimes.add((System.currentTimeMillis() - starthitset) / 1000.);
+                    float starthitset = System.currentTimeMillis();
+                    Collection<GraphChange> hittingSets = IonHittingSet.findHittingSet(possibleChanges);
+                    recHitTimes.add((System.currentTimeMillis() - starthitset) / 1000.);
                     // Part 3.c - checks the newly constructed graphs from 3.b and rejects those that
                     // cycles or produce independencies known not to occur from the input PAGs or
                     // include undirectedPaths from definite nonancestors
-                    for (final GraphChange gc : hittingSets) {
+                    for (GraphChange gc : hittingSets) {
                         boolean badhittingset = false;
-                        for (final Edge edge : gc.getRemoves()) {
-                            final Node node1 = edge.getNode1();
-                            final Node node2 = edge.getNode2();
-                            final Set<Triple> triples = new HashSet<>();
+                        for (Edge edge : gc.getRemoves()) {
+                            Node node1 = edge.getNode1();
+                            Node node2 = edge.getNode2();
+                            Set<Triple> triples = new HashSet<>();
                             triples.addAll(gc.getColliders());
                             triples.addAll(gc.getNoncolliders());
                             if (triples.size() != (gc.getColliders().size() + gc.getNoncolliders().size())) {
                                 badhittingset = true;
                                 break;
                             }
-                            for (final Triple triple : triples) {
+                            for (Triple triple : triples) {
                                 if (node1.equals(triple.getY())) {
                                     if (node2.equals(triple.getX()) ||
                                             node2.equals(triple.getZ())) {
@@ -348,7 +349,7 @@ public class IonJoeModifications {
                             if (badhittingset) {
                                 break;
                             }
-                            for (final NodePair pair : gc.getOrients()) {
+                            for (NodePair pair : gc.getOrients()) {
                                 if ((node1.equals(pair.getFirst()) && node2.equals(pair.getSecond())) ||
                                         (node2.equals(pair.getFirst()) && node1.equals(pair.getSecond()))) {
                                     badhittingset = true;
@@ -360,8 +361,8 @@ public class IonJoeModifications {
                             }
                         }
                         if (!badhittingset) {
-                            for (final NodePair pair : gc.getOrients()) {
-                                for (final Triple triple : gc.getNoncolliders()) {
+                            for (NodePair pair : gc.getOrients()) {
+                                for (Triple triple : gc.getNoncolliders()) {
                                     if (pair.getSecond().equals(triple.getY())) {
                                         if (pair.getFirst().equals(triple.getX()) &&
                                                 pag.getEndpoint(triple.getZ(), triple.getY()).equals(Endpoint.ARROW)) {
@@ -387,7 +388,7 @@ public class IonJoeModifications {
                         if (badhittingset) {
                             continue;
                         }
-                        final Graph changed = gc.applyTo(pag);
+                        Graph changed = gc.applyTo(pag);
                         // if graph change has already been rejected move on to next graph
                         if (reject.contains(changed)) {
                             continue;
@@ -397,7 +398,7 @@ public class IonJoeModifications {
                             continue;
                         }
                         // reject if null, predicts false independencies or has cycle
-                        if (predictsFalseIndependence(this.associations, changed)
+                        if (this.predictsFalseIndependence(associations, changed)
                                 || changed.existsDirectedCycle()) {
                             reject.add(changed);
                         }
@@ -412,13 +413,13 @@ public class IonJoeModifications {
                     }
                 }
                 // exits loop if not looping over adjacencies
-                if (!this.adjacencySearch) {
+                if (!adjacencySearch) {
                     break;
                 }
             }
         }
         TetradLogger.getInstance().log("info", "Step 3: " + (System.currentTimeMillis() - steps) / 1000. + "s");
-        final Queue<Graph> step3Pags = new LinkedList<>(step3PagsSet);
+        Queue<Graph> step3Pags = new LinkedList<>(step3PagsSet);
 
         /*
          * Step 4
@@ -431,23 +432,23 @@ public class IonJoeModifications {
         Set<Graph> outputPags = new HashSet<>();
 
         while (!step3Pags.isEmpty()) {
-            final Graph pag = step3Pags.poll();
+            Graph pag = step3Pags.poll();
             necEdges = new HashMap<>();
             // Step 4.a - if x and y are known to be unconditionally associated and there is
             // exactly one trek between them, mark each edge on that trek as necessary and
             // make the tiples on the trek definite noncolliders
             // initially mark each edge as not necessary
-            for (final Edge edge : pag.getEdges()) {
+            for (Edge edge : pag.getEdges()) {
                 necEdges.put(edge, false);
             }
             // look for unconditional associations
-            for (final IonIndependenceFacts fact : this.associations) {
-                for (final List<Node> nodes : fact.getZ()) {
+            for (IonIndependenceFacts fact : associations) {
+                for (List<Node> nodes : fact.getZ()) {
                     if (nodes.isEmpty()) {
-                        final List<List<Node>> treks = IonJoeModifications.treks(pag, fact.x, fact.y);
+                        List<List<Node>> treks = treks(pag, fact.x, fact.y);
                         if (treks.size() == 1) {
-                            final List<Node> trek = treks.get(0);
-                            final List<Triple> triples = new ArrayList<>();
+                            List<Node> trek = treks.get(0);
+                            List<Triple> triples = new ArrayList<>();
                             for (int i = 1; i < trek.size(); i++) {
                                 // marks each edge in trek as necessary
                                 necEdges.put(pag.getEdge(trek.get(i - 1), trek.get(i)), true);
@@ -468,16 +469,16 @@ public class IonJoeModifications {
             boolean elimTreks;
             // checks to see if removing redundant undirectedPaths eliminates every trek between
             // two variables known to be nconditionally assoicated
-            final List<Graph> possRemovePags = possRemove(pag, necEdges);
-            final double currentUsage = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-            if (currentUsage > this.maxMemory) this.maxMemory = currentUsage;
-            for (final Graph newPag : possRemovePags) {
+            List<Graph> possRemovePags = this.possRemove(pag, necEdges);
+            double currentUsage = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+            if (currentUsage > maxMemory) maxMemory = currentUsage;
+            for (Graph newPag : possRemovePags) {
                 elimTreks = false;
                 // looks for unconditional associations
-                for (final IonIndependenceFacts fact : this.associations) {
-                    for (final List<Node> nodes : fact.getZ()) {
+                for (IonIndependenceFacts fact : associations) {
+                    for (List<Node> nodes : fact.getZ()) {
                         if (nodes.isEmpty()) {
-                            if (IonJoeModifications.treks(newPag, fact.x, fact.y).isEmpty()) {
+                            if (treks(newPag, fact.x, fact.y).isEmpty()) {
                                 elimTreks = true;
                             }
                             // stop looping once the empty set is found
@@ -491,7 +492,7 @@ public class IonJoeModifications {
                 }
             }
         }
-        outputPags = removeMoreSpecific(outputPags);
+        outputPags = this.removeMoreSpecific(outputPags);
 //        outputPags = applyKnowledge(outputPags);
 
         TetradLogger.getInstance().log("info", "Step 4: " + (System.currentTimeMillis() - steps) / 1000. + "s");
@@ -504,27 +505,27 @@ public class IonJoeModifications {
          */
         steps = System.currentTimeMillis();
         Set<Graph> outputSet = new HashSet<>();
-        for (final Graph pag : outputPags) {
-            final Set<Triple> unshieldedPossibleColliders = new HashSet<>();
-            for (final Triple triple : getPossibleTriples(pag)) {
+        for (Graph pag : outputPags) {
+            Set<Triple> unshieldedPossibleColliders = new HashSet<>();
+            for (Triple triple : this.getPossibleTriples(pag)) {
                 if (!pag.isAdjacentTo(triple.getX(), triple.getZ())) {
                     unshieldedPossibleColliders.add(triple);
                 }
             }
 
-            final PowerSet<Triple> pset = new PowerSet<>(unshieldedPossibleColliders);
-            for (final Set<Triple> set : pset) {
-                final Graph newGraph = new EdgeListGraph(pag);
-                for (final Triple triple : set) {
+            PowerSet<Triple> pset = new PowerSet<>(unshieldedPossibleColliders);
+            for (Set<Triple> set : pset) {
+                Graph newGraph = new EdgeListGraph(pag);
+                for (Triple triple : set) {
                     newGraph.setEndpoint(triple.getX(), triple.getY(), Endpoint.ARROW);
                     newGraph.setEndpoint(triple.getZ(), triple.getY(), Endpoint.ARROW);
                 }
-                doFinalOrientation(newGraph);
+                this.doFinalOrientation(newGraph);
             }
-            for (final Graph outputPag : this.finalResult) {
-                if (!predictsFalseIndependence(this.associations, outputPag)) {
-                    final Set<Triple> underlineTriples = new HashSet<>(outputPag.getUnderLines());
-                    for (final Triple triple : underlineTriples) {
+            for (Graph outputPag : finalResult) {
+                if (!this.predictsFalseIndependence(associations, outputPag)) {
+                    Set<Triple> underlineTriples = new HashSet<>(outputPag.getUnderLines());
+                    for (Triple triple : underlineTriples) {
                         outputPag.removeUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
                     }
                     outputSet.add(outputPag);
@@ -533,15 +534,15 @@ public class IonJoeModifications {
         }
 
 //        outputSet = applyKnowledge(outputSet);
-        outputSet = checkPaths(outputSet);
+        outputSet = this.checkPaths(outputSet);
 
-        this.output.addAll(outputSet);
+        output.addAll(outputSet);
         TetradLogger.getInstance().log("info", "Step 5: " + (System.currentTimeMillis() - steps) / 1000. + "s");
-        this.runtime = ((System.currentTimeMillis() - start) / 1000.);
-        logGraphs("\nReturning output (" + this.output.size() + " Graphs):", this.output);
-        final double currentUsage = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-        if (currentUsage > this.maxMemory) this.maxMemory = currentUsage;
-        return this.output;
+        runtime = ((System.currentTimeMillis() - start) / 1000.);
+        this.logGraphs("\nReturning output (" + output.size() + " Graphs):", output);
+        double currentUsage = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+        if (currentUsage > maxMemory) maxMemory = currentUsage;
+        return output;
     }
 
     // returns total runtime and times for hitting set calculations
@@ -550,15 +551,15 @@ public class IonJoeModifications {
         double totalhit = 0;
         double longesthit = 0;
         double averagehit = 0;
-        for (final Double i : this.recHitTimes) {
+        for (Double i : recHitTimes) {
             totalhit += i;
-            averagehit += i / this.recHitTimes.size();
+            averagehit += i / recHitTimes.size();
             if (i > longesthit) {
                 longesthit = i;
             }
         }
-        final List<String> list = new ArrayList<>();
-        list.add(Double.toString(this.runtime));
+        List<String> list = new ArrayList<>();
+        list.add(Double.toString(runtime));
         list.add(Double.toString(totalhit));
         list.add(Double.toString(longesthit));
         list.add(Double.toString(averagehit));
@@ -568,7 +569,7 @@ public class IonJoeModifications {
     // returns the maximum memory used in a run of ION
 
     public double getMaxMemUsage() {
-        return this.maxMemory;
+        return maxMemory;
     }
 
     // return hitting set sizes
@@ -577,14 +578,14 @@ public class IonJoeModifications {
         int totalit = 0;
         int largestit = 0;
         int averageit = 0;
-        for (final Integer i : this.recGraphs) {
+        for (Integer i : recGraphs) {
             totalit += i;
-            averageit += i / this.recGraphs.size();
+            averageit += i / recGraphs.size();
             if (i > largestit) {
                 largestit = i;
             }
         }
-        final List<Integer> list = new ArrayList<>();
+        List<Integer> list = new ArrayList<>();
         list.add(totalit);
         list.add(largestit);
         list.add(averageit);
@@ -594,24 +595,24 @@ public class IonJoeModifications {
     // summarizes time and hitting set time and size information for latex
 
     public String getStats() {
-        String stats = "Total running time:  " + this.runtime + "\\\\";
+        String stats = "Total running time:  " + runtime + "\\\\";
         int totalit = 0;
         int largestit = 0;
         int averageit = 0;
-        for (final Integer i : this.recGraphs) {
+        for (Integer i : recGraphs) {
             totalit += i;
             averageit += i;
             if (i > largestit) {
                 largestit = i;
             }
         }
-        averageit /= this.recGraphs.size();
+        averageit /= recGraphs.size();
         double totalhit = 0;
         double longesthit = 0;
         double averagehit = 0;
-        for (final Double i : this.recHitTimes) {
+        for (Double i : recHitTimes) {
             totalhit += i;
-            averagehit += i / this.recHitTimes.size();
+            averagehit += i / recHitTimes.size();
             if (i > longesthit) {
                 longesthit = i;
             }
@@ -630,11 +631,11 @@ public class IonJoeModifications {
     /**
      * Logs a set of graphs with a corresponding message
      */
-    private void logGraphs(final String message, final List<? extends Graph> graphs) {
+    private void logGraphs(String message, List<? extends Graph> graphs) {
         if (message != null) {
             TetradLogger.getInstance().log("graph", message);
         }
-        for (final Graph graph : graphs) {
+        for (Graph graph : graphs) {
             TetradLogger.getInstance().log("graph", graph.toString());
         }
     }
@@ -642,8 +643,8 @@ public class IonJoeModifications {
     /**
      * Generates NodePairs of all possible pairs of nodes from given list of nodes.
      */
-    private List<NodePair> allNodePairs(final List<Node> nodes) {
-        final List<NodePair> nodePairs = new ArrayList<>();
+    private List<NodePair> allNodePairs(List<Node> nodes) {
+        List<NodePair> nodePairs = new ArrayList<>();
         for (int j = 0; j < nodes.size() - 1; j++) {
             for (int k = j + 1; k < nodes.size(); k++) {
                 nodePairs.add(new NodePair(nodes.get(j), nodes.get(k)));
@@ -655,10 +656,10 @@ public class IonJoeModifications {
     /**
      * Finds all node pairs that are not adjacent in an input graph
      */
-    private Set<NodePair> nonadjacencies(final Graph graph) {
-        final Set<NodePair> nonadjacencies = new HashSet<>();
-        for (final Graph inputPag : this.input) {
-            for (final NodePair pair : allNodePairs(inputPag.getNodes())) {
+    private Set<NodePair> nonadjacencies(Graph graph) {
+        Set<NodePair> nonadjacencies = new HashSet<>();
+        for (Graph inputPag : input) {
+            for (NodePair pair : this.allNodePairs(inputPag.getNodes())) {
                 if (!inputPag.isAdjacentTo(pair.getFirst(), pair.getSecond())) {
                     nonadjacencies.add(new NodePair(graph.getNode(pair.getFirst().getName()), graph.getNode(pair.getSecond().getName())));
                 }
@@ -673,11 +674,11 @@ public class IonJoeModifications {
      * is a conflict and recording definite noncolliders.
      */
 
-    private void transferLocal(final Graph graph) {
-        final Set<NodePair> nonadjacencies = nonadjacencies(graph);
-        for (final Graph pag : this.input) {
-            for (final Edge edge : pag.getEdges()) {
-                final NodePair graphNodePair = new NodePair(graph.getNode(edge.getNode1().getName()), graph.getNode(edge.getNode2().getName()));
+    private void transferLocal(Graph graph) {
+        Set<NodePair> nonadjacencies = this.nonadjacencies(graph);
+        for (Graph pag : input) {
+            for (Edge edge : pag.getEdges()) {
+                NodePair graphNodePair = new NodePair(graph.getNode(edge.getNode1().getName()), graph.getNode(edge.getNode2().getName()));
                 if (nonadjacencies.contains(graphNodePair)) {
                     continue;
                 }
@@ -685,8 +686,8 @@ public class IonJoeModifications {
                     graph.addEdge(new Edge(graphNodePair.getFirst(), graphNodePair.getSecond(), edge.getEndpoint1(), edge.getEndpoint2()));
                     continue;
                 }
-                final Endpoint first = edge.getEndpoint1();
-                final Endpoint firstCurrent = graph.getEndpoint(graphNodePair.getSecond(), graphNodePair.getFirst());
+                Endpoint first = edge.getEndpoint1();
+                Endpoint firstCurrent = graph.getEndpoint(graphNodePair.getSecond(), graphNodePair.getFirst());
                 if (!first.equals(Endpoint.CIRCLE)) {
                     if ((first.equals(Endpoint.ARROW) && firstCurrent.equals(Endpoint.TAIL)) ||
                             (first.equals(Endpoint.TAIL) && firstCurrent.equals(Endpoint.ARROW))) {
@@ -695,8 +696,8 @@ public class IonJoeModifications {
                         graph.setEndpoint(graphNodePair.getSecond(), graphNodePair.getFirst(), edge.getEndpoint1());
                     }
                 }
-                final Endpoint second = edge.getEndpoint2();
-                final Endpoint secondCurrent = graph.getEndpoint(graphNodePair.getFirst(), graphNodePair.getSecond());
+                Endpoint second = edge.getEndpoint2();
+                Endpoint secondCurrent = graph.getEndpoint(graphNodePair.getFirst(), graphNodePair.getSecond());
                 if (!second.equals(Endpoint.CIRCLE)) {
                     if ((second.equals(Endpoint.ARROW) && secondCurrent.equals(Endpoint.TAIL)) ||
                             (second.equals(Endpoint.TAIL) && secondCurrent.equals(Endpoint.ARROW))) {
@@ -706,11 +707,11 @@ public class IonJoeModifications {
                     }
                 }
             }
-            for (final Triple triple : pag.getUnderLines()) {
-                final Triple graphTriple = new Triple(graph.getNode(triple.getX().getName()), graph.getNode(triple.getY().getName()), graph.getNode(triple.getZ().getName()));
+            for (Triple triple : pag.getUnderLines()) {
+                Triple graphTriple = new Triple(graph.getNode(triple.getX().getName()), graph.getNode(triple.getY().getName()), graph.getNode(triple.getZ().getName()));
                 if (graphTriple.alongPathIn(graph)) {
                     graph.addUnderlineTriple(graphTriple.getX(), graphTriple.getY(), graphTriple.getZ());
-                    this.definiteNoncolliders.add(graphTriple);
+                    definiteNoncolliders.add(graphTriple);
                 }
             }
         }
@@ -720,10 +721,10 @@ public class IonJoeModifications {
      * @return all triples in a graph
      */
 
-    private Set<Triple> getAllTriples(final Graph graph) {
-        final Set<Triple> triples = new HashSet<>();
-        for (final Node node : graph.getNodes()) {
-            final List<Node> adjNodes = graph.getAdjacentNodes(node);
+    private Set<Triple> getAllTriples(Graph graph) {
+        Set<Triple> triples = new HashSet<>();
+        for (Node node : graph.getNodes()) {
+            List<Node> adjNodes = graph.getAdjacentNodes(node);
             for (int i = 0; i < adjNodes.size() - 1; i++) {
                 for (int j = i + 1; j < adjNodes.size(); j++) {
                     triples.add(new Triple(adjNodes.get(i), node, adjNodes.get(j)));
@@ -738,28 +739,28 @@ public class IonJoeModifications {
      * sets for any two input PAGs
      */
 
-    private List<NodePair> nonIntersection(final Graph graph) {
-        final List<Set<String>> varsets = new ArrayList<>();
-        for (final Graph inputPag : this.input) {
-            final Set<String> varset = new HashSet<>();
-            for (final Node node : inputPag.getNodes()) {
+    private List<NodePair> nonIntersection(Graph graph) {
+        List<Set<String>> varsets = new ArrayList<>();
+        for (Graph inputPag : input) {
+            Set<String> varset = new HashSet<>();
+            for (Node node : inputPag.getNodes()) {
                 varset.add(node.getName());
             }
             varsets.add(varset);
         }
-        final List<NodePair> pairs = new ArrayList();
+        List<NodePair> pairs = new ArrayList();
 
-        for (int i = 0; i < this.variables.size() - 1; i++) {
-            for (int j = i + 1; j < this.variables.size(); j++) {
+        for (int i = 0; i < variables.size() - 1; i++) {
+            for (int j = i + 1; j < variables.size(); j++) {
                 boolean intersection = false;
-                for (final Set<String> varset : varsets) {
-                    if (varset.containsAll(Arrays.asList(this.variables.get(i), this.variables.get(j)))) {
+                for (Set<String> varset : varsets) {
+                    if (varset.containsAll(Arrays.asList(variables.get(i), variables.get(j)))) {
                         intersection = true;
                         break;
                     }
                 }
                 if (!intersection) {
-                    pairs.add(new NodePair(graph.getNode(this.variables.get(i)), graph.getNode(this.variables.get(j))));
+                    pairs.add(new NodePair(graph.getNode(variables.get(i)), graph.getNode(variables.get(j))));
                 }
             }
         }
@@ -769,33 +770,33 @@ public class IonJoeModifications {
     /**
      * Finds the association or seperation sets for every pair of nodes.
      */
-    private List<Set<IonIndependenceFacts>> findSepAndAssoc(final Graph graph) {
-        final Set<IonIndependenceFacts> separations = new HashSet<>();
-        final Set<IonIndependenceFacts> associations = new HashSet<>();
-        final List<NodePair> allNodes = allNodePairs(graph.getNodes());
+    private List<Set<IonIndependenceFacts>> findSepAndAssoc(Graph graph) {
+        Set<IonIndependenceFacts> separations = new HashSet<>();
+        Set<IonIndependenceFacts> associations = new HashSet<>();
+        List<NodePair> allNodes = this.allNodePairs(graph.getNodes());
 
-        for (final NodePair pair : allNodes) {
-            final Node x = pair.getFirst();
-            final Node y = pair.getSecond();
+        for (NodePair pair : allNodes) {
+            Node x = pair.getFirst();
+            Node y = pair.getSecond();
 
-            final List<Node> variables = new ArrayList<>(graph.getNodes());
+            List<Node> variables = new ArrayList<>(graph.getNodes());
             variables.remove(x);
             variables.remove(y);
 
-            final List<Set<Node>> subsets = SearchGraphUtils.powerSet(variables);
+            List<Set<Node>> subsets = SearchGraphUtils.powerSet(variables);
 
-            final IonIndependenceFacts indep = new IonIndependenceFacts(x, y, new HashSet<List<Node>>());
-            final IonIndependenceFacts assoc = new IonIndependenceFacts(x, y, new HashSet<List<Node>>());
+            IonIndependenceFacts indep = new IonIndependenceFacts(x, y, new HashSet<List<Node>>());
+            IonIndependenceFacts assoc = new IonIndependenceFacts(x, y, new HashSet<List<Node>>());
             boolean addIndep = false;
             boolean addAssoc = false;
 
-            for (final Graph pag : this.input) {
-                for (final Set<Node> subset : subsets) {
-                    if (containsAll(pag, subset, pair)) {
-                        final Node pagX = pag.getNode(x.getName());
-                        final Node pagY = pag.getNode(y.getName());
-                        final ArrayList<Node> pagSubset = new ArrayList<>();
-                        for (final Node node : subset) {
+            for (Graph pag : input) {
+                for (Set<Node> subset : subsets) {
+                    if (this.containsAll(pag, subset, pair)) {
+                        Node pagX = pag.getNode(x.getName());
+                        Node pagY = pag.getNode(y.getName());
+                        ArrayList<Node> pagSubset = new ArrayList<>();
+                        for (Node node : subset) {
                             pagSubset.add(pag.getNode(node.getName()));
                         }
                         if (pag.isDSeparatedFrom(pagX, pagY, new ArrayList<>(pagSubset))) {
@@ -815,7 +816,7 @@ public class IonJoeModifications {
 
         }
 
-        final List<Set<IonIndependenceFacts>> facts = new ArrayList<>(2);
+        List<Set<IonIndependenceFacts>> facts = new ArrayList<>(2);
         facts.add(0, separations);
         facts.add(1, associations);
         return facts;
@@ -824,12 +825,12 @@ public class IonJoeModifications {
     /**
      * States whether the given graph contains the nodes in the given set and the node pair.
      */
-    private boolean containsAll(final Graph g, final Set<Node> nodes, final NodePair pair) {
-        final List<String> nodeNames = g.getNodeNames();
+    private boolean containsAll(Graph g, Set<Node> nodes, NodePair pair) {
+        List<String> nodeNames = g.getNodeNames();
         if (!nodeNames.contains(pair.getFirst().getName()) || !nodeNames.contains(pair.getSecond().getName())) {
             return false;
         }
-        for (final Node node : nodes) {
+        for (Node node : nodes) {
             if (!nodeNames.contains(node.getName())) {
                 return false;
             }
@@ -841,9 +842,9 @@ public class IonJoeModifications {
      * Checks given pag against a set of necessary associations to determine if the pag implies an indepedence where one
      * is known to not exist.
      */
-    private boolean predictsFalseIndependence(final Set<IonIndependenceFacts> associations, final Graph pag) {
-        for (final IonIndependenceFacts assocFact : associations)
-            for (final List<Node> conditioningSet : assocFact.getZ())
+    private boolean predictsFalseIndependence(Set<IonIndependenceFacts> associations, Graph pag) {
+        for (IonIndependenceFacts assocFact : associations)
+            for (List<Node> conditioningSet : assocFact.getZ())
                 if (pag.isDSeparatedFrom(
                         assocFact.getX(), assocFact.getY(), conditioningSet))
                     return true;
@@ -853,12 +854,12 @@ public class IonJoeModifications {
     /**
      * @return all the triples in the graph that can be either oriented as a collider or non-collider.
      */
-    private Set<Triple> getPossibleTriples(final Graph pag) {
-        final Set<Triple> possibleTriples = new HashSet<>();
-        for (final Triple triple : getAllTriples(pag)) {
+    private Set<Triple> getPossibleTriples(Graph pag) {
+        Set<Triple> possibleTriples = new HashSet<>();
+        for (Triple triple : this.getAllTriples(pag)) {
             if (pag.isAdjacentTo(triple.getX(), triple.getY()) && pag.isAdjacentTo(triple.getY(), triple.getZ())
                     && !pag.isUnderlineTriple(triple.getX(), triple.getY(), triple.getZ()) &&
-                    !this.definiteNoncolliders.contains(triple) &&
+                    !definiteNoncolliders.contains(triple) &&
                     !pag.isDefCollider(triple.getX(), triple.getY(), triple.getZ())) {
                 possibleTriples.add(triple);
             }
@@ -870,32 +871,32 @@ public class IonJoeModifications {
      * Given a map between sets of conditioned on variables and lists of PossibleDConnectingPaths, finds all the
      * possible GraphChanges which could be used to block said undirectedPaths
      */
-    private List<Set<GraphChange>> findChanges(final Map<Collection<Node>, List<PossibleDConnectingPath>> paths) {
-        final List<Set<GraphChange>> pagChanges = new ArrayList<>();
+    private List<Set<GraphChange>> findChanges(Map<Collection<Node>, List<PossibleDConnectingPath>> paths) {
+        List<Set<GraphChange>> pagChanges = new ArrayList<>();
 
-        final Set<Map.Entry<Collection<Node>, List<PossibleDConnectingPath>>> entries = paths.entrySet();
+        Set<Entry<Collection<Node>, List<PossibleDConnectingPath>>> entries = paths.entrySet();
         /* Loop through each entry, ie each conditioned set of variables. */
-        for (final Map.Entry<Collection<Node>, List<PossibleDConnectingPath>> entry : entries) {
-            final Collection<Node> conditions = entry.getKey();
-            final List<PossibleDConnectingPath> dConnecting = entry.getValue();
+        for (Entry<Collection<Node>, List<PossibleDConnectingPath>> entry : entries) {
+            Collection<Node> conditions = entry.getKey();
+            List<PossibleDConnectingPath> dConnecting = entry.getValue();
 
             /* loop through each path */
-            for (final PossibleDConnectingPath possible : dConnecting) {
-                final List<Node> possPath = possible.getPath();
+            for (PossibleDConnectingPath possible : dConnecting) {
+                List<Node> possPath = possible.getPath();
                 /* Created with 2*# of undirectedPaths as appoximation. might have to increase size once */
-                final Set<GraphChange> pathChanges = new HashSet<>(2 * possPath.size());
+                Set<GraphChange> pathChanges = new HashSet<>(2 * possPath.size());
 
                 /* find those conditions which are not along the path (used in colider) */
-                final List<Node> outsidePath = new ArrayList<>(conditions.size());
-                for (final Node condition : conditions) {
+                List<Node> outsidePath = new ArrayList<>(conditions.size());
+                for (Node condition : conditions) {
                     if (!possPath.contains(condition))
                         outsidePath.add(condition);
                 }
 
                 /* Walk through path, node by node */
                 for (int i = 0; i < possPath.size() - 1; i++) {
-                    final Node current = possPath.get(i);
-                    final Node next = possPath.get(i + 1);
+                    Node current = possPath.get(i);
+                    Node next = possPath.get(i + 1);
                     GraphChange gc;
 
                     /* for each pair of nodes, add the operation to remove their edge */
@@ -907,7 +908,7 @@ public class IonJoeModifications {
                      * set, add the operation to orient as a nonColider around that node */
                     if (conditions.contains(current) && i > 0) {
                         gc = new GraphChange();
-                        final Triple nonColider = new Triple(possPath.get(i - 1), current, next);
+                        Triple nonColider = new Triple(possPath.get(i - 1), current, next);
                         gc.addNonCollider(nonColider);
                         pathChanges.add(gc);
                     }
@@ -916,13 +917,13 @@ public class IonJoeModifications {
                      * is necessary though to ensure that there are no undirectedPaths implying that a
                      * conditioned variable (even outside the path) is a decendant of a colider */
                     if ((!conditions.contains(current)) && i > 0) {
-                        final Triple colider = new Triple(possPath.get(i - 1), current, next);
+                        Triple colider = new Triple(possPath.get(i - 1), current, next);
 
                         if (possible.getPag().isUnderlineTriple(possPath.get(i - 1), current, next))
                             continue;
 
-                        final Edge edge1 = possible.getPag().getEdge(colider.getX(), colider.getY());
-                        final Edge edge2 = possible.getPag().getEdge(colider.getZ(), colider.getY());
+                        Edge edge1 = possible.getPag().getEdge(colider.getX(), colider.getY());
+                        Edge edge2 = possible.getPag().getEdge(colider.getZ(), colider.getY());
 
                         if (edge1.getNode1().equals(colider.getY())) {
                             if (edge1.getEndpoint1().equals(Endpoint.TAIL)) {
@@ -954,7 +955,7 @@ public class IonJoeModifications {
 
                         /* ensure nondecendency in possible path between getModel and each conditioned
                          * variable outside the path */
-                        for (final Node outside : outsidePath) {
+                        for (Node outside : outsidePath) {
 
                             /* list of possible decendant undirectedPaths */
 
@@ -971,18 +972,18 @@ public class IonJoeModifications {
                             }
 
                             /* loop over each possible path which might indicate decendency */
-                            for (final PossibleDConnectingPath decendantPDCPath : decendantPaths) {
-                                final List<Node> decendantPath = decendantPDCPath.getPath();
+                            for (PossibleDConnectingPath decendantPDCPath : decendantPaths) {
+                                List<Node> decendantPath = decendantPDCPath.getPath();
 
                                 /* walk down path checking orientation (path may already
                                  * imply non-decendency) and creating changes if need be*/
                                 boolean impliesDecendant = true;
-                                final Set<GraphChange> colideChanges = new HashSet<>();
+                                Set<GraphChange> colideChanges = new HashSet<>();
                                 for (int j = 0; j < decendantPath.size() - 1; j++) {
-                                    final Node from = decendantPath.get(j);
+                                    Node from = decendantPath.get(j);
                                     // chaneges from +1
-                                    final Node to = decendantPath.get(j + 1);
-                                    final Edge currentEdge = possible.getPag().getEdge(from, to);
+                                    Node to = decendantPath.get(j + 1);
+                                    Edge currentEdge = possible.getPag().getEdge(from, to);
 
                                     if (currentEdge.getEndpoint1().equals(Endpoint.ARROW)) {
                                         impliesDecendant = false;
@@ -1015,20 +1016,20 @@ public class IonJoeModifications {
     /**
      * Constructs PossRemove, every combination of removing of not removing redudant undirectedPaths
      */
-    private List<Graph> possRemove(final Graph pag, final Map<Edge, Boolean> necEdges) {
+    private List<Graph> possRemove(Graph pag, Map<Edge, Boolean> necEdges) {
         // list of edges that can be removed
-        final List<Edge> remEdges = new ArrayList<>();
-        for (final Edge remEdge : necEdges.keySet()) {
+        List<Edge> remEdges = new ArrayList<>();
+        for (Edge remEdge : necEdges.keySet()) {
             if (!necEdges.get(remEdge))
                 remEdges.add(remEdge);
         }
         // powerset of edges that can be removed
-        final PowerSet<Edge> pset = new PowerSet<>(remEdges);
-        final List<Graph> possRemove = new ArrayList<>();
+        PowerSet<Edge> pset = new PowerSet<>(remEdges);
+        List<Graph> possRemove = new ArrayList<>();
         // for each set of edges in the powerset remove edges from graph and add to PossRemove
-        for (final Set<Edge> set : pset) {
-            final Graph newPag = new EdgeListGraph(pag);
-            for (final Edge edge : set) {
+        for (Set<Edge> set : pset) {
+            Graph newPag = new EdgeListGraph(pag);
+            for (Edge edge : set) {
                 newPag.removeEdge(edge);
             }
             possRemove.add(newPag);
@@ -1040,50 +1041,50 @@ public class IonJoeModifications {
      * Does the final set of orientations after colliders have been oriented
      */
 
-    private void doFinalOrientation(final Graph graph) {
-        this.discrimGraphs.clear();
-        final Set<Graph> currentDiscrimGraphs = new HashSet<>();
+    private void doFinalOrientation(Graph graph) {
+        discrimGraphs.clear();
+        Set<Graph> currentDiscrimGraphs = new HashSet<>();
         currentDiscrimGraphs.add(graph);
-        while (this.changeFlag) {
-            this.changeFlag = false;
-            currentDiscrimGraphs.addAll(this.discrimGraphs);
-            this.discrimGraphs.clear();
-            for (final Graph newGraph : currentDiscrimGraphs) {
-                doubleTriangle(newGraph);
-                awayFromColliderAncestorCycle(newGraph);
-                if (!discrimPaths(newGraph)) {
-                    if (this.changeFlag) {
-                        this.discrimGraphs.add(newGraph);
+        while (changeFlag) {
+            changeFlag = false;
+            currentDiscrimGraphs.addAll(discrimGraphs);
+            discrimGraphs.clear();
+            for (Graph newGraph : currentDiscrimGraphs) {
+                this.doubleTriangle(newGraph);
+                this.awayFromColliderAncestorCycle(newGraph);
+                if (!this.discrimPaths(newGraph)) {
+                    if (changeFlag) {
+                        discrimGraphs.add(newGraph);
                     } else {
-                        this.finalResult.add(newGraph);
+                        finalResult.add(newGraph);
                     }
                 }
             }
             currentDiscrimGraphs.clear();
         }
-        this.changeFlag = true;
+        changeFlag = true;
     }
 
     /**
      * Implements the double-triangle orientation rule, which states that if D*-oB, A*->B<-*C and A*-*D*-*C is a
      * noncollider, then D*->B.
      */
-    private void doubleTriangle(final Graph graph) {
-        final List<Node> nodes = graph.getNodes();
+    private void doubleTriangle(Graph graph) {
+        List<Node> nodes = graph.getNodes();
 
-        for (final Node B : nodes) {
+        for (Node B : nodes) {
 
-            final List<Node> intoBArrows = graph.getNodesInTo(B, Endpoint.ARROW);
-            final List<Node> intoBCircles = graph.getNodesInTo(B, Endpoint.CIRCLE);
+            List<Node> intoBArrows = graph.getNodesInTo(B, Endpoint.ARROW);
+            List<Node> intoBCircles = graph.getNodesInTo(B, Endpoint.CIRCLE);
 
             //possible A's and C's are those with arrows into B
-            final List<Node> possA = new LinkedList<>(intoBArrows);
-            final List<Node> possC = new LinkedList<>(intoBArrows);
+            List<Node> possA = new LinkedList<>(intoBArrows);
+            List<Node> possC = new LinkedList<>(intoBArrows);
 
             //possible D's are those with circles into B
-            for (final Node D : intoBCircles) {
-                for (final Node A : possA) {
-                    for (final Node C : possC) {
+            for (Node D : intoBCircles) {
+                for (Node A : possA) {
+                    for (Node C : possC) {
                         if (C == A) {
                             continue;
                         }
@@ -1100,12 +1101,12 @@ public class IonJoeModifications {
                         }
 
                         //if all of the previous tests pass, orient D*-oB as D*->B
-                        if (!isArrowpointAllowed(graph, D, B)) {
+                        if (!this.isArrowpointAllowed(graph, D, B)) {
                             continue;
                         }
 
                         graph.setEndpoint(D, B, Endpoint.ARROW);
-                        this.changeFlag = true;
+                        changeFlag = true;
                     }
                 }
             }
@@ -1114,55 +1115,55 @@ public class IonJoeModifications {
 
     // Does only the ancestor and cycle rules of these repeatedly until no changes
 
-    private void awayFromAncestorCycle(final Graph graph) {
-        while (this.changeFlag) {
-            this.changeFlag = false;
-            final List<Node> nodes = graph.getNodes();
+    private void awayFromAncestorCycle(Graph graph) {
+        while (changeFlag) {
+            changeFlag = false;
+            List<Node> nodes = graph.getNodes();
 
-            for (final Node B : nodes) {
-                final List<Node> adj = graph.getAdjacentNodes(B);
+            for (Node B : nodes) {
+                List<Node> adj = graph.getAdjacentNodes(B);
 
                 if (adj.size() < 2) {
                     continue;
                 }
 
-                final ChoiceGenerator cg = new ChoiceGenerator(adj.size(), 2);
+                ChoiceGenerator cg = new ChoiceGenerator(adj.size(), 2);
                 int[] combination;
 
                 while ((combination = cg.next()) != null) {
-                    final Node A = adj.get(combination[0]);
-                    final Node C = adj.get(combination[1]);
+                    Node A = adj.get(combination[0]);
+                    Node C = adj.get(combination[1]);
 
                     //choice gen doesnt do diff orders, so must switch A & C around.
-                    awayFromAncestor(graph, A, B, C);
-                    awayFromAncestor(graph, C, B, A);
-                    awayFromCycle(graph, A, B, C);
-                    awayFromCycle(graph, C, B, A);
+                    this.awayFromAncestor(graph, A, B, C);
+                    this.awayFromAncestor(graph, C, B, A);
+                    this.awayFromCycle(graph, A, B, C);
+                    this.awayFromCycle(graph, C, B, A);
                 }
             }
         }
-        this.changeFlag = true;
+        changeFlag = true;
     }
 
     // Does all 3 of these rules at once instead of going through all
     // triples multiple times per iteration of doFinalOrientation.
 
-    private void awayFromColliderAncestorCycle(final Graph graph) {
-        final List<Node> nodes = graph.getNodes();
+    private void awayFromColliderAncestorCycle(Graph graph) {
+        List<Node> nodes = graph.getNodes();
 
-        for (final Node B : nodes) {
-            final List<Node> adj = graph.getAdjacentNodes(B);
+        for (Node B : nodes) {
+            List<Node> adj = graph.getAdjacentNodes(B);
 
             if (adj.size() < 2) {
                 continue;
             }
 
-            final ChoiceGenerator cg = new ChoiceGenerator(adj.size(), 2);
+            ChoiceGenerator cg = new ChoiceGenerator(adj.size(), 2);
             int[] combination;
 
             while ((combination = cg.next()) != null) {
-                final Node A = adj.get(combination[0]);
-                final Node C = adj.get(combination[1]);
+                Node A = adj.get(combination[0]);
+                Node C = adj.get(combination[1]);
 
                 //choice gen doesnt do diff orders, so must switch A & C around.
 //                awayFromCollider(graph, A, B, C);
@@ -1171,10 +1172,10 @@ public class IonJoeModifications {
 //                awayFromAncestor(graph, C, B, A);
 //                awayFromCycle(graph, A, B, C);
 //                awayFromCycle(graph, C, B, A);
-                ruleR1(A, B, C, graph);
-                ruleR1(C, B, A, graph);
-                ruleR2(A, B, C, graph);
-                ruleR2(C, B, A, graph);
+                this.ruleR1(A, B, C, graph);
+                this.ruleR1(C, B, A, graph);
+                this.ruleR2(A, B, C, graph);
+                this.ruleR2(C, B, A, graph);
 
             }
         }
@@ -1182,13 +1183,13 @@ public class IonJoeModifications {
 
     /// R1, away from collider
 
-    private void ruleR1(final Node a, final Node b, final Node c, final Graph graph) {
+    private void ruleR1(Node a, Node b, Node c, Graph graph) {
         if (graph.isAdjacentTo(a, c)) {
             return;
         }
 
         if (graph.getEndpoint(a, b) == Endpoint.ARROW && graph.getEndpoint(c, b) == Endpoint.CIRCLE) {
-            if (!isArrowpointAllowed(graph, b, c)) {
+            if (!this.isArrowpointAllowed(graph, b, c)) {
                 return;
             }
 
@@ -1200,14 +1201,14 @@ public class IonJoeModifications {
     //if Ao->c and a-->b-->c, then a-->c
     // Zhang's rule R2, awy from ancestor.
 
-    private void ruleR2(final Node a, final Node b, final Node c, final Graph graph) {
+    private void ruleR2(Node a, Node b, Node c, Graph graph) {
         if (!graph.isAdjacentTo(a, c)) {
             return;
         }
 
         if (graph.getEndpoint(b, a) == Endpoint.TAIL && graph.getEndpoint(a, b) == Endpoint.ARROW
                 && graph.getEndpoint(b, c) == Endpoint.ARROW && graph.getEndpoint(a, c) == Endpoint.CIRCLE) {
-            if (!isArrowpointAllowed(graph, a, c)) {
+            if (!this.isArrowpointAllowed(graph, a, c)) {
                 return;
             }
 
@@ -1215,7 +1216,7 @@ public class IonJoeModifications {
         } else if (graph.getEndpoint(a, b) == Endpoint.ARROW && graph.getEndpoint(c, b) == Endpoint.TAIL
                 && graph.getEndpoint(b, c) == Endpoint.ARROW && graph.getEndpoint(a, c) == Endpoint.CIRCLE
         ) {
-            if (!isArrowpointAllowed(graph, a, c)) {
+            if (!this.isArrowpointAllowed(graph, a, c)) {
                 return;
             }
 
@@ -1224,7 +1225,7 @@ public class IonJoeModifications {
     }
 
 
-    private boolean isArrowpointAllowed(final Graph graph, final Node x, final Node y) {
+    private boolean isArrowpointAllowed(Graph graph, Node x, Node y) {
         if (graph.getEndpoint(x, y) == Endpoint.ARROW) {
             return true;
         }
@@ -1243,27 +1244,27 @@ public class IonJoeModifications {
     // if a*->Bo-oC and not a*-*c, then a*->b-->c
     // (orient either circle if present, don't need both)
 
-    private void awayFromCollider(final Graph graph, final Node a, final Node b, final Node c) {
-        final Endpoint BC = graph.getEndpoint(b, c);
-        final Endpoint CB = graph.getEndpoint(c, b);
+    private void awayFromCollider(Graph graph, Node a, Node b, Node c) {
+        Endpoint BC = graph.getEndpoint(b, c);
+        Endpoint CB = graph.getEndpoint(c, b);
 
         if (!(graph.isAdjacentTo(a, c)) &&
                 (graph.getEndpoint(a, b) == Endpoint.ARROW)) {
             if (CB == Endpoint.CIRCLE || CB == Endpoint.TAIL) {
                 if (BC == Endpoint.CIRCLE) {
-                    if (!isArrowpointAllowed(graph, b, c)) {
+                    if (!this.isArrowpointAllowed(graph, b, c)) {
                         return;
                     }
 
                     graph.setEndpoint(b, c, Endpoint.ARROW);
-                    this.changeFlag = true;
+                    changeFlag = true;
                 }
             }
 
             if (BC == Endpoint.CIRCLE || BC == Endpoint.ARROW) {
                 if (CB == Endpoint.CIRCLE) {
                     graph.setEndpoint(c, b, Endpoint.TAIL);
-                    this.changeFlag = true;
+                    changeFlag = true;
                 }
             }
         }
@@ -1271,7 +1272,7 @@ public class IonJoeModifications {
 
     //if a*-oC and either a-->b*->c or a*->b-->c, then a*->c
 
-    private void awayFromAncestor(final Graph graph, final Node a, final Node b, final Node c) {
+    private void awayFromAncestor(Graph graph, Node a, Node b, Node c) {
         if ((graph.isAdjacentTo(a, c)) &&
                 (graph.getEndpoint(a, c) == Endpoint.CIRCLE)) {
 
@@ -1280,25 +1281,25 @@ public class IonJoeModifications {
                     (graph.getEndpoint(b, a) == Endpoint.TAIL) ||
                             (graph.getEndpoint(c, b) == Endpoint.TAIL))) {
 
-                if (!isArrowpointAllowed(graph, a, c)) {
+                if (!this.isArrowpointAllowed(graph, a, c)) {
                     return;
                 }
 
                 graph.setEndpoint(a, c, Endpoint.ARROW);
-                this.changeFlag = true;
+                changeFlag = true;
             }
         }
     }
 
     //if Ao->c and a-->b-->c, then a-->c
 
-    private void awayFromCycle(final Graph graph, final Node a, final Node b, final Node c) {
+    private void awayFromCycle(Graph graph, Node a, Node b, Node c) {
         if ((graph.isAdjacentTo(a, c)) &&
                 (graph.getEndpoint(a, c) == Endpoint.ARROW) &&
                 (graph.getEndpoint(c, a) == Endpoint.CIRCLE)) {
             if (graph.isDirectedFromTo(a, b) && graph.isDirectedFromTo(b, c)) {
                 graph.setEndpoint(c, a, Endpoint.TAIL);
-                this.changeFlag = true;
+                changeFlag = true;
             }
         }
     }
@@ -1314,32 +1315,32 @@ public class IonJoeModifications {
      * L....A --> C
      * </pre>
      */
-    private boolean discrimPaths(final Graph graph) {
-        final List<Node> nodes = graph.getNodes();
+    private boolean discrimPaths(Graph graph) {
+        List<Node> nodes = graph.getNodes();
 
-        for (final Node b : nodes) {
+        for (Node b : nodes) {
 
             //potential A and C candidate pairs are only those
             // that look like this:   A<-oBo->C  or  A<->Bo->C
-            final List<Node> possAandC = graph.getNodesOutTo(b, Endpoint.ARROW);
+            List<Node> possAandC = graph.getNodesOutTo(b, Endpoint.ARROW);
 
             //keep arrows and circles
-            final List<Node> possA = new LinkedList<>(possAandC);
+            List<Node> possA = new LinkedList<>(possAandC);
             possA.removeAll(graph.getNodesInTo(b, Endpoint.TAIL));
 
             //keep only circles
-            final List<Node> possC = new LinkedList<>(possAandC);
+            List<Node> possC = new LinkedList<>(possAandC);
             possC.retainAll(graph.getNodesInTo(b, Endpoint.CIRCLE));
 
-            for (final Node a : possA) {
-                for (final Node c : possC) {
+            for (Node a : possA) {
+                for (Node c : possC) {
                     if (!graph.isParentOf(a, c)) {
                         continue;
                     }
 
-                    final LinkedList<Node> reachable = new LinkedList<>();
+                    LinkedList<Node> reachable = new LinkedList<>();
                     reachable.add(a);
-                    if (reachablePathFindOrient(graph, a, b, c, reachable)) {
+                    if (this.reachablePathFindOrient(graph, a, b, c, reachable)) {
                         return true;
                     }
                 }
@@ -1353,12 +1354,12 @@ public class IonJoeModifications {
      * a). This is breadth-first, utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. </p> The body of
      * a DDP consists of colliders that are parents of c.
      */
-    private boolean reachablePathFindOrient(final Graph graph, final Node a, final Node b, final Node c,
-                                            final LinkedList<Node> reachable) {
-        final Set<Node> cParents = new HashSet<>(graph.getParents(c));
+    private boolean reachablePathFindOrient(Graph graph, Node a, Node b, Node c,
+                                            LinkedList<Node> reachable) {
+        Set<Node> cParents = new HashSet<>(graph.getParents(c));
 
         // Needed to avoid cycles in failure case.
-        final Set<Node> visited = new HashSet<>();
+        Set<Node> visited = new HashSet<>();
         visited.add(b);
         visited.add(c);
 
@@ -1366,14 +1367,14 @@ public class IonJoeModifications {
         // the "visited" set.  b and c are added explicitly here; a will be
         // added in the first while iteration.
         while (reachable.size() > 0) {
-            final Node x = reachable.removeFirst();
+            Node x = reachable.removeFirst();
             visited.add(x);
 
             // Possible DDP path endpoints.
-            final List<Node> pathExtensions = graph.getNodesInTo(x, Endpoint.ARROW);
+            List<Node> pathExtensions = graph.getNodesInTo(x, Endpoint.ARROW);
             pathExtensions.removeAll(visited);
 
-            for (final Node l : pathExtensions) {
+            for (Node l : pathExtensions) {
 
                 // If l is reachable and not adjacent to c, its a DDP
                 // endpoint, so do DDP orientation. Otherwise, if l <-> c,
@@ -1382,7 +1383,7 @@ public class IonJoeModifications {
 
                     // Check whether <a, b, c> should be reoriented given
                     // that l is not adjacent to c; if so, orient and stop.
-                    doDdpOrientation(graph, l, a, b, c);
+                    this.doDdpOrientation(graph, l, a, b, c);
                     return true;
                 } else if (cParents.contains(l)) {
                     if (graph.getEndpoint(x, l) == Endpoint.ARROW) {
@@ -1398,37 +1399,37 @@ public class IonJoeModifications {
      * Orients the edges inside the definte discriminating path triangle. Takes the left endpoint, and a,b,c as
      * arguments.
      */
-    private void doDdpOrientation(final Graph graph, final Node l, final Node a, final Node b, final Node c) {
-        this.changeFlag = true;
-        for (final IonIndependenceFacts iif : this.separations) {
+    private void doDdpOrientation(Graph graph, Node l, Node a, Node b, Node c) {
+        changeFlag = true;
+        for (IonIndependenceFacts iif : separations) {
             if ((iif.getX().equals(l) && iif.getY().equals(c)) ||
                     iif.getY().equals(l) && iif.getX().equals(c)) {
-                for (final List<Node> condSet : iif.getZ()) {
+                for (List<Node> condSet : iif.getZ()) {
                     if (condSet.contains(b)) {
                         graph.setEndpoint(c, b, Endpoint.TAIL);
-                        this.discrimGraphs.add(graph);
+                        discrimGraphs.add(graph);
                         return;
                     }
                 }
                 break;
             }
         }
-        final Graph newGraph1 = new EdgeListGraph(graph);
+        Graph newGraph1 = new EdgeListGraph(graph);
         newGraph1.setEndpoint(a, b, Endpoint.ARROW);
         newGraph1.setEndpoint(c, b, Endpoint.ARROW);
-        this.discrimGraphs.add(newGraph1);
-        final Graph newGraph2 = new EdgeListGraph(graph);
+        discrimGraphs.add(newGraph1);
+        Graph newGraph2 = new EdgeListGraph(graph);
         newGraph2.setEndpoint(c, b, Endpoint.TAIL);
-        this.discrimGraphs.add(newGraph2);
+        discrimGraphs.add(newGraph2);
     }
 
-    private Set<Graph> removeMoreSpecific(final Set<Graph> outputPags) {
-        final Set<Graph> moreSpecific = new HashSet<>();
+    private Set<Graph> removeMoreSpecific(Set<Graph> outputPags) {
+        Set<Graph> moreSpecific = new HashSet<>();
         // checks for and removes PAGs tht are more specific, same skeleton and orientations
         // except for one or more arrows or tails where another graph has circles, than other
         // pags in the output graphs that may be produced from the edge removes in step 4
-        for (final Graph pag : outputPags) {
-            for (final Graph pag2 : outputPags) {
+        for (Graph pag : outputPags) {
+            for (Graph pag2 : outputPags) {
                 // if same pag
                 if (pag.equals(pag2)) {
                     continue;
@@ -1438,7 +1439,7 @@ public class IonJoeModifications {
                     continue;
                 }
                 boolean sameAdjacencies = true;
-                for (final Edge edge1 : pag.getEdges()) {
+                for (Edge edge1 : pag.getEdges()) {
                     if (!pag2.isAdjacentTo(edge1.getNode1(), edge1.getNode2())) {
                         sameAdjacencies = false;
                     }
@@ -1447,8 +1448,8 @@ public class IonJoeModifications {
                     // checks to see if pag2 has same arrows and tails
                     boolean arrowstails = true;
                     boolean circles = true;
-                    for (final Edge edge2 : pag2.getEdges()) {
-                        final Edge edge1 = pag.getEdge(edge2.getNode1(), edge2.getNode2());
+                    for (Edge edge2 : pag2.getEdges()) {
+                        Edge edge1 = pag.getEdge(edge2.getNode1(), edge2.getNode2());
                         if (edge1.getNode1().equals(edge2.getNode1())) {
                             if (!edge2.getEndpoint1().equals(Endpoint.CIRCLE)) {
                                 if (!edge1.getEndpoint1().equals(edge2.getEndpoint1())) {
@@ -1496,23 +1497,23 @@ public class IonJoeModifications {
                 }
             }
         }
-        for (final Graph pag : moreSpecific) {
+        for (Graph pag : moreSpecific) {
             outputPags.remove(pag);
         }
         return outputPags;
     }
 
-    private Set<Graph> checkPaths(final Set<Graph> pags) {
-        final HashSet<Graph> pagsOut = new HashSet<>();
+    private Set<Graph> checkPaths(Set<Graph> pags) {
+        HashSet<Graph> pagsOut = new HashSet<>();
 
-        for (final Graph pag : pags) {
+        for (Graph pag : pags) {
             boolean allAccountFor = true;
 
             GRAPH:
-            for (final Graph inGraph : this.input) {
-                for (final Edge edge : inGraph.getEdges()) {
-                    final Node node1 = pag.getNode(edge.getNode1().getName());
-                    final Node node2 = pag.getNode(edge.getNode2().getName());
+            for (Graph inGraph : input) {
+                for (Edge edge : inGraph.getEdges()) {
+                    Node node1 = pag.getNode(edge.getNode1().getName());
+                    Node node2 = pag.getNode(edge.getNode2().getName());
 
                     if (Edges.isDirectedEdge(edge)) {
                         if (!pag.existsSemiDirectedPathFromTo(node1, Collections.singleton(node2))) {
@@ -1556,7 +1557,7 @@ public class IonJoeModifications {
         /**
          * Constructs a triple of nodes.
          */
-        public IonIndependenceFacts(final Node x, final Node y, final Collection<List<Node>> z) {
+        public IonIndependenceFacts(Node x, Node y, Collection<List<Node>> z) {
             if (x == null || y == null || z == null) {
                 throw new NullPointerException();
             }
@@ -1567,42 +1568,42 @@ public class IonJoeModifications {
         }
 
         public final Node getX() {
-            return this.x;
+            return x;
         }
 
         public final Node getY() {
-            return this.y;
+            return y;
         }
 
         public final Collection<List<Node>> getZ() {
-            return this.z;
+            return z;
         }
 
-        public void addMoreZ(final List<Node> moreZ) {
-            this.z.add(moreZ);
+        public void addMoreZ(List<Node> moreZ) {
+            z.add(moreZ);
         }
 
         public final int hashCode() {
             int hash = 17;
-            hash += 19 * this.x.hashCode() * this.y.hashCode();
-            hash += 23 * this.z.hashCode();
+            hash += 19 * x.hashCode() * y.hashCode();
+            hash += 23 * z.hashCode();
             return hash;
         }
 
-        public final boolean equals(final Object obj) {
+        public final boolean equals(Object obj) {
             if (!(obj instanceof IonIndependenceFacts)) {
                 return false;
             }
 
-            final IonIndependenceFacts fact = (IonIndependenceFacts) obj;
-            return (this.x.equals(fact.x) && this.y.equals(fact.y) &&
-                    this.z.equals(fact.z))
-                    || (this.x.equals(fact.y) & this.y.equals(fact.x) &&
-                    this.z.equals(fact.z));
+            IonIndependenceFacts fact = (IonIndependenceFacts) obj;
+            return (x.equals(fact.x) && y.equals(fact.y) &&
+                    z.equals(fact.z))
+                    || (x.equals(fact.y) & y.equals(fact.x) &&
+                    z.equals(fact.z));
         }
 
         public String toString() {
-            return "I(" + this.x + ", " + this.y + " | " + this.z + ")";
+            return "I(" + x + ", " + y + " | " + z + ")";
         }
     }
 
@@ -1617,7 +1618,7 @@ public class IonJoeModifications {
     private class PowerSet<E> implements Iterable<Set<E>> {
         Collection<E> all;
 
-        public PowerSet(final Collection<E> all) {
+        public PowerSet(Collection<E> all) {
             this.all = all;
         }
 
@@ -1636,10 +1637,10 @@ public class IonJoeModifications {
             List<InE> mask = new ArrayList<>();
             boolean hasNext = true;
 
-            PowerSetIterator(final PowerSet<InE> powerSet) {
+            PowerSetIterator(PowerSet<InE> powerSet) {
 
                 this.powerSet = powerSet;
-                this.canonicalOrder.addAll(powerSet.all);
+                canonicalOrder.addAll(powerSet.all);
             }
 
             public void remove() {
@@ -1647,7 +1648,7 @@ public class IonJoeModifications {
             }
 
             private boolean allOnes() {
-                for (final InE bit : this.mask) {
+                for (InE bit : mask) {
                     if (bit == null) {
                         return false;
                     }
@@ -1658,36 +1659,36 @@ public class IonJoeModifications {
             private void increment() {
                 int i = 0;
                 while (true) {
-                    if (i < this.mask.size()) {
-                        final InE bit = this.mask.get(i);
+                    if (i < mask.size()) {
+                        InE bit = mask.get(i);
                         if (bit == null) {
-                            this.mask.set(i, this.canonicalOrder.get(i));
+                            mask.set(i, canonicalOrder.get(i));
                             return;
                         } else {
-                            this.mask.set(i, null);
+                            mask.set(i, null);
                             i++;
                         }
                     } else {
-                        this.mask.add(this.canonicalOrder.get(i));
+                        mask.add(canonicalOrder.get(i));
                         return;
                     }
                 }
             }
 
             public boolean hasNext() {
-                return this.hasNext;
+                return hasNext;
             }
 
             public Set<InE> next() {
 
-                final Set<InE> result = new HashSet<>();
-                result.addAll(this.mask);
+                Set<InE> result = new HashSet<>();
+                result.addAll(mask);
                 result.remove(null);
 
-                this.hasNext = this.mask.size() < this.powerSet.all.size() || !allOnes();
+                hasNext = mask.size() < powerSet.all.size() || !this.allOnes();
 
-                if (this.hasNext) {
-                    increment();
+                if (hasNext) {
+                    this.increment();
                 }
 
                 return result;
@@ -1696,28 +1697,28 @@ public class IonJoeModifications {
         }
     }
 
-    public static List<List<Node>> treks(final Graph graph, final Node node1, final Node node2) {
-        final List<List<Node>> paths = new LinkedList<>();
-        IonJoeModifications.treks(graph, node1, node2, new LinkedList<Node>(), paths);
+    public static List<List<Node>> treks(Graph graph, Node node1, Node node2) {
+        List<List<Node>> paths = new LinkedList<>();
+        treks(graph, node1, node2, new LinkedList<Node>(), paths);
         return paths;
     }
 
     /**
      * Constructs the list of treks between node1 and node2.
      */
-    private static void treks(final Graph graph, final Node node1, final Node node2,
-                              final LinkedList<Node> path, final List<List<Node>> paths) {
+    private static void treks(Graph graph, Node node1, Node node2,
+                              LinkedList<Node> path, List<List<Node>> paths) {
         path.addLast(node1);
 
-        for (final Edge edge : graph.getEdges(node1)) {
-            final Node next = Edges.traverse(node1, edge);
+        for (Edge edge : graph.getEdges(node1)) {
+            Node next = Edges.traverse(node1, edge);
 
             if (next == null) {
                 continue;
             }
 
             if (path.size() > 1) {
-                final Node node0 = path.get(path.size() - 2);
+                Node node0 = path.get(path.size() - 2);
 
                 if (next == node0) {
                     continue;
@@ -1729,7 +1730,7 @@ public class IonJoeModifications {
             }
 
             if (next == node2) {
-                final LinkedList<Node> _path = new LinkedList<>(path);
+                LinkedList<Node> _path = new LinkedList<>(path);
                 _path.add(next);
                 paths.add(_path);
                 continue;
@@ -1739,23 +1740,23 @@ public class IonJoeModifications {
                 continue;
             }
 
-            IonJoeModifications.treks(graph, next, node2, path, paths);
+            treks(graph, next, node2, path, paths);
         }
 
         path.removeLast();
     }
 
-    private Graph screenForKnowledge(final Graph pag) {
-        for (final Iterator<KnowledgeEdge> it = this.knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
-            final KnowledgeEdge next = it.next();
-            final Node y = pag.getNode(next.getFrom());
-            final Node x = pag.getNode(next.getTo());
+    private Graph screenForKnowledge(Graph pag) {
+        for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
+            KnowledgeEdge next = it.next();
+            Node y = pag.getNode(next.getFrom());
+            Node x = pag.getNode(next.getTo());
 
             if (x == null || y == null) {
                 continue;
             }
 
-            final Edge edge = pag.getEdge(x, y);
+            Edge edge = pag.getEdge(x, y);
 
             if (edge == null) {
                 continue;
@@ -1773,16 +1774,16 @@ public class IonJoeModifications {
         }
 
 
-        for (final Iterator<KnowledgeEdge> it = this.knowledge.requiredEdgesIterator(); it.hasNext(); ) {
-            final KnowledgeEdge next = it.next();
-            final Node x = pag.getNode(next.getFrom());
-            final Node y = pag.getNode(next.getTo());
+        for (Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext(); ) {
+            KnowledgeEdge next = it.next();
+            Node x = pag.getNode(next.getFrom());
+            Node y = pag.getNode(next.getTo());
 
             if (x == null || y == null) {
                 continue;
             }
 
-            final Edge edge = pag.getEdge(x, y);
+            Edge edge = pag.getEdge(x, y);
 
             if (edge == null) {
                 return null;
@@ -1804,11 +1805,11 @@ public class IonJoeModifications {
         return pag;
     }
 
-    private Set<Graph> applyKnowledge(final Set<Graph> outputSet) {
-        final Set<Graph> _out = new HashSet<>();
+    private Set<Graph> applyKnowledge(Set<Graph> outputSet) {
+        Set<Graph> _out = new HashSet<>();
 
-        for (final Graph graph : outputSet) {
-            final Graph _graph = screenForKnowledge(graph);
+        for (Graph graph : outputSet) {
+            Graph _graph = this.screenForKnowledge(graph);
 
             if (_graph != null) {
                 _out.add(_graph);

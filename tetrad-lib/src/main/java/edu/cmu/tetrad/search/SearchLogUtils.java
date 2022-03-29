@@ -38,7 +38,7 @@ import java.util.List;
 public class SearchLogUtils {
     private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-    public static String endpointOrientedMsg(final Endpoint e, final Node x, final Node y) {
+    public static String endpointOrientedMsg(Endpoint e, Node x, Node y) {
         char endptChar = '*';
 
         if (e == Endpoint.TAIL) {
@@ -49,70 +49,70 @@ public class SearchLogUtils {
             endptChar = 'o';
         }
 
-        final String msg = "Orienting endpoint: " + x.getName() + " *-" + endptChar +
+        String msg = "Orienting endpoint: " + x.getName() + " *-" + endptChar +
                 " " + y.getName();
         return msg;
     }
 
-    public static String edgeOrientedMsg(final String reason, final Edge edge) {
+    public static String edgeOrientedMsg(String reason, Edge edge) {
         return "Orienting edge (" + reason + "): " + edge;
     }
 
-    public static String colliderOrientedMsg(final String note, final Node x, final Node y, final Node z) {
+    public static String colliderOrientedMsg(String note, Node x, Node y, Node z) {
         return "Orienting collider (" + note + "): " + x.getName() + " *-> " +
                 y.getName() + " <-* " + z.getName();
     }
 
-    public static String colliderOrientedMsg(final Node x, final Node y, final Node z) {
+    public static String colliderOrientedMsg(Node x, Node y, Node z) {
         return "Orienting collider: " + x.getName() + " *-> " +
                 y.getName() + " <-* " + z.getName();
     }
 
-    public static String colliderOrientedMsg(final Node x, final Node y, final Node z, final List sepset) {
+    public static String colliderOrientedMsg(Node x, Node y, Node z, List sepset) {
         return "Orienting collider: " + x.getName() + " *-> " +
                 y.getName() + " <-* " + z.getName() + "\t(Sepset = " + sepset +
                 ")";
     }
 
-    public static String determinismDetected(final List sepset, final Node x) {
+    public static String determinismDetected(List sepset, Node x) {
         return "Determinism detected: " + sepset + " -> " + x.getName();
     }
 
-    public static String independenceFactMsg(final Node x, final Node y, final List<Node> condSet, final double pValue) {
-        final StringBuilder sb = new StringBuilder();
+    public static String independenceFactMsg(Node x, Node y, List<Node> condSet, double pValue) {
+        StringBuilder sb = new StringBuilder();
 
         sb.append("Independence accepted: ");
-        sb.append(SearchLogUtils.independenceFact(x, y, condSet));
+        sb.append(independenceFact(x, y, condSet));
 
         if (!Double.isNaN(pValue)) {
-            sb.append("\tp = ").append(SearchLogUtils.nf.format(pValue));
+            sb.append("\tp = ").append(nf.format(pValue));
         }
 
         return sb.toString();
     }
 
-    public static String dependenceFactMsg(final Node x, final Node y, final List<Node> condSet, final double pValue) {
-        final StringBuilder sb = new StringBuilder();
+    public static String dependenceFactMsg(Node x, Node y, List<Node> condSet, double pValue) {
+        StringBuilder sb = new StringBuilder();
 
         sb.append("Dependent: ");
-        sb.append(SearchLogUtils.independenceFact(x, y, condSet));
+        sb.append(independenceFact(x, y, condSet));
 
         if (!Double.isNaN(pValue)) {
-            sb.append("\tp = ").append(SearchLogUtils.nf.format(pValue));
+            sb.append("\tp = ").append(nf.format(pValue));
         }
 
         return sb.toString();
     }
 
 
-    public static String independenceFact(final Node x, final Node y, final List<Node> condSet) {
-        final StringBuilder sb = new StringBuilder();
+    public static String independenceFact(Node x, Node y, List<Node> condSet) {
+        StringBuilder sb = new StringBuilder();
 
         sb.append(x.getName());
         sb.append(" _||_ ");
         sb.append(y.getName());
 
-        final Iterator it = condSet.iterator();
+        Iterator it = condSet.iterator();
 
         if (it.hasNext()) {
             sb.append(" | ");

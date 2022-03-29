@@ -54,7 +54,7 @@ public final class IndexedParent implements TetradSerializable {
     /**
      * Constructs a new index parent.
      */
-    public IndexedParent(final int index, final int lag) {
+    public IndexedParent(int index, int lag) {
 
         if (index < 0) {
             throw new IllegalArgumentException("Index must be >= 0: " + index);
@@ -84,35 +84,35 @@ public final class IndexedParent implements TetradSerializable {
      * Returns the index of the parent.
      */
     public int getIndex() {
-        return this.index;
+        return index;
     }
 
     /**
      * Returns the lag of the parent.
      */
     public int getLag() {
-        return this.lag;
+        return lag;
     }
 
     /**
      * Returns true iff the lags and indices are equal.
      */
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         if (o == this) {
             return true;
         }
         if (!(o instanceof IndexedParent)) {
             return false;
         }
-        final IndexedParent c = (IndexedParent) o;
-        return c.getIndex() == this.getIndex() && c.getLag() == this.getLag();
+        IndexedParent c = (IndexedParent) o;
+        return c.getIndex() == getIndex() && c.getLag() == getLag();
     }
 
     /**
      * Prints out the factor index and lag.
      */
     public String toString() {
-        return "IndexedParent, index = " + getIndex() + ", lag = " + getLag();
+        return "IndexedParent, index = " + this.getIndex() + ", lag = " + this.getLag();
     }
 
     /**
@@ -128,15 +128,15 @@ public final class IndexedParent implements TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (this.index < 0) {
+        if (index < 0) {
             throw new IllegalStateException();
         }
 
-        if (this.lag < 0) {
+        if (lag < 0) {
             throw new IllegalStateException();
         }
 

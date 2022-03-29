@@ -42,7 +42,7 @@ public class SingleValue implements Distribution {
      *
      * @param value A real number.
      */
-    public SingleValue(final double value) {
+    public SingleValue(double value) {
         this.value = value;
     }
 
@@ -55,7 +55,7 @@ public class SingleValue implements Distribution {
         return new SingleValue(0.5);
     }
 
-    public void setParameter(final int index, final double value) {
+    public void setParameter(int index, double value) {
         if (index == 0) {
             this.value = value;
         } else {
@@ -63,15 +63,15 @@ public class SingleValue implements Distribution {
         }
     }
 
-    public double getParameter(final int index) {
+    public double getParameter(int index) {
         if (index == 0) {
-            return this.value;
+            return value;
         } else {
             throw new IllegalArgumentException("Not a parameter index: " + index);
         }
     }
 
-    public String getParameterName(final int index) {
+    public String getParameterName(int index) {
         if (index == 0) {
             return "Value";
         } else {
@@ -89,15 +89,15 @@ public class SingleValue implements Distribution {
      * @return the value that was set.
      */
     public double nextRandom() {
-        return getValue();
+        return this.getValue();
     }
 
     public String toString() {
-        return "[" + getValue() + "]";
+        return "[" + this.getValue() + "]";
     }
 
     private double getValue() {
-        return this.value;
+        return value;
     }
 
 

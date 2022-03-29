@@ -43,25 +43,25 @@ public class ArResidualsWrapper extends DataWrapper {
      * @param data   - Previous data (from the parent node)
      * @param params - The parameters.
      */
-    public ArResidualsWrapper(final DataWrapper data, final Parameters params) {
-        final DataModelList list = data.getDataModelList();
-        final DataModelList convertedList = new DataModelList();
-        final DataModelList dataSets = data.getDataModelList();
+    public ArResidualsWrapper(DataWrapper data, Parameters params) {
+        DataModelList list = data.getDataModelList();
+        DataModelList convertedList = new DataModelList();
+        DataModelList dataSets = data.getDataModelList();
 
         for (int i = 0; i < list.size(); i++) {
-            final DataModel selectedModel = dataSets.get(i);
+            DataModel selectedModel = dataSets.get(i);
 
             if (!(selectedModel instanceof DataSet)) {
                 continue;
             }
 
-            final DataModel model = TimeSeriesUtils.ar2((DataSet) selectedModel, params.getInt("numTimeLags", 1));
+            DataModel model = TimeSeriesUtils.ar2((DataSet) selectedModel, params.getInt("numTimeLags", 1));
             model.setKnowledge(selectedModel.getKnowledge());
             convertedList.add(model);
-            setSourceGraph(data.getSourceGraph());
+            this.setSourceGraph(data.getSourceGraph());
         }
 
-        setDataModelList(convertedList);
+        this.setDataModelList(convertedList);
 
 
 //        DataModel model = data.getSelectedDataModel();
@@ -72,7 +72,7 @@ public class ArResidualsWrapper extends DataWrapper {
 //        this.setDataModel(model);
 //        this.setSourceGraph(data.getSourceGraph());
 
-        LogDataUtils.logDataModelList("Result data from an AR residual calculation.", getDataModelList());
+        LogDataUtils.logDataModelList("Result data from an AR residual calculation.", this.getDataModelList());
 
     }
 

@@ -37,7 +37,7 @@ import java.io.IOException;
 class SaveBayesImXmlAction extends AbstractAction {
     private final BayesImEditor bayesImEditor;
 
-    public SaveBayesImXmlAction(final BayesImEditor bayesImEditor) {
+    public SaveBayesImXmlAction(BayesImEditor bayesImEditor) {
         super("Save Bayes IM as XML");
         if (bayesImEditor == null) {
             throw new NullPointerException(
@@ -46,23 +46,23 @@ class SaveBayesImXmlAction extends AbstractAction {
         this.bayesImEditor = bayesImEditor;
     }
 
-    public void actionPerformed(final ActionEvent e) {
+    public void actionPerformed(ActionEvent e) {
         try {
 
-            final File outfile = EditorUtils.getSaveFile("bayesim", "xml",
-                    this.bayesImEditor, false, "Save Bayes IM as XML...");
+            File outfile = EditorUtils.getSaveFile("bayesim", "xml",
+                    bayesImEditor, false, "Save Bayes IM as XML...");
 
-            final BayesIm bayesIm = this.bayesImEditor.getWizard().getBayesIm();
-            final FileOutputStream out = new FileOutputStream(outfile);
+            BayesIm bayesIm = bayesImEditor.getWizard().getBayesIm();
+            FileOutputStream out = new FileOutputStream(outfile);
 
-            final Element element = BayesXmlRenderer.getElement(bayesIm);
-            final Document document = new Document(element);
-            final Serializer serializer = new Serializer(out);
+            Element element = BayesXmlRenderer.getElement(bayesIm);
+            Document document = new Document(element);
+            Serializer serializer = new Serializer(out);
             serializer.setLineSeparator("\n");
             serializer.setIndent(2);
             serializer.write(document);
             out.close();
-        } catch (final IOException e1) {
+        } catch (IOException e1) {
             throw new RuntimeException(e1);
         }
     }

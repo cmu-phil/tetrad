@@ -36,14 +36,14 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
     /**
      * States whether the component is selected or not.
      */
-    private boolean selected = false;
+    private boolean selected;
 
 
     /**
      * The colors
      */
-    private final static Color BORDER_COLOR = new Color(148, 152, 177);
-    private final static Color BACKGROUND_COLOR = new Color(255, 255, 219);
+    private static final Color BORDER_COLOR = new Color(148, 152, 177);
+    private static final Color BACKGROUND_COLOR = new Color(255, 255, 219);
 
 
     /**
@@ -56,7 +56,7 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
      * Constructs the Node display.
      */
     public NoteDisplayComp() {
-        buildComponents();
+        this.buildComponents();
     }
 
     //================================ Public Methods ==============================//
@@ -65,21 +65,21 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
     /**
      * Paints the component.
      */
-    public void paint(final Graphics g) {
-        final int width = getSize().width;
-        final int height = getSize().height;
-        g.setColor(NoteDisplayComp.BACKGROUND_COLOR);
+    public void paint(Graphics g) {
+        int width = this.getSize().width;
+        int height = this.getSize().height;
+        g.setColor(BACKGROUND_COLOR);
         g.fillRect(0, 0, width, height);
 
-        int y = this.name.getSize().height;
+        int y = name.getSize().height;
         y += 2;
-        g.setColor(NoteDisplayComp.BORDER_COLOR);
+        g.setColor(BORDER_COLOR);
         while (y < height) {
             g.drawLine(0, y, width, y);
             y += 5;
         }
         // draw the border.
-        g.setColor(NoteDisplayComp.BORDER_COLOR);
+        g.setColor(BORDER_COLOR);
         g.drawRect(0, 0, width - 1, height - 1);
 
         super.paint(g);
@@ -89,7 +89,7 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
     /**
      * Sets the acronym of the component.
      */
-    public void setAcronym(final String acronym) {
+    public void setAcronym(String acronym) {
 
     }
 
@@ -99,25 +99,25 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
      * @return true iff the display is selected.
      */
     public boolean isSelected() {
-        return this.selected;
+        return selected;
     }
 
     /**
      * Sets the comp as selected.
      */
-    public void setSelected(final boolean selected) {
+    public void setSelected(boolean selected) {
         this.selected = selected;
     }
 
     /**
      * Does nothing.
      */
-    public void setHasModel(final boolean b) {
+    public void setHasModel(boolean b) {
         // Ignore.
     }
 
 
-    public void setName(final String name) {
+    public void setName(String name) {
         super.setName(name);
         this.name.setText(name);
         //buildComponents();
@@ -127,26 +127,26 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
 
 
     private void buildComponents() {
-        removeAll();
-        setLayout(new BorderLayout());
-        setBackground(NoteDisplayComp.BACKGROUND_COLOR);
-        setFont(DisplayNodeUtils.getFont());
+        this.removeAll();
+        this.setLayout(new BorderLayout());
+        this.setBackground(BACKGROUND_COLOR);
+        this.setFont(DisplayNodeUtils.getFont());
 
-        final Box b = Box.createVerticalBox();
+        Box b = Box.createVerticalBox();
         b.add(Box.createVerticalStrut(2));
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(Box.createHorizontalStrut(5));
-        b2.add(this.name);
+        b2.add(name);
         b2.add(Box.createHorizontalStrut(5));
         b2.add(Box.createHorizontalGlue());
         b.add(b2);
 
         b.add(Box.createVerticalStrut(65));
 
-        add(b, BorderLayout.CENTER);
-        revalidate();
-        repaint();
+        this.add(b, BorderLayout.CENTER);
+        this.revalidate();
+        this.repaint();
     }
 
 

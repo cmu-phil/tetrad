@@ -35,33 +35,33 @@ public class LogData extends DataWrapper {
 
     //=============================CONSTRUCTORS==============================//
 
-    public LogData(final DataWrapper wrapper, final Parameters params) {
-        final DataModelList inList = wrapper.getDataModelList();
-        final DataModelList outList = new DataModelList();
+    public LogData(DataWrapper wrapper, Parameters params) {
+        DataModelList inList = wrapper.getDataModelList();
+        DataModelList outList = new DataModelList();
 
-        for (final DataModel model : inList) {
+        for (DataModel model : inList) {
             if (!(model instanceof DataSet)) {
                 throw new IllegalArgumentException("Not a data set: " + model.getName());
             }
 
-            final DataSet dataSet = (DataSet) model;
+            DataSet dataSet = (DataSet) model;
 
 //            if (!(dataSet.isContinuous())) {
 //                throw new IllegalArgumentException("Not a continuous data set: " + dataSet.getName());
 //            }
 
-            final double a = params.getDouble("a");
-            final boolean isUnlog = params.getBoolean("unlog");
-            final int base = params.getInt("base");
+            double a = params.getDouble("a");
+            boolean isUnlog = params.getBoolean("unlog");
+            int base = params.getInt("base");
 
-            final DataSet dataSet2 = DataUtils.logData(dataSet, a, isUnlog, base);
+            DataSet dataSet2 = DataUtils.logData(dataSet, a, isUnlog, base);
             outList.add(dataSet2);
         }
 
-        setDataModel(outList);
-        setSourceGraph(wrapper.getSourceGraph());
+        this.setDataModel(outList);
+        this.setSourceGraph(wrapper.getSourceGraph());
 
-        LogDataUtils.logDataModelList("Logarithmic conversion of data.", getDataModelList());
+        LogDataUtils.logDataModelList("Logarithmic conversion of data.", this.getDataModelList());
 
     }
 

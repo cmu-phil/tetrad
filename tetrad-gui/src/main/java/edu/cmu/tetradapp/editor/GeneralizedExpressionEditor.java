@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.calculator.parser.ExpressionParser;
+import edu.cmu.tetrad.calculator.parser.ExpressionParser.RestrictionType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
@@ -56,12 +57,12 @@ class GeneralizedExpressionEditor extends JComponent {
     /**
      * The start index of selected text.
      */
-    private int start = 0;
+    private int start;
 
     /**
      * The width of the selected text.
      */
-    private int stringWidth = 0;
+    private int stringWidth;
 
     /**
      * The time that the selectded text should be colored. (Must do this all indirectly using a thread because
@@ -132,7 +133,7 @@ class GeneralizedExpressionEditor extends JComponent {
      * @param semPm The GeneralizedSemPm that's being edited, containing <code>node</code>.
      * @param node  The node in <code>semPm</code> that's being edited.
      */
-    public GeneralizedExpressionEditor(final GeneralizedSemPm semPm, final Node node) {
+    public GeneralizedExpressionEditor(GeneralizedSemPm semPm, Node node) {
         if (semPm == null) {
             throw new NullPointerException("SEM PM must be provided.");
         }
@@ -147,94 +148,94 @@ class GeneralizedExpressionEditor extends JComponent {
 
         this.semPm = semPm;
         this.node = node;
-        this.errorNode = semPm.getErrorNode(node);
-        this.expressionString = semPm.getNodeExpressionString(node);
+        errorNode = semPm.getErrorNode(node);
+        expressionString = semPm.getNodeExpressionString(node);
 
-        final StyleContext sc = new StyleContext();
-        final DefaultStyledDocument doc = new DefaultStyledDocument(sc);
-        this.expressionTextPane = new JTextPane(doc);
-        this.resultTextPane = new JTextArea(semPm.getNodeExpressionString(node));
+        StyleContext sc = new StyleContext();
+        DefaultStyledDocument doc = new DefaultStyledDocument(sc);
+        expressionTextPane = new JTextPane(doc);
+        resultTextPane = new JTextArea(semPm.getNodeExpressionString(node));
 
         try {
             // Add the text to the document
             doc.insertString(0, semPm.getNodeExpressionString(node), null);
-        } catch (final BadLocationException e) {
+        } catch (BadLocationException e) {
             throw new RuntimeException("Couldn't construct editor", e);
         }
 
-        this.otherVariables = new LinkedHashSet<>();
+        otherVariables = new LinkedHashSet<>();
 
-        for (final Node _node : semPm.getNodes()) {
+        for (Node _node : semPm.getNodes()) {
             if (semPm.getParents(node).contains(_node)) {
                 continue;
             }
 
-            this.otherVariables.add(_node.getName());
+            otherVariables.add(_node.getName());
         }
 
-        final ExpressionParser parser = new ExpressionParser(this.otherVariables, ExpressionParser.RestrictionType.MAY_NOT_CONTAIN);
-        this.latestParser = parser;
+        ExpressionParser parser = new ExpressionParser(otherVariables, RestrictionType.MAY_NOT_CONTAIN);
+        latestParser = parser;
 
         try {
-            parser.parseExpression(this.expressionString);
-        } catch (final ParseException e) {
+            parser.parseExpression(expressionString);
+        } catch (ParseException e) {
             throw new RuntimeException("Cannot parser the stored expression.", e);
         }
 
-        this.resultTextPane.setEditable(false);
-        this.resultTextPane.setBackground(Color.LIGHT_GRAY);
+        resultTextPane.setEditable(false);
+        resultTextPane.setBackground(Color.LIGHT_GRAY);
 
-        final Map<String, String> expressionsMap = getExpressionMap(semPm, node);
-        final String[] expressionTokens = getExpressionTokens(semPm, node, expressionsMap);
-        final JComboBox expressionsBox = new JComboBox(expressionTokens);
+        Map<String, String> expressionsMap = this.getExpressionMap(semPm, node);
+        String[] expressionTokens = this.getExpressionTokens(semPm, node, expressionsMap);
+        JComboBox expressionsBox = new JComboBox(expressionTokens);
         expressionsBox.setMaximumSize(expressionsBox.getPreferredSize());
 
-        final JButton insertButton = new JButton("Insert");
+        JButton insertButton = new JButton("Insert");
 
         insertButton.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent actionEvent) {
-                final String token = (String) expressionsBox.getSelectedItem();
+            public void actionPerformed(ActionEvent actionEvent) {
+                String token = (String) expressionsBox.getSelectedItem();
                 String signature;
 
                 if ("-New Parameter-".equals(token)) {
-                    signature = nextParameterName("b");
+                    signature = GeneralizedExpressionEditor.this.nextParameterName("b");
                 } else {
                     signature = expressionsMap.get(token);
                 }
 
                 while (signature.contains("%")) {
-                    signature = signature.replaceFirst("%", nextParameterName("b"));
+                    signature = signature.replaceFirst("%", GeneralizedExpressionEditor.this.nextParameterName("b"));
                 }
 
-                GeneralizedExpressionEditor.this.expressionTextPane.replaceSelection(signature);
+                expressionTextPane.replaceSelection(signature);
             }
         });
 
-        this.errorTermCheckBox = new JCheckBox("Automatically add error term");
-        this.errorTermCheckBox.setSelected(Preferences.userRoot().getBoolean("automaticallyAddErrorTerms", true));
-        this.errorTermCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent event) {
-                final JCheckBox box = (JCheckBox) event.getSource();
+        errorTermCheckBox = new JCheckBox("Automatically add error term");
+        errorTermCheckBox.setSelected(Preferences.userRoot().getBoolean("automaticallyAddErrorTerms", true));
+        errorTermCheckBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                JCheckBox box = (JCheckBox) event.getSource();
                 Preferences.userRoot().putBoolean("automaticallyAddErrorTerms", box.isSelected());
             }
         });
 
-        final Box b = Box.createVerticalBox();
+        Box b = Box.createVerticalBox();
 
-        final Box b1 = Box.createHorizontalBox();
-        b1.add(new JLabel("Parents of " + node + ":  " + niceParentsList(semPm.getParents(node))));
+        Box b1 = Box.createHorizontalBox();
+        b1.add(new JLabel("Parents of " + node + ":  " + this.niceParentsList(semPm.getParents(node))));
         b1.add(Box.createHorizontalGlue());
         b.add(b1);
         b.add(Box.createVerticalStrut(5));
 
-        final Box b2 = Box.createHorizontalBox();
-        this.referencedParametersLabel = new JLabel("Parameters:  " + parameterString(parser));
-        b2.add(this.referencedParametersLabel);
+        Box b2 = Box.createHorizontalBox();
+        referencedParametersLabel = new JLabel("Parameters:  " + this.parameterString(parser));
+        b2.add(referencedParametersLabel);
         b2.add(Box.createHorizontalGlue());
         b.add(b2);
         b.add(Box.createVerticalStrut(5));
 
-        final Box b4 = Box.createHorizontalBox();
+        Box b4 = Box.createHorizontalBox();
         b4.add(new JLabel("Type Expression:"));
         b4.add(Box.createHorizontalGlue());
         b4.add(expressionsBox);
@@ -243,113 +244,113 @@ class GeneralizedExpressionEditor extends JComponent {
         b.add(b4);
         b.add(Box.createVerticalStrut(5));
 
-        final JScrollPane expressionScroll = new JScrollPane(this.expressionTextPane);
+        JScrollPane expressionScroll = new JScrollPane(expressionTextPane);
         expressionScroll.setPreferredSize(new Dimension(500, 50));
-        final Box b5 = Box.createHorizontalBox();
+        Box b5 = Box.createHorizontalBox();
         b5.add(expressionScroll);
         b.add(b5);
         b.add(Box.createVerticalStrut(5));
 
-        final Box b6 = Box.createHorizontalBox();
+        Box b6 = Box.createHorizontalBox();
         b6.add(new JLabel("Result:"));
         b6.add(Box.createHorizontalGlue());
         b.add(b6);
         b.add(Box.createVerticalStrut(5));
 
-        final JScrollPane resultScroll = new JScrollPane(this.resultTextPane);
+        JScrollPane resultScroll = new JScrollPane(resultTextPane);
         resultScroll.setPreferredSize(new Dimension(500, 50));
-        final Box b7 = Box.createHorizontalBox();
+        Box b7 = Box.createHorizontalBox();
         b7.add(resultScroll);
         b.add(b7);
         b.add(Box.createVerticalStrut(5));
 
-        final Box b8 = Box.createHorizontalBox();
-        b8.add(this.errorTermCheckBox);
+        Box b8 = Box.createHorizontalBox();
+        b8.add(errorTermCheckBox);
         b8.add(Box.createHorizontalGlue());
         b8.add(new JLabel("* Parameter appears in other expressions."));
         b.add(b8);
 
-        setLayout(new BorderLayout());
-        add(b, BorderLayout.CENTER);
+        this.setLayout(new BorderLayout());
+        this.add(b, BorderLayout.CENTER);
 
         doc.addDocumentListener(new DocumentListener() {
-            public void insertUpdate(final DocumentEvent documentEvent) {
-                listen();
+            public void insertUpdate(DocumentEvent documentEvent) {
+                GeneralizedExpressionEditor.this.listen();
             }
 
-            public void removeUpdate(final DocumentEvent documentEvent) {
-                listen();
+            public void removeUpdate(DocumentEvent documentEvent) {
+                GeneralizedExpressionEditor.this.listen();
             }
 
-            public void changedUpdate(final DocumentEvent documentEvent) {
-                listen();
+            public void changedUpdate(DocumentEvent documentEvent) {
+                GeneralizedExpressionEditor.this.listen();
             }
         });
 
         class ColorThread extends Thread {
-            private boolean stop = false;
+            private boolean stop;
 
             @Override
             public void run() {
-                final StyledDocument document = (StyledDocument) GeneralizedExpressionEditor.this.expressionTextPane.getDocument();
+                StyledDocument document = (StyledDocument) expressionTextPane.getDocument();
 
-                final Style red = GeneralizedExpressionEditor.this.expressionTextPane.addStyle("Red", null);
+                Style red = expressionTextPane.addStyle("Red", null);
                 StyleConstants.setForeground(red, Color.RED);
 
-                final Style black = GeneralizedExpressionEditor.this.expressionTextPane.addStyle("Black", null);
+                Style black = expressionTextPane.addStyle("Black", null);
                 StyleConstants.setForeground(black, Color.BLACK);
 
-                while (!this.stop) {
-                    if (System.currentTimeMillis() < GeneralizedExpressionEditor.this.recolorTime) {
+                while (!stop) {
+                    if (System.currentTimeMillis() < recolorTime) {
                         continue;
                     }
 
-                    if (GeneralizedExpressionEditor.this.color == Color.RED) {
-                        document.setCharacterAttributes(GeneralizedExpressionEditor.this.start, GeneralizedExpressionEditor.this.stringWidth, GeneralizedExpressionEditor.this.expressionTextPane.getStyle("Red"), true);
-                    } else if (GeneralizedExpressionEditor.this.color == Color.BLACK) {
-                        document.setCharacterAttributes(GeneralizedExpressionEditor.this.start, GeneralizedExpressionEditor.this.stringWidth, GeneralizedExpressionEditor.this.expressionTextPane.getStyle("Black"), true);
+                    if (color == Color.RED) {
+                        document.setCharacterAttributes(start, stringWidth, expressionTextPane.getStyle("Red"), true);
+                    } else if (color == Color.BLACK) {
+                        document.setCharacterAttributes(start, stringWidth, expressionTextPane.getStyle("Black"), true);
                     }
 
                     try {
                         Thread.sleep(200);
-                    } catch (final InterruptedException e) {
+                    } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                 }
             }
 
             public void scheduleStop() {
-                this.stop = true;
+                stop = true;
             }
         }
 
-        final ColorThread thread = new ColorThread();
+        ColorThread thread = new ColorThread();
         thread.start();
 
-        addComponentListener(new ComponentAdapter() {
+        this.addComponentListener(new ComponentAdapter() {
             @Override
-            public void componentHidden(final ComponentEvent componentEvent) {
+            public void componentHidden(ComponentEvent componentEvent) {
                 thread.scheduleStop();
             }
         });
 
-        this.expressionTextPane.setCaretPosition(this.expressionTextPane.getText().length());
+        expressionTextPane.setCaretPosition(expressionTextPane.getText().length());
 
         // When the dialog closes, we want to make sure the expression gets parsed and set.
-        addAncestorListener(new AncestorListener() {
-            public void ancestorAdded(final AncestorEvent ancestorEvent) {
+        this.addAncestorListener(new AncestorListener() {
+            public void ancestorAdded(AncestorEvent ancestorEvent) {
             }
 
-            public void ancestorRemoved(final AncestorEvent ancestorEvent) {
-                listen();
+            public void ancestorRemoved(AncestorEvent ancestorEvent) {
+                GeneralizedExpressionEditor.this.listen();
             }
 
-            public void ancestorMoved(final AncestorEvent ancestorEvent) {
+            public void ancestorMoved(AncestorEvent ancestorEvent) {
             }
         });
 
-        setFocusCycleRoot(true);
-        this.expressionTextPane.grabFocus();
+        this.setFocusCycleRoot(true);
+        expressionTextPane.grabFocus();
     }
 
     /**
@@ -358,7 +359,7 @@ class GeneralizedExpressionEditor extends JComponent {
      * @param semPm     The GeneralizedSemPm that's being edited, containing <code>parameter</code>.
      * @param parameter The parameter in <code>semPm</code> that's being edited.
      */
-    public GeneralizedExpressionEditor(final GeneralizedSemPm semPm, final String parameter) {
+    public GeneralizedExpressionEditor(GeneralizedSemPm semPm, String parameter) {
         if (semPm == null) {
             throw new NullPointerException("SEM PM must be provided.");
         }
@@ -373,80 +374,80 @@ class GeneralizedExpressionEditor extends JComponent {
 
         this.semPm = semPm;
         this.parameter = parameter;
-        this.errorNode = null;
-        this.expressionString = semPm.getParameterExpressionString(parameter);
+        errorNode = null;
+        expressionString = semPm.getParameterExpressionString(parameter);
 
-        final StyleContext sc = new StyleContext();
-        final DefaultStyledDocument doc = new DefaultStyledDocument(sc);
-        this.expressionTextPane = new JTextPane(doc);
-        this.resultTextPane = new JTextArea(semPm.getParameterExpressionString(parameter));
+        StyleContext sc = new StyleContext();
+        DefaultStyledDocument doc = new DefaultStyledDocument(sc);
+        expressionTextPane = new JTextPane(doc);
+        resultTextPane = new JTextArea(semPm.getParameterExpressionString(parameter));
 
         try {
             try {
                 // Add the text to the document
                 doc.insertString(0, semPm.getParameterExpressionString(parameter), null);
-            } catch (final BadLocationException e) {
+            } catch (BadLocationException e) {
             }
-        } catch (final Exception e) {
+        } catch (Exception e) {
             System.exit(1);
         }
 
-        this.otherVariables = new LinkedHashSet<>();
+        otherVariables = new LinkedHashSet<>();
 
-        for (final Node _node : semPm.getNodes()) {
-            this.otherVariables.add(_node.getName());
+        for (Node _node : semPm.getNodes()) {
+            otherVariables.add(_node.getName());
         }
 
-        final ExpressionParser parser = new ExpressionParser(this.otherVariables, ExpressionParser.RestrictionType.MAY_NOT_CONTAIN);
+        ExpressionParser parser = new ExpressionParser(otherVariables, RestrictionType.MAY_NOT_CONTAIN);
 
         try {
-            parser.parseExpression(this.expressionString);
-        } catch (final ParseException e) {
+            parser.parseExpression(expressionString);
+        } catch (ParseException e) {
             throw new RuntimeException("Cannot parser the stored expression.", e);
         }
 
-        this.resultTextPane.setEditable(false);
-        this.resultTextPane.setBackground(Color.LIGHT_GRAY);
+        resultTextPane.setEditable(false);
+        resultTextPane.setBackground(Color.LIGHT_GRAY);
 
-        final Map<String, String> expressionsMap = getExpressionMap(semPm, this.node);
-        final String[] expressionTokens = getExpressionTokens(semPm, this.node, expressionsMap);
-        final JComboBox expressionsBox = new JComboBox(expressionTokens);
+        Map<String, String> expressionsMap = this.getExpressionMap(semPm, node);
+        String[] expressionTokens = this.getExpressionTokens(semPm, node, expressionsMap);
+        JComboBox expressionsBox = new JComboBox(expressionTokens);
         expressionsBox.setMaximumSize(expressionsBox.getPreferredSize());
 
-        final JButton insertButton = new JButton("Insert");
+        JButton insertButton = new JButton("Insert");
 
         insertButton.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent actionEvent) {
-                final String token = (String) expressionsBox.getSelectedItem();
+            public void actionPerformed(ActionEvent actionEvent) {
+                String token = (String) expressionsBox.getSelectedItem();
                 String signature;
 
                 if ("-New Parameter-".equals(token)) {
-                    signature = nextParameterName("b");
+                    signature = GeneralizedExpressionEditor.this.nextParameterName("b");
                 } else {
                     signature = expressionsMap.get(token);
                 }
 
                 while (signature.contains("%")) {
-                    signature = signature.replaceFirst("%", nextParameterName("b"));
+                    signature = signature.replaceFirst("%", GeneralizedExpressionEditor.this.nextParameterName("b"));
                 }
 
-                GeneralizedExpressionEditor.this.expressionTextPane.replaceSelection(signature);
+                expressionTextPane.replaceSelection(signature);
             }
         });
 
-        this.errorTermCheckBox = new JCheckBox("Automatically add error term");
-        this.errorTermCheckBox.setSelected(Preferences.userRoot().getBoolean("automaticallyAddErrorTerms", true));
+        errorTermCheckBox = new JCheckBox("Automatically add error term");
+        errorTermCheckBox.setSelected(Preferences.userRoot().getBoolean("automaticallyAddErrorTerms", true));
 
-        final Box b = Box.createVerticalBox();
+        Box b = Box.createVerticalBox();
 
-        final Box b2 = Box.createHorizontalBox();
-        this.referencedParametersLabel = new JLabel("Parameters:  " + parameterString(parser));
-        b2.add(this.referencedParametersLabel);
+        Box b2 = Box.createHorizontalBox();
+        referencedParametersLabel = new JLabel("Parameters:  " + this.parameterString(parser));
+        b2.add(referencedParametersLabel);
         b2.add(Box.createHorizontalGlue());
         b.add(b2);
         b.add(Box.createVerticalStrut(5));
 
-        final Box b4 = Box.createHorizontalBox();
+        Box b4 = Box.createHorizontalBox();
         b4.add(new JLabel("Type Expression:"));
         b4.add(Box.createHorizontalGlue());
         b4.add(expressionsBox);
@@ -461,98 +462,98 @@ class GeneralizedExpressionEditor extends JComponent {
 //        b.add(b4);
 //        b.add(Box.createVerticalStrut(5));
 
-        final JScrollPane expressionScroll = new JScrollPane(this.expressionTextPane);
+        JScrollPane expressionScroll = new JScrollPane(expressionTextPane);
         expressionScroll.setPreferredSize(new Dimension(500, 50));
-        final Box b5 = Box.createHorizontalBox();
+        Box b5 = Box.createHorizontalBox();
         b5.add(expressionScroll);
         b.add(b5);
         b.add(Box.createVerticalStrut(5));
 
-        final Box b6 = Box.createHorizontalBox();
+        Box b6 = Box.createHorizontalBox();
         b6.add(new JLabel("Result:"));
         b6.add(Box.createHorizontalGlue());
         b.add(b6);
         b.add(Box.createVerticalStrut(5));
 
-        final JScrollPane resultScroll = new JScrollPane(this.resultTextPane);
+        JScrollPane resultScroll = new JScrollPane(resultTextPane);
         resultScroll.setPreferredSize(new Dimension(500, 50));
-        final Box b7 = Box.createHorizontalBox();
+        Box b7 = Box.createHorizontalBox();
         b7.add(resultScroll);
         b.add(b7);
         b.add(Box.createVerticalStrut(5));
 
-        final Box b8 = Box.createHorizontalBox();
-        b8.add(this.errorTermCheckBox);
+        Box b8 = Box.createHorizontalBox();
+        b8.add(errorTermCheckBox);
         b8.add(Box.createHorizontalGlue());
         b8.add(new JLabel("* Parameter appears in other expressions."));
         b.add(b8);
 
-        setLayout(new BorderLayout());
-        add(b, BorderLayout.CENTER);
+        this.setLayout(new BorderLayout());
+        this.add(b, BorderLayout.CENTER);
 
         doc.addDocumentListener(new DocumentListener() {
-            public void insertUpdate(final DocumentEvent documentEvent) {
-                listen();
+            public void insertUpdate(DocumentEvent documentEvent) {
+                GeneralizedExpressionEditor.this.listen();
             }
 
-            public void removeUpdate(final DocumentEvent documentEvent) {
-                listen();
+            public void removeUpdate(DocumentEvent documentEvent) {
+                GeneralizedExpressionEditor.this.listen();
             }
 
-            public void changedUpdate(final DocumentEvent documentEvent) {
-                listen();
+            public void changedUpdate(DocumentEvent documentEvent) {
+                GeneralizedExpressionEditor.this.listen();
             }
         });
 
         class ColorThread extends Thread {
-            private boolean stop = false;
+            private boolean stop;
 
             @Override
             public void run() {
-                final StyledDocument document = (StyledDocument) GeneralizedExpressionEditor.this.expressionTextPane.getDocument();
+                StyledDocument document = (StyledDocument) expressionTextPane.getDocument();
 
-                final Style red = GeneralizedExpressionEditor.this.expressionTextPane.addStyle("Red", null);
+                Style red = expressionTextPane.addStyle("Red", null);
                 StyleConstants.setForeground(red, Color.RED);
 
-                final Style black = GeneralizedExpressionEditor.this.expressionTextPane.addStyle("Black", null);
+                Style black = expressionTextPane.addStyle("Black", null);
                 StyleConstants.setForeground(black, Color.BLACK);
 
-                while (!this.stop) {
-                    if (System.currentTimeMillis() < GeneralizedExpressionEditor.this.recolorTime) {
+                while (!stop) {
+                    if (System.currentTimeMillis() < recolorTime) {
                         continue;
                     }
 
-                    if (GeneralizedExpressionEditor.this.color == Color.RED) {
-                        document.setCharacterAttributes(GeneralizedExpressionEditor.this.start, GeneralizedExpressionEditor.this.stringWidth, GeneralizedExpressionEditor.this.expressionTextPane.getStyle("Red"), true);
-                    } else if (GeneralizedExpressionEditor.this.color == Color.BLACK) {
-                        document.setCharacterAttributes(GeneralizedExpressionEditor.this.start, GeneralizedExpressionEditor.this.stringWidth, GeneralizedExpressionEditor.this.expressionTextPane.getStyle("Black"), true);
+                    if (color == Color.RED) {
+                        document.setCharacterAttributes(start, stringWidth, expressionTextPane.getStyle("Red"), true);
+                    } else if (color == Color.BLACK) {
+                        document.setCharacterAttributes(start, stringWidth, expressionTextPane.getStyle("Black"), true);
                     }
 
                     try {
                         Thread.sleep(200);
-                    } catch (final InterruptedException e) {
+                    } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                 }
             }
 
             public void scheduleStop() {
-                this.stop = true;
+                stop = true;
             }
         }
 
-        final ColorThread thread = new ColorThread();
+        ColorThread thread = new ColorThread();
         thread.start();
 
-        addComponentListener(new ComponentAdapter() {
+        this.addComponentListener(new ComponentAdapter() {
             @Override
-            public void componentHidden(final ComponentEvent componentEvent) {
+            public void componentHidden(ComponentEvent componentEvent) {
                 thread.scheduleStop();
             }
         });
 
-        setFocusCycleRoot(true);
-        this.expressionTextPane.grabFocus();
+        this.setFocusCycleRoot(true);
+        expressionTextPane.grabFocus();
     }
 
     //==================================================PUBLIC METHODS==========================================//
@@ -562,28 +563,28 @@ class GeneralizedExpressionEditor extends JComponent {
      * "variable = " or "parameter ~". This is the final product of the editing.
      */
     public String getExpressionString() {
-        return this.expressionString;
+        return expressionString;
     }
 
     /**
      * @param base The base of the paramter name.
      * @return the next parameter in the sequence base1, base2,... that's not already being used by the SEM PM.
      */
-    private String nextParameterName(final String base) {
-        final Set<String> parameters = this.semPm.getParameters();
-        parameters.addAll(this.latestParser.getParameters());
+    private String nextParameterName(String base) {
+        Set<String> parameters = semPm.getParameters();
+        parameters.addAll(latestParser.getParameters());
 
         System.out.println("*" + parameters);
-        System.out.println(this.latestParser.getParameters());
+        System.out.println(latestParser.getParameters());
 
         // Names should start with "1."
         int i = 0;
 
         loop:
         while (true) {
-            final String name = base + (++i);
+            String name = base + (++i);
 
-            for (final String parameter : parameters) {
+            for (String parameter : parameters) {
                 if (parameter.equals(name)) {
                     continue loop;
                 }
@@ -597,16 +598,16 @@ class GeneralizedExpressionEditor extends JComponent {
 
     //==================================================PRIVATE METHODS=========================================//
 
-    private String niceParentsList(final List<Node> nodes) {
-        final List<String> nodeNames = new ArrayList<>();
+    private String niceParentsList(List<Node> nodes) {
+        List<String> nodeNames = new ArrayList<>();
 
-        for (final Node node : nodes) {
+        for (Node node : nodes) {
             nodeNames.add(node.getName());
         }
 
-        final List<String> _nodeNames = new ArrayList<>(nodeNames);
+        List<String> _nodeNames = new ArrayList<>(nodeNames);
 
-        final StringBuilder buf = new StringBuilder();
+        StringBuilder buf = new StringBuilder();
 
         for (int i = 0; i < _nodeNames.size(); i++) {
             buf.append(_nodeNames.get(i));
@@ -620,74 +621,74 @@ class GeneralizedExpressionEditor extends JComponent {
     }
 
     private void listen() {
-        final String expressionString = this.expressionTextPane.getText();
+        String expressionString = expressionTextPane.getText();
         String valueExpressionString;
 
-        final ExpressionParser parser = new ExpressionParser(this.otherVariables, ExpressionParser.RestrictionType.MAY_NOT_CONTAIN);
+        ExpressionParser parser = new ExpressionParser(otherVariables, RestrictionType.MAY_NOT_CONTAIN);
 
         try {
             if (!"".equals(expressionString)) {
                 parser.parseExpression(expressionString);
             }
-            this.color = Color.BLACK;
-            this.start = 0;
-            this.stringWidth = expressionString.length();
-            this.recolorTime = System.currentTimeMillis();
+            color = Color.BLACK;
+            start = 0;
+            stringWidth = expressionString.length();
+            recolorTime = System.currentTimeMillis();
             valueExpressionString = expressionString;
-        } catch (final ParseException e) {
-            this.color = Color.RED;
-            this.start = e.getErrorOffset();
-            this.stringWidth = parser.getNextOffset() - e.getErrorOffset();
-            this.recolorTime = System.currentTimeMillis();
+        } catch (ParseException e) {
+            color = Color.RED;
+            start = e.getErrorOffset();
+            stringWidth = parser.getNextOffset() - e.getErrorOffset();
+            recolorTime = System.currentTimeMillis();
             valueExpressionString = null;
         }
 
         if (valueExpressionString != null) {
-            String formula = this.expressionTextPane.getText();
+            String formula = expressionTextPane.getText();
 
-            if (this.node != null) {
-                if (this.node.getNodeType() != NodeType.ERROR && !formula.contains(this.errorNode.getName())
-                        && this.errorTermCheckBox.isSelected()) {
+            if (node != null) {
+                if (node.getNodeType() != NodeType.ERROR && !formula.contains(errorNode.getName())
+                        && errorTermCheckBox.isSelected()) {
                     if (!formula.trim().endsWith("+") && !"".equals(formula)) {
                         formula += " + ";
                     }
 
-                    formula += this.errorNode.getName();
+                    formula += errorNode.getName();
                 }
 
                 this.expressionString = formula;
 
-                if (this.node.getNodeType() == NodeType.ERROR) {
-                    this.resultTextPane.setText(this.node + " ~ " + formula);
+                if (node.getNodeType() == NodeType.ERROR) {
+                    resultTextPane.setText(node + " ~ " + formula);
                 } else {
-                    this.resultTextPane.setText(this.node + " = " + formula);
+                    resultTextPane.setText(node + " = " + formula);
                 }
-            } else if (this.parameter != null) {
+            } else if (parameter != null) {
                 this.expressionString = formula;
-                this.resultTextPane.setText(this.parameter + " ~ " + formula);
+                resultTextPane.setText(parameter + " ~ " + formula);
             }
 
-            this.referencedParametersLabel.setText("Parameters:  " + parameterString(parser));
+            referencedParametersLabel.setText("Parameters:  " + this.parameterString(parser));
         }
 
-        this.latestParser = parser;
+        latestParser = parser;
     }
 
-    private String parameterString(final ExpressionParser parser) {
-        final Set<String> parameters = new LinkedHashSet<>(parser.getParameters());
+    private String parameterString(ExpressionParser parser) {
+        Set<String> parameters = new LinkedHashSet<>(parser.getParameters());
 
-        for (final Node _node : this.semPm.getNodes()) {
+        for (Node _node : semPm.getNodes()) {
             parameters.remove(_node.getName());
         }
 
-        final List<String> parametersList = new ArrayList<>(parameters);
-        final StringBuilder buf = new StringBuilder();
+        List<String> parametersList = new ArrayList<>(parameters);
+        StringBuilder buf = new StringBuilder();
 
         for (int i = 0; i < parametersList.size(); i++) {
             buf.append(parametersList.get(i));
 
-            final Set<Node> referencingNodes = this.semPm.getReferencingNodes(parametersList.get(i));
-            referencingNodes.remove(this.node);
+            Set<Node> referencingNodes = semPm.getReferencingNodes(parametersList.get(i));
+            referencingNodes.remove(node);
 
             if (referencingNodes.size() > 0) {
                 buf.append("*");
@@ -701,26 +702,26 @@ class GeneralizedExpressionEditor extends JComponent {
         return buf.toString();
     }
 
-    private String[] getExpressionTokens(final GeneralizedSemPm semPm, final Node node, final Map<String, String> expressionsMap) {
-        final List<String> _tokens = new ArrayList<>(expressionsMap.keySet());
+    private String[] getExpressionTokens(GeneralizedSemPm semPm, Node node, Map<String, String> expressionsMap) {
+        List<String> _tokens = new ArrayList<>(expressionsMap.keySet());
 
         if (node != null) {
             _tokens.add(semPm.getParents(node).size(), "-New Parameter-");
         }
 
-        final String[] expressionTokens = new String[_tokens.size()];
+        String[] expressionTokens = new String[_tokens.size()];
         int i = -1;
 
-        for (final String token : _tokens) {
+        for (String token : _tokens) {
             expressionTokens[++i] = token;
         }
         return expressionTokens;
     }
 
-    private Map<String, String> getExpressionMap(final GeneralizedSemPm semPm, final Node node) {
+    private Map<String, String> getExpressionMap(GeneralizedSemPm semPm, Node node) {
         // These are the expressions the user can choose from. The display form is on the left, and the template
         // form is on the. Obviously you use a % for a new parameter. In case you want to change it.
-        final String[][] expressions = new String[][]{
+        String[][] expressions = {
                 {"+", " + "},
                 {"-", " - "},
                 {"*", " * "},
@@ -773,10 +774,10 @@ class GeneralizedExpressionEditor extends JComponent {
                 {"Mixture(a1, dist1, b1, dist2, ...)", "Mixture(%, Normal(%, %), %, Normal(%, %))"},
         };
 
-        final Map<String, String> expressionsMap = new LinkedHashMap<>();
+        Map<String, String> expressionsMap = new LinkedHashMap<>();
 
         if (node != null) {
-            final List<Node> parents = semPm.getParents(node);
+            List<Node> parents = semPm.getParents(node);
 
             for (int i = 0; i < parents.size(); i++) {
                 expressionsMap.put(parents.get(i).getName(), parents.get(i).getName());

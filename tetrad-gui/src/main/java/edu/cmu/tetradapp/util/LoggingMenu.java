@@ -55,13 +55,13 @@ class LoggingMenu extends JMenu {
     /**
      * Constructs the menu given the logger that the menu is to display.
      */
-    private LoggingMenu(final TetradLoggerConfig config) {
+    private LoggingMenu(TetradLoggerConfig config) {
         super("Logging");
         if (config == null) {
             throw new NullPointerException("The given config must not be null");
         }
         this.config = config;
-        this.addMenuListener(new LoggingMenuListener());
+        addMenuListener(new LoggingMenuListener());
     }
 
 
@@ -69,7 +69,7 @@ class LoggingMenu extends JMenu {
      * Constructs the logging menu, given the parent component that should be used
      * to center dialogs on.
      */
-    public LoggingMenu(final TetradLoggerConfig config, final Component parent) {
+    public LoggingMenu(TetradLoggerConfig config, Component parent) {
         this(config);
         this.parent = parent;
     }
@@ -81,19 +81,19 @@ class LoggingMenu extends JMenu {
      * Builds the menu
      */
     private void buildMenu() {
-        this.removeAll();
-        final JMenuItem setup = new JMenuItem("Setup Log Events...");
-        setup.addActionListener(e -> showLogSetupDialog());
+        removeAll();
+        JMenuItem setup = new JMenuItem("Setup Log Events...");
+        setup.addActionListener(e -> this.showLogSetupDialog());
 
-        final JCheckBoxMenuItem menuItem = new JCheckBoxMenuItem("Logging");
+        JCheckBoxMenuItem menuItem = new JCheckBoxMenuItem("Logging");
         menuItem.setSelected(TetradLogger.getInstance().isLogging());
 
-        this.add(setup);
-        this.addSeparator();
-        this.add(menuItem);
+        add(setup);
+        addSeparator();
+        add(menuItem);
 
         menuItem.addActionListener(e -> {
-            final JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
+            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
             TetradLogger.getInstance().setLogging(item.isSelected());
         });
     }
@@ -103,17 +103,17 @@ class LoggingMenu extends JMenu {
      * Shows the log display setup dialog.
      */
     private void showLogSetupDialog() {
-        final JPanel panel = new JPanel();
-        final List<TetradLoggerConfig.Event> events = this.config.getSupportedEvents();
+        JPanel panel = new JPanel();
+        List<TetradLoggerConfig.Event> events = config.getSupportedEvents();
         panel.setLayout(new GridLayout(3, events.size() / 3));
-        for (final TetradLoggerConfig.Event event : events) {
-            final String id = event.getId();
-            final JCheckBox checkBox = new JCheckBox(event.getDescription());
+        for (TetradLoggerConfig.Event event : events) {
+            String id = event.getId();
+            JCheckBox checkBox = new JCheckBox(event.getDescription());
             checkBox.setHorizontalTextPosition(AbstractButton.RIGHT);
-            checkBox.setSelected(this.config.isEventActive(id));
+            checkBox.setSelected(config.isEventActive(id));
             checkBox.addActionListener(e -> {
-                final JCheckBox box = (JCheckBox) e.getSource();
-                this.config.setEventActive(id, box.isSelected());
+                JCheckBox box = (JCheckBox) e.getSource();
+                config.setEventActive(id, box.isSelected());
             });
 
             panel.add(checkBox);
@@ -121,7 +121,7 @@ class LoggingMenu extends JMenu {
 
         panel.setBorder(new TitledBorder("Select Events to Log"));
 
-        final Component comp = this.parent == null ? JOptionUtils.centeringComp() : this.parent;
+        Component comp = parent == null ? JOptionUtils.centeringComp() : parent;
         JOptionPane.showMessageDialog(comp, panel, "Logging Setup", JOptionPane.PLAIN_MESSAGE);
     }
 
@@ -133,15 +133,15 @@ class LoggingMenu extends JMenu {
      */
     private class LoggingMenuListener implements MenuListener {
 
-        public void menuSelected(final MenuEvent e) {
-            buildMenu();
+        public void menuSelected(MenuEvent e) {
+            LoggingMenu.this.buildMenu();
         }
 
-        public void menuDeselected(final MenuEvent e) {
+        public void menuDeselected(MenuEvent e) {
 
         }
 
-        public void menuCanceled(final MenuEvent e) {
+        public void menuCanceled(MenuEvent e) {
 
         }
     }

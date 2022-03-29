@@ -62,7 +62,7 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
      */
     private boolean editable = true;
 
-    public TabularDataJTable(final DataSet model, final Map<String, String> columnToTooltip) {
+    public TabularDataJTable(DataSet model, Map<String, String> columnToTooltip) {
         this(model);
 //		System.out.println("setting columnToTooltip " + columnToTooltip);
         this.columnToTooltip = columnToTooltip;
@@ -71,17 +71,17 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
     /**
      * Constructor. Takes a DataSet as a model.
      */
-    public TabularDataJTable(final DataSet model) {
+    public TabularDataJTable(DataSet model) {
 
 //		System.out.println("Calling constructor "
 //				+ Arrays.toString(Thread.currentThread().getStackTrace()));
-        final TabularDataTable dataModel = new TabularDataTable(model);
+        TabularDataTable dataModel = new TabularDataTable(model);
 
         dataModel.addPropertyChangeListener(this);
-        setModel(dataModel);
-        setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        this.setModel(dataModel);
+        this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 //		System.out.println("dataModel: "+model.getColumnToTooltip());
-        this.columnToTooltip
+        columnToTooltip
                 = model.getColumnToTooltip() != null ? model.getColumnToTooltip() : new Hashtable<String, String>();
         int rowCount = this.dataModel.getRowCount();
         int max = 0;
@@ -100,68 +100,68 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
         // GraphComparisonTableCellRenderer(columnToTooltip));
 
         // provide cell renderer the tooltip.
-        addMouseListener(new MouseAdapter() {
-            public void mousePressed(final MouseEvent e) {
-                final int row = rowAtPoint(e.getPoint());
-                final int col = columnAtPoint(e.getPoint());
+        this.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                int row = TabularDataJTable.this.rowAtPoint(e.getPoint());
+                int col = TabularDataJTable.this.columnAtPoint(e.getPoint());
 
                 if (row == 0) {
-                    setRowSelectionAllowed(false);
-                    setColumnSelectionAllowed(true);
+                    TabularDataJTable.this.setRowSelectionAllowed(false);
+                    TabularDataJTable.this.setColumnSelectionAllowed(true);
                 } else if (col == 0) {
-                    setRowSelectionAllowed(true);
-                    setColumnSelectionAllowed(false);
+                    TabularDataJTable.this.setRowSelectionAllowed(true);
+                    TabularDataJTable.this.setColumnSelectionAllowed(false);
                 } else {
-                    setRowSelectionAllowed(true);
-                    setColumnSelectionAllowed(true);
+                    TabularDataJTable.this.setRowSelectionAllowed(true);
+                    TabularDataJTable.this.setColumnSelectionAllowed(true);
                 }
             }
         });
 
-        final FontMetrics metrics = getFontMetrics(getFont());
+        FontMetrics metrics = this.getFontMetrics(this.getFont());
 
-        getColumnModel().getColumn(0).setMaxWidth(9 * max);
+        this.getColumnModel().getColumn(0).setMaxWidth(9 * max);
 //		getColumnModel().getColumn(1).setMaxWidth(9 * 4);
-        setRowHeight(metrics.getHeight() + 3);
+        this.setRowHeight(metrics.getHeight() + 3);
 
-        setRowSelectionAllowed(true);
-        getColumnModel().setColumnSelectionAllowed(true);
+        this.setRowSelectionAllowed(true);
+        this.getColumnModel().setColumnSelectionAllowed(true);
 
         for (int i = 0; i < model.getNumColumns(); i++) {
             if (model.isSelected(model.getVariable(i))) {
-                setRowSelectionAllowed(false);
-                addColumnSelectionInterval(i + 1, i + 1);
+                this.setRowSelectionAllowed(false);
+                this.addColumnSelectionInterval(i + 1, i + 1);
             }
         }
 
-        getColumnModel().addColumnModelListener(new TableColumnModelListener() {
-            public void columnAdded(final TableColumnModelEvent e) {
+        this.getColumnModel().addColumnModelListener(new TableColumnModelListener() {
+            public void columnAdded(TableColumnModelEvent e) {
             }
 
-            public void columnRemoved(final TableColumnModelEvent e) {
+            public void columnRemoved(TableColumnModelEvent e) {
             }
 
-            public void columnMoved(final TableColumnModelEvent e) {
+            public void columnMoved(TableColumnModelEvent e) {
             }
 
-            public void columnMarginChanged(final ChangeEvent e) {
+            public void columnMarginChanged(ChangeEvent e) {
             }
 
             /**
              * Sets the selection of columns in the model to what's in the
              * display.
              */
-            public void columnSelectionChanged(final ListSelectionEvent e) {
+            public void columnSelectionChanged(ListSelectionEvent e) {
                 if (e.getValueIsAdjusting()) {
                     return;
                 }
 
-                final ListSelectionModel selectionModel = (ListSelectionModel) e
+                ListSelectionModel selectionModel = (ListSelectionModel) e
                         .getSource();
-                final DataSet dataSet = getDataSet();
+                DataSet dataSet = TabularDataJTable.this.getDataSet();
                 dataSet.clearSelection();
 
-                if (!getRowSelectionAllowed()) {
+                if (!TabularDataJTable.this.getRowSelectionAllowed()) {
                     for (int i = 0; i < dataSet.getNumColumns(); i++) {
                         if (selectionModel.isSelectedIndex(i + 1)) {
                             dataSet.setSelected(dataSet.getVariable(i), true);
@@ -171,12 +171,12 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
             }
         });
 
-        setTransferHandler(new TabularDataTransferHandler());
+        this.setTransferHandler(new TabularDataTransferHandler());
 
-        addFocusListener(new FocusAdapter() {
-            public void focusLost(final FocusEvent e) {
-                final JTable table = (JTable) e.getSource();
-                final TableCellEditor editor = table.getCellEditor();
+        this.addFocusListener(new FocusAdapter() {
+            public void focusLost(FocusEvent e) {
+                JTable table = (JTable) e.getSource();
+                TableCellEditor editor = table.getCellEditor();
                 if (editor != null) {
                     editor.stopCellEditing();
                 }
@@ -185,7 +185,7 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
     }
 
     @Override
-    public Component prepareRenderer(final TableCellRenderer renderer, final int rowIndex, final int vColIndex) {
+    public Component prepareRenderer(TableCellRenderer renderer, int rowIndex, int vColIndex) {
 //		if (columnToTooltip == null) {
 //			columnToTooltip = new Hashtable<String, String>();
 //			 	columnToTooltip.put("ADJ_COR", "Adjacencies in the reference graph that are in the true graph.");
@@ -197,14 +197,14 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
 //
 //		}
 //	 	System.out.println("columnToTooltip " + columnToTooltip);
-        final Component c = super.prepareRenderer(renderer, rowIndex, vColIndex);
+        Component c = super.prepareRenderer(renderer, rowIndex, vColIndex);
         if (c instanceof JComponent) {
-            final JComponent jc = (JComponent) c;
+            JComponent jc = (JComponent) c;
 
-            final Object o = getValueAt(rowIndex, vColIndex);
+            Object o = this.getValueAt(rowIndex, vColIndex);
 
             if (o != null) {
-                final String tooltip = this.columnToTooltip.get(o.toString());
+                String tooltip = columnToTooltip.get(o.toString());
 //				System.out.println("tooltip " + o + " "+ tooltip);
                 if (tooltip != null) {
                     jc.setToolTipText(tooltip);
@@ -214,21 +214,21 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
         return c;
     }
 
-    public void setEditable(final boolean editable) {
+    public void setEditable(boolean editable) {
         this.editable = editable;
     }
 
-    public void setValueAt(final Object aValue, final int row, final int column) {
+    public void setValueAt(Object aValue, int row, int column) {
         try {
             super.setValueAt(aValue, row, column);
-        } catch (final Exception e) {
+        } catch (Exception e) {
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), e
                     .getMessage(), "Error", JOptionPane.WARNING_MESSAGE);
         }
     }
 
-    public TableCellEditor getCellEditor(final int row, final int column) {
-        if (!this.editable) {
+    public TableCellEditor getCellEditor(int row, int column) {
+        if (!editable) {
             return new DoNothingEditor();
         }
         if (row == 1) {
@@ -243,7 +243,7 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
         return null;
     }
 
-    public TableCellRenderer getCellRenderer(final int row, final int column) {
+    public TableCellRenderer getCellRenderer(int row, int column) {
         if (column == 0) {
             return new RowNumberRenderer();
         } //		else if (column == 1 && row >= 1) {
@@ -254,7 +254,7 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
                 return new VariableNameRenderer();
             }
 
-            return new DataCellRenderer(this, getNumLeadingCols());
+            return new DataCellRenderer(this, this.getNumLeadingCols());
         }
     }
 
@@ -262,29 +262,29 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
      * @return the underlying DataSet model.
      */
     public DataSet getDataSet() {
-        final TabularDataTable tableModelTabularData = (TabularDataTable) getModel();
+        TabularDataTable tableModelTabularData = (TabularDataTable) this.getModel();
         return tableModelTabularData.getDataSet();
     }
 
-    public void setDataSet(final DataSet data) {
-        final TabularDataTable tableModelTabularData = (TabularDataTable) getModel();
+    public void setDataSet(DataSet data) {
+        TabularDataTable tableModelTabularData = (TabularDataTable) this.getModel();
         tableModelTabularData.setDataSet(data);
     }
 
     public DataModel getDataModel() {
-        return getDataSet();
+        return this.getDataSet();
     }
 
     public void deleteSelected() {
-        final TabularDataTable model = (TabularDataTable) getModel();
-        final DataSet dataSet = model.getDataSet();
+        TabularDataTable model = (TabularDataTable) this.getModel();
+        DataSet dataSet = model.getDataSet();
 
         // When getRowSelectionAllowed() is false, getColumnSelectionAllowed() must be true, vise versa.
         // But both can be true since we can select a data cell - Zhou
-        if (getColumnSelectionAllowed()) {
-            final int[] selectedCols = getSelectedColumns();
+        if (this.getColumnSelectionAllowed()) {
+            int[] selectedCols = this.getSelectedColumns();
 
-            final TableCellEditor editor = getCellEditor();
+            TableCellEditor editor = this.getCellEditor();
 
             if (editor != null) {
                 editor.stopCellEditing();
@@ -293,17 +293,17 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
             for (int i = selectedCols.length - 1; i >= 0; i--) {
 //            for (int i = 0; i < selectedCols.length; i++) {
                 // Adjust to 0 base
-                selectedCols[i] -= getNumLeadingCols();
+                selectedCols[i] -= this.getNumLeadingCols();
                 // Then remove each individual column from model
                 dataSet.removeColumn(selectedCols[i]);
             }
 
             // Using this causes error - Zhou
             //dataSet.removeCols(selectedCols);
-        } else if (getRowSelectionAllowed()) {
-            final int[] selectedRows = getSelectedRows();
+        } else if (this.getRowSelectionAllowed()) {
+            int[] selectedRows = this.getSelectedRows();
 
-            final TableCellEditor editor = getCellEditor();
+            TableCellEditor editor = this.getCellEditor();
 
             if (editor != null) {
                 editor.stopCellEditing();
@@ -318,64 +318,64 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
             throw new IllegalStateException("Only row deletion and column deltion supported.");
         }
 
-        firePropertyChange("modelChanged", null, null);
+        this.firePropertyChange("modelChanged", null, null);
         model.fireTableDataChanged();
     }
 
     public void clearSelected() {
-        final TabularDataTable model = (TabularDataTable) getModel();
-        final DataSet dataSet = model.getDataSet();
+        TabularDataTable model = (TabularDataTable) this.getModel();
+        DataSet dataSet = model.getDataSet();
 
-        if (!getRowSelectionAllowed()) {
-            final int[] selectedCols = getSelectedColumns();
-            final TableCellEditor editor = getCellEditor();
+        if (!this.getRowSelectionAllowed()) {
+            int[] selectedCols = this.getSelectedColumns();
+            TableCellEditor editor = this.getCellEditor();
 
             if (editor != null) {
                 editor.stopCellEditing();
             }
 
             for (int i = selectedCols.length - 1; i >= 0; i--) {
-                if (selectedCols[i] < getNumLeadingCols()) {
+                if (selectedCols[i] < this.getNumLeadingCols()) {
                     continue;
                 }
 
-                final int dataCol = selectedCols[i] - getNumLeadingCols();
+                int dataCol = selectedCols[i] - this.getNumLeadingCols();
 
                 if (dataCol >= dataSet.getNumColumns()) {
                     continue;
                 }
 
-                final Node variable = dataSet.getVariable(dataCol);
-                final Object missingValue = ((Variable) variable)
+                Node variable = dataSet.getVariable(dataCol);
+                Object missingValue = ((Variable) variable)
                         .getMissingValueMarker();
 
                 for (int j = 0; j < dataSet.getNumRows(); j++) {
                     dataSet.setObject(j, dataCol, missingValue);
                 }
             }
-        } else if (!getColumnSelectionAllowed()) {
-            final int[] selectedRows = getSelectedRows();
+        } else if (!this.getColumnSelectionAllowed()) {
+            int[] selectedRows = this.getSelectedRows();
 
-            final TableCellEditor editor = getCellEditor();
+            TableCellEditor editor = this.getCellEditor();
             if (editor != null) {
                 editor.stopCellEditing();
             }
 
-            for (int i = getColumnCount() - 1; i >= 0; i--) {
-                if (i < getNumLeadingCols()) {
+            for (int i = this.getColumnCount() - 1; i >= 0; i--) {
+                if (i < this.getNumLeadingCols()) {
                     continue;
                 }
 
-                final String colName = (String) (getValueAt(1, i));
+                String colName = (String) (this.getValueAt(1, i));
 
                 if (colName == null) {
                     continue;
                 }
 
-                final int dataCol = i - getNumLeadingCols();
+                int dataCol = i - this.getNumLeadingCols();
 
-                final Node variable = dataSet.getVariable(dataCol);
-                final Object missingValue = ((Variable) variable)
+                Node variable = dataSet.getVariable(dataCol);
+                Object missingValue = ((Variable) variable)
                         .getMissingValueMarker();
 
                 for (int j = selectedRows.length - 1; j >= 0; j--) {
@@ -392,34 +392,34 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
                 }
             }
         } else {
-            final int[] selectedRows = getSelectedRows();
-            final int[] selectedCols = getSelectedColumns();
+            int[] selectedRows = this.getSelectedRows();
+            int[] selectedCols = this.getSelectedColumns();
 
-            final TableCellEditor editor = getCellEditor();
+            TableCellEditor editor = this.getCellEditor();
 
             if (editor != null) {
                 editor.stopCellEditing();
             }
 
             for (int i = selectedCols.length - 1; i >= 0; i--) {
-                if (selectedCols[i] < getNumLeadingCols()) {
+                if (selectedCols[i] < this.getNumLeadingCols()) {
                     continue;
                 }
 
-                final int dataCol = selectedCols[i] - getNumLeadingCols();
+                int dataCol = selectedCols[i] - this.getNumLeadingCols();
 
                 if (dataCol >= dataSet.getNumColumns()) {
                     continue;
                 }
 
-                final String colName = (String) (getValueAt(1, selectedCols[i]));
+                String colName = (String) (this.getValueAt(1, selectedCols[i]));
 
                 if (colName == null) {
                     continue;
                 }
 
-                final Node variable = dataSet.getVariable(dataCol);
-                final Object missingValue = ((Variable) variable)
+                Node variable = dataSet.getVariable(dataCol);
+                Object missingValue = ((Variable) variable)
                         .getMissingValueMarker();
 
                 for (int j = selectedRows.length - 1; j >= 0; j--) {
@@ -437,7 +437,7 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
             }
         }
 
-        firePropertyChange("modelChanged", null, null);
+        this.firePropertyChange("modelChanged", null, null);
         model.fireTableDataChanged();
     }
 
@@ -453,48 +453,48 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
      * @return true iff the given token is a legitimate value for the cell at
      * (row, col) in the table.
      */
-    public boolean checkValueAt(final String token, final int col) {
-        if (col < getNumLeadingCols()) {
+    public boolean checkValueAt(String token, int col) {
+        if (col < this.getNumLeadingCols()) {
             throw new IllegalArgumentException();
         }
 
-        final DataSet dataSet = getDataSet();
-        final int dataCol = col - getNumLeadingCols();
+        DataSet dataSet = this.getDataSet();
+        int dataCol = col - this.getNumLeadingCols();
         // int dataCol = col;
 
         if (dataCol < dataSet.getNumColumns()) {
-            final Node variable = dataSet.getVariable(dataCol);
+            Node variable = dataSet.getVariable(dataCol);
             return ((Variable) variable).checkValue(token);
         } else {
             return true;
         }
     }
 
-    public void setShowCategoryNames(final boolean selected) {
-        final TabularDataTable table = (TabularDataTable) getModel();
+    public void setShowCategoryNames(boolean selected) {
+        TabularDataTable table = (TabularDataTable) this.getModel();
         table.setCategoryNamesShown(selected);
     }
 
     public boolean isShowCategoryNames() {
-        final TabularDataTable table = (TabularDataTable) getModel();
+        TabularDataTable table = (TabularDataTable) this.getModel();
         return table.isCategoryNamesShown();
     }
 
-    public void propertyChange(final PropertyChangeEvent evt) {
-        firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+    public void propertyChange(PropertyChangeEvent evt) {
+        this.firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
     }
 
 }
 
 class RowNumberRenderer extends DefaultTableCellRenderer {
 
-    public Component getTableCellRendererComponent(final JTable table, final Object value,
-                                                   final boolean isSelected, final boolean hasFocus, final int row, final int column) {
-        final JLabel label = (JLabel) super.getTableCellRendererComponent(table,
+    public Component getTableCellRendererComponent(JTable table, Object value,
+                                                   boolean isSelected, boolean hasFocus, int row, int column) {
+        JLabel label = (JLabel) super.getTableCellRendererComponent(table,
                 value, isSelected, hasFocus, row, column);
 
         if (row > 1) {
-            setText(Integer.toString(row - 1));
+            this.setText(Integer.toString(row - 1));
             label.setHorizontalAlignment(JLabel.CENTER);
             label.setFont(new Font("SansSerif", Font.BOLD, 12));
         }
@@ -571,9 +571,9 @@ class VariableNameRenderer extends DefaultTableCellRenderer {
             return;
         }
 
-        setText((String) value);
-        setFont(new Font("SansSerif", Font.BOLD, 12));
-        setHorizontalAlignment(JLabel.CENTER);
+        this.setText((String) value);
+        this.setFont(new Font("SansSerif", Font.BOLD, 12));
+        this.setHorizontalAlignment(JLabel.CENTER);
     }
 }
 
@@ -583,7 +583,7 @@ class DoNothingEditor extends DefaultCellEditor {
         super(new JTextField());
     }
 
-    public boolean isCellEditable(final EventObject anEvent) {
+    public boolean isCellEditable(EventObject anEvent) {
         return false;
     }
 }
@@ -598,9 +598,9 @@ class VariableNameEditor extends DefaultCellEditor {
     public VariableNameEditor() {
         super(new JTextField());
 
-        this.textField = (JTextField) this.editorComponent;
+        textField = (JTextField) editorComponent;
 
-        this.delegate = new EditorDelegate() {
+        delegate = new DefaultCellEditor.EditorDelegate() {
 
             /**
              * Overrides delegate; sets the value of the textfield to the value
@@ -613,10 +613,10 @@ class VariableNameEditor extends DefaultCellEditor {
                     value = "";
                 }
 
-                VariableNameEditor.this.textField.setText((String) value);
-                VariableNameEditor.this.textField.setFont(new Font("SansSerif", Font.BOLD, 12));
-                VariableNameEditor.this.textField.setHorizontalAlignment(JTextField.CENTER);
-                VariableNameEditor.this.textField.selectAll();
+                textField.setText((String) value);
+                textField.setFont(new Font("SansSerif", Font.BOLD, 12));
+                textField.setHorizontalAlignment(JTextField.CENTER);
+                textField.selectAll();
             }
 
             /**
@@ -626,11 +626,11 @@ class VariableNameEditor extends DefaultCellEditor {
              * @return this text value.
              */
             public Object getCellEditorValue() {
-                return VariableNameEditor.this.textField.getText();
+                return textField.getText();
             }
         };
 
-        this.textField.addActionListener(this.delegate);
+        textField.addActionListener(delegate);
     }
 }
 
@@ -640,37 +640,37 @@ class DataCellRenderer extends DefaultTableCellRenderer {
     private final DataSet dataSet;
     private final int numLeadingCols;
 
-    public DataCellRenderer(final TabularDataJTable tableTabular, final int numLeadingCols) {
-        this.dataSet = ((TabularDataTable) tableTabular.getModel()).getDataSet();
+    public DataCellRenderer(TabularDataJTable tableTabular, int numLeadingCols) {
+        dataSet = ((TabularDataTable) tableTabular.getModel()).getDataSet();
         this.numLeadingCols = numLeadingCols;
-        this.nf = this.dataSet.getNumberFormat();
+        nf = dataSet.getNumberFormat();
     }
 
-    public void setValue(final Object value) {
+    public void setValue(Object value) {
         if (value instanceof String) {
-            setText((String) value);
+            this.setText((String) value);
         } else if (value instanceof Integer) {
-            setText(value.toString());
+            this.setText(value.toString());
         } else if (value instanceof Double) {
-            setText(this.nf.format((double) (Double) value));
+            this.setText(nf.format((double) (Double) value));
         } else {
-            setText("");
+            this.setText("");
         }
     }
 
-    public Component getTableCellRendererComponent(final JTable table, final Object value,
-                                                   final boolean isSelected, final boolean hasFocus, final int row, final int col) {
+    public Component getTableCellRendererComponent(JTable table, Object value,
+                                                   boolean isSelected, boolean hasFocus, int row, int col) {
 
         // Have to set the alignment here, since this is the only place the col
         // index of the component is available...
-        final Component c = super.getTableCellRendererComponent(table, value,
+        Component c = super.getTableCellRendererComponent(table, value,
                 isSelected, hasFocus, row, col);
-        final DefaultTableCellRenderer renderer = (DefaultTableCellRenderer) c;
+        DefaultTableCellRenderer renderer = (DefaultTableCellRenderer) c;
 
-        if (this.dataSet.getNumColumns() > 0 && col >= getNumLeadingCols()
-                && col < this.dataSet.getNumColumns() + getNumLeadingCols()) {
-            final int dataCol = col - getNumLeadingCols();
-            final Node variable = this.dataSet.getVariable(dataCol);
+        if (dataSet.getNumColumns() > 0 && col >= this.getNumLeadingCols()
+                && col < dataSet.getNumColumns() + this.getNumLeadingCols()) {
+            int dataCol = col - this.getNumLeadingCols();
+            Node variable = dataSet.getVariable(dataCol);
 
             if (variable instanceof DiscreteVariable) {
                 renderer.setHorizontalAlignment(JLabel.RIGHT);
@@ -683,6 +683,6 @@ class DataCellRenderer extends DefaultTableCellRenderer {
     }
 
     private int getNumLeadingCols() {
-        return this.numLeadingCols;
+        return numLeadingCols;
     }
 }

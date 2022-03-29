@@ -39,7 +39,7 @@ public class Metadata {
     public Metadata() {
     }
 
-    public Metadata(final List<ColumnMetadata> domainColumnns, final List<InterventionalColumn> interventionalColumns) {
+    public Metadata(List<ColumnMetadata> domainColumnns, List<InterventionalColumn> interventionalColumns) {
         if (domainColumnns != null) {
             this.domainColumnns.addAll(domainColumnns);
         }
@@ -50,22 +50,22 @@ public class Metadata {
 
     @Override
     public String toString() {
-        return "Metadata{" + "domainColumnns=" + this.domainColumnns + ", interventionalColumns=" + this.interventionalColumns + '}';
+        return "Metadata{" + "domainColumnns=" + domainColumnns + ", interventionalColumns=" + interventionalColumns + '}';
     }
 
     public List<ColumnMetadata> getDomainColumnns() {
-        return this.domainColumnns;
+        return domainColumnns;
     }
 
-    public void setDomainColumnns(final List<ColumnMetadata> domainColumnns) {
+    public void setDomainColumnns(List<ColumnMetadata> domainColumnns) {
         this.domainColumnns = domainColumnns;
     }
 
     public List<InterventionalColumn> getInterventionalColumns() {
-        return this.interventionalColumns;
+        return interventionalColumns;
     }
 
-    public void setInterventionalColumns(final List<InterventionalColumn> interventionalColumns) {
+    public void setInterventionalColumns(List<InterventionalColumn> interventionalColumns) {
         this.interventionalColumns = interventionalColumns;
     }
 

@@ -74,106 +74,106 @@ class GeneralizedSemPmGraphicalEditor extends JPanel {
     /**
      * Constructs a SemPm graphical editor for the given SemIm.
      */
-    public GeneralizedSemPmGraphicalEditor(final GeneralizedSemPm semPm, final Map<Object, EditorWindow> launchedEditors) {
+    public GeneralizedSemPmGraphicalEditor(GeneralizedSemPm semPm, Map<Object, EditorWindow> launchedEditors) {
         this.semPm = semPm;
         this.launchedEditors = launchedEditors;
-        setLayout(new BorderLayout());
-        final JScrollPane scroll = new JScrollPane(workbench());
+        this.setLayout(new BorderLayout());
+        JScrollPane scroll = new JScrollPane(this.workbench());
         scroll.setPreferredSize(new Dimension(450, 450));
 
-        add(scroll, BorderLayout.CENTER);
-        setBorder(new TitledBorder(
+        this.add(scroll, BorderLayout.CENTER);
+        this.setBorder(new TitledBorder(
                 "Double click expressions to edit"));
     }
 
     //========================PRIVATE PROTECTED METHODS======================//
-    private void beginNodeEdit(final Node node) {
-        if (this.launchedEditors.keySet().contains(node)) {
-            this.launchedEditors.get(node).moveToFront();
+    private void beginNodeEdit(Node node) {
+        if (launchedEditors.keySet().contains(node)) {
+            launchedEditors.get(node).moveToFront();
             return;
         }
 
-        final GeneralizedExpressionEditor paramEditor = new GeneralizedExpressionEditor(this.semPm, node);
+        GeneralizedExpressionEditor paramEditor = new GeneralizedExpressionEditor(semPm, node);
 
-        final JPanel panel = new JPanel();
+        JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.add(paramEditor, BorderLayout.CENTER);
         panel.setBorder(new EmptyBorder(5, 5, 5, 5));
 
-        final EditorWindow editorWindow
+        EditorWindow editorWindow
                 = new EditorWindow(panel, "Edit Expression", "OK", true, this);
 
         DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
         editorWindow.pack();
         editorWindow.setVisible(true);
 
-        this.launchedEditors.put(node, editorWindow);
+        launchedEditors.put(node, editorWindow);
 
         editorWindow.addInternalFrameListener(new InternalFrameAdapter() {
-            public void internalFrameClosing(final InternalFrameEvent internalFrameEvent) {
+            public void internalFrameClosing(InternalFrameEvent internalFrameEvent) {
                 if (!editorWindow.isCanceled()) {
-                    final String expressionString = paramEditor.getExpressionString();
+                    String expressionString = paramEditor.getExpressionString();
                     try {
-                        GeneralizedSemPmGraphicalEditor.this.semPm.setNodeExpression(node, expressionString);
-                    } catch (final ParseException e) {
+                        semPm.setNodeExpression(node, expressionString);
+                    } catch (ParseException e) {
                         // This is an expression that's been vetted by the expression editor.
                         e.printStackTrace();
-                        GeneralizedSemPmGraphicalEditor.this.launchedEditors.remove(node);
+                        launchedEditors.remove(node);
                         throw new RuntimeException("The expression editor returned an unparseable string: " + expressionString, e);
                     }
-                    refreshLabels();
-                    firePropertyChange("modelChanged", null, null);
+                    GeneralizedSemPmGraphicalEditor.this.refreshLabels();
+                    GeneralizedSemPmGraphicalEditor.this.firePropertyChange("modelChanged", null, null);
                 }
 
-                GeneralizedSemPmGraphicalEditor.this.launchedEditors.remove(node);
+                launchedEditors.remove(node);
             }
         });
     }
 
     private GeneralizedSemPm semPm() {
-        return this.semPm;
+        return semPm;
     }
 
     private Graph graph() {
-        return semPm().getGraph();
+        return this.semPm().getGraph();
     }
 
     private GraphWorkbench workbench() {
-        if (this.getWorkbench() == null) {
-            this.workbench = new GraphWorkbench(graph());
-            this.getWorkbench().setAllowDoubleClickActions(false);
-            refreshLabels();
-            addMouseListenerToGraphNodesMeasured();
+        if (getWorkbench() == null) {
+            workbench = new GraphWorkbench(this.graph());
+            getWorkbench().setAllowDoubleClickActions(false);
+            this.refreshLabels();
+            this.addMouseListenerToGraphNodesMeasured();
         }
-        return getWorkbench();
+        return this.getWorkbench();
     }
 
     public void refreshLabels() {
-        final List nodes = graph().getNodes();
+        List nodes = this.graph().getNodes();
 
-        for (final Object node : nodes) {
-            resetNodeLabel((Node) node);
+        for (Object node : nodes) {
+            this.resetNodeLabel((Node) node);
         }
 
-        workbench().repaint();
+        this.workbench().repaint();
     }
 
-    private void resetNodeLabel(final Node node) {
-        final int maxExpressionLength = Preferences.userRoot().getInt("maxExpressionLength", 25);
+    private void resetNodeLabel(Node node) {
+        int maxExpressionLength = Preferences.userRoot().getInt("maxExpressionLength", 25);
 
-        if (this.semPm.getNodeExpression(node) == null) {
+        if (semPm.getNodeExpression(node) == null) {
             return;
         }
 
-        String expressionString = this.semPm.getNodeExpressionString(node);
+        String expressionString = semPm.getNodeExpressionString(node);
         if (expressionString.length() > maxExpressionLength) {
             expressionString = "- long formula -";
         }
 
         if (expressionString == null) {
-            workbench().setNodeLabel(node, null, 0, 0);
+            this.workbench().setNodeLabel(node, null, 0, 0);
         } else {
-            final JLabel label = new JLabel();
+            JLabel label = new JLabel();
             label.setForeground(Color.BLACK);
             label.setBackground(Color.WHITE);
 //            label.setFont(SMALL_FONT);
@@ -185,21 +185,21 @@ class GeneralizedSemPmGraphicalEditor extends JPanel {
             if (node.getNodeType() == NodeType.ERROR) {
                 label.setOpaque(false);
 
-                final Node error = this.workbench.getGraph().getNode(node.getName());
+                Node error = workbench.getGraph().getNode(node.getName());
 
                 if (error != null) {
-                    workbench().setNodeLabel(error, label, -10, -10);
+                    this.workbench().setNodeLabel(error, label, -10, -10);
                 }
             } else {
                 label.setOpaque(false);
 
-                if (workbench().getGraph().containsNode(node)) {
-                    workbench().setNodeLabel(node, label, 0, 0);
+                if (this.workbench().getGraph().containsNode(node)) {
+                    this.workbench().setNodeLabel(node, label, 0, 0);
                 }
             }
         }
 
-        firePropertyChange("modelChanged", null, null);
+        this.firePropertyChange("modelChanged", null, null);
     }
 
     private void addMouseListenerToGraphNodesMeasured() {
@@ -218,42 +218,42 @@ class GeneralizedSemPmGraphicalEditor extends JPanel {
     }
 
     public GraphWorkbench getWorkbench() {
-        return this.workbench;
+        return workbench;
     }
 
     public boolean isEnableEditing() {
-        return this.enableEditing;
+        return enableEditing;
     }
 
-    public void enableEditing(final boolean enableEditing) {
+    public void enableEditing(boolean enableEditing) {
         this.enableEditing = enableEditing;
-        if (this.workbench != null) {
-            this.workbench.enableEditing(enableEditing);
+        if (workbench != null) {
+            workbench.enableEditing(enableEditing);
         }
     }
 
     //=======================PRIVATE INNER CLASSES==========================//
-    private final static class NodeMouseListener extends MouseAdapter {
+    private static final class NodeMouseListener extends MouseAdapter {
 
         private final Node node;
         private final GeneralizedSemPmGraphicalEditor editor;
 
-        public NodeMouseListener(final Node node, final GeneralizedSemPmGraphicalEditor editor) {
+        public NodeMouseListener(Node node, GeneralizedSemPmGraphicalEditor editor) {
             this.node = node;
             this.editor = editor;
         }
 
         private Node getNode() {
-            return this.node;
+            return node;
         }
 
         private GeneralizedSemPmGraphicalEditor getEditor() {
-            return this.editor;
+            return editor;
         }
 
-        public void mouseClicked(final MouseEvent e) {
+        public void mouseClicked(MouseEvent e) {
             if (e.getClickCount() == 2) {
-                getEditor().beginNodeEdit(getNode());
+                this.getEditor().beginNodeEdit(this.getNode());
             }
         }
     }

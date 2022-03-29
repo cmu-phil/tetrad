@@ -37,50 +37,50 @@ import edu.pitt.csb.mgm.MixedUtils;
 public class SearchWrappers {
     public static class PcStableWrapper extends DataGraphSearch {
         //should be one param for the alpha level of the independance test
-        public PcStableWrapper(final double... params) {
+        public PcStableWrapper(double... params) {
             super(params);
         }
 
         public PcStableWrapper copy() {
-            return new PcStableWrapper(this.searchParams);
+            return new PcStableWrapper(searchParams);
         }
 
-        public Graph search(final DataSet ds) {
-            final IndTestMultinomialLogisticRegression indTest = new IndTestMultinomialLogisticRegression(ds, this.searchParams[0]);
-            final PcStable pcs = new PcStable(indTest);
+        public Graph search(DataSet ds) {
+            IndTestMultinomialLogisticRegression indTest = new IndTestMultinomialLogisticRegression(ds, searchParams[0]);
+            PcStable pcs = new PcStable(indTest);
             return pcs.search();
         }
     }
 
     public static class MGMWrapper extends DataGraphSearch {
         //should be array three parameters for lambdas of each edge type
-        public MGMWrapper(final double... params) {
+        public MGMWrapper(double... params) {
             super(params);
         }
 
         public MGMWrapper copy() {
-            return new MGMWrapper(this.searchParams);
+            return new MGMWrapper(searchParams);
         }
 
-        public Graph search(final DataSet ds) {
-            final MGM m = new MGM(ds, this.searchParams);
+        public Graph search(DataSet ds) {
+            MGM m = new MGM(ds, searchParams);
             return m.search();
         }
     }
 
     public static class FgesWrapper extends DataGraphSearch {
-        public FgesWrapper(final double... params) {
+        public FgesWrapper(double... params) {
             super(params);
         }
 
         public FgesWrapper copy() {
-            return new FgesWrapper(this.searchParams);
+            return new FgesWrapper(searchParams);
         }
 
-        public Graph search(final DataSet ds) {
-            final SemBicScore score = new SemBicScore(new CovarianceMatrix(MixedUtils.makeContinuousData(ds)));
-            score.setPenaltyDiscount(this.searchParams[0]);
-            final Fges fg = new Fges(score);
+        public Graph search(DataSet ds) {
+            SemBicScore score = new SemBicScore(new CovarianceMatrix(MixedUtils.makeContinuousData(ds)));
+            score.setPenaltyDiscount(searchParams[0]);
+            Fges fg = new Fges(score);
             return fg.search();
         }
     }

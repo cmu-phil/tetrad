@@ -39,13 +39,13 @@ public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
     }
 
     @Override
-    public Graph search(final DataModel dataSet, final Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            final ICovarianceMatrix cov = DataUtils.getCovMatrix(dataSet);
-            final double alpha = parameters.getDouble(Params.ALPHA);
+            ICovarianceMatrix cov = DataUtils.getCovMatrix(dataSet);
+            double alpha = parameters.getDouble(Params.ALPHA);
 
-            final boolean wishart = parameters.getBoolean(Params.USE_WISHART, true);
-            final TestType testType;
+            boolean wishart = parameters.getBoolean(Params.USE_WISHART, true);
+            TestType testType;
 
             if (wishart) {
                 testType = TestType.TETRAD_WISHART;
@@ -53,18 +53,18 @@ public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
                 testType = TestType.TETRAD_DELTA;
             }
 
-            final BuildPureClusters bpc = new BuildPureClusters(cov, alpha, testType);
+            BuildPureClusters bpc = new BuildPureClusters(cov, alpha, testType);
             bpc.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
-            final Graph graph = bpc.search();
+            Graph graph = bpc.search();
 
             if (!parameters.getBoolean(Params.INCLUDE_STRUCTURE_MODEL)) {
                 return graph;
             } else {
 
-                final Clusters clusters = ClusterUtils.mimClusters(graph);
+                Clusters clusters = ClusterUtils.mimClusters(graph);
 
-                final Mimbuild mimbuild = new Mimbuild();
+                Mimbuild mimbuild = new Mimbuild();
                 mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
                 mimbuild.setKnowledge((IKnowledge) parameters.get("knowledge", new Knowledge2()));
 
@@ -74,33 +74,33 @@ public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
                     mimbuild.setMinClusterSize(4);
                 }
 
-                final List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters, dataSet.getVariables());
-                final List<String> latentNames = new ArrayList<>();
+                List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters, dataSet.getVariables());
+                List<String> latentNames = new ArrayList<>();
 
                 for (int i = 0; i < clusters.getNumClusters(); i++) {
                     latentNames.add(clusters.getClusterName(i));
                 }
 
-                final Graph structureGraph = mimbuild.search(partition, latentNames, cov);
+                Graph structureGraph = mimbuild.search(partition, latentNames, cov);
                 GraphUtils.circleLayout(structureGraph, 200, 200, 150);
                 GraphUtils.fruchtermanReingoldLayout(structureGraph);
 
-                final ICovarianceMatrix latentsCov = mimbuild.getLatentsCov();
+                ICovarianceMatrix latentsCov = mimbuild.getLatentsCov();
 
                 TetradLogger.getInstance().log("details", "Latent covs = \n" + latentsCov);
 
-                final Graph fullGraph = mimbuild.getFullGraph();
+                Graph fullGraph = mimbuild.getFullGraph();
                 GraphUtils.circleLayout(fullGraph, 200, 200, 150);
                 GraphUtils.fruchtermanReingoldLayout(fullGraph);
 
                 return fullGraph;
             }
         } else {
-            final Bpc algorithm = new Bpc();
+            Bpc algorithm = new Bpc();
 
-            final DataSet data = (DataSet) dataSet;
-            final GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(this.knowledge);
+            DataSet data = (DataSet) dataSet;
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
+            search.setKnowledge(knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -125,7 +125,7 @@ public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
     }
 
     @Override
-    public Graph getComparisonGraph(final Graph graph) {
+    public Graph getComparisonGraph(Graph graph) {
         return SearchGraphUtils.cpdagForDag(new EdgeListGraph(graph));
     }
 
@@ -141,7 +141,7 @@ public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.USE_WISHART);
         parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
@@ -152,11 +152,11 @@ public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
     @Override
     public IKnowledge getKnowledge() {
-        return this.knowledge;
+        return knowledge;
     }
 
     @Override
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 }

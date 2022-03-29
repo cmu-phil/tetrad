@@ -59,7 +59,7 @@ public final class SessionEditor extends JComponent
     /**
      * Constucts a session editor with the given name.
      */
-    public SessionEditor(final String name) {
+    public SessionEditor(String name) {
         this(name, null);
     }
 
@@ -69,12 +69,12 @@ public final class SessionEditor extends JComponent
      *
      * @param name The name of the session.  This is used for saving out
      */
-    public SessionEditor(final String name, SessionEditorWorkbench workbench) {
-        setName(name);
+    public SessionEditor(String name, SessionEditorWorkbench workbench) {
+        this.setName(name);
 
         if (workbench == null) {
-            final Session session = new Session(name);
-            final SessionWrapper wrapper = new SessionWrapper(session);
+            Session session = new Session(name);
+            SessionWrapper wrapper = new SessionWrapper(session);
             workbench = new SessionEditorWorkbench(wrapper);
         }
 
@@ -89,20 +89,20 @@ public final class SessionEditor extends JComponent
 //
 //        Preferences.userRoot().putInt("initialHelpMessageCount", initialHelpMessageCount + 1);
 
-        setWorkbench(workbench);
-        setToolbar(new SessionEditorToolbar(workbench));
-        final JScrollPane workbenchScroll = new JScrollPane(workbench);
+        this.setWorkbench(workbench);
+        this.setToolbar(new SessionEditorToolbar(workbench));
+        JScrollPane workbenchScroll = new JScrollPane(workbench);
 
-        setLayout(new BorderLayout());
-        add(workbenchScroll, BorderLayout.CENTER);
-        add(getToolbar(), BorderLayout.WEST);
+        this.setLayout(new BorderLayout());
+        this.add(workbenchScroll, BorderLayout.CENTER);
+        this.add(this.getToolbar(), BorderLayout.WEST);
 
         workbench.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(final PropertyChangeEvent e) {
-                final String propertyName = e.getPropertyName();
+            public void propertyChange(PropertyChangeEvent e) {
+                String propertyName = e.getPropertyName();
 
                 if ("name".equals(propertyName)) {
-                    firePropertyChange("name", e.getOldValue(),
+                    SessionEditor.this.firePropertyChange("name", e.getOldValue(),
                             e.getNewValue());
                 }
             }
@@ -113,7 +113,7 @@ public final class SessionEditor extends JComponent
      * @return the session workbench.
      */
     public SessionEditorWorkbench getSessionWorkbench() {
-        return getWorkbench();
+        return this.getWorkbench();
     }
 
     /**
@@ -124,17 +124,17 @@ public final class SessionEditor extends JComponent
      * selection.
      */
     public List getSelectedModelComponents() {
-        final List selectedComponents = getWorkbench().getSelectedComponents();
-        final List selectedModelComponents = new ArrayList();
+        List selectedComponents = this.getWorkbench().getSelectedComponents();
+        List selectedModelComponents = new ArrayList();
 
-        for (final Object comp : selectedComponents) {
+        for (Object comp : selectedComponents) {
             if (comp instanceof SessionEditorNode) {
-                final SessionEditorNode editorNode = (SessionEditorNode) comp;
-                final Node modelNode = editorNode.getModelNode();
+                SessionEditorNode editorNode = (SessionEditorNode) comp;
+                Node modelNode = editorNode.getModelNode();
                 selectedModelComponents.add(modelNode);
             } else if (comp instanceof SessionEditorEdge) {
-                final SessionEditorEdge editorEdge = (SessionEditorEdge) comp;
-                final Edge modelEdge = getWorkbench().getModelEdge(editorEdge);
+                SessionEditorEdge editorEdge = (SessionEditorEdge) comp;
+                Edge modelEdge = this.getWorkbench().getModelEdge(editorEdge);
                 selectedModelComponents.add(modelEdge);
             }
         }
@@ -150,16 +150,16 @@ public final class SessionEditor extends JComponent
      * @param sessionElements the list of model nodes.
      * @param point           the upper left corner of the first node.
      */
-    public void pasteSubsession(final List sessionElements, final Point point) {
-        getToolbar().setRespondingToEvents(false);
-        getWorkbench().pasteSubsession(sessionElements, point);
-        getToolbar().setRespondingToEvents(true);
+    public void pasteSubsession(List sessionElements, Point point) {
+        this.getToolbar().setRespondingToEvents(false);
+        this.getWorkbench().pasteSubsession(sessionElements, point);
+        this.getToolbar().setRespondingToEvents(true);
     }
 
     /**
      * Sets the name of the session editor.
      */
-    public final void setName(final String name) {
+    public final void setName(String name) {
         if (name == null) {
             throw new NullPointerException("Name must not be null.");
         }
@@ -168,27 +168,27 @@ public final class SessionEditor extends JComponent
     }
 
     private SessionEditorToolbar getToolbar() {
-        return this.toolbar;
+        return toolbar;
     }
 
-    private void setToolbar(final SessionEditorToolbar toolbar) {
+    private void setToolbar(SessionEditorToolbar toolbar) {
         this.toolbar = toolbar;
     }
 
     private SessionEditorWorkbench getWorkbench() {
-        return this.workbench;
+        return workbench;
     }
 
-    private void setWorkbench(final SessionEditorWorkbench workbench) {
+    private void setWorkbench(SessionEditorWorkbench workbench) {
         this.workbench = workbench;
     }
 
     public void saveSessionImage() {
-        final Action action = new SaveComponentImage(this.workbench, "Save Session Image...");
+        Action action = new SaveComponentImage(workbench, "Save Session Image...");
         action.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "Save"));
     }
 
-    public void firePropertyChange(final String s, final Object o, final String name) {
+    public void firePropertyChange(String s, Object o, String name) {
         super.firePropertyChange(s, o, name);
     }
 }

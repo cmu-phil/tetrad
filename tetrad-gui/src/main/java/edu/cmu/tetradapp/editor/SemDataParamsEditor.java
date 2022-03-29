@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.IntTextField;
+import edu.cmu.tetradapp.util.IntTextField.Filter;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -40,7 +41,7 @@ public class SemDataParamsEditor extends JPanel implements ParameterEditor {
     /**
      * The parameters object being edited.
      */
-    private transient Parameters params = null;
+    private transient Parameters params;
 
     /**
      * Constructs a dialog to edit the given workbench OldSem simulation
@@ -49,7 +50,7 @@ public class SemDataParamsEditor extends JPanel implements ParameterEditor {
     public SemDataParamsEditor() {
     }
 
-    public void setParams(final Parameters params) {
+    public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
@@ -57,34 +58,34 @@ public class SemDataParamsEditor extends JPanel implements ParameterEditor {
         this.params = params;
     }
 
-    public void setParentModels(final Object[] parentModels) {
+    public void setParentModels(Object[] parentModels) {
         // Do nothing.
     }
 
     public void setup() {
 
         // set up text and ties them to the parameters object being edited.
-        final IntTextField sampleSizeField = new IntTextField(getParams().getInt("sampleSize", 1000), 8);
+        IntTextField sampleSizeField = new IntTextField(this.getParams().getInt("sampleSize", 1000), 8);
 
-        sampleSizeField.setFilter(new IntTextField.Filter() {
-            public int filter(final int value, final int oldValue) {
+        sampleSizeField.setFilter(new Filter() {
+            public int filter(int value, int oldValue) {
                 try {
-                    getParams().set("sampleSize", value);
+                    SemDataParamsEditor.this.getParams().set("sampleSize", value);
                     return value;
-                } catch (final Exception e) {
+                } catch (Exception e) {
                     return oldValue;
                 }
             }
         });
 
-        final IntTextField numDataSetsField = new IntTextField(getParams().getInt("numDataSets", 1), 8);
+        IntTextField numDataSetsField = new IntTextField(this.getParams().getInt("numDataSets", 1), 8);
 
-        numDataSetsField.setFilter(new IntTextField.Filter() {
-            public int filter(final int value, final int oldValue) {
+        numDataSetsField.setFilter(new Filter() {
+            public int filter(int value, int oldValue) {
                 try {
-                    getParams().set("numDataSets", value);
+                    SemDataParamsEditor.this.getParams().set("numDataSets", value);
                     return value;
-                } catch (final Exception e) {
+                } catch (Exception e) {
                     return oldValue;
                 }
             }
@@ -92,13 +93,13 @@ public class SemDataParamsEditor extends JPanel implements ParameterEditor {
 
 //        JCheckBox latentDataSaved = new JCheckBox("Include Latent Variables",
 //                Preferences.userRoot().getBoolean("latentDataSaved", getParameters().isIncludeLatents()));
-        final JCheckBox latentDataSaved = new JCheckBox("Include Latent Variables",
-                getParams().getBoolean("latentDataSaved", false));
+        JCheckBox latentDataSaved = new JCheckBox("Include Latent Variables",
+                this.getParams().getBoolean("latentDataSaved", false));
         latentDataSaved.setHorizontalTextPosition(SwingConstants.LEFT);
         latentDataSaved.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final JCheckBox b = (JCheckBox) e.getSource();
-                getParams().set("includeLatents", b.isSelected());
+            public void actionPerformed(ActionEvent e) {
+                JCheckBox b = (JCheckBox) e.getSource();
+                SemDataParamsEditor.this.getParams().set("includeLatents", b.isSelected());
             }
         });
 
@@ -112,24 +113,24 @@ public class SemDataParamsEditor extends JPanel implements ParameterEditor {
 //            }
 //        });
 
-        setLayout(new BorderLayout());
+        this.setLayout(new BorderLayout());
 
         // continue workbench construction.
-        final Box b = Box.createVerticalBox();
+        Box b = Box.createVerticalBox();
 
-        final Box b1 = Box.createHorizontalBox();
+        Box b1 = Box.createHorizontalBox();
         b1.add(new JLabel("Sample size:  "));
         b1.add(Box.createHorizontalGlue());
         b1.add(sampleSizeField);
         b.add(b1);
 
-        final Box b1a = Box.createHorizontalBox();
+        Box b1a = Box.createHorizontalBox();
         b1a.add(new JLabel("Num data sets:  "));
         b1a.add(Box.createHorizontalGlue());
         b1a.add(numDataSetsField);
         b.add(b1a);
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(latentDataSaved);
         b.add(b2);
 
@@ -137,8 +138,8 @@ public class SemDataParamsEditor extends JPanel implements ParameterEditor {
 //        b3.add(positiveOnlyBox);
 //        b.add(b3);
 
-        add(b, BorderLayout.CENTER);
-        setBorder(new EmptyBorder(5, 5, 5, 5));
+        this.add(b, BorderLayout.CENTER);
+        this.setBorder(new EmptyBorder(5, 5, 5, 5));
     }
 
     public boolean mustBeShown() {
@@ -150,7 +151,7 @@ public class SemDataParamsEditor extends JPanel implements ParameterEditor {
      * public, but it is needed so that the textfields can edit the model.).
      */
     private synchronized Parameters getParams() {
-        return this.params;
+        return params;
     }
 }
 

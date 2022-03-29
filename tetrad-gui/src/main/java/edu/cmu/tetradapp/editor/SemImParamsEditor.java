@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
+import edu.cmu.tetradapp.util.DoubleTextField.Filter;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -42,7 +43,7 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
     /**
      * The parameters object being edited.
      */
-    private Parameters params = null;
+    private Parameters params;
 
     /**
      * Constructs a dialog to edit the given workbench SEM simulation
@@ -51,7 +52,7 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
     public SemImParamsEditor() {
     }
 
-    public void setParams(final Parameters params) {
+    public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
@@ -59,7 +60,7 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
         this.params = params;
     }
 
-    public void setParentModels(final Object[] parentModels) {
+    public void setParentModels(Object[] parentModels) {
         // Do nothing.
     }
 
@@ -69,121 +70,121 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
      * appropriate listeners.
      */
     public void setup() {
-        setLayout(new BorderLayout());
+        this.setLayout(new BorderLayout());
 
 //        final JCheckBox randomEveryTime = new JCheckBox();
 //        randomEveryTime.setSelected(!params.getBoolean("retainPreviousValues", false));
-        final DecimalFormat decimalFormat = new DecimalFormat("0.0######");
+        DecimalFormat decimalFormat = new DecimalFormat("0.0######");
 
-        final DoubleTextField coefLowField = new DoubleTextField(this.params.getDouble("coefLow"),
+        DoubleTextField coefLowField = new DoubleTextField(params.getDouble("coefLow"),
                 6, decimalFormat);
 
-        coefLowField.setFilter(new DoubleTextField.Filter() {
-            public double filter(final double value, final double oldValue) {
+        coefLowField.setFilter(new Filter() {
+            public double filter(double value, double oldValue) {
                 try {
-                    getParams().set("coefLow", value);
-                    getParams().set("coefHigh", SemImParamsEditor.this.params.getDouble("coefHigh"));
+                    SemImParamsEditor.this.getParams().set("coefLow", value);
+                    SemImParamsEditor.this.getParams().set("coefHigh", params.getDouble("coefHigh"));
                     return value;
-                } catch (final IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
 
-        final DoubleTextField coefHighField = new DoubleTextField(this.params.getDouble("coefHigh"),
+        DoubleTextField coefHighField = new DoubleTextField(params.getDouble("coefHigh"),
                 6, decimalFormat);
 
-        coefHighField.setFilter(new DoubleTextField.Filter() {
-            public double filter(final double value, final double oldValue) {
+        coefHighField.setFilter(new Filter() {
+            public double filter(double value, double oldValue) {
                 try {
-                    getParams().set("coefLow", SemImParamsEditor.this.params.getDouble("coefLow"));
-                    getParams().set("coefHigh", value);
+                    SemImParamsEditor.this.getParams().set("coefLow", params.getDouble("coefLow"));
+                    SemImParamsEditor.this.getParams().set("coefHigh", value);
                     return value;
-                } catch (final IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
-        final DoubleTextField covLowField = new DoubleTextField(this.params.getDouble("covLow", 0.0),
+        DoubleTextField covLowField = new DoubleTextField(params.getDouble("covLow", 0.0),
                 6, decimalFormat);
 
-        covLowField.setFilter(new DoubleTextField.Filter() {
-            public double filter(final double value, final double oldValue) {
+        covLowField.setFilter(new Filter() {
+            public double filter(double value, double oldValue) {
                 try {
-                    SemImParamsEditor.this.params.set("covLow", value);
-                    SemImParamsEditor.this.params.set("covHigh", SemImParamsEditor.this.params.getDouble("covHigh"));
+                    params.set("covLow", value);
+                    params.set("covHigh", params.getDouble("covHigh"));
                     return value;
-                } catch (final IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
-        final DoubleTextField covHighField = new DoubleTextField(this.params.getDouble("covHigh", 0.0),
+        DoubleTextField covHighField = new DoubleTextField(params.getDouble("covHigh", 0.0),
                 6, decimalFormat);
 
-        covHighField.setFilter(new DoubleTextField.Filter() {
-            public double filter(final double value, final double oldValue) {
+        covHighField.setFilter(new Filter() {
+            public double filter(double value, double oldValue) {
                 try {
-                    SemImParamsEditor.this.params.set("covLow", SemImParamsEditor.this.params.getDouble("covLow"));
-                    SemImParamsEditor.this.params.set("covHigh", value);
+                    params.set("covLow", params.getDouble("covLow"));
+                    params.set("covHigh", value);
                     return value;
-                } catch (final IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
-        final DoubleTextField varLowField = new DoubleTextField(this.params.getDouble("varLow", 1),
+        DoubleTextField varLowField = new DoubleTextField(params.getDouble("varLow", 1),
                 6, decimalFormat);
 
-        varLowField.setFilter(new DoubleTextField.Filter() {
-            public double filter(final double value, final double oldValue) {
+        varLowField.setFilter(new Filter() {
+            public double filter(double value, double oldValue) {
                 try {
-                    SemImParamsEditor.this.params.set("varLow", value);
-                    SemImParamsEditor.this.params.set("varHigh", SemImParamsEditor.this.params.getDouble("varHigh"));
+                    params.set("varLow", value);
+                    params.set("varHigh", params.getDouble("varHigh"));
                     return value;
-                } catch (final IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
-        final DoubleTextField varHighField = new DoubleTextField(this.params.getDouble("varHigh"),
+        DoubleTextField varHighField = new DoubleTextField(params.getDouble("varHigh"),
                 6, decimalFormat);
 
-        varHighField.setFilter(new DoubleTextField.Filter() {
-            public double filter(final double value, final double oldValue) {
+        varHighField.setFilter(new Filter() {
+            public double filter(double value, double oldValue) {
                 try {
-                    SemImParamsEditor.this.params.set("varLow", SemImParamsEditor.this.params.getDouble("varLow"));
-                    SemImParamsEditor.this.params.set("varHigh", value);
+                    params.set("varLow", params.getDouble("varLow"));
+                    params.set("varHigh", value);
                     return value;
-                } catch (final IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
-        final JCheckBox coefSymmetric = new JCheckBox("Symmetric about zero.");
-        final JCheckBox covSymmetric = new JCheckBox("Symmetric about zero.");
+        JCheckBox coefSymmetric = new JCheckBox("Symmetric about zero.");
+        JCheckBox covSymmetric = new JCheckBox("Symmetric about zero.");
 
-        coefSymmetric.setSelected(this.params.getBoolean("coefSymmetric", true));
-        covSymmetric.setSelected(this.params.getBoolean("covSymmetric", true));
+        coefSymmetric.setSelected(params.getBoolean("coefSymmetric", true));
+        covSymmetric.setSelected(params.getBoolean("covSymmetric", true));
 
         coefSymmetric.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final JCheckBox checkBox = (JCheckBox) e.getSource();
-                SemImParamsEditor.this.params.set("coefSymmetric", checkBox.isSelected());
+            public void actionPerformed(ActionEvent e) {
+                JCheckBox checkBox = (JCheckBox) e.getSource();
+                params.set("coefSymmetric", checkBox.isSelected());
             }
 
         });
 
         covSymmetric.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final JCheckBox checkBox = (JCheckBox) e.getSource();
-                SemImParamsEditor.this.params.set("covSymmetric", checkBox.isSelected());
+            public void actionPerformed(ActionEvent e) {
+                JCheckBox checkBox = (JCheckBox) e.getSource();
+                params.set("covSymmetric", checkBox.isSelected());
             }
         });
 
@@ -199,16 +200,16 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
 //        });
 
         // continue workbench construction.
-        final Box b1 = Box.createVerticalBox();
+        Box b1 = Box.createVerticalBox();
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel(
                 "Unfixed parameter values for this SEM IM are drawn as follows:"));
         b2.add(Box.createHorizontalGlue());
         b1.add(b2);
         b1.add(Box.createVerticalStrut(5));
 
-        final Box b4a = Box.createHorizontalBox();
+        Box b4a = Box.createHorizontalBox();
 //        b4a.add(Box.createHorizontalStrut(10));
         b4a.add(new JLabel("Coefficient values are drawn from "));
         b4a.add(new BigLabel("("));
@@ -220,7 +221,7 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
         b4a.add(Box.createHorizontalGlue());
         b1.add(b4a);
 
-        final Box b4b = Box.createHorizontalBox();
+        Box b4b = Box.createHorizontalBox();
 //        b4b.add(Box.createHorizontalStrut(10));
         b4b.add(new JLabel("Error covariance values are drawn from "));
         b4b.add(new BigLabel("("));
@@ -232,7 +233,7 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
         b4b.add(Box.createHorizontalGlue());
         b1.add(b4b);
 
-        final Box b4c = Box.createHorizontalBox();
+        Box b4c = Box.createHorizontalBox();
 //        b4c.add(Box.createHorizontalStrut(10));
         b4c.add(new JLabel("Error standard deviation values are drawn from "));
         b4c.add(new BigLabel("("));
@@ -251,8 +252,8 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
 //        b1.add(b5);
 
         b1.add(Box.createHorizontalGlue());
-        add(b1, BorderLayout.CENTER);
-        setBorder(new EmptyBorder(5, 5, 5, 5));
+        this.add(b1, BorderLayout.CENTER);
+        this.setBorder(new EmptyBorder(5, 5, 5, 5));
     }
 
     public boolean mustBeShown() {
@@ -264,15 +265,15 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
      * public, but it is needed so that the textfields can edit the model.)
      */
     private synchronized Parameters getParams() {
-        return this.params;
+        return params;
     }
 
-    final static class BigLabel extends JLabel {
+    static final class BigLabel extends JLabel {
         private static final Font FONT = new Font("Dialog", Font.BOLD, 20);
 
-        public BigLabel(final String text) {
+        public BigLabel(String text) {
             super(text);
-            setFont(BigLabel.FONT);
+            this.setFont(FONT);
         }
     }
 }

@@ -30,8 +30,8 @@ public class DiscreteBicTest implements IndependenceWrapper {
     static final long serialVersionUID = 23L;
 
     @Override
-    public IndependenceTest getTest(final DataModel dataSet, final Parameters parameters) {
-        final BicScore score = new BicScore(DataUtils.getDiscreteDataSet(dataSet));
+    public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+        BicScore score = new BicScore(DataUtils.getDiscreteDataSet(dataSet));
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         score.setStructurePrior(parameters.getDouble(Params.STRUCTURE_PRIOR));
         return new IndTestScore(score);
@@ -49,7 +49,7 @@ public class DiscreteBicTest implements IndependenceWrapper {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.STRUCTURE_PRIOR);
         return parameters;

@@ -11,6 +11,7 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Fask;
+import edu.cmu.tetrad.search.Fask.AdjacencyMethod;
 import edu.cmu.tetrad.search.IndTestFisherZ;
 import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.util.Parameters;
@@ -36,23 +37,23 @@ import java.util.List;
 public class FaskPW implements Algorithm, TakesExternalGraph {
 
     static final long serialVersionUID = 23L;
-    private Algorithm algorithm = null;
-    private Graph externalGraph = null;
+    private Algorithm algorithm;
+    private Graph externalGraph;
 
     public FaskPW() {
     }
 
-    public FaskPW(final Algorithm algorithm) {
+    public FaskPW(Algorithm algorithm) {
         this.algorithm = algorithm;
     }
 
     @Override
-    public Graph search(final DataModel dataModel, final Parameters parameters) {
+    public Graph search(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            Graph graph = this.externalGraph;
+            Graph graph = externalGraph;
 
             if (graph == null) {
-                graph = this.algorithm.search(dataModel, parameters);
+                graph = algorithm.search(dataModel, parameters);
             }
 
             if (graph == null) {
@@ -61,22 +62,22 @@ public class FaskPW implements Algorithm, TakesExternalGraph {
                         + "will orient the edges in the input graph using the data");
             }
 
-            final DataSet dataSet = DataUtils.getContinuousDataSet(dataModel);
+            DataSet dataSet = DataUtils.getContinuousDataSet(dataModel);
 
-            final Fask fask = new Fask(dataSet, new SemBicScore(dataSet), new IndTestFisherZ(dataSet, 0.01));
-            fask.setAdjacencyMethod(Fask.AdjacencyMethod.EXTERNAL_GRAPH);
+            Fask fask = new Fask(dataSet, new SemBicScore(dataSet), new IndTestFisherZ(dataSet, 0.01));
+            fask.setAdjacencyMethod(AdjacencyMethod.EXTERNAL_GRAPH);
             fask.setExternalGraph(graph);
             fask.setSkewEdgeThreshold(Double.POSITIVE_INFINITY);
 
             return fask.search();
         } else {
-            final FaskPW rSkew = new FaskPW(this.algorithm);
-            if (this.externalGraph != null) {
-                rSkew.setExternalGraph(this.externalGraph);
+            FaskPW rSkew = new FaskPW(algorithm);
+            if (externalGraph != null) {
+                rSkew.setExternalGraph(externalGraph);
             }
 
-            final DataSet data = (DataSet) dataModel;
-            final GeneralResamplingTest search = new GeneralResamplingTest(data, rSkew, parameters.getInt(Params.NUMBER_RESAMPLING));
+            DataSet data = (DataSet) dataModel;
+            GeneralResamplingTest search = new GeneralResamplingTest(data, rSkew, parameters.getInt(Params.NUMBER_RESAMPLING));
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -102,14 +103,14 @@ public class FaskPW implements Algorithm, TakesExternalGraph {
     }
 
     @Override
-    public Graph getComparisonGraph(final Graph graph) {
+    public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
     @Override
     public String getDescription() {
-        return "RSkew" + (this.algorithm != null ? " with initial graph from "
-                + this.algorithm.getDescription() : "");
+        return "RSkew" + (algorithm != null ? " with initial graph from "
+                + algorithm.getDescription() : "");
     }
 
     @Override
@@ -119,10 +120,10 @@ public class FaskPW implements Algorithm, TakesExternalGraph {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
 
-        if (this.algorithm != null && !this.algorithm.getParameters().isEmpty()) {
-            parameters.addAll(this.algorithm.getParameters());
+        if (algorithm != null && !algorithm.getParameters().isEmpty()) {
+            parameters.addAll(algorithm.getParameters());
         }
 
         parameters.add(Params.VERBOSE);
@@ -132,16 +133,16 @@ public class FaskPW implements Algorithm, TakesExternalGraph {
 
     @Override
     public Graph getExternalGraph() {
-        return this.externalGraph;
+        return externalGraph;
     }
 
     @Override
-    public void setExternalGraph(final Graph externalGraph) {
+    public void setExternalGraph(Graph externalGraph) {
         this.externalGraph = externalGraph;
     }
 
     @Override
-    public void setExternalGraph(final Algorithm algorithm) {
+    public void setExternalGraph(Algorithm algorithm) {
         if (algorithm == null) {
             throw new IllegalArgumentException("This FASK-PW (pairwise) algorithm needs both data and a graph source as inputs; it \n"
                     + "will orient the edges in the input graph using the data.");

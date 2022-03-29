@@ -25,6 +25,7 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
+import edu.cmu.tetradapp.util.IntTextField.Filter;
 
 import javax.swing.*;
 
@@ -38,7 +39,7 @@ class TimeSeriesIndTestParamsEditor extends JComponent {
     /**
      * The parameters object being edited.
      */
-    private Parameters params = null;
+    private Parameters params;
 
     /**
      * Edits the alpha value, in [0, 1].
@@ -53,35 +54,35 @@ class TimeSeriesIndTestParamsEditor extends JComponent {
     /**
      * Constructs a dialog to edit the given gene simulation parameters object.
      */
-    public TimeSeriesIndTestParamsEditor(final Parameters simulator) {
-        this.params = simulator;
+    public TimeSeriesIndTestParamsEditor(Parameters simulator) {
+        params = simulator;
 
-        this.alphaField = new DoubleTextField(getLagIndTestParams().getDouble("alpha", 0.001), 5,
+        alphaField = new DoubleTextField(this.getLagIndTestParams().getDouble("alpha", 0.001), 5,
                 NumberFormatUtil.getInstance().getNumberFormat());
-        this.alphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(final double value, final double oldValue) {
+        alphaField.setFilter(new DoubleTextField.Filter() {
+            public double filter(double value, double oldValue) {
                 try {
-                    getLagIndTestParams().set("alpha", 0.001);
+                    TimeSeriesIndTestParamsEditor.this.getLagIndTestParams().set("alpha", 0.001);
                     return value;
-                } catch (final IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
-        this.numLagsField = new IntTextField((getLagIndTestParams()).getInt("numLags", 1), 3);
-        this.numLagsField.setFilter(new IntTextField.Filter() {
-            public int filter(final int value, final int oldValue) {
+        numLagsField = new IntTextField((this.getLagIndTestParams()).getInt("numLags", 1), 3);
+        numLagsField.setFilter(new Filter() {
+            public int filter(int value, int oldValue) {
                 try {
-                    getLagIndTestParams().set("numLags", value);
+                    TimeSeriesIndTestParamsEditor.this.getLagIndTestParams().set("numLags", value);
                     return value;
-                } catch (final IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
-        buildGui();
+        this.buildGui();
     }
 
     /**
@@ -90,12 +91,12 @@ class TimeSeriesIndTestParamsEditor extends JComponent {
      * appropriate listeners.
      */
     private void buildGui() {
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        final Box b1 = Box.createHorizontalBox();
+        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        Box b1 = Box.createHorizontalBox();
         b1.add(new JLabel("Alpha:"));
         b1.add(Box.createHorizontalGlue());
-        b1.add(this.alphaField);
-        add(b1);
+        b1.add(alphaField);
+        this.add(b1);
 
         //        Box b2 = Box.createHorizontalBox();
         //        b2.add(new JLabel("Window Size:"));
@@ -103,20 +104,20 @@ class TimeSeriesIndTestParamsEditor extends JComponent {
         //        b2.add(windowSizeField);
         //        add(b2);
 
-        final Box b3 = Box.createHorizontalBox();
+        Box b3 = Box.createHorizontalBox();
         b3.add(new JLabel("Num Lags:"));
         b3.add(Box.createHorizontalGlue());
-        b3.add(this.numLagsField);
-        add(b3);
-        add(Box.createVerticalGlue());
+        b3.add(numLagsField);
+        this.add(b3);
+        this.add(Box.createVerticalGlue());
 
-        final Box b4 = Box.createHorizontalBox();
+        Box b4 = Box.createHorizontalBox();
         b4.add(new JLabel("Num Times:"));
         b4.add(Box.createHorizontalGlue());
-        final int numTimePoints = getLagIndTestParams().getInt("numTimePoints", 0);
+        int numTimePoints = this.getLagIndTestParams().getInt("numTimePoints", 0);
         b4.add(new JLabel(Integer.toString(numTimePoints)));
-        add(b4);
-        add(Box.createVerticalGlue());
+        this.add(b4);
+        this.add(Box.createVerticalGlue());
     }
 
     /**
@@ -124,7 +125,7 @@ class TimeSeriesIndTestParamsEditor extends JComponent {
      * public, but it is needed so that the textfields can edit the model.)
      */
     private Parameters getLagIndTestParams() {
-        return this.params;
+        return params;
     }
 }
 

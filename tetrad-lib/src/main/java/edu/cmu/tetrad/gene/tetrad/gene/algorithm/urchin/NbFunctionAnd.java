@@ -23,8 +23,8 @@ package edu.cmu.tetrad.gene.tetrad.gene.algorithm.urchin;
 
 
 public class NbFunctionAnd extends AbstractNbComponent {
-    public NbFunctionAnd(final double factor, final double power, final NbComponent[] parents,
-                         final int[] inhibitExcite, final String name) {
+    public NbFunctionAnd(double factor, double power, NbComponent[] parents,
+                         int[] inhibitExcite, String name) {
 
         super(factor, power, parents, inhibitExcite, name);
     }
@@ -32,15 +32,15 @@ public class NbFunctionAnd extends AbstractNbComponent {
     public void update() {
         //System.out.println("Updating " + name);
         double product = 1.0;
-        for (int i = 0; i < getNparents(); i++) {
-            final double v = getParents()[i].getValue();
-            if (getInhibitExcite()[i] > 0) {
+        for (int i = 0; i < this.getNparents(); i++) {
+            double v = this.getParents()[i].getValue();
+            if (this.getInhibitExcite()[i] > 0) {
                 product *= v;
             } else {
                 product *= (1.0 - v);
             }
         }
-        setValue(product * getFactor());
+        this.setValue(product * this.getFactor());
         //System.out.println("Value = " + value);
     }
 }

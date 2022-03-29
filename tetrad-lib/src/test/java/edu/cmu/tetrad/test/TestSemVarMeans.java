@@ -50,117 +50,117 @@ public class TestSemVarMeans {
 
     @Test
     public void testMeansRecursive() {
-        final Graph graph = constructGraph1();
-        final SemPm semPm1 = new SemPm(graph);
+        Graph graph = this.constructGraph1();
+        SemPm semPm1 = new SemPm(graph);
 
-        final List<Parameter> parameters = semPm1.getParameters();
+        List<Parameter> parameters = semPm1.getParameters();
 
-        for (final Parameter p : parameters) {
+        for (Parameter p : parameters) {
             p.setInitializedRandomly(false);
         }
 
-        final SemIm semIm1 = new SemIm(semPm1);
+        SemIm semIm1 = new SemIm(semPm1);
 
-        final double[] means = {5.0, 4.0, 3.0, 2.0, 1.0};
+        double[] means = {5.0, 4.0, 3.0, 2.0, 1.0};
 
         RandomUtil.getInstance().setSeed(-379467L);
 
         for (int i = 0; i < semIm1.getVariableNodes().size(); i++) {
-            final Node node = semIm1.getVariableNodes().get(i);
+            Node node = semIm1.getVariableNodes().get(i);
             semIm1.setMean(node, means[i]);
         }
 
-        final DataSet dataSet = semIm1.simulateDataRecursive(1000, false);
+        DataSet dataSet = semIm1.simulateDataRecursive(1000, false);
 
-        final SemEstimator semEst = new SemEstimator(dataSet, semPm1);
+        SemEstimator semEst = new SemEstimator(dataSet, semPm1);
         semEst.estimate();
-        final SemIm estSemIm = semEst.getEstimatedSem();
-        final List<Node> nodes = semPm1.getVariableNodes();
+        SemIm estSemIm = semEst.getEstimatedSem();
+        List<Node> nodes = semPm1.getVariableNodes();
 
-        for (final Node node : nodes) {
-            final double mean = semIm1.getMean(node);
+        for (Node node : nodes) {
+            double mean = semIm1.getMean(node);
             assertEquals(mean, estSemIm.getMean(node), 0.5);
         }
     }
 
     @Test
     public void testMeansReducedForm() {
-        final Graph graph = constructGraph1();
-        final SemPm semPm1 = new SemPm(graph);
+        Graph graph = this.constructGraph1();
+        SemPm semPm1 = new SemPm(graph);
 
-        final List<Parameter> parameters = semPm1.getParameters();
+        List<Parameter> parameters = semPm1.getParameters();
 
-        for (final Parameter p : parameters) {
+        for (Parameter p : parameters) {
             p.setInitializedRandomly(false);
         }
 
-        final SemIm semIm1 = new SemIm(semPm1);
+        SemIm semIm1 = new SemIm(semPm1);
 
-        final double[] means = {5.0, 4.0, 3.0, 2.0, 1.0};
+        double[] means = {5.0, 4.0, 3.0, 2.0, 1.0};
 
         RandomUtil.getInstance().setSeed(-379467L);
 
         for (int i = 0; i < semIm1.getVariableNodes().size(); i++) {
-            final Node node = semIm1.getVariableNodes().get(i);
+            Node node = semIm1.getVariableNodes().get(i);
             semIm1.setMean(node, means[i]);
         }
 
-        final DataSet dataSet = semIm1.simulateDataReducedForm(1000, false);
+        DataSet dataSet = semIm1.simulateDataReducedForm(1000, false);
 
-        final SemEstimator semEst = new SemEstimator(dataSet, semPm1);
+        SemEstimator semEst = new SemEstimator(dataSet, semPm1);
         semEst.estimate();
-        final SemIm estSemIm = semEst.getEstimatedSem();
-        final List<Node> nodes = semPm1.getVariableNodes();
+        SemIm estSemIm = semEst.getEstimatedSem();
+        List<Node> nodes = semPm1.getVariableNodes();
 
-        for (final Node node : nodes) {
-            final double mean = semIm1.getMean(node);
+        for (Node node : nodes) {
+            double mean = semIm1.getMean(node);
             assertEquals(mean, estSemIm.getMean(node), 0.5);
         }
     }
 
     @Test
     public void testMeansCholesky() {
-        final Graph graph = constructGraph1();
-        final SemPm semPm1 = new SemPm(graph);
+        Graph graph = this.constructGraph1();
+        SemPm semPm1 = new SemPm(graph);
 
-        final List<Parameter> parameters = semPm1.getParameters();
+        List<Parameter> parameters = semPm1.getParameters();
 
-        for (final Parameter p : parameters) {
+        for (Parameter p : parameters) {
             p.setInitializedRandomly(false);
         }
 
-        final SemIm semIm1 = new SemIm(semPm1);
+        SemIm semIm1 = new SemIm(semPm1);
 
-        final double[] means = {5.0, 4.0, 3.0, 2.0, 1.0};
+        double[] means = {5.0, 4.0, 3.0, 2.0, 1.0};
 
         RandomUtil.getInstance().setSeed(-379467L);
 
         for (int i = 0; i < semIm1.getVariableNodes().size(); i++) {
-            final Node node = semIm1.getVariableNodes().get(i);
+            Node node = semIm1.getVariableNodes().get(i);
             semIm1.setMean(node, means[i]);
         }
 
-        final DataSet dataSet = semIm1.simulateDataCholesky(1000, false);
+        DataSet dataSet = semIm1.simulateDataCholesky(1000, false);
 
-        final SemEstimator semEst = new SemEstimator(dataSet, semPm1);
+        SemEstimator semEst = new SemEstimator(dataSet, semPm1);
         semEst.estimate();
-        final SemIm estSemIm = semEst.getEstimatedSem();
-        final List<Node> nodes = semPm1.getVariableNodes();
+        SemIm estSemIm = semEst.getEstimatedSem();
+        List<Node> nodes = semPm1.getVariableNodes();
 
-        for (final Node node : nodes) {
-            final double mean = semIm1.getMean(node);
+        for (Node node : nodes) {
+            double mean = semIm1.getMean(node);
             assertEquals(mean, estSemIm.getMean(node), 0.6);
         }
     }
 
     private Graph constructGraph1() {
-        final Graph graph = new EdgeListGraph();
+        Graph graph = new EdgeListGraph();
 
-        final Node x1 = new GraphNode("X1");
-        final Node x2 = new GraphNode("X2");
-        final Node x3 = new GraphNode("X3");
-        final Node x4 = new GraphNode("X4");
-        final Node x5 = new GraphNode("X5");
+        Node x1 = new GraphNode("X1");
+        Node x2 = new GraphNode("X2");
+        Node x3 = new GraphNode("X3");
+        Node x4 = new GraphNode("X4");
+        Node x5 = new GraphNode("X5");
 
         //x1.setNodeType(NodeType.LATENT);
         //x2.setNodeType(NodeType.LATENT);

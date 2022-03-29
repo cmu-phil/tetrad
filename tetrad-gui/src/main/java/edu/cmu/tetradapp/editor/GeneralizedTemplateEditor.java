@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.sem.TemplateExpander;
 import edu.cmu.tetradapp.util.StringTextField;
+import edu.cmu.tetradapp.util.StringTextField.Filter;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -59,12 +60,12 @@ class GeneralizedTemplateEditor extends JComponent {
     /**
      * The start index of selected text.
      */
-    private int start = 0;
+    private int start;
 
     /**
      * The width of the selected text.
      */
-    private int stringWidth = 0;
+    private int stringWidth;
 
     /**
      * The time that the selectded text should be colored. (Must do this all indirectly using a thread because we cannot
@@ -133,153 +134,153 @@ class GeneralizedTemplateEditor extends JComponent {
      *
      * @param semPm The GeneralizedSemPm that's being edited. The edits will be made to a copy of this PM.
      */
-    public GeneralizedTemplateEditor(final GeneralizedSemPm semPm) {
+    public GeneralizedTemplateEditor(GeneralizedSemPm semPm) {
         if (semPm == null) {
             throw new NullPointerException("SEM PM must be provided.");
         }
 
         this.semPm = new GeneralizedSemPm(semPm);
 
-        this.equationsBox = Box.createVerticalBox();
-        final JScrollPane scroll = new JScrollPane(this.equationsBox);
+        equationsBox = Box.createVerticalBox();
+        JScrollPane scroll = new JScrollPane(equationsBox);
         scroll.setPreferredSize(new Dimension(400, 300));
 
-        final StyleContext sc = new StyleContext();
-        this.expressionTextDoc = new DefaultStyledDocument(sc);
-        this.expressionTextPane = new JTextPane(this.expressionTextDoc);
+        StyleContext sc = new StyleContext();
+        expressionTextDoc = new DefaultStyledDocument(sc);
+        expressionTextPane = new JTextPane(expressionTextDoc);
 
-        setParseText(semPm.getVariablesTemplate());
+        this.setParseText(semPm.getVariablesTemplate());
 
-        final ExpressionParser parser = new ExpressionParser(); //new ArrayList<String>(), ExpressionParser.RestrictionType.MAY_NOT_CONTAIN);
-        this.latestParser = parser;
+        ExpressionParser parser = new ExpressionParser(); //new ArrayList<String>(), ExpressionParser.RestrictionType.MAY_NOT_CONTAIN);
+        latestParser = parser;
 
         try {
-            final String template = getSemPm().getVariablesTemplate();
+            String template = this.getSemPm().getVariablesTemplate();
             parser.parseExpression(template);
-        } catch (final ParseException e) {
+        } catch (ParseException e) {
             throw new RuntimeException("Cannot parse the stored expression.", e);
         }
 
-        final Map<String, String> expressionsMap = getExpressionsMap(semPm);
-        final String[] expressionTokens = getExpressionTokens(expressionsMap);
-        final JComboBox<String> expressionsBox = new JComboBox<>(expressionTokens);
+        Map<String, String> expressionsMap = this.getExpressionsMap(semPm);
+        String[] expressionTokens = this.getExpressionTokens(expressionsMap);
+        JComboBox<String> expressionsBox = new JComboBox<>(expressionTokens);
         expressionsBox.setMaximumSize(expressionsBox.getPreferredSize());
 
-        final JButton insertButton = new JButton("Insert");
+        JButton insertButton = new JButton("Insert");
 
         insertButton.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent actionEvent) {
-                final String token = (String) expressionsBox.getSelectedItem();
+            public void actionPerformed(ActionEvent actionEvent) {
+                String token = (String) expressionsBox.getSelectedItem();
                 String signature;
 
                 if ("-New Parameter-".equals(token)) {
-                    signature = nextParameterName("b");
+                    signature = GeneralizedTemplateEditor.this.nextParameterName("b");
                 } else {
                     signature = expressionsMap.get(token);
                 }
 
                 while (signature.contains("%")) {
-                    signature = signature.replaceFirst("%", nextParameterName("b"));
+                    signature = signature.replaceFirst("%", GeneralizedTemplateEditor.this.nextParameterName("b"));
                 }
 
-                GeneralizedTemplateEditor.this.expressionTextPane.replaceSelection(signature);
+                expressionTextPane.replaceSelection(signature);
             }
         });
 
-        this.combo.addItem("Variables");
-        this.combo.addItem("Errors");
-        this.combo.addItem("Parameter Initializations");
-        this.combo.addItem("Estimation Starting Values");
+        combo.addItem("Variables");
+        combo.addItem("Errors");
+        combo.addItem("Parameter Initializations");
+        combo.addItem("Estimation Starting Values");
 
-        this.combo.setSelectedItem("Variables");
+        combo.setSelectedItem("Variables");
 
-        updateEquationsDisplay();
+        this.updateEquationsDisplay();
 
-        this.combo.addActionListener(new ActionListener() {
+        combo.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(final ActionEvent e) {
-                final JComboBox source = (JComboBox) e.getSource();
-                final String item = (String) source.getSelectedItem();
+            public void actionPerformed(ActionEvent e) {
+                JComboBox source = (JComboBox) e.getSource();
+                String item = (String) source.getSelectedItem();
 
                 if ("Variables".equals(item)) {
-                    final String variablesTemplate = getSemPm().getVariablesTemplate();
-                    setParseText(variablesTemplate);
-                    updateEquationsDisplay();
+                    String variablesTemplate = GeneralizedTemplateEditor.this.getSemPm().getVariablesTemplate();
+                    GeneralizedTemplateEditor.this.setParseText(variablesTemplate);
+                    GeneralizedTemplateEditor.this.updateEquationsDisplay();
                 } else if ("Errors".equals(item)) {
-                    final String errorsTemplate = getSemPm().getErrorsTemplate();
-                    setParseText(errorsTemplate);
-                    updateEquationsDisplay();
+                    String errorsTemplate = GeneralizedTemplateEditor.this.getSemPm().getErrorsTemplate();
+                    GeneralizedTemplateEditor.this.setParseText(errorsTemplate);
+                    GeneralizedTemplateEditor.this.updateEquationsDisplay();
                 } else if ("Parameter Initializations".equals(item)) {
-                    final String startsWith = GeneralizedTemplateEditor.this.startsWithField.getText();
-                    String template = getSemPm().getStartsWithParameterTemplate(startsWith);
+                    String startsWith = startsWithField.getText();
+                    String template = GeneralizedTemplateEditor.this.getSemPm().getStartsWithParameterTemplate(startsWith);
                     if (template == null) {
-                        final String parametersTemplate = getSemPm().getParametersTemplate();
+                        String parametersTemplate = GeneralizedTemplateEditor.this.getSemPm().getParametersTemplate();
                         template = parametersTemplate;
                     }
 
-                    setParseText(template);
-                    updateEquationsDisplay();
+                    GeneralizedTemplateEditor.this.setParseText(template);
+                    GeneralizedTemplateEditor.this.updateEquationsDisplay();
                 } else if ("Estimation Starting Values".equals(item)) {
-                    final String startsWith = GeneralizedTemplateEditor.this.startsWithField.getText();
-                    String template = getSemPm().getStartsWithParameterEstimationInitializatonTemplate(startsWith);
+                    String startsWith = startsWithField.getText();
+                    String template = GeneralizedTemplateEditor.this.getSemPm().getStartsWithParameterEstimationInitializatonTemplate(startsWith);
                     if (template == null) {
-                        final String parametersTemplate = getSemPm().getParametersEstimationInitializationTemplate();
+                        String parametersTemplate = GeneralizedTemplateEditor.this.getSemPm().getParametersEstimationInitializationTemplate();
                         template = parametersTemplate;
                     }
 
-                    setParseText(template);
-                    updateEquationsDisplay();
+                    GeneralizedTemplateEditor.this.setParseText(template);
+                    GeneralizedTemplateEditor.this.updateEquationsDisplay();
                 } else {
                     throw new IllegalStateException("Unrecognized Combo Box Item: " + item);
                 }
             }
         });
 
-        final JButton applyButton = new JButton("APPLY");
+        JButton applyButton = new JButton("APPLY");
 
         applyButton.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent actionEvent) {
-                applyChanges();
-                updateEquationsDisplay();
+            public void actionPerformed(ActionEvent actionEvent) {
+                GeneralizedTemplateEditor.this.applyChanges();
+                GeneralizedTemplateEditor.this.updateEquationsDisplay();
 
-                if ("Variables".equals(GeneralizedTemplateEditor.this.combo.getSelectedItem())) {
-                    final String template = GeneralizedTemplateEditor.this.expressionTextPane.getText();
+                if ("Variables".equals(combo.getSelectedItem())) {
+                    String template = expressionTextPane.getText();
 
                     try {
-                        getSemPm().setVariablesTemplate(template);
-                    } catch (final ParseException e) {
+                        GeneralizedTemplateEditor.this.getSemPm().setVariablesTemplate(template);
+                    } catch (ParseException e) {
                         //
                     }
-                } else if ("Errors".equals(GeneralizedTemplateEditor.this.combo.getSelectedItem())) {
-                    final String template = GeneralizedTemplateEditor.this.expressionTextPane.getText();
+                } else if ("Errors".equals(combo.getSelectedItem())) {
+                    String template = expressionTextPane.getText();
 
                     try {
-                        getSemPm().setErrorsTemplate(template);
-                    } catch (final ParseException e) {
+                        GeneralizedTemplateEditor.this.getSemPm().setErrorsTemplate(template);
+                    } catch (ParseException e) {
                         //
                     }
-                } else if ("Parameter Initializations".equals(GeneralizedTemplateEditor.this.combo.getSelectedItem())) {
-                    final String template = GeneralizedTemplateEditor.this.expressionTextPane.getText();
+                } else if ("Parameter Initializations".equals(combo.getSelectedItem())) {
+                    String template = expressionTextPane.getText();
 
                     try {
-                        getSemPm().setParametersTemplate(template);
+                        GeneralizedTemplateEditor.this.getSemPm().setParametersTemplate(template);
 
-                        final String startsWith = GeneralizedTemplateEditor.this.startsWithField.getText();
+                        String startsWith = startsWithField.getText();
 
-                        getSemPm().setStartsWithParametersTemplate(startsWith, template);
-                    } catch (final ParseException e) {
+                        GeneralizedTemplateEditor.this.getSemPm().setStartsWithParametersTemplate(startsWith, template);
+                    } catch (ParseException e) {
                         //
                     }
-                } else if ("Estimation Starting Values".equals(GeneralizedTemplateEditor.this.combo.getSelectedItem())) {
-                    final String template = GeneralizedTemplateEditor.this.expressionTextPane.getText();
+                } else if ("Estimation Starting Values".equals(combo.getSelectedItem())) {
+                    String template = expressionTextPane.getText();
 
                     try {
-                        getSemPm().setParametersEstimationInitializationTemplate(template);
+                        GeneralizedTemplateEditor.this.getSemPm().setParametersEstimationInitializationTemplate(template);
 
-                        final String startsWith = GeneralizedTemplateEditor.this.startsWithField.getText();
+                        String startsWith = startsWithField.getText();
 
-                        getSemPm().setStartsWithParametersEstimationInitializaationTemplate(startsWith, template);
-                    } catch (final ParseException e) {
+                        GeneralizedTemplateEditor.this.getSemPm().setStartsWithParametersEstimationInitializaationTemplate(startsWith, template);
+                    } catch (ParseException e) {
                         //
                     }
                 }
@@ -287,48 +288,48 @@ class GeneralizedTemplateEditor extends JComponent {
             }
         });
 
-        final JButton saveTemplate = new JButton("Save Template");
+        JButton saveTemplate = new JButton("Save Template");
 
         saveTemplate.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(final ActionEvent e) {
-                listen();
+            public void actionPerformed(ActionEvent e) {
+                GeneralizedTemplateEditor.this.listen();
             }
         });
 
-        this.startsWithField = new StringTextField("", 6);
+        startsWithField = new StringTextField("", 6);
 
-        this.startsWithField.setFilter(new StringTextField.Filter() {
-            public String filter(final String value, final String oldValue) {
-                final String item = (String) GeneralizedTemplateEditor.this.combo.getSelectedItem();
+        startsWithField.setFilter(new Filter() {
+            public String filter(String value, String oldValue) {
+                String item = (String) combo.getSelectedItem();
 
                 if ("Variables".equals(item)) {
-                    final String variablesTemplate = getSemPm().getVariablesTemplate();
-                    setParseText(variablesTemplate);
+                    String variablesTemplate = GeneralizedTemplateEditor.this.getSemPm().getVariablesTemplate();
+                    GeneralizedTemplateEditor.this.setParseText(variablesTemplate);
 //                    updateEquationsDisplay();
                 } else if ("Errors".equals(item)) {
-                    final String errorsTemplate = getSemPm().getErrorsTemplate();
-                    setParseText(errorsTemplate);
+                    String errorsTemplate = GeneralizedTemplateEditor.this.getSemPm().getErrorsTemplate();
+                    GeneralizedTemplateEditor.this.setParseText(errorsTemplate);
 //                    updateEquationsDisplay();
                 } else if ("Parameter Initializations".equals(item)) {
-                    final String startsWith = GeneralizedTemplateEditor.this.startsWithField.getText();
-                    String template = getSemPm().getStartsWithParameterTemplate(startsWith);
+                    String startsWith = startsWithField.getText();
+                    String template = GeneralizedTemplateEditor.this.getSemPm().getStartsWithParameterTemplate(startsWith);
                     if (template == null) {
-                        final String parametersTemplate = getSemPm().getParametersTemplate();
+                        String parametersTemplate = GeneralizedTemplateEditor.this.getSemPm().getParametersTemplate();
                         template = parametersTemplate;
                     }
 
-                    setParseText(template);
+                    GeneralizedTemplateEditor.this.setParseText(template);
 //                    updateEquationsDisplay();
                 } else if ("Estimation Starting Values".equals(item)) {
-                    final String startsWith = GeneralizedTemplateEditor.this.startsWithField.getText();
-                    String template = getSemPm().getStartsWithParameterEstimationInitializatonTemplate(startsWith);
+                    String startsWith = startsWithField.getText();
+                    String template = GeneralizedTemplateEditor.this.getSemPm().getStartsWithParameterEstimationInitializatonTemplate(startsWith);
                     if (template == null) {
-                        final String parametersTemplate = getSemPm().getParametersEstimationInitializationTemplate();
+                        String parametersTemplate = GeneralizedTemplateEditor.this.getSemPm().getParametersEstimationInitializationTemplate();
                         template = parametersTemplate;
                     }
 
-                    setParseText(template);
+                    GeneralizedTemplateEditor.this.setParseText(template);
 //                    updateEquationsDisplay();
                 } else {
                     throw new IllegalStateException("Unrecognized Combo Box Item: " + item);
@@ -338,9 +339,9 @@ class GeneralizedTemplateEditor extends JComponent {
             }
         });
 
-        final Box b = Box.createVerticalBox();
+        Box b = Box.createVerticalBox();
 
-        final Box b4 = Box.createHorizontalBox();
+        Box b4 = Box.createHorizontalBox();
         b4.add(new JLabel("Type Template:"));
         b4.add(Box.createHorizontalGlue());
         b4.add(expressionsBox);
@@ -349,31 +350,31 @@ class GeneralizedTemplateEditor extends JComponent {
         b.add(b4);
         b.add(Box.createVerticalStrut(5));
 
-        final JScrollPane expressionScroll = new JScrollPane(this.expressionTextPane);
+        JScrollPane expressionScroll = new JScrollPane(expressionTextPane);
         expressionScroll.setPreferredSize(new Dimension(500, 50));
-        final Box b5 = Box.createHorizontalBox();
+        Box b5 = Box.createHorizontalBox();
         b5.add(expressionScroll);
         b.add(b5);
         b.add(Box.createVerticalStrut(5));
 
-        final JPanel applyToPanel = new JPanel();
+        JPanel applyToPanel = new JPanel();
         applyToPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 
-        final Box b7 = Box.createHorizontalBox();
+        Box b7 = Box.createHorizontalBox();
         b7.add(new JLabel("Apply to: "));
-        b7.add(this.combo);
+        b7.add(combo);
 //        b7.add(variablesButton);
 //        b7.add(errorsButton);
 //        b7.add(parametersButton);
         b7.add(Box.createHorizontalGlue());
         b7.add(new JLabel("Starts with: "));
-        b7.add(this.startsWithField);
+        b7.add(startsWithField);
         b.add(b7);
         b.add(Box.createVerticalStrut(5));
 
         b.add(new JScrollPane(scroll));
 
-        final Box b8 = Box.createHorizontalBox();
+        Box b8 = Box.createHorizontalBox();
         b8.add(Box.createHorizontalGlue());
         b8.add(saveTemplate);
         b8.add(applyButton);
@@ -382,109 +383,109 @@ class GeneralizedTemplateEditor extends JComponent {
 
         b.setBorder(new EmptyBorder(5, 5, 5, 5));
 
-        setLayout(new BorderLayout());
-        add(b, BorderLayout.CENTER);
+        this.setLayout(new BorderLayout());
+        this.add(b, BorderLayout.CENTER);
 
         class ColorThread extends Thread {
-            private boolean stop = false;
+            private boolean stop;
 
             @Override
             public void run() {
-                final StyledDocument document = (StyledDocument) GeneralizedTemplateEditor.this.expressionTextPane.getDocument();
+                StyledDocument document = (StyledDocument) expressionTextPane.getDocument();
 
-                final Style red = GeneralizedTemplateEditor.this.expressionTextPane.addStyle("Red", null);
+                Style red = expressionTextPane.addStyle("Red", null);
                 StyleConstants.setForeground(red, Color.RED);
 
-                final Style black = GeneralizedTemplateEditor.this.expressionTextPane.addStyle("Black", null);
+                Style black = expressionTextPane.addStyle("Black", null);
                 StyleConstants.setForeground(black, Color.BLACK);
 
-                while (!this.stop) {
-                    if (System.currentTimeMillis() < GeneralizedTemplateEditor.this.recolorTime) {
+                while (!stop) {
+                    if (System.currentTimeMillis() < recolorTime) {
                         continue;
                     }
 
-                    if (GeneralizedTemplateEditor.this.color.equals(Color.RED)) {
-                        document.setCharacterAttributes(GeneralizedTemplateEditor.this.start, GeneralizedTemplateEditor.this.stringWidth, GeneralizedTemplateEditor.this.expressionTextPane.getStyle("Red"), true);
-                    } else if (GeneralizedTemplateEditor.this.color == Color.BLACK) {
-                        document.setCharacterAttributes(GeneralizedTemplateEditor.this.start, GeneralizedTemplateEditor.this.stringWidth, GeneralizedTemplateEditor.this.expressionTextPane.getStyle("Black"), true);
+                    if (color.equals(Color.RED)) {
+                        document.setCharacterAttributes(start, stringWidth, expressionTextPane.getStyle("Red"), true);
+                    } else if (color == Color.BLACK) {
+                        document.setCharacterAttributes(start, stringWidth, expressionTextPane.getStyle("Black"), true);
                     }
 
                     try {
                         Thread.sleep(200);
-                    } catch (final InterruptedException e) {
+                    } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                 }
             }
 
             public void scheduleStop() {
-                this.stop = true;
+                stop = true;
             }
         }
 
-        this.expressionTextDoc.addDocumentListener(new DocumentListener() {
-            public void insertUpdate(final DocumentEvent documentEvent) {
-                listen();
+        expressionTextDoc.addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent documentEvent) {
+                GeneralizedTemplateEditor.this.listen();
             }
 
-            public void removeUpdate(final DocumentEvent documentEvent) {
-                listen();
+            public void removeUpdate(DocumentEvent documentEvent) {
+                GeneralizedTemplateEditor.this.listen();
             }
 
-            public void changedUpdate(final DocumentEvent documentEvent) {
-                listen();
+            public void changedUpdate(DocumentEvent documentEvent) {
+                GeneralizedTemplateEditor.this.listen();
             }
         });
 
-        final ColorThread thread = new ColorThread();
+        ColorThread thread = new ColorThread();
         thread.start();
 
-        addAncestorListener(new AncestorListener() {
-            public void ancestorAdded(final AncestorEvent event) {
+        this.addAncestorListener(new AncestorListener() {
+            public void ancestorAdded(AncestorEvent event) {
                 //To change body of implemented methods use File | Settings | File Templates.
             }
 
-            public void ancestorRemoved(final AncestorEvent event) {
+            public void ancestorRemoved(AncestorEvent event) {
                 thread.scheduleStop();
             }
 
-            public void ancestorMoved(final AncestorEvent event) {
+            public void ancestorMoved(AncestorEvent event) {
                 //To change body of implemented methods use File | Settings | File Templates.
             }
         });
 
-        this.expressionTextPane.setCaretPosition(this.expressionTextPane.getText().length());
+        expressionTextPane.setCaretPosition(expressionTextPane.getText().length());
 
         // When the dialog closes, we want to make sure the expression gets parsed and set.
-        addAncestorListener(new AncestorListener() {
-            public void ancestorAdded(final AncestorEvent ancestorEvent) {
+        this.addAncestorListener(new AncestorListener() {
+            public void ancestorAdded(AncestorEvent ancestorEvent) {
             }
 
-            public void ancestorRemoved(final AncestorEvent ancestorEvent) {
-                listen();
+            public void ancestorRemoved(AncestorEvent ancestorEvent) {
+                GeneralizedTemplateEditor.this.listen();
             }
 
-            public void ancestorMoved(final AncestorEvent ancestorEvent) {
+            public void ancestorMoved(AncestorEvent ancestorEvent) {
             }
         });
 
-        setFocusCycleRoot(true);
+        this.setFocusCycleRoot(true);
     }
 
     //==================================================PRIVATE METHODS=========================================//
 
-    private String[] getExpressionTokens(final Map<String, String> expressionsMap) {
-        final String[] expressionTokens = new String[expressionsMap.keySet().size()];
+    private String[] getExpressionTokens(Map<String, String> expressionsMap) {
+        String[] expressionTokens = new String[expressionsMap.keySet().size()];
         int i = -1;
 
-        for (final String token : expressionsMap.keySet()) {
+        for (String token : expressionsMap.keySet()) {
             expressionTokens[++i] = token;
         }
         return expressionTokens;
     }
 
-    private Map<String, String> getExpressionsMap(final GeneralizedSemPm semPm) {
-        final String[][] templateExpressions = new String[][]{
+    private Map<String, String> getExpressionsMap(GeneralizedSemPm semPm) {
+        String[][] templateExpressions = {
                 {"NEW", "NEW(b)"},
                 {"new", "new(b)"},
                 {"TSUM", "TSUM($)"},
@@ -495,7 +496,7 @@ class GeneralizedTemplateEditor extends JComponent {
 
         // These are the expressions the user can choose from. The display form is on the left, and the template
         // form is on the. Obviously you use a % for a new parameter. In case you want to change it.
-        final String[][] expressions = new String[][]{
+        String[][] expressions = {
                 {"+", " + "},
                 {"-", " - "},
                 {"*", " * "},
@@ -571,9 +572,9 @@ class GeneralizedTemplateEditor extends JComponent {
                 {"Mixture(a1, dist1, b1, dist2, ...)", "Mixture(%, Normal(%, %), %, Normal(%, %))"},
         };
 
-        final List<Node> nodes = semPm.getNodes();
+        List<Node> nodes = semPm.getNodes();
 
-        final Map<String, String> expressionsMap = new LinkedHashMap<>();
+        Map<String, String> expressionsMap = new LinkedHashMap<>();
 
         for (int i = 0; i < templateExpressions.length; i++) {
             expressionsMap.put(templateExpressions[i][0], templateExpressions[i][1]);
@@ -591,18 +592,18 @@ class GeneralizedTemplateEditor extends JComponent {
 
     //===============================================PUBLIC METHODS===========================================//
 
-    private String nextParameterName(final String base) {
-        final Set<String> parameters = getSemPm().getParameters();
-        parameters.addAll(this.latestParser.getParameters());
+    private String nextParameterName(String base) {
+        Set<String> parameters = this.getSemPm().getParameters();
+        parameters.addAll(latestParser.getParameters());
 
         // Names should start with "1."
         int i = 0;
 
         loop:
         while (true) {
-            final String name = base + (++i);
+            String name = base + (++i);
 
-            for (final String parameter : parameters) {
+            for (String parameter : parameters) {
                 if (parameter.equals(name)) {
                     continue loop;
                 }
@@ -615,40 +616,40 @@ class GeneralizedTemplateEditor extends JComponent {
     }
 
     public GeneralizedSemPm getSemPm() {
-        return this.semPm;
+        return semPm;
     }
 
     //==============================================PRIVATE METHODS============================================//
 
-    private void setParseText(final String text) {
+    private void setParseText(String text) {
         try {
 
             // Add the text to the document
-            this.expressionTextDoc.remove(0, this.expressionTextPane.getText().length());
-            this.expressionTextDoc.insertString(0, text, null);
-        } catch (final BadLocationException e) {
+            expressionTextDoc.remove(0, expressionTextPane.getText().length());
+            expressionTextDoc.insertString(0, text, null);
+        } catch (BadLocationException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
 
     private void applyChanges() {
-        final List<Node> nodes = new ArrayList<>();
-        final List<String> parameters = new ArrayList<>();
-        final String startWith = this.startsWithField.getText();
+        List<Node> nodes = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
+        String startWith = startsWithField.getText();
 
-        if ("Variables".equals(this.combo.getSelectedItem())) {
-            for (final Node node : getSemPm().getVariableNodes()) {
-                if (!getSemPm().getGraph().isParameterizable(node)) {
+        if ("Variables".equals(combo.getSelectedItem())) {
+            for (Node node : this.getSemPm().getVariableNodes()) {
+                if (!this.getSemPm().getGraph().isParameterizable(node)) {
                     continue;
                 }
 
                 String formula = "";
 
                 try {
-                    formula = TemplateExpander.getInstance().expandTemplate(this.expressionTextPane.getText(),
-                            getSemPm(), node);
-                } catch (final ParseException e) {
+                    formula = TemplateExpander.getInstance().expandTemplate(expressionTextPane.getText(),
+                            this.getSemPm(), node);
+                } catch (ParseException e) {
                     continue;
                 }
 
@@ -657,25 +658,25 @@ class GeneralizedTemplateEditor extends JComponent {
                 }
 
                 try {
-                    getSemPm().setNodeExpression(node, formula);
-                } catch (final ParseException e) {
+                    this.getSemPm().setNodeExpression(node, formula);
+                } catch (ParseException e) {
                     continue;
                 }
 
                 nodes.add(node);
             }
-        } else if ("Errors".equals(this.combo.getSelectedItem())) {
-            for (final Node node : getSemPm().getErrorNodes()) {
-                if (!getSemPm().getGraph().isParameterizable(node)) {
+        } else if ("Errors".equals(combo.getSelectedItem())) {
+            for (Node node : this.getSemPm().getErrorNodes()) {
+                if (!this.getSemPm().getGraph().isParameterizable(node)) {
                     continue;
                 }
 
                 String formula = "";
 
                 try {
-                    formula = TemplateExpander.getInstance().expandTemplate(this.expressionTextPane.getText(),
-                            getSemPm(), node);
-                } catch (final ParseException e) {
+                    formula = TemplateExpander.getInstance().expandTemplate(expressionTextPane.getText(),
+                            this.getSemPm(), node);
+                } catch (ParseException e) {
                     continue;
                 }
 
@@ -684,24 +685,24 @@ class GeneralizedTemplateEditor extends JComponent {
                 }
 
                 try {
-                    getSemPm().setNodeExpression(node, formula);
-                } catch (final ParseException e) {
+                    this.getSemPm().setNodeExpression(node, formula);
+                } catch (ParseException e) {
                     continue;
                 }
 
                 nodes.add(node);
             }
-        } else if ("Parameter Initializations".equals(this.combo.getSelectedItem())) {
-            final List<String> _parameters = new ArrayList<>(getSemPm().getParameters());
+        } else if ("Parameter Initializations".equals(combo.getSelectedItem())) {
+            List<String> _parameters = new ArrayList<>(this.getSemPm().getParameters());
             Collections.sort(_parameters);
 
-            for (final String parameter : _parameters) {
+            for (String parameter : _parameters) {
                 String formula = "";
 
                 try {
-                    formula = TemplateExpander.getInstance().expandTemplate(this.expressionTextPane.getText(),
-                            getSemPm(), null);
-                } catch (final ParseException e) {
+                    formula = TemplateExpander.getInstance().expandTemplate(expressionTextPane.getText(),
+                            this.getSemPm(), null);
+                } catch (ParseException e) {
                     continue;
                 }
 
@@ -710,25 +711,25 @@ class GeneralizedTemplateEditor extends JComponent {
                 }
 
                 try {
-                    getSemPm().setParameterExpression(parameter, formula);
-                    getSemPm().setParameterExpression(startWith, parameter, formula);
-                } catch (final ParseException e) {
+                    this.getSemPm().setParameterExpression(parameter, formula);
+                    this.getSemPm().setParameterExpression(startWith, parameter, formula);
+                } catch (ParseException e) {
                     continue;
                 }
 
                 parameters.add(parameter);
             }
-        } else if ("Estimation Starting Values".equals(this.combo.getSelectedItem())) {
-            final List<String> _parameters = new ArrayList<>(getSemPm().getParameters());
+        } else if ("Estimation Starting Values".equals(combo.getSelectedItem())) {
+            List<String> _parameters = new ArrayList<>(this.getSemPm().getParameters());
             Collections.sort(_parameters);
 
-            for (final String parameter : _parameters) {
+            for (String parameter : _parameters) {
                 String formula = "";
 
                 try {
-                    formula = TemplateExpander.getInstance().expandTemplate(this.expressionTextPane.getText(),
-                            getSemPm(), null);
-                } catch (final ParseException e) {
+                    formula = TemplateExpander.getInstance().expandTemplate(expressionTextPane.getText(),
+                            this.getSemPm(), null);
+                } catch (ParseException e) {
                     continue;
                 }
 
@@ -737,9 +738,9 @@ class GeneralizedTemplateEditor extends JComponent {
                 }
 
                 try {
-                    getSemPm().setParameterEstimationInitializationExpression(parameter, formula);
-                    getSemPm().setParameterEstimationInitializationExpression(startWith, parameter, formula);
-                } catch (final ParseException e) {
+                    this.getSemPm().setParameterEstimationInitializationExpression(parameter, formula);
+                    this.getSemPm().setParameterEstimationInitializationExpression(startWith, parameter, formula);
+                } catch (ParseException e) {
                     continue;
                 }
 
@@ -750,116 +751,116 @@ class GeneralizedTemplateEditor extends JComponent {
     }
 
     private void updateEquationsDisplay() {
-        this.equationsBox.removeAll();
+        equationsBox.removeAll();
 
-        if ("Variables".equals(this.combo.getSelectedItem())) {
-            for (final Node node : getSemPm().getVariableNodes()) {
-                if (!getSemPm().getGraph().isParameterizable(node)) {
+        if ("Variables".equals(combo.getSelectedItem())) {
+            for (Node node : this.getSemPm().getVariableNodes()) {
+                if (!this.getSemPm().getGraph().isParameterizable(node)) {
                     continue;
                 }
 
-                final Box c = Box.createHorizontalBox();
-                final String symbol = node.getNodeType() == NodeType.ERROR ? " ~ " : " = ";
-                final JLabel label = new JLabel(node + symbol + getSemPm().getNodeExpressionString(node));
+                Box c = Box.createHorizontalBox();
+                String symbol = node.getNodeType() == NodeType.ERROR ? " ~ " : " = ";
+                JLabel label = new JLabel(node + symbol + this.getSemPm().getNodeExpressionString(node));
                 c.add(label);
                 c.add(Box.createHorizontalGlue());
-                this.equationsBox.add(c);
-                this.equationsBox.add(Box.createVerticalStrut(5));
+                equationsBox.add(c);
+                equationsBox.add(Box.createVerticalStrut(5));
             }
-        } else if ("Errors".equals(this.combo.getSelectedItem())) {
-            for (final Node node : getSemPm().getErrorNodes()) {
+        } else if ("Errors".equals(combo.getSelectedItem())) {
+            for (Node node : this.getSemPm().getErrorNodes()) {
                 if (node == null) continue;
 
-                final Box c = Box.createHorizontalBox();
-                final String symbol = node.getNodeType() == NodeType.ERROR ? " ~ " : " = ";
-                final JLabel label = new JLabel(node + symbol + getSemPm().getNodeExpressionString(node));
+                Box c = Box.createHorizontalBox();
+                String symbol = node.getNodeType() == NodeType.ERROR ? " ~ " : " = ";
+                JLabel label = new JLabel(node + symbol + this.getSemPm().getNodeExpressionString(node));
                 c.add(label);
                 c.add(Box.createHorizontalGlue());
-                this.equationsBox.add(c);
-                this.equationsBox.add(Box.createVerticalStrut(5));
+                equationsBox.add(c);
+                equationsBox.add(Box.createVerticalStrut(5));
             }
-        } else if ("Parameter Initializations".equals(this.combo.getSelectedItem())) {
-            final List<String> _parameters = new ArrayList<>(getSemPm().getParameters());
+        } else if ("Parameter Initializations".equals(combo.getSelectedItem())) {
+            List<String> _parameters = new ArrayList<>(this.getSemPm().getParameters());
             Collections.sort(_parameters);
 
-            for (final String parameter : _parameters) {
-                final Box c = Box.createHorizontalBox();
-                final JLabel label = new JLabel(parameter + " ~ " + getSemPm().getParameterExpressionString(parameter));
+            for (String parameter : _parameters) {
+                Box c = Box.createHorizontalBox();
+                JLabel label = new JLabel(parameter + " ~ " + this.getSemPm().getParameterExpressionString(parameter));
 
                 c.add(label);
                 c.add(Box.createHorizontalGlue());
 
-                this.equationsBox.add(c);
-                this.equationsBox.add(Box.createVerticalStrut(5));
+                equationsBox.add(c);
+                equationsBox.add(Box.createVerticalStrut(5));
             }
-        } else if ("Estimation Starting Values".equals(this.combo.getSelectedItem())) {
-            final List<String> _parameters = new ArrayList<>(getSemPm().getParameters());
+        } else if ("Estimation Starting Values".equals(combo.getSelectedItem())) {
+            List<String> _parameters = new ArrayList<>(this.getSemPm().getParameters());
             Collections.sort(_parameters);
 
-            for (final String parameter : _parameters) {
-                final Box c = Box.createHorizontalBox();
-                final JLabel label = new JLabel(parameter + " ~ " +
-                        getSemPm().getParameterEstimationInitializationExpressionString(parameter));
+            for (String parameter : _parameters) {
+                Box c = Box.createHorizontalBox();
+                JLabel label = new JLabel(parameter + " ~ " +
+                        this.getSemPm().getParameterEstimationInitializationExpressionString(parameter));
 
                 c.add(label);
                 c.add(Box.createHorizontalGlue());
 
-                this.equationsBox.add(c);
-                this.equationsBox.add(Box.createVerticalStrut(5));
+                equationsBox.add(c);
+                equationsBox.add(Box.createVerticalStrut(5));
             }
         }
 
 
-        this.equationsBox.setBorder(new EmptyBorder(5, 5, 5, 5));
+        equationsBox.setBorder(new EmptyBorder(5, 5, 5, 5));
 
-        this.equationsBox.revalidate();
-        this.equationsBox.repaint();
+        equationsBox.revalidate();
+        equationsBox.repaint();
     }
 
     private void listen() {
-        final String expressionString = this.expressionTextPane.getText();
+        String expressionString = expressionTextPane.getText();
 
-        final ExpressionParser parser = new ExpressionParser();
+        ExpressionParser parser = new ExpressionParser();
 
         try {
             if (!"".equals(expressionString.trim())) {
                 parser.parseExpression(expressionString);
             }
 
-            this.color = Color.BLACK;
-            this.start = 0;
-            this.stringWidth = expressionString.length();
-            this.recolorTime = System.currentTimeMillis();
+            color = Color.BLACK;
+            start = 0;
+            stringWidth = expressionString.length();
+            recolorTime = System.currentTimeMillis();
 
-            final String startsWithText = this.startsWithField.getValue().trim();
+            String startsWithText = startsWithField.getValue().trim();
 
-            if ("Variables".equals(this.combo.getSelectedItem())) {
+            if ("Variables".equals(combo.getSelectedItem())) {
                 if (!"".equals(expressionString.trim())) {
 //                    getSemPm().setVariablesTemplate(expressionString);
                 }
-            } else if ("Errors".equals(this.combo.getSelectedItem())) {
+            } else if ("Errors".equals(combo.getSelectedItem())) {
                 if (!"".equals(expressionString.trim())) {
 //                    getSemPm().setErrorsTemplate(expressionString);
                 }
-            } else if ("Parameter Initializations".equals(this.combo.getSelectedItem())) {
+            } else if ("Parameter Initializations".equals(combo.getSelectedItem())) {
                 if (!"".equals(startsWithText.trim())) {
-                    getSemPm().setStartsWithParametersTemplate(startsWithText, expressionString);
+                    this.getSemPm().setStartsWithParametersTemplate(startsWithText, expressionString);
                 }
 //                getSemPm().setParametersTemplate(expressionString);
-            } else if ("Estimation Starting Values".equals(this.combo.getSelectedItem())) {
+            } else if ("Estimation Starting Values".equals(combo.getSelectedItem())) {
                 if (!"".equals(startsWithText.trim())) {
-                    getSemPm().setStartsWithParametersEstimationInitializaationTemplate(startsWithText, expressionString);
+                    this.getSemPm().setStartsWithParametersEstimationInitializaationTemplate(startsWithText, expressionString);
                 }
 //                getSemPm().setParametersEstimationInitializationTemplate(expressionString);
             }
-        } catch (final ParseException e) {
-            this.color = Color.RED;
-            this.start = e.getErrorOffset();
-            this.stringWidth = parser.getNextOffset() - e.getErrorOffset();
-            this.recolorTime = System.currentTimeMillis();
+        } catch (ParseException e) {
+            color = Color.RED;
+            start = e.getErrorOffset();
+            stringWidth = parser.getNextOffset() - e.getErrorOffset();
+            recolorTime = System.currentTimeMillis();
         }
 
-        this.latestParser = parser;
+        latestParser = parser;
     }
 }
 

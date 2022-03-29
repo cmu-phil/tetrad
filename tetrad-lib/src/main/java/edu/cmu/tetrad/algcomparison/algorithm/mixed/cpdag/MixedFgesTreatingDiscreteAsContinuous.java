@@ -25,21 +25,21 @@ import java.util.List;
 public class MixedFgesTreatingDiscreteAsContinuous implements Algorithm {
     static final long serialVersionUID = 23L;
 
-    public Graph search(final DataModel Dk, final Parameters parameters) {
+    public Graph search(DataModel Dk, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             DataSet mixedDataSet = DataUtils.getMixedDataSet(Dk);
             mixedDataSet = DataUtils.convertNumericalDiscreteToContinuous(mixedDataSet);
-            final SemBicScore score = new SemBicScore(new CovarianceMatrix(mixedDataSet));
+            SemBicScore score = new SemBicScore(new CovarianceMatrix(mixedDataSet));
             score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-            final Fges fges = new Fges(score);
+            Fges fges = new Fges(score);
             fges.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            final Graph p = fges.search();
-            return convertBack(mixedDataSet, p);
+            Graph p = fges.search();
+            return this.convertBack(mixedDataSet, p);
         } else {
-            final MixedFgesTreatingDiscreteAsContinuous algorithm = new MixedFgesTreatingDiscreteAsContinuous();
+            MixedFgesTreatingDiscreteAsContinuous algorithm = new MixedFgesTreatingDiscreteAsContinuous();
 
-            final DataSet data = (DataSet) Dk;
-            final GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
+            DataSet data = (DataSet) Dk;
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -64,21 +64,21 @@ public class MixedFgesTreatingDiscreteAsContinuous implements Algorithm {
         }
     }
 
-    private Graph convertBack(final DataSet Dk, final Graph p) {
-        final Graph p2 = new EdgeListGraph(Dk.getVariables());
+    private Graph convertBack(DataSet Dk, Graph p) {
+        Graph p2 = new EdgeListGraph(Dk.getVariables());
 
         for (int i = 0; i < p.getNodes().size(); i++) {
             for (int j = i + 1; j < p.getNodes().size(); j++) {
-                final Node v1 = p.getNodes().get(i);
-                final Node v2 = p.getNodes().get(j);
+                Node v1 = p.getNodes().get(i);
+                Node v2 = p.getNodes().get(j);
 
-                final Edge e = p.getEdge(v1, v2);
+                Edge e = p.getEdge(v1, v2);
 
                 if (e != null) {
-                    final Node w1 = Dk.getVariable(e.getNode1().getName());
-                    final Node w2 = Dk.getVariable(e.getNode2().getName());
+                    Node w1 = Dk.getVariable(e.getNode1().getName());
+                    Node w2 = Dk.getVariable(e.getNode2().getName());
 
-                    final Edge e2 = new Edge(w1, w2, e.getEndpoint1(), e.getEndpoint2());
+                    Edge e2 = new Edge(w1, w2, e.getEndpoint1(), e.getEndpoint2());
 
                     p2.addEdge(e2);
                 }
@@ -87,7 +87,7 @@ public class MixedFgesTreatingDiscreteAsContinuous implements Algorithm {
         return p2;
     }
 
-    public Graph getComparisonGraph(final Graph graph) {
+    public Graph getComparisonGraph(Graph graph) {
         return SearchGraphUtils.cpdagForDag(new EdgeListGraph(graph));
     }
 
@@ -103,7 +103,7 @@ public class MixedFgesTreatingDiscreteAsContinuous implements Algorithm {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.VERBOSE);
         return parameters;

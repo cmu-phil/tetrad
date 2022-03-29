@@ -51,7 +51,7 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
      * The color this node when unselected; depends on whether there is a model
      * or not.
      */
-    private Color unselectedColor = StdDisplayComp.NO_MODEL_COLOR;
+    private Color unselectedColor = NO_MODEL_COLOR;
 
     /**
      * Font used to render text.
@@ -79,11 +79,11 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
     private final Image image;
 
 
-    public StdDisplayComp(final String imagePath) {
-        this.nameLabel = new JLabel(" ");
-        this.acronymLabel = new JLabel("No model");
-        this.image = ImageUtils.getImage(this, imagePath);
-        layoutComponents();
+    public StdDisplayComp(String imagePath) {
+        nameLabel = new JLabel(" ");
+        acronymLabel = new JLabel("No model");
+        image = ImageUtils.getImage(this, imagePath);
+        this.layoutComponents();
     }
 
     /**
@@ -91,40 +91,40 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
      *
      * @param selected the selection status of the node (true or false).
      */
-    public void setSelected(final boolean selected) {
+    public void setSelected(boolean selected) {
         this.selected = selected;
-        setBorder(null);
-        repaint();
+        this.setBorder(null);
+        this.repaint();
     }
 
     private boolean isSelected() {
-        return this.selected;
+        return selected;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         super.setName(name);
-        this.nameLabel.setText(name);
+        nameLabel.setText(name);
     }
 
-    public void setAcronym(final String acronym) {
-        this.acronymLabel.setText(acronym);
-        layoutComponents();
+    public void setAcronym(String acronym) {
+        acronymLabel.setText(acronym);
+        this.layoutComponents();
     }
 
     private Shape getShape() {
-        return new Rectangle2D.Double(0, 0, getSize().width - 1,
-                getSize().height - 1);
+        return new Rectangle2D.Double(0, 0, this.getSize().width - 1,
+                this.getSize().height - 1);
     }
 
-    public boolean contains(final int x, final int y) {
-        return getShape().contains(x, y);
+    public boolean contains(int x, int y) {
+        return this.getShape().contains(x, y);
     }
 
-    public void setHasModel(final boolean hasModel) {
+    public void setHasModel(boolean hasModel) {
         if (hasModel) {
-            this.unselectedColor = StdDisplayComp.HAS_MODEL_COLOR;
+            unselectedColor = HAS_MODEL_COLOR;
         } else {
-            this.unselectedColor = StdDisplayComp.NO_MODEL_COLOR;
+            unselectedColor = NO_MODEL_COLOR;
         }
     }
 
@@ -133,55 +133,55 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
      * Paints the background of the component (since it has to be a
      * JComponent).
      */
-    public void paint(final Graphics g) {
-        final Graphics2D g2 = (Graphics2D) g;
-        g2.setColor(isSelected() ? DisplayNodeUtils.getNodeSelectedFillColor() : this.unselectedColor);
-        g2.fill(getShape());
-        g2.setColor(isSelected() ? DisplayNodeUtils.getNodeSelectedEdgeColor() : DisplayNodeUtils.getNodeEdgeColor());
-        g2.draw(getShape());
+    public void paint(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setColor(this.isSelected() ? DisplayNodeUtils.getNodeSelectedFillColor() : unselectedColor);
+        g2.fill(this.getShape());
+        g2.setColor(this.isSelected() ? DisplayNodeUtils.getNodeSelectedEdgeColor() : DisplayNodeUtils.getNodeEdgeColor());
+        g2.draw(this.getShape());
 
         super.paint(g);
     }
 
     private void layoutComponents() {
-        removeAll();
-        setLayout(new BorderLayout());
-        setBackground(DisplayNodeUtils.getNodeFillColor());
-        setFont(DisplayNodeUtils.getFont());
+        this.removeAll();
+        this.setLayout(new BorderLayout());
+        this.setBackground(DisplayNodeUtils.getNodeFillColor());
+        this.setFont(DisplayNodeUtils.getFont());
 
-        final Box b = Box.createVerticalBox();
+        Box b = Box.createVerticalBox();
 
         // Add icon to name label.
-        final Box b1 = Box.createHorizontalBox();
+        Box b1 = Box.createHorizontalBox();
         b1.add(Box.createHorizontalGlue());
-        b1.add(new JLabel(new ImageIcon(this.image)));
+        b1.add(new JLabel(new ImageIcon(image)));
         b1.add(Box.createHorizontalGlue());
         b.add(b1);
 
         // Construct name label.
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(Box.createHorizontalGlue());
         b2.add(Box.createHorizontalStrut(5));
-        b2.add(this.nameLabel);
+        b2.add(nameLabel);
         b2.add(Box.createHorizontalStrut(5));
         b2.add(Box.createHorizontalGlue());
         b.add(b2);
 
         // Construct acronym label.
-        final Box b3 = Box.createHorizontalBox();
+        Box b3 = Box.createHorizontalBox();
         b3.add(Box.createHorizontalGlue());
         b3.add(Box.createHorizontalStrut(5));
-        this.acronymLabel.setFont(StdDisplayComp.SMALL_FONT);
-        b3.add(this.acronymLabel);
+        acronymLabel.setFont(SMALL_FONT);
+        b3.add(acronymLabel);
         b3.add(Box.createHorizontalStrut(5));
         b3.add(Box.createHorizontalGlue());
         b.add(b3);
 
         b.add(Box.createRigidArea(new Dimension(60, 0)));
 
-        add(b, BorderLayout.CENTER);
-        revalidate();
-        repaint();
+        this.add(b, BorderLayout.CENTER);
+        this.revalidate();
+        this.repaint();
     }
 
 }

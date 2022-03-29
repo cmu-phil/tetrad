@@ -44,78 +44,78 @@ public class JunctionTreeWrapper implements SessionModel, UpdaterWrapper, Unmars
 
     private Parameters params;
 
-    public JunctionTreeWrapper(final BayesImWrapper wrapper, final Parameters params) {
+    public JunctionTreeWrapper(BayesImWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
 
-        final BayesIm bayesIm = wrapper.getBayesIm();
-        setup(bayesIm, params);
+        BayesIm bayesIm = wrapper.getBayesIm();
+        this.setup(bayesIm, params);
     }
 
-    public JunctionTreeWrapper(final DirichletBayesImWrapper wrapper, final Parameters params) {
+    public JunctionTreeWrapper(DirichletBayesImWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
-        final DirichletBayesIm bayesIm = wrapper.getDirichletBayesIm();
-        setup(bayesIm, params);
+        DirichletBayesIm bayesIm = wrapper.getDirichletBayesIm();
+        this.setup(bayesIm, params);
     }
 
-    public JunctionTreeWrapper(final BayesEstimatorWrapper wrapper, final Parameters params) {
+    public JunctionTreeWrapper(BayesEstimatorWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
 
-        final BayesIm bayesIm = wrapper.getEstimatedBayesIm();
-        setup(bayesIm, params);
+        BayesIm bayesIm = wrapper.getEstimatedBayesIm();
+        this.setup(bayesIm, params);
     }
 
-    public JunctionTreeWrapper(final DirichletEstimatorWrapper wrapper, final Parameters params) {
+    public JunctionTreeWrapper(DirichletEstimatorWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
-        final DirichletBayesIm bayesIm = wrapper.getEstimatedBayesIm();
-        setup(bayesIm, params);
+        DirichletBayesIm bayesIm = wrapper.getEstimatedBayesIm();
+        this.setup(bayesIm, params);
     }
 
-    public JunctionTreeWrapper(final EmBayesEstimatorWrapper wrapper, final Parameters params) {
+    public JunctionTreeWrapper(EmBayesEstimatorWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
-        final BayesIm bayesIm = wrapper.getEstimateBayesIm();
-        setup(bayesIm, params);
+        BayesIm bayesIm = wrapper.getEstimateBayesIm();
+        this.setup(bayesIm, params);
     }
 
-    private void setup(final BayesIm bayesIm, final Parameters params) {
-        TetradLogger.getInstance().setConfigForClass(this.getClass());
+    private void setup(BayesIm bayesIm, Parameters params) {
+        TetradLogger.getInstance().setConfigForClass(getClass());
         this.params = params;
         if (params.get("evidence", null) == null || ((Evidence) params.get("evidence", null)).isIncompatibleWith(bayesIm)) {
-            this.bayesUpdater = new JunctionTreeUpdater(bayesIm);
+            bayesUpdater = new JunctionTreeUpdater(bayesIm);
         } else {
-            this.bayesUpdater = new JunctionTreeUpdater(bayesIm,
+            bayesUpdater = new JunctionTreeUpdater(bayesIm,
                     (Evidence) params.get("evidence", null));
         }
 
-        final Node node = (Node) getParams().get("variable", null);
+        Node node = (Node) this.getParams().get("variable", null);
 
         if (node != null) {
-            final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+            NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
             TetradLogger.getInstance().log("info", "\nRow Summing Exact Updater");
 
-            final String nodeName = node.getName();
-            final int nodeIndex = bayesIm.getNodeIndex(bayesIm.getNode(nodeName));
-            final double[] priors = getBayesUpdater().calculatePriorMarginals(nodeIndex);
-            final double[] marginals = getBayesUpdater().calculateUpdatedMarginals(nodeIndex);
+            String nodeName = node.getName();
+            int nodeIndex = bayesIm.getNodeIndex(bayesIm.getNode(nodeName));
+            double[] priors = this.getBayesUpdater().calculatePriorMarginals(nodeIndex);
+            double[] marginals = this.getBayesUpdater().calculateUpdatedMarginals(nodeIndex);
 
             TetradLogger.getInstance().log("details", "\nVariable = " + nodeName);
             TetradLogger.getInstance().log("details", "\nEvidence:");
-            final Evidence evidence = (Evidence) getParams().get("evidence", null);
-            final Proposition proposition = evidence.getProposition();
+            Evidence evidence = (Evidence) this.getParams().get("evidence", null);
+            Proposition proposition = evidence.getProposition();
 
             for (int i = 0; i < proposition.getNumVariables(); i++) {
-                final Node variable = proposition.getVariableSource().getVariables().get(i);
-                final int category = proposition.getSingleCategory(i);
+                Node variable = proposition.getVariableSource().getVariables().get(i);
+                int category = proposition.getSingleCategory(i);
 
                 if (category != -1) {
                     TetradLogger.getInstance().log("details", "\t" + variable + " = " + category);
@@ -125,40 +125,40 @@ public class JunctionTreeWrapper implements SessionModel, UpdaterWrapper, Unmars
             TetradLogger.getInstance().log("details", "\nCat.\tPrior\tMarginal");
 
             for (int i = 0; i < priors.length; i++) {
-                TetradLogger.getInstance().log("details", category(evidence, nodeName, i) + "\t"
+                TetradLogger.getInstance().log("details", this.category(evidence, nodeName, i) + "\t"
                         + nf.format(priors[i]) + "\t" + nf.format(marginals[i]));
             }
         }
         TetradLogger.getInstance().reset();
     }
 
-    private DiscreteVariable discreteVariable(final Evidence evidence, final String nodeName) {
+    private DiscreteVariable discreteVariable(Evidence evidence, String nodeName) {
         return evidence.getVariable(nodeName);
     }
 
-    private String category(final Evidence evidence, final String nodeName, final int i) {
-        final DiscreteVariable variable = discreteVariable(evidence, nodeName);
+    private String category(Evidence evidence, String nodeName, int i) {
+        DiscreteVariable variable = this.discreteVariable(evidence, nodeName);
         return variable.getCategory(i);
     }
 
     @Override
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
     @Override
     public String getName() {
-        return this.name;
+        return name;
     }
 
     @Override
     public Parameters getParams() {
-        return this.params;
+        return params;
     }
 
     @Override
     public ManipulatingBayesUpdater getBayesUpdater() {
-        return this.bayesUpdater;
+        return bayesUpdater;
     }
 
 }

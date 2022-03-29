@@ -94,23 +94,23 @@ public final class DepthChoiceGenerator {
      * @param a     the number of objects being selected from.
      * @param depth the maximum number of objects selected.
      */
-    public DepthChoiceGenerator(final int a, final int depth) {
+    public DepthChoiceGenerator(int a, int depth) {
         if ((a < 0) || depth < -1) {
             throw new IllegalArgumentException();
         }
 
         this.a = a;
-        this.b = 0;
+        b = 0;
         this.depth = depth;
 
-        this.effectiveDepth = depth;
-        if (depth == -1) this.effectiveDepth = a;
-        if (depth > a) this.effectiveDepth = a;
+        effectiveDepth = depth;
+        if (depth == -1) effectiveDepth = a;
+        if (depth > a) effectiveDepth = a;
 
-        initialize();
+        this.initialize();
     }
 
-    public static int getNumCombinations(final int a, final int b) {
+    public static int getNumCombinations(int a, int b) {
         int numCombinations = 0;
 
         for (int c = 0; c <= b; c++) {
@@ -121,23 +121,23 @@ public final class DepthChoiceGenerator {
     }
 
     private void initialize() {
-        this.choiceLocal = new int[this.b];
-        this.choiceReturned = new int[this.b];
-        this.diff = this.a - this.b;
+        choiceLocal = new int[b];
+        choiceReturned = new int[b];
+        diff = a - b;
 
         // Initialize the choice array with successive integers [0 1 2 ...].
         // Set the value at the last index one less than it would be in such
         // a series, ([0 1 2 ... b - 2]) so that on the first call to next()
         // the first combination ([0 1 2 ... b - 1]) is returned correctly.
-        for (int i = 0; i < this.b - 1; i++) {
-            this.choiceLocal[i] = i;
+        for (int i = 0; i < b - 1; i++) {
+            choiceLocal[i] = i;
         }
 
-        if (this.b > 0) {
-            this.choiceLocal[this.b - 1] = this.b - 2;
+        if (b > 0) {
+            choiceLocal[b - 1] = b - 2;
         }
 
-        this.begun = false;
+        begun = false;
     }
 
     /**
@@ -147,33 +147,33 @@ public final class DepthChoiceGenerator {
     public synchronized int[] next() {
 //        if (getB() == this.choiceLocal.length) return null;
 
-        int i = getB();
+        int i = this.getB();
 
         // Scan from the right for the first index whose value is less than
         // its expected maximum (i + diff) and perform the fill() operation
         // at that index.
         while (--i > -1) {
-            if (this.choiceLocal[i] < i + this.diff) {
-                fill(i);
-                this.begun = true;
-                System.arraycopy(this.choiceLocal, 0, this.choiceReturned, 0, this.b);
-                return this.choiceReturned;
+            if (choiceLocal[i] < i + diff) {
+                this.fill(i);
+                begun = true;
+                System.arraycopy(choiceLocal, 0, choiceReturned, 0, b);
+                return choiceReturned;
             }
         }
 
-        if (this.begun) {
-            this.b++;
+        if (begun) {
+            b++;
 
-            if (this.b > this.effectiveDepth) {
+            if (b > effectiveDepth) {
                 return null;
             }
 
-            initialize();
-            return next();
+            this.initialize();
+            return this.next();
         } else {
-            this.begun = true;
-            System.arraycopy(this.choiceLocal, 0, this.choiceReturned, 0, this.b);
-            return this.choiceReturned;
+            begun = true;
+            System.arraycopy(choiceLocal, 0, choiceReturned, 0, b);
+            return choiceReturned;
         }
     }
 
@@ -185,8 +185,8 @@ public final class DepthChoiceGenerator {
      * @param depth the number of objects in the desired selection.
      */
     @SuppressWarnings({"SameParameterValue"})
-    public static void testPrint(final int a, final int depth) {
-        final DepthChoiceGenerator cg = new DepthChoiceGenerator(a, depth);
+    public static void testPrint(int a, int depth) {
+        DepthChoiceGenerator cg = new DepthChoiceGenerator(a, depth);
         int[] choice;
 
         System.out.println();
@@ -198,7 +198,7 @@ public final class DepthChoiceGenerator {
             if (choice.length == 0) {
                 System.out.println("zero-length array");
             } else {
-                for (final int aChoice : choice) {
+                for (int aChoice : choice) {
                     System.out.print(aChoice + "\t");
                 }
 
@@ -210,7 +210,7 @@ public final class DepthChoiceGenerator {
     }
 
     public String toString() {
-        return "Depth choice generator: a = " + this.a + " depth = " + this.depth;
+        return "Depth choice generator: a = " + a + " depth = " + depth;
     }
 
     /**
@@ -218,14 +218,14 @@ public final class DepthChoiceGenerator {
      */
     @SuppressWarnings({"UnusedDeclaration"})
     public int getA() {
-        return this.a;
+        return a;
     }
 
     /**
      * @return Ibid.
      */
     private int getB() {
-        return this.b;
+        return b;
     }
 
     /**
@@ -234,11 +234,11 @@ public final class DepthChoiceGenerator {
      *
      * @param index the index to begin this incrementing operation.
      */
-    private void fill(final int index) {
-        this.choiceLocal[index]++;
+    private void fill(int index) {
+        choiceLocal[index]++;
 
-        for (int i = index + 1; i < getB(); i++) {
-            this.choiceLocal[i] = this.choiceLocal[i - 1] + 1;
+        for (int i = index + 1; i < this.getB(); i++) {
+            choiceLocal[i] = choiceLocal[i - 1] + 1;
         }
     }
 }

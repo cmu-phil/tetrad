@@ -53,7 +53,7 @@ class Rubberband extends JComponent {
      * @param anchor The anchor point of the rubberband; the rubber band will
      *               always go from this point to some other point.
      */
-    public Rubberband(final Point anchor) {
+    public Rubberband(Point anchor) {
 
         if (anchor == null) {
             throw new NullPointerException("Anchor point must not be null.");
@@ -67,38 +67,38 @@ class Rubberband extends JComponent {
         final int cap = BasicStroke.CAP_ROUND;
         final int join = BasicStroke.JOIN_BEVEL;
         final int miterlimit = 0;
-        final float[] dash = new float[]{2, 2, 4, 2};
+        float[] dash = {2, 2, 4, 2};
         final float dashphase = 0.0f;
 
-        this.stroke = new BasicStroke(width, cap, join, miterlimit, dash, dashphase);
+        stroke = new BasicStroke(width, cap, join, miterlimit, dash, dashphase);
 
         // initial location of rubberband
-        setLocation(anchor);
-        setSize(0, 0);
+        this.setLocation(anchor);
+        this.setSize(0, 0);
     }
 
     /**
      * Updates the track point for the rubber band so that it extends from the
      * initial location point to the point specified as the argument.
      */
-    public void updateTrackPoint(final Point p) {
-        final int newLocX = Math.min(p.x, this.anchor.x);
-        final int newLocY = Math.min(p.y, this.anchor.y);
-        final int deltaX = Math.abs(p.x - this.anchor.x);
-        final int deltaY = Math.abs(p.y - this.anchor.y);
-        setLocation(newLocX, newLocY);
-        setSize(deltaX, deltaY);
+    public void updateTrackPoint(Point p) {
+        int newLocX = Math.min(p.x, anchor.x);
+        int newLocY = Math.min(p.y, anchor.y);
+        int deltaX = Math.abs(p.x - anchor.x);
+        int deltaY = Math.abs(p.y - anchor.y);
+        this.setLocation(newLocX, newLocY);
+        this.setSize(deltaX, deltaY);
     }
 
     /**
      * Paints the rubberband.
      */
-    public void paint(final Graphics g) {
-        final Graphics2D g2 = (Graphics2D) g;
-        resetShapeBounds();
+    public void paint(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g;
+        this.resetShapeBounds();
         g2.setColor(Color.black);
-        g2.setStroke(this.stroke);
-        g2.draw(this.shape);
+        g2.setStroke(stroke);
+        g2.draw(shape);
     }
 
     /**
@@ -107,8 +107,8 @@ class Rubberband extends JComponent {
      * inside the boundaries of the component on all four sides.
      */
     private void resetShapeBounds() {
-        final RoundRectangle2D.Double rrect = (RoundRectangle2D.Double) this.shape;
-        rrect.setRoundRect(0, 0, getBounds().width - 1, getBounds().height - 1,
+        RoundRectangle2D.Double rrect = (RoundRectangle2D.Double) shape;
+        rrect.setRoundRect(0, 0, this.getBounds().width - 1, this.getBounds().height - 1,
                 10, 10);
     }
 
@@ -117,7 +117,7 @@ class Rubberband extends JComponent {
      * components it intersects.
      */
     public Shape getShape() {
-        return this.shape;
+        return shape;
     }
 }
 

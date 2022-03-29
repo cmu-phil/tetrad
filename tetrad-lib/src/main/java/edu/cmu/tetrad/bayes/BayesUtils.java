@@ -46,24 +46,24 @@ final class BayesUtils {
      *                                  data by the same name does not have a
      *                                  subset of its categories.
      */
-    public static void ensureVarsInData(final List<Node> pmVars,
-                                        final DataSet dataSet) {
-        for (final Node pmVar1 : pmVars) {
-            final DiscreteVariable pmVar = (DiscreteVariable) pmVar1;
-            final String name = pmVar.getName();
-            final DiscreteVariable from =
+    public static void ensureVarsInData(List<Node> pmVars,
+                                        DataSet dataSet) {
+        for (Node pmVar1 : pmVars) {
+            DiscreteVariable pmVar = (DiscreteVariable) pmVar1;
+            String name = pmVar.getName();
+            DiscreteVariable from =
                     (DiscreteVariable) dataSet.getVariable(name);
 
             if (from == null) {
                 throw new IllegalArgumentException("Variable " + pmVar + " was not in the data.");
             }
 
-            final List<String> pmCategories = pmVar.getCategories();
-            final List<String> dataCategories = from.getCategories();
+            List<String> pmCategories = pmVar.getCategories();
+            List<String> dataCategories = from.getCategories();
 
             if (!pmCategories.equals(dataCategories)) {
                 if (pmCategories.containsAll(dataCategories)) {
-                    final DiscreteVariable to = new DiscreteVariable(pmVar);
+                    DiscreteVariable to = new DiscreteVariable(pmVar);
                     dataSet.changeVariable(from, to);
                 } else {
                     throw new IllegalArgumentException("Variable '" + name + "' " +

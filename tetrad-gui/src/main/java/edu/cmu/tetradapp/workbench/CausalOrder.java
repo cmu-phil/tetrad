@@ -50,8 +50,8 @@ final class CausalOrder {
 
     //==============================CONSTRUCTORS===========================//
 
-    public CausalOrder(final LayoutEditable layoutEditable) {
-        this.graph = layoutEditable.getGraph();
+    public CausalOrder(LayoutEditable layoutEditable) {
+        graph = layoutEditable.getGraph();
 
         this.layoutEditable = layoutEditable;
     }
@@ -59,18 +59,18 @@ final class CausalOrder {
     //============================PUBLIC METHODS==========================//
 
     public void doLayout() {
-        final List<List<Node>> tiers = getTiers();
+        List<List<Node>> tiers = this.getTiers();
 
         int y = 0;
 
-        for (final List<Node> tier : tiers) {
+        for (List<Node> tier : tiers) {
             y += 60;
 
             if (tier.isEmpty()) continue;
 
             Node node = tier.get(0);
 
-            DisplayNode displayNode = (DisplayNode) this.layoutEditable.getModelNodesToDisplay().get(node);
+            DisplayNode displayNode = (DisplayNode) layoutEditable.getModelNodesToDisplay().get(node);
             Rectangle r = displayNode.getBounds();
             int x = r.width / 2 + 10;
 
@@ -81,9 +81,9 @@ final class CausalOrder {
 
             for (int i = 1; i < tier.size(); i++) {
                 node = tier.get(i);
-                displayNode = (DisplayNode) this.layoutEditable.getModelNodesToDisplay().get(node);
+                displayNode = (DisplayNode) layoutEditable.getModelNodesToDisplay().get(node);
                 r = displayNode.getBounds();
-                final int thisHalf = r.width / 2;
+                int thisHalf = r.width / 2;
                 x += lastHalf + thisHalf + 5;
                 node.setCenterX(x);
                 node.setCenterY(y);
@@ -100,12 +100,12 @@ final class CausalOrder {
      * @return the tiers of this digraph.
      */
     private List<List<Node>> getTiers() {
-        final Set<Node> found = new HashSet<>();
-        final Set<Node> notFound = new HashSet<>();
-        final List<List<Node>> tiers = new LinkedList<>();
+        Set<Node> found = new HashSet<>();
+        Set<Node> notFound = new HashSet<>();
+        List<List<Node>> tiers = new LinkedList<>();
 
         // first copy all the nodes into 'notFound'.
-        for (final Node node1 : this.graph.getNodes()) {
+        for (Node node1 : graph.getNodes()) {
             notFound.add(node1);
         }
 
@@ -113,10 +113,10 @@ final class CausalOrder {
         // has all of its parents already in 'found', then add it to the
         // getModel tier.
         while (!notFound.isEmpty()) {
-            final List<Node> thisTier = new LinkedList<>();
+            List<Node> thisTier = new LinkedList<>();
 
-            for (final Node node : notFound) {
-                if (found.containsAll(this.graph.getParents(node))) {
+            for (Node node : notFound) {
+                if (found.containsAll(graph.getParents(node))) {
                     thisTier.add(node);
                 }
             }
@@ -137,62 +137,62 @@ final class CausalOrder {
         return tiers;
     }
 
-    private void placeNodes(final Node node, final Map<Node, Integer> tiers, final Graph graph) {
+    private void placeNodes(Node node, Map<Node, Integer> tiers, Graph graph) {
         if (tiers.keySet().contains(node)) {
             return;
         }
 
-        final Set<Node> keySet = tiers.keySet();
-        final List<Node> parents = graph.getParents(node);
+        Set<Node> keySet = tiers.keySet();
+        List<Node> parents = graph.getParents(node);
         parents.retainAll(keySet);
 
-        final List<Node> children = graph.getChildren(node);
+        List<Node> children = graph.getChildren(node);
         children.retainAll(keySet);
 
         if (parents.isEmpty() && children.isEmpty()) {
             tiers.put(node, 0);
         } else if (parents.isEmpty()) {
-            final int cMin = getCMin(children, tiers);
+            int cMin = this.getCMin(children, tiers);
             tiers.put(node, cMin - 1);
-            placeChildren(node, tiers, graph);
+            this.placeChildren(node, tiers, graph);
             return;
         } else {
-            final int pMax = getPMax(parents, tiers);
-            final int cMin = getCMin(children, tiers);
+            int pMax = this.getPMax(parents, tiers);
+            int cMin = this.getCMin(children, tiers);
             tiers.put(node, pMax + 1);
 
             if (!children.isEmpty() && cMin < pMax + 2) {
-                final int diff = (pMax + 2) - cMin;
-                final List<Node> descendants =
+                int diff = (pMax + 2) - cMin;
+                List<Node> descendants =
                         graph.getDescendants(Collections.singletonList(node));
                 descendants.retainAll(keySet);
                 descendants.remove(node);
 
-                for (final Node descendant : descendants) {
-                    final Integer index = tiers.get(descendant);
+                for (Node descendant : descendants) {
+                    Integer index = tiers.get(descendant);
                     tiers.put(descendant, index + diff);
                 }
             }
         }
 
-        placeChildren(node, tiers, graph);
+        this.placeChildren(node, tiers, graph);
     }
 
-    private void placeChildren(final Node node, final Map<Node, Integer> tiers,
-                               final Graph graph) {
+    private void placeChildren(Node node, Map<Node, Integer> tiers,
+                               Graph graph) {
         // Recurse.
-        final List<Node> adj = graph.getAdjacentNodes(node);
+        List<Node> adj = graph.getAdjacentNodes(node);
 
-        for (final Node _node : adj) {
-            placeNodes(_node, tiers, graph);
+        for (Node _node : adj) {
+            this.placeNodes(_node, tiers, graph);
         }
     }
 
-    private int getPMax(final List<Node> parents, final Map<Node, Integer> tiers) {
+    private int getPMax(List<Node> parents, Map<Node, Integer> tiers) {
         int pMax = Integer.MIN_VALUE;
 
-        for (final Node parent : parents) {
-            final Integer index = tiers.get(parent);
+        for (Node parent : parents) {
+            Integer index = tiers.get(parent);
             if (index > pMax) {
                 pMax = index;
             }
@@ -200,11 +200,11 @@ final class CausalOrder {
         return pMax;
     }
 
-    private int getCMin(final List<Node> children, final Map<Node, Integer> tiers) {
+    private int getCMin(List<Node> children, Map<Node, Integer> tiers) {
         int cMin = Integer.MAX_VALUE;
 
-        for (final Node child : children) {
-            final Integer index = tiers.get(child);
+        for (Node child : children) {
+            Integer index = tiers.get(child);
             if (index < cMin) {
                 cMin = index;
             }

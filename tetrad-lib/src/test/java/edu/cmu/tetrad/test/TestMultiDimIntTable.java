@@ -32,56 +32,56 @@ public class TestMultiDimIntTable {
 
     public void setUp() {
 
-        final int[] dims = new int[]{2, 3, 4, 5};
+        int[] dims = {2, 3, 4, 5};
 
-        this.table = new MultiDimIntTable(dims);
+        table = new MultiDimIntTable(dims);
     }
 
     @Test
     public void testSize() {
-        setUp();
-        assertEquals(this.table.getNumCells(), 2 * 3 * 4 * 5);
+        this.setUp();
+        assertEquals(table.getNumCells(), 2 * 3 * 4 * 5);
     }
 
     @Test
     public void testIndexCalculation1() {
-        setUp();
-        final int[] coords = new int[]{0, 0, 1, 0};
-        final int index = this.table.getCellIndex(coords);
+        this.setUp();
+        int[] coords = {0, 0, 1, 0};
+        int index = table.getCellIndex(coords);
 
         assertEquals(5, index);
     }
 
     @Test
     public void testIndexCalculation2() {
-        setUp();
-        final int[] coords = new int[]{0, 1, 2, 0};
-        final int index = this.table.getCellIndex(coords);
+        this.setUp();
+        int[] coords = {0, 1, 2, 0};
+        int index = table.getCellIndex(coords);
 
         assertEquals(30, index);
     }
 
     @Test
     public void testCoordinateCalculation() {
-        setUp();
-        final int[] coords = this.table.getCoordinates(30);
+        this.setUp();
+        int[] coords = table.getCoordinates(30);
 
         assertEquals(1, coords[1]);
     }
 
     @Test
     public void testCellIncrement() {
-        setUp();
-        final int[] coords = this.table.getCoordinates(30);
+        this.setUp();
+        int[] coords = table.getCoordinates(30);
 
-        this.table.increment(coords, 1);
-        assertEquals(1, this.table.getValue(coords));
+        table.increment(coords, 1);
+        assertEquals(1, table.getValue(coords));
     }
 
     @Test
     public void testNumDimensions() {
-        setUp();
-        assertEquals(4, this.table.getNumDimensions());
+        this.setUp();
+        assertEquals(4, table.getNumDimensions());
     }
 }
 

@@ -44,29 +44,29 @@ class DataCellEditor extends DefaultCellEditor {
     public DataCellEditor() {
         super(new JTextField());
 
-        this.textField = (JTextField) this.editorComponent;
-        this.textField.setHorizontalAlignment(JTextField.LEFT);
-        this.textField.setBorder(new LineBorder(Color.BLACK));
+        textField = (JTextField) editorComponent;
+        textField.setHorizontalAlignment(JTextField.LEFT);
+        textField.setBorder(new LineBorder(Color.BLACK));
 
-        this.delegate = new EditorDelegate() {
-            public void setValue(final Object value) {
+        delegate = new DefaultCellEditor.EditorDelegate() {
+            public void setValue(Object value) {
                 if (value == null) {
-                    DataCellEditor.this.textField.setText("");
+                    textField.setText("");
                 } else if (value instanceof String) {
-                    DataCellEditor.this.textField.setText((String) value);
+                    textField.setText((String) value);
                 } else if (value instanceof Integer) {
-                    DataCellEditor.this.textField.setText(value.toString());
+                    textField.setText(value.toString());
                 } else if (value instanceof Double) {
-                    final double doubleValue = (Double) value;
+                    double doubleValue = (Double) value;
 
                     if (Double.isNaN(doubleValue)) {
-                        DataCellEditor.this.textField.setText("");
+                        textField.setText("");
                     } else {
-                        DataCellEditor.this.textField.setText(DataCellEditor.this.nf.format(doubleValue));
+                        textField.setText(nf.format(doubleValue));
                     }
                 }
 
-                DataCellEditor.this.textField.selectAll();
+                textField.selectAll();
             }
 
             /**
@@ -76,11 +76,11 @@ class DataCellEditor extends DefaultCellEditor {
              * @return this text getValue.
              */
             public Object getCellEditorValue() {
-                return DataCellEditor.this.textField.getText();
+                return textField.getText();
             }
         };
 
-        this.textField.addActionListener(this.delegate);
+        textField.addActionListener(delegate);
     }
 
     /**
@@ -89,7 +89,7 @@ class DataCellEditor extends DefaultCellEditor {
      *
      * @see javax.swing.DefaultCellEditor.EditorDelegate#shouldSelectCell(java.util.EventObject)
      */
-    public boolean shouldSelectCell(final EventObject anEvent) {
+    public boolean shouldSelectCell(EventObject anEvent) {
         return true;
     }
 }

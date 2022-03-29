@@ -22,9 +22,10 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetradapp.model.FgesRunner;
+import edu.cmu.tetradapp.model.FgesRunner.Type;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
+import edu.cmu.tetradapp.util.IntTextField.Filter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -40,7 +41,7 @@ import java.text.NumberFormat;
  */
 
 class FgesIndTestParamsEditor extends JComponent {
-    private final FgesRunner.Type type;
+    private final Type type;
     private final Parameters params;
     private DoubleTextField cellPriorField, structurePriorField;
     private JButton uniformStructurePrior;
@@ -53,36 +54,36 @@ class FgesIndTestParamsEditor extends JComponent {
      */
     private final JCheckBox faithfulnessAssumed;
 
-    public FgesIndTestParamsEditor(final Parameters params, final FgesRunner.Type type) {
+    public FgesIndTestParamsEditor(Parameters params, Type type) {
         this.params = params;
         this.type = type;
 
-        final NumberFormat nf = new DecimalFormat("0.0####");
-        final NumberFormat smallNf = new DecimalFormat("0.0E0");
+        NumberFormat nf = new DecimalFormat("0.0####");
+        NumberFormat smallNf = new DecimalFormat("0.0E0");
 
-        if (type == FgesRunner.Type.DISCRETE) {
-            this.cellPriorField = new DoubleTextField(
-                    getFgesIndTestParams().getDouble("samplePrior", 1), 5, nf, smallNf, 1e-4);
+        if (type == Type.DISCRETE) {
+            cellPriorField = new DoubleTextField(
+                    this.getFgesIndTestParams().getDouble("samplePrior", 1), 5, nf, smallNf, 1e-4);
 
-            this.cellPriorField.setFilter(new DoubleTextField.Filter() {
-                public double filter(final double value, final double oldValue) {
+            cellPriorField.setFilter(new DoubleTextField.Filter() {
+                public double filter(double value, double oldValue) {
                     try {
-                        getFgesIndTestParams().set("samplePrior", value);
+                        FgesIndTestParamsEditor.this.getFgesIndTestParams().set("samplePrior", value);
                         return value;
-                    } catch (final IllegalArgumentException e) {
+                    } catch (IllegalArgumentException e) {
                         return oldValue;
                     }
                 }
             });
 
-            this.structurePriorField = new DoubleTextField(
-                    getFgesIndTestParams().getDouble("structurePrior", 1), 5, nf);
-            this.structurePriorField.setFilter(new DoubleTextField.Filter() {
-                public double filter(final double value, final double oldValue) {
+            structurePriorField = new DoubleTextField(
+                    this.getFgesIndTestParams().getDouble("structurePrior", 1), 5, nf);
+            structurePriorField.setFilter(new DoubleTextField.Filter() {
+                public double filter(double value, double oldValue) {
                     try {
-                        getFgesIndTestParams().set("structurePrior", value);
+                        FgesIndTestParamsEditor.this.getFgesIndTestParams().set("structurePrior", value);
                         return value;
-                    } catch (final IllegalArgumentException e) {
+                    } catch (IllegalArgumentException e) {
                         return oldValue;
                     }
                 }
@@ -90,7 +91,7 @@ class FgesIndTestParamsEditor extends JComponent {
 
 //            this.defaultStructurePrior =
 //                    new JButton("Default structure prior = 0.05");
-            final Font font = new Font("Dialog", Font.BOLD, 10);
+            Font font = new Font("Dialog", Font.BOLD, 10);
 //            this.defaultStructurePrior.setFont(font);
 //            this.defaultStructurePrior.setBorder(null);
 //            this.defaultStructurePrior.addActionListener(new ActionListener() {
@@ -99,165 +100,165 @@ class FgesIndTestParamsEditor extends JComponent {
 //                }
 //            });
 
-            this.uniformStructurePrior =
+            uniformStructurePrior =
                     new JButton("Default structure prior = 1.0");
-            this.uniformStructurePrior.setFont(font);
-            this.uniformStructurePrior.setBorder(null);
-            this.uniformStructurePrior.addActionListener(new ActionListener() {
-                public void actionPerformed(final ActionEvent e) {
-                    FgesIndTestParamsEditor.this.structurePriorField.setValue(1.0);
+            uniformStructurePrior.setFont(font);
+            uniformStructurePrior.setBorder(null);
+            uniformStructurePrior.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    structurePriorField.setValue(1.0);
                 }
             });
         } else {
-            this.penaltyDiscount = new DoubleTextField(
-                    getFgesIndTestParams().getDouble("penaltyDiscount", 4), 5, nf);
-            this.penaltyDiscount.setFilter(new DoubleTextField.Filter() {
-                public double filter(final double value, final double oldValue) {
+            penaltyDiscount = new DoubleTextField(
+                    this.getFgesIndTestParams().getDouble("penaltyDiscount", 4), 5, nf);
+            penaltyDiscount.setFilter(new DoubleTextField.Filter() {
+                public double filter(double value, double oldValue) {
                     try {
-                        getFgesIndTestParams().set("penaltyDiscount", value);
+                        FgesIndTestParamsEditor.this.getFgesIndTestParams().set("penaltyDiscount", value);
                         return value;
-                    } catch (final IllegalArgumentException e) {
+                    } catch (IllegalArgumentException e) {
                         return oldValue;
                     }
                 }
             });
         }
 
-        this.numCPDAGsToSave = new IntTextField(
-                getFgesIndTestParams().getInt("numCPDAGsToSave", 1), 5);
-        this.numCPDAGsToSave.setFilter(new IntTextField.Filter() {
-            public int filter(final int value, final int oldValue) {
+        numCPDAGsToSave = new IntTextField(
+                this.getFgesIndTestParams().getInt("numCPDAGsToSave", 1), 5);
+        numCPDAGsToSave.setFilter(new Filter() {
+            public int filter(int value, int oldValue) {
                 try {
-                    getFgesIndTestParams().set("numCPDAGToSave", value);
+                    FgesIndTestParamsEditor.this.getFgesIndTestParams().set("numCPDAGToSave", value);
                     return value;
-                } catch (final IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
-        this.depth = new IntTextField(getFgesIndTestParams().getInt("depth", -1), 4);
-        this.depth.setFilter(new IntTextField.Filter() {
-            public int filter(final int value, final int oldValue) {
+        depth = new IntTextField(this.getFgesIndTestParams().getInt("depth", -1), 4);
+        depth.setFilter(new Filter() {
+            public int filter(int value, int oldValue) {
                 try {
-                    getFgesIndTestParams().set("depth", value);
+                    FgesIndTestParamsEditor.this.getFgesIndTestParams().set("depth", value);
                     return value;
-                } catch (final IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
-        this.faithfulnessAssumed = new JCheckBox();
-        this.faithfulnessAssumed.setSelected(getFgesIndTestParams().getBoolean("faithfulnessAssumed", true));
-        this.faithfulnessAssumed.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent actionEvent) {
-                final JCheckBox source = (JCheckBox) actionEvent.getSource();
-                getFgesIndTestParams().set("faithfulnessAssumed", source.isSelected());
+        faithfulnessAssumed = new JCheckBox();
+        faithfulnessAssumed.setSelected(this.getFgesIndTestParams().getBoolean("faithfulnessAssumed", true));
+        faithfulnessAssumed.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                JCheckBox source = (JCheckBox) actionEvent.getSource();
+                FgesIndTestParamsEditor.this.getFgesIndTestParams().set("faithfulnessAssumed", source.isSelected());
             }
         });
 
-        buildGui();
+        this.buildGui();
     }
 
     private void buildGui() {
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        if (this.type == FgesRunner.Type.DISCRETE) {
-            final Box b0 = Box.createHorizontalBox();
+        if (type == Type.DISCRETE) {
+            Box b0 = Box.createHorizontalBox();
             b0.add(new JLabel("BDeu:"));
             b0.add(Box.createHorizontalGlue());
-            add(b0);
-            add(Box.createVerticalStrut(5));
+            this.add(b0);
+            this.add(Box.createVerticalStrut(5));
 
-            final Box b2 = Box.createHorizontalBox();
+            Box b2 = Box.createHorizontalBox();
             b2.add(Box.createHorizontalStrut(5));
             b2.add(new JLabel("Sample prior:"));
             b2.add(Box.createHorizontalGlue());
-            b2.add(this.cellPriorField);
-            add(b2);
-            add(Box.createVerticalStrut(5));
+            b2.add(cellPriorField);
+            this.add(b2);
+            this.add(Box.createVerticalStrut(5));
 
-            final Box b3 = Box.createHorizontalBox();
+            Box b3 = Box.createHorizontalBox();
             b3.add(Box.createHorizontalStrut(5));
             b3.add(new JLabel("Structure prior:"));
             b3.add(Box.createHorizontalGlue());
-            b3.add(this.structurePriorField);
-            add(b3);
+            b3.add(structurePriorField);
+            this.add(b3);
 
-            final Box b5 = Box.createHorizontalBox();
+            Box b5 = Box.createHorizontalBox();
             b5.add(Box.createHorizontalGlue());
-            b5.add(this.uniformStructurePrior);
-            add(b5);
-            add(Box.createVerticalStrut(10));
+            b5.add(uniformStructurePrior);
+            this.add(b5);
+            this.add(Box.createVerticalStrut(10));
 
-            final Box b8 = Box.createHorizontalBox();
+            Box b8 = Box.createHorizontalBox();
             b8.add(new JLabel("Num CPDAGs to Save"));
             b8.add(Box.createHorizontalGlue());
-            b8.add(this.numCPDAGsToSave);
-            add(b8);
+            b8.add(numCPDAGsToSave);
+            this.add(b8);
 
-            final Box b4a = Box.createHorizontalBox();
+            Box b4a = Box.createHorizontalBox();
             b4a.add(new JLabel("Length 1 faithfulness assumed "));
             b4a.add(Box.createHorizontalGlue());
-            b4a.add(this.faithfulnessAssumed);
-            add(b4a);
+            b4a.add(faithfulnessAssumed);
+            this.add(b4a);
 
-            final Box b4b = Box.createHorizontalBox();
+            Box b4b = Box.createHorizontalBox();
             b4b.add(new JLabel("Depth "));
             b4b.add(Box.createHorizontalGlue());
-            b4b.add(this.depth);
-            add(b4b);
-        } else if (this.type == FgesRunner.Type.CONTINUOUS || this.type == FgesRunner.Type.MIXED) {
-            final Box b7 = Box.createHorizontalBox();
+            b4b.add(depth);
+            this.add(b4b);
+        } else if (type == Type.CONTINUOUS || type == Type.MIXED) {
+            Box b7 = Box.createHorizontalBox();
             b7.add(new JLabel("Penalty Discount"));
             b7.add(Box.createHorizontalGlue());
 
-            b7.add(this.penaltyDiscount);
-            add(b7);
+            b7.add(penaltyDiscount);
+            this.add(b7);
 
-            final Box b4a = Box.createHorizontalBox();
+            Box b4a = Box.createHorizontalBox();
             b4a.add(new JLabel("Length 1 faithfulness assumed "));
-            b4a.add(this.faithfulnessAssumed);
-            add(b4a);
+            b4a.add(faithfulnessAssumed);
+            this.add(b4a);
 
-            final Box b8 = Box.createHorizontalBox();
+            Box b8 = Box.createHorizontalBox();
             b8.add(new JLabel("Num CPDAGs to Save"));
             b8.add(Box.createHorizontalGlue());
-            b8.add(this.numCPDAGsToSave);
-            add(b8);
+            b8.add(numCPDAGsToSave);
+            this.add(b8);
 
-            final Box b4b = Box.createHorizontalBox();
+            Box b4b = Box.createHorizontalBox();
             b4b.add(new JLabel("Depth "));
             b4b.add(Box.createHorizontalGlue());
-            b4b.add(this.depth);
-            add(b4b);
-        } else if (this.type == FgesRunner.Type.GRAPH) {
-            final Box b8 = Box.createHorizontalBox();
+            b4b.add(depth);
+            this.add(b4b);
+        } else if (type == Type.GRAPH) {
+            Box b8 = Box.createHorizontalBox();
             b8.add(new JLabel("Num CPDAGs to Save"));
             b8.add(Box.createHorizontalGlue());
-            b8.add(this.numCPDAGsToSave);
-            add(b8);
+            b8.add(numCPDAGsToSave);
+            this.add(b8);
 
-            final Box b4a = Box.createHorizontalBox();
+            Box b4a = Box.createHorizontalBox();
             b4a.add(new JLabel("Length 1 faithfulness assumed "));
-            b4a.add(this.faithfulnessAssumed);
-            add(b4a);
+            b4a.add(faithfulnessAssumed);
+            this.add(b4a);
 
-            final Box b4b = Box.createHorizontalBox();
+            Box b4b = Box.createHorizontalBox();
             b4b.add(new JLabel("Depth "));
             b4b.add(Box.createHorizontalGlue());
-            b4b.add(this.depth);
-            add(b4b);
+            b4b.add(depth);
+            this.add(b4b);
 
         } else {
-            throw new IllegalStateException("Unrecognized type: " + this.type);
+            throw new IllegalStateException("Unrecognized type: " + type);
         }
 
     }
 
     private Parameters getFgesIndTestParams() {
-        return this.params;
+        return params;
     }
 
 }

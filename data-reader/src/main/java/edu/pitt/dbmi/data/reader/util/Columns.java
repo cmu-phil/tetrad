@@ -30,10 +30,10 @@ public final class Columns {
     private Columns() {
     }
 
-    public static final int[] sortNew(final int[] columns) {
-        final int size = (columns == null) ? 0 : columns.length;
+    public static final int[] sortNew(int[] columns) {
+        int size = (columns == null) ? 0 : columns.length;
         if (size > 0) {
-            final int[] copiedColumns = new int[size];
+            int[] copiedColumns = new int[size];
             System.arraycopy(columns, 0, copiedColumns, 0, size);
             Arrays.sort(copiedColumns);
 
@@ -50,7 +50,7 @@ public final class Columns {
      * @param columns
      * @return
      */
-    public static final int[] extractValidColumnNumbers(final int numberOfColumns, final int[] columns) {
+    public static final int[] extractValidColumnNumbers(int numberOfColumns, int[] columns) {
         return (columns == null || columns.length == 0)
                 ? new int[0]
                 : Arrays.stream(columns)

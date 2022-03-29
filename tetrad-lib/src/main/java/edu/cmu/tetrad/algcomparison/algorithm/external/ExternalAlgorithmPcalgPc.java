@@ -51,38 +51,38 @@ import java.util.List;
 public class ExternalAlgorithmPcalgPc extends ExternalAlgorithm {
     static final long serialVersionUID = 23L;
     private final String extDir;
-    private String shortDescription = null;
+    private String shortDescription;
 
-    public ExternalAlgorithmPcalgPc(final String extDir) {
+    public ExternalAlgorithmPcalgPc(String extDir) {
         this.extDir = extDir;
-        this.shortDescription = new File(extDir).getName().replace("_", " ");
+        shortDescription = new File(extDir).getName().replace("_", " ");
     }
 
-    public ExternalAlgorithmPcalgPc(final String extDir, final String shortDecription) {
+    public ExternalAlgorithmPcalgPc(String extDir, String shortDecription) {
         this.extDir = extDir;
-        this.shortDescription = shortDecription;
+        shortDescription = shortDecription;
     }
 
     /**
      * Reads in the relevant graph from the file (see above) and returns it.
      */
-    public Graph search(final DataModel dataSet, final Parameters parameters) {
-        final int index = getIndex(dataSet);
+    public Graph search(DataModel dataSet, Parameters parameters) {
+        int index = this.getIndex(dataSet);
 
-        final File file = new File(this.path, "/results/" + this.extDir + "/" + (this.simIndex + 1) + "/graph." + index + ".txt");
+        File file = new File(path, "/results/" + extDir + "/" + (simIndex + 1) + "/graph." + index + ".txt");
 
         System.out.println(file.getAbsolutePath());
 
         try {
-            final DataSet dataSet2 = DataUtils.loadContinuousData(file, "//", '\"' ,
+            DataSet dataSet2 = DataUtils.loadContinuousData(file, "//", '\"' ,
                     "*", true, Delimiter.TAB);
             System.out.println("Loading graph from " + file.getAbsolutePath());
-            final Graph graph = ExternalAlgorithmPcalgPc.loadGraphPcAlgMatrix(dataSet2);
+            Graph graph = loadGraphPcAlgMatrix(dataSet2);
 
             GraphUtils.circleLayout(graph, 225, 200, 150);
 
             return graph;
-        } catch (final IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException("Couldn't parse graph.");
         }
     }
@@ -90,15 +90,15 @@ public class ExternalAlgorithmPcalgPc extends ExternalAlgorithm {
     /**
      * Returns the CPDAG of the supplied DAG.
      */
-    public Graph getComparisonGraph(final Graph graph) {
+    public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
     public String getDescription() {
-        if (this.shortDescription == null) {
-            return "Load data from " + this.path + "/" + this.extDir;
+        if (shortDescription == null) {
+            return "Load data from " + path + "/" + extDir;
         } else {
-            return this.shortDescription;
+            return shortDescription;
         }
     }
 
@@ -108,30 +108,30 @@ public class ExternalAlgorithmPcalgPc extends ExternalAlgorithm {
     }
 
     @Override
-    public long getElapsedTime(final DataModel dataSet, final Parameters parameters) {
-        final int index = getIndex(dataSet);
+    public long getElapsedTime(DataModel dataSet, Parameters parameters) {
+        int index = this.getIndex(dataSet);
 
-        final File file = new File(this.path, "/elapsed/" + this.extDir + "/" + (this.simIndex + 1) + "/graph." + index + ".txt");
+        File file = new File(path, "/elapsed/" + extDir + "/" + (simIndex + 1) + "/graph." + index + ".txt");
 
         try {
-            final BufferedReader r = new BufferedReader(new FileReader(file));
-            final String l = r.readLine(); // Skip the first line.
+            BufferedReader r = new BufferedReader(new FileReader(file));
+            String l = r.readLine(); // Skip the first line.
             return Long.parseLong(l);
-        } catch (final IOException e) {
+        } catch (IOException e) {
             return -99;
         }
     }
 
-    public static Graph loadGraphPcAlgMatrix(final DataSet dataSet) {
-        final List<Node> vars = dataSet.getVariables();
+    public static Graph loadGraphPcAlgMatrix(DataSet dataSet) {
+        List<Node> vars = dataSet.getVariables();
 
-        final Graph graph = new EdgeListGraph(vars);
+        Graph graph = new EdgeListGraph(vars);
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
             for (int j = 0; j < dataSet.getNumColumns(); j++) {
                 if (i == j) continue;
-                final int g = dataSet.getInt(i, j);
-                final int h = dataSet.getInt(j, i);
+                int g = dataSet.getInt(i, j);
+                int h = dataSet.getInt(j, i);
 
 
                 if (g == 1 && h == 1 && !graph.isAdjacentTo(vars.get(i), vars.get(j))) {

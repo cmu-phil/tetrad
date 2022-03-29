@@ -23,8 +23,8 @@ package edu.cmu.tetrad.gene.tetrad.gene.algorithm.urchin;
 
 
 public class NbFunctionOr extends AbstractNbComponent {
-    public NbFunctionOr(final double factor, final double power, final NbComponent[] parents,
-                        final int[] inhibitExcite, final String name) {
+    public NbFunctionOr(double factor, double power, NbComponent[] parents,
+                        int[] inhibitExcite, String name) {
 
         super(factor, power, parents, inhibitExcite, name);
         if (parents.length < 2) {
@@ -38,22 +38,22 @@ public class NbFunctionOr extends AbstractNbComponent {
         //System.out.println("Updating " + name);
         double sum = 0.0;
 
-        if (getInhibitExcite()[0] > 0) {
-            sum = getParents()[0].getValue();
+        if (this.getInhibitExcite()[0] > 0) {
+            sum = this.getParents()[0].getValue();
         } else {
-            sum = 1.0 - getParents()[0].getValue();
+            sum = 1.0 - this.getParents()[0].getValue();
         }
 
-        for (int i = 1; i < getNparents(); i++) {
+        for (int i = 1; i < this.getNparents(); i++) {
             double v = 0.0;
-            if (getInhibitExcite()[i] > 0) {
-                v = getParents()[i].getValue();
+            if (this.getInhibitExcite()[i] > 0) {
+                v = this.getParents()[i].getValue();
             } else {
-                v = (1.0 - getParents()[i].getValue());
+                v = (1.0 - this.getParents()[i].getValue());
             }
             sum += v * (1.0 - sum);
         }
-        setValue(sum * getFactor());
+        this.setValue(sum * this.getFactor());
         //System.out.println("Value = " + value);
     }
 }

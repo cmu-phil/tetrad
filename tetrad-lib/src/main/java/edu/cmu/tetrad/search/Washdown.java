@@ -69,26 +69,26 @@ public class Washdown {
     private final List<Node> variables;
     private final double alpha;
 
-    public Washdown(final ICovarianceMatrix cov, final double alpha) {
+    public Washdown(ICovarianceMatrix cov, double alpha) {
         this.cov = cov;
-        this.variables = cov.getVariables();
+        variables = cov.getVariables();
         this.alpha = alpha;
     }
 
-    public Washdown(final DataSet data, final double alpha) {
-        this.dataSet = data;
-        this.variables = data.getVariables();
+    public Washdown(DataSet data, double alpha) {
+        dataSet = data;
+        variables = data.getVariables();
         this.alpha = alpha;
     }
 
     public Graph search() {
         List<List<Node>> clusters = new ArrayList<>();
-        clusters.add(new ArrayList<>(this.variables));
+        clusters.add(new ArrayList<>(variables));
 
         double pValue;
 
         do {
-            clusters = purify(clusters);
+            clusters = this.purify(clusters);
 
 //            System.out.println("Discards = " + disgards);
 //
@@ -96,7 +96,7 @@ public class Washdown {
 //                break;
 //            }
 
-            final List<Node> disgards = getDiscards(clusters, this.variables);
+            List<Node> disgards = this.getDiscards(clusters, variables);
 
             clusters.add(disgards);
 
@@ -119,21 +119,21 @@ public class Washdown {
 //
 //            clusters = removeEmpty(clusters);
 
-            pValue = pValue(clusters);
+            pValue = this.pValue(clusters);
 
             System.out.println("\nSearch PValue = " + pValue + " clusters = " + clusters + "\n");
-        } while (pValue < this.alpha);
+        } while (pValue < alpha);
 
-        return pureMeasurementModel(clusters);
+        return this.pureMeasurementModel(clusters);
     }
 
-    private List<Node> getDiscards(final List<List<Node>> clusters, final List<Node> variables) {
-        final List<Node> disgards = new ArrayList<>();
+    private List<Node> getDiscards(List<List<Node>> clusters, List<Node> variables) {
+        List<Node> disgards = new ArrayList<>();
 
-        for (final Node node : variables) {
+        for (Node node : variables) {
             boolean found = false;
 
-            for (final List<Node> cluster : clusters) {
+            for (List<Node> cluster : clusters) {
                 if (cluster.contains(node)) {
                     found = true;
                 }
@@ -148,14 +148,14 @@ public class Washdown {
     }
 
     private List<List<Node>> purify(List<List<Node>> clusters) {
-        final List<Node> keep = new ArrayList<>(this.variables);
-        final List<Node> disgards = new ArrayList<>();
-        double bestGof = gof(clusters);
+        List<Node> keep = new ArrayList<>(variables);
+        List<Node> disgards = new ArrayList<>();
+        double bestGof = this.gof(clusters);
         System.out.println("Purify Best GOF = " + bestGof + " clusters = " + clusters);
 
         while (true) {
 
-            if (pValue(clusters) > this.alpha) {
+            if (this.pValue(clusters) > alpha) {
                 return clusters;
             }
 
@@ -163,9 +163,9 @@ public class Washdown {
             Node bestNode = null;
 
             for (int i = 0; i < keep.size(); i++) {
-                final List<List<Node>> _clusters = removeVar(keep.get(i), clusters);
-                final double _gof = gof(_clusters);
-                System.out.println("     GOF = " + gof(_clusters) + "P value = " + pValue(_clusters) + " clusters = " + _clusters);
+                List<List<Node>> _clusters = this.removeVar(keep.get(i), clusters);
+                double _gof = this.gof(_clusters);
+                System.out.println("     GOF = " + this.gof(_clusters) + "P value = " + this.pValue(_clusters) + " clusters = " + _clusters);
 
                 if (_gof < bestGof) {
                     bestGof = _gof;
@@ -177,17 +177,17 @@ public class Washdown {
                 return clusters;
             }
 
-            clusters = removeVar(bestNode, clusters);
+            clusters = this.removeVar(bestNode, clusters);
             keep.remove(bestNode);
             disgards.add(bestNode);
         }
     }
 
-    private List<List<Node>> removeVar(final Node node, final List<List<Node>> clusters) {
-        final List<List<Node>> _clusters = new ArrayList<>();
+    private List<List<Node>> removeVar(Node node, List<List<Node>> clusters) {
+        List<List<Node>> _clusters = new ArrayList<>();
 
-        for (final List<Node> cluster : clusters) {
-            final List<Node> _cluster = new ArrayList<>(cluster);
+        for (List<Node> cluster : clusters) {
+            List<Node> _cluster = new ArrayList<>(cluster);
             _cluster.remove(node);
             if (!cluster.isEmpty()) {
                 _clusters.add(_cluster);
@@ -202,49 +202,49 @@ public class Washdown {
      */
 
     private double gof(List<List<Node>> clusters) {
-        clusters = removeEmpty(clusters);
+        clusters = this.removeEmpty(clusters);
 
-        final Graph graph = pureMeasurementModel(clusters);
-        final SemPm pm = new SemPm(graph);
+        Graph graph = this.pureMeasurementModel(clusters);
+        SemPm pm = new SemPm(graph);
 
-        final SemEstimator estimator;
+        SemEstimator estimator;
 
-        if (this.cov != null) {
-            estimator = new SemEstimator(this.cov, pm);
+        if (cov != null) {
+            estimator = new SemEstimator(cov, pm);
         } else {
-            estimator = new SemEstimator(this.dataSet, pm);
+            estimator = new SemEstimator(dataSet, pm);
         }
 
-        final SemIm est = estimator.estimate();
+        SemIm est = estimator.estimate();
 
         return est.getBicScore();
     }
 
     private double pValue(List<List<Node>> clusters) {
-        clusters = removeEmpty(clusters);
+        clusters = this.removeEmpty(clusters);
 
-        final Graph graph = pureMeasurementModel(clusters);
-        final SemPm pm = new SemPm(graph);
+        Graph graph = this.pureMeasurementModel(clusters);
+        SemPm pm = new SemPm(graph);
 
-        final SemEstimator estimator;
+        SemEstimator estimator;
 
-        if (this.cov != null) {
-            estimator = new SemEstimator(this.cov, pm);
+        if (cov != null) {
+            estimator = new SemEstimator(cov, pm);
         } else {
-            estimator = new SemEstimator(this.dataSet, pm);
+            estimator = new SemEstimator(dataSet, pm);
         }
 
-        final SemIm est = estimator.estimate();
+        SemIm est = estimator.estimate();
 
-        final double pValue = est.getPValue();
+        double pValue = est.getPValue();
 
         return pValue;
     }
 
-    private List<List<Node>> removeEmpty(final List<List<Node>> clusters) {
-        final List<List<Node>> _clusters = new ArrayList<>();
+    private List<List<Node>> removeEmpty(List<List<Node>> clusters) {
+        List<List<Node>> _clusters = new ArrayList<>();
 
-        for (final List<Node> cluster : clusters) {
+        for (List<Node> cluster : clusters) {
             if (!cluster.isEmpty()) {
                 _clusters.add(cluster);
             }
@@ -253,12 +253,12 @@ public class Washdown {
         return _clusters;
     }
 
-    private Graph pureMeasurementModel(final List<List<Node>> clusters) {
-        final Graph G = new EdgeListGraph();
+    private Graph pureMeasurementModel(List<List<Node>> clusters) {
+        Graph G = new EdgeListGraph();
 
-        final List<Node> latents = new ArrayList<>();
+        List<Node> latents = new ArrayList<>();
         for (int i = 0; i < clusters.size(); i++) {
-            final Node node = new GraphNode("L" + i);
+            Node node = new GraphNode("L" + i);
             node.setNodeType(NodeType.LATENT);
             latents.add(node);
             G.addNode(node);
@@ -271,7 +271,7 @@ public class Washdown {
         }
 
         for (int i = 0; i < clusters.size(); i++) {
-            for (final Node node : clusters.get(i)) {
+            for (Node node : clusters.get(i)) {
                 G.addNode(node);
                 G.addDirectedEdge(latents.get(i), node);
             }

@@ -23,8 +23,8 @@ package edu.cmu.tetrad.gene.tetrad.gene.algorithm.urchin;
 
 
 public class NbFunction extends AbstractNbComponent {
-    public NbFunction(final double factor, final double power, final NbComponent[] parents,
-                      final int[] inhibitExcite, final String name) {
+    public NbFunction(double factor, double power, NbComponent[] parents,
+                      int[] inhibitExcite, String name) {
 
         super(factor, power, parents, inhibitExcite, name);
     }
@@ -32,8 +32,8 @@ public class NbFunction extends AbstractNbComponent {
     public void update() {
         //System.out.println("Updating " + name);
         double sum = 0.0;
-        for (int i = 0; i < getNparents(); i++) {
-            final double v = getParents()[i].getValue();
+        for (int i = 0; i < this.getNparents(); i++) {
+            double v = this.getParents()[i].getValue();
             sum += v;
         }
         System.out.println("Sum = " + sum);

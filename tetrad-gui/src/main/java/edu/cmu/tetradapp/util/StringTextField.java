@@ -52,36 +52,36 @@ public final class StringTextField extends JTextField {
     /**
      * Constructs a new text field displaying the given default value.
      */
-    public StringTextField(final String value, final int size) {
+    public StringTextField(String value, int size) {
         super(size);
 
-        setHorizontalAlignment(JTextField.LEFT);
-        setValue(value);
-        addActionListener(new ActionListener() {
+        this.setHorizontalAlignment(JTextField.LEFT);
+        this.setValue(value);
+        this.addActionListener(new ActionListener() {
 
             /**
              * Reacts to somebody pressing the return key in this field by
              * attempting to set the value displayed. If the value
              * displayed cannot be set, the set value is reinstated.
              */
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 try {
-                    setValue(e.getActionCommand());
-                } catch (final NumberFormatException e1) {
-                    setValue(StringTextField.this.value);
+                    StringTextField.this.setValue(e.getActionCommand());
+                } catch (NumberFormatException e1) {
+                    StringTextField.this.setValue(StringTextField.this.value);
                 }
             }
         });
 
-        addFocusListener(new FocusAdapter() {
+        this.addFocusListener(new FocusAdapter() {
 
             /**
              * Nothing need be done when focus is gained, but this method is
              * required by the FocusListener interface.
              */
-            public void focusGained(final FocusEvent e) {
-                if (isEditable()) {
-                    selectAll();
+            public void focusGained(FocusEvent e) {
+                if (StringTextField.this.isEditable()) {
+                    StringTextField.this.selectAll();
                 }
             }
 
@@ -92,13 +92,13 @@ public final class StringTextField extends JTextField {
              *
              * @param e the event.
              */
-            public void focusLost(final FocusEvent e) {
+            public void focusLost(FocusEvent e) {
 
                 // Dehighlight text.
-                setCaretPosition(0);
-                moveCaretPosition(0);
+                StringTextField.this.setCaretPosition(0);
+                StringTextField.this.moveCaretPosition(0);
 
-                setValue(getText());
+                StringTextField.this.setValue(StringTextField.this.getText());
             }
         });
     }
@@ -108,17 +108,17 @@ public final class StringTextField extends JTextField {
     /**
      * Sets the value of the text field to the given String value.
      */
-    public void setValue(final String value) {
+    public void setValue(String value) {
         if (value.equals(this.value)) {
             return;
         }
 
-        final String newValue = filter(value, this.value);
+        String newValue = this.filter(value, this.value);
 
         if (!newValue.equals(this.value)) {
             this.value = newValue;
-            setText(this.value);
-            firePropertyChange("newValue", null, this.value);
+            this.setText(this.value);
+            this.firePropertyChange("newValue", null, this.value);
         }
     }
 
@@ -126,13 +126,13 @@ public final class StringTextField extends JTextField {
      * Accesses the int value currently displayed.
      */
     public String getValue() {
-        return this.value;
+        return value;
     }
 
     /**
      * Sets whether the given value should be accepted.
      */
-    public void setFilter(final Filter filter) {
+    public void setFilter(Filter filter) {
         this.filter = filter;
     }
 
@@ -141,17 +141,17 @@ public final class StringTextField extends JTextField {
      * trying to expand it like a balloon by returning the preferred size.
      */
     public Dimension getMaximumSize() {
-        return getPreferredSize();
+        return this.getPreferredSize();
     }
 
     //=============================PRIVATE METHODS=======================//
 
-    private String filter(final String value, final String oldValue) {
-        if (this.filter == null) {
+    private String filter(String value, String oldValue) {
+        if (filter == null) {
             return value;
         }
 
-        return this.filter.filter(value, oldValue);
+        return filter.filter(value, oldValue);
     }
 
     //==============================INTERFACES===========================//

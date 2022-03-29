@@ -59,9 +59,9 @@ public abstract class ConvexProximal {
      * @param Xout gradient of g(X)
      * @return value of g(X)
      */
-    public double smooth(final DoubleMatrix1D X, final DoubleMatrix1D Xout) {
-        Xout.assign(smoothGradient(X));
-        return smoothValue(X);
+    public double smooth(DoubleMatrix1D X, DoubleMatrix1D Xout) {
+        Xout.assign(this.smoothGradient(X));
+        return this.smoothValue(X);
     }
 
     /**
@@ -90,9 +90,9 @@ public abstract class ConvexProximal {
      * @param Xout vector solution to prox_t(X)
      * @return value of h(X)
      */
-    public double nonSmooth(final double t, final DoubleMatrix1D X, final DoubleMatrix1D Xout) {
-        Xout.assign(proximalOperator(t, X));
-        return nonSmoothValue(X);
+    public double nonSmooth(double t, DoubleMatrix1D X, DoubleMatrix1D Xout) {
+        Xout.assign(this.proximalOperator(t, X));
+        return this.nonSmoothValue(X);
     }
 
 }

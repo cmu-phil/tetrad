@@ -41,9 +41,9 @@ import java.util.List;
 public final class IndTestIndependenceFacts implements IndependenceTest {
 
     private final IndependenceFacts facts;
-    private boolean verbose = false;
+    private boolean verbose;
 
-    public IndTestIndependenceFacts(final IndependenceFacts facts) {
+    public IndTestIndependenceFacts(IndependenceFacts facts) {
         this.facts = facts;
 
 //        System.out.println("Independence Facts for test: ");
@@ -51,20 +51,20 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
     }
 
 
-    public IndependenceTest indTestSubset(final List<Node> vars) {
+    public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
-    public boolean isIndependent(final Node x, final Node y, final List<Node> z) {
-        final Node[] _z = new Node[z.size()];
+    public boolean isIndependent(Node x, Node y, List<Node> z) {
+        Node[] _z = new Node[z.size()];
 
         for (int i = 0; i < z.size(); i++) {
             _z[i] = z.get(i);
         }
 
-        final boolean independent = this.facts.isIndependent(x, y, _z);
+        boolean independent = facts.isIndependent(x, y, _z);
 
-        if (this.verbose) {
+        if (verbose) {
             if (independent) {
                 TetradLogger.getInstance().log("independencies",
                         SearchLogUtils.independenceFactMsg(x, y, z, Double.NaN));
@@ -79,22 +79,22 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
         return independent;
     }
 
-    public boolean isIndependent(final Node x, final Node y, final Node... z) {
-        final List<Node> zz = new ArrayList<>();
+    public boolean isIndependent(Node x, Node y, Node... z) {
+        List<Node> zz = new ArrayList<>();
 
-        for (final Node node : z) {
+        for (Node node : z) {
             zz.add(node);
         }
 
-        return isIndependent(x, y, zz);
+        return this.isIndependent(x, y, zz);
     }
 
-    public boolean isDependent(final Node x, final Node y, final List<Node> z) {
-        return !isIndependent(x, y, z);
+    public boolean isDependent(Node x, Node y, List<Node> z) {
+        return !this.isIndependent(x, y, z);
     }
 
-    public boolean isDependent(final Node x, final Node y, final Node... z) {
-        return !isIndependent(x, y, z);
+    public boolean isDependent(Node x, Node y, Node... z) {
+        return !this.isIndependent(x, y, z);
     }
 
     public double getPValue() {
@@ -102,15 +102,15 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
     }
 
     public List<Node> getVariables() {
-        return this.facts.getVariables();
+        return facts.getVariables();
     }
 
-    public Node getVariable(final String name) {
+    public Node getVariable(String name) {
         if (name == null) throw new NullPointerException();
 
-        final List<Node> variables = this.facts.getVariables();
+        List<Node> variables = facts.getVariables();
 
-        for (final Node node : variables) {
+        for (Node node : variables) {
             if (name.equals(node.getName())) {
                 return node;
             }
@@ -120,10 +120,10 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
     }
 
     public List<String> getVariableNames() {
-        return this.facts.getVariableNames();
+        return facts.getVariableNames();
     }
 
-    public boolean determines(final List<Node> z, final Node y) {
+    public boolean determines(List<Node> z, Node y) {
         return false;
     }
 
@@ -131,12 +131,12 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
         return Double.NaN;
     }
 
-    public void setAlpha(final double alpha) {
+    public void setAlpha(double alpha) {
         throw new UnsupportedOperationException();
     }
 
     public DataModel getData() {
-        return this.facts;
+        return facts;
     }
 
     @Override
@@ -161,14 +161,14 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
 
     @Override
     public double getScore() {
-        return getPValue();
+        return this.getPValue();
     }
 
     public boolean isVerbose() {
-        return this.verbose;
+        return verbose;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 }

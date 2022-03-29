@@ -57,7 +57,7 @@ public class DiscretizationWrapper extends DataWrapper {
      * Constructs the <code>DiscretizationWrapper</code> by discretizing the select
      * <code>DataModel</code>.
      */
-    public DiscretizationWrapper(final DataWrapper data, final Parameters params) {
+    public DiscretizationWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
             throw new NullPointerException("The given data must not be null");
         }
@@ -65,28 +65,28 @@ public class DiscretizationWrapper extends DataWrapper {
             throw new NullPointerException("The given parameters must not be null");
         }
 
-        final DataModelList dataSets = data.getDataModelList();
-        final DataModelList discretizedDataSets = new DataModelList();
+        DataModelList dataSets = data.getDataModelList();
+        DataModelList discretizedDataSets = new DataModelList();
 
-        for (final DataModel dataModel : dataSets) {
+        for (DataModel dataModel : dataSets) {
             if (!(dataModel instanceof DataSet)) {
                 throw new IllegalArgumentException("Only tabular data sets can be converted to time lagged form.");
             }
 
-            final DataSet originalData = (DataSet) dataModel;
+            DataSet originalData = (DataSet) dataModel;
 
-            final Map<Node, DiscretizationSpec> discretizationSpecs = (Map<Node, DiscretizationSpec>) params.get("discretizationSpecs", new HashMap<Node, DiscretizationSpec>());
-            final Discretizer discretizer = new Discretizer(originalData, discretizationSpecs);
+            Map<Node, DiscretizationSpec> discretizationSpecs = (Map<Node, DiscretizationSpec>) params.get("discretizationSpecs", new HashMap<Node, DiscretizationSpec>());
+            Discretizer discretizer = new Discretizer(originalData, discretizationSpecs);
             discretizer.setVariablesCopied(Preferences.userRoot().getBoolean("copyUnselectedColumns", true));
 
             discretizedDataSets.add(discretizer.discretize());
         }
 
 
-        setDataModel(discretizedDataSets);
-        setSourceGraph(data.getSourceGraph());
+        this.setDataModel(discretizedDataSets);
+        this.setSourceGraph(data.getSourceGraph());
 
-        LogDataUtils.logDataModelList("Discretization of data in the parent node.", getDataModelList());
+        LogDataUtils.logDataModelList("Discretization of data in the parent node.", this.getDataModelList());
 
     }
 
@@ -116,7 +116,7 @@ public class DiscretizationWrapper extends DataWrapper {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }

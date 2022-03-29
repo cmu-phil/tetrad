@@ -57,49 +57,49 @@ public class TestIndTestWaldLR {
         int numPassed = 0;
 
         for (int i = 0; i < 10; i++) {
-            final List<Node> nodes = new ArrayList<>();
+            List<Node> nodes = new ArrayList<>();
 
             for (int i1 = 0; i1 < 10; i1++) {
                 nodes.add(new ContinuousVariable("X" + (i1 + 1)));
             }
 
-            final Graph graph = GraphUtils.randomGraph(nodes, 0, 10,
+            Graph graph = GraphUtils.randomGraph(nodes, 0, 10,
                     3, 3, 3, false);
-            final SemPm pm = new SemPm(graph);
-            final SemIm im = new SemIm(pm);
+            SemPm pm = new SemPm(graph);
+            SemIm im = new SemIm(pm);
             DataSet data = im.simulateData(1000, false);
 
-            final Discretizer discretizer = new Discretizer(data);
+            Discretizer discretizer = new Discretizer(data);
             discretizer.setVariablesCopied(true);
             discretizer.equalCounts(data.getVariable(0), 2);
             discretizer.equalCounts(data.getVariable(3), 2);
             data = discretizer.discretize();
 
-            final Node x1 = data.getVariable("X1");
-            final Node x2 = data.getVariable("X2");
-            final Node x3 = data.getVariable("X3");
-            final Node x4 = data.getVariable("X4");
-            final Node x5 = data.getVariable("X5");
+            Node x1 = data.getVariable("X1");
+            Node x2 = data.getVariable("X2");
+            Node x3 = data.getVariable("X3");
+            Node x4 = data.getVariable("X4");
+            Node x5 = data.getVariable("X5");
 
-            final List<Node> cond = new ArrayList<>();
+            List<Node> cond = new ArrayList<>();
             cond.add(x3);
             cond.add(x4);
             cond.add(x5);
 
-            final Node x1Graph = graph.getNode(x1.getName());
-            final Node x2Graph = graph.getNode(x2.getName());
+            Node x1Graph = graph.getNode(x1.getName());
+            Node x2Graph = graph.getNode(x2.getName());
 
-            final List<Node> condGraph = new ArrayList<>();
+            List<Node> condGraph = new ArrayList<>();
 
-            for (final Node node : cond) {
+            for (Node node : cond) {
                 condGraph.add(graph.getNode(node.getName()));
             }
 
             // Using the Wald LR test since it's most up to date.
-            final IndependenceTest test = new IndTestMultinomialLogisticRegressionWald(data, 0.05, false);
-            final IndTestDSep dsep = new IndTestDSep(graph);
+            IndependenceTest test = new IndTestMultinomialLogisticRegressionWald(data, 0.05, false);
+            IndTestDSep dsep = new IndTestDSep(graph);
 
-            final boolean correct = test.isIndependent(x2, x1, cond) == dsep.isIndependent(x2Graph, x1Graph, condGraph);
+            boolean correct = test.isIndependent(x2, x1, cond) == dsep.isIndependent(x2Graph, x1Graph, condGraph);
 
             if (correct) {
                 numPassed++;

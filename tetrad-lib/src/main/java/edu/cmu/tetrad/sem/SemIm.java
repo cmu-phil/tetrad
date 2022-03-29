@@ -22,6 +22,7 @@ package edu.cmu.tetrad.sem;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.TimeLagGraph.NodeId;
 import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionCovariance;
 import edu.cmu.tetrad.regression.RegressionResult;
@@ -209,7 +210,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      *
      * @serial Any value.
      */
-    private boolean estimated = false;
+    private boolean estimated;
     /**
      * True just in case the graph for the SEM is cyclic.
      */
@@ -222,7 +223,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     /**
      * True just in case cyclicity has already been checked.
      */
-    private boolean cyclicChecked = false;
+    private boolean cyclicChecked;
 
 //    /**
 //     * True if positive definiteness should be checked when optimizing the
@@ -244,7 +245,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     /**
      * True iff only positive data should be simulated.
      */
-    private boolean simulatedPositiveDataOnly = false;
+    private boolean simulatedPositiveDataOnly;
     private Map<Node, Integer> variablesHash;
     private Matrix sampleCovInv;
     // Types of scores that yield a chi square value when minimized.
@@ -253,13 +254,13 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 //    }
     private ScoreType scoreType = ScoreType.Fml;
     private int errorType = 1; // 1 = Normal, 2 = Uniform, 3 = Exponential, 4 = Gumbel
-    private double errorParam1 = 0.0;
+    private double errorParam1;
     private double errorParam2 = 1.0;
 
     /**
      * Constructs a new SEM IM from a SEM PM.
      */
-    public SemIm(final SemPm semPm) {
+    public SemIm(SemPm semPm) {
         this(semPm, null, new Parameters());
     }
 
@@ -269,7 +270,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * Constructs a new SEM IM from the given SEM PM, using the given params
      * object to guide the choice of parameter values.
      */
-    public SemIm(final SemPm semPm, final Parameters params) {
+    public SemIm(SemPm semPm, Parameters params) {
         this(semPm, null, params);
     }
 
@@ -278,55 +279,55 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * params object to guide the choice of parameter values. If old values are
      * retained, they are gotten from the old SEM IM.
      */
-    public SemIm(final SemPm semPm, final SemIm oldSemIm, final Parameters parameters) {
+    public SemIm(SemPm semPm, SemIm oldSemIm, Parameters parameters) {
         if (semPm == null) {
             throw new NullPointerException("Sem PM must not be null.");
         }
 
-        if (this.params == null) {
+        if (params == null) {
             throw new NullPointerException();
         }
 
-        this.params = parameters;
+        params = parameters;
 
-        this.sampleSize = parameters.getInt(Params.SAMPLE_SIZE);
+        sampleSize = parameters.getInt(Params.SAMPLE_SIZE);
 
         this.semPm = new SemPm(semPm);
 
-        this.variableNodes
+        variableNodes
                 = Collections.unmodifiableList(semPm.getVariableNodes());
-        this.measuredNodes
+        measuredNodes
                 = Collections.unmodifiableList(semPm.getMeasuredNodes());
 
-        final int numVars = this.variableNodes.size();
+        int numVars = variableNodes.size();
 
-        this.edgeCoef = new Matrix(numVars, numVars);
-        this.errCovar = new Matrix(numVars, numVars);
-        this.variableMeans = new double[numVars];
-        this.variableMeansStdDev = new double[numVars];
+        edgeCoef = new Matrix(numVars, numVars);
+        errCovar = new Matrix(numVars, numVars);
+        variableMeans = new double[numVars];
+        variableMeansStdDev = new double[numVars];
 
-        this.freeParameters = initFreeParameters();
-        this.freeMappings = createMappings(getFreeParameters());
-        this.fixedParameters = initFixedParameters();
-        this.fixedMappings = createMappings(getFixedParameters());
-        this.meanParameters = initMeanParameters();
+        freeParameters = this.initFreeParameters();
+        freeMappings = this.createMappings(this.getFreeParameters());
+        fixedParameters = this.initFixedParameters();
+        fixedMappings = this.createMappings(this.getFixedParameters());
+        meanParameters = this.initMeanParameters();
 
         // Set variable means to 0.0 pending the program creating the SemIm
         // setting them. I.e. by default they are set to 0.0.
         for (int i = 0; i < numVars; i++) {
-            this.variableMeans[i] = 0;
-            this.variableMeansStdDev[i] = Double.NaN;
+            variableMeans[i] = 0;
+            variableMeansStdDev[i] = Double.NaN;
         }
 
-        initializeValues();
+        this.initializeValues();
 
         // Note that we want to use the default params object here unless a bona fide
         // subistute has been provided.
-        if (oldSemIm != null && this.getParams().getBoolean("retainPreviousValues", false)) {
-            retainPreviousValues(oldSemIm);
+        if (oldSemIm != null && getParams().getBoolean("retainPreviousValues", false)) {
+            this.retainPreviousValues(oldSemIm);
         }
 
-        this.distributions = new HashMap<>();
+        distributions = new HashMap<>();
 
         // Careful with this! These must not be left in! They override the
         // normal behavior!
@@ -335,27 +336,27 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 //        }
 
 
-        this.errorType = parameters.getInt(Params.SIMULATION_ERROR_TYPE);
-        this.errorParam1 = parameters.getDouble(Params.SIMULATION_PARAM1);
-        this.errorParam2 = parameters.getDouble(Params.SIMULATION_PARAM2);
+        errorType = parameters.getInt(Params.SIMULATION_ERROR_TYPE);
+        errorParam1 = parameters.getDouble(Params.SIMULATION_PARAM1);
+        errorParam2 = parameters.getDouble(Params.SIMULATION_PARAM2);
 
-        this.functions = new HashMap<>();
+        functions = new HashMap<>();
     }
 
     /**
      * Constructs a SEM model using the given SEM PM and sample covariance
      * matrix.
      */
-    public SemIm(final SemPm semPm, final ICovarianceMatrix covMatrix) {
+    public SemIm(SemPm semPm, ICovarianceMatrix covMatrix) {
         this(semPm);
-        setCovMatrix(covMatrix);
+        this.setCovMatrix(covMatrix);
     }
 
     /**
      * Special hidden constructor to generate updated models.
      */
-    private SemIm(final SemIm semIm, final Matrix covariances,
-                  final Vector means) {
+    private SemIm(SemIm semIm, Matrix covariances,
+                  Vector means) {
         this(semIm);
 
         if (covariances.rows() != covariances.columns()) {
@@ -368,24 +369,24 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
                     + "positive definite.");
         }
 
-        if (means.size() != this.semPm.getVariableNodes().size()) {
+        if (means.size() != semPm.getVariableNodes().size()) {
             throw new IllegalArgumentException(
                     "Number of means does not equal " + "number of variables.");
         }
 
-        if (covariances.rows() != this.semPm.getVariableNodes().size()) {
+        if (covariances.rows() != semPm.getVariableNodes().size()) {
             throw new IllegalArgumentException(
                     "Dimension of covariance matrix "
                             + "does not equal number of variables.");
         }
 
-        this.errCovar = covariances;
-        this.variableMeans = means.toArray();
+        errCovar = covariances;
+        variableMeans = means.toArray();
 
-        this.freeParameters = initFreeParameters();
-        this.freeMappings = createMappings(getFreeParameters());
-        this.fixedParameters = initFixedParameters();
-        this.fixedMappings = createMappings(getFixedParameters());
+        freeParameters = this.initFreeParameters();
+        freeMappings = this.createMappings(this.getFreeParameters());
+        fixedParameters = this.initFixedParameters();
+        fixedMappings = this.createMappings(this.getFixedParameters());
     }
 
     /**
@@ -394,42 +395,42 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * @throws RuntimeException if the given SemIm cannot be serialized and
      *                          deserialized correctly.
      */
-    public SemIm(final SemIm semIm) {
+    public SemIm(SemIm semIm) {
         try {
 
             // We make a deep copy of semIm and then copy all of its fields
             // into this SEM IM. Otherwise, it's just too HARD to make a deep copy!
             // (Complain, complain.) jdramsey 4/20/2005
-            final SemIm _semIm = new MarshalledObject<>(semIm).get();
+            SemIm _semIm = new MarshalledObject<>(semIm).get();
 
-            this.semPm = _semIm.semPm;
-            this.variableNodes = _semIm.variableNodes;
-            this.measuredNodes = _semIm.measuredNodes;
-            this.freeParameters = _semIm.freeParameters;
-            this.fixedParameters = _semIm.fixedParameters;
-            this.meanParameters = _semIm.meanParameters;
-            this.edgeCoef = _semIm.edgeCoef;
-            this.errCovar = _semIm.errCovar;
-            this.variableMeans = _semIm.variableMeans;
-            this.variableMeansStdDev = _semIm.variableMeansStdDev;
-            this.sampleCovarC = _semIm.sampleCovarC;
-            this.sampleSize = _semIm.sampleSize;
-            this.implCovar = _semIm.implCovar;
-            this.freeMappings = _semIm.freeMappings;
-            this.fixedMappings = _semIm.fixedMappings;
-            this.standardErrors = _semIm.standardErrors;
-            this.parameterBoundsEnforced = _semIm.parameterBoundsEnforced;
-            this.estimated = _semIm.estimated;
-            this.cyclic = _semIm.cyclic;
-            this.distributions = new HashMap<>(_semIm.distributions);
-            this.scoreType = _semIm.scoreType;
-        } catch (final IOException | ClassNotFoundException e) {
+            semPm = _semIm.semPm;
+            variableNodes = _semIm.variableNodes;
+            measuredNodes = _semIm.measuredNodes;
+            freeParameters = _semIm.freeParameters;
+            fixedParameters = _semIm.fixedParameters;
+            meanParameters = _semIm.meanParameters;
+            edgeCoef = _semIm.edgeCoef;
+            errCovar = _semIm.errCovar;
+            variableMeans = _semIm.variableMeans;
+            variableMeansStdDev = _semIm.variableMeansStdDev;
+            sampleCovarC = _semIm.sampleCovarC;
+            sampleSize = _semIm.sampleSize;
+            implCovar = _semIm.implCovar;
+            freeMappings = _semIm.freeMappings;
+            fixedMappings = _semIm.fixedMappings;
+            standardErrors = _semIm.standardErrors;
+            parameterBoundsEnforced = _semIm.parameterBoundsEnforced;
+            estimated = _semIm.estimated;
+            cyclic = _semIm.cyclic;
+            distributions = new HashMap<>(_semIm.distributions);
+            scoreType = _semIm.scoreType;
+        } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException("SemIm could not be deep cloned.", e);
         }
     }
 
     public static List<String> getParameterNames() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
         parameters.add("coefLow");
         parameters.add("coefHigh");
         parameters.add("covLow");
@@ -450,15 +451,15 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * @param graph The graph for the new SEM IM.
      * @return The new SEM IM, retaining values from <code>semIm</code>.
      */
-    public static SemIm retainValues(final SemIm semIm, final SemGraph graph) {
-        final SemPm newSemPm = new SemPm(graph);
-        final SemIm newSemIm = new SemIm(newSemPm);
+    public static SemIm retainValues(SemIm semIm, SemGraph graph) {
+        SemPm newSemPm = new SemPm(graph);
+        SemIm newSemIm = new SemIm(newSemPm);
 
-        for (final Parameter p1 : newSemIm.getSemPm().getParameters()) {
-            final Node nodeA = semIm.getSemPm().getGraph().getNode(p1.getNodeA().getName());
-            final Node nodeB = semIm.getSemPm().getGraph().getNode(p1.getNodeB().getName());
+        for (Parameter p1 : newSemIm.getSemPm().getParameters()) {
+            Node nodeA = semIm.getSemPm().getGraph().getNode(p1.getNodeA().getName());
+            Node nodeB = semIm.getSemPm().getGraph().getNode(p1.getNodeB().getName());
 
-            for (final Parameter p2 : semIm.getSemPm().getParameters()) {
+            for (Parameter p2 : semIm.getSemPm().getParameters()) {
                 if (p2.getNodeA() == nodeA && p2.getNodeB() == nodeB && p2.getType() == p1.getType()) {
                     newSemIm.setParamValue(p1, semIm.getParamValue(p2));
                 }
@@ -480,7 +481,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * @return a variant of the getModel model with the given covariance matrix
      * and means. Used for updating.
      */
-    public SemIm updatedIm(final Matrix covariances, final Vector means) {
+    public SemIm updatedIm(Matrix covariances, Vector means) {
         return new SemIm(this, covariances, means);
     }
 
@@ -491,21 +492,21 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * given matrix. The variable names used in the SemPm for this model must
      * all appear in this CovarianceMatrix.
      */
-    public void setCovMatrix(final ICovarianceMatrix covMatrix) {
+    public void setCovMatrix(ICovarianceMatrix covMatrix) {
         if (covMatrix == null) {
             throw new NullPointerException(
                     "Covariance matrix must not be null.");
         }
 
-        final ICovarianceMatrix covMatrix2 = fixVarOrder(covMatrix);
-        this.sampleCovarC = covMatrix2.getMatrix().copy();
-        this.sampleCovarVariables = covMatrix2.getVariables();
-        this.sampleSize = covMatrix2.getSampleSize();
-        this.sampleCovInv = null;
+        ICovarianceMatrix covMatrix2 = this.fixVarOrder(covMatrix);
+        sampleCovarC = covMatrix2.getMatrix().copy();
+        sampleCovarVariables = covMatrix2.getVariables();
+        sampleSize = covMatrix2.getSampleSize();
+        sampleCovInv = null;
 
-        if (this.sampleSize < 0) {
+        if (sampleSize < 0) {
             throw new IllegalArgumentException(
-                    "Sample size out of range: " + this.sampleSize);
+                    "Sample size out of range: " + sampleSize);
         }
     }
 
@@ -514,15 +515,15 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * covariance matrix for this model to a subset of it. The measured variable
      * names used in the SemPm for this model must all appear in this data set.
      */
-    public void setDataSet(final DataSet dataSet) {
-        setCovMatrix(new CovarianceMatrix(dataSet));
+    public void setDataSet(DataSet dataSet) {
+        this.setCovMatrix(new CovarianceMatrix(dataSet));
     }
 
     /**
      * @return the Digraph which describes the causal structure of the Sem.
      */
     public SemPm getSemPm() {
-        return this.semPm;
+        return semPm;
     }
 
     /**
@@ -532,10 +533,10 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * getFreeParameters()[i].
      */
     public double[] getFreeParamValues() {
-        final double[] paramValues = new double[freeMappings().size()];
+        double[] paramValues = new double[this.freeMappings().size()];
 
-        for (int i = 0; i < freeMappings().size(); i++) {
-            final Mapping mapping = freeMappings().get(i);
+        for (int i = 0; i < this.freeMappings().size(); i++) {
+            Mapping mapping = this.freeMappings().get(i);
             paramValues[i] = mapping.getValue();
         }
 
@@ -547,14 +548,14 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * appear in getFreeParameters()) to the values contained in the given
      * array. That is, params[i] is the value for getFreeParameters()[i].
      */
-    public void setFreeParamValues(final double[] params) {
-        if (params.length != getNumFreeParams()) {
+    public void setFreeParamValues(double[] params) {
+        if (params.length != this.getNumFreeParams()) {
             throw new IllegalArgumentException("The array provided must be "
                     + "of the same length as the number of free parameters.");
         }
 
-        for (int i = 0; i < freeMappings().size(); i++) {
-            final Mapping mapping = freeMappings().get(i);
+        for (int i = 0; i < this.freeMappings().size(); i++) {
+            Mapping mapping = this.freeMappings().get(i);
             mapping.setValue(params[i]);
         }
     }
@@ -566,7 +567,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * @throws IllegalArgumentException if the given parameter is not a free
      *                                  parameter in this model.
      */
-    public double getParamValue(final Parameter parameter) {
+    public double getParamValue(Parameter parameter) {
         if (parameter == null) {
             throw new NullPointerException();
         }
@@ -599,17 +600,17 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 //            double[] coef = result.getCoef();
 //            return coef[parents.indexOf(parent) + 1];
 //        }
-        if (getFreeParameters().contains(parameter)) {
-            final int index = getFreeParameters().indexOf(parameter);
-            final Mapping mapping = this.freeMappings.get(index);
+        if (this.getFreeParameters().contains(parameter)) {
+            int index = this.getFreeParameters().indexOf(parameter);
+            Mapping mapping = freeMappings.get(index);
             return mapping.getValue();
-        } else if (getFixedParameters().contains(parameter)) {
-            final int index = getFixedParameters().indexOf(parameter);
-            final Mapping mapping = this.fixedMappings.get(index);
+        } else if (this.getFixedParameters().contains(parameter)) {
+            int index = this.getFixedParameters().indexOf(parameter);
+            Mapping mapping = fixedMappings.get(index);
             return mapping.getValue();
-        } else if (getMeanParameters().contains(parameter)) {
-            final int index = getMeanParameters().indexOf(parameter);
-            return this.variableMeans[index];
+        } else if (this.getMeanParameters().contains(parameter)) {
+            int index = this.getMeanParameters().indexOf(parameter);
+            return variableMeans[index];
         }
 
 //        return Double.NaN;
@@ -623,16 +624,16 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * @throws IllegalArgumentException if the given parameter is not a free
      *                                  parameter in this model.
      */
-    public void setParamValue(final Parameter parameter, final double value) {
-        if (getFreeParameters().contains(parameter)) {
+    public void setParamValue(Parameter parameter, double value) {
+        if (this.getFreeParameters().contains(parameter)) {
             // Note this assumes the freeMappings are in the same order as the
             // free freeParameters.                                        get
-            final int index = getFreeParameters().indexOf(parameter);
-            final Mapping mapping = this.freeMappings.get(index);
+            int index = this.getFreeParameters().indexOf(parameter);
+            Mapping mapping = freeMappings.get(index);
             mapping.setValue(value);
-        } else if (getMeanParameters().contains(parameter)) {
-            final int index = getMeanParameters().indexOf(parameter);
-            this.variableMeans[index] = value;
+        } else if (this.getMeanParameters().contains(parameter)) {
+            int index = this.getMeanParameters().indexOf(parameter);
+            variableMeans[index] = value;
         } else {
             throw new IllegalArgumentException("That parameter cannot be set in "
                     + "this model: " + parameter);
@@ -645,80 +646,80 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * @throws IllegalArgumentException if the given parameter is not a free
      *                                  parameter in this model.
      */
-    public void setFixedParamValue(final Parameter parameter, final double value) {
-        if (!getFixedParameters().contains(parameter)) {
+    public void setFixedParamValue(Parameter parameter, double value) {
+        if (!this.getFixedParameters().contains(parameter)) {
             throw new IllegalArgumentException(
                     "Not a fixed parameter in " + "this model: " + parameter);
         }
 
         // Note this assumes the fixedMappings are in the same order as the
         // fixed freeParameters.
-        final int index = getFixedParameters().indexOf(parameter);
-        final Mapping mapping = this.fixedMappings.get(index);
+        int index = this.getFixedParameters().indexOf(parameter);
+        Mapping mapping = fixedMappings.get(index);
         mapping.setValue(value);
     }
 
-    public double getErrVar(final Node x) {
-        final Parameter param = this.semPm.getVarianceParameter(x);
-        return getParamValue(param);
+    public double getErrVar(Node x) {
+        Parameter param = semPm.getVarianceParameter(x);
+        return this.getParamValue(param);
     }
 
-    public double getErrCovar(final Node x, final Node y) {
-        final Parameter param = this.semPm.getCovarianceParameter(x, y);
-        return getParamValue(param);
+    public double getErrCovar(Node x, Node y) {
+        Parameter param = semPm.getCovarianceParameter(x, y);
+        return this.getParamValue(param);
     }
 
-    public double getEdgeCoef(final Node x, final Node y) {
-        final Parameter param = this.semPm.getCoefficientParameter(x, y);
-        return getParamValue(param);
+    public double getEdgeCoef(Node x, Node y) {
+        Parameter param = semPm.getCoefficientParameter(x, y);
+        return this.getParamValue(param);
     }
 
-    public double getEdgeCoef(final Edge edge) {
+    public double getEdgeCoef(Edge edge) {
         if (!Edges.isDirectedEdge(edge)) {
             throw new IllegalArgumentException("Only directed edges have 'edge coefficients'");
         }
-        return getEdgeCoef(edge.getNode1(), edge.getNode2());
+        return this.getEdgeCoef(edge.getNode1(), edge.getNode2());
     }
 
-    public void setErrVar(final Node x, final double value) {
-        final Parameter param = this.semPm.getVarianceParameter(x);
-        setParamValue(param, value);
+    public void setErrVar(Node x, double value) {
+        Parameter param = semPm.getVarianceParameter(x);
+        this.setParamValue(param, value);
     }
 
-    public void setEdgeCoef(final Node x, final Node y, final double value) {
-        final Parameter param = this.semPm.getCoefficientParameter(x, y);
-        setParamValue(param, value);
+    public void setEdgeCoef(Node x, Node y, double value) {
+        Parameter param = semPm.getCoefficientParameter(x, y);
+        this.setParamValue(param, value);
     }
 
-    public boolean existsEdgeCoef(final Node x, final Node y) {
-        return x != y && this.semPm.getCoefficientParameter(x, y) != null;
+    public boolean existsEdgeCoef(Node x, Node y) {
+        return x != y && semPm.getCoefficientParameter(x, y) != null;
     }
 
-    public void setErrCovar(final Node x, final double value) {
-        final SemGraph graph = getSemPm().getGraph();
-        final Node exogenousX = graph.getExogenous(x);
-        setParamValue(exogenousX, exogenousX, value);
+    public void setErrCovar(Node x, double value) {
+        SemGraph graph = this.getSemPm().getGraph();
+        Node exogenousX = graph.getExogenous(x);
+        this.setParamValue(exogenousX, exogenousX, value);
     }
 
-    public void setErrCovar(final Node x, final Node y, final double value) {
-        final Parameter param = this.semPm.getCovarianceParameter(x, y);
-        setParamValue(param, value);
-    }
-
-    /**
-     * Sets the mean associated with the given node.
-     */
-    public void setMean(final Node node, final double mean) {
-        final int index = this.variableNodes.indexOf(node);
-        this.variableMeans[index] = mean;
+    public void setErrCovar(Node x, Node y, double value) {
+        Parameter param = semPm.getCovarianceParameter(x, y);
+        this.setParamValue(param, value);
     }
 
     /**
      * Sets the mean associated with the given node.
      */
-    public void setMeanStandardDeviation(final Node node, final double mean) {
-        final int index = this.variableNodes.indexOf(node);
-        this.variableMeansStdDev[index] = mean;
+    public void setMean(Node node, double mean) {
+        int index = variableNodes.indexOf(node);
+        variableMeans[index] = mean;
+    }
+
+    /**
+     * Sets the mean associated with the given node.
+     */
+    public void setMeanStandardDeviation(Node node, double mean) {
+        int index = variableNodes.indexOf(node);
+        variableMeansStdDev[index] = mean;
     }
 
     /**
@@ -726,8 +727,8 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      *
      * @throws UnsupportedOperationException if called on a cyclic SEM.
      */
-    public void setIntercept(final Node node, final double intercept) {
-        if (isCyclic()) {
+    public void setIntercept(Node node, double intercept) {
+        if (this.isCyclic()) {
             throw new UnsupportedOperationException("Setting and getting of "
                     + "intercepts is supported for acyclic SEMs only. The internal "
                     + "parameterizations uses variable means; the relationship "
@@ -735,37 +736,37 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
                     + "worked out for the cyclic case.");
         }
 
-        final SemGraph semGraph = getSemPm().getGraph();
-        final List<Node> tierOrdering = semGraph.getCausalOrdering();
+        SemGraph semGraph = this.getSemPm().getGraph();
+        List<Node> tierOrdering = semGraph.getCausalOrdering();
 
-        final double[] intercepts = new double[tierOrdering.size()];
+        double[] intercepts = new double[tierOrdering.size()];
 
         for (int i = 0; i < tierOrdering.size(); i++) {
-            final Node _node = tierOrdering.get(i);
-            intercepts[i] = getIntercept(_node);
+            Node _node = tierOrdering.get(i);
+            intercepts[i] = this.getIntercept(_node);
         }
 
         intercepts[tierOrdering.indexOf(node)] = intercept;
 
         for (int i = 0; i < tierOrdering.size(); i++) {
-            final Node _node = tierOrdering.get(i);
+            Node _node = tierOrdering.get(i);
 
-            final List<Node> parents = semGraph.getParents(_node);
+            List<Node> parents = semGraph.getParents(_node);
 
             double weightedSumOfParentMeans = 0.0;
 
-            for (final Node parent : parents) {
+            for (Node parent : parents) {
                 if (parent.getNodeType() == NodeType.ERROR) {
                     continue;
                 }
 
-                final double coef = getEdgeCoef(parent, _node);
-                final double mean = getMean(parent);
+                double coef = this.getEdgeCoef(parent, _node);
+                double mean = this.getMean(parent);
                 weightedSumOfParentMeans += coef * mean;
             }
 
-            final double mean = weightedSumOfParentMeans + intercepts[i];
-            setMean(_node, mean);
+            double mean = weightedSumOfParentMeans + intercepts[i];
+            this.setMean(_node, mean);
         }
     }
 
@@ -774,9 +775,9 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * @throws UnsupportedOperationException if called on a cyclic SEM.
      */
     public double getIntercept(Node node) {
-        node = this.semPm.getGraph().getNode(node.getName());
+        node = semPm.getGraph().getNode(node.getName());
 
-        if (isCyclic()) {
+        if (this.isCyclic()) {
             return Double.NaN;
 //            throw new UnsupportedOperationException("Setting and getting of " +
 //                    "intercepts is supported for acyclic SEMs only. The internal " +
@@ -785,64 +786,64 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 //                    "worked out for the cyclic case.");
         }
 
-        final SemGraph semGraph = getSemPm().getGraph();
-        final List<Node> parents = semGraph.getParents(node);
+        SemGraph semGraph = this.getSemPm().getGraph();
+        List<Node> parents = semGraph.getParents(node);
 
         double weightedSumOfParentMeans = 0.0;
 
-        for (final Node parent : parents) {
+        for (Node parent : parents) {
             if (parent.getNodeType() == NodeType.ERROR) {
                 continue;
             }
 
-            final double coef = getEdgeCoef(parent, node);
-            final double mean = getMean(parent);
+            double coef = this.getEdgeCoef(parent, node);
+            double mean = this.getMean(parent);
             weightedSumOfParentMeans += coef * mean;
         }
 
-        final double mean = getMean(node);
-        final double intercept = mean - weightedSumOfParentMeans;
+        double mean = this.getMean(node);
+        double intercept = mean - weightedSumOfParentMeans;
         return intercept;
     }
 
     /**
      * @return the value of the mean assoc iated with the given node.
      */
-    public double getMean(final Node node) {
-        final int index = this.variableNodes.indexOf(node);
+    public double getMean(Node node) {
+        int index = variableNodes.indexOf(node);
 
         if (index == -1) {
             System.out.println("Expecting this node: " + node);
-            System.out.println("Node list = " + this.variableNodes);
+            System.out.println("Node list = " + variableNodes);
         }
 
-        return this.variableMeans[index];
+        return variableMeans[index];
     }
 
     /**
      * @return the means for variables in order.
      */
     public double[] getMeans() {
-        final double[] means = new double[this.variableMeans.length];
-        System.arraycopy(this.variableMeans, 0, means, 0, this.variableMeans.length);
+        double[] means = new double[variableMeans.length];
+        System.arraycopy(variableMeans, 0, means, 0, variableMeans.length);
         return means;
     }
 
     /**
      * @return the value of the mean associated with the given node.
      */
-    public double getMeanStdDev(final Node node) {
-        final int index = this.variableNodes.indexOf(node);
-        return this.variableMeansStdDev[index];
+    public double getMeanStdDev(Node node) {
+        int index = variableNodes.indexOf(node);
+        return variableMeansStdDev[index];
     }
 
     /**
      * @return the value of the variance associated with the given node.
      */
-    public double getVariance(final Node node, final Matrix implCovar) {
-        if (getSemPm().getGraph().isExogenous(node)) {
+    public double getVariance(Node node, Matrix implCovar) {
+        if (this.getSemPm().getGraph().isExogenous(node)) {
 //            if (node.getNodeType() == NodeType.ERROR) {
-            final Parameter parameter = getSemPm().getVarianceParameter(node);
+            Parameter parameter = this.getSemPm().getVarianceParameter(node);
 
             // This seems to be required to get the show/hide error terms
             // feature to work in the SemImEditor.
@@ -850,9 +851,9 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
                 return Double.NaN;
             }
 
-            return getParamValue(parameter);
+            return this.getParamValue(parameter);
         } else {
-            final int index = this.variableNodes.indexOf(node);
+            int index = variableNodes.indexOf(node);
 //            TetradMatrix implCovar = getImplCovar();
             return implCovar.get(index, index);
         }
@@ -862,8 +863,8 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * @return the value of the standard deviation associated with the given
      * node.
      */
-    public double getStdDev(final Node node, final Matrix implCovar) {
-        return sqrt(getVariance(node, implCovar));
+    public double getStdDev(Node node, Matrix implCovar) {
+        return sqrt(this.getVariance(node, implCovar));
     }
 
     /**
@@ -878,30 +879,30 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      *                                  parameter in this model or if there is no parameter connecting nodeA with
      *                                  nodeB in this model.
      */
-    public double getParamValue(final Node nodeA, final Node nodeB) {
+    public double getParamValue(Node nodeA, Node nodeB) {
         Parameter parameter = null;
 
         if (nodeA == nodeB) {
-            parameter = getSemPm().getVarianceParameter(nodeA);
+            parameter = this.getSemPm().getVarianceParameter(nodeA);
         }
 
         if (parameter == null) {
-            parameter = getSemPm().getCovarianceParameter(nodeA, nodeB);
+            parameter = this.getSemPm().getCovarianceParameter(nodeA, nodeB);
         }
 
         if (parameter == null) {
-            parameter = getSemPm().getCoefficientParameter(nodeA, nodeB);
+            parameter = this.getSemPm().getCoefficientParameter(nodeA, nodeB);
         }
 
         if (parameter == null) {
             return Double.NaN;
         }
 
-        if (!getFreeParameters().contains(parameter)) {
+        if (!this.getFreeParameters().contains(parameter)) {
             return Double.NaN;
         }
 
-        return getParamValue(parameter);
+        return this.getParamValue(parameter);
     }
 
     /**
@@ -916,7 +917,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      *                                  parameter in this model or if there is no parameter connecting nodeA with
      *                                  nodeB in this model, or if value is Double.NaN.
      */
-    public void setParamValue(final Node nodeA, final Node nodeB, final double value) {
+    public void setParamValue(Node nodeA, Node nodeB, double value) {
         if (Double.isNaN(value)) {
             throw new IllegalArgumentException("Please remove or impute missing data.");
         }
@@ -928,15 +929,15 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
         Parameter parameter = null;
 
         if (nodeA == nodeB) {
-            parameter = getSemPm().getVarianceParameter(nodeA);
+            parameter = this.getSemPm().getVarianceParameter(nodeA);
         }
 
         if (parameter == null) {
-            parameter = getSemPm().getCoefficientParameter(nodeA, nodeB);
+            parameter = this.getSemPm().getCoefficientParameter(nodeA, nodeB);
         }
 
         if (parameter == null) {
-            parameter = getSemPm().getCovarianceParameter(nodeA, nodeB);
+            parameter = this.getSemPm().getCovarianceParameter(nodeA, nodeB);
         }
 
         if (parameter == null) {
@@ -944,58 +945,58 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
                     + "model for an edge from " + nodeA + " to " + nodeB + ".");
         }
 
-        if (!this.getFreeParameters().contains(parameter)) {
+        if (!getFreeParameters().contains(parameter)) {
             throw new IllegalArgumentException(
                     "Not a free parameter in " + "this model: " + parameter);
         }
 
-        setParamValue(parameter, value);
+        this.setParamValue(parameter, value);
     }
 
     /**
      * @return the (unmodifiable) list of free freeParameters in the model.
      */
     public List<Parameter> getFreeParameters() {
-        return this.freeParameters;
+        return freeParameters;
     }
 
     /**
      * @return the number of free freeParameters.
      */
     public int getNumFreeParams() {
-        return getFreeParameters().size();
+        return this.getFreeParameters().size();
     }
 
     /**
      * @return the (unmodifiable) list of fixed freeParameters in the model.
      */
     public List<Parameter> getFixedParameters() {
-        return this.fixedParameters;
+        return fixedParameters;
     }
 
     private List<Parameter> getMeanParameters() {
-        return this.meanParameters;
+        return meanParameters;
     }
 
     /**
      * @return the number of free freeParameters.
      */
     public int getNumFixedParams() {
-        return getFixedParameters().size();
+        return this.getFixedParameters().size();
     }
 
     /**
      * The list of measured and latent nodes for the semPm. (Unmodifiable.)
      */
     public List<Node> getVariableNodes() {
-        return this.variableNodes;
+        return variableNodes;
     }
 
     /**
      * The list of measured nodes for the semPm. (Unmodifiable.)
      */
     public List<Node> getMeasuredNodes() {
-        return this.measuredNodes;
+        return measuredNodes;
     }
 
     /**
@@ -1003,7 +1004,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * provided at construction time).
      */
     public int getSampleSize() {
-        return this.sampleSize;
+        return sampleSize;
     }
 
     /**
@@ -1014,7 +1015,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * array itself may not.
      */
     public Matrix getEdgeCoef() {
-        return this.edgeCoef.copy();
+        return edgeCoef.copy();
     }
 
     /**
@@ -1025,17 +1026,17 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * values of these may be changed, but the array itself may not.
      */
     public Matrix getErrCovar() {
-        return errCovar().copy();
+        return this.errCovar().copy();
     }
 
     /**
      * @return a copy of the implied covariance matrix over all the variables.
      */
-    public Matrix getImplCovar(final boolean recalculate) {
-        if (!recalculate && this.implCovar != null) {
-            return this.implCovar;
+    public Matrix getImplCovar(boolean recalculate) {
+        if (!recalculate && implCovar != null) {
+            return implCovar;
         } else {
-            return implCovar();
+            return this.implCovar();
         }
     }
 
@@ -1044,7 +1045,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * variables only.
      */
     public Matrix getImplCovarMeas() {
-        return implCovarMeas().copy();
+        return this.implCovarMeas().copy();
     }
 
     /**
@@ -1052,18 +1053,18 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * covar has been set.
      */
     public Matrix getSampleCovar() {
-        return this.sampleCovarC;
+        return sampleCovarC;
     }
 
     /**
      * Sets the distribution for the given node.
      */
-    public void setDistribution(final Node node, final Distribution distribution) {
+    public void setDistribution(Node node, Distribution distribution) {
         if (node == null) {
             throw new NullPointerException();
         }
 
-        if (!getVariableNodes().contains(node)) {
+        if (!this.getVariableNodes().contains(node)) {
             throw new IllegalArgumentException("Not a node in this SEM.");
         }
 
@@ -1071,7 +1072,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
             throw new NullPointerException("Distribution must be specified.");
         }
 
-        this.distributions.put(node, distribution);
+        distributions.put(node, distribution);
     }
 
     /**
@@ -1079,12 +1080,12 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * (Bollen 107). To optimize, this should be minimized.
      */
     public double getScore() {
-        if (this.scoreType == ScoreType.Fml) {
-            return getFml2();
-        } else if (this.scoreType == ScoreType.Fgls) {
-            return getFgls();
+        if (scoreType == ScoreType.Fml) {
+            return this.getFml2();
+        } else if (scoreType == ScoreType.Fgls) {
+            return this.getFgls();
         } else {
-            throw new IllegalStateException("Unrecognized score type; " + this.scoreType);
+            throw new IllegalStateException("Unrecognized score type; " + scoreType);
         }
     }
 
@@ -1110,21 +1111,21 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 //        return h1 - h0;
 //    }
     private double getFml2() {
-        final Matrix sigma;
+        Matrix sigma;
 
         try {
-            sigma = implCovarMeas();
-        } catch (final Exception e) {
+            sigma = this.implCovarMeas();
+        } catch (Exception e) {
             return Double.NaN;
         }
 
-        final Matrix s = this.sampleCovarC;
+        Matrix s = sampleCovarC;
 
-        final double fml;
+        double fml;
 
         try {
-            fml = Math.log(sigma.det()) + (s.times(sigma.inverse())).trace() - Math.log(s.det()) - getMeasuredNodes().size();
-        } catch (final Exception e) {
+            fml = Math.log(sigma.det()) + (s.times(sigma.inverse())).trace() - Math.log(s.det()) - this.getMeasuredNodes().size();
+        } catch (Exception e) {
             return Double.NaN;
         }
 
@@ -1132,21 +1133,21 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     private double getFgls() {
-        final Matrix implCovarMeas;
+        Matrix implCovarMeas;
 
         try {
-            implCovarMeas = implCovarMeas();
-        } catch (final Exception e) {
+            implCovarMeas = this.implCovarMeas();
+        } catch (Exception e) {
             return Double.NaN;
         }
 
-        if (this.sampleCovInv == null) {
-            final Matrix sampleCovar = this.sampleCovarC;
-            this.sampleCovInv = sampleCovar.inverse();
+        if (sampleCovInv == null) {
+            Matrix sampleCovar = sampleCovarC;
+            sampleCovInv = sampleCovar.inverse();
         }
 
-        final Matrix I = Matrix.identity(implCovarMeas.rows());
-        final Matrix diff = I.minus((implCovarMeas.times(this.sampleCovInv)));
+        Matrix I = Matrix.identity(implCovarMeas.rows());
+        Matrix diff = I.minus((implCovarMeas.times(sampleCovInv)));
 
         return 0.5 * (diff.times(diff)).trace();
     }
@@ -1181,13 +1182,13 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     public double getTruncLL() {
         // Formula Bollen p. 263.
 
-        final Matrix Sigma = implCovarMeas();
+        Matrix Sigma = this.implCovarMeas();
 
         // Using (n - 1) / n * s as in Bollen p. 134 causes sinkholes to open
         // up immediately. Not sure why.
-        final Matrix S = this.sampleCovarC;
-        final int n = getSampleSize();
-        return -(n - 1) / 2. * (logDet(Sigma) + traceAInvB(Sigma, S));
+        Matrix S = sampleCovarC;
+        int n = this.getSampleSize();
+        return -(n - 1) / 2. * (this.logDet(Sigma) + this.traceAInvB(Sigma, S));
 //        return -(n / 2.0) * (logDet(Sigma) + traceABInv(S, Sigma));
 //        return -(logDet(Sigma) + traceABInv(S, Sigma));
 //        return -(n - 1) / 2 * (logDet(Sigma) + traceABInv(S, Sigma));
@@ -1198,10 +1199,10 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * getFullBicScore() up to a constant.
      */
     public double getBicScore() {
-        final int dof = getSemPm().getDof();
+        int dof = this.getSemPm().getDof();
 //        return getChiSquare() - dof * Math.log(sampleSize);
 
-        return getChiSquare() - dof * Math.log(this.sampleSize);
+        return this.getChiSquare() - dof * Math.log(sampleSize);
 
 //        CovarianceMatrix covarianceMatrix = new CovarianceMatrix(getVariableNodes(), getImplCovar(), getSampleSize());
 //        Ges ges = new Ges(covarianceMatrix);
@@ -1213,29 +1214,29 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 //        double e = 1; // The sum of squares of the model? What's that?
 //        return e / (getSemPm().getDof() * getSampleSize());
 
-        final double v = getChiSquare() - this.semPm.getDof();
-        final double v1 = this.semPm.getDof() * (getSampleSize() - 1);
+        double v = this.getChiSquare() - semPm.getDof();
+        double v1 = semPm.getDof() * (this.getSampleSize() - 1);
         return sqrt(v) / sqrt(v1);
     }
 
     @Override
     public double getCfi() {
-        if (getSampleCovar() == null) {
+        if (this.getSampleCovar() == null) {
             return Double.NaN;
         }
 
-        final SemIm nullIm = independenceModel();
-        final double nullChiSq = nullIm.getChiSquare();
-        final double dNull = nullChiSq - nullIm.getSemPm().getDof();
-        final double dProposed = getChiSquare() - getSemPm().getDof();
+        SemIm nullIm = this.independenceModel();
+        double nullChiSq = nullIm.getChiSquare();
+        double dNull = nullChiSq - nullIm.getSemPm().getDof();
+        double dProposed = this.getChiSquare() - this.getSemPm().getDof();
         return (dNull - dProposed) / dNull;
     }
 
     private SemIm independenceModel() {
-        final Graph nullModel = new SemGraph(getSemPm().getGraph());
+        Graph nullModel = new SemGraph(this.getSemPm().getGraph());
         nullModel.removeEdges(nullModel.getEdges());
-        final SemPm nullPm = new SemPm(nullModel);
-        final CovarianceMatrix sampleCovar = new CovarianceMatrix(getMeasuredNodes(), getSampleCovar(), getSampleSize());
+        SemPm nullPm = new SemPm(nullModel);
+        CovarianceMatrix sampleCovar = new CovarianceMatrix(this.getMeasuredNodes(), this.getSampleCovar(), this.getSampleSize());
 
         return new SemEstimator(sampleCovar, nullPm).estimate();
     }
@@ -1273,15 +1274,15 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * @return the chi square value for the model.
      */
     public double getChiSquare() {
-        return (getSampleSize() - 1) * getScore();
+        return (this.getSampleSize() - 1) * this.getScore();
     }
 
     /**
      * @return the p-value for the model.
      */
     public double getPValue() {
-        final double chiSquare = getChiSquare();
-        final int dof = this.semPm.getDof();
+        double chiSquare = this.getChiSquare();
+        int dof = semPm.getDof();
         if (dof <= 0) {
             return Double.NaN;
         } else if (chiSquare < 0) {
@@ -1297,20 +1298,20 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * graphs as well as acyclic graphs.
      */
     @Override
-    public DataSet simulateData(final int sampleSize, final boolean latentDataSaved) {
-        return simulateData(sampleSize, null, latentDataSaved);
+    public DataSet simulateData(int sampleSize, boolean latentDataSaved) {
+        return this.simulateData(sampleSize, null, latentDataSaved);
     }
 
-    private DataSet simulateData(final int sampleSize, final DataSet initialValues, final boolean latentDataSaved) {
-        if (this.semPm.getGraph().isTimeLagModel()) {
-            return simulateTimeSeries(sampleSize, latentDataSaved);
+    private DataSet simulateData(int sampleSize, DataSet initialValues, boolean latentDataSaved) {
+        if (semPm.getGraph().isTimeLagModel()) {
+            return this.simulateTimeSeries(sampleSize, latentDataSaved);
         }
 
         if (initialValues != null) {
-            return simulateDataRecursive(sampleSize, latentDataSaved);
+            return this.simulateDataRecursive(sampleSize, latentDataSaved);
         } else {
             //        return simulateDataCholesky(sampleSize, latentDataSaved);
-            return simulateDataReducedForm(sampleSize, latentDataSaved);
+            return this.simulateDataReducedForm(sampleSize, latentDataSaved);
 //            return simulateDataRecursive2(sampleSize, latentDataSaved);
         }
     }
@@ -1322,51 +1323,51 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
         this.scoreType = scoreType;
     }
 
-    private DataSet simulateTimeSeries(final int sampleSize, final boolean latentDataSaved) {
-        final SemGraph semGraph = new SemGraph(this.semPm.getGraph());
+    private DataSet simulateTimeSeries(int sampleSize, boolean latentDataSaved) {
+        SemGraph semGraph = new SemGraph(semPm.getGraph());
         semGraph.setShowErrorTerms(true);
-        final TimeLagGraph timeSeriesGraph = this.semPm.getGraph().getTimeLagGraph();
+        TimeLagGraph timeSeriesGraph = semPm.getGraph().getTimeLagGraph();
 
-        final List<Node> variables = new ArrayList<>();
+        List<Node> variables = new ArrayList<>();
 
-        final List<Node> lag0Nodes = timeSeriesGraph.getLag0Nodes();
+        List<Node> lag0Nodes = timeSeriesGraph.getLag0Nodes();
 
-        for (final Node node : lag0Nodes) {
-            final ContinuousVariable _node = new ContinuousVariable(timeSeriesGraph.getNodeId(node).getName());
+        for (Node node : lag0Nodes) {
+            ContinuousVariable _node = new ContinuousVariable(timeSeriesGraph.getNodeId(node).getName());
             _node.setNodeType(node.getNodeType());
             variables.add(_node);
         }
 
-        final DataSet fullData = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, variables.size()), variables);
+        DataSet fullData = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, variables.size()), variables);
 
-        final Map<Node, Integer> nodeIndices = new HashMap<>();
+        Map<Node, Integer> nodeIndices = new HashMap<>();
 
         for (int i = 0; i < lag0Nodes.size(); i++) {
             nodeIndices.put(lag0Nodes.get(i), i);
         }
 
-        final Graph contemporaneousDag = timeSeriesGraph.subgraph(timeSeriesGraph.getLag0Nodes());
+        Graph contemporaneousDag = timeSeriesGraph.subgraph(timeSeriesGraph.getLag0Nodes());
 
-        final List<Node> tierOrdering = contemporaneousDag.getCausalOrdering();
+        List<Node> tierOrdering = contemporaneousDag.getCausalOrdering();
 
         for (int currentStep = 0; currentStep < sampleSize; currentStep++) {
-            for (final Node to : tierOrdering) {
-                final List<Node> parents = semGraph.getNodesInTo(to, Endpoint.ARROW);
+            for (Node to : tierOrdering) {
+                List<Node> parents = semGraph.getNodesInTo(to, Endpoint.ARROW);
 
                 double sum = 0.0;
 
-                for (final Node parent : parents) {
+                for (Node parent : parents) {
                     if (parent.getNodeType() == NodeType.ERROR) {
-                        final Node child = semGraph.getChildren(parent).get(0);
-                        final double paramValue = getParamValue(child, child);
+                        Node child = semGraph.getChildren(parent).get(0);
+                        double paramValue = this.getParamValue(child, child);
                         sum += RandomUtil.getInstance().nextNormal(0.0, paramValue);
                     } else {
-                        final TimeLagGraph.NodeId id = timeSeriesGraph.getNodeId(parent);
-                        final int fromIndex = nodeIndices.get(timeSeriesGraph.getNode(id.getName(), 0));
-                        final int lag = id.getLag();
+                        NodeId id = timeSeriesGraph.getNodeId(parent);
+                        int fromIndex = nodeIndices.get(timeSeriesGraph.getNode(id.getName(), 0));
+                        int lag = id.getLag();
                         if (currentStep > lag) {
-                            final double coef = getParamValue(parent, to);
-                            final double fromValue = fullData.getDouble(currentStep - lag, fromIndex);
+                            double coef = this.getParamValue(parent, to);
+                            double fromValue = fullData.getDouble(currentStep - lag, fromIndex);
                             sum += coef * fromValue;
                         } else {
                             sum += RandomUtil.getInstance().nextNormal(0.0, 0.5);
@@ -1375,7 +1376,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
                 }
 
                 if (to.getNodeType() != NodeType.ERROR) {
-                    final int toIndex = nodeIndices.get(to);
+                    int toIndex = nodeIndices.get(to);
                     fullData.setDouble(currentStep, toIndex, sum);
                 }
             }
@@ -1393,11 +1394,11 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * @param seed       a seed for random number generation
      */
     @Override
-    public DataSet simulateData(final int sampleSize, final long seed, final boolean latentDataSaved) {
-        final RandomUtil random = RandomUtil.getInstance();
-        final long _seed = random.getSeed();
+    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
+        RandomUtil random = RandomUtil.getInstance();
+        long _seed = random.getSeed();
         random.setSeed(seed);
-        final DataSet dataSet = simulateData(sampleSize, latentDataSaved);
+        DataSet dataSet = this.simulateData(sampleSize, latentDataSaved);
         random.revertSeed(_seed);
         return dataSet;
     }
@@ -1410,31 +1411,31 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * @param sampleSize      the number of rows of data to simulate.
      * @param latentDataSaved True iff data for latents should be saved.
      */
-    public DataSet simulateDataCholesky(final int sampleSize, final boolean latentDataSaved) {
-        final List<Node> variables = new LinkedList<>();
+    public DataSet simulateDataCholesky(int sampleSize, boolean latentDataSaved) {
+        List<Node> variables = new LinkedList<>();
 
         if (latentDataSaved) {
-            for (final Node node : getVariableNodes()) {
+            for (Node node : this.getVariableNodes()) {
                 variables.add(node);
             }
         } else {
-            for (final Node node : getMeasuredNodes()) {
+            for (Node node : this.getMeasuredNodes()) {
                 variables.add(node);
             }
         }
 
-        final List<Node> newVariables = new ArrayList<>();
+        List<Node> newVariables = new ArrayList<>();
 
-        for (final Node node : variables) {
-            final ContinuousVariable continuousVariable = new ContinuousVariable(node.getName());
+        for (Node node : variables) {
+            ContinuousVariable continuousVariable = new ContinuousVariable(node.getName());
             continuousVariable.setNodeType(node.getNodeType());
             newVariables.add(continuousVariable);
         }
 
-        final Matrix impliedCovar = implCovar();
+        Matrix impliedCovar = this.implCovar();
 
-        final DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, newVariables.size()), newVariables);
-        final Matrix cholesky = MatrixUtils.cholesky(impliedCovar);
+        DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, newVariables.size()), newVariables);
+        Matrix cholesky = MatrixUtils.cholesky(impliedCovar);
 
         // Simulate the data by repeatedly calling the Cholesky.exogenousData
         // method. Store only the data for the measured variables.
@@ -1442,7 +1443,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
         for (int row = 0; row < sampleSize; row++) {
 
             // Step 1. Generate normal samples.
-            final double[] exoData = new double[cholesky.rows()];
+            double[] exoData = new double[cholesky.rows()];
 
             for (int i = 0; i < exoData.length; i++) {
                 exoData[i] = RandomUtil.getInstance().nextNormal(0, 1);
@@ -1450,7 +1451,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
             }
 
             // Step 2. Multiply by cholesky to get correct covariance.
-            final double[] point = new double[exoData.length];
+            double[] point = new double[exoData.length];
 
             for (int i = 0; i < exoData.length; i++) {
                 double sum = 0.0;
@@ -1463,14 +1464,14 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
             }
 
             for (int col = 0; col < variables.size(); col++) {
-                final int index = getVariableNodes().indexOf(variables.get(col));
-                final double value = point[index] + this.variableMeans[col];
+                int index = this.getVariableNodes().indexOf(variables.get(col));
+                double value = point[index] + variableMeans[col];
 
                 if (Double.isNaN(value) || Double.isInfinite(value)) {
                     throw new IllegalArgumentException("Value out of range: " + value);
                 }
 
-                if (isSimulatedPositiveDataOnly() && value < 0) {
+                if (this.isSimulatedPositiveDataOnly() && value < 0) {
                     row--;
                     continue ROW;
                 }
@@ -1486,14 +1487,14 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
         }
     }
 
-    public DataSet simulateDataRecursive(final int sampleSize,
-                                         final boolean latentDataSaved) {
-        return simulateDataRecursive(sampleSize, null, latentDataSaved);
+    public DataSet simulateDataRecursive(int sampleSize,
+                                         boolean latentDataSaved) {
+        return this.simulateDataRecursive(sampleSize, null, latentDataSaved);
     }
 
-    public DataSet simulateDataRecursive(final DataSet initialValues,
-                                         final boolean latentDataSaved) {
-        return simulateDataRecursive(initialValues.getNumRows(), initialValues, latentDataSaved);
+    public DataSet simulateDataRecursive(DataSet initialValues,
+                                         boolean latentDataSaved) {
+        return this.simulateDataRecursive(initialValues.getNumRows(), initialValues, latentDataSaved);
     }
 
     /**
@@ -1504,72 +1505,72 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * @param sampleSize > 0.
      * @return the simulated data set.
      */
-    private DataSet simulateDataRecursive(final int sampleSize, final DataSet initialValues,
-                                          final boolean latentDataSaved) {
-        final int errorType = this.params.getInt(Params.SIMULATION_ERROR_TYPE);
+    private DataSet simulateDataRecursive(int sampleSize, DataSet initialValues,
+                                          boolean latentDataSaved) {
+        int errorType = params.getInt(Params.SIMULATION_ERROR_TYPE);
 
-        final List<Node> variables = new LinkedList<>();
-        final List<Node> variableNodes = getVariableNodes();
+        List<Node> variables = new LinkedList<>();
+        List<Node> variableNodes = this.getVariableNodes();
 
-        for (final Node node : variableNodes) {
-            final ContinuousVariable var = new ContinuousVariable(node.getName());
+        for (Node node : variableNodes) {
+            ContinuousVariable var = new ContinuousVariable(node.getName());
             var.setNodeType(node.getNodeType());
             variables.add(var);
         }
 
-        final DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, variables.size()), variables);
+        DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, variables.size()), variables);
 
         // Create some index arrays to hopefully speed up the simulation.
-        final Graph graph = new EdgeListGraph(getSemPm().getGraph());
-        final List<Node> tierOrdering = graph.getCausalOrdering();
+        Graph graph = new EdgeListGraph(this.getSemPm().getGraph());
+        List<Node> tierOrdering = graph.getCausalOrdering();
 
-        final int[] tierIndices = new int[variableNodes.size()];
+        int[] tierIndices = new int[variableNodes.size()];
 
         for (int i = 0; i < tierIndices.length; i++) {
             tierIndices[i] = variableNodes.indexOf(tierOrdering.get(i));
         }
 
-        final int[][] _parents = new int[variableNodes.size()][];
+        int[][] _parents = new int[variableNodes.size()][];
 
         for (int i = 0; i < variableNodes.size(); i++) {
-            final Node node = variableNodes.get(i);
-            final List<Node> parents = graph.getParents(node);
+            Node node = variableNodes.get(i);
+            List<Node> parents = graph.getParents(node);
 
             parents.removeIf(_node -> _node.getNodeType() == NodeType.ERROR);
 
             _parents[i] = new int[parents.size()];
 
             for (int j = 0; j < parents.size(); j++) {
-                final Node _parent = parents.get(j);
+                Node _parent = parents.get(j);
                 _parents[i][j] = variableNodes.indexOf(_parent);
             }
         }
 
-        final Matrix cholesky = MatrixUtils.cholesky(errCovar());
+        Matrix cholesky = MatrixUtils.cholesky(this.errCovar());
 
         // Do the simulation.
         ROW:
         for (int row = 0; row < sampleSize; row++) {
 
             // Step 1. Generate normal samples.
-            final double[] exoData = new double[cholesky.rows()];
+            double[] exoData = new double[cholesky.rows()];
 
             for (int i = 0; i < exoData.length; i++) {
                 if (errorType == 1) {
                     exoData[i] = RandomUtil.getInstance().nextNormal(0,
-                            sqrt(this.errCovar.get(i, i)));
+                            sqrt(errCovar.get(i, i)));
                 } else if (errorType == 2) {
-                    exoData[i] = RandomUtil.getInstance().nextUniform(this.errorParam1, this.errorParam2);
+                    exoData[i] = RandomUtil.getInstance().nextUniform(errorParam1, errorParam2);
                 } else if (errorType == 3) {
-                    exoData[i] = RandomUtil.getInstance().nextExponential(this.errorParam1);
+                    exoData[i] = RandomUtil.getInstance().nextExponential(errorParam1);
                 } else if (errorType == 4) {
-                    exoData[i] = RandomUtil.getInstance().nextGumbel(this.errorParam1,
-                            this.errorParam2);
+                    exoData[i] = RandomUtil.getInstance().nextGumbel(errorParam1,
+                            errorParam2);
                 }
             }
 
             // Step 2. Multiply by cholesky to get correct covariance.
-            final double[] point = new double[exoData.length];
+            double[] point = new double[exoData.length];
 
             for (int i = 0; i < exoData.length; i++) {
                 double sum = 0.0;
@@ -1581,18 +1582,18 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
                 point[i] = sum;
             }
 
-            final Vector e = new Vector(point);
+            Vector e = new Vector(point);
 
             for (int tier = 0; tier < tierOrdering.size(); tier++) {
-                final Node node = tierOrdering.get(tier);
-                final ConnectionFunction function = this.functions.get(node);
-                final int col = tierIndices[tier];
+                Node node = tierOrdering.get(tier);
+                ConnectionFunction function = functions.get(node);
+                int col = tierIndices[tier];
 
-                final Distribution distribution = this.distributions.get(node);
+                Distribution distribution = distributions.get(node);
                 double value;
 
                 // If it's an exogenous node and initial data has been specified, use that data instead.
-                final Node node1 = tierOrdering.get(tier);
+                Node node1 = tierOrdering.get(tier);
 
                 Node initNode = null;
                 int initCol = -1;
@@ -1604,7 +1605,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 
                 if (_parents[col].length == 0 && initialValues != null
                         && initCol != -1) {
-                    final int column = initialValues.getColumn(initNode);
+                    int column = initialValues.getColumn(initNode);
                     value = initialValues.getDouble(row, column);
 //                    System.out.println(value);
 
@@ -1619,18 +1620,18 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
                 }
 
                 if (function != null) {
-                    final Node[] parents = function.getInputNodes();
-                    final double[] parentValues = new double[parents.length];
+                    Node[] parents = function.getInputNodes();
+                    double[] parentValues = new double[parents.length];
 
                     for (int j = 0; j < parents.length; j++) {
-                        final Node parent = parents[j];
-                        final int index = variableNodes.indexOf(parent);
+                        Node parent = parents[j];
+                        int index = variableNodes.indexOf(parent);
                         parentValues[j] = fullDataSet.getDouble(row, index);
                     }
 
                     value += function.valueAt(parentValues);
 
-                    if (initialValues == null && isSimulatedPositiveDataOnly() && value < 0) {
+                    if (initialValues == null && this.isSimulatedPositiveDataOnly() && value < 0) {
                         row--;
                         continue ROW;
                     }
@@ -1638,13 +1639,13 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
                     fullDataSet.setDouble(row, col, value);
                 } else {
                     for (int j = 0; j < _parents[col].length; j++) {
-                        final int parent = _parents[col][j];
-                        final double parentValue = fullDataSet.getDouble(row, parent);
-                        final double parentCoef = this.edgeCoef.get(parent, col);
+                        int parent = _parents[col][j];
+                        double parentValue = fullDataSet.getDouble(row, parent);
+                        double parentCoef = edgeCoef.get(parent, col);
                         value += parentValue * parentCoef;
                     }
 
-                    if (isSimulatedPositiveDataOnly() && value < 0) {
+                    if (this.isSimulatedPositiveDataOnly() && value < 0) {
                         row--;
                         continue ROW;
                     }
@@ -1656,7 +1657,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 
         for (int i = 0; i < fullDataSet.getNumRows(); i++) {
             for (int j = 0; j < fullDataSet.getNumColumns(); j++) {
-                fullDataSet.setDouble(i, j, fullDataSet.getDouble(i, j) + this.variableMeans[j]);
+                fullDataSet.setDouble(i, j, fullDataSet.getDouble(i, j) + variableMeans[j]);
             }
         }
 
@@ -1667,47 +1668,47 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
         }
     }
 
-    public DataSet simulateDataReducedForm(final int sampleSize, final boolean latentDataSaved) {
-        final int errorType = this.params.getInt(Params.SIMULATION_ERROR_TYPE);
+    public DataSet simulateDataReducedForm(int sampleSize, boolean latentDataSaved) {
+        int errorType = params.getInt(Params.SIMULATION_ERROR_TYPE);
 
-        final int numVars = getVariableNodes().size();
+        int numVars = this.getVariableNodes().size();
 
         // Calculate inv(I - edgeCoefC)
-        final Matrix B = edgeCoef().transpose();
-        final Matrix iMinusBInv = TetradAlgebra.identity(B.rows()).minus(B).inverse();
+        Matrix B = this.edgeCoef().transpose();
+        Matrix iMinusBInv = TetradAlgebra.identity(B.rows()).minus(B).inverse();
 
         // Pick error values e, for each calculate inv * e.
-        final Matrix sim = new Matrix(sampleSize, numVars);
+        Matrix sim = new Matrix(sampleSize, numVars);
 
         ROW:
         for (int row = 0; row < sampleSize; row++) {
 
             // Step 1. Generate normal samples.
-            final Vector e = new Vector(this.edgeCoef.columns());
+            Vector e = new Vector(edgeCoef.columns());
 
             for (int i = 0; i < e.size(); i++) {
 //                e.set(i, RandomUtil.getInstance().nextNormal(0, sqrt(errCovar.get(i, i))));
 
                 if (errorType == 1) {
-                    e.set(i, RandomUtil.getInstance().nextNormal(0, sqrt(this.errCovar.get(i, i))));
+                    e.set(i, RandomUtil.getInstance().nextNormal(0, sqrt(errCovar.get(i, i))));
 //                    e.set(i, RandomUtil.getInstance().nextNormal(0, sqrt(errorParam2)));
                 } else if (errorType == 2) {
-                    e.set(i, RandomUtil.getInstance().nextUniform(this.errorParam1, this.errorParam2));
+                    e.set(i, RandomUtil.getInstance().nextUniform(errorParam1, errorParam2));
                 } else if (errorType == 3) {
-                    e.set(i, RandomUtil.getInstance().nextExponential(this.errorParam1));
+                    e.set(i, RandomUtil.getInstance().nextExponential(errorParam1));
                 } else if (errorType == 4) {
-                    e.set(i, RandomUtil.getInstance().nextGumbel(this.errorParam1, this.errorParam2));
+                    e.set(i, RandomUtil.getInstance().nextGumbel(errorParam1, errorParam2));
                 }
             }
 
             // Step 3. Calculate the new rows in the data.
-            final Vector sample = iMinusBInv.times(e);
+            Vector sample = iMinusBInv.times(e);
             sim.assignRow(row, sample);
 
             for (int col = 0; col < sample.size(); col++) {
-                final double value = sim.get(row, col) + this.variableMeans[col];
+                double value = sim.get(row, col) + variableMeans[col];
 
-                if (isSimulatedPositiveDataOnly() && value < 0) {
+                if (this.isSimulatedPositiveDataOnly() && value < 0) {
                     row--;
                     continue ROW;
                 }
@@ -1716,15 +1717,15 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
             }
         }
 
-        final List<Node> continuousVars = new ArrayList<>();
+        List<Node> continuousVars = new ArrayList<>();
 
-        for (final Node node : getVariableNodes()) {
-            final ContinuousVariable var = new ContinuousVariable(node.getName());
+        for (Node node : this.getVariableNodes()) {
+            ContinuousVariable var = new ContinuousVariable(node.getName());
             var.setNodeType(node.getNodeType());
             continuousVars.add(var);
         }
 
-        final DataSet fullDataSet = new BoxDataSet(new DoubleDataBox(sim.toArray()), continuousVars);
+        DataSet fullDataSet = new BoxDataSet(new DoubleDataBox(sim.toArray()), continuousVars);
 
         if (latentDataSaved) {
             return fullDataSet;
@@ -1734,15 +1735,15 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     // For testing.
-    public Vector simulateOneRecord(final Vector e) {
+    public Vector simulateOneRecord(Vector e) {
         // Calculate inv(I - edgeCoefC)
-        final Matrix edgeCoef = edgeCoef().copy().transpose();
+        Matrix edgeCoef = this.edgeCoef().copy().transpose();
 
 //        TetradMatrix iMinusB = TetradAlgebra.identity(edgeCoefC.rows()); //TetradMatrix.identity(edgeCoefC.rows());
 //        iMinusB.assign(edgeCoefC, Functions.minus);
-        final Matrix iMinusB = TetradAlgebra.identity(edgeCoef.rows()).minus(edgeCoef);
+        Matrix iMinusB = TetradAlgebra.identity(edgeCoef.rows()).minus(edgeCoef);
 
-        final Matrix inv = iMinusB.inverse();
+        Matrix inv = iMinusB.inverse();
 
         return inv.times(e);
     }
@@ -1752,33 +1753,33 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * distributions that have been set for them.
      */
     public void initializeValues() {
-        for (final Mapping fixedMapping : this.fixedMappings) {
-            final Parameter parameter = fixedMapping.getParameter();
-            fixedMapping.setValue(initialValue(parameter));
+        for (Mapping fixedMapping : fixedMappings) {
+            Parameter parameter = fixedMapping.getParameter();
+            fixedMapping.setValue(this.initialValue(parameter));
         }
 
-        for (final Mapping freeMapping : this.freeMappings) {
-            final Parameter parameter = freeMapping.getParameter();
-            freeMapping.setValue(initialValue(parameter));
+        for (Mapping freeMapping : freeMappings) {
+            Parameter parameter = freeMapping.getParameter();
+            freeMapping.setValue(this.initialValue(parameter));
         }
     }
 
-    public double getStandardError(final Parameter parameter, final int maxFreeParams) {
-        final Matrix sampleCovar = getSampleCovar();
+    public double getStandardError(Parameter parameter, int maxFreeParams) {
+        Matrix sampleCovar = this.getSampleCovar();
 
         if (sampleCovar == null) {
             return Double.NaN;
         }
 
-        if (getFreeParameters().contains(parameter)) {
-            if (getNumFreeParams() <= maxFreeParams) {
+        if (this.getFreeParameters().contains(parameter)) {
+            if (this.getNumFreeParams() <= maxFreeParams) {
                 if (parameter.getNodeA() != parameter.getNodeB()) {
-                    final Node nodeA = parameter.getNodeA();
-                    final Node nodeB = parameter.getNodeB();
-                    final Node parent;
-                    final Node child;
+                    Node nodeA = parameter.getNodeA();
+                    Node nodeB = parameter.getNodeB();
+                    Node parent;
+                    Node child;
 
-                    final Graph graph = getSemPm().getGraph();
+                    Graph graph = this.getSemPm().getGraph();
 
                     if (graph.isParentOf(nodeA, nodeB)) {
                         parent = nodeA;
@@ -1792,30 +1793,30 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
                         return Double.NaN;
                     }
 
-                    final CovarianceMatrix cov = new CovarianceMatrix(this.measuredNodes, sampleCovar, this.sampleSize);
-                    final Regression regression = new RegressionCovariance(cov);
-                    final List<Node> parents = graph.getParents(child);
+                    CovarianceMatrix cov = new CovarianceMatrix(measuredNodes, sampleCovar, sampleSize);
+                    Regression regression = new RegressionCovariance(cov);
+                    List<Node> parents = graph.getParents(child);
 
-                    for (final Node node : new ArrayList<>(parents)) {
+                    for (Node node : new ArrayList<>(parents)) {
                         if (node.getName().startsWith("E_")) {
                             parents.remove(node);
                         }
                     }
 
-                    if (!(child.getNodeType() == NodeType.LATENT) && !containsLatent(parents)) {
-                        final RegressionResult result = regression.regress(child, parents);
-                        final double[] se = result.getSe();
+                    if (!(child.getNodeType() == NodeType.LATENT) && !this.containsLatent(parents)) {
+                        RegressionResult result = regression.regress(child, parents);
+                        double[] se = result.getSe();
                         return se[parents.indexOf(parent) + 1];
                     }
                 }
 
-                if (this.sampleCovarC == null) {
-                    this.standardErrors = null;
+                if (sampleCovarC == null) {
+                    standardErrors = null;
                     return Double.NaN;
                 }
 
-                final int index = getFreeParameters().indexOf(parameter);
-                final double[] doubles = standardErrors();
+                int index = this.getFreeParameters().indexOf(parameter);
+                double[] doubles = this.standardErrors();
 
                 if (doubles == null) {
                     return Double.NaN;
@@ -1825,7 +1826,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
             } else {
                 return Double.NaN;
             }
-        } else if (getFixedParameters().contains(parameter)) {
+        } else if (this.getFixedParameters().contains(parameter)) {
             return 0.0;
         }
 
@@ -1833,8 +1834,8 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
                 "That is not a parameter of this model: " + parameter);
     }
 
-    private boolean containsLatent(final List<Node> parents) {
-        for (final Node node : parents) {
+    private boolean containsLatent(List<Node> parents) {
+        for (Node node : parents) {
             if (node.getNodeType() == NodeType.LATENT) {
                 return true;
             }
@@ -1844,44 +1845,44 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     public List<Node> listUnmeasuredLatents() {
-        return unmeasuredLatents(getSemPm());
+        return this.unmeasuredLatents(this.getSemPm());
     }
 
-    public double getTValue(final Parameter parameter, final int maxFreeParams) {
-        return getParamValue(parameter)
-                / getStandardError(parameter, maxFreeParams);
+    public double getTValue(Parameter parameter, int maxFreeParams) {
+        return this.getParamValue(parameter)
+                / this.getStandardError(parameter, maxFreeParams);
     }
 
-    public double getPValue(final Parameter parameter, final int maxFreeParams) {
-        final double tValue = getTValue(parameter, maxFreeParams);
-        final int df = getSampleSize() - 1;
+    public double getPValue(Parameter parameter, int maxFreeParams) {
+        double tValue = this.getTValue(parameter, maxFreeParams);
+        int df = this.getSampleSize() - 1;
         return 2.0 * (1.0 - ProbUtils.tCdf(Math.abs(tValue), df));
     }
 
     public boolean isParameterBoundsEnforced() {
-        return this.parameterBoundsEnforced;
+        return parameterBoundsEnforced;
     }
 
     public void setParameterBoundsEnforced(
-            final boolean parameterBoundsEnforced) {
+            boolean parameterBoundsEnforced) {
         this.parameterBoundsEnforced = parameterBoundsEnforced;
     }
 
     public boolean isEstimated() {
-        return this.estimated;
+        return estimated;
     }
 
-    public void setEstimated(final boolean estimated) {
+    public void setEstimated(boolean estimated) {
         this.estimated = estimated;
     }
 
     public boolean isCyclic() {
-        if (!this.cyclicChecked) {
-            this.cyclic = this.semPm.getGraph().existsDirectedCycle();
-            this.cyclicChecked = true;
+        if (!cyclicChecked) {
+            cyclic = semPm.getGraph().existsDirectedCycle();
+            cyclicChecked = true;
         }
 
-        return this.cyclic;
+        return cyclic;
     }
 
 //    public boolean isCheckPositiveDefinite() {
@@ -1896,14 +1897,14 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * @return the variable by the given name, or null if none exists.
      * @throws NullPointerException if name is null.
      */
-    public Node getVariableNode(final String name) {
+    public Node getVariableNode(String name) {
         if (name == null) {
             throw new NullPointerException();
         }
 
-        final List<Node> variables = getVariableNodes();
+        List<Node> variables = this.getVariableNodes();
 
-        for (final Node variable : variables) {
+        for (Node variable : variables) {
             if (name.equals(variable.getName())) {
                 return variable;
             }
@@ -1916,70 +1917,70 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * @return a string representation of the Sem (pretty detailed).
      */
     public String toString() {
-        final List<String> varNames = new ArrayList<>();
+        List<String> varNames = new ArrayList<>();
 
-        for (final Node node : this.variableNodes) {
+        for (Node node : variableNodes) {
             varNames.add(node.getName());
         }
 
-        final StringBuilder buf = new StringBuilder();
+        StringBuilder buf = new StringBuilder();
 
         buf.append("\nVariable nodes:\n\n");
-        buf.append(getVariableNodes());
+        buf.append(this.getVariableNodes());
 
         buf.append("\n\nMeasured nodes:\n\n");
-        buf.append(getMeasuredNodes());
+        buf.append(this.getMeasuredNodes());
 
         buf.append("\n\nEdge coefficient matrix:\n");
-        buf.append(MatrixUtils.toStringSquare(edgeCoef().toArray(), varNames));
+        buf.append(MatrixUtils.toStringSquare(this.edgeCoef().toArray(), varNames));
 
         buf.append("\n\nError covariance matrix:\n");
-        buf.append(MatrixUtils.toStringSquare(getErrCovar().toArray(), varNames));
+        buf.append(MatrixUtils.toStringSquare(this.getErrCovar().toArray(), varNames));
 
         buf.append("\n\nVariable means:\n");
 
-        for (int i = 0; i < getVariableNodes().size(); i++) {
+        for (int i = 0; i < this.getVariableNodes().size(); i++) {
             buf.append("\nMean(");
-            buf.append(getVariableNodes().get(i));
+            buf.append(this.getVariableNodes().get(i));
             buf.append(") = ");
-            buf.append(this.variableMeans[i]);
+            buf.append(variableMeans[i]);
         }
 
         buf.append("\n\nSample size = ");
-        buf.append(this.sampleSize);
+        buf.append(sampleSize);
 
-        if (this.sampleCovarC == null) {
+        if (sampleCovarC == null) {
             buf.append("\n\nSample covaraince matrix not specified**");
         } else {
             buf.append("\n\nsample cov:\n");
-            buf.append(MatrixUtils.toString(this.sampleCovarC.toArray()));
+            buf.append(MatrixUtils.toString(sampleCovarC.toArray()));
         }
 
         buf.append("\n\nimplCovar:\n");
 
         try {
-            buf.append(MatrixUtils.toString(implCovar().toArray()));
-        } catch (final IllegalFormatException e) {
+            buf.append(MatrixUtils.toString(this.implCovar().toArray()));
+        } catch (IllegalFormatException e) {
             e.printStackTrace();
         }
 
         buf.append("\n\nimplCovarMeas:\n");
-        buf.append(MatrixUtils.toString(implCovarMeas().toArray()));
+        buf.append(MatrixUtils.toString(this.implCovarMeas().toArray()));
 
-        if (this.sampleCovarC != null) {
+        if (sampleCovarC != null) {
             buf.append("\n\nmodel chi square = ");
-            buf.append(getChiSquare());
+            buf.append(this.getChiSquare());
 
             buf.append("\nmodel dof = ");
-            buf.append(this.semPm.getDof());
+            buf.append(semPm.getDof());
 
             buf.append("\nmodel p-value = ");
-            buf.append(getPValue());
+            buf.append(this.getPValue());
         }
 
         buf.append("\n\nfree mappings:\n");
-        for (int i = 0; i < this.freeMappings.size(); i++) {
-            final Mapping iMapping = this.freeMappings.get(i);
+        for (int i = 0; i < freeMappings.size(); i++) {
+            Mapping iMapping = freeMappings.get(i);
             buf.append("\n");
             buf.append(i);
             buf.append(". ");
@@ -1987,8 +1988,8 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
         }
 
         buf.append("\n\nfixed mappings:\n");
-        for (int i = 0; i < this.fixedMappings.size(); i++) {
-            final Mapping iMapping = this.fixedMappings.get(i);
+        for (int i = 0; i < fixedMappings.size(); i++) {
+            Mapping iMapping = fixedMappings.get(i);
             buf.append("\n");
             buf.append(i);
             buf.append(". ");
@@ -1999,30 +2000,30 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     //==============================PRIVATE METHODS====================//
-    private void retainPreviousValues(final SemIm oldSemIm) {
+    private void retainPreviousValues(SemIm oldSemIm) {
         if (oldSemIm == null) {
             System.out.println("old sem im null");
             return;
         }
 
-        final List<Node> nodes = this.semPm.getGraph().getNodes();
-        final Graph oldGraph = oldSemIm.getSemPm().getGraph();
+        List<Node> nodes = semPm.getGraph().getNodes();
+        Graph oldGraph = oldSemIm.getSemPm().getGraph();
 
-        for (final Node nodeA : nodes) {
-            for (final Node nodeB : nodes) {
-                final Node _nodeA = oldGraph.getNode(nodeA.getName());
-                final Node _nodeB = oldGraph.getNode(nodeB.getName());
+        for (Node nodeA : nodes) {
+            for (Node nodeB : nodes) {
+                Node _nodeA = oldGraph.getNode(nodeA.getName());
+                Node _nodeB = oldGraph.getNode(nodeB.getName());
 
                 if (_nodeA == null || _nodeB == null) {
                     continue;
                 }
 
-                final double _value = oldSemIm.getParamValue(_nodeA, _nodeB);
+                double _value = oldSemIm.getParamValue(_nodeA, _nodeB);
 
                 if (!Double.isNaN(_value)) {
                     try {
-                        final Parameter _parameter = oldSemIm.getSemPm().getParameter(_nodeA, _nodeB);
-                        final Parameter parameter = getSemPm().getParameter(nodeA, nodeB);
+                        Parameter _parameter = oldSemIm.getSemPm().getParameter(_nodeA, _nodeB);
+                        Parameter parameter = this.getSemPm().getParameter(nodeA, nodeB);
 
                         if (parameter == null || _parameter == null) {
                             continue;
@@ -2036,8 +2037,8 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
                             continue;
                         }
 
-                        setParamValue(nodeA, nodeB, _value);
-                    } catch (final IllegalArgumentException e) {
+                        this.setParamValue(nodeA, nodeB, _value);
+                    } catch (IllegalArgumentException e) {
                         System.out.println("Couldn't set " + nodeA + ", " + nodeB);
                     }
                 }
@@ -2053,15 +2054,15 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 //
 //        return logDetSample;
 //    }
-    private List<Node> unmeasuredLatents(final SemPm semPm) {
-        final SemGraph graph = semPm.getGraph();
+    private List<Node> unmeasuredLatents(SemPm semPm) {
+        SemGraph graph = semPm.getGraph();
 
-        final List<Node> unmeasuredLatents = new LinkedList<>();
+        List<Node> unmeasuredLatents = new LinkedList<>();
 
         NODES:
-        for (final Node node : graph.getNodes()) {
+        for (Node node : graph.getNodes()) {
             if (node.getNodeType() == NodeType.LATENT) {
-                for (final Node child : graph.getChildren(node)) {
+                for (Node child : graph.getChildren(node)) {
                     if (child.getNodeType() == NodeType.MEASURED) {
                         continue NODES;
                     }
@@ -2075,18 +2076,18 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     private Matrix errCovar() {
-        return this.errCovar;
+        return errCovar;
     }
 
     private Matrix implCovar() {
-        computeImpliedCovar();
-        return this.implCovar;
+        this.computeImpliedCovar();
+        return implCovar;
     }
 
     private Matrix implCovarMeas() {
-        computeImpliedCovar();
+        this.computeImpliedCovar();
         // Submatrix of implied covar for measured vars only.
-        final int size = getMeasuredNodes().size();
+        int size = this.getMeasuredNodes().size();
         /*
       The covariance matrix of the measured variables only. May be null if
       implCovar has not been calculated yet. This is the submatrix of
@@ -2094,66 +2095,66 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
       each time the F_ML function is recalculated.
 
          */
-        final Matrix implCovarMeas = new Matrix(size, size);
+        Matrix implCovarMeas = new Matrix(size, size);
 
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
-                final Node iNode = getMeasuredNodes().get(i);
-                final Node jNode = getMeasuredNodes().get(j);
+                Node iNode = this.getMeasuredNodes().get(i);
+                Node jNode = this.getMeasuredNodes().get(j);
 
 //                int _i = getVariableNodes().indexOf(iNode);
 //                int _j = getVariableNodes().indexOf(jNode);
-                if (this.variablesHash == null) {
-                    this.variablesHash = new HashMap<>();
+                if (variablesHash == null) {
+                    variablesHash = new HashMap<>();
 
-                    for (int k = 0; k < this.variableNodes.size(); k++) {
-                        this.variablesHash.put(this.variableNodes.get(k), k);
+                    for (int k = 0; k < variableNodes.size(); k++) {
+                        variablesHash.put(variableNodes.get(k), k);
                     }
                 }
 
-                final int _i = this.variablesHash.get(iNode);
-                final int _j = this.variablesHash.get(jNode);
+                int _i = variablesHash.get(iNode);
+                int _j = variablesHash.get(jNode);
 
-                implCovarMeas.set(i, j, this.implCovar.get(_i, _j));
+                implCovarMeas.set(i, j, implCovar.get(_i, _j));
             }
         }
         return implCovarMeas;
     }
 
     private List<Parameter> initFreeParameters() {
-        return Collections.unmodifiableList(this.semPm.getFreeParameters());
+        return Collections.unmodifiableList(semPm.getFreeParameters());
     }
 
     /**
      * @return a random value from the appropriate distribution for the given
      * parameter.
      */
-    private double initialValue(final Parameter parameter) {
-        if (!getSemPm().getParameters().contains(parameter)) {
+    private double initialValue(Parameter parameter) {
+        if (!this.getSemPm().getParameters().contains(parameter)) {
             throw new IllegalArgumentException("Not a parameter for this SEM: " + parameter);
         }
 
         if (parameter.isInitializedRandomly()) {
             if (parameter.getType() == ParamType.COEF) {
-                final double coefLow = getParams().getDouble("coefLow", .5);
-                final double coefHigh = getParams().getDouble("coefHigh", 1.5);
-                final double value = new Split(coefLow, coefHigh).nextRandom();
-                if (getParams().getBoolean("coefSymmetric", true)) {
+                double coefLow = this.getParams().getDouble("coefLow", .5);
+                double coefHigh = this.getParams().getDouble("coefHigh", 1.5);
+                double value = new Split(coefLow, coefHigh).nextRandom();
+                if (this.getParams().getBoolean("coefSymmetric", true)) {
                     return value;
                 } else {
                     return Math.abs(value);
                 }
             } else if (parameter.getType() == ParamType.COVAR) {
-                final double covLow = getParams().getDouble("covLow", 0.1);
-                final double covHigh = getParams().getDouble("covHigh", 0.2);
-                final double value = new Split(covLow, covHigh).nextRandom();
-                if (getParams().getBoolean("covSymmetric", true)) {
+                double covLow = this.getParams().getDouble("covLow", 0.1);
+                double covHigh = this.getParams().getDouble("covHigh", 0.2);
+                double value = new Split(covLow, covHigh).nextRandom();
+                if (this.getParams().getBoolean("covSymmetric", true)) {
                     return value;
                 } else {
                     return Math.abs(value);
                 }
             } else { //if (parameter.getType() == ParamType.VAR) {
-                return RandomUtil.getInstance().nextUniform(getParams().getDouble("varLow", 1), getParams().getDouble("varHigh", 3));
+                return RandomUtil.getInstance().nextUniform(this.getParams().getDouble("varLow", 1), this.getParams().getDouble("varHigh", 3));
             }
         } else {
             return parameter.getStartingValue();
@@ -2164,7 +2165,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * @return the (unmodifiable) list of freeParameters (type Param).
      */
     private List<Mapping> freeMappings() {
-        return this.freeMappings;
+        return freeMappings;
     }
 
     /**
@@ -2173,16 +2174,16 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * @throws IllegalArgumentException if not all of the variables of
      *                                  <code>semPm</code> are in <code>covMatrix</code>.
      */
-    private ICovarianceMatrix fixVarOrder(final ICovarianceMatrix covMatrix) {
-        final List<String> varNamesList = new ArrayList<>();
+    private ICovarianceMatrix fixVarOrder(ICovarianceMatrix covMatrix) {
+        List<String> varNamesList = new ArrayList<>();
 
-        for (int i = 0; i < getMeasuredNodes().size(); i++) {
-            final Node node = getMeasuredNodes().get(i);
+        for (int i = 0; i < this.getMeasuredNodes().size(); i++) {
+            Node node = this.getMeasuredNodes().get(i);
             varNamesList.add(node.getName());
         }
 
         //System.out.println("CovarianceMatrix ar order: " + varNamesList);
-        final String[] measuredVarNames = varNamesList.toArray(new String[varNamesList.size()]);
+        String[] measuredVarNames = varNamesList.toArray(new String[varNamesList.size()]);
         return covMatrix.getSubmatrix(measuredVarNames);
     }
 
@@ -2190,29 +2191,29 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * Creates an unmodifiable list of freeMappings in the same order as the
      * given list of freeParameters.
      */
-    private List<Mapping> createMappings(final List<Parameter> parameters) {
-        final List<Mapping> mappings = new ArrayList<>();
-        final SemGraph graph = getSemPm().getGraph();
+    private List<Mapping> createMappings(List<Parameter> parameters) {
+        List<Mapping> mappings = new ArrayList<>();
+        SemGraph graph = this.getSemPm().getGraph();
 
-        for (final Parameter parameter : parameters) {
-            final Node nodeA = graph.getVarNode(parameter.getNodeA());
-            final Node nodeB = graph.getVarNode(parameter.getNodeB());
+        for (Parameter parameter : parameters) {
+            Node nodeA = graph.getVarNode(parameter.getNodeA());
+            Node nodeB = graph.getVarNode(parameter.getNodeB());
 
             if (nodeA == null || nodeB == null) {
                 throw new IllegalArgumentException("Missing variable--either " + nodeA + " or " + nodeB + " parameter = " + parameter + ".");
             }
 
-            final int i = getVariableNodes().indexOf(nodeA);
-            final int j = getVariableNodes().indexOf(nodeB);
+            int i = this.getVariableNodes().indexOf(nodeA);
+            int j = this.getVariableNodes().indexOf(nodeB);
 
             if (parameter.getType() == ParamType.COEF) {
-                final Mapping mapping = new Mapping(this, parameter, edgeCoef(), i, j);
+                Mapping mapping = new Mapping(this, parameter, this.edgeCoef(), i, j);
                 mappings.add(mapping);
             } else if (parameter.getType() == ParamType.VAR) {
-                final Mapping mapping = new Mapping(this, parameter, errCovar(), i, i);
+                Mapping mapping = new Mapping(this, parameter, this.errCovar(), i, i);
                 mappings.add(mapping);
             } else if (parameter.getType() == ParamType.COVAR) {
-                final Mapping mapping = new Mapping(this, parameter, errCovar(), i, j);
+                Mapping mapping = new Mapping(this, parameter, this.errCovar(), i, j);
                 mappings.add(mapping);
             }
         }
@@ -2221,10 +2222,10 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     private List<Parameter> initFixedParameters() {
-        final List<Parameter> fixedParameters = new ArrayList<>();
+        List<Parameter> fixedParameters = new ArrayList<>();
 
-        for (final Parameter _parameter : getSemPm().getParameters()) {
-            final ParamType type = _parameter.getType();
+        for (Parameter _parameter : this.getSemPm().getParameters()) {
+            ParamType type = _parameter.getType();
 
             if (type == ParamType.VAR || type == ParamType.COVAR || type == ParamType.COEF) {
                 if (_parameter.isFixed()) {
@@ -2237,9 +2238,9 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     private List<Parameter> initMeanParameters() {
-        final List<Parameter> meanParameters = new ArrayList<>();
+        List<Parameter> meanParameters = new ArrayList<>();
 
-        for (final Parameter param : getSemPm().getParameters()) {
+        for (Parameter param : this.getSemPm().getParameters()) {
             if (param.getType() == ParamType.MEAN) {
                 meanParameters.add(param);
             }
@@ -2255,28 +2256,28 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * only.
      */
     private void computeImpliedCovar() {
-        final Matrix edgeCoefT = edgeCoef().transpose();// getAlgebra().transpose(edgeCoefC());
+        Matrix edgeCoefT = this.edgeCoef().transpose();// getAlgebra().transpose(edgeCoefC());
 
         // Note. Since the sizes of the temp matrices in this calculation
         // never change, we ought to be able to reuse them.
-        this.implCovar = MatrixUtils.impliedCovar(edgeCoefT, errCovar());
+        implCovar = MatrixUtils.impliedCovar(edgeCoefT, this.errCovar());
 
     }
 
-    private double logDet(final Matrix matrix2D) {
-        final double det = matrix2D.det();
+    private double logDet(Matrix matrix2D) {
+        double det = matrix2D.det();
         return Math.log(Math.abs(det));
 //        return det > 0 ? Math.log(det) : 0;
     }
 
-    private double traceAInvB(final Matrix A, final Matrix B) {
+    private double traceAInvB(Matrix A, Matrix B) {
 
         // Note that at this point the sem and the sample covar MUST have the
         // same variables in the same order.
-        final Matrix inverse = A.inverse();
-        final Matrix product = inverse.times(B);
+        Matrix inverse = A.inverse();
+        Matrix product = inverse.times(B);
 
-        final double trace = product.trace();
+        double trace = product.trace();
 
 //        double trace = MatrixUtils.trace(product);
         if (trace < -1e-8) {
@@ -2309,20 +2310,20 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 //        return trace;
 //    }
     private Matrix edgeCoef() {
-        return this.edgeCoef;
+        return edgeCoef;
     }
 
     private double[] standardErrors() {
-        if (this.standardErrors == null) {
-            final SemStdErrorEstimator estimator = new SemStdErrorEstimator();
+        if (standardErrors == null) {
+            SemStdErrorEstimator estimator = new SemStdErrorEstimator();
             try {
                 estimator.computeStdErrors(this);
-            } catch (final Exception e) {
+            } catch (Exception e) {
                 return null;
             }
-            this.standardErrors = estimator.getStdErrors();
+            standardErrors = estimator.getStdErrors();
         }
-        return this.standardErrors;
+        return standardErrors;
     }
 
     /**
@@ -2338,57 +2339,57 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (this.semPm == null) {
+        if (semPm == null) {
             throw new NullPointerException();
         }
 
-        if (this.variableNodes == null) {
+        if (variableNodes == null) {
             throw new NullPointerException();
         }
 
-        if (this.measuredNodes == null) {
+        if (measuredNodes == null) {
             throw new NullPointerException();
         }
 
-        if (this.variableMeans == null) {
+        if (variableMeans == null) {
             throw new NullPointerException();
         }
 
-        if (this.freeParameters == null) {
+        if (freeParameters == null) {
             throw new NullPointerException();
         }
 
-        if (this.freeMappings == null) {
+        if (freeMappings == null) {
             throw new NullPointerException();
         }
 
-        if (this.fixedParameters == null) {
+        if (fixedParameters == null) {
             throw new NullPointerException();
         }
 
-        if (this.fixedMappings == null) {
+        if (fixedMappings == null) {
             throw new NullPointerException();
         }
 
-        if (this.meanParameters == null) {
-            this.meanParameters = initMeanParameters();
+        if (meanParameters == null) {
+            meanParameters = this.initMeanParameters();
         }
 
-        if (this.sampleSize < 0) {
+        if (sampleSize < 0) {
             throw new IllegalArgumentException(
-                    "Sample size out of range: " + this.sampleSize);
+                    "Sample size out of range: " + sampleSize);
         }
 
-        if (getParams() == null) {
-            setParams(new Parameters());
+        if (this.getParams() == null) {
+            this.setParams(new Parameters());
         }
 
-        if (this.distributions == null) {
-            this.distributions = new HashMap<>();
+        if (distributions == null) {
+            distributions = new HashMap<>();
         }
     }
 
@@ -2399,7 +2400,7 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
 //
 //        return algebra;
 //    }
-    private double round(final double value, int decimalPlace) {
+    private double round(double value, int decimalPlace) {
         double power_of_ten = 1;
         while (decimalPlace-- > 0) {
             power_of_ten *= 10.0;
@@ -2409,73 +2410,73 @@ public final class SemIm implements IM, ISemIm, TetradSerializable {
     }
 
     public Parameters getParams() {
-        return this.params;
+        return params;
     }
 
-    public void setParams(final Parameters params) {
+    public void setParams(Parameters params) {
         this.params = params;
     }
 
-    public void setFunction(final Node node, final ConnectionFunction function) {
-        final List<Node> parents = this.semPm.getGraph().getParents(node);
+    public void setFunction(Node node, ConnectionFunction function) {
+        List<Node> parents = semPm.getGraph().getParents(node);
 
-        for (final Iterator<Node> j = parents.iterator(); j.hasNext(); ) {
-            final Node _node = j.next();
+        for (Iterator<Node> j = parents.iterator(); j.hasNext(); ) {
+            Node _node = j.next();
 
             if (_node.getNodeType() == NodeType.ERROR) {
                 j.remove();
             }
         }
 
-        final HashSet<Node> parentSet = new HashSet<>(parents);
-        final List<Node> inputList = Arrays.asList(function.getInputNodes());
-        final HashSet<Node> inputSet = new HashSet<>(inputList);
+        HashSet<Node> parentSet = new HashSet<>(parents);
+        List<Node> inputList = Arrays.asList(function.getInputNodes());
+        HashSet<Node> inputSet = new HashSet<>(inputList);
 
         if (!parentSet.equals(inputSet)) {
             throw new IllegalArgumentException("The given function for " + node
                     + " may only use the parents of " + node + ": " + parents);
         }
 
-        this.functions.put(node, function);
+        functions.put(node, function);
     }
 
-    public ConnectionFunction getConnectionFunction(final Node node) {
-        return this.functions.get(node);
+    public ConnectionFunction getConnectionFunction(Node node) {
+        return functions.get(node);
     }
 
     public double[] getVariableMeans() {
-        return this.variableMeans;
+        return variableMeans;
     }
 
     public boolean isSimulatedPositiveDataOnly() {
-        return this.simulatedPositiveDataOnly;
+        return simulatedPositiveDataOnly;
     }
 
-    public void setSimulatedPositiveDataOnly(final boolean simulatedPositiveDataOnly) {
+    public void setSimulatedPositiveDataOnly(boolean simulatedPositiveDataOnly) {
         this.simulatedPositiveDataOnly = simulatedPositiveDataOnly;
     }
 
-    public Matrix getImplCovar(final List<Node> nodes) {
-        computeImpliedCovar();
+    public Matrix getImplCovar(List<Node> nodes) {
+        this.computeImpliedCovar();
         // Submatrix of implied covar for listed nodes only
-        final int size = nodes.size();
-        final Matrix implCovarMeas = new Matrix(size, size);
+        int size = nodes.size();
+        Matrix implCovarMeas = new Matrix(size, size);
 
-        final Map<Node, Integer> variablesHash = new HashMap<>();
+        Map<Node, Integer> variablesHash = new HashMap<>();
 
-        for (int k = 0; k < this.variableNodes.size(); k++) {
-            variablesHash.put(this.variableNodes.get(k), k);
+        for (int k = 0; k < variableNodes.size(); k++) {
+            variablesHash.put(variableNodes.get(k), k);
         }
 
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
-                final Node iNode = nodes.get(i);
-                final Node jNode = nodes.get(j);
+                Node iNode = nodes.get(i);
+                Node jNode = nodes.get(j);
 
-                final int _i = variablesHash.get(iNode);
-                final int _j = variablesHash.get(jNode);
+                int _i = variablesHash.get(iNode);
+                int _j = variablesHash.get(jNode);
 
-                implCovarMeas.set(i, j, this.implCovar.get(_i, _j));
+                implCovarMeas.set(i, j, implCovar.get(_i, _j));
             }
         }
 

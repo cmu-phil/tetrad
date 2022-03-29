@@ -30,19 +30,19 @@ public class F1Arrow implements Statistic {
     }
 
     @Override
-    public double getValue(final Graph trueGraph, final Graph estGraph, final DataModel dataModel) {
-        final ArrowConfusion arrowConfusion = new ArrowConfusion(trueGraph, estGraph);
-        final int arrowTp = arrowConfusion.getArrowsTp();
-        final int arrowFp = arrowConfusion.getArrowsFp();
-        final int arrowFn = arrowConfusion.getArrowsFn();
-        final int arrowTn = arrowConfusion.getArrowsTn();
-        final double arrowPrecision = arrowTp / (double) (arrowTp + arrowFp);
-        final double arrowRecall = arrowTp / (double) (arrowTp + arrowFn);
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+        ArrowConfusion arrowConfusion = new ArrowConfusion(trueGraph, estGraph);
+        int arrowTp = arrowConfusion.getArrowsTp();
+        int arrowFp = arrowConfusion.getArrowsFp();
+        int arrowFn = arrowConfusion.getArrowsFn();
+        int arrowTn = arrowConfusion.getArrowsTn();
+        double arrowPrecision = arrowTp / (double) (arrowTp + arrowFp);
+        double arrowRecall = arrowTp / (double) (arrowTp + arrowFn);
         return 2 * (arrowPrecision * arrowRecall) / (arrowPrecision + arrowRecall);
     }
 
     @Override
-    public double getNormValue(final double value) {
+    public double getNormValue(double value) {
         return value;
     }
 }

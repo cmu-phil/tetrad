@@ -34,15 +34,15 @@ public class DSeparationScore implements ScoreWrapper {
 
     }
 
-    public DSeparationScore(final Graph graph) {
+    public DSeparationScore(Graph graph) {
         this.graph = graph;
     }
 
     @Override
-    public Score getScore(final DataModel dataSet, final Parameters parameters) {
+    public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
         if (dataSet == null) {
-            return new GraphScore(this.graph);
+            return new GraphScore(graph);
         } else {
             throw new IllegalArgumentException("Expecting no data for a d-separation test.");
         }
@@ -64,11 +64,11 @@ public class DSeparationScore implements ScoreWrapper {
     }
 
     @Override
-    public Node getVariable(final String name) {
-        return this.dataSet.getVariable(name);
+    public Node getVariable(String name) {
+        return dataSet.getVariable(name);
     }
 
-    public void setGraph(final Graph graph) {
+    public void setGraph(Graph graph) {
         this.graph = graph;
     }
 

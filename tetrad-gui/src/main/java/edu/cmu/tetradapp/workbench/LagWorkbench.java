@@ -48,8 +48,8 @@ public class LagWorkbench extends AbstractWorkbench {
     private static final int BIDIRECTED_EDGE = 4;
 
     //====================PRIVATE FIELDS=================================//
-    private int nodeType = LagWorkbench.MEASURED_NODE;
-    private int edgeMode = LagWorkbench.DIRECTED_EDGE;
+    private int nodeType = MEASURED_NODE;
+    private int edgeMode = DIRECTED_EDGE;
 
     //========================CONSTRUCTORS===============================//
 
@@ -64,9 +64,9 @@ public class LagWorkbench extends AbstractWorkbench {
     /**
      * Constructs a new workbench workbench for the given workbench model.
      */
-    private LagWorkbench(final Graph graph) {
+    private LagWorkbench(Graph graph) {
         super(graph);
-        setRightClickPopupAllowed(true);
+        this.setRightClickPopupAllowed(true);
     }
 
     //========================PUBLIC METHODS==============================//
@@ -81,7 +81,7 @@ public class LagWorkbench extends AbstractWorkbench {
      * @see #BIDIRECTED_EDGE
      */
     public int getEdgeMode() {
-        return this.edgeMode;
+        return edgeMode;
     }
 
     /**
@@ -90,18 +90,18 @@ public class LagWorkbench extends AbstractWorkbench {
     public Node getNewModelNode() {
 
         // select a name and create the model node
-        final String name;
-        final Node modelNode;
+        String name;
+        Node modelNode;
 
-        switch (this.nodeType) {
-            case LagWorkbench.MEASURED_NODE:
-                name = nextVariableName("X");
+        switch (nodeType) {
+            case MEASURED_NODE:
+                name = this.nextVariableName("X");
                 modelNode = new GraphNode(name);
                 modelNode.setNodeType(NodeType.MEASURED);
                 break;
 
-            case LagWorkbench.LATENT_NODE:
-                name = nextVariableName("L");
+            case LATENT_NODE:
+                name = this.nextVariableName("L");
                 modelNode = new GraphNode(name);
                 modelNode.setNodeType(NodeType.LATENT);
                 break;
@@ -120,12 +120,12 @@ public class LagWorkbench extends AbstractWorkbench {
      * @param modelNode the model node.
      * @return the new display node.
      */
-    public DisplayNode getNewDisplayNode(final Node modelNode) {
-        final DisplayNode displayNode;
+    public DisplayNode getNewDisplayNode(Node modelNode) {
+        DisplayNode displayNode;
 
         if (modelNode.getNodeType() == NodeType.MEASURED) {
-            final GraphNodeMeasured nodeMeasured = new GraphNodeMeasured(modelNode);
-            nodeMeasured.setEditExitingMeasuredVarsAllowed(isEditExistingMeasuredVarsAllowed());
+            GraphNodeMeasured nodeMeasured = new GraphNodeMeasured(modelNode);
+            nodeMeasured.setEditExitingMeasuredVarsAllowed(this.isEditExistingMeasuredVarsAllowed());
             displayNode = nodeMeasured;
         } else if (modelNode.getNodeType() == NodeType.LATENT) {
             displayNode = new GraphNodeLatent(modelNode);
@@ -136,11 +136,11 @@ public class LagWorkbench extends AbstractWorkbench {
         }
 
         displayNode.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(final PropertyChangeEvent evt) {
+            public void propertyChange(PropertyChangeEvent evt) {
                 if ("resetGraph".equals(evt.getPropertyName())) {
-                    setGraph(getGraph());
+                    LagWorkbench.this.setGraph(LagWorkbench.this.getGraph());
                 } else if ("editingValueChanged".equals(evt.getPropertyName())) {
-                    firePropertyChange("modelChanged", null, null);
+                    LagWorkbench.this.firePropertyChange("modelChanged", null, null);
                 }
             }
         });
@@ -155,16 +155,16 @@ public class LagWorkbench extends AbstractWorkbench {
      * @param modelEdge the model edge.
      * @return the new display edge.
      */
-    public IDisplayEdge getNewDisplayEdge(final Edge modelEdge) {
-        final Node node1 = modelEdge.getNode1();
-        final Node node2 = modelEdge.getNode2();
+    public IDisplayEdge getNewDisplayEdge(Edge modelEdge) {
+        Node node1 = modelEdge.getNode1();
+        Node node2 = modelEdge.getNode2();
 
         if (node1 == node2) {
             throw new IllegalArgumentException("Edges to self not supported.");
         }
 
-        final DisplayNode displayNodeA = (DisplayNode) getModelNodesToDisplay().get(node1);
-        final DisplayNode displayNodeB = (DisplayNode) getModelNodesToDisplay().get(node2);
+        DisplayNode displayNodeA = (DisplayNode) this.getModelNodesToDisplay().get(node1);
+        DisplayNode displayNodeB = (DisplayNode) this.getModelNodesToDisplay().get(node2);
 
         if ((displayNodeA == null) || (displayNodeB == null)) {
             return null;
@@ -181,18 +181,18 @@ public class LagWorkbench extends AbstractWorkbench {
      * @param node2 the other model node.
      * @return the new model edge.
      */
-    public Edge getNewModelEdge(final Node node1, final Node node2) {
-        switch (this.edgeMode) {
-            case LagWorkbench.DIRECTED_EDGE:
+    public Edge getNewModelEdge(Node node1, Node node2) {
+        switch (edgeMode) {
+            case DIRECTED_EDGE:
                 return Edges.directedEdge(node1, node2);
 
-            case LagWorkbench.NONDIRECTED_EDGE:
+            case NONDIRECTED_EDGE:
                 return Edges.nondirectedEdge(node1, node2);
 
-            case LagWorkbench.PARTIALLY_ORIENTED_EDGE:
+            case PARTIALLY_ORIENTED_EDGE:
                 return Edges.partiallyOrientedEdge(node1, node2);
 
-            case LagWorkbench.BIDIRECTED_EDGE:
+            case BIDIRECTED_EDGE:
                 return Edges.bidirectedEdge(node1, node2);
 
             default:
@@ -209,19 +209,19 @@ public class LagWorkbench extends AbstractWorkbench {
      * @param mouseLoc the location of the mouse.
      * @return the new tracking edge (a display edge).
      */
-    public IDisplayEdge getNewTrackingEdge(final DisplayNode node, final Point mouseLoc) {
-        switch (this.edgeMode) {
-            case LagWorkbench.DIRECTED_EDGE:
+    public IDisplayEdge getNewTrackingEdge(DisplayNode node, Point mouseLoc) {
+        switch (edgeMode) {
+            case DIRECTED_EDGE:
                 return new DisplayEdge(node, mouseLoc, DisplayEdge.DIRECTED);
 
-            case LagWorkbench.NONDIRECTED_EDGE:
+            case NONDIRECTED_EDGE:
                 return new DisplayEdge(node, mouseLoc, DisplayEdge.NONDIRECTED);
 
-            case LagWorkbench.PARTIALLY_ORIENTED_EDGE:
+            case PARTIALLY_ORIENTED_EDGE:
                 return new DisplayEdge(node, mouseLoc,
                         DisplayEdge.PARTIALLY_ORIENTED);
 
-            case LagWorkbench.BIDIRECTED_EDGE:
+            case BIDIRECTED_EDGE:
                 return new DisplayEdge(node, mouseLoc, DisplayEdge.BIDIRECTED);
 
             default:
@@ -238,7 +238,7 @@ public class LagWorkbench extends AbstractWorkbench {
      * @see #LATENT_NODE
      */
     public int getNodeMode() {
-        return this.nodeType;
+        return nodeType;
     }
 
     /**
@@ -249,16 +249,16 @@ public class LagWorkbench extends AbstractWorkbench {
      * @param base the base string.
      * @return the first string in the sequence not already being used.
      */
-    private String nextVariableName(final String base) {
+    private String nextVariableName(String base) {
 
         // Variable names should start with "1."
         int i = 0;
 
         loop:
         while (true) {
-            final String name = base + (++i);
+            String name = base + (++i);
 
-            for (final Node node1 : getGraph().getNodes()) {
+            for (Node node1 : this.getGraph().getNodes()) {
 
                 if (node1.getName().equals(name)) {
                     continue loop;
@@ -274,15 +274,15 @@ public class LagWorkbench extends AbstractWorkbench {
     /**
      * Sets the edge mode to the given mode.
      */
-    public void setEdgeMode(final int edgeMode) {
+    public void setEdgeMode(int edgeMode) {
         switch (edgeMode) {
-            case LagWorkbench.DIRECTED_EDGE:
+            case DIRECTED_EDGE:
                 // Falls through!
-            case LagWorkbench.NONDIRECTED_EDGE:
+            case NONDIRECTED_EDGE:
                 // Falls through!
-            case LagWorkbench.PARTIALLY_ORIENTED_EDGE:
+            case PARTIALLY_ORIENTED_EDGE:
                 // Falls through!
-            case LagWorkbench.BIDIRECTED_EDGE:
+            case BIDIRECTED_EDGE:
                 this.edgeMode = edgeMode;
                 break;
             default:
@@ -293,8 +293,8 @@ public class LagWorkbench extends AbstractWorkbench {
     /**
      * Sets the type of this node to the given type.
      */
-    public void setNodeType(final int nodeType) {
-        if (nodeType == LagWorkbench.MEASURED_NODE || nodeType == LagWorkbench.LATENT_NODE) {
+    public void setNodeType(int nodeType) {
+        if (nodeType == MEASURED_NODE || nodeType == LATENT_NODE) {
             this.nodeType = nodeType;
         } else {
             throw new IllegalArgumentException("The type of the node must be " +
@@ -306,23 +306,23 @@ public class LagWorkbench extends AbstractWorkbench {
      * Pastes a list of session elements (SessionNodeWrappers and SessionEdges)
      * into the workbench.
      */
-    public void pasteSubgraph(final List graphElements, final Point upperLeft) {
+    public void pasteSubgraph(List graphElements, Point upperLeft) {
 
         // Extract the SessionNodes from the SessionNodeWrappers
         // and pass the list of them to the Session.  Choose a unique
         // name for each of the session wrappers.
-        final Point oldUpperLeft = EditorUtils.getTopLeftPoint(graphElements);
-        final int deltaX = upperLeft.x - oldUpperLeft.x;
-        final int deltaY = upperLeft.y - oldUpperLeft.y;
+        Point oldUpperLeft = EditorUtils.getTopLeftPoint(graphElements);
+        int deltaX = upperLeft.x - oldUpperLeft.x;
+        int deltaY = upperLeft.y - oldUpperLeft.y;
 
-        for (final Object graphElement : graphElements) {
+        for (Object graphElement : graphElements) {
 
             if (graphElement instanceof Node) {
-                final Node node = (Node) graphElement;
-                adjustNameAndPosition(node, deltaX, deltaY);
-                getWorkbench().getGraph().addNode(node);
+                Node node = (Node) graphElement;
+                this.adjustNameAndPosition(node, deltaX, deltaY);
+                this.getWorkbench().getGraph().addNode(node);
             } else if (graphElement instanceof Edge) {
-                getWorkbench().getGraph().addEdge((Edge) graphElement);
+                this.getWorkbench().getGraph().addEdge((Edge) graphElement);
             } else {
                 throw new IllegalArgumentException("The list of session " +
                         "elements should contain only SessionNodeWrappers " +
@@ -342,11 +342,11 @@ public class LagWorkbench extends AbstractWorkbench {
      * @param deltaX the shift in x
      * @param deltaY the shift in y.
      */
-    private void adjustNameAndPosition(final Node node, final int deltaX,
-                                       final int deltaY) {
-        final String originalName = node.getName();
+    private void adjustNameAndPosition(Node node, int deltaX,
+                                       int deltaY) {
+        String originalName = node.getName();
         //String base = extractBase(originalName);
-        final String uniqueName = nextUniqueName(originalName);
+        String uniqueName = this.nextUniqueName(originalName);
 
         if (!uniqueName.equals(originalName)) {
             node.setName(uniqueName);
@@ -363,22 +363,22 @@ public class LagWorkbench extends AbstractWorkbench {
         if (base == null) {
             throw new NullPointerException("Base name must be non-null.");
         }
-        final List<Node> currentNodes = this.getWorkbench().getGraph().getNodes();
-        if (!LagWorkbench.containsName(currentNodes, base)) {
+        List<Node> currentNodes = getWorkbench().getGraph().getNodes();
+        if (!containsName(currentNodes, base)) {
             return base;
         }
         // otherwise fine new unique name.
         base += "_";
         int i = 1;
-        while (LagWorkbench.containsName(currentNodes, base + i)) {
+        while (containsName(currentNodes, base + i)) {
             i++;
         }
 
         return base + i;
     }
 
-    private static boolean containsName(final List<Node> nodes, final String name) {
-        for (final Node node : nodes) {
+    private static boolean containsName(List<Node> nodes, String name) {
+        for (Node node : nodes) {
             if (name.equals(node.getName())) {
                 return true;
             }

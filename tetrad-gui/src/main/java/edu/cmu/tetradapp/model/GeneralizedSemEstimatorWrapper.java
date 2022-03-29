@@ -49,20 +49,20 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
      */
     private String name;
 
-    private GeneralizedSemPm semPm = null;
+    private GeneralizedSemPm semPm;
 
-    private DataSet data = null;
+    private DataSet data;
 
     /**
      * True just in case errors should be shown in the interface.
      */
     private boolean showErrors;
-    private GeneralizedSemIm estIm = null;
+    private GeneralizedSemIm estIm;
     private String report = "";
 
     //==============================CONSTRUCTORS==========================//
 
-    public GeneralizedSemEstimatorWrapper(final GeneralizedSemPmWrapper semPm, final DataWrapper data) {
+    public GeneralizedSemEstimatorWrapper(GeneralizedSemPmWrapper semPm, DataWrapper data) {
         if (semPm == null) {
             throw new NullPointerException("SEM PM must not be null.");
         }
@@ -70,7 +70,7 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
         this.semPm = semPm.getSemPm();
         this.data = (DataSet) data.getSelectedDataModel();
 
-        execute();
+        this.execute();
     }
 
 //    public GeneralizedSemEstimatorWrapper(GeneralizedSemImWrapper semIm, DataWrapper data) {
@@ -85,9 +85,9 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
 //    }
 
     public void execute() {
-        final GeneralizedSemEstimator estimator = new GeneralizedSemEstimator();
-        this.estIm = estimator.estimate(this.semPm, this.data);
-        this.report = estimator.getReport();
+        GeneralizedSemEstimator estimator = new GeneralizedSemEstimator();
+        estIm = estimator.estimate(semPm, data);
+        report = estimator.getReport();
     }
 
     public static Node serializableInstance() {
@@ -98,7 +98,7 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
     //============================PUBLIC METHODS=========================//
 
     public GeneralizedSemIm getSemIm() {
-        return this.estIm;
+        return estIm;
     }
 
     /**
@@ -114,52 +114,52 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
      * @throws IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
 
     public Graph getGraph() {
-        return this.semPm.getGraph();
+        return semPm.getGraph();
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
     public boolean isShowErrors() {
-        return this.showErrors;
+        return showErrors;
     }
 
-    public void setShowErrors(final boolean showErrors) {
+    public void setShowErrors(boolean showErrors) {
         this.showErrors = showErrors;
     }
 
     //======================= Private methods ====================//
 
-    private void log(final GeneralizedSemIm im) {
+    private void log(GeneralizedSemIm im) {
         TetradLogger.getInstance().log("info", "Generalized SEM IM");
         TetradLogger.getInstance().log("im", im.toString());
     }
 
     public Graph getSourceGraph() {
-        return getGraph();
+        return this.getGraph();
     }
 
     public Graph getResultGraph() {
-        return getGraph();
+        return this.getGraph();
     }
 
     public List<String> getVariableNames() {
-        return getGraph().getNodeNames();
+        return this.getGraph().getNodeNames();
     }
 
     public List<Node> getVariables() {
-        return getGraph().getNodes();
+        return this.getGraph().getNodes();
     }
 
 
@@ -167,15 +167,15 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
      * The wrapped SemPm.
      */
     public GeneralizedSemPm getSemPm() {
-        return this.semPm;
+        return semPm;
     }
 
-    public void setSemPm(final GeneralizedSemPm semPm) {
+    public void setSemPm(GeneralizedSemPm semPm) {
         this.semPm = semPm;
     }
 
     public String getReport() {
-        return this.report;
+        return report;
     }
 }
 

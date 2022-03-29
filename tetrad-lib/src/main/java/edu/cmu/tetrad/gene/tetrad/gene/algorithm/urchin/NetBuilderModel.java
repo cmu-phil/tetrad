@@ -26,112 +26,112 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 import java.text.NumberFormat;
 
 public class NetBuilderModel {
-    public NetBuilderModel(final double[] exogenousInputs, final int nhours) {
+    public NetBuilderModel(double[] exogenousInputs, int nhours) {
 
-        final NbComponent matCBeta =
+        NbComponent matCBeta =
                 new NbFunction(10.0, 1.0, null, null, "Mat CBeta");
 
-        final NbComponent liCl = new NbFunction(10.0, 1.0, null, null, "LiCl");
+        NbComponent liCl = new NbFunction(10.0, 1.0, null, null, "LiCl");
 
-        final NbComponent matOtx = new NbFunction(1.0, 1.0, null, null, "Mat Otx");
+        NbComponent matOtx = new NbFunction(1.0, 1.0, null, null, "Mat Otx");
 
-        final NbComponent TCF = new NbFunction(10.0, 1.0, null, null, "TCF");
+        NbComponent TCF = new NbFunction(10.0, 1.0, null, null, "TCF");
 
-        final NbComponent[] chiparents = {matCBeta};
-        final int[] chicauses = {1};
-        final NbComponent chi =
+        NbComponent[] chiparents = {matCBeta};
+        int[] chicauses = {1};
+        NbComponent chi =
                 new NbFunctionAnd(1.0, 1.0, chiparents, chicauses, "Chi");
 
-        final NbComponent chiSwitch =
+        NbComponent chiSwitch =
                 new NbFunction(10.0, 1.0, null, null, "ChiSwitch");
 
-        final NbComponent[] pcparents = {chi, chiSwitch};
-        final int[] pccauses = {1, 1};
-        final NbComponent postChi =
+        NbComponent[] pcparents = {chi, chiSwitch};
+        int[] pccauses = {1, 1};
+        NbComponent postChi =
                 new NbFunctionOr(1.0, 1.0, pcparents, pccauses, "Post Chi");
 
-        final NbComponent[] nBparents = {TCF, postChi};
-        final int[] nBcauses = {1, 1};
-        final NbComponent nB = new NbFunctionAnd(1.0, 1.0, nBparents, nBcauses, "nB");
+        NbComponent[] nBparents = {TCF, postChi};
+        int[] nBcauses = {1, 1};
+        NbComponent nB = new NbFunctionAnd(1.0, 1.0, nBparents, nBcauses, "nB");
 
-        final NbComponent[] nBmodparents = {nB};
-        final int[] nBmodcauses = {1};
-        final NbComponent nBmod =
+        NbComponent[] nBmodparents = {nB};
+        int[] nBmodcauses = {1};
+        NbComponent nBmod =
                 new NbFunctionSV(10.0, 1.0, nBmodparents, nBmodcauses, "nBmod");
 
-        final NbComponent[] wnt8parents = {nBmod};
-        final int[] wnt8causes = {1};
-        final NbComponent wnt8 =
+        NbComponent[] wnt8parents = {nBmod};
+        int[] wnt8causes = {1};
+        NbComponent wnt8 =
                 new NbGeneAnd(1.0, 1.0, wnt8parents, wnt8causes, "Wnt8", 0.1);
 
-        final NbComponent[] krlparents = {nBmod};
-        final int[] krlcauses = {1};
-        final NbComponent krl =
+        NbComponent[] krlparents = {nBmod};
+        int[] krlcauses = {1};
+        NbComponent krl =
                 new NbGeneAnd(100.0, 1.0, krlparents, krlcauses, "Krl", 0.1);
 
-        final NbComponent[] soxb1parents = {krl};
-        final int[] soxb1causes = {-1};
-        final NbComponent soxB1 = new NbGeneAnd(1.0, 1.0, soxb1parents, soxb1causes,
+        NbComponent[] soxb1parents = {krl};
+        int[] soxb1causes = {-1};
+        NbComponent soxB1 = new NbGeneAnd(1.0, 1.0, soxb1parents, soxb1causes,
                 "SoxB1", 0.1);
 
-        final NbComponent[] matotxmodparents = {matOtx};
-        final int[] matotxmodcauses = {1};
-        final NbComponent matOtxMod = new NbFunctionSV(10.0, 1.0, matotxmodparents,
+        NbComponent[] matotxmodparents = {matOtx};
+        int[] matotxmodcauses = {1};
+        NbComponent matOtxMod = new NbFunctionSV(10.0, 1.0, matotxmodparents,
                 matotxmodcauses, "MatOtxMod");
 
-        final NbComponent[] kroxparents = {nBmod};
-        final int[] kroxcauses = {1};
-        final NbComponent krox =
+        NbComponent[] kroxparents = {nBmod};
+        int[] kroxcauses = {1};
+        NbComponent krox =
                 new NbGeneOr(100.0, 1.0, kroxparents, kroxcauses, "Krox", 0.1);
 
         krox.addParent(krox, 1);
         wnt8.addParent(krox, 1);
 
-        final NbComponent[] otxparents = {krox};
-        final int[] otxcauses = {1};
-        final NbComponent otx =
+        NbComponent[] otxparents = {krox};
+        int[] otxcauses = {1};
+        NbComponent otx =
                 new NbGeneOr(100.0, 1.0, otxparents, otxcauses, "Otx", 0.1);
 
-        final NbComponent[] otxsumparents = {matOtxMod, otx};
-        final int[] otxsumcauses = {1, 1};
-        final NbComponent otxSum = new NbFunctionSum(1.0, 1.0, otxsumparents,
+        NbComponent[] otxsumparents = {matOtxMod, otx};
+        int[] otxsumcauses = {1, 1};
+        NbComponent otxSum = new NbFunctionSum(1.0, 1.0, otxsumparents,
                 otxsumcauses, "Otx Sum");
 
         otx.addParent(otxSum, 1);
         krox.addParent(otxSum, 1);
 
-        final NbComponent[] eveparents = {krox, nBmod};
-        final int[] evecauses = {1, 1};
-        final NbComponent eve =
+        NbComponent[] eveparents = {krox, nBmod};
+        int[] evecauses = {1, 1};
+        NbComponent eve =
                 new NbGeneAnd(100.0, 1.0, eveparents, evecauses, "Eve", 0.1);
 
-        final NbComponent[] gsk3parents = {liCl, wnt8};
-        final int[] gsk3causes = {-1, -1};
-        final NbComponent GSK3 =
+        NbComponent[] gsk3parents = {liCl, wnt8};
+        int[] gsk3causes = {-1, -1};
+        NbComponent GSK3 =
                 new NbFunctionAnd(1.0, 1.0, gsk3parents, gsk3causes, "GSK-3");
 
-        final NbComponent[] gsk3modparents = {GSK3};
-        final int[] gsk3modcauses = {1};
-        final NbComponent GSK3Mod = new NbFunctionSV(1.0, 10.0, gsk3modparents,
+        NbComponent[] gsk3modparents = {GSK3};
+        int[] gsk3modcauses = {1};
+        NbComponent GSK3Mod = new NbFunctionSV(1.0, 10.0, gsk3modparents,
                 gsk3modcauses, "GSK3 Mod");
 
-        final NbComponent[] soxb1modparents = {soxB1};
-        final int[] soxb1modcauses = {1};
-        final NbComponent soxB1Mod = new NbFunctionSV(1.0, 10.0, soxb1modparents,
+        NbComponent[] soxb1modparents = {soxB1};
+        int[] soxb1modcauses = {1};
+        NbComponent soxB1Mod = new NbFunctionSV(1.0, 10.0, soxb1modparents,
                 soxb1causes, "SoxB1 Mod");
 
-        final NbComponent[] prechiparents = {GSK3Mod, soxB1Mod};
-        final int[] prechicauses = {-1, -1};
-        final NbComponent preChi = new NbFunctionAnd(1.0, 1.0, prechiparents,
+        NbComponent[] prechiparents = {GSK3Mod, soxB1Mod};
+        int[] prechicauses = {-1, -1};
+        NbComponent preChi = new NbFunctionAnd(1.0, 1.0, prechiparents,
                 prechicauses, "Pre Chi");
 
         chi.addParent(preChi, 1);
 
-        final NbComponent[] components = {matCBeta, liCl, matOtx, TCF, chi, chiSwitch,
+        NbComponent[] components = {matCBeta, liCl, matOtx, TCF, chi, chiSwitch,
                 postChi, nB, nBmod, wnt8, krl, soxB1, matOtxMod, otxSum, krox,
                 otx, eve, GSK3, GSK3Mod, soxB1Mod, preChi};
 
-        final NbComponent[] genes = {wnt8, krl, soxB1, krox, otx, eve};
+        NbComponent[] genes = {wnt8, krl, soxB1, krox, otx, eve};
 
         matCBeta.setValue(exogenousInputs[0]);
         liCl.setValue(exogenousInputs[1]);
@@ -158,8 +158,8 @@ public class NetBuilderModel {
 
         //double[][] data = new double[21][nhours];
 
-        final int ngenes = genes.length;
-        final double[][] geneData = new double[ngenes][nhours];
+        int ngenes = genes.length;
+        double[][] geneData = new double[ngenes][nhours];
 
         /*
         for(int i = 0; i < components.length; i++) {
@@ -217,7 +217,7 @@ public class NetBuilderModel {
             }
         }
 
-        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
         /*
         for(int i = 0; i < components.length; i++) {
@@ -240,7 +240,7 @@ public class NetBuilderModel {
         }
         */
 
-        final double[] means = new double[ngenes];
+        double[] means = new double[ngenes];
         for (int i = 0; i < ngenes; i++) {
             double sum = 0.0;
             for (int hour = 1; hour < nhours; hour++) {
@@ -249,7 +249,7 @@ public class NetBuilderModel {
             means[i] = sum / (nhours - 1);
         }
 
-        final int[] thresh = new int[ngenes];
+        int[] thresh = new int[ngenes];
         for (int hour = 1; hour < nhours; hour++) {
             for (int i = 0; i < ngenes; i++) {
                 if (geneData[i][hour] > means[i]) {

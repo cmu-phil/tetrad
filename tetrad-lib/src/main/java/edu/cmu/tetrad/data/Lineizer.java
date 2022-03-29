@@ -42,7 +42,7 @@ final class Lineizer {
      * Stores the line read by hasMoreLines, until it is retrieved by nextLine,
      * at which point it is null.
      */
-    private String tempLine = null;
+    private String tempLine;
 
     /**
      * The comment marker.
@@ -52,13 +52,13 @@ final class Lineizer {
     /**
      * The line number of the line most recently read.
      */
-    private int lineNumber = 0;
+    private int lineNumber;
 
     /**
      * Constructs a tokenizer for the given input line, using the given Pattern
      * as delimiter.
      */
-    public Lineizer(final Reader reader, final String commentMarker) {
+    public Lineizer(Reader reader, String commentMarker) {
         if (reader == null) {
             throw new NullPointerException();
         }
@@ -75,11 +75,11 @@ final class Lineizer {
      * @return true iff more tokens exist in the line.
      */
     public final boolean hasMoreLines() {
-        if (this.tempLine == null) {
+        if (tempLine == null) {
             try {
-                this.tempLine = readLine();
-                return this.tempLine != null;
-            } catch (final IOException e) {
+                tempLine = this.readLine();
+                return tempLine != null;
+            } catch (IOException e) {
                 return false;
             }
         } else {
@@ -91,17 +91,17 @@ final class Lineizer {
      * Return the next token in the line.
      */
     public final String nextLine() {
-        this.lineNumber++;
+        lineNumber++;
 
-        if (this.tempLine == null) {
+        if (tempLine == null) {
             try {
-                return readLine();
-            } catch (final IOException e) {
+                return this.readLine();
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         } else {
-            final String line = this.tempLine;
-            this.tempLine = null;
+            String line = tempLine;
+            tempLine = null;
             return line;
         }
     }
@@ -109,12 +109,12 @@ final class Lineizer {
     private String readLine() throws IOException {
         String line;
 
-        while ((line = this.reader.readLine()) != null) {
+        while ((line = reader.readLine()) != null) {
             if ("".equals(line)) {
                 continue;
             }
 
-            if (line.startsWith(this.commentMarker)) {
+            if (line.startsWith(commentMarker)) {
                 continue;
             }
 
@@ -125,7 +125,7 @@ final class Lineizer {
     }
 
     public int getLineNumber() {
-        return this.lineNumber;
+        return lineNumber;
     }
 }
 

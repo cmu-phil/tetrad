@@ -61,7 +61,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
     private final int sampleSize;
 
     public int getSampleSize() {
-        return this.sampleSize;
+        return sampleSize;
     }
 
     public enum Initialization {
@@ -106,7 +106,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
      *
      * @param im The SEM IM that the freeParameters will be initialized from.
      */
-    public StandardizedSemIm(final SemIm im, final Parameters parameters) {
+    public StandardizedSemIm(SemIm im, Parameters parameters) {
         this(im, Initialization.CALCULATE_FROM_SEM, parameters);
     }
 
@@ -125,71 +125,71 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
      * @param im             Stop asking me for these things! The given SEM IM!!!
      * @param initialization CALCULATE_FROM_SEM if the initial values will be calculated from the given SEM IM;
      */
-    public StandardizedSemIm(final SemIm im, final Initialization initialization, final Parameters parameters) {
-        this.semPm = new SemPm(im.getSemPm());
-        this.semGraph = new SemGraph(this.semPm.getGraph());
-        this.semGraph.setShowErrorTerms(true);
-        this.sampleSize = parameters.getInt(Params.SAMPLE_SIZE);
+    public StandardizedSemIm(SemIm im, Initialization initialization, Parameters parameters) {
+        semPm = new SemPm(im.getSemPm());
+        semGraph = new SemGraph(semPm.getGraph());
+        semGraph.setShowErrorTerms(true);
+        sampleSize = parameters.getInt(Params.SAMPLE_SIZE);
 
-        if (this.semGraph.existsDirectedCycle()) {
+        if (semGraph.existsDirectedCycle()) {
             throw new IllegalArgumentException("The cyclic case is not handled.");
         }
 
         if (initialization == Initialization.CALCULATE_FROM_SEM) {
 //          This code calculates the new coefficients directly from the old ones.
-            this.edgeParameters = new HashMap<>();
+            edgeParameters = new HashMap<>();
 
-            final List<Node> nodes = im.getVariableNodes();
-            final Matrix impliedCovar = im.getImplCovar(true);
+            List<Node> nodes = im.getVariableNodes();
+            Matrix impliedCovar = im.getImplCovar(true);
 
-            for (final Parameter parameter : im.getSemPm().getParameters()) {
+            for (Parameter parameter : im.getSemPm().getParameters()) {
                 if (parameter.getType() == ParamType.COEF) {
-                    final Node a = parameter.getNodeA();
-                    final Node b = parameter.getNodeB();
-                    final int aindex = nodes.indexOf(a);
-                    final int bindex = nodes.indexOf(b);
-                    final double vara = impliedCovar.get(aindex, aindex);
-                    final double stda = Math.sqrt(vara);
-                    final double varb = impliedCovar.get(bindex, bindex);
-                    final double stdb = Math.sqrt(varb);
-                    final double oldCoef = im.getEdgeCoef(a, b);
-                    final double newCoef = (stda / stdb) * oldCoef;
-                    this.edgeParameters.put(Edges.directedEdge(a, b), newCoef);
+                    Node a = parameter.getNodeA();
+                    Node b = parameter.getNodeB();
+                    int aindex = nodes.indexOf(a);
+                    int bindex = nodes.indexOf(b);
+                    double vara = impliedCovar.get(aindex, aindex);
+                    double stda = sqrt(vara);
+                    double varb = impliedCovar.get(bindex, bindex);
+                    double stdb = sqrt(varb);
+                    double oldCoef = im.getEdgeCoef(a, b);
+                    double newCoef = (stda / stdb) * oldCoef;
+                    edgeParameters.put(Edges.directedEdge(a, b), newCoef);
                 } else if (parameter.getType() == ParamType.COVAR) {
-                    final Node a = parameter.getNodeA();
-                    final Node b = parameter.getNodeB();
-                    final Node exoa = this.semGraph.getExogenous(a);
-                    final Node exob = this.semGraph.getExogenous(b);
-                    final double covar = im.getErrCovar(a, b) / Math.sqrt(im.getErrVar(a) * im.getErrVar(b));
-                    this.edgeParameters.put(Edges.bidirectedEdge(exoa, exob), covar);
+                    Node a = parameter.getNodeA();
+                    Node b = parameter.getNodeB();
+                    Node exoa = semGraph.getExogenous(a);
+                    Node exob = semGraph.getExogenous(b);
+                    double covar = im.getErrCovar(a, b) / sqrt(im.getErrVar(a) * im.getErrVar(b));
+                    edgeParameters.put(Edges.bidirectedEdge(exoa, exob), covar);
                 }
             }
         } else {
 
             // This code estimates the new coefficients from simulated data from the old model.
-            final DataSet dataSet = im.simulateData(this.sampleSize, false);
+            DataSet dataSet = im.simulateData(sampleSize, false);
             Matrix _dataSet = dataSet.getDoubleData();
             _dataSet = DataUtils.standardizeData(_dataSet);
-            final DataSet dataSetStandardized = new BoxDataSet(new VerticalDoubleDataBox(_dataSet.toArray()), dataSet.getVariables());
+            DataSet dataSetStandardized = new BoxDataSet(new VerticalDoubleDataBox(_dataSet.toArray()), dataSet.getVariables());
 
-            final SemEstimator estimator = new SemEstimator(dataSetStandardized, im.getSemPm());
-            final SemIm imStandardized = estimator.estimate();
+            SemEstimator estimator = new SemEstimator(dataSetStandardized, im.getSemPm());
+            SemIm imStandardized = estimator.estimate();
 
-            this.edgeParameters = new HashMap<>();
+            edgeParameters = new HashMap<>();
 
-            for (final Parameter parameter : imStandardized.getSemPm().getParameters()) {
+            for (Parameter parameter : imStandardized.getSemPm().getParameters()) {
                 if (parameter.getType() == ParamType.COEF) {
-                    final Node a = parameter.getNodeA();
-                    final Node b = parameter.getNodeB();
-                    final double coef = imStandardized.getEdgeCoef(a, b);
-                    this.edgeParameters.put(Edges.directedEdge(a, b), coef);
+                    Node a = parameter.getNodeA();
+                    Node b = parameter.getNodeB();
+                    double coef = imStandardized.getEdgeCoef(a, b);
+                    edgeParameters.put(Edges.directedEdge(a, b), coef);
                 } else if (parameter.getType() == ParamType.COVAR) {
-                    final Node a = parameter.getNodeA();
-                    final Node b = parameter.getNodeB();
-                    final Node exoa = this.semGraph.getExogenous(a);
-                    final Node exob = this.semGraph.getExogenous(b);
-                    final double covar = -im.getErrCovar(a, b) / Math.sqrt(im.getErrVar(a) * im.getErrVar(b));
-                    this.edgeParameters.put(Edges.bidirectedEdge(exoa, exob), covar);
+                    Node a = parameter.getNodeA();
+                    Node b = parameter.getNodeB();
+                    Node exoa = semGraph.getExogenous(a);
+                    Node exob = semGraph.getExogenous(b);
+                    double covar = -im.getErrCovar(a, b) / sqrt(im.getErrVar(a) * im.getErrVar(b));
+                    edgeParameters.put(Edges.bidirectedEdge(exoa, exob), covar);
                 }
             }
         }
@@ -197,11 +197,11 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
 
     public boolean containsParameter(Edge edge) {
         if (Edges.isBidirectedEdge(edge)) {
-            edge = Edges.bidirectedEdge(this.semGraph.getExogenous(edge.getNode1()),
-                    this.semGraph.getExogenous(edge.getNode2()));
+            edge = Edges.bidirectedEdge(semGraph.getExogenous(edge.getNode1()),
+                    semGraph.getExogenous(edge.getNode2()));
         }
 
-        return this.edgeParameters.containsKey(edge);
+        return edgeParameters.containsKey(edge);
     }
 
     /**
@@ -213,20 +213,20 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
      * @param coef The coefficient of a -> b.
      * @return true if the coefficent was set (i.e. was within range), false if not.
      */
-    public boolean setEdgeCoefficient(final Node a, final Node b, final double coef) {
-        final Edge edge = Edges.directedEdge(a, b);
+    public boolean setEdgeCoefficient(Node a, Node b, double coef) {
+        Edge edge = Edges.directedEdge(a, b);
 
-        if (this.edgeParameters.get(edge) == null) {
+        if (edgeParameters.get(edge) == null) {
             throw new NullPointerException("Not a coefficient parameter in this model: " + edge);
         }
 
-        if (!edge.equals(this.editingEdge)) {
-            this.range = getParameterRange(edge);
-            this.editingEdge = edge;
+        if (!edge.equals(editingEdge)) {
+            range = this.getParameterRange(edge);
+            editingEdge = edge;
         }
 
-        if (coef > this.range.getLow() && coef < this.range.getHigh()) {
-            this.edgeParameters.put(edge, coef);
+        if (coef > range.getLow() && coef < range.getHigh()) {
+            edgeParameters.put(edge, coef);
             return true;
         }
 
@@ -242,20 +242,20 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
      * @param covar The covariance of a <-> b.
      * @return true if the coefficent was set (i.e. was within range), false if not.
      */
-    public boolean setErrorCovariance(final Node a, final Node b, final double covar) {
-        final Edge edge = Edges.bidirectedEdge(this.semGraph.getExogenous(a), this.semGraph.getExogenous(b));
+    public boolean setErrorCovariance(Node a, Node b, double covar) {
+        Edge edge = Edges.bidirectedEdge(semGraph.getExogenous(a), semGraph.getExogenous(b));
 
-        if (this.edgeParameters.get(edge) == null) {
+        if (edgeParameters.get(edge) == null) {
             throw new IllegalArgumentException("Not a covariance parameter in this model: " + edge);
         }
 
-        if (!edge.equals(this.editingEdge)) {
-            this.range = getParameterRange(edge);
-            this.editingEdge = edge;
+        if (!edge.equals(editingEdge)) {
+            range = this.getParameterRange(edge);
+            editingEdge = edge;
         }
 
-        if (covar > this.range.getLow() && covar < this.range.getHigh()) {
-            this.edgeParameters.put(edge, covar);
+        if (covar > range.getLow() && covar < range.getHigh()) {
+            edgeParameters.put(edge, covar);
             return true;
         } else {
             return false;
@@ -267,9 +267,9 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
      * @param b a->b
      * @return The coefficient for a->b.
      */
-    public double getEdgeCoef(final Node a, final Node b) {
-        final Edge edge = Edges.directedEdge(a, b);
-        final Double d = this.edgeParameters.get(edge);
+    public double getEdgeCoef(Node a, Node b) {
+        Edge edge = Edges.directedEdge(a, b);
+        Double d = edgeParameters.get(edge);
 
         if (d == null) {
             return Double.NaN;
@@ -284,9 +284,9 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
      * @param b a->b
      * @return The coefficient for a->b.
      */
-    public double getErrorCovariance(final Node a, final Node b) {
-        final Edge edge = Edges.bidirectedEdge(this.semGraph.getExogenous(a), this.semGraph.getExogenous(b));
-        final Double d = this.edgeParameters.get(edge);
+    public double getErrorCovariance(Node a, Node b) {
+        Edge edge = Edges.bidirectedEdge(semGraph.getExogenous(a), semGraph.getExogenous(b));
+        Double d = edgeParameters.get(edge);
 
         if (d == null) {
             throw new IllegalArgumentException("Not a covariance parameter in this model: " + edge);
@@ -295,32 +295,32 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
         return d;
     }
 
-    public double getParameterValue(final Edge edge) {
+    public double getParameterValue(Edge edge) {
         if (Edges.isDirectedEdge(edge)) {
-            return getEdgeCoef(edge.getNode1(), edge.getNode2());
+            return this.getEdgeCoef(edge.getNode1(), edge.getNode2());
         } else if (Edges.isBidirectedEdge(edge)) {
-            return getErrorCovariance(edge.getNode1(), edge.getNode2());
+            return this.getErrorCovariance(edge.getNode1(), edge.getNode2());
         } else {
             throw new IllegalArgumentException("Only directed and bidirected edges are supported: " + edge);
         }
     }
 
-    public void setParameterValue(final Edge edge, final double value) {
+    public void setParameterValue(Edge edge, double value) {
         if (Edges.isDirectedEdge(edge)) {
-            setEdgeCoefficient(edge.getNode1(), edge.getNode2(), value);
+            this.setEdgeCoefficient(edge.getNode1(), edge.getNode2(), value);
         } else if (Edges.isBidirectedEdge(edge)) {
-            setErrorCovariance(edge.getNode1(), edge.getNode2(), value);
+            this.setErrorCovariance(edge.getNode1(), edge.getNode2(), value);
         } else {
             throw new IllegalArgumentException("Only directed and bidirected edges are supported: " + edge);
         }
     }
 
-    public ParameterRange getCoefficientRange(final Node a, final Node b) {
-        return getParameterRange(Edges.directedEdge(a, b));
+    public ParameterRange getCoefficientRange(Node a, Node b) {
+        return this.getParameterRange(Edges.directedEdge(a, b));
     }
 
-    public ParameterRange getCovarianceRange(final Node a, final Node b) {
-        return getParameterRange(Edges.bidirectedEdge(this.semGraph.getExogenous(a), this.semGraph.getExogenous(b)));
+    public ParameterRange getCovarianceRange(Node a, Node b) {
+        return this.getParameterRange(Edges.bidirectedEdge(semGraph.getExogenous(a), semGraph.getExogenous(b)));
     }
 
     /**
@@ -329,16 +329,16 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
      */
     public ParameterRange getParameterRange(Edge edge) {
         if (Edges.isBidirectedEdge(edge)) {
-            edge = Edges.bidirectedEdge(this.semGraph.getExogenous(edge.getNode1()),
-                    this.semGraph.getExogenous(edge.getNode2()));
+            edge = Edges.bidirectedEdge(semGraph.getExogenous(edge.getNode1()),
+                    semGraph.getExogenous(edge.getNode2()));
         }
 
 
-        if (!(this.edgeParameters.containsKey(edge))) {
+        if (!(edgeParameters.containsKey(edge))) {
             throw new IllegalArgumentException("Not an edge in this model: " + edge);
         }
 
-        double initial = this.edgeParameters.get(edge);
+        double initial = edgeParameters.get(edge);
 
         if (initial == Double.NEGATIVE_INFINITY) {
             initial = Double.MIN_VALUE;
@@ -346,12 +346,12 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
             initial = Double.MAX_VALUE;
         }
 
-        final double value = initial;
+        double value = initial;
 
         // look upward for a point that fails.
         double high = value + 1;
 
-        while (paramInBounds(edge, high)) {
+        while (this.paramInBounds(edge, high)) {
             high = value + 2 * (high - value);
 
             if (high == Double.POSITIVE_INFINITY) {
@@ -360,7 +360,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
         }
 
         // find the boundary using binary search.
-        final double rangeHigh;
+        double rangeHigh;
 
         if (high == Double.POSITIVE_INFINITY) {
             rangeHigh = high;
@@ -368,9 +368,9 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
             double low = value;
 
             while (high - low > 1e-10) {
-                final double midpoint = (high + low) / 2.0;
+                double midpoint = (high + low) / 2.0;
 
-                if (paramInBounds(edge, midpoint)) {
+                if (this.paramInBounds(edge, midpoint)) {
                     low = midpoint;
                 } else {
                     high = midpoint;
@@ -383,7 +383,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
         // look downard for a point that fails.
         double low = value - 1;
 
-        while (paramInBounds(edge, low)) {
+        while (this.paramInBounds(edge, low)) {
             low = value - 2 * (value - low);
 
             if (low == Double.NEGATIVE_INFINITY) {
@@ -391,7 +391,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
             }
         }
 
-        final double rangeLow;
+        double rangeLow;
 
         if (low == Double.NEGATIVE_INFINITY) {
             rangeLow = low;
@@ -401,9 +401,9 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
             high = value;
 
             while (high - low > 1e-10) {
-                final double midpoint = (high + low) / 2.0;
+                double midpoint = (high + low) / 2.0;
 
-                if (paramInBounds(edge, midpoint)) {
+                if (this.paramInBounds(edge, midpoint)) {
                     high = midpoint;
                 } else {
                     low = midpoint;
@@ -414,9 +414,9 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
         }
 
         if (Edges.isDirectedEdge(edge)) {
-            this.edgeParameters.put(edge, initial);
+            edgeParameters.put(edge, initial);
         } else if (Edges.isBidirectedEdge(edge)) {
-            this.edgeParameters.put(edge, initial);
+            edgeParameters.put(edge, initial);
         }
 
         return new ParameterRange(edge, value, rangeLow, rangeHigh);
@@ -428,25 +428,25 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
      * MODEL! Its value is simply calculated from the given coefficients of the model.
      * Returns Double.NaN if the error variance cannot be computed.
      */
-    public double getErrorVariance(final Node error) {
-        return calculateErrorVarianceFromParams(error);
+    public double getErrorVariance(Node error) {
+        return this.calculateErrorVarianceFromParams(error);
     }
 
     /**
      * @return a map from error to error variances, or to Double.NaN where these cannot be computed.
      */
     private Map<Node, Double> errorVariances() {
-        if (this.errorVariances != null) {
-            return this.errorVariances;
+        if (errorVariances != null) {
+            return errorVariances;
         }
 
-        final Map<Node, Double> errorVarances = new HashMap<>();
+        Map<Node, Double> errorVarances = new HashMap<>();
 
-        for (final Node error : getErrorNodes()) {
-            errorVarances.put(error, getErrorVariance(error));
+        for (Node error : this.getErrorNodes()) {
+            errorVarances.put(error, this.getErrorVariance(error));
         }
 
-        this.errorVariances = errorVarances;
+        errorVariances = errorVarances;
         return errorVarances;
     }
 
@@ -454,34 +454,34 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
      * @return a string representation of the coefficients and variances of the model.
      */
     public String toString() {
-        final StringBuilder buf = new StringBuilder();
-        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        StringBuilder buf = new StringBuilder();
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
         buf.append("\nStandardized SEM:");
         buf.append("\n\nEdge coefficients (parameters):\n");
 
-        for (final Edge edge : this.edgeParameters.keySet()) {
+        for (Edge edge : edgeParameters.keySet()) {
             if (!Edges.isDirectedEdge(edge)) {
                 continue;
             }
 
-            buf.append("\n").append(edge).append(" ").append(nf.format(this.edgeParameters.get(edge)));
+            buf.append("\n").append(edge).append(" ").append(nf.format(edgeParameters.get(edge)));
         }
 
         buf.append("\n\nError covariances (parameters):\n");
 
-        for (final Edge edge : this.edgeParameters.keySet()) {
+        for (Edge edge : edgeParameters.keySet()) {
             if (!Edges.isBidirectedEdge(edge)) {
                 continue;
             }
 
-            buf.append("\n").append(edge).append(" ").append(nf.format(this.edgeParameters.get(edge)));
+            buf.append("\n").append(edge).append(" ").append(nf.format(edgeParameters.get(edge)));
         }
 
         buf.append("\n\nError variances (calculated):\n");
 
-        for (final Node error : getErrorNodes()) {
-            final double variance = getErrorVariance(error);
+        for (Node error : this.getErrorNodes()) {
+            double variance = this.getErrorVariance(error);
             buf.append("\n").append(error).append(" ").append(Double.isNaN(variance) ? "Undefined" : nf.format(variance));
         }
 
@@ -494,7 +494,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
      * @return the list of variable nodes of the model, in order.
      */
     public List<Node> getVariableNodes() {
-        return this.semPm.getVariableNodes();
+        return semPm.getVariableNodes();
     }
 
     /**
@@ -503,26 +503,26 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
      * PARAMETERS OF THE MODEL--THE ONLY PARAMETERS.
      */
     private Matrix edgeCoef() {
-        if (this.edgeCoef != null) {
-            return this.edgeCoef;
+        if (edgeCoef != null) {
+            return edgeCoef;
         }
 
-        final List<Node> variableNodes = getVariableNodes();
+        List<Node> variableNodes = this.getVariableNodes();
 
-        final Matrix edgeCoef = new Matrix(variableNodes.size(), variableNodes.size());
+        Matrix edgeCoef = new Matrix(variableNodes.size(), variableNodes.size());
 
-        for (final Edge edge : this.edgeParameters.keySet()) {
+        for (Edge edge : edgeParameters.keySet()) {
             if (Edges.isBidirectedEdge(edge)) {
                 continue;
             }
 
-            final Node a = edge.getNode1();
-            final Node b = edge.getNode2();
+            Node a = edge.getNode1();
+            Node b = edge.getNode2();
 
-            final int aindex = variableNodes.indexOf(a);
-            final int bindex = variableNodes.indexOf(b);
+            int aindex = variableNodes.indexOf(a);
+            int bindex = variableNodes.indexOf(b);
 
-            final double coef = this.edgeParameters.get(edge);
+            double coef = edgeParameters.get(edge);
 
             edgeCoef.set(aindex, bindex, coef);
         }
@@ -537,7 +537,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
      * COEFFICIENTS ARE PARAMETERS.
      */
     public double[] means() {
-        return new double[this.semPm.getVariableNodes().size()];
+        return new double[semPm.getVariableNodes().size()];
     }
 
     /**
@@ -550,62 +550,62 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
      * @return This returns a standardized data set simulated from the model, using the reduced form
      * method.
      */
-    public DataSet simulateData(final int sampleSize, final boolean latentDataSaved) {
-        return simulateDataReducedForm(sampleSize, latentDataSaved);
+    public DataSet simulateData(int sampleSize, boolean latentDataSaved) {
+        return this.simulateDataReducedForm(sampleSize, latentDataSaved);
     }
 
     @Override
-    public DataSet simulateData(final int sampleSize, final long seed, final boolean latentDataSaved) {
-        final RandomUtil random = RandomUtil.getInstance();
-        final long _seed = random.getSeed();
+    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
+        RandomUtil random = RandomUtil.getInstance();
+        long _seed = random.getSeed();
         random.setSeed(seed);
-        final DataSet dataSet = simulateData(sampleSize, latentDataSaved);
+        DataSet dataSet = this.simulateData(sampleSize, latentDataSaved);
         random.revertSeed(_seed);
         return dataSet;
     }
 
-    public DataSet simulateDataReducedForm(final int sampleSize, final boolean latentDataSaved) {
-        this.edgeCoef = null;
-        this.errorCovar = null;
-        this.errorVariances = null;
+    public DataSet simulateDataReducedForm(int sampleSize, boolean latentDataSaved) {
+        edgeCoef = null;
+        errorCovar = null;
+        errorVariances = null;
 
-        final int numVars = getVariableNodes().size();
+        int numVars = this.getVariableNodes().size();
 
         // Calculate inv(I - edgeCoefC)
-        final Matrix B = edgeCoef().transpose();
-        final Matrix iMinusBInv = TetradAlgebra.identity(B.rows()).minus(B).inverse();
+        Matrix B = this.edgeCoef().transpose();
+        Matrix iMinusBInv = TetradAlgebra.identity(B.rows()).minus(B).inverse();
 
         // Pick error values e, for each calculate inv * e.
-        final Matrix sim = new Matrix(sampleSize, numVars);
+        Matrix sim = new Matrix(sampleSize, numVars);
 
         for (int row = 0; row < sampleSize; row++) {
 
             // Step 1. Generate normal samples.
-            final Vector e = new Vector(edgeCoef().columns());
+            Vector e = new Vector(this.edgeCoef().columns());
 
             for (int i = 0; i < e.size(); i++) {
-                e.set(i, RandomUtil.getInstance().nextNormal(0, sqrt(errCovar(errorVariances(), false).get(i, i))));
+                e.set(i, RandomUtil.getInstance().nextNormal(0, sqrt(this.errCovar(this.errorVariances(), false).get(i, i))));
             }
 
             // Step 3. Calculate the new rows in the data.
-            final Vector sample = iMinusBInv.times(e);
+            Vector sample = iMinusBInv.times(e);
             sim.assignRow(row, sample);
 
             for (int col = 0; col < sample.size(); col++) {
-                final double value = sim.get(row, col);
+                double value = sim.get(row, col);
                 sim.set(row, col, value);
             }
         }
 
-        final List<Node> continuousVars = new ArrayList<>();
+        List<Node> continuousVars = new ArrayList<>();
 
-        for (final Node node : getVariableNodes()) {
-            final ContinuousVariable var = new ContinuousVariable(node.getName());
+        for (Node node : this.getVariableNodes()) {
+            ContinuousVariable var = new ContinuousVariable(node.getName());
             var.setNodeType(node.getNodeType());
             continuousVars.add(var);
         }
 
-        final DataSet fullDataSet = new BoxDataSet(new DoubleDataBox(sim.toArray()), continuousVars);
+        DataSet fullDataSet = new BoxDataSet(new DoubleDataBox(sim.toArray()), continuousVars);
 
         if (latentDataSaved) {
             return fullDataSet;
@@ -618,7 +618,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
      * @return a copy of the implied covariance matrix over all the variables.
      */
     public Matrix getImplCovar() {
-        return implCovar();
+        return this.implCovar();
     }
 
     /**
@@ -626,7 +626,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
      * variables only.
      */
     public Matrix getImplCovarMeas() {
-        return implCovarMeas().copy();
+        return this.implCovarMeas().copy();
     }
 
     //========================================PRIVATE METHODS==========================================//
@@ -637,34 +637,34 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
      * CALCULATED. Note that elements of this matrix may be Double.NaN; this indicates that these
      * elements cannot be calculated.
      */
-    private Matrix errCovar(final Map<Node, Double> errorVariances, final boolean recalculate) {
-        if (!recalculate && this.errorCovar != null) {
-            return this.errorCovar;
+    private Matrix errCovar(Map<Node, Double> errorVariances, boolean recalculate) {
+        if (!recalculate && errorCovar != null) {
+            return errorCovar;
         }
 
-        final List<Node> variableNodes = getVariableNodes();
-        final List<Node> errorNodes = new ArrayList<>();
+        List<Node> variableNodes = this.getVariableNodes();
+        List<Node> errorNodes = new ArrayList<>();
 
-        for (final Node node : variableNodes) {
-            errorNodes.add(this.semGraph.getExogenous(node));
+        for (Node node : variableNodes) {
+            errorNodes.add(semGraph.getExogenous(node));
         }
 
-        final Matrix errorCovar = new Matrix(errorVariances.size(), errorVariances.size());
+        Matrix errorCovar = new Matrix(errorVariances.size(), errorVariances.size());
 
         for (int index = 0; index < errorNodes.size(); index++) {
-            final Node error = errorNodes.get(index);
-            final double variance = getErrorVariance(error);
+            Node error = errorNodes.get(index);
+            double variance = this.getErrorVariance(error);
             errorCovar.set(index, index, variance);
         }
 
         for (int index1 = 0; index1 < errorNodes.size(); index1++) {
             for (int index2 = 0; index2 < errorNodes.size(); index2++) {
-                final Node error1 = errorNodes.get(index1);
-                final Node error2 = errorNodes.get(index2);
-                final Edge edge = this.semGraph.getEdge(error1, error2);
+                Node error1 = errorNodes.get(index1);
+                Node error2 = errorNodes.get(index2);
+                Edge edge = semGraph.getEdge(error1, error2);
 
                 if (edge != null && Edges.isBidirectedEdge(edge)) {
-                    final double covariance = getErrorCovariance(error1, error2);
+                    double covariance = this.getErrorCovariance(error1, error2);
                     errorCovar.set(index1, index2, covariance);
                 }
             }
@@ -676,13 +676,13 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
     }
 
     private Matrix implCovar() {
-        computeImpliedCovar();
-        return this.implCovar;
+        this.computeImpliedCovar();
+        return implCovar;
     }
 
     private Matrix implCovarMeas() {
-        computeImpliedCovar();
-        return this.implCovarMeas;
+        this.computeImpliedCovar();
+        return implCovarMeas;
     }
 
     /**
@@ -692,25 +692,25 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
      * only.
      */
     private void computeImpliedCovar() {
-        final Matrix edgeCoefT = edgeCoef().transpose();
+        Matrix edgeCoefT = this.edgeCoef().transpose();
 
         // Note. Since the sizes of the temp matrices in this calculation
         // never change, we ought to be able to reuse them.
-        this.implCovar = MatrixUtils.impliedCovar(edgeCoefT, errCovar(errorVariances(), true));
+        implCovar = MatrixUtils.impliedCovar(edgeCoefT, this.errCovar(this.errorVariances(), true));
 
         // Submatrix of implied covar for measured vars only.
-        final int size = getMeasuredNodes().size();
-        this.implCovarMeas = new Matrix(size, size);
+        int size = this.getMeasuredNodes().size();
+        implCovarMeas = new Matrix(size, size);
 
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
-                final Node iNode = getMeasuredNodes().get(i);
-                final Node jNode = getMeasuredNodes().get(j);
+                Node iNode = this.getMeasuredNodes().get(i);
+                Node jNode = this.getMeasuredNodes().get(j);
 
-                final int _i = getVariableNodes().indexOf(iNode);
-                final int _j = getVariableNodes().indexOf(jNode);
+                int _i = this.getVariableNodes().indexOf(iNode);
+                int _j = this.getVariableNodes().indexOf(jNode);
 
-                this.implCovarMeas.set(i, j, this.implCovar.get(_i, _j));
+                implCovarMeas.set(i, j, implCovar.get(_i, _j));
             }
         }
     }
@@ -719,15 +719,15 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
      * The list of measured nodes for the semPm. (Unmodifiable.)
      */
     public List<Node> getMeasuredNodes() {
-        return getSemPm().getMeasuredNodes();
+        return this.getSemPm().getMeasuredNodes();
     }
 
 
     public List<Node> getErrorNodes() {
-        final List<Node> errorNodes = new ArrayList<>();
+        List<Node> errorNodes = new ArrayList<>();
 
-        for (final Node node : getVariableNodes()) {
-            errorNodes.add(this.semGraph.getExogenous(node));
+        for (Node node : this.getVariableNodes()) {
+            errorNodes.add(semGraph.getExogenous(node));
         }
 
         return errorNodes;
@@ -737,7 +737,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
      * @return a copy of the SEM PM.
      */
     public SemPm getSemPm() {
-        return new SemPm(this.semPm);
+        return new SemPm(semPm);
     }
 
     //-------------------------------------------PUBLIC CLASSES--------------------------------------------//
@@ -756,7 +756,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
         private final double low;
         private final double high;
 
-        public ParameterRange(final Edge edge, final double coef, final double low, final double high) {
+        public ParameterRange(Edge edge, double coef, double low, double high) {
             this.edge = edge;
             this.coef = coef;
             this.low = low;
@@ -771,38 +771,38 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
         }
 
         public Edge getEdge() {
-            return this.edge;
+            return edge;
         }
 
         public double getCoef() {
-            return this.coef;
+            return coef;
         }
 
         public double getLow() {
-            return this.low;
+            return low;
         }
 
         public double getHigh() {
-            return this.high;
+            return high;
         }
 
         public String toString() {
 
-            return "\n\nRange for " + this.edge +
-                    "\nCurrent value = " + this.coef +
-                    "\nLow end of range = " + this.low +
-                    "\nHigh end of range = " + this.high;
+            return "\n\nRange for " + edge +
+                    "\nCurrent value = " + coef +
+                    "\nLow end of range = " + low +
+                    "\nHigh end of range = " + high;
         }
     }
 
     //-------------------------------------------PRIVATE METHODS-------------------------------------------//
 
-    private boolean paramInBounds(final Edge edge, final double newValue) {
-        this.edgeParameters.put(edge, newValue);
-        final Map<Node, Double> errorVariances = new HashMap<>();
-        for (final Node node : this.semPm.getVariableNodes()) {
-            final Node error = this.semGraph.getExogenous(node);
-            final double d2 = calculateErrorVarianceFromParams(error);
+    private boolean paramInBounds(Edge edge, double newValue) {
+        edgeParameters.put(edge, newValue);
+        Map<Node, Double> errorVariances = new HashMap<>();
+        for (Node node : semPm.getVariableNodes()) {
+            Node error = semGraph.getExogenous(node);
+            double d2 = this.calculateErrorVarianceFromParams(error);
             if (Double.isNaN(d2)) {
                 return false;
             }
@@ -810,7 +810,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
             errorVariances.put(error, d2);
         }
 
-        return MatrixUtils.isPositiveDefinite(errCovar(errorVariances, true));
+        return MatrixUtils.isPositiveDefinite(this.errCovar(errorVariances, true));
     }
 
     /**
@@ -820,64 +820,64 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
      * @return The value of the error variance, or Double.NaN is the value is undefined.
      */
     private double calculateErrorVarianceFromParams(Node error) {
-        error = this.semGraph.getNode(error.getName());
+        error = semGraph.getNode(error.getName());
 
-        final Node child = this.semGraph.getChildren(error).get(0);
-        final List<Node> parents = this.semGraph.getParents(child);
+        Node child = semGraph.getChildren(error).get(0);
+        List<Node> parents = semGraph.getParents(child);
 
         double otherVariance = 0;
 
-        for (final Node parent : parents) {
+        for (Node parent : parents) {
             if (parent == error) continue;
-            final double coef = getEdgeCoef(parent, child);
+            double coef = this.getEdgeCoef(parent, child);
             otherVariance += coef * coef;
         }
 
         if (parents.size() >= 2) {
-            final ChoiceGenerator gen = new ChoiceGenerator(parents.size(), 2);
+            ChoiceGenerator gen = new ChoiceGenerator(parents.size(), 2);
             int[] indices;
 
             while ((indices = gen.next()) != null) {
-                final Node node1 = parents.get(indices[0]);
-                final Node node2 = parents.get(indices[1]);
+                Node node1 = parents.get(indices[0]);
+                Node node2 = parents.get(indices[1]);
 
-                final double coef1;
-                final double coef2;
+                double coef1;
+                double coef2;
 
                 if (node1.getNodeType() != NodeType.ERROR) {
-                    coef1 = getEdgeCoef(node1, child);
+                    coef1 = this.getEdgeCoef(node1, child);
                 } else {
                     coef1 = 1;
                 }
 
                 if (node2.getNodeType() != NodeType.ERROR) {
-                    coef2 = getEdgeCoef(node2, child);
+                    coef2 = this.getEdgeCoef(node2, child);
                 } else {
                     coef2 = 1;
                 }
 
-                final List<List<Node>> treks = GraphUtils.treksIncludingBidirected(this.semGraph, node1, node2);
+                List<List<Node>> treks = GraphUtils.treksIncludingBidirected(semGraph, node1, node2);
 
                 double cov = 0.0;
 
-                for (final List<Node> trek : treks) {
+                for (List<Node> trek : treks) {
                     double product = 1.0;
 
                     for (int i = 1; i < trek.size(); i++) {
-                        final Node _node1 = trek.get(i - 1);
-                        final Node _node2 = trek.get(i);
+                        Node _node1 = trek.get(i - 1);
+                        Node _node2 = trek.get(i);
 
-                        final Edge edge = this.semGraph.getEdge(_node1, _node2);
-                        final double factor;
+                        Edge edge = semGraph.getEdge(_node1, _node2);
+                        double factor;
 
                         if (Edges.isBidirectedEdge(edge)) {
-                            factor = this.edgeParameters.get(edge);
-                        } else if (!this.edgeParameters.containsKey(edge)) {
+                            factor = edgeParameters.get(edge);
+                        } else if (!edgeParameters.containsKey(edge)) {
                             factor = 1;
-                        } else if (this.semGraph.isParentOf(_node1, _node2)) {
-                            factor = getEdgeCoef(_node1, _node2);
+                        } else if (semGraph.isParentOf(_node1, _node2)) {
+                            factor = this.getEdgeCoef(_node1, _node2);
                         } else {
-                            factor = getEdgeCoef(_node2, _node1);
+                            factor = this.getEdgeCoef(_node2, _node1);
                         }
 
                         product *= factor;

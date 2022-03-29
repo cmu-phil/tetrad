@@ -40,15 +40,15 @@ public final class TestFruchtermanReingoldLayout {
     public void testLayout() {
         //        Dag dag = DataGraphUtils.createRandomDag(40, 0, 80, 6, 6, 6, true);
 
-        final Dag dag = new Dag();
+        Dag dag = new Dag();
 
-        final GraphNode x1 = new GraphNode("X1");
-        final GraphNode x2 = new GraphNode("X2");
-        final GraphNode x3 = new GraphNode("X3");
-        final GraphNode x4 = new GraphNode("X4");
-        final GraphNode x5 = new GraphNode("X5");
-        final GraphNode x6 = new GraphNode("X6");
-        final GraphNode x7 = new GraphNode("X7");
+        GraphNode x1 = new GraphNode("X1");
+        GraphNode x2 = new GraphNode("X2");
+        GraphNode x3 = new GraphNode("X3");
+        GraphNode x4 = new GraphNode("X4");
+        GraphNode x5 = new GraphNode("X5");
+        GraphNode x6 = new GraphNode("X6");
+        GraphNode x7 = new GraphNode("X7");
 
         dag.addNode(x1);
         dag.addNode(x2);
@@ -63,11 +63,11 @@ public final class TestFruchtermanReingoldLayout {
         dag.addDirectedEdge(x4, x5);
         dag.addDirectedEdge(x5, x6);
 
-        final Dag dag2 = new Dag(dag);
+        Dag dag2 = new Dag(dag);
 
         GraphUtils.circleLayout(dag, 200, 200, 150);
 
-        final FruchtermanReingoldLayout layout = new FruchtermanReingoldLayout(dag);
+        FruchtermanReingoldLayout layout = new FruchtermanReingoldLayout(dag);
         layout.doLayout();
 
         assertEquals(dag, dag2);
@@ -75,10 +75,10 @@ public final class TestFruchtermanReingoldLayout {
 
     @Test
     public void testLayout2() {
-        final Dag dag = new Dag();
+        Dag dag = new Dag();
 
-        final GraphNode x1 = new GraphNode("X1");
-        final GraphNode x2 = new GraphNode("X2");
+        GraphNode x1 = new GraphNode("X1");
+        GraphNode x2 = new GraphNode("X2");
 
         x1.setCenter(40, 5);
         x2.setCenter(50, 5);
@@ -88,9 +88,9 @@ public final class TestFruchtermanReingoldLayout {
 
         dag.addDirectedEdge(x1, x2);
 
-        final Dag dag2 = new Dag(dag);
+        Dag dag2 = new Dag(dag);
 
-        final FruchtermanReingoldLayout layout = new FruchtermanReingoldLayout(dag);
+        FruchtermanReingoldLayout layout = new FruchtermanReingoldLayout(dag);
         layout.doLayout();
 
         assertEquals(dag, dag2);

@@ -64,13 +64,13 @@ public final class GraspFci implements GraphSearch {
     private IndependenceTest test;
 
     // Flag for complete rule set, true if you should use complete rule set, false otherwise.
-    private boolean completeRuleSetUsed = false;
+    private boolean completeRuleSetUsed;
 
     // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
     private int maxPathLength = -1;
 
     // True iff verbose output should be printed.
-    private boolean verbose = false;
+    private boolean verbose;
 
     // The print stream that output is directed to.
     private PrintStream out = System.out;
@@ -79,9 +79,9 @@ public final class GraspFci implements GraphSearch {
     private int numStarts;
     private int depth = 4;
     private int uncoveredDepth = 1;
-    private boolean useRaskuttiUhler = false;
+    private boolean useRaskuttiUhler;
     private boolean useDataOrder = true;
-    private boolean allowRandomnessInsideAlgorithm = false;
+    private boolean allowRandomnessInsideAlgorithm;
 
     private int nonsingularDepth = 1;
     private boolean ordered = true;
@@ -89,60 +89,60 @@ public final class GraspFci implements GraphSearch {
     private boolean cacheScores = true;
 
     //============================CONSTRUCTORS============================//
-    public GraspFci(final IndependenceTest test, final Score score) {
+    public GraspFci(IndependenceTest test, Score score) {
         this.test = test;
         this.score = score;
 
-        this.sampleSize = score.getSampleSize();
+        sampleSize = score.getSampleSize();
     }
 
     //========================PUBLIC METHODS==========================//
     public Graph search() {
-        this.logger.log("info", "Starting FCI algorithm.");
-        this.logger.log("info", "Independence test = " + getTest() + ".");
+        logger.log("info", "Starting FCI algorithm.");
+        logger.log("info", "Independence test = " + this.getTest() + ".");
 
         // The PAG being constructed.
-        final Graph graph;
+        Graph graph;
 
-        final Grasp grasp = new Grasp(this.test, this.score);
+        Grasp grasp = new Grasp(test, score);
 
-        grasp.setDepth(this.depth);
-        grasp.setUncoveredDepth(this.uncoveredDepth);
-        grasp.setNonSingularDepth(this.nonsingularDepth);
-        grasp.setOrdered(this.ordered);
-        grasp.setUseScore(this.useScore);
-        grasp.setUseRaskuttiUhler(this.useRaskuttiUhler);
-        grasp.setUseDataOrder(this.useDataOrder);
-        grasp.setAllowRandomnessInsideAlgorithm(this.allowRandomnessInsideAlgorithm);
-        grasp.setVerbose(this.verbose);
-        grasp.setCacheScores(this.cacheScores);
+        grasp.setDepth(depth);
+        grasp.setUncoveredDepth(uncoveredDepth);
+        grasp.setNonSingularDepth(nonsingularDepth);
+        grasp.setOrdered(ordered);
+        grasp.setUseScore(useScore);
+        grasp.setUseRaskuttiUhler(useRaskuttiUhler);
+        grasp.setUseDataOrder(useDataOrder);
+        grasp.setAllowRandomnessInsideAlgorithm(allowRandomnessInsideAlgorithm);
+        grasp.setVerbose(verbose);
+        grasp.setCacheScores(cacheScores);
 
-        grasp.setNumStarts(this.numStarts);
-        grasp.setKnowledge(this.knowledge);
+        grasp.setNumStarts(numStarts);
+        grasp.setKnowledge(knowledge);
 
-        final List<Node> perm = grasp.bestOrder(this.score.getVariables());
+        List<Node> perm = grasp.bestOrder(score.getVariables());
         graph = grasp.getGraph(true);
 
-        final Graph graspGraph = new EdgeListGraph(graph);
+        Graph graspGraph = new EdgeListGraph(graph);
 
 
         graph.reorientAllWith(Endpoint.CIRCLE);
 
 
-        fciOrientBk(this.knowledge, graph, graph.getNodes());
+        this.fciOrientBk(knowledge, graph, graph.getNodes());
 
 
-        for (final Node b : perm) {
-            final List<Node> adj = graph.getAdjacentNodes(b);
+        for (Node b : perm) {
+            List<Node> adj = graph.getAdjacentNodes(b);
 
             for (int i = 0; i < adj.size(); i++) {
                 for (int j = i + 1; j < adj.size(); j++) {
-                    final Node a = adj.get(i);
-                    final Node c = adj.get(j);
+                    Node a = adj.get(i);
+                    Node c = adj.get(j);
 
                     if (!graph.isAdjacentTo(a, c) && graspGraph.isDefCollider(a, b, c)
-                            && isArrowpointAllowed(a, b, graph)
-                            && isArrowpointAllowed(c, b, graph)) {
+                            && this.isArrowpointAllowed(a, b, graph)
+                            && this.isArrowpointAllowed(c, b, graph)) {
                         graph.setEndpoint(a, b, Endpoint.ARROW);
                         graph.setEndpoint(c, b, Endpoint.ARROW);
                     }
@@ -151,27 +151,27 @@ public final class GraspFci implements GraphSearch {
         }
 
 
-        final TeyssierScorer scorer;
+        TeyssierScorer scorer;
 
-        scorer = new TeyssierScorer(this.test, this.score);
+        scorer = new TeyssierScorer(test, score);
 
         scorer.score(perm);
 
-        final List<Triple> triples = new ArrayList<>();
+        List<Triple> triples = new ArrayList<>();
         scorer.clearBookmarks();
 
-        for (final Node b : perm) {
-            final Set<Node> into = scorer.getParents(b);
+        for (Node b : perm) {
+            Set<Node> into = scorer.getParents(b);
 
-            for (final Node a : into) {
-                for (final Node c : into) {
-                    for (final Node d : perm) {
-                        if (configuration(scorer, a, b, c, d)) {
+            for (Node a : into) {
+                for (Node c : into) {
+                    for (Node d : perm) {
+                        if (this.configuration(scorer, a, b, c, d)) {
                             scorer.bookmark();
-                            final double score = scorer.score();
+                            double score = scorer.score();
                             scorer.swap(b, c);
 
-                            if (configuration(scorer, d, c, b, a) && score == scorer.score()) {
+                            if (this.configuration(scorer, d, c, b, a) && score == scorer.score()) {
                                 triples.add(new Triple(b, c, d));
                             }
 
@@ -182,22 +182,22 @@ public final class GraspFci implements GraphSearch {
             }
         }
 
-        for (final Triple triple : triples) {
-            final Node b = triple.getX();
-            final Node c = triple.getY();
-            final Node d = triple.getZ();
+        for (Triple triple : triples) {
+            Node b = triple.getX();
+            Node c = triple.getY();
+            Node d = triple.getZ();
 
             graph.removeEdge(b, d);
         }
 
-        for (final Triple triple : triples) {
-            final Node b = triple.getX();
-            final Node c = triple.getY();
-            final Node d = triple.getZ();
+        for (Triple triple : triples) {
+            Node b = triple.getX();
+            Node c = triple.getY();
+            Node d = triple.getZ();
 
             if (graph.isAdjacentTo(b, c) && graph.isAdjacentTo(d, c)
-                    && isArrowpointAllowed(b, c, graph)
-                    && isArrowpointAllowed(c, c, graph)) {
+                    && this.isArrowpointAllowed(b, c, graph)
+                    && this.isArrowpointAllowed(c, c, graph)) {
                 graph.setEndpoint(b, c, Endpoint.ARROW);
                 graph.setEndpoint(d, c, Endpoint.ARROW);
             }
@@ -205,16 +205,16 @@ public final class GraspFci implements GraphSearch {
 
         // The maxDegree for the discriminating path step.
         final int sepsetsDepth = -1;
-        final SepsetProducer sepsets = new SepsetsTeyssier(graspGraph, scorer, null, sepsetsDepth);
+        SepsetProducer sepsets = new SepsetsTeyssier(graspGraph, scorer, null, sepsetsDepth);
 
-        final FciOrient fciOrient = new FciOrient(sepsets);
-        fciOrient.setVerbose(this.verbose);
-        fciOrient.setOut(this.out);
-        fciOrient.setMaxPathLength(this.maxPathLength);
+        FciOrient fciOrient = new FciOrient(sepsets);
+        fciOrient.setVerbose(verbose);
+        fciOrient.setOut(out);
+        fciOrient.setMaxPathLength(maxPathLength);
         fciOrient.skipDiscriminatingPathRule(false);
-        fciOrient.setKnowledge(getKnowledge());
-        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setMaxPathLength(this.maxPathLength);
+        fciOrient.setKnowledge(this.getKnowledge());
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setMaxPathLength(maxPathLength);
         fciOrient.doFinalOrientation(graph);
 
         graph.setPag(true);
@@ -224,8 +224,8 @@ public final class GraspFci implements GraphSearch {
         return graph;
     }
 
-    private boolean configuration(final TeyssierScorer scorer, final Node a, final Node b, final Node c, final Node d) {
-        if (!distinct(a, b, c, d)) return false;
+    private boolean configuration(TeyssierScorer scorer, Node a, Node b, Node c, Node d) {
+        if (!this.distinct(a, b, c, d)) return false;
 
         return scorer.adjacent(a, b)
                 && scorer.adjacent(b, c)
@@ -235,8 +235,8 @@ public final class GraspFci implements GraphSearch {
                 && scorer.collider(a, b, c);
     }
 
-    private boolean distinct(final Node a, final Node b, final Node c, final Node d) {
-        final Set<Node> nodes = new HashSet<>();
+    private boolean distinct(Node a, Node b, Node c, Node d) {
+        Set<Node> nodes = new HashSet<>();
 
         nodes.add(a);
         nodes.add(b);
@@ -252,10 +252,10 @@ public final class GraspFci implements GraphSearch {
     }
 
     public IKnowledge getKnowledge() {
-        return this.knowledge;
+        return knowledge;
     }
 
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -269,7 +269,7 @@ public final class GraspFci implements GraphSearch {
      * default.
      */
     public boolean isCompleteRuleSetUsed() {
-        return this.completeRuleSetUsed;
+        return completeRuleSetUsed;
     }
 
     /**
@@ -277,7 +277,7 @@ public final class GraspFci implements GraphSearch {
      *                            should be used, false if only R1-R4 (the rule set of the original FCI)
      *                            should be used. False by default.
      */
-    public void setCompleteRuleSetUsed(final boolean completeRuleSetUsed) {
+    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
@@ -286,14 +286,14 @@ public final class GraspFci implements GraphSearch {
      * unlimited.
      */
     public int getMaxPathLength() {
-        return this.maxPathLength;
+        return maxPathLength;
     }
 
     /**
      * @param maxPathLength the maximum length of any discriminating path, or -1
      *                      if unlimited.
      */
-    public void setMaxPathLength(final int maxPathLength) {
+    public void setMaxPathLength(int maxPathLength) {
         if (maxPathLength < -1) {
             throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
         }
@@ -305,10 +305,10 @@ public final class GraspFci implements GraphSearch {
      * True iff verbose output should be printed.
      */
     public boolean isVerbose() {
-        return this.verbose;
+        return verbose;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
@@ -316,30 +316,30 @@ public final class GraspFci implements GraphSearch {
      * The independence test.
      */
     public IndependenceTest getTest() {
-        return this.test;
+        return test;
     }
 
-    public void setTest(final IndependenceTest test) {
+    public void setTest(IndependenceTest test) {
         this.test = test;
     }
 
     public ICovarianceMatrix getCovMatrix() {
-        return this.covarianceMatrix;
+        return covarianceMatrix;
     }
 
     public ICovarianceMatrix getCovarianceMatrix() {
-        return this.covarianceMatrix;
+        return covarianceMatrix;
     }
 
-    public void setCovarianceMatrix(final ICovarianceMatrix covarianceMatrix) {
+    public void setCovarianceMatrix(ICovarianceMatrix covarianceMatrix) {
         this.covarianceMatrix = covarianceMatrix;
     }
 
     public PrintStream getOut() {
-        return this.out;
+        return out;
     }
 
-    public void setOut(final PrintStream out) {
+    public void setOut(PrintStream out) {
         this.out = out;
     }
 
@@ -348,15 +348,15 @@ public final class GraspFci implements GraphSearch {
     /**
      * Orients according to background knowledge
      */
-    private void fciOrientBk(final IKnowledge knowledge, final Graph graph, final List<Node> variables) {
-        this.logger.log("info", "Starting BK Orientation.");
+    private void fciOrientBk(IKnowledge knowledge, Graph graph, List<Node> variables) {
+        logger.log("info", "Starting BK Orientation.");
 
-        for (final Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
-            final KnowledgeEdge edge = it.next();
+        for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
+            KnowledgeEdge edge = it.next();
 
             //match strings to variables in the graph.
-            final Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            final Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
+            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
 
             if (from == null || to == null) {
                 continue;
@@ -369,15 +369,15 @@ public final class GraspFci implements GraphSearch {
             // Orient to*->from
             graph.setEndpoint(to, from, Endpoint.ARROW);
             graph.setEndpoint(from, to, Endpoint.CIRCLE);
-            this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+            logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }
 
-        for (final Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext(); ) {
-            final KnowledgeEdge edge = it.next();
+        for (Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext(); ) {
+            KnowledgeEdge edge = it.next();
 
             //match strings to variables in this graph
-            final Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            final Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
+            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
 
             if (from == null || to == null) {
                 continue;
@@ -389,53 +389,53 @@ public final class GraspFci implements GraphSearch {
 
             graph.setEndpoint(to, from, Endpoint.TAIL);
             graph.setEndpoint(from, to, Endpoint.ARROW);
-            this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+            logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }
 
-        this.logger.log("info", "Finishing BK Orientation.");
+        logger.log("info", "Finishing BK Orientation.");
     }
 
-    public void setNumStarts(final int numStarts) {
+    public void setNumStarts(int numStarts) {
         this.numStarts = numStarts;
     }
 
-    public void setDepth(final int depth) {
+    public void setDepth(int depth) {
         this.depth = depth;
     }
 
-    public void setUncoveredDepth(final int uncoveredDepth) {
+    public void setUncoveredDepth(int uncoveredDepth) {
         this.uncoveredDepth = uncoveredDepth;
     }
 
-    public void setUseRaskuttiUhler(final boolean useRaskuttiUhler) {
+    public void setUseRaskuttiUhler(boolean useRaskuttiUhler) {
         this.useRaskuttiUhler = useRaskuttiUhler;
     }
 
-    public void setNonSingularDepth(final int nonsingularDepth) {
+    public void setNonSingularDepth(int nonsingularDepth) {
         this.nonsingularDepth = nonsingularDepth;
     }
 
-    public void setOrdered(final boolean ordered) {
+    public void setOrdered(boolean ordered) {
         this.ordered = ordered;
     }
 
-    public void setUseScore(final boolean useScore) {
+    public void setUseScore(boolean useScore) {
         this.useScore = useScore;
     }
 
-    public void setCacheScores(final boolean cacheScores) {
+    public void setCacheScores(boolean cacheScores) {
         this.cacheScores = cacheScores;
     }
 
-    public void setUseDataOrder(final boolean useDataOrder) {
+    public void setUseDataOrder(boolean useDataOrder) {
         this.useDataOrder = useDataOrder;
     }
 
-    public void setAllowRandomnessInsideAlgorithm(final boolean allowRandomnessInsideAlgorithms) {
-        this.allowRandomnessInsideAlgorithm = allowRandomnessInsideAlgorithms;
+    public void setAllowRandomnessInsideAlgorithm(boolean allowRandomnessInsideAlgorithms) {
+        allowRandomnessInsideAlgorithm = allowRandomnessInsideAlgorithms;
     }
 
-    private boolean isArrowpointAllowed(final Node x, final Node y, final Graph graph) {
+    private boolean isArrowpointAllowed(Node x, Node y, Graph graph) {
         if (graph.getEndpoint(x, y) == Endpoint.ARROW) {
             return true;
         }
@@ -445,13 +445,13 @@ public final class GraspFci implements GraphSearch {
         }
 
         if (graph.getEndpoint(y, x) == Endpoint.ARROW) {
-            if (this.knowledge.isForbidden(x.getName(), y.getName())) {
+            if (knowledge.isForbidden(x.getName(), y.getName())) {
                 return false;
             } else {
                 return true;
             }
         } else if (graph.getEndpoint(y, x) == Endpoint.TAIL) {
-            if (this.knowledge.isForbidden(x.getName(), y.getName())) {
+            if (knowledge.isForbidden(x.getName(), y.getName())) {
                 return false;
             } else {
                 return true;

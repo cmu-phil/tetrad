@@ -56,7 +56,7 @@ public final class NoEdgesToSelf implements GraphConstraint {
      * @return true if the edge does not connect a node to itself, false
      * otherwise.
      */
-    public boolean isEdgeAddable(final Edge edge, final Graph graph) {
+    public boolean isEdgeAddable(Edge edge, Graph graph) {
         return !edge.getNode1().equals(edge.getNode2());
     }
 
@@ -65,7 +65,7 @@ public final class NoEdgesToSelf implements GraphConstraint {
      * @param graph the graph to check.
      * @return true.
      */
-    public boolean isNodeAddable(final Node node, final Graph graph) {
+    public boolean isNodeAddable(Node node, Graph graph) {
         return true;
     }
 
@@ -74,7 +74,7 @@ public final class NoEdgesToSelf implements GraphConstraint {
      * @param graph the graph to check.
      * @return true.
      */
-    public boolean isEdgeRemovable(final Edge edge, final Graph graph) {
+    public boolean isEdgeRemovable(Edge edge, Graph graph) {
         return true;
     }
 
@@ -82,7 +82,7 @@ public final class NoEdgesToSelf implements GraphConstraint {
      * @param graph the graph to check.
      * @return true.
      */
-    public boolean isNodeRemovable(final Node node, final Graph graph) {
+    public boolean isNodeRemovable(Node node, Graph graph) {
         return true;
     }
 

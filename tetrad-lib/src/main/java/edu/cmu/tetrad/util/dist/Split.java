@@ -57,7 +57,7 @@ public class Split implements Distribution {
      * @param a Ibid.
      * @param b Ibid.
      */
-    public Split(final double a, final double b) {
+    public Split(double a, double b) {
         if (a < 0) {
             throw new IllegalArgumentException(
                     "When asking for a range from a to b, the value of a must be >= 0: a = " + a + " b = " + b);
@@ -87,8 +87,8 @@ public class Split implements Distribution {
      * @return a random value from [-b, -a] U [a, b].
      */
     public double nextRandom() {
-        final double c = RandomUtil.getInstance().nextDouble();
-        double value = getA() + c * (getB() - getA());
+        double c = RandomUtil.getInstance().nextDouble();
+        double value = this.getA() + c * (this.getB() - this.getA());
 
         if (RandomUtil.getInstance().nextDouble() < 0.5) {
             value *= -1.0;
@@ -98,11 +98,11 @@ public class Split implements Distribution {
     }
 
     public double getA() {
-        return this.a;
+        return a;
     }
 
     public double getB() {
-        return this.b;
+        return b;
     }
 
 
@@ -111,32 +111,32 @@ public class Split implements Distribution {
     }
 
     public String toString() {
-        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-        return "Split(" + nf.format(this.a) + ", " + nf.format(this.b) + ", " + ")";
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        return "Split(" + nf.format(a) + ", " + nf.format(b) + ", " + ")";
     }
 
 
-    public void setParameter(final int index, final double value) {
-        if (index == 0 && value < this.b) {
-            this.a = value;
-        } else if (index == 1 && value > this.a) {
-            this.b = value;
+    public void setParameter(int index, double value) {
+        if (index == 0 && value < b) {
+            a = value;
+        } else if (index == 1 && value > a) {
+            b = value;
         } else {
             throw new IllegalArgumentException("Cannot set value of " + index + " to " + value);
         }
     }
 
-    public double getParameter(final int index) {
+    public double getParameter(int index) {
         if (index == 0) {
-            return this.a;
+            return a;
         } else if (index == 1) {
-            return this.b;
+            return b;
         } else {
             throw new IllegalArgumentException("There is no parameter " + index);
         }
     }
 
-    public String getParameterName(final int index) {
+    public String getParameterName(int index) {
         if (index == 0) {
             return "Lower bound (> 0)";
         } else if (index == 1) {
@@ -165,15 +165,15 @@ public class Split implements Distribution {
      * @throws ClassNotFoundException If the class of an object in the stream is not
      *                                in the project.
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (this.a < 0) {
+        if (a < 0) {
             throw new IllegalStateException();
         }
 
-        if (this.b <= this.a) {
+        if (b <= a) {
             throw new IllegalStateException();
         }
     }

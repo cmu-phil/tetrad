@@ -16,7 +16,7 @@ public class RandomForward implements RandomGraph {
     static final long serialVersionUID = 23L;
 
     @Override
-    public Graph createGraph(final Parameters parameters) {
+    public Graph createGraph(Parameters parameters) {
         return GraphUtils.randomGraphRandomForwardEdges(
                 parameters.getInt("numMeasures") + parameters.getInt("numLatents"),
                 parameters.getInt("numLatents"),
@@ -34,7 +34,7 @@ public class RandomForward implements RandomGraph {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
         parameters.add("numMeasures");
         parameters.add("numLatents");
         parameters.add("avgDegree");

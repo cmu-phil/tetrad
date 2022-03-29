@@ -44,7 +44,7 @@ public class EditorWindow extends JInternalFrame
     /**
      * Set to true if the dialog was canceled.
      */
-    private boolean canceled = false;
+    private boolean canceled;
 
     /**
      * The name of the main button; normally "Save."
@@ -64,8 +64,8 @@ public class EditorWindow extends JInternalFrame
     /**
      * Pops a new editor window up from a dialog.
      */
-    public EditorWindow(final JPanel editor, final String title, final String buttonName,
-                        final boolean cancellable, final Component centeringComp) {
+    public EditorWindow(JPanel editor, String title, String buttonName,
+                        boolean cancellable, Component centeringComp) {
         super(title, true, true, true, false);
 
         if (editor == null) {
@@ -76,16 +76,16 @@ public class EditorWindow extends JInternalFrame
 //            throw new NullPointerException("Button name must not be null.");
 //        }
         this.buttonName = buttonName;
-        doSetup(editor, cancellable);
+        this.doSetup(editor, cancellable);
 
         this.centeringComp = centeringComp;
 
-        setClosable(false);
+        this.setClosable(false);
     }
 
     @Override
-    public int compareTo(final Object o) {
-        final EditorWindow to = (EditorWindow) o;
+    public int compareTo(Object o) {
+        EditorWindow to = (EditorWindow) o;
         return ((EditorWindow) o).getName().compareTo(to.getName());
 
     }
@@ -93,38 +93,38 @@ public class EditorWindow extends JInternalFrame
     /**
      * Constructs the dialog.
      */
-    private void doSetup(final JPanel editor, final boolean cancellable) {
+    private void doSetup(JPanel editor, boolean cancellable) {
         this.editor = editor;
 
-        addInternalFrameListener(new InternalFrameAdapter() {
-            public void InternalFrameClosing(final InternalFrameEvent evt) {
-                EditorWindow.this.canceled = true;
-                closeDialog();
+        this.addInternalFrameListener(new InternalFrameAdapter() {
+            public void InternalFrameClosing(InternalFrameEvent evt) {
+                canceled = true;
+                EditorWindow.this.closeDialog();
             }
         });
 
-        this.okButton = null;
+        okButton = null;
 
-        if (this.buttonName != null) {
-            this.okButton = new JButton(this.buttonName);
+        if (buttonName != null) {
+            okButton = new JButton(buttonName);
         }
 
-        final JButton cancelButton = new JButton("Cancel");
+        JButton cancelButton = new JButton("Cancel");
 
-        if (this.okButton != null) {
-            this.okButton.setPreferredSize(new Dimension(100, 50));
-            this.okButton.addActionListener(new OkListener());
+        if (okButton != null) {
+            okButton.setPreferredSize(new Dimension(100, 50));
+            okButton.addActionListener(new OkListener());
         }
 
         cancelButton.setPreferredSize(new Dimension(100, 50));
         cancelButton.addActionListener(new CancelListener());
 
-        final Box b0 = Box.createVerticalBox();
-        final Box b = Box.createHorizontalBox();
+        Box b0 = Box.createVerticalBox();
+        Box b = Box.createHorizontalBox();
 
         b.add(Box.createHorizontalGlue());
-        if (this.okButton != null) {
-            b.add(this.okButton);
+        if (okButton != null) {
+            b.add(okButton);
         }
         b.add(Box.createHorizontalStrut(5));
 
@@ -137,78 +137,78 @@ public class EditorWindow extends JInternalFrame
         b0.add(editor);
         b0.add(b);
 
-        final Dimension screensize = Toolkit.getDefaultToolkit().getScreenSize();
+        Dimension screensize = Toolkit.getDefaultToolkit().getScreenSize();
 
-        final int width = Math.min(b0.getPreferredSize().width + 50, screensize.width);
-        final int height = Math.min(b0.getPreferredSize().height + 50, screensize.height - 100);
+        int width = Math.min(b0.getPreferredSize().width + 50, screensize.width);
+        int height = Math.min(b0.getPreferredSize().height + 50, screensize.height - 100);
 
         if (!(editor instanceof DoNotScroll) && (b0.getPreferredSize().width > width || b0.getPreferredSize().height > height)) {
-            final JScrollPane scroll = new JScrollPane(b0);
+            JScrollPane scroll = new JScrollPane(b0);
             scroll.setPreferredSize(new Dimension(width, height));
-            getContentPane().add(scroll);
+            this.getContentPane().add(scroll);
         } else {
-            getContentPane().add(b0);
+            this.getContentPane().add(b0);
         }
 
         // Set the ok button so that pressing enter activates it.
         // jdramsey 5/5/02
-        final JRootPane root = SwingUtilities.getRootPane(this);
+        JRootPane root = SwingUtilities.getRootPane(this);
         if (root != null) {
-            root.setDefaultButton(this.okButton);
+            root.setDefaultButton(okButton);
         }
 
-        pack();
+        this.pack();
     }
 
     /**
      * Closes the dialog.
      */
     public void closeDialog() {
-        setVisible(false);
-        ModificationRegistery.unregisterEditor(getEditor());
-        doDefaultCloseAction();
+        this.setVisible(false);
+        ModificationRegistery.unregisterEditor(this.getEditor());
+        this.doDefaultCloseAction();
     }
 
     public boolean isCanceled() {
-        return this.canceled;
+        return canceled;
     }
 
     private JComponent getEditor() {
-        return this.editor;
+        return editor;
     }
 
     public Component getCenteringComp() {
-        return this.centeringComp;
+        return centeringComp;
     }
 
     private class OkListener implements ActionListener {
 
-        public void actionPerformed(final ActionEvent e) {
-            if (EditorWindow.this.editor instanceof FinalizingEditor) {
-                final boolean ok = ((FinalizingEditor) EditorWindow.this.editor).finalizeEditor();
+        public void actionPerformed(ActionEvent e) {
+            if (editor instanceof FinalizingEditor) {
+                boolean ok = ((FinalizingEditor) editor).finalizeEditor();
                 if (ok) {
-                    closeDialog();
+                    EditorWindow.this.closeDialog();
                 }
             } else {
-                closeDialog();
+                EditorWindow.this.closeDialog();
             }
         }
     }
 
     private class CancelListener implements ActionListener {
 
-        public void actionPerformed(final ActionEvent e) {
-            EditorWindow.this.canceled = true;
-            closeDialog();
+        public void actionPerformed(ActionEvent e) {
+            canceled = true;
+            EditorWindow.this.closeDialog();
         }
     }
 
     /**
      * Adds the action listener to the OK button if it's not null.
      */
-    public void addActionListener(final ActionListener l) {
-        if (this.okButton != null) {
-            this.okButton.addActionListener(l);
+    public void addActionListener(ActionListener l) {
+        if (okButton != null) {
+            okButton.addActionListener(l);
         }
     }
 }

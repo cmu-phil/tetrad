@@ -24,6 +24,7 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.channels.FileChannel.MapMode;
 
 /**
  * Mar 8, 2017 10:51:43 AM
@@ -57,7 +58,7 @@ public class TextFileUtils {
      * @return
      * @throws IOException
      */
-    public static char inferDelimiter(final File file, final int n, int skip, String comment, final char quoteCharacter, final char[] delims) throws IOException {
+    public static char inferDelimiter(File file, int n, int skip, String comment, char quoteCharacter, char[] delims) throws IOException {
         if (file == null) {
             throw new IllegalArgumentException("Parameter file cannot be null.");
         }
@@ -69,52 +70,52 @@ public class TextFileUtils {
         }
         comment = (comment == null) ? "" : comment.trim();
 
-        final int[] characters = new int[256];
-        try (final FileChannel fc = new RandomAccessFile(file, "r").getChannel()) {
-            final long fileSize = fc.size();
+        int[] characters = new int[256];
+        try (FileChannel fc = new RandomAccessFile(file, "r").getChannel()) {
+            long fileSize = fc.size();
             long position = 0;
             long size = (fileSize > Integer.MAX_VALUE) ? Integer.MAX_VALUE : fileSize;
 
-            final ByteBuffer byteBuffer = ByteBuffer.allocate(comment.length());
-            final byte[] prefix = comment.getBytes();
+            ByteBuffer byteBuffer = ByteBuffer.allocate(comment.length());
+            byte[] prefix = comment.getBytes();
             int index = 0;
             boolean hasQuoteChar = false;
             boolean reqCheck = prefix.length > 0;
             boolean skipLine = false;
             int lineCount = 0;
-            final byte quoteChar = (byte) quoteCharacter;
-            byte prevNonBlankChar = TextFileUtils.SPACE_CHAR;
+            byte quoteChar = (byte) quoteCharacter;
+            byte prevNonBlankChar = SPACE_CHAR;
             byte prevChar = -1;
             do {
-                final MappedByteBuffer buffer = fc.map(FileChannel.MapMode.READ_ONLY, position, size);
+                MappedByteBuffer buffer = fc.map(MapMode.READ_ONLY, position, size);
 
                 while (buffer.hasRemaining() && lineCount < n && !Thread.currentThread().isInterrupted()) {
-                    final byte currChar = buffer.get();
+                    byte currChar = buffer.get();
 
                     if (skipLine) {
-                        if (currChar == TextFileUtils.CARRIAGE_RETURN || currChar == TextFileUtils.LINE_FEED) {
+                        if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
                             skipLine = false;
                         }
                     } else {
-                        if (currChar == TextFileUtils.CARRIAGE_RETURN || currChar == TextFileUtils.LINE_FEED) {
+                        if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
                             byteBuffer.clear();
                             reqCheck = prefix.length > 0;
 
-                            if (!(currChar == TextFileUtils.LINE_FEED && prevChar == TextFileUtils.CARRIAGE_RETURN)) {
+                            if (!(currChar == LINE_FEED && prevChar == CARRIAGE_RETURN)) {
                                 lineCount++;
                             }
                         } else {
-                            if (currChar > TextFileUtils.SPACE_CHAR) {
+                            if (currChar > SPACE_CHAR) {
                                 prevNonBlankChar = currChar;
                             }
 
-                            if (reqCheck && prevNonBlankChar > TextFileUtils.SPACE_CHAR) {
+                            if (reqCheck && prevNonBlankChar > SPACE_CHAR) {
                                 if (currChar == prefix[index]) {
                                     index++;
                                     if (index == prefix.length) {
                                         index = 0;
                                         skipLine = true;
-                                        prevNonBlankChar = TextFileUtils.SPACE_CHAR;
+                                        prevNonBlankChar = SPACE_CHAR;
                                         byteBuffer.clear();
 
                                         prevChar = currChar;
@@ -137,7 +138,7 @@ public class TextFileUtils {
                                     if (byteBuffer.position() > 0) {
                                         byteBuffer.flip();
                                         while (byteBuffer.hasRemaining() && !Thread.currentThread().isInterrupted()) {
-                                            final byte c = byteBuffer.get();
+                                            byte c = byteBuffer.get();
                                             if (c == quoteChar) {
                                                 hasQuoteChar = !hasQuoteChar;
                                             } else if (!hasQuoteChar) {

@@ -37,9 +37,9 @@ public class NumberFormatUtil {
     private NumberFormatUtil() {
 
         try {
-            this.nf = new DecimalFormat(Preferences.userRoot().get("numberFormat", "0.0000"));
-        } catch (final Exception e) {
-            this.nf = new DecimalFormat("0.0000");
+            nf = new DecimalFormat(Preferences.userRoot().get("numberFormat", "0.0000"));
+        } catch (Exception e) {
+            nf = new DecimalFormat("0.0000");
         }
 
     }
@@ -48,7 +48,7 @@ public class NumberFormatUtil {
      * @return Ibid.
      */
     public static NumberFormatUtil getInstance() {
-        return NumberFormatUtil.INSTANCE;
+        return INSTANCE;
     }
 
     /**
@@ -57,7 +57,7 @@ public class NumberFormatUtil {
      * @param nf Ibid.
      * @throws NullPointerException if nf is null.
      */
-    public void setNumberFormat(final NumberFormat nf) {
+    public void setNumberFormat(NumberFormat nf) {
         if (nf == null) {
             throw new NullPointerException();
         }
@@ -69,7 +69,7 @@ public class NumberFormatUtil {
      * @return Ibid.
      */
     public NumberFormat getNumberFormat() {
-        return this.nf;
+        return nf;
     }
 }
 

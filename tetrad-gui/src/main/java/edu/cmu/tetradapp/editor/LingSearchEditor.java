@@ -28,7 +28,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.IndTestType;
-import edu.cmu.tetrad.search.Ling;
+import edu.cmu.tetrad.search.Ling.StoredGraphs;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
@@ -38,6 +38,7 @@ import edu.cmu.tetradapp.model.IGesRunner;
 import edu.cmu.tetradapp.model.KnowledgeEditable;
 import edu.cmu.tetradapp.model.LingRunner;
 import edu.cmu.tetradapp.util.DoubleTextField;
+import edu.cmu.tetradapp.util.DoubleTextField.Filter;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
@@ -67,39 +68,39 @@ public class LingSearchEditor extends AbstractSearchEditor
 
     //=========================CONSTRUCTORS============================//
 
-    public LingSearchEditor(final LingRunner runner) {
+    public LingSearchEditor(LingRunner runner) {
         super(runner, "Result Graph");
     }
 
     //=============================== Public Methods ==================================//
 
     public Graph getGraph() {
-        return getWorkbench().getGraph();
+        return this.getWorkbench().getGraph();
     }
 
     @Override
     public Map getModelEdgesToDisplay() {
-        return getWorkbench().getModelEdgesToDisplay();
+        return this.getWorkbench().getModelEdgesToDisplay();
     }
 
     public Map getModelNodesToDisplay() {
-        return getWorkbench().getModelNodesToDisplay();
+        return this.getWorkbench().getModelNodesToDisplay();
     }
 
-    public void layoutByGraph(final Graph graph) {
-        getWorkbench().layoutByGraph(graph);
+    public void layoutByGraph(Graph graph) {
+        this.getWorkbench().layoutByGraph(graph);
     }
 
     public void layoutByKnowledge() {
-        final GraphWorkbench resultWorkbench = getWorkbench();
-        final Graph graph = resultWorkbench.getGraph();
-        final IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
+        GraphWorkbench resultWorkbench = this.getWorkbench();
+        Graph graph = resultWorkbench.getGraph();
+        IKnowledge knowledge = (IKnowledge) this.getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
         SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
 //        resultWorkbench.setGraph(graph);
     }
 
     public Rectangle getVisibleRect() {
-        return getWorkbench().getVisibleRect();
+        return this.getWorkbench().getVisibleRect();
     }
 
     //==========================PROTECTED METHODS============================//
@@ -108,12 +109,12 @@ public class LingSearchEditor extends AbstractSearchEditor
     /**
      * Sets up the editor, does the layout, and so on.
      */
-    protected void setup(final String resultLabel) {
-        setLayout(new BorderLayout());
-        add(getToolbar(), BorderLayout.WEST);
+    protected void setup(String resultLabel) {
+        this.setLayout(new BorderLayout());
+        this.add(this.getToolbar(), BorderLayout.WEST);
         //JTabbedPane tabbedPane = new JTabbedPane();
 //        tabbedPane = new JTabbedPane();
-        this.lingDisplay = lingDisplay();
+        lingDisplay = this.lingDisplay();
 //        tabbedPane.add("Result", lingDisplay);
 
         /*if (getAlgorithmRunner().getSelectedDataModel() instanceof DataSet) {
@@ -121,31 +122,31 @@ public class LingSearchEditor extends AbstractSearchEditor
             tabbedPane.add("DAG in CPDAG", dagWorkbench);
         }*/
 
-        add(this.lingDisplay, BorderLayout.CENTER);
+        this.add(lingDisplay, BorderLayout.CENTER);
 //        add(tabbedPane, BorderLayout.CENTER);
-        add(menuBar(), BorderLayout.NORTH);
+        this.add(this.menuBar(), BorderLayout.NORTH);
     }
 
     private LingDisplay lingDisplay() {
-        final Graph resultGraph = resultGraph();
-        final Ling.StoredGraphs storedGraphs = arrangeGraphs();
-        final LingDisplay display = new LingDisplay(storedGraphs);
+        Graph resultGraph = this.resultGraph();
+        StoredGraphs storedGraphs = this.arrangeGraphs();
+        LingDisplay display = new LingDisplay(storedGraphs);
 
         // Superfluous?
-        getGraphHistory().clear();
-        getGraphHistory().add(resultGraph);
+        this.getGraphHistory().clear();
+        this.getGraphHistory().add(resultGraph);
 
-        setWorkbench(display.getWorkbench());
-        getWorkbench().setAllowDoubleClickActions(false);
-        getWorkbench().setAllowNodeEdgeSelection(true);
+        this.setWorkbench(display.getWorkbench());
+        this.getWorkbench().setAllowDoubleClickActions(false);
+        this.getWorkbench().setAllowNodeEdgeSelection(true);
 
-        setWorkbenchScroll(new JScrollPane(display));
-        getWorkbenchScroll().setPreferredSize(new Dimension(450, 450));
-        getWorkbenchScroll().setBorder(new TitledBorder(""));
+        this.setWorkbenchScroll(new JScrollPane(display));
+        this.getWorkbenchScroll().setPreferredSize(new Dimension(450, 450));
+        this.getWorkbenchScroll().setBorder(new TitledBorder(""));
 
-        getWorkbench().addMouseListener(new MouseAdapter() {
-            public void mouseExited(final MouseEvent e) {
-                storeLatestWorkbenchGraph();
+        this.getWorkbench().addMouseListener(new MouseAdapter() {
+            public void mouseExited(MouseEvent e) {
+                LingSearchEditor.this.storeLatestWorkbenchGraph();
             }
         });
 
@@ -153,15 +154,15 @@ public class LingSearchEditor extends AbstractSearchEditor
         return display;
     }
 
-    private Ling.StoredGraphs arrangeGraphs() {
-        final LingRunner runner = (LingRunner) getAlgorithmRunner();
-        final Graph resultGraph = runner.getResultGraph();
+    private StoredGraphs arrangeGraphs() {
+        LingRunner runner = (LingRunner) this.getAlgorithmRunner();
+        Graph resultGraph = runner.getResultGraph();
 
-        Ling.StoredGraphs storedGraphs = runner.getStoredGraphs();
-        if (storedGraphs == null) storedGraphs = new Ling.StoredGraphs();
+        StoredGraphs storedGraphs = runner.getStoredGraphs();
+        if (storedGraphs == null) storedGraphs = new StoredGraphs();
 
-        final Graph latestWorkbenchGraph = (Graph) runner.getParams().get("sourceGraph", null);
-        final Graph sourceGraph = runner.getSourceGraph();
+        Graph latestWorkbenchGraph = (Graph) runner.getParams().get("sourceGraph", null);
+        Graph sourceGraph = runner.getSourceGraph();
 
         boolean arrangedAll = false;
 
@@ -185,7 +186,7 @@ public class LingSearchEditor extends AbstractSearchEditor
     }
 
     private Graph resultGraph() {
-        Graph resultGraph = getAlgorithmRunner().getGraph();
+        Graph resultGraph = this.getAlgorithmRunner().getGraph();
 
         if (resultGraph == null) {
             resultGraph = new EdgeListGraph();
@@ -200,35 +201,35 @@ public class LingSearchEditor extends AbstractSearchEditor
      * cannot count on a result graph having been found when the method
      */
     public void execute() {
-        final Window owner = (Window) getTopLevelAncestor();
+        Window owner = (Window) this.getTopLevelAncestor();
 
-        final WatchedProcess process = new WatchedProcess(owner) {
+        WatchedProcess process = new WatchedProcess(owner) {
             public void watch() {
-                getExecuteButton().setEnabled(false);
-                setErrorMessage(null);
+                LingSearchEditor.this.getExecuteButton().setEnabled(false);
+                this.setErrorMessage(null);
 
-                if (!LingSearchEditor.this.knowledgeMessageShown) {
-                    final IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
+                if (!knowledgeMessageShown) {
+                    IKnowledge knowledge = (IKnowledge) LingSearchEditor.this.getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
                     if (!knowledge.isEmpty()) {
                         JOptionPane.showMessageDialog(
                                 JOptionUtils.centeringComp(),
                                 "Using previously set knowledge. (To edit, use " +
                                         "the Knowledge menu.)");
-                        LingSearchEditor.this.knowledgeMessageShown = true;
+                        knowledgeMessageShown = true;
                     }
                 }
 
                 try {
-                    storeLatestWorkbenchGraph();
-                    getAlgorithmRunner().execute();
-                    final LingRunner runner = (LingRunner) getAlgorithmRunner();
-                    arrangeGraphs();
-                    LingSearchEditor.this.lingDisplay.resetGraphs(runner.getStoredGraphs());
-                } catch (final Exception e) {
-                    final CharArrayWriter writer1 = new CharArrayWriter();
-                    final PrintWriter writer2 = new PrintWriter(writer1);
+                    LingSearchEditor.this.storeLatestWorkbenchGraph();
+                    LingSearchEditor.this.getAlgorithmRunner().execute();
+                    LingRunner runner = (LingRunner) LingSearchEditor.this.getAlgorithmRunner();
+                    LingSearchEditor.this.arrangeGraphs();
+                    lingDisplay.resetGraphs(runner.getStoredGraphs());
+                } catch (Exception e) {
+                    CharArrayWriter writer1 = new CharArrayWriter();
+                    PrintWriter writer2 = new PrintWriter(writer1);
                     e.printStackTrace(writer2);
-                    final String message = writer1.toString();
+                    String message = writer1.toString();
                     writer2.close();
 
                     e.printStackTrace(System.out);
@@ -244,44 +245,44 @@ public class LingSearchEditor extends AbstractSearchEditor
                     if (messageString == null) {
                         messageString = message;
                     }
-                    setErrorMessage(messageString);
+                    this.setErrorMessage(messageString);
 
                     TetradLogger.getInstance().error("************Algorithm stopped!");
 
-                    getExecuteButton().setEnabled(true);
+                    LingSearchEditor.this.getExecuteButton().setEnabled(true);
                     throw new RuntimeException(e);
                 }
 
-                getWorkbenchScroll().setBorder(
-                        new TitledBorder(getResultLabel()));
-                final Graph resultGraph = resultGraph();
+                LingSearchEditor.this.getWorkbenchScroll().setBorder(
+                        new TitledBorder(LingSearchEditor.this.getResultLabel()));
+                Graph resultGraph = LingSearchEditor.this.resultGraph();
 
-                doDefaultArrangement(resultGraph);
-                getWorkbench().setBackground(Color.WHITE);
-                getWorkbench().setGraph(resultGraph);
-                getGraphHistory().clear();
-                getGraphHistory().add(resultGraph);
-                getWorkbench().repaint();
+                LingSearchEditor.this.doDefaultArrangement(resultGraph);
+                LingSearchEditor.this.getWorkbench().setBackground(Color.WHITE);
+                LingSearchEditor.this.getWorkbench().setGraph(resultGraph);
+                LingSearchEditor.this.getGraphHistory().clear();
+                LingSearchEditor.this.getGraphHistory().add(resultGraph);
+                LingSearchEditor.this.getWorkbench().repaint();
 
                 // For Mimbuild, e.g., that need to do a second stage.
-                firePropertyChange("algorithmFinished", null, null);
-                getExecuteButton().setEnabled(true);
-                firePropertyChange("modelChanged", null, null);
+                LingSearchEditor.this.firePropertyChange("algorithmFinished", null, null);
+                LingSearchEditor.this.getExecuteButton().setEnabled(true);
+                LingSearchEditor.this.firePropertyChange("modelChanged", null, null);
             }
         };
 
-        final Thread watcher = new Thread() {
+        Thread watcher = new Thread() {
             public void run() {
                 while (true) {
                     try {
                         Thread.sleep(300);
 
                         if (!process.isAlive()) {
-                            getExecuteButton().setEnabled(true);
+                            LingSearchEditor.this.getExecuteButton().setEnabled(true);
                             return;
                         }
-                    } catch (final InterruptedException e) {
-                        getExecuteButton().setEnabled(true);
+                    } catch (InterruptedException e) {
+                        LingSearchEditor.this.getExecuteButton().setEnabled(true);
                         return;
                     }
                 }
@@ -296,28 +297,28 @@ public class LingSearchEditor extends AbstractSearchEditor
      * Construct the toolbar panel.
      */
     protected JPanel getToolbar() {
-        final JPanel toolbar = new JPanel();
+        JPanel toolbar = new JPanel();
 
-        getExecuteButton().setText("Execute*");
-        getExecuteButton().addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                execute();
+        this.getExecuteButton().setText("Execute*");
+        this.getExecuteButton().addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                LingSearchEditor.this.execute();
             }
         });
 
-        final Box b1 = Box.createVerticalBox();
-        final Box b21 = Box.createVerticalBox();
+        Box b1 = Box.createVerticalBox();
+        Box b21 = Box.createVerticalBox();
 
-        final Box b211 = Box.createHorizontalBox();
+        Box b211 = Box.createHorizontalBox();
         b211.add(new JLabel("Threshold "));
-        final Parameters params = getAlgorithmRunner().getParams();
-        final double pruneFactor = params.getDouble("threshold", 0.5);
-        final DoubleTextField field = new DoubleTextField(pruneFactor, 8, NumberFormatUtil.getInstance().getNumberFormat());
+        Parameters params = this.getAlgorithmRunner().getParams();
+        double pruneFactor = params.getDouble("threshold", 0.5);
+        DoubleTextField field = new DoubleTextField(pruneFactor, 8, NumberFormatUtil.getInstance().getNumberFormat());
 
-        field.setFilter(new DoubleTextField.Filter() {
-            public double filter(final double value, final double oldValue) {
+        field.setFilter(new Filter() {
+            public double filter(double value, double oldValue) {
                 if (value > 0.0) {
-                    setThreshold(value);
+                    LingSearchEditor.this.setThreshold(value);
                     return value;
                 }
 
@@ -329,34 +330,34 @@ public class LingSearchEditor extends AbstractSearchEditor
 
         b21.add(b211);
 
-        final JPanel paramsPanel = new JPanel();
+        JPanel paramsPanel = new JPanel();
         paramsPanel.add(b21);
         paramsPanel.setBorder(new TitledBorder("Parameters"));
         b1.add(paramsPanel);
         b1.add(Box.createVerticalStrut(10));
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(Box.createGlue());
-        b2.add(getExecuteButton());
+        b2.add(this.getExecuteButton());
         b1.add(b2);
         b1.add(Box.createVerticalStrut(10));
 
-        if (getAlgorithmRunner().getDataModel() instanceof DataSet) {
-            final Box b3 = Box.createHorizontalBox();
+        if (this.getAlgorithmRunner().getDataModel() instanceof DataSet) {
+            Box b3 = Box.createHorizontalBox();
             b3.add(Box.createGlue());
             b1.add(b3);
         }
 
-        if (getAlgorithmRunner().getParams() instanceof Parameters) {
+        if (this.getAlgorithmRunner().getParams() instanceof Parameters) {
             b1.add(Box.createVerticalStrut(5));
-            final Box hBox = Box.createHorizontalBox();
+            Box hBox = Box.createHorizontalBox();
             hBox.add(Box.createHorizontalGlue());
             b1.add(hBox);
             b1.add(Box.createVerticalStrut(5));
         }
 
-        final Box b4 = Box.createHorizontalBox();
-        final JLabel label = new JLabel("<html>" + "*Please note that some" +
+        Box b4 = Box.createHorizontalBox();
+        JLabel label = new JLabel("<html>" + "*Please note that some" +
                 "<br>searches may take a" + "<br>long time to complete." +
                 "</html>");
         label.setHorizontalAlignment(SwingConstants.CENTER);
@@ -372,8 +373,8 @@ public class LingSearchEditor extends AbstractSearchEditor
     }
 
 
-    private void setThreshold(final double value) {
-        final Parameters params = getAlgorithmRunner().getParams();
+    private void setThreshold(double value) {
+        Parameters params = this.getAlgorithmRunner().getParams();
         params.set("threshold", value);
     }
 
@@ -389,9 +390,9 @@ public class LingSearchEditor extends AbstractSearchEditor
 //        });
     }
 
-    protected void addSpecialMenus(final JMenuBar menuBar) {
-        if (!(getAlgorithmRunner() instanceof IGesRunner)) {
-            final JMenu test = new JMenu("Independence");
+    protected void addSpecialMenus(JMenuBar menuBar) {
+        if (!(this.getAlgorithmRunner() instanceof IGesRunner)) {
+            JMenu test = new JMenu("Independence");
             menuBar.add(test);
 
             IndTestMenuItems.addIndependenceTestChoices(test, this);
@@ -399,31 +400,31 @@ public class LingSearchEditor extends AbstractSearchEditor
             test.addSeparator();
         }
 
-        final JMenu graph = new JMenu("Graph");
+        JMenu graph = new JMenu("Graph");
 
-        graph.add(new GraphPropertiesAction(getWorkbench()));
-        graph.add(new PathsAction(getWorkbench()));
+        graph.add(new GraphPropertiesAction(this.getWorkbench()));
+        graph.add(new PathsAction(this.getWorkbench()));
 
         menuBar.add(graph);
 
     }
 
     public Graph getSourceGraph() {
-        Graph sourceGraph = getWorkbench().getGraph();
+        Graph sourceGraph = this.getWorkbench().getGraph();
 
         if (sourceGraph == null) {
-            sourceGraph = getAlgorithmRunner().getSourceGraph();
+            sourceGraph = this.getAlgorithmRunner().getSourceGraph();
         }
         return sourceGraph;
     }
 
     public List<String> getVarNames() {
-        final Parameters params = getAlgorithmRunner().getParams();
+        Parameters params = this.getAlgorithmRunner().getParams();
         return (List<String>) params.get("varNames", null);
     }
 
 
-    public void setTestType(final IndTestType testType) {
+    public void setTestType(IndTestType testType) {
         super.setTestType(testType);
     }
 
@@ -431,23 +432,23 @@ public class LingSearchEditor extends AbstractSearchEditor
         return super.getTestType();
     }
 
-    public void setKnowledge(final IKnowledge knowledge) {
-        getAlgorithmRunner().getParams().set("knowledge", knowledge);
+    public void setKnowledge(IKnowledge knowledge) {
+        this.getAlgorithmRunner().getParams().set("knowledge", knowledge);
     }
 
     public IKnowledge getKnowledge() {
-        return (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
+        return (IKnowledge) this.getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
     }
 
     //================================PRIVATE METHODS====================//
 
-    protected void doDefaultArrangement(final Graph resultGraph) {
-        if (getLatestWorkbenchGraph() != null) {   //(alreadyLaidOut) {
+    protected void doDefaultArrangement(Graph resultGraph) {
+        if (this.getLatestWorkbenchGraph() != null) {   //(alreadyLaidOut) {
             GraphUtils.arrangeBySourceGraph(resultGraph,
-                    getLatestWorkbenchGraph());
-        } else if (getKnowledge().isDefaultToKnowledgeLayout()) {
+                    this.getLatestWorkbenchGraph());
+        } else if (this.getKnowledge().isDefaultToKnowledgeLayout()) {
             SearchGraphUtils.arrangeByKnowledgeTiers(resultGraph,
-                    getKnowledge());
+                    this.getKnowledge());
 //            alreadyLaidOut = true;
         } else {
             GraphUtils.circleLayout(resultGraph, 200, 200, 150);

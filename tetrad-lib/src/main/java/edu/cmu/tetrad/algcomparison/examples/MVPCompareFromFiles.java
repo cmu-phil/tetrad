@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.algcomparison.examples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
+import edu.cmu.tetrad.algcomparison.Comparison.ComparisonGraph;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
 import edu.cmu.tetrad.algcomparison.score.MVPBicScore;
@@ -40,8 +41,8 @@ import edu.cmu.tetrad.util.Parameters;
  * @author jdramsey
  */
 public class MVPCompareFromFiles {
-    public static void main(final String... args) {
-        final Parameters parameters = new Parameters();
+    public static void main(String... args) {
+        Parameters parameters = new Parameters();
 
         // Can leave the simulation parameters out since
         // we're loading from file here.
@@ -55,7 +56,7 @@ public class MVPCompareFromFiles {
 
         parameters.set("alpha", 1e-3, 1e-4);
 
-        final Statistics statistics = new Statistics();
+        Statistics statistics = new Statistics();
 
         statistics.add(new ParameterColumn("avgDegree"));
         statistics.add(new ParameterColumn("sampleSize"));
@@ -70,7 +71,7 @@ public class MVPCompareFromFiles {
         statistics.setWeight("AHP", 1.0);
         statistics.setWeight("AHR", 0.5);
 
-        final Algorithms algorithms = new Algorithms();
+        Algorithms algorithms = new Algorithms();
 
 //        algorithms.add(new Fges(new ConditionalGaussianBicScore()));
 //        algorithms.add(new Fges(new ConditionalGaussianOtherBicScore()));
@@ -81,12 +82,12 @@ public class MVPCompareFromFiles {
 //        algorithms.add(new Cpc(new MVPLRT()));
 //        algorithms.add(new Cpc(new MNLRLRT(), new Mgm()));
 
-        final Comparison comparison = new Comparison();
+        Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
-        comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
+        comparison.setComparisonGraph(ComparisonGraph.true_DAG);
 
         comparison.compareFromFiles("comparison", algorithms, statistics, parameters);
     }

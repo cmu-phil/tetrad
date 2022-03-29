@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
+import edu.cmu.tetradapp.util.DoubleTextField.Filter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -38,7 +39,7 @@ public class DirichletEstimatorParamsEditor extends JPanel implements ParameterE
     /**
      * The parameters object being edited.
      */
-    private Parameters params = null;
+    private Parameters params;
 
     /**
      * Constructs a dialog to edit the given workbench Bayes simulation
@@ -47,7 +48,7 @@ public class DirichletEstimatorParamsEditor extends JPanel implements ParameterE
     public DirichletEstimatorParamsEditor() {
     }
 
-    public void setParams(final Parameters params) {
+    public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
@@ -55,7 +56,7 @@ public class DirichletEstimatorParamsEditor extends JPanel implements ParameterE
         this.params = params;
     }
 
-    public void setParentModels(final Object[] parentModels) {
+    public void setParentModels(Object[] parentModels) {
         // Does nothing.
     }
 
@@ -69,25 +70,25 @@ public class DirichletEstimatorParamsEditor extends JPanel implements ParameterE
      * appropriate listeners.
      */
     public void setup() {
-        setLayout(new BorderLayout());
+        this.setLayout(new BorderLayout());
 
-        final DoubleTextField symmetricAlphaField = new DoubleTextField(
-                this.params.getDouble("symmetricAlpha", 1.0), 5, NumberFormatUtil.getInstance().getNumberFormat());
-        symmetricAlphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(final double value, final double oldValue) {
+        DoubleTextField symmetricAlphaField = new DoubleTextField(
+                params.getDouble("symmetricAlpha", 1.0), 5, NumberFormatUtil.getInstance().getNumberFormat());
+        symmetricAlphaField.setFilter(new Filter() {
+            public double filter(double value, double oldValue) {
                 try {
-                    DirichletEstimatorParamsEditor.this.params.set("symmetricAlpha", value);
+                    params.set("symmetricAlpha", value);
                     return value;
-                } catch (final IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
         // continue workbench construction.
-        final Box b1 = Box.createVerticalBox();
+        Box b1 = Box.createVerticalBox();
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("<html>" +
                 "If you make a Dirichlet estimator using a Bayes PM and a " +
                 "<br>discrete data set as parents, a Dirichlet Bayes IM will" +
@@ -100,7 +101,7 @@ public class DirichletEstimatorParamsEditor extends JPanel implements ParameterE
                 "<br>prior you want as a Dirichlet Bayes IM in the IM box." +
                 "</html>"));
 
-        final Box b7 = Box.createHorizontalBox();
+        Box b7 = Box.createHorizontalBox();
         b7.add(Box.createHorizontalGlue());
         b7.add(new JLabel("<html>" +
                 "<i>Estimate using a prior with all pseudocounts =</i>" +
@@ -111,7 +112,7 @@ public class DirichletEstimatorParamsEditor extends JPanel implements ParameterE
         b1.add(Box.createVerticalStrut(5));
         b1.add(b7);
         b1.add(Box.createHorizontalGlue());
-        add(b1, BorderLayout.CENTER);
+        this.add(b1, BorderLayout.CENTER);
     }
 
     /**
@@ -119,7 +120,7 @@ public class DirichletEstimatorParamsEditor extends JPanel implements ParameterE
      * public, but it is needed so that the textfields can edit the model.)
      */
     protected synchronized Parameters getParams() {
-        return this.params;
+        return params;
     }
 }
 

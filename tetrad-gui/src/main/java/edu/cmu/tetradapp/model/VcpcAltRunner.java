@@ -48,46 +48,46 @@ public class VcpcAltRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public VcpcAltRunner(final DataWrapper dataWrapper, final Parameters params) {
+    public VcpcAltRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
-    public VcpcAltRunner(final DataWrapper dataWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
+    public VcpcAltRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public VcpcAltRunner(final Graph graph, final Parameters params) {
+    public VcpcAltRunner(Graph graph, Parameters params) {
         super(graph, params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public VcpcAltRunner(final Graph graph, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
+    public VcpcAltRunner(Graph graph, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graph, params, knowledgeBoxModel);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public VcpcAltRunner(final GraphWrapper graphWrapper, final Parameters params) {
+    public VcpcAltRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public VcpcAltRunner(final GraphWrapper graphWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
+    public VcpcAltRunner(GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public VcpcAltRunner(final GraphSource graphWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
+    public VcpcAltRunner(GraphSource graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
@@ -95,41 +95,41 @@ public class VcpcAltRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public VcpcAltRunner(final GraphSource graphWrapper, final Parameters params) {
+    public VcpcAltRunner(GraphSource graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
-    public VcpcAltRunner(final DagWrapper dagWrapper, final Parameters params) {
+    public VcpcAltRunner(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public VcpcAltRunner(final DagWrapper dagWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
+    public VcpcAltRunner(DagWrapper dagWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dagWrapper.getDag(), params, knowledgeBoxModel);
     }
 
-    public VcpcAltRunner(final SemGraphWrapper dagWrapper, final Parameters params) {
+    public VcpcAltRunner(SemGraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public VcpcAltRunner(final SemGraphWrapper dagWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
+    public VcpcAltRunner(SemGraphWrapper dagWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dagWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-    public VcpcAltRunner(final DataWrapper dataWrapper, final GraphWrapper graphWrapper, final Parameters params) {
+    public VcpcAltRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params) {
         super(dataWrapper, params, null);
-        this.trueGraph = graphWrapper.getGraph();
+        trueGraph = graphWrapper.getGraph();
     }
 
-    public VcpcAltRunner(final DataWrapper dataWrapper, final GraphWrapper graphWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
+    public VcpcAltRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
-        this.trueGraph = graphWrapper.getGraph();
+        trueGraph = graphWrapper.getGraph();
     }
 
-    public VcpcAltRunner(final IndependenceFactsModel model, final Parameters params) {
+    public VcpcAltRunner(IndependenceFactsModel model, Parameters params) {
         super(model, params, null);
     }
 
-    public VcpcAltRunner(final IndependenceFactsModel model, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
+    public VcpcAltRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -146,50 +146,50 @@ public class VcpcAltRunner extends AbstractAlgorithmRunner
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     public void execute() {
-        final IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
-        final Parameters searchParams = getParams();
+        IKnowledge knowledge = (IKnowledge) this.getParams().get("knowledge", new Knowledge2());
+        Parameters searchParams = this.getParams();
 
-        final Parameters params =
+        Parameters params =
                 searchParams;
 
 
-        final VcpcAlt VcpcAlt = new VcpcAlt(getIndependenceTest());
+        VcpcAlt VcpcAlt = new VcpcAlt(this.getIndependenceTest());
         VcpcAlt.setKnowledge(knowledge);
-        VcpcAlt.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
+        VcpcAlt.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
         VcpcAlt.setDepth(params.getInt("depth", -1));
-        final Graph graph = VcpcAlt.search();
+        Graph graph = VcpcAlt.search();
 
-        if (getSourceGraph() != null) {
-            GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
+        if (this.getSourceGraph() != null) {
+            GraphUtils.arrangeBySourceGraph(graph, this.getSourceGraph());
         } else if (knowledge.isDefaultToKnowledgeLayout()) {
             SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
         } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
 
-        setResultGraph(graph);
+        this.setResultGraph(graph);
     }
 
     public IndependenceTest getIndependenceTest() {
-        Object dataModel = getDataModel();
+        Object dataModel = this.getDataModel();
 
         if (dataModel == null) {
-            dataModel = getSourceGraph();
+            dataModel = this.getSourceGraph();
         }
 
-        final IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
-        return new IndTestChooser().getTest(dataModel, getParams(), testType);
+        IndTestType testType = (IndTestType) (this.getParams()).get("indTestType", IndTestType.FISHER_Z);
+        return new IndTestChooser().getTest(dataModel, this.getParams(), testType);
     }
 
     public Graph getGraph() {
-        return getResultGraph();
+        return this.getResultGraph();
     }
 
     /**
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        final List<String> names = new ArrayList<>();
+        List<String> names = new ArrayList<>();
 //        names.add("ColliderDiscovery");
 //        names.add("Noncolliders");
         names.add("Ambiguous Triples");
@@ -199,9 +199,9 @@ public class VcpcAltRunner extends AbstractAlgorithmRunner
     /**
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
-    public List<List<Triple>> getTriplesLists(final Node node) {
-        final List<List<Triple>> triplesList = new ArrayList<>();
-        final Graph graph = getGraph();
+    public List<List<Triple>> getTriplesLists(Node node) {
+        List<List<Triple>> triplesList = new ArrayList<>();
+        Graph graph = this.getGraph();
 //        triplesList.add(DataGraphUtils.getCollidersFromGraph(node, graph));
 //        triplesList.add(DataGraphUtils.getNoncollidersFromGraph(node, graph));
         triplesList.add(GraphUtils.getAmbiguousTriplesFromGraph(node, graph));
@@ -213,9 +213,9 @@ public class VcpcAltRunner extends AbstractAlgorithmRunner
     }
 
     public ImpliedOrientation getMeekRules() {
-        final MeekRules meekRules = new MeekRules();
-        meekRules.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
-        meekRules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
+        MeekRules meekRules = new MeekRules();
+        meekRules.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
+        meekRules.setKnowledge((IKnowledge) this.getParams().get("knowledge", new Knowledge2()));
         return meekRules;
     }
 
@@ -227,7 +227,7 @@ public class VcpcAltRunner extends AbstractAlgorithmRunner
     //========================== Private Methods ===============================//
 
     private boolean isAggressivelyPreventCycles() {
-        final Parameters params = getParams();
+        Parameters params = this.getParams();
         if (params instanceof Parameters) {
             return params.getBoolean("aggressivelyPreventCycles", false);
         }

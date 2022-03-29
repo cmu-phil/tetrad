@@ -41,39 +41,39 @@ public class AdjustCopyrights {
         String copyrightNotice = null;
 
         try {
-            copyrightNotice = loadCopyrightNotice();
-        } catch (final IOException e) {
+            copyrightNotice = this.loadCopyrightNotice();
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
-        final File directory = new File(".");
-        final List<File> javaFiles = getJavaFiles(directory);
+        File directory = new File(".");
+        List<File> javaFiles = this.getJavaFiles(directory);
 
-        for (final File file : javaFiles) {
+        for (File file : javaFiles) {
             try {
-                final String inContents = FileLoadingUtils.fromFile(file);
+                String inContents = FileLoadingUtils.fromFile(file);
 
                 if (inContents.startsWith(copyrightNotice)) {
                     continue;
                 }
 
-                final Pattern pattern = Pattern.compile("package");
-                final Matcher matcher = pattern.matcher(inContents);
+                Pattern pattern = Pattern.compile("package");
+                Matcher matcher = pattern.matcher(inContents);
                 if (!matcher.find()) {
                     System.out.println("No package statement: " + file);
                 }
 
                 System.out.println("Modifying: " + file);
 
-                final FileOutputStream out = new FileOutputStream(file);
-                final PrintStream outStream = new PrintStream(out);
+                FileOutputStream out = new FileOutputStream(file);
+                PrintStream outStream = new PrintStream(out);
                 outStream.println(copyrightNotice);
                 outStream.println();
 
-                final int from = matcher.start();
+                int from = matcher.start();
                 outStream.println(
                         inContents.substring(from, inContents.length()));
-            } catch (final IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
@@ -88,17 +88,17 @@ public class AdjustCopyrights {
      * @return all of the files in the given directory whose names end with
      * ".java".
      */
-    private List<File> getJavaFiles(final File directory) {
+    private List<File> getJavaFiles(File directory) {
         if (!directory.isDirectory()) {
             throw new IllegalArgumentException("Not a directory: " + directory);
         }
 
-        final List<File> javaFiles = new LinkedList<>();
-        final File[] files = directory.listFiles();
+        List<File> javaFiles = new LinkedList<>();
+        File[] files = directory.listFiles();
 
-        for (final File file : files) {
+        for (File file : files) {
             if (file.isDirectory()) {
-                javaFiles.addAll(getJavaFiles(file));
+                javaFiles.addAll(this.getJavaFiles(file));
             } else {
                 if (file.getName().endsWith(".java")) {
                     javaFiles.add(file);
@@ -109,7 +109,7 @@ public class AdjustCopyrights {
         return javaFiles;
     }
 
-    public static void main(final String[] args) {
+    public static void main(String[] args) {
         new AdjustCopyrights().adjustCopyrights();
     }
 }

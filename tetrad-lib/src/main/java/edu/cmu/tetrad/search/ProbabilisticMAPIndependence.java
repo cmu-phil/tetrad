@@ -29,6 +29,7 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference;
+import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference.OP;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -68,15 +69,15 @@ public class ProbabilisticMAPIndependence implements IndependenceTest {
     private final Map<IndependenceFact, Double> H;
     private double posterior;
 
-    private boolean verbose = false;
+    private boolean verbose;
 
     /**
      * Initializes the test using a discrete data sets.
      */
-    public ProbabilisticMAPIndependence(final DataSet dataSet) {
-        this.data = dataSet;
+    public ProbabilisticMAPIndependence(DataSet dataSet) {
+        data = dataSet;
 
-        final int[] counts = new int[dataSet.getNumColumns() + 2];
+        int[] counts = new int[dataSet.getNumColumns() + 2];
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             counts[j + 1] = ((DiscreteVariable) (dataSet.getVariable(j))).getNumCategories();
@@ -87,7 +88,7 @@ public class ProbabilisticMAPIndependence implements IndependenceTest {
 
         }
 
-        final int[][] cases = new int[dataSet.getNumRows() + 1][dataSet.getNumColumns() + 2];
+        int[][] cases = new int[dataSet.getNumRows() + 1][dataSet.getNumColumns() + 2];
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
             for (int j = 0; j < dataSet.getNumColumns(); j++) {
@@ -95,44 +96,44 @@ public class ProbabilisticMAPIndependence implements IndependenceTest {
             }
         }
 
-        this.bci = new BCInference(cases, counts);
+        bci = new BCInference(cases, counts);
 
-        this.nodes = dataSet.getVariables();
+        nodes = dataSet.getVariables();
 
-        this.indices = new HashMap<>();
+        indices = new HashMap<>();
 
-        for (int i = 0; i < this.nodes.size(); i++) {
-            this.indices.put(this.nodes.get(i), i);
+        for (int i = 0; i < nodes.size(); i++) {
+            indices.put(nodes.get(i), i);
         }
 
-        this.H = new HashMap<>();
+        H = new HashMap<>();
     }
 
     @Override
-    public IndependenceTest indTestSubset(final List<Node> vars) {
+    public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public boolean isIndependent(final Node x, final Node y, final List<Node> z) {
-        final Node[] _z = z.toArray(new Node[z.size()]);
-        return isIndependent(x, y, _z);
+    public boolean isIndependent(Node x, Node y, List<Node> z) {
+        Node[] _z = z.toArray(new Node[z.size()]);
+        return this.isIndependent(x, y, _z);
     }
 
     @Override
-    public boolean isIndependent(final Node x, final Node y, final Node... z) {
+    public boolean isIndependent(Node x, Node y, Node... z) {
 //        IndependenceFact key = new IndependenceFact(x, y, z);
 //
 //        if (!H.containsKey(key)) {
-        final double pInd = probConstraint(BCInference.OP.independent, x, y, z);
+        double pInd = this.probConstraint(OP.independent, x, y, z);
 //            H.put(key, pInd);
 //        }
 //
 //        double pInd = H.get(key);
 
-        final double p = probOp(BCInference.OP.independent, pInd);
+        double p = this.probOp(OP.independent, pInd);
 
-        this.posterior = p;
+        posterior = p;
 
         return p > 0.5;
 
@@ -144,42 +145,42 @@ public class ProbabilisticMAPIndependence implements IndependenceTest {
 //        }
     }
 
-    public double probConstraint(final BCInference.OP op, final Node x, final Node y, final Node[] z) {
+    public double probConstraint(OP op, Node x, Node y, Node[] z) {
 
-        final int _x = this.indices.get(x) + 1;
-        final int _y = this.indices.get(y) + 1;
+        int _x = indices.get(x) + 1;
+        int _y = indices.get(y) + 1;
 
-        final int[] _z = new int[z.length + 1];
+        int[] _z = new int[z.length + 1];
         _z[0] = z.length;
-        for (int i = 0; i < z.length; i++) _z[i + 1] = this.indices.get(z[i]) + 1;
+        for (int i = 0; i < z.length; i++) _z[i + 1] = indices.get(z[i]) + 1;
 
-        return this.bci.probConstraint(op, _x, _y, _z);
+        return bci.probConstraint(op, _x, _y, _z);
     }
 
     @Override
-    public boolean isDependent(final Node x, final Node y, final List<Node> z) {
-        final Node[] _z = z.toArray(new Node[z.size()]);
-        return !isIndependent(x, y, _z);
+    public boolean isDependent(Node x, Node y, List<Node> z) {
+        Node[] _z = z.toArray(new Node[z.size()]);
+        return !this.isIndependent(x, y, _z);
     }
 
     @Override
-    public boolean isDependent(final Node x, final Node y, final Node... z) {
-        return !isIndependent(x, y, z);
+    public boolean isDependent(Node x, Node y, Node... z) {
+        return !this.isIndependent(x, y, z);
     }
 
     @Override
     public double getPValue() {
-        return this.posterior;
+        return posterior;
     }
 
     @Override
     public List<Node> getVariables() {
-        return this.nodes;
+        return nodes;
     }
 
     @Override
-    public Node getVariable(final String name) {
-        for (final Node node : this.nodes) {
+    public Node getVariable(String name) {
+        for (Node node : nodes) {
             if (name.equals(node.getName())) return node;
         }
 
@@ -188,16 +189,16 @@ public class ProbabilisticMAPIndependence implements IndependenceTest {
 
     @Override
     public List<String> getVariableNames() {
-        final List<String> names = new ArrayList<>();
+        List<String> names = new ArrayList<>();
 
-        for (final Node node : this.nodes) {
+        for (Node node : nodes) {
             names.add(node.getName());
         }
         return names;
     }
 
     @Override
-    public boolean determines(final List<Node> z, final Node y) {
+    public boolean determines(List<Node> z, Node y) {
         throw new UnsupportedOperationException();
     }
 
@@ -207,13 +208,13 @@ public class ProbabilisticMAPIndependence implements IndependenceTest {
     }
 
     @Override
-    public void setAlpha(final double alpha) {
+    public void setAlpha(double alpha) {
         throw new UnsupportedOperationException();
     }
 
     @Override
     public DataModel getData() {
-        return this.data;
+        return data;
     }
 
     @Override
@@ -238,17 +239,17 @@ public class ProbabilisticMAPIndependence implements IndependenceTest {
 
     @Override
     public double getScore() {
-        return getPValue();
+        return this.getPValue();
     }
 
     public Map<IndependenceFact, Double> getH() {
-        return new HashMap<>(this.H);
+        return new HashMap<>(H);
     }
 
-    private double probOp(final BCInference.OP type, final double pInd) {
-        final double probOp;
+    private double probOp(OP type, double pInd) {
+        double probOp;
 
-        if (BCInference.OP.independent == type) {
+        if (OP.independent == type) {
             probOp = pInd;
         } else {
             probOp = 1.0 - pInd;
@@ -258,16 +259,16 @@ public class ProbabilisticMAPIndependence implements IndependenceTest {
     }
 
     public double getPosterior() {
-        return this.posterior;
+        return posterior;
     }
 
     @Override
     public boolean isVerbose() {
-        return this.verbose;
+        return verbose;
     }
 
     @Override
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 }

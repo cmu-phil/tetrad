@@ -56,17 +56,17 @@ import java.util.regex.Pattern;
 public final class DataUtils {
 
 
-    public static void copyColumn(final Node node, final DataSet source, final DataSet dest) {
-        final int sourceColumn = source.getColumn(node);
-        final int destColumn = dest.getColumn(node);
+    public static void copyColumn(Node node, DataSet source, DataSet dest) {
+        int sourceColumn = source.getColumn(node);
+        int destColumn = dest.getColumn(node);
         if (sourceColumn < 0) {
             throw new NullPointerException("The given node was not in the source dataset");
         }
         if (destColumn < 0) {
             throw new NullPointerException("The given node was not in the destination dataset");
         }
-        final int sourceRows = source.getNumRows();
-        final int destRows = dest.getNumRows();
+        int sourceRows = source.getNumRows();
+        int destRows = dest.getNumRows();
         if (node instanceof ContinuousVariable) {
             for (int i = 0; i < destRows && i < sourceRows; i++) {
                 dest.setDouble(i, destColumn, source.getDouble(i, sourceColumn));
@@ -88,19 +88,19 @@ public final class DataUtils {
      * @param column Ibid.
      * @return true iff the column is binary.
      */
-    public static boolean isBinary(final DataSet data, final int column) {
-        final Node node = data.getVariable(column);
-        final int size = data.getNumRows();
+    public static boolean isBinary(DataSet data, int column) {
+        Node node = data.getVariable(column);
+        int size = data.getNumRows();
         if (node instanceof DiscreteVariable) {
             for (int i = 0; i < size; i++) {
-                final int value = data.getInt(i, column);
+                int value = data.getInt(i, column);
                 if (value != 1 && value != 0) {
                     return false;
                 }
             }
         } else if (node instanceof ContinuousVariable) {
             for (int i = 0; i < size; i++) {
-                final double value = data.getDouble(i, column);
+                double value = data.getDouble(i, column);
                 if (value != 1.0 && value != 0.0) {
                     return false;
                 }
@@ -116,7 +116,7 @@ public final class DataUtils {
      * @return the default category for index i. (The default category should
      * ALWAYS be obtained by calling this method.)
      */
-    public static String defaultCategory(final int index) {
+    public static String defaultCategory(int index) {
         return Integer.toString(index);
     }
 
@@ -135,8 +135,8 @@ public final class DataUtils {
      * @return The new data sets with missing data added.
      */
     public static DataSet addMissingData(
-            final DataSet inData, final double[] probs) {
-        final DataSet outData;
+            DataSet inData, double[] probs) {
+        DataSet outData;
 
         outData = inData.copy();
 
@@ -145,14 +145,14 @@ public final class DataUtils {
                     "Wrong number of elements in prob array");
         }
 
-        for (final double prob : probs) {
+        for (double prob : probs) {
             if (prob < 0.0 || prob > 1.0) {
                 throw new IllegalArgumentException("Probability out of range");
             }
         }
 
         for (int j = 0; j < outData.getNumColumns(); j++) {
-            final Node node = outData.getVariable(j);
+            Node node = outData.getVariable(j);
 
             if (node instanceof ContinuousVariable) {
                 for (int i = 0; i < outData.getNumRows(); i++) {
@@ -172,23 +172,23 @@ public final class DataUtils {
         return outData;
     }
 
-    public static DataSet replaceMissingWithRandom(final DataSet inData) {
-        final DataSet outData;
+    public static DataSet replaceMissingWithRandom(DataSet inData) {
+        DataSet outData;
 
         try {
             outData = new MarshalledObject<>(inData).get();
-        } catch (final Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
         for (int j = 0; j < outData.getNumColumns(); j++) {
-            final Node variable = outData.getVariable(j);
+            Node variable = outData.getVariable(j);
 
             if (variable instanceof DiscreteVariable) {
-                final List<Integer> values = new ArrayList<>();
+                List<Integer> values = new ArrayList<>();
 
                 for (int i = 0; i < outData.getNumRows(); i++) {
-                    final int value = outData.getInt(i, j);
+                    int value = outData.getInt(i, j);
                     if (value == -99) continue;
                     values.add(value);
                 }
@@ -197,7 +197,7 @@ public final class DataUtils {
 
                 for (int i = 0; i < outData.getNumRows(); i++) {
                     if (outData.getInt(i, j) == -99) {
-                        final int value = RandomUtil.getInstance().nextInt(values.size());
+                        int value = RandomUtil.getInstance().nextInt(values.size());
                         outData.setInt(i, j, values.get(value));
                     }
                 }
@@ -206,13 +206,13 @@ public final class DataUtils {
                 double max = Double.NEGATIVE_INFINITY;
 
                 for (int i = 0; i < outData.getNumRows(); i++) {
-                    final double value = outData.getDouble(i, j);
+                    double value = outData.getDouble(i, j);
                     if (value < min) min = value;
                     if (value > max) max = value;
                 }
 
                 for (int i = 0; i < outData.getNumRows(); i++) {
-                    final double random = RandomUtil.getInstance().nextDouble();
+                    double random = RandomUtil.getInstance().nextDouble();
                     outData.setDouble(i, j, min + random * (max - min));
                 }
             }
@@ -226,9 +226,9 @@ public final class DataUtils {
      * instances.
      */
     public static DataSet continuousSerializableInstance() {
-        final List<Node> variables = new LinkedList<>();
+        List<Node> variables = new LinkedList<>();
         variables.add(new ContinuousVariable("X"));
-        final DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(10, variables.size()), variables);
+        DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(10, variables.size()), variables);
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
             for (int j = 0; j < dataSet.getNumColumns(); j++) {
@@ -243,9 +243,9 @@ public final class DataUtils {
      * A discrete data set used to construct some other serializable instances.
      */
     public static DataSet discreteSerializableInstance() {
-        final List<Node> variables = new LinkedList<>();
+        List<Node> variables = new LinkedList<>();
         variables.add(new DiscreteVariable("X", 2));
-        final DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(2, variables.size()), variables);
+        DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(2, variables.size()), variables);
         dataSet.setInt(0, 0, 0);
         dataSet.setInt(1, 0, 1);
         return dataSet;
@@ -254,7 +254,7 @@ public final class DataUtils {
     /**
      * @return true iff the data sets contains a missing value.
      */
-    public static boolean containsMissingValue(final Matrix data) {
+    public static boolean containsMissingValue(Matrix data) {
         for (int i = 0; i < data.rows(); i++) {
             for (int j = 0; j < data.columns(); j++) {
                 if (Double.isNaN(data.get(i, j))) {
@@ -267,9 +267,9 @@ public final class DataUtils {
     }
 
 
-    public static boolean containsMissingValue(final DataSet data) {
+    public static boolean containsMissingValue(DataSet data) {
         for (int j = 0; j < data.getNumColumns(); j++) {
-            final Node node = data.getVariable(j);
+            Node node = data.getVariable(j);
 
             if (node instanceof ContinuousVariable) {
                 for (int i = 0; i < data.getNumRows(); i++) {
@@ -299,14 +299,14 @@ public final class DataUtils {
      * @param isUnlog
      * @return
      */
-    public static DataSet logData(final DataSet dataSet, final double a, final boolean isUnlog, final int base) {
-        final Matrix data = dataSet.getDoubleData();
-        final Matrix X = data.like();
-        final double n = dataSet.getNumRows();
+    public static DataSet logData(DataSet dataSet, double a, boolean isUnlog, int base) {
+        Matrix data = dataSet.getDoubleData();
+        Matrix X = data.like();
+        double n = dataSet.getNumRows();
 
         for (int j = 0; j < data.columns(); j++) {
-            final double[] x1Orig = Arrays.copyOf(data.getColumn(j).toArray(), data.rows());
-            final double[] x1 = Arrays.copyOf(data.getColumn(j).toArray(), data.rows());
+            double[] x1Orig = Arrays.copyOf(data.getColumn(j).toArray(), data.rows());
+            double[] x1 = Arrays.copyOf(data.getColumn(j).toArray(), data.rows());
 
             if (dataSet.getVariable(j) instanceof DiscreteVariable) {
                 X.assignColumn(j, new Vector(x1));
@@ -336,8 +336,8 @@ public final class DataUtils {
     }
 
 
-    public static Matrix standardizeData(final Matrix data) {
-        final Matrix data2 = data.copy();
+    public static Matrix standardizeData(Matrix data) {
+        Matrix data2 = data.copy();
 
         for (int j = 0; j < data2.columns(); j++) {
             double sum = 0.0;
@@ -346,7 +346,7 @@ public final class DataUtils {
                 sum += data2.get(i, j);
             }
 
-            final double mean = sum / data.rows();
+            double mean = sum / data.rows();
 
             for (int i = 0; i < data.rows(); i++) {
                 data2.set(i, j, data.get(i, j) - mean);
@@ -355,7 +355,7 @@ public final class DataUtils {
             double norm = 0.0;
 
             for (int i = 0; i < data.rows(); i++) {
-                final double v = data2.get(i, j);
+                double v = data2.get(i, j);
                 norm += v * v;
             }
 
@@ -369,16 +369,16 @@ public final class DataUtils {
         return data2;
     }
 
-    public static double[] standardizeData(final double[] data) {
-        final double[] data2 = new double[data.length];
+    public static double[] standardizeData(double[] data) {
+        double[] data2 = new double[data.length];
 
         double sum = 0.0;
 
-        for (final double d : data) {
+        for (double d : data) {
             sum += d;
         }
 
-        final double mean = sum / data.length;
+        double mean = sum / data.length;
 
         for (int i = 0; i < data.length; i++) {
             data2[i] = data[i] - mean;
@@ -386,7 +386,7 @@ public final class DataUtils {
 
         double norm = 0.0;
 
-        for (final double v : data2) {
+        for (double v : data2) {
             norm += v * v;
         }
 
@@ -399,8 +399,8 @@ public final class DataUtils {
         return data2;
     }
 
-    public static DoubleArrayList standardizeData(final DoubleArrayList data) {
-        final DoubleArrayList data2 = new DoubleArrayList(data.size());
+    public static DoubleArrayList standardizeData(DoubleArrayList data) {
+        DoubleArrayList data2 = new DoubleArrayList(data.size());
 
         double sum = 0.0;
 
@@ -408,7 +408,7 @@ public final class DataUtils {
             sum += data.get(i);
         }
 
-        final double mean = sum / data.size();
+        double mean = sum / data.size();
 
         for (int i = 0; i < data.size(); i++) {
             data2.add(data.get(i) - mean);
@@ -417,7 +417,7 @@ public final class DataUtils {
         double norm = 0.0;
 
         for (int i = 0; i < data2.size(); i++) {
-            final double v = data2.get(i);
+            double v = data2.get(i);
             norm += v * v;
         }
 
@@ -430,34 +430,34 @@ public final class DataUtils {
         return data2;
     }
 
-    public static List<DataSet> standardizeData(final List<DataSet> dataSets) {
-        final List<DataSet> outList = new ArrayList<>();
+    public static List<DataSet> standardizeData(List<DataSet> dataSets) {
+        List<DataSet> outList = new ArrayList<>();
 
-        for (final DataSet dataSet : dataSets) {
+        for (DataSet dataSet : dataSets) {
             if (!(dataSet.isContinuous())) {
                 throw new IllegalArgumentException("Not a continuous data set: " + dataSet.getName());
             }
 
-            final Matrix data2 = DataUtils.standardizeData(dataSet.getDoubleData());
+            Matrix data2 = standardizeData(dataSet.getDoubleData());
 
-            final DataSet dataSet2 = new BoxDataSet(new VerticalDoubleDataBox(data2.transpose().toArray()), dataSet.getVariables());
+            DataSet dataSet2 = new BoxDataSet(new VerticalDoubleDataBox(data2.transpose().toArray()), dataSet.getVariables());
             outList.add(dataSet2);
         }
 
         return outList;
     }
 
-    public static DataSet standardizeData(final DataSet dataSet) {
-        final List<DataSet> dataSets = Collections.singletonList(dataSet);
-        final List<DataSet> outList = DataUtils.standardizeData(dataSets);
+    public static DataSet standardizeData(DataSet dataSet) {
+        List<DataSet> dataSets = Collections.singletonList(dataSet);
+        List<DataSet> outList = standardizeData(dataSets);
         return outList.get(0);
     }
 
     /**
      * Centers the array in place.
      */
-    public static void centerData(final double[] data) {
-        final double[] data2 = new double[data.length];
+    public static void centerData(double[] data) {
+        double[] data2 = new double[data.length];
 
         double sum = 0.0;
 
@@ -465,22 +465,22 @@ public final class DataUtils {
             sum += data[i];
         }
 
-        final double mean = sum / data.length;
+        double mean = sum / data.length;
 
         for (int i = 0; i < data.length; i++) {
             data2[i] -= mean;
         }
     }
 
-    public static double[] center(final double[] d) {
+    public static double[] center(double[] d) {
         double sum = 0.0;
 
         for (int i = 0; i < d.length; i++) {
             sum += d[i];
         }
 
-        final double mean = sum / d.length;
-        final double[] d2 = new double[d.length];
+        double mean = sum / d.length;
+        double[] d2 = new double[d.length];
 
         for (int i = 0; i < d.length; i++) {
             d2[i] = d[i] - mean;
@@ -489,8 +489,8 @@ public final class DataUtils {
         return d2;
     }
 
-    public static Matrix centerData(final Matrix data) {
-        final Matrix data2 = data.copy();
+    public static Matrix centerData(Matrix data) {
+        Matrix data2 = data.copy();
 
         for (int j = 0; j < data2.columns(); j++) {
             double sum = 0.0;
@@ -499,7 +499,7 @@ public final class DataUtils {
                 sum += data2.get(i, j);
             }
 
-            final double mean = sum / data.rows();
+            double mean = sum / data.rows();
 
             for (int i = 0; i < data.rows(); i++) {
                 data2.set(i, j, data.get(i, j) - mean);
@@ -514,35 +514,35 @@ public final class DataUtils {
 //        return center(dataSets).get(0);
 //    }
 
-    public static List<DataSet> center(final List<DataSet> dataList) {
-        final List<DataSet> dataSets = new ArrayList<>();
+    public static List<DataSet> center(List<DataSet> dataList) {
+        List<DataSet> dataSets = new ArrayList<>();
 
-        for (final DataSet dataSet : dataList) {
+        for (DataSet dataSet : dataList) {
             dataSets.add(dataSet);
         }
 
-        final List<DataSet> outList = new ArrayList<>();
+        List<DataSet> outList = new ArrayList<>();
 
-        for (final DataModel model : dataSets) {
+        for (DataModel model : dataSets) {
             if (!(model instanceof DataSet)) {
                 throw new IllegalArgumentException("Not a data set: " + model.getName());
             }
 
-            final DataSet dataSet = (DataSet) model;
+            DataSet dataSet = (DataSet) model;
 
             if (!(dataSet.isContinuous())) {
                 throw new IllegalArgumentException("Not a continuous data set: " + dataSet.getName());
             }
 
-            final Matrix data2 = DataUtils.centerData(dataSet.getDoubleData());
-            final List<Node> list = dataSet.getVariables();
-            final List<Node> list2 = new ArrayList<>();
+            Matrix data2 = centerData(dataSet.getDoubleData());
+            List<Node> list = dataSet.getVariables();
+            List<Node> list2 = new ArrayList<>();
 
-            for (final Node node : list) {
+            for (Node node : list) {
                 list2.add(node);
             }
 
-            final DataSet dataSet2 = new BoxDataSet(new VerticalDoubleDataBox(data2.transpose().toArray()), list2);
+            DataSet dataSet2 = new BoxDataSet(new VerticalDoubleDataBox(data2.transpose().toArray()), list2);
             outList.add(dataSet2);
         }
 
@@ -550,11 +550,11 @@ public final class DataUtils {
     }
 
 
-    public static DataSet discretize(final DataSet dataSet, final int numCategories, final boolean variablesCopied) {
-        final Discretizer discretizer = new Discretizer(dataSet);
+    public static DataSet discretize(DataSet dataSet, int numCategories, boolean variablesCopied) {
+        Discretizer discretizer = new Discretizer(dataSet);
         discretizer.setVariablesCopied(variablesCopied);
 
-        for (final Node node : dataSet.getVariables()) {
+        for (Node node : dataSet.getVariables()) {
 //            if (dataSet.getVariable(node.getNode()) instanceof ContinuousVariable) {
             discretizer.equalIntervals(node, numCategories);
 //            }
@@ -563,10 +563,10 @@ public final class DataUtils {
         return discretizer.discretize();
     }
 
-    public static List<Node> createContinuousVariables(final String[] varNames) {
-        final List<Node> variables = new LinkedList<>();
+    public static List<Node> createContinuousVariables(String[] varNames) {
+        List<Node> variables = new LinkedList<>();
 
-        for (final String varName : varNames) {
+        for (String varName : varNames) {
             variables.add(new ContinuousVariable(varName));
         }
 
@@ -576,7 +576,7 @@ public final class DataUtils {
     /**
      * @return the submatrix of m with variables in the order of the x variables.
      */
-    public static Matrix subMatrix(final ICovarianceMatrix m, final Node x, final Node y, final List<Node> z) {
+    public static Matrix subMatrix(ICovarianceMatrix m, Node x, Node y, List<Node> z) {
         if (x == null) {
             throw new NullPointerException();
         }
@@ -589,17 +589,17 @@ public final class DataUtils {
             throw new NullPointerException();
         }
 
-        for (final Node node : z) {
+        for (Node node : z) {
             if (node == null) {
                 throw new NullPointerException();
             }
         }
 
-        final List<Node> variables = m.getVariables();
+        List<Node> variables = m.getVariables();
 //        TetradMatrix _covMatrix = m.getMatrix();
 
         // Create index array for the given variables.
-        final int[] indices = new int[2 + z.size()];
+        int[] indices = new int[2 + z.size()];
 
         indices[0] = variables.indexOf(x);
         indices[1] = variables.indexOf(y);
@@ -609,9 +609,9 @@ public final class DataUtils {
         }
 
         // Extract submatrix of correlation matrix using this index array.
-        final Matrix submatrix = m.getSelection(indices, indices);
+        Matrix submatrix = m.getSelection(indices, indices);
 
-        if (DataUtils.containsMissingValue(submatrix)) {
+        if (containsMissingValue(submatrix)) {
             throw new IllegalArgumentException(
                     "Please remove or impute missing values first.");
         }
@@ -622,7 +622,7 @@ public final class DataUtils {
     /**
      * @return the submatrix of m with variables in the order of the x variables.
      */
-    public static Matrix subMatrix(final Matrix m, final List<Node> variables, final Node x, final Node y, final List<Node> z) {
+    public static Matrix subMatrix(Matrix m, List<Node> variables, Node x, Node y, List<Node> z) {
         if (x == null) {
             throw new NullPointerException();
         }
@@ -635,14 +635,14 @@ public final class DataUtils {
             throw new NullPointerException();
         }
 
-        for (final Node node : z) {
+        for (Node node : z) {
             if (node == null) {
                 throw new NullPointerException();
             }
         }
 
         // Create index array for the given variables.
-        final int[] indices = new int[2 + z.size()];
+        int[] indices = new int[2 + z.size()];
 
         indices[0] = variables.indexOf(x);
         indices[1] = variables.indexOf(y);
@@ -664,7 +664,7 @@ public final class DataUtils {
     /**
      * @return the submatrix of m with variables in the order of the x variables.
      */
-    public static Matrix subMatrix(final Matrix m, final Map<Node, Integer> indexMap, final Node x, final Node y, final List<Node> z) {
+    public static Matrix subMatrix(Matrix m, Map<Node, Integer> indexMap, Node x, Node y, List<Node> z) {
         if (x == null) {
             throw new NullPointerException();
         }
@@ -677,14 +677,14 @@ public final class DataUtils {
             throw new NullPointerException();
         }
 
-        for (final Node node : z) {
+        for (Node node : z) {
             if (node == null) {
                 throw new NullPointerException();
             }
         }
 
         // Create index array for the given variables.
-        final int[] indices = new int[2 + z.size()];
+        int[] indices = new int[2 + z.size()];
 
         indices[0] = indexMap.get(x);
         indices[1] = indexMap.get(y);
@@ -700,7 +700,7 @@ public final class DataUtils {
     /**
      * @return the submatrix of m with variables in the order of the x variables.
      */
-    public static Matrix subMatrix(final ICovarianceMatrix m, final Map<Node, Integer> indexMap, final Node x, final Node y, final List<Node> z) {
+    public static Matrix subMatrix(ICovarianceMatrix m, Map<Node, Integer> indexMap, Node x, Node y, List<Node> z) {
 //        if (x == null) {
 //            throw new NullPointerException();
 //        }
@@ -720,7 +720,7 @@ public final class DataUtils {
 //        }
 
         // Create index array for the given variables.
-        final int[] indices = new int[2 + z.size()];
+        int[] indices = new int[2 + z.size()];
 
         indices[0] = indexMap.get(x);
         indices[1] = indexMap.get(y);
@@ -738,14 +738,14 @@ public final class DataUtils {
      * @param dataSet The data set to shuffle.
      * @return Ibid.
      */
-    public static DataSet shuffleColumnsCov(final DataSet dataSet) {
-        final int numVariables = dataSet.getNumColumns();
+    public static DataSet shuffleColumnsCov(DataSet dataSet) {
+        int numVariables = dataSet.getNumColumns();
 
-        final List<Integer> indicesList = new ArrayList<>();
+        List<Integer> indicesList = new ArrayList<>();
         for (int i = 0; i < numVariables; i++) indicesList.add(i);
         Collections.shuffle(indicesList);
 
-        final int[] indices = new int[numVariables];
+        int[] indices = new int[numVariables];
 
         for (int i = 0; i < numVariables; i++) {
             indices[i] = indicesList.get(i);
@@ -755,10 +755,10 @@ public final class DataUtils {
     }
 
     public static DataSet convertNumericalDiscreteToContinuous(
-            final DataSet dataSet) throws NumberFormatException {
-        final List<Node> variables = new ArrayList<>();
+            DataSet dataSet) throws NumberFormatException {
+        List<Node> variables = new ArrayList<>();
 
-        for (final Node variable : dataSet.getVariables()) {
+        for (Node variable : dataSet.getVariables()) {
             if (variable instanceof ContinuousVariable) {
                 variables.add(variable);
             } else {
@@ -766,24 +766,24 @@ public final class DataUtils {
             }
         }
 
-        final DataSet continuousData = new BoxDataSet(new VerticalDoubleDataBox(dataSet.getNumRows(), variables.size()), variables);
+        DataSet continuousData = new BoxDataSet(new VerticalDoubleDataBox(dataSet.getNumRows(), variables.size()), variables);
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
-            final Node variable = dataSet.getVariable(j);
+            Node variable = dataSet.getVariable(j);
 
             if (variable instanceof ContinuousVariable) {
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
                     continuousData.setDouble(i, j, dataSet.getDouble(i, j));
                 }
             } else {
-                final DiscreteVariable discreteVariable = (DiscreteVariable) variable;
+                DiscreteVariable discreteVariable = (DiscreteVariable) variable;
 
                 boolean allNumerical = true;
 
-                for (final String cat : discreteVariable.getCategories()) {
+                for (String cat : discreteVariable.getCategories()) {
                     try {
                         Double.parseDouble(cat);
-                    } catch (final NumberFormatException e) {
+                    } catch (NumberFormatException e) {
                         allNumerical = false;
                         break;
                     }
@@ -791,9 +791,9 @@ public final class DataUtils {
 
 
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
-                    final int index = dataSet.getInt(i, j);
-                    final String catName = discreteVariable.getCategory(index);
-                    final double value;
+                    int index = dataSet.getInt(i, j);
+                    String catName = discreteVariable.getCategory(index);
+                    double value;
 
                     if (catName.equals("*")) {
                         value = Double.NaN;
@@ -813,23 +813,23 @@ public final class DataUtils {
         return continuousData;
     }
 
-    public static DataSet concatenate(final DataSet dataSet1, final DataSet dataSet2) {
-        final List<Node> vars1 = dataSet1.getVariables();
-        final List<Node> vars2 = dataSet2.getVariables();
-        final Map<String, Integer> varMap2 = new HashMap<>();
+    public static DataSet concatenate(DataSet dataSet1, DataSet dataSet2) {
+        List<Node> vars1 = dataSet1.getVariables();
+        List<Node> vars2 = dataSet2.getVariables();
+        Map<String, Integer> varMap2 = new HashMap<>();
         for (int i = 0; i < vars2.size(); i++) {
             varMap2.put(vars2.get(i).getName(), i);
         }
-        final int rows1 = dataSet1.getNumRows();
-        final int rows2 = dataSet2.getNumRows();
-        final int cols1 = dataSet1.getNumColumns();
+        int rows1 = dataSet1.getNumRows();
+        int rows2 = dataSet2.getNumRows();
+        int cols1 = dataSet1.getNumColumns();
 
-        final Matrix concatMatrix = new Matrix(rows1 + rows2, cols1);
-        final Matrix matrix1 = dataSet1.getDoubleData();
-        final Matrix matrix2 = dataSet2.getDoubleData();
+        Matrix concatMatrix = new Matrix(rows1 + rows2, cols1);
+        Matrix matrix1 = dataSet1.getDoubleData();
+        Matrix matrix2 = dataSet2.getDoubleData();
 
         for (int i = 0; i < vars1.size(); i++) {
-            final int var2 = varMap2.get(vars1.get(i).getName());
+            int var2 = varMap2.get(vars1.get(i).getName());
             for (int j = 0; j < rows1; j++) {
                 concatMatrix.set(j, i, matrix1.get(j, i));
             }
@@ -861,27 +861,27 @@ public final class DataUtils {
 //    }
 
 
-    public static DataSet concatenate(final DataSet... dataSets) {
-        final List<DataSet> _dataSets = new ArrayList<>();
+    public static DataSet concatenate(DataSet... dataSets) {
+        List<DataSet> _dataSets = new ArrayList<>();
 
         Collections.addAll(_dataSets, dataSets);
 
-        return DataUtils.concatenate(_dataSets);
+        return concatenate(_dataSets);
     }
 
-    public static Matrix concatenate(final Matrix... dataSets) {
+    public static Matrix concatenate(Matrix... dataSets) {
         int totalSampleSize = 0;
 
-        for (final Matrix dataSet : dataSets) {
+        for (Matrix dataSet : dataSets) {
             totalSampleSize += dataSet.rows();
         }
 
-        final int numColumns = dataSets[0].columns();
-        final Matrix allData = new Matrix(totalSampleSize, numColumns);
+        int numColumns = dataSets[0].columns();
+        Matrix allData = new Matrix(totalSampleSize, numColumns);
         int q = 0;
         int r;
 
-        for (final Matrix dataSet : dataSets) {
+        for (Matrix dataSet : dataSets) {
             r = dataSet.rows();
 
             for (int i = 0; i < r; i++) {
@@ -897,20 +897,20 @@ public final class DataUtils {
     }
 
     // Trying to optimize some.
-    public static DataSet concatenate(final List<DataSet> dataSets) {
+    public static DataSet concatenate(List<DataSet> dataSets) {
         int totalSampleSize = 0;
 
-        for (final DataSet dataSet : dataSets) {
+        for (DataSet dataSet : dataSets) {
             totalSampleSize += dataSet.getNumRows();
         }
 
-        final int numColumns = dataSets.get(0).getNumColumns();
-        final Matrix allData = new Matrix(totalSampleSize, numColumns);
+        int numColumns = dataSets.get(0).getNumColumns();
+        Matrix allData = new Matrix(totalSampleSize, numColumns);
         int q = 0;
         int r;
 
-        for (final DataSet dataSet : dataSets) {
-            final Matrix _data = dataSet.getDoubleData();
+        for (DataSet dataSet : dataSets) {
+            Matrix _data = dataSet.getDoubleData();
             r = _data.rows();
 
             for (int i = 0; i < r; i++) {
@@ -925,19 +925,19 @@ public final class DataUtils {
         return new BoxDataSet(new VerticalDoubleDataBox(allData.transpose().toArray()), dataSets.get(0).getVariables());
     }
 
-    public static Matrix concatenateTetradMatrices(final List<Matrix> dataSets) {
+    public static Matrix concatenateTetradMatrices(List<Matrix> dataSets) {
         int totalSampleSize = 0;
 
-        for (final Matrix dataSet : dataSets) {
+        for (Matrix dataSet : dataSets) {
             totalSampleSize += dataSet.rows();
         }
 
-        final int numColumns = dataSets.get(0).columns();
-        final Matrix allData = new Matrix(totalSampleSize, numColumns);
+        int numColumns = dataSets.get(0).columns();
+        Matrix allData = new Matrix(totalSampleSize, numColumns);
         int q = 0;
         int r;
 
-        for (final Matrix _data : dataSets) {
+        for (Matrix _data : dataSets) {
             r = _data.rows();
 
             for (int i = 0; i < r; i++) {
@@ -952,20 +952,20 @@ public final class DataUtils {
         return allData;
     }
 
-    public static DataSet collectVariables(final List<DataSet> dataSets) {
+    public static DataSet collectVariables(List<DataSet> dataSets) {
         int totalNumColumns = 0;
 
-        for (final DataSet dataSet : dataSets) {
+        for (DataSet dataSet : dataSets) {
             totalNumColumns += dataSet.getNumColumns();
         }
 
-        final int numRows = dataSets.get(0).getNumRows();
-        final Matrix allData = new Matrix(numRows, totalNumColumns);
+        int numRows = dataSets.get(0).getNumRows();
+        Matrix allData = new Matrix(numRows, totalNumColumns);
         int q = 0;
         int cc;
 
-        for (final DataSet dataSet : dataSets) {
-            final Matrix _data = dataSet.getDoubleData();
+        for (DataSet dataSet : dataSets) {
+            Matrix _data = dataSet.getDoubleData();
             cc = _data.columns();
 
             for (int jj = 0; jj < cc; jj++) {
@@ -977,28 +977,28 @@ public final class DataUtils {
             q += cc;
         }
 
-        final List<Node> variables = new ArrayList<>();
+        List<Node> variables = new ArrayList<>();
 
-        for (final DataSet dataSet : dataSets) {
+        for (DataSet dataSet : dataSets) {
             variables.addAll(dataSet.getVariables());
         }
 
         return new BoxDataSet(new VerticalDoubleDataBox(allData.transpose().toArray()), variables);
     }
 
-    public static DataSet concatenateDataNoChecks(final List<DataSet> datasets) {
-        final List<Node> vars1 = datasets.get(0).getVariables();
-        final int cols = vars1.size();
+    public static DataSet concatenateDataNoChecks(List<DataSet> datasets) {
+        List<Node> vars1 = datasets.get(0).getVariables();
+        int cols = vars1.size();
         int rows = 0;
-        for (final DataSet dataset : datasets) {
+        for (DataSet dataset : datasets) {
             rows += dataset.getNumRows();
         }
 
-        final Matrix concatMatrix = new Matrix(rows, vars1.size());
+        Matrix concatMatrix = new Matrix(rows, vars1.size());
 
         int index = 0;
 
-        for (final DataSet dataset : datasets) {
+        for (DataSet dataset : datasets) {
             for (int i = 0; i < dataset.getNumRows(); i++) {
                 for (int j = 0; j < cols; j++) {
                     concatMatrix.set(index, j, dataset.getDouble(i, j));
@@ -1011,19 +1011,19 @@ public final class DataUtils {
     }
 
 
-    public static DataSet concatenateDiscreteData(final DataSet dataSet1, final DataSet dataSet2) {
-        final List<Node> vars = dataSet1.getVariables();
-        final int rows1 = dataSet1.getNumRows();
-        final int rows2 = dataSet2.getNumRows();
-        final DataSet concatData = new BoxDataSet(new VerticalDoubleDataBox(rows1 + rows2, vars.size()), vars);
+    public static DataSet concatenateDiscreteData(DataSet dataSet1, DataSet dataSet2) {
+        List<Node> vars = dataSet1.getVariables();
+        int rows1 = dataSet1.getNumRows();
+        int rows2 = dataSet2.getNumRows();
+        DataSet concatData = new BoxDataSet(new VerticalDoubleDataBox(rows1 + rows2, vars.size()), vars);
 
-        for (final Node var : vars) {
-            final int var1 = dataSet1.getColumn(dataSet1.getVariable(var.toString()));
-            final int varc = concatData.getColumn(concatData.getVariable(var.toString()));
+        for (Node var : vars) {
+            int var1 = dataSet1.getColumn(dataSet1.getVariable(var.toString()));
+            int varc = concatData.getColumn(concatData.getVariable(var.toString()));
             for (int i = 0; i < rows1; i++) {
                 concatData.setInt(i, varc, dataSet1.getInt(i, var1));
             }
-            final int var2 = dataSet2.getColumn(dataSet2.getVariable(var.toString()));
+            int var2 = dataSet2.getColumn(dataSet2.getVariable(var.toString()));
             for (int i = 0; i < rows2; i++) {
                 concatData.setInt(i + rows1, varc, dataSet2.getInt(i, var2));
             }
@@ -1055,15 +1055,15 @@ public final class DataUtils {
         return dataSet;
     }
 
-    public static void printAndersonDarlingPs(final DataSet dataSet) {
+    public static void printAndersonDarlingPs(DataSet dataSet) {
         System.out.println("Anderson Darling P value for Variables\n");
 
-        final NumberFormat nf = new DecimalFormat("0.0000");
-        final Matrix m = dataSet.getDoubleData();
+        NumberFormat nf = new DecimalFormat("0.0000");
+        Matrix m = dataSet.getDoubleData();
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
-            final double[] x = m.getColumn(j).toArray();
-            final double p = new AndersonDarlingTest(x).getP();
+            double[] x = m.getColumn(j).toArray();
+            double p = new AndersonDarlingTest(x).getP();
             System.out.println("For " + dataSet.getVariable(j) +
                     ", Anderson-Darling p = " + nf.format(p)
                     + (p > 0.05 ? " = Gaussian" : " = Nongaussian"));
@@ -1071,11 +1071,11 @@ public final class DataUtils {
 
     }
 
-    public static DataSet restrictToMeasured(final DataSet fullDataSet) {
-        final List<Node> measuredVars = new ArrayList<>();
-        final List<Node> latentVars = new ArrayList<>();
+    public static DataSet restrictToMeasured(DataSet fullDataSet) {
+        List<Node> measuredVars = new ArrayList<>();
+        List<Node> latentVars = new ArrayList<>();
 
-        for (final Node node : fullDataSet.getVariables()) {
+        for (Node node : fullDataSet.getVariables()) {
             if (node.getNodeType() == NodeType.MEASURED) {
                 measuredVars.add(node);
             } else {
@@ -1086,13 +1086,13 @@ public final class DataUtils {
         return latentVars.isEmpty() ? fullDataSet : fullDataSet.subsetColumns(measuredVars);
     }
 
-    public static Matrix cov2(final Matrix data) {
-        final RealMatrix covarianceMatrix = new Covariance(new BlockRealMatrix(data.toArray())).getCovarianceMatrix();
+    public static Matrix cov2(Matrix data) {
+        RealMatrix covarianceMatrix = new Covariance(new BlockRealMatrix(data.toArray())).getCovarianceMatrix();
         return new Matrix(covarianceMatrix.getData());
     }
 
-    public static Vector means(final Matrix data) {
-        final Vector means = new Vector(data.columns());
+    public static Vector means(Matrix data) {
+        Vector means = new Vector(data.columns());
 
         for (int j = 0; j < means.size(); j++) {
             double sum = 0.0;
@@ -1107,7 +1107,7 @@ public final class DataUtils {
                 count++;
             }
 
-            final double mean = sum / count;
+            double mean = sum / count;
 
             means.set(j, mean);
         }
@@ -1118,9 +1118,9 @@ public final class DataUtils {
     /**
      * Column major data.
      */
-    public static Vector means(final double[][] data) {
-        final Vector means = new Vector(data.length);
-        final int rows = data[0].length;
+    public static Vector means(double[][] data) {
+        Vector means = new Vector(data.length);
+        int rows = data[0].length;
 
         for (int j = 0; j < means.size(); j++) {
             double sum = 0.0;
@@ -1135,7 +1135,7 @@ public final class DataUtils {
                 count++;
             }
 
-            final double mean = sum / count;
+            double mean = sum / count;
 
             means.set(j, mean);
         }
@@ -1143,7 +1143,7 @@ public final class DataUtils {
         return means;
     }
 
-    public static void demean(final Matrix data, final Vector means) {
+    public static void demean(Matrix data, Vector means) {
         for (int j = 0; j < data.columns(); j++) {
             for (int i = 0; i < data.rows(); i++) {
                 data.set(i, j, data.get(i, j) - means.get(j));
@@ -1154,8 +1154,8 @@ public final class DataUtils {
     /**
      * Column major data.
      */
-    public static void demean(final double[][] data, final Vector means) {
-        final int rows = data[0].length;
+    public static void demean(double[][] data, Vector means) {
+        int rows = data[0].length;
 
         for (int j = 0; j < data.length; j++) {
             for (int i = 0; i < rows; i++) {
@@ -1164,7 +1164,7 @@ public final class DataUtils {
         }
     }
 
-    public static void remean(final Matrix data, final Vector means) {
+    public static void remean(Matrix data, Vector means) {
         for (int j = 0; j < data.columns(); j++) {
             for (int i = 0; i < data.rows(); i++) {
                 data.set(i, j, data.get(i, j) + means.get(j));
@@ -1172,11 +1172,11 @@ public final class DataUtils {
         }
     }
 
-    public static Matrix covDemeaned(final Matrix data) {
-        final Matrix transpose = data.transpose();
-        final Matrix prod = transpose.times(data);
+    public static Matrix covDemeaned(Matrix data) {
+        Matrix transpose = data.transpose();
+        Matrix prod = transpose.times(data);
 
-        final double factor = 1.0 / (data.rows() - 1);
+        double factor = 1.0 / (data.rows() - 1);
 
         for (int i = 0; i < prod.rows(); i++) {
             for (int j = 0; j < prod.columns(); j++) {
@@ -1189,7 +1189,7 @@ public final class DataUtils {
 //        return prod.scalarMult(1.0 / (data.rows() - 1));
     }
 
-    public static Matrix cov(final Matrix data) {
+    public static Matrix cov(Matrix data) {
 
 
         for (int j = 0; j < data.columns(); j++) {
@@ -1199,20 +1199,20 @@ public final class DataUtils {
                 sum += data.get(i, j);
             }
 
-            final double mean = sum / data.rows();
+            double mean = sum / data.rows();
 
             for (int i = 0; i < data.rows(); i++) {
                 data.set(i, j, data.get(i, j) - mean);
             }
         }
 
-        final RealMatrix q = new BlockRealMatrix(data.toArray());
+        RealMatrix q = new BlockRealMatrix(data.toArray());
 
-        final RealMatrix q1 = MatrixUtils.transposeWithoutCopy(q);
-        final RealMatrix q2 = DataUtils.times(q1, q);
-        final Matrix prod = new Matrix(q2.getData());
+        RealMatrix q1 = MatrixUtils.transposeWithoutCopy(q);
+        RealMatrix q2 = times(q1, q);
+        Matrix prod = new Matrix(q2.getData());
 
-        final double factor = 1.0 / (data.rows() - 1);
+        double factor = 1.0 / (data.rows() - 1);
 
         for (int i = 0; i < prod.rows(); i++) {
             for (int j = 0; j < prod.columns(); j++) {
@@ -1224,57 +1224,57 @@ public final class DataUtils {
     }
 
     public static void simpleTest() {
-        final double[][] d = new double[][]{
+        double[][] d = {
                 {1, 2},
                 {3, 4},
                 {5, 6},
         };
 
-        final RealMatrix m = new BlockRealMatrix(d);
+        RealMatrix m = new BlockRealMatrix(d);
 
         System.out.println(m);
 
-        System.out.println(DataUtils.times(m.transpose(), m));
+        System.out.println(times(m.transpose(), m));
 
         System.out.println(MatrixUtils.transposeWithoutCopy(m).multiply(m));
 
-        final Matrix n = new Matrix(m.getData());
+        Matrix n = new Matrix(m.getData());
 
         System.out.println(n);
 
-        final RealMatrix q = new BlockRealMatrix(n.toArray());
+        RealMatrix q = new BlockRealMatrix(n.toArray());
 
-        final RealMatrix q1 = MatrixUtils.transposeWithoutCopy(q);
-        final RealMatrix q2 = DataUtils.times(q1, q);
+        RealMatrix q1 = MatrixUtils.transposeWithoutCopy(q);
+        RealMatrix q2 = times(q1, q);
         System.out.println(new Matrix(q2.getData()));
     }
 
-    private static RealMatrix times(final RealMatrix m, final RealMatrix n) {
+    private static RealMatrix times(RealMatrix m, RealMatrix n) {
         if (m.getColumnDimension() != n.getRowDimension()) throw new IllegalArgumentException("Incompatible matrices.");
 
-        final int rowDimension = m.getRowDimension();
-        final int columnDimension = n.getColumnDimension();
+        int rowDimension = m.getRowDimension();
+        int columnDimension = n.getColumnDimension();
 
-        final RealMatrix out = new BlockRealMatrix(rowDimension, columnDimension);
+        RealMatrix out = new BlockRealMatrix(rowDimension, columnDimension);
 
-        final int NTHREADS = Runtime.getRuntime().availableProcessors();
+        int NTHREADS = Runtime.getRuntime().availableProcessors();
 
-        final ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
+        ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
 
         for (int t = 0; t < NTHREADS; t++) {
-            final int _t = t;
+            int _t = t;
 
-            final Runnable worker = new Runnable() {
+            Runnable worker = new Runnable() {
                 @Override
                 public void run() {
-                    final int chunk = rowDimension / NTHREADS + 1;
+                    int chunk = rowDimension / NTHREADS + 1;
                     for (int row = _t * chunk; row < Math.min((_t + 1) * chunk, rowDimension); row++) {
                         if ((row + 1) % 100 == 0) System.out.println(row + 1);
 
                         for (int col = 0; col < columnDimension; ++col) {
                             double sum = 0.0D;
 
-                            final int commonDimension = m.getColumnDimension();
+                            int commonDimension = m.getColumnDimension();
 
                             for (int i = 0; i < commonDimension; ++i) {
                                 sum += m.getEntry(row, i) * n.getEntry(i, col);
@@ -1297,14 +1297,14 @@ public final class DataUtils {
     }
 
     // for online learning.
-    public static Matrix onlineCov(final Matrix data) {
-        final int N = data.rows();
-        final int M = data.columns();
+    public static Matrix onlineCov(Matrix data) {
+        int N = data.rows();
+        int M = data.columns();
 
-        final Matrix cov = new Matrix(M, M);
+        Matrix cov = new Matrix(M, M);
 
-        final double[] m = new double[M];
-        final double[] d = new double[M];
+        double[] m = new double[M];
+        double[] d = new double[M];
 
         for (int j = 0; j < M; j++) {
             m[j] = data.get(0, j);
@@ -1320,24 +1320,24 @@ public final class DataUtils {
         double b = a;
 
         for (int i = 1; i < N; i++) {
-            final double b0 = b;
+            double b0 = b;
             b += a;
 
             for (int j1 = 0; j1 < M; j1++) {
-                final double mj0 = m[j1];
-                final double xj = data.get(i, j1);
+                double mj0 = m[j1];
+                double xj = data.get(i, j1);
                 d[j1] = (a / b) * (xj - mj0);
                 m[j1] += d[j1];
             }
 
             for (int j = 0; j < M; j++) {
                 for (int k = j; k < M; k++) {
-                    final double cjk0 = cov.get(j, k);
+                    double cjk0 = cov.get(j, k);
 
-                    final double xj = data.get(i, j);
-                    final double xk = data.get(i, k);
+                    double xj = data.get(i, j);
+                    double xk = data.get(i, k);
 
-                    final double f = (1. / b) * (b0 * cjk0 + b * d[j] * d[k] + a * (xj - m[j]) * (xk - m[k]));
+                    double f = (1. / b) * (b0 * cjk0 + b * d[j] * d[k] + a * (xj - m[j]) * (xk - m[k]));
 
                     cov.set(j, k, f);
                     cov.set(k, j, f);
@@ -1374,8 +1374,8 @@ public final class DataUtils {
 //
 //    }
 
-    public static Vector mean(final Matrix data) {
-        final Vector mean = new Vector(data.columns());
+    public static Vector mean(Matrix data) {
+        Vector mean = new Vector(data.columns());
 
         for (int i = 0; i < data.columns(); i++) {
             mean.set(i, StatUtils.mean(data.getColumn(i).toArray()));
@@ -1389,15 +1389,15 @@ public final class DataUtils {
      * @param cov The variables and covariance matrix over the variables.
      * @return The simulated data.
      */
-    public static DataSet choleskySimulation(final CovarianceMatrix cov) {
+    public static DataSet choleskySimulation(CovarianceMatrix cov) {
         System.out.println(cov);
-        final int sampleSize = cov.getSampleSize();
+        int sampleSize = cov.getSampleSize();
 
-        final List<Node> variables = cov.getVariables();
-        final DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, variables.size()), variables);
-        final Matrix _cov = cov.getMatrix().copy();
+        List<Node> variables = cov.getVariables();
+        DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, variables.size()), variables);
+        Matrix _cov = cov.getMatrix().copy();
 
-        final Matrix cholesky = MatrixUtils.cholesky(_cov);
+        Matrix cholesky = MatrixUtils.cholesky(_cov);
 
         System.out.println("Cholesky decomposition" + cholesky);
 
@@ -1406,14 +1406,14 @@ public final class DataUtils {
         for (int row = 0; row < sampleSize; row++) {
 
             // Step 1. Generate normal samples.
-            final double[] exoData = new double[cholesky.rows()];
+            double[] exoData = new double[cholesky.rows()];
 
             for (int i = 0; i < exoData.length; i++) {
                 exoData[i] = RandomUtil.getInstance().nextNormal(0, 1);
             }
 
             // Step 2. Multiply by cholesky to get correct covariance.
-            final double[] point = new double[exoData.length];
+            double[] point = new double[exoData.length];
 
             for (int i = 0; i < exoData.length; i++) {
                 double sum = 0.0;
@@ -1426,8 +1426,8 @@ public final class DataUtils {
             }
 
             for (int col = 0; col < variables.size(); col++) {
-                final int index = variables.indexOf(variables.get(col));
-                final double value = point[index];
+                int index = variables.indexOf(variables.get(col));
+                double value = point[index];
 
                 if (Double.isNaN(value) || Double.isInfinite(value)) {
                     System.out.println("Value out of range: " + value);
@@ -1444,16 +1444,16 @@ public final class DataUtils {
      * @return a sample with replacement with the given sample size from the
      * given dataset.
      */
-    public static Matrix getBootstrapSample(final Matrix data, final int sampleSize) {
-        final int actualSampleSize = data.rows();
+    public static Matrix getBootstrapSample(Matrix data, int sampleSize) {
+        int actualSampleSize = data.rows();
 
-        final int[] rows = new int[sampleSize];
+        int[] rows = new int[sampleSize];
 
         for (int i = 0; i < rows.length; i++) {
             rows[i] = RandomUtil.getInstance().nextInt(actualSampleSize);
         }
 
-        final int[] cols = new int[data.columns()];
+        int[] cols = new int[data.columns()];
         for (int i = 0; i < cols.length; i++) cols[i] = i;
 
         return data.getSelection(rows, cols);
@@ -1463,22 +1463,22 @@ public final class DataUtils {
      * @return a sample without replacement with the given sample size from the
      * given dataset.
      */
-    public static DataSet getResamplingDataset(final DataSet data, final int sampleSize) {
-        final int actualSampleSize = data.getNumRows();
+    public static DataSet getResamplingDataset(DataSet data, int sampleSize) {
+        int actualSampleSize = data.getNumRows();
         int _size = sampleSize;
         if (actualSampleSize < _size) {
             _size = actualSampleSize;
         }
 
-        final List<Integer> availRows = new ArrayList<>();
+        List<Integer> availRows = new ArrayList<>();
         for (int i = 0; i < actualSampleSize; i++) {
             availRows.add(i);
         }
 
         Collections.shuffle(availRows);
 
-        final List<Integer> addedRows = new ArrayList<>();
-        final int[] rows = new int[_size];
+        List<Integer> addedRows = new ArrayList<>();
+        int[] rows = new int[_size];
         for (int i = 0; i < _size; i++) {
             int row = -1;
             int index = -1;
@@ -1491,7 +1491,7 @@ public final class DataUtils {
             availRows.remove(index);
         }
 
-        final int[] cols = new int[data.getNumColumns()];
+        int[] cols = new int[data.getNumColumns()];
         for (int i = 0; i < cols.length; i++) cols[i] = i;
 
         return new BoxDataSet(new VerticalDoubleDataBox(data.getDoubleData().getSelection(rows, cols).transpose().toArray()), data.getVariables());
@@ -1501,16 +1501,16 @@ public final class DataUtils {
      * @return a sample with replacement with the given sample size from the
      * given dataset.
      */
-    public static DataSet getBootstrapSample(final DataSet data, final int sampleSize) {
-        final int actualSampleSize = data.getNumRows();
+    public static DataSet getBootstrapSample(DataSet data, int sampleSize) {
+        int actualSampleSize = data.getNumRows();
 
-        final int[] rows = new int[sampleSize];
+        int[] rows = new int[sampleSize];
 
         for (int i = 0; i < rows.length; i++) {
             rows[i] = RandomUtil.getInstance().nextInt(actualSampleSize);
         }
 
-        final int[] cols = new int[data.getNumColumns()];
+        int[] cols = new int[data.getNumColumns()];
         for (int i = 0; i < cols.length; i++) cols[i] = i;
 
         return new BoxDataSet(new VerticalDoubleDataBox(data.getDoubleData().getSelection(rows, cols).transpose().toArray()),
@@ -1522,40 +1522,40 @@ public final class DataUtils {
      * given dataset. May return a sample of less than the given size; makes
      * sampleAttempts attempts to sample.
      */
-    public static DataSet getBootstrapSample2(final DataSet data, final int sampleAttempts) {
-        final int actualSampleSize = data.getNumRows();
-        final List<Integer> samples = new ArrayList<>();
+    public static DataSet getBootstrapSample2(DataSet data, int sampleAttempts) {
+        int actualSampleSize = data.getNumRows();
+        List<Integer> samples = new ArrayList<>();
 
         for (int i = 0; i < sampleAttempts; i++) {
-            final int sample = RandomUtil.getInstance().nextInt(actualSampleSize);
+            int sample = RandomUtil.getInstance().nextInt(actualSampleSize);
             if (!samples.contains(sample)) samples.add(sample);
         }
 
-        final int[] rows = new int[samples.size()];
+        int[] rows = new int[samples.size()];
 
         for (int i = 0; i < samples.size(); i++) {
             rows[i] = samples.get(i);
         }
 
-        final int[] cols = new int[data.getNumColumns()];
+        int[] cols = new int[data.getNumColumns()];
         for (int i = 0; i < cols.length; i++) cols[i] = i;
 
         return new BoxDataSet(new VerticalDoubleDataBox(data.getDoubleData().getSelection(rows, cols).transpose().toArray()),
                 data.getVariables());
     }
 
-    public static List<DataSet> split(final DataSet data, final double percentTest) {
+    public static List<DataSet> split(DataSet data, double percentTest) {
         if (percentTest <= 0 || percentTest >= 1) throw new IllegalArgumentException();
 
-        final List<Integer> rows = new ArrayList<>();
+        List<Integer> rows = new ArrayList<>();
         for (int i = 0; i < data.getNumRows(); i++) rows.add(i);
 
         Collections.shuffle(rows);
 
-        final int split = (int) (rows.size() * percentTest);
+        int split = (int) (rows.size() * percentTest);
 
-        final List<Integer> rows1 = new ArrayList<>();
-        final List<Integer> rows2 = new ArrayList<>();
+        List<Integer> rows1 = new ArrayList<>();
+        List<Integer> rows2 = new ArrayList<>();
 
         for (int i = 0; i < split; i++) {
             rows1.add(rows.get(i));
@@ -1565,24 +1565,24 @@ public final class DataUtils {
             rows2.add(rows.get(i));
         }
 
-        final int[] _rows1 = new int[rows1.size()];
-        final int[] _rows2 = new int[rows2.size()];
+        int[] _rows1 = new int[rows1.size()];
+        int[] _rows2 = new int[rows2.size()];
 
         for (int i = 0; i < rows1.size(); i++) _rows1[i] = rows1.get(i);
         for (int i = 0; i < rows2.size(); i++) _rows2[i] = rows2.get(i);
 
-        final int[] cols = new int[data.getNumColumns()];
+        int[] cols = new int[data.getNumColumns()];
         for (int i = 0; i < cols.length; i++) cols[i] = i;
 
-        final BoxDataSet boxDataSet1 = new BoxDataSet(new VerticalDoubleDataBox(
+        BoxDataSet boxDataSet1 = new BoxDataSet(new VerticalDoubleDataBox(
                 data.getDoubleData().getSelection(_rows1, cols).transpose().toArray()),
                 data.getVariables());
 
-        final BoxDataSet boxDataSet2 = new BoxDataSet(new VerticalDoubleDataBox(
+        BoxDataSet boxDataSet2 = new BoxDataSet(new VerticalDoubleDataBox(
                 data.getDoubleData().getSelection(_rows2, cols).transpose().toArray()),
                 data.getVariables());
 
-        final List<DataSet> ret = new ArrayList<>();
+        List<DataSet> ret = new ArrayList<>();
 
         ret.add(boxDataSet1);
         ret.add(boxDataSet2);
@@ -1593,15 +1593,15 @@ public final class DataUtils {
     /**
      * Subtracts the mean of each column from each datum that column.
      */
-    public static DataSet center(final DataSet data) {
-        final DataSet _data = data.copy();
+    public static DataSet center(DataSet data) {
+        DataSet _data = data.copy();
 
         for (int j = 0; j < _data.getNumColumns(); j++) {
             double sum = 0.0;
             int n = 0;
 
             for (int i = 0; i < _data.getNumRows(); i++) {
-                final double v = _data.getDouble(i, j);
+                double v = _data.getDouble(i, j);
 
                 if (!Double.isNaN(v)) {
                     sum += v;
@@ -1609,7 +1609,7 @@ public final class DataUtils {
                 }
             }
 
-            final double avg = sum / n;
+            double avg = sum / n;
 
             for (int i = 0; i < _data.getNumRows(); i++) {
                 _data.setDouble(i, j, _data.getDouble(i, j) - avg);
@@ -1626,17 +1626,17 @@ public final class DataUtils {
      * @param n       The returned sample size, n[0]. Provide a length 1 array.
      * @return The reduced covariance matrix.
      */
-    public static Matrix covMatrixForDefinedRows(final DataSet dataSet, final int[] vars, final int[] n) {
+    public static Matrix covMatrixForDefinedRows(DataSet dataSet, int[] vars, int[] n) {
         DataSet _dataSet = dataSet.copy();
-        _dataSet = DataUtils.center(_dataSet);
+        _dataSet = center(_dataSet);
 
-        final Matrix reduced = new Matrix(vars.length, vars.length);
+        Matrix reduced = new Matrix(vars.length, vars.length);
 
-        final List<Integer> rows = new ArrayList<>();
+        List<Integer> rows = new ArrayList<>();
 
         I:
         for (int i = 0; i < dataSet.getNumRows(); i++) {
-            for (final int var : vars) {
+            for (int var : vars) {
                 if (Double.isNaN(_dataSet.getDouble(i, var))) {
                     continue I;
                 }
@@ -1649,8 +1649,8 @@ public final class DataUtils {
             for (int j = 0; j < reduced.columns(); j++) {
                 double sum = 0.0;
 
-                for (final int k : rows) {
-                    final double v = _dataSet.getDouble(k, vars[i]) * _dataSet.getDouble(k, vars[j]);
+                for (int k : rows) {
+                    double v = _dataSet.getDouble(k, vars[i]) * _dataSet.getDouble(k, vars[j]);
                     sum += v;
                 }
 
@@ -1663,10 +1663,10 @@ public final class DataUtils {
         return reduced;
     }
 
-    public static IKnowledge createRequiredKnowledge(final Graph resultGraph) {
-        final IKnowledge knowledge = new Knowledge2();
+    public static IKnowledge createRequiredKnowledge(Graph resultGraph) {
+        IKnowledge knowledge = new Knowledge2();
 
-        final List<Node> nodes = resultGraph.getNodes();
+        List<Node> nodes = resultGraph.getNodes();
 
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = i + 1; j < nodes.size(); j++) {
@@ -1674,17 +1674,17 @@ public final class DataUtils {
                 if (nodes.get(i).getName().startsWith("E_")) continue;
                 if (nodes.get(j).getName().startsWith("E_")) continue;
 
-                final Edge edge = resultGraph.getEdge(nodes.get(i), nodes.get(j));
+                Edge edge = resultGraph.getEdge(nodes.get(i), nodes.get(j));
 
                 if (edge == null) {
                 } else if (edge.isDirected()) {
-                    final Node node1 = edge.getNode1();
-                    final Node node2 = edge.getNode2();
+                    Node node1 = edge.getNode1();
+                    Node node2 = edge.getNode2();
 //                    knowledge.setEdgeForbidden(node2.getNode(), node1.getNode(), true);
                     knowledge.setRequired(node1.getName(), node2.getName());
                 } else if (Edges.isUndirectedEdge(edge)) {
-                    final Node node1 = edge.getNode1();
-                    final Node node2 = edge.getNode2();
+                    Node node1 = edge.getNode1();
+                    Node node2 = edge.getNode2();
                     knowledge.setRequired(node1.getName(), node2.getName());
                     knowledge.setRequired(node2.getName(), node1.getName());
                 }
@@ -1694,47 +1694,47 @@ public final class DataUtils {
         return knowledge;
     }
 
-    public static DataSet shuffleColumns(final DataSet dataModel) {
-        final String name = dataModel.getName();
-        final int numVariables = dataModel.getNumColumns();
+    public static DataSet shuffleColumns(DataSet dataModel) {
+        String name = dataModel.getName();
+        int numVariables = dataModel.getNumColumns();
 
-        final List<Integer> indicesList = new ArrayList<>();
+        List<Integer> indicesList = new ArrayList<>();
         for (int i = 0; i < numVariables; i++) indicesList.add(i);
         Collections.shuffle(indicesList);
 
-        final int[] indices = new int[numVariables];
+        int[] indices = new int[numVariables];
 
         for (int i = 0; i < numVariables; i++) {
             indices[i] = indicesList.get(i);
         }
 
-        final DataSet dataSet = dataModel.subsetColumns(indices);
+        DataSet dataSet = dataModel.subsetColumns(indices);
         dataSet.setName(name);
         return dataSet;
     }
 
-    public static List<DataSet> shuffleColumns2(final List<DataSet> dataSets) {
-        final List<Node> vars = new ArrayList<>();
+    public static List<DataSet> shuffleColumns2(List<DataSet> dataSets) {
+        List<Node> vars = new ArrayList<>();
 
-        final List<Node> variables = dataSets.get(0).getVariables();
+        List<Node> variables = dataSets.get(0).getVariables();
         Collections.shuffle(variables);
 
-        for (final Node node : variables) {
-            final Node _node = dataSets.get(0).getVariable(node.getName());
+        for (Node node : variables) {
+            Node _node = dataSets.get(0).getVariable(node.getName());
 
             if (_node != null) {
                 vars.add(_node);
             }
         }
 
-        final List<DataSet> ret = new ArrayList<>();
+        List<DataSet> ret = new ArrayList<>();
 
-        for (final DataSet m : dataSets) {
-            final List<Node> myVars = new ArrayList<>();
-            for (final Node n1 : variables) {
+        for (DataSet m : dataSets) {
+            List<Node> myVars = new ArrayList<>();
+            for (Node n1 : variables) {
                 myVars.add(m.getVariable(n1.getName()));
             }
-            final DataSet data = m.subsetColumns(myVars);
+            DataSet data = m.subsetColumns(myVars);
             data.setName(m.getName() + ".reordered");
             ret.add(data);
         }
@@ -1742,14 +1742,14 @@ public final class DataUtils {
         return ret;
     }
 
-    public static ICovarianceMatrix shuffleColumnsCov(final ICovarianceMatrix cov) {
-        final List<String> vars = new ArrayList<>();
+    public static ICovarianceMatrix shuffleColumnsCov(ICovarianceMatrix cov) {
+        List<String> vars = new ArrayList<>();
 
-        final List<Node> variables = new ArrayList<>(cov.getVariables());
+        List<Node> variables = new ArrayList<>(cov.getVariables());
         Collections.shuffle(variables);
 
-        for (final Node node : variables) {
-            final Node _node = cov.getVariable(node.getName());
+        for (Node node : variables) {
+            Node _node = cov.getVariable(node.getName());
 
             if (_node != null) {
                 vars.add(_node.getName());
@@ -1760,10 +1760,10 @@ public final class DataUtils {
     }
 
 
-    public static ICovarianceMatrix covarianceNonparanormalDrton(final DataSet dataSet) {
-        final CovarianceMatrix covMatrix = new CovarianceMatrix(dataSet);
-        final Matrix data = dataSet.getDoubleData();
-        final int NTHREDS = Runtime.getRuntime().availableProcessors() * 10;
+    public static ICovarianceMatrix covarianceNonparanormalDrton(DataSet dataSet) {
+        CovarianceMatrix covMatrix = new CovarianceMatrix(dataSet);
+        Matrix data = dataSet.getDoubleData();
+        int NTHREDS = Runtime.getRuntime().availableProcessors() * 10;
         final int EPOCH_COUNT = 100000;
 
         ExecutorService executor = Executors.newFixedThreadPool(NTHREDS);
@@ -1771,14 +1771,14 @@ public final class DataUtils {
 
         for (int _i = 0; _i < dataSet.getNumColumns(); _i++) {
             for (int _j = _i; _j < dataSet.getNumColumns(); _j++) {
-                final int i = _i;
-                final int j = _j;
+                int i = _i;
+                int j = _j;
 
 //                double tau = StatUtils.rankCorrelation(data.viewColumn(i).toArray(), data.viewColumn(j).toArray());
-                final Runnable worker = new Runnable() {
+                Runnable worker = new Runnable() {
                     @Override
                     public void run() {
-                        final double tau = StatUtils.kendallsTau(data.getColumn(i).toArray(), data.getColumn(j).toArray());
+                        double tau = StatUtils.kendallsTau(data.getColumn(i).toArray(), data.getColumn(j).toArray());
                         covMatrix.setValue(i, j, tau);
                         covMatrix.setValue(j, i, tau);
                     }
@@ -1795,7 +1795,7 @@ public final class DataUtils {
                         // Wait until all threads are finish
                         executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
                         System.out.println("Finished all threads");
-                    } catch (final InterruptedException e) {
+                    } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
 
@@ -1811,7 +1811,7 @@ public final class DataUtils {
             // Wait until all threads are finish
             executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
             System.out.println("Finished all threads");
-        } catch (final InterruptedException e) {
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
@@ -1866,32 +1866,32 @@ public final class DataUtils {
 //        return(x)
 //    }
 
-    public static DataSet getNonparanormalTransformed(final DataSet dataSet) {
+    public static DataSet getNonparanormalTransformed(DataSet dataSet) {
         try {
-            final Matrix data = dataSet.getDoubleData();
-            final Matrix X = data.like();
-            final double n = dataSet.getNumRows();
+            Matrix data = dataSet.getDoubleData();
+            Matrix X = data.like();
+            double n = dataSet.getNumRows();
             final double delta = 1e-8;
 //            delta = 1.0 / (4.0 * Math.pow(n, 0.25) * Math.sqrt(Math.PI * Math.log(n)));
 
-            final NormalDistribution normalDistribution = new NormalDistribution();
+            NormalDistribution normalDistribution = new NormalDistribution();
 
             double std = Double.NaN;
 
             for (int j = 0; j < data.columns(); j++) {
-                final double[] x1Orig = Arrays.copyOf(data.getColumn(j).toArray(), data.rows());
-                final double[] x1 = Arrays.copyOf(data.getColumn(j).toArray(), data.rows());
+                double[] x1Orig = Arrays.copyOf(data.getColumn(j).toArray(), data.rows());
+                double[] x1 = Arrays.copyOf(data.getColumn(j).toArray(), data.rows());
 
-                final double a2Orig = new AndersonDarlingTest(x1).getASquaredStar();
+                double a2Orig = new AndersonDarlingTest(x1).getASquaredStar();
 
                 if (dataSet.getVariable(j) instanceof DiscreteVariable) {
                     X.assignColumn(j, new Vector(x1));
                     continue;
                 }
 
-                final double std1 = StatUtils.sd(x1);
-                final double mu1 = StatUtils.mean(x1);
-                final double[] xTransformed = DataUtils.ranks(data, x1);
+                double std1 = StatUtils.sd(x1);
+                double mu1 = StatUtils.mean(x1);
+                double[] xTransformed = ranks(data, x1);
 
                 for (int i = 0; i < xTransformed.length; i++) {
                     xTransformed[i] /= n;
@@ -1914,7 +1914,7 @@ public final class DataUtils {
                     xTransformed[i] += mu1;
                 }
 
-                final double a2Transformed = new AndersonDarlingTest(xTransformed).getASquaredStar();
+                double a2Transformed = new AndersonDarlingTest(xTransformed).getASquaredStar();
 
                 System.out.println(dataSet.getVariable(j) + ": A^2* = " + a2Orig + " transformed A^2* = " + a2Transformed);
 
@@ -1926,17 +1926,17 @@ public final class DataUtils {
             }
 
             return new BoxDataSet(new VerticalDoubleDataBox(X.transpose().toArray()), dataSet.getVariables());
-        } catch (final OutOfRangeException e) {
+        } catch (OutOfRangeException e) {
             e.printStackTrace();
             return dataSet;
         }
     }
 
-    private static double[] ranks(final Matrix data, final double[] x) {
-        final double[] ranks = new double[x.length];
+    private static double[] ranks(Matrix data, double[] x) {
+        double[] ranks = new double[x.length];
 
         for (int i = 0; i < data.rows(); i++) {
-            final double d = x[i];
+            double d = x[i];
             int count = 0;
 
             for (int k = 0; k < data.rows(); k++) {
@@ -1951,28 +1951,28 @@ public final class DataUtils {
         return ranks;
     }
 
-    public static DataSet removeConstantColumns(final DataSet dataSet) {
-        final int columns = dataSet.getNumColumns();
-        final int rows = dataSet.getNumRows();
+    public static DataSet removeConstantColumns(DataSet dataSet) {
+        int columns = dataSet.getNumColumns();
+        int rows = dataSet.getNumRows();
         if (rows == 0) {
             return dataSet;
         }
 
-        final List<Integer> keepCols = new ArrayList<>();
+        List<Integer> keepCols = new ArrayList<>();
 
         for (int j = 0; j < columns; j++) {
-            final Object previous = dataSet.getObject(0, j);
+            Object previous = dataSet.getObject(0, j);
             boolean constant = true;
             for (int row = 1; row < rows; row++) {
-                final Object current = dataSet.getObject(row, j);
+                Object current = dataSet.getObject(row, j);
                 if (!previous.equals(current)) {
                     constant = false;
                     break;
                 }
 
                 if (previous instanceof Double && current instanceof Double) {
-                    final double _previouw = (Double) previous;
-                    final double _current = (Double) current;
+                    double _previouw = (Double) previous;
+                    double _current = (Double) current;
 
                     if (Double.isNaN(_previouw) && Double.isNaN(_current)) {
                         constant = false;
@@ -1984,13 +1984,13 @@ public final class DataUtils {
             if (!constant) keepCols.add(j);
         }
 
-        final int[] newCols = new int[keepCols.size()];
+        int[] newCols = new int[keepCols.size()];
         for (int j = 0; j < keepCols.size(); j++) newCols[j] = keepCols.get(j);
 
         return dataSet.subsetColumns(newCols);
     }
 
-    public static ICovarianceMatrix getCovMatrix(final DataModel dataModel) {
+    public static ICovarianceMatrix getCovMatrix(DataModel dataModel) {
         if (dataModel == null) {
             throw new IllegalArgumentException("Expecting either a tabular dataset or a covariance matrix.");
         }
@@ -2004,7 +2004,7 @@ public final class DataUtils {
         }
     }
 
-    public static DataSet getDiscreteDataSet(final DataModel dataSet) {
+    public static DataSet getDiscreteDataSet(DataModel dataSet) {
         if (dataSet == null || !(dataSet instanceof DataSet) || !dataSet.isDiscrete()) {
             throw new IllegalArgumentException("Sorry, I was expecting a discrete data set.");
         }
@@ -2012,7 +2012,7 @@ public final class DataUtils {
         return (DataSet) dataSet;
     }
 
-    public static DataSet getContinuousDataSet(final DataModel dataSet) {
+    public static DataSet getContinuousDataSet(DataModel dataSet) {
         if (dataSet == null || !(dataSet instanceof DataSet) || !dataSet.isContinuous()) {
             throw new IllegalArgumentException("Sorry, I was expecting a (tabular) continuous data set.");
         }
@@ -2020,7 +2020,7 @@ public final class DataUtils {
         return (DataSet) dataSet;
     }
 
-    public static DataSet getMixedDataSet(final DataModel dataSet) {
+    public static DataSet getMixedDataSet(DataModel dataSet) {
         if (dataSet == null || !(dataSet instanceof DataSet)) {
             throw new IllegalArgumentException("Sorry, I was expecting a (tabular) mixed data set.");
         }
@@ -2031,11 +2031,11 @@ public final class DataUtils {
     /**
      * Returns the equivalent sample size, assuming all units are equally correlated and all unit variances are equal.
      */
-    public static double getEss(final ICovarianceMatrix covariances) {
-        final Matrix C = new CorrelationMatrix(covariances).getMatrix();
+    public static double getEss(ICovarianceMatrix covariances) {
+        Matrix C = new CorrelationMatrix(covariances).getMatrix();
 
-        final double m = covariances.getSize();
-        final double n = covariances.getSampleSize();
+        double m = covariances.getSize();
+        double n = covariances.getSampleSize();
 
         double sum = 0;
 
@@ -2045,7 +2045,7 @@ public final class DataUtils {
             }
         }
 
-        final double rho = (n * sum - n * m) / (m * (n * n - n));
+        double rho = (n * sum - n * m) / (m * (n * n - n));
         return n / (1. + (n - 1.) * rho);
     }
 
@@ -2053,10 +2053,10 @@ public final class DataUtils {
      * Loads knowledge from a file. Assumes knowledge is the only thing in the
      * file. No jokes please. :)
      */
-    public static IKnowledge loadKnowledge(final File file, final DelimiterType delimiterType, final String commentMarker) throws IOException {
-        final FileReader reader = new FileReader(file);
-        final Lineizer lineizer = new Lineizer(reader, commentMarker);
-        final IKnowledge knowledge = DataUtils.loadKnowledge(lineizer, delimiterType.getPattern());
+    public static IKnowledge loadKnowledge(File file, DelimiterType delimiterType, String commentMarker) throws IOException {
+        FileReader reader = new FileReader(file);
+        Lineizer lineizer = new Lineizer(reader, commentMarker);
+        IKnowledge knowledge = loadKnowledge(lineizer, delimiterType.getPattern());
         TetradLogger.getInstance().reset();
         return knowledge;
     }
@@ -2072,8 +2072,8 @@ public final class DataUtils {
      * 4 x5
      * </pre>
      */
-    public static IKnowledge loadKnowledge(final Lineizer lineizer, final Pattern delimiter) {
-        final IKnowledge knowledge = new Knowledge2();
+    public static IKnowledge loadKnowledge(Lineizer lineizer, Pattern delimiter) {
+        IKnowledge knowledge = new Knowledge2();
 
         String line = lineizer.nextLine();
         String firstLine = line;
@@ -2124,7 +2124,7 @@ public final class DataUtils {
 
                     int tier = -1;
 
-                    final RegexTokenizer st = new RegexTokenizer(line, delimiter, '"');
+                    RegexTokenizer st = new RegexTokenizer(line, delimiter, '"');
                     if (st.hasMoreTokens()) {
                         String token = st.nextToken();
                         boolean forbiddenWithin = false;
@@ -2151,9 +2151,9 @@ public final class DataUtils {
                             continue;
                         }
 
-                        final String name = DataUtils.substitutePeriodsForSpaces(token);
+                        String name = substitutePeriodsForSpaces(token);
 
-                        DataUtils.addVariable(knowledge, name);
+                        addVariable(knowledge, name);
 
                         knowledge.addToTier(tier - 1, name);
 
@@ -2184,17 +2184,17 @@ public final class DataUtils {
                         continue SECTIONS;
                     }
 
-                    final Set<String> from = new HashSet<>();
-                    final Set<String> to = new HashSet<>();
+                    Set<String> from = new HashSet<>();
+                    Set<String> to = new HashSet<>();
 
                     RegexTokenizer st = new RegexTokenizer(line, delimiter, '"');
 
                     while (st.hasMoreTokens()) {
                         String token = st.nextToken();
                         token = token.trim();
-                        final String name = DataUtils.substitutePeriodsForSpaces(token);
+                        String name = substitutePeriodsForSpaces(token);
 
-                        DataUtils.addVariable(knowledge, name);
+                        addVariable(knowledge, name);
 
                         from.add(name);
                     }
@@ -2206,14 +2206,14 @@ public final class DataUtils {
                     while (st.hasMoreTokens()) {
                         String token = st.nextToken();
                         token = token.trim();
-                        final String name = DataUtils.substitutePeriodsForSpaces(token);
+                        String name = substitutePeriodsForSpaces(token);
 
-                        DataUtils.addVariable(knowledge, name);
+                        addVariable(knowledge, name);
 
                         to.add(name);
                     }
 
-                    final KnowledgeGroup group = new KnowledgeGroup(KnowledgeGroup.FORBIDDEN, from, to);
+                    KnowledgeGroup group = new KnowledgeGroup(KnowledgeGroup.FORBIDDEN, from, to);
 
                     knowledge.addKnowledgeGroup(group);
                 }
@@ -2241,17 +2241,17 @@ public final class DataUtils {
                         continue SECTIONS;
                     }
 
-                    final Set<String> from = new HashSet<>();
-                    final Set<String> to = new HashSet<>();
+                    Set<String> from = new HashSet<>();
+                    Set<String> to = new HashSet<>();
 
                     RegexTokenizer st = new RegexTokenizer(line, delimiter, '"');
 
                     while (st.hasMoreTokens()) {
                         String token = st.nextToken();
                         token = token.trim();
-                        final String name = DataUtils.substitutePeriodsForSpaces(token);
+                        String name = substitutePeriodsForSpaces(token);
 
-                        DataUtils.addVariable(knowledge, name);
+                        addVariable(knowledge, name);
 
                         from.add(name);
                     }
@@ -2263,14 +2263,14 @@ public final class DataUtils {
                     while (st.hasMoreTokens()) {
                         String token = st.nextToken();
                         token = token.trim();
-                        final String name = DataUtils.substitutePeriodsForSpaces(token);
+                        String name = substitutePeriodsForSpaces(token);
 
-                        DataUtils.addVariable(knowledge, name);
+                        addVariable(knowledge, name);
 
                         to.add(name);
                     }
 
-                    final KnowledgeGroup group = new KnowledgeGroup(KnowledgeGroup.REQUIRED, from, to);
+                    KnowledgeGroup group = new KnowledgeGroup(KnowledgeGroup.REQUIRED, from, to);
 
                     knowledge.addKnowledgeGroup(group);
                 }
@@ -2298,7 +2298,7 @@ public final class DataUtils {
                         continue SECTIONS;
                     }
 
-                    final RegexTokenizer st = new RegexTokenizer(line, delimiter, '"');
+                    RegexTokenizer st = new RegexTokenizer(line, delimiter, '"');
                     String from = null, to = null;
 
                     if (st.hasMoreTokens()) {
@@ -2319,9 +2319,9 @@ public final class DataUtils {
                                 + ": Line contains fewer than two elements.");
                     }
 
-                    DataUtils.addVariable(knowledge, from);
+                    addVariable(knowledge, from);
 
-                    DataUtils.addVariable(knowledge, to);
+                    addVariable(knowledge, to);
 
                     knowledge.setForbidden(from, to);
                 }
@@ -2349,7 +2349,7 @@ public final class DataUtils {
                         continue SECTIONS;
                     }
 
-                    final RegexTokenizer st = new RegexTokenizer(line, delimiter, '"');
+                    RegexTokenizer st = new RegexTokenizer(line, delimiter, '"');
                     String from = null, to = null;
 
                     if (st.hasMoreTokens()) {
@@ -2370,8 +2370,8 @@ public final class DataUtils {
                                 + ": Line contains fewer than two elements.");
                     }
 
-                    DataUtils.addVariable(knowledge, from);
-                    DataUtils.addVariable(knowledge, to);
+                    addVariable(knowledge, from);
+                    addVariable(knowledge, to);
 
                     knowledge.removeForbidden(from, to);
                     knowledge.setRequired(from, to);
@@ -2385,28 +2385,28 @@ public final class DataUtils {
         return knowledge;
     }
 
-    private static void addVariable(final IKnowledge knowledge, final String from) {
+    private static void addVariable(IKnowledge knowledge, String from) {
         if (!knowledge.getVariables().contains(from)) {
             knowledge.addVariable(from);
         }
     }
 
-    private static String substitutePeriodsForSpaces(final String s) {
+    private static String substitutePeriodsForSpaces(String s) {
         return s.replaceAll(" ", ".");
     }
 
-    public static double[] removeMissingValues(final double[] data) {
+    public static double[] removeMissingValues(double[] data) {
         int c = 0;
 
-        for (final double datum : data) {
+        for (double datum : data) {
             if (Double.isNaN(datum)) c++;
         }
 
-        final double[] data2 = new double[data.length - c];
+        double[] data2 = new double[data.length - c];
 
         int i = 0;
 
-        for (final double datum : data) {
+        for (double datum : data) {
             if (!Double.isNaN(data[i])) {
                 data2[i++] = datum;
             }
@@ -2416,37 +2416,37 @@ public final class DataUtils {
     }
 
     @NotNull
-    public static DataSet loadContinuousData(final File file, final String commentMarker, final char quoteCharacter,
-                                             final String missingValueMarker, final boolean hasHeader, final Delimiter delimiter)
+    public static DataSet loadContinuousData(File file, String commentMarker, char quoteCharacter,
+                                             String missingValueMarker, boolean hasHeader, Delimiter delimiter)
             throws IOException {
-        final ContinuousTabularDatasetFileReader dataReader
+        ContinuousTabularDatasetFileReader dataReader
                 = new ContinuousTabularDatasetFileReader(file.toPath(), delimiter);
         dataReader.setCommentMarker(commentMarker);
         dataReader.setQuoteCharacter(quoteCharacter);
         dataReader.setMissingDataMarker(missingValueMarker);
         dataReader.setHasHeader(hasHeader);
-        final ContinuousData data = (ContinuousData) dataReader.readInData();
+        ContinuousData data = (ContinuousData) dataReader.readInData();
         return (DataSet) DataConvertUtils.toContinuousDataModel(data);
     }
 
     @NotNull
-    public static DataSet loadDiscreteData(final File file, final String commentMarker, final char quoteCharacter,
-                                           final String missingValueMarker, final boolean hasHeader, final Delimiter delimiter)
+    public static DataSet loadDiscreteData(File file, String commentMarker, char quoteCharacter,
+                                           String missingValueMarker, boolean hasHeader, Delimiter delimiter)
             throws IOException {
-        final TabularColumnReader columnReader = new TabularColumnFileReader(file.toPath(), delimiter);
-        final DataColumn[] dataColumns = columnReader.readInDataColumns(new int[]{1}, true);
+        TabularColumnReader columnReader = new TabularColumnFileReader(file.toPath(), delimiter);
+        DataColumn[] dataColumns = columnReader.readInDataColumns(new int[]{1}, true);
 
         columnReader.setCommentMarker(commentMarker);
 
-        final TabularDataReader dataReader = new TabularDataFileReader(file.toPath(), delimiter);
+        TabularDataReader dataReader = new TabularDataFileReader(file.toPath(), delimiter);
 
         // Need to specify commentMarker, .... again to the TabularDataFileReader
         dataReader.setCommentMarker(commentMarker);
         dataReader.setMissingDataMarker(missingValueMarker);
         dataReader.setQuoteCharacter(quoteCharacter);
 
-        final Data data = dataReader.read(dataColumns, hasHeader);
-        final DataModel dataModel = DataConvertUtils.toDataModel(data);
+        Data data = dataReader.read(dataColumns, hasHeader);
+        DataModel dataModel = DataConvertUtils.toDataModel(data);
 
         return (DataSet) dataModel;
     }
@@ -2468,18 +2468,18 @@ public final class DataUtils {
      *                           new FileReader(file), " \t", "//");
      * </pre> The initial "/covariance" is optional.
      */
-    public static ICovarianceMatrix parseCovariance(final char[] chars, final String commentMarker,
-                                                    final DelimiterType delimiterType,
-                                                    final char quoteChar,
-                                                    final String missingValueMarker) {
+    public static ICovarianceMatrix parseCovariance(char[] chars, String commentMarker,
+                                                    DelimiterType delimiterType,
+                                                    char quoteChar,
+                                                    String missingValueMarker) {
 
         // Do first pass to get a description of the file.
-        final CharArrayReader reader = new CharArrayReader(chars);
+        CharArrayReader reader = new CharArrayReader(chars);
 
         // Close the reader and re-open for a second pass to load the data.
         reader.close();
-        final CharArrayReader reader2 = new CharArrayReader(chars);
-        final ICovarianceMatrix covarianceMatrix = DataUtils.doCovariancePass(reader2, commentMarker,
+        CharArrayReader reader2 = new CharArrayReader(chars);
+        ICovarianceMatrix covarianceMatrix = doCovariancePass(reader2, commentMarker,
                 delimiterType, quoteChar, missingValueMarker);
 
         TetradLogger.getInstance().log("info", "\nData set loaded!");
@@ -2492,22 +2492,22 @@ public final class DataUtils {
      *
      * @throws IOException if the file cannot be read.
      */
-    public static ICovarianceMatrix parseCovariance(final File file, final String commentMarker,
-                                                    final DelimiterType delimiterType,
-                                                    final char quoteChar,
-                                                    final String missingValueMarker) throws IOException {
+    public static ICovarianceMatrix parseCovariance(File file, String commentMarker,
+                                                    DelimiterType delimiterType,
+                                                    char quoteChar,
+                                                    String missingValueMarker) throws IOException {
         FileReader reader = null;
 
         try {
             reader = new FileReader(file);
-            final ICovarianceMatrix covarianceMatrix = DataUtils.doCovariancePass(reader, commentMarker,
+            ICovarianceMatrix covarianceMatrix = doCovariancePass(reader, commentMarker,
                     delimiterType, quoteChar, missingValueMarker);
 
             TetradLogger.getInstance().log("info", "\nCovariance matrix loaded!");
             return covarianceMatrix;
-        } catch (final FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             throw e;
-        } catch (final Exception e) {
+        } catch (Exception e) {
             if (reader != null) {
                 reader.close();
             }
@@ -2517,8 +2517,8 @@ public final class DataUtils {
     }
 
 
-    static ICovarianceMatrix doCovariancePass(final Reader reader, final String commentMarker, final DelimiterType delimiterType,
-                                              final char quoteChar, final String missingValueMarker) {
+    static ICovarianceMatrix doCovariancePass(Reader reader, String commentMarker, DelimiterType delimiterType,
+                                              char quoteChar, String missingValueMarker) {
         TetradLogger.getInstance().log("info", "\nDATA LOADING PARAMETERS:");
         TetradLogger.getInstance().log("info", "File type = COVARIANCE");
         TetradLogger.getInstance().log("info", "Comment marker = " + commentMarker);
@@ -2527,7 +2527,7 @@ public final class DataUtils {
         TetradLogger.getInstance().log("info", "Missing value marker = " + missingValueMarker);
         TetradLogger.getInstance().log("info", "--------------------");
 
-        final Lineizer lineizer = new Lineizer(reader, commentMarker);
+        Lineizer lineizer = new Lineizer(reader, commentMarker);
 
         // Skip "/Covariance" if it is there.
         String line = lineizer.nextLine();
@@ -2538,13 +2538,13 @@ public final class DataUtils {
 
         // Read br sample size.
         RegexTokenizer st = new RegexTokenizer(line, delimiterType.getPattern(), quoteChar);
-        final String token = st.nextToken();
+        String token = st.nextToken();
 
-        final int n;
+        int n;
 
         try {
             n = Integer.parseInt(token);
-        } catch (final NumberFormatException e) {
+        } catch (NumberFormatException e) {
             throw new IllegalArgumentException(
                     "Expected a sample size here, got \"" + token + "\".");
         }
@@ -2564,10 +2564,10 @@ public final class DataUtils {
 
         st = new RegexTokenizer(line, delimiterType.getPattern(), quoteChar);
 
-        final List<String> vars = new ArrayList<>();
+        List<String> vars = new ArrayList<>();
 
         while (st.hasMoreTokens()) {
-            final String _token = st.nextToken();
+            String _token = st.nextToken();
 
             if ("".equals(_token)) {
                 TetradLogger.getInstance().log("emptyToken", "Parsed an empty token for a variable name--ignoring.");
@@ -2577,16 +2577,16 @@ public final class DataUtils {
             vars.add(_token);
         }
 
-        final String[] varNames = vars.toArray(new String[vars.size()]);
+        String[] varNames = vars.toArray(new String[vars.size()]);
 
         TetradLogger.getInstance().log("info", "Variables:");
 
-        for (final String varName : varNames) {
+        for (String varName : varNames) {
             TetradLogger.getInstance().log("info", varName + " --> Continuous");
         }
 
         // Read br covariances.
-        final Matrix c = new Matrix(vars.size(), vars.size());
+        Matrix c = new Matrix(vars.size(), vars.size());
 
         for (int i = 0; i < vars.size(); i++) {
             st = new RegexTokenizer(lineizer.nextLine(), delimiterType.getPattern(), quoteChar);
@@ -2598,7 +2598,7 @@ public final class DataUtils {
                             + " of the covariance " + "matrix input.");
                 }
 
-                final String literal = st.nextToken();
+                String literal = st.nextToken();
 
                 if ("".equals(literal)) {
                     TetradLogger.getInstance().log("emptyToken", "Parsed an empty token for a "
@@ -2612,17 +2612,17 @@ public final class DataUtils {
                     continue;
                 }
 
-                final double r = Double.parseDouble(literal);
+                double r = Double.parseDouble(literal);
 
                 c.set(i, j, r);
                 c.set(j, i, r);
             }
         }
 
-        final IKnowledge knowledge = DataUtils.loadKnowledge(lineizer, delimiterType.getPattern());
+        IKnowledge knowledge = loadKnowledge(lineizer, delimiterType.getPattern());
 
-        final ICovarianceMatrix covarianceMatrix
-                = new CovarianceMatrix(DataUtils.createContinuousVariables(varNames), c, n);
+        ICovarianceMatrix covarianceMatrix
+                = new CovarianceMatrix(createContinuousVariables(varNames), c, n);
 
         covarianceMatrix.setKnowledge(knowledge);
 

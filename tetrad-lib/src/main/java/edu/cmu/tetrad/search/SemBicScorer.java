@@ -12,10 +12,10 @@ import java.util.List;
 import java.util.Map;
 
 public class SemBicScorer {
-    public static double scoreDag(Graph dag, final DataModel data) {
+    public static double scoreDag(Graph dag, DataModel data) {
         if (dag == null) throw new NullPointerException("DAG not specified.");
 
-        final Score score;
+        Score score;
 
         if (data instanceof ICovarianceMatrix) {
             score = new SemBicScore((ICovarianceMatrix) dag);
@@ -31,17 +31,17 @@ public class SemBicScorer {
             throw new NullPointerException("Dag was not specified.");
         }
 
-        final Map<Node, Integer> hashIndices = SemBicScorer.buildIndexing(dag.getNodes());
+        Map<Node, Integer> hashIndices = buildIndexing(dag.getNodes());
 
         double _score = 0.0;
 
-        for (final Node node : dag.getNodes()) {
-            final List<Node> x = dag.getParents(node);
+        for (Node node : dag.getNodes()) {
+            List<Node> x = dag.getParents(node);
 
-            final int[] parentIndices = new int[x.size()];
+            int[] parentIndices = new int[x.size()];
 
             int count = 0;
-            for (final Node parent : x) {
+            for (Node parent : x) {
                 parentIndices[count++] = hashIndices.get(parent);
             }
 
@@ -52,12 +52,12 @@ public class SemBicScorer {
     }
 
     // Maps adj to their indices for quick lookup.
-    private static Map<Node, Integer> buildIndexing(final List<Node> nodes) {
-        final Map<Node, Integer> hashIndices = new HashMap<>();
+    private static Map<Node, Integer> buildIndexing(List<Node> nodes) {
+        Map<Node, Integer> hashIndices = new HashMap<>();
 
         int i = -1;
 
-        for (final Node n : nodes) {
+        for (Node n : nodes) {
             hashIndices.put(n, ++i);
         }
 

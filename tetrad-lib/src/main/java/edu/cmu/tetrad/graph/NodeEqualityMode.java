@@ -32,12 +32,12 @@ public class NodeEqualityMode {
 
     private static Type type = Type.NAME;
 
-    public static void setEqualityMode(final Type _type) {
-        NodeEqualityMode.type = _type;
+    public static void setEqualityMode(Type _type) {
+        type = _type;
     }
 
     public static Type getEqualityType() {
-        return NodeEqualityMode.type;
+        return type;
     }
 }
 

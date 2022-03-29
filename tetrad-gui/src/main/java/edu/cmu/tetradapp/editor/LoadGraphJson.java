@@ -23,7 +23,7 @@ public class LoadGraphJson extends AbstractAction {
      */
     private final GraphEditable graphEditable;
 
-    public LoadGraphJson(final GraphEditable graphEditable, final String title) {
+    public LoadGraphJson(GraphEditable graphEditable, String title) {
         super(title);
 
         if (graphEditable == null) {
@@ -34,12 +34,12 @@ public class LoadGraphJson extends AbstractAction {
     }
 
     @Override
-    public void actionPerformed(final ActionEvent e) {
-        final JFileChooser chooser = LoadGraphJson.getJFileChooser();
+    public void actionPerformed(ActionEvent e) {
+        JFileChooser chooser = getJFileChooser();
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-        chooser.showOpenDialog((Component) this.graphEditable);
+        chooser.showOpenDialog((Component) graphEditable);
 
-        final File file = chooser.getSelectedFile();
+        File file = chooser.getSelectedFile();
 
         if (file == null) {
             System.out.println("File was null.");
@@ -48,14 +48,14 @@ public class LoadGraphJson extends AbstractAction {
 
         Preferences.userRoot().put("fileSaveLocation", file.getParent());
 
-        final Graph graph = GraphUtils.loadGraphJson(file);
+        Graph graph = GraphUtils.loadGraphJson(file);
         GraphUtils.circleLayout(graph, 200, 200, 150);
-        this.graphEditable.setGraph(graph);
+        graphEditable.setGraph(graph);
     }
 
     private static JFileChooser getJFileChooser() {
-        final JFileChooser chooser = new JFileChooser();
-        final String sessionSaveLocation =
+        JFileChooser chooser = new JFileChooser();
+        String sessionSaveLocation =
                 Preferences.userRoot().get("fileSaveLocation", "");
         chooser.setCurrentDirectory(new File(sessionSaveLocation));
         chooser.resetChoosableFileFilters();

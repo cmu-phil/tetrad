@@ -49,27 +49,27 @@ public final class DelimiterType implements TetradSerializable {
     /**
      * The name of this type.
      */
-    private transient final String name;
+    private final transient String name;
 
     /**
      * The regular expression representing the delimiter.
      */
-    private transient final Pattern pattern;
+    private final transient Pattern pattern;
 
     /**
      * Protected constructor for the types; this allows for extension in case
      * anyone wants to add formula types.
      */
-    private DelimiterType(final String name, final String regex) {
+    private DelimiterType(String name, String regex) {
         this.name = name;
-        this.pattern = Pattern.compile(regex);
+        pattern = Pattern.compile(regex);
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
     public static DelimiterType serializableInstance() {
-        return DelimiterType.TAB;
+        return TAB;
     }
 
     /**
@@ -77,22 +77,22 @@ public final class DelimiterType implements TetradSerializable {
      * used to parse, using a matcher.
      */
     public final Pattern getPattern() {
-        return this.pattern;
+        return pattern;
     }
 
     /**
      * Prints out the name of the type.
      */
     public final String toString() {
-        return this.name;
+        return name;
     }
 
     // Declarations required for serialization.
-    private static int nextOrdinal = 0;
-    private final int ordinal = DelimiterType.nextOrdinal++;
-    private static final DelimiterType[] TYPES = {DelimiterType.WHITESPACE, DelimiterType.TAB, DelimiterType.COMMA};
+    private static int nextOrdinal;
+    private final int ordinal = nextOrdinal++;
+    private static final DelimiterType[] TYPES = {WHITESPACE, TAB, COMMA};
 
     final Object readResolve() throws ObjectStreamException {
-        return DelimiterType.TYPES[this.ordinal]; // Canonicalize.
+        return TYPES[ordinal]; // Canonicalize.
     }
 }

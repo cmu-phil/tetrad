@@ -35,28 +35,28 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 public final class ExtraCategoryInterpolator implements DataFilter {
-    public DataSet filter(final DataSet dataSet) {
+    public DataSet filter(DataSet dataSet) {
 
         // Why does it have to be discrete? Why can't we simply expand
         // whatever discrete columns are there and leave the continuous
         // ones untouched? jdramsey 7/4/2005
 
-        final List<Node> variables = new LinkedList<>();
+        List<Node> variables = new LinkedList<>();
 
         // Add all of the variables to the new data set.
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
-            final Node _var = dataSet.getVariable(j);
+            Node _var = dataSet.getVariable(j);
 
             if (!(_var instanceof DiscreteVariable)) {
                 variables.add(_var);
                 continue;
             }
 
-            final DiscreteVariable variable = (DiscreteVariable) _var;
+            DiscreteVariable variable = (DiscreteVariable) _var;
 
-            final String oldName = variable.getName();
-            final List<String> oldCategories = variable.getCategories();
-            final List<String> newCategories = new LinkedList<>(oldCategories);
+            String oldName = variable.getName();
+            List<String> oldCategories = variable.getCategories();
+            List<String> newCategories = new LinkedList<>(oldCategories);
 
             String newCategory = "Missing";
             int _j = 0;
@@ -66,29 +66,29 @@ public final class ExtraCategoryInterpolator implements DataFilter {
             }
 
             newCategories.add(newCategory);
-            final String newName = oldName + "+";
-            final DiscreteVariable newVariable = new DiscreteVariable(newName, newCategories);
+            String newName = oldName + "+";
+            DiscreteVariable newVariable = new DiscreteVariable(newName, newCategories);
 
             variables.add(newVariable);
         }
 
-        final DataSet newDataSet = new BoxDataSet(new DoubleDataBox(dataSet.getNumRows(), variables.size()), variables);
+        DataSet newDataSet = new BoxDataSet(new DoubleDataBox(dataSet.getNumRows(), variables.size()), variables);
 
         // Copy old values to new data set, replacing missing values with new
         // "MissingValue" categories.
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
-            final Node _var = dataSet.getVariable(j);
+            Node _var = dataSet.getVariable(j);
 
             if (_var instanceof ContinuousVariable) {
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
                     newDataSet.setDouble(i, j, dataSet.getDouble(i, j));
                 }
             } else if (_var instanceof DiscreteVariable) {
-                final DiscreteVariable variable = (DiscreteVariable) _var;
-                final int numCategories = variable.getNumCategories();
+                DiscreteVariable variable = (DiscreteVariable) _var;
+                int numCategories = variable.getNumCategories();
 
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
-                    final int value = dataSet.getInt(i, j);
+                    int value = dataSet.getInt(i, j);
 
                     if (value == DiscreteVariable.MISSING_VALUE) {
                         newDataSet.setInt(i, j, numCategories);

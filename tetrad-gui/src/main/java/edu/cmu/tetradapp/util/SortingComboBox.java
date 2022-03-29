@@ -38,16 +38,16 @@ public class SortingComboBox extends JComboBox {
      *
      * @param anItem the item to add.
      */
-    public void addItem(final Object anItem) {
+    public void addItem(Object anItem) {
 
-        final String name = anItem.toString();
+        String name = anItem.toString();
 
-        for (int i = 0; i < getItemCount(); i++) {
-            final Object o = getItemAt(i);
-            final String oName = o.toString();
+        for (int i = 0; i < this.getItemCount(); i++) {
+            Object o = this.getItemAt(i);
+            String oName = o.toString();
 
             if (oName.compareTo(name) > 0) {
-                insertItemAt(anItem, i);
+                this.insertItemAt(anItem, i);
 
                 return;
             }

@@ -28,25 +28,25 @@ public class Cfci implements Algorithm, HasKnowledge {
     private final IndependenceWrapper test;
     private IKnowledge knowledge = new Knowledge2();
 
-    public Cfci(final IndependenceWrapper test) {
+    public Cfci(IndependenceWrapper test) {
         this.test = test;
     }
 
     @Override
-    public Graph search(final DataModel dataSet, final Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            final edu.cmu.tetrad.search.Cfci search = new edu.cmu.tetrad.search.Cfci(this.test.getTest(dataSet, parameters));
-            search.setKnowledge(this.knowledge);
+            edu.cmu.tetrad.search.Cfci search = new edu.cmu.tetrad.search.Cfci(test.getTest(dataSet, parameters));
+            search.setKnowledge(knowledge);
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         } else {
-            final Cfci algorithm = new Cfci(this.test);
+            Cfci algorithm = new Cfci(test);
 
-            final DataSet data = (DataSet) dataSet;
-            final GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(this.knowledge);
+            DataSet data = (DataSet) dataSet;
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
+            search.setKnowledge(knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -72,25 +72,25 @@ public class Cfci implements Algorithm, HasKnowledge {
     }
 
     @Override
-    public Graph getComparisonGraph(final Graph graph) {
+    public Graph getComparisonGraph(Graph graph) {
         return new DagToPag2(new EdgeListGraph(graph)).convert();
     }
 
     @Override
     public String getDescription() {
-        return "CFCI (Conservative Fast Causal Inference), using " + this.test.getDescription();
+        return "CFCI (Conservative Fast Causal Inference), using " + test.getDescription();
     }
 
     @Override
     public DataType getDataType() {
-        return this.test.getDataType();
+        return test.getDataType();
     }
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new LinkedList<>();
-        if (this.test != null) {
-            parameters.addAll(this.test.getParameters());
+        List<String> parameters = new LinkedList<>();
+        if (test != null) {
+            parameters.addAll(test.getParameters());
         }
         parameters.add(Params.DEPTH);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
@@ -101,11 +101,11 @@ public class Cfci implements Algorithm, HasKnowledge {
 
     @Override
     public IKnowledge getKnowledge() {
-        return this.knowledge;
+        return knowledge;
     }
 
     @Override
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 }

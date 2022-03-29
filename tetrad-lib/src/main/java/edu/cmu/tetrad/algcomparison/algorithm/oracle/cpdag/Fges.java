@@ -41,29 +41,29 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     }
 
-    public Fges(final ScoreWrapper score) {
+    public Fges(ScoreWrapper score) {
         this.score = score;
     }
 
     @Override
-    public Graph search(final DataModel dataSet, final Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
 
-            final int parallelism = parameters.getInt(Params.PARALLELISM);
+            int parallelism = parameters.getInt(Params.PARALLELISM);
 
-            final Score score = this.score.getScore(dataSet, parameters);
-            final Graph graph;
+            Score score = this.score.getScore(dataSet, parameters);
+            Graph graph;
 
-            final edu.cmu.tetrad.search.Fges search
+            edu.cmu.tetrad.search.Fges search
                     = new edu.cmu.tetrad.search.Fges(score, parallelism);
-            search.setKnowledge(this.knowledge);
+            search.setKnowledge(knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setMeekVerbose(parameters.getBoolean(Params.MEEK_VERBOSE));
             search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
             search.setSymmetricFirstStep(parameters.getBoolean(Params.SYMMETRIC_FIRST_STEP));
             search.setFaithfulnessAssumed(parameters.getBoolean(Params.FAITHFULNESS_ASSUMED));
 
-            final Object obj = parameters.get(Params.PRINT_STREAM);
+            Object obj = parameters.get(Params.PRINT_STREAM);
             if (obj instanceof PrintStream) {
                 search.setOut((PrintStream) obj);
             }
@@ -72,11 +72,11 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
             return graph;
         } else {
-            final Fges fges = new Fges(this.score);
+            Fges fges = new Fges(score);
 
-            final DataSet data = (DataSet) dataSet;
-            final GeneralResamplingTest search = new GeneralResamplingTest(data, fges, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(this.knowledge);
+            DataSet data = (DataSet) dataSet;
+            GeneralResamplingTest search = new GeneralResamplingTest(data, fges, parameters.getInt(Params.NUMBER_RESAMPLING));
+            search.setKnowledge(knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -104,23 +104,23 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper {
     }
 
     @Override
-    public Graph getComparisonGraph(final Graph graph) {
+    public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
     @Override
     public String getDescription() {
-        return "FGES (Fast Greedy Equivalence Search) using " + this.score.getDescription();
+        return "FGES (Fast Greedy Equivalence Search) using " + score.getDescription();
     }
 
     @Override
     public DataType getDataType() {
-        return this.score.getDataType();
+        return score.getDataType();
     }
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
         parameters.add(Params.SYMMETRIC_FIRST_STEP);
         parameters.add(Params.MAX_DEGREE);
         parameters.add(Params.PARALLELISM);
@@ -134,21 +134,21 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     @Override
     public IKnowledge getKnowledge() {
-        return this.knowledge;
+        return knowledge;
     }
 
     @Override
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
     @Override
     public ScoreWrapper getScoreWrapper() {
-        return this.score;
+        return score;
     }
 
     @Override
-    public void setScoreWrapper(final ScoreWrapper score) {
+    public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
     }
 

@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeEqualityMode;
+import edu.cmu.tetrad.graph.NodeEqualityMode.Type;
 import edu.cmu.tetrad.search.DMSearch;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -55,34 +56,34 @@ public class TestDM {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
+        NodeEqualityMode.setEqualityMode(Type.NAME);
 
-        final Graph graph = TestDM.emptyGraph(4);
+        Graph graph = emptyGraph(4);
 
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X2"));
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X3"));
         graph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("X2"));
         graph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("X3"));
 
-        final SemPm pm = new SemPm(graph);
-        final SemIm im = new SemIm(pm);
+        SemPm pm = new SemPm(graph);
+        SemIm im = new SemIm(pm);
 
-        final DataSet data = im.simulateData(100000, false);
+        DataSet data = im.simulateData(100000, false);
 
-        final DMSearch search = new DMSearch();
+        DMSearch search = new DMSearch();
 
         search.setInputs(new int[]{0, 1});
         search.setOutputs(new int[]{2, 3});
 
         search.setData(data);
         search.setTrueInputs(search.getInputs());
-        final Graph foundGraph = search.search();
+        Graph foundGraph = search.search();
 
-        print("Test Case 1");
+        this.print("Test Case 1");
 //        System.out.println(search.getDmStructure());
 
 //        System.out.println(foundGraph);
-        final Graph trueGraph = new EdgeListGraph();
+        Graph trueGraph = new EdgeListGraph();
 
         trueGraph.addNode(new ContinuousVariable("X0"));
         trueGraph.addNode(new ContinuousVariable("X1"));
@@ -104,7 +105,7 @@ public class TestDM {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        final Graph graph = TestDM.emptyGraph(8);
+        Graph graph = emptyGraph(8);
 
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X2"));
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X3"));
@@ -121,12 +122,12 @@ public class TestDM {
         graph.addDirectedEdge(new ContinuousVariable("X5"), new ContinuousVariable("X6"));
         graph.addDirectedEdge(new ContinuousVariable("X5"), new ContinuousVariable("X7"));
 
-        final SemPm pm = new SemPm(graph);
-        final SemIm im = new SemIm(pm);
+        SemPm pm = new SemPm(graph);
+        SemIm im = new SemIm(pm);
 
-        final DataSet data = im.simulateData(100000, false);
+        DataSet data = im.simulateData(100000, false);
 
-        final DMSearch search = new DMSearch();
+        DMSearch search = new DMSearch();
 
         search.setInputs(new int[]{0, 1, 4, 5});
         search.setOutputs(new int[]{2, 3, 6, 7});
@@ -134,11 +135,11 @@ public class TestDM {
         search.setData(data);
         search.setTrueInputs(search.getInputs());
 
-        final Graph foundGraph = search.search();
+        Graph foundGraph = search.search();
 
-        print("Test Case 2");
+        this.print("Test Case 2");
 
-        final Graph trueGraph = new EdgeListGraph();
+        Graph trueGraph = new EdgeListGraph();
 
         trueGraph.addNode(new ContinuousVariable("X0"));
         trueGraph.addNode(new ContinuousVariable("X1"));
@@ -176,7 +177,7 @@ public class TestDM {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        final Graph graph = TestDM.emptyGraph(12);
+        Graph graph = emptyGraph(12);
 
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X2"));
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X3"));
@@ -208,23 +209,23 @@ public class TestDM {
         graph.addDirectedEdge(new ContinuousVariable("X9"), new ContinuousVariable("X10"));
         graph.addDirectedEdge(new ContinuousVariable("X9"), new ContinuousVariable("X11"));
 
-        final SemPm pm = new SemPm(graph);
-        final SemIm im = new SemIm(pm);
+        SemPm pm = new SemPm(graph);
+        SemIm im = new SemIm(pm);
 
-        final DataSet data = im.simulateData(100000, false);
+        DataSet data = im.simulateData(100000, false);
 
-        final DMSearch search = new DMSearch();
+        DMSearch search = new DMSearch();
 
         search.setInputs(new int[]{0, 1, 4, 5, 8, 9});
         search.setOutputs(new int[]{2, 3, 6, 7, 10, 11});
 
         search.setData(data);
         search.setTrueInputs(search.getInputs());
-        final Graph foundGraph = search.search();
+        Graph foundGraph = search.search();
 
-        print("Test Case 3");
+        this.print("Test Case 3");
 
-        final Graph trueGraph = new EdgeListGraph();
+        Graph trueGraph = new EdgeListGraph();
 
         trueGraph.addNode(new ContinuousVariable("X0"));
         trueGraph.addNode(new ContinuousVariable("X1"));
@@ -277,7 +278,7 @@ public class TestDM {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        final Graph graph = TestDM.emptyGraph(6);
+        Graph graph = emptyGraph(6);
 
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X3"));
         graph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("X3"));
@@ -285,23 +286,23 @@ public class TestDM {
         graph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("X5"));
         graph.addDirectedEdge(new ContinuousVariable("X2"), new ContinuousVariable("X5"));
 
-        final SemPm pm = new SemPm(graph);
-        final SemIm im = new SemIm(pm);
+        SemPm pm = new SemPm(graph);
+        SemIm im = new SemIm(pm);
 
-        final DataSet data = im.simulateData(100000, false);
+        DataSet data = im.simulateData(100000, false);
 
-        final DMSearch search = new DMSearch();
+        DMSearch search = new DMSearch();
 
         search.setInputs(new int[]{0, 1, 2});
         search.setOutputs(new int[]{3, 4, 5});
 
         search.setData(data);
         search.setTrueInputs(search.getInputs());
-        final Graph foundGraph = search.search();
+        Graph foundGraph = search.search();
 
-        print("Three Latent Fork Case");
+        this.print("Three Latent Fork Case");
 
-        final Graph trueGraph = new EdgeListGraph();
+        Graph trueGraph = new EdgeListGraph();
 
         trueGraph.addNode(new ContinuousVariable("X0"));
         trueGraph.addNode(new ContinuousVariable("X1"));
@@ -337,7 +338,7 @@ public class TestDM {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        final Graph graph = TestDM.emptyGraph(6);
+        Graph graph = emptyGraph(6);
 
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X3"));
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X4"));
@@ -345,23 +346,23 @@ public class TestDM {
         graph.addDirectedEdge(new ContinuousVariable("X2"), new ContinuousVariable("X4"));
         graph.addDirectedEdge(new ContinuousVariable("X2"), new ContinuousVariable("X5"));
 
-        final SemPm pm = new SemPm(graph);
-        final SemIm im = new SemIm(pm);
+        SemPm pm = new SemPm(graph);
+        SemIm im = new SemIm(pm);
 
-        final DataSet data = im.simulateData(100000, false);
+        DataSet data = im.simulateData(100000, false);
 
-        final DMSearch search = new DMSearch();
+        DMSearch search = new DMSearch();
 
         search.setInputs(new int[]{0, 1, 2});
         search.setOutputs(new int[]{3, 4, 5});
 
         search.setData(data);
         search.setTrueInputs(search.getInputs());
-        final Graph foundGraph = search.search();
+        Graph foundGraph = search.search();
 
-        print("Three Latent Collider Case");
+        this.print("Three Latent Collider Case");
 
-        final Graph trueGraph = new EdgeListGraph();
+        Graph trueGraph = new EdgeListGraph();
 
         trueGraph.addNode(new ContinuousVariable("X0"));
         trueGraph.addNode(new ContinuousVariable("X1"));
@@ -394,7 +395,7 @@ public class TestDM {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        final Graph graph = TestDM.emptyGraph(8);
+        Graph graph = emptyGraph(8);
 
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X4"));
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X5"));
@@ -410,24 +411,24 @@ public class TestDM {
 
         graph.addDirectedEdge(new ContinuousVariable("X3"), new ContinuousVariable("X7"));
 
-        final SemPm pm = new SemPm(graph);
-        final SemIm im = new SemIm(pm);
+        SemPm pm = new SemPm(graph);
+        SemIm im = new SemIm(pm);
 
-        final DataSet data = im.simulateData(1000, false);
+        DataSet data = im.simulateData(1000, false);
 
-        final DMSearch search = new DMSearch();
+        DMSearch search = new DMSearch();
 
         search.setInputs(new int[]{0, 1, 2, 3});
         search.setOutputs(new int[]{4, 5, 6, 7});
 
         search.setData(data);
         search.setTrueInputs(search.getInputs());
-        final Graph foundGraph = search.search();
+        Graph foundGraph = search.search();
 
-        print("Four Latent Case");
-        print("search.getDmStructure().latentStructToEdgeListGraph(search.getDmStructure())");
+        this.print("Four Latent Case");
+        this.print("search.getDmStructure().latentStructToEdgeListGraph(search.getDmStructure())");
 
-        final Graph trueGraph = new EdgeListGraph();
+        Graph trueGraph = new EdgeListGraph();
 
         trueGraph.addNode(new ContinuousVariable("X0"));
         trueGraph.addNode(new ContinuousVariable("X1"));
@@ -469,23 +470,23 @@ public class TestDM {
     @Ignore
     public void rtest7() {
 
-        print("test 7");
-        final DMSearch result
-                = readAndSearchData("src/edu/cmu/tetradproj/amurrayw/testcase7.txt",
+        this.print("test 7");
+        DMSearch result
+                = this.readAndSearchData("src/edu/cmu/tetradproj/amurrayw/testcase7.txt",
                 new int[]{0, 1}, new int[]{2, 3}, true, new int[]{0, 1});
 
-        final File file = new File("src/edu/cmu/tetradproj/amurrayw/output_test7.txt");
+        File file = new File("src/edu/cmu/tetradproj/amurrayw/output_test7.txt");
         try {
-            final FileOutputStream out = new FileOutputStream(file);
-            final PrintStream outStream = new PrintStream(out);
+            FileOutputStream out = new FileOutputStream(file);
+            PrintStream outStream = new PrintStream(out);
             outStream.println(result.getDmStructure().latentStructToEdgeListGraph(result.getDmStructure()));
             outStream.println();
-        } catch (final java.io.FileNotFoundException e) {
-            print("Can't write to file.");
+        } catch (java.io.FileNotFoundException e) {
+            this.print("Can't write to file.");
 
         }
 
-        print("DONE");
+        this.print("DONE");
     }
 
     @Test
@@ -534,19 +535,19 @@ public class TestDM {
 
     @Ignore
     public void rtest9() {
-        internaltest9(10);
+        this.internaltest9(10);
     }
 
     @Ignore
-    public int internaltest9(final double initialDiscount) {
+    public int internaltest9(double initialDiscount) {
 
         RandomUtil.getInstance().setSeed(29483818483L);
 
         final int nInputs = 17610;
         final int nOutputs = 12042;
 
-        final int[] inputs = new int[nInputs];
-        final int[] outputs = new int[nOutputs];
+        int[] inputs = new int[nInputs];
+        int[] outputs = new int[nOutputs];
 
         for (int i = 0; i < nInputs; i++) {
             inputs[i] = i;
@@ -555,7 +556,7 @@ public class TestDM {
             outputs[i] = nInputs + i - 1;
         }
 
-        print("test 9");
+        this.print("test 9");
 
 //Trying recursion as while loop seems to reduce speed below that of non-loop version.
         //double initialDiscount = 20;
@@ -567,37 +568,37 @@ public class TestDM {
         result.setDiscount(initialDiscount);
 
         result
-                = readAndSearchData("src/edu/cmu/tetradproj/amurrayw/final_joined_data_no_par.txt",
+                = this.readAndSearchData("src/edu/cmu/tetradproj/amurrayw/final_joined_data_no_par.txt",
                 inputs, outputs, true, inputs);
 
-        print("Finished search, now writing output to file.");
+        this.print("Finished search, now writing output to file.");
 
-        final File file = new File("src/edu/cmu/tetradproj/amurrayw/final_output_" + initialDiscount + "_.txt");
+        File file = new File("src/edu/cmu/tetradproj/amurrayw/final_output_" + initialDiscount + "_.txt");
         try {
-            final FileOutputStream out = new FileOutputStream(file);
-            final PrintStream outStream = new PrintStream(out);
+            FileOutputStream out = new FileOutputStream(file);
+            PrintStream outStream = new PrintStream(out);
             outStream.println(result.getDmStructure().latentStructToEdgeListGraph(result.getDmStructure()));
             //outStream.println();
-        } catch (final java.io.FileNotFoundException e) {
-            print("Can't write to file.");
+        } catch (java.io.FileNotFoundException e) {
+            this.print("Can't write to file.");
 
         }
 
-        final File file2 = new File("src/edu/cmu/tetradproj/amurrayw/unconverted_output" + initialDiscount + "_.txt");
+        File file2 = new File("src/edu/cmu/tetradproj/amurrayw/unconverted_output" + initialDiscount + "_.txt");
         try {
-            final FileOutputStream out = new FileOutputStream(file2);
-            final PrintStream outStream = new PrintStream(out);
+            FileOutputStream out = new FileOutputStream(file2);
+            PrintStream outStream = new PrintStream(out);
             outStream.println(result.getDmStructure());
             //outStream.println();
-        } catch (final java.io.FileNotFoundException e) {
-            print("Can't write to file.");
+        } catch (java.io.FileNotFoundException e) {
+            this.print("Can't write to file.");
 
         }
 //            initialDiscount--;
 //        }
 
         //System.out.println(result.getDmStructure().latentStructToEdgeListGraph(result.getDmStructure()));
-        print("DONE");
+        this.print("DONE");
 
 //        if(initialDiscount>1){
 //            result=null;
@@ -612,19 +613,19 @@ public class TestDM {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        final Graph graph = TestDM.emptyGraph(5);
+        Graph graph = emptyGraph(5);
 
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X2"));
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X3"));
         graph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("X3"));
         graph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("X4"));
 
-        final SemPm pm = new SemPm(graph);
-        final SemIm im = new SemIm(pm);
+        SemPm pm = new SemPm(graph);
+        SemIm im = new SemIm(pm);
 
-        final DataSet data = im.simulateData(100000, false);
+        DataSet data = im.simulateData(100000, false);
 
-        final DMSearch search = new DMSearch();
+        DMSearch search = new DMSearch();
 
         search.setUseFges(false);
 
@@ -635,7 +636,7 @@ public class TestDM {
         search.setTrueInputs(search.getInputs());
         search.search();
 
-        print("Test Case 10");
+        this.print("Test Case 10");
 
         // Trying to quiet the output for unit tests.
         if (false) {
@@ -646,8 +647,8 @@ public class TestDM {
 
     }
 
-    public boolean listHasDuplicates(final List<Node> list) {
-        for (final Node node : list) {
+    public boolean listHasDuplicates(List<Node> list) {
+        for (Node node : list) {
             list.remove(node);
             if (list.contains(node)) {
                 return (true);
@@ -656,10 +657,10 @@ public class TestDM {
         return (false);
     }
 
-    public boolean cycleExists(final Graph graph, List<Node> adjacentNodes, final List<Node> path, Node currentNode) {
+    public boolean cycleExists(Graph graph, List<Node> adjacentNodes, List<Node> path, Node currentNode) {
 
         if (adjacentNodes.isEmpty() && path.isEmpty()) {
-            for (final Node node : graph.getNodes()) {
+            for (Node node : graph.getNodes()) {
                 adjacentNodes = graph.getAdjacentNodes(node);
 
                 if (adjacentNodes.isEmpty()) {
@@ -669,22 +670,22 @@ public class TestDM {
                 path.add(node);
                 currentNode = node;
 
-                print("RAN: " + adjacentNodes + " " + path + " " + currentNode);
+                this.print("RAN: " + adjacentNodes + " " + path + " " + currentNode);
 
-                return (cycleExists(graph, adjacentNodes, path, currentNode));
+                return (this.cycleExists(graph, adjacentNodes, path, currentNode));
             }
         } else {
             adjacentNodes = graph.getAdjacentNodes(currentNode);
-            for (final Node node : adjacentNodes) {
+            for (Node node : adjacentNodes) {
                 if (path.lastIndexOf(node) == (path.size() - 1)) {
                     continue;
                 } else {
                     path.add(node);
                     currentNode = node;
-                    return (cycleExists(graph, adjacentNodes, path, currentNode));
+                    return (this.cycleExists(graph, adjacentNodes, path, currentNode));
                 }
             }
-            if (listHasDuplicates(path)) {
+            if (this.listHasDuplicates(path)) {
                 return (true);
             }
         }
@@ -696,12 +697,12 @@ public class TestDM {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        final Graph graph = TestDM.emptyGraph(4);
+        Graph graph = emptyGraph(4);
 
-        final Node X0 = graph.getNode("X0");
-        final Node X1 = graph.getNode("X1");
-        final Node X2 = graph.getNode("X2");
-        final Node X3 = graph.getNode("X3");
+        Node X0 = graph.getNode("X0");
+        Node X1 = graph.getNode("X1");
+        Node X2 = graph.getNode("X2");
+        Node X3 = graph.getNode("X3");
 
         graph.addDirectedEdge(X0, X2);
         graph.addDirectedEdge(X2, X3);
@@ -710,13 +711,13 @@ public class TestDM {
         System.out.print(graph.existsDirectedPathFromTo(X0, X3));
         System.out.print(graph.existsDirectedPathFromTo(X3, X0));
 
-        for (final Node node : graph.getNodes()) {
-            print("Nodes adjacent to " + node + ": " + graph.getAdjacentNodes(node) + "\n");
+        for (Node node : graph.getNodes()) {
+            this.print("Nodes adjacent to " + node + ": " + graph.getAdjacentNodes(node) + "\n");
         }
 
-        print("graph.existsDirectedCycle: " + graph.existsDirectedCycle());
+        this.print("graph.existsDirectedCycle: " + graph.existsDirectedCycle());
 
-        print("Graph structure: " + graph);
+        this.print("Graph structure: " + graph);
 
         assertTrue(true);
 
@@ -727,20 +728,20 @@ public class TestDM {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        final Graph graph = TestDM.emptyGraph(9);
+        Graph graph = emptyGraph(9);
 
-        final Node X0 = graph.getNode("X0");
-        final Node X1 = graph.getNode("X1");
-        final Node X2 = graph.getNode("X2");
+        Node X0 = graph.getNode("X0");
+        Node X1 = graph.getNode("X1");
+        Node X2 = graph.getNode("X2");
 
-        final Node X3 = graph.getNode("X3");
-        final Node X4 = graph.getNode("X4");
+        Node X3 = graph.getNode("X3");
+        Node X4 = graph.getNode("X4");
 
-        final Node X5 = graph.getNode("X5");
+        Node X5 = graph.getNode("X5");
 
-        final Node X6 = graph.getNode("X6");
-        final Node X7 = graph.getNode("X7");
-        final Node X8 = graph.getNode("X8");
+        Node X6 = graph.getNode("X6");
+        Node X7 = graph.getNode("X7");
+        Node X8 = graph.getNode("X8");
 
         graph.addDirectedEdge(X0, X6);
         graph.addDirectedEdge(X0, X7);
@@ -761,12 +762,12 @@ public class TestDM {
 
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        final SemPm pm = new SemPm(graph);
-        final SemIm im = new SemIm(pm);
+        SemPm pm = new SemPm(graph);
+        SemIm im = new SemIm(pm);
 
-        final DataSet data = im.simulateData(100000, false);
+        DataSet data = im.simulateData(100000, false);
 
-        final DMSearch search = new DMSearch();
+        DMSearch search = new DMSearch();
 
         search.setInputs(new int[]{0, 1, 2, 3, 4, 5});
         search.setOutputs(new int[]{6, 7, 8});
@@ -775,12 +776,12 @@ public class TestDM {
         search.setTrueInputs(search.getInputs());
         search.search();
 
-        print("");
-        print("" + search.getDmStructure());
+        this.print("");
+        this.print("" + search.getDmStructure());
 
-        print("graph.existsDirectedCycle: " + search.getDmStructure().latentStructToEdgeListGraph(search.getDmStructure()).existsDirectedCycle());
+        this.print("graph.existsDirectedCycle: " + search.getDmStructure().latentStructToEdgeListGraph(search.getDmStructure()).existsDirectedCycle());
 
-        print("Graph structure: " + search);
+        this.print("Graph structure: " + search);
 
         assertTrue(true);
 
@@ -791,23 +792,23 @@ public class TestDM {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        final Graph graph = TestDM.emptyGraph(12);
+        Graph graph = emptyGraph(12);
 
-        final Node X0 = graph.getNode("X0");
-        final Node X1 = graph.getNode("X1");
-        final Node X2 = graph.getNode("X2");
+        Node X0 = graph.getNode("X0");
+        Node X1 = graph.getNode("X1");
+        Node X2 = graph.getNode("X2");
 
-        final Node X3 = graph.getNode("X3");
-        final Node X4 = graph.getNode("X4");
+        Node X3 = graph.getNode("X3");
+        Node X4 = graph.getNode("X4");
 
-        final Node X5 = graph.getNode("X5");
+        Node X5 = graph.getNode("X5");
 
-        final Node X6 = graph.getNode("X6");
-        final Node X7 = graph.getNode("X7");
-        final Node X8 = graph.getNode("X8");
-        final Node X9 = graph.getNode("X9");
-        final Node X10 = graph.getNode("X10");
-        final Node X11 = graph.getNode("X11");
+        Node X6 = graph.getNode("X6");
+        Node X7 = graph.getNode("X7");
+        Node X8 = graph.getNode("X8");
+        Node X9 = graph.getNode("X9");
+        Node X10 = graph.getNode("X10");
+        Node X11 = graph.getNode("X11");
 
         graph.addDirectedEdge(X0, X6);
 
@@ -844,12 +845,12 @@ public class TestDM {
 //        graph.addDirectedEdge(X5, X8);
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        final SemPm pm = new SemPm(graph);
-        final SemIm im = new SemIm(pm);
+        SemPm pm = new SemPm(graph);
+        SemIm im = new SemIm(pm);
 
-        final DataSet data = im.simulateData(100000, false);
+        DataSet data = im.simulateData(100000, false);
 
-        final DMSearch search = new DMSearch();
+        DMSearch search = new DMSearch();
 
         search.setInputs(new int[]{0, 1, 2, 3, 4, 5});
         search.setOutputs(new int[]{6, 7, 8, 9, 10, 11});
@@ -858,12 +859,12 @@ public class TestDM {
         search.setTrueInputs(search.getInputs());
         search.search();
 
-        print("");
-        print("" + search.getDmStructure());
+        this.print("");
+        this.print("" + search.getDmStructure());
 
-        print("graph.existsDirectedCycle: " + search.getDmStructure().latentStructToEdgeListGraph(search.getDmStructure()).existsDirectedCycle());
+        this.print("graph.existsDirectedCycle: " + search.getDmStructure().latentStructToEdgeListGraph(search.getDmStructure()).existsDirectedCycle());
 
-        print("Graph structure: " + search);
+        this.print("Graph structure: " + search);
 
         assertTrue(true);
 
@@ -872,42 +873,42 @@ public class TestDM {
     @Ignore
     public void rtest16() {
 
-        print("test PC");
-        final DMSearch result
-                = readAndSearchData("src/edu/cmu/tetradproj/amurrayw/testcase7_fixed.txt",
+        this.print("test PC");
+        DMSearch result
+                = this.readAndSearchData("src/edu/cmu/tetradproj/amurrayw/testcase7_fixed.txt",
                 new int[]{0, 1}, new int[]{2, 3}, false, new int[]{0, 1});
 
-        final File file = new File("src/edu/cmu/tetradproj/amurrayw/output_test7_fixed.txt");
+        File file = new File("src/edu/cmu/tetradproj/amurrayw/output_test7_fixed.txt");
         try {
-            final FileOutputStream out = new FileOutputStream(file);
-            final PrintStream outStream = new PrintStream(out);
+            FileOutputStream out = new FileOutputStream(file);
+            PrintStream outStream = new PrintStream(out);
             outStream.println(result.getDmStructure().latentStructToEdgeListGraph(result.getDmStructure()));
             outStream.println();
-        } catch (final java.io.FileNotFoundException e) {
-            print("Can't write to file.");
+        } catch (java.io.FileNotFoundException e) {
+            this.print("Can't write to file.");
 
         }
 
         System.out.println(result.getDmStructure().latentStructToEdgeListGraph(result.getDmStructure()));
-        print("DONE");
+        this.print("DONE");
     }
 
     @Ignore
     public void rtest17() {
-        internaltest17(999);
+        this.internaltest17(999);
     }
 
     @Ignore
-    public int internaltest17(final double initialDiscount) {
+    public int internaltest17(double initialDiscount) {
         RandomUtil.getInstance().setSeed(29483818483L);
 
         final int nInputs = 17610;
         final int nOutputs = 12042;
 
-        final int[] inputs = new int[nInputs];
-        final int[] outputs = new int[nOutputs];
+        int[] inputs = new int[nInputs];
+        int[] outputs = new int[nOutputs];
 
-        final int[] trueInputs = new int[]{2761, 2762, 4450, 2247, 16137, 13108, 12530, 231, 1223, 1379, 5379, 12745,
+        int[] trueInputs = {2761, 2762, 4450, 2247, 16137, 13108, 12530, 231, 1223, 1379, 5379, 12745,
                 14913, 16066, 16197, 16199, 17353, 17392, 4397, 3009, 3143, 5478, 5479, 5480,
                 5481, 5482, 7474, 12884, 12885, 12489, 9112, 1943, 9114, 1950, 9644, 9645,
                 9647};
@@ -919,7 +920,7 @@ public class TestDM {
             outputs[i] = nInputs + i - 1;
         }
 
-        print("test 17");
+        this.print("test 17");
 
 //Trying recursion as while loop seems to reduce speed below that of non-loop version.
         //double initialDiscount = 20;
@@ -934,37 +935,37 @@ public class TestDM {
         result.setDiscount(initialDiscount);
 
         result
-                = readAndSearchData("src/edu/cmu/tetradproj/amurrayw/final_joined_data_no_par_fixed.txt",
+                = this.readAndSearchData("src/edu/cmu/tetradproj/amurrayw/final_joined_data_no_par_fixed.txt",
                 inputs, outputs, false, trueInputs);
 
-        print("Finished search, now writing output to file.");
+        this.print("Finished search, now writing output to file.");
 
-        final File file = new File("src/edu/cmu/tetradproj/amurrayw/final_output_" + initialDiscount + "_.txt");
+        File file = new File("src/edu/cmu/tetradproj/amurrayw/final_output_" + initialDiscount + "_.txt");
         try {
-            final FileOutputStream out = new FileOutputStream(file);
-            final PrintStream outStream = new PrintStream(out);
+            FileOutputStream out = new FileOutputStream(file);
+            PrintStream outStream = new PrintStream(out);
             outStream.println(result.getDmStructure().latentStructToEdgeListGraph(result.getDmStructure()));
             //outStream.println();
-        } catch (final java.io.FileNotFoundException e) {
-            print("Can't write to file.");
+        } catch (java.io.FileNotFoundException e) {
+            this.print("Can't write to file.");
 
         }
 
-        final File file2 = new File("src/edu/cmu/tetradproj/amurrayw/unconverted_output" + initialDiscount + "_.txt");
+        File file2 = new File("src/edu/cmu/tetradproj/amurrayw/unconverted_output" + initialDiscount + "_.txt");
         try {
-            final FileOutputStream out = new FileOutputStream(file2);
-            final PrintStream outStream = new PrintStream(out);
+            FileOutputStream out = new FileOutputStream(file2);
+            PrintStream outStream = new PrintStream(out);
             outStream.println(result.getDmStructure());
             //outStream.println();
-        } catch (final java.io.FileNotFoundException e) {
-            print("Can't write to file.");
+        } catch (java.io.FileNotFoundException e) {
+            this.print("Can't write to file.");
 
         }
 //            initialDiscount--;
 //        }
 
         //System.out.println(result.getDmStructure().latentStructToEdgeListGraph(result.getDmStructure()));
-        print("DONE");
+        this.print("DONE");
 
 //        if(initialDiscount>1){
 //            result=null;
@@ -1012,22 +1013,22 @@ public class TestDM {
 //            finishRenaming(i);
 //        }
 
-        finishRenaming(999);
+        this.finishRenaming(999);
     }
 
-    public void finishRenaming(final int penalty) {
+    public void finishRenaming(int penalty) {
         String currentLine;
 
         try {
-            final FileReader file = new FileReader("src/edu/cmu/tetradproj/amurrayw/final_run/renamed_graph_penalty" + penalty + ".r.txt");
-            final BufferedReader br = new BufferedReader(file);
+            FileReader file = new FileReader("src/edu/cmu/tetradproj/amurrayw/final_run/renamed_graph_penalty" + penalty + ".r.txt");
+            BufferedReader br = new BufferedReader(file);
 
             String[] varNames = null;
 
             int nVar = 0;
             int lineNumber = 0;
 
-            final Graph graph = new EdgeListGraph();
+            Graph graph = new EdgeListGraph();
 
             while ((currentLine = br.readLine()) != null) {
 
@@ -1037,20 +1038,20 @@ public class TestDM {
 
                     nVar = varNames.length;
 
-                    for (final String nodeName : varNames) {
+                    for (String nodeName : varNames) {
                         graph.addNode(new ContinuousVariable(nodeName));
 
                     }
                 } else {
 
                     //splits line to single
-                    final String[] adjInfoString = currentLine.split("\\s+");
+                    String[] adjInfoString = currentLine.split("\\s+");
 
                     for (int i = 0; i < nVar; i++) {
                         if (Integer.parseInt(adjInfoString[i]) > 1) {
-                            print(adjInfoString[i]);
+                            this.print(adjInfoString[i]);
                         } else if (Integer.parseInt(adjInfoString[i]) < 0) {
-                            print(adjInfoString[i]);
+                            this.print(adjInfoString[i]);
                         }
 
 //                        System.out.println(adjInfoString[i]);
@@ -1084,25 +1085,25 @@ public class TestDM {
 //                System.out.println(currentLine);
             }
 
-            final File outfile = new File("src/edu/cmu/tetradproj/amurrayw/final_run/renamed_final_output_" + penalty + "_.txt");
+            File outfile = new File("src/edu/cmu/tetradproj/amurrayw/final_run/renamed_final_output_" + penalty + "_.txt");
             try {
-                final FileOutputStream out = new FileOutputStream(outfile);
-                final PrintStream outStream = new PrintStream(out);
+                FileOutputStream out = new FileOutputStream(outfile);
+                PrintStream outStream = new PrintStream(out);
                 outStream.println(graph);
                 //outStream.println();
-            } catch (final java.io.FileNotFoundException e) {
+            } catch (java.io.FileNotFoundException e) {
                 final String x = "Can't write to file.";
-                print(x);
+                this.print(x);
 
             }
 
-        } catch (final IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
     }
 
-    private void print(final String x) {
+    private void print(String x) {
         if (false) {
             System.out.println(x);
         }
@@ -1110,20 +1111,20 @@ public class TestDM {
 
     //Reads in data and runs search. Note: Assumes variable names are of the form X0, X1, etc.
     // Both input and output integer arrays are the indexes of their respective variables.
-    public DMSearch readAndSearchData(final String fileLocation, final int[] inputs, final int[] outputs, final boolean useGES, final int[] trueInputs) {
-        final File file = new File(fileLocation);
+    public DMSearch readAndSearchData(String fileLocation, int[] inputs, int[] outputs, boolean useGES, int[] trueInputs) {
+        File file = new File(fileLocation);
         DataSet data = null;
 
         try {
-            final ContinuousTabularDatasetFileReader dataReader = new ContinuousTabularDatasetFileReader(file.toPath(), Delimiter.SPACE);
+            ContinuousTabularDatasetFileReader dataReader = new ContinuousTabularDatasetFileReader(file.toPath(), Delimiter.SPACE);
             data = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData());
-        } catch (final IOException e) {
-            print("Failed to read in data.");
+        } catch (IOException e) {
+            this.print("Failed to read in data.");
             e.printStackTrace();
         }
 
-        print("Read Data");
-        final DMSearch search = new DMSearch();
+        this.print("Read Data");
+        DMSearch search = new DMSearch();
 
         search.setInputs(inputs);
         search.setOutputs(outputs);
@@ -1149,8 +1150,8 @@ public class TestDM {
 
     }
 
-    public static Graph emptyGraph(final int numNodes) {
-        final List<Node> nodes = new ArrayList<>();
+    public static Graph emptyGraph(int numNodes) {
+        List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < numNodes; i++) {
             nodes.add(new ContinuousVariable("X" + i));
@@ -1159,7 +1160,7 @@ public class TestDM {
         return new EdgeListGraph(nodes);
     }
 
-    public static void main(final String... args) {
+    public static void main(String... args) {
         new TestDM().test8();
     }
 

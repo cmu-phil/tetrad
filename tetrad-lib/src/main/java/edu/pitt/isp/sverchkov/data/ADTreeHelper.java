@@ -33,26 +33,26 @@ class ADTreeHelper implements Serializable {
     protected final int m; // The number of attributes
     protected final int[] airities;
 
-    protected ADTreeHelper(final int m) {
+    protected ADTreeHelper(int m) {
         this.m = m;
-        this.airities = new int[m];
+        airities = new int[m];
     }
 
-    protected int count(final int[] assignment, CountNode ptr) {
+    protected int count(int[] assignment, CountNode ptr) {
         if (null == ptr) return 0;
 
         for (int i = ptr.attr - 1; i >= 0 && ptr != null; i--) {
-            final VaryNode vary = ptr.vary[i];
+            VaryNode vary = ptr.vary[i];
             if (assignment[i] >= 0) {
                 if (assignment[i] == vary.mcv) {
-                    final int[] a = new int[this.m];
-                    System.arraycopy(assignment, 0, a, 0, this.m);
+                    int[] a = new int[m];
+                    System.arraycopy(assignment, 0, a, 0, m);
                     a[i] = -1;
-                    int count = count(a, ptr);
+                    int count = this.count(a, ptr);
                     for (int v = 0; v < vary.values.length; v++)
                         if (v != vary.mcv) {
                             a[i] = v;
-                            count -= count(a, ptr);
+                            count -= this.count(a, ptr);
                         }
                     return count;
                 } else
@@ -68,12 +68,12 @@ class ADTreeHelper implements Serializable {
         protected final int count;
         protected final VaryNode[] vary;
 
-        protected CountNode(final int attribute, final int[][] array) {
-            this.attr = attribute;
-            this.count = array.length;
-            this.vary = new VaryNode[this.attr];
-            for (int i = 0; i < this.attr; i++)
-                this.vary[i] = new VaryNode(i, array);
+        protected CountNode(int attribute, int[][] array) {
+            attr = attribute;
+            count = array.length;
+            vary = new VaryNode[attr];
+            for (int i = 0; i < attr; i++)
+                vary[i] = new VaryNode(i, array);
         }
     }
 
@@ -81,14 +81,14 @@ class ADTreeHelper implements Serializable {
         protected final CountNode[] values;
         protected int mcv = -1;
 
-        private VaryNode(final int attr, final int[][] array) {
+        private VaryNode(int attr, int[][] array) {
             System.out.println(attr);
 
-            final int airity = ADTreeHelper.this.airities[attr];
+            int airity = airities[attr];
 
-            this.values = new CountNode[airity];
+            values = new CountNode[airity];
 
-            final List<List<Integer>> childArrayIndexes = new ArrayList<>(airity);
+            List<List<Integer>> childArrayIndexes = new ArrayList<>(airity);
             for (int i = 0; i < airity; i++)
                 childArrayIndexes.add(new ArrayList<Integer>());
 
@@ -97,23 +97,23 @@ class ADTreeHelper implements Serializable {
 
             int maxCount = 0;
             for (int i = 0; i < airity; i++) {
-                final int count = childArrayIndexes.get(i).size();
+                int count = childArrayIndexes.get(i).size();
                 if (count > maxCount) {
                     maxCount = count;
-                    this.mcv = i;
+                    mcv = i;
                 }
             }
 
             for (int i = 0; i < airity; i++)
-                if (i != this.mcv) {
-                    final List<Integer> indexes = childArrayIndexes.get(i);
+                if (i != mcv) {
+                    List<Integer> indexes = childArrayIndexes.get(i);
                     if (indexes.size() > 0) {
-                        final int[][] childArray = new int[indexes.size()][];
+                        int[][] childArray = new int[indexes.size()][];
                         int j = 0;
-                        for (final int index : indexes)
+                        for (int index : indexes)
                             childArray[j++] = array[index];
 
-                        this.values[i] = new CountNode(attr, childArray);
+                        values[i] = new CountNode(attr, childArray);
                     }
                 }
         }

@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
+import edu.cmu.tetradapp.util.IntTextField.Filter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -45,29 +46,29 @@ public class LogParamsEditor extends JPanel implements ParameterEditor {
     /**
      * The parameters object being edited.
      */
-    private Parameters params = null;
+    private Parameters params;
 
 
-    public void setParams(final Parameters params) {
+    public void setParams(Parameters params) {
         this.params = params;
     }
 
-    public void setParentModels(final Object[] parentModels) {
-        for (final Object parentModel : parentModels) {
+    public void setParentModels(Object[] parentModels) {
+        for (Object parentModel : parentModels) {
             //            System.out.println(parentModel);
             //
             if (parentModel instanceof DataWrapper) {
-                final DataModel dataModel = ((DataWrapper) parentModel).getSelectedDataModel();
+                DataModel dataModel = ((DataWrapper) parentModel).getSelectedDataModel();
                 //
                 if (dataModel instanceof DataSet) {
-                    final DataSet parentDataSet = (DataSet) dataModel;
+                    DataSet parentDataSet = (DataSet) dataModel;
                 }
             }
         }
     }
 
     public void setup() {
-        buildGui();
+        this.buildGui();
     }
 
     public boolean mustBeShown() {
@@ -82,62 +83,62 @@ public class LogParamsEditor extends JPanel implements ParameterEditor {
      * appropriate listeners.
      */
     private void buildGui() {
-        setLayout(new BorderLayout());
+        this.setLayout(new BorderLayout());
 
-        final DoubleTextField aField = new DoubleTextField(this.params.getDouble("a", 10.0), 6, NumberFormatUtil.getInstance().getNumberFormat());
+        DoubleTextField aField = new DoubleTextField(params.getDouble("a", 10.0), 6, NumberFormatUtil.getInstance().getNumberFormat());
         aField.setFilter(new DoubleTextField.Filter() {
-            public double filter(final double value, final double oldValue) {
+            public double filter(double value, double oldValue) {
                 try {
-                    LogParamsEditor.this.params.set("a", value);
+                    params.set("a", value);
                     return value;
-                } catch (final IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
-        final IntTextField baseField = new IntTextField(this.params.getInt("base", 0), 4);
-        baseField.setFilter(new IntTextField.Filter() {
-            public int filter(final int value, final int oldValue) {
+        IntTextField baseField = new IntTextField(params.getInt("base", 0), 4);
+        baseField.setFilter(new Filter() {
+            public int filter(int value, int oldValue) {
                 try {
-                    LogParamsEditor.this.params.set("base", value);
+                    params.set("base", value);
                     return value;
-                } catch (final IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
         // continue workbench construction.
-        final Box b1 = Box.createVerticalBox();
+        Box b1 = Box.createVerticalBox();
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("<html>" +
                 "The input dataset will be logarithmically transformed by applying f(x) = ln(a + x) to each data point x." +
                 "<br> Can also 'unlog' the data i.e., apply g(x) = exp(x) - a, or override the base"));
 
 
-        final Box b9 = Box.createHorizontalBox();
+        Box b9 = Box.createHorizontalBox();
         b9.add(Box.createHorizontalGlue());
         b9.add(new JLabel("<html> base (use 0 for natural log and base <i>e</i>): </html>"));
         b9.add(baseField);
 
-        final Box b7 = Box.createHorizontalBox();
+        Box b7 = Box.createHorizontalBox();
         b7.add(Box.createHorizontalGlue());
         b7.add(new JLabel("<html><i>a =  </i></html>"));
         b7.add(aField);
 
 
-        final JCheckBox unlog = new JCheckBox();
-        unlog.setSelected(this.params.getBoolean("unlog", false));
+        JCheckBox unlog = new JCheckBox();
+        unlog.setSelected(params.getBoolean("unlog", false));
         unlog.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final JCheckBox box = (JCheckBox) e.getSource();
-                LogParamsEditor.this.params.set("unlog", box.isSelected());
+            public void actionPerformed(ActionEvent e) {
+                JCheckBox box = (JCheckBox) e.getSource();
+                params.set("unlog", box.isSelected());
             }
         });
 
-        final Box b8 = Box.createHorizontalBox();
+        Box b8 = Box.createHorizontalBox();
         b8.add(Box.createHorizontalGlue());
         b8.add(new JLabel("<html>Unlog: </html>"));
         b8.add(unlog);
@@ -151,7 +152,7 @@ public class LogParamsEditor extends JPanel implements ParameterEditor {
         b1.add(Box.createHorizontalGlue());
         b1.add(b9);
         b1.add(Box.createHorizontalGlue());
-        add(b1, BorderLayout.CENTER);
+        this.add(b1, BorderLayout.CENTER);
     }
 
 }

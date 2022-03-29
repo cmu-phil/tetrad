@@ -21,13 +21,13 @@ import java.util.List;
  */
 public class GeneralResamplingSearchRunnable implements Runnable {
 
-    private DataSet dataSet = null;
+    private DataSet dataSet;
 
-    private List<DataModel> dataSets = null;
+    private List<DataModel> dataSets;
 
-    private Algorithm algorithm = null;
+    private Algorithm algorithm;
 
-    private MultiDataSetAlgorithm multiDataSetAlgorithm = null;
+    private MultiDataSetAlgorithm multiDataSetAlgorithm;
 
     private final Parameters parameters;
 
@@ -38,7 +38,7 @@ public class GeneralResamplingSearchRunnable implements Runnable {
     /**
      * An initial graph to start from.
      */
-    private Graph externalGraph = null;
+    private Graph externalGraph;
 
     /**
      * Specification of forbidden and required edges.
@@ -47,8 +47,8 @@ public class GeneralResamplingSearchRunnable implements Runnable {
 
     private PrintStream out = System.out;
 
-    public GeneralResamplingSearchRunnable(final DataSet dataSet, final Algorithm algorithm, final Parameters parameters,
-                                           final GeneralResamplingSearch resamplingAlgorithmSearch, final boolean verbose) {
+    public GeneralResamplingSearchRunnable(DataSet dataSet, Algorithm algorithm, Parameters parameters,
+                                           GeneralResamplingSearch resamplingAlgorithmSearch, boolean verbose) {
         this.dataSet = dataSet;
         this.algorithm = algorithm;
         this.parameters = parameters;
@@ -56,8 +56,8 @@ public class GeneralResamplingSearchRunnable implements Runnable {
         this.verbose = verbose;
     }
 
-    public GeneralResamplingSearchRunnable(final List<DataModel> dataSets, final MultiDataSetAlgorithm multiDataSetAlgorithm, final Parameters parameters,
-                                           final GeneralResamplingSearch resamplingAlgorithmSearch, final boolean verbose) {
+    public GeneralResamplingSearchRunnable(List<DataModel> dataSets, MultiDataSetAlgorithm multiDataSetAlgorithm, Parameters parameters,
+                                           GeneralResamplingSearch resamplingAlgorithmSearch, boolean verbose) {
         this.dataSets = dataSets;
         this.multiDataSetAlgorithm = multiDataSetAlgorithm;
         this.parameters = parameters;
@@ -70,7 +70,7 @@ public class GeneralResamplingSearchRunnable implements Runnable {
      */
 
     public IKnowledge getKnowledge() {
-        return this.knowledge;
+        return knowledge;
     }
 
     /**
@@ -78,17 +78,17 @@ public class GeneralResamplingSearchRunnable implements Runnable {
      *
      * @param knowledge the knowledge object, specifying forbidden and required edges.
      */
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         if (knowledge == null)
             throw new NullPointerException();
         this.knowledge = knowledge;
     }
 
     public Graph getExternalGraph() {
-        return this.externalGraph;
+        return externalGraph;
     }
 
-    public void setExternalGraph(final Graph externalGraph) {
+    public void setExternalGraph(Graph externalGraph) {
         this.externalGraph = externalGraph;
     }
 
@@ -96,7 +96,7 @@ public class GeneralResamplingSearchRunnable implements Runnable {
      * Sets the output stream that output (except for log output) should be sent
      * to. By detault System.out.
      */
-    public void setOut(final PrintStream out) {
+    public void setOut(PrintStream out) {
         this.out = out;
     }
 
@@ -105,48 +105,48 @@ public class GeneralResamplingSearchRunnable implements Runnable {
      * sent to.
      */
     public PrintStream getOut() {
-        return this.out;
+        return out;
     }
 
     @Override
     public void run() {
         //System.out.println("#dataSet rows: " + dataSet.getNumRows());
 
-        final long start;
-        final long stop;
+        long start;
+        long stop;
         start = System.currentTimeMillis();
-        if (this.verbose) {
-            this.out.println("thread started ... ");
+        if (verbose) {
+            out.println("thread started ... ");
         }
 
         Graph graph = null;
 
-        if (this.dataSet != null) {
-            if (this.algorithm instanceof HasKnowledge) {
-                ((HasKnowledge) this.algorithm).setKnowledge(this.knowledge);
-                if (this.verbose) {
-                    this.out.println("knowledge being set ... ");
+        if (dataSet != null) {
+            if (algorithm instanceof HasKnowledge) {
+                ((HasKnowledge) algorithm).setKnowledge(knowledge);
+                if (verbose) {
+                    out.println("knowledge being set ... ");
                 }
             }
-            graph = this.algorithm.search(this.dataSet, this.parameters);
+            graph = algorithm.search(dataSet, parameters);
         } else {
-            if (this.multiDataSetAlgorithm instanceof HasKnowledge) {
-                ((HasKnowledge) this.multiDataSetAlgorithm).setKnowledge(this.knowledge);
-                if (this.verbose) {
-                    this.out.println("knowledge being set ... ");
+            if (multiDataSetAlgorithm instanceof HasKnowledge) {
+                ((HasKnowledge) multiDataSetAlgorithm).setKnowledge(knowledge);
+                if (verbose) {
+                    out.println("knowledge being set ... ");
                 }
             }
-            graph = this.multiDataSetAlgorithm.search(this.dataSets, this.parameters);
+            graph = multiDataSetAlgorithm.search(dataSets, parameters);
         }
 
         graph.getEdges();
 
         stop = System.currentTimeMillis();
-        if (this.verbose) {
-            this.out.println("processing time of resampling for a thread was: "
+        if (verbose) {
+            out.println("processing time of resampling for a thread was: "
                     + (stop - start) / 1000.0 + " sec");
         }
-        this.resamplingAlgorithmSearch.addPAG(graph);
+        resamplingAlgorithmSearch.addPAG(graph);
     }
 
 }

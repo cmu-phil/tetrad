@@ -40,17 +40,17 @@ public class TimeSeriesWrapper2 extends DataWrapper implements KnowledgeTransfer
      * @param data   - Previous data (from the parent node)
      * @param params - The parameters.
      */
-    public TimeSeriesWrapper2(final DataWrapper data, final Parameters params) {
-        final DataModelList dataSets = data.getDataModelList();
-        final DataModelList timeSeriesDataSets = new DataModelList();
+    public TimeSeriesWrapper2(DataWrapper data, Parameters params) {
+        DataModelList dataSets = data.getDataModelList();
+        DataModelList timeSeriesDataSets = new DataModelList();
 
-        for (final DataModel dataModel : dataSets) {
+        for (DataModel dataModel : dataSets) {
             if (!(dataModel instanceof DataSet)) {
                 throw new IllegalArgumentException("Can only add an index to tabular data.");
             }
 
-            final DataSet dataSet = (DataSet) dataModel;
-            final DataSet timeSeries = TimeSeriesUtils.addIndex(dataSet);
+            DataSet dataSet = (DataSet) dataModel;
+            DataSet timeSeries = TimeSeriesUtils.addIndex(dataSet);
             if (dataSet.getName() != null) {
                 timeSeries.setName(dataSet.getName());
             }
@@ -62,10 +62,10 @@ public class TimeSeriesWrapper2 extends DataWrapper implements KnowledgeTransfer
 //            throw new IllegalArgumentException("The data model must be a rectangular dataset");
 //        }
 //        model = TimeSeriesUtils.createLagData((DataSet) model, params.getNumOfTimeLags());
-        this.setDataModel(timeSeriesDataSets);
-        this.setSourceGraph(data.getSourceGraph());
+        setDataModel(timeSeriesDataSets);
+        setSourceGraph(data.getSourceGraph());
 
-        LogDataUtils.logDataModelList("Expansion of parent data into lagged data.", getDataModelList());
+        LogDataUtils.logDataModelList("Expansion of parent data into lagged data.", this.getDataModelList());
 
     }
 

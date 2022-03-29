@@ -116,7 +116,7 @@ public final class Cfci implements GraphSearch {
      */
     private final TetradLogger logger = TetradLogger.getInstance();
 
-    private boolean verbose = false;
+    private boolean verbose;
 
     private final CorrelationMatrix corr;
 
@@ -125,24 +125,24 @@ public final class Cfci implements GraphSearch {
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
      */
-    public Cfci(final IndependenceTest independenceTest) {
-        if (independenceTest == null || this.knowledge == null) {
+    public Cfci(IndependenceTest independenceTest) {
+        if (independenceTest == null || knowledge == null) {
             throw new NullPointerException();
         }
 
         this.independenceTest = independenceTest;
-        this.variables.addAll(independenceTest.getVariables());
+        variables.addAll(independenceTest.getVariables());
 
-        this.corr = new CorrelationMatrix(independenceTest.getCov());
+        corr = new CorrelationMatrix(independenceTest.getCov());
     }
 
     //========================PUBLIC METHODS==========================//
 
     public int getDepth() {
-        return this.depth;
+        return depth;
     }
 
-    public void setDepth(final int depth) {
+    public void setDepth(int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException(
                     "Depth must be -1 (unlimited) or >= 0: " + depth);
@@ -152,110 +152,110 @@ public final class Cfci implements GraphSearch {
     }
 
     public long getElapsedTime() {
-        return this.elapsedTime;
+        return elapsedTime;
     }
 
     public Graph search() {
-        final long beginTime = System.currentTimeMillis();
-        if (this.verbose) {
-            this.logger.log("info", "Starting FCI algorithm.");
-            this.logger.log("info", "Independence test = " + this.independenceTest + ".");
+        long beginTime = System.currentTimeMillis();
+        if (verbose) {
+            logger.log("info", "Starting FCI algorithm.");
+            logger.log("info", "Independence test = " + independenceTest + ".");
         }
 
-        setMaxReachablePathLength(this.maxReachablePathLength);
+        this.setMaxReachablePathLength(maxReachablePathLength);
 
         //List<Node> variables = independenceTest.getVariable();       - Robert Tillman 2008
-        final List<Node> nodes = new LinkedList<>();
+        List<Node> nodes = new LinkedList<>();
 
-        for (final Node variable : this.variables) {
+        for (Node variable : variables) {
             nodes.add(variable);
         }
 
-        this.graph = new EdgeListGraph(nodes);
-        this.graph.fullyConnect(Endpoint.TAIL);
+        graph = new EdgeListGraph(nodes);
+        graph.fullyConnect(Endpoint.TAIL);
 
 //        // Step FCI B.  (Zhang's step F2.)
-        final Fas adj = new Fas(this.independenceTest);
-        adj.setKnowledge(getKnowledge());
-        adj.setDepth(this.depth);
-        adj.setVerbose(this.verbose);
-        this.graph = adj.search();
-        this.graph.reorientAllWith(Endpoint.CIRCLE);
+        Fas adj = new Fas(independenceTest);
+        adj.setKnowledge(this.getKnowledge());
+        adj.setDepth(depth);
+        adj.setVerbose(verbose);
+        graph = adj.search();
+        graph.reorientAllWith(Endpoint.CIRCLE);
 
         // Note we don't use the sepsets from this search.
 
         // Optional step: Possible Dsep. (Needed for correctness but very time consuming.)
-        if (isPossibleDsepSearchDone()) {
-            final long time1 = System.currentTimeMillis();
-            ruleR0(this.independenceTest, this.depth, this.sepsets);
+        if (this.isPossibleDsepSearchDone()) {
+            long time1 = System.currentTimeMillis();
+            this.ruleR0(independenceTest, depth, sepsets);
 
-            final long time2 = System.currentTimeMillis();
+            long time2 = System.currentTimeMillis();
 
-            if (this.verbose) {
-                this.logger.log("info", "Step C: " + (time2 - time1) / 1000. + "s");
+            if (verbose) {
+                logger.log("info", "Step C: " + (time2 - time1) / 1000. + "s");
             }
 
             // Step FCI D.
-            final long time3 = System.currentTimeMillis();
+            long time3 = System.currentTimeMillis();
 
-            final PossibleDsepFci possibleDSep = new PossibleDsepFci(this.graph, this.independenceTest, this.corr);
-            possibleDSep.setDepth(getDepth());
-            possibleDSep.setKnowledge(getKnowledge());
-            possibleDSep.setMaxPathLength(getMaxReachablePathLength());
+            PossibleDsepFci possibleDSep = new PossibleDsepFci(graph, independenceTest, corr);
+            possibleDSep.setDepth(this.getDepth());
+            possibleDSep.setKnowledge(this.getKnowledge());
+            possibleDSep.setMaxPathLength(this.getMaxReachablePathLength());
 
             // We use these sepsets though.
-            this.sepsets.addAll(possibleDSep.search());
-            final long time4 = System.currentTimeMillis();
+            sepsets.addAll(possibleDSep.search());
+            long time4 = System.currentTimeMillis();
 
-            if (this.verbose) {
-                this.logger.log("info", "Step D: " + (time4 - time3) / 1000. + "s");
+            if (verbose) {
+                logger.log("info", "Step D: " + (time4 - time3) / 1000. + "s");
             }
 
             // Reorient all edges as o-o.
-            this.graph.reorientAllWith(Endpoint.CIRCLE);
+            graph.reorientAllWith(Endpoint.CIRCLE);
         }
 
         // Step CI C (Zhang's step F3.)
-        final long time5 = System.currentTimeMillis();
-        fciOrientbk(getKnowledge(), this.graph, this.variables);
-        ruleR0(this.independenceTest, this.depth, this.sepsets);
+        long time5 = System.currentTimeMillis();
+        this.fciOrientbk(this.getKnowledge(), graph, variables);
+        this.ruleR0(independenceTest, depth, sepsets);
 
-        final long time6 = System.currentTimeMillis();
+        long time6 = System.currentTimeMillis();
 
-        if (this.verbose) {
-            this.logger.log("info", "Step CI C: " + (time6 - time5) / 1000. + "s");
+        if (verbose) {
+            logger.log("info", "Step CI C: " + (time6 - time5) / 1000. + "s");
         }
 
         // Step CI D. (Zhang's step F4.)
 
-        final FciOrient fciOrient = new FciOrient(new SepsetsConservative(this.graph, this.independenceTest,
-                new SepsetMap(), this.depth));
+        FciOrient fciOrient = new FciOrient(new SepsetsConservative(graph, independenceTest,
+                new SepsetMap(), depth));
 
-        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setMaxPathLength(-1);
-        fciOrient.setKnowledge(this.knowledge);
-        fciOrient.ruleR0(this.graph);
-        fciOrient.doFinalOrientation(this.graph);
+        fciOrient.setKnowledge(knowledge);
+        fciOrient.ruleR0(graph);
+        fciOrient.doFinalOrientation(graph);
 
-        final long endTime = System.currentTimeMillis();
-        this.elapsedTime = endTime - beginTime;
+        long endTime = System.currentTimeMillis();
+        elapsedTime = endTime - beginTime;
 
-        if (this.verbose) {
-            this.logger.log("graph", "Returning graph: " + this.graph);
+        if (verbose) {
+            logger.log("graph", "Returning graph: " + graph);
         }
 
-        return this.graph;
+        return graph;
     }
 
     public SepsetMap getSepsets() {
-        return this.sepsets;
+        return sepsets;
     }
 
     public IKnowledge getKnowledge() {
-        return this.knowledge;
+        return knowledge;
     }
 
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -268,94 +268,94 @@ public final class Cfci implements GraphSearch {
      * should be used. False by default.
      */
     public boolean isCompleteRuleSetUsed() {
-        return this.completeRuleSetUsed;
+        return completeRuleSetUsed;
     }
 
     /**
      * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-T1 (the rule
      *                            set of the original FCI) should be used. False by default.
      */
-    public void setCompleteRuleSetUsed(final boolean completeRuleSetUsed) {
+    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
     public Set<Triple> getColliderTriples() {
-        return new HashSet<>(this.colliderTriples);
+        return new HashSet<>(colliderTriples);
     }
 
     public Set<Triple> getNoncolliderTriples() {
-        return new HashSet<>(this.noncolliderTriples);
+        return new HashSet<>(noncolliderTriples);
     }
 
     public Set<Triple> getAmbiguousTriples() {
-        return new HashSet<>(this.ambiguousTriples);
+        return new HashSet<>(ambiguousTriples);
     }
 
     //===========================PRIVATE METHODS=========================//
 
     private Graph getGraph() {
-        return this.graph;
+        return graph;
     }
 
-    private void ruleR0(final IndependenceTest test, final int depth, final SepsetMap sepsets) {
-        if (this.verbose) {
+    private void ruleR0(IndependenceTest test, int depth, SepsetMap sepsets) {
+        if (verbose) {
             TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
         }
 
-        this.colliderTriples = new HashSet<>();
-        this.noncolliderTriples = new HashSet<>();
-        this.ambiguousTriples = new HashSet<>();
+        colliderTriples = new HashSet<>();
+        noncolliderTriples = new HashSet<>();
+        ambiguousTriples = new HashSet<>();
 
-        for (final Node y : getGraph().getNodes()) {
-            final List<Node> adjacentNodes = getGraph().getAdjacentNodes(y);
+        for (Node y : this.getGraph().getNodes()) {
+            List<Node> adjacentNodes = this.getGraph().getAdjacentNodes(y);
 
             if (adjacentNodes.size() < 2) {
                 continue;
             }
 
-            final ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
             int[] combination;
 
             while ((combination = cg.next()) != null) {
-                final Node x = adjacentNodes.get(combination[0]);
-                final Node z = adjacentNodes.get(combination[1]);
+                Node x = adjacentNodes.get(combination[0]);
+                Node z = adjacentNodes.get(combination[1]);
 
-                if (this.getGraph().isAdjacentTo(x, z)) {
+                if (getGraph().isAdjacentTo(x, z)) {
                     continue;
                 }
 
-                final TripleType type = getTripleType(x, y, z, test, depth);
-                final List<Node> sepset = sepsets.get(x, z);
+                TripleType type = this.getTripleType(x, y, z, test, depth);
+                List<Node> sepset = sepsets.get(x, z);
 
                 if (type == TripleType.COLLIDER || (sepset != null && !sepset.contains(y))) {
-                    if (isArrowpointAllowed(x, y) &&
-                            isArrowpointAllowed(z, y)) {
-                        getGraph().setEndpoint(x, y, Endpoint.ARROW);
-                        getGraph().setEndpoint(z, y, Endpoint.ARROW);
+                    if (this.isArrowpointAllowed(x, y) &&
+                            this.isArrowpointAllowed(z, y)) {
+                        this.getGraph().setEndpoint(x, y, Endpoint.ARROW);
+                        this.getGraph().setEndpoint(z, y, Endpoint.ARROW);
 
-                        if (this.verbose) {
-                            TetradLogger.getInstance().log("tripleClassifications", "Collider: " + Triple.pathString(this.graph, x, y, z));
+                        if (verbose) {
+                            TetradLogger.getInstance().log("tripleClassifications", "Collider: " + Triple.pathString(graph, x, y, z));
                         }
                     }
 
-                    this.colliderTriples.add(new Triple(x, y, z));
+                    colliderTriples.add(new Triple(x, y, z));
                 } else if (type == TripleType.NONCOLLIDER || (sepset != null && sepset.contains(y))) {
-                    this.noncolliderTriples.add(new Triple(x, y, z));
-                    if (this.verbose) {
-                        TetradLogger.getInstance().log("tripleClassifications", "Noncollider: " + Triple.pathString(this.graph, x, y, z));
+                    noncolliderTriples.add(new Triple(x, y, z));
+                    if (verbose) {
+                        TetradLogger.getInstance().log("tripleClassifications", "Noncollider: " + Triple.pathString(graph, x, y, z));
                     }
                 } else {
-                    final Triple triple = new Triple(x, y, z);
-                    this.ambiguousTriples.add(triple);
-                    getGraph().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
-                    if (this.verbose) {
-                        TetradLogger.getInstance().log("tripleClassifications", "AmbiguousTriples: " + Triple.pathString(this.graph, x, y, z));
+                    Triple triple = new Triple(x, y, z);
+                    ambiguousTriples.add(triple);
+                    this.getGraph().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                    if (verbose) {
+                        TetradLogger.getInstance().log("tripleClassifications", "AmbiguousTriples: " + Triple.pathString(graph, x, y, z));
                     }
                 }
             }
         }
 
-        if (this.verbose) {
+        if (verbose) {
             TetradLogger.getInstance().log("info", "Finishing Collider Orientation.");
         }
     }
@@ -367,32 +367,32 @@ public final class Cfci implements GraphSearch {
      * @param y The possible point node.
      * @return Whether the arrowpoint is allowed.
      */
-    private boolean isArrowpointAllowed(final Node x, final Node y) {
-        if (this.graph.getEndpoint(x, y) == Endpoint.ARROW) {
+    private boolean isArrowpointAllowed(Node x, Node y) {
+        if (graph.getEndpoint(x, y) == Endpoint.ARROW) {
             return true;
         }
 
-        if (this.graph.getEndpoint(x, y) == Endpoint.TAIL) {
+        if (graph.getEndpoint(x, y) == Endpoint.TAIL) {
             return false;
         }
 
-        if (this.graph.getEndpoint(y, x) == Endpoint.ARROW) {
-            if (!this.knowledge.isForbidden(x.getName(), y.getName())) return true;
+        if (graph.getEndpoint(y, x) == Endpoint.ARROW) {
+            if (!knowledge.isForbidden(x.getName(), y.getName())) return true;
         }
 
-        if (this.graph.getEndpoint(y, x) == Endpoint.TAIL) {
-            if (!this.knowledge.isForbidden(x.getName(), y.getName())) return true;
+        if (graph.getEndpoint(y, x) == Endpoint.TAIL) {
+            if (!knowledge.isForbidden(x.getName(), y.getName())) return true;
         }
 
-        return this.graph.getEndpoint(y, x) == Endpoint.CIRCLE;
+        return graph.getEndpoint(y, x) == Endpoint.CIRCLE;
     }
 
-    private TripleType getTripleType(final Node x, final Node y, final Node z,
-                                     final IndependenceTest test, final int depth) {
+    private TripleType getTripleType(Node x, Node y, Node z,
+                                     IndependenceTest test, int depth) {
         boolean existsSepsetContainingY = false;
         boolean existsSepsetNotContainingY = false;
 
-        Set<Node> __nodes = new HashSet<>(this.getGraph().getAdjacentNodes(x));
+        Set<Node> __nodes = new HashSet<>(getGraph().getAdjacentNodes(x));
         __nodes.remove(z);
 
         List<Node> _nodes = new LinkedList<>(__nodes);
@@ -404,11 +404,11 @@ public final class Cfci implements GraphSearch {
         _depth = Math.min(_depth, _nodes.size());
 
         for (int d = 0; d <= _depth; d++) {
-            final ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);
+            ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);
             int[] choice;
 
             while ((choice = cg.next()) != null) {
-                final List<Node> condSet = Cfci.asList(choice, _nodes);
+                List<Node> condSet = asList(choice, _nodes);
 
                 if (test.isIndependent(x, z, condSet)) {
                     if (condSet.contains(y)) {
@@ -420,7 +420,7 @@ public final class Cfci implements GraphSearch {
             }
         }
 
-        __nodes = new HashSet<>(this.getGraph().getAdjacentNodes(z));
+        __nodes = new HashSet<>(getGraph().getAdjacentNodes(z));
         __nodes.remove(x);
 
         _nodes = new LinkedList<>(__nodes);
@@ -432,11 +432,11 @@ public final class Cfci implements GraphSearch {
         _depth = Math.min(_depth, _nodes.size());
 
         for (int d = 0; d <= _depth; d++) {
-            final ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);
+            ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);
             int[] choice;
 
             while ((choice = cg.next()) != null) {
-                final List<Node> condSet = Cfci.asList(choice, _nodes);
+                List<Node> condSet = asList(choice, _nodes);
 
                 if (test.isIndependent(x, z, condSet)) {
                     if (condSet.contains(y)) {
@@ -451,7 +451,7 @@ public final class Cfci implements GraphSearch {
         // Note: Unless sepsets are being collected during fas, most likely
         // this will be null. (Only sepsets found during possible dsep search
         // will be here.)
-        final List<Node> condSet = getSepsets().get(x, z);
+        List<Node> condSet = this.getSepsets().get(x, z);
 
         if (condSet != null) {
             if (condSet.contains(y)) {
@@ -470,10 +470,10 @@ public final class Cfci implements GraphSearch {
         }
     }
 
-    private static List<Node> asList(final int[] indices, final List<Node> nodes) {
-        final List<Node> list = new LinkedList<>();
+    private static List<Node> asList(int[] indices, List<Node> nodes) {
+        List<Node> list = new LinkedList<>();
 
-        for (final int i : indices) {
+        for (int i : indices) {
             list.add(nodes.get(i));
         }
 
@@ -485,27 +485,27 @@ public final class Cfci implements GraphSearch {
      * Whether verbose output (about independencies) is output.
      */
     public boolean isVerbose() {
-        return this.verbose;
+        return verbose;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
-    public void setMaxReachablePathLength(final int maxReachablePathLength) {
+    public void setMaxReachablePathLength(int maxReachablePathLength) {
         this.maxReachablePathLength = maxReachablePathLength;
     }
 
     public boolean isPossibleDsepSearchDone() {
-        return this.possibleDsepSearchDone;
+        return possibleDsepSearchDone;
     }
 
-    public void setPossibleDsepSearchDone(final boolean possibleDsepSearchDone) {
+    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
         this.possibleDsepSearchDone = possibleDsepSearchDone;
     }
 
     public int getMaxReachablePathLength() {
-        return this.maxReachablePathLength;
+        return maxReachablePathLength;
     }
 
     private enum TripleType {
@@ -515,18 +515,18 @@ public final class Cfci implements GraphSearch {
     /**
      * Orients according to background knowledge
      */
-    private void fciOrientbk(final IKnowledge bk, final Graph graph, final List<Node> variables) {
-        if (this.verbose) {
-            this.logger.log("info", "Starting BK Orientation.");
+    private void fciOrientbk(IKnowledge bk, Graph graph, List<Node> variables) {
+        if (verbose) {
+            logger.log("info", "Starting BK Orientation.");
         }
 
-        for (final Iterator<KnowledgeEdge> it =
+        for (Iterator<KnowledgeEdge> it =
              bk.forbiddenEdgesIterator(); it.hasNext(); ) {
-            final KnowledgeEdge edge = it.next();
+            KnowledgeEdge edge = it.next();
 
             //match strings to variables in the graph.
-            final Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            final Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
+            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
 
             if (from == null || to == null) {
                 continue;
@@ -539,18 +539,18 @@ public final class Cfci implements GraphSearch {
             // Orient to*->from
             graph.setEndpoint(to, from, Endpoint.ARROW);
 
-            if (this.verbose) {
-                this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+            if (verbose) {
+                logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
             }
         }
 
-        for (final Iterator<KnowledgeEdge> it =
+        for (Iterator<KnowledgeEdge> it =
              bk.requiredEdgesIterator(); it.hasNext(); ) {
-            final KnowledgeEdge edge = it.next();
+            KnowledgeEdge edge = it.next();
 
             //match strings to variables in this graph
-            final Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            final Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
+            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
 
             if (from == null || to == null) {
                 continue;
@@ -563,20 +563,20 @@ public final class Cfci implements GraphSearch {
             // Orient from*->to (?)
             // Orient from-->to
 
-            if (this.verbose) {
+            if (verbose) {
                 System.out.println("Rule T3: Orienting " + from + "-->" + to);
             }
 
             graph.setEndpoint(to, from, Endpoint.TAIL);
             graph.setEndpoint(from, to, Endpoint.ARROW);
 
-            if (this.verbose) {
-                this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+            if (verbose) {
+                logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
             }
         }
 
-        if (this.verbose) {
-            this.logger.log("info", "Finishing BK Orientation.");
+        if (verbose) {
+            logger.log("info", "Finishing BK Orientation.");
         }
     }
 }

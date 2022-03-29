@@ -51,69 +51,69 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
     private List<String> variableNames = new ArrayList<>();
     private int numTiers = 3;
 
-    public KnowledgeBoxModel(final Parameters params) {
-        this.knowledge = new Knowledge2();
-        this.numTiers = 3;
-        this.variables = new ArrayList<>();
+    public KnowledgeBoxModel(Parameters params) {
+        knowledge = new Knowledge2();
+        numTiers = 3;
+        variables = new ArrayList<>();
         this.params = params;
-        this.params.set("__myKnowledge", this.knowledge);
+        this.params.set("__myKnowledge", knowledge);
     }
 
     /**
      * Constructor from dataWrapper edge
      */
-    public KnowledgeBoxModel(final KnowledgeBoxInput[] inputs, final Parameters params) {
+    public KnowledgeBoxModel(KnowledgeBoxInput[] inputs, Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
 
         if (inputs.length == 1 && inputs[0] instanceof KnowledgeTransferable) {
-            this.knowledge = ((KnowledgeTransferable) inputs[0]).getKnowledge();
-            this.numTiers = this.knowledge.getNumTiers();
+            knowledge = ((KnowledgeTransferable) inputs[0]).getKnowledge();
+            numTiers = knowledge.getNumTiers();
             return;
         }
 
-        for (final KnowledgeBoxInput input : inputs) {
+        for (KnowledgeBoxInput input : inputs) {
             if (input == null) {
                 throw new NullPointerException();
             }
         }
 
-        final SortedSet<Node> variableNodes = new TreeSet<>();
-        final SortedSet<String> variableNames = new TreeSet<>();
+        SortedSet<Node> variableNodes = new TreeSet<>();
+        SortedSet<String> variableNames = new TreeSet<>();
 
-        for (final KnowledgeBoxInput input : inputs) {
-            for (final Node node : input.getVariables()) {
+        for (KnowledgeBoxInput input : inputs) {
+            for (Node node : input.getVariables()) {
                 if (node.getNodeType() == NodeType.MEASURED) {
                     variableNodes.add(node);
                     variableNames.add(node.getName());
-                    this.knowledge.addVariable(node.getName());
+                    knowledge.addVariable(node.getName());
                 }
             }
         }
 
-        this.variables = new ArrayList<>(variableNodes);
+        variables = new ArrayList<>(variableNodes);
         this.variableNames = new ArrayList<>(variableNames);
 
         this.params = params;
 
-        final Object myKnowledge = params.get("__myKnowledge");
+        Object myKnowledge = params.get("__myKnowledge");
         if (myKnowledge instanceof IKnowledge
                 && new HashSet<>(((IKnowledge) myKnowledge).getVariables())
                 .equals(new HashSet<>(variableNames))) {
-            this.knowledge = (IKnowledge) myKnowledge;
+            knowledge = (IKnowledge) myKnowledge;
         } else {
-            this.knowledge = new Knowledge2();
+            knowledge = new Knowledge2();
 
-            for (final String var : variableNames) {
-                this.knowledge.addVariable(var);
+            for (String var : variableNames) {
+                knowledge.addVariable(var);
             }
 
-            params.set("__myKnowledge", this.knowledge);
+            params.set("__myKnowledge", knowledge);
         }
 
         TetradLogger.getInstance().log("info", "Knowledge");
-        if (!this.knowledge.isEmpty()) {
+        if (!knowledge.isEmpty()) {
             // printing out is bad for large knowledge input
 //            TetradLogger.getInstance().log("knowledge", params.get("knowledge", new Knowledge2()).toString());
         }
@@ -128,11 +128,11 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
         return new KnowledgeBoxModel(new KnowledgeBoxInput[]{GraphWrapper.serializableInstance()}, new Parameters());
     }
 
-    private void freshenKnowledgeIfEmpty(final List<String> varNames) {
-        if (this.knowledge.isEmpty()) {
-            createKnowledge(this.knowledge);
+    private void freshenKnowledgeIfEmpty(List<String> varNames) {
+        if (knowledge.isEmpty()) {
+            this.createKnowledge(knowledge);
 
-            for (final String varName : varNames) {
+            for (String varName : varNames) {
                 if (!varName.startsWith("E_")) {
                     varNames.add(varName);
                 }
@@ -140,10 +140,10 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
         }
     }
 
-    private IKnowledge createKnowledge(final IKnowledge knowledge) {
+    private IKnowledge createKnowledge(IKnowledge knowledge) {
         knowledge.clear();
-        this.variableNames.clear();
-        for (final String varName : knowledge.getVariables()) {
+        variableNames.clear();
+        for (String varName : knowledge.getVariables()) {
             knowledge.addVariable(varName);
         }
         return knowledge;
@@ -151,51 +151,51 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
 
     @Override
     public String getName() {
-        return this.name;
+        return name;
     }
 
     @Override
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
     @Override
     public Graph getSourceGraph() {
-        return this.sourceGraph;
+        return sourceGraph;
     }
 
     //    @Override
     public Graph getResultGraph() {
-        return this.sourceGraph;
+        return sourceGraph;
     }
 
     @Override
     public List<String> getVarNames() {
-        return this.variableNames;
+        return variableNames;
     }
 
     @Override
     public IKnowledge getKnowledge() {
-        return this.knowledge;
+        return knowledge;
     }
 
     @Override
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
         this.knowledge = knowledge;
-        this.numTiers = knowledge.getNumTiers();
-        this.params.set("__myKnowledge", knowledge);
+        numTiers = knowledge.getNumTiers();
+        params.set("__myKnowledge", knowledge);
 
         // printing out is bad for large knowledge input
 //        TetradLogger.getInstance().log("knowledge", knowledge.toString());
     }
 
     @Override
-    public void resetParams(final Object params) {
+    public void resetParams(Object params) {
         this.params = (Parameters) params;
-        freshenKnowledgeIfEmpty(this.variableNames);
+        this.freshenKnowledgeIfEmpty(variableNames);
 
         // printing out is bad for large knowledge input
 //        TetradLogger.getInstance().log("knowledge", knowledge.toString());
@@ -203,24 +203,24 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
 
     @Override
     public Object getResettableParams() {
-        return this.params;
+        return params;
     }
 
     //    @Override
     public List<Node> getVariables() {
-        return this.variables;
+        return variables;
     }
 
     //    @Override
     public List<String> getVariableNames() {
-        return this.variableNames;
+        return variableNames;
     }
 
     public int getNumTiers() {
-        return this.numTiers;
+        return numTiers;
     }
 
-    public void setNumTiers(final int numTiers) {
+    public void setNumTiers(int numTiers) {
         this.numTiers = numTiers;
     }
 }

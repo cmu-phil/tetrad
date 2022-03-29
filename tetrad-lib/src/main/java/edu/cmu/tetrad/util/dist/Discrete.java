@@ -43,8 +43,8 @@ public class Discrete implements Distribution {
      * supplied values must be in (0, 1), and each must be less than its
      * successor (if it has one).
      */
-    private Discrete(final double... p) {
-        this.p = convert(p);
+    private Discrete(double... p) {
+        this.p = this.convert(p);
     }
 
     /**
@@ -58,49 +58,49 @@ public class Discrete implements Distribution {
     }
 
     public int getNumParameters() {
-        return this.p.length;
+        return p.length;
     }
 
     public String getName() {
         return "Discrete";
     }
 
-    public void setParameter(final int index, final double value) {
-        this.p[index] = value;
+    public void setParameter(int index, double value) {
+        p[index] = value;
     }
 
-    public double getParameter(final int index) {
-        return this.p[index];
+    public double getParameter(int index) {
+        return p[index];
     }
 
-    public String getParameterName(final int index) {
+    public String getParameterName(int index) {
         return "Cut #" + (index + 1);
     }
 
     public double nextRandom() {
-        final double r = RandomUtil.getInstance().nextDouble();
+        double r = RandomUtil.getInstance().nextDouble();
 
-        for (int i = 0; i < this.p.length; i++) {
-            if (r < this.p[i]) return i;
+        for (int i = 0; i < p.length; i++) {
+            if (r < p[i]) return i;
         }
 
         throw new IllegalArgumentException();
     }
 
     public String toString() {
-        return "Discrete(" + Arrays.toString(this.p) + ")";
+        return "Discrete(" + Arrays.toString(p) + ")";
     }
 
     //=============================PRIVATE METHODS=========================//
 
-    private double[] convert(final double... p) {
-        for (final double _p : p) {
+    private double[] convert(double... p) {
+        for (double _p : p) {
             if (_p < 0) throw new IllegalArgumentException("All arguments must be >= 0: " + _p);
         }
 
         double sum = 0.0;
 
-        for (final double _p : p) {
+        for (double _p : p) {
             sum += _p;
         }
 

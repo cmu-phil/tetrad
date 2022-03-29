@@ -75,15 +75,15 @@ public class MbClassify implements DiscreteClassifier {
      * @param maxMissing The maximum number of missing values allowed. Cases with more than this number of missing
      *                   values among the variables in the DAG found by MBFS will be skipped.
      */
-    public MbClassify(final DataSet train, final DataSet test,
-                      final String target, final double alpha, final int depth, final double prior, final int maxMissing) {
-        setup(train, test, target, alpha, depth, prior, maxMissing);
+    public MbClassify(DataSet train, DataSet test,
+                      String target, double alpha, int depth, double prior, int maxMissing) {
+        this.setup(train, test, target, alpha, depth, prior, maxMissing);
     }
 
-    public MbClassify(final String trainPath, final String testPath, final String targetString,
-                      final String alphaString, final String depthString, final String priorString, final String maxMissingString) {
+    public MbClassify(String trainPath, String testPath, String targetString,
+                      String alphaString, String depthString, String priorString, String maxMissingString) {
         try {
-            final StringBuilder buf = new StringBuilder();
+            StringBuilder buf = new StringBuilder();
             buf.append("MbClassify ");
             buf.append(trainPath).append(" ");
             buf.append(testPath).append(" ");
@@ -95,24 +95,24 @@ public class MbClassify implements DiscreteClassifier {
 
             TetradLogger.getInstance().log("info", buf.toString());
 
-            final DataSet train = DataUtils.loadContinuousData(new File(trainPath), "//", '\"' ,
+            DataSet train = DataUtils.loadContinuousData(new File(trainPath), "//", '\"' ,
                     "*", true, Delimiter.TAB);
-            final DataSet test = DataUtils.loadContinuousData(new File(testPath), "//", '\"' ,
+            DataSet test = DataUtils.loadContinuousData(new File(testPath), "//", '\"' ,
                     "*", true, Delimiter.TAB);
 
-            final double alpha = Double.parseDouble(alphaString);
-            final int depth = Integer.parseInt(depthString);
-            final double prior = Double.parseDouble(priorString);
-            final int maxMissing = Integer.parseInt(maxMissingString);
+            double alpha = Double.parseDouble(alphaString);
+            int depth = Integer.parseInt(depthString);
+            double prior = Double.parseDouble(priorString);
+            int maxMissing = Integer.parseInt(maxMissingString);
 
-            setup(train, test, targetString, alpha, depth, prior, maxMissing);
-        } catch (final IOException e) {
+            this.setup(train, test, targetString, alpha, depth, prior, maxMissing);
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void setup(final DataSet train, final DataSet test, final String target, final double alpha,
-                       final int depth, final double prior, final int maxMissing) {
+    private void setup(DataSet train, DataSet test, String target, double alpha,
+                       int depth, double prior, int maxMissing) {
         this.train = train;
         this.test = test;
         this.alpha = alpha;
@@ -121,9 +121,9 @@ public class MbClassify implements DiscreteClassifier {
         this.prior = prior;
         this.maxMissing = maxMissing;
 
-        this.targetVariable = (DiscreteVariable) train.getVariable(target);
+        targetVariable = (DiscreteVariable) train.getVariable(target);
 
-        if (this.targetVariable == null) {
+        if (targetVariable == null) {
             throw new IllegalArgumentException("Target variable not in data: " +
                     target);
         }
@@ -149,82 +149,82 @@ public class MbClassify implements DiscreteClassifier {
      * @return The classifications.
      */
     public int[] classify() {
-        final IndependenceTest indTest = new IndTestChiSquare(this.train, this.alpha);
+        IndependenceTest indTest = new IndTestChiSquare(train, alpha);
 
-        final Mbfs search = new Mbfs(indTest, this.depth);
-        search.setDepth(this.depth);
+        Mbfs search = new Mbfs(indTest, depth);
+        search.setDepth(depth);
 //        Hiton search = new Hiton(indTest, depth);
 //        Mmmb search = new Mmmb(indTest, depth);
-        final List<Node> mbPlusTarget = search.findMb(this.target);
-        mbPlusTarget.add(this.train.getVariable(this.target));
+        List<Node> mbPlusTarget = search.findMb(target);
+        mbPlusTarget.add(train.getVariable(target));
 
-        final DataSet subset = this.train.subsetColumns(mbPlusTarget);
+        DataSet subset = train.subsetColumns(mbPlusTarget);
 
         System.out.println("subset vars = " + subset.getVariables());
 
-        final Pc cpdagSearch = new Pc(new IndTestChiSquare(subset, 0.05));
+        Pc cpdagSearch = new Pc(new IndTestChiSquare(subset, 0.05));
 //        cpdagSearch.setMaxIndegree(depth);
-        final Graph mbCPDAG = cpdagSearch.search();
+        Graph mbCPDAG = cpdagSearch.search();
 
 //        MbFanSearch search = new MbFanSearch(indTest, depth);
 //        Graph mbCPDAG = search.search(target);
 
         TetradLogger.getInstance().log("details", "CPDAG = " + mbCPDAG);
-        MbUtils.trimToMbNodes(mbCPDAG, this.train.getVariable(this.target), true);
+        MbUtils.trimToMbNodes(mbCPDAG, train.getVariable(target), true);
         TetradLogger.getInstance().log("details", "Trimmed CPDAG = " + mbCPDAG);
 
         // Removing bidirected edges from the CPDAG before selecting a DAG.                                   4
-        for (final Edge edge : mbCPDAG.getEdges()) {
+        for (Edge edge : mbCPDAG.getEdges()) {
             if (Edges.isBidirectedEdge(edge)) {
                 mbCPDAG.removeEdge(edge);
             }
         }
 
-        final Graph selectedDag = MbUtils.getOneMbDag(mbCPDAG);
+        Graph selectedDag = MbUtils.getOneMbDag(mbCPDAG);
 
         TetradLogger.getInstance().log("details", "Selected DAG = " + selectedDag);
         TetradLogger.getInstance().log("details", "Vars = " + selectedDag.getNodes());
         TetradLogger.getInstance().log("details", "\nClassification using selected MB DAG:");
 
-        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-        final List<Node> mbNodes = selectedDag.getNodes();
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        List<Node> mbNodes = selectedDag.getNodes();
 
         //The Markov blanket nodes will correspond to a subset of the variables
         //in the training dataset.  Find the subset dataset.
-        final DataSet trainDataSubset = this.train.subsetColumns(mbNodes);
+        DataSet trainDataSubset = train.subsetColumns(mbNodes);
 
         //To create a Bayes net for the Markov blanket we need the DAG.
-        final BayesPm bayesPm = new BayesPm(selectedDag);
+        BayesPm bayesPm = new BayesPm(selectedDag);
 
         //To parameterize the Bayes net we need the number of values
         //of each variable.
-        final List varsTrain = trainDataSubset.getVariables();
+        List varsTrain = trainDataSubset.getVariables();
 
         for (int i1 = 0; i1 < varsTrain.size(); i1++) {
-            final DiscreteVariable trainingVar = (DiscreteVariable) varsTrain.get(i1);
+            DiscreteVariable trainingVar = (DiscreteVariable) varsTrain.get(i1);
             bayesPm.setCategories(mbNodes.get(i1), trainingVar.getCategories());
         }
 
         //Create an updater for the instantiated Bayes net.
         TetradLogger.getInstance().log("info", "Estimating Bayes net; please wait...");
-        final DirichletBayesIm prior = DirichletBayesIm.symmetricDirichletIm(bayesPm,
+        DirichletBayesIm prior = DirichletBayesIm.symmetricDirichletIm(bayesPm,
                 this.prior);
-        final BayesIm bayesIm = DirichletEstimator.estimate(prior, trainDataSubset);
+        BayesIm bayesIm = DirichletEstimator.estimate(prior, trainDataSubset);
 
-        final RowSummingExactUpdater updater = new RowSummingExactUpdater(bayesIm);
+        RowSummingExactUpdater updater = new RowSummingExactUpdater(bayesIm);
 
         //The subset dataset of the dataset to be classified containing
         //the variables in the Markov blanket.
-        final DataSet testSubset = this.test.subsetColumns(mbNodes);
+        DataSet testSubset = test.subsetColumns(mbNodes);
 
         //Get the raw data from the dataset to be classified, the number
         //of variables, and the number of cases.
-        final int numCases = testSubset.getNumRows();
-        final int[] estimatedCategories = new int[numCases];
+        int numCases = testSubset.getNumRows();
+        int[] estimatedCategories = new int[numCases];
         Arrays.fill(estimatedCategories, -1);
 
         //The variables in the dataset.
-        final List<Node> varsClassify = testSubset.getVariables();
+        List<Node> varsClassify = testSubset.getVariables();
 
         //For each case in the dataset to be classified compute the estimated
         //value of the target variable and increment the appropriate element
@@ -233,28 +233,28 @@ public class MbClassify implements DiscreteClassifier {
 
             //Create an Evidence instance for the instantiated Bayes net
             //which will allow that updating.
-            final Proposition proposition = Proposition.tautology(bayesIm);
+            Proposition proposition = Proposition.tautology(bayesIm);
 
             //Restrict all other variables to their observed values in
             //this case.
             int numMissing = 0;
 
             for (int testIndex = 0; testIndex < varsClassify.size(); testIndex++) {
-                final DiscreteVariable var = (DiscreteVariable) varsClassify.get(testIndex);
+                DiscreteVariable var = (DiscreteVariable) varsClassify.get(testIndex);
 
                 // If it's the target, ignore it.
-                if (var.equals(this.targetVariable)) {
+                if (var.equals(targetVariable)) {
                     continue;
                 }
 
-                final int trainIndex = proposition.getNodeIndex(var.getName());
+                int trainIndex = proposition.getNodeIndex(var.getName());
 
                 // If it's not in the train subset, ignore it.
                 if (trainIndex == -99) {
                     continue;
                 }
 
-                final int testValue = testSubset.getInt(k, testIndex);
+                int testValue = testSubset.getInt(k, testIndex);
 
                 if (testValue == -99) {
                     numMissing++;
@@ -263,29 +263,29 @@ public class MbClassify implements DiscreteClassifier {
                 }
             }
 
-            if (numMissing > this.maxMissing) {
+            if (numMissing > maxMissing) {
                 TetradLogger.getInstance().log("details", "classification(" + k + ") = " +
                         "not done since number of missing values too high " +
                         "(" + numMissing + ").");
                 continue;
             }
 
-            final Evidence evidence = Evidence.tautology(bayesIm);
+            Evidence evidence = Evidence.tautology(bayesIm);
             evidence.getProposition().restrictToProposition(proposition);
             updater.setEvidence(evidence);
 
             // for each possible value of target compute its probability in
             // the updated Bayes net.  Select the value with the highest
             // probability as the estimated getValue.
-            final int targetIndex = proposition.getNodeIndex(this.targetVariable.getName());
+            int targetIndex = proposition.getNodeIndex(targetVariable.getName());
 
             //Straw man values--to be replaced.
             double highestProb = -0.1;
             int _category = -1;
 
             for (int category = 0;
-                 category < this.targetVariable.getNumCategories(); category++) {
-                final double marginal = updater.getMarginal(targetIndex, category);
+                 category < targetVariable.getNumCategories(); category++) {
+                double marginal = updater.getMarginal(targetIndex, category);
 
                 if (marginal > highestProb) {
                     highestProb = marginal;
@@ -302,7 +302,7 @@ public class MbClassify implements DiscreteClassifier {
                 continue;
             }
 
-            final String estimatedCategory = this.targetVariable.getCategories().get(_category);
+            String estimatedCategory = targetVariable.getCategories().get(_category);
             TetradLogger.getInstance().log("details", "classification(" + k + ") = " + estimatedCategory);
 
             estimatedCategories[k] = _category;
@@ -310,9 +310,9 @@ public class MbClassify implements DiscreteClassifier {
 
         //Create a crosstabulation table to store the coefs of observed
         //versus estimated occurrences of each value of the target variable.
-        final int targetIndex = varsClassify.indexOf(this.targetVariable);
-        final int numCategories = this.targetVariable.getNumCategories();
-        final int[][] crossTabs = new int[numCategories][numCategories];
+        int targetIndex = varsClassify.indexOf(targetVariable);
+        int numCategories = targetVariable.getNumCategories();
+        int[][] crossTabs = new int[numCategories][numCategories];
 
         //Will count the number of cases where the target variable
         //is correctly classified.
@@ -320,8 +320,8 @@ public class MbClassify implements DiscreteClassifier {
         int numberCounted = 0;
 
         for (int k = 0; k < numCases; k++) {
-            final int estimatedCategory = estimatedCategories[k];
-            final int observedValue = testSubset.getInt(k, targetIndex);
+            int estimatedCategory = estimatedCategories[k];
+            int observedValue = testSubset.getInt(k, targetIndex);
 
 //            if (observedValue < 0) {
 //                continue;
@@ -339,7 +339,7 @@ public class MbClassify implements DiscreteClassifier {
             }
         }
 
-        final double percentCorrect1 =
+        double percentCorrect1 =
                 100.0 * ((double) numberCorrect) / ((double) numberCounted);
 
         // Print the cross classification.
@@ -347,19 +347,19 @@ public class MbClassify implements DiscreteClassifier {
         TetradLogger.getInstance().log("details", "\t\t\tEstimated\t");
         TetradLogger.getInstance().log("details", "Observed\t");
 
-        final StringBuilder buf0 = new StringBuilder();
+        StringBuilder buf0 = new StringBuilder();
         buf0.append("\t");
 
         for (int m = 0; m < numCategories; m++) {
-            buf0.append(this.targetVariable.getCategory(m)).append("\t");
+            buf0.append(targetVariable.getCategory(m)).append("\t");
         }
 
         TetradLogger.getInstance().log("details", buf0.toString());
 
         for (int k = 0; k < numCategories; k++) {
-            final StringBuilder buf = new StringBuilder();
+            StringBuilder buf = new StringBuilder();
 
-            buf.append(this.targetVariable.getCategory(k)).append("\t");
+            buf.append(targetVariable.getCategory(k)).append("\t");
 
             for (int m = 0; m < numCategories; m++)
                 buf.append(crossTabs[k][m]).append("\t");
@@ -372,8 +372,8 @@ public class MbClassify implements DiscreteClassifier {
         TetradLogger.getInstance().log("details", "Number counted = " + numberCounted);
         TetradLogger.getInstance().log("details", "Percent correct = " + nf.format(percentCorrect1) + "%");
 
-        this.crossTabulation = crossTabs;
-        this.percentCorrect = percentCorrect1;
+        crossTabulation = crossTabs;
+        percentCorrect = percentCorrect1;
 
         return estimatedCategories;
     }
@@ -382,14 +382,14 @@ public class MbClassify implements DiscreteClassifier {
      * @return the cross-tabulation from the classify method. The classify method must be run first.
      */
     public int[][] crossTabulation() {
-        return this.crossTabulation;
+        return crossTabulation;
     }
 
     /**
      * @return the percent correct from the classify method. The classify method must be run first.
      */
     public double getPercentCorrect() {
-        return this.percentCorrect;
+        return percentCorrect;
     }
 
     /**
@@ -400,14 +400,14 @@ public class MbClassify implements DiscreteClassifier {
      *
      * @param args train.dat test.dat alpha depth dirichlet_prior max_missing
      */
-    public static void main(final String[] args) {
-        final String trainPath = args[0];
-        final String testPath = args[1];
-        final String targetString = args[2];
-        final String alphaString = args[3];
-        final String depthString = args[4];
-        final String priorString = args[5];
-        final String maxMissingString = args[6];
+    public static void main(String[] args) {
+        String trainPath = args[0];
+        String testPath = args[1];
+        String targetString = args[2];
+        String alphaString = args[3];
+        String depthString = args[4];
+        String priorString = args[5];
+        String maxMissingString = args[6];
 
         new MbClassify(trainPath, testPath, targetString, alphaString, depthString,
                 priorString, maxMissingString);

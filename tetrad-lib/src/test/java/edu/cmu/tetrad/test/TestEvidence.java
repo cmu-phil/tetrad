@@ -45,28 +45,28 @@ public final class TestEvidence {
      */
     @Test
     public void testUpdate1() {
-        final BayesIm bayesIm = TestEvidence.sampleBayesIm2();
+        BayesIm bayesIm = sampleBayesIm2();
 
-        final Evidence evidence = Evidence.tautology(bayesIm);
+        Evidence evidence = Evidence.tautology(bayesIm);
         evidence.getProposition().removeCategory(0, 1);
         evidence.getProposition().setVariable(1, false);
         evidence.setManipulated(0, true);
-        final Evidence evidence2 = new Evidence(evidence, bayesIm);
+        Evidence evidence2 = new Evidence(evidence, bayesIm);
 
         assertEquals(evidence2, evidence);
         assertEquals(evidence, new Evidence(evidence));
 
-        final BayesIm bayesIm2 = new MlBayesIm(bayesIm);
-        final Evidence evidence3 = new Evidence(evidence, bayesIm2);
+        BayesIm bayesIm2 = new MlBayesIm(bayesIm);
+        Evidence evidence3 = new Evidence(evidence, bayesIm2);
         assertTrue(!(evidence3.equals(evidence2)));
     }
 
     private static BayesIm sampleBayesIm2() {
-        final Node a = new GraphNode("a");
-        final Node b = new GraphNode("b");
-        final Node c = new GraphNode("c");
+        Node a = new GraphNode("a");
+        Node b = new GraphNode("b");
+        Node c = new GraphNode("c");
 
-        final Dag graph;
+        Dag graph;
 
         graph = new Dag();
 
@@ -78,10 +78,10 @@ public final class TestEvidence {
         graph.addDirectedEdge(a, c);
         graph.addDirectedEdge(b, c);
 
-        final BayesPm bayesPm = new BayesPm(graph);
+        BayesPm bayesPm = new BayesPm(graph);
         bayesPm.setNumCategories(b, 3);
 
-        final BayesIm bayesIm1 = new MlBayesIm(bayesPm);
+        BayesIm bayesIm1 = new MlBayesIm(bayesPm);
         bayesIm1.setProbability(0, 0, 0, .3);
         bayesIm1.setProbability(0, 0, 1, .7);
 

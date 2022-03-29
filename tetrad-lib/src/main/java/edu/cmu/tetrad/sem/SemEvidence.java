@@ -65,20 +65,20 @@ public final class SemEvidence implements TetradSerializable {
     /**
      * Constructs a container for evidence for the given Bayes IM.
      */
-    public SemEvidence(final SemIm semIm) {
+    public SemEvidence(SemIm semIm) {
         if (semIm == null) {
             throw new NullPointerException();
         }
 
         this.semIm = semIm;
-        this.proposition = SemProposition.tautology(semIm);
-        this.manipulation = new SemManipulation(semIm);
+        proposition = SemProposition.tautology(semIm);
+        manipulation = new SemManipulation(semIm);
     }
 
-    public SemEvidence(final SemEvidence evidence) {
-        this.semIm = evidence.semIm;
-        this.proposition = new SemProposition(evidence.proposition);
-        this.manipulation = new SemManipulation(evidence.manipulation);
+    public SemEvidence(SemEvidence evidence) {
+        semIm = evidence.semIm;
+        proposition = new SemProposition(evidence.proposition);
+        manipulation = new SemManipulation(evidence.manipulation);
     }
 
 //    /**
@@ -134,14 +134,14 @@ public final class SemEvidence implements TetradSerializable {
      * @return the Bayes IM that this is evidence for.
      */
     public SemIm getSemIm() {
-        return this.semIm;
+        return semIm;
     }
 
-    public int getNodeIndex(final String nodeName) {
-        final List<Node> nodes = this.semIm.getSemPm().getVariableNodes();
+    public int getNodeIndex(String nodeName) {
+        List<Node> nodes = semIm.getSemPm().getVariableNodes();
 
         for (int i = 0; i < nodes.size(); i++) {
-            final Node node = nodes.get(i);
+            Node node = nodes.get(i);
 
             if (node.getName().equals(nodeName)) {
                 return i;
@@ -151,11 +151,11 @@ public final class SemEvidence implements TetradSerializable {
         return -1;
     }
 
-    public int getNodeIndex(final Node node) {
-        final List<Node> nodes = this.semIm.getSemPm().getVariableNodes();
+    public int getNodeIndex(Node node) {
+        List<Node> nodes = semIm.getSemPm().getVariableNodes();
 
         for (int i = 0; i < nodes.size(); i++) {
-            final Node _node = nodes.get(i);
+            Node _node = nodes.get(i);
 
             if (node == _node) {
                 return i;
@@ -166,36 +166,36 @@ public final class SemEvidence implements TetradSerializable {
     }
 
     public int getNumNodes() {
-        return this.semIm.getVariableNodes().size();
+        return semIm.getVariableNodes().size();
     }
 
-    public Node getNode(final int nodeIndex) {
-        return this.semIm.getVariableNodes().get(nodeIndex);
+    public Node getNode(int nodeIndex) {
+        return semIm.getVariableNodes().get(nodeIndex);
     }
 
     public SemProposition getProposition() {
-        return this.proposition;
+        return proposition;
     }
 
-    public boolean isManipulated(final int nodeIndex) {
-        return this.manipulation.isManipulated(nodeIndex);
+    public boolean isManipulated(int nodeIndex) {
+        return manipulation.isManipulated(nodeIndex);
     }
 
-    public void setManipulated(final int nodeIndex, final boolean manipulated) {
-        this.manipulation.setManipulated(nodeIndex, manipulated);
+    public void setManipulated(int nodeIndex, boolean manipulated) {
+        manipulation.setManipulated(nodeIndex, manipulated);
     }
 
     public String toString() {
-        final List<Node> nodes = this.semIm.getVariableNodes();
-        final StringBuilder buf = new StringBuilder();
+        List<Node> nodes = semIm.getVariableNodes();
+        StringBuilder buf = new StringBuilder();
         buf.append("\nEvidence: ");
 
         for (int i = 0; i < nodes.size(); i++) {
-            final Node node = nodes.get(i);
+            Node node = nodes.get(i);
             buf.append("\n").append(node).append(" = ")
-                    .append(this.proposition.getValue(i));
+                    .append(proposition.getValue(i));
 
-            if (isManipulated(i)) {
+            if (this.isManipulated(i)) {
                 buf.append("\tManipulated");
             }
         }
@@ -207,11 +207,11 @@ public final class SemEvidence implements TetradSerializable {
      * @return the variable for which there is evidence.
      */
     public List<Node> getNodesInEvidence() {
-        final List<Node> nodes = this.semIm.getVariableNodes();
-        final List<Node> nodesInEvidence = new ArrayList<>();
+        List<Node> nodes = semIm.getVariableNodes();
+        List<Node> nodesInEvidence = new ArrayList<>();
 
         for (int i = 0; i < nodes.size(); i++) {
-            if (!Double.isNaN(this.proposition.getValue(i))) {
+            if (!Double.isNaN(proposition.getValue(i))) {
                 nodesInEvidence.add(nodes.get(i));
             }
         }
@@ -219,7 +219,7 @@ public final class SemEvidence implements TetradSerializable {
         return nodesInEvidence;
     }
 
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         if (o == null) {
             return false;
         }
@@ -228,17 +228,17 @@ public final class SemEvidence implements TetradSerializable {
             throw new IllegalArgumentException();
         }
 
-        final SemEvidence evidence = (SemEvidence) o;
+        SemEvidence evidence = (SemEvidence) o;
 
-        return this.semIm == evidence.semIm && this.proposition.equals(evidence.proposition) && this.manipulation.equals(evidence.manipulation);
+        return semIm == evidence.semIm && proposition.equals(evidence.proposition) && manipulation.equals(evidence.manipulation);
 
     }
 
     public int hashCode() {
         int hashCode = 37;
-        hashCode = 19 * hashCode + this.semIm.hashCode();
-        hashCode = 19 * hashCode + this.proposition.hashCode();
-        hashCode = 19 * hashCode + this.manipulation.hashCode();
+        hashCode = 19 * hashCode + semIm.hashCode();
+        hashCode = 19 * hashCode + proposition.hashCode();
+        hashCode = 19 * hashCode + manipulation.hashCode();
         return hashCode;
     }
 
@@ -255,11 +255,11 @@ public final class SemEvidence implements TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (this.proposition == null) {
+        if (proposition == null) {
             throw new NullPointerException();
         }
     }

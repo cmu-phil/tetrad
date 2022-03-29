@@ -25,6 +25,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.StringTextField;
+import edu.cmu.tetradapp.util.StringTextField.Filter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -42,13 +43,13 @@ import java.util.List;
  */
 class ParameterPanel extends JPanel {
 
-    public ParameterPanel(List<String> parametersToEdit, final Parameters parameters) {
-        final Box container = Box.createHorizontalBox();
-        final Box paramsBox = Box.createVerticalBox();
+    public ParameterPanel(List<String> parametersToEdit, Parameters parameters) {
+        Box container = Box.createHorizontalBox();
+        Box paramsBox = Box.createVerticalBox();
 
-        final List<String> removeDuplicates = new ArrayList<>();
+        List<String> removeDuplicates = new ArrayList<>();
 
-        for (final String param : parametersToEdit) {
+        for (String param : parametersToEdit) {
             if (!removeDuplicates.contains(param)) {
                 removeDuplicates.add(param);
             }
@@ -60,36 +61,36 @@ class ParameterPanel extends JPanel {
         // E.g., EB, R1...R4, RSkew, RSkewE, Skew, SkewE
         if (parametersToEdit.size() > 0) {
             // Add each param row to box
-            for (final String parameter : parametersToEdit) {
-                final Object defaultValue = ParamDescriptions.getInstance().get(parameter).getDefaultValue();
+            for (String parameter : parametersToEdit) {
+                Object defaultValue = ParamDescriptions.getInstance().get(parameter).getDefaultValue();
 
                 //System.out.println(parameter + " " + defaultValue);
 
-                final JComponent parameterSelection;
+                JComponent parameterSelection;
 
                 if (defaultValue instanceof Double) {
-                    final double lowerBoundDouble = ParamDescriptions.getInstance().get(parameter).getLowerBoundDouble();
-                    final double upperBoundDouble = ParamDescriptions.getInstance().get(parameter).getUpperBoundDouble();
-                    parameterSelection = getDoubleField(parameter, parameters, (Double) defaultValue, lowerBoundDouble, upperBoundDouble);
+                    double lowerBoundDouble = ParamDescriptions.getInstance().get(parameter).getLowerBoundDouble();
+                    double upperBoundDouble = ParamDescriptions.getInstance().get(parameter).getUpperBoundDouble();
+                    parameterSelection = this.getDoubleField(parameter, parameters, (Double) defaultValue, lowerBoundDouble, upperBoundDouble);
                 } else if (defaultValue instanceof Integer) {
-                    final int lowerBoundInt = ParamDescriptions.getInstance().get(parameter).getLowerBoundInt();
-                    final int upperBoundInt = ParamDescriptions.getInstance().get(parameter).getUpperBoundInt();
-                    parameterSelection = getIntTextField(parameter, parameters, (Integer) defaultValue, lowerBoundInt, upperBoundInt);
+                    int lowerBoundInt = ParamDescriptions.getInstance().get(parameter).getLowerBoundInt();
+                    int upperBoundInt = ParamDescriptions.getInstance().get(parameter).getUpperBoundInt();
+                    parameterSelection = this.getIntTextField(parameter, parameters, (Integer) defaultValue, lowerBoundInt, upperBoundInt);
                 } else if (defaultValue instanceof Boolean) {
                     // Joe's old implementation with dropdown yes or no
                     //parameterSelection = getBooleanBox(parameter, parameters, (Boolean) defaultValue);
                     // Zhou's new implementation with yes/no radio buttons
-                    parameterSelection = getBooleanSelectionBox(parameter, parameters, (Boolean) defaultValue);
+                    parameterSelection = this.getBooleanSelectionBox(parameter, parameters, (Boolean) defaultValue);
                 } else if (defaultValue instanceof String) {
-                    parameterSelection = getStringField(parameter, parameters, (String) defaultValue);
+                    parameterSelection = this.getStringField(parameter, parameters, (String) defaultValue);
                 } else {
                     throw new IllegalArgumentException("Unexpected type: " + defaultValue.getClass());
                 }
 
                 // Each parameter row contains parameter label and selection/input field
-                final Box paramRow = Box.createHorizontalBox();
+                Box paramRow = Box.createHorizontalBox();
 
-                final JLabel paramLabel = new JLabel(ParamDescriptions.getInstance().get(parameter).getShortDescription());
+                JLabel paramLabel = new JLabel(ParamDescriptions.getInstance().get(parameter).getShortDescription());
                 paramRow.add(paramLabel);
                 paramRow.add(Box.createHorizontalGlue());
                 paramRow.add(parameterSelection);
@@ -101,7 +102,7 @@ class ParameterPanel extends JPanel {
                 paramsBox.add(Box.createVerticalStrut(10));
             }
         } else {
-            final JLabel noParamsLabel = new JLabel("No parameters to edit");
+            JLabel noParamsLabel = new JLabel("No parameters to edit");
             paramsBox.add(noParamsLabel);
         }
 
@@ -109,18 +110,18 @@ class ParameterPanel extends JPanel {
 
         container.add(paramsBox);
 
-        setLayout(new BorderLayout());
-        add(container, BorderLayout.CENTER);
+        this.setLayout(new BorderLayout());
+        this.add(container, BorderLayout.CENTER);
 
     }
 
-    private DoubleTextField getDoubleField(final String parameter, final Parameters parameters,
-                                           final double defaultValue, final double lowerBound, final double upperBound) {
-        final DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
+    private DoubleTextField getDoubleField(String parameter, Parameters parameters,
+                                           double defaultValue, double lowerBound, double upperBound) {
+        DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
                 8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
 
         field.setFilter(new DoubleTextField.Filter() {
-            public double filter(final double value, final double oldValue) {
+            public double filter(double value, double oldValue) {
                 if (value == field.getValue()) {
                     return oldValue;
                 }
@@ -135,7 +136,7 @@ class ParameterPanel extends JPanel {
 
                 try {
                     parameters.set(parameter, value);
-                } catch (final Exception e) {
+                } catch (Exception e) {
                     // Ignore.
                 }
 
@@ -146,12 +147,12 @@ class ParameterPanel extends JPanel {
         return field;
     }
 
-    private IntTextField getIntTextField(final String parameter, final Parameters parameters,
-                                         final int defaultValue, final double lowerBound, final double upperBound) {
-        final IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 8);
+    private IntTextField getIntTextField(String parameter, Parameters parameters,
+                                         int defaultValue, double lowerBound, double upperBound) {
+        IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 8);
 
         field.setFilter(new IntTextField.Filter() {
-            public int filter(final int value, final int oldValue) {
+            public int filter(int value, int oldValue) {
                 if (value == field.getValue()) {
                     return oldValue;
                 }
@@ -166,7 +167,7 @@ class ParameterPanel extends JPanel {
 
                 try {
                     parameters.set(parameter, value);
-                } catch (final Exception e) {
+                } catch (Exception e) {
                     // Ignore.
                 }
 
@@ -178,10 +179,10 @@ class ParameterPanel extends JPanel {
     }
 
     // Joe's old implementation with dropdown yes or no
-    private JComboBox getBooleanBox(final String parameter, final Parameters parameters, final boolean defaultValue) {
-        final JComboBox<String> box = new JComboBox<>(new String[]{"Yes", "No"});
+    private JComboBox getBooleanBox(String parameter, Parameters parameters, boolean defaultValue) {
+        JComboBox<String> box = new JComboBox<>(new String[]{"Yes", "No"});
 
-        final boolean aBoolean = parameters.getBoolean(parameter, defaultValue);
+        boolean aBoolean = parameters.getBoolean(parameter, defaultValue);
 
         //System.out.println(parameter + " = " + aBoolean);
 
@@ -193,7 +194,7 @@ class ParameterPanel extends JPanel {
 
         box.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(final ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 if (((JComboBox) e.getSource()).getSelectedItem().equals("Yes")) {
                     parameters.set(parameter, true);
                 } else {
@@ -208,18 +209,18 @@ class ParameterPanel extends JPanel {
     }
 
     // Zhou's new implementation with yes/no radio buttons
-    private Box getBooleanSelectionBox(final String parameter, final Parameters parameters, final boolean defaultValue) {
-        final Box selectionBox = Box.createHorizontalBox();
+    private Box getBooleanSelectionBox(String parameter, Parameters parameters, boolean defaultValue) {
+        Box selectionBox = Box.createHorizontalBox();
 
-        final JRadioButton yesButton = new JRadioButton("Yes");
-        final JRadioButton noButton = new JRadioButton("No");
+        JRadioButton yesButton = new JRadioButton("Yes");
+        JRadioButton noButton = new JRadioButton("No");
 
         // Button group to ensure only only one option can be selected
-        final ButtonGroup selectionBtnGrp = new ButtonGroup();
+        ButtonGroup selectionBtnGrp = new ButtonGroup();
         selectionBtnGrp.add(yesButton);
         selectionBtnGrp.add(noButton);
 
-        final boolean aBoolean = parameters.getBoolean(parameter, defaultValue);
+        boolean aBoolean = parameters.getBoolean(parameter, defaultValue);
 
         //System.out.println(parameter + " = " + aBoolean);
 
@@ -237,8 +238,8 @@ class ParameterPanel extends JPanel {
         // Event listener
         yesButton.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(final ActionEvent actionEvent) {
-                final JRadioButton button = (JRadioButton) actionEvent.getSource();
+            public void actionPerformed(ActionEvent actionEvent) {
+                JRadioButton button = (JRadioButton) actionEvent.getSource();
                 if (button.isSelected()) {
                     parameters.set(parameter, true);
                 }
@@ -248,8 +249,8 @@ class ParameterPanel extends JPanel {
         // Event listener
         noButton.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(final ActionEvent actionEvent) {
-                final JRadioButton button = (JRadioButton) actionEvent.getSource();
+            public void actionPerformed(ActionEvent actionEvent) {
+                JRadioButton button = (JRadioButton) actionEvent.getSource();
                 if (button.isSelected()) {
                     parameters.set(parameter, false);
                 }
@@ -259,18 +260,18 @@ class ParameterPanel extends JPanel {
         return selectionBox;
     }
 
-    private StringTextField getStringField(final String parameter, final Parameters parameters, final String defaultValue) {
-        final StringTextField field = new StringTextField(parameters.getString(parameter, defaultValue), 20);
+    private StringTextField getStringField(String parameter, Parameters parameters, String defaultValue) {
+        StringTextField field = new StringTextField(parameters.getString(parameter, defaultValue), 20);
 
-        field.setFilter(new StringTextField.Filter() {
-            public String filter(final String value, final String oldValue) {
+        field.setFilter(new Filter() {
+            public String filter(String value, String oldValue) {
                 if (value.equals(field.getValue().trim())) {
                     return oldValue;
                 }
 
                 try {
                     parameters.set(parameter, value);
-                } catch (final Exception e) {
+                } catch (Exception e) {
                     // Ignore.
                 }
 

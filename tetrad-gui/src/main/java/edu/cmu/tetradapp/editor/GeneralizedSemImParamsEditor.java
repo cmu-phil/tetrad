@@ -25,6 +25,7 @@ import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.util.DoubleTextField;
+import edu.cmu.tetradapp.util.DoubleTextField.Filter;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -60,60 +61,60 @@ class GeneralizedSemImParamsEditor extends JPanel {
     /**
      * Constructs a SemPm graphical editor for the given SemIm.
      */
-    public GeneralizedSemImParamsEditor(final GeneralizedSemIm semIm, final Map<Object, EditorWindow> launchedEditors) {
+    public GeneralizedSemImParamsEditor(GeneralizedSemIm semIm, Map<Object, EditorWindow> launchedEditors) {
         this.semIm = semIm;
         /*
       The set of launched editors--or rather, the nodes for the launched editors.
      */
-        final Map<Object, EditorWindow> launchedEditors1 = launchedEditors;
-        this.semPm = semIm.getSemPm();
-        freshenDisplay();
+        Map<Object, EditorWindow> launchedEditors1 = launchedEditors;
+        semPm = semIm.getSemPm();
+        this.freshenDisplay();
     }
 
     //========================PRIVATE PROTECTED METHODS======================//
 
     private void freshenDisplay() {
-        removeAll();
-        setLayout(new BorderLayout());
-        final JScrollPane scroll = new JScrollPane(initialValuesPane());
+        this.removeAll();
+        this.setLayout(new BorderLayout());
+        JScrollPane scroll = new JScrollPane(this.initialValuesPane());
         scroll.setPreferredSize(new Dimension(450, 450));
-        add(scroll, BorderLayout.CENTER);
+        this.add(scroll, BorderLayout.CENTER);
     }
 
     private JComponent initialValuesPane() {
-        final Box b = Box.createVerticalBox();
+        Box b = Box.createVerticalBox();
 
-        final java.util.List<String> parameters = new ArrayList<>(semPm().getParameters());
+        java.util.List<String> parameters = new ArrayList<>(this.semPm().getParameters());
         Collections.sort(parameters);
 
         // Need to keep these in a particular order.
         class MyTextField extends DoubleTextField {
             private final String parameter;
 
-            public MyTextField(final String parameter, final double value, final int width, final NumberFormat format) {
+            public MyTextField(String parameter, double value, int width, NumberFormat format) {
                 super(value, width, format);
                 this.parameter = parameter;
             }
 
             public String getParameter() {
-                return this.parameter;
+                return parameter;
             }
         }
 
-        final List<String> _parameters = new ArrayList(this.semPm.getParameters());
+        List<String> _parameters = new ArrayList(semPm.getParameters());
         Collections.sort(_parameters);
 
-        for (final String parameter : _parameters) {
-            final String _parameter = parameter;
+        for (String parameter : _parameters) {
+            String _parameter = parameter;
 
-            final Box c = Box.createHorizontalBox();
+            Box c = Box.createHorizontalBox();
             c.add(new JLabel(parameter + " = "));
-            final MyTextField field = new MyTextField(parameter, this.semIm.getParameterValue(parameter), 8,
+            MyTextField field = new MyTextField(parameter, semIm.getParameterValue(parameter), 8,
                     NumberFormatUtil.getInstance().getNumberFormat());
 
-            field.setFilter(new DoubleTextField.Filter() {
-                public double filter(final double value, final double oldValue) {
-                    GeneralizedSemImParamsEditor.this.semIm.setParameterValue(_parameter, value);
+            field.setFilter(new Filter() {
+                public double filter(double value, double oldValue) {
+                    semIm.setParameterValue(_parameter, value);
                     return value;
                 }
             });
@@ -130,7 +131,7 @@ class GeneralizedSemImParamsEditor extends JPanel {
     }
 
     private GeneralizedSemPm semPm() {
-        return this.semPm;
+        return semPm;
     }
 }
 

@@ -36,19 +36,19 @@ public class ExpandCaseMultipliersWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
 
 
-    public ExpandCaseMultipliersWrapper(final DataWrapper data, final Parameters params) {
+    public ExpandCaseMultipliersWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
             throw new NullPointerException("The givan data must not be null");
         }
-        final DataModel model = data.getSelectedDataModel();
+        DataModel model = data.getSelectedDataModel();
         if ((!(model instanceof DataSet))) {
             throw new IllegalArgumentException("Data must be tabular");
         }
-        final DataFilter interpolator = new CaseExpander();
-        this.setDataModel(interpolator.filter((DataSet) model));
-        this.setSourceGraph(data.getSourceGraph());
+        DataFilter interpolator = new CaseExpander();
+        setDataModel(interpolator.filter((DataSet) model));
+        setSourceGraph(data.getSourceGraph());
 
-        LogDataUtils.logDataModelList("Expansion of case multipliers in parent data.", getDataModelList());
+        LogDataUtils.logDataModelList("Expansion of case multipliers in parent data.", this.getDataModelList());
 
     }
 

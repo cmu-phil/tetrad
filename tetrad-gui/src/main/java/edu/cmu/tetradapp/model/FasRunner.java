@@ -39,7 +39,7 @@ import java.util.List;
 public class FasRunner extends AbstractAlgorithmRunner
         implements IndTestProducer, GraphSource {
     static final long serialVersionUID = 23L;
-    private Graph externalGraph = null;
+    private Graph externalGraph;
 
     //============================CONSTRUCTORS============================//
 
@@ -48,59 +48,59 @@ public class FasRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    public FasRunner(final DataWrapper dataWrapper, final Parameters params) {
+    public FasRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
-    public FasRunner(final DataWrapper dataWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
+    public FasRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
     // Starts PC from the given graph.
-    public FasRunner(final DataWrapper dataWrapper, final GraphWrapper graphWrapper, final Parameters params) {
+    public FasRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params) {
         super(dataWrapper, params, null);
-        this.externalGraph = graphWrapper.getGraph();
+        externalGraph = graphWrapper.getGraph();
     }
 
-    public FasRunner(final DataWrapper dataWrapper, final GraphWrapper graphWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
+    public FasRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
-        this.externalGraph = graphWrapper.getGraph();
+        externalGraph = graphWrapper.getGraph();
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public FasRunner(final Graph graph, final Parameters params) {
+    public FasRunner(Graph graph, Parameters params) {
         super(graph, params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public FasRunner(final GraphWrapper graphWrapper, final Parameters params) {
+    public FasRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public FasRunner(final GraphSource graphWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
+    public FasRunner(GraphSource graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-    public FasRunner(final DagWrapper dagWrapper, final Parameters params) {
+    public FasRunner(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public FasRunner(final SemGraphWrapper dagWrapper, final Parameters params) {
+    public FasRunner(SemGraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
-    public FasRunner(final IndependenceFactsModel model, final Parameters params) {
+    public FasRunner(IndependenceFactsModel model, Parameters params) {
         super(model, params, null);
     }
 
-    public FasRunner(final IndependenceFactsModel model, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
+    public FasRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
 
@@ -114,9 +114,9 @@ public class FasRunner extends AbstractAlgorithmRunner
     }
 
     public ImpliedOrientation getMeekRules() {
-        final MeekRules rules = new MeekRules();
-        rules.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
-        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
+        MeekRules rules = new MeekRules();
+        rules.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
+        rules.setKnowledge((IKnowledge) this.getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
 
@@ -128,52 +128,52 @@ public class FasRunner extends AbstractAlgorithmRunner
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     public void execute() {
-        final IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
-        final int depth = getParams().getInt("depth", -1);
-        Graph graph = new EdgeListGraph(getIndependenceTest().getVariables());
+        IKnowledge knowledge = (IKnowledge) this.getParams().get("knowledge", new Knowledge2());
+        int depth = this.getParams().getInt("depth", -1);
+        Graph graph = new EdgeListGraph(this.getIndependenceTest().getVariables());
 
-        final Fas fas = new Fas(getIndependenceTest());
+        Fas fas = new Fas(this.getIndependenceTest());
         fas.setKnowledge(knowledge);
         fas.setDepth(depth);
         graph = fas.search();
 
         System.out.println(graph);
 
-        for (final Node node : graph.getNodes()) {
+        for (Node node : graph.getNodes()) {
             System.out.println(node + " " + graph.getAdjacentNodes(node).size());
         }
 
-        if (getSourceGraph() != null) {
-            GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
+        if (this.getSourceGraph() != null) {
+            GraphUtils.arrangeBySourceGraph(graph, this.getSourceGraph());
         } else if (knowledge.isDefaultToKnowledgeLayout()) {
             SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
         } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
 
-        setResultGraph(graph);
+        this.setResultGraph(graph);
     }
 
     public IndependenceTest getIndependenceTest() {
-        Object dataModel = getDataModel();
+        Object dataModel = this.getDataModel();
 
         if (dataModel == null) {
-            dataModel = getSourceGraph();
+            dataModel = this.getSourceGraph();
         }
 
-        final IndTestType testType = (IndTestType) (getParams()).get("indTestType", IndTestType.FISHER_Z);
-        return new IndTestChooser().getTest(dataModel, getParams(), testType);
+        IndTestType testType = (IndTestType) (this.getParams()).get("indTestType", IndTestType.FISHER_Z);
+        return new IndTestChooser().getTest(dataModel, this.getParams(), testType);
     }
 
     public Graph getGraph() {
-        return getResultGraph();
+        return this.getResultGraph();
     }
 
     /**
      * @return the names of the triple classifications. Coordinates with getTriplesList.
      */
     public List<String> getTriplesClassificationTypes() {
-        final List<String> names = new ArrayList<>();
+        List<String> names = new ArrayList<>();
 //        names.add("ColliderDiscovery");
 //        names.add("Noncolliders");
         return names;
@@ -183,8 +183,8 @@ public class FasRunner extends AbstractAlgorithmRunner
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>
      * for the given node.
      */
-    public List<List<Triple>> getTriplesLists(final Node node) {
-        final List<List<Triple>> triplesList = new ArrayList<>();
+    public List<List<Triple>> getTriplesLists(Node node) {
+        List<List<Triple>> triplesList = new ArrayList<>();
 //        Graph graph = getGraph();
 //        triplesList.add(DataGraphUtils.getCollidersFromGraph(node, graph));
 //        triplesList.add(DataGraphUtils.getNoncollidersFromGraph(node, graph));
@@ -198,7 +198,7 @@ public class FasRunner extends AbstractAlgorithmRunner
     //========================== Private Methods ===============================//
 
     private boolean isAggressivelyPreventCycles() {
-        final Parameters params = getParams();
+        Parameters params = this.getParams();
         if (params instanceof Parameters) {
             return params.getBoolean("aggressivelyPreventCycles", false);
         }

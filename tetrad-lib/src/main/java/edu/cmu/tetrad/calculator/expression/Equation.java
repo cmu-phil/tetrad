@@ -47,7 +47,7 @@ public class Equation {
     private final String unparsedExpression;
 
 
-    public Equation(final String variable, final Expression expression, final String unparsed) {
+    public Equation(String variable, Expression expression, String unparsed) {
         if (variable == null) {
             throw new NullPointerException("variable was null.");
         }
@@ -57,7 +57,7 @@ public class Equation {
         if (unparsed == null) {
             throw new NullPointerException("unparsed was null.");
         }
-        this.unparsedExpression = unparsed;
+        unparsedExpression = unparsed;
         this.variable = variable;
         this.expression = expression;
     }
@@ -66,17 +66,17 @@ public class Equation {
 
 
     public String getUnparsedExpression() {
-        return this.unparsedExpression;
+        return unparsedExpression;
     }
 
 
     public String getVariable() {
-        return this.variable;
+        return variable;
     }
 
 
     public Expression getExpression() {
-        return this.expression;
+        return expression;
     }
 
 }

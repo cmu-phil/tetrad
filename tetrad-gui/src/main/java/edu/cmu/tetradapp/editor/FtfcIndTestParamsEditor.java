@@ -21,9 +21,10 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.search.FindTwoFactorClusters;
+import edu.cmu.tetrad.search.FindTwoFactorClusters.Algorithm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
+import edu.cmu.tetradapp.util.DoubleTextField.Filter;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -40,59 +41,59 @@ import java.text.NumberFormat;
 class FtfcIndTestParamsEditor extends JComponent {
     private final Parameters FtfcParams;
 
-    public FtfcIndTestParamsEditor(final Parameters paramsPureClusters) {
-        this.FtfcParams = paramsPureClusters;
+    public FtfcIndTestParamsEditor(Parameters paramsPureClusters) {
+        FtfcParams = paramsPureClusters;
 
-        final NumberFormat smallNumberFormat = new DecimalFormat("0E00");
-        final DoubleTextField alphaField = new DoubleTextField(getParams().getDouble("alpha", 0.001), 8,
+        NumberFormat smallNumberFormat = new DecimalFormat("0E00");
+        DoubleTextField alphaField = new DoubleTextField(this.getParams().getDouble("alpha", 0.001), 8,
                 new DecimalFormat("0.0########"), smallNumberFormat, 1e-4);
 
-        alphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(final double value, final double oldValue) {
+        alphaField.setFilter(new Filter() {
+            public double filter(double value, double oldValue) {
                 try {
-                    getParams().set("alpha", 0.001);
+                    FtfcIndTestParamsEditor.this.getParams().set("alpha", 0.001);
                     return value;
-                } catch (final IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
-        final JComboBox<FindTwoFactorClusters.Algorithm> algorithmSelector = new JComboBox<>();
-        algorithmSelector.addItem(FindTwoFactorClusters.Algorithm.SAG);
-        algorithmSelector.addItem(FindTwoFactorClusters.Algorithm.GAP);
+        JComboBox<Algorithm> algorithmSelector = new JComboBox<>();
+        algorithmSelector.addItem(Algorithm.SAG);
+        algorithmSelector.addItem(Algorithm.GAP);
 
-        final FindTwoFactorClusters.Algorithm algorithmType = (FindTwoFactorClusters.Algorithm) getParams().get("ftfcAlgorithm", FindTwoFactorClusters.Algorithm.GAP);
+        Algorithm algorithmType = (Algorithm) this.getParams().get("ftfcAlgorithm", Algorithm.GAP);
         algorithmSelector.setSelectedItem(algorithmType);
 
         algorithmSelector.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final FindTwoFactorClusters.Algorithm index = (FindTwoFactorClusters.Algorithm) algorithmSelector.getSelectedItem();
+            public void actionPerformed(ActionEvent e) {
+                Algorithm index = (Algorithm) algorithmSelector.getSelectedItem();
                 if (index != null) {
-                    getParams().set("ftfcAlgorithm", index);
+                    FtfcIndTestParamsEditor.this.getParams().set("ftfcAlgorithm", index);
                 }
             }
         });
 
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("Algorithm:"));
         b2.add(Box.createHorizontalGlue());
         b2.add(algorithmSelector);
-        add(b2);
+        this.add(b2);
 
-        add(Box.createHorizontalGlue());
-        final Box b3 = Box.createHorizontalBox();
+        this.add(Box.createHorizontalGlue());
+        Box b3 = Box.createHorizontalBox();
         b3.add(new JLabel("Alpha:"));
         b3.add(Box.createHorizontalGlue());
         b3.add(alphaField);
-        add(b3);
-        add(Box.createHorizontalGlue());
+        this.add(b3);
+        this.add(Box.createHorizontalGlue());
     }
 
     private Parameters getParams() {
-        return this.FtfcParams;
+        return FtfcParams;
     }
 
 

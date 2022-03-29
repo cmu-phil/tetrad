@@ -42,13 +42,13 @@ public class KernelUtils {
      * @param dataset the dataset containing each variable
      * @param nodes   the variables to construct the Gram matrix for
      */
-    public static Matrix constructGramMatrix(final List<Kernel> kernels, final DataSet dataset, final List<Node> nodes) {
-        final int m = dataset.getNumRows();
-        final Matrix gram = new Matrix(m, m);
+    public static Matrix constructGramMatrix(List<Kernel> kernels, DataSet dataset, List<Node> nodes) {
+        int m = dataset.getNumRows();
+        Matrix gram = new Matrix(m, m);
         for (int k = 0; k < nodes.size(); k++) {
-            final Node node = nodes.get(k);
-            final int col = dataset.getColumn(node);
-            final Kernel kernel = kernels.get(k);
+            Node node = nodes.get(k);
+            int col = dataset.getColumn(node);
+            Kernel kernel = kernels.get(k);
             for (int i = 0; i < m; i++) {
                 for (int j = i; j < m; j++) {
                     double keval = kernel.eval(dataset.getDouble(i, col), dataset.getDouble(j, col));
@@ -72,12 +72,12 @@ public class KernelUtils {
      * @param dataset the dataset containing each variable
      * @param nodes   the variables to construct the Gram matrix for
      */
-    public static Matrix constructCentralizedGramMatrix(final List<Kernel> kernels, final DataSet dataset, final List<Node> nodes) {
-        final int m = dataset.getNumRows();
-        final Matrix gram = KernelUtils.constructGramMatrix(kernels, dataset, nodes);
-        final Matrix H = KernelUtils.constructH(m);
-        final Matrix KH = gram.times(H);
-        final Matrix HKH = H.times(KH);
+    public static Matrix constructCentralizedGramMatrix(List<Kernel> kernels, DataSet dataset, List<Node> nodes) {
+        int m = dataset.getNumRows();
+        Matrix gram = constructGramMatrix(kernels, dataset, nodes);
+        Matrix H = constructH(m);
+        Matrix KH = gram.times(H);
+        Matrix HKH = H.times(KH);
         return HKH;
     }
 
@@ -86,10 +86,10 @@ public class KernelUtils {
      *
      * @param m the sample size
      */
-    public static Matrix constructH(final int m) {
-        final Matrix H = new Matrix(m, m);
-        final double od = -1.0 / (double) m;
-        final double d = od + 1;
+    public static Matrix constructH(int m) {
+        Matrix H = new Matrix(m, m);
+        double od = -1.0 / (double) m;
+        double d = od + 1;
         for (int i = 0; i < m; i++) {
             for (int j = i; j < m; j++) {
                 if (i == j) {
@@ -109,19 +109,19 @@ public class KernelUtils {
      * @param dataset the dataset containing each variable
      * @param nodes   the variables to construct the Gram matrix for
      */
-    public static Matrix incompleteCholeskyGramMatrix(final List<Kernel> kernels, final DataSet dataset, final List<Node> nodes, final double precision) {
+    public static Matrix incompleteCholeskyGramMatrix(List<Kernel> kernels, DataSet dataset, List<Node> nodes, double precision) {
         if (precision <= 0) {
             throw new IllegalArgumentException("Precision must be > 0");
         }
 
-        final int m = dataset.getNumRows();
-        final Matrix G = new Matrix(m, m);
+        int m = dataset.getNumRows();
+        Matrix G = new Matrix(m, m);
 
         // get diagonal of Gram matrix and initialize permutation vector
-        final double[] Dadv = new double[m];
-        final int[] p = new int[m];
+        double[] Dadv = new double[m];
+        int[] p = new int[m];
         for (int i = 0; i < m; i++) {
-            Dadv[i] = KernelUtils.evaluate(kernels, dataset, nodes, i, i);
+            Dadv[i] = evaluate(kernels, dataset, nodes, i, i);
             p[i] = i;
         }
 
@@ -146,27 +146,27 @@ public class KernelUtils {
             }
 
             // permute best vector and k
-            final int pk = p[k];
+            int pk = p[k];
             p[k] = p[bestInd];
             p[bestInd] = pk;
-            final double dk = Dadv[k];
+            double dk = Dadv[k];
             Dadv[k] = Dadv[bestInd];
             Dadv[bestInd] = dk;
             for (int j = 0; j < k; j++) {
-                final double gk = G.get(k, j);
+                double gk = G.get(k, j);
                 G.set(k, j, G.get(bestInd, j));
                 G.set(bestInd, j, gk);
             }
 
             // compute next column
-            final double diag = Math.sqrt(Dadv[k]);
+            double diag = Math.sqrt(Dadv[k]);
             G.set(k, k, diag);
             for (int j = (k + 1); j < m; j++) {
                 double s = 0.0;
                 for (int i = 0; i < k; i++) {
                     s += G.get(j, i) * G.get(k, i);
                 }
-                G.set(j, k, (KernelUtils.evaluate(kernels, dataset, nodes, p[j], p[k]) - s) / diag);
+                G.set(j, k, (evaluate(kernels, dataset, nodes, p[j], p[k]) - s) / diag);
             }
 
             // update diagonal
@@ -177,7 +177,7 @@ public class KernelUtils {
         }
 
         // trim columns
-        final Matrix Gm = new Matrix(m, cols);
+        Matrix Gm = new Matrix(m, cols);
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < cols; j++) {
                 Gm.set(i, j, G.get(i, j));
@@ -188,7 +188,7 @@ public class KernelUtils {
 
     // evaluates tensor product for kernels
 
-    private static double evaluate(final List<Kernel> kernels, final DataSet dataset, final List<Node> vars, final int i, final int j) {
+    private static double evaluate(List<Kernel> kernels, DataSet dataset, List<Node> vars, int i, int j) {
         int col = dataset.getColumn(vars.get(0));
         double keval = kernels.get(0).eval(dataset.getDouble(i, col), dataset.getDouble(j, col));
         for (int k = 1; k < vars.size(); k++) {

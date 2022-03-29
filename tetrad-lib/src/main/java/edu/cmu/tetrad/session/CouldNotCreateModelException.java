@@ -31,12 +31,12 @@ package edu.cmu.tetrad.session;
 public class CouldNotCreateModelException extends Exception {
     private final Class modelClass;
 
-    public CouldNotCreateModelException(final Class modelClass) {
+    public CouldNotCreateModelException(Class modelClass) {
         this.modelClass = modelClass;
     }
 
     public Class getModelClass() {
-        return this.modelClass;
+        return modelClass;
     }
 
     public String getMessage() {

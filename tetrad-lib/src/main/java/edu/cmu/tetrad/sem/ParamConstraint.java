@@ -48,11 +48,11 @@ public class ParamConstraint implements TetradSerializable {
      * of relation imposed by the constraint. The SemIm is required because the
      * freeParameters' values are determined by it.
      */
-    public ParamConstraint(final SemIm semIm, final Parameter param1,
-                           final ParamConstraintType type, final double number) {
+    public ParamConstraint(SemIm semIm, Parameter param1,
+                           ParamConstraintType type, double number) {
         this.semIm = semIm;
         this.param1 = param1;
-        this.param2 = null;
+        param2 = null;
         this.type = type;
         this.number = number;
     }
@@ -81,15 +81,15 @@ public class ParamConstraint implements TetradSerializable {
     }
 
     public ParamConstraintType getType() {
-        return this.type;
+        return type;
     }
 
-    public void setType(final ParamConstraintType type) {
+    public void setType(ParamConstraintType type) {
         this.type = type;
     }
 
     public double getNumber() {
-        return this.number;
+        return number;
     }
 
 //    public void setNumber(double number) {
@@ -97,7 +97,7 @@ public class ParamConstraint implements TetradSerializable {
 //    }
 
     public Parameter getParam2() {
-        return this.param2;
+        return param2;
     }
 
 //    public boolean isSatisfied() {
@@ -145,17 +145,17 @@ public class ParamConstraint implements TetradSerializable {
      *
      * @return true if the value would satisfy the constraint.
      */
-    public boolean wouldBeSatisfied(final double testValue) {
-        return this.type == ParamConstraintType.NONE || this.param2 == null && (this.type == ParamConstraintType.EQ && testValue == this.number || this.type == ParamConstraintType.GT && testValue > this.number || this.type == ParamConstraintType.LT && testValue < this.number);
+    public boolean wouldBeSatisfied(double testValue) {
+        return type == ParamConstraintType.NONE || param2 == null && (type == ParamConstraintType.EQ && testValue == number || type == ParamConstraintType.GT && testValue > number || type == ParamConstraintType.LT && testValue < number);
 
     }
 
     public Parameter getParam1() {
-        return this.param1;
+        return param1;
     }
 
     public SemIm getSemIm() {
-        return this.semIm;
+        return semIm;
     }
 }
 

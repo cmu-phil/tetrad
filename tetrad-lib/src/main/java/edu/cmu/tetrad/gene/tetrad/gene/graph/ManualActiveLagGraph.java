@@ -37,13 +37,13 @@ public class ManualActiveLagGraph extends ActiveLagGraph implements SessionModel
      * Using the given parameters, constructs an BasicLagGraph.
      */
     public ManualActiveLagGraph() {
-        addFactors("Gene", 1);
-        setMaxLagAllowable(3);
+        this.addFactors("Gene", 1);
+        this.setMaxLagAllowable(3);
 
         // Add edges one time step back.
-        for (final String s : getFactors()) {
-            final LaggedFactor laggedFactor = new LaggedFactor(s, 1);
-            addEdge(s, laggedFactor);
+        for (String s : this.getFactors()) {
+            LaggedFactor laggedFactor = new LaggedFactor(s, 1);
+            this.addEdge(s, laggedFactor);
         }
     }
 
@@ -54,12 +54,12 @@ public class ManualActiveLagGraph extends ActiveLagGraph implements SessionModel
         return new ManualActiveLagGraph();
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 }
 

@@ -110,7 +110,7 @@ public final class UniformGraphGenerator {
     /**
      * Parent of random edge. 0 is the default parent node.
      */
-    private int randomParent = 0;
+    private int randomParent;
 
     /**
      * Child of random edge. 0 is the default child node.
@@ -130,32 +130,32 @@ public final class UniformGraphGenerator {
      *
      * @param structure One of ANY_DAG, POLYTREE, or CONNECTED_DAG.
      */
-    public UniformGraphGenerator(final int structure) {
+    public UniformGraphGenerator(int structure) {
         switch (structure) {
-            case UniformGraphGenerator.ANY_DAG:
-            case UniformGraphGenerator.CONNECTED_DAG:
+            case ANY_DAG:
+            case CONNECTED_DAG:
                 break;
             default:
                 throw new IllegalArgumentException("Unrecognized structure.");
         }
 
         this.structure = structure;
-        this.numNodes = 4;
-        this.maxInDegree = 3;
-        this.maxOutDegree = 3;
-        this.maxDegree = 6;
-        this.maxEdges = this.numNodes - 1;
+        numNodes = 4;
+        maxInDegree = 3;
+        maxOutDegree = 3;
+        maxDegree = 6;
+        maxEdges = numNodes - 1;
 
         // Determining the number of iterations for the chain to converge is a
         // difficult task. This value follows the DagAlea (see Melancon;Bousque,
         // 2000) suggestion, and we verified that this number is satisfatory. (Ide.)
-        this.numIterations = 6 * this.numNodes * this.numNodes;
+        numIterations = 6 * numNodes * numNodes;
     }
 
     //===============================PUBLIC METHODS========================//
 
     private int getNumNodes() {
-        return this.numNodes;
+        return numNodes;
     }
 
     /**
@@ -164,28 +164,28 @@ public final class UniformGraphGenerator {
      *
      * @param numNodes Must be an integer >= 4.
      */
-    public void setNumNodes(final int numNodes) {
+    public void setNumNodes(int numNodes) {
         if (numNodes < 1) {
             throw new IllegalArgumentException("Number of nodes must be >= 1.");
         }
 
         this.numNodes = numNodes;
-        this.maxDegree = numNodes - 1;
-        this.maxInDegree = numNodes - 1;
-        this.maxOutDegree = numNodes - 1;
-        this.maxEdges = numNodes - 1;
-        this.numIterations = 6 * numNodes * numNodes;
+        maxDegree = numNodes - 1;
+        maxInDegree = numNodes - 1;
+        maxOutDegree = numNodes - 1;
+        maxEdges = numNodes - 1;
+        numIterations = 6 * numNodes * numNodes;
 
-        if (this.numIterations > 300000000) {
-            this.numIterations = 300000000;
+        if (numIterations > 300000000) {
+            numIterations = 300000000;
         }
 
-        this.parentMatrix = null;
-        this.childMatrix = null;
+        parentMatrix = null;
+        childMatrix = null;
     }
 
     private int getMaxDegree() {
-        return this.maxDegree;
+        return maxDegree;
     }
 
     /**
@@ -193,7 +193,7 @@ public final class UniformGraphGenerator {
      *
      * @param maxDegree An integer between 3 and numNodes - 1, inclusively.
      */
-    public void setMaxDegree(final int maxDegree) {
+    public void setMaxDegree(int maxDegree) {
         if (maxDegree < 3) {
             throw new IllegalArgumentException("Degree of nodes must be >= 3.");
         }
@@ -202,15 +202,15 @@ public final class UniformGraphGenerator {
     }
 
     private int getMaxInDegree() {
-        return this.maxInDegree;
+        return maxInDegree;
     }
 
-    public void setMaxInDegree(final int maxInDegree) {
-        if (UniformGraphGenerator.ANY_DAG == getStructure() && getMaxInDegree() < 0) {
+    public void setMaxInDegree(int maxInDegree) {
+        if (ANY_DAG == this.getStructure() && this.getMaxInDegree() < 0) {
             throw new IllegalArgumentException("Max indegree must be >= 1 " +
                     "when generating DAGs without the assumption of " +
                     "connectedness.");
-        } else if (UniformGraphGenerator.CONNECTED_DAG == getStructure() && getMaxInDegree() < 2) {
+        } else if (CONNECTED_DAG == this.getStructure() && this.getMaxInDegree() < 2) {
             throw new IllegalArgumentException("Max indegree must be >= 2 " +
                     "when generating DAGs under the assumption of " +
                     "connectedness.");
@@ -220,17 +220,17 @@ public final class UniformGraphGenerator {
     }
 
     private int getMaxOutDegree() {
-        return this.maxOutDegree;
+        return maxOutDegree;
     }
 
-    public void setMaxOutDegree(final int maxOutDegree) {
-        if (UniformGraphGenerator.ANY_DAG == getStructure() && getMaxInDegree() < 1) {
+    public void setMaxOutDegree(int maxOutDegree) {
+        if (ANY_DAG == this.getStructure() && this.getMaxInDegree() < 1) {
             throw new IllegalArgumentException("Max indegree must be >= 1 " +
                     "when generating DAGs without the assumption of " +
                     "connectedness.");
         }
 
-        if (UniformGraphGenerator.CONNECTED_DAG == getStructure() && getMaxInDegree() < 2) {
+        if (CONNECTED_DAG == this.getStructure() && this.getMaxInDegree() < 2) {
             throw new IllegalArgumentException("Max indegree must be >= 2 " +
                     "when generating DAGs under the assumption of " +
                     "connectedness.");
@@ -240,11 +240,11 @@ public final class UniformGraphGenerator {
     }
 
     private int getMaxEdges() {
-        return this.maxEdges;
+        return maxEdges;
     }
 
     private int getMaxPossibleEdges() {
-        return getNumNodes() * getMaxDegree() / 2;
+        return this.getNumNodes() * this.getMaxDegree() / 2;
     }
 
     public void setMaxEdges(int maxEdges) {
@@ -252,8 +252,8 @@ public final class UniformGraphGenerator {
             throw new IllegalArgumentException("Max edges must be >= 0.");
         }
 
-        if (maxEdges > getMaxPossibleEdges()) {
-            maxEdges = getMaxPossibleEdges();
+        if (maxEdges > this.getMaxPossibleEdges()) {
+            maxEdges = this.getMaxPossibleEdges();
 //            System.out.println("\nThe value maxEdges = " +
 //                    maxEdges + " is too high; it has been set to the maximum " +
 //                    "number of possible edges, which is " +
@@ -264,22 +264,22 @@ public final class UniformGraphGenerator {
     }
 
     private int getNumIterations() {
-        return this.numIterations;
+        return numIterations;
     }
 
-    public void setNumIterations(final int numIterations) {
+    public void setNumIterations(int numIterations) {
         this.numIterations = numIterations;
     }
 
     private int getStructure() {
-        return this.structure;
+        return structure;
     }
 
     public void generate() {
-        if (UniformGraphGenerator.ANY_DAG == getStructure()) {
-            generateArbitraryDag();
-        } else if (UniformGraphGenerator.CONNECTED_DAG == getStructure()) {
-            generateConnectedDag();
+        if (ANY_DAG == this.getStructure()) {
+            this.generateArbitraryDag();
+        } else if (CONNECTED_DAG == this.getStructure()) {
+            this.generateConnectedDag();
         } else {
             throw new IllegalStateException("Unknown structure type.");
         }
@@ -288,38 +288,38 @@ public final class UniformGraphGenerator {
     public Graph getDag() {
         //System.out.println("Converting to DAG");
 
-        final List<Node> nodes = new ArrayList<>();
-        final NumberFormat nf = NumberFormat.getInstance();
+        List<Node> nodes = new ArrayList<>();
+        NumberFormat nf = NumberFormat.getInstance();
         nf.setMaximumFractionDigits(0);
 
-        final int numDigits = (int) Math.ceil(Math.log(this.numNodes) / Math.log(10.0));
+        int numDigits = (int) Math.ceil(Math.log(numNodes) / Math.log(10.0));
         nf.setMinimumIntegerDigits(numDigits);
         nf.setGroupingUsed(false);
 
 
-        for (int i = 1; i <= getNumNodes(); i++) {
-            final GraphNode node = new GraphNode("X" + nf.format(i));
+        for (int i = 1; i <= this.getNumNodes(); i++) {
+            GraphNode node = new GraphNode("X" + nf.format(i));
 //            dag.addIndex(node);
             nodes.add(node);
         }
 
-        return getDag(nodes);
+        return this.getDag(nodes);
     }
 
-    public Graph getDag(final List<Node> nodes) {
-        if (nodes.size() != getNumNodes()) {
+    public Graph getDag(List<Node> nodes) {
+        if (nodes.size() != this.getNumNodes()) {
             throw new IllegalArgumentException("Only " + nodes.size() + " nodes were provided, but the " +
-                    "simulated graph has " + getNumNodes() + ".");
+                    "simulated graph has " + this.getNumNodes() + ".");
         }
 
-        final Graph dag = new EdgeListGraph(nodes);
+        Graph dag = new EdgeListGraph(nodes);
 
-        for (int i = 0; i < getNumNodes(); i++) {
-            final Node child = nodes.get(i);
+        for (int i = 0; i < this.getNumNodes(); i++) {
+            Node child = nodes.get(i);
 
-            if (this.parentMatrix[i][0] != 1) {
-                for (int j = 1; j < this.parentMatrix[i][0]; j++) {
-                    final Node parent = nodes.get(this.parentMatrix[i][j]);
+            if (parentMatrix[i][0] != 1) {
+                for (int j = 1; j < parentMatrix[i][0]; j++) {
+                    Node parent = nodes.get(parentMatrix[i][j]);
                     dag.addDirectedEdge(parent, child);
 //                    System.out.println("Added " + dag.getEdge(parent, child));
                 }
@@ -336,26 +336,26 @@ public final class UniformGraphGenerator {
 
     public void printEdges() {
         System.out.println("Edges:");
-        for (int i = 0; i < getNumNodes(); i++) {
-            for (int j = 1; j < this.childMatrix[i][0]; j++) {
-                System.out.println("\t" + i + " --> " + this.childMatrix[i][j]);
+        for (int i = 0; i < this.getNumNodes(); i++) {
+            for (int j = 1; j < childMatrix[i][0]; j++) {
+                System.out.println("\t" + i + " --> " + childMatrix[i][j]);
             }
         }
     }
 
     public String toString() {
-        final String buf = "\nStructural information for generated graph:" +
-                "\n\tNumber of nodes:" + getNumNodes() +
-                "\n\tMax degree for each node:" + getMaxDegree() +
+        String buf = "\nStructural information for generated graph:" +
+                "\n\tNumber of nodes:" + this.getNumNodes() +
+                "\n\tMax degree for each node:" + this.getMaxDegree() +
                 "\n\tMaximum number of incoming edges for each node:" +
-                getMaxInDegree() +
+                this.getMaxInDegree() +
                 "\n\tMaximum number of outgoing edges for each node:" +
-                getMaxOutDegree() +
-                "\n\tMaximum total number of edges:" + getMaxEdges() +
-                " of " + getNumNodes() * getMaxDegree() / 2 +
+                this.getMaxOutDegree() +
+                "\n\tMaximum total number of edges:" + this.getMaxEdges() +
+                " of " + this.getNumNodes() * this.getMaxDegree() / 2 +
                 " possibles" +
                 "\n\tNumber of transitions between samples:" +
-                getNumIterations();
+                this.getNumIterations();
 
         return buf;
     }
@@ -363,27 +363,27 @@ public final class UniformGraphGenerator {
     //================================PRIVATE METHODS======================//
 
     private void generateArbitraryDag() {
-        initializeGraphAsEmpty();
+        this.initializeGraphAsEmpty();
 
-        if (getNumNodes() <= 1) {
+        if (this.getNumNodes() <= 1) {
             return;
         }
 
         int numEdges = 0;
 
-        for (int i = 0; i < getNumIterations(); i++) {
+        for (int i = 0; i < this.getNumIterations(); i++) {
 //            if (i % 10000000 == 0) System.out.println("..." + i);
 
-            sampleEdge();
+            this.sampleEdge();
 
-            if (edgeExists()) {
-                removeEdge();
+            if (this.edgeExists()) {
+                this.removeEdge();
                 numEdges--;
             } else {
-                if ((numEdges < getMaxEdges() && maxDegreeNotExceeded() &&
-                        maxIndegreeNotExceeded() && maxOutdegreeNotExceeded() &&
-                        isAcyclic())) {
-                    addEdge();
+                if ((numEdges < this.getMaxEdges() && this.maxDegreeNotExceeded() &&
+                        this.maxIndegreeNotExceeded() && this.maxOutdegreeNotExceeded() &&
+                        this.isAcyclic())) {
+                    this.addEdge();
                     numEdges++;
                 }
             }
@@ -396,52 +396,52 @@ public final class UniformGraphGenerator {
      * addition to acyclicity, some other conditions have been added in.
      */
     private void generateConnectedDag() {
-        initializeGraphAsChain();
+        this.initializeGraphAsChain();
 
-        if (getNumNodes() <= 1) {
+        if (this.getNumNodes() <= 1) {
             return;
         }
 
-        int totalEdges = getNumNodes() - 1;
+        int totalEdges = this.getNumNodes() - 1;
 
-        while (isDisconnecting()) {
-            sampleEdge();
+        while (this.isDisconnecting()) {
+            this.sampleEdge();
 
-            if (edgeExists()) {
+            if (this.edgeExists()) {
                 continue;
             }
 
-            if (isAcyclic() && maxDegreeNotExceeded()) {
-                addEdge();
+            if (this.isAcyclic() && this.maxDegreeNotExceeded()) {
+                this.addEdge();
                 totalEdges++;
             }
         }
 
-        for (int i = 0; i < getNumIterations(); i++) {
-            sampleEdge();
+        for (int i = 0; i < this.getNumIterations(); i++) {
+            this.sampleEdge();
 
-            if (edgeExists()) {
-                if (isDisconnecting()) {
-                    removeEdge();
-                    reverseDirection();
+            if (this.edgeExists()) {
+                if (this.isDisconnecting()) {
+                    this.removeEdge();
+                    this.reverseDirection();
 
-                    if (totalEdges < getMaxEdges() && maxDegreeNotExceeded() &&
-                            maxIndegreeNotExceeded() &&
-                            maxOutdegreeNotExceeded() && isAcyclic()) {
-                        addEdge();
+                    if (totalEdges < this.getMaxEdges() && this.maxDegreeNotExceeded() &&
+                            this.maxIndegreeNotExceeded() &&
+                            this.maxOutdegreeNotExceeded() && this.isAcyclic()) {
+                        this.addEdge();
                     } else {
-                        reverseDirection();
-                        addEdge();
+                        this.reverseDirection();
+                        this.addEdge();
                     }
                 } else {
-                    removeEdge();
+                    this.removeEdge();
                     totalEdges--;
                 }
             } else {
-                if (totalEdges < getMaxEdges() && maxDegreeNotExceeded() &&
-                        maxIndegreeNotExceeded() && maxOutdegreeNotExceeded() &&
-                        isAcyclic()) {
-                    addEdge();
+                if (totalEdges < this.getMaxEdges() && this.maxDegreeNotExceeded() &&
+                        this.maxIndegreeNotExceeded() && this.maxOutdegreeNotExceeded() &&
+                        this.isAcyclic()) {
+                    this.addEdge();
                     totalEdges++;
                 }
             }
@@ -449,17 +449,17 @@ public final class UniformGraphGenerator {
     }
 
     private void reverseDirection() {
-        final int temp = this.randomChild;
-        this.randomChild = this.randomParent;
-        this.randomParent = temp;
+        int temp = randomChild;
+        randomChild = randomParent;
+        randomParent = temp;
     }
 
     /**
      * @return true if the edge parent-->child exists in the graph.
      */
     private boolean edgeExists() {
-        for (int i = 1; i < this.parentMatrix[this.randomChild][0]; i++) {
-            if (this.parentMatrix[this.randomChild][i] == this.randomParent) {
+        for (int i = 1; i < parentMatrix[randomChild][0]; i++) {
+            if (parentMatrix[randomChild][i] == randomParent) {
                 return true;
             }
         }
@@ -471,11 +471,11 @@ public final class UniformGraphGenerator {
      * randomChild do not exceed maxDegree.
      */
     private boolean maxDegreeNotExceeded() {
-        final int parentDegree = this.parentMatrix[this.randomParent][0] +
-                this.childMatrix[this.randomParent][0] - 1;
-        final int childDegree =
-                this.parentMatrix[this.randomChild][0] + this.childMatrix[this.randomChild][0] - 1;
-        return parentDegree <= getMaxDegree() && childDegree <= getMaxDegree();
+        int parentDegree = parentMatrix[randomParent][0] +
+                childMatrix[randomParent][0] - 1;
+        int childDegree =
+                parentMatrix[randomChild][0] + childMatrix[randomChild][0] - 1;
+        return parentDegree <= this.getMaxDegree() && childDegree <= this.getMaxDegree();
     }
 
     /**
@@ -483,7 +483,7 @@ public final class UniformGraphGenerator {
      * randomChild do not exceed maxIndegree.
      */
     private boolean maxIndegreeNotExceeded() {
-        return this.parentMatrix[this.randomChild][0] <= getMaxInDegree();
+        return parentMatrix[randomChild][0] <= this.getMaxInDegree();
     }
 
     /**
@@ -491,7 +491,7 @@ public final class UniformGraphGenerator {
      * randomChild do not exceed maxOutdegree.
      */
     private boolean maxOutdegreeNotExceeded() {
-        return this.childMatrix[this.randomParent][0] <= getMaxOutDegree();
+        return childMatrix[randomParent][0] <= this.getMaxOutDegree();
     }
 
     /**
@@ -499,39 +499,39 @@ public final class UniformGraphGenerator {
      * disconnecting were it to be removed.
      */
     private boolean isDisconnecting() {
-        final boolean[] visited = new boolean[getNumNodes()];
-        final int[] list = new int[getNumNodes()];
+        boolean[] visited = new boolean[this.getNumNodes()];
+        int[] list = new int[this.getNumNodes()];
         int index = 0;
         int lastIndex = 1;
         list[0] = 0;
         visited[0] = true;
         while (index < lastIndex) {
-            final int currentNode = list[index];
+            int currentNode = list[index];
 
             // verify parents of getModel node
-            for (int i = 1; i < this.parentMatrix[currentNode][0]; i++) {
-                if (currentNode == this.randomChild &&
-                        this.parentMatrix[currentNode][i] == this.randomParent) {
+            for (int i = 1; i < parentMatrix[currentNode][0]; i++) {
+                if (currentNode == randomChild &&
+                        parentMatrix[currentNode][i] == randomParent) {
                     continue;
                 }
 
-                if (!visited[this.parentMatrix[currentNode][i]]) {
-                    list[lastIndex] = this.parentMatrix[currentNode][i];
-                    visited[this.parentMatrix[currentNode][i]] = true;
+                if (!visited[parentMatrix[currentNode][i]]) {
+                    list[lastIndex] = parentMatrix[currentNode][i];
+                    visited[parentMatrix[currentNode][i]] = true;
                     lastIndex++;
                 }
             }
 
             // verify children of getModel node
-            for (int i = 1; i < this.childMatrix[currentNode][0]; i++) {
-                if (currentNode == this.randomParent &&
-                        this.childMatrix[currentNode][i] == this.randomChild) {
+            for (int i = 1; i < childMatrix[currentNode][0]; i++) {
+                if (currentNode == randomParent &&
+                        childMatrix[currentNode][i] == randomChild) {
                     continue;
                 }
 
-                if (!visited[this.childMatrix[currentNode][i]]) {
-                    list[lastIndex] = this.childMatrix[currentNode][i];
-                    visited[this.childMatrix[currentNode][i]] = true;
+                if (!visited[childMatrix[currentNode][i]]) {
+                    list[lastIndex] = childMatrix[currentNode][i];
+                    visited[childMatrix[currentNode][i]] = true;
                     lastIndex++;
                 }
             }
@@ -540,7 +540,7 @@ public final class UniformGraphGenerator {
         }
 
         // verify whether all nodes were visited
-        for (final boolean aVisited : visited) {
+        for (boolean aVisited : visited) {
             if (!aVisited) {
                 return true;
             }
@@ -556,27 +556,27 @@ public final class UniformGraphGenerator {
      * an edge.
      */
     private boolean isAcyclic() {
-        final boolean[] visited = new boolean[getNumNodes()];
+        boolean[] visited = new boolean[this.getNumNodes()];
         boolean noCycle = true;
-        final int[] list = new int[getNumNodes() + 1];
+        int[] list = new int[this.getNumNodes() + 1];
         int index = 0;
         int lastIndex = 1;
-        list[0] = this.randomParent;
-        visited[this.randomParent] = true;
+        list[0] = randomParent;
+        visited[randomParent] = true;
         while (index < lastIndex && noCycle) {
-            final int currentNode = list[index];
+            int currentNode = list[index];
             int i = 1;
 
             // verify parents of getModel node
-            while ((i < this.parentMatrix[currentNode][0]) && noCycle) {
-                if (!visited[this.parentMatrix[currentNode][i]]) {
-                    if (this.parentMatrix[currentNode][i] != this.randomChild) {
-                        list[lastIndex] = this.parentMatrix[currentNode][i];
+            while ((i < parentMatrix[currentNode][0]) && noCycle) {
+                if (!visited[parentMatrix[currentNode][i]]) {
+                    if (parentMatrix[currentNode][i] != randomChild) {
+                        list[lastIndex] = parentMatrix[currentNode][i];
                         lastIndex++;
                     } else {
                         noCycle = false;
                     }
-                    visited[this.parentMatrix[currentNode][i]] = true;
+                    visited[parentMatrix[currentNode][i]] = true;
                 }
                 i++;
             }
@@ -591,21 +591,21 @@ public final class UniformGraphGenerator {
      */
     private void initializeGraphAsEmpty() {
         int max =
-                Math.max(getMaxInDegree() + getMaxOutDegree(), getMaxDegree());
+                Math.max(this.getMaxInDegree() + this.getMaxOutDegree(), this.getMaxDegree());
         max += 1;
 
-        this.parentMatrix = new int[getNumNodes()][max];
-        this.childMatrix = new int[getNumNodes()][max];
+        parentMatrix = new int[this.getNumNodes()][max];
+        childMatrix = new int[this.getNumNodes()][max];
 
-        for (int i = 0; i < getNumNodes(); i++) {
-            this.parentMatrix[i][0] = 1; //set first node
-            this.childMatrix[i][0] = 1;
+        for (int i = 0; i < this.getNumNodes(); i++) {
+            parentMatrix[i][0] = 1; //set first node
+            childMatrix[i][0] = 1;
         }
 
-        for (int i = 0; i < getNumNodes(); i++) {
+        for (int i = 0; i < this.getNumNodes(); i++) {
             for (int j = 1; j < max; j++) {
-                this.parentMatrix[i][j] = -5; //set first node
-                this.childMatrix[i][j] = -5;
+                parentMatrix[i][j] = -5; //set first node
+                childMatrix[i][j] = -5;
             }
         }
     }
@@ -614,26 +614,26 @@ public final class UniformGraphGenerator {
      * Initializes the graph as a simple ordered tree, 0-->1-->2-->...-->n.
      */
     private void initializeGraphAsChain() {
-        this.parentMatrix = new int[getNumNodes()][getMaxDegree() + 2];
-        this.childMatrix = new int[getNumNodes()][getMaxDegree() + 2];
+        parentMatrix = new int[this.getNumNodes()][this.getMaxDegree() + 2];
+        childMatrix = new int[this.getNumNodes()][this.getMaxDegree() + 2];
 
-        for (int i = 0; i < getNumNodes(); i++) {
-            for (int j = 1; j < getMaxDegree() + 1; j++) {
-                this.parentMatrix[i][j] = -5; //set first node
-                this.childMatrix[i][j] = -5;
+        for (int i = 0; i < this.getNumNodes(); i++) {
+            for (int j = 1; j < this.getMaxDegree() + 1; j++) {
+                parentMatrix[i][j] = -5; //set first node
+                childMatrix[i][j] = -5;
             }
         }
-        this.parentMatrix[0][0] = 1; //set first node
-        this.childMatrix[0][0] = 2;    //set first node
-        this.childMatrix[0][1] = 1;    //set first node
-        this.parentMatrix[getNumNodes() - 1][0] = 2;  //set last node
-        this.parentMatrix[getNumNodes() - 1][1] = getNumNodes() - 2;  //set last node
-        this.childMatrix[getNumNodes() - 1][0] = 1;     //set last node
-        for (int i = 1; i < (getNumNodes() - 1); i++) {  // set the other nodes
-            this.parentMatrix[i][0] = 2;
-            this.parentMatrix[i][1] = i - 1;
-            this.childMatrix[i][0] = 2;
-            this.childMatrix[i][1] = i + 1;
+        parentMatrix[0][0] = 1; //set first node
+        childMatrix[0][0] = 2;    //set first node
+        childMatrix[0][1] = 1;    //set first node
+        parentMatrix[this.getNumNodes() - 1][0] = 2;  //set last node
+        parentMatrix[this.getNumNodes() - 1][1] = this.getNumNodes() - 2;  //set last node
+        childMatrix[this.getNumNodes() - 1][0] = 1;     //set last node
+        for (int i = 1; i < (this.getNumNodes() - 1); i++) {  // set the other nodes
+            parentMatrix[i][0] = 2;
+            parentMatrix[i][1] = i - 1;
+            childMatrix[i][0] = 2;
+            childMatrix[i][1] = i + 1;
         }
     }
 
@@ -641,13 +641,13 @@ public final class UniformGraphGenerator {
      * Sets randomParent-->randomChild to a random edge, chosen uniformly.
      */
     private void sampleEdge() {
-        final int rand = this.randomUtil.nextInt(getNumNodes() * (getNumNodes() - 1));
-        this.randomParent = rand / (getNumNodes() - 1);
-        final int rest = rand - this.randomParent * (getNumNodes() - 1);
-        if (rest >= this.randomParent) {
-            this.randomChild = rest + 1;
+        int rand = randomUtil.nextInt(this.getNumNodes() * (this.getNumNodes() - 1));
+        randomParent = rand / (this.getNumNodes() - 1);
+        int rest = rand - randomParent * (this.getNumNodes() - 1);
+        if (rest >= randomParent) {
+            randomChild = rest + 1;
         } else {
-            this.randomChild = rest;
+            randomChild = rest;
         }
     }
 
@@ -655,10 +655,10 @@ public final class UniformGraphGenerator {
      * Adds the edge randomParent-->randomChild to the graph.
      */
     private void addEdge() {
-        this.childMatrix[this.randomParent][this.childMatrix[this.randomParent][0]] = this.randomChild;
-        this.childMatrix[this.randomParent][0]++;
-        this.parentMatrix[this.randomChild][this.parentMatrix[this.randomChild][0]] = this.randomParent;
-        this.parentMatrix[this.randomChild][0]++;
+        childMatrix[randomParent][childMatrix[randomParent][0]] = randomChild;
+        childMatrix[randomParent][0]++;
+        parentMatrix[randomChild][parentMatrix[randomChild][0]] = randomParent;
+        parentMatrix[randomChild][0]++;
     }
 
     /**
@@ -669,43 +669,43 @@ public final class UniformGraphGenerator {
         int lastNode;
         int proxNode;
         int atualNode;
-        if ((this.parentMatrix[this.randomChild][0] != 1) &&
-                (this.childMatrix[this.randomParent][0] != 1)) {
+        if ((parentMatrix[randomChild][0] != 1) &&
+                (childMatrix[randomParent][0] != 1)) {
             lastNode =
-                    this.parentMatrix[this.randomChild][this.parentMatrix[this.randomChild][0] - 1];
-            for (int i = (this.parentMatrix[this.randomChild][0] - 1); (i > 0 && go); i--) { // remove element from parentMatrix
-                atualNode = this.parentMatrix[this.randomChild][i];
-                if (atualNode != this.randomParent) {
+                    parentMatrix[randomChild][parentMatrix[randomChild][0] - 1];
+            for (int i = (parentMatrix[randomChild][0] - 1); (i > 0 && go); i--) { // remove element from parentMatrix
+                atualNode = parentMatrix[randomChild][i];
+                if (atualNode != randomParent) {
                     proxNode = atualNode;
-                    this.parentMatrix[this.randomChild][i] = lastNode;
+                    parentMatrix[randomChild][i] = lastNode;
                     lastNode = proxNode;
                 } else {
-                    this.parentMatrix[this.randomChild][i] = lastNode;
+                    parentMatrix[randomChild][i] = lastNode;
                     go = false;
                 }
             }
-            if ((this.childMatrix[this.randomParent][0] != 1) &&
-                    (this.childMatrix[this.randomParent][0] != 1)) {
-                lastNode = this.childMatrix[this.randomParent][
-                        this.childMatrix[this.randomParent][0] - 1];
+            if ((childMatrix[randomParent][0] != 1) &&
+                    (childMatrix[randomParent][0] != 1)) {
+                lastNode = childMatrix[randomParent][
+                        childMatrix[randomParent][0] - 1];
                 go = true;
-                for (int i = (this.childMatrix[this.randomParent][0] - 1); (i > 0 &&
+                for (int i = (childMatrix[randomParent][0] - 1); (i > 0 &&
                         go); i--) { // remove element from childMatrix
-                    atualNode = this.childMatrix[this.randomParent][i];
-                    if (atualNode != this.randomChild) {
+                    atualNode = childMatrix[randomParent][i];
+                    if (atualNode != randomChild) {
                         proxNode = atualNode;
-                        this.childMatrix[this.randomParent][i] = lastNode;
+                        childMatrix[randomParent][i] = lastNode;
                         lastNode = proxNode;
                     } else {
-                        this.childMatrix[this.randomParent][i] = lastNode;
+                        childMatrix[randomParent][i] = lastNode;
                         go = false;
                     }
                 } // end of for
             }
-            this.childMatrix[this.randomParent][(this.childMatrix[this.randomParent][0] - 1)] = -4;
-            this.childMatrix[this.randomParent][0]--;
-            this.parentMatrix[this.randomChild][(this.parentMatrix[this.randomChild][0] - 1)] = -4;
-            this.parentMatrix[this.randomChild][0]--;
+            childMatrix[randomParent][(childMatrix[randomParent][0] - 1)] = -4;
+            childMatrix[randomParent][0]--;
+            parentMatrix[randomChild][(parentMatrix[randomChild][0] - 1)] = -4;
+            parentMatrix[randomChild][0]--;
         }
     }
 }

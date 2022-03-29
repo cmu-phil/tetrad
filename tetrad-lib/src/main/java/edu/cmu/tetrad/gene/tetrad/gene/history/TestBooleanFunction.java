@@ -39,7 +39,7 @@ public class TestBooleanFunction extends TestCase {
     /**
      * Standard constructor for JUnit test cases.
      */
-    public TestBooleanFunction(final String name) {
+    public TestBooleanFunction(String name) {
         super(name);
     }
 
@@ -47,7 +47,7 @@ public class TestBooleanFunction extends TestCase {
      * Tests to make sure that null parent throw an exception.
      */
     public void testNullConstruction() {
-        final List parents = new ArrayList();
+        List parents = new ArrayList();
         for (int i = 0; i < 5; i++) {
             parents.add(new IndexedParent(1, 2));
         }
@@ -56,7 +56,7 @@ public class TestBooleanFunction extends TestCase {
         try {
             new BooleanFunction(
                     (IndexedParent[]) parents.toArray(new IndexedParent[0]));
-        } catch (final NullPointerException e) {
+        } catch (NullPointerException e) {
             return;
         }
 
@@ -67,14 +67,14 @@ public class TestBooleanFunction extends TestCase {
      * Tests to make sure the table is the correct size.
      */
     public void testTableSize() {
-        final int numParents = RandomUtil.getInstance().nextInt(5);
+        int numParents = RandomUtil.getInstance().nextInt(5);
 
-        final List parents = new ArrayList();
+        List parents = new ArrayList();
         for (int i = 0; i < numParents; i++) {
             parents.add(new IndexedParent(1, 2));
         }
 
-        final BooleanFunction function = new BooleanFunction(
+        BooleanFunction function = new BooleanFunction(
                 (IndexedParent[]) parents.toArray(new IndexedParent[0]));
 
         int size = 1;
@@ -91,14 +91,14 @@ public class TestBooleanFunction extends TestCase {
     public void testRowOrder() {
 
         // Create an AND function the hard way.
-        final boolean[] values = new boolean[2];
+        boolean[] values = new boolean[2];
         int row = 0;
 
         // Set up the function object with two parents.
-        final IndexedParent x = new IndexedParent(1, 2);
-        final IndexedParent y = new IndexedParent(2, 1);
-        final IndexedParent[] twoParents = new IndexedParent[]{x, y};
-        final BooleanFunction function = new BooleanFunction(twoParents);
+        IndexedParent x = new IndexedParent(1, 2);
+        IndexedParent y = new IndexedParent(2, 1);
+        IndexedParent[] twoParents = {x, y};
+        BooleanFunction function = new BooleanFunction(twoParents);
 
         // Set the first row to true.
         values[0] = true;
@@ -137,10 +137,10 @@ public class TestBooleanFunction extends TestCase {
      * functions fail.
      */
     public void testIsEffective() {
-        final IndexedParent x = new IndexedParent(0, 2);
-        final IndexedParent y = new IndexedParent(1, 2);
-        final IndexedParent z = new IndexedParent(2, 3);
-        final IndexedParent[] threeParents = new IndexedParent[]{x, y, z};
+        IndexedParent x = new IndexedParent(0, 2);
+        IndexedParent y = new IndexedParent(1, 2);
+        IndexedParent z = new IndexedParent(2, 3);
+        IndexedParent[] threeParents = {x, y, z};
         BooleanFunction function = null;
 
         // The following 3-parent function should pass.
@@ -176,11 +176,11 @@ public class TestBooleanFunction extends TestCase {
      * non-canalyzing functions (exclusive-OR, ...) fail.
      */
     public void testIsCanalyzing() {
-        final IndexedParent x = new IndexedParent(0, 1);
-        final IndexedParent y = new IndexedParent(1, 2);
-        final IndexedParent z = new IndexedParent(2, 3);
-        final IndexedParent[] twoParents = new IndexedParent[]{x, y};
-        final IndexedParent[] threeParents = new IndexedParent[]{x, y, z};
+        IndexedParent x = new IndexedParent(0, 1);
+        IndexedParent y = new IndexedParent(1, 2);
+        IndexedParent z = new IndexedParent(2, 3);
+        IndexedParent[] twoParents = {x, y};
+        IndexedParent[] threeParents = {x, y, z};
         BooleanFunction function = null;
 
         // AND should pass the isCanalyzing() test.

@@ -35,7 +35,7 @@ import java.util.List;
  */
 public class MetadataFileWriterTest {
 
-    private final Path metadataFile = Paths.get(getClass().getResource("/data/metadata/sim_mixed_intervention_metadata.json").getFile());
+    private final Path metadataFile = Paths.get(this.getClass().getResource("/data/metadata/sim_mixed_intervention_metadata.json").getFile());
 
     public MetadataFileWriterTest() {
     }
@@ -47,17 +47,17 @@ public class MetadataFileWriterTest {
      */
     @Test
     public void testWriteAsString() throws JsonProcessingException, IOException {
-        final List<ColumnMetadata> domainCols = new LinkedList<>();
+        List<ColumnMetadata> domainCols = new LinkedList<>();
         domainCols.add(new ColumnMetadata("X3", false));
         domainCols.add(new ColumnMetadata("X5", true));
 
-        final List<InterventionalColumn> intervCols = new LinkedList<>();
+        List<InterventionalColumn> intervCols = new LinkedList<>();
         intervCols.add(new InterventionalColumn(new ColumnMetadata("X9", true), new ColumnMetadata("X10", false)));
         intervCols.add(new InterventionalColumn(new ColumnMetadata("X8", false), null));
 
-        final Metadata metadata = new Metadata(domainCols, intervCols);
+        Metadata metadata = new Metadata(domainCols, intervCols);
 
-        final String json = (new MetadataFileWriter()).writeAsString(metadata);
+        String json = (new MetadataFileWriter()).writeAsString(metadata);
         Assert.assertTrue(!(json == null || json.isEmpty()));
     }
 

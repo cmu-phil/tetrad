@@ -62,13 +62,13 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
 
     //=============================CONSTRUCTORS============================//
 
-    public IdentifiabilityWrapper(final BayesImWrapperObs wrapper, final Parameters params) {
+    public IdentifiabilityWrapper(BayesImWrapperObs wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
 
-        final BayesIm bayesIm = wrapper.getBayesIm();
-        setup(bayesIm, params);
+        BayesIm bayesIm = wrapper.getBayesIm();
+        this.setup(bayesIm, params);
     }
 /*
     public RowSummingExactWrapper(DirichletBayesImWrapper wrapper, Parameters params) {
@@ -111,50 +111,50 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
     //==============================PUBLIC METHODS========================//
 
     public ManipulatingBayesUpdater getBayesUpdater() {
-        return this.bayesUpdater;
+        return bayesUpdater;
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
     //===============================PRIVATE METHODS======================//
 
-    private void setup(final BayesIm bayesIm, final Parameters params) {
-        TetradLogger.getInstance().setConfigForClass(this.getClass());
+    private void setup(BayesIm bayesIm, Parameters params) {
+        TetradLogger.getInstance().setConfigForClass(getClass());
         this.params = params;
         if (params.get("evidence", null) == null || ((Evidence) params.get("evidence", null)).isIncompatibleWith(bayesIm)) {
-            this.bayesUpdater = new Identifiability(bayesIm);
+            bayesUpdater = new Identifiability(bayesIm);
         } else {
-            this.bayesUpdater = new Identifiability(bayesIm,
+            bayesUpdater = new Identifiability(bayesIm,
                     (Evidence) params.get("evidence", null));
         }
 
 
-        final Node node = (Node) getParams().get("variable", null);
+        Node node = (Node) this.getParams().get("variable", null);
 
         if (node != null) {
-            final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+            NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
             TetradLogger.getInstance().log("info", "\nIdentifiability");
 
-            final String nodeName = node.getName();
-            final int nodeIndex = bayesIm.getNodeIndex(bayesIm.getNode(nodeName));
-            final double[] priors = getBayesUpdater().calculatePriorMarginals(nodeIndex);
-            final double[] marginals = getBayesUpdater().calculateUpdatedMarginals(nodeIndex);
+            String nodeName = node.getName();
+            int nodeIndex = bayesIm.getNodeIndex(bayesIm.getNode(nodeName));
+            double[] priors = this.getBayesUpdater().calculatePriorMarginals(nodeIndex);
+            double[] marginals = this.getBayesUpdater().calculateUpdatedMarginals(nodeIndex);
 
             TetradLogger.getInstance().log("details", "\nVariable = " + nodeName);
             TetradLogger.getInstance().log("details", "\nEvidence:");
-            final Evidence evidence = (Evidence) getParams().get("evidence", null);
-            final Proposition proposition = evidence.getProposition();
+            Evidence evidence = (Evidence) this.getParams().get("evidence", null);
+            Proposition proposition = evidence.getProposition();
 
             for (int i = 0; i < proposition.getNumVariables(); i++) {
-                final Node variable = proposition.getVariableSource().getVariables().get(i);
-                final int category = proposition.getSingleCategory(i);
+                Node variable = proposition.getVariableSource().getVariables().get(i);
+                int category = proposition.getSingleCategory(i);
 
                 if (category != -1) {
                     TetradLogger.getInstance().log("details", "\t" + variable + " = " + category);
@@ -164,19 +164,19 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
             TetradLogger.getInstance().log("details", "\nCat.\tPrior\tMarginal");
 
             for (int i = 0; i < priors.length; i++) {
-                TetradLogger.getInstance().log("details", category(evidence, nodeName, i) + "\t"
+                TetradLogger.getInstance().log("details", this.category(evidence, nodeName, i) + "\t"
                         + nf.format(priors[i]) + "\t" + nf.format(marginals[i]));
             }
         }
         TetradLogger.getInstance().reset();
     }
 
-    private String category(final Evidence evidence, final String nodeName, final int i) {
-        final DiscreteVariable variable = discreteVariable(evidence, nodeName);
+    private String category(Evidence evidence, String nodeName, int i) {
+        DiscreteVariable variable = this.discreteVariable(evidence, nodeName);
         return variable.getCategory(i);
     }
 
-    private DiscreteVariable discreteVariable(final Evidence evidence, final String nodeName) {
+    private DiscreteVariable discreteVariable(Evidence evidence, String nodeName) {
         return evidence.getVariable(nodeName);
     }
 
@@ -193,17 +193,17 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (getBayesUpdater() == null) {
+        if (this.getBayesUpdater() == null) {
             throw new NullPointerException();
         }
     }
 
     public Parameters getParams() {
-        return this.params;
+        return params;
     }
 }
 

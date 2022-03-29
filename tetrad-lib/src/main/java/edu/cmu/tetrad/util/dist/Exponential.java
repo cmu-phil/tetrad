@@ -34,7 +34,7 @@ public class Exponential implements Distribution {
 
     private double lambda;
 
-    public Exponential(final double lambda) {
+    public Exponential(double lambda) {
         this.lambda = lambda;
     }
 
@@ -55,23 +55,23 @@ public class Exponential implements Distribution {
         return new Exponential(.5);
     }
 
-    public void setParameter(final int index, final double value) {
+    public void setParameter(int index, double value) {
         if (index == 0) {
-            this.lambda = value;
+            lambda = value;
         }
 
         throw new IllegalArgumentException();
     }
 
-    public double getParameter(final int index) {
+    public double getParameter(int index) {
         if (index == 0) {
-            return this.lambda;
+            return lambda;
         }
 
         throw new IllegalArgumentException();
     }
 
-    public String getParameterName(final int index) {
+    public String getParameterName(int index) {
         if (index == 0) {
             return "Lambda";
         }
@@ -80,11 +80,11 @@ public class Exponential implements Distribution {
     }
 
     public double nextRandom() {
-        return RandomUtil.getInstance().nextExponential(this.lambda);
+        return RandomUtil.getInstance().nextExponential(lambda);
     }
 
     public String toString() {
-        return "Exponential(" + this.lambda + ")";
+        return "Exponential(" + lambda + ")";
     }
 }
 

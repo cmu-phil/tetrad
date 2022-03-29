@@ -57,13 +57,13 @@ public class Peter1Score implements Score {
 
     // True if linear dependencies should return NaN for the score, and hence be
     // ignored by FGES
-    private boolean ignoreLinearDependent = false;
+    private boolean ignoreLinearDependent;
 
     // The printstream output should be sent to.
     private PrintStream out = System.out;
 
     // True if verbose output should be sent to out.
-    private boolean verbose = false;
+    private boolean verbose;
 
     // Variables that caused computational problems and so are to be avoided.
     private final Set<Integer> forbidden = new HashSet<>();
@@ -71,52 +71,52 @@ public class Peter1Score implements Score {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public Peter1Score(final ICovarianceMatrix covariances) {
+    public Peter1Score(ICovarianceMatrix covariances) {
         if (covariances == null) {
             throw new NullPointerException();
         }
 
-        this.setCovariances(covariances);
-        this.variables = covariances.getVariables();
-        this.sampleSize = covariances.getSampleSize();
+        setCovariances(covariances);
+        variables = covariances.getVariables();
+        sampleSize = covariances.getSampleSize();
     }
 
     /**
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */
-    public double localScore(final int i, int... parents) {
-        for (final int p : parents) if (this.forbidden.contains(p)) return Double.NaN;
+    public double localScore(int i, int... parents) {
+        for (int p : parents) if (forbidden.contains(p)) return Double.NaN;
 
         try {
-            double s2 = getCovariances().getValue(i, i);
-            final int p = parents.length;
+            double s2 = this.getCovariances().getValue(i, i);
+            int p = parents.length;
 
-            final Matrix covxx = getSelection(getCovariances(), parents, parents);
-            final Vector covxy = getSelection(getCovariances(), parents, new int[]{i}).getColumn(0);
+            Matrix covxx = this.getSelection(this.getCovariances(), parents, parents);
+            Vector covxy = this.getSelection(this.getCovariances(), parents, new int[]{i}).getColumn(0);
             s2 -= covxx.inverse().times(covxy).dotProduct(covxy);
 
             if (s2 <= 0) {
-                if (isVerbose()) {
-                    this.out.println("Nonpositive residual varianceY: resVar / varianceY = " + (s2 / getCovariances().getValue(i, i)));
+                if (this.isVerbose()) {
+                    out.println("Nonpositive residual varianceY: resVar / varianceY = " + (s2 / this.getCovariances().getValue(i, i)));
                 }
 
                 return Double.NaN;
             }
 
-            final int n = getSampleSize();
-            final int k = 2 * p + 1;
+            int n = this.getSampleSize();
+            int k = 2 * p + 1;
             s2 = ((n) / (double) (n - k)) * s2;
-            return -(n) * log(s2) - getPenaltyDiscount() * k * log(n);
-        } catch (final Exception e) {
+            return -(n) * log(s2) - this.getPenaltyDiscount() * k * log(n);
+        } catch (Exception e) {
             boolean removedOne = true;
 
             while (removedOne) {
-                final List<Integer> _parents = new ArrayList<>();
-                for (final int parent : parents) _parents.add(parent);
-                _parents.removeAll(this.forbidden);
+                List<Integer> _parents = new ArrayList<>();
+                for (int parent : parents) _parents.add(parent);
+                _parents.removeAll(forbidden);
                 parents = new int[_parents.size()];
                 for (int y = 0; y < _parents.size(); y++) parents[y] = _parents.get(y);
-                removedOne = printMinimalLinearlyDependentSet(parents, getCovariances());
+                removedOne = this.printMinimalLinearlyDependentSet(parents, this.getCovariances());
             }
 
             return Double.NaN;
@@ -124,17 +124,17 @@ public class Peter1Score implements Score {
     }
 
     @Override
-    public double localScoreDiff(final int x, final int y, final int[] z) {
-        return localScore(y, append(z, x)) - localScore(y, z);
+    public double localScoreDiff(int x, int y, int[] z) {
+        return this.localScore(y, this.append(z, x)) - this.localScore(y, z);
     }
 
     @Override
-    public double localScoreDiff(final int x, final int y) {
-        return localScore(y, x) - localScore(y);
+    public double localScoreDiff(int x, int y) {
+        return this.localScore(y, x) - this.localScore(y);
     }
 
-    private int[] append(final int[] parents, final int extra) {
-        final int[] all = new int[parents.length + 1];
+    private int[] append(int[] parents, int extra) {
+        int[] all = new int[parents.length + 1];
         System.arraycopy(parents, 0, all, 1, parents.length);
         all[0] = extra;
         return all;
@@ -143,8 +143,8 @@ public class Peter1Score implements Score {
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
-    public double localScore(final int i, final int parent) {
-        return localScore(i, new int[]{parent});
+    public double localScore(int i, int parent) {
+        return this.localScore(i, new int[]{parent});
 
 //        double residualVariance = getCovariances().getValue(i, i);
 //        int n = getSampleSize();
@@ -176,8 +176,8 @@ public class Peter1Score implements Score {
     /**
      * Specialized scoring method for no parents. Used to speed up the effect edges search.
      */
-    public double localScore(final int i) {
-        return localScore(i, new int[0]);
+    public double localScore(int i) {
+        return this.localScore(i, new int[0]);
 //        double residualVariance = getCovariances().getValue(i, i);
 //        int n = getSampleSize();
 //        int p = 0;
@@ -197,31 +197,31 @@ public class Peter1Score implements Score {
      * True iff edges that cause linear dependence are ignored.
      */
     public boolean isIgnoreLinearDependent() {
-        return this.ignoreLinearDependent;
+        return ignoreLinearDependent;
     }
 
-    public void setIgnoreLinearDependent(final boolean ignoreLinearDependent) {
+    public void setIgnoreLinearDependent(boolean ignoreLinearDependent) {
         this.ignoreLinearDependent = ignoreLinearDependent;
     }
 
-    public void setOut(final PrintStream out) {
+    public void setOut(PrintStream out) {
         this.out = out;
     }
 
     public double getPenaltyDiscount() {
-        return this.penaltyDiscount;
+        return penaltyDiscount;
     }
 
     public ICovarianceMatrix getCovariances() {
-        return this.covariances;
+        return covariances;
     }
 
     public int getSampleSize() {
-        return this.sampleSize;
+        return sampleSize;
     }
 
     @Override
-    public boolean isEffectEdge(final double bump) {
+    public boolean isEffectEdge(double bump) {
         return bump > 0;//-0.25 * getPenaltyDiscount() * Math.log(sampleSize);
     }
 
@@ -229,51 +229,51 @@ public class Peter1Score implements Score {
         throw new UnsupportedOperationException();
     }
 
-    public void setPenaltyDiscount(final double penaltyDiscount) {
+    public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
     }
 
     public boolean isVerbose() {
-        return this.verbose;
+        return verbose;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     @Override
     public List<Node> getVariables() {
-        return this.variables;
+        return variables;
     }
 
-    private Matrix getSelection(final ICovarianceMatrix cov, final int[] rows, final int[] cols) {
+    private Matrix getSelection(ICovarianceMatrix cov, int[] rows, int[] cols) {
         return cov.getSelection(rows, cols);
     }
 
     // Prints a smallest subset of parents that causes a singular matrix exception.
-    private boolean printMinimalLinearlyDependentSet(final int[] parents, final ICovarianceMatrix cov) {
-        final List<Node> _parents = new ArrayList<>();
-        for (final int p : parents) _parents.add(this.variables.get(p));
+    private boolean printMinimalLinearlyDependentSet(int[] parents, ICovarianceMatrix cov) {
+        List<Node> _parents = new ArrayList<>();
+        for (int p : parents) _parents.add(variables.get(p));
 
-        final DepthChoiceGenerator gen = new DepthChoiceGenerator(_parents.size(), _parents.size());
+        DepthChoiceGenerator gen = new DepthChoiceGenerator(_parents.size(), _parents.size());
         int[] choice;
 
         while ((choice = gen.next()) != null) {
-            final int[] sel = new int[choice.length];
-            final List<Node> _sel = new ArrayList<>();
+            int[] sel = new int[choice.length];
+            List<Node> _sel = new ArrayList<>();
             for (int m = 0; m < choice.length; m++) {
                 sel[m] = parents[m];
-                _sel.add(this.variables.get(sel[m]));
+                _sel.add(variables.get(sel[m]));
             }
 
-            final Matrix m = cov.getSelection(sel, sel);
+            Matrix m = cov.getSelection(sel, sel);
 
             try {
                 m.inverse();
-            } catch (final Exception e2) {
-                this.forbidden.add(sel[0]);
-                this.out.println("### Linear dependence among variables: " + _sel);
-                this.out.println("### Removing " + _sel.get(0));
+            } catch (Exception e2) {
+                forbidden.add(sel[0]);
+                out.println("### Linear dependence among variables: " + _sel);
+                out.println("### Removing " + _sel.get(0));
                 return true;
             }
         }
@@ -281,18 +281,18 @@ public class Peter1Score implements Score {
         return false;
     }
 
-    private void setCovariances(final ICovarianceMatrix covariances) {
+    private void setCovariances(ICovarianceMatrix covariances) {
         this.covariances = covariances;
     }
 
-    public void setVariables(final List<Node> variables) {
-        this.covariances.setVariables(variables);
+    public void setVariables(List<Node> variables) {
+        covariances.setVariables(variables);
         this.variables = variables;
     }
 
     @Override
-    public Node getVariable(final String targetName) {
-        for (final Node node : this.variables) {
+    public Node getVariable(String targetName) {
+        for (Node node : variables) {
             if (node.getName().equals(targetName)) {
                 return node;
             }
@@ -303,20 +303,20 @@ public class Peter1Score implements Score {
 
     @Override
     public int getMaxDegree() {
-        return (int) Math.ceil(log(this.sampleSize));
+        return (int) Math.ceil(log(sampleSize));
     }
 
     @Override
-    public boolean determines(final List<Node> z, final Node y) {
-        final int i = this.variables.indexOf(y);
+    public boolean determines(List<Node> z, Node y) {
+        int i = variables.indexOf(y);
 
-        final int[] k = new int[z.size()];
+        int[] k = new int[z.size()];
 
         for (int t = 0; t < z.size(); t++) {
-            k[t] = this.variables.indexOf(z.get(t));
+            k[t] = variables.indexOf(z.get(t));
         }
 
-        final double v = localScore(i, k);
+        double v = this.localScore(i, k);
 
         return Double.isNaN(v);
     }

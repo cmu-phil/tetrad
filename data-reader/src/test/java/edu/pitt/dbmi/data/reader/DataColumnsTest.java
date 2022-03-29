@@ -37,8 +37,8 @@ import java.nio.file.Paths;
  */
 public class DataColumnsTest {
 
-    Path dataFile = Paths.get(getClass().getResource("/data/metadata/sim_mixed_intervention.txt").getFile());
-    Path metadataFile = Paths.get(getClass().getResource("/data/metadata/sim_mixed_intervention_metadata.json").getFile());
+    Path dataFile = Paths.get(this.getClass().getResource("/data/metadata/sim_mixed_intervention.txt").getFile());
+    Path metadataFile = Paths.get(this.getClass().getResource("/data/metadata/sim_mixed_intervention_metadata.json").getFile());
 
     private final Delimiter delimiter = Delimiter.TAB;
 
@@ -52,15 +52,15 @@ public class DataColumnsTest {
      */
     @Test
     public void testUpdate() throws IOException {
-        final TabularColumnReader columnReader = new TabularColumnFileReader(this.dataFile, this.delimiter);
+        TabularColumnReader columnReader = new TabularColumnFileReader(dataFile, delimiter);
         DataColumn[] dataColumns = columnReader.readInDataColumns(true);
 
         long expected = 10;
         long actual = dataColumns.length;
         Assert.assertEquals(expected, actual);
 
-        final MetadataReader metadataReader = new MetadataFileReader(this.metadataFile);
-        final Metadata metadata = metadataReader.read();
+        MetadataReader metadataReader = new MetadataFileReader(metadataFile);
+        Metadata metadata = metadataReader.read();
         dataColumns = DataColumns.update(dataColumns, metadata);
 
         expected = 11;

@@ -61,7 +61,7 @@ public class DeltaTetradTest {
      * Constructs a test using a given data set. If a data set is provided (that is, a tabular data set), fourth moment
      * statistics can be calculated (p. 160); otherwise, it must be assumed that the data are multivariate Gaussian.
      */
-    public DeltaTetradTest(final DataSet dataSet) {
+    public DeltaTetradTest(DataSet dataSet) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
@@ -70,23 +70,23 @@ public class DeltaTetradTest {
             throw new IllegalArgumentException();
         }
 
-        this.cov = new CovarianceMatrix(dataSet);
+        cov = new CovarianceMatrix(dataSet);
 
-        final List<DataSet> data1 = new ArrayList<>();
+        List<DataSet> data1 = new ArrayList<>();
         data1.add(dataSet);
-        final List<DataSet> data2 = DataUtils.center(data1);
+        List<DataSet> data2 = DataUtils.center(data1);
 
         this.dataSet = data2.get(0);
 
-        this.data = this.dataSet.getDoubleData().transpose().toArray();
-        this.N = dataSet.getNumRows();
-        this.variables = dataSet.getVariables();
+        data = this.dataSet.getDoubleData().transpose().toArray();
+        N = dataSet.getNumRows();
+        variables = dataSet.getVariables();
 //        this.numVars = dataSet.getNumColumns();
 
-        this.variablesHash = new HashMap<>();
+        variablesHash = new HashMap<>();
 
-        for (int i = 0; i < this.variables.size(); i++) {
-            this.variablesHash.put(this.variables.get(i), i);
+        for (int i = 0; i < variables.size(); i++) {
+            variablesHash.put(variables.get(i), i);
         }
 
 //        this.means = new double[numVars];
@@ -100,19 +100,19 @@ public class DeltaTetradTest {
      * Constructs a test using the given covariance matrix. Fourth moment statistics are not caculated; it is assumed
      * that the data are distributed as multivariate Gaussian.
      */
-    public DeltaTetradTest(final ICovarianceMatrix cov) {
+    public DeltaTetradTest(ICovarianceMatrix cov) {
         if (cov == null) {
             throw new NullPointerException();
         }
 
         this.cov = cov;
-        this.N = cov.getSampleSize();
-        this.variables = cov.getVariables();
+        N = cov.getSampleSize();
+        variables = cov.getVariables();
 
-        this.variablesHash = new HashMap<>();
+        variablesHash = new HashMap<>();
 
-        for (int i = 0; i < this.variables.size(); i++) {
-            this.variablesHash.put(this.variables.get(i), i);
+        for (int i = 0; i < variables.size(); i++) {
+            variablesHash.put(variables.get(i), i);
         }
     }
 
@@ -128,55 +128,55 @@ public class DeltaTetradTest {
      * Calculates the T statistic (Bollen and Ting, p. 161). This is significant if tests as significant using the Chi
      * Square distribution with degrees of freedom equal to the number of nonredundant tetrads tested.
      */
-    public double calcChiSquare(final Tetrad... tetrads) {
-        this.df = tetrads.length;
+    public double calcChiSquare(Tetrad... tetrads) {
+        df = tetrads.length;
 
         // Need a list of symbolic covariances--i.e. covariances that appear in tetrads.
-        final Set<Sigma> boldSigmaSet = new LinkedHashSet<>();
-        final List<Sigma> boldSigma = new ArrayList<>();
+        Set<Sigma> boldSigmaSet = new LinkedHashSet<>();
+        List<Sigma> boldSigma = new ArrayList<>();
 
-        for (final Tetrad tetrad : tetrads) {
+        for (Tetrad tetrad : tetrads) {
             boldSigmaSet.add(new Sigma(tetrad.getI(), tetrad.getK()));
             boldSigmaSet.add(new Sigma(tetrad.getI(), tetrad.getL()));
             boldSigmaSet.add(new Sigma(tetrad.getJ(), tetrad.getK()));
             boldSigmaSet.add(new Sigma(tetrad.getJ(), tetrad.getL()));
         }
 
-        for (final Sigma sigma : boldSigmaSet) {
+        for (Sigma sigma : boldSigmaSet) {
             boldSigma.add(sigma);
         }
 
         // Need a matrix of variances and covariances of sample covariances.
-        final Matrix sigma_ss = new Matrix(boldSigma.size(), boldSigma.size());
+        Matrix sigma_ss = new Matrix(boldSigma.size(), boldSigma.size());
 
         for (int i = 0; i < boldSigma.size(); i++) {
             for (int j = 0; j < boldSigma.size(); j++) {
-                final Sigma sigmaef = boldSigma.get(i);
-                final Sigma sigmagh = boldSigma.get(j);
+                Sigma sigmaef = boldSigma.get(i);
+                Sigma sigmagh = boldSigma.get(j);
 
-                final Node e = sigmaef.getA();
-                final Node f = sigmaef.getB();
-                final Node g = sigmagh.getA();
-                final Node h = sigmagh.getB();
+                Node e = sigmaef.getA();
+                Node f = sigmaef.getB();
+                Node g = sigmagh.getA();
+                Node h = sigmagh.getB();
 
-                if (this.cov != null && this.cov instanceof CorrelationMatrix) {
+                if (cov != null && cov instanceof CorrelationMatrix) {
 
 //                Assumes multinormality. Using formula 23. (Not implementing formula 22 because that case
 //                does not come up.)
-                    final double rr = 0.5 * (sxy(e, f) * sxy(g, h))
-                            * (sxy(e, g) * sxy(e, g) + sxy(e, h) * sxy(e, h) + sxy(f, g) * sxy(f, g) + sxy(f, h) * sxy(f, h))
-                            + sxy(e, g) * sxy(f, h) + sxy(e, h) * sxy(f, g)
-                            - sxy(e, f) * (sxy(f, g) * sxy(f, h) + sxy(e, g) * sxy(e, h))
-                            - sxy(g, h) * (sxy(f, g) * sxy(e, g) + sxy(f, h) * sxy(e, h));
+                    double rr = 0.5 * (this.sxy(e, f) * this.sxy(g, h))
+                            * (this.sxy(e, g) * this.sxy(e, g) + this.sxy(e, h) * this.sxy(e, h) + this.sxy(f, g) * this.sxy(f, g) + this.sxy(f, h) * this.sxy(f, h))
+                            + this.sxy(e, g) * this.sxy(f, h) + this.sxy(e, h) * this.sxy(f, g)
+                            - this.sxy(e, f) * (this.sxy(f, g) * this.sxy(f, h) + this.sxy(e, g) * this.sxy(e, h))
+                            - this.sxy(g, h) * (this.sxy(f, g) * this.sxy(e, g) + this.sxy(f, h) * this.sxy(e, h));
 
                     sigma_ss.set(i, j, rr);
-                } else if (this.cov != null && this.dataSet == null) {
+                } else if (cov != null && dataSet == null) {
 
                     // Assumes multinormality--see p. 160.
-                    final double _ss = sxy(e, g) * sxy(f, h) - sxy(e, h) * sxy(f, g);   // + or -? Different advise. + in the code.
+                    double _ss = this.sxy(e, g) * this.sxy(f, h) - this.sxy(e, h) * this.sxy(f, g);   // + or -? Different advise. + in the code.
                     sigma_ss.set(i, j, _ss);
                 } else {
-                    final double _ss = sxyzw(e, f, g, h) - sxy(e, f) * sxy(g, h);
+                    double _ss = this.sxyzw(e, f, g, h) - this.sxy(e, f) * this.sxy(g, h);
                     sigma_ss.set(i, j, _ss);
                 }
             }
@@ -184,52 +184,52 @@ public class DeltaTetradTest {
 
         // Need a matrix of of population estimates of partial derivatives of tetrads
         // with respect to covariances in boldSigma.w
-        final Matrix del = new Matrix(boldSigma.size(), tetrads.length);
+        Matrix del = new Matrix(boldSigma.size(), tetrads.length);
 
         for (int i = 0; i < boldSigma.size(); i++) {
             for (int j = 0; j < tetrads.length; j++) {
-                final Sigma sigma = boldSigma.get(i);
-                final Tetrad tetrad = tetrads[j];
+                Sigma sigma = boldSigma.get(i);
+                Tetrad tetrad = tetrads[j];
 
-                final Node e = tetrad.getI();
-                final Node f = tetrad.getJ();
-                final Node g = tetrad.getK();
-                final Node h = tetrad.getL();
+                Node e = tetrad.getI();
+                Node f = tetrad.getJ();
+                Node g = tetrad.getK();
+                Node h = tetrad.getL();
 
-                final double derivative = getDerivative(e, f, g, h, sigma.getA(), sigma.getB());
+                double derivative = this.getDerivative(e, f, g, h, sigma.getA(), sigma.getB());
                 del.set(i, j, derivative);
             }
         }
 
         // Need a vector of population estimates of the tetrads.
-        final Matrix t = new Matrix(tetrads.length, 1);
+        Matrix t = new Matrix(tetrads.length, 1);
 
         for (int i = 0; i < tetrads.length; i++) {
-            final Tetrad tetrad = tetrads[i];
+            Tetrad tetrad = tetrads[i];
 
-            final Node e = tetrad.getI();
-            final Node f = tetrad.getJ();
-            final Node g = tetrad.getK();
-            final Node h = tetrad.getL();
+            Node e = tetrad.getI();
+            Node f = tetrad.getJ();
+            Node g = tetrad.getK();
+            Node h = tetrad.getL();
 
-            final double d1 = sxy(e, f);
-            final double d2 = sxy(g, h);
-            final double d3 = sxy(e, g);
-            final double d4 = sxy(f, h);
+            double d1 = this.sxy(e, f);
+            double d2 = this.sxy(g, h);
+            double d3 = this.sxy(e, g);
+            double d4 = this.sxy(f, h);
 
-            final double value = d1 * d2 - d3 * d4;
+            double value = d1 * d2 - d3 * d4;
             t.set(i, 0, value);
         }
 
         // Now multiply to get Sigma_tt
-        final Matrix w1 = del.transpose().times(sigma_ss);
-        final Matrix sigma_tt = w1.times(del);
+        Matrix w1 = del.transpose().times(sigma_ss);
+        Matrix sigma_tt = w1.times(del);
 
         // And now invert and multiply to get T.
-        final Matrix v0 = sigma_tt.inverse();
-        final Matrix v1 = t.transpose().times(v0);
-        final Matrix v2 = v1.times(t);
-        final double chisq = this.N * v2.get(0, 0);
+        Matrix v0 = sigma_tt.inverse();
+        Matrix v1 = t.transpose().times(v0);
+        Matrix v2 = v1.times(t);
+        double chisq = N * v2.get(0, 0);
 
         this.chisq = chisq;
 
@@ -240,26 +240,26 @@ public class DeltaTetradTest {
      * @return the p value for the most recent test.
      */
     public double getPValue() {
-        final double cdf = new ChiSquaredDistribution(this.df).cumulativeProbability(this.chisq);
+        double cdf = new ChiSquaredDistribution(df).cumulativeProbability(chisq);
         return 1.0 - cdf;
     }
 
-    public double getPValue(final Tetrad... tetrads) {
-        calcChiSquare(tetrads);
-        return getPValue();
+    public double getPValue(Tetrad... tetrads) {
+        this.calcChiSquare(tetrads);
+        return this.getPValue();
     }
 
-    private double sxyzw(final Node e, final Node f, final Node g, final Node h) {
-        if (this.dataSet == null) {
+    private double sxyzw(Node e, Node f, Node g, Node h) {
+        if (dataSet == null) {
             throw new IllegalArgumentException("To calculate sxyzw, tabular data is needed.");
         }
 
-        final int x = this.variablesHash.get(e);
-        final int y = this.variablesHash.get(f);
-        final int z = this.variablesHash.get(g);
-        final int w = this.variablesHash.get(h);
+        int x = variablesHash.get(e);
+        int y = variablesHash.get(f);
+        int z = variablesHash.get(g);
+        int w = variablesHash.get(h);
 
-        return getForthMoment(x, y, z, w);
+        return this.getForthMoment(x, y, z, w);
     }
 
 //    private void setForthMoment(int x, int y, int z, int w, double sxyzw) {
@@ -292,7 +292,7 @@ public class DeltaTetradTest {
 //        fourthMoment[w][z][y][x] = sxyzw;
 //    }
 
-    private double getForthMoment(final int x, final int y, final int z, final int w) {
+    private double getForthMoment(int x, int y, int z, int w) {
 //        if (cacheFourthMoments) {
 //            if (fourthMoment == null) {
 //                initializeForthMomentMatrix(dataSet.getVariable());
@@ -307,7 +307,7 @@ public class DeltaTetradTest {
 //
 //            return sxyzw;
 //        } else {
-        return sxyzw(x, y, z, w);
+        return this.sxyzw(x, y, z, w);
 //        }
     }
 
@@ -315,50 +315,50 @@ public class DeltaTetradTest {
      * If using a covariance matrix or a correlation matrix, just returns the lookups. Otherwise calculates the
      * covariance.
      */
-    private double sxy(final Node _node1, final Node _node2) {
-        final int i = this.variablesHash.get(_node1);
-        final int j = this.variablesHash.get(_node2);
+    private double sxy(Node _node1, Node _node2) {
+        int i = variablesHash.get(_node1);
+        int j = variablesHash.get(_node2);
 
-        if (this.cov != null) {
-            return this.cov.getValue(i, j);
+        if (cov != null) {
+            return cov.getValue(i, j);
         } else {
-            final double[] arr1 = this.data[i];
-            final double[] arr2 = this.data[j];
-            return sxy(arr1, arr2, arr1.length);
+            double[] arr1 = data[i];
+            double[] arr2 = data[j];
+            return this.sxy(arr1, arr2, arr1.length);
         }
     }
 
-    private double getDerivative(final Node node1, final Node node2, final Node node3, final Node node4, final Node a, final Node b) {
+    private double getDerivative(Node node1, Node node2, Node node3, Node node4, Node a, Node b) {
         if (node1 == a && node2 == b) {
-            return sxy(node3, node4);
+            return this.sxy(node3, node4);
         }
 
         if (node1 == b && node2 == a) {
-            return sxy(node3, node4);
+            return this.sxy(node3, node4);
         }
 
         if (node3 == a && node4 == b) {
-            return sxy(node1, node2);
+            return this.sxy(node1, node2);
         }
 
         if (node3 == b && node4 == a) {
-            return sxy(node1, node2);
+            return this.sxy(node1, node2);
         }
 
         if (node1 == a && node3 == b) {
-            return -sxy(node2, node4);
+            return -this.sxy(node2, node4);
         }
 
         if (node1 == b && node3 == a) {
-            return -sxy(node2, node4);
+            return -this.sxy(node2, node4);
         }
 
         if (node2 == a && node4 == b) {
-            return -sxy(node1, node3);
+            return -this.sxy(node1, node3);
         }
 
         if (node2 == b && node4 == a) {
-            return -sxy(node1, node3);
+            return -this.sxy(node1, node3);
         }
 
         return 0.0;
@@ -372,46 +372,46 @@ public class DeltaTetradTest {
         private final Node a;
         private final Node b;
 
-        public Sigma(final Node a, final Node b) {
+        public Sigma(Node a, Node b) {
             this.a = a;
             this.b = b;
         }
 
         public Node getA() {
-            return this.a;
+            return a;
         }
 
         public Node getB() {
-            return this.b;
+            return b;
         }
 
-        public boolean equals(final Object o) {
+        public boolean equals(Object o) {
             if (!(o instanceof Sigma)) {
                 throw new IllegalArgumentException();
             }
 
-            final Sigma _o = (Sigma) o;
-            return (_o.getA().equals(getA()) && _o.getB().equals(getB())) || (_o.getB().equals(getA()) && _o.getA().equals(getB()));
+            Sigma _o = (Sigma) o;
+            return (_o.getA().equals(this.getA()) && _o.getB().equals(this.getB())) || (_o.getB().equals(this.getA()) && _o.getA().equals(this.getB()));
         }
 
         public int hashCode() {
-            return this.a.hashCode() + this.b.hashCode();
+            return a.hashCode() + b.hashCode();
         }
 
         public String toString() {
-            return "Sigma(" + getA() + ", " + getB() + ")";
+            return "Sigma(" + this.getA() + ", " + this.getB() + ")";
         }
     }
 
-    private double sxyzw(final int x, final int y, final int z, final int w) {
+    private double sxyzw(int x, int y, int z, int w) {
         double sxyzw = 0.0;
 
-        final double[] _x = this.data[x];
-        final double[] _y = this.data[y];
-        final double[] _z = this.data[z];
-        final double[] _w = this.data[w];
+        double[] _x = data[x];
+        double[] _y = data[y];
+        double[] _z = data[z];
+        double[] _w = data[w];
 
-        final int N = _x.length;
+        int N = _x.length;
 
         for (int j = 0; j < N; j++) {
             sxyzw += _x[j] * _y[j] * _z[j] * _w[j];
@@ -420,7 +420,7 @@ public class DeltaTetradTest {
         return (1.0 / N) * sxyzw;
     }
 
-    private double sxy(final double[] array1, final double[] array2, final int N) {
+    private double sxy(double[] array1, double[] array2, int N) {
         int i;
         double sum = 0.0;
 

@@ -63,7 +63,7 @@ public enum DataToken implements Token {
     /**
      * Constructs the enum
      */
-    DataToken(final String name) {
+    DataToken(String name) {
         if (name == null) {
             throw new NullPointerException();
         }
@@ -76,7 +76,7 @@ public enum DataToken implements Token {
      * @return the name of the token
      */
     public String getName() {
-        return this.name;
+        return name;
     }
 }
 

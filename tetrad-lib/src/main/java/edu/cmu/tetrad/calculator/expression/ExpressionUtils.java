@@ -21,6 +21,8 @@
 
 package edu.cmu.tetrad.calculator.expression;
 
+import edu.cmu.tetrad.calculator.expression.ExpressionDescriptor.Position;
+
 import java.util.List;
 
 /**
@@ -28,21 +30,21 @@ import java.util.List;
  */
 class ExpressionUtils {
 
-    public static String renderExpression(final Expression expression, final ExpressionDescriptor.Position position, final String token) {
+    public static String renderExpression(Expression expression, Position position, String token) {
 
-        final List<Expression> expressions = expression.getExpressions();
+        List<Expression> expressions = expression.getExpressions();
 
-        if (position == ExpressionDescriptor.Position.INFIX
-                || (position == ExpressionDescriptor.Position.BOTH && expressions.size() == 2)) {
-            final Expression expression1 = expressions.get(0);
-            final Expression expression2 = expressions.get(1);
+        if (position == Position.INFIX
+                || (position == Position.BOTH && expressions.size() == 2)) {
+            Expression expression1 = expressions.get(0);
+            Expression expression2 = expressions.get(1);
 
-            final ExpressionDescriptor.Position position1 = expression1.getPosition();
-            final ExpressionDescriptor.Position position2 = expression2.getPosition();
+            Position position1 = expression1.getPosition();
+            Position position2 = expression2.getPosition();
 
-            final StringBuilder buf = new StringBuilder();
+            StringBuilder buf = new StringBuilder();
 
-            if (position1 == ExpressionDescriptor.Position.INFIX && !expression1.getToken().equals(token)) {
+            if (position1 == Position.INFIX && !expression1.getToken().equals(token)) {
                 buf.append("(");
                 buf.append(expression1);
                 buf.append(")");
@@ -52,7 +54,7 @@ class ExpressionUtils {
 
             buf.append(token);
 
-            if (position2 == ExpressionDescriptor.Position.INFIX && !expression2.getToken().equals(token)) {
+            if (position2 == Position.INFIX && !expression2.getToken().equals(token)) {
                 buf.append("(");
                 buf.append(expression2);
                 buf.append(")");
@@ -66,7 +68,7 @@ class ExpressionUtils {
 //            return "(" + expression1 + middleToken +
 //                    expression2 + ")";
         } else {
-            final StringBuilder buf = new StringBuilder();
+            StringBuilder buf = new StringBuilder();
             buf.append(token);
             buf.append("(");
 

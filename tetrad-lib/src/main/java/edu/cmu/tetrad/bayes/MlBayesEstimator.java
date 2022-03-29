@@ -39,7 +39,7 @@ public final class MlBayesEstimator {
      * given Bayes PM and the data columns in the given data set. Each variable
      * in the given Bayes PM must be equal to a variable in the given data set.
      */
-    public BayesIm estimate(final BayesPm bayesPm, final DataSet dataSet) {
+    public BayesIm estimate(BayesPm bayesPm, DataSet dataSet) {
         if (bayesPm == null) {
             throw new NullPointerException();
         }
@@ -57,29 +57,29 @@ public final class MlBayesEstimator {
         BayesUtils.ensureVarsInData(bayesPm.getVariables(), dataSet);
 
         // Create a new Bayes IM to store the estimated values.
-        final BayesIm estimatedIm = new MlBayesIm(bayesPm);
+        BayesIm estimatedIm = new MlBayesIm(bayesPm);
 
         // Create a subset of the data set with the variables of the IM, in
         // the order of the IM.
-        final List<Node> variables = estimatedIm.getVariables();
-        final DataSet columnDataSet2 = dataSet.subsetColumns(variables);
-        final DiscreteProbs discreteProbs = new DataSetProbs(columnDataSet2);
+        List<Node> variables = estimatedIm.getVariables();
+        DataSet columnDataSet2 = dataSet.subsetColumns(variables);
+        DiscreteProbs discreteProbs = new DataSetProbs(columnDataSet2);
 
         // We will use the same estimation methods as the updaters, to ensure
         // compatibility.
-        final Proposition assertion = Proposition.tautology(estimatedIm);
-        final Proposition condition = Proposition.tautology(estimatedIm);
-        final Evidence evidence2 = Evidence.tautology(estimatedIm);
+        Proposition assertion = Proposition.tautology(estimatedIm);
+        Proposition condition = Proposition.tautology(estimatedIm);
+        Evidence evidence2 = Evidence.tautology(estimatedIm);
 
-        final int numNodes = estimatedIm.getNumNodes();
+        int numNodes = estimatedIm.getNumNodes();
 
         for (int node = 0; node < numNodes; node++) {
-            final int numRows = estimatedIm.getNumRows(node);
-            final int numCols = estimatedIm.getNumColumns(node);
-            final int[] parents = estimatedIm.getParents(node);
+            int numRows = estimatedIm.getNumRows(node);
+            int numCols = estimatedIm.getNumColumns(node);
+            int[] parents = estimatedIm.getParents(node);
 
             for (int row = 0; row < numRows; row++) {
-                final int[] parentValues = estimatedIm.getParentValues(node, row);
+                int[] parentValues = estimatedIm.getParentValues(node, row);
 
                 for (int col = 0; col < numCols; col++) {
 
@@ -104,7 +104,7 @@ public final class MlBayesEstimator {
                     }
 
                     if (condition.existsCombination()) {
-                        final double p = discreteProbs.getConditionalProb(assertion, condition);
+                        double p = discreteProbs.getConditionalProb(assertion, condition);
                         estimatedIm.setProbability(node, row, col, p);
                     } else {
                         estimatedIm.setProbability(node, row, col, Double.NaN);

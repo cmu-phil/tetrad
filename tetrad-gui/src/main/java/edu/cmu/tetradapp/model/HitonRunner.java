@@ -50,33 +50,33 @@ public class HitonRunner extends AbstractAlgorithmRunner
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
      */
-    private HitonRunner(final DataWrapper dataWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
+    private HitonRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public HitonRunner(final Graph graph, final Parameters params) {
+    public HitonRunner(Graph graph, Parameters params) {
         super(graph, params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public HitonRunner(final GraphWrapper dagWrapper, final Parameters params) {
+    public HitonRunner(GraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public HitonRunner(final DagWrapper dagWrapper, final Parameters params) {
+    public HitonRunner(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
-    public HitonRunner(final SemGraphWrapper dagWrapper,
-                       final Parameters params) {
+    public HitonRunner(SemGraphWrapper dagWrapper,
+                       Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
@@ -96,42 +96,42 @@ public class HitonRunner extends AbstractAlgorithmRunner
      * implemented in the extending class.
      */
     public void execute() {
-        final int pcDepth = getParams().getInt("depth", -1);
-        final HitonMb search =
-                new HitonMb(getIndependenceTest(), pcDepth, false);
+        int pcDepth = this.getParams().getInt("depth", -1);
+        HitonMb search =
+                new HitonMb(this.getIndependenceTest(), pcDepth, false);
 //        Parameters params = getParameters();
 //        if (params instanceof Parameters) {
 //            search.setAggressivelyPreventCycles(((Parameters) params).isAggressivelyPreventCycles());
 //        }
 //        Knowledge knowledge = getParameters().getKnowledge();
 //        search.setKnowledge(knowledge);
-        final String targetName = getParams().getString("targetName", null);
-        final List<Node> nodes = search.findMb(targetName);
+        String targetName = this.getParams().getString("targetName", null);
+        List<Node> nodes = search.findMb(targetName);
 
-        final Graph graph = new EdgeListGraph();
+        Graph graph = new EdgeListGraph();
 
-        for (final Node node : nodes) {
+        for (Node node : nodes) {
             graph.addNode(node);
         }
 
-        setResultGraph(graph);
+        this.setResultGraph(graph);
 
-        if (getSourceGraph() != null) {
-            GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
+        if (this.getSourceGraph() != null) {
+            GraphUtils.arrangeBySourceGraph(graph, this.getSourceGraph());
         } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
     }
 
     public IndependenceTest getIndependenceTest() {
-        Object dataModel = getDataModel();
+        Object dataModel = this.getDataModel();
 
         if (dataModel == null) {
-            dataModel = getSourceGraph();
+            dataModel = this.getSourceGraph();
         }
 
-        final Parameters params = getParams();
-        final IndTestType testType = (IndTestType) params.get("indTestType", IndTestType.FISHER_Z);
+        Parameters params = this.getParams();
+        IndTestType testType = (IndTestType) params.get("indTestType", IndTestType.FISHER_Z);
         return new IndTestChooser().getTest(dataModel, params, testType);
     }
 
@@ -148,13 +148,13 @@ public class HitonRunner extends AbstractAlgorithmRunner
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
 
     public Graph getGraph() {
-        return getResultGraph();
+        return this.getResultGraph();
     }
 
     /**
@@ -170,7 +170,7 @@ public class HitonRunner extends AbstractAlgorithmRunner
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>
      * for the given node.
      */
-    public List<List<Triple>> getTriplesLists(final Node node) {
+    public List<List<Triple>> getTriplesLists(Node node) {
         return new LinkedList<>();
     }
 

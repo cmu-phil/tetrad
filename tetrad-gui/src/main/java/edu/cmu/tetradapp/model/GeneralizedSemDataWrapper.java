@@ -39,7 +39,7 @@ import java.rmi.MarshalledObject;
  */
 public class GeneralizedSemDataWrapper extends DataWrapper implements SessionModel {
     static final long serialVersionUID = 23L;
-    private GeneralizedSemIm semIm = null;
+    private GeneralizedSemIm semIm;
     private Parameters params;
     private long seed;
 
@@ -47,7 +47,7 @@ public class GeneralizedSemDataWrapper extends DataWrapper implements SessionMod
 
     //==============================CONSTRUCTORS=============================//
 
-    private GeneralizedSemDataWrapper(final GeneralizedSemImWrapper wrapper, Parameters params) {
+    private GeneralizedSemDataWrapper(GeneralizedSemImWrapper wrapper, Parameters params) {
         GeneralizedSemIm semIm = null;
 
         if (wrapper.getSemIms() == null || wrapper.getSemIms().size() > 1) {
@@ -56,7 +56,7 @@ public class GeneralizedSemDataWrapper extends DataWrapper implements SessionMod
 
         try {
             semIm = new MarshalledObject<>(wrapper.getSemIms().get(0)).get();
-        } catch (final Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("Could not clone the SEM IM.");
         }
 
@@ -64,22 +64,22 @@ public class GeneralizedSemDataWrapper extends DataWrapper implements SessionMod
 
         try {
             params = new MarshalledObject<>(params).get();
-        } catch (final Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("Could not clone the Parameters.");
         }
 
-        setParameters(params);
+        this.setParameters(params);
 
-        setSeed();
+        this.setSeed();
 
-        this.setSourceGraph(semIm.getSemPm().getGraph());
-        setParameters(params);
+        setSourceGraph(semIm.getSemPm().getGraph());
+        this.setParameters(params);
         this.semIm = semIm;
-        LogDataUtils.logDataModelList("Data simulated from a generalized SEM model.", getDataModelList());
+        LogDataUtils.logDataModelList("Data simulated from a generalized SEM model.", this.getDataModelList());
     }
 
     public GeneralizedSemIm getSemIm() {
-        return this.semIm;
+        return semIm;
     }
 
     /**
@@ -94,25 +94,25 @@ public class GeneralizedSemDataWrapper extends DataWrapper implements SessionMod
     /**
      * Sets the data model.
      */
-    public void setDataModel(final DataModel dataModel) {
+    public void setDataModel(DataModel dataModel) {
         throw new UnsupportedOperationException();
     }
 
-    private DataModelList simulateData(final Simulator simulator, final Parameters params) {
-        if (this.dataModelList != null) {
-            return this.dataModelList;
+    private DataModelList simulateData(Simulator simulator, Parameters params) {
+        if (dataModelList != null) {
+            return dataModelList;
         }
 
-        final DataModelList list = new DataModelList();
-        final int sampleSize = params.getInt("sampleSize", 1000);
-        final boolean latentDataSaved = params.getBoolean("latentDataSaved", false);
+        DataModelList list = new DataModelList();
+        int sampleSize = params.getInt("sampleSize", 1000);
+        boolean latentDataSaved = params.getBoolean("latentDataSaved", false);
 
         for (int i = 0; i < params.getInt("numDataSets", 1); i++) {
-            final DataSet dataSet = simulator.simulateData(sampleSize, this.seed, latentDataSaved);
+            DataSet dataSet = simulator.simulateData(sampleSize, seed, latentDataSaved);
             list.add(dataSet);
         }
 
-        this.dataModelList = list;
+        dataModelList = list;
 
         return list;
     }
@@ -121,20 +121,20 @@ public class GeneralizedSemDataWrapper extends DataWrapper implements SessionMod
      * @return the list of models.
      */
     public DataModelList getDataModelList() {
-        return simulateData(this.semIm, this.params);
+        return this.simulateData(semIm, params);
 //        return this.dataModelList;
     }
 
-    public void setDataModelList(final DataModelList dataModelList) {
+    public void setDataModelList(DataModelList dataModelList) {
 //        this.dataModelList = dataModelList;
     }
 
-    public void setParameters(final Parameters params) {
+    public void setParameters(Parameters params) {
         this.params = params;
     }
 
     private void setSeed() {
-        this.seed = RandomUtil.getInstance().getSeed();
+        seed = RandomUtil.getInstance().getSeed();
     }
 }
 

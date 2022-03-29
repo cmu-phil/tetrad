@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.calculator.expression;
 
+import edu.cmu.tetrad.calculator.expression.ExpressionDescriptor.Position;
 import edu.cmu.tetrad.util.TetradSerializable;
 import org.apache.commons.math3.distribution.IntegerDistribution;
 import org.apache.commons.math3.distribution.RealDistribution;
@@ -52,7 +53,7 @@ public interface Expression extends TetradSerializable {
     /**
      * @return the position, infix or not.
      */
-    ExpressionDescriptor.Position getPosition();
+    Position getPosition();
 
     /**
      * @return the sub expressions of this expression.

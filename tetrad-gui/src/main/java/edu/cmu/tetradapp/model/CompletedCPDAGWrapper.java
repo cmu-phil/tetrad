@@ -60,21 +60,21 @@ public class CompletedCPDAGWrapper implements SessionModel, GraphSource {
         }
         graph = new EdgeListGraph(graph);
         SearchGraphUtils.basicCPDAG(graph);
-        final MeekRules rules = new MeekRules();
+        MeekRules rules = new MeekRules();
         rules.setKnowledge(new Knowledge2());
         rules.orientImplied(graph);
         this.graph = graph;
     }
 
-    public CompletedCPDAGWrapper(final GraphWrapper wrapper) {
+    public CompletedCPDAGWrapper(GraphWrapper wrapper) {
         this(wrapper.getGraph());
     }
 
-    public CompletedCPDAGWrapper(final DagWrapper wrapper) {
+    public CompletedCPDAGWrapper(DagWrapper wrapper) {
         this(wrapper.getGraph());
     }
 
-    public CompletedCPDAGWrapper(final SemGraphWrapper wrapper) {
+    public CompletedCPDAGWrapper(SemGraphWrapper wrapper) {
         this(wrapper.getGraph());
     }
 
@@ -91,10 +91,10 @@ public class CompletedCPDAGWrapper implements SessionModel, GraphSource {
     //==============================PUBLIC METHODS======================//
 
     public Graph getGraph() {
-        return this.graph;
+        return graph;
     }
 
-    public void setGraph(final Graph graph) {
+    public void setGraph(Graph graph) {
         this.graph = graph;
     }
 
@@ -115,20 +115,20 @@ public class CompletedCPDAGWrapper implements SessionModel, GraphSource {
      * @throws ClassNotFoundException if some expected class cannot be found
      *                                in the stream.
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (this.graph == null) {
+        if (graph == null) {
             throw new NullPointerException();
         }
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 }

@@ -37,7 +37,7 @@ public class LTMatrix extends BasicLTMatrix {
     /**
      * Creates a lower triangular matrix with <code>nrows</code> rows.
      */
-    public LTMatrix(final String mname, final int nrows) {
+    public LTMatrix(String mname, int nrows) {
         super(mname, nrows);
     }
 
@@ -45,7 +45,7 @@ public class LTMatrix extends BasicLTMatrix {
      * Creates a lower triangular matrix reading it from file
      * <code>fname</code>.
      */
-    public LTMatrix(final String fname) throws IOException {
+    public LTMatrix(String fname) throws IOException {
         super(fname);
     }
 
@@ -53,72 +53,72 @@ public class LTMatrix extends BasicLTMatrix {
      * Initializes the data structure used to hold the contents of the matrix
      */
     protected void initMatrixStorage() {
-        this.A = new short[(this.n * (this.n + 1) / 2)];
+        A = new short[(n * (n + 1) / 2)];
     }
 
     /**
      * Casts double x to short and assigns it to element (r,c) This method
      * checks that x can be converted to a short without causing overflow.
      */
-    public void setDoubleValue(final int r, final int c, final double x) {
+    public void setDoubleValue(int r, int c, double x) {
         if ((x < BasicMatrix.MIN_SHORT) || (x > BasicMatrix.MAX_SHORT)) {
             throw new IllegalArgumentException(
                     "Double " + x + " cannot be stored as a short");
         }
-        setValue(r, c, (short) x);
+        this.setValue(r, c, (short) x);
     }
 
     /**
      * Assigns integer x to matrix element (r, c).  This method checks that x
      * can be converted to a short without causing overflow.
      */
-    public void setValue(final int r, final int c, final int x) {
+    public void setValue(int r, int c, int x) {
         if ((x < BasicMatrix.MIN_SHORT) || (x > BasicMatrix.MAX_SHORT)) {
             throw new IllegalArgumentException(
                     "Double " + x + " cannot be stored as a short");
         }
-        setValue(r, c, (short) x);
+        this.setValue(r, c, (short) x);
     }
 
     /**
      * Assigns short x to matrix element (r, c)
      */
-    public void setValue(final int r, final int c, final short x) {
+    public void setValue(int r, int c, short x) {
         if (r < c) {
-            upperTriangXcp(r, c);
+            this.upperTriangXcp(r, c);
         }
-        if ((r >= this.n) || (c >= this.n) || (r < 0) || (c < 0)) {
-            badIndexXcp(r, c);
+        if ((r >= n) || (c >= n) || (r < 0) || (c < 0)) {
+            this.badIndexXcp(r, c);
         }
-        this.A[(r * (r + 1) / 2 + c)] = x;
+        A[(r * (r + 1) / 2 + c)] = x;
     }
 
     /**
      * Returns element (r,c) as a double
      */
-    public double getDoubleValue(final int r, final int c) {
-        if ((r >= this.n) || (c >= this.n) || (r < 0) || (c < 0)) {
-            badIndexXcp(r, c);
+    public double getDoubleValue(int r, int c) {
+        if ((r >= n) || (c >= n) || (r < 0) || (c < 0)) {
+            this.badIndexXcp(r, c);
         }
-        return (double) (r >= c ? this.A[r * (r + 1) / 2 + c] : 0);
+        return (double) (r >= c ? A[r * (r + 1) / 2 + c] : 0);
     }
 
     /**
      * Returns element (r,c)
      */
-    public short getValue(final int r, final int c) {
-        if ((r >= this.n) || (c >= this.n) || (r < 0) || (c < 0)) {
-            badIndexXcp(r, c);
+    public short getValue(int r, int c) {
+        if ((r >= n) || (c >= n) || (r < 0) || (c < 0)) {
+            this.badIndexXcp(r, c);
         }
-        return (r >= c ? this.A[r * (r + 1) / 2 + c] : 0);
+        return (r >= c ? A[r * (r + 1) / 2 + c] : 0);
     }
 
     /**
      * Assign zero to all elements in the matrix
      */
     public void setAllValuesToZero() {
-        for (int i = 0; i < this.A.length; i++) {
-            this.A[i] = 0;
+        for (int i = 0; i < A.length; i++) {
+            A[i] = 0;
         }
     }
 
@@ -127,19 +127,19 @@ public class LTMatrix extends BasicLTMatrix {
      * matrix
      */
     public String toString() {
-        String s = this.getClass().getName() + " " + this.name + "\n" + this.n +
+        String s = getClass().getName() + " " + name + "\n" + n +
                 " // <- Total # rows\n";
-        for (int r = 0; r < this.n; r++) {
+        for (int r = 0; r < n; r++) {
             //s = s + "/* "+r+" */  ";
             for (int c = 0; c <= r; c++) {
-                s = s + this.getValue(r, c) + " ";
+                s = s + getValue(r, c) + " ";
             }
             s = s + "\n";
         }
         return s;
     }
 
-    private void upperTriangXcp(final int r, final int c) {
+    private void upperTriangXcp(int r, int c) {
         throw new IllegalArgumentException("Trying to set a value in (" + r +
                 "," + c + ") -> " + "Upper Triangular region ");
     }

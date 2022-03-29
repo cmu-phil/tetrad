@@ -73,12 +73,12 @@ public class RegressionDatasetGeneralized implements Regression {
      * @param data A rectangular data set, the relevant variables of which
      *             are continuous.
      */
-    public RegressionDatasetGeneralized(final DataSet data) {
+    public RegressionDatasetGeneralized(DataSet data) {
         this.data = data.getDoubleData();
-        this.variables = data.getVariables();
+        variables = data.getVariables();
     }
 
-    public RegressionDatasetGeneralized(final Matrix data, final List<Node> variables) {
+    public RegressionDatasetGeneralized(Matrix data, List<Node> variables) {
         this.data = data;
         this.variables = variables;
     }
@@ -89,7 +89,7 @@ public class RegressionDatasetGeneralized implements Regression {
      * Sets the alpha level for deciding which regressors are significant
      * based on their p values.
      */
-    public void setAlpha(final double alpha) {
+    public void setAlpha(double alpha) {
         this.alpha = alpha;
     }
 
@@ -97,7 +97,7 @@ public class RegressionDatasetGeneralized implements Regression {
      * @return This graph.
      */
     public Graph getGraph() {
-        return this.graph;
+        return graph;
     }
 
     /**
@@ -109,28 +109,28 @@ public class RegressionDatasetGeneralized implements Regression {
      * coefficeint, se, t, and p values, and specifying the same for the
      * constant.
      */
-    public RegressionResult regress(final Node target, final List<Node> regressors) {
-        final int n = this.data.rows();
-        final int k = regressors.size() + 1;
+    public RegressionResult regress(Node target, List<Node> regressors) {
+        int n = data.rows();
+        int k = regressors.size() + 1;
 
-        final int _target = this.variables.indexOf(target);
-        final int[] _regressors = new int[regressors.size()];
+        int _target = variables.indexOf(target);
+        int[] _regressors = new int[regressors.size()];
 
         for (int i = 0; i < regressors.size(); i++) {
-            _regressors[i] = this.variables.indexOf(regressors.get(i));
+            _regressors[i] = variables.indexOf(regressors.get(i));
         }
 
-        final int[] rows = new int[this.data.rows()];
+        int[] rows = new int[data.rows()];
         for (int i = 0; i < rows.length; i++) rows[i] = i;
 
 //        TetradMatrix y = data.viewSelection(rows, new int[]{_target}).copy();
-        final Matrix xSub = this.data.getSelection(rows, _regressors);
+        Matrix xSub = data.getSelection(rows, _regressors);
 
 
 //        TetradMatrix y = data.subsetColumns(Arrays.asList(target)).getDoubleData();
 //        RectangularDataSet rectangularDataSet = data.subsetColumns(regressors);
 //        TetradMatrix xSub = rectangularDataSet.getDoubleData();
-        final Matrix X = new Matrix(xSub.rows(), xSub.columns() + 1);
+        Matrix X = new Matrix(xSub.rows(), xSub.columns() + 1);
 
         for (int i = 0; i < X.rows(); i++) {
             for (int j = 0; j < X.columns(); j++) {
@@ -151,24 +151,24 @@ public class RegressionDatasetGeneralized implements Regression {
 //            zRows[i] = i;
 //        }
 
-        final Vector y = this.data.getColumn(_target);
-        final Matrix Xt = X.transpose();
-        final Matrix XtX = Xt.times(X);
-        final Matrix G = XtX.inverse();
+        Vector y = data.getColumn(_target);
+        Matrix Xt = X.transpose();
+        Matrix XtX = Xt.times(X);
+        Matrix G = XtX.inverse();
 
-        final Matrix GXt = G.times(Xt);
+        Matrix GXt = G.times(Xt);
 
-        final Vector b = GXt.times(y);
+        Vector b = GXt.times(y);
 
-        final Vector yPred = X.times(b);
+        Vector yPred = X.times(b);
 
 //        TetradVector xRes = yPred.copy().assign(y, Functions.minus);
-        final Vector xRes = yPred.minus(y);
+        Vector xRes = yPred.minus(y);
 
-        final double rss = rss(X, y, b);
-        final double se = Math.sqrt(rss / (n - k));
-        final double tss = tss(y);
-        final double r2 = 1.0 - (rss / tss);
+        double rss = this.rss(X, y, b);
+        double se = Math.sqrt(rss / (n - k));
+        double tss = this.tss(y);
+        double r2 = 1.0 - (rss / tss);
 
 //        TetradVector sqErr = TetradVector.instance(y.columns());
 //        TetradVector t = TetradVector.instance(y.columns());
@@ -187,7 +187,7 @@ public class RegressionDatasetGeneralized implements Regression {
 //
 //        this.graph = createOutputGraph(target.getNode(), y, regressors, p);
 //
-        final String[] vNames = new String[regressors.size()];
+        String[] vNames = new String[regressors.size()];
 
         for (int i = 0; i < regressors.size(); i++) {
             vNames[i] = regressors.get(i).getName();
@@ -200,32 +200,32 @@ public class RegressionDatasetGeneralized implements Regression {
 
 
         return new RegressionResult(false, vNames, n,
-                b.toArray(), new double[0], new double[0], new double[0], r2, rss, this.alpha, yPred, xRes);
+                b.toArray(), new double[0], new double[0], new double[0], r2, rss, alpha, yPred, xRes);
     }
 
-    public RegressionResult regress(final Node target, final Node... regressors) {
-        final List<Node> _regressors = Arrays.asList(regressors);
-        return regress(target, _regressors);
+    public RegressionResult regress(Node target, Node... regressors) {
+        List<Node> _regressors = Arrays.asList(regressors);
+        return this.regress(target, _regressors);
     }
 
     //=======================PRIVATE METHODS================================//
 
-    private Graph createOutputGraph(final String target, final Matrix x,
-                                    final List<Node> regressors, final Vector p) {
+    private Graph createOutputGraph(String target, Matrix x,
+                                    List<Node> regressors, Vector p) {
         // Create output graph.
-        final Node targetNode = new GraphNode(target);
+        Node targetNode = new GraphNode(target);
 
-        final Graph graph = new EdgeListGraph();
+        Graph graph = new EdgeListGraph();
         graph.addNode(targetNode);
 
         for (int i = 0; i < x.columns(); i++) {
-            final String variableName = (i > 0) ? regressors.get(i - 1).getName() : "const";
+            String variableName = (i > 0) ? regressors.get(i - 1).getName() : "const";
 
             //Add a node and edge to the output graph for significant predictors:
-            if (p.get(i) < this.alpha) {
-                final Node predictorNode = new GraphNode(variableName);
+            if (p.get(i) < alpha) {
+                Node predictorNode = new GraphNode(variableName);
                 graph.addNode(predictorNode);
-                final Edge newEdge = new Edge(predictorNode, targetNode,
+                Edge newEdge = new Edge(predictorNode, targetNode,
                         Endpoint.TAIL, Endpoint.ARROW);
                 graph.addEdge(newEdge);
             }
@@ -234,27 +234,27 @@ public class RegressionDatasetGeneralized implements Regression {
         return graph;
     }
 
-    private String createResultString(final int n, final int k, final double rss, final double r2,
-                                      final Matrix x, final List<Node> regressors,
-                                      final Matrix b, final Vector se,
-                                      final Vector t, final Vector p) {
+    private String createResultString(int n, int k, double rss, double r2,
+                                      Matrix x, List<Node> regressors,
+                                      Matrix b, Vector se,
+                                      Vector t, Vector p) {
         // Create result string.
-        final String rssString = this.nf.format(rss);
-        final String r2String = this.nf.format(r2);
+        String rssString = nf.format(rss);
+        String r2String = nf.format(r2);
         String summary = "\n REGRESSION RESULT";
-        summary += "\n n = " + n + ", k = " + k + ", alpha = " + this.alpha + "\n";
+        summary += "\n n = " + n + ", k = " + k + ", alpha = " + alpha + "\n";
         summary += " SSE = " + rssString + "\n";
         summary += " R^2 = " + r2String + "\n\n";
         summary += " VAR\tCOEF\tSE\tT\tP\n";
 
         for (int i = 0; i < x.columns(); i++) {
             // Note: the first column contains the regression constants.
-            final String variableName = (i > 0) ? regressors.get(i - 1).getName() : "const";
+            String variableName = (i > 0) ? regressors.get(i - 1).getName() : "const";
 
-            summary += " " + variableName + "\t" + this.nf.format(b.get(i, 0)) +
-                    "\t" + this.nf.format(se.get(i)) + "\t" + this.nf.format(t.get(i)) +
-                    "\t" + this.nf.format(p.get(i)) + "\t" +
-                    ((p.get(i) < this.alpha) ? "significant " : "") + "\n";
+            summary += " " + variableName + "\t" + nf.format(b.get(i, 0)) +
+                    "\t" + nf.format(se.get(i)) + "\t" + nf.format(t.get(i)) +
+                    "\t" + nf.format(p.get(i)) + "\t" +
+                    ((p.get(i) < alpha) ? "significant " : "") + "\n";
         }
         return summary;
     }
@@ -272,7 +272,7 @@ public class RegressionDatasetGeneralized implements Regression {
      * @param b the regression coefficients.
      * @return the residual sum of squares.
      */
-    private double rss(final Matrix x, final Vector y, final Vector b) {
+    private double rss(Matrix x, Vector y, Vector b) {
         double rss = 0.0;
 
         for (int i = 0; i < x.rows(); i++) {
@@ -282,7 +282,7 @@ public class RegressionDatasetGeneralized implements Regression {
                 yH += b.get(j) * x.get(i, j);
             }
 
-            final double d = y.get(i) - yH;
+            double d = y.get(i) - yH;
 
             rss += d * d;
         }
@@ -290,7 +290,7 @@ public class RegressionDatasetGeneralized implements Regression {
         return rss;
     }
 
-    private double tss(final Vector y) {
+    private double tss(Vector y) {
         // first calculate the mean
         double mean = 0.0;
 
@@ -303,7 +303,7 @@ public class RegressionDatasetGeneralized implements Regression {
         double ssm = 0.0;
 
         for (int i = 0; i < y.size(); i++) {
-            final double d = mean - y.get(i);
+            double d = mean - y.get(i);
             ssm += d * d;
         }
 

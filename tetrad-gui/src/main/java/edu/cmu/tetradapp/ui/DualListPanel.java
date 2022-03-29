@@ -21,6 +21,8 @@ package edu.cmu.tetradapp.ui;
 import edu.cmu.tetrad.graph.Node;
 
 import javax.swing.*;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import java.awt.*;
 
 /**
@@ -42,66 +44,66 @@ public class DualListPanel extends JPanel {
     private JScrollPane unselectedScrollPane;
 
     public DualListPanel() {
-        initComponents();
+        this.initComponents();
     }
 
     private void initComponents() {
-        final GridBagConstraints gridBagConstraints;
+        GridBagConstraints gridBagConstraints;
 
-        this.sourceList = new JList<>();
-        this.selectedList = new JList<>();
+        sourceList = new JList<>();
+        selectedList = new JList<>();
 
-        this.unselectedScrollPane = new JScrollPane(this.sourceList);
-        this.selectedScrollPane = new JScrollPane(this.selectedList);
+        unselectedScrollPane = new JScrollPane(sourceList);
+        selectedScrollPane = new JScrollPane(selectedList);
 
-        this.buttonParentPanel = new JPanel();
-        this.buttonPanel = new JPanel();
-        this.moveToselector = new JButton();
-        this.moveToSource = new JButton();
+        buttonParentPanel = new JPanel();
+        buttonPanel = new JPanel();
+        moveToselector = new JButton();
+        moveToSource = new JButton();
 
-        setOpaque(false);
+        this.setOpaque(false);
 
-        this.unselectedScrollPane.setBorder(BorderFactory.createTitledBorder("Not selected"));
+        unselectedScrollPane.setBorder(BorderFactory.createTitledBorder("Not selected"));
 
-        this.unselectedScrollPane.setViewportView(this.sourceList);
+        unselectedScrollPane.setViewportView(sourceList);
 
-        this.selectedScrollPane.setBorder(BorderFactory.createTitledBorder("Selected"));
+        selectedScrollPane.setBorder(BorderFactory.createTitledBorder("Selected"));
 
-        this.selectedScrollPane.setViewportView(this.selectedList);
+        selectedScrollPane.setViewportView(selectedList);
 
-        this.buttonParentPanel.setOpaque(false);
-        this.buttonParentPanel.setLayout(new GridBagLayout());
+        buttonParentPanel.setOpaque(false);
+        buttonParentPanel.setLayout(new GridBagLayout());
 
-        this.buttonPanel.setOpaque(false);
+        buttonPanel.setOpaque(false);
 
-        this.moveToselector.setText(">");
-        this.moveToselector.setMaximumSize(new Dimension(64, 25));
-        this.moveToselector.setMinimumSize(new Dimension(64, 25));
-        this.moveToselector.setPreferredSize(new Dimension(64, 25));
+        moveToselector.setText(">");
+        moveToselector.setMaximumSize(new Dimension(64, 25));
+        moveToselector.setMinimumSize(new Dimension(64, 25));
+        moveToselector.setPreferredSize(new Dimension(64, 25));
 
-        this.moveToSource.setText("<");
-        this.moveToSource.setMaximumSize(new Dimension(64, 25));
-        this.moveToSource.setMinimumSize(new Dimension(64, 25));
-        this.moveToSource.setPreferredSize(new Dimension(64, 25));
+        moveToSource.setText("<");
+        moveToSource.setMaximumSize(new Dimension(64, 25));
+        moveToSource.setMinimumSize(new Dimension(64, 25));
+        moveToSource.setPreferredSize(new Dimension(64, 25));
 
-        final GroupLayout buttonPanelLayout = new GroupLayout(this.buttonPanel);
-        this.buttonPanel.setLayout(buttonPanelLayout);
+        GroupLayout buttonPanelLayout = new GroupLayout(buttonPanel);
+        buttonPanel.setLayout(buttonPanelLayout);
         buttonPanelLayout.setHorizontalGroup(
-                buttonPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                buttonPanelLayout.createParallelGroup(Alignment.LEADING)
                         .addGroup(buttonPanelLayout.createSequentialGroup()
                                 .addContainerGap()
-                                .addGroup(buttonPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                        .addComponent(this.moveToselector, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(this.moveToSource, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                                .addGroup(buttonPanelLayout.createParallelGroup(Alignment.LEADING)
+                                        .addComponent(moveToselector, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(moveToSource, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                                 .addContainerGap())
         );
         buttonPanelLayout.setVerticalGroup(
-                buttonPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                buttonPanelLayout.createParallelGroup(Alignment.LEADING)
                         .addGroup(buttonPanelLayout.createSequentialGroup()
                                 .addContainerGap()
-                                .addComponent(this.moveToselector, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(this.moveToSource, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                .addComponent(moveToselector, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(ComponentPlacement.RELATED)
+                                .addComponent(moveToSource, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                 .addContainerGap())
         );
 
@@ -109,52 +111,52 @@ public class DualListPanel extends JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = GridBagConstraints.BOTH;
-        this.buttonParentPanel.add(this.buttonPanel, gridBagConstraints);
+        buttonParentPanel.add(buttonPanel, gridBagConstraints);
 
-        final GroupLayout layout = new GroupLayout(this);
-        this.setLayout(layout);
+        GroupLayout layout = new GroupLayout(this);
+        setLayout(layout);
         layout.setHorizontalGroup(
-                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                layout.createParallelGroup(Alignment.LEADING)
                         .addGroup(layout.createSequentialGroup()
-                                .addComponent(this.unselectedScrollPane, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
-                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(this.buttonParentPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(this.selectedScrollPane, GroupLayout.DEFAULT_SIZE, 144, Short.MAX_VALUE))
+                                .addComponent(unselectedScrollPane, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
+                                .addPreferredGap(ComponentPlacement.RELATED)
+                                .addComponent(buttonParentPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(ComponentPlacement.RELATED)
+                                .addComponent(selectedScrollPane, GroupLayout.DEFAULT_SIZE, 144, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
-                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addComponent(this.unselectedScrollPane)
-                        .addComponent(this.buttonParentPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(this.selectedScrollPane, GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
+                layout.createParallelGroup(Alignment.LEADING)
+                        .addComponent(unselectedScrollPane)
+                        .addComponent(buttonParentPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(selectedScrollPane, GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
         );
 
-        this.unselectedScrollPane.getAccessibleContext().setAccessibleName("Unselected");
-        this.unselectedScrollPane.getAccessibleContext().setAccessibleDescription("");
+        unselectedScrollPane.getAccessibleContext().setAccessibleName("Unselected");
+        unselectedScrollPane.getAccessibleContext().setAccessibleDescription("");
     }
 
     public JButton getMoveToSource() {
-        return this.moveToSource;
+        return moveToSource;
     }
 
     public JButton getMoveToselector() {
-        return this.moveToselector;
+        return moveToselector;
     }
 
     public JList<Node> getSelectedList() {
-        return this.selectedList;
+        return selectedList;
     }
 
     public JScrollPane getSelectedScrollPane() {
-        return this.selectedScrollPane;
+        return selectedScrollPane;
     }
 
     public JList<Node> getSourceList() {
-        return this.sourceList;
+        return sourceList;
     }
 
     public JScrollPane getUnselectedScrollPane() {
-        return this.unselectedScrollPane;
+        return unselectedScrollPane;
     }
 
 }

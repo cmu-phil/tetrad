@@ -67,7 +67,7 @@ public class GeneralAndersonDarlingTest {
     /**
      * Constructs an Anderson-Darling test for the given column of data.
      */
-    public GeneralAndersonDarlingTest(final List<Double> data, final RealDistribution dist) {
+    public GeneralAndersonDarlingTest(List<Double> data, RealDistribution dist) {
         if (dist == null) {
             throw new NullPointerException();
         }
@@ -78,7 +78,7 @@ public class GeneralAndersonDarlingTest {
 
         this.data = data;
 
-        runTest();
+        this.runTest();
     }
 
     //============================PUBLIC METHODS=========================//
@@ -87,7 +87,7 @@ public class GeneralAndersonDarlingTest {
      * @return the A^2 statistic.
      */
     public double getASquared() {
-        return this.aSquared;
+        return aSquared;
     }
 
     /**
@@ -95,7 +95,7 @@ public class GeneralAndersonDarlingTest {
      * heuristically for sample size.
      */
     public double getASquaredStar() {
-        return this.aSquaredStar;
+        return aSquaredStar;
     }
 
     /**
@@ -103,25 +103,25 @@ public class GeneralAndersonDarlingTest {
      * exponential functions.
      */
     public double getP() {
-        return this.p;
+        return p;
     }
 
     //============================PRIVATE METHODS========================//
 
     private void runTest() {
-        final int n = this.data.size();
+        int n = data.size();
         double h = 0.0;
 
         int numSummed = 0;
 
         for (int i = 1; i <= n; i++) {
-            final double x1 = this.data.get(i - 1);
-            final double a1 = Math.log(this.dist.cumulativeProbability(x1));
+            double x1 = data.get(i - 1);
+            double a1 = Math.log(dist.cumulativeProbability(x1));
 
-            final double x2 = this.data.get(n + 1 - i - 1);
-            final double a2 = Math.log(1.0 - this.dist.cumulativeProbability(x2));
+            double x2 = data.get(n + 1 - i - 1);
+            double a2 = Math.log(1.0 - dist.cumulativeProbability(x2));
 
-            final double k = (2 * i - 1) * (a1 + a2);
+            double k = (2 * i - 1) * (a1 + a2);
 
             if (!(Double.isNaN(a1) || Double.isNaN(a2) || Double.isInfinite(a1) || Double.isInfinite(a2))) {
                 h += k;
@@ -129,9 +129,9 @@ public class GeneralAndersonDarlingTest {
             }
         }
 
-        final double a = -n - (1.0 / numSummed) * h;
-        final double aa = (1 + 0.75 / numSummed + 2.25 / Math.pow(numSummed, 2)) * a;
-        final double p;
+        double a = -n - (1.0 / numSummed) * h;
+        double aa = (1 + 0.75 / numSummed + 2.25 / Math.pow(numSummed, 2)) * a;
+        double p;
 
         if (aa < 0.2) {
             p = 1 - Math.exp(-13.436 + 101.14 * aa - 223.73 * aa * aa);
@@ -143,8 +143,8 @@ public class GeneralAndersonDarlingTest {
             p = Math.exp(1.2937 - 5.709 * aa + 0.0186 * aa * aa);
         }
 
-        this.aSquared = a;
-        this.aSquaredStar = aa;
+        aSquared = a;
+        aSquaredStar = aa;
         this.p = p;
     }
 

@@ -36,7 +36,7 @@ public class Type5 implements SessionModel, TetradSerializableExcluded {
      * arguments of the same type. There is in principle no way to decide which
      * argument should be passed in which position.
      */
-    public Type5(final Type1 model1, final Type1 model2, final Parameters parameters) {
+    public Type5(Type1 model1, Type1 model2, Parameters parameters) {
     }
 
     public static Type5 serializableInstance() {
@@ -44,14 +44,14 @@ public class Type5 implements SessionModel, TetradSerializableExcluded {
                 Type1.serializableInstance(), new Parameters());
     }
 
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         return (o instanceof Type5);
     }
 
     /**
      * Sets the name of the session model.
      */
-    public void setName(final String name) {
+    public void setName(String name) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 

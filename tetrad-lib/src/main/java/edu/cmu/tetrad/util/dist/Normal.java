@@ -53,9 +53,9 @@ public class Normal implements Distribution {
 
     //=========================CONSTRUCTORS===========================//
 
-    public Normal(final double mean, final double sd) {
-        setParameter(0, mean);
-        setParameter(1, sd);
+    public Normal(double mean, double sd) {
+        this.setParameter(0, mean);
+        this.setParameter(1, sd);
     }
 
     /**
@@ -73,28 +73,28 @@ public class Normal implements Distribution {
         return "N";
     }
 
-    public void setParameter(final int index, final double value) {
+    public void setParameter(int index, double value) {
         if (index == 0) {
-            this.mean = value;
+            mean = value;
         } else if (index == 1 && value >= 0) {
-            this.sd = value;
+            sd = value;
         } else {
             throw new IllegalArgumentException("Illegal value for parameter " +
                     index + ": " + value);
         }
     }
 
-    public double getParameter(final int index) {
+    public double getParameter(int index) {
         if (index == 0) {
-            return this.mean;
+            return mean;
         } else if (index == 1) {
-            return this.sd;
+            return sd;
         } else {
             throw new IllegalArgumentException("Illegal index: " + index);
         }
     }
 
-    public String getParameterName(final int index) {
+    public String getParameterName(int index) {
         if (index == 0) {
             return "Mean";
         } else if (index == 1) {
@@ -115,12 +115,12 @@ public class Normal implements Distribution {
      * @return the next random sample from the distribution.
      */
     public double nextRandom() {
-        return RandomUtil.getInstance().nextNormal(this.mean, this.sd);
+        return RandomUtil.getInstance().nextNormal(mean, sd);
     }
 
     public String toString() {
-        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-        return "N(" + nf.format(this.mean) + ", " + nf.format(this.sd) + ")";
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        return "N(" + nf.format(mean) + ", " + nf.format(sd) + ")";
     }
 
     //========================PRIVATE METHODS===========================//
@@ -140,11 +140,11 @@ public class Normal implements Distribution {
      * @throws ClassNotFoundException if a the class of an object in the input cannot
      *                                be found.
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (this.sd <= 0) {
+        if (sd <= 0) {
             throw new IllegalStateException();
         }
 

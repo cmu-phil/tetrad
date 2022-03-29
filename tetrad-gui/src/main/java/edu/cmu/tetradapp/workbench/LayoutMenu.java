@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetradapp.util.CopyLayoutAction;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.util.PasteLayoutAction;
+import edu.cmu.tetradapp.workbench.LayoutUtils.Layout;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -43,113 +44,113 @@ public class LayoutMenu extends JMenu {
     private final LayoutEditable layoutEditable;
     private final CopyLayoutAction copyLayoutAction;
 
-    public LayoutMenu(final LayoutEditable layoutEditable) {
+    public LayoutMenu(LayoutEditable layoutEditable) {
         super("Layout");
         this.layoutEditable = layoutEditable;
 
         if (layoutEditable.getGraph().isTimeLagModel()) {
 
-            final JMenuItem topToBottom = new JMenuItem("Top to bottom");
-            add(topToBottom);
+            JMenuItem topToBottom = new JMenuItem("Top to bottom");
+            this.add(topToBottom);
 
             topToBottom.addActionListener(new ActionListener() {
-                public void actionPerformed(final ActionEvent e) {
-                    LayoutUtils.topToBottomLayout(getLayoutEditable());
+                public void actionPerformed(ActionEvent e) {
+                    LayoutUtils.topToBottomLayout(LayoutMenu.this.getLayoutEditable());
 
                     // Copy the laid out graph to the clipboard.
-                    getCopyLayoutAction().actionPerformed(null);
+                    LayoutMenu.this.getCopyLayoutAction().actionPerformed(null);
                 }
             });
 
-            final JMenuItem leftToRight = new JMenuItem("Left to right");
-            add(leftToRight);
+            JMenuItem leftToRight = new JMenuItem("Left to right");
+            this.add(leftToRight);
 
             leftToRight.addActionListener(new ActionListener() {
-                public void actionPerformed(final ActionEvent e) {
-                    LayoutUtils.leftToRightLayout(getLayoutEditable());
+                public void actionPerformed(ActionEvent e) {
+                    LayoutUtils.leftToRightLayout(LayoutMenu.this.getLayoutEditable());
 
                     // Copy the laid out graph to the clipboard.
-                    getCopyLayoutAction().actionPerformed(null);
+                    LayoutMenu.this.getCopyLayoutAction().actionPerformed(null);
                 }
             });
 
-            final JMenuItem bottomToTop = new JMenuItem("Bottom to top");
-            add(bottomToTop);
+            JMenuItem bottomToTop = new JMenuItem("Bottom to top");
+            this.add(bottomToTop);
 
             bottomToTop.addActionListener(new ActionListener() {
-                public void actionPerformed(final ActionEvent e) {
-                    LayoutUtils.bottomToTopLayout(getLayoutEditable());
+                public void actionPerformed(ActionEvent e) {
+                    LayoutUtils.bottomToTopLayout(LayoutMenu.this.getLayoutEditable());
 
                     // Copy the laid out graph to the clipboard.
-                    getCopyLayoutAction().actionPerformed(null);
+                    LayoutMenu.this.getCopyLayoutAction().actionPerformed(null);
                 }
             });
 
-            final JMenuItem rightToLeft = new JMenuItem("Right to left");
-            add(rightToLeft);
+            JMenuItem rightToLeft = new JMenuItem("Right to left");
+            this.add(rightToLeft);
 
             rightToLeft.addActionListener(new ActionListener() {
-                public void actionPerformed(final ActionEvent e) {
-                    LayoutUtils.rightToLeftLayout(getLayoutEditable());
+                public void actionPerformed(ActionEvent e) {
+                    LayoutUtils.rightToLeftLayout(LayoutMenu.this.getLayoutEditable());
 
                     // Copy the laid out graph to the clipboard.
-                    getCopyLayoutAction().actionPerformed(null);
+                    LayoutMenu.this.getCopyLayoutAction().actionPerformed(null);
                 }
             });
 
-            final JMenuItem likeLag0 = new JMenuItem("Copy lag 0");
-            add(likeLag0);
+            JMenuItem likeLag0 = new JMenuItem("Copy lag 0");
+            this.add(likeLag0);
 
             likeLag0.addActionListener(new ActionListener() {
-                public void actionPerformed(final ActionEvent e) {
-                    if (LayoutUtils.getLayout() == LayoutUtils.Layout.topToBottom
-                            || LayoutUtils.getLayout() == LayoutUtils.Layout.lag0TopToBottom) {
-                        LayoutUtils.copyLag0LayoutTopToBottom(getLayoutEditable());
-                    } else if (LayoutUtils.getLayout() == LayoutUtils.Layout.bottomToTop
-                            || LayoutUtils.getLayout() == LayoutUtils.Layout.lag0BottomToTop) {
-                        LayoutUtils.copyLag0LayoutBottomToTop(getLayoutEditable());
-                    } else if (LayoutUtils.getLayout() == LayoutUtils.Layout.leftToRight
-                            || LayoutUtils.getLayout() == LayoutUtils.Layout.lag0LeftToRight) {
-                        LayoutUtils.copyLag0LayoutLeftToRight(getLayoutEditable());
-                    } else if (LayoutUtils.getLayout() == LayoutUtils.Layout.rightToLeft
-                            || LayoutUtils.getLayout() == LayoutUtils.Layout.lag0RightToLeft) {
-                        LayoutUtils.copyLag0LayoutRightToLeft(getLayoutEditable());
+                public void actionPerformed(ActionEvent e) {
+                    if (LayoutUtils.getLayout() == Layout.topToBottom
+                            || LayoutUtils.getLayout() == Layout.lag0TopToBottom) {
+                        LayoutUtils.copyLag0LayoutTopToBottom(LayoutMenu.this.getLayoutEditable());
+                    } else if (LayoutUtils.getLayout() == Layout.bottomToTop
+                            || LayoutUtils.getLayout() == Layout.lag0BottomToTop) {
+                        LayoutUtils.copyLag0LayoutBottomToTop(LayoutMenu.this.getLayoutEditable());
+                    } else if (LayoutUtils.getLayout() == Layout.leftToRight
+                            || LayoutUtils.getLayout() == Layout.lag0LeftToRight) {
+                        LayoutUtils.copyLag0LayoutLeftToRight(LayoutMenu.this.getLayoutEditable());
+                    } else if (LayoutUtils.getLayout() == Layout.rightToLeft
+                            || LayoutUtils.getLayout() == Layout.lag0RightToLeft) {
+                        LayoutUtils.copyLag0LayoutRightToLeft(LayoutMenu.this.getLayoutEditable());
                     } else {
 //                        LayoutUtils.topToBottomLayout(getLayoutEditable());
                     }
 
                     // Copy the laid out graph to the clipboard.
-                    getCopyLayoutAction().actionPerformed(null);
+                    LayoutMenu.this.getCopyLayoutAction().actionPerformed(null);
                 }
             });
 
-            addSeparator();
+            this.addSeparator();
         }
 
 
-        final JMenuItem circleLayout = new JMenuItem("Circle");
-        add(circleLayout);
+        JMenuItem circleLayout = new JMenuItem("Circle");
+        this.add(circleLayout);
 
         circleLayout.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                LayoutUtils.circleLayout(getLayoutEditable());
+            public void actionPerformed(ActionEvent e) {
+                LayoutUtils.circleLayout(LayoutMenu.this.getLayoutEditable());
 
                 // Copy the laid out graph to the clipboard.
-                getCopyLayoutAction().actionPerformed(null);
+                LayoutMenu.this.getCopyLayoutAction().actionPerformed(null);
             }
 
         });
 
-        if (getLayoutEditable().getKnowledge() != null) {
-            final JMenuItem knowledgeTiersLayout = new JMenuItem("Knowledge Tiers");
-            add(knowledgeTiersLayout);
+        if (this.getLayoutEditable().getKnowledge() != null) {
+            JMenuItem knowledgeTiersLayout = new JMenuItem("Knowledge Tiers");
+            this.add(knowledgeTiersLayout);
 
             knowledgeTiersLayout.addActionListener(new ActionListener() {
-                public void actionPerformed(final ActionEvent e) {
-                    LayoutUtils.knowledgeLayout(getLayoutEditable());
+                public void actionPerformed(ActionEvent e) {
+                    LayoutUtils.knowledgeLayout(LayoutMenu.this.getLayoutEditable());
 
                     // Copy the laid out graph to the clipboard.
-                    getCopyLayoutAction().actionPerformed(null);
+                    LayoutMenu.this.getCopyLayoutAction().actionPerformed(null);
                 }
             });
         }
@@ -182,65 +183,65 @@ public class LayoutMenu extends JMenu {
 //        });
 
 
-        final JMenuItem fruchtermanReingold = new JMenuItem("Fruchterman-Reingold");
-        add(fruchtermanReingold);
+        JMenuItem fruchtermanReingold = new JMenuItem("Fruchterman-Reingold");
+        this.add(fruchtermanReingold);
 
         fruchtermanReingold.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                LayoutUtils.fruchtermanReingoldLayout(getLayoutEditable());
+            public void actionPerformed(ActionEvent e) {
+                LayoutUtils.fruchtermanReingoldLayout(LayoutMenu.this.getLayoutEditable());
 
                 // Copy the laid out graph to the clipboard.
-                getCopyLayoutAction().actionPerformed(null);
+                LayoutMenu.this.getCopyLayoutAction().actionPerformed(null);
             }
         });
 
-        final JMenuItem kamadaKawai = new JMenuItem("Kamada-Kawai");
-        add(kamadaKawai);
+        JMenuItem kamadaKawai = new JMenuItem("Kamada-Kawai");
+        this.add(kamadaKawai);
 
         kamadaKawai.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final LayoutEditable layoutEditable = getLayoutEditable();
+            public void actionPerformed(ActionEvent e) {
+                LayoutEditable layoutEditable = LayoutMenu.this.getLayoutEditable();
                 LayoutUtils.kamadaKawaiLayout(layoutEditable);
 
                 // Copy the laid out graph to the clipboard.
-                getCopyLayoutAction().actionPerformed(null);
+                LayoutMenu.this.getCopyLayoutAction().actionPerformed(null);
             }
         });
 
-        final JMenuItem distanceFromSelected = new JMenuItem("Distance From Selected");
-        add(distanceFromSelected);
+        JMenuItem distanceFromSelected = new JMenuItem("Distance From Selected");
+        this.add(distanceFromSelected);
 
         distanceFromSelected.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final LayoutEditable layoutEditable = getLayoutEditable();
+            public void actionPerformed(ActionEvent e) {
+                LayoutEditable layoutEditable = LayoutMenu.this.getLayoutEditable();
                 LayoutUtils.distanceFromSelectedLayout(layoutEditable);
 
                 // Copy the laid out graph to the clipboard.
-                getCopyLayoutAction().actionPerformed(null);
+                LayoutMenu.this.getCopyLayoutAction().actionPerformed(null);
             }
         });
 
-        final JMenuItem causalOrder = new JMenuItem("Causal Order");
-        add(causalOrder);
+        JMenuItem causalOrder = new JMenuItem("Causal Order");
+        this.add(causalOrder);
 
         causalOrder.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final LayoutEditable layoutEditable = getLayoutEditable();
-                final Graph graph = layoutEditable.getGraph();
+            public void actionPerformed(ActionEvent e) {
+                LayoutEditable layoutEditable = LayoutMenu.this.getLayoutEditable();
+                Graph graph = layoutEditable.getGraph();
 
-                for (final Node node : new ArrayList<>(graph.getNodes())) {
+                for (Node node : new ArrayList<>(graph.getNodes())) {
                     if (node.getNodeType() == NodeType.ERROR) {
                         graph.removeNode(node);
                     }
                 }
 
-                final CausalOrder layout1 = new CausalOrder(layoutEditable);
+                CausalOrder layout1 = new CausalOrder(layoutEditable);
                 layout1.doLayout();
                 layoutEditable.layoutByGraph(graph);
-                LayoutUtils.layout = LayoutUtils.Layout.distanceFromSelected;
+                LayoutUtils.layout = Layout.distanceFromSelected;
 
                 // Copy the laid out graph to the clipboard.
-                getCopyLayoutAction().actionPerformed(null);
+                LayoutMenu.this.getCopyLayoutAction().actionPerformed(null);
             }
         });
 
@@ -268,19 +269,19 @@ public class LayoutMenu extends JMenu {
 //            }
 //        });
 
-        addSeparator();
+        this.addSeparator();
 
-        this.copyLayoutAction = new CopyLayoutAction(getLayoutEditable());
-        add(getCopyLayoutAction());
-        add(new PasteLayoutAction(getLayoutEditable()));
+        copyLayoutAction = new CopyLayoutAction(this.getLayoutEditable());
+        this.add(this.getCopyLayoutAction());
+        this.add(new PasteLayoutAction(this.getLayoutEditable()));
     }
 
     private LayoutEditable getLayoutEditable() {
-        return this.layoutEditable;
+        return layoutEditable;
     }
 
     private CopyLayoutAction getCopyLayoutAction() {
-        return this.copyLayoutAction;
+        return copyLayoutAction;
     }
 
 

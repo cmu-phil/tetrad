@@ -23,13 +23,13 @@ public class GraphExactlyRight implements Statistic {
     }
 
     @Override
-    public double getValue(final Graph trueGraph, Graph estGraph, final DataModel dataModel) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         estGraph = GraphUtils.replaceNodes(estGraph, trueGraph.getNodes());
         return trueGraph.equals(estGraph) ? 1 : 0;
     }
 
     @Override
-    public double getNormValue(final double value) {
+    public double getNormValue(double value) {
         return value;
     }
 }

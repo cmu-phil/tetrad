@@ -6,7 +6,10 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.GraphUtils.GraphComparison;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.performance.ComparisonParameters.Algorithm;
+import edu.cmu.tetrad.performance.ComparisonParameters.IndependenceTestType;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.sem.ScoreType;
@@ -41,13 +44,13 @@ public class Comparison2 {
      * Simulates data from model parameterizing the given DAG, and runs the
      * algorithm on that data, printing out error statistics.
      */
-    public static ComparisonResult compare(final ComparisonParameters params) {
+    public static ComparisonResult compare(ComparisonParameters params) {
         DataSet dataSet = null;
         Graph trueDag = null;
         IndependenceTest test = null;
         Score score = null;
 
-        final ComparisonResult result = new ComparisonResult(params);
+        ComparisonResult result = new ComparisonResult(params);
 
         if (params.isDataFromFile()) {
 
@@ -56,14 +59,14 @@ public class Comparison2 {
              */
             final String path = "/Users/dmalinsky/Documents/research/data/danexamples";
 
-            final File dir = new File(path);
-            final File[] files = dir.listFiles();
+            File dir = new File(path);
+            File[] files = dir.listFiles();
 
             if (files == null) {
                 throw new NullPointerException("No files in " + path);
             }
 
-            for (final File file : files) {
+            for (File file : files) {
 
                 if (file.getName().startsWith("graph") && file.getName().contains(String.valueOf(params.getGraphNum()))
                         && file.getName().endsWith(".g.txt")) {
@@ -74,20 +77,20 @@ public class Comparison2 {
 
             }
 
-            final String trialGraph = String.valueOf(params.getGraphNum()).concat("-").concat(String.valueOf(params.getTrial())).concat(".dat.txt");
+            String trialGraph = String.valueOf(params.getGraphNum()).concat("-").concat(String.valueOf(params.getTrial())).concat(".dat.txt");
 
-            for (final File file : files) {
+            for (File file : files) {
 
                 if (file.getName().startsWith("graph") && file.getName().endsWith(trialGraph)) {
 
-                    final Path dataFile = Paths.get(path.concat("/").concat(file.getName()));
+                    Path dataFile = Paths.get(path.concat("/").concat(file.getName()));
                     final Delimiter delimiter = Delimiter.TAB;
 
                     if (params.getDataType() == ComparisonParameters.DataType.Continuous) {
                         try {
-                            final ContinuousTabularDatasetFileReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, delimiter);
+                            ContinuousTabularDatasetFileReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, delimiter);
                             dataSet = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData());
-                        } catch (final IOException e) {
+                        } catch (IOException e) {
                             e.printStackTrace();
                         }
 
@@ -96,9 +99,9 @@ public class Comparison2 {
 
                     } else {
                         try {
-                            final VerticalDiscreteTabularDatasetFileReader dataReader = new VerticalDiscreteTabularDatasetFileReader(dataFile, delimiter);
+                            VerticalDiscreteTabularDatasetFileReader dataReader = new VerticalDiscreteTabularDatasetFileReader(dataFile, delimiter);
                             dataSet = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData());
-                        } catch (final IOException e) {
+                        } catch (IOException e) {
                             e.printStackTrace();
                         }
 
@@ -114,7 +117,7 @@ public class Comparison2 {
         } // end isDataFromFile()
 
         if (params.isNoData()) {
-            final List<Node> nodes = new ArrayList<>();
+            List<Node> nodes = new ArrayList<>();
             for (int i = 0; i < params.getNumVars(); i++) {
                 nodes.add(new ContinuousVariable("X" + (i + 1)));
             }
@@ -125,7 +128,7 @@ public class Comparison2 {
             /**
              * added 5.25.16 for SvarFCI *
              */
-            if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {
+            if (params.getAlgorithm() == Algorithm.SVARFCI) {
                 trueDag = GraphUtils.randomGraphRandomForwardEdges(
                         nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
                 trueDag = TimeSeriesUtils.graphToLagGraph(trueDag, 2);
@@ -142,64 +145,64 @@ public class Comparison2 {
                 throw new IllegalArgumentException("Algorithm not set.");
             }
 
-            final long time1 = System.currentTimeMillis();
+            long time1 = System.currentTimeMillis();
 
-            if (params.getAlgorithm() == ComparisonParameters.Algorithm.PC) {
+            if (params.getAlgorithm() == Algorithm.PC) {
                 if (test == null) {
                     throw new IllegalArgumentException("Test not set.");
                 }
-                final Pc search = new Pc(test);
+                Pc search = new Pc(test);
                 result.setResultGraph(search.search());
                 result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
-            } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.CPC) {
+            } else if (params.getAlgorithm() == Algorithm.CPC) {
                 if (test == null) {
                     throw new IllegalArgumentException("Test not set.");
                 }
-                final Cpc search = new Cpc(test);
+                Cpc search = new Cpc(test);
                 result.setResultGraph(search.search());
                 result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
-            } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.PCLocal) {
+            } else if (params.getAlgorithm() == Algorithm.PCLocal) {
                 if (test == null) {
                     throw new IllegalArgumentException("Test not set.");
                 }
-                final PcLocal search = new PcLocal(test);
+                PcLocal search = new PcLocal(test);
                 result.setResultGraph(search.search());
                 result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
-            } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.PCStableMax) {
+            } else if (params.getAlgorithm() == Algorithm.PCStableMax) {
                 if (test == null) {
                     throw new IllegalArgumentException("Test not set.");
                 }
-                final PcStableMax search = new PcStableMax(test);
+                PcStableMax search = new PcStableMax(test);
                 result.setResultGraph(search.search());
                 result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
-            } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGES) {
+            } else if (params.getAlgorithm() == Algorithm.FGES) {
                 if (score == null) {
                     throw new IllegalArgumentException("Score not set.");
                 }
-                final Fges search = new Fges(score);
+                Fges search = new Fges(score);
                 //search.setFaithfulnessAssumed(params.isOneEdgeFaithfulnessAssumed());
                 result.setResultGraph(search.search());
                 result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
-            } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FCI) {
+            } else if (params.getAlgorithm() == Algorithm.FCI) {
                 if (test == null) {
                     throw new IllegalArgumentException("Test not set.");
                 }
-                final Fci search = new Fci(test);
+                Fci search = new Fci(test);
                 result.setResultGraph(search.search());
                 result.setCorrectResult(new DagToPag2(trueDag).convert());
-            } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.GFCI) {
+            } else if (params.getAlgorithm() == Algorithm.GFCI) {
                 if (test == null) {
                     throw new IllegalArgumentException("Test not set.");
                 }
-                final GFci search = new GFci(test, score);
+                GFci search = new GFci(test, score);
                 result.setResultGraph(search.search());
                 result.setCorrectResult(new DagToPag2(trueDag).convert());
-            } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {
+            } else if (params.getAlgorithm() == Algorithm.SVARFCI) {
                 if (test == null) {
                     throw new IllegalArgumentException("Test not set.");
                 }
-                final SvarFci search = new SvarFci(test);
-                final IKnowledge knowledge = Comparison2.getKnowledge(trueDag);
+                SvarFci search = new SvarFci(test);
+                IKnowledge knowledge = getKnowledge(trueDag);
                 search.setKnowledge(knowledge);
                 result.setResultGraph(search.search());
                 result.setCorrectResult(new TsDagToPag(trueDag).convert());
@@ -209,9 +212,9 @@ public class Comparison2 {
                 throw new IllegalArgumentException("Unrecognized algorithm.");
             }
 
-            final long time2 = System.currentTimeMillis();
+            long time2 = System.currentTimeMillis();
 
-            final long elapsed = time2 - time1;
+            long elapsed = time2 - time1;
             result.setElapsed(elapsed);
 
             result.setTrueDag(trueDag);
@@ -239,7 +242,7 @@ public class Comparison2 {
             }
 
             if (params.getDataType() == ComparisonParameters.DataType.Continuous) {
-                final List<Node> nodes = new ArrayList<>();
+                List<Node> nodes = new ArrayList<>();
 
                 for (int i = 0; i < params.getNumVars(); i++) {
                     nodes.add(new ContinuousVariable("X" + (i + 1)));
@@ -251,7 +254,7 @@ public class Comparison2 {
                 /**
                  * added 6.08.16 for SvarFCI *
                  */
-                if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {
+                if (params.getAlgorithm() == Algorithm.SVARFCI) {
                     trueDag = GraphUtils.randomGraphRandomForwardEdges(
                             nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
                     trueDag = TimeSeriesUtils.graphToLagGraph(trueDag, 2);
@@ -269,12 +272,12 @@ public class Comparison2 {
                     throw new IllegalArgumentException("Sample size not set.");
                 }
 
-                final LargeScaleSimulation sim = new LargeScaleSimulation(trueDag);
+                LargeScaleSimulation sim = new LargeScaleSimulation(trueDag);
 
                 /**
                  * added 6.08.16 for SvarFCI *
                  */
-                if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {
+                if (params.getAlgorithm() == Algorithm.SVARFCI) {
                     sim.setCoefRange(0.20, 0.50);
                 }
                 /**
@@ -285,7 +288,7 @@ public class Comparison2 {
                 /**
                  * added 6.08.16 for SvarFCI *
                  */
-                if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {
+                if (params.getAlgorithm() == Algorithm.SVARFCI) {
 ////                    System.out.println("Coefs matrix : " + sim.getCoefs());
 //                    System.out.println(MatrixUtils.toString(sim.getCoefficientMatrix()));
 ////                    System.out.println("dim = " + sim.getCoefs()[1][1]);
@@ -301,9 +304,9 @@ public class Comparison2 {
 //                    /***************************/
                     boolean isStableTetradMatrix;
                     int attempt = 1;
-                    final int tierSize = params.getNumVars();
-                    final int[] sub = new int[tierSize];
-                    final int[] sub2 = new int[tierSize];
+                    int tierSize = params.getNumVars();
+                    int[] sub = new int[tierSize];
+                    int[] sub2 = new int[tierSize];
                     for (int i = 0; i < tierSize; i++) {
                         sub[i] = i;
                         sub2[i] = tierSize + i;
@@ -313,11 +316,11 @@ public class Comparison2 {
 //                        System.out.println("Variable Nodes : " + sim.getVariableNodes());
 //                        System.out.println(MatrixUtils.toString(sim.getCoefficientMatrix()));
 
-                        final Matrix coefMat = new Matrix(sim.getCoefficientMatrix());
-                        final Matrix B = coefMat.getSelection(sub, sub);
-                        final Matrix Gamma1 = coefMat.getSelection(sub2, sub);
-                        final Matrix Gamma0 = Matrix.identity(tierSize).minus(B);
-                        final Matrix A1 = Gamma0.inverse().times(Gamma1);
+                        Matrix coefMat = new Matrix(sim.getCoefficientMatrix());
+                        Matrix B = coefMat.getSelection(sub, sub);
+                        Matrix Gamma1 = coefMat.getSelection(sub2, sub);
+                        Matrix Gamma0 = Matrix.identity(tierSize).minus(B);
+                        Matrix A1 = Gamma0.inverse().times(Gamma1);
 
 //                        TetradMatrix B2 = coefMat.getSelection(sub2, sub2);
 //                        System.out.println("B matrix : " + B);
@@ -339,7 +342,7 @@ public class Comparison2 {
                 }
 
             } else if (params.getDataType() == ComparisonParameters.DataType.Discrete) {
-                final List<Node> nodes = new ArrayList<>();
+                List<Node> nodes = new ArrayList<>();
 
                 for (int i = 0; i < params.getNumVars(); i++) {
                     nodes.add(new DiscreteVariable("X" + (i + 1), 3));
@@ -356,14 +359,14 @@ public class Comparison2 {
                     throw new IllegalArgumentException("Sample size not set.");
                 }
 
-                final int[] tiers = new int[nodes.size()];
+                int[] tiers = new int[nodes.size()];
 
                 for (int i = 0; i < nodes.size(); i++) {
                     tiers[i] = i;
                 }
 
-                final BayesPm pm = new BayesPm(trueDag, 3, 3);
-                final MlBayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
+                BayesPm pm = new BayesPm(trueDag, 3, 3);
+                MlBayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
                 dataSet = im.simulateData(params.getSampleSize(), false, tiers);
             } else {
                 throw new IllegalArgumentException("Unrecognized data type.");
@@ -373,7 +376,7 @@ public class Comparison2 {
             }
         }
 
-        if (params.getIndependenceTest() == ComparisonParameters.IndependenceTestType.FisherZ) {
+        if (params.getIndependenceTest() == IndependenceTestType.FisherZ) {
             if (params.getDataType() != null && params.getDataType() != ComparisonParameters.DataType.Continuous) {
                 throw new IllegalArgumentException("Data type previously set to something other than continuous.");
             }
@@ -385,7 +388,7 @@ public class Comparison2 {
             test = new IndTestFisherZ(dataSet, params.getAlpha());
 
             params.setDataType(ComparisonParameters.DataType.Continuous);
-        } else if (params.getIndependenceTest() == ComparisonParameters.IndependenceTestType.ChiSquare) {
+        } else if (params.getIndependenceTest() == IndependenceTestType.ChiSquare) {
             if (params.getDataType() != null && params.getDataType() != ComparisonParameters.DataType.Discrete) {
                 throw new IllegalArgumentException("Data type previously set to something other than discrete.");
             }
@@ -408,7 +411,7 @@ public class Comparison2 {
                 throw new IllegalArgumentException("Penalty discount not set.");
             }
 
-            final SemBicScore semBicScore = new SemBicScore(new CovarianceMatrix(dataSet));
+            SemBicScore semBicScore = new SemBicScore(new CovarianceMatrix(dataSet));
             semBicScore.setPenaltyDiscount(params.getPenaltyDiscount());
             score = semBicScore;
 
@@ -439,64 +442,64 @@ public class Comparison2 {
             throw new IllegalArgumentException("Algorithm not set.");
         }
 
-        final long time1 = System.currentTimeMillis();
+        long time1 = System.currentTimeMillis();
 
-        if (params.getAlgorithm() == ComparisonParameters.Algorithm.PC) {
+        if (params.getAlgorithm() == Algorithm.PC) {
             if (test == null) {
                 throw new IllegalArgumentException("Test not set.");
             }
-            final Pc search = new Pc(test);
+            Pc search = new Pc(test);
             result.setResultGraph(search.search());
             result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
-        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.CPC) {
+        } else if (params.getAlgorithm() == Algorithm.CPC) {
             if (test == null) {
                 throw new IllegalArgumentException("Test not set.");
             }
-            final Cpc search = new Cpc(test);
+            Cpc search = new Cpc(test);
             result.setResultGraph(search.search());
             result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
-        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.PCLocal) {
+        } else if (params.getAlgorithm() == Algorithm.PCLocal) {
             if (test == null) {
                 throw new IllegalArgumentException("Test not set.");
             }
-            final PcLocal search = new PcLocal(test);
+            PcLocal search = new PcLocal(test);
             result.setResultGraph(search.search());
             result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
-        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.PCStableMax) {
+        } else if (params.getAlgorithm() == Algorithm.PCStableMax) {
             if (test == null) {
                 throw new IllegalArgumentException("Test not set.");
             }
-            final PcStableMax search = new PcStableMax(test);
+            PcStableMax search = new PcStableMax(test);
             result.setResultGraph(search.search());
             result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
-        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGES) {
+        } else if (params.getAlgorithm() == Algorithm.FGES) {
             if (score == null) {
                 throw new IllegalArgumentException("Score not set.");
             }
-            final Fges search = new Fges(score);
+            Fges search = new Fges(score);
             //search.setFaithfulnessAssumed(params.isOneEdgeFaithfulnessAssumed());
             result.setResultGraph(search.search());
             result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
-        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FCI) {
+        } else if (params.getAlgorithm() == Algorithm.FCI) {
             if (test == null) {
                 throw new IllegalArgumentException("Test not set.");
             }
-            final Fci search = new Fci(test);
+            Fci search = new Fci(test);
             result.setResultGraph(search.search());
             result.setCorrectResult(new DagToPag2(trueDag).convert());
-        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.GFCI) {
+        } else if (params.getAlgorithm() == Algorithm.GFCI) {
             if (test == null) {
                 throw new IllegalArgumentException("Test not set.");
             }
-            final GFci search = new GFci(test, score);
+            GFci search = new GFci(test, score);
             result.setResultGraph(search.search());
             result.setCorrectResult(new DagToPag2(trueDag).convert());
-        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {
+        } else if (params.getAlgorithm() == Algorithm.SVARFCI) {
             if (test == null) {
                 throw new IllegalArgumentException("Test not set.");
             }
-            final SvarFci search = new SvarFci(test);
-            final IKnowledge knowledge = Comparison2.getKnowledge(trueDag);
+            SvarFci search = new SvarFci(test);
+            IKnowledge knowledge = getKnowledge(trueDag);
             search.setKnowledge(knowledge);
             result.setResultGraph(search.search());
             result.setCorrectResult(new TsDagToPag(trueDag).convert());
@@ -504,9 +507,9 @@ public class Comparison2 {
             throw new IllegalArgumentException("Unrecognized algorithm.");
         }
 
-        final long time2 = System.currentTimeMillis();
+        long time2 = System.currentTimeMillis();
 
-        final long elapsed = time2 - time1;
+        long elapsed = time2 - time1;
         result.setElapsed(elapsed);
 
         result.setTrueDag(trueDag);
@@ -527,14 +530,14 @@ public class Comparison2 {
 //        return null;
 //    }
     // changed return type of 'summarize' to TextTable
-    public static TextTable summarize(final List<ComparisonResult> results, final List<TableColumn> tableColumns) {
+    public static TextTable summarize(List<ComparisonResult> results, List<TableColumn> tableColumns) {
 
-        final List<Node> variables = new ArrayList<>();
-        for (final TableColumn column : tableColumns) {
+        List<Node> variables = new ArrayList<>();
+        for (TableColumn column : tableColumns) {
             variables.add(new ContinuousVariable(column.toString()));
         }
 
-        final DataSet dataSet = new BoxDataSet(new DoubleDataBox(0, variables.size()), variables);
+        DataSet dataSet = new BoxDataSet(new DoubleDataBox(0, variables.size()), variables);
         dataSet.setNumberFormat(new DecimalFormat("0"));
 
         for (int i = 0; i < results.size(); i++) {
@@ -543,13 +546,13 @@ public class Comparison2 {
 
         System.out.println();
 
-        for (final ComparisonResult _result : results) {
-            final Graph correctGraph = _result.getCorrectResult();
-            final Graph resultGraph = _result.getResultGraph();
+        for (ComparisonResult _result : results) {
+            Graph correctGraph = _result.getCorrectResult();
+            Graph resultGraph = _result.getResultGraph();
 
-            final GraphUtils.GraphComparison comparison = SearchGraphUtils.getGraphComparison2(correctGraph, resultGraph);
+            GraphComparison comparison = SearchGraphUtils.getGraphComparison2(correctGraph, resultGraph);
 
-            final int newRow = dataSet.getNumRows();
+            int newRow = dataSet.getNumRows();
 
             if (tableColumns.contains(TableColumn.AdjCor)) {
                 dataSet.setDouble(newRow, tableColumns.indexOf(TableColumn.AdjCor), comparison.getAdjCor());
@@ -600,16 +603,16 @@ public class Comparison2 {
             }
         }
 
-        final int[] cols = new int[tableColumns.size()];
+        int[] cols = new int[tableColumns.size()];
         for (int i = 0; i < cols.length; i++) {
             cols[i] = i;
         }
 
-        return Comparison2.getTextTable(dataSet, cols, new DecimalFormat("0.00")); //deleted .toString()
+        return getTextTable(dataSet, cols, new DecimalFormat("0.00")); //deleted .toString()
     }
 
-    private static TextTable getTextTable(final DataSet dataSet, final int[] columns, final NumberFormat nf) {
-        final TextTable table = new TextTable(dataSet.getNumRows() + 2, columns.length + 1);
+    private static TextTable getTextTable(DataSet dataSet, int[] columns, NumberFormat nf) {
+        TextTable table = new TextTable(dataSet.getNumRows() + 2, columns.length + 1);
 
         table.setToken(0, 0, "Run #");
 
@@ -627,7 +630,7 @@ public class Comparison2 {
             }
         }
 
-        final NumberFormat nf2 = new DecimalFormat("0.00");
+        NumberFormat nf2 = new DecimalFormat("0.00");
 
         for (int j = 0; j < columns.length; j++) {
             double sum = 0.0;
@@ -636,7 +639,7 @@ public class Comparison2 {
                 sum += dataSet.getDouble(i, columns[j]);
             }
 
-            final double avg = sum / dataSet.getNumRows();
+            double avg = sum / dataSet.getNumRows();
 
             table.setToken(dataSet.getNumRows() + 2 - 1, j + 1, nf2.format(avg));
         }
@@ -646,16 +649,16 @@ public class Comparison2 {
         return table;
     }
 
-    public static IKnowledge getKnowledge(final Graph graph) {
+    public static IKnowledge getKnowledge(Graph graph) {
 //        System.out.println("Entering getKnowledge ... ");
         int numLags = 1; // need to fix this!
-        final List<Node> variables = graph.getNodes();
-        final List<Integer> laglist = new ArrayList<>();
-        final IKnowledge knowledge = new Knowledge2();
+        List<Node> variables = graph.getNodes();
+        List<Integer> laglist = new ArrayList<>();
+        IKnowledge knowledge = new Knowledge2();
         int lag;
-        for (final Node node : variables) {
-            final String varName = node.getName();
-            final String tmp;
+        for (Node node : variables) {
+            String varName = node.getName();
+            String tmp;
             if (varName.indexOf(':') == -1) {
                 lag = 0;
                 laglist.add(lag);
@@ -670,38 +673,38 @@ public class Comparison2 {
 //        System.out.println("Variable list before the sort = " + variables);
         Collections.sort(variables, new Comparator<Node>() {
             @Override
-            public int compare(final Node o1, final Node o2) {
-                final String name1 = Comparison2.getNameNoLag(o1);
-                final String name2 = Comparison2.getNameNoLag(o2);
+            public int compare(Node o1, Node o2) {
+                String name1 = getNameNoLag(o1);
+                String name2 = getNameNoLag(o2);
 
 //                System.out.println("name 1 = " + name1);
 //                System.out.println("name 2 = " + name2);
-                final String prefix1 = Comparison2.getPrefix(name1);
-                final String prefix2 = Comparison2.getPrefix(name2);
+                String prefix1 = getPrefix(name1);
+                String prefix2 = getPrefix(name2);
 
 //                System.out.println("prefix 1 = " + prefix1);
 //                System.out.println("prefix 2 = " + prefix2);
-                final int index1 = Comparison2.getIndex(name1);
-                final int index2 = Comparison2.getIndex(name2);
+                int index1 = getIndex(name1);
+                int index2 = getIndex(name2);
 
 //                System.out.println("index 1 = " + index1);
 //                System.out.println("index 2 = " + index2);
-                if (Comparison2.getLag(o1.getName()) == Comparison2.getLag(o2.getName())) {
+                if (getLag(o1.getName()) == getLag(o2.getName())) {
                     if (prefix1.compareTo(prefix2) == 0) {
                         return Integer.compare(index1, index2);
                     } else {
                         return prefix1.compareTo(prefix2);
                     }
                 } else {
-                    return Comparison2.getLag(o1.getName()) - Comparison2.getLag(o2.getName());
+                    return getLag(o1.getName()) - getLag(o2.getName());
                 }
             }
         });
 
 //        System.out.println("Variable list after the sort = " + variables);
-        for (final Node node : variables) {
-            final String varName = node.getName();
-            final String tmp;
+        for (Node node : variables) {
+            String varName = node.getName();
+            String tmp;
             if (varName.indexOf(':') == -1) {
                 lag = 0;
 //                laglist.add(lag);
@@ -717,8 +720,8 @@ public class Comparison2 {
         return knowledge;
     }
 
-    public static String getNameNoLag(final Object obj) {
-        final String tempS = obj.toString();
+    public static String getNameNoLag(Object obj) {
+        String tempS = obj.toString();
         if (tempS.indexOf(':') == -1) {
             return tempS;
         } else {
@@ -726,7 +729,7 @@ public class Comparison2 {
         }
     }
 
-    public static String getPrefix(final String s) {
+    public static String getPrefix(String s) {
 //        int y = 0;
 //        for (int i = s.length() - 1; i >= 0; i--) {
 //            try {
@@ -744,23 +747,23 @@ public class Comparison2 {
         return s.substring(0, 1);
     }
 
-    public static int getIndex(final String s) {
+    public static int getIndex(String s) {
         int y = 0;
         for (int i = s.length() - 1; i >= 0; i--) {
             try {
                 y = Integer.parseInt(s.substring(i));
-            } catch (final NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 return y;
             }
         }
         throw new IllegalArgumentException("Not integer suffix.");
     }
 
-    public static int getLag(final String s) {
+    public static int getLag(String s) {
         if (s.indexOf(':') == -1) {
             return 0;
         }
-        final String tmp = s.substring(s.indexOf(':') + 1, s.length());
+        String tmp = s.substring(s.indexOf(':') + 1, s.length());
         return (Integer.parseInt(tmp));
     }
 

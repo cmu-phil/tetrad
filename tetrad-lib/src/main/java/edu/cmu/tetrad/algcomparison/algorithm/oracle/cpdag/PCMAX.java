@@ -9,7 +9,10 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.PcAll;
+import edu.cmu.tetrad.search.PcAll.ColliderDiscovery;
+import edu.cmu.tetrad.search.PcAll.Concurrent;
+import edu.cmu.tetrad.search.PcAll.ConflictRule;
+import edu.cmu.tetrad.search.PcAll.FasType;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -39,47 +42,47 @@ public class PCMAX implements Algorithm, HasKnowledge, TakesIndependenceWrapper 
     public PCMAX() {
     }
 
-    public PCMAX(final IndependenceWrapper test) {
+    public PCMAX(IndependenceWrapper test) {
         this.test = test;
     }
 
     @Override
-    public Graph search(final DataModel dataSet, final Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            final edu.cmu.tetrad.search.PcAll.ColliderDiscovery colliderDiscovery
-                    = PcAll.ColliderDiscovery.MAX_P;
+            final ColliderDiscovery colliderDiscovery
+                    = ColliderDiscovery.MAX_P;
 
-            final edu.cmu.tetrad.search.PcAll.ConflictRule conflictRule;
+            ConflictRule conflictRule;
 
             switch (parameters.getInt(Params.CONFLICT_RULE)) {
                 case 1:
-                    conflictRule = edu.cmu.tetrad.search.PcAll.ConflictRule.OVERWRITE;
+                    conflictRule = ConflictRule.OVERWRITE;
                     break;
                 case 2:
-                    conflictRule = edu.cmu.tetrad.search.PcAll.ConflictRule.BIDIRECTED;
+                    conflictRule = ConflictRule.BIDIRECTED;
                     break;
                 case 3:
-                    conflictRule = edu.cmu.tetrad.search.PcAll.ConflictRule.PRIORITY;
+                    conflictRule = ConflictRule.PRIORITY;
                     break;
                 default:
                     throw new IllegalArgumentException("Not a choice.");
             }
 
-            final edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(this.test.getTest(dataSet, parameters));
+            edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setHeuristic(parameters.getInt(Params.FAS_HEURISTIC));
-            search.setKnowledge(this.knowledge);
+            search.setKnowledge(knowledge);
 
             if (parameters.getBoolean(Params.STABLE_FAS)) {
-                search.setFasType(edu.cmu.tetrad.search.PcAll.FasType.STABLE);
+                search.setFasType(FasType.STABLE);
             } else {
-                search.setFasType(edu.cmu.tetrad.search.PcAll.FasType.REGULAR);
+                search.setFasType(FasType.REGULAR);
             }
 
             if (parameters.getBoolean(Params.CONCURRENT_FAS)) {
-                search.setConcurrent(edu.cmu.tetrad.search.PcAll.Concurrent.YES);
+                search.setConcurrent(Concurrent.YES);
             } else {
-                search.setConcurrent(edu.cmu.tetrad.search.PcAll.Concurrent.NO);
+                search.setConcurrent(Concurrent.NO);
             }
 
             search.setColliderDiscovery(colliderDiscovery);
@@ -90,11 +93,11 @@ public class PCMAX implements Algorithm, HasKnowledge, TakesIndependenceWrapper 
 
             return search.search();
         } else {
-            final PCMAX pcAll = new PCMAX(this.test);
+            PCMAX pcAll = new PCMAX(test);
 
-            final DataSet data = (DataSet) dataSet;
-            final GeneralResamplingTest search = new GeneralResamplingTest(data, pcAll, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(this.knowledge);
+            DataSet data = (DataSet) dataSet;
+            GeneralResamplingTest search = new GeneralResamplingTest(data, pcAll, parameters.getInt(Params.NUMBER_RESAMPLING));
+            search.setKnowledge(knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -120,23 +123,23 @@ public class PCMAX implements Algorithm, HasKnowledge, TakesIndependenceWrapper 
     }
 
     @Override
-    public Graph getComparisonGraph(final Graph graph) {
+    public Graph getComparisonGraph(Graph graph) {
         return SearchGraphUtils.cpdagForDag(new EdgeListGraph(graph));
     }
 
     @Override
     public String getDescription() {
-        return "PC using " + this.test.getDescription();
+        return "PC using " + test.getDescription();
     }
 
     @Override
     public DataType getDataType() {
-        return this.test.getDataType();
+        return test.getDataType();
     }
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
         parameters.add(Params.STABLE_FAS);
         parameters.add(Params.CONCURRENT_FAS);
 //        parameters.add(Params.COLLIDER_DISCOVERY_RULE);
@@ -152,21 +155,21 @@ public class PCMAX implements Algorithm, HasKnowledge, TakesIndependenceWrapper 
 
     @Override
     public IKnowledge getKnowledge() {
-        return this.knowledge;
+        return knowledge;
     }
 
     @Override
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
-        return this.test;
+        return test;
     }
 
     @Override
-    public void setIndependenceWrapper(final IndependenceWrapper test) {
+    public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;
     }
 

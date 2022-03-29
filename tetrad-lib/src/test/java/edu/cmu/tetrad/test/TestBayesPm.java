@@ -39,26 +39,26 @@ public final class TestBayesPm {
 
     @Test
     public void testInitializeFixed() {
-        final Graph graph = GraphConverter.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
-        final Dag dag = new Dag(graph);
-        final BayesPm bayesPm = new BayesPm(dag, 3, 3);
+        Graph graph = GraphConverter.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
+        Dag dag = new Dag(graph);
+        BayesPm bayesPm = new BayesPm(dag, 3, 3);
 
-        final List<Node> nodes = dag.getNodes();
+        List<Node> nodes = dag.getNodes();
 
-        for (final Node node1 : nodes) {
+        for (Node node1 : nodes) {
             assertEquals(3, bayesPm.getNumCategories(node1));
         }
     }
 
     @Test
     public void testInitializeRandom() {
-        final Graph graph = GraphConverter.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
-        final Dag dag = new Dag(graph);
-        final BayesPm bayesPm = new BayesPm(dag, 2, 5);
-        final List<Node> nodes = dag.getNodes();
+        Graph graph = GraphConverter.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
+        Dag dag = new Dag(graph);
+        BayesPm bayesPm = new BayesPm(dag, 2, 5);
+        List<Node> nodes = dag.getNodes();
 
-        for (final Node node1 : nodes) {
-            final int numValues = bayesPm.getNumCategories(node1);
+        for (Node node1 : nodes) {
+            int numValues = bayesPm.getNumCategories(node1);
             assertTrue("Number of values out of range: " + numValues,
                     numValues >= 2 && numValues <= 5);
         }
@@ -66,13 +66,13 @@ public final class TestBayesPm {
 
     @Test
     public void testChangeNumValues() {
-        final Graph graph = GraphConverter.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
-        final Dag dag = new Dag(graph);
+        Graph graph = GraphConverter.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
+        Dag dag = new Dag(graph);
 
-        final Node x1 = dag.getNode("X1");
-        final Node x2 = dag.getNode("X2");
+        Node x1 = dag.getNode("X1");
+        Node x2 = dag.getNode("X2");
 
-        final BayesPm bayesPm = new BayesPm(dag, 3, 3);
+        BayesPm bayesPm = new BayesPm(dag, 3, 3);
         bayesPm.setNumCategories(x1, 5);
 
         assertEquals(5, bayesPm.getNumCategories(x1));
@@ -81,22 +81,22 @@ public final class TestBayesPm {
 
     @Test
     public void testEquals() {
-        final Graph graph = GraphConverter.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
-        final Dag dag = new Dag(graph);
+        Graph graph = GraphConverter.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
+        Dag dag = new Dag(graph);
 
-        final BayesPm bayesPm = new BayesPm(dag, 3, 3);
+        BayesPm bayesPm = new BayesPm(dag, 3, 3);
 
         assertEquals(bayesPm, bayesPm);
     }
 
     @Test
     public void testMeasuredNodes() {
-        final Dag dag = new Dag();
+        Dag dag = new Dag();
 
-        final Node x1 = new GraphNode("X1");
-        final Node x2 = new GraphNode("X2");
-        final Node x3 = new GraphNode("X3");
-        final Node x4 = new GraphNode("X4");
+        Node x1 = new GraphNode("X1");
+        Node x2 = new GraphNode("X2");
+        Node x3 = new GraphNode("X3");
+        Node x4 = new GraphNode("X4");
 
         x1.setNodeType(NodeType.LATENT);
 

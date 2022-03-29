@@ -51,39 +51,39 @@ public class IndTestDSep implements IndependenceTest {
     private Set<Node> observedVars;
     private List<Node> _observedVars;
     private HashSet<IndependenceFact> facts;
-    private boolean verbose = false;
-    private double pvalue = 0;
+    private boolean verbose;
+    private double pvalue;
 
-    public IndTestDSep(final Graph graph) {
+    public IndTestDSep(Graph graph) {
         this(graph, false);
     }
 
     /**
      * Constructs a new independence test that returns d-separation facts for the given graph as independence results.
      */
-    public IndTestDSep(final Graph graph, final boolean keepLatents) {
+    public IndTestDSep(Graph graph, boolean keepLatents) {
         if (graph == null) {
             throw new NullPointerException();
         }
 
         this.graph = graph;
 
-        this._observedVars = calcVars(graph, keepLatents);
-        this.observedVars = new HashSet<>(this._observedVars);
+        _observedVars = this.calcVars(graph, keepLatents);
+        observedVars = new HashSet<>(_observedVars);
     }
 
     /**
      * Required by IndependenceTest.
      */
-    public IndependenceTest indTestSubset(final List<Node> vars) {
+    public IndependenceTest indTestSubset(List<Node> vars) {
         if (vars.isEmpty()) {
             throw new IllegalArgumentException("Subset may not be empty.");
         }
 
-        final List<Node> _vars = new ArrayList<>();
+        List<Node> _vars = new ArrayList<>();
 
-        for (final Node var : vars) {
-            final Node _var = getVariable(var.getName());
+        for (Node var : vars) {
+            Node _var = this.getVariable(var.getName());
 
             if (_var == null) {
                 throw new IllegalArgumentException(
@@ -93,10 +93,10 @@ public class IndTestDSep implements IndependenceTest {
             _vars.add(_var);
         }
 
-        this._observedVars = _vars;
-        this.observedVars = new HashSet<>(this._observedVars);
+        _observedVars = _vars;
+        observedVars = new HashSet<>(_observedVars);
 
-        this.facts = new HashSet<>();
+        facts = new HashSet<>();
 
         return this;
     }
@@ -104,13 +104,13 @@ public class IndTestDSep implements IndependenceTest {
     /**
      * @return the list of observed nodes in the given graph.
      */
-    private List<Node> calcVars(final Graph graph, final boolean keepLatents) {
+    private List<Node> calcVars(Graph graph, boolean keepLatents) {
         if (keepLatents) {
             return graph.getNodes();
         } else {
-            final List<Node> observedVars = new ArrayList<>();
+            List<Node> observedVars = new ArrayList<>();
 
-            for (final Node node : graph.getNodes()) {
+            for (Node node : graph.getNodes()) {
                 if (node.getNodeType() == NodeType.MEASURED) {
                     observedVars.add(node);
                 }
@@ -128,34 +128,34 @@ public class IndTestDSep implements IndependenceTest {
      * @param z a List of nodes (conditioning variables)
      * @return true iff x _||_ y | z
      */
-    public boolean isIndependent(final Node x, final Node y, final List<Node> z) {
+    public boolean isIndependent(Node x, Node y, List<Node> z) {
         if (z == null) {
             throw new NullPointerException();
         }
 
-        for (final Node node : z) {
+        for (Node node : z) {
             if (node == null) {
                 throw new NullPointerException();
             }
         }
 
-        if (!this.observedVars.contains(x)) {
+        if (!observedVars.contains(x)) {
             throw new IllegalArgumentException("Not an observed variable: " + x);
         }
 
-        if (!this.observedVars.contains(y)) {
+        if (!observedVars.contains(y)) {
             throw new IllegalArgumentException("Not an observed variable: " + y);
         }
 
-        for (final Node _z : z) {
-            if (!this.observedVars.contains(_z)) {
+        for (Node _z : z) {
+            if (!observedVars.contains(_z)) {
                 throw new IllegalArgumentException("Not an observed variable: " + _z);
             }
         }
 
-        final boolean dSeparated = !getGraph().isDConnectedTo(x, y, z);
+        boolean dSeparated = !this.getGraph().isDConnectedTo(x, y, z);
 
-        if (this.verbose) {
+        if (verbose) {
             if (dSeparated) {
                 final double pValue = 1.0;
                 TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, pValue));
@@ -168,54 +168,54 @@ public class IndTestDSep implements IndependenceTest {
         }
 
         if (dSeparated) {
-            if (this.facts != null) {
-                this.facts.add(new IndependenceFact(x, y, z));
+            if (facts != null) {
+                facts.add(new IndependenceFact(x, y, z));
             }
 
-            this.pvalue = 1.0;
+            pvalue = 1.0;
         } else {
-            this.pvalue = 0.0;
+            pvalue = 0.0;
         }
 
         return dSeparated;
     }
 
-    public boolean isIndependent(final Node x, final Node y, final Node... z) {
-        final List<Node> zList = Arrays.asList(z);
-        return isIndependent(x, y, zList);
+    public boolean isIndependent(Node x, Node y, Node... z) {
+        List<Node> zList = Arrays.asList(z);
+        return this.isIndependent(x, y, zList);
     }
 
-    public boolean isDependent(final Node x, final Node y, final List<Node> z) {
-        return !isIndependent(x, y, z);
+    public boolean isDependent(Node x, Node y, List<Node> z) {
+        return !this.isIndependent(x, y, z);
     }
 
-    public boolean isDependent(final Node x, final Node y, final Node... z) {
-        final List<Node> zList = Arrays.asList(z);
-        return isDependent(x, y, zList);
+    public boolean isDependent(Node x, Node y, Node... z) {
+        List<Node> zList = Arrays.asList(z);
+        return this.isDependent(x, y, zList);
     }
 
     /**
      * Auxiliary method to calculate dseparation facts directly from nodes instead of from variables.
      */
-    public boolean isDSeparated(final Node x, final Node y, final List<Node> z) {
+    public boolean isDSeparated(Node x, Node y, List<Node> z) {
         if (z == null) {
             throw new NullPointerException();
         }
 
-        for (final Node aZ : z) {
+        for (Node aZ : z) {
             if (aZ == null) {
                 throw new NullPointerException();
             }
         }
 
-        return getGraph().isDSeparatedFrom(x, y, z);
+        return this.getGraph().isDSeparatedFrom(x, y, z);
     }
 
     /**
      * Needed for IndependenceTest interface. P value is not meaningful here.
      */
     public double getPValue() {
-        return this.pvalue;
+        return pvalue;
     }
 
     /**
@@ -223,22 +223,22 @@ public class IndTestDSep implements IndependenceTest {
      * relations-- that is, all the variables in the given graph or the given data set.
      */
     public List<Node> getVariables() {
-        return Collections.unmodifiableList(this._observedVars);
+        return Collections.unmodifiableList(_observedVars);
     }
 
     /**
      * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
-        final List<Node> nodes = this._observedVars;
-        final List<String> nodeNames = new ArrayList<>();
-        for (final Node var : nodes) {
+        List<Node> nodes = _observedVars;
+        List<String> nodeNames = new ArrayList<>();
+        for (Node var : nodes) {
             nodeNames.add(var.getName());
         }
         return nodeNames;
     }
 
-    public boolean determines(final List z, final Node x1) {
+    public boolean determines(List z, Node x1) {
         return false; //z.contains(x1);
     }
 
@@ -246,12 +246,12 @@ public class IndTestDSep implements IndependenceTest {
         return 0.5;
     }
 
-    public void setAlpha(final double alpha) {
+    public void setAlpha(double alpha) {
         //
     }
 
-    public Node getVariable(final String name) {
-        for (final Node variable : this.observedVars) {
+    public Node getVariable(String name) {
+        for (Node variable : observedVars) {
             if (variable.getName().equals(name)) {
                 return variable;
             }
@@ -264,10 +264,10 @@ public class IndTestDSep implements IndependenceTest {
      * @return the underlying graph.
      */
     public Graph getGraph() {
-        return this.graph;
+        return graph;
     }
 
-    public void setGraph(final Graph graph) {
+    public void setGraph(Graph graph) {
         this.graph = graph;
     }
 
@@ -301,22 +301,22 @@ public class IndTestDSep implements IndependenceTest {
 
     @Override
     public double getScore() {
-        return getPValue() == 1 ? -1 : 1;
+        return this.getPValue() == 1 ? -1 : 1;
     }
 
     public void startRecordingFacts() {
-        this.facts = new HashSet<>();
+        facts = new HashSet<>();
     }
 
     public HashSet<IndependenceFact> getFacts() {
-        return this.facts;
+        return facts;
     }
 
     public boolean isVerbose() {
-        return this.verbose;
+        return verbose;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 

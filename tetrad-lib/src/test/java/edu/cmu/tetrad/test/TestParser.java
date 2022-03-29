@@ -25,6 +25,7 @@ import edu.cmu.tetrad.calculator.expression.ConstantExpression;
 import edu.cmu.tetrad.calculator.expression.Context;
 import edu.cmu.tetrad.calculator.expression.Expression;
 import edu.cmu.tetrad.calculator.parser.ExpressionParser;
+import edu.cmu.tetrad.calculator.parser.ExpressionParser.RestrictionType;
 import org.junit.Test;
 
 import java.text.ParseException;
@@ -45,20 +46,20 @@ public final class TestParser {
      */
     @Test
     public void testInvalidExpressions() {
-        final ExpressionParser parser = new ExpressionParser();
+        ExpressionParser parser = new ExpressionParser();
 
-        TestParser.parseInvalid(parser, "(1 + 3))");
-        TestParser.parseInvalid(parser, "(1 + (4 * 5) + sqrt(5)");
-        TestParser.parseInvalid(parser, "1+");
-        TestParser.parseInvalid(parser, "113#");
+        parseInvalid(parser, "(1 + 3))");
+        parseInvalid(parser, "(1 + (4 * 5) + sqrt(5)");
+        parseInvalid(parser, "1+");
+        parseInvalid(parser, "113#");
     }
 
     @Test
     public void testParseEquation() {
-        final ExpressionParser parser = new ExpressionParser(Arrays.asList("x", "y"), ExpressionParser.RestrictionType.MAY_ONLY_CONTAIN);
+        ExpressionParser parser = new ExpressionParser(Arrays.asList("x", "y"), RestrictionType.MAY_ONLY_CONTAIN);
         try {
             parser.parseEquation("x = (1 + y)");
-        } catch (final ParseException ex) {
+        } catch (ParseException ex) {
             fail(ex.getMessage());
         }
     }
@@ -68,51 +69,51 @@ public final class TestParser {
      */
     @Test
     public void testBasicExpressions() {
-        final ExpressionParser parser = new ExpressionParser();
+        ExpressionParser parser = new ExpressionParser();
 
-        Expression expression = TestParser.parse(parser, "+(1,1)");
+        Expression expression = parse(parser, "+(1,1)");
         assertTrue(expression.evaluate(new TestingContext()) == 2.0);
 
-        expression = TestParser.parse(parser, "*(+(1,2), 5)");
+        expression = parse(parser, "*(+(1,2), 5)");
         assertTrue(expression.evaluate(new TestingContext()) == 15.0);
 
-        expression = TestParser.parse(parser, "1 + 2.5");
+        expression = parse(parser, "1 + 2.5");
         assertTrue(expression.evaluate(new TestingContext()) == 3.5);
 
-        expression = TestParser.parse(parser, "(2 + 3)");
+        expression = parse(parser, "(2 + 3)");
         assertTrue(expression.evaluate(new TestingContext()) == 5.0);
 
-        expression = TestParser.parse(parser, "1 + (3 + 4)");
+        expression = parse(parser, "1 + (3 + 4)");
         assertTrue(expression.evaluate(new TestingContext()) == 8.0);
 
-        expression = TestParser.parse(parser, "1 + 2 + 5");
+        expression = parse(parser, "1 + 2 + 5");
         assertTrue(expression.evaluate(new TestingContext()) == 8.0);
 
-        expression = TestParser.parse(parser, "1 + (2 * 3)");
+        expression = parse(parser, "1 + (2 * 3)");
         assertTrue(expression.evaluate(new TestingContext()) == 7.0);
 
-        expression = TestParser.parse(parser, "1 + (2 + (3 * 4))");
+        expression = parse(parser, "1 + (2 + (3 * 4))");
         assertTrue(expression.evaluate(new TestingContext()) == 15.0);
 
-        expression = TestParser.parse(parser, "(2 * 3) + (4 * 5)");
+        expression = parse(parser, "(2 * 3) + (4 * 5)");
         assertTrue(expression.evaluate(new TestingContext()) == 26.0);
 
-        expression = TestParser.parse(parser, "((2 * 3) + (1 + (2 + (3 * 4))))");
+        expression = parse(parser, "((2 * 3) + (1 + (2 + (3 * 4))))");
         assertTrue(expression.evaluate(new TestingContext()) == 21.0);
 
-        expression = TestParser.parse(parser, "pow(2,3)");
+        expression = parse(parser, "pow(2,3)");
         assertTrue(expression.evaluate(new TestingContext()) == 8.0);
 
-        expression = TestParser.parse(parser, "sqrt(pow(2,2))");
+        expression = parse(parser, "sqrt(pow(2,2))");
         assertTrue(expression.evaluate(new TestingContext()) == 2.0);
 
-        expression = TestParser.parse(parser, ConstantExpression.E.getName());
+        expression = parse(parser, ConstantExpression.E.getName());
         assertTrue(expression.evaluate(new TestingContext()) == ConstantExpression.E.evaluate(null));
 
-        expression = TestParser.parse(parser, ConstantExpression.PI.getName());
+        expression = parse(parser, ConstantExpression.PI.getName());
         assertTrue(expression.evaluate(new TestingContext()) == ConstantExpression.PI.evaluate(null));
 
-        expression = TestParser.parse(parser, ConstantExpression.PI.getName() + "+ 2");
+        expression = parse(parser, ConstantExpression.PI.getName() + "+ 2");
         assertTrue(expression.evaluate(new TestingContext()) == Math.PI + 2);
     }
 
@@ -122,20 +123,20 @@ public final class TestParser {
      */
     @Test
     public void testVariables() {
-        final ExpressionParser parser = new ExpressionParser(Arrays.asList("x", "y", "z"), ExpressionParser.RestrictionType.MAY_ONLY_CONTAIN);
-        final TestingContext context = new TestingContext();
+        ExpressionParser parser = new ExpressionParser(Arrays.asList("x", "y", "z"), RestrictionType.MAY_ONLY_CONTAIN);
+        TestingContext context = new TestingContext();
 
-        Expression expression = TestParser.parse(parser, "x");
+        Expression expression = parse(parser, "x");
         context.assign("x", 5.6);
         assertTrue(expression.evaluate(context) == 5.6);
 
-        expression = TestParser.parse(parser, "(x + y) * z");
+        expression = parse(parser, "(x + y) * z");
         context.assign("x", 1.0);
         context.assign("y", 2.0);
         context.assign("z", 3.0);
         assertTrue(expression.evaluate(context) == 9.0);
 
-        expression = TestParser.parse(parser, "3 + (x + (3 * y))");
+        expression = parse(parser, "3 + (x + (3 * y))");
         context.assign("x", 4.0);
         context.assign("y", 2.0);
         assertTrue(expression.evaluate(context) == 13.0);
@@ -146,8 +147,8 @@ public final class TestParser {
      */
     @Test
     public void testVariableRestriction() {
-        final ExpressionParser parser = new ExpressionParser(Arrays.asList("x", "y", "z"), ExpressionParser.RestrictionType.MAY_ONLY_CONTAIN);
-        TestParser.parseInvalid(parser, "x + x1");
+        ExpressionParser parser = new ExpressionParser(Arrays.asList("x", "y", "z"), RestrictionType.MAY_ONLY_CONTAIN);
+        parseInvalid(parser, "x + x1");
     }
 
     /**
@@ -155,25 +156,25 @@ public final class TestParser {
      */
     @Test
     public void testCommutativeOperators() {
-        final ExpressionParser parser = new ExpressionParser();
+        ExpressionParser parser = new ExpressionParser();
 
-        Expression expression = TestParser.parse(parser, "1 + 2 + 3");
+        Expression expression = parse(parser, "1 + 2 + 3");
         assertTrue(expression.evaluate(new TestingContext()) == 6.0);
 
-        expression = TestParser.parse(parser, "1 + 1 + 1 + (3 * 4)");
+        expression = parse(parser, "1 + 1 + 1 + (3 * 4)");
         assertTrue(expression.evaluate(new TestingContext()) == 15.0);
 
-        expression = TestParser.parse(parser, "1 * 1 * 2 * 3 * (1 + 1)");
+        expression = parse(parser, "1 * 1 * 2 * 3 * (1 + 1)");
         assertTrue(expression.evaluate(new TestingContext()) == 12.0);
     }
 
     //============================== Private Methods ===========================//
 
-    private static void parseInvalid(final ExpressionParser parser, final String exp) {
+    private static void parseInvalid(ExpressionParser parser, String exp) {
         try {
-            final Expression e = parser.parseExpression(exp);
+            Expression e = parser.parseExpression(exp);
             fail("Should not have parsed, " + exp + ", but got " + e);
-        } catch (final ParseException ex) {
+        } catch (ParseException ex) {
             // Succeeded
         }
     }
@@ -181,11 +182,11 @@ public final class TestParser {
     /**
      * Tests the expression on the given parser.
      */
-    private static Expression parse(final ExpressionParser parser, final String expression) {
+    private static Expression parse(ExpressionParser parser, String expression) {
         try {
             return parser.parseExpression(expression);
-        } catch (final ParseException ex) {
-            final int offset = ex.getErrorOffset();
+        } catch (ParseException ex) {
+            int offset = ex.getErrorOffset();
             System.out.println(expression);
             for (int i = 0; i < offset; i++) {
                 System.out.print(" ");
@@ -204,17 +205,17 @@ public final class TestParser {
         private final Map<String, Double> doubleVars = new HashMap<>();
         private final Map<String, Object> vars = new HashMap<>();
 
-        public void assign(final String v, final double d) {
-            this.doubleVars.put(v, d);
+        public void assign(String v, double d) {
+            doubleVars.put(v, d);
         }
 
         public void clear() {
-            this.doubleVars.clear();
-            this.vars.clear();
+            doubleVars.clear();
+            vars.clear();
         }
 
-        public Double getValue(final String var) {
-            return this.doubleVars.get(var);
+        public Double getValue(String var) {
+            return doubleVars.get(var);
         }
     }
 }

@@ -42,17 +42,17 @@ class ListTransferable implements Transferable {
     /**
      * Supported dataflavors--only one.
      */
-    private final static DataFlavor[] dataFlavors = new DataFlavor[]{
+    private static final DataFlavor[] dataFlavors = {
             new DataFlavor(ListTransferable.class, "String List Selection")};
 
 
-    public final static DataFlavor DATA_FLAVOR = ListTransferable.dataFlavors[0];
+    public static final DataFlavor DATA_FLAVOR = dataFlavors[0];
 
 
     /**
      * Constructs a new selection with the given list of graph nodes.
      */
-    public ListTransferable(final List list) {
+    public ListTransferable(List list) {
         if (list == null) {
             throw new NullPointerException(
                     "List of list must " + "not be null.");
@@ -72,13 +72,13 @@ class ListTransferable implements Transferable {
      *                                                          not supported.
      * @see DataFlavor#getRepresentationClass
      */
-    public Object getTransferData(final DataFlavor flavor)
+    public Object getTransferData(DataFlavor flavor)
             throws UnsupportedFlavorException, IOException {
-        if (!isDataFlavorSupported(flavor)) {
+        if (!this.isDataFlavorSupported(flavor)) {
             throw new UnsupportedFlavorException(flavor);
         }
 
-        return this.list;
+        return list;
     }
 
     /**
@@ -86,8 +86,8 @@ class ListTransferable implements Transferable {
      * @return whether or not the specified data flavor is supported for
      * this object.
      */
-    public boolean isDataFlavorSupported(final DataFlavor flavor) {
-        return flavor.equals(ListTransferable.dataFlavors[0]);
+    public boolean isDataFlavorSupported(DataFlavor flavor) {
+        return flavor.equals(dataFlavors[0]);
     }
 
     /**
@@ -97,7 +97,7 @@ class ListTransferable implements Transferable {
      * least descriptive).
      */
     public DataFlavor[] getTransferDataFlavors() {
-        return ListTransferable.dataFlavors;
+        return dataFlavors;
     }
 }
 

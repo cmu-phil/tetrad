@@ -52,16 +52,16 @@ public class TestLingamCPDAG {
 
         final int sampleSize = 1000;
 
-        final List<Node> nodes = new ArrayList<>();
+        List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < 6; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        final Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 6,
+        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 6,
                 4, 4, 4, false));
 
-        final List<Distribution> variableDistributions = new ArrayList<>();
+        List<Distribution> variableDistributions = new ArrayList<>();
 
         variableDistributions.add(new Normal(0, 1));
         variableDistributions.add(new Normal(0, 1));
@@ -70,19 +70,19 @@ public class TestLingamCPDAG {
         variableDistributions.add(new Normal(0, 1));
         variableDistributions.add(new Normal(0, 1));
 
-        final SemPm semPm = new SemPm(graph);
-        final SemIm semIm = new SemIm(semPm);
+        SemPm semPm = new SemPm(graph);
+        SemIm semIm = new SemIm(semPm);
 
-        final DataSet dataSet = simulateDataNonNormal(semIm, sampleSize, variableDistributions);
-        final Score score = new SemBicScore(new CovarianceMatrix(dataSet));
-        final Graph estnumCPDAGsToStore = new Fges(score).search();
+        DataSet dataSet = this.simulateDataNonNormal(semIm, sampleSize, variableDistributions);
+        Score score = new SemBicScore(new CovarianceMatrix(dataSet));
+        Graph estnumCPDAGsToStore = new Fges(score).search();
 
-        final LingamCPDAG lingam = new LingamCPDAG(estnumCPDAGsToStore, dataSet);
+        LingamCPDAG lingam = new LingamCPDAG(estnumCPDAGsToStore, dataSet);
         lingam.search();
 
-        final double[] pvals = lingam.getPValues();
+        double[] pvals = lingam.getPValues();
 
-        final double[] expectedPVals = {0.18, 0.29, 0.88, 0.00, 0.01, 0.57};
+        double[] expectedPVals = {0.18, 0.29, 0.88, 0.00, 0.01, 0.57};
 
         for (int i = 0; i < pvals.length; i++) {
 //            assertEquals(expectedPVals[i], pvals[i], 0.01);
@@ -96,36 +96,36 @@ public class TestLingamCPDAG {
      * @param sampleSize > 0.
      * @return the simulated data set.
      */
-    private DataSet simulateDataNonNormal(final SemIm semIm, final int sampleSize,
-                                          final List<Distribution> distributions) {
-        final List<Node> variables = new LinkedList<>();
-        final List<Node> variableNodes = semIm.getSemPm().getVariableNodes();
+    private DataSet simulateDataNonNormal(SemIm semIm, int sampleSize,
+                                          List<Distribution> distributions) {
+        List<Node> variables = new LinkedList<>();
+        List<Node> variableNodes = semIm.getSemPm().getVariableNodes();
 
-        for (final Node node : variableNodes) {
-            final ContinuousVariable var = new ContinuousVariable(node.getName());
+        for (Node node : variableNodes) {
+            ContinuousVariable var = new ContinuousVariable(node.getName());
             variables.add(var);
         }
 
-        final DataSet dataSet = new BoxDataSet(new DoubleDataBox(sampleSize, variables.size()), variables);
+        DataSet dataSet = new BoxDataSet(new DoubleDataBox(sampleSize, variables.size()), variables);
 
         // Create some index arrays to hopefully speed up the simulation.
-        final SemGraph graph = semIm.getSemPm().getGraph();
-        final List<Node> tierOrdering = graph.getCausalOrdering();
+        SemGraph graph = semIm.getSemPm().getGraph();
+        List<Node> tierOrdering = graph.getCausalOrdering();
 
-        final int[] tierIndices = new int[variableNodes.size()];
+        int[] tierIndices = new int[variableNodes.size()];
 
         for (int i = 0; i < tierIndices.length; i++) {
             tierIndices[i] = variableNodes.indexOf(tierOrdering.get(i));
         }
 
-        final int[][] _parents = new int[variables.size()][];
+        int[][] _parents = new int[variables.size()][];
 
         for (int i = 0; i < variableNodes.size(); i++) {
-            final Node node = variableNodes.get(i);
-            final List<Node> parents = graph.getParents(node);
+            Node node = variableNodes.get(i);
+            List<Node> parents = graph.getParents(node);
 
-            for (final Iterator<Node> j = parents.iterator(); j.hasNext(); ) {
-                final Node _node = j.next();
+            for (Iterator<Node> j = parents.iterator(); j.hasNext(); ) {
+                Node _node = j.next();
 
                 if (_node.getNodeType() == NodeType.ERROR) {
                     j.remove();
@@ -135,7 +135,7 @@ public class TestLingamCPDAG {
             _parents[i] = new int[parents.size()];
 
             for (int j = 0; j < parents.size(); j++) {
-                final Node _parent = parents.get(j);
+                Node _parent = parents.get(j);
                 _parents[i][j] = variableNodes.indexOf(_parent);
             }
         }
@@ -145,15 +145,15 @@ public class TestLingamCPDAG {
 //            System.out.println(row);
 
             for (int i = 0; i < tierOrdering.size(); i++) {
-                final int col = tierIndices[i];
-                final Distribution distribution = distributions.get(col);
+                int col = tierIndices[i];
+                Distribution distribution = distributions.get(col);
 
 //                System.out.println(distribution);
 
                 double value = distribution.nextRandom();
 
                 for (int j = 0; j < _parents[col].length; j++) {
-                    final int parent = _parents[col][j];
+                    int parent = _parents[col][j];
                     value += dataSet.getDouble(row, parent) *
                             semIm.getEdgeCoef().get(parent, col);
                 }

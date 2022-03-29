@@ -71,23 +71,23 @@ public final class PermutationGenerator {
      *
      * @param a the number of objects being selected from.
      */
-    public PermutationGenerator(final int a) {
+    public PermutationGenerator(int a) {
         if ((a < 0)) {
             throw new IllegalArgumentException();
         }
 
-        this.numObjects = a;
-        this.choiceLocal = new int[a];
+        numObjects = a;
+        choiceLocal = new int[a];
 
         // Initialize the choice array with successive integers [0 1 2 ...].
         // Set the value at the last index one less than it would be in such
         // numObjects series, ([0 1 2 ... b - 2]) so that on the first call to next()
         // the first combination ([0 1 2 ... b - 1]) is returned correctly.
         for (int i = 0; i < a; i++) {
-            this.choiceLocal[i] = i;
+            choiceLocal[i] = i;
         }
 
-        this.begun = false;
+        begun = false;
     }
 
     /**
@@ -95,41 +95,41 @@ public final class PermutationGenerator {
      * finished.
      */
     public int[] next() {
-        if (this.choiceReturned == null) {
-            this.choiceReturned = new int[getNumObjects()];
-            System.arraycopy(this.choiceLocal, 0, this.choiceReturned, 0, this.numObjects);
-            this.begun = true;
-            return this.choiceReturned;
+        if (choiceReturned == null) {
+            choiceReturned = new int[this.getNumObjects()];
+            System.arraycopy(choiceLocal, 0, choiceReturned, 0, numObjects);
+            begun = true;
+            return choiceReturned;
         }
 
-        int i = getNumObjects() - 1;
+        int i = this.getNumObjects() - 1;
 
         // Scan from the right for the first index whose value is less than
         // its expected maximum (i + diff) and perform the fill() operation
         // at that index.
         while (--i > -1) {
-            final LinkedList<Integer> h = new LinkedList<>();
+            LinkedList<Integer> h = new LinkedList<>();
 
-            for (int j = i; j < this.choiceLocal.length; j++) {
-                h.add(this.choiceLocal[j]);
+            for (int j = i; j < choiceLocal.length; j++) {
+                h.add(choiceLocal[j]);
             }
 
             Collections.sort(h);
 
-            if (this.choiceLocal[i] < h.getLast()) {
-                fill(i, h);
-                this.begun = true;
-                System.arraycopy(this.choiceLocal, 0, this.choiceReturned, 0, this.numObjects);
-                return this.choiceReturned;
+            if (choiceLocal[i] < h.getLast()) {
+                this.fill(i, h);
+                begun = true;
+                System.arraycopy(choiceLocal, 0, choiceReturned, 0, numObjects);
+                return choiceReturned;
             }
         }
 
-        if (this.begun) {
+        if (begun) {
             return null;
         } else {
-            this.begun = true;
-            System.arraycopy(this.choiceLocal, 0, this.choiceReturned, 0, this.numObjects);
-            return this.choiceReturned;
+            begun = true;
+            System.arraycopy(choiceLocal, 0, choiceReturned, 0, numObjects);
+            return choiceReturned;
         }
     }
 
@@ -140,8 +140,8 @@ public final class PermutationGenerator {
      * @param a the number of objects being selected from.
      */
     @SuppressWarnings({"SameParameterValue"})
-    public static void testPrint(final int a) {
-        final PermutationGenerator cg = new PermutationGenerator(a);
+    public static void testPrint(int a) {
+        PermutationGenerator cg = new PermutationGenerator(a);
         int[] choice;
 
         System.out.println();
@@ -153,7 +153,7 @@ public final class PermutationGenerator {
             if (choice.length == 0) {
                 System.out.println("zero-length array");
             } else {
-                for (final int aChoice : choice) {
+                for (int aChoice : choice) {
                     System.out.print(aChoice + "\t");
                 }
 
@@ -168,7 +168,7 @@ public final class PermutationGenerator {
      * @return the number of objects being chosen from.
      */
     private int getNumObjects() {
-        return this.numObjects;
+        return numObjects;
     }
 
     /**
@@ -178,15 +178,15 @@ public final class PermutationGenerator {
      * @param index the index to begin this incrementing operation.
      * @param h     the list of integers at index or later.
      */
-    private void fill(final int index, LinkedList<Integer> h) {
+    private void fill(int index, LinkedList<Integer> h) {
         h = new LinkedList<>(h);
-        final int t = h.indexOf(this.choiceLocal[index]);
-        final Integer newVal = h.get(t + 1);
-        this.choiceLocal[index] = newVal;
+        int t = h.indexOf(choiceLocal[index]);
+        Integer newVal = h.get(t + 1);
+        choiceLocal[index] = newVal;
         h.remove(newVal);
 
-        for (int i = index + 1; i < getNumObjects(); i++) {
-            this.choiceLocal[i] = h.get(i - index - 1);
+        for (int i = index + 1; i < this.getNumObjects(); i++) {
+            choiceLocal[i] = h.get(i - index - 1);
         }
     }
 }

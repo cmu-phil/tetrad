@@ -35,6 +35,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.model.*;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.IntTextField;
+import edu.cmu.tetradapp.util.IntTextField.Filter;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
@@ -72,98 +73,98 @@ public class FgesSearchEditor extends AbstractSearchEditor
     /**
      * Opens up an editor to let the user view the given FgesRunner.
      */
-    public FgesSearchEditor(final FgesRunner runner) {
+    public FgesSearchEditor(FgesRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
-    public FgesSearchEditor(final WFgesRunner runner) {
+    public FgesSearchEditor(WFgesRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
-    public FgesSearchEditor(final FgesMbRunner runner) {
+    public FgesSearchEditor(FgesMbRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
-    public FgesSearchEditor(final ImagesRunner runner) {
+    public FgesSearchEditor(ImagesRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
-    public FgesSearchEditor(final TsFgesRunner runner) {
+    public FgesSearchEditor(TsFgesRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 
     //=============================== Public Methods ==================================//
 
     public Graph getGraph() {
-        return getWorkbench().getGraph();
+        return this.getWorkbench().getGraph();
     }
 
     @Override
     public Map getModelEdgesToDisplay() {
-        return getWorkbench().getModelEdgesToDisplay();
+        return this.getWorkbench().getModelEdgesToDisplay();
     }
 
     public Map getModelNodesToDisplay() {
-        return getWorkbench().getModelNodesToDisplay();
+        return this.getWorkbench().getModelNodesToDisplay();
     }
 
-    public void layoutByGraph(final Graph graph) {
-        getWorkbench().layoutByGraph(graph);
+    public void layoutByGraph(Graph graph) {
+        this.getWorkbench().layoutByGraph(graph);
     }
 
     public void layoutByKnowledge() {
-        final GraphWorkbench resultWorkbench = getWorkbench();
-        final Graph graph = resultWorkbench.getGraph();
-        final IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
+        GraphWorkbench resultWorkbench = this.getWorkbench();
+        Graph graph = resultWorkbench.getGraph();
+        IKnowledge knowledge = (IKnowledge) this.getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
         SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
 //        resultWorkbench.setGraph(graph);
     }
 
     public Rectangle getVisibleRect() {
-        return getWorkbench().getVisibleRect();
+        return this.getWorkbench().getVisibleRect();
     }
 
 
-    public void setIndex(final int index) {
-        ((Indexable) getAlgorithmRunner()).setIndex(index);
-        removeStatsTabs();
-        firePropertyChange("modelChanged", null, null);
+    public void setIndex(int index) {
+        ((Indexable) this.getAlgorithmRunner()).setIndex(index);
+        this.removeStatsTabs();
+        this.firePropertyChange("modelChanged", null, null);
     }
 
     public int getIndex() {
-        return ((Indexable) getAlgorithmRunner()).getIndex();
+        return ((Indexable) this.getAlgorithmRunner()).getIndex();
     }
 
     public void execute() {
-        final Window owner = (Window) getTopLevelAncestor();
+        Window owner = (Window) this.getTopLevelAncestor();
 
-        final WatchedProcess process = new WatchedProcess(owner) {
+        WatchedProcess process = new WatchedProcess(owner) {
             public void watch() {
-                getExecuteButton().setEnabled(false);
-                setErrorMessage(null);
+                FgesSearchEditor.this.getExecuteButton().setEnabled(false);
+                this.setErrorMessage(null);
 
-                if (!FgesSearchEditor.this.knowledgeMessageShown) {
-                    final IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
+                if (!knowledgeMessageShown) {
+                    IKnowledge knowledge = (IKnowledge) FgesSearchEditor.this.getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
                     if (!knowledge.isEmpty()) {
                         JOptionPane.showMessageDialog(
-                                getWorkbench(),
+                                FgesSearchEditor.this.getWorkbench(),
                                 "Using previously set knowledge. (To edit, use " +
                                         "the Knowledge menu.)");
-                        FgesSearchEditor.this.knowledgeMessageShown = true;
+                        knowledgeMessageShown = true;
                     }
                 }
 
                 try {
-                    storeLatestWorkbenchGraph();
-                    getAlgorithmRunner().execute();
-                    final IFgesRunner runner = (IFgesRunner) getAlgorithmRunner();
-                    arrangeGraphs();
-                    FgesSearchEditor.this.gesDisplay.resetGraphs(runner.getTopGraphs());
-                } catch (final Exception e) {
-                    final CharArrayWriter writer1 = new CharArrayWriter();
-                    final PrintWriter writer2 = new PrintWriter(writer1);
+                    FgesSearchEditor.this.storeLatestWorkbenchGraph();
+                    FgesSearchEditor.this.getAlgorithmRunner().execute();
+                    IFgesRunner runner = (IFgesRunner) FgesSearchEditor.this.getAlgorithmRunner();
+                    FgesSearchEditor.this.arrangeGraphs();
+                    gesDisplay.resetGraphs(runner.getTopGraphs());
+                } catch (Exception e) {
+                    CharArrayWriter writer1 = new CharArrayWriter();
+                    PrintWriter writer2 = new PrintWriter(writer1);
                     e.printStackTrace(writer2);
-                    final String message = writer1.toString();
+                    String message = writer1.toString();
                     writer2.close();
 
                     e.printStackTrace(System.out);
@@ -179,47 +180,47 @@ public class FgesSearchEditor extends AbstractSearchEditor
                     if (messageString == null) {
                         messageString = message;
                     }
-                    setErrorMessage(messageString);
+                    this.setErrorMessage(messageString);
 
                     TetradLogger.getInstance().error("************Algorithm stopped!");
 
-                    getExecuteButton().setEnabled(true);
+                    FgesSearchEditor.this.getExecuteButton().setEnabled(true);
                     throw new RuntimeException(e);
                 }
 
-                getWorkbenchScroll().setBorder(
-                        new TitledBorder(getResultLabel()));
-                final Graph resultGraph = resultGraph();
+                FgesSearchEditor.this.getWorkbenchScroll().setBorder(
+                        new TitledBorder(FgesSearchEditor.this.getResultLabel()));
+                Graph resultGraph = FgesSearchEditor.this.resultGraph();
 
-                doDefaultArrangement(resultGraph);
-                getWorkbench().setBackground(Color.WHITE);
-                getWorkbench().setGraph(resultGraph);
+                FgesSearchEditor.this.doDefaultArrangement(resultGraph);
+                FgesSearchEditor.this.getWorkbench().setBackground(Color.WHITE);
+                FgesSearchEditor.this.getWorkbench().setGraph(resultGraph);
 //                getWorkbench().setGraph(gesDisplay.getTopGraphs().get(gesDisplay.getTopGraphs().size() - 1).getGraph());
-                getGraphHistory().clear();
-                getGraphHistory().add(resultGraph);
-                getWorkbench().repaint();
+                FgesSearchEditor.this.getGraphHistory().clear();
+                FgesSearchEditor.this.getGraphHistory().add(resultGraph);
+                FgesSearchEditor.this.getWorkbench().repaint();
 
                 // For Mimbuild, e.g., that need to do a second stage.
-                firePropertyChange("algorithmFinished", null, null);
-                getExecuteButton().setEnabled(true);
-                firePropertyChange("modelChanged", null, null);
+                FgesSearchEditor.this.firePropertyChange("algorithmFinished", null, null);
+                FgesSearchEditor.this.getExecuteButton().setEnabled(true);
+                FgesSearchEditor.this.firePropertyChange("modelChanged", null, null);
 
-                doPostExecutionSteps();
+                FgesSearchEditor.this.doPostExecutionSteps();
             }
         };
 
-        final Thread watcher = new Thread() {
+        Thread watcher = new Thread() {
             public void run() {
                 while (true) {
                     try {
                         Thread.sleep(300);
 
                         if (!process.isAlive()) {
-                            getExecuteButton().setEnabled(true);
+                            FgesSearchEditor.this.getExecuteButton().setEnabled(true);
                             return;
                         }
-                    } catch (final InterruptedException e) {
-                        getExecuteButton().setEnabled(true);
+                    } catch (InterruptedException e) {
+                        FgesSearchEditor.this.getExecuteButton().setEnabled(true);
                         return;
                     }
                 }
@@ -230,28 +231,28 @@ public class FgesSearchEditor extends AbstractSearchEditor
     }
 
     public List<String> getVarNames() {
-        final Parameters params = getAlgorithmRunner().getParams();
+        Parameters params = this.getAlgorithmRunner().getParams();
         return (List<String>) params.get("varNames", null);
     }
 
-    public void setKnowledge(final IKnowledge knowledge) {
-        getAlgorithmRunner().getParams().set("knowledge", knowledge);
+    public void setKnowledge(IKnowledge knowledge) {
+        this.getAlgorithmRunner().getParams().set("knowledge", knowledge);
     }
 
     public IKnowledge getKnowledge() {
-        return (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
+        return (IKnowledge) this.getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
     }
 
     //==========================PROTECTED METHODS============================//
 
 
-    protected void doDefaultArrangement(final Graph resultGraph) {
-        if (getLatestWorkbenchGraph() != null) {   //(alreadyLaidOut) {
+    protected void doDefaultArrangement(Graph resultGraph) {
+        if (this.getLatestWorkbenchGraph() != null) {   //(alreadyLaidOut) {
             GraphUtils.arrangeBySourceGraph(resultGraph,
-                    getLatestWorkbenchGraph());
-        } else if (getKnowledge().isDefaultToKnowledgeLayout()) {
+                    this.getLatestWorkbenchGraph());
+        } else if (this.getKnowledge().isDefaultToKnowledgeLayout()) {
             SearchGraphUtils.arrangeByKnowledgeTiers(resultGraph,
-                    getKnowledge());
+                    this.getKnowledge());
 //            alreadyLaidOut = true;
         } else {
             GraphUtils.circleLayout(resultGraph, 200, 200, 150);
@@ -262,57 +263,57 @@ public class FgesSearchEditor extends AbstractSearchEditor
     /**
      * Sets up the editor, does the layout, and so on.
      */
-    protected void setup(final String resultLabel) {
-        setLayout(new BorderLayout());
-        add(getToolbar(), BorderLayout.WEST);
+    protected void setup(String resultLabel) {
+        this.setLayout(new BorderLayout());
+        this.add(this.getToolbar(), BorderLayout.WEST);
 
-        this.tabbedPane = new JTabbedPane();
-        this.tabbedPane.add("forbid_latent_common_causes", gesDisplay());
+        tabbedPane = new JTabbedPane();
+        tabbedPane.add("forbid_latent_common_causes", this.gesDisplay());
 
-        add(this.tabbedPane, BorderLayout.CENTER);
-        add(menuBar(), BorderLayout.NORTH);
+        this.add(tabbedPane, BorderLayout.CENTER);
+        this.add(this.menuBar(), BorderLayout.NORTH);
     }
 
     /**
      * Construct the toolbar panel.
      */
     protected JPanel getToolbar() {
-        final JPanel toolbar = new JPanel();
+        JPanel toolbar = new JPanel();
 
-        getExecuteButton().setText("Execute*");
-        getExecuteButton().addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                removeStatsTabs();
-                execute();
+        this.getExecuteButton().setText("Execute*");
+        this.getExecuteButton().addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                FgesSearchEditor.this.removeStatsTabs();
+                FgesSearchEditor.this.execute();
             }
         });
 
-        final JButton statsButton = new JButton("Calc Stats");
+        JButton statsButton = new JButton("Calc Stats");
         statsButton.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final Window owner = (Window) getTopLevelAncestor();
+            public void actionPerformed(ActionEvent e) {
+                Window owner = (Window) FgesSearchEditor.this.getTopLevelAncestor();
 
                 new WatchedProcess(owner) {
                     public void watch() {
-                        calcStats();
+                        FgesSearchEditor.this.calcStats();
                     }
                 };
             }
         });
 
 
-        final Box b1 = Box.createVerticalBox();
-        b1.add(getParamsPanel());
+        Box b1 = Box.createVerticalBox();
+        b1.add(this.getParamsPanel());
         b1.add(Box.createVerticalStrut(10));
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(Box.createGlue());
-        b2.add(getExecuteButton());
+        b2.add(this.getExecuteButton());
         b1.add(b2);
         b1.add(Box.createVerticalStrut(10));
 
-        if (!(getAlgorithmRunner().getDataModel() instanceof ICovarianceMatrix)) {
-            final Box b3 = Box.createHorizontalBox();
+        if (!(this.getAlgorithmRunner().getDataModel() instanceof ICovarianceMatrix)) {
+            Box b3 = Box.createHorizontalBox();
             b3.add(Box.createGlue());
             b3.add(statsButton);
             b1.add(b3);
@@ -340,8 +341,8 @@ public class FgesSearchEditor extends AbstractSearchEditor
 //            b1.add(Box.createVerticalStrut(5));
 //        }
 
-        final Box b4 = Box.createHorizontalBox();
-        final JLabel label = new JLabel("<html>" + "*Please note that some" +
+        Box b4 = Box.createHorizontalBox();
+        JLabel label = new JLabel("<html>" + "*Please note that some" +
                 "<br>searches may take a" + "<br>long time to complete." +
                 "</html>");
         label.setHorizontalAlignment(SwingConstants.CENTER);
@@ -356,9 +357,9 @@ public class FgesSearchEditor extends AbstractSearchEditor
         return toolbar;
     }
 
-    protected void addSpecialMenus(final JMenuBar menuBar) {
-        if (!(getAlgorithmRunner() instanceof FgesRunner)) {
-            final JMenu test = new JMenu("Independence");
+    protected void addSpecialMenus(JMenuBar menuBar) {
+        if (!(this.getAlgorithmRunner() instanceof FgesRunner)) {
+            JMenu test = new JMenu("Independence");
             menuBar.add(test);
 
             IndTestMenuItems.addIndependenceTestChoices(test, this);
@@ -375,16 +376,16 @@ public class FgesSearchEditor extends AbstractSearchEditor
 //            }
         }
 
-        final JMenu graph = new JMenu("Graph");
-        final JMenuItem showDags = new JMenuItem("Show DAGs in forbid_latent_common_causes");
+        JMenu graph = new JMenu("Graph");
+        JMenuItem showDags = new JMenuItem("Show DAGs in forbid_latent_common_causes");
 //        JMenuItem meekOrient = new JMenuItem("Meek Orientation");
-        final JMenuItem dagInCPDAG = new JMenuItem("Choose DAG in forbid_latent_common_causes");
-        final JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
-        final JMenuItem nextGraph = new JMenuItem("Next Graph");
-        final JMenuItem previousGraph = new JMenuItem("Previous Graph");
+        JMenuItem dagInCPDAG = new JMenuItem("Choose DAG in forbid_latent_common_causes");
+        JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
+        JMenuItem nextGraph = new JMenuItem("Next Graph");
+        JMenuItem previousGraph = new JMenuItem("Previous Graph");
 
-        graph.add(new GraphPropertiesAction(getWorkbench()));
-        graph.add(new PathsAction(getWorkbench()));
+        graph.add(new GraphPropertiesAction(this.getWorkbench()));
+        graph.add(new PathsAction(this.getWorkbench()));
 //        graph.add(new DirectedPathsAction(getWorkbench()));
 //        graph.add(new TreksAction(getWorkbench()));
 //        graph.add(new AllPathsAction(getWorkbench()));
@@ -404,14 +405,14 @@ public class FgesSearchEditor extends AbstractSearchEditor
         graph.add(showDags);
 
         graph.addSeparator();
-        graph.add(new JMenuItem(new SelectBidirectedAction(getWorkbench())));
-        graph.add(new JMenuItem(new SelectUndirectedAction(getWorkbench())));
+        graph.add(new JMenuItem(new SelectBidirectedAction(this.getWorkbench())));
+        graph.add(new JMenuItem(new SelectUndirectedAction(this.getWorkbench())));
 
         menuBar.add(graph);
 
         showDags.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final Window owner = (Window) getTopLevelAncestor();
+            public void actionPerformed(ActionEvent e) {
+                Window owner = (Window) FgesSearchEditor.this.getTopLevelAncestor();
 
                 new WatchedProcess(owner) {
                     public void watch() {
@@ -419,8 +420,8 @@ public class FgesSearchEditor extends AbstractSearchEditor
                         // Needs to be a CPDAG search; this isn't checked
                         // before running the algorithm because of allowable
                         // "slop"--e.g. bidirected edges.
-                        final AlgorithmRunner runner = getAlgorithmRunner();
-                        final Graph graph = runner.getGraph();
+                        AlgorithmRunner runner = FgesSearchEditor.this.getAlgorithmRunner();
+                        Graph graph = runner.getGraph();
 
 
                         if (graph == null) {
@@ -431,22 +432,22 @@ public class FgesSearchEditor extends AbstractSearchEditor
                         }
 
                         if (runner instanceof FgesRunner) {
-                            final GraphScorer scorer = ((FgesRunner) runner).getGraphScorer();
-                            final Graph _graph = ((FgesRunner) runner).getTopGraphs().get(getIndex()).getGraph();
+                            GraphScorer scorer = ((FgesRunner) runner).getGraphScorer();
+                            Graph _graph = ((FgesRunner) runner).getTopGraphs().get(FgesSearchEditor.this.getIndex()).getGraph();
 
-                            final ScoredGraphsDisplay display = new ScoredGraphsDisplay(_graph, scorer);
-                            final GraphWorkbench workbench = getWorkbench();
+                            ScoredGraphsDisplay display = new ScoredGraphsDisplay(_graph, scorer);
+                            GraphWorkbench workbench = FgesSearchEditor.this.getWorkbench();
 
-                            final EditorWindow editorWindow =
+                            EditorWindow editorWindow =
                                     new EditorWindow(display, "Independence Facts",
                                             "Close", false, workbench);
                             DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
                             editorWindow.setVisible(true);
                         } else {
-                            final CPDAGDisplay display = new CPDAGDisplay(graph);
-                            final GraphWorkbench workbench = getWorkbench();
+                            CPDAGDisplay display = new CPDAGDisplay(graph);
+                            GraphWorkbench workbench = FgesSearchEditor.this.getWorkbench();
 
-                            final EditorWindow editorWindow =
+                            EditorWindow editorWindow =
                                     new EditorWindow(display, "Independence Facts",
                                             "Close", false, workbench);
                             DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
@@ -469,54 +470,54 @@ public class FgesSearchEditor extends AbstractSearchEditor
 //        });
 
         dagInCPDAG.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final Graph graph = new EdgeListGraph(getGraph());
+            public void actionPerformed(ActionEvent e) {
+                Graph graph = new EdgeListGraph(FgesSearchEditor.this.getGraph());
 
                 // Removing bidirected edges from the CPDAG before selecting a DAG.                                   4
-                for (final Edge edge : graph.getEdges()) {
+                for (Edge edge : graph.getEdges()) {
                     if (Edges.isBidirectedEdge(edge)) {
                         graph.removeEdge(edge);
                     }
                 }
 
-                final Graph dag = SearchGraphUtils.dagFromCPDAG(graph);
+                Graph dag = SearchGraphUtils.dagFromCPDAG(graph);
 
-                getGraphHistory().add(dag);
-                getWorkbench().setGraph(dag);
+                FgesSearchEditor.this.getGraphHistory().add(dag);
+                FgesSearchEditor.this.getWorkbench().setGraph(dag);
 
-                ((AbstractAlgorithmRunner) getAlgorithmRunner()).setResultGraph(dag);
-                firePropertyChange("modelChanged", null, null);
+                ((AbstractAlgorithmRunner) FgesSearchEditor.this.getAlgorithmRunner()).setResultGraph(dag);
+                FgesSearchEditor.this.firePropertyChange("modelChanged", null, null);
             }
         });
 
         gesOrient.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final DataModel dataModel = getAlgorithmRunner().getDataModel();
+            public void actionPerformed(ActionEvent e) {
+                DataModel dataModel = FgesSearchEditor.this.getAlgorithmRunner().getDataModel();
 
-                final Graph graph = SearchGraphUtils.reorient(getGraph(), dataModel, getKnowledge());
+                Graph graph = SearchGraphUtils.reorient(FgesSearchEditor.this.getGraph(), dataModel, FgesSearchEditor.this.getKnowledge());
 
-                getGraphHistory().add(graph);
-                getWorkbench().setGraph(graph);
-                firePropertyChange("modelChanged", null, null);
+                FgesSearchEditor.this.getGraphHistory().add(graph);
+                FgesSearchEditor.this.getWorkbench().setGraph(graph);
+                FgesSearchEditor.this.firePropertyChange("modelChanged", null, null);
             }
 
         });
 
         nextGraph.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final Graph next = getGraphHistory().next();
-                getWorkbench().setGraph(next);
-                ((AbstractAlgorithmRunner) getAlgorithmRunner()).setResultGraph(next);
-                firePropertyChange("modelChanged", null, null);
+            public void actionPerformed(ActionEvent e) {
+                Graph next = FgesSearchEditor.this.getGraphHistory().next();
+                FgesSearchEditor.this.getWorkbench().setGraph(next);
+                ((AbstractAlgorithmRunner) FgesSearchEditor.this.getAlgorithmRunner()).setResultGraph(next);
+                FgesSearchEditor.this.firePropertyChange("modelChanged", null, null);
             }
         });
 
         previousGraph.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final Graph previous = getGraphHistory().previous();
-                getWorkbench().setGraph(previous);
-                ((AbstractAlgorithmRunner) getAlgorithmRunner()).setResultGraph(previous);
-                firePropertyChange("modelChanged", null, null);
+            public void actionPerformed(ActionEvent e) {
+                Graph previous = FgesSearchEditor.this.getGraphHistory().previous();
+                FgesSearchEditor.this.getWorkbench().setGraph(previous);
+                ((AbstractAlgorithmRunner) FgesSearchEditor.this.getAlgorithmRunner()).setResultGraph(previous);
+                FgesSearchEditor.this.firePropertyChange("modelChanged", null, null);
             }
         });
 
@@ -526,26 +527,26 @@ public class FgesSearchEditor extends AbstractSearchEditor
     //==============================PRIVATE METHODS=============================//
 
     private FgesDisplay gesDisplay() {
-        final Graph resultGraph = resultGraph();
-        final List<ScoredGraph> topGraphs = arrangeGraphs();
-        final FgesDisplay display = new FgesDisplay(resultGraph, topGraphs, this);
-        this.gesDisplay = display;
+        Graph resultGraph = this.resultGraph();
+        List<ScoredGraph> topGraphs = this.arrangeGraphs();
+        FgesDisplay display = new FgesDisplay(resultGraph, topGraphs, this);
+        gesDisplay = display;
 
         // Superfluous?
-        getGraphHistory().clear();
-        getGraphHistory().add(resultGraph);
+        this.getGraphHistory().clear();
+        this.getGraphHistory().add(resultGraph);
 
-        setWorkbench(display.getWorkbench());
-        getWorkbench().setAllowDoubleClickActions(false);
-        getWorkbench().setAllowNodeEdgeSelection(true);
+        this.setWorkbench(display.getWorkbench());
+        this.getWorkbench().setAllowDoubleClickActions(false);
+        this.getWorkbench().setAllowNodeEdgeSelection(true);
 
-        setWorkbenchScroll(new JScrollPane(display));
-        getWorkbenchScroll().setPreferredSize(new Dimension(450, 450));
-        getWorkbenchScroll().setBorder(new TitledBorder(""));
+        this.setWorkbenchScroll(new JScrollPane(display));
+        this.getWorkbenchScroll().setPreferredSize(new Dimension(450, 450));
+        this.getWorkbenchScroll().setBorder(new TitledBorder(""));
 
-        getWorkbench().addMouseListener(new MouseAdapter() {
-            public void mouseExited(final MouseEvent e) {
-                storeLatestWorkbenchGraph();
+        this.getWorkbench().addMouseListener(new MouseAdapter() {
+            public void mouseExited(MouseEvent e) {
+                FgesSearchEditor.this.storeLatestWorkbenchGraph();
             }
         });
 
@@ -553,14 +554,14 @@ public class FgesSearchEditor extends AbstractSearchEditor
     }
 
     private List<ScoredGraph> arrangeGraphs() {
-        final IFgesRunner runner = (IFgesRunner) getAlgorithmRunner();
+        IFgesRunner runner = (IFgesRunner) this.getAlgorithmRunner();
 
         List<ScoredGraph> topGraphs = runner.getTopGraphs();
 
         if (topGraphs == null) topGraphs = new ArrayList<>();
 
 //        Graph latestWorkbenchGraph = (Graph) runner.getParameters().get("sourceGraph", null);
-        final Graph sourceGraph = runner.getSourceGraph();
+        Graph sourceGraph = runner.getSourceGraph();
 
         boolean arrangedAll = false;
 
@@ -570,13 +571,13 @@ public class FgesSearchEditor extends AbstractSearchEditor
 //        }
 
         if (!arrangedAll) {
-            for (final ScoredGraph topGraph : topGraphs) {
+            for (ScoredGraph topGraph : topGraphs) {
                 arrangedAll = GraphUtils.arrangeBySourceGraph(topGraph.getGraph(), sourceGraph);
             }
         }
 
         if (!arrangedAll) {
-            for (final ScoredGraph topGraph : topGraphs) {
+            for (ScoredGraph topGraph : topGraphs) {
                 GraphUtils.circleLayout(topGraph.getGraph(), 200, 200, 150);
             }
         }
@@ -585,7 +586,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
     }
 
     private Graph resultGraph() {
-        Graph resultGraph = getAlgorithmRunner().getGraph();
+        Graph resultGraph = this.getAlgorithmRunner().getGraph();
 
         if (resultGraph == null) {
             resultGraph = new EdgeListGraph();
@@ -596,24 +597,24 @@ public class FgesSearchEditor extends AbstractSearchEditor
 
 
     private void calcStats() {
-        final FgesRunner runner = (FgesRunner) getAlgorithmRunner();
+        FgesRunner runner = (FgesRunner) this.getAlgorithmRunner();
 
         if (runner.getTopGraphs().isEmpty()) {
             throw new IllegalArgumentException("No CPDAGs were recorded. Please adjust the number of " +
                     "CPDAGs to store.");
         }
 
-        final Graph resultGraph = runner.getTopGraphs().get(runner.getIndex()).getGraph();
+        Graph resultGraph = runner.getTopGraphs().get(runner.getIndex()).getGraph();
 
-        if (!(getAlgorithmRunner().getDataModel() instanceof ICovarianceMatrix)) {
+        if (!(this.getAlgorithmRunner().getDataModel() instanceof ICovarianceMatrix)) {
 
             //resultGraph may be the output of a PC search.
             //Such graphs sometimes contain doubly directed edges.
             //We converte such edges to directed edges here.
             //For the time being an orientation is arbitrarily selected.
-            final Set<Edge> allEdges = resultGraph.getEdges();
+            Set<Edge> allEdges = resultGraph.getEdges();
 
-            for (final Edge edge : allEdges) {
+            for (Edge edge : allEdges) {
                 if (edge.getEndpoint1() == Endpoint.ARROW &&
                         edge.getEndpoint2() == Endpoint.ARROW) {
                     //Option 1 orient it from node1 to node2
@@ -625,7 +626,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
                 }
             }
 
-            final Graph dag = SearchGraphUtils.dagFromCPDAG(resultGraph);
+            Graph dag = SearchGraphUtils.dagFromCPDAG(resultGraph);
 
 //            DataSet dataSet = (DataSet) getAlgorithmRunner().getDataModel();
 //            String report;
@@ -638,13 +639,13 @@ public class FgesSearchEditor extends AbstractSearchEditor
 //                throw new IllegalArgumentException("");
 //            }
 
-            final String bayesFactorsReport = ((FgesRunner) getAlgorithmRunner()).getBayesFactorsReport(dag);
+            String bayesFactorsReport = ((FgesRunner) this.getAlgorithmRunner()).getBayesFactorsReport(dag);
 //            String bootstrapEdgeCountsReport = ((ImagesRunner) getAlgorithmRunner()).getBootstrapEdgeCountsReport(25);
 
-            final JScrollPane dagWorkbenchScroll = dagWorkbenchScroll(dag);
+            JScrollPane dagWorkbenchScroll = this.dagWorkbenchScroll(dag);
 
 //            modelStatsText = new JTextArea();
-            final JTextArea logBayesFactorsScroll = new JTextArea();
+            JTextArea logBayesFactorsScroll = new JTextArea();
 //            bootstrapEdgeCountsScroll = new JTextArea();
 
 //            modelStatsText.setLineWrap(true);
@@ -663,7 +664,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
 //            bootstrapPanel.setLayout(new BorderLayout());
 //            bootstrapPanel.add(bootstrapEdgeCountsScroll, BorderLayout.CENTER);
 
-            final JTextArea modelStatisticsScroll = new JTextArea();
+            JTextArea modelStatisticsScroll = new JTextArea();
 //            bootstrapEdgeCountsScroll = new JTextArea();
 
 //            modelStatsText.setLineWrap(true);
@@ -672,15 +673,15 @@ public class FgesSearchEditor extends AbstractSearchEditor
 
             modelStatisticsScroll.setLineWrap(true);
             modelStatisticsScroll.setWrapStyleWord(true);
-            modelStatisticsScroll.setText(reportIfDiscrete(dag, (DataSet) getDataModel()));
+            modelStatisticsScroll.setText(this.reportIfDiscrete(dag, (DataSet) this.getDataModel()));
 
-            final Box b = Box.createHorizontalBox();
+            Box b = Box.createHorizontalBox();
             b.add(new JLabel("# Bootstraps = "));
 
-            final IntTextField numBootstraps = new IntTextField(25, 8);
+            IntTextField numBootstraps = new IntTextField(25, 8);
 
-            numBootstraps.setFilter(new IntTextField.Filter() {
-                public int filter(final int value, final int oldValue) {
+            numBootstraps.setFilter(new Filter() {
+                public int filter(int value, int oldValue) {
                     if (value < 0) return oldValue;
                     else return value;
                 }
@@ -688,15 +689,15 @@ public class FgesSearchEditor extends AbstractSearchEditor
 
             b.add(numBootstraps);
 
-            final JButton goButton = new JButton("Go!");
+            JButton goButton = new JButton("Go!");
 
             goButton.addActionListener(new ActionListener() {
-                public void actionPerformed(final ActionEvent actionEvent) {
-                    final Window owner = (Window) getTopLevelAncestor();
+                public void actionPerformed(ActionEvent actionEvent) {
+                    Window owner = (Window) FgesSearchEditor.this.getTopLevelAncestor();
 
                     new WatchedProcess(owner) {
                         public void watch() {
-                            final int n = numBootstraps.getValue();
+                            int n = numBootstraps.getValue();
 //                            String bootstrapEdgeCountsReport = ((ImagesRunner) getAlgorithmRunner()).getBootstrapEdgeCountsReport(n);
 //                            bootstrapEdgeCountsScroll.setText(bootstrapEdgeCountsReport);
                         }
@@ -709,36 +710,36 @@ public class FgesSearchEditor extends AbstractSearchEditor
 
 //            bootstrapPanel.add(b, BorderLayout.NORTH);
 
-            removeStatsTabs();
-            this.tabbedPane.addTab("DAG in CPDAG", dagWorkbenchScroll);
+            this.removeStatsTabs();
+            tabbedPane.addTab("DAG in CPDAG", dagWorkbenchScroll);
 //            tabbedPane.addTab("DAG Model Statistics", new JScrollPane(modelStatsText));
-            this.tabbedPane.addTab("Log Bayes Factors", new JScrollPane(logBayesFactorsScroll));
+            tabbedPane.addTab("Log Bayes Factors", new JScrollPane(logBayesFactorsScroll));
 //            tabbedPane.addTab("Edge Bootstraps", new JScrollPane(bootstrapPanel));
-            this.tabbedPane.addTab("Model Stats", new JScrollPane(modelStatisticsScroll));
+            tabbedPane.addTab("Model Stats", new JScrollPane(modelStatisticsScroll));
         }
     }
 
-    private String reportIfDiscrete(final Graph dag, final DataSet dataSet) {
-        final List vars = dataSet.getVariables();
-        final Map<String, DiscreteVariable> nodesToVars =
+    private String reportIfDiscrete(Graph dag, DataSet dataSet) {
+        List vars = dataSet.getVariables();
+        Map<String, DiscreteVariable> nodesToVars =
                 new HashMap<>();
         for (int i = 0; i < dataSet.getNumColumns(); i++) {
-            final DiscreteVariable var = (DiscreteVariable) vars.get(i);
-            final String name = var.getName();
-            final Node node = new GraphNode(name);
+            DiscreteVariable var = (DiscreteVariable) vars.get(i);
+            String name = var.getName();
+            Node node = new GraphNode(name);
             nodesToVars.put(node.getName(), var);
         }
 
-        final BayesPm bayesPm = new BayesPm(new Dag(dag));
-        final List<Node> nodes = bayesPm.getDag().getNodes();
+        BayesPm bayesPm = new BayesPm(new Dag(dag));
+        List<Node> nodes = bayesPm.getDag().getNodes();
 
-        for (final Node node : nodes) {
-            final Node var = nodesToVars.get(node.getName());
+        for (Node node : nodes) {
+            Node var = nodesToVars.get(node.getName());
 
             if (var instanceof DiscreteVariable) {
-                final DiscreteVariable var2 = nodesToVars.get(node.getName());
-                final int numCategories = var2.getNumCategories();
-                final List<String> categories = new ArrayList<>();
+                DiscreteVariable var2 = nodesToVars.get(node.getName());
+                int numCategories = var2.getNumCategories();
+                List<String> categories = new ArrayList<>();
                 for (int j = 0; j < numCategories; j++) {
                     categories.add(var2.getCategory(j));
                 }
@@ -747,17 +748,17 @@ public class FgesSearchEditor extends AbstractSearchEditor
         }
 
 
-        final NumberFormat nf = NumberFormat.getInstance();
+        NumberFormat nf = NumberFormat.getInstance();
         nf.setMaximumFractionDigits(4);
 
-        final StringBuilder buf = new StringBuilder();
+        StringBuilder buf = new StringBuilder();
 
-        final BayesProperties properties = new BayesProperties(dataSet);
+        BayesProperties properties = new BayesProperties(dataSet);
 
-        final double p = properties.getLikelihoodRatioP(dag);
-        final double chisq = properties.getChisq();
-        final double bic = properties.getBic();
-        final double dof = properties.getDof();
+        double p = properties.getLikelihoodRatioP(dag);
+        double chisq = properties.getChisq();
+        double bic = properties.getBic();
+        double dof = properties.getDof();
 
         buf.append("\nP  = ").append(p);
         buf.append("\nDOF = ").append(dof);
@@ -770,49 +771,49 @@ public class FgesSearchEditor extends AbstractSearchEditor
 
 
     private void removeStatsTabs() {
-        for (int i = this.tabbedPane.getTabCount() - 1; i >= 0; i--) {
-            final String name = this.tabbedPane.getTitleAt(i);
+        for (int i = tabbedPane.getTabCount() - 1; i >= 0; i--) {
+            String name = tabbedPane.getTitleAt(i);
 
             if (name.equals("DAG Model Statistics")) {
-                this.tabbedPane.removeTabAt(i);
+                tabbedPane.removeTabAt(i);
             } else if (name.equals("DAG in CPDAG")) {
-                this.tabbedPane.removeTabAt(i);
+                tabbedPane.removeTabAt(i);
             } else if (name.equals("Log Bayes Factors")) {
-                this.tabbedPane.removeTabAt(i);
+                tabbedPane.removeTabAt(i);
             } else if (name.equals("Edge Bootstraps")) {
-                this.tabbedPane.removeTabAt(i);
+                tabbedPane.removeTabAt(i);
             }
         }
     }
 
     public Graph getSourceGraph() {
-        Graph sourceGraph = getWorkbench().getGraph();
+        Graph sourceGraph = this.getWorkbench().getGraph();
 
         if (sourceGraph == null) {
-            sourceGraph = getAlgorithmRunner().getSourceGraph();
+            sourceGraph = this.getAlgorithmRunner().getSourceGraph();
         }
         return sourceGraph;
     }
 
-    private void addCovMatrixTestMenuItems(final JMenu test) {
-        IndTestType testType = getTestType();
+    private void addCovMatrixTestMenuItems(JMenu test) {
+        IndTestType testType = this.getTestType();
         if (testType != IndTestType.FISHER_Z
 //                &&
 //                testType != IndTestType.CORRELATION_T
         ) {
-            setTestType(IndTestType.FISHER_Z);
+            this.setTestType(IndTestType.FISHER_Z);
         }
 
-        final ButtonGroup group = new ButtonGroup();
-        final JCheckBoxMenuItem fishersZ = new JCheckBoxMenuItem("Fisher's Z");
+        ButtonGroup group = new ButtonGroup();
+        JCheckBoxMenuItem fishersZ = new JCheckBoxMenuItem("Fisher's Z");
         group.add(fishersZ);
         test.add(fishersZ);
 
-        final JCheckBoxMenuItem tTest = new JCheckBoxMenuItem("Cramer's T");
+        JCheckBoxMenuItem tTest = new JCheckBoxMenuItem("Cramer's T");
         group.add(tTest);
         test.add(tTest);
 
-        testType = getTestType();
+        testType = this.getTestType();
 
         if (testType == IndTestType.FISHER_Z) {
             fishersZ.setSelected(true);
@@ -822,8 +823,8 @@ public class FgesSearchEditor extends AbstractSearchEditor
 //        }
 
         fishersZ.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                setTestType(IndTestType.FISHER_Z);
+            public void actionPerformed(ActionEvent e) {
+                FgesSearchEditor.this.setTestType(IndTestType.FISHER_Z);
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Using Fisher's Z.");
             }
@@ -838,7 +839,7 @@ public class FgesSearchEditor extends AbstractSearchEditor
 //        });
     }
 
-    public void setTestType(final IndTestType testType) {
+    public void setTestType(IndTestType testType) {
         super.setTestType(testType);
     }
 
@@ -847,11 +848,11 @@ public class FgesSearchEditor extends AbstractSearchEditor
     }
 
     private JPanel getParamsPanel() {
-        final JPanel paramsPanel = new JPanel();
+        JPanel paramsPanel = new JPanel();
 
-        final Box b2 = Box.createVerticalBox();
+        Box b2 = Box.createVerticalBox();
 
-        final JComponent indTestParamBox = getIndTestParamBox();
+        JComponent indTestParamBox = this.getIndTestParamBox();
         if (indTestParamBox != null) {
             b2.add(indTestParamBox);
         }
@@ -862,45 +863,45 @@ public class FgesSearchEditor extends AbstractSearchEditor
     }
 
     private JComponent getIndTestParamBox() {
-        final Parameters params = getAlgorithmRunner().getParams();
-        return getIndTestParamBox(params);
+        Parameters params = this.getAlgorithmRunner().getParams();
+        return this.getIndTestParamBox(params);
     }
 
     /**
      * Factory to return the correct param editor for independence test params.
      * This will go in a little box in the search editor.
      */
-    private JComponent getIndTestParamBox(final Parameters params) {
+    private JComponent getIndTestParamBox(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
 
-        final AlgorithmRunner algorithmRunner = getAlgorithmRunner();
+        AlgorithmRunner algorithmRunner = this.getAlgorithmRunner();
 
         if (algorithmRunner instanceof IFgesRunner) {
-            final IFgesRunner fgesRunner = ((IFgesRunner) algorithmRunner);
+            IFgesRunner fgesRunner = ((IFgesRunner) algorithmRunner);
             return new FgesIndTestParamsEditor(params, fgesRunner.getType());
         }
 
         if (algorithmRunner instanceof FgesMbRunner) {
-            final FgesMbRunner fgesRunner = ((FgesMbRunner) algorithmRunner);
+            FgesMbRunner fgesRunner = ((FgesMbRunner) algorithmRunner);
             return new FgesIndTestParamsEditor(params, fgesRunner.getType());
         }
 
         throw new IllegalArgumentException();
     }
 
-    private JScrollPane dagWorkbenchScroll(final Graph dag) {
+    private JScrollPane dagWorkbenchScroll(Graph dag) {
 
-        final GraphWorkbench dagWorkbench = new GraphWorkbench(dag);
+        GraphWorkbench dagWorkbench = new GraphWorkbench(dag);
         dagWorkbench.setAllowDoubleClickActions(false);
         dagWorkbench.setAllowNodeEdgeSelection(true);
-        final JScrollPane dagWorkbenchScroll = new JScrollPane(dagWorkbench);
+        JScrollPane dagWorkbenchScroll = new JScrollPane(dagWorkbench);
         dagWorkbenchScroll.setPreferredSize(new Dimension(450, 450));
 
         dagWorkbench.addMouseListener(new MouseAdapter() {
-            public void mouseExited(final MouseEvent e) {
-                storeLatestWorkbenchGraph();
+            public void mouseExited(MouseEvent e) {
+                FgesSearchEditor.this.storeLatestWorkbenchGraph();
             }
         });
 

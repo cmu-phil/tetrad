@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
+import edu.cmu.tetradapp.util.DoubleTextField.Filter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -39,19 +40,19 @@ public class MissingDataInjectorParamsEditor extends JPanel implements Parameter
     /**
      * The parameters object being edited.
      */
-    private Parameters params = null;
+    private Parameters params;
 
     //========================= Public Methods =======================================//
 
     public void setup() {
-        buildGui();
+        this.buildGui();
     }
 
-    public void setParams(final Parameters params) {
+    public void setParams(Parameters params) {
         this.params = params;
     }
 
-    public void setParentModels(final Object[] parentModels) {
+    public void setParentModels(Object[] parentModels) {
 
     }
 
@@ -67,31 +68,31 @@ public class MissingDataInjectorParamsEditor extends JPanel implements Parameter
      * appropriate listeners.
      */
     private void buildGui() {
-        setLayout(new BorderLayout());
+        this.setLayout(new BorderLayout());
 
-        final DoubleTextField probField =
-                new DoubleTextField(this.params.getDouble("prob", 0.02), 6, NumberFormatUtil.getInstance().getNumberFormat());
-        probField.setFilter(new DoubleTextField.Filter() {
-            public double filter(final double value, final double oldValue) {
+        DoubleTextField probField =
+                new DoubleTextField(params.getDouble("prob", 0.02), 6, NumberFormatUtil.getInstance().getNumberFormat());
+        probField.setFilter(new Filter() {
+            public double filter(double value, double oldValue) {
                 try {
-                    MissingDataInjectorParamsEditor.this.params.set("prob", value);
+                    params.set("prob", value);
                     return value;
-                } catch (final IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
         // continue workbench construction.
-        final Box b1 = Box.createVerticalBox();
+        Box b1 = Box.createVerticalBox();
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("<html>" +
                 "The input dataset will have missing data values inserted " +
                 "<br>independently for each variable in each case with the" +
                 "<br>probability specified." + "</html>"));
 
-        final Box b7 = Box.createHorizontalBox();
+        Box b7 = Box.createHorizontalBox();
         b7.add(Box.createHorizontalGlue());
         b7.add(new JLabel("<html>" + "<i>Probability:  </i>" + "</html>"));
         b7.add(probField);
@@ -100,7 +101,7 @@ public class MissingDataInjectorParamsEditor extends JPanel implements Parameter
         b1.add(Box.createVerticalStrut(5));
         b1.add(b7);
         b1.add(Box.createHorizontalGlue());
-        add(b1, BorderLayout.CENTER);
+        this.add(b1, BorderLayout.CENTER);
     }
 
 }

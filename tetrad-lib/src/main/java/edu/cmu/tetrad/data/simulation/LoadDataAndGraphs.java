@@ -30,66 +30,66 @@ public class LoadDataAndGraphs implements Simulation {
 
     private transient PrintStream stdout = System.out;
 
-    public LoadDataAndGraphs(final String path) {
+    public LoadDataAndGraphs(String path) {
         this.path = path;
     }
 
     @Override
-    public void createData(final Parameters parameters, final boolean newModel) {
+    public void createData(Parameters parameters, boolean newModel) {
 //        if (!newModel && !dataSets.isEmpty()) return;
-        if (!this.dataSets.isEmpty()) return;
+        if (!dataSets.isEmpty()) return;
 
-        this.dataSets = new ArrayList<>();
+        dataSets = new ArrayList<>();
 
-        final File path = new File(this.path);
+        File path = new File(this.path);
 
         if (path.exists()) {
-            final int numDataSets = Objects.requireNonNull(new File(path, "/data").listFiles()).length;
+            int numDataSets = Objects.requireNonNull(new File(path, "/data").listFiles()).length;
 
             try {
                 for (int i = 0; i < numDataSets; i++) {
                     try {
-                        final File file2 = new File(path + "/graph/graph." + (i + 1) + ".txt");
-                        this.stdout.println("Loading graph from " + file2.getAbsolutePath());
-                        this.graphs.add(GraphUtils.loadGraphTxt(file2));
-                    } catch (final Exception e) {
-                        this.graphs.add(null);
+                        File file2 = new File(path + "/graph/graph." + (i + 1) + ".txt");
+                        stdout.println("Loading graph from " + file2.getAbsolutePath());
+                        graphs.add(GraphUtils.loadGraphTxt(file2));
+                    } catch (Exception e) {
+                        graphs.add(null);
                     }
 
-                    GraphUtils.circleLayout(this.graphs.get(i), 225, 200, 150);
+                    GraphUtils.circleLayout(graphs.get(i), 225, 200, 150);
 
-                    final File file1 = new File(path + "/data/data." + (i + 1) + ".txt");
+                    File file1 = new File(path + "/data/data." + (i + 1) + ".txt");
 
-                    this.stdout.println("Loading data from " + file1.getAbsolutePath());
+                    stdout.println("Loading data from " + file1.getAbsolutePath());
 
-                    final DataSet ds= DataUtils.loadContinuousData(file1, "//", '\"' ,
+                    DataSet ds= DataUtils.loadContinuousData(file1, "//", '\"' ,
                             "*", true, Delimiter.TAB);
 
-                    this.dataSets.add(ds);
+                    dataSets.add(ds);
                 }
 
-                final File file = new File(path, "parameters.txt");
-                final BufferedReader r = new BufferedReader(new FileReader(file));
+                File file = new File(path, "parameters.txt");
+                BufferedReader r = new BufferedReader(new FileReader(file));
 
                 String line;
 
                 line = r.readLine();
 
                 if (line != null) {
-                    this.description = line;
+                    description = line;
                 }
 
                 while ((line = r.readLine()) != null) {
                     if (line.contains(" = ")) {
-                        final String[] tokens = line.split(" = ");
-                        final String key = tokens[0];
-                        final String value = tokens[1].trim();
+                        String[] tokens = line.split(" = ");
+                        String key = tokens[0];
+                        String value = tokens[1].trim();
 
-                        this.usedParameters.add(key);
+                        usedParameters.add(key);
                         try {
-                            final double _value = Double.parseDouble(value);
+                            double _value = Double.parseDouble(value);
                             parameters.set(key, _value);
-                        } catch (final NumberFormatException e) {
+                        } catch (NumberFormatException e) {
                             if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
                                 parameters.set(key, Boolean.valueOf(value));
                             } else {
@@ -100,25 +100,25 @@ public class LoadDataAndGraphs implements Simulation {
                 }
 
                 parameters.set(Params.NUM_RUNS, numDataSets);
-            } catch (final IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
     @Override
-    public Graph getTrueGraph(final int index) {
-        return this.graphs.get(index);
+    public Graph getTrueGraph(int index) {
+        return graphs.get(index);
     }
 
     @Override
-    public DataModel getDataModel(final int index) {
-        return this.dataSets.get(index);
+    public DataModel getDataModel(int index) {
+        return dataSets.get(index);
     }
 
     @Override
     public String getDescription() {
-        return "Load data sets and graphs from a directory" + (!("".equals(this.description)) ? ": " + this.description : "");
+        return "Load data sets and graphs from a directory" + (!("".equals(description)) ? ": " + description : "");
 
 //        try {
 //            File file = new File(path, "parameters.txt");
@@ -141,12 +141,12 @@ public class LoadDataAndGraphs implements Simulation {
 
     @Override
     public List<String> getParameters() {
-        return this.usedParameters;
+        return usedParameters;
     }
 
     @Override
     public int getNumDataModels() {
-        return this.dataSets.size();
+        return dataSets.size();
     }
 
     @Override
@@ -155,7 +155,7 @@ public class LoadDataAndGraphs implements Simulation {
         boolean discrete = false;
         boolean mixed = false;
 
-        for (final DataSet dataSet : this.dataSets) {
+        for (DataSet dataSet : dataSets) {
             if (dataSet.isContinuous()) {
                 continuous = true;
             }
@@ -180,7 +180,7 @@ public class LoadDataAndGraphs implements Simulation {
         return DataType.Mixed;
     }
 
-    public void setStdout(final PrintStream stdout) {
+    public void setStdout(PrintStream stdout) {
         this.stdout = stdout;
     }
 

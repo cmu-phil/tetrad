@@ -34,41 +34,41 @@ public class DataTableImpl<N, V> implements DataTable<N, V> {
     private final List<N> variables;
     private final List<List<V>> rows;
 
-    public DataTableImpl(final List<? extends N> vars) {
-        this.variables = Collections.unmodifiableList(new ArrayList<>(vars));
-        this.rows = new ArrayList<>();
+    public DataTableImpl(List<? extends N> vars) {
+        variables = Collections.unmodifiableList(new ArrayList<>(vars));
+        rows = new ArrayList<>();
     }
 
     @Override
     public List<N> variables() {
-        return this.variables;
+        return variables;
     }
 
     @Override
     public int columnCount() {
-        return this.variables.size();
+        return variables.size();
     }
 
     @Override
     public int rowCount() {
-        return this.rows.size();
+        return rows.size();
     }
 
     @Override
-    public void addRow(final List<? extends V> row) {
-        final int
+    public void addRow(List<? extends V> row) {
+        int
                 m = row.size(),
-                w = columnCount();
+                w = this.columnCount();
 
         if (m != w)
             throw new IllegalArgumentException("Tried to insert a row of length " + m + " into a table of width " + w + ".");
 
-        this.rows.add(Collections.unmodifiableList(new ArrayList<>(row)));
+        rows.add(Collections.unmodifiableList(new ArrayList<>(row)));
     }
 
     @Override
     public Iterator<List<V>> iterator() {
-        return Collections.unmodifiableList(this.rows).listIterator();
+        return Collections.unmodifiableList(rows).listIterator();
     }
 
 }

@@ -54,16 +54,16 @@ public class CovSEard implements CovarianceFunction {
 
     private final int D;
     private final int numParameters;
-    private Matrix K = null;
+    private Matrix K;
 
     /**
      * Creates a new <code>CovSEard CovarianceFunction<code>
      *
      * @param inputDimension muber of dimension of the input
      */
-    public CovSEard(final int inputDimension) {
-        this.D = inputDimension;
-        this.numParameters = this.D + 1;
+    public CovSEard(int inputDimension) {
+        D = inputDimension;
+        numParameters = D + 1;
     }
 
     /**
@@ -72,7 +72,7 @@ public class CovSEard implements CovarianceFunction {
      * @return number of hyperparameters
      */
     public int numParameters() {
-        return this.numParameters;
+        return numParameters;
     }
 
     /**
@@ -82,23 +82,23 @@ public class CovSEard implements CovarianceFunction {
      * @param X        input dataset
      * @return K covariance <code>Matrix</code>
      */
-    public Matrix compute(final Matrix loghyper, final Matrix X) {
+    public Matrix compute(Matrix loghyper, Matrix X) {
 
-        if (X.getColumnDimension() != this.D)
-            throw new IllegalArgumentException("The number of dimensions specified on the covariance function " + this.D + " must agree with the size of the input vector" + X.getColumnDimension());
-        if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != this.numParameters)
-            throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + this.numParameters);
+        if (X.getColumnDimension() != D)
+            throw new IllegalArgumentException("The number of dimensions specified on the covariance function " + D + " must agree with the size of the input vector" + X.getColumnDimension());
+        if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != numParameters)
+            throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + numParameters);
 
-        final Matrix ell = exp(loghyper.getMatrix(0, this.D - 1, 0, 0));                         // characteristic length scales
-        final double sf2 = Math.exp(2 * loghyper.get(this.D, 0));                              // signal variance
+        Matrix ell = exp(loghyper.getMatrix(0, D - 1, 0, 0));                         // characteristic length scales
+        double sf2 = Math.exp(2 * loghyper.get(D, 0));                              // signal variance
 
-        final Matrix diag = new Matrix(this.D, this.D);
-        for (int i = 0; i < this.D; i++)
+        Matrix diag = new Matrix(D, D);
+        for (int i = 0; i < D; i++)
             diag.set(i, i, 1 / ell.get(i, 0));
 
-        this.K = exp(CovSEard.squareDist(diag.times(X.transpose())).times(-0.5)).times(sf2);   // SE covariance
+        K = exp(squareDist(diag.times(X.transpose())).times(-0.5)).times(sf2);   // SE covariance
 
-        return this.K;
+        return K;
     }
 
     /**
@@ -109,25 +109,25 @@ public class CovSEard implements CovarianceFunction {
      * @param Xstar    test set
      * @return [K(Xstar, Xstar) K(X,Xstar)]
      */
-    public Matrix[] compute(final Matrix loghyper, final Matrix X, final Matrix Xstar) {
+    public Matrix[] compute(Matrix loghyper, Matrix X, Matrix Xstar) {
 
-        if (X.getColumnDimension() != this.D)
-            throw new IllegalArgumentException("The number of dimensions specified on the covariance function " + this.D + " must agree with the size of the input vector" + X.getColumnDimension());
-        if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != this.numParameters)
-            throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + this.numParameters);
+        if (X.getColumnDimension() != D)
+            throw new IllegalArgumentException("The number of dimensions specified on the covariance function " + D + " must agree with the size of the input vector" + X.getColumnDimension());
+        if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != numParameters)
+            throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + numParameters);
 
-        final Matrix ell = exp(loghyper.getMatrix(0, this.D - 1, 0, 0));                         // characteristic length scales
-        final double sf2 = Math.exp(2 * loghyper.get(this.D, 0));                              // signal variance
+        Matrix ell = exp(loghyper.getMatrix(0, D - 1, 0, 0));                         // characteristic length scales
+        double sf2 = Math.exp(2 * loghyper.get(D, 0));                              // signal variance
 
-        final double[] a = new double[Xstar.getRowDimension()];
+        double[] a = new double[Xstar.getRowDimension()];
         Arrays.fill(a, sf2);
-        final Matrix A = new Matrix(a, Xstar.getRowDimension());
+        Matrix A = new Matrix(a, Xstar.getRowDimension());
 
-        final Matrix diag = new Matrix(this.D, this.D);
-        for (int i = 0; i < this.D; i++)
+        Matrix diag = new Matrix(D, D);
+        for (int i = 0; i < D; i++)
             diag.set(i, i, 1 / ell.get(i, 0));
 
-        final Matrix B = exp(CovSEard.squareDist(diag.times(X.transpose()), diag.times(Xstar.transpose())).times(-0.5)).times(sf2);
+        Matrix B = exp(squareDist(diag.times(X.transpose()), diag.times(Xstar.transpose())).times(-0.5)).times(sf2);
 
         return new Matrix[]{A, B};
     }
@@ -142,56 +142,56 @@ public class CovSEard implements CovarianceFunction {
      * @param index    hyperparameter index
      * @return <code>Matrix</code> of derivatives
      */
-    public Matrix computeDerivatives(final Matrix loghyper, final Matrix X, final int index) {
+    public Matrix computeDerivatives(Matrix loghyper, Matrix X, int index) {
 
-        if (X.getColumnDimension() != this.D)
-            throw new IllegalArgumentException("The number of dimensions specified on the covariance function " + this.D + " must agree with the size of the input vector" + X.getColumnDimension());
-        if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != this.numParameters)
-            throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + this.numParameters);
-        if (index > numParameters() - 1)
-            throw new IllegalArgumentException("Wrong hyperparameters index " + index + " it should be smaller or equal to " + (numParameters() - 1));
+        if (X.getColumnDimension() != D)
+            throw new IllegalArgumentException("The number of dimensions specified on the covariance function " + D + " must agree with the size of the input vector" + X.getColumnDimension());
+        if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != numParameters)
+            throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + numParameters);
+        if (index > this.numParameters() - 1)
+            throw new IllegalArgumentException("Wrong hyperparameters index " + index + " it should be smaller or equal to " + (this.numParameters() - 1));
 
         Matrix A = null;
 
-        final Matrix ell = exp(loghyper.getMatrix(0, this.D - 1, 0, 0));                         // characteristic length scales
-        final double sf2 = Math.exp(2 * loghyper.get(this.D, 0));                              // signal variance
+        Matrix ell = exp(loghyper.getMatrix(0, D - 1, 0, 0));                         // characteristic length scales
+        double sf2 = Math.exp(2 * loghyper.get(D, 0));                              // signal variance
         // noise variance
 
-        if (this.K.getRowDimension() != X.getRowDimension() || this.K.getColumnDimension() != X.getRowDimension()) {
-            final Matrix diag = new Matrix(this.D, this.D);
-            for (int i = 0; i < this.D; i++)
+        if (K.getRowDimension() != X.getRowDimension() || K.getColumnDimension() != X.getRowDimension()) {
+            Matrix diag = new Matrix(D, D);
+            for (int i = 0; i < D; i++)
                 diag.set(i, i, 1 / ell.get(i, 0));
 
-            this.K = exp(CovSEard.squareDist(diag.times(X.transpose())).times(-0.5)).times(sf2);   // SE covariance
+            K = exp(squareDist(diag.times(X.transpose())).times(-0.5)).times(sf2);   // SE covariance
         }
 
-        if (index < this.D) {   //length scale parameters
-            final Matrix col = CovSEard.squareDist(X.getMatrix(0, X.getRowDimension() - 1, index, index).transpose().times(1 / ell.get(index, 0)));
+        if (index < D) {   //length scale parameters
+            Matrix col = squareDist(X.getMatrix(0, X.getRowDimension() - 1, index, index).transpose().times(1 / ell.get(index, 0)));
 
-            A = this.K.arrayTimes(col);
+            A = K.arrayTimes(col);
         } else {    // magnitude parameter
-            A = this.K.times(2);
-            this.K = null;
+            A = K.times(2);
+            K = null;
         }
 
         return A;
     }
 
-    private static Matrix squareDist(final Matrix a) {
-        return CovSEard.squareDist(a, a);
+    private static Matrix squareDist(Matrix a) {
+        return squareDist(a, a);
     }
 
-    private static Matrix squareDist(final Matrix a, final Matrix b) {
-        final Matrix C = new Matrix(a.getColumnDimension(), b.getColumnDimension());
-        final int m = a.getColumnDimension();
-        final int n = b.getColumnDimension();
-        final int d = a.getRowDimension();
+    private static Matrix squareDist(Matrix a, Matrix b) {
+        Matrix C = new Matrix(a.getColumnDimension(), b.getColumnDimension());
+        int m = a.getColumnDimension();
+        int n = b.getColumnDimension();
+        int d = a.getRowDimension();
 
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < n; j++) {
                 double z = 0.0;
                 for (int k = 0; k < d; k++) {
-                    final double t = a.get(k, i) - b.get(k, j);
+                    double t = a.get(k, i) - b.get(k, j);
                     z += t * t;
                 }
                 C.set(i, j, z);

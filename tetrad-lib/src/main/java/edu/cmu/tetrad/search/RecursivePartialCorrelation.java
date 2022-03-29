@@ -42,25 +42,25 @@ public class RecursivePartialCorrelation {
     private final ICovarianceMatrix corr;
     private final Map<Node, Integer> nodesMap = new HashMap<>();
 
-    public RecursivePartialCorrelation(final List<Node> nodes, final Matrix cov, final int sampleSize) {
-        this.corr = new CorrelationMatrixOnTheFly(new CovarianceMatrix(nodes, cov, sampleSize));
-        for (int i = 0; i < nodes.size(); i++) this.nodesMap.put(nodes.get(i), i);
+    public RecursivePartialCorrelation(List<Node> nodes, Matrix cov, int sampleSize) {
+        corr = new CorrelationMatrixOnTheFly(new CovarianceMatrix(nodes, cov, sampleSize));
+        for (int i = 0; i < nodes.size(); i++) nodesMap.put(nodes.get(i), i);
     }
 
-    public RecursivePartialCorrelation(final ICovarianceMatrix cov) {
-        this.corr = new CorrelationMatrixOnTheFly(cov);
-        final List<Node> nodes = this.corr.getVariables();
-        for (int i = 0; i < nodes.size(); i++) this.nodesMap.put(nodes.get(i), i);
+    public RecursivePartialCorrelation(ICovarianceMatrix cov) {
+        corr = new CorrelationMatrixOnTheFly(cov);
+        List<Node> nodes = corr.getVariables();
+        for (int i = 0; i < nodes.size(); i++) nodesMap.put(nodes.get(i), i);
     }
 
-    public double corr(final Node x, final Node y, final List<Node> z) {
-        if (z.isEmpty()) return this.corr.getValue(this.nodesMap.get(x), this.nodesMap.get(y));
-        final Node z0 = z.get(0);
-        final List<Node> _z = new ArrayList<>(z);
+    public double corr(Node x, Node y, List<Node> z) {
+        if (z.isEmpty()) return corr.getValue(nodesMap.get(x), nodesMap.get(y));
+        Node z0 = z.get(0);
+        List<Node> _z = new ArrayList<>(z);
         _z.remove(z0);
-        final double corr0 = corr(x, y, _z);
-        final double corr1 = corr(x, z0, _z);
-        final double corr2 = corr(z0, y, _z);
+        double corr0 = this.corr(x, y, _z);
+        double corr1 = this.corr(x, z0, _z);
+        double corr2 = this.corr(z0, y, _z);
         return (corr0 - corr1 * corr2) / sqrt(1. - corr1 * corr1) * sqrt(1. - corr2 * corr2);
     }
 }

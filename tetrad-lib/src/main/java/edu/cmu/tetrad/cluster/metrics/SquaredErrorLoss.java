@@ -30,7 +30,7 @@ import edu.cmu.tetrad.util.Vector;
  * @author Joseph Ramsey
  */
 public class SquaredErrorLoss implements Dissimilarity {
-    public double dissimilarity(final Vector v1, final Vector v2) {
+    public double dissimilarity(Vector v1, Vector v2) {
         if (v1.size() != v2.size()) {
             throw new IllegalArgumentException("Vectors not the same length.");
         }
@@ -38,7 +38,7 @@ public class SquaredErrorLoss implements Dissimilarity {
         double sum = 0.0;
 
         for (int j = 0; j < v1.size(); j++) {
-            final double diff = v1.get(j) - v2.get(j);
+            double diff = v1.get(j) - v2.get(j);
             sum += diff * diff;
         }
 

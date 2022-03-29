@@ -26,15 +26,15 @@ public class TailConfusion {
     private int TCfn;
     private int TCfp;
 
-    public TailConfusion(final Graph truth, final Graph est) {
+    public TailConfusion(Graph truth, Graph est) {
         this.truth = truth;
         this.est = est;
-        this.tailsTp = 0;
-        this.tailsFp = 0;
-        this.tailsFn = 0;
-        this.TCtp = 0; //for the two-cycle accuracy
-        this.TCfn = 0;
-        this.TCfp = 0;
+        tailsTp = 0;
+        tailsFp = 0;
+        tailsFn = 0;
+        TCtp = 0; //for the two-cycle accuracy
+        TCfn = 0;
+        TCfp = 0;
 
 
         this.est = GraphUtils.replaceNodes(est, truth.getNodes());
@@ -43,10 +43,10 @@ public class TailConfusion {
         // Get edges from the true Graph to compute TruePositives, TrueNegatives and FalseNeagtives
         //    System.out.println(this.truth.getEdges());
 
-        for (final Edge edge : this.truth.getEdges()) {
+        for (Edge edge : this.truth.getEdges()) {
 
-            final List<Edge> edges1 = this.est.getEdges(edge.getNode1(), edge.getNode2());
-            final Edge edge1;
+            List<Edge> edges1 = this.est.getEdges(edge.getNode1(), edge.getNode2());
+            Edge edge1;
 
             if (edges1.size() == 1) {
                 edge1 = edges1.get(0);
@@ -66,8 +66,8 @@ public class TailConfusion {
             //      System.out.println(e1Est);
             //      System.out.println(e2Est);
 
-            final List<Edge> edges2 = this.truth.getEdges(edge.getNode1(), edge.getNode2());
-            final Edge edge2;
+            List<Edge> edges2 = this.truth.getEdges(edge.getNode1(), edge.getNode2());
+            Edge edge2;
 
             if (edges2.size() == 1) {
                 edge2 = edges2.get(0);
@@ -89,27 +89,27 @@ public class TailConfusion {
 
 
             if (e1True == Endpoint.TAIL && e1Est != Endpoint.TAIL) {
-                this.tailsFn++;
+                tailsFn++;
             }
 
             if (e2True == Endpoint.TAIL && e2Est != Endpoint.TAIL) {
-                this.tailsFn++;
+                tailsFn++;
             }
 
             if (e1True == Endpoint.TAIL && e1Est == Endpoint.TAIL) {
-                this.tailsTp++;
+                tailsTp++;
             }
 
             if (e2True == Endpoint.TAIL && e2Est == Endpoint.TAIL) {
-                this.tailsTp++;
+                tailsTp++;
             }
 
             if (e1True != Endpoint.TAIL && e1Est != Endpoint.TAIL) {
-                this.tailsTn++;
+                tailsTn++;
             }
 
             if (e2True != Endpoint.TAIL && e2Est != Endpoint.TAIL) {
-                this.tailsTn++;
+                tailsTn++;
             }
 
 
@@ -117,10 +117,10 @@ public class TailConfusion {
 // Get edges from the estimated graph to compute only FalsePositives
         // System.out.println(this.est.getEdges());
 
-        for (final Edge edge : this.est.getEdges()) {
+        for (Edge edge : this.est.getEdges()) {
 
-            final List<Edge> edges1 = this.est.getEdges(edge.getNode1(), edge.getNode2());
-            final Edge edge1;
+            List<Edge> edges1 = this.est.getEdges(edge.getNode1(), edge.getNode2());
+            Edge edge1;
 
             if (edges1.size() == 1) {
                 edge1 = edges1.get(0);
@@ -139,8 +139,8 @@ public class TailConfusion {
             //       System.out.println(e1Est);
             //       System.out.println(e2Est);
 
-            final List<Edge> edges2 = this.truth.getEdges(edge.getNode1(), edge.getNode2());
-            final Edge edge2;
+            List<Edge> edges2 = this.truth.getEdges(edge.getNode1(), edge.getNode2());
+            Edge edge2;
 
             if (edges2.size() == 1) {
                 edge2 = edges2.get(0);
@@ -162,11 +162,11 @@ public class TailConfusion {
 
 
             if (e1Est == Endpoint.TAIL && e1True != Endpoint.TAIL) {
-                this.tailsFp++;
+                tailsFp++;
             }
 
             if (e2Est == Endpoint.TAIL && e2True != Endpoint.TAIL) {
-                this.tailsFp++;
+                tailsFp++;
             }
 
 
@@ -178,31 +178,31 @@ public class TailConfusion {
         //allOriented.addAll(this.truth.getEdges());
         //allOriented.addAll(this.est.getEdges());
 
-        for (final Edge edge : this.truth.getEdges()) {
+        for (Edge edge : this.truth.getEdges()) {
 
 
-            final List<Edge> TwoCycle1 = this.truth.getEdges(edge.getNode1(), edge.getNode2());
-            final List<Edge> TwoCycle2 = this.est.getEdges(edge.getNode1(), edge.getNode2());
+            List<Edge> TwoCycle1 = this.truth.getEdges(edge.getNode1(), edge.getNode2());
+            List<Edge> TwoCycle2 = this.est.getEdges(edge.getNode1(), edge.getNode2());
 
             if (TwoCycle1.size() == 2 && TwoCycle2.size() == 2) {
                 //              System.out.println("2-cycle correctly inferred " + TwoCycle1);
-                this.TCtp++;
+                TCtp++;
             }
 
             if (TwoCycle1.size() == 2 && TwoCycle2.size() != 2) {
                 //             System.out.println("2-cycle not inferred " + TwoCycle1);
-                this.TCfn++;
+                TCfn++;
             }
         }
 
-        for (final Edge edge : this.est.getEdges()) {
+        for (Edge edge : this.est.getEdges()) {
 
-            final List<Edge> TwoCycle1 = this.truth.getEdges(edge.getNode1(), edge.getNode2());
-            final List<Edge> TwoCycle2 = this.est.getEdges(edge.getNode1(), edge.getNode2());
+            List<Edge> TwoCycle1 = this.truth.getEdges(edge.getNode1(), edge.getNode2());
+            List<Edge> TwoCycle2 = this.est.getEdges(edge.getNode1(), edge.getNode2());
 
             if (TwoCycle1.size() != 2 && TwoCycle2.size() == 2) {
                 //              System.out.println("2-cycle falsely inferred" + TwoCycle2);
-                this.TCfp++;
+                TCfp++;
             }
         }
 
@@ -212,9 +212,9 @@ public class TailConfusion {
         System.out.println(tailsFp);
 */
         //divide by 2, the 2cycle accuracy is duplicated due to how getEdges is used
-        this.TCtp = this.TCtp / 2;
-        this.TCfn = this.TCfn / 2;
-        this.TCfp = this.TCfp / 2;
+        TCtp = TCtp / 2;
+        TCfn = TCfn / 2;
+        TCfp = TCfp / 2;
         //       System.out.println(TCtp);
         //       System.out.println(TCfn);
         //       System.out.println(TCfp);
@@ -223,31 +223,31 @@ public class TailConfusion {
 
 
     public int getArrowsTp() {
-        return this.tailsTp;
+        return tailsTp;
     }
 
     public int getArrowsFp() {
-        return this.tailsFp;
+        return tailsFp;
     }
 
     public int getArrowsFn() {
-        return this.tailsFn;
+        return tailsFn;
     }
 
     public int getArrowsTn() {
-        return this.tailsTn;
+        return tailsTn;
     }
 
     public int getTwoCycleTp() {
-        return this.TCtp;
+        return TCtp;
     }
 
     public int getTwoCycleFp() {
-        return this.TCfp;
+        return TCfp;
     }
 
     public int getTwoCycleFn() {
-        return this.TCfn;
+        return TCfn;
     }
 
 

@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.util;
 
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.TetradLogger.LogDisplayOutputStream;
 
 import javax.swing.*;
 import java.io.OutputStream;
@@ -31,7 +31,7 @@ import java.io.OutputStream;
  *
  * @author Joseph Ramsey
  */
-public class TextAreaOutputStream extends OutputStream implements TetradLogger.LogDisplayOutputStream {
+public class TextAreaOutputStream extends OutputStream implements LogDisplayOutputStream {
 
     /**
      * The text area written to.
@@ -46,7 +46,7 @@ public class TextAreaOutputStream extends OutputStream implements TetradLogger.L
     /**
      * The length of string written to the text area.
      */
-    private int lengthWritten = 0;
+    private int lengthWritten;
 
     /**
      * Creates a text area output stream, for writing text to the given
@@ -58,9 +58,9 @@ public class TextAreaOutputStream extends OutputStream implements TetradLogger.L
      *
      * @param textArea The text area written to.
      */
-    public TextAreaOutputStream(final JTextArea textArea) {
+    public TextAreaOutputStream(JTextArea textArea) {
         this.textArea = textArea;
-        this.lengthWritten = textArea.getText().length();
+        lengthWritten = textArea.getText().length();
     }
 
     /**
@@ -68,34 +68,34 @@ public class TextAreaOutputStream extends OutputStream implements TetradLogger.L
      *
      * @param b the byte to be written.
      */
-    public synchronized void write(final int b) {
-        if (this.buf.length() > 5000) return;
-        this.buf.append((char) b);
+    public synchronized void write(int b) {
+        if (buf.length() > 5000) return;
+        buf.append((char) b);
 
         if ((char) b == '\n') {
             final int maxSize = 50000;
 
             if (false) {//lengthWritten > maxSize) {
-                final String text = this.textArea.getText();
-                final StringBuilder buf1 = new StringBuilder(text.substring(maxSize - 10000));
-                buf1.append(this.buf);
-                this.textArea.setText(buf1.toString());
-                this.lengthWritten = buf1.length();
-                this.buf.setLength(0);
-                this.buf = new StringBuilder();
-                moveToEnd();
+                String text = textArea.getText();
+                StringBuilder buf1 = new StringBuilder(text.substring(maxSize - 10000));
+                buf1.append(buf);
+                textArea.setText(buf1.toString());
+                lengthWritten = buf1.length();
+                buf.setLength(0);
+                buf = new StringBuilder();
+                this.moveToEnd();
 
                 try {
                     Thread.sleep(100);
-                } catch (final InterruptedException e) {
+                } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             } else {
-                this.textArea.append(this.buf.toString());
+                textArea.append(buf.toString());
 //            textArea.setText(buf.toString());
-                this.lengthWritten = this.lengthWritten + this.buf.length();
-                this.buf.setLength(0);
-                moveToEnd();
+                lengthWritten = lengthWritten + buf.length();
+                buf.setLength(0);
+                this.moveToEnd();
             }
         }
     }
@@ -107,13 +107,13 @@ public class TextAreaOutputStream extends OutputStream implements TetradLogger.L
      * @return String translated from the buffer's contents.
      */
     public String toString() {
-        return this.textArea.toString();
+        return textArea.toString();
     }
 
 
     public void reset() {
-        this.textArea.setText("");
-        this.lengthWritten = 0;
+        textArea.setText("");
+        lengthWritten = 0;
     }
 
 
@@ -123,11 +123,11 @@ public class TextAreaOutputStream extends OutputStream implements TetradLogger.L
      * @return The total string length written to the text area.
      */
     public int getLengthWritten() {
-        return this.lengthWritten;
+        return lengthWritten;
     }
 
     public void moveToEnd() {
-        this.textArea.setCaretPosition(0);
+        textArea.setCaretPosition(0);
     }
 }
 

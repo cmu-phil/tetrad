@@ -42,39 +42,39 @@ public class SvarGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapp
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
-    private IKnowledge knowledge = null;
+    private IKnowledge knowledge;
 
     public SvarGfci() {
     }
 
-    public SvarGfci(final IndependenceWrapper type, final ScoreWrapper score) {
-        this.test = type;
+    public SvarGfci(IndependenceWrapper type, ScoreWrapper score) {
+        test = type;
         this.score = score;
     }
 
     @Override
-    public Graph search(final DataModel dataSet, final Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) {
 //    	if (!(dataSet instanceof TimeSeriesData)) {
 //            throw new IllegalArgumentException("You need a (labeled) time series data set to run SvarGFCI.");
 //        }
 
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            if (this.knowledge != null) {
-                dataSet.setKnowledge(this.knowledge);
+            if (knowledge != null) {
+                dataSet.setKnowledge(knowledge);
             }
-            final edu.cmu.tetrad.search.SvarGFci search = new edu.cmu.tetrad.search.SvarGFci(this.test.getTest(dataSet, parameters),
-                    this.score.getScore(dataSet, parameters));
-            search.setKnowledge(this.knowledge);
+            edu.cmu.tetrad.search.SvarGFci search = new edu.cmu.tetrad.search.SvarGFci(test.getTest(dataSet, parameters),
+                    score.getScore(dataSet, parameters));
+            search.setKnowledge(knowledge);
 
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             return search.search();
         } else {
-            final SvarGfci algorithm = new SvarGfci(this.test, this.score);
+            SvarGfci algorithm = new SvarGfci(test, score);
 
-            final DataSet data = (DataSet) dataSet;
-            final GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(this.knowledge);
+            DataSet data = (DataSet) dataSet;
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
+            search.setKnowledge(knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -100,22 +100,22 @@ public class SvarGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapp
     }
 
     @Override
-    public Graph getComparisonGraph(final Graph graph) {
+    public Graph getComparisonGraph(Graph graph) {
         return new TsDagToPag(new EdgeListGraph(graph)).convert();
     }
 
     public String getDescription() {
-        return "SavrGFCI (SVAR GFCI) using " + this.test.getDescription() + " and " + this.score.getDescription();
+        return "SavrGFCI (SVAR GFCI) using " + test.getDescription() + " and " + score.getDescription();
     }
 
     @Override
     public DataType getDataType() {
-        return this.test.getDataType();
+        return test.getDataType();
     }
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
 
         parameters.add(Params.FAITHFULNESS_ASSUMED);
         parameters.add(Params.MAX_INDEGREE);
@@ -127,31 +127,31 @@ public class SvarGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapp
 
     @Override
     public IKnowledge getKnowledge() {
-        return this.knowledge;
+        return knowledge;
     }
 
     @Override
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
-        return this.test;
+        return test;
     }
 
     @Override
-    public void setIndependenceWrapper(final IndependenceWrapper test) {
+    public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;
     }
 
     @Override
     public ScoreWrapper getScoreWrapper() {
-        return this.score;
+        return score;
     }
 
     @Override
-    public void setScoreWrapper(final ScoreWrapper score) {
+    public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
     }
 

@@ -43,7 +43,7 @@ class LoadTimeSeriesDataAction extends AbstractAction {
 
     private final DataEditor editor;
 
-    public LoadTimeSeriesDataAction(final DataEditor editor) {
+    public LoadTimeSeriesDataAction(DataEditor editor) {
         super("Load Time Series Data");
 
         if (editor == null) {
@@ -56,8 +56,8 @@ class LoadTimeSeriesDataAction extends AbstractAction {
     /**
      * Performs the action of loading a session from a file.
      */
-    public void actionPerformed(final ActionEvent e) {
-        loadTimeSeriesDataSet();
+    public void actionPerformed(ActionEvent e) {
+        this.loadTimeSeriesDataSet();
     }
 
     /**
@@ -66,31 +66,31 @@ class LoadTimeSeriesDataAction extends AbstractAction {
     private void loadTimeSeriesDataSet() {
 
         // select a file to load using the file chooser
-        final JFileChooser chooser = getJFileChooser();
+        JFileChooser chooser = this.getJFileChooser();
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-        chooser.showOpenDialog(this.editor);
+        chooser.showOpenDialog(editor);
 
         // get the file
-        final File file = chooser.getSelectedFile();
+        File file = chooser.getSelectedFile();
         Preferences.userRoot().put("fileSaveLocation", file.getParent());
 
         try {
-            final BufferedReader in = new BufferedReader(new FileReader(file));
+            BufferedReader in = new BufferedReader(new FileReader(file));
             String line;
             StringTokenizer st;
 
             // read in variable name and set up DataSet.
-            final List<Node> variables = new LinkedList<>();
+            List<Node> variables = new LinkedList<>();
 
             st = new StringTokenizer(in.readLine());
 
             while (st.hasMoreTokens()) {
-                final String name = st.nextToken();
-                final ContinuousVariable var = new ContinuousVariable(name);
+                String name = st.nextToken();
+                ContinuousVariable var = new ContinuousVariable(name);
                 variables.add(var);
             }
 
-            final DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(0, variables.size()), variables);
+            DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(0, variables.size()), variables);
 
             final int row = -1;
 
@@ -100,7 +100,7 @@ class LoadTimeSeriesDataAction extends AbstractAction {
                 st = new StringTokenizer(line);
 
                 while (st.hasMoreTokens()) {
-                    final String literal = st.nextToken();
+                    String literal = st.nextToken();
                     if (literal.length() == 0) {
                         continue;
                     }
@@ -109,20 +109,20 @@ class LoadTimeSeriesDataAction extends AbstractAction {
                 }
             }
 
-            final TimeSeriesData dataSet3 = new TimeSeriesData(
+            TimeSeriesData dataSet3 = new TimeSeriesData(
                     dataSet.getDoubleData(), dataSet.getVariableNames());
 
-            this.editor.getDataWrapper().setDataModel(dataSet3);
-            firePropertyChange("modelChanged", null, null);
-            this.editor.reset();
-        } catch (final Exception e) {
+            editor.getDataWrapper().setDataModel(dataSet3);
+            this.firePropertyChange("modelChanged", null, null);
+            editor.reset();
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     private JFileChooser getJFileChooser() {
-        final JFileChooser chooser = new JFileChooser();
-        final String sessionSaveLocation = Preferences.userRoot().get(
+        JFileChooser chooser = new JFileChooser();
+        String sessionSaveLocation = Preferences.userRoot().get(
                 "fileSaveLocation", Preferences.userRoot().absolutePath());
         chooser.setCurrentDirectory(new File(sessionSaveLocation));
         chooser.resetChoosableFileFilters();

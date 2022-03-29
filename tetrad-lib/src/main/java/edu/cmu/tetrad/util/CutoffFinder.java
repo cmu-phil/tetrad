@@ -45,18 +45,18 @@ public class CutoffFinder {
      * @param deltaX      the amount the integration jumps forward each time.
      * @return the cutoff value for these conditions.
      */
-    public static double getCutoff(final Function f, final double xUpperBound, final double alpha,
-                                   final double deltaX) {
+    public static double getCutoff(Function f, double xUpperBound, double alpha,
+                                   double deltaX) {
 
         double area = 0.0;
         double x1 = 0.0, x2 = 0.0;
-        final double upperAreaLimit = .5 * (1 - alpha);
+        double upperAreaLimit = .5 * (1 - alpha);
 
         while ((area < upperAreaLimit) && (x1 < xUpperBound)) {
             x1 = x2;
             x2 += deltaX;
 
-            final double yAve = .5 * (f.valueAt(x1) + f.valueAt(x2));
+            double yAve = .5 * (f.valueAt(x1) + f.valueAt(x2));
             area += yAve * deltaX;
         }
 

@@ -34,16 +34,16 @@ import java.util.List;
 public class EmpiricalCdf implements RealDistribution {
     private final List<Double> data;
 
-    public EmpiricalCdf(final List<Double> data) {
+    public EmpiricalCdf(List<Double> data) {
         if (data == null) throw new NullPointerException();
         this.data = data;
         Collections.sort(data);
     }
 
-    public double cumulativeProbability(final double x) {
+    public double cumulativeProbability(double x) {
         int count = 0;
 
-        for (final double y : this.data) {
+        for (double y : data) {
             if (y <= x) {
                 count++;
             } else {
@@ -51,31 +51,31 @@ public class EmpiricalCdf implements RealDistribution {
             }
         }
 
-        return count / (double) this.data.size();
+        return count / (double) data.size();
     }
 
     @Override
-    public double probability(final double v) {
+    public double probability(double v) {
         return 0;
     }
 
     @Override
-    public double density(final double v) {
-        final double d1 = v - 0.05;
-        final double d2 = v + 0.05;
-        final double n2 = cumulativeProbability(d1);
-        final double n1 = cumulativeProbability(d2);
+    public double density(double v) {
+        double d1 = v - 0.05;
+        double d2 = v + 0.05;
+        double n2 = this.cumulativeProbability(d1);
+        double n1 = this.cumulativeProbability(d2);
         return (n1 - n2) / (d2 - d1);
     }
 
     @Override
     @Deprecated
-    public double cumulativeProbability(final double v, final double v1) throws NumberIsTooLargeException {
+    public double cumulativeProbability(double v, double v1) throws NumberIsTooLargeException {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public double inverseCumulativeProbability(final double v) throws OutOfRangeException {
+    public double inverseCumulativeProbability(double v) throws OutOfRangeException {
         return 0;
     }
 
@@ -117,7 +117,7 @@ public class EmpiricalCdf implements RealDistribution {
     }
 
     @Override
-    public void reseedRandomGenerator(final long l) {
+    public void reseedRandomGenerator(long l) {
 
     }
 
@@ -127,7 +127,7 @@ public class EmpiricalCdf implements RealDistribution {
     }
 
     @Override
-    public double[] sample(final int i) {
+    public double[] sample(int i) {
         return new double[0];
     }
 }

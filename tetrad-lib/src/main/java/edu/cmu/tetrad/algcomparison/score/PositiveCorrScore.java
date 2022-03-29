@@ -23,11 +23,11 @@ public class PositiveCorrScore implements ScoreWrapper {
     double alpha = 0.001;
 
     @Override
-    public Score getScore(final DataModel dataSet, final Parameters parameters) {
+    public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
-        final double alpha = parameters.getDouble("alpha");
+        double alpha = parameters.getDouble("alpha");
         this.alpha = alpha;
-        final IndTestPositiveCorr test = new IndTestPositiveCorr((DataSet) dataSet, alpha);
+        IndTestPositiveCorr test = new IndTestPositiveCorr((DataSet) dataSet, alpha);
         return new ScoredIndTest(test);
     }
 
@@ -43,13 +43,13 @@ public class PositiveCorrScore implements ScoreWrapper {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
         parameters.add("alpha");
         return parameters;
     }
 
     @Override
-    public Node getVariable(final String name) {
-        return this.dataSet.getVariable(name);
+    public Node getVariable(String name) {
+        return dataSet.getVariable(name);
     }
 }

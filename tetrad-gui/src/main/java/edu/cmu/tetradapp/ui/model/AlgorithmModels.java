@@ -41,44 +41,44 @@ public final class AlgorithmModels {
     private Map<AlgType, List<AlgorithmModel>> modelMap;
 
     private AlgorithmModels() {
-        refreshModels();
+        this.refreshModels();
     }
 
     private void refreshModels() {
-        final AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
-        final List<AnnotatedClass<Algorithm>> list = Tetrad.enableExperimental
+        AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
+        List<AnnotatedClass<Algorithm>> list = Tetrad.enableExperimental
                 ? algoAnno.getAnnotatedClasses()
                 : algoAnno.filterOutExperimental(algoAnno.getAnnotatedClasses());
-        this.models = Collections.unmodifiableList(
+        models = Collections.unmodifiableList(
                 list.stream()
                         .map(e -> new AlgorithmModel(e))
                         .sorted()
                         .collect(Collectors.toList()));
 
-        final Map<AlgType, List<AlgorithmModel>> map = new EnumMap<>(AlgType.class);
+        Map<AlgType, List<AlgorithmModel>> map = new EnumMap<>(AlgType.class);
 
         // initialize enum map
-        for (final AlgType algType : AlgType.values()) {
+        for (AlgType algType : AlgType.values()) {
             map.put(algType, new LinkedList<>());
         }
 
         // group by datatype
-        this.models.stream().forEach(e -> {
+        models.stream().forEach(e -> {
             map.get(e.getAlgorithm().getAnnotation().algoType()).add(e);
         });
 
         // make it unmodifiable
         map.forEach((k, v) -> map.put(k, Collections.unmodifiableList(v)));
-        this.modelMap = Collections.unmodifiableMap(map);
+        modelMap = Collections.unmodifiableMap(map);
     }
 
     public static AlgorithmModels getInstance() {
-        AlgorithmModels.INSTANCE.refreshModels();   // if we had a subscriber CPDAG for app settings would not have to waste time doing this every time!
-        return AlgorithmModels.INSTANCE;
+        INSTANCE.refreshModels();   // if we had a subscriber CPDAG for app settings would not have to waste time doing this every time!
+        return INSTANCE;
     }
 
-    private List<AlgorithmModel> filterInclusivelyByAllOrSpecificDataType(final List<AlgorithmModel> algorithmModels, final DataType dataType, final boolean multiDataSetAlgorithm) {
-        final AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
+    private List<AlgorithmModel> filterInclusivelyByAllOrSpecificDataType(List<AlgorithmModel> algorithmModels, DataType dataType, boolean multiDataSetAlgorithm) {
+        AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
 
         return (dataType == DataType.All)
                 ? algorithmModels
@@ -89,7 +89,7 @@ public final class AlgorithmModels {
                             : true;
                 })
                 .filter(e -> {
-                    for (final DataType dt : e.getAlgorithm().getAnnotation().dataType()) {
+                    for (DataType dt : e.getAlgorithm().getAnnotation().dataType()) {
                         if (dt == DataType.All || dt == dataType) {
                             return true;
                         }
@@ -99,13 +99,13 @@ public final class AlgorithmModels {
                 .collect(Collectors.toList());
     }
 
-    public List<AlgorithmModel> getModels(final DataType dataType, final boolean multiDataSetAlgorithm) {
-        return filterInclusivelyByAllOrSpecificDataType(this.models, dataType, multiDataSetAlgorithm);
+    public List<AlgorithmModel> getModels(DataType dataType, boolean multiDataSetAlgorithm) {
+        return this.filterInclusivelyByAllOrSpecificDataType(models, dataType, multiDataSetAlgorithm);
     }
 
-    public List<AlgorithmModel> getModels(final AlgType algType, final DataType dataType, final boolean multiDataSetAlgorithm) {
-        return this.modelMap.containsKey(algType)
-                ? filterInclusivelyByAllOrSpecificDataType(this.modelMap.get(algType), dataType, multiDataSetAlgorithm)
+    public List<AlgorithmModel> getModels(AlgType algType, DataType dataType, boolean multiDataSetAlgorithm) {
+        return modelMap.containsKey(algType)
+                ? this.filterInclusivelyByAllOrSpecificDataType(modelMap.get(algType), dataType, multiDataSetAlgorithm)
                 : Collections.EMPTY_LIST;
     }
 

@@ -89,8 +89,8 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
 //        LogUtils.getInstance().finer("" + estimateBayesIm);
 //    }
 
-    public EmBayesEstimatorWrapper(final DataWrapper dataWrapper,
-                                   final BayesPmWrapper bayesPmWrapper, final Parameters params) {
+    public EmBayesEstimatorWrapper(DataWrapper dataWrapper,
+                                   BayesPmWrapper bayesPmWrapper, Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -103,23 +103,23 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
             throw new NullPointerException();
         }
 
-        final DataSet dataSet =
+        DataSet dataSet =
                 (DataSet) dataWrapper.getSelectedDataModel();
-        final BayesPm bayesPm = bayesPmWrapper.getBayesPm();
+        BayesPm bayesPm = bayesPmWrapper.getBayesPm();
 
-        final EmBayesEstimator estimator = new EmBayesEstimator(bayesPm, dataSet);
+        EmBayesEstimator estimator = new EmBayesEstimator(bayesPm, dataSet);
         this.dataSet = estimator.getMixedDataSet();
 
         try {
             estimator.maximization(params.getDouble("tolerance", 0.0001));
-            this.estimateBayesIm = estimator.getEstimatedIm();
-        } catch (final IllegalArgumentException e) {
+            estimateBayesIm = estimator.getEstimatedIm();
+        } catch (IllegalArgumentException e) {
             e.printStackTrace();
             throw new RuntimeException(
                     "Please specify the search tolerance first.");
         }
         TetradLogger.getInstance().log("info", "EM-Estimated Bayes IM:");
-        TetradLogger.getInstance().log("im", "" + this.estimateBayesIm);
+        TetradLogger.getInstance().log("im", "" + estimateBayesIm);
     }
 
 //    public EmBayesEstimatorWrapper(DataWrapper dataWrapper,
@@ -173,15 +173,15 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
     //================================PUBLIC METHODS======================//
 
     public BayesIm getEstimateBayesIm() {
-        return this.estimateBayesIm;
+        return estimateBayesIm;
     }
 
-    private void estimate(final DataSet dataSet, final BayesPm bayesPm, final double thresh) {
+    private void estimate(DataSet dataSet, BayesPm bayesPm, double thresh) {
         try {
-            final EmBayesEstimator estimator = new EmBayesEstimator(bayesPm, dataSet);
-            this.estimateBayesIm = estimator.maximization(thresh);
+            EmBayesEstimator estimator = new EmBayesEstimator(bayesPm, dataSet);
+            estimateBayesIm = estimator.maximization(thresh);
             this.dataSet = estimator.getMixedDataSet();
-        } catch (final ArrayIndexOutOfBoundsException e) {
+        } catch (ArrayIndexOutOfBoundsException e) {
             e.printStackTrace();
             throw new RuntimeException("Value assignments between Bayes PM " +
                     "and discrete data set do not match.");
@@ -189,27 +189,27 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
     }
 
     public DataSet getDataSet() {
-        return this.dataSet;
+        return dataSet;
     }
 
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (this.dataSet == null) {
+        if (dataSet == null) {
             throw new NullPointerException();
         }
     }
 
     public Graph getGraph() {
-        return this.estimateBayesIm.getBayesPm().getDag();
+        return estimateBayesIm.getBayesPm().getDag();
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 

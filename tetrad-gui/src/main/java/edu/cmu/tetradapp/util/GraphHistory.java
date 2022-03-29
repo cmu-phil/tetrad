@@ -47,52 +47,52 @@ public class GraphHistory {
      * Constructs a graph history.
      */
     public GraphHistory() {
-        this.graphs = new LinkedList<>();
-        this.index = -1;
+        graphs = new LinkedList<>();
+        index = -1;
     }
 
-    public void add(final Graph graph) {
+    public void add(Graph graph) {
         if (graph == null) {
             throw new NullPointerException();
         }
 
-        for (int i = this.graphs.size() - 1; i > this.index; i--) {
-            this.graphs.remove(i);
+        for (int i = graphs.size() - 1; i > index; i--) {
+            graphs.remove(i);
         }
 
-        this.graphs.addLast(new EdgeListGraph(graph));
-        this.index++;
+        graphs.addLast(new EdgeListGraph(graph));
+        index++;
     }
 
     public Graph next() {
-        if (this.index == -1) {
+        if (index == -1) {
             throw new IllegalArgumentException("Graph history has not been " +
                     "initialized yet.");
         }
 
-        if (this.index < this.graphs.size() - 1) {
-            this.index++;
+        if (index < graphs.size() - 1) {
+            index++;
         }
 
-        return this.graphs.get(this.index);
+        return graphs.get(index);
     }
 
     public Graph previous() {
-        if (this.index == -1) {
+        if (index == -1) {
             throw new IllegalArgumentException("Graph history has not been " +
                     "initialized yet.");
         }
 
-        if (this.index > 0) {
-            this.index--;
+        if (index > 0) {
+            index--;
         }
 
-        return this.graphs.get(this.index);
+        return graphs.get(index);
     }
 
     public void clear() {
-        this.graphs.clear();
-        this.index = -1;
+        graphs.clear();
+        index = -1;
     }
 }
 

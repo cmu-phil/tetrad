@@ -83,8 +83,8 @@ public class Mapping implements TetradSerializable {
      * @param i         Left coordinates of matrix[i][j].
      * @param j         Right coordinate of matrix[i][j].
      */
-    public Mapping(final ISemIm semIm, final Parameter parameter, final Matrix matrix,
-                   final int i, final int j) {
+    public Mapping(ISemIm semIm, Parameter parameter, Matrix matrix,
+                   int i, int j) {
         if (semIm == null) {
             throw new NullPointerException("SemIm must not be null.");
         }
@@ -103,7 +103,7 @@ public class Mapping implements TetradSerializable {
 
         this.semIm = semIm;
         this.parameter = parameter;
-        this.a = matrix;
+        a = matrix;
         this.i = i;
         this.j = j;
     }
@@ -121,19 +121,19 @@ public class Mapping implements TetradSerializable {
      * Sets the value of the array element at the stored coordinates (i, j).
      * If the array is symmetric sets two elements.
      */
-    public void setValue(final double x) {
-        if (this.semIm.isParameterBoundsEnforced() &&
-                getParameter().getType() == ParamType.VAR && x < 0.0) {
+    public void setValue(double x) {
+        if (semIm.isParameterBoundsEnforced() &&
+                this.getParameter().getType() == ParamType.VAR && x < 0.0) {
             throw new IllegalArgumentException(
                     "Variances cannot " + "have values <= 0.0: " + x);
         }
 
-        this.a.set(this.i, this.j, x);
+        a.set(i, j, x);
 
-        if (getParameter().getType() == ParamType.VAR ||
-                getParameter().getType() == ParamType.COVAR) {
-            this.a.set(this.j, this.i, x);
-            this.a.set(this.i, this.j, x);
+        if (this.getParameter().getType() == ParamType.VAR ||
+                this.getParameter().getType() == ParamType.COVAR) {
+            a.set(j, i, x);
+            a.set(i, j, x);
         }
     }
 
@@ -141,14 +141,14 @@ public class Mapping implements TetradSerializable {
      * @return the value of the array element at (i, j).
      */
     public double getValue() {
-        return this.a.get(this.i, this.j);
+        return a.get(i, j);
     }
 
     /**
      * @return the paramter that this mapping maps.
      */
     public Parameter getParameter() {
-        return this.parameter;
+        return parameter;
     }
 
     /**
@@ -156,8 +156,8 @@ public class Mapping implements TetradSerializable {
      * subscripts) about the array element associated with this mapping.
      */
     public String toString() {
-        return "<" + getParameter().getName() + " " + getParameter().getType() +
-                "[" + this.i + "][" + this.j + "]>";
+        return "<" + this.getParameter().getName() + " " + this.getParameter().getType() +
+                "[" + i + "][" + j + "]>";
     }
 
     /**
@@ -173,15 +173,15 @@ public class Mapping implements TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (this.semIm == null) {
+        if (semIm == null) {
             throw new NullPointerException();
         }
 
-        if (this.parameter == null) {
+        if (parameter == null) {
             throw new NullPointerException();
         }
     }

@@ -44,8 +44,8 @@ public final class MimAdjacencySearch {
     /**
      * Constructs a new MimAdjacencySearch. IT IS ASSUMED THAT THE INDEPENDENCE CHECKER IS OF CLASS IndTestMimBuild
      */
-    public MimAdjacencySearch(final Graph graph, final IndependenceTest ind,
-                              final IKnowledge knowledge, final List<Node> latents) {
+    public MimAdjacencySearch(Graph graph, IndependenceTest ind,
+                              IKnowledge knowledge, List<Node> latents) {
         this.graph = graph;
         this.ind = ind;
         this.knowledge = knowledge;
@@ -65,9 +65,9 @@ public final class MimAdjacencySearch {
     public SepsetMap adjSearch() {
 
         int n = 0;
-        final SepsetMap sepset = new SepsetMap();
+        SepsetMap sepset = new SepsetMap();
 
-        while (adjStep(this.graph, this.ind, this.knowledge, sepset, n) && getDepth() > n) {
+        while (this.adjStep(graph, ind, knowledge, sepset, n) && this.getDepth() > n) {
             n++;
         }
 
@@ -78,12 +78,12 @@ public final class MimAdjacencySearch {
      * Return an array of Nodes who can be conditional checks can be done on stipulated by temporal tiers </p> Shane
      * Harwood harwood+@andrew.cmu.edu
      */
-    private Object[] forbidFilter(final Set<String> set1, final String x, final IKnowledge bk) {
-        final Iterator<String> it = set1.iterator();
-        final List<String> arr = new LinkedList<>();
+    private Object[] forbidFilter(Set<String> set1, String x, IKnowledge bk) {
+        Iterator<String> it = set1.iterator();
+        List<String> arr = new LinkedList<>();
 
         while (it.hasNext()) {
-            final String z = it.next();
+            String z = it.next();
 
             if (!bk.isForbidden(z, x)) {
                 arr.add(z);
@@ -108,48 +108,48 @@ public final class MimAdjacencySearch {
      *                  independent) are recorded in this sepset.  This is for use later on in the algorithm.
      * @return false if no independencies are found for this step.  (This means we are finished with adjacency search.)
      */
-    private boolean adjStep(final Graph graph, final IndependenceTest ind,
-                            final IKnowledge knowledge, final SepsetMap sepset, final int n) {
+    private boolean adjStep(Graph graph, IndependenceTest ind,
+                            IKnowledge knowledge, SepsetMap sepset, int n) {
         // Note: as a stateful object, all of these arguments should belong
         // to the state.  There is no need to pass them in every time.
-        final Iterator<Node> it = this.latents.iterator();
+        Iterator<Node> it = latents.iterator();
         boolean result = false;
-        final List<Node> visited = new LinkedList<>();    //list of visited nodes
+        List<Node> visited = new LinkedList<>();    //list of visited nodes
 
         // for each node x...
         while (it.hasNext()) {
-            final Node nodeX = it.next();
-            final Set<Node> set = new HashSet<>();
+            Node nodeX = it.next();
+            Set<Node> set = new HashSet<>();
 
-            for (final Node node : graph.getAdjacentNodes(nodeX)) {
-                if (this.latents.contains(node)) {
+            for (Node node : graph.getAdjacentNodes(nodeX)) {
+                if (latents.contains(node)) {
                     set.add(node);
                 }
             }
 
             //trim all unnecessary comapres, we have already visited them
-            for (final Node aVisited : visited) {
+            for (Node aVisited : visited) {
                 set.remove(aVisited);
             }
 
             visited.add(nodeX);
 
-            final Iterator<Node> it1 = (new HashSet<>(set)).iterator();
+            Iterator<Node> it1 = (new HashSet<>(set)).iterator();
 
             // for each node y connected to x ...
             while (it1.hasNext()) {
-                final Node nodeY = it1.next();
+                Node nodeY = it1.next();
 
-                final Set<String> set1 = new HashSet<>();
-                for (final Node node : graph.getAdjacentNodes(nodeX)) {
-                    if (this.latents.contains(node)) {
+                Set<String> set1 = new HashSet<>();
+                for (Node node : graph.getAdjacentNodes(nodeX)) {
+                    if (latents.contains(node)) {
                         set1.add(node.toString());
                     }
                 }
 
-                final Set<String> set2 = new HashSet<>();    //find parents of Y
-                for (final Node node : graph.getAdjacentNodes(nodeY)) {
-                    if (this.latents.contains(node)) {
+                Set<String> set2 = new HashSet<>();    //find parents of Y
+                for (Node node : graph.getAdjacentNodes(nodeY)) {
+                    if (latents.contains(node)) {
                         set2.add(node.toString());
                     }
                 }
@@ -160,17 +160,17 @@ public final class MimAdjacencySearch {
 
                 // seta: all nodes adjacent to x other than y and come
                 // before x or before y temporally
-                final Object[] seta = forbidFilter(set1, nodeX.getName(), knowledge);
+                Object[] seta = this.forbidFilter(set1, nodeX.getName(), knowledge);
 
                 if (seta.length >= n) {
                     result = true;
 
-                    final ChoiceGenerator cg = new ChoiceGenerator(seta.length, n);
+                    ChoiceGenerator cg = new ChoiceGenerator(seta.length, n);
                     int[] subset;
 
                     // for each subset of size n ...
                     while ((subset = cg.next()) != null) {
-                        final List<Node> condSet = MimAdjacencySearch.asList(subset, seta);
+                        List<Node> condSet = asList(subset, seta);
                         if (ind.isIndependent(nodeX, nodeY, condSet) &&
                                 knowledge.noEdgeRequired(nodeX.getName(),
                                         nodeY.getName())) {
@@ -199,8 +199,8 @@ public final class MimAdjacencySearch {
      * @param o the objects from which we obtain our list
      * @return the list described above.
      */
-    private static List asList(final int[] i, final Object[] o) {
-        final Object[] temp = new Object[i.length];
+    private static List asList(int[] i, Object[] o) {
+        Object[] temp = new Object[i.length];
 
         for (int a = 0; a < i.length; a++) {
             temp[a] = o[i[a]];
@@ -210,10 +210,10 @@ public final class MimAdjacencySearch {
     }
 
     public int getDepth() {
-        return this.depth;
+        return depth;
     }
 
-    public void setDepth(final int depth) {
+    public void setDepth(int depth) {
         this.depth = depth;
     }
 }

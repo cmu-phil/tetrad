@@ -66,12 +66,12 @@ public final class BdeMetricCache {
 
     private double[][] observedCounts;
 
-    public BdeMetricCache(final DataSet dataSet, final BayesPm bayesPm) {
+    public BdeMetricCache(DataSet dataSet, BayesPm bayesPm) {
         this.bayesPm = bayesPm;
         this.dataSet = dataSet;
-        this.scores = new HashMap<>();
-        this.scoreCounts = new HashMap<>();
-        this.variables = dataSet.getVariables();
+        scores = new HashMap<>();
+        scoreCounts = new HashMap<>();
+        variables = dataSet.getVariables();
     }
 
     /**
@@ -79,21 +79,21 @@ public final class BdeMetricCache {
      * relative to the data, of the factor determined by a node and its
      * parents.
      */
-    public double scoreLnGam(final Node node, final Set<Node> parents, final BayesPm bayesPmMod,
-                             final BayesIm bayesIm) {
+    public double scoreLnGam(Node node, Set<Node> parents, BayesPm bayesPmMod,
+                             BayesIm bayesIm) {
 
         //A factor of a model is determined by a node and its parents in that model.
         //The NodeParentsPair inner class provides a means to instantiate such
         //a pair so that it can be used as an argument to the Map scores.
-        final NodeParentsPair nodeAndParents = new NodeParentsPair(node, parents);
-        final double score;
+        NodeParentsPair nodeAndParents = new NodeParentsPair(node, parents);
+        double score;
 
         //If the score of this factor has already been computed and stored, retrieve it from the
         //Map scores.
-        if (this.scores.containsKey(nodeAndParents)) {
+        if (scores.containsKey(nodeAndParents)) {
             System.out.println(
                     node + " Score came from map--counts not computed.");
-            score = this.scores.get(nodeAndParents);
+            score = scores.get(nodeAndParents);
 
             return score;
         } else {
@@ -102,38 +102,38 @@ public final class BdeMetricCache {
             //this factor.  In observedCounts and priorProbs, for instance, there will be as
             //many rows as there are combinations of values of the parents and
             //as many columns as there are categories of the child variable.
-            final Node[] parentArray = new Node[parents.size()];
+            Node[] parentArray = new Node[parents.size()];
             for (int i = 0; i < parentArray.length; i++) {
                 parentArray[i] = (Node) (parents.toArray()[i]);
             }
 
-            final BayesIm bayesImMod = new MlBayesIm(bayesPmMod);
-            final int numRows = bayesImMod.getNumRows(bayesImMod.getNodeIndex(node));
+            BayesIm bayesImMod = new MlBayesIm(bayesPmMod);
+            int numRows = bayesImMod.getNumRows(bayesImMod.getNodeIndex(node));
 
-            final double[][] priorProbs;
-            final double[] priorProbsRowSum;
+            double[][] priorProbs;
+            double[] priorProbsRowSum;
 
-            this.observedCounts = new double[numRows][];
+            observedCounts = new double[numRows][];
             priorProbs = new double[numRows][];
 
-            final double[] observedCountsRowSum = new double[numRows];
+            double[] observedCountsRowSum = new double[numRows];
             priorProbsRowSum = new double[numRows];
 
-            final int numCols = this.bayesPm.getNumCategories(node);
+            int numCols = bayesPm.getNumCategories(node);
 
             for (int j = 0; j < numRows; j++) {
 
                 observedCountsRowSum[j] = 0;
                 priorProbsRowSum[j] = 0;
 
-                this.observedCounts[j] = new double[numCols];
+                observedCounts[j] = new double[numCols];
                 priorProbs[j] = new double[numCols];
             }
 
             if (bayesIm == null) {
-                computeObservedCounts(node, parentArray);
+                this.computeObservedCounts(node, parentArray);
             } else {
-                computeObservedCountsMD(node, bayesPmMod, bayesIm);
+                this.computeObservedCountsMD(node, bayesPmMod, bayesIm);
             }
 
             //Set all priorProbs (i.e. estimated counts) to 1.0.  Eventually they may be
@@ -147,7 +147,7 @@ public final class BdeMetricCache {
 
             for (int j = 0; j < numRows; j++) {
                 for (int k = 0; k < numCols; k++) {
-                    observedCountsRowSum[j] += this.observedCounts[j][k];
+                    observedCountsRowSum[j] += observedCounts[j][k];
                     priorProbsRowSum[j] += priorProbs[j][k];
                 }
             }
@@ -160,11 +160,11 @@ public final class BdeMetricCache {
             for (int j = 0; j < numRows; j++) {
 
                 try {
-                    final double numerator = ProbUtils.lngamma(priorProbsRowSum[j]);
-                    final double denom = ProbUtils.lngamma(
+                    double numerator = ProbUtils.lngamma(priorProbsRowSum[j]);
+                    double denom = ProbUtils.lngamma(
                             priorProbsRowSum[j] + observedCountsRowSum[j]);
                     sum += (numerator - denom);
-                } catch (final Exception e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
 
@@ -173,9 +173,9 @@ public final class BdeMetricCache {
                 for (int k = 0; k < numCols; k++) {
                     try {
                         sumk += ProbUtils.lngamma(
-                                priorProbs[j][k] + this.observedCounts[j][k]) -
+                                priorProbs[j][k] + observedCounts[j][k]) -
                                 ProbUtils.lngamma(priorProbs[j][k]);
-                    } catch (final Exception e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
@@ -187,63 +187,63 @@ public final class BdeMetricCache {
 
         }
 
-        final Double scoreDouble = score;
-        this.scores.put(nodeAndParents, scoreDouble);
+        Double scoreDouble = score;
+        scores.put(nodeAndParents, scoreDouble);
 
         return score;
     }
 
 
-    private void computeObservedCountsMD(final Node node, final BayesPm bayesPmTest,
-                                         final BayesIm bayesIm) {
-        final int numCases = this.dataSet.getNumRows();
-        final int numVariables = this.variables.size();
+    private void computeObservedCountsMD(Node node, BayesPm bayesPmTest,
+                                         BayesIm bayesIm) {
+        int numCases = dataSet.getNumRows();
+        int numVariables = variables.size();
 
-        final Graph graph = bayesIm.getBayesPm().getDag();
+        Graph graph = bayesIm.getBayesPm().getDag();
 
-        final RowSummingExactUpdater rseu = new RowSummingExactUpdater(bayesIm);
+        RowSummingExactUpdater rseu = new RowSummingExactUpdater(bayesIm);
 
-        final String name = node.getName();
+        String name = node.getName();
 
-        final int index = getVarIndex(name);
+        int index = this.getVarIndex(name);
 
-        final int numCols = bayesPmTest.getNumCategories(node);
+        int numCols = bayesPmTest.getNumCategories(node);
 
-        final BayesIm bayesImTest = new MlBayesIm(bayesPmTest);
-        final int nodeIndexImTest = bayesImTest.getNodeIndex(node);
-        final int numRows = bayesImTest.getNumRows(nodeIndexImTest);
+        BayesIm bayesImTest = new MlBayesIm(bayesPmTest);
+        int nodeIndexImTest = bayesImTest.getNodeIndex(node);
+        int numRows = bayesImTest.getNumRows(nodeIndexImTest);
 
-        final int varIndex = bayesImTest.getNodeIndex(node);
-        final int[] parentVarIndices = bayesImTest.getParents(varIndex);
+        int varIndex = bayesImTest.getNodeIndex(node);
+        int[] parentVarIndices = bayesImTest.getParents(varIndex);
 
         if (parentVarIndices.length == 0) {              //node has no parents
 
             for (int col = 0; col < numCols; col++) {
-                this.observedCounts[0][col] = 0;
+                observedCounts[0][col] = 0;
             }
 
             for (int i = 0; i < numCases; i++) {
-                if (this.dataSet.getInt(i, index) != -99) {
-                    this.observedCounts[0][this.dataSet.getInt(i, index)] += 1.0;
+                if (dataSet.getInt(i, index) != -99) {
+                    observedCounts[0][dataSet.getInt(i, index)] += 1.0;
                 } else {
-                    final Evidence evidenceThisCase = Evidence.tautology(bayesIm);
+                    Evidence evidenceThisCase = Evidence.tautology(bayesIm);
                     boolean existsEvidence = false;
 
                     //Define evidence for updating by using the values of the other vars.
                     for (int k = 0; k < numVariables; k++) {
-                        if (this.dataSet.getInt(i, k) == -99) {
+                        if (dataSet.getInt(i, k) == -99) {
                             continue;
                         }
 
-                        final Node otherVar = this.variables.get(k);
+                        Node otherVar = variables.get(k);
 
                         existsEvidence = true;
-                        final String otherVarName = otherVar.getName();
-                        final Node otherNode = graph.getNode(otherVarName);
-                        final int otherIndex = bayesIm.getNodeIndex(otherNode);
+                        String otherVarName = otherVar.getName();
+                        Node otherNode = graph.getNode(otherVarName);
+                        int otherIndex = bayesIm.getNodeIndex(otherNode);
 
                         evidenceThisCase.getProposition().setCategory(
-                                otherIndex, this.dataSet.getInt(i, k));
+                                otherIndex, dataSet.getInt(i, k));
 
                     }
 
@@ -252,7 +252,7 @@ public final class BdeMetricCache {
                     //Compute marginal probabilities of each value  of ar and increase
                     //observed counts accordingly
                     for (int m = 0; m < numCols; m++) {
-                        final double p = rseu.getMarginal(varIndex, m);
+                        double p = rseu.getMarginal(varIndex, m);
                         if (Double.isNaN(p)) {
                             System.out.println(
                                     "esixtsEvidence = " + existsEvidence);
@@ -260,17 +260,17 @@ public final class BdeMetricCache {
                             System.exit(0);
                         }
 
-                        this.observedCounts[0][m] += p;
+                        observedCounts[0][m] += p;
                     }
 
                 }
             }
         } else {
             for (int row = 0; row < numRows; row++) {
-                final int[] parValues = bayesImTest.getParentValues(varIndex, row);
+                int[] parValues = bayesImTest.getParentValues(varIndex, row);
 
                 for (int col = 0; col < numCols; col++) {
-                    this.observedCounts[row][col] = 0.0;
+                    observedCounts[row][col] = 0.0;
                 }
 
                 for (int i = 0; i < numCases; i++) {
@@ -278,8 +278,8 @@ public final class BdeMetricCache {
 
                     for (int p = 0; p < parentVarIndices.length; p++) {
                         if (parValues[p] !=
-                                this.dataSet.getInt(i, parentVarIndices[p]) &&
-                                this.dataSet.getInt(i, parentVarIndices[p]) != -99) {
+                                dataSet.getInt(i, parentVarIndices[p]) &&
+                                dataSet.getInt(i, parentVarIndices[p]) != -99) {
                             parentMatch = false;
                             break;
                         }
@@ -291,26 +291,26 @@ public final class BdeMetricCache {
 
                     boolean parentMissing = false;
 
-                    for (final int parentVarIndice : parentVarIndices) {
-                        if (this.dataSet.getInt(i, parentVarIndice) == -99) {
+                    for (int parentVarIndice : parentVarIndices) {
+                        if (dataSet.getInt(i, parentVarIndice) == -99) {
                             parentMissing = true;
                             break;
                         }
                     }
 
-                    if (this.dataSet.getInt(i, index) != -99 && !parentMissing) {
-                        this.observedCounts[row][this.dataSet.getInt(i, index)] += 1.0;
+                    if (dataSet.getInt(i, index) != -99 && !parentMissing) {
+                        observedCounts[row][dataSet.getInt(i, index)] += 1.0;
                         continue;
                     }
 
                     //To compute marginals create the evidence
-                    final Evidence evidenceThisCase = Evidence.tautology(bayesIm);
+                    Evidence evidenceThisCase = Evidence.tautology(bayesIm);
 
                     rseu.setEvidence(evidenceThisCase);
 
-                    final int[] parPlusChildIndices =
+                    int[] parPlusChildIndices =
                             new int[parentVarIndices.length + 1];
-                    final int[] parPlusChildValues =
+                    int[] parPlusChildValues =
                             new int[parentVarIndices.length + 1];
 
                     parPlusChildIndices[0] = varIndex;
@@ -322,7 +322,7 @@ public final class BdeMetricCache {
                     for (int m = 0; m < numCols; m++) {
                         parPlusChildValues[0] = m;
 
-                        final double p = rseu.getJointMarginal(parPlusChildIndices,
+                        double p = rseu.getJointMarginal(parPlusChildIndices,
                                 parPlusChildValues);
 
                         if (Double.isNaN(p)) {
@@ -333,7 +333,7 @@ public final class BdeMetricCache {
                             System.exit(0);
                         }
 
-                        this.observedCounts[row][m] += p;
+                        observedCounts[row][m] += p;
                     }
                 }
             }
@@ -342,58 +342,58 @@ public final class BdeMetricCache {
         //else/*   Commented out on 11.22.04 to see if it causes a problem.
         for (int row = 0; row < numRows; row++) {
             for (int col = 0; col < numCols; col++) {
-                this.observedCounts[row][col] *= numCases;
+                observedCounts[row][col] *= numCases;
             }
         }
 
     }
 
 
-    private void computeObservedCounts(final Node node, final Node[] parentArray) {
+    private void computeObservedCounts(Node node, Node[] parentArray) {
 
-        final String name = node.getName();
-        final int index = getVarIndex(name);
-        final int numCols = this.bayesPm.getNumCategories(node);
+        String name = node.getName();
+        int index = this.getVarIndex(name);
+        int numCols = bayesPm.getNumCategories(node);
 
-        final int[] parentVarIndices = new int[parentArray.length];
-        final int[] parDims = new int[parentArray.length];
+        int[] parentVarIndices = new int[parentArray.length];
+        int[] parDims = new int[parentArray.length];
 
         // Calculate the number of rows in the table of counts for this variable.  It
         // will be the outerProduct of the numbers of categories of its parents.  This is
         // similar to the number of rows in a conditional probability table.
         int numRows = 1;
         for (int i = 0; i < parentArray.length; i++) {
-            final String parName = parentArray[i].getName();
+            String parName = parentArray[i].getName();
 
-            parentVarIndices[i] = getVarIndex(parName);
+            parentVarIndices[i] = this.getVarIndex(parName);
 
-            final int numCats = this.bayesPm.getNumCategories(parentArray[i]);
+            int numCats = bayesPm.getNumCategories(parentArray[i]);
             parDims[i] = numCats;
             numRows *= numCats;
         }
 
-        this.observedCounts = new double[numRows][];
+        observedCounts = new double[numRows][];
         for (int j = 0; j < numRows; j++) {
-            this.observedCounts[j] = new double[numCols];
+            observedCounts[j] = new double[numCols];
         }
 
         //System.out.println("Updating estimated counts for node " + varName);
         //This segment is for variables with no parents:
         if (parentArray.length == 0) {
             for (int col = 0; col < numCols; col++) {
-                this.observedCounts[0][col] = 0;
+                observedCounts[0][col] = 0;
             }
 
             //Loop over the cases in the data set
-            for (int i = 0; i < this.dataSet.getNumRows(); i++) {
-                this.observedCounts[0][this.dataSet.getInt(i, index)] += 1.0;
+            for (int i = 0; i < dataSet.getNumRows(); i++) {
+                observedCounts[0][dataSet.getInt(i, index)] += 1.0;
             }
 
         } else {    //For variables with parents:
 
             for (int row = 0; row < numRows; row++) {
 
-                final int[] parValues = new int[parDims.length];
+                int[] parValues = new int[parDims.length];
 
                 //The following loop was adapted from the method in MLBayesIm that calculates
                 //the row number in the CPT corresponding to a set of values of parents.
@@ -404,11 +404,11 @@ public final class BdeMetricCache {
                 }
 
                 for (int col = 0; col < numCols; col++) {
-                    this.observedCounts[row][col] = 0;
+                    observedCounts[row][col] = 0;
                 }
 
                 //Loop over the cases in the dataset.
-                for (int i = 0; i < this.dataSet.getNumRows(); i++) {
+                for (int i = 0; i < dataSet.getNumRows(); i++) {
                     //for a case where the parent values = parValues increment the observed count.
 
                     boolean parentMatch = true;
@@ -417,7 +417,7 @@ public final class BdeMetricCache {
                     //in the observed counts table.
                     for (int p = 0; p < parentVarIndices.length; p++) {
                         if (parValues[p] !=
-                                this.dataSet.getInt(i, parentVarIndices[p])) {
+                                dataSet.getInt(i, parentVarIndices[p])) {
                             parentMatch = false;
                             break;
                         }
@@ -428,7 +428,7 @@ public final class BdeMetricCache {
                     }
 
                     //A match occurred so increment the count.
-                    this.observedCounts[row][this.dataSet.getInt(i, index)] += 1;
+                    observedCounts[row][dataSet.getInt(i, index)] += 1;
 
                 }
 
@@ -443,46 +443,46 @@ public final class BdeMetricCache {
      * with the String in the argument.  Usually in the above code the name
      * comes from a node in the graph of the BayesPm.
      */
-    private int getVarIndex(final String name) {
-        return this.dataSet.getColumn(this.dataSet.getVariable(name));
+    private int getVarIndex(String name) {
+        return dataSet.getColumn(dataSet.getVariable(name));
     }
 
     /**
      * This method is used in testing and debugging and not in the BDe metric
      * calculations.
      */
-    public double[][] getObservedCounts(final Node node, final BayesPm bayesPm,
-                                        final BayesIm bayesIm) {
+    public double[][] getObservedCounts(Node node, BayesPm bayesPm,
+                                        BayesIm bayesIm) {
         System.out.println("In getObservedCounts for node = " + node.getName());
 
-        final BayesIm pmIm = new MlBayesIm(bayesPm);
+        BayesIm pmIm = new MlBayesIm(bayesPm);
 
-        final int inode = pmIm.getNodeIndex(node);
-        final int numPars = pmIm.getNumParents(inode);
-        final int numRows = pmIm.getNumRows(inode);
+        int inode = pmIm.getNodeIndex(node);
+        int numPars = pmIm.getNumParents(inode);
+        int numRows = pmIm.getNumRows(inode);
 
         System.out.println(
                 "Has " + numPars + " parents " + numRows + " rows in CPT.");
         //computeObservedCountsMD(node, bayesPm, bayesIm);
-        computeObservedCountsMD(node, bayesPm, bayesIm);
-        return this.observedCounts;
+        this.computeObservedCountsMD(node, bayesPm, bayesIm);
+        return observedCounts;
     }
 
     /**
      * This is just for testing the operation of the inner class and the map
      * from nodes and parent sets to scores.
      */
-    public int getScoreCount(final Node node, final Set<Node> parents) {
-        final NodeParentsPair nodeParents = new NodeParentsPair(node, parents);
-        final int count;
+    public int getScoreCount(Node node, Set<Node> parents) {
+        NodeParentsPair nodeParents = new NodeParentsPair(node, parents);
+        int count;
 
-        if (this.scoreCounts.containsKey(nodeParents)) {
+        if (scoreCounts.containsKey(nodeParents)) {
             System.out.println(node + " Score came from map.");
-            count = this.scoreCounts.get(nodeParents);
+            count = scoreCounts.get(nodeParents);
         } else {
             count = nodeParents.calcCount();
-            final Integer countInt = count;
-            this.scoreCounts.put(nodeParents, countInt);
+            Integer countInt = count;
+            scoreCounts.put(nodeParents, countInt);
         }
 
         return count;
@@ -499,25 +499,25 @@ public final class BdeMetricCache {
         private final Node node;
         private final Set<Node> parents;
 
-        public NodeParentsPair(final Node node, final Set<Node> parents) {
+        public NodeParentsPair(Node node, Set<Node> parents) {
             this.node = node;
             this.parents = parents;
 
         }
 
         public int calcCount() {
-            return this.parents.size() + 1;
+            return parents.size() + 1;
         }
 
         public int hashCode() {
             int hash = 91;
-            hash = 43 * hash + this.node.hashCode();
-            hash = 43 * hash + this.parents.hashCode();
+            hash = 43 * hash + node.hashCode();
+            hash = 43 * hash + parents.hashCode();
 
             return hash;
         }
 
-        public boolean equals(final Object other) {
+        public boolean equals(Object other) {
             if (other == this) {
                 return true;
             }
@@ -526,9 +526,9 @@ public final class BdeMetricCache {
                 return false;
             }
 
-            final NodeParentsPair npp = (NodeParentsPair) other;
+            NodeParentsPair npp = (NodeParentsPair) other;
 
-            return npp.node.equals(this.node) && npp.parents.equals(this.parents);
+            return npp.node.equals(node) && npp.parents.equals(parents);
 
         }
 

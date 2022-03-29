@@ -66,8 +66,8 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
 
     //===============================CONSTRUCTORS============================//
 
-    private StructEmBayesSearchRunner(final DataWrapper dataWrapper,
-                                      final BayesPmWrapper bayesPmWrapper) {
+    private StructEmBayesSearchRunner(DataWrapper dataWrapper,
+                                      BayesPmWrapper bayesPmWrapper) {
         if (dataWrapper == null) {
             throw new NullPointerException(
                     "BayesDataWrapper must not be null.");
@@ -77,20 +77,20 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
             throw new NullPointerException("BayesPmWrapper must not be null");
         }
 
-        this.dataSet = (DataSet) dataWrapper.getSelectedDataModel();
-        this.bayesPm = bayesPmWrapper.getBayesPm();
+        dataSet = (DataSet) dataWrapper.getSelectedDataModel();
+        bayesPm = bayesPmWrapper.getBayesPm();
 
-        estimate(this.dataSet, this.bayesPm);
-        log();
+        this.estimate(dataSet, bayesPm);
+        this.log();
     }
 
-    public StructEmBayesSearchRunner(final Simulation simulation,
-                                     final BayesPmWrapper bayesPmWrapper) {
+    public StructEmBayesSearchRunner(Simulation simulation,
+                                     BayesPmWrapper bayesPmWrapper) {
         this((DataWrapper) simulation, bayesPmWrapper);
     }
 
-    public StructEmBayesSearchRunner(final DataWrapper dataWrapper,
-                                     final BayesPmWrapper bayesPmWrapper, final Parameters params) {
+    public StructEmBayesSearchRunner(DataWrapper dataWrapper,
+                                     BayesPmWrapper bayesPmWrapper, Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -103,26 +103,26 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
             throw new NullPointerException();
         }
 
-        final DataSet dataSet =
+        DataSet dataSet =
                 (DataSet) dataWrapper.getSelectedDataModel();
 
-        final FactoredBayesStructuralEM estimator = new FactoredBayesStructuralEM(
+        FactoredBayesStructuralEM estimator = new FactoredBayesStructuralEM(
                 dataSet, bayesPmWrapper.getBayesPm());
         this.dataSet = estimator.getDataSet();
 
         try {
-            this.estimatedBayesIm =
+            estimatedBayesIm =
                     estimator.maximization(params.getDouble("tolerance", 0.0001));
 
-        } catch (final IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             throw new RuntimeException(e);
         }
 
-        log();
+        this.log();
     }
 
-    public StructEmBayesSearchRunner(final DataWrapper dataWrapper,
-                                     final BayesImWrapper bayesImWrapper, final Parameters params) {
+    public StructEmBayesSearchRunner(DataWrapper dataWrapper,
+                                     BayesImWrapper bayesImWrapper, Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -135,24 +135,24 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
             throw new NullPointerException();
         }
 
-        final DataSet dataSet =
+        DataSet dataSet =
                 (DataSet) dataWrapper.getSelectedDataModel();
 
-        this.bayesPm = bayesImWrapper.getBayesIm().getBayesPm();
+        bayesPm = bayesImWrapper.getBayesIm().getBayesPm();
 
-        final FactoredBayesStructuralEM estimator =
-                new FactoredBayesStructuralEM(dataSet, this.bayesPm);
+        FactoredBayesStructuralEM estimator =
+                new FactoredBayesStructuralEM(dataSet, bayesPm);
         this.dataSet = estimator.getDataSet();
 
         try {
-            this.estimatedBayesIm =
+            estimatedBayesIm =
                     estimator.maximization(params.getDouble("tolerance", 0.0001));
-        } catch (final IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             throw new RuntimeException(
                     "Please specify the search tolerance first.");
         }
 
-        log();
+        this.log();
     }
 
     /**
@@ -167,10 +167,10 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
     //================================PUBLIC METHODS========================//
 
     public BayesIm getEstimatedBayesIm() {
-        return this.estimatedBayesIm;
+        return estimatedBayesIm;
     }
 
-    private void estimate(final DataSet DataSet, final BayesPm bayesPm) {
+    private void estimate(DataSet DataSet, BayesPm bayesPm) {
         final double thresh = 0.0001;
 
         //        for (Iterator i = graph.getNodes().iterator(); i.hasNext();) {
@@ -182,11 +182,11 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
         //        }
 
         try {
-            final FactoredBayesStructuralEM estimator =
+            FactoredBayesStructuralEM estimator =
                     new FactoredBayesStructuralEM(DataSet, bayesPm);
-            this.dataSet = estimator.getDataSet();
-            this.estimatedBayesIm = estimator.maximization(thresh);
-        } catch (final ArrayIndexOutOfBoundsException e) {
+            dataSet = estimator.getDataSet();
+            estimatedBayesIm = estimator.maximization(thresh);
+        } catch (ArrayIndexOutOfBoundsException e) {
             e.printStackTrace();
             throw new RuntimeException("Value assignments between Bayes PM " +
                     "and discrete data set do not match.");
@@ -194,7 +194,7 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
     }
 
     public DataSet getDataSet() {
-        return this.dataSet;
+        return dataSet;
     }
 
     /**
@@ -210,7 +210,7 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
@@ -218,30 +218,30 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
 //            throw new NullPointerException();
 //        }
 
-        if (this.estimatedBayesIm == null) {
+        if (estimatedBayesIm == null) {
             throw new NullPointerException();
         }
 
-        if (this.dataSet == null) {
+        if (dataSet == null) {
             throw new NullPointerException();
         }
     }
 
     public Graph getGraph() {
-        return this.estimatedBayesIm.getBayesPm().getDag();
+        return estimatedBayesIm.getBayesPm().getDag();
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
     private void log() {
         TetradLogger.getInstance().log("info", "EM-Estimated Bayes IM");
-        TetradLogger.getInstance().log("im", "" + this.estimatedBayesIm);
+        TetradLogger.getInstance().log("im", "" + estimatedBayesIm);
     }
 }
 

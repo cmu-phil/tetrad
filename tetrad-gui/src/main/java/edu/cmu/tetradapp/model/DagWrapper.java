@@ -46,8 +46,8 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
 
     static final long serialVersionUID = 23L;
     private int numModels = 1;
-    private int modelIndex = 0;
-    private String modelSourceName = null;
+    private int modelIndex;
+    private String modelSourceName;
 
     /**
      * @serial Can be null.
@@ -63,132 +63,132 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
     private Dag graph;
 
     //=============================CONSTRUCTORS==========================//
-    public DagWrapper(final Dag graph) {
+    public DagWrapper(Dag graph) {
         if (graph == null) {
             throw new NullPointerException("Tetrad dag must not be null.");
         }
-        setGraph(graph);
-        this.parameters = new Parameters();
-        log();
+        this.setGraph(graph);
+        parameters = new Parameters();
+        this.log();
     }
 
     // Do not, repeat not, get rid of these params. -jdramsey 7/4/2010
-    public DagWrapper(final Parameters params) {
-        this.parameters = params;
+    public DagWrapper(Parameters params) {
+        parameters = params;
         if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
-            setDag(new Dag());
+            this.setDag(new Dag());
         } else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
             RandomUtil.getInstance().setSeed(new Date().getTime());
-            setDag(new Dag(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), params)));
+            this.setDag(new Dag(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(this.getGraph(), params)));
         }
-        log();
+        this.log();
     }
 
-    public DagWrapper(final GraphSource graphSource, final Parameters parameters) {
+    public DagWrapper(GraphSource graphSource, Parameters parameters) {
         if (graphSource instanceof Simulation) {
-            final Simulation simulation = (Simulation) graphSource;
-            final List<Graph> graphs = simulation.getGraphs();
+            Simulation simulation = (Simulation) graphSource;
+            List<Graph> graphs = simulation.getGraphs();
 
-            this.dags = new ArrayList<>();
+            dags = new ArrayList<>();
 
-            for (final Graph graph : graphs) {
-                this.dags.add(new Dag(graph));
+            for (Graph graph : graphs) {
+                dags.add(new Dag(graph));
             }
 
-            this.numModels = this.dags.size();
-            this.modelIndex = 0;
-            this.modelSourceName = simulation.getName();
+            numModels = dags.size();
+            modelIndex = 0;
+            modelSourceName = simulation.getName();
         } else {
-            setGraph(new EdgeListGraph(graphSource.getGraph()));
+            this.setGraph(new EdgeListGraph(graphSource.getGraph()));
         }
 
-        log();
+        this.log();
     }
 
-    public DagWrapper(final AbstractAlgorithmRunner wrapper) {
+    public DagWrapper(AbstractAlgorithmRunner wrapper) {
         this(new Dag(wrapper.getResultGraph()));
     }
 
-    public DagWrapper(final PcRunner wrapper) {
+    public DagWrapper(PcRunner wrapper) {
         this(new Dag(wrapper.getResultGraph()));
     }
 
-    public DagWrapper(final CcdRunner2 wrapper) {
+    public DagWrapper(CcdRunner2 wrapper) {
         this(new Dag(wrapper.getResultGraph()));
     }
 
-    public DagWrapper(final MimBuildRunner wrapper) {
+    public DagWrapper(MimBuildRunner wrapper) {
         this(new Dag(wrapper.getResultGraph()));
     }
 
-    public DagWrapper(final PurifyRunner wrapper) {
+    public DagWrapper(PurifyRunner wrapper) {
         this(new Dag(wrapper.getResultGraph()));
     }
 
-    public DagWrapper(final BuildPureClustersRunner wrapper) {
+    public DagWrapper(BuildPureClustersRunner wrapper) {
         this(new Dag(wrapper.getResultGraph()));
     }
 
-    public DagWrapper(final MbfsRunner wrapper) {
+    public DagWrapper(MbfsRunner wrapper) {
         this(new Dag(wrapper.getResultGraph()));
     }
 
-    public DagWrapper(final CeFanSearchRunner wrapper) {
+    public DagWrapper(CeFanSearchRunner wrapper) {
         this(new Dag(wrapper.getResultGraph()));
     }
 
-    public DagWrapper(final DataWrapper wrapper) {
+    public DagWrapper(DataWrapper wrapper) {
         if (wrapper instanceof Simulation) {
-            final Simulation simulation = (Simulation) wrapper;
+            Simulation simulation = (Simulation) wrapper;
 
-            final List<Graph> graphs = simulation.getGraphs();
+            List<Graph> graphs = simulation.getGraphs();
 
-            this.dags = new ArrayList<>();
+            dags = new ArrayList<>();
 
-            for (final Graph graph : graphs) {
-                this.dags.add(new Dag(graph));
+            for (Graph graph : graphs) {
+                dags.add(new Dag(graph));
             }
 
-            this.numModels = this.dags.size();
-            this.modelIndex = 0;
-            this.modelSourceName = simulation.getName();
+            numModels = dags.size();
+            modelIndex = 0;
+            modelSourceName = simulation.getName();
         } else {
-            setGraph(new EdgeListGraph(wrapper.getVariables()));
+            this.setGraph(new EdgeListGraph(wrapper.getVariables()));
         }
 
-        GraphUtils.circleLayout(getGraph(), 200, 200, 150);
+        GraphUtils.circleLayout(this.getGraph(), 200, 200, 150);
     }
 
-    public DagWrapper(final BayesPmWrapper wrapper) {
+    public DagWrapper(BayesPmWrapper wrapper) {
         this(new Dag(wrapper.getBayesPm().getDag()));
     }
 
-    public DagWrapper(final BayesImWrapper wrapper) {
+    public DagWrapper(BayesImWrapper wrapper) {
         this(new Dag(wrapper.getBayesIm().getBayesPm().getDag()));
     }
 
-    public DagWrapper(final BayesEstimatorWrapper wrapper) {
+    public DagWrapper(BayesEstimatorWrapper wrapper) {
         this(new Dag(wrapper.getEstimatedBayesIm().getBayesPm().getDag()));
     }
 
-    public DagWrapper(final CptInvariantUpdaterWrapper wrapper) {
+    public DagWrapper(CptInvariantUpdaterWrapper wrapper) {
         this(new Dag(wrapper.getBayesUpdater().getManipulatedGraph()));
     }
 
-    public DagWrapper(final SemPmWrapper wrapper) {
+    public DagWrapper(SemPmWrapper wrapper) {
         this(new Dag(wrapper.getSemPm().getGraph()));
     }
 
-    public DagWrapper(final SemImWrapper wrapper) {
+    public DagWrapper(SemImWrapper wrapper) {
         this(new Dag(wrapper.getSemIm().getSemPm().getGraph()));
     }
 
-    public DagWrapper(final SemEstimatorWrapper wrapper) {
+    public DagWrapper(SemEstimatorWrapper wrapper) {
         this(new Dag(wrapper.getSemEstimator().getEstimatedSem().getSemPm()
                 .getGraph()));
     }
 
-    public DagWrapper(final RegressionRunner wrapper) {
+    public DagWrapper(RegressionRunner wrapper) {
         this(new Dag(wrapper.getResultGraph()));
     }
 
@@ -203,19 +203,19 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
 
     //================================PUBLIC METHODS=======================//
     public Graph getDag() {
-        return this.dags.get(getModelIndex());
+        return dags.get(this.getModelIndex());
     }
 
-    public void setDag(final Dag graph) {
-        this.dags = new ArrayList<>();
-        this.dags.add(graph);
-        log();
+    public void setDag(Dag graph) {
+        dags = new ArrayList<>();
+        dags.add(graph);
+        this.log();
     }
 
     //============================PRIVATE METHODS========================//
     private void log() {
         TetradLogger.getInstance().log("info", "Directed Acyclic Graph (DAG)");
-        TetradLogger.getInstance().log("graph", getGraph() + "");
+        TetradLogger.getInstance().log("graph", this.getGraph() + "");
     }
 
     /**
@@ -231,90 +231,90 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
 
     public Graph getGraph() {
-        return getDag();
+        return this.getDag();
     }
 
     @Override
     public IndependenceTest getIndependenceTest() {
-        return new IndTestDSep(getGraph());
+        return new IndTestDSep(this.getGraph());
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
     public Graph getSourceGraph() {
-        return getGraph();
+        return this.getGraph();
     }
 
     public Graph getResultGraph() {
-        return getGraph();
+        return this.getGraph();
     }
 
     public List<String> getVariableNames() {
-        return getGraph().getNodeNames();
+        return this.getGraph().getNodeNames();
     }
 
     public List<Node> getVariables() {
-        return getGraph().getNodes();
+        return this.getGraph().getNodes();
     }
 
     @Override
     public Map<String, String> getParamSettings() {
-        final Map<String, String> paramSettings = new HashMap<>();
-        paramSettings.put("# Nodes", Integer.toString(getDag().getNumNodes()));
-        paramSettings.put("# Edges", Integer.toString(getDag().getNumEdges()));
+        Map<String, String> paramSettings = new HashMap<>();
+        paramSettings.put("# Nodes", Integer.toString(this.getDag().getNumNodes()));
+        paramSettings.put("# Edges", Integer.toString(this.getDag().getNumEdges()));
         return paramSettings;
     }
 
     @Override
-    public void setAllParamSettings(final Map<String, String> paramSettings) {
-        this.allParamSettings = paramSettings;
+    public void setAllParamSettings(Map<String, String> paramSettings) {
+        allParamSettings = paramSettings;
     }
 
     @Override
     public Map<String, String> getAllParamSettings() {
-        return this.allParamSettings;
+        return allParamSettings;
     }
 
     public Parameters getParameters() {
-        return this.parameters;
+        return parameters;
     }
 
     public int getNumModels() {
-        return this.numModels;
+        return numModels;
     }
 
     public int getModelIndex() {
-        return this.modelIndex;
+        return modelIndex;
     }
 
     public String getModelSourceName() {
-        return this.modelSourceName;
+        return modelSourceName;
     }
 
-    public void setModelIndex(final int modelIndex) {
+    public void setModelIndex(int modelIndex) {
         this.modelIndex = modelIndex;
     }
 
-    public void setGraph(final Graph graph) {
-        this.dags = new ArrayList<>();
-        this.dags.add(new Dag(graph));
+    public void setGraph(Graph graph) {
+        dags = new ArrayList<>();
+        dags.add(new Dag(graph));
     }
 
     public List<Graph> getGraphs() {
-        final List<Graph> graphs = new ArrayList<>();
-        graphs.addAll(this.dags);
+        List<Graph> graphs = new ArrayList<>();
+        graphs.addAll(dags);
         return graphs;
     }
 }

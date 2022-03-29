@@ -41,49 +41,49 @@ public class TestSemEstimator {
 
     @Test
     public void testSet1() {
-        final Graph graph = constructGraph1();
-        final SemPm semPm = new SemPm(graph);
-        final ICovarianceMatrix covMatrix = constructCovMatrix1();
-        final SemEstimator estimator = new SemEstimator(covMatrix, semPm);
+        Graph graph = this.constructGraph1();
+        SemPm semPm = new SemPm(graph);
+        ICovarianceMatrix covMatrix = this.constructCovMatrix1();
+        SemEstimator estimator = new SemEstimator(covMatrix, semPm);
         estimator.estimate();
     }
 
     @Test
     public void testSet2() {
-        final Graph graph = constructGraph2();
-        final SemPm semPm = new SemPm(graph);
-        final ICovarianceMatrix covMatrix = constructCovMatrix2();
+        Graph graph = this.constructGraph2();
+        SemPm semPm = new SemPm(graph);
+        ICovarianceMatrix covMatrix = this.constructCovMatrix2();
         new SemEstimator(covMatrix, semPm);
     }
 
     public void testSet3() {
-        final Graph graph = constructGraph2();
-        final SemPm semPm = new SemPm(graph);
-        final ICovarianceMatrix covMatrix = constructCovMatrix2();
-        final SemEstimator estimator = new SemEstimator(covMatrix, semPm);
+        Graph graph = this.constructGraph2();
+        SemPm semPm = new SemPm(graph);
+        ICovarianceMatrix covMatrix = this.constructCovMatrix2();
+        SemEstimator estimator = new SemEstimator(covMatrix, semPm);
         estimator.estimate();
     }
 
     @Test
     public void testSet8() {
-        final Graph graph = GraphConverter.convert("X1-->X2,X2-->X3,X3-->X4,X4-->X1");
+        Graph graph = GraphConverter.convert("X1-->X2,X2-->X3,X3-->X4,X4-->X1");
 
-        final SemPm pm = new SemPm(graph);
-        final SemIm im = new SemIm(pm);
+        SemPm pm = new SemPm(graph);
+        SemIm im = new SemIm(pm);
 
-        final DataSet data = im.simulateData(1000, false);
+        DataSet data = im.simulateData(1000, false);
 
         new SemEstimator(data, pm, new SemOptimizerPowell()).estimate();
     }
 
     private Graph constructGraph1() {
-        final Graph graph = new EdgeListGraph();
+        Graph graph = new EdgeListGraph();
 
-        final Node x1 = new GraphNode("X1");
-        final Node x2 = new GraphNode("X2");
-        final Node x3 = new GraphNode("X3");
-        final Node x4 = new GraphNode("X4");
-        final Node x5 = new GraphNode("X5");
+        Node x1 = new GraphNode("X1");
+        Node x2 = new GraphNode("X2");
+        Node x3 = new GraphNode("X3");
+        Node x4 = new GraphNode("X4");
+        Node x5 = new GraphNode("X5");
 
         graph.addNode(x1);
         graph.addNode(x2);
@@ -101,26 +101,26 @@ public class TestSemEstimator {
     }
 
     private ICovarianceMatrix constructCovMatrix1() {
-        final String[] vars = new String[]{"X1", "X2", "X3", "X4", "X5"};
-        final double[][] arr = {{1.04408}, {0.80915, 1.55607},
+        String[] vars = {"X1", "X2", "X3", "X4", "X5"};
+        double[][] arr = {{1.04408}, {0.80915, 1.55607},
                 {0.89296, 1.67375, 2.87584},
                 {2.23792, 2.68536, 3.94996, 7.78259},
                 {1.17516, 1.36337, 1.99039, 4.04533, 3.14922}};
 
-        final double[][] m = MatrixUtils.convertLowerTriangleToSymmetric(arr);
-        final Matrix m2 = new Matrix(m);
+        double[][] m = MatrixUtils.convertLowerTriangleToSymmetric(arr);
+        Matrix m2 = new Matrix(m);
         return new CovarianceMatrix(DataUtils.createContinuousVariables(vars), m2, 1000);
     }
 
     private Graph constructGraph2() {
-        final Graph graph = new EdgeListGraph();
+        Graph graph = new EdgeListGraph();
 
-        final Node x1 = new GraphNode("X1");
-        final Node x2 = new GraphNode("X2");
-        final Node x3 = new GraphNode("X3");
-        final Node x4 = new GraphNode("X4");
-        final Node x5 = new GraphNode("X5");
-        final Node x6 = new GraphNode("X6");
+        Node x1 = new GraphNode("X1");
+        Node x2 = new GraphNode("X2");
+        Node x3 = new GraphNode("X3");
+        Node x4 = new GraphNode("X4");
+        Node x5 = new GraphNode("X5");
+        Node x6 = new GraphNode("X6");
 
         graph.addNode(x1);
         graph.addNode(x2);
@@ -141,60 +141,60 @@ public class TestSemEstimator {
 
     @Test
     public void testOptimizer2() {
-        final List<Node> nodes = new ArrayList<>();
+        List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < 5; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        final Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 5,
+        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 5,
                 30, 15, 15, false));
-        final SemPm pm = new SemPm(graph);
-        final SemIm im = new SemIm(pm);
+        SemPm pm = new SemPm(graph);
+        SemIm im = new SemIm(pm);
 
-        final DataSet data = im.simulateData(1000, false);
+        DataSet data = im.simulateData(1000, false);
 
-        final SemIm im2 = new SemIm(pm);
+        SemIm im2 = new SemIm(pm);
         im2.setDataSet(data);
 
-        final SemOptimizer opt = new SemOptimizerPowell();
+        SemOptimizer opt = new SemOptimizerPowell();
 
         opt.optimize(im2);
     }
 
     @Test
     public void testOptimizer3() {
-        final List<Node> nodes = new ArrayList<>();
+        List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < 5; i++) {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        final Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 5,
+        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 5,
                 30, 15, 15, false));
-        final SemPm pm = new SemPm(graph);
-        final SemIm im = new SemIm(pm);
+        SemPm pm = new SemPm(graph);
+        SemIm im = new SemIm(pm);
 
-        final DataSet data = im.simulateData(1000, false);
+        DataSet data = im.simulateData(1000, false);
 
-        final SemIm im2 = new SemIm(pm);
+        SemIm im2 = new SemIm(pm);
         im2.setDataSet(data);
 
-        final SemOptimizer opt = new SemOptimizerPowell();
+        SemOptimizer opt = new SemOptimizerPowell();
 
         opt.optimize(im2);
     }
 
     private ICovarianceMatrix constructCovMatrix2() {
-        final String[] vars = new String[]{"X1", "X2", "X3", "X4", "X5", "X6"};
+        String[] vars = {"X1", "X2", "X3", "X4", "X5", "X6"};
 
-        final double[][] arr = {{0.915736}, {0.636415, 1.446795},
+        double[][] arr = {{0.915736}, {0.636415, 1.446795},
                 {0.596983, 1.289278, 2.202219},
                 {-0.004218, -0.012488, 0.017168, 0.979152},
                 {2.106086, 2.864279, 2.696651, 1.334353, 9.705821},
                 {0.029125, -0.027681, -0.043718, 0.679363, 0.886868, 1.495396}};
 
-        final double[][] m = MatrixUtils.convertLowerTriangleToSymmetric(arr);
+        double[][] m = MatrixUtils.convertLowerTriangleToSymmetric(arr);
 //        TetradMatrix m2 = TetradMatrix.instance(m);
         return new CovarianceMatrix(DataUtils.createContinuousVariables(vars), new Matrix(m),
                 1000);

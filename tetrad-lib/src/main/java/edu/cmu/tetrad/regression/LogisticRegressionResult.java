@@ -116,9 +116,9 @@ public class LogisticRegressionResult implements TetradSerializable {
      * @param probs         the array of P-values for the regression
      *                      coefficients.
      */
-    private LogisticRegressionResult(final String target, final String[] variableNames, final double[] xMeans, final double[] xStdDevs,
-                                     final int numRegressors, final int ny0, final int ny1, final double[] coefs,
-                                     final double[] stdErrs, final double[] probs, final double intercept, final String result, final double logLikelihood) {
+    private LogisticRegressionResult(String target, String[] variableNames, double[] xMeans, double[] xStdDevs,
+                                     int numRegressors, int ny0, int ny1, double[] coefs,
+                                     double[] stdErrs, double[] probs, double intercept, String result, double logLikelihood) {
 
 
         if (variableNames.length != numRegressors) {
@@ -167,7 +167,7 @@ public class LogisticRegressionResult implements TetradSerializable {
      * Generates a simple exemplar of this class to test serialization.
      */
     public static LogisticRegressionResult serializableInstance() {
-        final double[] values = new double[]{1.0, 2.0};
+        double[] values = {1.0, 2.0};
         return new LogisticRegressionResult("X1", new String[]{"X2"}, values, values, 1, 2, 3,
                 values, values, values, 1.5, "", 0.0);
     }
@@ -175,90 +175,90 @@ public class LogisticRegressionResult implements TetradSerializable {
     //================================== Public Methods =======================================//
 
     public String getTarget() {
-        return this.target;
+        return target;
     }
 
     public double getIntercept() {
-        return this.intercept;
+        return intercept;
     }
 
     /**
      * @return the number of regressors.
      */
     public int getNumRegressors() {
-        return this.numRegressors;
+        return numRegressors;
     }
 
     /**
      * @return the number of cases with target = 0.
      */
     public int getNy0() {
-        return this.ny0;
+        return ny0;
     }
 
     /**
      * @return the number of cases with target = 1.
      */
     public int getNy1() {
-        return this.ny1;
+        return ny1;
     }
 
     /**
      * @return the total number of cases.
      */
     public int getnCases() {
-        return this.ny0 + this.ny1;
+        return ny0 + ny1;
     }
 
     /**
      * @return the array of strings containing the variable names.
      */
     public String[] getVariableNames() {
-        return this.variableNames;
+        return variableNames;
     }
 
     /**
      * @return the array of regression coeffients.
      */
     public double[] getCoefs() {
-        return this.coefs;
+        return coefs;
     }
 
     /**
      * @return the array of coefT-statistics for the regression coefficients.
      */
     public double[] getStdErrs() {
-        return this.stdErrs;
+        return stdErrs;
     }
 
     /**
      * @return the array of coefP-values for the regression coefficients.
      */
     public double[] getProbs() {
-        return this.probs;
+        return probs;
     }
 
     public String[] getVarNames() {
-        return this.variableNames;
+        return variableNames;
     }
 
     public String toString() {
-        return this.result;
+        return result;
     }
 
     public double[] getxMeans() {
-        return this.xMeans;
+        return xMeans;
     }
 
     public double[] getxStdDevs() {
-        return this.xStdDevs;
+        return xStdDevs;
     }
 
     /**
      * @return -2LogLiklihood
      */
     public double getLogLikelihood() {
-        return this.logLikelihood;
+        return logLikelihood;
     }
 
     /**
@@ -274,31 +274,31 @@ public class LogisticRegressionResult implements TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-        if (this.xMeans == null) {
+        if (xMeans == null) {
             throw new NullPointerException();
         }
-        if (this.xStdDevs == null) {
+        if (xStdDevs == null) {
             throw new NullPointerException();
         }
-        if (this.variableNames == null) {
+        if (variableNames == null) {
             throw new NullPointerException();
         }
-        if (this.coefs == null) {
+        if (coefs == null) {
             throw new NullPointerException();
         }
-        if (this.stdErrs == null) {
+        if (stdErrs == null) {
             throw new NullPointerException();
         }
-        if (this.probs == null) {
+        if (probs == null) {
             throw new NullPointerException();
         }
-        if (this.result == null) {
+        if (result == null) {
             throw new NullPointerException();
         }
-        if (this.target == null) {
+        if (target == null) {
             throw new NullPointerException();
         }
 

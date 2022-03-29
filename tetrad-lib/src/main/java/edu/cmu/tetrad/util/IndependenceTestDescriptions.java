@@ -48,29 +48,29 @@ public final class IndependenceTestDescriptions {
     private final Map<String, String> descriptions = new HashMap<>();
 
     private IndependenceTestDescriptions() {
-        try (final InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("manual/index.html")) {
-            final Document doc = Jsoup.parse(inputStream, StandardCharsets.UTF_8.name(), "");
-            getShortNames().forEach(shortName -> {
-                final Element element = doc.getElementById(shortName);
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("manual/index.html")) {
+            Document doc = Jsoup.parse(inputStream, StandardCharsets.UTF_8.name(), "");
+            this.getShortNames().forEach(shortName -> {
+                Element element = doc.getElementById(shortName);
                 if (element != null) {
-                    final Elements paragraphs = element.children();
-                    final String desc = paragraphs.stream()
+                    Elements paragraphs = element.children();
+                    String desc = paragraphs.stream()
                             .map(p -> p.text().trim())
                             .collect(Collectors.joining("\n"));
-                    this.descriptions.put(shortName, desc);
+                    descriptions.put(shortName, desc);
                 }
             });
-        } catch (final IOException ex) {
-            IndependenceTestDescriptions.LOGGER.error("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.", ex);
+        } catch (IOException ex) {
+            LOGGER.error("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.", ex);
         }
     }
 
     public static IndependenceTestDescriptions getInstance() {
-        return IndependenceTestDescriptions.INSTANCE;
+        return INSTANCE;
     }
 
-    public String get(final String shortName) {
-        final String description = this.descriptions.get(shortName);
+    public String get(String shortName) {
+        String description = descriptions.get(shortName);
 
         return (description == null)
                 ? String.format("Please add a description for %s.", shortName)

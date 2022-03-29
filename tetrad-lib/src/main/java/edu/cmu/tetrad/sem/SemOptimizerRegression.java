@@ -64,35 +64,35 @@ public class SemOptimizerRegression implements SemOptimizer {
     /**
      * Fit the freeParameters by doing local regressions.
      */
-    public void optimize(final SemIm semIm) {
-        if (this.numRestarts != 1) {
+    public void optimize(SemIm semIm) {
+        if (numRestarts != 1) {
             throw new IllegalArgumentException("Number of restarts must be 1 for this method.");
         }
 
-        final Matrix covar = semIm.getSampleCovar();
+        Matrix covar = semIm.getSampleCovar();
 
         if (covar == null) {
             throw new NullPointerException("Sample covar has not been set.");
         }
 
-        final SemGraph graph = semIm.getSemPm().getGraph();
-        final List<Node> nodes = graph.getNodes();
+        SemGraph graph = semIm.getSemPm().getGraph();
+        List<Node> nodes = graph.getNodes();
 
 //        TetradLogger.getInstance().log("info", "FML = " + semIm.getScore());
 
-        for (final Node node : nodes) {
+        for (Node node : nodes) {
             if (node.getNodeType() != NodeType.MEASURED) {
                 continue;
             }
 
             if (!graph.isParameterizable(node)) continue;
 
-            final int idx = nodes.indexOf(node);
-            final List<Node> parents = graph.getParents(node);
+            int idx = nodes.indexOf(node);
+            List<Node> parents = graph.getParents(node);
 //            Node errorParent = node;
 
             for (int i = 0; i < parents.size(); i++) {
-                final Node nextParent = parents.get(i);
+                Node nextParent = parents.get(i);
                 if (nextParent.getNodeType() == NodeType.ERROR) {
 //                    errorParent = nextParent;
                     parents.remove(nextParent);
@@ -103,25 +103,25 @@ public class SemOptimizerRegression implements SemOptimizer {
             double variance = covar.get(idx, idx);
 
             if (parents.size() > 0) {
-                final Vector nodeParentsCov = new Vector(parents.size());
-                final Matrix parentsCov = new Matrix(parents.size(), parents.size());
+                Vector nodeParentsCov = new Vector(parents.size());
+                Matrix parentsCov = new Matrix(parents.size(), parents.size());
 
                 for (int i = 0; i < parents.size(); i++) {
-                    final int idx2 = nodes.indexOf(parents.get(i));
+                    int idx2 = nodes.indexOf(parents.get(i));
                     nodeParentsCov.set(i, covar.get(idx, idx2));
 
                     for (int j = i; j < parents.size(); j++) {
-                        final int idx3 = nodes.indexOf(parents.get(j));
+                        int idx3 = nodes.indexOf(parents.get(j));
                         parentsCov.set(i, j, covar.get(idx2, idx3));
                         parentsCov.set(j, i, covar.get(idx2, idx3));
                     }
                 }
 
-                final Vector b = parentsCov.inverse().times(nodeParentsCov);
+                Vector b = parentsCov.inverse().times(nodeParentsCov);
                 variance -= nodeParentsCov.dotProduct(b);
 
                 for (int i = 0; i < b.size(); i++) {
-                    final int idx2 = nodes.indexOf(parents.get(i));
+                    int idx2 = nodes.indexOf(parents.get(i));
                     semIm.setParamValue(nodes.get(idx2), node, b.get(i));
                 }
             }
@@ -133,13 +133,13 @@ public class SemOptimizerRegression implements SemOptimizer {
     }
 
     @Override
-    public void setNumRestarts(final int numRestarts) {
+    public void setNumRestarts(int numRestarts) {
         this.numRestarts = numRestarts;
     }
 
     @Override
     public int getNumRestarts() {
-        return this.numRestarts;
+        return numRestarts;
     }
 
     public String toString() {

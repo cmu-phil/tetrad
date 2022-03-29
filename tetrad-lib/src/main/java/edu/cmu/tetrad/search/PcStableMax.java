@@ -77,13 +77,13 @@ public class PcStableMax implements GraphSearch {
     /**
      * The initial graph for the Fast Adjacency Search, or null if there is none.
      */
-    private Graph externalGraph = null;
+    private Graph externalGraph;
 
     /**
      * True if verbose output should be printed.
      */
-    private boolean verbose = false;
-    private boolean useHeuristic = false;
+    private boolean verbose;
+    private boolean useHeuristic;
     private int maxPathLength;
 
     //=============================CONSTRUCTORS==========================//
@@ -94,7 +94,7 @@ public class PcStableMax implements GraphSearch {
      * @param independenceTest The oracle for conditional independence facts. This does not make a copy of the
      *                         independence test, for fear of duplicating the data set!
      */
-    public PcStableMax(final IndependenceTest independenceTest) {
+    public PcStableMax(IndependenceTest independenceTest) {
         if (independenceTest == null) {
             throw new NullPointerException();
         }
@@ -108,20 +108,20 @@ public class PcStableMax implements GraphSearch {
      * @return the independence test being used in the search.
      */
     public IndependenceTest getIndependenceTest() {
-        return this.independenceTest;
+        return independenceTest;
     }
 
     /**
      * @return the knowledge specification used in the search. Non-null.
      */
     public IKnowledge getKnowledge() {
-        return this.knowledge;
+        return knowledge;
     }
 
     /**
      * Sets the knowledge specification to be used in the search. May not be null.
      */
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -134,7 +134,7 @@ public class PcStableMax implements GraphSearch {
      * independence checked.
      */
     public int getDepth() {
-        return this.depth;
+        return depth;
     }
 
     /**
@@ -145,7 +145,7 @@ public class PcStableMax implements GraphSearch {
      *              should be high (1000). A value of Integer.MAX_VALUE may not be used, due to a bug on multi-core
      *              machines.
      */
-    public void setDepth(final int depth) {
+    public void setDepth(int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException("Depth must be -1 or >= 0: " + depth);
         }
@@ -161,113 +161,113 @@ public class PcStableMax implements GraphSearch {
      * Runs PC search, returning the output CPDAG.
      */
     public Graph search() {
-        return search(this.independenceTest.getVariables());
+        return this.search(independenceTest.getVariables());
     }
 
     /**
      * Runs PC search, returning the output CPDAG, over the given nodes.
      */
-    public Graph search(final List<Node> nodes) {
-        this.logger.log("info", "Starting PC algorithm");
-        this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
+    public Graph search(List<Node> nodes) {
+        logger.log("info", "Starting PC algorithm");
+        logger.log("info", "Independence test = " + this.getIndependenceTest() + ".");
 
-        final long startTime = System.currentTimeMillis();
+        long startTime = System.currentTimeMillis();
 
-        if (getIndependenceTest() == null) {
+        if (this.getIndependenceTest() == null) {
             throw new NullPointerException();
         }
 
-        final List<Node> allNodes = getIndependenceTest().getVariables();
+        List<Node> allNodes = this.getIndependenceTest().getVariables();
 
         if (!allNodes.containsAll(nodes)) {
             throw new IllegalArgumentException("All of the given nodes must " +
                     "be in the domain of the independence test provided.");
         }
 
-        final Fas fas = new Fas(getIndependenceTest());
+        Fas fas = new Fas(this.getIndependenceTest());
         fas.setStable(true);
-        fas.setKnowledge(getKnowledge());
-        fas.setDepth(getDepth());
-        fas.setVerbose(this.verbose);
+        fas.setKnowledge(this.getKnowledge());
+        fas.setDepth(this.getDepth());
+        fas.setVerbose(verbose);
 //        fas.setRecordSepsets(false);
-        this.graph = fas.search();
+        graph = fas.search();
 
-        SearchGraphUtils.pcOrientbk(this.knowledge, this.graph, nodes);
+        SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
 
-        final OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(this.independenceTest);
-        orientCollidersMaxP.setKnowledge(this.knowledge);
-        orientCollidersMaxP.setUseHeuristic(this.useHeuristic);
-        orientCollidersMaxP.setMaxPathLength(this.maxPathLength);
-        orientCollidersMaxP.orient(this.graph);
+        OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(independenceTest);
+        orientCollidersMaxP.setKnowledge(knowledge);
+        orientCollidersMaxP.setUseHeuristic(useHeuristic);
+        orientCollidersMaxP.setMaxPathLength(maxPathLength);
+        orientCollidersMaxP.orient(graph);
 
-        final MeekRules rules = new MeekRules();
-        rules.setKnowledge(this.knowledge);
-        rules.orientImplied(this.graph);
+        MeekRules rules = new MeekRules();
+        rules.setKnowledge(knowledge);
+        rules.orientImplied(graph);
 
-        this.logger.log("graph", "\nReturning this graph: " + this.graph);
+        logger.log("graph", "\nReturning this graph: " + graph);
 
-        this.elapsedTime = System.currentTimeMillis() - startTime;
+        elapsedTime = System.currentTimeMillis() - startTime;
 
-        this.logger.log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
-        this.logger.log("info", "Finishing PC Algorithm.");
-        this.logger.flush();
+        logger.log("info", "Elapsed time = " + (elapsedTime) / 1000. + " s");
+        logger.log("info", "Finishing PC Algorithm.");
+        logger.flush();
 
-        return this.graph;
+        return graph;
     }
 
     /**
      * @return the elapsed time of the search, in milliseconds.
      */
     public long getElapsedTime() {
-        return this.elapsedTime;
+        return elapsedTime;
     }
 
     public Set<Edge> getAdjacencies() {
-        final Set<Edge> adjacencies = new HashSet<>();
-        for (final Edge edge : this.graph.getEdges()) {
+        Set<Edge> adjacencies = new HashSet<>();
+        for (Edge edge : graph.getEdges()) {
             adjacencies.add(edge);
         }
         return adjacencies;
     }
 
     public Set<Edge> getNonadjacencies() {
-        final Graph complete = GraphUtils.completeGraph(this.graph);
-        final Set<Edge> nonAdjacencies = complete.getEdges();
-        final Graph undirected = GraphUtils.undirectedGraph(this.graph);
+        Graph complete = GraphUtils.completeGraph(graph);
+        Set<Edge> nonAdjacencies = complete.getEdges();
+        Graph undirected = GraphUtils.undirectedGraph(graph);
         nonAdjacencies.removeAll(undirected.getEdges());
         return new HashSet<>(nonAdjacencies);
     }
 
     public List<Node> getNodes() {
-        return this.graph.getNodes();
+        return graph.getNodes();
     }
 
-    public void setExternalGraph(final Graph externalGraph) {
+    public void setExternalGraph(Graph externalGraph) {
         this.externalGraph = externalGraph;
     }
 
     public boolean isVerbose() {
-        return this.verbose;
+        return verbose;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
-    public void setUseHeuristic(final boolean useHeuristic) {
+    public void setUseHeuristic(boolean useHeuristic) {
         this.useHeuristic = useHeuristic;
     }
 
     public boolean isUseHeuristic() {
-        return this.useHeuristic;
+        return useHeuristic;
     }
 
-    public void setMaxPathLength(final int maxPathLength) {
+    public void setMaxPathLength(int maxPathLength) {
         this.maxPathLength = maxPathLength;
     }
 
     public int getMaxPathLength() {
-        return this.maxPathLength;
+        return maxPathLength;
     }
 }
 

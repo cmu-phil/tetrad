@@ -47,23 +47,23 @@ public class TetradInternalFrame extends JInternalFrame {
      *
      * @param title the title of the frame.
      */
-    public TetradInternalFrame(final String title) {
+    public TetradInternalFrame(String title) {
         super(title, false, true, false, false);
-        final Image image = ImageUtils.getImage(this, "tyler16.png");
-        setFrameIcon(new ImageIcon(image));
+        Image image = ImageUtils.getImage(this, "tyler16.png");
+        this.setFrameIcon(new ImageIcon(image));
 
-        super.setDefaultCloseOperation(JInternalFrame.DO_NOTHING_ON_CLOSE);
-        addInternalFrameListener(new InternalFrameAdapter() {
+        setDefaultCloseOperation(JInternalFrame.DO_NOTHING_ON_CLOSE);
+        this.addInternalFrameListener(new InternalFrameAdapter() {
 
             /**
              * Throws up a warning dialog and then closes the frame if the user
              * says to.  Otherwise ignores the attempt.
              */
-            public void internalFrameClosing(final InternalFrameEvent e) {
-                final ActionEvent e2 = new ActionEvent(e.getSource(),
+            public void internalFrameClosing(InternalFrameEvent e) {
+                ActionEvent e2 = new ActionEvent(e.getSource(),
                         ActionEvent.ACTION_PERFORMED, "FrameClosing");
 
-                final CloseSessionAction closeSessionAction =
+                CloseSessionAction closeSessionAction =
                         new CloseSessionAction();
                 closeSessionAction.actionPerformed(e2);
             }

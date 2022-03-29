@@ -38,13 +38,13 @@ public final class TestUpdatedBayesIm {
 
     @Test
     public void testCompound() {
-        final Node x0Node = new GraphNode("X0");
-        final Node x1Node = new GraphNode("X1");
-        final Node x2Node = new GraphNode("X2");
-        final Node x3Node = new GraphNode("X3");
-        final Node x4Node = new GraphNode("X4");
+        Node x0Node = new GraphNode("X0");
+        Node x1Node = new GraphNode("X1");
+        Node x2Node = new GraphNode("X2");
+        Node x3Node = new GraphNode("X3");
+        Node x4Node = new GraphNode("X4");
 
-        final Dag graph = new Dag();
+        Dag graph = new Dag();
         graph.addNode(x0Node);
         graph.addNode(x1Node);
         graph.addNode(x2Node);
@@ -58,37 +58,37 @@ public final class TestUpdatedBayesIm {
         graph.addDirectedEdge(x4Node, x0Node);
         graph.addDirectedEdge(x4Node, x2Node);
 
-        final BayesPm bayesPm = new BayesPm(graph);
-        final MlBayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+        BayesPm bayesPm = new BayesPm(graph);
+        MlBayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
 
-        final UpdatedBayesIm updatedIm1 = new UpdatedBayesIm(bayesIm);
+        UpdatedBayesIm updatedIm1 = new UpdatedBayesIm(bayesIm);
         assertEquals(bayesIm, updatedIm1);
 
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 5; j++) {
-                final Evidence evidence1 = updatedIm1.getEvidence();
+                Evidence evidence1 = updatedIm1.getEvidence();
                 evidence1.getProposition().disallowComplement(i, 0);
-                final UpdatedBayesIm updatedIm2 =
+                UpdatedBayesIm updatedIm2 =
                         new UpdatedBayesIm(updatedIm1, evidence1);
 
-                final Evidence evidence2 = updatedIm2.getEvidence();
+                Evidence evidence2 = updatedIm2.getEvidence();
                 evidence2.getProposition().setToTautology();
                 evidence2.getProposition().disallowComplement(j, 0);
 
-                final CptInvariantMarginalCalculator marginals1 =
+                CptInvariantMarginalCalculator marginals1 =
                         new CptInvariantMarginalCalculator(updatedIm2,
                                 evidence2);
-                final double marginal1 = marginals1.getMarginal(0, 0);
+                double marginal1 = marginals1.getMarginal(0, 0);
 
-                final Evidence evidence3 = updatedIm1.getEvidence();
+                Evidence evidence3 = updatedIm1.getEvidence();
                 evidence3.getProposition().disallowComplement(i, 0);
                 evidence3.getProposition().disallowComplement(j, 0);
 
-                final CptInvariantMarginalCalculator marginals2 =
+                CptInvariantMarginalCalculator marginals2 =
                         new CptInvariantMarginalCalculator(updatedIm1,
                                 evidence3);
 
-                final double marginal2 = marginals2.getMarginal(0, 0);
+                double marginal2 = marginals2.getMarginal(0, 0);
 
                 assertEquals(marginal1, marginal2, 1.0e-2);
             }

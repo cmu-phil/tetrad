@@ -41,20 +41,20 @@ public class TestIndependenceFact {
     @Test
     public void testSimpleCase() {
 
-        final Node x = new GraphNode("X");
-        final Node y = new GraphNode("Y");
-        final Node w = new GraphNode("W");
+        Node x = new GraphNode("X");
+        Node y = new GraphNode("Y");
+        Node w = new GraphNode("W");
 
-        final IndependenceFact fact1 = new IndependenceFact(x, y);
-        final IndependenceFact fact2 = new IndependenceFact(y, x);
+        IndependenceFact fact1 = new IndependenceFact(x, y);
+        IndependenceFact fact2 = new IndependenceFact(y, x);
 
         assertEquals(fact1, fact2);
 
-        final IndependenceFact fact3 = new IndependenceFact(x, w);
+        IndependenceFact fact3 = new IndependenceFact(x, w);
 
         assertNotEquals(fact1, fact3);
 
-        final List<IndependenceFact> facts = new ArrayList<>();
+        List<IndependenceFact> facts = new ArrayList<>();
 
         facts.add(fact1);
 

@@ -31,8 +31,8 @@ public class RevealOutputGraph implements OutputGraph {
     String[] names;
     String graphName;
 
-    public RevealOutputGraph(final int ngenes, final int[][] parents, final int[][] lags,
-                             final String[] names, final String graphName) {
+    public RevealOutputGraph(int ngenes, int[][] parents, int[][] lags,
+                             String[] names, String graphName) {
         this.ngenes = ngenes;
         this.parents = parents;
         this.lags = lags;
@@ -41,23 +41,23 @@ public class RevealOutputGraph implements OutputGraph {
     }
 
     public int getSize() {
-        return this.ngenes;
+        return ngenes;
     }
 
-    public int[] getParents(final int index) {
-        return this.parents[index];
+    public int[] getParents(int index) {
+        return parents[index];
     }
 
-    public int[] getLags(final int index) {
-        return this.lags[index];
+    public int[] getLags(int index) {
+        return lags[index];
     }
 
-    public String getNodeName(final int index) {
-        return this.names[index];
+    public String getNodeName(int index) {
+        return names[index];
     }
 
     public String getGraphName() {
-        return this.graphName;
+        return graphName;
     }
 }
 

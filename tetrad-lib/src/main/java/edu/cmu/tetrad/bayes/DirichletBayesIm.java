@@ -151,7 +151,7 @@ public final class DirichletBayesIm implements BayesIm {
      *                                  permutation of the nodes contained in the bayes parametric model
      *                                  provided.
      */
-    private DirichletBayesIm(final BayesPm bayesPm) throws IllegalArgumentException {
+    private DirichletBayesIm(BayesPm bayesPm) throws IllegalArgumentException {
         this(bayesPm, null, Double.NaN);
     }
 
@@ -177,8 +177,8 @@ public final class DirichletBayesIm implements BayesIm {
      *                                  permutation of the nodes contained in the bayes parametric model
      *                                  provided.
      */
-    private DirichletBayesIm(final BayesPm bayesPm, final DirichletBayesIm oldBayesIm,
-                             final double symmetricAlpha) throws IllegalArgumentException {
+    private DirichletBayesIm(BayesPm bayesPm, DirichletBayesIm oldBayesIm,
+                             double symmetricAlpha) throws IllegalArgumentException {
         if (bayesPm == null) {
             throw new NullPointerException("BayesPm must not be null.");
         }
@@ -188,16 +188,16 @@ public final class DirichletBayesIm implements BayesIm {
         // Get the nodes from the BayesPm, fixing on an order. (This is
         // important; the nodes must always be in the same order for this
         // DirichletBayesIm.)
-        final Graph graph = bayesPm.getDag();
-        this.nodes = new Node[graph.getNumNodes()];
-        final Iterator<Node> it = graph.getNodes().iterator();
+        Graph graph = bayesPm.getDag();
+        nodes = new Node[graph.getNumNodes()];
+        Iterator<Node> it = graph.getNodes().iterator();
 
-        for (int i = 0; i < this.nodes.length; i++) {
-            this.nodes[i] = it.next();
+        for (int i = 0; i < nodes.length; i++) {
+            nodes[i] = it.next();
         }
 
         // Initialize.
-        initialize(oldBayesIm, symmetricAlpha);
+        this.initialize(oldBayesIm, symmetricAlpha);
     }
 
     /**
@@ -215,7 +215,7 @@ public final class DirichletBayesIm implements BayesIm {
      *                                  permutation of the nodes contained in the bayes parametric model
      *                                  provided.
      */
-    private DirichletBayesIm(final BayesPm bayesPm, final double symmetricAlpha)
+    private DirichletBayesIm(BayesPm bayesPm, double symmetricAlpha)
             throws IllegalArgumentException {
         this(bayesPm, null, symmetricAlpha);
     }
@@ -223,34 +223,34 @@ public final class DirichletBayesIm implements BayesIm {
     /**
      * Copy constructor.
      */
-    public DirichletBayesIm(final DirichletBayesIm dirichletBayesIm)
+    public DirichletBayesIm(DirichletBayesIm dirichletBayesIm)
             throws IllegalArgumentException {
         if (dirichletBayesIm == null) {
             throw new NullPointerException(
                     "DirichletBayesIm must not be null.");
         }
 
-        this.bayesPm = dirichletBayesIm.getBayesPm();
-        this.nextRowTotal = dirichletBayesIm.nextRowTotal;
+        bayesPm = dirichletBayesIm.getBayesPm();
+        nextRowTotal = dirichletBayesIm.nextRowTotal;
 
         // Get the nodes from the BayesPm, fixing on an order. (This is
         // important; the nodes must always be in the same order for this
         // DirichletBayesIm.)
-        this.nodes = new Node[dirichletBayesIm.getNumNodes()];
+        nodes = new Node[dirichletBayesIm.getNumNodes()];
         for (int i = 0; i < dirichletBayesIm.getNumNodes(); i++) {
-            this.nodes[i] = dirichletBayesIm.getNode(i);
+            nodes[i] = dirichletBayesIm.getNode(i);
         }
 
         // Copy all the old values over.
-        initialize(dirichletBayesIm, Double.NaN);
+        this.initialize(dirichletBayesIm, Double.NaN);
     }
 
-    public static DirichletBayesIm blankDirichletIm(final BayesPm bayesPm) {
+    public static DirichletBayesIm blankDirichletIm(BayesPm bayesPm) {
         return new DirichletBayesIm(bayesPm);
     }
 
-    public static DirichletBayesIm symmetricDirichletIm(final BayesPm bayesPm,
-                                                        final double symmetricAlpha) {
+    public static DirichletBayesIm symmetricDirichletIm(BayesPm bayesPm,
+                                                        double symmetricAlpha) {
         return new DirichletBayesIm(bayesPm, symmetricAlpha);
     }
 
@@ -258,7 +258,7 @@ public final class DirichletBayesIm implements BayesIm {
      * Generates a simple exemplar of this class to test serialization.
      */
     public static DirichletBayesIm serializableInstance() {
-        return DirichletBayesIm.blankDirichletIm(BayesPm.serializableInstance());
+        return blankDirichletIm(BayesPm.serializableInstance());
     }
 
     //===============================PUBLIC METHODS========================//
@@ -267,16 +267,16 @@ public final class DirichletBayesIm implements BayesIm {
      * @return this PM.
      */
     public BayesPm getBayesPm() {
-        return this.bayesPm;
+        return bayesPm;
     }
 
     /**
      * @return the index of the node with the given name in the specified
      * DirichletBayesIm.
      */
-    public int getCorrespondingNodeIndex(final int nodeIndex, final BayesIm otherBayesIm) {
-        final String nodeName = getNode(nodeIndex).getName();
-        final Node oldNode = otherBayesIm.getNode(nodeName);
+    public int getCorrespondingNodeIndex(int nodeIndex, BayesIm otherBayesIm) {
+        String nodeName = this.getNode(nodeIndex).getName();
+        Node oldNode = otherBayesIm.getNode(nodeName);
         return otherBayesIm.getNodeIndex(oldNode);
     }
 
@@ -284,7 +284,7 @@ public final class DirichletBayesIm implements BayesIm {
      * @return the DAG.
      */
     public Graph getDag() {
-        return this.bayesPm.getDag();
+        return bayesPm.getDag();
     }
 
     /**
@@ -292,22 +292,22 @@ public final class DirichletBayesIm implements BayesIm {
      * be set before calling a randomize method. The default value is 100.
      */
     private double getNextRowTotal() {
-        return this.nextRowTotal;
+        return nextRowTotal;
     }
 
     /**
      * @return this node.
      */
-    public Node getNode(final int nodeIndex) {
-        return this.nodes[nodeIndex];
+    public Node getNode(int nodeIndex) {
+        return nodes[nodeIndex];
     }
 
     /**
      * @param name the name of the node.
      * @return the node.
      */
-    public Node getNode(final String name) {
-        return getDag().getNode(name);
+    public Node getNode(String name) {
+        return this.getDag().getNode(name);
     }
 
     /**
@@ -315,9 +315,9 @@ public final class DirichletBayesIm implements BayesIm {
      * @return the index for that node, or -1 if the node is not in the
      * DirichletBayesIm.
      */
-    public int getNodeIndex(final Node node) {
-        for (int i = 0; i < this.nodes.length; i++) {
-            if (node == this.nodes[i]) {
+    public int getNodeIndex(Node node) {
+        for (int i = 0; i < nodes.length; i++) {
+            if (node == nodes[i]) {
                 return i;
             }
         }
@@ -329,23 +329,23 @@ public final class DirichletBayesIm implements BayesIm {
      * @return this number.
      * @see #getNumRows
      */
-    public int getNumColumns(final int nodeIndex) {
-        return this.pseudocounts[nodeIndex][0].length;
+    public int getNumColumns(int nodeIndex) {
+        return pseudocounts[nodeIndex][0].length;
     }
 
     /**
      * @return the number of nodes in the model.
      */
     public int getNumNodes() {
-        return this.nodes.length;
+        return nodes.length;
     }
 
     /**
      * @param nodeIndex the given node.
      * @return the number of parents for this node.
      */
-    public int getNumParents(final int nodeIndex) {
-        return this.parents[nodeIndex].length;
+    public int getNumParents(int nodeIndex) {
+        return parents[nodeIndex].length;
     }
 
     /**
@@ -353,31 +353,31 @@ public final class DirichletBayesIm implements BayesIm {
      * @see #getRowIndex
      * @see #getNumColumns
      */
-    public int getNumRows(final int nodeIndex) {
-        return this.pseudocounts[nodeIndex].length;
+    public int getNumRows(int nodeIndex) {
+        return pseudocounts[nodeIndex].length;
     }
 
     /**
      * @return the given parent of the given node.
      */
-    public int getParent(final int nodeIndex, final int parentIndex) {
-        return this.parents[nodeIndex][parentIndex];
+    public int getParent(int nodeIndex, int parentIndex) {
+        return parents[nodeIndex][parentIndex];
     }
 
     /**
      * @return the dimension of the given parent for the given node.
      */
-    public int getParentDim(final int nodeIndex, final int parentIndex) {
-        return this.parentDims[nodeIndex][parentIndex];
+    public int getParentDim(int nodeIndex, int parentIndex) {
+        return parentDims[nodeIndex][parentIndex];
     }
 
     /**
      * @return this array of parent dimensions.
      * @see #getParents
      */
-    public int[] getParentDims(final int nodeIndex) {
-        final int[] dims = this.parentDims[nodeIndex];
-        final int[] copy = new int[dims.length];
+    public int[] getParentDims(int nodeIndex) {
+        int[] dims = parentDims[nodeIndex];
+        int[] copy = new int[dims.length];
         System.arraycopy(dims, 0, copy, 0, dims.length);
         return copy;
     }
@@ -387,9 +387,9 @@ public final class DirichletBayesIm implements BayesIm {
      * a given node in the order in which they are stored internally.
      * @see #getParentDims
      */
-    public int[] getParents(final int nodeIndex) {
-        final int[] nodeParents = this.parents[nodeIndex];
-        final int[] copy = new int[nodeParents.length];
+    public int[] getParents(int nodeIndex) {
+        int[] nodeParents = parents[nodeIndex];
+        int[] copy = new int[nodeParents.length];
         System.arraycopy(nodeParents, 0, copy, 0, nodeParents.length);
         return copy;
     }
@@ -398,8 +398,8 @@ public final class DirichletBayesIm implements BayesIm {
      * @return the value in the probability table for the given node, at the
      * given row and column.
      */
-    public int getParentValue(final int nodeIndex, final int rowIndex, final int colIndex) {
-        return getParentValues(nodeIndex, rowIndex)[colIndex];
+    public int getParentValue(int nodeIndex, int rowIndex, int colIndex) {
+        return this.getParentValues(nodeIndex, rowIndex)[colIndex];
     }
 
     /**
@@ -410,9 +410,9 @@ public final class DirichletBayesIm implements BayesIm {
      * @see #getNodeIndex
      * @see #getRowIndex
      */
-    public int[] getParentValues(final int nodeIndex, int rowIndex) {
-        final int[] dims = getParentDims(nodeIndex);
-        final int[] values = new int[dims.length];
+    public int[] getParentValues(int nodeIndex, int rowIndex) {
+        int[] dims = this.getParentDims(nodeIndex);
+        int[] values = new int[dims.length];
 
         for (int i = dims.length - 1; i >= 0; i--) {
             values[i] = rowIndex % dims[i];
@@ -432,10 +432,10 @@ public final class DirichletBayesIm implements BayesIm {
      * @see #getNodeIndex
      * @see #getRowIndex
      */
-    public double getProbability(final int nodeIndex, final int rowIndex, final int colIndex) {
-        final double parameterPseudocount
-                = getPseudocount(nodeIndex, rowIndex, colIndex);
-        final double rowPseudocount = getRowPseudocount(nodeIndex, rowIndex);
+    public double getProbability(int nodeIndex, int rowIndex, int colIndex) {
+        double parameterPseudocount
+                = this.getPseudocount(nodeIndex, rowIndex, colIndex);
+        double rowPseudocount = this.getRowPseudocount(nodeIndex, rowIndex);
 
         if (parameterPseudocount < 0.0) {
             return Double.NaN;
@@ -444,8 +444,8 @@ public final class DirichletBayesIm implements BayesIm {
         }
     }
 
-    public double getPseudocount(final int nodeIndex, final int rowIndex, final int colIndex) {
-        return this.pseudocounts[nodeIndex][rowIndex][colIndex];
+    public double getPseudocount(int nodeIndex, int rowIndex, int colIndex) {
+        return pseudocounts[nodeIndex][rowIndex][colIndex];
     }
 
     /**
@@ -453,8 +453,8 @@ public final class DirichletBayesIm implements BayesIm {
      * values.
      * @see #getParentValues
      */
-    public int getRowIndex(final int nodeIndex, final int[] values) {
-        final int[] dim = getParentDims(nodeIndex);
+    public int getRowIndex(int nodeIndex, int[] values) {
+        int[] dim = this.getParentDims(nodeIndex);
         int rowIndex = 0;
 
         for (int i = 0; i < dim.length; i++) {
@@ -465,22 +465,22 @@ public final class DirichletBayesIm implements BayesIm {
         return rowIndex;
     }
 
-    public double getRowPseudocount(final int nodeIndex, final int rowIndex) {
+    public double getRowPseudocount(int nodeIndex, int rowIndex) {
         double sum = 0;
 
-        for (int i = 0; i < getNumColumns(nodeIndex); i++) {
-            sum += getPseudocount(nodeIndex, rowIndex, i);
+        for (int i = 0; i < this.getNumColumns(nodeIndex); i++) {
+            sum += this.getPseudocount(nodeIndex, rowIndex, i);
         }
 
         return sum > 0 ? sum : 0;
     }
 
     public List<String> getVariableNames() {
-        final List<String> variableNames = new LinkedList<>();
+        List<String> variableNames = new LinkedList<>();
 
-        for (int i = 0; i < getNumNodes(); i++) {
-            final Node node = getNode(i);
-            variableNames.add(this.bayesPm.getVariable(node).getName());
+        for (int i = 0; i < this.getNumNodes(); i++) {
+            Node node = this.getNode(i);
+            variableNames.add(bayesPm.getVariable(node).getName());
         }
 
         return variableNames;
@@ -491,11 +491,11 @@ public final class DirichletBayesIm implements BayesIm {
     }
 
     public List<Node> getVariables() {
-        final List<Node> variables = new LinkedList<>();
+        List<Node> variables = new LinkedList<>();
 
-        for (int i = 0; i < getNumNodes(); i++) {
-            final Node node = getNode(i);
-            variables.add(this.bayesPm.getVariable(node));
+        for (int i = 0; i < this.getNumNodes(); i++) {
+            Node node = this.getNode(i);
+            variables.add(bayesPm.getVariable(node));
         }
 
         return variables;
@@ -510,91 +510,91 @@ public final class DirichletBayesIm implements BayesIm {
      * @see #initializeNode
      * @see #randomizeRow
      */
-    private void initialize(final DirichletBayesIm oldBayesIm,
-                            final double symmetricAlpha) {
-        this.parents = new int[this.nodes.length][];
-        this.parentDims = new int[this.nodes.length][];
-        this.pseudocounts = new double[this.nodes.length][][];
+    private void initialize(DirichletBayesIm oldBayesIm,
+                            double symmetricAlpha) {
+        parents = new int[nodes.length][];
+        parentDims = new int[nodes.length][];
+        pseudocounts = new double[nodes.length][][];
 
-        for (int nodeIndex = 0; nodeIndex < this.nodes.length; nodeIndex++) {
-            initializeNode(nodeIndex, oldBayesIm, symmetricAlpha);
+        for (int nodeIndex = 0; nodeIndex < nodes.length; nodeIndex++) {
+            this.initializeNode(nodeIndex, oldBayesIm, symmetricAlpha);
         }
     }
 
     /**
      * This method initializes the node indicated.
      */
-    private void initializeNode(final int nodeIndex, final DirichletBayesIm oldBayesIm,
-                                final double symmetricAlpha) {
-        final Node node = this.nodes[nodeIndex];
+    private void initializeNode(int nodeIndex, DirichletBayesIm oldBayesIm,
+                                double symmetricAlpha) {
+        Node node = nodes[nodeIndex];
 
         // Set up parents array.  Should store the parents of
         // each node as ints in a particular order.
-        final Graph graph = getBayesPm().getDag();
-        final List<Node> parentList = new ArrayList<>(graph.getParents(node));
-        final int[] parentArray = new int[parentList.size()];
+        Graph graph = this.getBayesPm().getDag();
+        List<Node> parentList = new ArrayList<>(graph.getParents(node));
+        int[] parentArray = new int[parentList.size()];
 
         for (int i = 0; i < parentList.size(); i++) {
-            parentArray[i] = getNodeIndex(parentList.get(i));
+            parentArray[i] = this.getNodeIndex(parentList.get(i));
         }
 
         // Sort parent array.
         Arrays.sort(parentArray);
 
-        this.parents[nodeIndex] = parentArray;
+        parents[nodeIndex] = parentArray;
 
         // Setup dimensions array for parents.
-        final int[] dims = new int[parentArray.length];
+        int[] dims = new int[parentArray.length];
 
         for (int i = 0; i < dims.length; i++) {
-            final Node parNode = this.nodes[parentArray[i]];
-            dims[i] = getBayesPm().getNumCategories(parNode);
+            Node parNode = nodes[parentArray[i]];
+            dims[i] = this.getBayesPm().getNumCategories(parNode);
         }
 
         // Calculate dimensions of table.
         int numRows = 1;
 
-        for (final int dim : dims) {
+        for (int dim : dims) {
             numRows *= dim;
         }
 
-        final int numCols = getBayesPm().getNumCategories(node);
+        int numCols = this.getBayesPm().getNumCategories(node);
 
-        this.parentDims[nodeIndex] = dims;
-        this.pseudocounts[nodeIndex] = new double[numRows][numCols];
+        parentDims[nodeIndex] = dims;
+        pseudocounts[nodeIndex] = new double[numRows][numCols];
 
         // Initialize each row.
         for (int rowIndex = 0; rowIndex < numRows; rowIndex++) {
             if (oldBayesIm == null) {
-                overwriteRow(nodeIndex, rowIndex, symmetricAlpha);
+                this.overwriteRow(nodeIndex, rowIndex, symmetricAlpha);
             } else {
-                retainOldRowIfPossible(nodeIndex, rowIndex, oldBayesIm,
+                this.retainOldRowIfPossible(nodeIndex, rowIndex, oldBayesIm,
                         symmetricAlpha);
             }
         }
     }
 
-    private void initializeRowAsBlank(final int nodeIndex, final int rowIndex) {
-        final int size = getNumColumns(nodeIndex);
-        final double[] row = new double[size];
+    private void initializeRowAsBlank(int nodeIndex, int rowIndex) {
+        int size = this.getNumColumns(nodeIndex);
+        double[] row = new double[size];
         Arrays.fill(row, Double.NaN);
-        this.pseudocounts[nodeIndex][rowIndex] = row;
+        pseudocounts[nodeIndex][rowIndex] = row;
     }
 
-    private void initializeRowSymmetrically(final int nodeIndex, final int rowIndex,
-                                            final double symmetricAlpha) {
-        final int size = getNumColumns(nodeIndex);
-        final double[] row = new double[size];
+    private void initializeRowSymmetrically(int nodeIndex, int rowIndex,
+                                            double symmetricAlpha) {
+        int size = this.getNumColumns(nodeIndex);
+        double[] row = new double[size];
         Arrays.fill(row, symmetricAlpha);
-        this.pseudocounts[nodeIndex][rowIndex] = row;
+        pseudocounts[nodeIndex][rowIndex] = row;
     }
 
     /**
      * @return true iff any value in the table for the given node is Double.NaN.
      */
-    public boolean isIncomplete(final int nodeIndex) {
-        for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
-            if (isIncomplete(nodeIndex, rowIndex)) {
+    public boolean isIncomplete(int nodeIndex) {
+        for (int rowIndex = 0; rowIndex < this.getNumRows(nodeIndex); rowIndex++) {
+            if (this.isIncomplete(nodeIndex, rowIndex)) {
                 return true;
             }
         }
@@ -605,9 +605,9 @@ public final class DirichletBayesIm implements BayesIm {
     /**
      * @return true iff one of the values in the given row is Double.NaN.
      */
-    public boolean isIncomplete(final int nodeIndex, final int rowIndex) {
-        for (int colIndex = 0; colIndex < getNumColumns(nodeIndex); colIndex++) {
-            final double p = getProbability(nodeIndex, rowIndex, colIndex);
+    public boolean isIncomplete(int nodeIndex, int rowIndex) {
+        for (int colIndex = 0; colIndex < this.getNumColumns(nodeIndex); colIndex++) {
+            double p = this.getProbability(nodeIndex, rowIndex, colIndex);
 
             if (Double.isNaN(p)) {
                 return true;
@@ -621,52 +621,52 @@ public final class DirichletBayesIm implements BayesIm {
      * Normalizes all rows in the tables associated with each of node in turn.
      */
     public void normalizeAll() {
-        for (int nodeIndex = 0; nodeIndex < this.nodes.length; nodeIndex++) {
-            normalizeNode(nodeIndex);
+        for (int nodeIndex = 0; nodeIndex < nodes.length; nodeIndex++) {
+            this.normalizeNode(nodeIndex);
         }
     }
 
     /**
      * Normalizes all rows in the table associated with a given node.
      */
-    public void normalizeNode(final int nodeIndex) {
-        for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
-            normalizeRow(nodeIndex, rowIndex);
+    public void normalizeNode(int nodeIndex) {
+        for (int rowIndex = 0; rowIndex < this.getNumRows(nodeIndex); rowIndex++) {
+            this.normalizeRow(nodeIndex, rowIndex);
         }
     }
 
     /**
      * Normalizes the given row.
      */
-    public void normalizeRow(final int nodeIndex, final int rowIndex) {
-        final int numColumns = getNumColumns(nodeIndex);
+    public void normalizeRow(int nodeIndex, int rowIndex) {
+        int numColumns = this.getNumColumns(nodeIndex);
         double total = 0.0;
 
         for (int colIndex = 0; colIndex < numColumns; colIndex++) {
-            total += getProbability(nodeIndex, rowIndex, colIndex);
+            total += this.getProbability(nodeIndex, rowIndex, colIndex);
         }
 
         if (total != 0.0) {
             for (int colIndex = 0; colIndex < numColumns; colIndex++) {
-                final double probability = getProbability(nodeIndex, rowIndex, colIndex);
-                final double prob = probability / total;
-                setProbability(nodeIndex, rowIndex, colIndex, prob);
+                double probability = this.getProbability(nodeIndex, rowIndex, colIndex);
+                double prob = probability / total;
+                this.setProbability(nodeIndex, rowIndex, colIndex, prob);
             }
         } else {
-            final double prob = 1.0 / numColumns;
+            double prob = 1.0 / numColumns;
 
             for (int colIndex = 0; colIndex < numColumns; colIndex++) {
-                setProbability(nodeIndex, rowIndex, colIndex, prob);
+                this.setProbability(nodeIndex, rowIndex, colIndex, prob);
             }
         }
     }
 
-    private void overwriteRow(final int nodeIndex, final int rowIndex,
-                              final double symmetricAlpha) {
+    private void overwriteRow(int nodeIndex, int rowIndex,
+                              double symmetricAlpha) {
         if (Double.isNaN(symmetricAlpha)) {
-            initializeRowAsBlank(nodeIndex, rowIndex);
+            this.initializeRowAsBlank(nodeIndex, rowIndex);
         } else if (symmetricAlpha >= 0.0) {
-            initializeRowSymmetrically(nodeIndex, rowIndex, symmetricAlpha);
+            this.initializeRowSymmetrically(nodeIndex, rowIndex, symmetricAlpha);
         } else {
             throw new IllegalArgumentException(
                     "Illegal symmetric alpha: " + symmetricAlpha);
@@ -680,10 +680,10 @@ public final class DirichletBayesIm implements BayesIm {
      * @param nodeIndex the node for the table whose incomplete rows are to be
      *                  randomized.
      */
-    public void randomizeIncompleteRows(final int nodeIndex) {
-        for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
-            if (isIncomplete(nodeIndex, rowIndex)) {
-                randomizeRow(nodeIndex, rowIndex);
+    public void randomizeIncompleteRows(int nodeIndex) {
+        for (int rowIndex = 0; rowIndex < this.getNumRows(nodeIndex); rowIndex++) {
+            if (this.isIncomplete(nodeIndex, rowIndex)) {
+                this.randomizeRow(nodeIndex, rowIndex);
             }
         }
     }
@@ -695,10 +695,10 @@ public final class DirichletBayesIm implements BayesIm {
      * @param nodeIndex the node for the table that this row belongs to.
      * @param rowIndex  the index of the row.
      */
-    public void randomizeRow(final int nodeIndex, final int rowIndex) {
-        final int size = getNumColumns(nodeIndex);
-        setNextRowTotal(getRowPseudocount(nodeIndex, rowIndex));
-        this.pseudocounts[nodeIndex][rowIndex] = getRandomPseudocounts(size);
+    public void randomizeRow(int nodeIndex, int rowIndex) {
+        int size = this.getNumColumns(nodeIndex);
+        this.setNextRowTotal(this.getRowPseudocount(nodeIndex, rowIndex));
+        pseudocounts[nodeIndex][rowIndex] = this.getRandomPseudocounts(size);
     }
 
     /**
@@ -706,32 +706,32 @@ public final class DirichletBayesIm implements BayesIm {
      *
      * @param nodeIndex the node for the table to be randomized.
      */
-    public void randomizeTable(final int nodeIndex) {
-        for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
-            randomizeRow(nodeIndex, rowIndex);
+    public void randomizeTable(int nodeIndex) {
+        for (int rowIndex = 0; rowIndex < this.getNumRows(nodeIndex); rowIndex++) {
+            this.randomizeRow(nodeIndex, rowIndex);
         }
     }
 
     /**
      * This method initializes the node indicated.
      */
-    private void retainOldRowIfPossible(final int nodeIndex, final int rowIndex,
-                                        final DirichletBayesIm oldBayesIm, final double symmetricAlpha) {
-        final int oldNodeIndex = getCorrespondingNodeIndex(nodeIndex, oldBayesIm);
+    private void retainOldRowIfPossible(int nodeIndex, int rowIndex,
+                                        DirichletBayesIm oldBayesIm, double symmetricAlpha) {
+        int oldNodeIndex = this.getCorrespondingNodeIndex(nodeIndex, oldBayesIm);
 
         if (oldNodeIndex == -1) {
-            overwriteRow(nodeIndex, rowIndex, symmetricAlpha);
-        } else if (getNumColumns(nodeIndex) != oldBayesIm.getNumColumns(oldNodeIndex)) {
-            overwriteRow(nodeIndex, rowIndex, symmetricAlpha);
+            this.overwriteRow(nodeIndex, rowIndex, symmetricAlpha);
+        } else if (this.getNumColumns(nodeIndex) != oldBayesIm.getNumColumns(oldNodeIndex)) {
+            this.overwriteRow(nodeIndex, rowIndex, symmetricAlpha);
         } else {
-            final int oldRowIndex
-                    = getUniqueCompatibleOldRow(nodeIndex, rowIndex, oldBayesIm);
+            int oldRowIndex
+                    = this.getUniqueCompatibleOldRow(nodeIndex, rowIndex, oldBayesIm);
 
             if (oldRowIndex >= 0) {
-                copyValuesFromOldToNew(oldNodeIndex, oldRowIndex, nodeIndex,
+                this.copyValuesFromOldToNew(oldNodeIndex, oldRowIndex, nodeIndex,
                         rowIndex, oldBayesIm);
             } else {
-                overwriteRow(nodeIndex, rowIndex, symmetricAlpha);
+                this.overwriteRow(nodeIndex, rowIndex, symmetricAlpha);
             }
         }
     }
@@ -740,7 +740,7 @@ public final class DirichletBayesIm implements BayesIm {
      * The row total that will be used for the next randomized row. This should
      * be set before calling a randomize method. The default value is 100.
      */
-    private void setNextRowTotal(final double nextRowTotal) {
+    private void setNextRowTotal(double nextRowTotal) {
         this.nextRowTotal = nextRowTotal;
     }
 
@@ -756,7 +756,7 @@ public final class DirichletBayesIm implements BayesIm {
      *                   its parents
      */
     @Override
-    public void setProbability(final int nodeIndex, final double[][] probMatrix) {
+    public void setProbability(int nodeIndex, double[][] probMatrix) {
         throw new UnsupportedOperationException("Please set pseudocounts and "
                 + "not probabilities for this Dirichlet Bayes IM.");
     }
@@ -779,20 +779,20 @@ public final class DirichletBayesIm implements BayesIm {
      * @param value     the desired probability to be set.
      * @see #getProbability
      */
-    public void setProbability(final int nodeIndex, final int rowIndex, final int colIndex,
-                               final double value) {
+    public void setProbability(int nodeIndex, int rowIndex, int colIndex,
+                               double value) {
         throw new UnsupportedOperationException("Please set pseudocounts and "
                 + "not probabilities for this Dirichlet Bayes IM.");
     }
 
-    public void setPseudocount(final int nodeIndex, final int rowIndex, final int colIndex,
-                               final double pseudocount) {
+    public void setPseudocount(int nodeIndex, int rowIndex, int colIndex,
+                               double pseudocount) {
         if (pseudocount < 0) {
             throw new IllegalArgumentException(
                     "Pseudocounts must be nonnegative.");
         }
 
-        this.pseudocounts[nodeIndex][rowIndex][colIndex] = pseudocount;
+        pseudocounts[nodeIndex][rowIndex][colIndex] = pseudocount;
     }
 
     /**
@@ -800,8 +800,8 @@ public final class DirichletBayesIm implements BayesIm {
      * <code>sampleSize</code>. if <code>latentDataSaved</code> is true, data
      * for latent variables is included in the simulated dataset.
      */
-    public DataSet simulateData(final int sampleSize, final boolean latentDataSaved) {
-        return simulateDataHelper(sampleSize,
+    public DataSet simulateData(int sampleSize, boolean latentDataSaved) {
+        return this.simulateDataHelper(sampleSize,
                 RandomUtil.getInstance(), latentDataSaved);
     }
 
@@ -811,7 +811,7 @@ public final class DirichletBayesIm implements BayesIm {
      *
      * @throws UnsupportedOperationException If you ever try to getDist it.
      */
-    public DataSet simulateData(final DataSet dataSet, final boolean latentDataSaved) {
+    public DataSet simulateData(DataSet dataSet, boolean latentDataSaved) {
         throw new UnsupportedOperationException();
     }
 
@@ -827,12 +827,12 @@ public final class DirichletBayesIm implements BayesIm {
      *                        included in the simulated data set.
      * @return the simulated sample as a DataSet.
      */
-    public DataSet simulateData(final int sampleSize, final long seed,
-                                final boolean latentDataSaved) {
-        final RandomUtil random = RandomUtil.getInstance();
-        final long _seed = random.getSeed();
+    public DataSet simulateData(int sampleSize, long seed,
+                                boolean latentDataSaved) {
+        RandomUtil random = RandomUtil.getInstance();
+        long _seed = random.getSeed();
         random.setSeed(seed);
-        final DataSet dataSet = simulateData(sampleSize, latentDataSaved);
+        DataSet dataSet = this.simulateData(sampleSize, latentDataSaved);
         random.revertSeed(_seed);
         return dataSet;
     }
@@ -847,68 +847,68 @@ public final class DirichletBayesIm implements BayesIm {
      *                        saved.
      * @return the simulated sample as a DataSet.
      */
-    private DataSet simulateDataHelper(final int sampleSize,
-                                       final RandomUtil randomUtil,
-                                       final boolean latentDataSaved) {
+    private DataSet simulateDataHelper(int sampleSize,
+                                       RandomUtil randomUtil,
+                                       boolean latentDataSaved) {
         int numMeasured = 0;
-        final int[] map = new int[this.nodes.length];
-        final List<Node> variables = new LinkedList<>();
+        int[] map = new int[nodes.length];
+        List<Node> variables = new LinkedList<>();
 
-        for (int j = 0; j < this.nodes.length; j++) {
-            if (!latentDataSaved && this.nodes[j].getNodeType() != NodeType.MEASURED) {
+        for (int j = 0; j < nodes.length; j++) {
+            if (!latentDataSaved && nodes[j].getNodeType() != NodeType.MEASURED) {
                 continue;
             }
 
-            final int numCategories = this.bayesPm.getNumCategories(this.nodes[j]);
-            final List<String> categories = new LinkedList<>();
+            int numCategories = bayesPm.getNumCategories(nodes[j]);
+            List<String> categories = new LinkedList<>();
 
             for (int k = 0; k < numCategories; k++) {
-                categories.add(this.bayesPm.getCategory(this.nodes[j], k));
+                categories.add(bayesPm.getCategory(nodes[j], k));
             }
 
-            final DiscreteVariable var
-                    = new DiscreteVariable(this.nodes[j].getName(), categories);
+            DiscreteVariable var
+                    = new DiscreteVariable(nodes[j].getName(), categories);
             variables.add(var);
-            final int index = ++numMeasured - 1;
+            int index = ++numMeasured - 1;
             map[index] = j;
         }
 
-        final DataSet dataSet = new BoxDataSet(new DoubleDataBox(sampleSize, variables.size()), variables);
-        constructSample(sampleSize, randomUtil, numMeasured, dataSet, map);
+        DataSet dataSet = new BoxDataSet(new DoubleDataBox(sampleSize, variables.size()), variables);
+        this.constructSample(sampleSize, randomUtil, numMeasured, dataSet, map);
         return dataSet;
     }
 
-    private void constructSample(final int sampleSize, final RandomUtil randomUtil,
-                                 final int numMeasured, final DataSet dataSet,
-                                 final int[] map) {
+    private void constructSample(int sampleSize, RandomUtil randomUtil,
+                                 int numMeasured, DataSet dataSet,
+                                 int[] map) {
         // Get a tier ordering and convert it to an int array.
-        final Graph graph = getBayesPm().getDag();
-        final Dag dag = new Dag(graph);
-        final List<Node> tierOrdering = dag.getCausalOrdering();
-        final int[] tiers = new int[tierOrdering.size()];
+        Graph graph = this.getBayesPm().getDag();
+        Dag dag = new Dag(graph);
+        List<Node> tierOrdering = dag.getCausalOrdering();
+        int[] tiers = new int[tierOrdering.size()];
 
         for (int i = 0; i < tierOrdering.size(); i++) {
-            tiers[i] = getNodeIndex(tierOrdering.get(i));
+            tiers[i] = this.getNodeIndex(tierOrdering.get(i));
         }
 
         // Construct the sample.
-        final int[] combination = new int[this.nodes.length];
+        int[] combination = new int[nodes.length];
 
         for (int i = 0; i < sampleSize; i++) {
-            final int[] point = new int[this.nodes.length];
+            int[] point = new int[nodes.length];
 
-            for (final int nodeIndex : tiers) {
-                final double cutoff = randomUtil.nextDouble();
+            for (int nodeIndex : tiers) {
+                double cutoff = randomUtil.nextDouble();
 
-                for (int k = 0; k < getNumParents(nodeIndex); k++) {
-                    combination[k] = point[getParent(nodeIndex, k)];
+                for (int k = 0; k < this.getNumParents(nodeIndex); k++) {
+                    combination[k] = point[this.getParent(nodeIndex, k)];
                 }
 
-                final int rowIndex = getRowIndex(nodeIndex, combination);
+                int rowIndex = this.getRowIndex(nodeIndex, combination);
                 double sum = 0.0;
 
-                for (int k = 0; k < getNumColumns(nodeIndex); k++) {
-                    final double probability = getProbability(nodeIndex, rowIndex, k);
+                for (int k = 0; k < this.getNumColumns(nodeIndex); k++) {
+                    double probability = this.getProbability(nodeIndex, rowIndex, k);
 
                     if (Double.isNaN(probability)) {
                         throw new IllegalStateException("Some probability "
@@ -938,9 +938,9 @@ public final class DirichletBayesIm implements BayesIm {
      * @param nodeIndex the node for the table that this row belongs to.
      * @param rowIndex  the index of the row.
      */
-    public void clearRow(final int nodeIndex, final int rowIndex) {
-        for (int colIndex = 0; colIndex < getNumColumns(nodeIndex); colIndex++) {
-            setProbability(nodeIndex, rowIndex, colIndex, Double.NaN);
+    public void clearRow(int nodeIndex, int rowIndex) {
+        for (int colIndex = 0; colIndex < this.getNumColumns(nodeIndex); colIndex++) {
+            this.setProbability(nodeIndex, rowIndex, colIndex, Double.NaN);
         }
     }
 
@@ -949,13 +949,13 @@ public final class DirichletBayesIm implements BayesIm {
      *
      * @param nodeIndex the node for the table to be randomized.
      */
-    public void clearTable(final int nodeIndex) {
-        for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
-            clearRow(nodeIndex, rowIndex);
+    public void clearTable(int nodeIndex) {
+        for (int rowIndex = 0; rowIndex < this.getNumRows(nodeIndex); rowIndex++) {
+            this.clearRow(nodeIndex, rowIndex);
         }
     }
 
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         if (o == this) {
             return true;
         }
@@ -964,31 +964,31 @@ public final class DirichletBayesIm implements BayesIm {
             return false;
         }
 
-        final DirichletBayesIm otherIm = (DirichletBayesIm) o;
+        DirichletBayesIm otherIm = (DirichletBayesIm) o;
 
-        if (getNumNodes() != otherIm.getNumNodes()) {
+        if (this.getNumNodes() != otherIm.getNumNodes()) {
             return false;
         }
 
-        for (int i = 0; i < getNumNodes(); i++) {
-            final int otherIndex = otherIm.getCorrespondingNodeIndex(i, otherIm);
+        for (int i = 0; i < this.getNumNodes(); i++) {
+            int otherIndex = otherIm.getCorrespondingNodeIndex(i, otherIm);
 
             if (otherIndex == -1) {
                 return false;
             }
 
-            if (getNumColumns(i) != otherIm.getNumColumns(otherIndex)) {
+            if (this.getNumColumns(i) != otherIm.getNumColumns(otherIndex)) {
                 return false;
             }
 
-            if (getNumRows(i) != otherIm.getNumRows(otherIndex)) {
+            if (this.getNumRows(i) != otherIm.getNumRows(otherIndex)) {
                 return false;
             }
 
-            for (int j = 0; j < getNumRows(i); j++) {
-                for (int k = 0; k < getNumColumns(i); k++) {
-                    final double probability = getProbability(i, j, k);
-                    final double otherProbability = otherIm.getPseudocount(i, j, k);
+            for (int j = 0; j < this.getNumRows(i); j++) {
+                for (int k = 0; k < this.getNumColumns(i); k++) {
+                    double probability = this.getProbability(i, j, k);
+                    double otherProbability = otherIm.getPseudocount(i, j, k);
 
                     if (Double.isNaN(probability)
                             && Double.isNaN(otherProbability)) {
@@ -996,7 +996,7 @@ public final class DirichletBayesIm implements BayesIm {
                     }
 
                     if (Math.abs(probability - otherProbability)
-                            > DirichletBayesIm.ALLOWABLE_DIFFERENCE) {
+                            > ALLOWABLE_DIFFERENCE) {
                         return false;
                     }
                 }
@@ -1010,37 +1010,37 @@ public final class DirichletBayesIm implements BayesIm {
      * Prints out the probability table for each variable.
      */
     public String toString() {
-        final StringBuilder buf = new StringBuilder();
-        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        StringBuilder buf = new StringBuilder();
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-        for (int i = 0; i < getNumNodes(); i++) {
-            buf.append("\n\nNode: ").append(getNode(i));
+        for (int i = 0; i < this.getNumNodes(); i++) {
+            buf.append("\n\nNode: ").append(this.getNode(i));
 
-            if (getNumParents(i) == 0) {
+            if (this.getNumParents(i) == 0) {
                 buf.append("\n");
             } else {
                 buf.append("\n\n");
-                for (int k = 0; k < getNumParents(i); k++) {
-                    buf.append(getNode(getParent(i, k))).append("\t");
+                for (int k = 0; k < this.getNumParents(i); k++) {
+                    buf.append(this.getNode(this.getParent(i, k))).append("\t");
                 }
             }
 
-            for (int j = 0; j < getNumRows(i); j++) {
+            for (int j = 0; j < this.getNumRows(i); j++) {
                 buf.append("\n");
-                for (int k = 0; k < getNumParents(i); k++) {
-                    buf.append(getParentValue(i, j, k));
+                for (int k = 0; k < this.getNumParents(i); k++) {
+                    buf.append(this.getParentValue(i, j, k));
 
-                    if (k < getNumParents(i) - 1) {
+                    if (k < this.getNumParents(i) - 1) {
                         buf.append("\t");
                     }
                 }
 
-                if (getNumParents(i) > 0) {
+                if (this.getNumParents(i) > 0) {
                     buf.append("\t");
                 }
 
-                for (int k = 0; k < getNumColumns(i); k++) {
-                    buf.append(nf.format(getProbability(i, j, k))).append("\t");
+                for (int k = 0; k < this.getNumColumns(i); k++) {
+                    buf.append(nf.format(this.getProbability(i, j, k))).append("\t");
                 }
             }
         }
@@ -1051,16 +1051,16 @@ public final class DirichletBayesIm implements BayesIm {
     }
 
     //=============================PRIVATE METHODS=========================//
-    private void copyValuesFromOldToNew(final int oldNodeIndex, final int oldRowIndex,
-                                        final int nodeIndex, final int rowIndex, final DirichletBayesIm oldBayesIm) {
-        if (getNumColumns(nodeIndex) != oldBayesIm.getNumColumns(oldNodeIndex)) {
+    private void copyValuesFromOldToNew(int oldNodeIndex, int oldRowIndex,
+                                        int nodeIndex, int rowIndex, DirichletBayesIm oldBayesIm) {
+        if (this.getNumColumns(nodeIndex) != oldBayesIm.getNumColumns(oldNodeIndex)) {
             throw new IllegalArgumentException("It's only possible to copy "
                     + "one row of probability values to another in a Bayes IM "
                     + "if the number of columns in the table are the same.");
         }
 
-        for (int colIndex = 0; colIndex < getNumColumns(nodeIndex); colIndex++) {
-            this.pseudocounts[nodeIndex][rowIndex][colIndex]
+        for (int colIndex = 0; colIndex < this.getNumColumns(nodeIndex); colIndex++) {
+            pseudocounts[nodeIndex][rowIndex][colIndex]
                     = oldBayesIm.getPseudocount(oldNodeIndex, oldRowIndex,
                     colIndex);
         }
@@ -1078,19 +1078,19 @@ public final class DirichletBayesIm implements BayesIm {
      * @return an array with randomly distributed probabilities of this length.
      * @see #randomizeRow
      */
-    private double[] getRandomPseudocounts(final int size) {
+    private double[] getRandomPseudocounts(int size) {
         assert size >= 0;
 
-        final double[] weights = DirichletBayesIm.getRandomWeights(size);
-        final double[] row = new double[size];
+        double[] weights = getRandomWeights(size);
+        double[] row = new double[size];
         int sum = 0;
 
         for (int i = 0; i < row.length - 1; i++) {
-            row[i] = (int) (getNextRowTotal() * weights[i]);
+            row[i] = (int) (this.getNextRowTotal() * weights[i]);
             sum += row[i];
         }
 
-        row[size - 1] = getNextRowTotal() - sum;
+        row[size - 1] = this.getNextRowTotal() - sum;
 
         return row;
     }
@@ -1104,14 +1104,14 @@ public final class DirichletBayesIm implements BayesIm {
      * @return an array with randomly distributed probabilities of this length.
      * @see #randomizeRow
      */
-    private static double[] getRandomWeights(final int size) {
+    private static double[] getRandomWeights(int size) {
         assert size >= 0;
 
-        final double[] weights = new double[size];
+        double[] weights = new double[size];
         double sum = 0.0;
 
         for (int i = 0; i < size; i++) {
-            final RandomUtil randomUtil = RandomUtil.getInstance();
+            RandomUtil randomUtil = RandomUtil.getInstance();
             weights[i] = randomUtil.nextDouble();
             sum += weights[i];
         }
@@ -1135,25 +1135,25 @@ public final class DirichletBayesIm implements BayesIm {
      * which case -1 is returned. Likewise, there may be no compatible rows, in
      * which case -1 is returned.
      */
-    private int getUniqueCompatibleOldRow(final int nodeIndex, final int rowIndex,
-                                          final BayesIm oldBayesIm) {
-        final int oldNodeIndex = getCorrespondingNodeIndex(nodeIndex, oldBayesIm);
-        final int oldNumParents = oldBayesIm.getNumParents(oldNodeIndex);
+    private int getUniqueCompatibleOldRow(int nodeIndex, int rowIndex,
+                                          BayesIm oldBayesIm) {
+        int oldNodeIndex = this.getCorrespondingNodeIndex(nodeIndex, oldBayesIm);
+        int oldNumParents = oldBayesIm.getNumParents(oldNodeIndex);
 
-        final int[] oldParentValues = new int[oldNumParents];
+        int[] oldParentValues = new int[oldNumParents];
         Arrays.fill(oldParentValues, -1);
 
-        final int[] parentValues = getParentValues(nodeIndex, rowIndex);
+        int[] parentValues = this.getParentValues(nodeIndex, rowIndex);
 
         // Go through each parent of the node in the new DirichletBayesIm.
-        for (int i = 0; i < getNumParents(nodeIndex); i++) {
+        for (int i = 0; i < this.getNumParents(nodeIndex); i++) {
 
             // Get the index of the parent in the new graph and in the old
             // graph. If it's no longer in the new graph, skip to the next
             // parent.
-            final int parentNodeIndex = getParent(nodeIndex, i);
-            final int oldParentNodeIndex
-                    = getCorrespondingNodeIndex(parentNodeIndex, oldBayesIm);
+            int parentNodeIndex = this.getParent(nodeIndex, i);
+            int oldParentNodeIndex
+                    = this.getCorrespondingNodeIndex(parentNodeIndex, oldBayesIm);
             int oldParentIndex = -1;
 
             for (int j = 0; j < oldBayesIm.getNumParents(oldNodeIndex); j++) {
@@ -1171,8 +1171,8 @@ public final class DirichletBayesIm implements BayesIm {
             // Look up that value index for the new DirichletBayesIm for that parent.
             // If it was a valid value index in the old DirichletBayesIm, record
             // that value in oldParentValues. Otherwise return -1.
-            final int newParentValue = parentValues[i];
-            final int oldParentDim
+            int newParentValue = parentValues[i];
+            int oldParentDim
                     = oldBayesIm.getParentDim(oldNodeIndex, oldParentIndex);
 
             if (newParentValue < oldParentDim) {
@@ -1183,7 +1183,7 @@ public final class DirichletBayesIm implements BayesIm {
         }
 
         // If there are any -1's in the combination at this point, return -1.
-        for (final int oldParentValue : oldParentValues) {
+        for (int oldParentValue : oldParentValues) {
             if (oldParentValue == -1) {
                 return -1;
             }
@@ -1204,27 +1204,27 @@ public final class DirichletBayesIm implements BayesIm {
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (this.bayesPm == null) {
+        if (bayesPm == null) {
             throw new NullPointerException();
         }
 
-        if (this.nodes == null) {
+        if (nodes == null) {
             throw new NullPointerException();
         }
 
-        if (this.parents == null) {
+        if (parents == null) {
             throw new NullPointerException();
         }
 
-        if (this.parentDims == null) {
+        if (parentDims == null) {
             throw new NullPointerException();
         }
 
-        if (this.pseudocounts == null) {
+        if (pseudocounts == null) {
             throw new NullPointerException();
         }
     }

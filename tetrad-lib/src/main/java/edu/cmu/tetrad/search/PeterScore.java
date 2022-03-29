@@ -44,21 +44,21 @@ public class PeterScore implements Score {
     private final List<Node> variables;
 
     // True if verbose output should be sent to out.
-    private boolean verbose = false;
+    private boolean verbose;
     private double penaltyDiscount = 1.0;
 
     /**
      * Constructs the score using a covariance matrix.
      */
-    public PeterScore(final DataSet dataSet) {
-        this.test = new IndTestFisherZ(dataSet, 0.001);
+    public PeterScore(DataSet dataSet) {
+        test = new IndTestFisherZ(dataSet, 0.001);
         this.dataSet = dataSet;
 
-        this.variables = new ArrayList<>();
+        variables = new ArrayList<>();
 
-        for (final Node node : this.test.getVariables()) {
+        for (Node node : test.getVariables()) {
             if (node.getNodeType() == NodeType.MEASURED) {
-                this.variables.add(node);
+                variables.add(node);
             }
         }
     }
@@ -66,34 +66,34 @@ public class PeterScore implements Score {
     /**
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */
-    public double localScore(final int i, final int[] parents) {
+    public double localScore(int i, int[] parents) {
         throw new UnsupportedOperationException();
     }
 
-    private List<Node> getVariableList(final int[] indices) {
-        final List<Node> variables = new ArrayList<>();
-        for (final int i : indices) {
+    private List<Node> getVariableList(int[] indices) {
+        List<Node> variables = new ArrayList<>();
+        for (int i : indices) {
             variables.add(this.variables.get(i));
         }
         return variables;
     }
 
     @Override
-    public double localScoreDiff(final int x, final int y, final int[] z) {
-        this.test.isIndependent(this.variables.get(x), this.variables.get(y), getVariableList(z));
-        final double p = this.test.getPValue();
-        final int N = getSampleSize();
+    public double localScoreDiff(int x, int y, int[] z) {
+        test.isIndependent(variables.get(x), variables.get(y), this.getVariableList(z));
+        double p = test.getPValue();
+        int N = this.getSampleSize();
         return -log(p) - (2 + z.length) * log(N);
 //        return 0.000001 - p;
     }
 
     @Override
-    public double localScoreDiff(final int x, final int y) {
-        return localScoreDiff(x, y, new int[0]);
+    public double localScoreDiff(int x, int y) {
+        return this.localScoreDiff(x, y, new int[0]);
     }
 
-    int[] append(final int[] parents, final int extra) {
-        final int[] all = new int[parents.length + 1];
+    int[] append(int[] parents, int extra) {
+        int[] all = new int[parents.length + 1];
         System.arraycopy(parents, 0, all, 0, parents.length);
         all[parents.length] = extra;
         return all;
@@ -103,41 +103,41 @@ public class PeterScore implements Score {
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
 
-    public double localScore(final int i, final int parent) {
+    public double localScore(int i, int parent) {
         throw new UnsupportedOperationException();
     }
 
     /**
      * Specialized scoring method for no parents. Used to speed up the effect edges search.
      */
-    public double localScore(final int i) {
+    public double localScore(int i) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public boolean isEffectEdge(final double bump) {
+    public boolean isEffectEdge(double bump) {
         return true;
     }
 
     public DataSet getDataSet() {
-        return this.dataSet;
+        return dataSet;
     }
 
     public boolean isVerbose() {
-        return this.verbose;
+        return verbose;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     @Override
     public List<Node> getVariables() {
-        return this.variables;
+        return variables;
     }
 
     public int getSampleSize() {
-        return this.dataSet.getNumRows();
+        return dataSet.getNumRows();
     }
 
     public boolean getAlternativePenalty() {
@@ -145,8 +145,8 @@ public class PeterScore implements Score {
     }
 
     @Override
-    public Node getVariable(final String targetName) {
-        for (final Node node : this.variables) {
+    public Node getVariable(String targetName) {
+        for (Node node : variables) {
             if (node.getName().equals(targetName)) {
                 return node;
             }
@@ -161,15 +161,15 @@ public class PeterScore implements Score {
     }
 
     @Override
-    public boolean determines(final List<Node> z, final Node y) {
+    public boolean determines(List<Node> z, Node y) {
         return false;
     }
 
     public double getPenaltyDiscount() {
-        return this.penaltyDiscount;
+        return penaltyDiscount;
     }
 
-    public void setPenaltyDiscount(final double penaltyDiscount) {
+    public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
     }
 }

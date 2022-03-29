@@ -70,8 +70,8 @@ public class BasalInitializer implements Initializer, TetradSerializable {
      * Constructs a new history that will initialize genes using the given basal
      * expression and initial standard deviation.
      */
-    public BasalInitializer(final UpdateFunction updateFunction,
-                            final double basalExpression, final double initStDev) {
+    public BasalInitializer(UpdateFunction updateFunction,
+                            double basalExpression, double initStDev) {
         if (updateFunction == null) {
             throw new NullPointerException(
                     "Update function must not be " + "null");
@@ -106,10 +106,10 @@ public class BasalInitializer implements Initializer, TetradSerializable {
      *
      * @param history the 2D double array to randomize.
      */
-    public void initialize(final double[][] history) {
+    public void initialize(double[][] history) {
 
-        final Distribution initDistribution =
-                new Normal(this.basalExpression, this.initStDev);
+        Distribution initDistribution =
+                new Normal(basalExpression, initStDev);
 
         // TODO: Make sure normal dist gets nextGaussian, multiplies
         // by st.dev. and adds mean.
@@ -122,11 +122,11 @@ public class BasalInitializer implements Initializer, TetradSerializable {
         // settle (an unknown number of time steps). jdramsey
         for (int j = 0; j < history[0].length; j++) {
 
-            final IndexedLagGraph connectivity =
-                    this.updateFunction.getIndexedLagGraph();
+            IndexedLagGraph connectivity =
+                    updateFunction.getIndexedLagGraph();
 
             if (connectivity.getNumParents(j) == 0) {
-                history[0][j] = this.basalExpression;
+                history[0][j] = basalExpression;
             } else {
                 history[0][j] = initDistribution.nextRandom();
             }
@@ -150,15 +150,15 @@ public class BasalInitializer implements Initializer, TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (this.updateFunction == null) {
+        if (updateFunction == null) {
             throw new NullPointerException();
         }
 
-        if (this.initStDev <= 0.0) {
+        if (initStDev <= 0.0) {
             throw new IllegalStateException();
         }
     }

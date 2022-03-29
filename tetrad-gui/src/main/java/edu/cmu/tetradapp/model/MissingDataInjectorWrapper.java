@@ -48,23 +48,23 @@ public class MissingDataInjectorWrapper extends DataWrapper {
 
     //============================CONSTRUCTORS=============================//
 
-    public MissingDataInjectorWrapper(final DataWrapper wrapper,
-                                      final Parameters params) {
-        final DataSet dataSet =
+    public MissingDataInjectorWrapper(DataWrapper wrapper,
+                                      Parameters params) {
+        DataSet dataSet =
                 (DataSet) wrapper.getSelectedDataModel();
 
-        final int numVars = dataSet.getNumColumns();
+        int numVars = dataSet.getNumColumns();
 
-        final double prob = params.getDouble("prob", 0.02);
-        final double[] probs = new double[numVars];
+        double prob = params.getDouble("prob", 0.02);
+        double[] probs = new double[numVars];
 
         Arrays.fill(probs, prob);
 
-        this.outputDataSet = DataUtils.addMissingData(dataSet, probs);
-        setDataModel(this.outputDataSet);
-        setSourceGraph(wrapper.getSourceGraph());
+        outputDataSet = DataUtils.addMissingData(dataSet, probs);
+        this.setDataModel(outputDataSet);
+        this.setSourceGraph(wrapper.getSourceGraph());
 
-        LogDataUtils.logDataModelList("Parent data with missing values injected randomly.", getDataModelList());
+        LogDataUtils.logDataModelList("Parent data with missing values injected randomly.", this.getDataModelList());
 
     }
 
@@ -80,7 +80,7 @@ public class MissingDataInjectorWrapper extends DataWrapper {
     //==========================PUBLIC METHODS============================//
 
     public DataSet getOutputDataset() {
-        return this.outputDataSet;
+        return outputDataSet;
     }
 
     /**
@@ -96,11 +96,11 @@ public class MissingDataInjectorWrapper extends DataWrapper {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (this.outputDataSet == null) {
+        if (outputDataSet == null) {
             throw new NullPointerException();
         }
     }

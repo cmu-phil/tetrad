@@ -57,70 +57,70 @@ public class BayesImEditorObs extends JPanel {
     /**
      * Constructs a new instanted model editor from a Bayes IM.
      */
-    public BayesImEditorObs(final BayesImWrapperObs wrapper, final BayesIm bayesIm) {
+    public BayesImEditorObs(BayesImWrapperObs wrapper, BayesIm bayesIm) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
 
         this.wrapper = wrapper;
-        init(bayesIm);
+        this.init(bayesIm);
     }
 
-    private void init(final BayesIm bayesIm) {
+    private void init(BayesIm bayesIm) {
         if (bayesIm == null) {
             throw new NullPointerException("Bayes IM must not be null.");
         }
 
-        final BayesPm bayesPm = bayesIm.getBayesPm();
-        final Graph graph = bayesPm.getDag();
-        final GraphWorkbench workbench = new GraphWorkbench(graph);
+        BayesPm bayesPm = bayesIm.getBayesPm();
+        Graph graph = bayesPm.getDag();
+        GraphWorkbench workbench = new GraphWorkbench(graph);
 
-        final JMenuBar menuBar = new JMenuBar();
-        final JMenu file = new JMenu("File");
+        JMenuBar menuBar = new JMenuBar();
+        JMenu file = new JMenu("File");
         menuBar.add(file);
         //file.add(new SaveBayesImXmlAction(this));
         //file.add(new LoadBayesImXmlAction(wrapper, this));
         file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
         file.add(new SaveComponentImage(workbench, "Save Graph Image..."));
-        setLayout(new BorderLayout());
-        add(menuBar, BorderLayout.NORTH);
+        this.setLayout(new BorderLayout());
+        this.add(menuBar, BorderLayout.NORTH);
 
-        this.wizard = new BayesImEditorWizardObs(bayesIm, workbench);
-        this.wizard.enableEditing(false);
+        wizard = new BayesImEditorWizardObs(bayesIm, workbench);
+        wizard.enableEditing(false);
 
-        this.wizard.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(final PropertyChangeEvent evt) {
+        wizard.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
                 if ("editorValueChanged".equals(evt.getPropertyName())) {
-                    firePropertyChange("modelChanged", null, null);
+                    BayesImEditorObs.this.firePropertyChange("modelChanged", null, null);
                 }
             }
         });
 
-        final JScrollPane workbenchScroll = new JScrollPane(workbench);
-        final JScrollPane wizardScroll = new JScrollPane(getWizard());
+        JScrollPane workbenchScroll = new JScrollPane(workbench);
+        JScrollPane wizardScroll = new JScrollPane(this.getWizard());
 
         workbenchScroll.setPreferredSize(new Dimension(450, 450));
 
-        final JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                 workbenchScroll, wizardScroll);
         splitPane.setOneTouchExpandable(true);
         splitPane.setDividerLocation(workbenchScroll.getPreferredSize().width);
-        add(splitPane, BorderLayout.CENTER);
+        this.add(splitPane, BorderLayout.CENTER);
 
-        setName("Bayes IM Obs Editor");
-        getWizard().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(final PropertyChangeEvent evt) {
+        this.setName("Bayes IM Obs Editor");
+        this.getWizard().addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
                 if ("editorClosing".equals(evt.getPropertyName())) {
-                    firePropertyChange("editorClosing", null, getName());
+                    BayesImEditorObs.this.firePropertyChange("editorClosing", null, BayesImEditorObs.this.getName());
                 }
 
                 if ("closeFrame".equals(evt.getPropertyName())) {
-                    firePropertyChange("closeFrame", null, null);
-                    firePropertyChange("editorClosing", true, true);
+                    BayesImEditorObs.this.firePropertyChange("closeFrame", null, null);
+                    BayesImEditorObs.this.firePropertyChange("editorClosing", true, true);
                 }
 
                 if ("modelChanged".equals(evt.getPropertyName())) {
-                    firePropertyChange("modelChanged", evt.getOldValue(),
+                    BayesImEditorObs.this.firePropertyChange("modelChanged", evt.getOldValue(),
                             evt.getNewValue());
                 }
             }
@@ -130,32 +130,32 @@ public class BayesImEditorObs extends JPanel {
     /**
      * Constructs a new instanted model editor from a Bayes IM wrapper.
      */
-    public BayesImEditorObs(final BayesImWrapperObs bayesImWrapperObs) {
+    public BayesImEditorObs(BayesImWrapperObs bayesImWrapperObs) {
         this(bayesImWrapperObs, bayesImWrapperObs.getBayesIm());
     }
 
     /**
      * Sets the name of this editor.
      */
-    public void setName(final String name) {
-        final String oldName = getName();
+    public void setName(String name) {
+        String oldName = this.getName();
         super.setName(name);
-        firePropertyChange("name", oldName, getName());
+        this.firePropertyChange("name", oldName, this.getName());
     }
 
     /**
      * @return a reference to this editor.
      */
     private BayesImEditorWizardObs getWizard() {
-        return this.wizard;
+        return wizard;
     }
 
-    public void getBayesIm(final BayesIm bayesIm) {
-        this.wrapper.setBayesIm(bayesIm);
-        removeAll();
-        init(this.wrapper.getBayesIm());
-        revalidate();
-        repaint();
-        firePropertyChange("modelChanged", null, null);
+    public void getBayesIm(BayesIm bayesIm) {
+        wrapper.setBayesIm(bayesIm);
+        this.removeAll();
+        this.init(wrapper.getBayesIm());
+        this.revalidate();
+        this.repaint();
+        this.firePropertyChange("modelChanged", null, null);
     }
 }

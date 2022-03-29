@@ -34,7 +34,7 @@ final class TetFileFilter extends FileFilter {
     /**
      * Accepts a file if its name ends with ".tet".
      */
-    public boolean accept(final File file) {
+    public boolean accept(File file) {
         return file.isDirectory() || file.getName().endsWith(".tet");
     }
 

@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.ScoredGraph;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetradapp.model.FgesRunner.Type;
 
 import java.util.List;
 
@@ -11,7 +12,7 @@ import java.util.List;
  * Created by jdramsey on 2/22/16.
  */
 public interface IFgesRunner {
-    FgesRunner.Type getType();
+    Type getType();
 
     List<ScoredGraph> getTopGraphs();
 

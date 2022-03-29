@@ -16,13 +16,13 @@ public class RandomTwoFactorMim implements RandomGraph {
     static final long serialVersionUID = 23L;
 
     @Override
-    public Graph createGraph(final Parameters parameters) {
-        final int numStructuralNodes = parameters.getInt("numStructuralNodes", 3);
-        final int maxStructuralEdges = parameters.getInt("numStructuralEdges", 3);
-        final int measurementModelDegree = parameters.getInt("measurementModelDegree", 3);
-        final int numLatentMeasuredImpureParents = parameters.getInt("latentMeasuredImpureParents", 0);
-        final int numMeasuredMeasuredImpureParents = parameters.getInt("measuredMeasuredImpureParents", 0);
-        final int numMeasuredMeasuredImpureAssociations = parameters.getInt("measuredMeasuredImpureAssociations", 0);
+    public Graph createGraph(Parameters parameters) {
+        int numStructuralNodes = parameters.getInt("numStructuralNodes", 3);
+        int maxStructuralEdges = parameters.getInt("numStructuralEdges", 3);
+        int measurementModelDegree = parameters.getInt("measurementModelDegree", 3);
+        int numLatentMeasuredImpureParents = parameters.getInt("latentMeasuredImpureParents", 0);
+        int numMeasuredMeasuredImpureParents = parameters.getInt("measuredMeasuredImpureParents", 0);
+        int numMeasuredMeasuredImpureAssociations = parameters.getInt("measuredMeasuredImpureAssociations", 0);
 
         return DataGraphUtils.randomBifactorModel(numStructuralNodes, maxStructuralEdges, measurementModelDegree,
                 numLatentMeasuredImpureParents, numMeasuredMeasuredImpureParents,
@@ -36,7 +36,7 @@ public class RandomTwoFactorMim implements RandomGraph {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
         parameters.add("numStructuralNodes");
         parameters.add("numStructuralEdges");
         parameters.add("measurementModelDegree");

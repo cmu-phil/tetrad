@@ -42,21 +42,21 @@ import java.util.List;
 public class CovMatrixAverageWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
 
-    public CovMatrixAverageWrapper(final DataWrapper[] covs, final Parameters params) {
-        final List<DataWrapper> matrices = new ArrayList<>();
+    public CovMatrixAverageWrapper(DataWrapper[] covs, Parameters params) {
+        List<DataWrapper> matrices = new ArrayList<>();
 
-        for (final DataWrapper cov : covs) {
+        for (DataWrapper cov : covs) {
             matrices.add(cov);
         }
 
-        calcAverage(matrices);
+        this.calcAverage(matrices);
     }
 
-    private void calcAverage(final List<DataWrapper> wrappers) {
-        final List<Matrix> cov = new ArrayList<>();
+    private void calcAverage(List<DataWrapper> wrappers) {
+        List<Matrix> cov = new ArrayList<>();
 
         for (int i = 0; i < wrappers.size(); i++) {
-            final DataModel selectedDataModel = wrappers.get(i).getSelectedDataModel();
+            DataModel selectedDataModel = wrappers.get(i).getSelectedDataModel();
 
             if (!(selectedDataModel instanceof ICovarianceMatrix)) {
                 throw new IllegalArgumentException("Sorry, this is an average only over covariance matrices.");
@@ -65,7 +65,7 @@ public class CovMatrixAverageWrapper extends DataWrapper {
             cov.add(((ICovarianceMatrix) selectedDataModel).getMatrix());
         }
 
-        final Matrix cov3 = new Matrix(cov.get(0).rows(), cov.get(0).rows());
+        Matrix cov3 = new Matrix(cov.get(0).rows(), cov.get(0).rows());
 
         for (int i = 0; i < cov.get(0).rows(); i++) {
             for (int j = 0; j < cov.get(0).rows(); j++) {
@@ -82,14 +82,14 @@ public class CovMatrixAverageWrapper extends DataWrapper {
             }
         }
 
-        final DataModel m = wrappers.get(0).getSelectedDataModel();
-        final ICovarianceMatrix _cov = (ICovarianceMatrix) m;
-        final List<Node> nodes = _cov.getVariables();
-        final int n = _cov.getSampleSize();
+        DataModel m = wrappers.get(0).getSelectedDataModel();
+        ICovarianceMatrix _cov = (ICovarianceMatrix) m;
+        List<Node> nodes = _cov.getVariables();
+        int n = _cov.getSampleSize();
 
-        final ICovarianceMatrix covWrapper = new CovarianceMatrix(nodes, cov3, n);
+        ICovarianceMatrix covWrapper = new CovarianceMatrix(nodes, cov3, n);
 
-        setDataModel(covWrapper);
+        this.setDataModel(covWrapper);
     }
 
     /**

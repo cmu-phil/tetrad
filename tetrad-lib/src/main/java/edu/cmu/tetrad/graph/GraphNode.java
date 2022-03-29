@@ -20,6 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.graph;
 
+import edu.cmu.tetrad.graph.NodeEqualityMode.Type;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.beans.PropertyChangeListener;
@@ -87,18 +88,18 @@ public class GraphNode implements Node, TetradSerializable {
     /**
      * Constructs a new Tetrad node with the given (non-null) string.
      */
-    public GraphNode(final String name) {
-        setName(name);
+    public GraphNode(String name) {
+        this.setName(name);
     }
 
     /**
      * Copy constructor.
      */
-    public GraphNode(final GraphNode node) {
-        this.name = node.name;
-        this.nodeType = node.nodeType;
-        this.centerX = node.centerX;
-        this.centerY = node.centerY;
+    public GraphNode(GraphNode node) {
+        name = node.name;
+        nodeType = node.nodeType;
+        centerX = node.centerX;
+        centerY = node.centerY;
     }
 
     /**
@@ -114,7 +115,7 @@ public class GraphNode implements Node, TetradSerializable {
      * @return the name of the variable.
      */
     public final String getName() {
-        return this.name;
+        return name;
     }
 
     /**
@@ -122,7 +123,7 @@ public class GraphNode implements Node, TetradSerializable {
      * @see edu.cmu.tetrad.graph.NodeType
      */
     public final NodeType getNodeType() {
-        return this.nodeType;
+        return nodeType;
     }
 
     /**
@@ -130,7 +131,7 @@ public class GraphNode implements Node, TetradSerializable {
      *
      * @see edu.cmu.tetrad.graph.NodeType
      */
-    public final void setNodeType(final NodeType nodeType) {
+    public final void setNodeType(NodeType nodeType) {
         if (nodeType == null) {
             throw new NullPointerException("Node type must not be null.");
         }
@@ -140,7 +141,7 @@ public class GraphNode implements Node, TetradSerializable {
     /**
      * Sets the name of this variable.
      */
-    public final void setName(final String name) {
+    public final void setName(String name) {
         if (name == null) {
             throw new NullPointerException("Name must not be null.");
         }
@@ -149,22 +150,22 @@ public class GraphNode implements Node, TetradSerializable {
 //            throw new IllegalArgumentException(
 //                    NamingProtocol.getProtocolDescription() + ": " + name);
 //        }
-        final String oldName = this.name;
+        String oldName = this.name;
         this.name = name;
-        getPcs().firePropertyChange("name", oldName, this.name);
+        this.getPcs().firePropertyChange("name", oldName, this.name);
     }
 
     /**
      * @return the x coordinate of the center of the node.
      */
     public final int getCenterX() {
-        return this.centerX;
+        return centerX;
     }
 
     /**
      * Sets the x coordinate of the center of this node.
      */
-    public final void setCenterX(final int centerX) {
+    public final void setCenterX(int centerX) {
         this.centerX = centerX;
     }
 
@@ -172,20 +173,20 @@ public class GraphNode implements Node, TetradSerializable {
      * @return the y coordinate of the center of the node.
      */
     public final int getCenterY() {
-        return this.centerY;
+        return centerY;
     }
 
     /**
      * Sets the y coordinate of the center of this node.
      */
-    public final void setCenterY(final int centerY) {
+    public final void setCenterY(int centerY) {
         this.centerY = centerY;
     }
 
     /**
      * Sets the (x, y) coordinates of the center of this node.
      */
-    public final void setCenter(final int centerX, final int centerY) {
+    public final void setCenter(int centerX, int centerY) {
         this.centerX = centerX;
         this.centerY = centerY;
     }
@@ -195,31 +196,31 @@ public class GraphNode implements Node, TetradSerializable {
      * there is one, or else creates a new one and returns that.
      */
     private PropertyChangeSupport getPcs() {
-        if (this.pcs == null) {
-            this.pcs = new PropertyChangeSupport(this);
+        if (pcs == null) {
+            pcs = new PropertyChangeSupport(this);
         }
-        return this.pcs;
+        return pcs;
     }
 
     /**
      * Adds a property change listener.
      */
-    public final void addPropertyChangeListener(final PropertyChangeListener l) {
-        getPcs().addPropertyChangeListener(l);
+    public final void addPropertyChangeListener(PropertyChangeListener l) {
+        this.getPcs().addPropertyChangeListener(l);
     }
 
     /**
      * @return the name of the node as its string representation.
      */
     public String toString() {
-        return this.name;
+        return name;
     }
 
     public int hashCode() {
-        if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.OBJECT) {
+        if (NodeEqualityMode.getEqualityType() == Type.OBJECT) {
             return super.hashCode();
-        } else if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.NAME) {
-            return getName().hashCode();
+        } else if (NodeEqualityMode.getEqualityType() == Type.NAME) {
+            return this.getName().hashCode();
         }
 
 //        return 17 * getNode().hashCode() + 19 * getNodeType().hashCode();
@@ -232,19 +233,19 @@ public class GraphNode implements Node, TetradSerializable {
      * Two continuous variables are equal if they have the same name and the
      * same missing value marker.
      */
-    public boolean equals(final Object o) {
-        if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.OBJECT) {
+    public boolean equals(Object o) {
+        if (NodeEqualityMode.getEqualityType() == Type.OBJECT) {
             return o == this;
-        } else if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.NAME) {
-            return o instanceof GraphNode && getName().equals(((Node) o).getName());
+        } else if (NodeEqualityMode.getEqualityType() == Type.NAME) {
+            return o instanceof GraphNode && this.getName().equals(((Node) o).getName());
         }
 
         throw new IllegalStateException();
     }
 
-    public Node like(final String name) {
-        final GraphNode node = new GraphNode(name);
-        node.setNodeType(getNodeType());
+    public Node like(String name) {
+        GraphNode node = new GraphNode(name);
+        node.setNodeType(this.getNodeType());
         return node;
     }
 
@@ -261,30 +262,30 @@ public class GraphNode implements Node, TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (this.name == null) {
+        if (name == null) {
             throw new NullPointerException();
         }
 
-        if (this.nodeType == null) {
+        if (nodeType == null) {
             throw new NullPointerException();
         }
     }
 
     @Override
-    public int compareTo(final Node node) {
-        final String node1 = getName();
-        final String node2 = node.getName();
+    public int compareTo(Node node) {
+        String node1 = this.getName();
+        String node2 = node.getName();
 
-        final boolean isAlpha1 = Node.ALPHA.matcher(node1).matches();
-        final boolean isAlpha2 = Node.ALPHA.matcher(node2).matches();
-        final boolean isAlphaNum1 = Node.ALPHA_NUM.matcher(node1).matches();
-        final boolean isAlphaNum2 = Node.ALPHA_NUM.matcher(node2).matches();
-        final boolean isLag1 = Node.LAG.matcher(node1).matches();
-        final boolean isLag2 = Node.LAG.matcher(node2).matches();
+        boolean isAlpha1 = Node.ALPHA.matcher(node1).matches();
+        boolean isAlpha2 = Node.ALPHA.matcher(node2).matches();
+        boolean isAlphaNum1 = Node.ALPHA_NUM.matcher(node1).matches();
+        boolean isAlphaNum2 = Node.ALPHA_NUM.matcher(node2).matches();
+        boolean isLag1 = Node.LAG.matcher(node1).matches();
+        boolean isLag2 = Node.LAG.matcher(node2).matches();
 
         if (isAlpha1) {
             if (isLag2) {
@@ -292,11 +293,11 @@ public class GraphNode implements Node, TetradSerializable {
             }
         } else if (isAlphaNum1) {
             if (isAlphaNum2) {
-                final String s1 = node1.replaceAll("\\d+", "");
-                final String s2 = node2.replaceAll("\\d+", "");
+                String s1 = node1.replaceAll("\\d+", "");
+                String s2 = node2.replaceAll("\\d+", "");
                 if (s1.equals(s2)) {
-                    final String n1 = node1.replaceAll("\\D+", "");
-                    final String n2 = node2.replaceAll("\\D+", "");
+                    String n1 = node1.replaceAll("\\D+", "");
+                    String n2 = node2.replaceAll("\\D+", "");
 
                     return Integer.valueOf(n1).compareTo(Integer.valueOf(n2));
                 } else {
@@ -309,13 +310,13 @@ public class GraphNode implements Node, TetradSerializable {
             if (isAlpha2 || isAlphaNum2) {
                 return 1;
             } else if (isLag2) {
-                final String l1 = node1.replaceAll(":", "");
-                final String l2 = node2.replaceAll(":", "");
-                final String s1 = l1.replaceAll("\\d+", "");
-                final String s2 = l2.replaceAll("\\d+", "");
+                String l1 = node1.replaceAll(":", "");
+                String l2 = node2.replaceAll(":", "");
+                String s1 = l1.replaceAll("\\d+", "");
+                String s2 = l2.replaceAll("\\d+", "");
                 if (s1.equals(s2)) {
-                    final String n1 = l1.replaceAll("\\D+", "");
-                    final String n2 = l2.replaceAll("\\D+", "");
+                    String n1 = l1.replaceAll("\\D+", "");
+                    String n2 = l2.replaceAll("\\D+", "");
 
                     return Integer.valueOf(n1).compareTo(Integer.valueOf(n2));
                 } else {
@@ -329,32 +330,32 @@ public class GraphNode implements Node, TetradSerializable {
 
     @Override
     public NodeVariableType getNodeVariableType() {
-        return this.nodeVariableType;
+        return nodeVariableType;
     }
 
     @Override
-    public void setNodeVariableType(final NodeVariableType nodeVariableType) {
+    public void setNodeVariableType(NodeVariableType nodeVariableType) {
         this.nodeVariableType = nodeVariableType;
     }
 
     @Override
     public Map<String, Object> getAllAttributes() {
-        return this.attributes;
+        return attributes;
     }
 
     @Override
-    public Object getAttribute(final String key) {
-        return this.attributes.get(key);
+    public Object getAttribute(String key) {
+        return attributes.get(key);
     }
 
     @Override
-    public void removeAttribute(final String key) {
-        this.attributes.remove(key);
+    public void removeAttribute(String key) {
+        attributes.remove(key);
     }
 
     @Override
-    public void addAttribute(final String key, final Object value) {
-        this.attributes.put(key, value);
+    public void addAttribute(String key, Object value) {
+        attributes.put(key, value);
     }
 
 }

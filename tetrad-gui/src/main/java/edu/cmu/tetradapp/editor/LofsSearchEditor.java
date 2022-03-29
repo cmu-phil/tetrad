@@ -26,7 +26,7 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndTestType;
-import edu.cmu.tetrad.search.Lofs;
+import edu.cmu.tetrad.search.Lofs.Score;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -59,39 +59,39 @@ public class LofsSearchEditor extends AbstractSearchEditor
     /**
      * Opens up an editor to let the user view the given PcRunner.
      */
-    public LofsSearchEditor(final LofsRunner runner) {
+    public LofsSearchEditor(LofsRunner runner) {
         super(runner, "Result Graph");
     }
 
     //=============================== Public Methods ==================================//
 
     public Graph getGraph() {
-        return getWorkbench().getGraph();
+        return this.getWorkbench().getGraph();
     }
 
     @Override
     public Map getModelEdgesToDisplay() {
-        return getWorkbench().getModelEdgesToDisplay();
+        return this.getWorkbench().getModelEdgesToDisplay();
     }
 
     public Map getModelNodesToDisplay() {
-        return getWorkbench().getModelNodesToDisplay();
+        return this.getWorkbench().getModelNodesToDisplay();
     }
 
-    public void layoutByGraph(final Graph graph) {
-        getWorkbench().layoutByGraph(graph);
+    public void layoutByGraph(Graph graph) {
+        this.getWorkbench().layoutByGraph(graph);
     }
 
     public void layoutByKnowledge() {
-        final GraphWorkbench resultWorkbench = getWorkbench();
-        final Graph graph = resultWorkbench.getGraph();
-        final IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
+        GraphWorkbench resultWorkbench = this.getWorkbench();
+        Graph graph = resultWorkbench.getGraph();
+        IKnowledge knowledge = (IKnowledge) this.getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
         SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
 //        resultWorkbench.setGraph(graph);
     }
 
     public Rectangle getVisibleRect() {
-        return getWorkbench().getVisibleRect();
+        return this.getWorkbench().getVisibleRect();
     }
 
     //==========================PROTECTED METHODS============================//
@@ -100,37 +100,37 @@ public class LofsSearchEditor extends AbstractSearchEditor
     /**
      * Sets up the editor, does the layout, and so on.
      */
-    protected void setup(final String resultLabel) {
-        setLayout(new BorderLayout());
-        add(getToolbar(), BorderLayout.WEST);
-        final JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.add("forbid_latent_common_causes", workbenchScroll(resultLabel));
+    protected void setup(String resultLabel) {
+        this.setLayout(new BorderLayout());
+        this.add(this.getToolbar(), BorderLayout.WEST);
+        JTabbedPane tabbedPane = new JTabbedPane();
+        tabbedPane.add("forbid_latent_common_causes", this.workbenchScroll(resultLabel));
 
-        add(tabbedPane, BorderLayout.CENTER);
-        add(menuBar(), BorderLayout.NORTH);
+        this.add(tabbedPane, BorderLayout.CENTER);
+        this.add(this.menuBar(), BorderLayout.NORTH);
     }
 
     /**
      * Construct the toolbar panel.
      */
     protected JPanel getToolbar() {
-        final JPanel toolbar = new JPanel();
+        JPanel toolbar = new JPanel();
 
-        getExecuteButton().setText("Execute*");
-        getExecuteButton().addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                execute();
+        this.getExecuteButton().setText("Execute*");
+        this.getExecuteButton().addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                LofsSearchEditor.this.execute();
             }
         });
 
-        final JCheckBox doRuleR1CheckBox = new JCheckBox("R1");
-        final JCheckBox doRuleR2CheckBox = new JCheckBox("R2");
+        JCheckBox doRuleR1CheckBox = new JCheckBox("R1");
+        JCheckBox doRuleR2CheckBox = new JCheckBox("R2");
 
-        final Parameters searchParams = getAlgorithmRunner().getParams();
+        Parameters searchParams = this.getAlgorithmRunner().getParams();
 
-        final JRadioButton B = new JRadioButton("B");
-        final JRadioButton A = new JRadioButton("A");
-        final ButtonGroup group = new ButtonGroup();
+        JRadioButton B = new JRadioButton("B");
+        JRadioButton A = new JRadioButton("A");
+        ButtonGroup group = new ButtonGroup();
         group.add(B);
         group.add(A);
 
@@ -141,8 +141,8 @@ public class LofsSearchEditor extends AbstractSearchEditor
         }
 
         A.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent actionEvent) {
-                final JRadioButton button = (JRadioButton) actionEvent.getSource();
+            public void actionPerformed(ActionEvent actionEvent) {
+                JRadioButton button = (JRadioButton) actionEvent.getSource();
                 if (button.isSelected()) {
                     searchParams.set("orientStrongerDirection", false);
                 }
@@ -150,86 +150,86 @@ public class LofsSearchEditor extends AbstractSearchEditor
         });
 
         B.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent actionEvent) {
-                final JRadioButton button = (JRadioButton) actionEvent.getSource();
+            public void actionPerformed(ActionEvent actionEvent) {
+                JRadioButton button = (JRadioButton) actionEvent.getSource();
                 if (button.isSelected()) {
                     searchParams.set("orientStrongerDirection", true);
                 }
             }
         });
 
-        final JCheckBox orient2cycles = new JCheckBox("Orient 2 cycles in R2");
+        JCheckBox orient2cycles = new JCheckBox("Orient 2 cycles in R2");
 
         orient2cycles.setSelected(searchParams.getBoolean("r2Orient2Cycles", false));
 
         orient2cycles.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent actionEvent) {
-                final JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
+            public void actionPerformed(ActionEvent actionEvent) {
+                JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
                 searchParams.set("r2Orient2Cycles", checkBox.isSelected());
             }
         });
 
-        final JCheckBox meanCenterResiduals = new JCheckBox("Mean center residuals");
+        JCheckBox meanCenterResiduals = new JCheckBox("Mean center residuals");
 
         meanCenterResiduals.setSelected(searchParams.getBoolean("meanCenterResiduals", false));
 
         meanCenterResiduals.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent actionEvent) {
-                final JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
+            public void actionPerformed(ActionEvent actionEvent) {
+                JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
                 searchParams.set("meanCenterResiduals", checkBox.isSelected());
             }
         });
 
-        final JComboBox scoreBox = new JComboBox();
+        JComboBox scoreBox = new JComboBox();
         scoreBox.addItem("Anderson Darling");
 //        scoreBox.addItem("Skew");
         scoreBox.addItem("Kurtosis");
 //        scoreBox.addItem("Fifth Moment");
         scoreBox.addItem("Mean Absolute");
 
-        final Lofs.Score _score = (Lofs.Score) searchParams.get("score", Lofs.Score.andersonDarling);
+        Score _score = (Score) searchParams.get("score", Score.andersonDarling);
 
-        if (_score == Lofs.Score.andersonDarling) {
+        if (_score == Score.andersonDarling) {
             scoreBox.setSelectedItem("Anderson Darling");
-        } else if (_score == Lofs.Score.skew) {
+        } else if (_score == Score.skew) {
             scoreBox.setSelectedItem("Skew");
-        } else if (_score == Lofs.Score.kurtosis) {
+        } else if (_score == Score.kurtosis) {
             scoreBox.setSelectedItem("Kurtosis");
-        } else if (_score == Lofs.Score.fifthMoment) {
+        } else if (_score == Score.fifthMoment) {
             scoreBox.setSelectedItem("Fifth Moment");
-        } else if (_score == Lofs.Score.absoluteValue) {
+        } else if (_score == Score.absoluteValue) {
             scoreBox.setSelectedItem("Mean Absolute");
         }
 
         scoreBox.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent actionEvent) {
-                final JComboBox box = (JComboBox) actionEvent.getSource();
-                final String item = (String) box.getSelectedItem();
+            public void actionPerformed(ActionEvent actionEvent) {
+                JComboBox box = (JComboBox) actionEvent.getSource();
+                String item = (String) box.getSelectedItem();
                 System.out.println(item);
 
                 if ("Anderson Darling".equals(item)) {
-                    searchParams.set("score", Lofs.Score.andersonDarling);
+                    searchParams.set("score", Score.andersonDarling);
                 } else if ("Skew".equals(item)) {
-                    searchParams.set("score", Lofs.Score.skew);
+                    searchParams.set("score", Score.skew);
                 } else if ("Kurtosis".equals(item)) {
-                    searchParams.set("score", Lofs.Score.kurtosis);
+                    searchParams.set("score", Score.kurtosis);
                 } else if ("Fifth Moment".equals(item)) {
-                    searchParams.set("score", Lofs.Score.fifthMoment);
+                    searchParams.set("score", Score.fifthMoment);
                 } else if ("Mean Absolute".equals(item)) {
-                    searchParams.set("score", Lofs.Score.absoluteValue);
+                    searchParams.set("score", Score.absoluteValue);
                 } else {
                     throw new IllegalStateException();
                 }
             }
         });
 
-        final Box b1 = Box.createVerticalBox();
-        b1.add(getParamsPanel());
+        Box b1 = Box.createVerticalBox();
+        b1.add(this.getParamsPanel());
         b1.add(Box.createVerticalStrut(10));
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(Box.createGlue());
-        b2.add(getExecuteButton());
+        b2.add(this.getExecuteButton());
         b1.add(b2);
         b1.add(Box.createVerticalStrut(10));
 
@@ -237,7 +237,7 @@ public class LofsSearchEditor extends AbstractSearchEditor
 //        b3a.add(Box.createGlue());
 //        b1.add(b3a);;
 
-        final Box b3b = Box.createHorizontalBox();
+        Box b3b = Box.createHorizontalBox();
         b3b.add(new JLabel("Do rules:"));
         b3b.add(doRuleR1CheckBox);
         b3b.add(doRuleR2CheckBox);
@@ -245,32 +245,32 @@ public class LofsSearchEditor extends AbstractSearchEditor
         b3b.add(Box.createHorizontalGlue());
         b1.add(b3b);
 
-        final Box b3c = Box.createHorizontalBox();
+        Box b3c = Box.createHorizontalBox();
 //        b3c.add(new JLabel("R2:"));
         b3c.add(B);
         b3c.add(A);
         b3c.add(Box.createHorizontalGlue());
         b1.add(b3c);
 
-        final Box b3d = Box.createHorizontalBox();
+        Box b3d = Box.createHorizontalBox();
 //        b3d.add(new JLabel("R2:"));
         b3d.add(orient2cycles);
         b3d.add(Box.createHorizontalGlue());
         b1.add(b3d);
 
-        final Box b3e = Box.createHorizontalBox();
+        Box b3e = Box.createHorizontalBox();
         b3e.add(meanCenterResiduals);
         b3e.add(Box.createHorizontalGlue());
         b1.add(b3e);
 
-        final Box b3f = Box.createHorizontalBox();
+        Box b3f = Box.createHorizontalBox();
         b3f.add(new JLabel("Score:"));
         b3f.add(scoreBox);
         b3f.add(Box.createHorizontalGlue());
         b1.add(b3f);
 
-        final Box b4 = Box.createHorizontalBox();
-        final JLabel label = new JLabel("<html>" + "*Please note that some" +
+        Box b4 = Box.createHorizontalBox();
+        JLabel label = new JLabel("<html>" + "*Please note that some" +
                 "<br>searches may take a" + "<br>long time to complete." +
                 "</html>");
         label.setHorizontalAlignment(SwingConstants.CENTER);
@@ -290,9 +290,9 @@ public class LofsSearchEditor extends AbstractSearchEditor
     }
 
 
-    protected void addSpecialMenus(final JMenuBar menuBar) {
-        if (!(getAlgorithmRunner() instanceof IGesRunner)) {
-            final JMenu test = new JMenu("Independence");
+    protected void addSpecialMenus(JMenuBar menuBar) {
+        if (!(this.getAlgorithmRunner() instanceof IGesRunner)) {
+            JMenu test = new JMenu("Independence");
             menuBar.add(test);
 
             IndTestMenuItems.addIndependenceTestChoices(test, this);
@@ -309,22 +309,22 @@ public class LofsSearchEditor extends AbstractSearchEditor
 //            }
         }
 
-        final JMenu graph = new JMenu("Graph");
-        final JMenuItem showDags = new JMenuItem("Show DAGs in forbid_latent_common_causes");
+        JMenu graph = new JMenu("Graph");
+        JMenuItem showDags = new JMenuItem("Show DAGs in forbid_latent_common_causes");
 //        JMenuItem meekOrient = new JMenuItem("Meek Orientation");
-        final JMenuItem dagInCPDAG = new JMenuItem("Choose DAG in forbid_latent_common_causes");
-        final JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
-        final JMenuItem nextGraph = new JMenuItem("Next Graph");
-        final JMenuItem previousGraph = new JMenuItem("Previous Graph");
+        JMenuItem dagInCPDAG = new JMenuItem("Choose DAG in forbid_latent_common_causes");
+        JMenuItem gesOrient = new JMenuItem("Global Score-based Reorientation");
+        JMenuItem nextGraph = new JMenuItem("Next Graph");
+        JMenuItem previousGraph = new JMenuItem("Previous Graph");
 
 //        graph.add(new LayoutMenu(this));
-        graph.add(new GraphPropertiesAction(getWorkbench()));
-        graph.add(new PathsAction(getWorkbench()));
+        graph.add(new GraphPropertiesAction(this.getWorkbench()));
+        graph.add(new PathsAction(this.getWorkbench()));
 //        graph.add(new DirectedPathsAction(getWorkbench()));
 //        graph.add(new TreksAction(getWorkbench()));
 //        graph.add(new AllPathsAction(getWorkbench()));
 //        graph.add(new NeighborhoodsAction(getWorkbench()));
-        graph.add(new TriplesAction(getWorkbench().getGraph(), getAlgorithmRunner()));
+        graph.add(new TriplesAction(this.getWorkbench().getGraph(), this.getAlgorithmRunner()));
         graph.addSeparator();
 
 //        graph.add(meekOrient);
@@ -339,14 +339,14 @@ public class LofsSearchEditor extends AbstractSearchEditor
         graph.add(showDags);
 
         graph.addSeparator();
-        graph.add(new JMenuItem(new SelectBidirectedAction(getWorkbench())));
-        graph.add(new JMenuItem(new SelectUndirectedAction(getWorkbench())));
+        graph.add(new JMenuItem(new SelectBidirectedAction(this.getWorkbench())));
+        graph.add(new JMenuItem(new SelectUndirectedAction(this.getWorkbench())));
 
         menuBar.add(graph);
 
         showDags.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final Window owner = (Window) getTopLevelAncestor();
+            public void actionPerformed(ActionEvent e) {
+                Window owner = (Window) LofsSearchEditor.this.getTopLevelAncestor();
 
                 new WatchedProcess(owner) {
                     public void watch() {
@@ -354,8 +354,8 @@ public class LofsSearchEditor extends AbstractSearchEditor
                         // Needs to be a CPDAG search; this isn't checked
                         // before running the algorithm because of allowable
                         // "slop"--e.g. bidirected edges.
-                        final AlgorithmRunner runner = getAlgorithmRunner();
-                        final Graph graph = runner.getGraph();
+                        AlgorithmRunner runner = LofsSearchEditor.this.getAlgorithmRunner();
+                        Graph graph = runner.getGraph();
 
 
                         if (graph == null) {
@@ -379,10 +379,10 @@ public class LofsSearchEditor extends AbstractSearchEditor
 //                            editorWindow.setVisible(true);
 //                        }
 //                        else {
-                        final CPDAGDisplay display = new CPDAGDisplay(graph);
-                        final GraphWorkbench workbench = getWorkbench();
+                        CPDAGDisplay display = new CPDAGDisplay(graph);
+                        GraphWorkbench workbench = LofsSearchEditor.this.getWorkbench();
 
-                        final EditorWindow editorWindow =
+                        EditorWindow editorWindow =
                                 new EditorWindow(display, "Independence Facts",
                                         "Close", false, workbench);
                         DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
@@ -405,54 +405,54 @@ public class LofsSearchEditor extends AbstractSearchEditor
 //        });
 
         dagInCPDAG.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final Graph graph = new EdgeListGraph(getGraph());
+            public void actionPerformed(ActionEvent e) {
+                Graph graph = new EdgeListGraph(LofsSearchEditor.this.getGraph());
 
                 // Removing bidirected edges from the CPDAG before selecting a DAG.                                   4
-                for (final Edge edge : graph.getEdges()) {
+                for (Edge edge : graph.getEdges()) {
                     if (Edges.isBidirectedEdge(edge)) {
                         graph.removeEdge(edge);
                     }
                 }
 
-                final Graph dag = SearchGraphUtils.dagFromCPDAG(graph);
+                Graph dag = SearchGraphUtils.dagFromCPDAG(graph);
 
-                getGraphHistory().add(dag);
-                getWorkbench().setGraph(dag);
+                LofsSearchEditor.this.getGraphHistory().add(dag);
+                LofsSearchEditor.this.getWorkbench().setGraph(dag);
 
-                ((AbstractAlgorithmRunner) getAlgorithmRunner()).setResultGraph(dag);
-                firePropertyChange("modelChanged", null, null);
+                ((AbstractAlgorithmRunner) LofsSearchEditor.this.getAlgorithmRunner()).setResultGraph(dag);
+                LofsSearchEditor.this.firePropertyChange("modelChanged", null, null);
             }
         });
 
         gesOrient.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final DataModel dataModel = getAlgorithmRunner().getDataModel();
+            public void actionPerformed(ActionEvent e) {
+                DataModel dataModel = LofsSearchEditor.this.getAlgorithmRunner().getDataModel();
 
-                final Graph graph = SearchGraphUtils.reorient(getGraph(), dataModel, getKnowledge());
+                Graph graph = SearchGraphUtils.reorient(LofsSearchEditor.this.getGraph(), dataModel, LofsSearchEditor.this.getKnowledge());
 
-                getGraphHistory().add(graph);
-                getWorkbench().setGraph(graph);
-                firePropertyChange("modelChanged", null, null);
+                LofsSearchEditor.this.getGraphHistory().add(graph);
+                LofsSearchEditor.this.getWorkbench().setGraph(graph);
+                LofsSearchEditor.this.firePropertyChange("modelChanged", null, null);
             }
 
         });
 
         nextGraph.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final Graph next = getGraphHistory().next();
-                getWorkbench().setGraph(next);
-                ((AbstractAlgorithmRunner) getAlgorithmRunner()).setResultGraph(next);
-                firePropertyChange("modelChanged", null, null);
+            public void actionPerformed(ActionEvent e) {
+                Graph next = LofsSearchEditor.this.getGraphHistory().next();
+                LofsSearchEditor.this.getWorkbench().setGraph(next);
+                ((AbstractAlgorithmRunner) LofsSearchEditor.this.getAlgorithmRunner()).setResultGraph(next);
+                LofsSearchEditor.this.firePropertyChange("modelChanged", null, null);
             }
         });
 
         previousGraph.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final Graph previous = getGraphHistory().previous();
-                getWorkbench().setGraph(previous);
-                ((AbstractAlgorithmRunner) getAlgorithmRunner()).setResultGraph(previous);
-                firePropertyChange("modelChanged", null, null);
+            public void actionPerformed(ActionEvent e) {
+                Graph previous = LofsSearchEditor.this.getGraphHistory().previous();
+                LofsSearchEditor.this.getWorkbench().setGraph(previous);
+                ((AbstractAlgorithmRunner) LofsSearchEditor.this.getAlgorithmRunner()).setResultGraph(previous);
+                LofsSearchEditor.this.firePropertyChange("modelChanged", null, null);
             }
         });
 
@@ -464,20 +464,20 @@ public class LofsSearchEditor extends AbstractSearchEditor
     }
 
     public Graph getSourceGraph() {
-        Graph sourceGraph = getWorkbench().getGraph();
+        Graph sourceGraph = this.getWorkbench().getGraph();
 
         if (sourceGraph == null) {
-            sourceGraph = getAlgorithmRunner().getSourceGraph();
+            sourceGraph = this.getAlgorithmRunner().getSourceGraph();
         }
         return sourceGraph;
     }
 
     public List<String> getVarNames() {
-        final Parameters params = getAlgorithmRunner().getParams();
+        Parameters params = this.getAlgorithmRunner().getParams();
         return (List<String>) params.get("varNames", null);
     }
 
-    public void setTestType(final IndTestType testType) {
+    public void setTestType(IndTestType testType) {
         super.setTestType(testType);
     }
 
@@ -485,22 +485,22 @@ public class LofsSearchEditor extends AbstractSearchEditor
         return super.getTestType();
     }
 
-    public void setKnowledge(final IKnowledge knowledge) {
-        getAlgorithmRunner().getParams().set("knowledge", knowledge);
+    public void setKnowledge(IKnowledge knowledge) {
+        this.getAlgorithmRunner().getParams().set("knowledge", knowledge);
     }
 
     public IKnowledge getKnowledge() {
-        return (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
+        return (IKnowledge) this.getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
     }
 
     //================================PRIVATE METHODS====================//
 
     private JPanel getParamsPanel() {
-        final JPanel paramsPanel = new JPanel();
+        JPanel paramsPanel = new JPanel();
 
-        final Box b2 = Box.createVerticalBox();
+        Box b2 = Box.createVerticalBox();
 
-        final JComponent indTestParamBox = getIndTestParamBox();
+        JComponent indTestParamBox = this.getIndTestParamBox();
         if (indTestParamBox != null) {
             b2.add(indTestParamBox);
         }
@@ -511,22 +511,22 @@ public class LofsSearchEditor extends AbstractSearchEditor
     }
 
     private JComponent getIndTestParamBox() {
-        final Parameters params = getAlgorithmRunner().getParams();
-        return getIndTestParamBox(params);
+        Parameters params = this.getAlgorithmRunner().getParams();
+        return this.getIndTestParamBox(params);
     }
 
     /**
      * Factory to return the correct param editor for independence test params.
      * This will go in a little box in the search editor.
      */
-    private JComponent getIndTestParamBox(final Parameters params) {
+    private JComponent getIndTestParamBox(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
 
         if (params instanceof Parameters) {
-            if (getAlgorithmRunner() instanceof IFgesRunner) {
-                final IFgesRunner fgesRunner = ((IFgesRunner) getAlgorithmRunner());
+            if (this.getAlgorithmRunner() instanceof IFgesRunner) {
+                IFgesRunner fgesRunner = ((IFgesRunner) this.getAlgorithmRunner());
                 return new FgesIndTestParamsEditor(params, fgesRunner.getType());
             }
         }
@@ -545,11 +545,11 @@ public class LofsSearchEditor extends AbstractSearchEditor
         }
 
         if (params instanceof Parameters) {
-            if (getAlgorithmRunner() instanceof LingamCPDAGRunner) {
+            if (this.getAlgorithmRunner() instanceof LingamCPDAGRunner) {
                 return new PcLingamIndTestParamsEditor(params);
             }
 
-            if (getAlgorithmRunner() instanceof LofsRunner) {
+            if (this.getAlgorithmRunner() instanceof LofsRunner) {
                 return new PcLingamIndTestParamsEditor(params);
             }
 
@@ -559,13 +559,13 @@ public class LofsSearchEditor extends AbstractSearchEditor
         return new IndTestParamsEditor(params);
     }
 
-    protected void doDefaultArrangement(final Graph resultGraph) {
-        if (getLatestWorkbenchGraph() != null) {   //(alreadyLaidOut) {
+    protected void doDefaultArrangement(Graph resultGraph) {
+        if (this.getLatestWorkbenchGraph() != null) {   //(alreadyLaidOut) {
             GraphUtils.arrangeBySourceGraph(resultGraph,
-                    getLatestWorkbenchGraph());
-        } else if (getKnowledge().isDefaultToKnowledgeLayout()) {
+                    this.getLatestWorkbenchGraph());
+        } else if (this.getKnowledge().isDefaultToKnowledgeLayout()) {
             SearchGraphUtils.arrangeByKnowledgeTiers(resultGraph,
-                    getKnowledge());
+                    this.getKnowledge());
         } else {
             GraphUtils.circleLayout(resultGraph, 200, 200, 150);
         }

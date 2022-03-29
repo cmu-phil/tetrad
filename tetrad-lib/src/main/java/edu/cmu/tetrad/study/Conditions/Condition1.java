@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.study.Conditions;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
+import edu.cmu.tetrad.algcomparison.Comparison.ComparisonGraph;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.external.ExternalAlgorithmPcalgGes;
 import edu.cmu.tetrad.algcomparison.algorithm.external.ExternalAlgorithmTetrad;
@@ -43,7 +44,7 @@ import edu.cmu.tetrad.util.Parameters;
  */
 public class Condition1 {
     public void generateTetradResults() {
-        final Parameters parameters = new Parameters();
+        Parameters parameters = new Parameters();
 
         parameters.set("alpha", 0.001);
         parameters.set("numRuns", 10);
@@ -51,7 +52,7 @@ public class Condition1 {
         parameters.set("useMaxPOrientationHeuristic", true);
         parameters.set("maxPOrientationMaxPathLength", 3);
 
-        final Statistics statistics = new Statistics();
+        Statistics statistics = new Statistics();
 
         statistics.add(new ParameterColumn("numMeasures"));
         statistics.add(new ParameterColumn("avgDegree"));
@@ -69,7 +70,7 @@ public class Condition1 {
         statistics.setWeight("AHP", 1.0);
         statistics.setWeight("AHR", 0.5);
 
-        final Algorithms algorithms = new Algorithms();
+        Algorithms algorithms = new Algorithms();
 
 //        algorithms.add(new Pc(new FisherZ()));
 //        algorithms.add(new PcStable(new FisherZ()));
@@ -77,7 +78,7 @@ public class Condition1 {
 //        algorithms.add(new Cpc(new FisherZ()));
 //        algorithms.add(new CpcStable(new FisherZ()));
 
-        final Comparison comparison = new Comparison();
+        Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
@@ -94,11 +95,11 @@ public class Condition1 {
     }
 
     public void compileTable() {
-        final Parameters parameters = new Parameters();
+        Parameters parameters = new Parameters();
 
         parameters.set("numRuns", 10);
 
-        final Statistics statistics = new Statistics();
+        Statistics statistics = new Statistics();
 
         statistics.add(new ParameterColumn("numMeasures"));
         statistics.add(new ParameterColumn("avgDegree"));
@@ -117,7 +118,7 @@ public class Condition1 {
         statistics.setWeight("AHP", 1.0);
         statistics.setWeight("AHR", 0.5);
 
-        final Algorithms algorithms = new Algorithms();
+        Algorithms algorithms = new Algorithms();
 //
 //        algorithms.add(new ExternalAlgorithmTetrad("PC_(\"Peter_and_Clark\"),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.001"));
 //        algorithms.add(new ExternalAlgorithmTetrad("PC-Stable_(\"Peter_and_Clark\"_Stable),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.001"));
@@ -183,13 +184,13 @@ public class Condition1 {
 //                new ExternalAlgorithmPcalgPc("CPC_majority_pcalg_defaults_alpha_=_0.001")
 //        ));
 
-        final Comparison comparison = new Comparison();
+        Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
         comparison.setSaveGraphs(true);
-        comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
+        comparison.setComparisonGraph(ComparisonGraph.CPDAG_of_the_true_DAG);
 
         comparison.generateReportFromExternalAlgorithms("/Users/user/comparison-data/condition_1",
                 "/Users/user/causal-comparisons/condition_1",
@@ -197,7 +198,7 @@ public class Condition1 {
 
     }
 
-    public static void main(final String... args) {
+    public static void main(String... args) {
         new Condition1().compileTable();
     }
 }

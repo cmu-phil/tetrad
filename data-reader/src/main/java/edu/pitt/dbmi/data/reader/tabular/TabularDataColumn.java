@@ -32,13 +32,13 @@ public class TabularDataColumn implements DataColumn {
     private final boolean generated;
     private boolean discrete;
 
-    public TabularDataColumn(final String name, final int columnNumber, final boolean generated) {
+    public TabularDataColumn(String name, int columnNumber, boolean generated) {
         this.name = name;
         this.columnNumber = columnNumber;
         this.generated = generated;
     }
 
-    public TabularDataColumn(final String name, final int columnNumber, final boolean generated, final boolean discrete) {
+    public TabularDataColumn(String name, int columnNumber, boolean generated, boolean discrete) {
         this.name = name;
         this.columnNumber = columnNumber;
         this.generated = generated;
@@ -47,31 +47,31 @@ public class TabularDataColumn implements DataColumn {
 
     @Override
     public String toString() {
-        return "TabularDataColumn{" + "name=" + this.name + ", columnNumber=" + this.columnNumber + ", generated=" + this.generated + ", discrete=" + this.discrete + '}';
+        return "TabularDataColumn{" + "name=" + name + ", columnNumber=" + columnNumber + ", generated=" + generated + ", discrete=" + discrete + '}';
     }
 
     @Override
     public String getName() {
-        return this.name;
+        return name;
     }
 
     @Override
     public int getColumnNumber() {
-        return this.columnNumber;
+        return columnNumber;
     }
 
     @Override
     public boolean isGenerated() {
-        return this.generated;
+        return generated;
     }
 
     @Override
     public boolean isDiscrete() {
-        return this.discrete;
+        return discrete;
     }
 
     @Override
-    public void setDiscrete(final boolean discrete) {
+    public void setDiscrete(boolean discrete) {
         this.discrete = discrete;
     }
 

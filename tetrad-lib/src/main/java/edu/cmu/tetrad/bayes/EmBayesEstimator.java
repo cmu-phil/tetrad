@@ -98,7 +98,7 @@ public final class EmBayesEstimator {
      * whose graph contains latent and observed variables.  The second is the
      * dataset of observed variables; missing value codes may be present.
      */
-    public EmBayesEstimator(final BayesPm bayesPm, final DataSet dataSet) {
+    public EmBayesEstimator(BayesPm bayesPm, DataSet dataSet) {
 
         if (bayesPm == null) {
             throw new NullPointerException();
@@ -108,116 +108,116 @@ public final class EmBayesEstimator {
             throw new NullPointerException();
         }
 
-        final List<Node> observedVars = new ArrayList<>();
+        List<Node> observedVars = new ArrayList<>();
 
         this.bayesPm = bayesPm;
         this.dataSet = dataSet;
 
-        this.graph = bayesPm.getDag();
-        this.nodes = new Node[this.graph.getNumNodes()];
+        graph = bayesPm.getDag();
+        nodes = new Node[graph.getNumNodes()];
 
-        final Iterator<Node> it = this.graph.getNodes().iterator();
+        Iterator<Node> it = graph.getNodes().iterator();
 
-        for (int i = 0; i < this.nodes.length; i++) {
-            this.nodes[i] = it.next();
+        for (int i = 0; i < nodes.length; i++) {
+            nodes[i] = it.next();
         }
 
-        for (final Node node : this.nodes) {
+        for (Node node : nodes) {
             if (node.getNodeType() == NodeType.MEASURED) {
                 observedVars.add(bayesPm.getVariable(node));
             }
         }
 
         //Make sure all measured variables in the BayesPm are in the discrete dataset
-        for (final Node observedVar : observedVars) {
+        for (Node observedVar : observedVars) {
             try {
                 this.dataSet.getVariable(observedVar.getName());
-            } catch (final Exception e) {
+            } catch (Exception e) {
                 throw new IllegalArgumentException(
                         "Some observed ar in the Bayes net " +
                                 "is not in the dataset: " + observedVar);
             }
         }
 
-        findBayesNetObserved();   //Sets bayesPmObs
+        this.findBayesNetObserved();   //Sets bayesPmObs
 
-        initialize();
+        this.initialize();
 
     }
 
-    public EmBayesEstimator(final BayesIm inputBayesIm, final DataSet dataSet) {
+    public EmBayesEstimator(BayesIm inputBayesIm, DataSet dataSet) {
         this(inputBayesIm.getBayesPm(), dataSet);
     }
 
     private void initialize() {
-        final DirichletBayesIm prior =
-                DirichletBayesIm.symmetricDirichletIm(this.bayesPmObs, 0.5);
+        DirichletBayesIm prior =
+                DirichletBayesIm.symmetricDirichletIm(bayesPmObs, 0.5);
 
-        this.observedIm = DirichletEstimator.estimate(prior, this.dataSet);
+        observedIm = DirichletEstimator.estimate(prior, dataSet);
 
         //mixedData should be ddsNm with new columns for the latent variables.
         //Each such column should contain missing data for each case.
 
-        final int numFullCases = this.dataSet.getNumRows();
-        final List<Node> variables = new LinkedList<>();
+        int numFullCases = dataSet.getNumRows();
+        List<Node> variables = new LinkedList<>();
 
-        for (final Node node : this.nodes) {
+        for (Node node : nodes) {
             if (node.getNodeType() == NodeType.LATENT) {
-                final int numCategories = this.bayesPm.getNumCategories(node);
-                final DiscreteVariable latentVar =
+                int numCategories = bayesPm.getNumCategories(node);
+                DiscreteVariable latentVar =
                         new DiscreteVariable(node.getName(), numCategories);
                 latentVar.setNodeType(NodeType.LATENT);
                 variables.add(latentVar);
             } else {
-                final String name = this.bayesPm.getVariable(node).getName();
-                final Node variable = this.dataSet.getVariable(name);
+                String name = bayesPm.getVariable(node).getName();
+                Node variable = dataSet.getVariable(name);
                 variables.add(variable);
             }
         }
 
-        final DataSet dsMixed = new BoxDataSet(new DoubleDataBox(numFullCases, variables.size()), variables);
+        DataSet dsMixed = new BoxDataSet(new DoubleDataBox(numFullCases, variables.size()), variables);
 
-        for (int j = 0; j < this.nodes.length; j++) {
-            if (this.nodes[j].getNodeType() == NodeType.LATENT) {
+        for (int j = 0; j < nodes.length; j++) {
+            if (nodes[j].getNodeType() == NodeType.LATENT) {
                 for (int i = 0; i < numFullCases; i++) {
                     dsMixed.setInt(i, j, -99);
                 }
             } else {
-                final String name = this.bayesPm.getVariable(this.nodes[j]).getName();
-                final Node variable = this.dataSet.getVariable(name);
-                final int index = this.dataSet.getColumn(variable);
+                String name = bayesPm.getVariable(nodes[j]).getName();
+                Node variable = dataSet.getVariable(name);
+                int index = dataSet.getColumn(variable);
 
                 for (int i = 0; i < numFullCases; i++) {
-                    dsMixed.setInt(i, j, this.dataSet.getInt(i, index));
+                    dsMixed.setInt(i, j, dataSet.getInt(i, index));
                 }
             }
         }
 
 //        System.out.println(dsMixed);
 
-        this.mixedData = dsMixed;
-        this.allVariables = this.mixedData.getVariables();
+        mixedData = dsMixed;
+        allVariables = mixedData.getVariables();
 
         //Find the bayes net which is parameterized using mixedData or set randomly when that's
         //not possible.
-        estimateIM(this.bayesPm, this.mixedData);
+        this.estimateIM(bayesPm, mixedData);
 
-        this.estimatedCounts = new double[this.nodes.length][][];
-        this.estimatedCountsDenom = new double[this.nodes.length][];
-        this.condProbs = new double[this.nodes.length][][];
+        estimatedCounts = new double[nodes.length][][];
+        estimatedCountsDenom = new double[nodes.length][];
+        condProbs = new double[nodes.length][][];
 
-        for (int i = 0; i < this.nodes.length; i++) {
+        for (int i = 0; i < nodes.length; i++) {
             //int numRows = bayesImMixed.getNumRows(i);
-            final int numRows = this.estimatedIm.getNumRows(i);
-            this.estimatedCounts[i] = new double[numRows][];
-            this.estimatedCountsDenom[i] = new double[numRows];
-            this.condProbs[i] = new double[numRows][];
+            int numRows = estimatedIm.getNumRows(i);
+            estimatedCounts[i] = new double[numRows][];
+            estimatedCountsDenom[i] = new double[numRows];
+            condProbs[i] = new double[numRows][];
             //for(int j = 0; j < bayesImMixed.getNumRows(i); j++) {
-            for (int j = 0; j < this.estimatedIm.getNumRows(i); j++) {
+            for (int j = 0; j < estimatedIm.getNumRows(i); j++) {
                 //int numCols = bayesImMixed.getNumColumns(i);
-                final int numCols = this.estimatedIm.getNumColumns(i);
-                this.estimatedCounts[i][j] = new double[numCols];
-                this.condProbs[i][j] = new double[numCols];
+                int numCols = estimatedIm.getNumColumns(i);
+                estimatedCounts[i][j] = new double[numCols];
+                condProbs[i][j] = new double[numCols];
             }
         }
     }
@@ -247,33 +247,33 @@ public final class EmBayesEstimator {
      * double[][] array estimatedCountsDenom.  These two arrays are used to
      * compute the estimated conditional probabilities of the output Bayes net.
      */
-    private void expectation(final BayesIm inputBayesIm) {
-        final int numCases = this.mixedData.getNumRows();
-        final int numVariables = this.allVariables.size();
-        final RowSummingExactUpdater rseu = new RowSummingExactUpdater(inputBayesIm);
+    private void expectation(BayesIm inputBayesIm) {
+        int numCases = mixedData.getNumRows();
+        int numVariables = allVariables.size();
+        RowSummingExactUpdater rseu = new RowSummingExactUpdater(inputBayesIm);
 
         for (int j = 0; j < numVariables; j++) {
-            final DiscreteVariable var = (DiscreteVariable) this.allVariables.get(j);
-            final String varName = var.getName();
-            final Node varNode = this.graph.getNode(varName);
-            final int varIndex = inputBayesIm.getNodeIndex(varNode);
-            final int[] parentVarIndices = inputBayesIm.getParents(varIndex);
+            DiscreteVariable var = (DiscreteVariable) allVariables.get(j);
+            String varName = var.getName();
+            Node varNode = graph.getNode(varName);
+            int varIndex = inputBayesIm.getNodeIndex(varNode);
+            int[] parentVarIndices = inputBayesIm.getParents(varIndex);
 
             //This segment is for variables with no parents:
             if (parentVarIndices.length == 0) {
                 //System.out.println("No parents");
                 for (int col = 0; col < var.getNumCategories(); col++) {
-                    this.estimatedCounts[j][0][col] = 0.0;
+                    estimatedCounts[j][0][col] = 0.0;
                 }
 
                 for (int i = 0; i < numCases; i++) {
                     //System.out.println("Case " + i);
                     //If this case has a value for ar
-                    if (this.mixedData.getInt(i, j) != -99) {
-                        this.estimatedCounts[j][0][this.mixedData.getInt(i, j)] += 1.0;
+                    if (mixedData.getInt(i, j) != -99) {
+                        estimatedCounts[j][0][mixedData.getInt(i, j)] += 1.0;
                     } else {
                         //find marginal probability, given obs data in this case, p(v=0)
-                        final Evidence evidenceThisCase = Evidence.tautology(inputBayesIm);
+                        Evidence evidenceThisCase = Evidence.tautology(inputBayesIm);
                         boolean existsEvidence = false;
 
                         //Define evidence for updating by using the values of the other vars.
@@ -281,18 +281,18 @@ public final class EmBayesEstimator {
                             if (k == j) {
                                 continue;
                             }
-                            final Node otherVar = this.allVariables.get(k);
-                            if (this.mixedData.getInt(i, k) == -99) {
+                            Node otherVar = allVariables.get(k);
+                            if (mixedData.getInt(i, k) == -99) {
                                 continue;
                             }
                             existsEvidence = true;
-                            final String otherVarName = otherVar.getName();
-                            final Node otherNode = this.graph.getNode(otherVarName);
-                            final int otherIndex =
+                            String otherVarName = otherVar.getName();
+                            Node otherNode = graph.getNode(otherVarName);
+                            int otherIndex =
                                     inputBayesIm.getNodeIndex(otherNode);
 
                             evidenceThisCase.getProposition().setCategory(
-                                    otherIndex, this.mixedData.getInt(i, k));
+                                    otherIndex, mixedData.getInt(i, k));
                         }
 
                         if (!existsEvidence) {
@@ -302,7 +302,7 @@ public final class EmBayesEstimator {
                         rseu.setEvidence(evidenceThisCase);
 
                         for (int m = 0; m < var.getNumCategories(); m++) {
-                            this.estimatedCounts[j][0][m] +=
+                            estimatedCounts[j][0][m] +=
                                     rseu.getMarginal(varIndex, m);
                         }
                     }
@@ -313,13 +313,13 @@ public final class EmBayesEstimator {
 
                 //Print counts for each value of this variable with no parents.
             } else {    //For variables with parents:
-                final int numRows = inputBayesIm.getNumRows(varIndex);
+                int numRows = inputBayesIm.getNumRows(varIndex);
                 for (int row = 0; row < numRows; row++) {
-                    final int[] parValues =
+                    int[] parValues =
                             inputBayesIm.getParentValues(varIndex, row);
-                    this.estimatedCountsDenom[varIndex][row] = 0.0;
+                    estimatedCountsDenom[varIndex][row] = 0.0;
                     for (int col = 0; col < var.getNumCategories(); col++) {
-                        this.estimatedCounts[varIndex][row][col] = 0.0;
+                        estimatedCounts[varIndex][row][col] = 0.0;
                     }
 
                     for (int i = 0; i < numCases; i++) {
@@ -329,8 +329,8 @@ public final class EmBayesEstimator {
 
                         for (int p = 0; p < parentVarIndices.length; p++) {
                             if (parValues[p] !=
-                                    this.mixedData.getInt(i, parentVarIndices[p]) &&
-                                    this.mixedData.getInt(i, parentVarIndices[p]) !=
+                                    mixedData.getInt(i, parentVarIndices[p]) &&
+                                    mixedData.getInt(i, parentVarIndices[p]) !=
                                             -99) {
                                 parentMatch = false;
                                 break;
@@ -342,18 +342,18 @@ public final class EmBayesEstimator {
                         }
 
                         boolean parentMissing = false;
-                        for (final int parentVarIndice : parentVarIndices) {
-                            if (this.mixedData.getInt(i, parentVarIndice) == -99) {
+                        for (int parentVarIndice : parentVarIndices) {
+                            if (mixedData.getInt(i, parentVarIndice) == -99) {
                                 parentMissing = true;
                                 break;
                             }
                         }
 
 
-                        if (this.mixedData.getInt(i, j) != -99 && !parentMissing) {
-                            this.estimatedCounts[j][row][this.mixedData.getInt(i, j)] +=
+                        if (mixedData.getInt(i, j) != -99 && !parentMissing) {
+                            estimatedCounts[j][row][mixedData.getInt(i, j)] +=
                                     1.0;
-                            this.estimatedCountsDenom[j][row] += 1.0;
+                            estimatedCountsDenom[j][row] += 1.0;
                             continue;    //Next case
                         }
 
@@ -365,30 +365,30 @@ public final class EmBayesEstimator {
             }
         }
 
-        final BayesIm outputBayesIm = new MlBayesIm(this.bayesPm);
+        BayesIm outputBayesIm = new MlBayesIm(bayesPm);
 
-        for (int j = 0; j < this.nodes.length; j++) {
+        for (int j = 0; j < nodes.length; j++) {
 
-            final DiscreteVariable var = (DiscreteVariable) this.allVariables.get(j);
-            final String varName = var.getName();
-            final Node varNode = this.graph.getNode(varName);
-            final int varIndex = inputBayesIm.getNodeIndex(varNode);
+            DiscreteVariable var = (DiscreteVariable) allVariables.get(j);
+            String varName = var.getName();
+            Node varNode = graph.getNode(varName);
+            int varIndex = inputBayesIm.getNodeIndex(varNode);
 //            int[] parentVarIndices = inputBayesIm.getParents(varIndex);
 
-            final int numRows = inputBayesIm.getNumRows(j);
+            int numRows = inputBayesIm.getNumRows(j);
             //System.out.println("Conditional probabilities for variable " + varName);
 
-            final int numCols = inputBayesIm.getNumColumns(j);
+            int numCols = inputBayesIm.getNumColumns(j);
             if (numRows == 1) {
                 double sum = 0.0;
                 for (int m = 0; m < numCols; m++) {
-                    sum += this.estimatedCounts[j][0][m];
+                    sum += estimatedCounts[j][0][m];
                 }
 
                 for (int m = 0; m < numCols; m++) {
-                    this.condProbs[j][0][m] = this.estimatedCounts[j][0][m] / sum;
+                    condProbs[j][0][m] = estimatedCounts[j][0][m] / sum;
                     outputBayesIm.setProbability(varIndex, 0, m,
-                            this.condProbs[j][0][m]);
+                            condProbs[j][0][m]);
                 }
                 //System.out.println();
             } else {
@@ -396,14 +396,14 @@ public final class EmBayesEstimator {
                 for (int row = 0; row < numRows; row++) {
 
                     for (int m = 0; m < numCols; m++) {
-                        if (this.estimatedCountsDenom[j][row] != 0.0) {
-                            this.condProbs[j][row][m] = this.estimatedCounts[j][row][m] /
-                                    this.estimatedCountsDenom[j][row];
+                        if (estimatedCountsDenom[j][row] != 0.0) {
+                            condProbs[j][row][m] = estimatedCounts[j][row][m] /
+                                    estimatedCountsDenom[j][row];
                         } else {
-                            this.condProbs[j][row][m] = Double.NaN;
+                            condProbs[j][row][m] = Double.NaN;
                         }
                         outputBayesIm.setProbability(varIndex, row, m,
-                                this.condProbs[j][row][m]);
+                                condProbs[j][row][m]);
                     }
                 }
             }
@@ -422,14 +422,14 @@ public final class EmBayesEstimator {
      * distance between vectors of sequences of their parameters.  See the
      * BayesImDistanceFunction class for details.
      */
-    public BayesIm maximization(final double threshhold) {
+    public BayesIm maximization(double threshhold) {
         double distance = Double.MAX_VALUE;
-        BayesIm oldBayesIm = this.estimatedIm;
+        BayesIm oldBayesIm = estimatedIm;
         BayesIm newBayesIm = null;
 
         while (Double.isNaN(distance) || distance > threshhold) {
-            expectation(oldBayesIm);
-            newBayesIm = getEstimatedIm();
+            this.expectation(oldBayesIm);
+            newBayesIm = this.getEstimatedIm();
 
             distance = BayesImDistanceFunction.distance(newBayesIm, oldBayesIm);
 
@@ -440,14 +440,14 @@ public final class EmBayesEstimator {
 
     private void findBayesNetObserved() {
 
-        final Dag dagObs = new Dag(this.graph);
-        for (final Node node : this.nodes) {
+        Dag dagObs = new Dag(graph);
+        for (Node node : nodes) {
             if (node.getNodeType() == NodeType.LATENT) {
                 dagObs.removeNode(node);
             }
         }
 
-        this.bayesPmObs = new BayesPm(dagObs, this.bayesPm);
+        bayesPmObs = new BayesPm(dagObs, bayesPm);
     }
 
     /**
@@ -457,7 +457,7 @@ public final class EmBayesEstimator {
      * The Bayes IM so estimated is used as the initial Bayes net in the
      * iterative procedure implemented in the maximize method.
      */
-    private void estimateIM(final BayesPm bayesPm, final DataSet dataSet) {
+    private void estimateIM(BayesPm bayesPm, DataSet dataSet) {
         if (bayesPm == null) {
             throw new NullPointerException();
         }
@@ -469,25 +469,25 @@ public final class EmBayesEstimator {
         BayesUtils.ensureVarsInData(bayesPm.getVariables(), dataSet);
 
         // Create a new Bayes IM to store the estimated values.
-        this.estimatedIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
+        estimatedIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
 
-        final int numNodes = this.estimatedIm.getNumNodes();
+        int numNodes = estimatedIm.getNumNodes();
 
         for (int node = 0; node < numNodes; node++) {
 
-            final int numRows = this.estimatedIm.getNumRows(node);
-            final int numCols = this.estimatedIm.getNumColumns(node);
-            final int[] parentVarIndices = this.estimatedIm.getParents(node);
-            if (this.nodes[node].getNodeType() == NodeType.LATENT) {
+            int numRows = estimatedIm.getNumRows(node);
+            int numCols = estimatedIm.getNumColumns(node);
+            int[] parentVarIndices = estimatedIm.getParents(node);
+            if (nodes[node].getNodeType() == NodeType.LATENT) {
                 continue;
             }
 
-            final Node nodeObs = this.observedIm.getNode(this.nodes[node].getName());
-            final int nodeObsIndex = this.observedIm.getNodeIndex(nodeObs);
+            Node nodeObs = observedIm.getNode(nodes[node].getName());
+            int nodeObsIndex = observedIm.getNodeIndex(nodeObs);
 
             boolean anyParentLatent = false;
-            for (final int parentVarIndice : parentVarIndices) {
-                if (this.nodes[parentVarIndice].getNodeType() == NodeType.LATENT) {
+            for (int parentVarIndice : parentVarIndices) {
+                if (nodes[parentVarIndice].getNodeType() == NodeType.LATENT) {
                     anyParentLatent = true;
                     break;
                 }
@@ -500,9 +500,9 @@ public final class EmBayesEstimator {
             //At this point node is measured in bayesPm and so are its parents.
             for (int row = 0; row < numRows; row++) {
                 for (int col = 0; col < numCols; col++) {
-                    final double p =
-                            this.observedIm.getProbability(nodeObsIndex, row, col);
-                    this.estimatedIm.setProbability(node, row, col, p);
+                    double p =
+                            observedIm.getProbability(nodeObsIndex, row, col);
+                    estimatedIm.setProbability(node, row, col, p);
                 }
             }
         }
@@ -510,11 +510,11 @@ public final class EmBayesEstimator {
     }
 
     public DataSet getMixedDataSet() {
-        return this.mixedData;
+        return mixedData;
     }
 
     public BayesIm getEstimatedIm() {
-        return this.estimatedIm;
+        return estimatedIm;
     }
 
 

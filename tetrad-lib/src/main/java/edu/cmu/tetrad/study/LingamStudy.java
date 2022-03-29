@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.study;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
+import edu.cmu.tetrad.algcomparison.Comparison.ComparisonGraph;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.Lingam;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.Fask;
@@ -42,8 +43,8 @@ import edu.cmu.tetrad.util.Params;
  * @author jdramsey
  */
 public class LingamStudy {
-    public static void main(final String... args) {
-        final Statistics statistics = new Statistics();
+    public static void main(String... args) {
+        Statistics statistics = new Statistics();
 
 //        statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
         statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
@@ -60,30 +61,30 @@ public class LingamStudy {
         statistics.setWeight("AHP", 1);
         statistics.setWeight("AHR", 1);
 
-        final Algorithms algorithms = new Algorithms();
+        Algorithms algorithms = new Algorithms();
 
         algorithms.add(new Lingam());
         algorithms.add(new R3(new FAS(new FisherZ())));
         algorithms.add(new RSkew(new FAS(new FisherZ())));
         algorithms.add(new Fask(new FisherZ()));
 
-        final Comparison comparison = new Comparison();
+        Comparison comparison = new Comparison();
 
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
-        comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
+        comparison.setComparisonGraph(ComparisonGraph.true_DAG);
 
-        final Simulations simulations = new Simulations();
+        Simulations simulations = new Simulations();
         simulations.add(new LinearFisherModel(new RandomForward()));
 
-        comparison.compareFromSimulations("lingam", simulations, algorithms, statistics, LingamStudy.getParameters());
+        comparison.compareFromSimulations("lingam", simulations, algorithms, statistics, getParameters());
 
     }
 
     private static Parameters getParameters() {
-        final Parameters parameters = new Parameters();
+        Parameters parameters = new Parameters();
 
         parameters.set(Params.VERBOSE, false);
 

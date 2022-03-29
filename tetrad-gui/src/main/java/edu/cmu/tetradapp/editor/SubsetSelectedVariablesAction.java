@@ -42,73 +42,73 @@ final class SubsetSelectedVariablesAction extends AbstractAction {
     /**
      * Creates a new action to split by collinear columns.
      */
-    public SubsetSelectedVariablesAction(final DataEditor editor) {
+    public SubsetSelectedVariablesAction(DataEditor editor) {
         super("Copy Selected Columns");
 
         if (editor == null) {
             throw new NullPointerException();
         }
 
-        this.dataEditor = editor;
+        dataEditor = editor;
     }
 
     /**
      * Performs the action of loading a session from a file.
      */
-    public void actionPerformed(final ActionEvent e) {
-        final DataModel dataModel = getDataEditor().getSelectedDataModel();
+    public void actionPerformed(ActionEvent e) {
+        DataModel dataModel = this.getDataEditor().getSelectedDataModel();
 
         if (dataModel instanceof DataSet) {
-            final DataSet dataSet = (DataSet) dataModel;
-            final int[] selectedIndices = dataSet.getSelectedIndices();
+            DataSet dataSet = (DataSet) dataModel;
+            int[] selectedIndices = dataSet.getSelectedIndices();
 
             if (selectedIndices.length == 0) {
-                JOptionPane.showMessageDialog(getDataEditor(),
+                JOptionPane.showMessageDialog(this.getDataEditor(),
                         "No columns have been selected.");
                 return;
             }
 
-            final DataSet selection =
+            DataSet selection =
                     dataSet.subsetColumns(selectedIndices);
 
-            final DataModelList list = new DataModelList();
+            DataModelList list = new DataModelList();
             list.add(selection);
-            getDataEditor().reset(list);
-            getDataEditor().selectFirstTab();
+            this.getDataEditor().reset(list);
+            this.getDataEditor().selectFirstTab();
         } else if (dataModel instanceof CorrelationMatrix) {
-            final CorrelationMatrix corrMatrix = (CorrelationMatrix) dataModel;
-            final List<String> selectedNames = corrMatrix.getSelectedVariableNames();
+            CorrelationMatrix corrMatrix = (CorrelationMatrix) dataModel;
+            List<String> selectedNames = corrMatrix.getSelectedVariableNames();
 
             if (selectedNames.isEmpty()) {
-                JOptionPane.showMessageDialog(getDataEditor(),
+                JOptionPane.showMessageDialog(this.getDataEditor(),
                         "No columns have been selected.");
                 return;
             }
 
-            final CorrelationMatrix submatrix = corrMatrix.getSubCorrMatrix(
+            CorrelationMatrix submatrix = corrMatrix.getSubCorrMatrix(
                     selectedNames.toArray(new String[0]));
 
-            final DataModelList list = new DataModelList();
+            DataModelList list = new DataModelList();
             list.add(submatrix);
-            getDataEditor().reset(list);
-            getDataEditor().selectFirstTab();
+            this.getDataEditor().reset(list);
+            this.getDataEditor().selectFirstTab();
         } else if (dataModel instanceof ICovarianceMatrix) {
-            final ICovarianceMatrix corrMatrix = (ICovarianceMatrix) dataModel;
-            final List<String> selectedNames = corrMatrix.getSelectedVariableNames();
+            ICovarianceMatrix corrMatrix = (ICovarianceMatrix) dataModel;
+            List<String> selectedNames = corrMatrix.getSelectedVariableNames();
 
             if (selectedNames.isEmpty()) {
-                JOptionPane.showMessageDialog(getDataEditor(),
+                JOptionPane.showMessageDialog(this.getDataEditor(),
                         "No columns have been selected.");
                 return;
             }
 
-            final ICovarianceMatrix submatrix = corrMatrix.getSubmatrix(
+            ICovarianceMatrix submatrix = corrMatrix.getSubmatrix(
                     selectedNames.toArray(new String[0]));
 
-            final DataModelList list = new DataModelList();
+            DataModelList list = new DataModelList();
             list.add(submatrix);
-            getDataEditor().reset(list);
-            getDataEditor().selectFirstTab();
+            this.getDataEditor().reset(list);
+            this.getDataEditor().selectFirstTab();
         } else {
             throw new IllegalArgumentException(
                     "Data subsetting requires a tabular " +
@@ -117,7 +117,7 @@ final class SubsetSelectedVariablesAction extends AbstractAction {
     }
 
     private DataEditor getDataEditor() {
-        return this.dataEditor;
+        return dataEditor;
     }
 }
 

@@ -25,6 +25,7 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
+import edu.cmu.tetradapp.util.IntTextField.Filter;
 
 import javax.swing.*;
 import java.text.DecimalFormat;
@@ -40,7 +41,7 @@ class PcIndTestParamsEditor extends JComponent {
     /**
      * The parameters object being edited.
      */
-    private Parameters params = null;
+    private Parameters params;
 
     /**
      * A text field to allow the user to enter the number of dishes to
@@ -57,40 +58,40 @@ class PcIndTestParamsEditor extends JComponent {
     /**
      * Constructs a dialog to edit the given gene simulation parameters object.
      */
-    public PcIndTestParamsEditor(final Parameters params) {
+    public PcIndTestParamsEditor(Parameters params) {
         this.params = params;
 
         // set up text and ties them to the parameters object being edited.
 //        alphaField = new DoubleTextField(params().getAlternativePenalty(), 5,
 //                NumberFormatUtil.getInstance().getNumberFormat());
-        final NumberFormat numberFormat = NumberFormatUtil.getInstance().getNumberFormat();
-        final NumberFormat smallNumberFormat = new DecimalFormat("0.0E0##");
-        this.alphaField = new DoubleTextField(params().getDouble("alpha", 0.001), 6,
+        NumberFormat numberFormat = NumberFormatUtil.getInstance().getNumberFormat();
+        NumberFormat smallNumberFormat = new DecimalFormat("0.0E0##");
+        alphaField = new DoubleTextField(this.params().getDouble("alpha", 0.001), 6,
                 numberFormat, smallNumberFormat, .001);
-        this.alphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(final double value, final double oldValue) {
+        alphaField.setFilter(new DoubleTextField.Filter() {
+            public double filter(double value, double oldValue) {
                 try {
-                    params().set("alpha", 0.001);
+                    PcIndTestParamsEditor.this.params().set("alpha", 0.001);
                     return value;
-                } catch (final IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
-        this.depthField = new IntTextField(params().getInt("depth", -1), 4);
-        this.depthField.setFilter(new IntTextField.Filter() {
-            public int filter(final int value, final int oldValue) {
+        depthField = new IntTextField(this.params().getInt("depth", -1), 4);
+        depthField.setFilter(new Filter() {
+            public int filter(int value, int oldValue) {
                 try {
-                    params().set("depth", value);
+                    PcIndTestParamsEditor.this.params().set("depth", value);
                     return value;
-                } catch (final IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
-        buildGui();
+        this.buildGui();
     }
 
     /**
@@ -99,25 +100,25 @@ class PcIndTestParamsEditor extends JComponent {
      * appropriate listeners.
      */
     private void buildGui() {
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        if (this.alphaField != null) {
-            final Box b1 = Box.createHorizontalBox();
+        if (alphaField != null) {
+            Box b1 = Box.createHorizontalBox();
             b1.add(new JLabel("Alpha:"));
             b1.add(Box.createHorizontalStrut(10));
             b1.add(Box.createHorizontalGlue());
-            b1.add(this.alphaField);
-            add(b1);
+            b1.add(alphaField);
+            this.add(b1);
         }
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("Depth:"));
         b2.add(Box.createHorizontalStrut(10));
         b2.add(Box.createHorizontalGlue());
-        b2.add(this.depthField);
-        add(b2);
+        b2.add(depthField);
+        this.add(b2);
 
-        add(Box.createHorizontalGlue());
+        this.add(Box.createHorizontalGlue());
     }
 
     /**
@@ -125,7 +126,7 @@ class PcIndTestParamsEditor extends JComponent {
      * public, but it is needed so that the textfields can edit the model.)
      */
     private Parameters params() {
-        return this.params;
+        return params;
     }
 }
 

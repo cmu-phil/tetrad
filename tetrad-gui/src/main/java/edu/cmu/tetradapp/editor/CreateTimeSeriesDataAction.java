@@ -54,21 +54,21 @@ final class CreateTimeSeriesDataAction extends AbstractAction {
     /**
      * Creates new action to discretize columns.
      */
-    public CreateTimeSeriesDataAction(final DataEditor editor) {
+    public CreateTimeSeriesDataAction(DataEditor editor) {
         super("Time Series Data");
 
         if (editor == null) {
             throw new NullPointerException();
         }
 
-        this.dataEditor = editor;
+        dataEditor = editor;
     }
 
     /**
      * Performs the action of loading a session from a file.
      */
-    public void actionPerformed(final ActionEvent e) {
-        final DataModel dataModel = getDataEditor().getSelectedDataModel();
+    public void actionPerformed(ActionEvent e) {
+        DataModel dataModel = this.getDataEditor().getSelectedDataModel();
 
         if (!(dataModel instanceof DataSet)) {
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
@@ -76,25 +76,25 @@ final class CreateTimeSeriesDataAction extends AbstractAction {
             return;
         }
 
-        this.dataSet = (DataSet) dataModel;
+        dataSet = (DataSet) dataModel;
 
-        final SpinnerNumberModel spinnerNumberModel =
-                new SpinnerNumberModel(getNumLags(), 0, 20, 1);
-        final JSpinner jSpinner = new JSpinner(spinnerNumberModel);
+        SpinnerNumberModel spinnerNumberModel =
+                new SpinnerNumberModel(this.getNumLags(), 0, 20, 1);
+        JSpinner jSpinner = new JSpinner(spinnerNumberModel);
         jSpinner.setPreferredSize(jSpinner.getPreferredSize());
 
         spinnerNumberModel.addChangeListener(new ChangeListener() {
-            public void stateChanged(final ChangeEvent e) {
-                final SpinnerNumberModel model = (SpinnerNumberModel) e.getSource();
-                setNumLags(model.getNumber().intValue());
+            public void stateChanged(ChangeEvent e) {
+                SpinnerNumberModel model = (SpinnerNumberModel) e.getSource();
+                CreateTimeSeriesDataAction.this.setNumLags(model.getNumber().intValue());
             }
         });
 
-        final JPanel panel = new JPanel();
+        JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
 
-        final Box b = Box.createVerticalBox();
-        final Box b1 = Box.createHorizontalBox();
+        Box b = Box.createVerticalBox();
+        Box b1 = Box.createHorizontalBox();
         b1.add(new JLabel("Number of time lags: "));
         b1.add(Box.createHorizontalGlue());
         b1.add(Box.createHorizontalStrut(15));
@@ -104,20 +104,20 @@ final class CreateTimeSeriesDataAction extends AbstractAction {
 
         panel.add(b, BorderLayout.CENTER);
 
-        final EditorWindow editorWindow = new EditorWindow(panel,
-                "Create time series data", "Save", true, this.dataEditor);
+        EditorWindow editorWindow = new EditorWindow(panel,
+                "Create time series data", "Save", true, dataEditor);
         DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
         editorWindow.setVisible(true);
 
         editorWindow.addInternalFrameListener(new InternalFrameAdapter() {
-            public void internalFrameClosed(final InternalFrameEvent e) {
-                final EditorWindow window = (EditorWindow) e.getSource();
+            public void internalFrameClosed(InternalFrameEvent e) {
+                EditorWindow window = (EditorWindow) e.getSource();
 
                 if (!window.isCanceled()) {
-                    if (CreateTimeSeriesDataAction.this.dataSet.isContinuous()) {
-                        createContinuousTimeSeriesData();
-                    } else if (CreateTimeSeriesDataAction.this.dataSet.isDiscrete()) {
-                        createDiscreteTimeSeriesData();
+                    if (dataSet.isContinuous()) {
+                        CreateTimeSeriesDataAction.this.createContinuousTimeSeriesData();
+                    } else if (dataSet.isDiscrete()) {
+                        CreateTimeSeriesDataAction.this.createDiscreteTimeSeriesData();
                     } else {
                         JOptionPane.showMessageDialog(
                                 JOptionUtils.centeringComp(),
@@ -131,19 +131,19 @@ final class CreateTimeSeriesDataAction extends AbstractAction {
     private void createContinuousTimeSeriesData() {
 
         // GIVEN: Continuous data set D, maximum lag m.
-        final Node[] dataVars = this.dataSet.getVariables().toArray(new Node[0]);
-        final int n = dataVars.length;
-        final int m = getNumLags();
+        Node[] dataVars = dataSet.getVariables().toArray(new Node[0]);
+        int n = dataVars.length;
+        int m = this.getNumLags();
 
         // LetXi, i = 0,...,n-1, be the variables from the data. Let Xi(t) be
         // the variable Xi at time lag t (before 0), t = 0,...,m.
-        final Node[][] laggedVars = new Node[m + 1][n];
-        final IKnowledge knowledge = new Knowledge2();
+        Node[][] laggedVars = new Node[m + 1][n];
+        IKnowledge knowledge = new Knowledge2();
 
         for (int s = 0; s < m; s++) {
             for (int j = 0; j < n; j++) {
-                final String name1 = dataVars[j].getName();
-                final String name2 = name1 + ":" + (s + 1);
+                String name1 = dataVars[j].getName();
+                String name2 = name1 + ":" + (s + 1);
                 laggedVars[s][j] = new ContinuousVariable(name2);
                 laggedVars[s][j].setCenter(80 * j + 50, 80 * (m - s) + 50);
                 knowledge.addToTier(s, laggedVars[s][j].getName());
@@ -151,40 +151,40 @@ final class CreateTimeSeriesDataAction extends AbstractAction {
         }
 
         // 2. Prepare the data the way you did.
-        final List<Node> variables = new LinkedList<>();
+        List<Node> variables = new LinkedList<>();
 
         for (int s = 0; s < m; s++) {
             for (int i = 0; i < n; i++) {
-                final double[] rawData = new double[this.dataSet.getNumRows()];
+                double[] rawData = new double[dataSet.getNumRows()];
 
-                for (int j = 0; j < this.dataSet.getNumRows(); j++) {
-                    rawData[j] = this.dataSet.getDouble(j, i);
+                for (int j = 0; j < dataSet.getNumRows(); j++) {
+                    rawData[j] = dataSet.getDouble(j, i);
                 }
 
-                final int size = this.dataSet.getNumRows();
+                int size = dataSet.getNumRows();
 
-                final double[] laggedRaw = new double[size - m + 1];
+                double[] laggedRaw = new double[size - m + 1];
                 System.arraycopy(rawData, s, laggedRaw, 0, size - m + 1);
                 variables.add(laggedVars[s][i]);
             }
         }
 
-        final DataSet _laggedData =
-                new BoxDataSet(new DoubleDataBox(this.dataSet.getNumRows() - m + 1, variables.size()), variables);
+        DataSet _laggedData =
+                new BoxDataSet(new DoubleDataBox(dataSet.getNumRows() - m + 1, variables.size()), variables);
 
         for (int s = 0; s < m; s++) {
             for (int i = 0; i < n; i++) {
-                final double[] rawData = new double[this.dataSet.getNumRows()];
+                double[] rawData = new double[dataSet.getNumRows()];
 
-                for (int j = 0; j < this.dataSet.getNumRows(); j++) {
-                    rawData[j] = this.dataSet.getDouble(j, i);
+                for (int j = 0; j < dataSet.getNumRows(); j++) {
+                    rawData[j] = dataSet.getDouble(j, i);
                 }
 
-                final int size = this.dataSet.getNumRows();
+                int size = dataSet.getNumRows();
 
-                final double[] laggedRaw = new double[size - m + 1];
+                double[] laggedRaw = new double[size - m + 1];
                 System.arraycopy(rawData, s, laggedRaw, 0, size - m + 1);
-                final int col = _laggedData.getVariables().indexOf(laggedVars[s][i]);
+                int col = _laggedData.getVariables().indexOf(laggedVars[s][i]);
 
                 for (int i1 = 0; i1 < laggedRaw.length; i1++) {
                     _laggedData.setDouble(i1, col, laggedRaw[i1]);
@@ -194,28 +194,28 @@ final class CreateTimeSeriesDataAction extends AbstractAction {
 
         knowledge.setDefaultToKnowledgeLayout(true);
         _laggedData.setKnowledge(knowledge);
-        final DataModelList list = new DataModelList();
+        DataModelList list = new DataModelList();
         list.add(_laggedData);
-        getDataEditor().reset(list);
-        getDataEditor().selectFirstTab();
+        this.getDataEditor().reset(list);
+        this.getDataEditor().selectFirstTab();
     }
 
     private void createDiscreteTimeSeriesData() {
 
         // GIVEN: Continuous data set D, maximum lag m.
-        final Node[] dataVars = this.dataSet.getVariables().toArray(new Node[0]);
-        final int n = dataVars.length;
-        final int m = getNumLags();
+        Node[] dataVars = dataSet.getVariables().toArray(new Node[0]);
+        int n = dataVars.length;
+        int m = this.getNumLags();
 
         // LetXi, i = 0,...,n-1, be the variables from the data. Let Xi(t) be
         // the variable Xi at time lag t (before 0), t = 0,...,m.
-        final Node[][] laggedVars = new Node[m + 1][n];
-        final IKnowledge knowledge = new Knowledge2();
+        Node[][] laggedVars = new Node[m + 1][n];
+        IKnowledge knowledge = new Knowledge2();
 
         for (int s = 0; s <= m; s++) {
             for (int j = 0; j < n; j++) {
-                final String name1 = dataVars[j].getName();
-                final String name2 = name1 + ":" + (s + 1);
+                String name1 = dataVars[j].getName();
+                String name2 = name1 + ":" + (s + 1);
                 laggedVars[s][j] =
                         new DiscreteVariable((DiscreteVariable) dataVars[j]);
                 laggedVars[s][j].setName(name2);
@@ -225,42 +225,42 @@ final class CreateTimeSeriesDataAction extends AbstractAction {
         }
 
         // 2. Prepare the data the way you did.
-        final List<Node> variables = new LinkedList<>();
+        List<Node> variables = new LinkedList<>();
 
         for (int s = 0; s <= m; s++) {
             for (int i = 0; i < n; i++) {
-                final int[] rawData = new int[this.dataSet.getNumRows()];
+                int[] rawData = new int[dataSet.getNumRows()];
 
-                for (int j = 0; j < this.dataSet.getNumRows(); j++) {
-                    rawData[j] = this.dataSet.getInt(j, i);
+                for (int j = 0; j < dataSet.getNumRows(); j++) {
+                    rawData[j] = dataSet.getInt(j, i);
                 }
 
-                final int size = this.dataSet.getNumRows();
+                int size = dataSet.getNumRows();
 
-                final int[] laggedRaw = new int[size - m + 1];
+                int[] laggedRaw = new int[size - m + 1];
                 System.arraycopy(rawData, m - s, laggedRaw, 0, size - m + 1);
                 variables.add(laggedVars[s][i]);
             }
         }
 
-        final DataSet _laggedData =
-                new BoxDataSet(new DoubleDataBox(this.dataSet.getNumRows() - m + 1, variables.size()), variables);
+        DataSet _laggedData =
+                new BoxDataSet(new DoubleDataBox(dataSet.getNumRows() - m + 1, variables.size()), variables);
 
         for (int s = 0; s <= m; s++) {
             for (int i = 0; i < n; i++) {
-                final int[] rawData = new int[this.dataSet.getNumRows()];
+                int[] rawData = new int[dataSet.getNumRows()];
 
-                for (int j = 0; j < this.dataSet.getNumRows(); j++) {
-                    rawData[j] = this.dataSet.getInt(j, i);
+                for (int j = 0; j < dataSet.getNumRows(); j++) {
+                    rawData[j] = dataSet.getInt(j, i);
                 }
 
-                final int size = this.dataSet.getNumRows();
+                int size = dataSet.getNumRows();
 
-                final int[] laggedRaw = new int[size - m + 1];
+                int[] laggedRaw = new int[size - m + 1];
                 System.arraycopy(rawData, m - s, laggedRaw, 0, size - m + 1);
-                final int _col = _laggedData.getColumn(laggedVars[s][i]);
+                int _col = _laggedData.getColumn(laggedVars[s][i]);
 
-                for (int j = 0; j < this.dataSet.getNumRows(); j++) {
+                for (int j = 0; j < dataSet.getNumRows(); j++) {
                     _laggedData.setInt(j, _col, laggedRaw[j]);
                 }
             }
@@ -268,14 +268,14 @@ final class CreateTimeSeriesDataAction extends AbstractAction {
 
         knowledge.setDefaultToKnowledgeLayout(true);
         _laggedData.setKnowledge(knowledge);
-        final DataModelList list = new DataModelList();
+        DataModelList list = new DataModelList();
         list.add(_laggedData);
-        getDataEditor().reset(list);
-        getDataEditor().selectFirstTab();
+        this.getDataEditor().reset(list);
+        this.getDataEditor().selectFirstTab();
 
     }
 
-    private void setNumLags(final int numLags) {
+    private void setNumLags(int numLags) {
         if (numLags < 2 || numLags > 20) {
             throw new IllegalArgumentException();
         }
@@ -284,11 +284,11 @@ final class CreateTimeSeriesDataAction extends AbstractAction {
     }
 
     private DataEditor getDataEditor() {
-        return this.dataEditor;
+        return dataEditor;
     }
 
     private int getNumLags() {
-        return this.numLags;
+        return numLags;
     }
 }
 

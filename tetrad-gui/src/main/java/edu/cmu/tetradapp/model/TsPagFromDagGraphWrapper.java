@@ -37,24 +37,24 @@ public class TsPagFromDagGraphWrapper extends GraphWrapper implements DoNotAddOl
     static final long serialVersionUID = 23L;
 
 
-    public TsPagFromDagGraphWrapper(final GraphSource source, final Parameters parameters) {
+    public TsPagFromDagGraphWrapper(GraphSource source, Parameters parameters) {
         this(source.getGraph());
     }
 
 
-    public TsPagFromDagGraphWrapper(final Graph graph) {
+    public TsPagFromDagGraphWrapper(Graph graph) {
         super(new EdgeListGraph());
 
         // make sure the given graph is a dag.
         try {
             new Dag(graph);
-        } catch (final Exception e) {
+        } catch (Exception e) {
             throw new IllegalArgumentException("The source graph is not a DAG.");
         }
 
-        final TsDagToPag p = new TsDagToPag(graph);
-        final Graph pag = p.convert();
-        setGraph(pag);
+        TsDagToPag p = new TsDagToPag(graph);
+        Graph pag = p.convert();
+        this.setGraph(pag);
 
         TetradLogger.getInstance().log("info", "\nGenerating allow_latent_common_causes from DAG.");
         TetradLogger.getInstance().log("CPDAG", pag + "");

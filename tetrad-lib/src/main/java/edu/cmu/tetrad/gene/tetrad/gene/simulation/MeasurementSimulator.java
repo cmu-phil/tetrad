@@ -64,7 +64,7 @@ public class MeasurementSimulator implements TetradSerializable {
     /**
      * @serial
      */
-    private GeneHistory history = null;
+    private GeneHistory history;
 
     // Adjustable parameters: for descriptions of these, see the
     // corresponding accessor methods. These parameters control how
@@ -105,17 +105,17 @@ public class MeasurementSimulator implements TetradSerializable {
     /**
      * @serial
      */
-    private int[] timeSteps = null;
+    private int[] timeSteps;
 
     /**
      * @serial
      */
-    private double[][][] rawData = null;
+    private double[][][] rawData;
 
     /**
      * @serial
      */
-    private double[][][] measuredData = null;
+    private double[][][] measuredData;
 
     // Exported parameters from the simulate() method to allow
     // progress to be reported onscreen for large simulations.
@@ -140,9 +140,9 @@ public class MeasurementSimulator implements TetradSerializable {
      *
      * @throws NullPointerException if the history argument is null.
      */
-    public MeasurementSimulator(final Parameters parameters) {
+    public MeasurementSimulator(Parameters parameters) {
         this.parameters = parameters;
-        constructTimeSteps();
+        this.constructTimeSteps();
     }
 
     /**
@@ -158,13 +158,13 @@ public class MeasurementSimulator implements TetradSerializable {
      * Returns the history that was set in the constructor.
      */
     public GeneHistory getHistory() {
-        return this.history;
+        return history;
     }
 
     /**
      * Sets the history.
      */
-    public void setHistory(final GeneHistory history) {
+    public void setHistory(GeneHistory history) {
         if (history == null) {
             throw new NullPointerException();
         }
@@ -177,10 +177,10 @@ public class MeasurementSimulator implements TetradSerializable {
      * passed to a dish model that determines how expression levels for genes in
      * cells are bumped up or down depending on which dish the cells are in.
      */
-    public void setNumDishes(final int numDishes) {
+    public void setNumDishes(int numDishes) {
 
         if (numDishes > 0) {
-            this.parameters.set("numDishes", numDishes);
+            parameters.set("numDishes", numDishes);
 //            this.numDishes = numDishes;
         } else {
             throw new IllegalArgumentException(
@@ -195,17 +195,17 @@ public class MeasurementSimulator implements TetradSerializable {
      * Returns the number of dishes that are to be simulated.
      */
     public int getNumDishes() {
-        return this.parameters.getInt("numDishes", this.numDishes);
+        return parameters.getInt("numDishes", numDishes);
 //        return numDishes;
     }
 
     public boolean isIncludeDishAndChipColumns() {
-        return this.parameters.getBoolean("includeDishAndChipColumns", this.includeDishAndChipColumns);
+        return parameters.getBoolean("includeDishAndChipColumns", includeDishAndChipColumns);
 //        return includeDishAndChipColumns;
     }
 
-    public void setIncludeDishAndChipColumns(final boolean includeDishAndChipColumns) {
-        this.parameters.set("includeDishAndChipColumns", includeDishAndChipColumns);
+    public void setIncludeDishAndChipColumns(boolean includeDishAndChipColumns) {
+        parameters.set("includeDishAndChipColumns", includeDishAndChipColumns);
 //        this.includeDishAndChipColumns = includeDishAndChipColumns;
     }
 
@@ -213,10 +213,10 @@ public class MeasurementSimulator implements TetradSerializable {
      * Sets the number of cells per dish. It is assumed that each dish has the
      * same number of cells.
      */
-    public void setNumCellsPerDish(final int numCellsPerDish) {
+    public void setNumCellsPerDish(int numCellsPerDish) {
 
         if (numCellsPerDish > 0) {
-            this.parameters.set("numCellsPerDish", numCellsPerDish);
+            parameters.set("numCellsPerDish", numCellsPerDish);
 //            this.numCellsPerDish = numCellsPerDish;
         } else {
             throw new IllegalArgumentException("Number of cells per dish " +
@@ -231,7 +231,7 @@ public class MeasurementSimulator implements TetradSerializable {
      * Returns the number of cells per dish.
      */
     public int getNumCellsPerDish() {
-        return this.parameters.getInt("numCellsPerDish", this.numCellsPerDish);
+        return parameters.getInt("numCellsPerDish", numCellsPerDish);
 //        return this.numCellsPerDish;
     }
 
@@ -242,13 +242,13 @@ public class MeasurementSimulator implements TetradSerializable {
      * parameter together with the parameters <code>firstStepStored</code> and
      * <code>interval</code>.
      */
-    public void setStepsGenerated(final int stepsGenerated) {
+    public void setStepsGenerated(int stepsGenerated) {
 
         if (stepsGenerated > 0) {
-            this.parameters.set("stepsGenerated", stepsGenerated);
+            parameters.set("stepsGenerated", stepsGenerated);
 //            this.stepsGenerated = stepsGenerated;
 
-            constructTimeSteps();
+            this.constructTimeSteps();
         } else {
             throw new IllegalArgumentException(
                     "Steps generated must be > 0:" + stepsGenerated);
@@ -261,7 +261,7 @@ public class MeasurementSimulator implements TetradSerializable {
      * @see #setStepsGenerated
      */
     public int getStepsGenerated() {
-        return this.parameters.getInt("stepsGenerated", this.stepsGenerated);
+        return parameters.getInt("stepsGenerated", stepsGenerated);
 //        return this.stepsGenerated;
     }
 
@@ -272,13 +272,13 @@ public class MeasurementSimulator implements TetradSerializable {
      * parameter is greater than the value of 'stepsGenerated', no steps will
      * be saved.
      */
-    public void setFirstStepStored(final int firstStepStored) {
+    public void setFirstStepStored(int firstStepStored) {
 
         if (firstStepStored > 0) {
-            this.parameters.set("firstStepStored", firstStepStored);
+            parameters.set("firstStepStored", firstStepStored);
 //            this.firstStepStored = firstStepStored;
 
-            constructTimeSteps();
+            this.constructTimeSteps();
         } else {
             throw new IllegalArgumentException(
                     "First step stored must be > 0: " + firstStepStored);
@@ -292,7 +292,7 @@ public class MeasurementSimulator implements TetradSerializable {
      * Returns the index of the first step to actually be stored out.
      */
     public int getFirstStepStored() {
-        return this.parameters.getInt("firstStepStored", this.firstStepStored);
+        return parameters.getInt("firstStepStored", firstStepStored);
 //        return this.firstStepStored;
     }
 
@@ -301,13 +301,13 @@ public class MeasurementSimulator implements TetradSerializable {
      *
      * @see #getInterval
      */
-    public void setInterval(final int interval) {
+    public void setInterval(int interval) {
 
         if (interval > 0) {
-            this.parameters.set("interval", interval);
+            parameters.set("interval", interval);
 //            this.interval = interval;
 
-            constructTimeSteps();
+            this.constructTimeSteps();
         } else {
             throw new IllegalArgumentException(
                     "Interval must be > 0: " + interval);
@@ -324,7 +324,7 @@ public class MeasurementSimulator implements TetradSerializable {
      * at the first index in the series that exceeds 'stepsGenerated'.
      */
     public int getInterval() {
-        return this.parameters.getInt("interval", this.interval);
+        return parameters.getInt("interval", interval);
 //        return this.interval;
     }
 
@@ -334,8 +334,8 @@ public class MeasurementSimulator implements TetradSerializable {
      * set this to 'false' since for any reasonably sized simulation only the
      * measurement data is needed and the raw data can get to be way big.
      */
-    public void setRawDataSaved(final boolean rawDataSaved) {
-        this.parameters.set("rawDataSaved", rawDataSaved);
+    public void setRawDataSaved(boolean rawDataSaved) {
+        parameters.set("rawDataSaved", rawDataSaved);
 //        this.rawDataSaved = rawDataSaved;
     }
 
@@ -349,7 +349,7 @@ public class MeasurementSimulator implements TetradSerializable {
      * @see #setRawDataSaved
      */
     public boolean isRawDataSaved() {
-        return this.parameters.getBoolean("rawDataSaved", this.rawDataSaved);
+        return parameters.getBoolean("rawDataSaved", rawDataSaved);
 //        return this.rawDataSaved;
     }
 
@@ -358,8 +358,8 @@ public class MeasurementSimulator implements TetradSerializable {
      * default value is 'true'; should only be set to 'false' if only the raw
      * data is needed for a particular task.
      */
-    public void setMeasuredDataSaved(final boolean measuredDataSaved) {
-        this.parameters.set("measuredDataSaved", measuredDataSaved);
+    public void setMeasuredDataSaved(boolean measuredDataSaved) {
+        parameters.set("measuredDataSaved", measuredDataSaved);
 //        this.measuredDataSaved = measuredDataSaved;
     }
 
@@ -373,7 +373,7 @@ public class MeasurementSimulator implements TetradSerializable {
      * @see #setMeasuredDataSaved
      */
     public boolean isMeasuredDataSaved() {
-        return this.parameters.getBoolean("measuredDataSaved", this.measuredDataSaved);
+        return parameters.getBoolean("measuredDataSaved", measuredDataSaved);
 //        return this.measuredDataSaved;
     }
 
@@ -394,8 +394,8 @@ public class MeasurementSimulator implements TetradSerializable {
      *                 initialized randomly.
      * @see GeneHistory
      */
-    public void setInitSync(final boolean initSync) {
-        this.parameters.set("initSync", initSync);
+    public void setInitSync(boolean initSync) {
+        parameters.set("initSync", initSync);
 //        this.initSync = initSync;
     }
 
@@ -409,15 +409,15 @@ public class MeasurementSimulator implements TetradSerializable {
      * @see #setInitSync
      */
     public boolean isInitSync() {
-        return this.parameters.getBoolean("initSync", this.initSync);
+        return parameters.getBoolean("initSync", initSync);
 //        return this.initSync;
     }
 
     /**
      * Sets whether the antilog of each expression level should be calculated.
      */
-    public void setAntilogCalculated(final boolean antilogCalculated) {
-        this.parameters.set("antilogCalculated", antilogCalculated);
+    public void setAntilogCalculated(boolean antilogCalculated) {
+        parameters.set("antilogCalculated", antilogCalculated);
 //        this.antilogCalculated = antilogCalculated;
     }
 
@@ -429,7 +429,7 @@ public class MeasurementSimulator implements TetradSerializable {
      * calculated.
      */
     public boolean isAntilogCalculated() {
-        return this.parameters.getBoolean("antilogCalculated", this.antilogCalculated);
+        return parameters.getBoolean("antilogCalculated", antilogCalculated);
 //        return this.antilogCalculated;
     }
 
@@ -442,10 +442,10 @@ public class MeasurementSimulator implements TetradSerializable {
      *
      * @see DishModel
      */
-    public void setDishDishVariability(final double dishDishVariability) {
+    public void setDishDishVariability(double dishDishVariability) {
 
         if ((dishDishVariability > 0.0) && (dishDishVariability < 100.0)) {
-            this.parameters.set("dishDishVariability", dishDishVariability);
+            parameters.set("dishDishVariability", dishDishVariability);
 //            this.dishDishVariability = dishDishVariability;
         } else {
             throw new IllegalArgumentException("Dish variability must " +
@@ -463,7 +463,7 @@ public class MeasurementSimulator implements TetradSerializable {
      * @see #setDishDishVariability
      */
     public double getDishDishVariability() {
-        return this.parameters.getDouble("dishDishVariability", this.dishDishVariability);
+        return parameters.getDouble("dishDishVariability", dishDishVariability);
 //        return this.dishDishVariability;
     }
 
@@ -476,10 +476,10 @@ public class MeasurementSimulator implements TetradSerializable {
      * of microarrays. The number of samples per dish is the number of
      * microarrays that this ground up mixture is pipetted onto.
      */
-    public void setNumSamplesPerDish(final int numSamplesPerDish) {
+    public void setNumSamplesPerDish(int numSamplesPerDish) {
 
         if (numSamplesPerDish > 0) {
-            this.parameters.set("numChipsPerDish", numSamplesPerDish);
+            parameters.set("numChipsPerDish", numSamplesPerDish);
 //            this.numSamplesPerDish = numSamplesPerDish;
         } else {
             throw new IllegalArgumentException("Number of chips per dish " +
@@ -497,7 +497,7 @@ public class MeasurementSimulator implements TetradSerializable {
      * @see #setNumSamplesPerDish
      */
     public int getNumSamplesPerDish() {
-        return this.parameters.getInt("numChipsPerDish", this.numSamplesPerDish);
+        return parameters.getInt("numChipsPerDish", numSamplesPerDish);
 //        return this.numSamplesPerDish;
     }
 
@@ -511,10 +511,10 @@ public class MeasurementSimulator implements TetradSerializable {
      * deviation of the given value, <code>sampleSampleVariability</code>.
      * This error is added to other measurement errors.
      */
-    public void setSampleSampleVariability(final double sampleSampleVariability) {
+    public void setSampleSampleVariability(double sampleSampleVariability) {
 
         if ((sampleSampleVariability > 0.0) && (sampleSampleVariability < 1.0)) {
-            this.parameters.set("sampleSampleVariability", sampleSampleVariability);
+            parameters.set("sampleSampleVariability", sampleSampleVariability);
 //            this.sampleSampleVariability = sampleSampleVariability;
         } else {
             throw new IllegalArgumentException("Sample variability must be " +
@@ -534,7 +534,7 @@ public class MeasurementSimulator implements TetradSerializable {
      * @see #setSampleSampleVariability
      */
     public double getSampleSampleVariability() {
-        return this.parameters.getDouble("sampleSampleVariability", this.sampleSampleVariability);
+        return parameters.getDouble("sampleSampleVariability", sampleSampleVariability);
 //        return this.sampleSampleVariability;
     }
 
@@ -547,10 +547,10 @@ public class MeasurementSimulator implements TetradSerializable {
      * bump all measured expressions on the dish by that amount. This error is
      * added to other measurement errors.
      */
-    public void setChipChipVariability(final double chipChipVariability) {
+    public void setChipChipVariability(double chipChipVariability) {
 
         if ((chipChipVariability > 0.0) && (chipChipVariability < 1.0)) {
-            this.parameters.set("chipChipVariability", chipChipVariability);
+            parameters.set("chipChipVariability", chipChipVariability);
 //            this.chipChipVariability = chipChipVariability;
         } else {
             throw new IllegalArgumentException("Chip to chip variability " +
@@ -567,7 +567,7 @@ public class MeasurementSimulator implements TetradSerializable {
      * @see #setChipChipVariability
      */
     public double getChipChipVariability() {
-        return this.parameters.getDouble("chipChipVariability", this.chipChipVariability);
+        return parameters.getDouble("chipChipVariability", chipChipVariability);
 //        return this.chipChipVariability;
     }
 
@@ -577,10 +577,10 @@ public class MeasurementSimulator implements TetradSerializable {
      * 0 and standard deviation <code>pixelDigitalization</code>. This error is
      * added to the other errors for measurement.
      */
-    public void setPixelDigitalization(final double pixelDigitalization) {
+    public void setPixelDigitalization(double pixelDigitalization) {
 
         if ((pixelDigitalization > 0.0) && (pixelDigitalization < 1.0)) {
-            this.parameters.set("pixelDigitalization", pixelDigitalization);
+            parameters.set("pixelDigitalization", pixelDigitalization);
 
 //            this.pixelDigitalization = pixelDigitalization;
         } else {
@@ -598,7 +598,7 @@ public class MeasurementSimulator implements TetradSerializable {
      * @see #setPixelDigitalization
      */
     public double getPixelDigitalization() {
-        return this.parameters.getDouble("pixelDigitalization", this.pixelDigitalization);
+        return parameters.getDouble("pixelDigitalization", pixelDigitalization);
 //        return this.pixelDigitalization;
     }
 
@@ -617,7 +617,7 @@ public class MeasurementSimulator implements TetradSerializable {
      * saved, or null, if raw data is not saved.
      */
     public double[][][] getRawData() {
-        return this.rawData;
+        return rawData;
     }
 
     /**
@@ -635,7 +635,7 @@ public class MeasurementSimulator implements TetradSerializable {
      * data is saved, or null, if measured data is not saved.
      */
     public double[][][] getMeasuredData() {
-        return this.measuredData;
+        return measuredData;
     }
 
     /**
@@ -651,12 +651,12 @@ public class MeasurementSimulator implements TetradSerializable {
         // order, since otherwise a loop later on in this method that
         // uses them will break badly. Note that basicConstraints on the
         // values of the parameters prevent numTimeSteps from being 0.
-        final int numTimeSteps = (1 + getStepsGenerated() - getFirstStepStored()) / getInterval();
+        int numTimeSteps = (1 + this.getStepsGenerated() - this.getFirstStepStored()) / this.getInterval();
 
-        this.timeSteps = new int[numTimeSteps];
+        timeSteps = new int[numTimeSteps];
 
-        for (int i = 0; i < this.timeSteps.length; i++) {
-            this.timeSteps[i] = getFirstStepStored() + i * getInterval();
+        for (int i = 0; i < timeSteps.length; i++) {
+            timeSteps[i] = this.getFirstStepStored() + i * this.getInterval();
         }
     }
 
@@ -676,7 +676,7 @@ public class MeasurementSimulator implements TetradSerializable {
      * 1, are in increasing order, and (as explained above) are equally spaced.
      */
     public int[] getTimeSteps() {
-        return this.timeSteps;
+        return timeSteps;
     }
 
     /**
@@ -688,7 +688,7 @@ public class MeasurementSimulator implements TetradSerializable {
      * @see #getNumDishes
      */
     public int getDishNumber() {
-        return this.dishNumber;
+        return dishNumber;
     }
 
     /**
@@ -701,7 +701,7 @@ public class MeasurementSimulator implements TetradSerializable {
      * @see #getNumDishes
      */
     public int getCellNumber() {
-        return this.cellNumber;
+        return cellNumber;
     }
 
     /**
@@ -722,35 +722,35 @@ public class MeasurementSimulator implements TetradSerializable {
      * @see #getRawData
      * @see #getMeasuredData
      */
-    public void simulate(final GeneHistory history) {
+    public void simulate(GeneHistory history) {
 
-        setHistory(history);
+        this.setHistory(history);
 
         history.reset();
 
         // Get the update function.
-        final UpdateFunction updateFunction = history.getUpdateFunction();
-        final int numFactors = updateFunction.getNumFactors();
+        UpdateFunction updateFunction = history.getUpdateFunction();
+        int numFactors = updateFunction.getNumFactors();
 
         // Set up the dish model.
-        final DishModel dishModel =
-                new DishModel(getNumDishes(), getDishDishVariability());
+        DishModel dishModel =
+                new DishModel(this.getNumDishes(), this.getDishDishVariability());
 
         // Set up the history.
-        history.setInitSync(isInitSync());
+        history.setInitSync(this.isInitSync());
         history.setDishModel(dishModel);
 
         // We will use two data cubes to store data for display
         // purposes: a measurement cube and a raw data cube. We first
         // construct the measurement cube, with two extra columns for
         // (a) dish number and (b) chip number.
-        final int numChips = getNumSamplesPerDish();
+        int numChips = this.getNumSamplesPerDish();
 
-        if (isMeasuredDataSaved()) {
-            final int numSteps = this.timeSteps.length;
-            final int numSamples = getNumDishes() * numChips;
+        if (this.isMeasuredDataSaved()) {
+            int numSteps = timeSteps.length;
+            int numSamples = this.getNumDishes() * numChips;
 
-            this.measuredData = new double[numFactors][numSteps][numSamples];
+            measuredData = new double[numFactors][numSteps][numSamples];
         }
 
         // We next construct the raw data cube, with two extra columns
@@ -760,13 +760,13 @@ public class MeasurementSimulator implements TetradSerializable {
         // be extremely large.) References to the cube and the initial
         // columns need to be saved in this scope for future use (but
         // may be null).
-        this.rawData = null;
+        rawData = null;
 
-        if (isRawDataSaved()) {
-            final int numSteps = this.timeSteps.length;
-            final int numCells = getNumDishes() * getNumCellsPerDish();
+        if (this.isRawDataSaved()) {
+            int numSteps = timeSteps.length;
+            int numCells = this.getNumDishes() * this.getNumCellsPerDish();
 
-            this.rawData = new double[numFactors][numSteps][numCells];
+            rawData = new double[numFactors][numSteps][numCells];
         }
 
         // There are three sources of error--sample to sample, chip to
@@ -775,16 +775,16 @@ public class MeasurementSimulator implements TetradSerializable {
         // on the same number of chips. There is an error associated
         // with each chip and with each sample. (Pixel digitalization
         // error is drawn later.)
-        final double sampleSd = getSampleSampleVariability();
-        final double chipSd = getChipChipVariability();
-        final double pixelSd = getPixelDigitalization();
-        final Distribution sampleErrorDist = new Normal(0.0, sampleSd);
-        final Distribution chipErrorDist = new Normal(0.0, chipSd);
-        final Distribution pixelErrorDist = new Normal(0.0, pixelSd);
-        final double[][] chipErrors = new double[getNumDishes()][numChips];
-        final double[][] sampleErrors = new double[getNumDishes()][numChips];
+        double sampleSd = this.getSampleSampleVariability();
+        double chipSd = this.getChipChipVariability();
+        double pixelSd = this.getPixelDigitalization();
+        Distribution sampleErrorDist = new Normal(0.0, sampleSd);
+        Distribution chipErrorDist = new Normal(0.0, chipSd);
+        Distribution pixelErrorDist = new Normal(0.0, pixelSd);
+        double[][] chipErrors = new double[this.getNumDishes()][numChips];
+        double[][] sampleErrors = new double[this.getNumDishes()][numChips];
 
-        for (int d = 0; d < getNumDishes(); d++) {
+        for (int d = 0; d < this.getNumDishes(); d++) {
             for (int ch = 0; ch < numChips; ch++) {
                 chipErrors[d][ch] = chipErrorDist.nextRandom();
                 sampleErrors[d][ch] = sampleErrorDist.nextRandom();
@@ -794,23 +794,23 @@ public class MeasurementSimulator implements TetradSerializable {
         // Make two double[] arrays, one to store data generated for a
         // particular cell (in a particular dish) and one to store
         // aggregations of these data.
-        final double[][] cellData = new double[this.timeSteps.length][numFactors];
-        final double[][] aggregation =
+        double[][] cellData = new double[timeSteps.length][numFactors];
+        double[][] aggregation =
                 new double[cellData.length][cellData[0].length];
 
         // For each dish and cell, simulate data and store it in in
         // 'cellData'. Across cells in a dish, aggregate this data in
         // 'aggregation'. First, iterate over dishes.
-        for (int d = 0; d < getNumDishes(); d++) {
+        for (int d = 0; d < this.getNumDishes(); d++) {
             dishModel.setDishNumber(d);
 
             // Reset the aggregation.
-            for (int sIndex = 0; sIndex < this.timeSteps.length; sIndex++) {
+            for (int sIndex = 0; sIndex < timeSteps.length; sIndex++) {
                 Arrays.fill(aggregation[sIndex], 0);
             }
 
             // Next, iterate over the cells in a dish.
-            for (int c = 0; c < getNumCellsPerDish(); c++) {
+            for (int c = 0; c < this.getNumCellsPerDish(); c++) {
 
                 // (Leave this System.out here for now so that the
                 // user can get a sense of how the simulation is
@@ -820,14 +820,14 @@ public class MeasurementSimulator implements TetradSerializable {
                 // assume the user will see System.out. TODO jdramsey
                 // 12/01/01
                 if ((c + 1) % 50 == 0) {
-                    this.dishNumber = d;
-                    this.cellNumber = c;
+                    dishNumber = d;
+                    cellNumber = c;
                     //                    System.out.println("Dish # " + (d + 1) + ", Cell # " +
                     //                            (c + 1));
                 }
 
                 // Reset the cell data.
-                for (int sIndex = 0; sIndex < this.timeSteps.length; sIndex++) {
+                for (int sIndex = 0; sIndex < timeSteps.length; sIndex++) {
                     Arrays.fill(cellData[sIndex], 0);
                 }
 
@@ -844,7 +844,7 @@ public class MeasurementSimulator implements TetradSerializable {
 
                 // Iterate over the steps generated, saving data only
                 // for the steps in timeSteps[].
-                while (++s < getStepsGenerated()) {
+                while (++s < this.getStepsGenerated()) {
 
                     // Update, but not if s == 0. We need to save the
                     // first step to demonstrate that the cells are
@@ -853,8 +853,8 @@ public class MeasurementSimulator implements TetradSerializable {
                         history.update();
                     }
 
-                    if (s == this.timeSteps[sIndex] - 1) {
-                        final double[][] historyArray = history.getHistoryArray();
+                    if (s == timeSteps[sIndex] - 1) {
+                        double[][] historyArray = history.getHistoryArray();
 
                         // For the steps in timeSteps[], iterate over
                         // the factors (genes).
@@ -865,7 +865,7 @@ public class MeasurementSimulator implements TetradSerializable {
                             cellData[sIndex][f] = historyArray[0][f];
 
                             // Antilog it if necessary.
-                            if (isAntilogCalculated()) {
+                            if (this.isAntilogCalculated()) {
                                 cellData[sIndex][f] =
                                         Math.exp(cellData[sIndex][f]);
                             }
@@ -874,18 +874,18 @@ public class MeasurementSimulator implements TetradSerializable {
                             // data cube only if the raw data should
                             // be saved. (Otherwise, rawData ought to
                             // be null.)
-                            if (isRawDataSaved()) {
-                                final int row = d * getNumCellsPerDish() + c;
+                            if (this.isRawDataSaved()) {
+                                int row = d * this.getNumCellsPerDish() + c;
 
                                 /*this.rawData[f][sIndex][row] =
                                 historyArray[0][f];*/
 
-                                this.rawData[f][sIndex][row] =
+                                rawData[f][sIndex][row] =
                                         cellData[sIndex][f];
                             }
                         }    // END for (int f = 0; ...
 
-                        if (++sIndex >= this.timeSteps.length) {
+                        if (++sIndex >= timeSteps.length) {
                             break;
                         }
                     }        // END if (s == timeSteps[sIndex])
@@ -899,7 +899,7 @@ public class MeasurementSimulator implements TetradSerializable {
                 }
             }                // END for (int c = 0; c < numCellsPerDish; c++)
 
-            if (isMeasuredDataSaved()) {
+            if (this.isMeasuredDataSaved()) {
 
                 // Calculate the average for each of these aggregations
                 // and from it generate the prescribed number of
@@ -911,16 +911,16 @@ public class MeasurementSimulator implements TetradSerializable {
                 // chip to chip error are chosen only for each
                 // sample. (These latter two errors have already been
                 // generated.)
-                for (int sIndex = 0; sIndex < this.timeSteps.length; sIndex++) {
+                for (int sIndex = 0; sIndex < timeSteps.length; sIndex++) {
                     for (int f = 0; f < numFactors; f++) {
                         for (int ch = 0; ch < numChips; ch++) {
-                            final double average =
-                                    aggregation[sIndex][f] / getNumCellsPerDish();
-                            final double pixelError = pixelErrorDist.nextRandom();
-                            final double measurement = average + sampleErrors[d][ch] +
+                            double average =
+                                    aggregation[sIndex][f] / this.getNumCellsPerDish();
+                            double pixelError = pixelErrorDist.nextRandom();
+                            double measurement = average + sampleErrors[d][ch] +
                                     chipErrors[d][ch] + pixelError;
 
-                            this.measuredData[f][sIndex][d * numChips + ch] =
+                            measuredData[f][sIndex][d * numChips + ch] =
                                     measurement;
                         }    // END for (int ch = 0; ch < numChips; ch++)
                     }        // END for (int f = 0; f < history.getNumFacto...
@@ -965,51 +965,51 @@ public class MeasurementSimulator implements TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (this.timeSteps == null) {
+        if (timeSteps == null) {
             throw new NullPointerException();
         }
 
-        if (this.chipChipVariability <= 0.0 || this.chipChipVariability >= 1.0) {
+        if (chipChipVariability <= 0.0 || chipChipVariability >= 1.0) {
             throw new IllegalStateException();
         }
 
-        if (this.sampleSampleVariability <= 0.0 || this.sampleSampleVariability >= 1.0) {
+        if (sampleSampleVariability <= 0.0 || sampleSampleVariability >= 1.0) {
             throw new IllegalStateException();
         }
 
-        if (this.pixelDigitalization <= 0.0 || this.pixelDigitalization >= 1.0) {
+        if (pixelDigitalization <= 0.0 || pixelDigitalization >= 1.0) {
             throw new IllegalStateException();
         }
 
-        if (this.dishDishVariability <= 0.0 || this.dishDishVariability >= 100.0) {
+        if (dishDishVariability <= 0.0 || dishDishVariability >= 100.0) {
             throw new IllegalStateException();
         }
 
-        if (this.numDishes <= 0) {
+        if (numDishes <= 0) {
             throw new IllegalStateException();
         }
 
-        if (this.numCellsPerDish <= 0) {
+        if (numCellsPerDish <= 0) {
             throw new IllegalStateException();
         }
 
-        if (this.stepsGenerated <= 0) {
+        if (stepsGenerated <= 0) {
             throw new IllegalStateException();
         }
 
-        if (this.firstStepStored <= 0) {
+        if (firstStepStored <= 0) {
             throw new IllegalStateException();
         }
 
-        if (this.interval <= 0) {
+        if (interval <= 0) {
             throw new IllegalStateException();
         }
 
-        if (this.numSamplesPerDish <= 0) {
+        if (numSamplesPerDish <= 0) {
             throw new IllegalStateException();
         }
 

@@ -40,47 +40,47 @@ public class ConvertToPositiveSkew extends DataWrapper {
 
     //=============================CONSTRUCTORS==============================//
 
-    private ConvertToPositiveSkew(final DataWrapper wrapper) {
-        final DataModelList inList1 = wrapper.getDataModelList();
-        final DataModelList outList = new DataModelList();
+    private ConvertToPositiveSkew(DataWrapper wrapper) {
+        DataModelList inList1 = wrapper.getDataModelList();
+        DataModelList outList = new DataModelList();
 
-        for (final DataModel model : inList1) {
+        for (DataModel model : inList1) {
             if (!(model instanceof DataSet)) {
                 throw new IllegalArgumentException("Not a data set: " + model.getName());
             }
 
-            final DataSet dataSet = (DataSet) model;
+            DataSet dataSet = (DataSet) model;
 
             if (!(dataSet.isContinuous())) {
                 throw new IllegalArgumentException("Not a continuous data set: " + dataSet.getName());
             }
 
-            final Matrix matrix2D = dataSet.getDoubleData();
+            Matrix matrix2D = dataSet.getDoubleData();
 
             for (int j = 0; j < matrix2D.columns(); j++) {
-                final double[] c = matrix2D.getColumn(j).toArray();
-                final double skew = StatUtils.skewness(c);
+                double[] c = matrix2D.getColumn(j).toArray();
+                double skew = StatUtils.skewness(c);
 
                 for (int i = 0; i < matrix2D.rows(); i++) {
                     matrix2D.set(i, j, matrix2D.get(i, j) * Math.signum(skew));
                 }
             }
 
-            final List<Node> list = dataSet.getVariables();
-            final List<Node> list2 = new ArrayList<>();
+            List<Node> list = dataSet.getVariables();
+            List<Node> list2 = new ArrayList<>();
 
-            for (final Node node : list) {
+            for (Node node : list) {
                 list2.add(node);
             }
 
-            final DataSet dataSet2 = new BoxDataSet(new DoubleDataBox(matrix2D.toArray()), list2);
+            DataSet dataSet2 = new BoxDataSet(new DoubleDataBox(matrix2D.toArray()), list2);
             outList.add(dataSet2);
         }
 
-        setDataModel(outList);
-        setSourceGraph(wrapper.getSourceGraph());
+        this.setDataModel(outList);
+        this.setSourceGraph(wrapper.getSourceGraph());
 
-        LogDataUtils.logDataModelList("Multiplying each column by the sign of its skew.", getDataModelList());
+        LogDataUtils.logDataModelList("Multiplying each column by the sign of its skew.", this.getDataModelList());
 
     }
 

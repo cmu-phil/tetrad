@@ -73,12 +73,12 @@ public class PcCPDAG implements GraphSearch {
      * True if cycles are to be aggressively prevented. May be expensive for large graphs (but also useful for large
      * graphs).
      */
-    private boolean aggressivelyPreventCycles = false;
+    private boolean aggressivelyPreventCycles;
 
     /**
      * Count of independence tests.
      */
-    private int numIndependenceTests = 0;
+    private int numIndependenceTests;
 
     /**
      * The logger for this class. The config needs to be set.
@@ -91,7 +91,7 @@ public class PcCPDAG implements GraphSearch {
 
     //=============================CONSTRUCTORS==========================//
 
-    public PcCPDAG(final IndependenceTest independenceTest) {
+    public PcCPDAG(IndependenceTest independenceTest) {
         if (independenceTest == null) {
             throw new NullPointerException();
         }
@@ -102,23 +102,23 @@ public class PcCPDAG implements GraphSearch {
     //==============================PUBLIC METHODS========================//
 
     public boolean isAggressivelyPreventCycles() {
-        return this.aggressivelyPreventCycles;
+        return aggressivelyPreventCycles;
     }
 
-    public void setAggressivelyPreventCycles(final boolean aggressivelyPreventCycles) {
+    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
         this.aggressivelyPreventCycles = aggressivelyPreventCycles;
     }
 
 
     public IndependenceTest getIndependenceTest() {
-        return this.independenceTest;
+        return independenceTest;
     }
 
     public IKnowledge getKnowledge() {
-        return this.knowledge;
+        return knowledge;
     }
 
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -127,105 +127,105 @@ public class PcCPDAG implements GraphSearch {
     }
 
     public SepsetMap getSepset() {
-        return this.sepset;
+        return sepset;
     }
 
     public int getDepth() {
-        return this.depth;
+        return depth;
     }
 
-    public void setDepth(final int depth) {
+    public void setDepth(int depth) {
         this.depth = depth;
     }
 
     public Graph getPartialGraph() {
-        return new EdgeListGraph(this.graph);
+        return new EdgeListGraph(graph);
     }
 
     /**
      * Runs PC starting with a fully connected graph over all of the variables in the domain of the independence test.
      */
     public Graph search() {
-        return search(this.independenceTest.getVariables());
+        return this.search(independenceTest.getVariables());
     }
 
     public long getElapsedTime() {
-        return this.elapsedTime;
+        return elapsedTime;
     }
 
     /**
      * Runs PC on just the given variables, all of which must be in the domain of the independence test.
      */
-    public Graph search(final List<Node> nodes) {
-        this.logger.log("info", "Starting PC CPDAG_of_the_true_DAG algorithm");
-        this.logger.log("info", "Independence test = " + this.independenceTest + ".");
+    public Graph search(List<Node> nodes) {
+        logger.log("info", "Starting PC CPDAG_of_the_true_DAG algorithm");
+        logger.log("info", "Independence test = " + independenceTest + ".");
 
-        final long startTime = System.currentTimeMillis();
-        this.numIndependenceTests = 0;
+        long startTime = System.currentTimeMillis();
+        numIndependenceTests = 0;
 
-        if (getIndependenceTest() == null) {
+        if (this.getIndependenceTest() == null) {
             throw new NullPointerException();
         }
 
-        final List allNodes = getIndependenceTest().getVariables();
+        List allNodes = this.getIndependenceTest().getVariables();
         if (!allNodes.containsAll(nodes)) {
             throw new IllegalArgumentException("All of the given nodes must " +
                     "be in the domain of the independence test provided.");
         }
 
 //        Fas fas = new Fas(graph, getIndependenceTest());
-        final Fas fas = new Fas(getIndependenceTest());
+        Fas fas = new Fas(this.getIndependenceTest());
         fas.setStable(true);
-        fas.setKnowledge(getKnowledge());
-        fas.setDepth(getDepth());
-        this.graph = fas.search();
-        this.sepset = fas.getSepsets();
-        this.numIndependenceTests = fas.getNumIndependenceTests();
+        fas.setKnowledge(this.getKnowledge());
+        fas.setDepth(this.getDepth());
+        graph = fas.search();
+        sepset = fas.getSepsets();
+        numIndependenceTests = fas.getNumIndependenceTests();
 
-        enumerateTriples();
+        this.enumerateTriples();
 
-        SearchGraphUtils.pcOrientbk(getKnowledge(), this.graph, nodes);
-        orientCollidersUsingSepsetsPattern(this.sepset, getKnowledge(), this.graph);
-        handleDirectableCycles(this.graph);
-        final MeekRulesCPDAG rules = new MeekRulesCPDAG();
+        SearchGraphUtils.pcOrientbk(this.getKnowledge(), graph, nodes);
+        this.orientCollidersUsingSepsetsPattern(sepset, this.getKnowledge(), graph);
+        this.handleDirectableCycles(graph);
+        MeekRulesCPDAG rules = new MeekRulesCPDAG();
 //        rules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
 //        rules.setKnowledge(knowledge);
-        rules.orientImplied(this.graph);
+        rules.orientImplied(graph);
 
-        this.logger.log("graph", "\nReturning this graph: " + this.graph);
+        logger.log("graph", "\nReturning this graph: " + graph);
 
-        this.elapsedTime = System.currentTimeMillis() - startTime;
+        elapsedTime = System.currentTimeMillis() - startTime;
 
-        this.logger.log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
-        this.logger.log("info", "Finishing PC Pattern_of_the_true_DAG Algorithm.");
-        this.logger.flush();
+        logger.log("info", "Elapsed time = " + (elapsedTime) / 1000. + " s");
+        logger.log("info", "Finishing PC Pattern_of_the_true_DAG Algorithm.");
+        logger.flush();
 
-        return this.graph;
+        return graph;
     }
 
     private void enumerateTriples() {
-        this.unshieldedColliders = new HashSet<>();
-        this.unshieldedNoncolliders = new HashSet<>();
+        unshieldedColliders = new HashSet<>();
+        unshieldedNoncolliders = new HashSet<>();
 
-        for (final Node y : this.graph.getNodes()) {
-            final List<Node> adj = this.graph.getAdjacentNodes(y);
+        for (Node y : graph.getNodes()) {
+            List<Node> adj = graph.getAdjacentNodes(y);
 
             if (adj.size() < 2) {
                 continue;
             }
 
-            final ChoiceGenerator gen = new ChoiceGenerator(adj.size(), 2);
+            ChoiceGenerator gen = new ChoiceGenerator(adj.size(), 2);
             int[] choice;
 
             while ((choice = gen.next()) != null) {
-                final Node x = adj.get(choice[0]);
-                final Node z = adj.get(choice[1]);
+                Node x = adj.get(choice[0]);
+                Node z = adj.get(choice[1]);
 
 //                if (graph.isAdjacentTo(x, z)) {
 //                    continue;
 //                }
 
-                final List<Node> nodes = this.sepset.get(x, z);
+                List<Node> nodes = sepset.get(x, z);
 
                 // Note that checking adj(x, z) does not suffice when knowledge
                 // has been specified.
@@ -234,20 +234,20 @@ public class PcCPDAG implements GraphSearch {
                 }
 
                 if (nodes.contains(y)) {
-                    getUnshieldedNoncolliders().add(new Triple(x, y, z));
+                    this.getUnshieldedNoncolliders().add(new Triple(x, y, z));
                 } else {
-                    getUnshieldedColliders().add(new Triple(x, y, z));
+                    this.getUnshieldedColliders().add(new Triple(x, y, z));
                 }
             }
         }
     }
 
     public Set<Triple> getUnshieldedColliders() {
-        return this.unshieldedColliders;
+        return unshieldedColliders;
     }
 
     public Set<Triple> getUnshieldedNoncolliders() {
-        return this.unshieldedNoncolliders;
+        return unshieldedNoncolliders;
     }
 
     /**
@@ -255,36 +255,36 @@ public class PcCPDAG implements GraphSearch {
      * *-* y *-* z as x *-> y <-* z just in case y is in Sepset({x, z}), unless such an orientation would create a
      * bidirected edge.
      */
-    public void orientCollidersUsingSepsetsPattern(final SepsetMap set,
-                                                   final IKnowledge knowledge, final Graph graph) {
+    public void orientCollidersUsingSepsetsPattern(SepsetMap set,
+                                                   IKnowledge knowledge, Graph graph) {
         TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
 
-        final List<Node> nodes = graph.getNodes();
+        List<Node> nodes = graph.getNodes();
 
-        for (final Node a : nodes) {
-            final List<Node> adjacentNodes = graph.getAdjacentNodes(a);
+        for (Node a : nodes) {
+            List<Node> adjacentNodes = graph.getAdjacentNodes(a);
 
             if (adjacentNodes.size() < 2) {
                 continue;
             }
 
-            final ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
             int[] combination;
 
             while ((combination = cg.next()) != null) {
-                final Node b = adjacentNodes.get(combination[0]);
-                final Node c = adjacentNodes.get(combination[1]);
+                Node b = adjacentNodes.get(combination[0]);
+                Node c = adjacentNodes.get(combination[1]);
 
                 // Skip triples that are shielded.
                 if (graph.isAdjacentTo(b, c)) {
                     continue;
                 }
 
-                final List<Node> sepset = set.get(b, c);
+                List<Node> sepset = set.get(b, c);
                 if (sepset != null && !sepset.contains(a) &&
-                        PcCPDAG.isArrowpointAllowedPattern(b, a, knowledge, graph) &&
-                        PcCPDAG.isArrowpointAllowedPattern(c, a, knowledge, graph) &&
-                        !createsCycle(b, a, graph) && !createsCycle(c, a, graph)) {
+                        isArrowpointAllowedPattern(b, a, knowledge, graph) &&
+                        isArrowpointAllowedPattern(c, a, knowledge, graph) &&
+                        !this.createsCycle(b, a, graph) && !this.createsCycle(c, a, graph)) {
                     graph.setEndpoint(b, a, Endpoint.ARROW);
                     graph.setEndpoint(c, a, Endpoint.ARROW);
                     TetradLogger.getInstance().log("colliderOrientations",
@@ -300,9 +300,9 @@ public class PcCPDAG implements GraphSearch {
     /**
      * Checks if an arrowpoint is allowed by background knowledge.
      */
-    private static boolean isArrowpointAllowedPattern(final Node from, final Node to,
-                                                      final IKnowledge knowledge, final Graph graph) {
-        final Edge edge = graph.getEdge(from, to);
+    private static boolean isArrowpointAllowedPattern(Node from, Node to,
+                                                      IKnowledge knowledge, Graph graph) {
+        Edge edge = graph.getEdge(from, to);
 
         if (knowledge == null) {
             return true;
@@ -318,11 +318,11 @@ public class PcCPDAG implements GraphSearch {
     /**
      * @param graph The graph in which a directed cycle is sought.
      */
-    public void handleDirectableCycles(final Graph graph) {
+    public void handleDirectableCycles(Graph graph) {
         TetradLogger.getInstance().log("info", "Starting Handling of Directable Cycles:");
 
-        for (final Node node : graph.getNodes()) {
-            directablePathFromTo(graph, node, node);
+        for (Node node : graph.getNodes()) {
+            this.directablePathFromTo(graph, node, node);
         }
 
         TetradLogger.getInstance().log("info", "Finishing Handling of Directable Cycles:");
@@ -333,19 +333,19 @@ public class PcCPDAG implements GraphSearch {
      * @param node1 The 'from' node.
      * @param node2 The 'to'node.
      */
-    public void directablePathFromTo(final Graph graph, final Node node1, final Node node2) {
-        directablePathVisit(graph, node1, node2, new LinkedList<Node>());
+    public void directablePathFromTo(Graph graph, Node node1, Node node2) {
+        this.directablePathVisit(graph, node1, node2, new LinkedList<Node>());
     }
 
-    private void directablePathVisit(final Graph graph, final Node node1, final Node node2,
-                                     final LinkedList<Node> path) {
+    private void directablePathVisit(Graph graph, Node node1, Node node2,
+                                     LinkedList<Node> path) {
         path.addLast(node1);
 //        System.out.println("PATH " + pathString(path, graph));
 //        System.out.println("EDGES " + graph.getEdges(node1));
 
 
-        for (final Edge edge : new LinkedList<>(graph.getEdges(node1))) {
-            final Node child = Edges.traverse(node1, edge);
+        for (Edge edge : new LinkedList<>(graph.getEdges(node1))) {
+            Node child = Edges.traverse(node1, edge);
 //            System.out.println("edge = " + edge + "child = " + child + ", node2 = " + node2);
 
             if (child == null) {
@@ -354,8 +354,8 @@ public class PcCPDAG implements GraphSearch {
 
             // Skip this path if the path to child would contain a collider.
             if (path.size() >= 2) {
-                final Node a1 = path.get(path.size() - 2);
-                final Node a2 = path.get(path.size() - 1);
+                Node a1 = path.get(path.size() - 2);
+                Node a2 = path.get(path.size() - 1);
 
                 if (a1 != child & graph.isDefCollider(a1, a2, child)) {
                     continue;
@@ -368,11 +368,11 @@ public class PcCPDAG implements GraphSearch {
                     continue;
                 }
 
-                if (containsChord(path, graph)) {
+                if (this.containsChord(path, graph)) {
                     continue;
                 }
 
-                orientSomeCollider(path, graph);
+                this.orientSomeCollider(path, graph);
 //                TetradLogger.getInstance().log("info", "Directable cycle! " + pathString(path, graph));
                 continue;
             }
@@ -381,7 +381,7 @@ public class PcCPDAG implements GraphSearch {
                 continue;
             }
 
-            directablePathVisit(graph, child, node2, path);
+            this.directablePathVisit(graph, child, node2, path);
         }
 
         path.removeLast();
@@ -390,12 +390,12 @@ public class PcCPDAG implements GraphSearch {
     /**
      * @return true just in case the given undirected cycle contains a chord.
      */
-    private boolean containsChord(final LinkedList<Node> path, final Graph graph) {
+    private boolean containsChord(LinkedList<Node> path, Graph graph) {
         for (int i = 0; i < path.size() / 2 + 1; i++) {
             for (int j = 2; j < path.size() - 1; j++) {
-                final int _j = (i + j) % path.size();
-                final Node node1 = path.get(i);
-                final Node node2 = path.get(_j);
+                int _j = (i + j) % path.size();
+                Node node1 = path.get(i);
+                Node node2 = path.get(_j);
 
                 if (graph.isAdjacentTo(node1, node2)) {
 //                    Edge chordEdge = graph.getEdge(node1, node2);
@@ -410,17 +410,17 @@ public class PcCPDAG implements GraphSearch {
         return false;
     }
 
-    private void orientSomeCollider(final LinkedList<Node> path, final Graph graph) {
-        final LinkedList<Node> _path = new LinkedList<>(path);
+    private void orientSomeCollider(LinkedList<Node> path, Graph graph) {
+        LinkedList<Node> _path = new LinkedList<>(path);
         _path.add(_path.get(0));
 
         double storedP = Double.POSITIVE_INFINITY;
         int storedI = -1;
 
         for (int i = 1; i < _path.size() - 1; i++) {
-            final Node node1 = _path.get(i - 1);
-            final Node node2 = _path.get(i);
-            final Node node3 = _path.get(i + 1);
+            Node node1 = _path.get(i - 1);
+            Node node2 = _path.get(i);
+            Node node3 = _path.get(i + 1);
 
             if (graph.getEdge(node1, node2) == null) {
                 throw new NullPointerException();
@@ -435,9 +435,9 @@ public class PcCPDAG implements GraphSearch {
                 continue;
             }
 
-            this.independenceTest.isIndependent(node1, node3, Arrays.asList(node2));
+            independenceTest.isIndependent(node1, node3, Arrays.asList(node2));
 //            independenceTest.isIndependent(node1, node3, new LinkedList<Node>());
-            final double p = this.independenceTest.getPValue();
+            double p = independenceTest.getPValue();
 
             if (p < storedP) {
                 storedP = p;
@@ -449,11 +449,11 @@ public class PcCPDAG implements GraphSearch {
             return;
         }
 
-        final Node node1 = _path.get(storedI - 1);
-        final Node node2 = _path.get(storedI);
-        final Node node3 = _path.get(storedI + 1);
+        Node node1 = _path.get(storedI - 1);
+        Node node2 = _path.get(storedI);
+        Node node3 = _path.get(storedI + 1);
 
-        if (createsCycle(node1, node2, graph) || createsCycle(node3, node2, graph)) {
+        if (this.createsCycle(node1, node2, graph) || this.createsCycle(node3, node2, graph)) {
             return;
         }
 
@@ -462,31 +462,31 @@ public class PcCPDAG implements GraphSearch {
 
         TetradLogger.getInstance().log("details", "Orienting " + node1 + "->" +
                 node2 + "<-" + node3
-                + " along path " + pathString(path, graph));
+                + " along path " + this.pathString(path, graph));
     }
 
-    private String pathString(final LinkedList<Node> path, final Graph graph) {
-        final StringBuilder buf = new StringBuilder();
+    private String pathString(LinkedList<Node> path, Graph graph) {
+        StringBuilder buf = new StringBuilder();
 
         for (int i = 0; i < path.size() - 1; i++) {
             buf.append(path.get(i));
-            final Edge edge = graph.getEdge(path.get(i), path.get(i + 1));
+            Edge edge = graph.getEdge(path.get(i), path.get(i + 1));
 
-            final Endpoint leftEnd = edge.getProximalEndpoint(path.get(i));
+            Endpoint leftEnd = edge.getProximalEndpoint(path.get(i));
             buf.append(leftEnd == Endpoint.ARROW ? "<" : "-");
             buf.append("-");
-            final Endpoint rightEnd = edge.getProximalEndpoint(path.get(i + 1));
+            Endpoint rightEnd = edge.getProximalEndpoint(path.get(i + 1));
             buf.append(rightEnd == Endpoint.ARROW ? ">" : "-");
         }
 
         buf.append(path.getLast());
-        final Edge edge = graph.getEdge(path.getLast(), path.getFirst());
+        Edge edge = graph.getEdge(path.getLast(), path.getFirst());
 
         if (edge != null) {
-            final Endpoint leftEnd = edge.getProximalEndpoint(path.getLast());
+            Endpoint leftEnd = edge.getProximalEndpoint(path.getLast());
             buf.append(leftEnd == Endpoint.ARROW ? "<" : "-");
             buf.append("-");
-            final Endpoint rightEnd = edge.getProximalEndpoint(path.getFirst());
+            Endpoint rightEnd = edge.getProximalEndpoint(path.getFirst());
             buf.append(rightEnd == Endpoint.ARROW ? ">" : "-");
             buf.append(path.getFirst());
         }
@@ -497,7 +497,7 @@ public class PcCPDAG implements GraphSearch {
     /**
      * @return true if orienting x-->y would create a cycle.
      */
-    private boolean createsCycle(final Node x, final Node y, final Graph graph) {
+    private boolean createsCycle(Node x, Node y, Graph graph) {
         return graph.isAncestorOf(y, x);
     }
 

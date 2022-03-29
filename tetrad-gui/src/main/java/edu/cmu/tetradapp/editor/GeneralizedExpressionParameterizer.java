@@ -23,12 +23,14 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.calculator.expression.Expression;
 import edu.cmu.tetrad.calculator.parser.ExpressionParser;
+import edu.cmu.tetrad.calculator.parser.ExpressionParser.RestrictionType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.util.DoubleTextField;
+import edu.cmu.tetradapp.util.DoubleTextField.Filter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -49,7 +51,7 @@ class GeneralizedExpressionParameterizer extends JComponent {
     private final Map<String, Double> substitutedValues;
     private final JTextArea resultTextPane;
 
-    public GeneralizedExpressionParameterizer(final GeneralizedSemIm semIm, final Node node) {
+    public GeneralizedExpressionParameterizer(GeneralizedSemIm semIm, Node node) {
         if (semIm == null) {
             throw new NullPointerException("SEM IM must be provided.");
         }
@@ -62,56 +64,56 @@ class GeneralizedExpressionParameterizer extends JComponent {
             throw new IllegalArgumentException("The node provided must be in the graph of the SEM PM.");
         }
 
-        this.semPm = semIm.getSemPm();
-        final GeneralizedSemIm semIm1 = semIm;
+        semPm = semIm.getSemPm();
+        GeneralizedSemIm semIm1 = semIm;
         this.node = node;
 
-        final Node errorNode = this.semPm.getErrorNode(node);
-        final String expressionString1 = this.semPm.getNodeExpressionString(node);
+        Node errorNode = semPm.getErrorNode(node);
+        String expressionString1 = semPm.getNodeExpressionString(node);
 
-        final Set<String> otherVariables = new LinkedHashSet<>();
+        Set<String> otherVariables = new LinkedHashSet<>();
 
-        for (final Node _node : this.semPm.getNodes()) {
-            if (this.semPm.getParents(node).contains(_node)) {
+        for (Node _node : semPm.getNodes()) {
+            if (semPm.getParents(node).contains(_node)) {
                 continue;
             }
 
             otherVariables.add(_node.getName());
         }
 
-        final ExpressionParser parser = new ExpressionParser(otherVariables, ExpressionParser.RestrictionType.MAY_NOT_CONTAIN);
+        ExpressionParser parser = new ExpressionParser(otherVariables, RestrictionType.MAY_NOT_CONTAIN);
 
         try {
             parser.parseExpression(expressionString1);
-        } catch (final ParseException e) {
+        } catch (ParseException e) {
             throw new RuntimeException("Cannot parser the stored expression.", e);
         }
 
 
-        final Expression expression = this.semPm.getNodeExpression(node);
-        final String expressionString = this.semPm.getNodeExpressionString(node);
-        final Set<String> referencedParameters = this.semPm.getReferencedParameters(node);
+        Expression expression = semPm.getNodeExpression(node);
+        String expressionString = semPm.getNodeExpressionString(node);
+        Set<String> referencedParameters = semPm.getReferencedParameters(node);
 
-        this.substitutedValues = new HashMap<>();
+        substitutedValues = new HashMap<>();
 
-        for (final String parameter : referencedParameters) {
-            this.substitutedValues.put(parameter, semIm.getParameterValue(parameter));
+        for (String parameter : referencedParameters) {
+            substitutedValues.put(parameter, semIm.getParameterValue(parameter));
         }
 
-        final String substitutedString = semIm.getNodeSubstitutedString(node, this.substitutedValues);
+        String substitutedString = semIm.getNodeSubstitutedString(node, substitutedValues);
 
         if (node.getNodeType() == NodeType.ERROR) {
-            this.resultTextPane = new JTextArea(node + " ~ " + substitutedString);
+            resultTextPane = new JTextArea(node + " ~ " + substitutedString);
         } else {
-            this.resultTextPane = new JTextArea(node + " = " + substitutedString);
+            resultTextPane = new JTextArea(node + " = " + substitutedString);
         }
 
-        this.resultTextPane.setEditable(false);
-        this.resultTextPane.setBackground(Color.LIGHT_GRAY);
+        resultTextPane.setEditable(false);
+        resultTextPane.setBackground(Color.LIGHT_GRAY);
 
-        final Box b = Box.createVerticalBox();
+        Box b = Box.createVerticalBox();
 
-        final Box b1 = Box.createHorizontalBox();
+        Box b1 = Box.createHorizontalBox();
 
         if (node.getNodeType() == NodeType.ERROR) {
             b1.add(new JLabel(node + " ~ " + expressionString));
@@ -122,12 +124,12 @@ class GeneralizedExpressionParameterizer extends JComponent {
         b.add(b1);
         b.add(Box.createVerticalStrut(5));
 
-        final Box b2 = Box.createHorizontalBox();
-        String parameterString = parameterString(parser);
+        Box b2 = Box.createHorizontalBox();
+        String parameterString = this.parameterString(parser);
 
         if ("".equals(parameterString)) parameterString = "--NONE--";
 
-        final JLabel referencedParametersLabel = new JLabel("Parameters:  " + parameterString);
+        JLabel referencedParametersLabel = new JLabel("Parameters:  " + parameterString);
         b2.add(referencedParametersLabel);
         b2.add(Box.createHorizontalGlue());
         b.add(b2);
@@ -137,27 +139,27 @@ class GeneralizedExpressionParameterizer extends JComponent {
         class MyTextField extends DoubleTextField {
             private final String parameter;
 
-            public MyTextField(final String parameter, final double value, final int width, final NumberFormat format) {
+            public MyTextField(String parameter, double value, int width, NumberFormat format) {
                 super(value, width, format);
                 this.parameter = parameter;
             }
 
             public String getParameter() {
-                return this.parameter;
+                return parameter;
             }
         }
 
-        for (final String parameter : referencedParameters) {
-            final Box c = Box.createHorizontalBox();
+        for (String parameter : referencedParameters) {
+            Box c = Box.createHorizontalBox();
             c.add(new JLabel(parameter + " = "));
-            final MyTextField field = new MyTextField(parameter, semIm.getParameterValue(parameter), 8,
+            MyTextField field = new MyTextField(parameter, semIm.getParameterValue(parameter), 8,
                     NumberFormatUtil.getInstance().getNumberFormat());
 
-            field.setFilter(new DoubleTextField.Filter() {
-                public double filter(final double value, final double oldValue) {
-                    GeneralizedExpressionParameterizer.this.substitutedValues.put(field.getParameter(), value);
-                    GeneralizedExpressionParameterizer.this.resultTextPane.setText(node + " = " + semIm.getNodeSubstitutedString(node,
-                            GeneralizedExpressionParameterizer.this.substitutedValues));
+            field.setFilter(new Filter() {
+                public double filter(double value, double oldValue) {
+                    substitutedValues.put(field.getParameter(), value);
+                    resultTextPane.setText(node + " = " + semIm.getNodeSubstitutedString(node,
+                            substitutedValues));
                     return value;
                 }
             });
@@ -168,47 +170,47 @@ class GeneralizedExpressionParameterizer extends JComponent {
             b.add(Box.createVerticalStrut(5));
         }
 
-        final Box b6 = Box.createHorizontalBox();
+        Box b6 = Box.createHorizontalBox();
         b6.add(new JLabel("Result:"));
         b6.add(Box.createHorizontalGlue());
         b.add(b6);
         b.add(Box.createVerticalStrut(5));
 
-        final JScrollPane resultScroll = new JScrollPane(this.resultTextPane);
+        JScrollPane resultScroll = new JScrollPane(resultTextPane);
         resultScroll.setPreferredSize(new Dimension(500, 50));
-        final Box b7 = Box.createHorizontalBox();
+        Box b7 = Box.createHorizontalBox();
         b7.add(resultScroll);
         b.add(b7);
         b.add(Box.createVerticalStrut(5));
 
-        final Box b8 = Box.createHorizontalBox();
+        Box b8 = Box.createHorizontalBox();
         b8.add(Box.createHorizontalGlue());
         b8.add(new JLabel("* Parameter appears in other expressions."));
         b.add(b8);
 
-        setLayout(new BorderLayout());
-        add(b, BorderLayout.CENTER);
+        this.setLayout(new BorderLayout());
+        this.add(b, BorderLayout.CENTER);
     }
 
     public Map<String, Double> getParameterValues() {
-        return this.substitutedValues;
+        return substitutedValues;
     }
 
-    private String parameterString(final ExpressionParser parser) {
-        final Set<String> parameters = new LinkedHashSet<>(parser.getParameters());
+    private String parameterString(ExpressionParser parser) {
+        Set<String> parameters = new LinkedHashSet<>(parser.getParameters());
 
-        for (final Node _node : this.semPm.getNodes()) {
+        for (Node _node : semPm.getNodes()) {
             parameters.remove(_node.getName());
         }
 
-        final List<String> parametersList = new ArrayList<>(parameters);
-        final StringBuilder buf = new StringBuilder();
+        List<String> parametersList = new ArrayList<>(parameters);
+        StringBuilder buf = new StringBuilder();
 
         for (int i = 0; i < parametersList.size(); i++) {
             buf.append(parametersList.get(i));
 
-            final Set<Node> referencingNodes = this.semPm.getReferencingNodes(parametersList.get(i));
-            referencingNodes.remove(this.node);
+            Set<Node> referencingNodes = semPm.getReferencingNodes(parametersList.get(i));
+            referencingNodes.remove(node);
 
             if (referencingNodes.size() > 0) {
                 buf.append("*");

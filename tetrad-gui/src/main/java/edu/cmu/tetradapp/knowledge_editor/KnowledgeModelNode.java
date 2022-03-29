@@ -66,18 +66,18 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
     private final Map<String, Object> attributes = new HashMap<>();
 
     //=============================CONSTRUCTORS=========================//
-    public KnowledgeModelNode(final String varName) {
+    public KnowledgeModelNode(String varName) {
         if (varName == null) {
             throw new NullPointerException();
         }
 
-        this.name = varName;
+        name = varName;
     }
 
-    public KnowledgeModelNode(final KnowledgeModelNode node) {
-        this.name = node.name;
-        this.centerX = node.centerX;
-        this.centerY = node.centerY;
+    public KnowledgeModelNode(KnowledgeModelNode node) {
+        name = node.name;
+        centerX = node.centerX;
+        centerY = node.centerY;
     }
 
     /**
@@ -91,10 +91,10 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
 
     //=============================PUBLIC METHODS=======================//
     public String getName() {
-        return this.name;
+        return name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         if (name == null) {
             throw new NullPointerException();
         }
@@ -111,48 +111,48 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
         return NodeType.NO_TYPE;
     }
 
-    public void setNodeType(final NodeType nodeType) {
+    public void setNodeType(NodeType nodeType) {
         throw new UnsupportedOperationException();
     }
 
     public int getCenterX() {
-        return this.centerX;
+        return centerX;
     }
 
-    public void setCenterX(final int centerX) {
+    public void setCenterX(int centerX) {
         this.centerX = centerX;
     }
 
     public int getCenterY() {
-        return this.centerY;
+        return centerY;
     }
 
-    public void setCenterY(final int centerY) {
+    public void setCenterY(int centerY) {
         this.centerY = centerY;
     }
 
-    public void setCenter(final int centerX, final int centerY) {
+    public void setCenter(int centerX, int centerY) {
         this.centerX = centerX;
         this.centerY = centerY;
     }
 
-    public void addPropertyChangeListener(final PropertyChangeListener l) {
+    public void addPropertyChangeListener(PropertyChangeListener l) {
         // Ignore.
     }
 
-    public Node like(final String name) {
+    public Node like(String name) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public String toString() {
-        return getName();
+        return this.getName();
     }
 
     @Override
-    public int compareTo(final Node node) {
-        final String name = getName();
+    public int compareTo(Node node) {
+        String name = this.getName();
         String[] tokens1 = name.split(":");
-        final String _name = node.getName();
+        String _name = node.getName();
         String[] tokens2 = _name.split(":");
 
         if (tokens1.length == 1) {
@@ -163,8 +163,8 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
             tokens2 = new String[]{tokens2[0], "0"};
         }
 
-        final int i1 = tokens1[1].compareTo(tokens2[1]);
-        final int i2 = tokens1[0].compareTo(tokens2[0]);
+        int i1 = tokens1[1].compareTo(tokens2[1]);
+        int i2 = tokens1[0].compareTo(tokens2[0]);
 
         if (i1 == 0) {
             return i2;
@@ -175,32 +175,32 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
 
     @Override
     public NodeVariableType getNodeVariableType() {
-        return this.nodeVariableType;
+        return nodeVariableType;
     }
 
     @Override
-    public void setNodeVariableType(final NodeVariableType nodeVariableType) {
+    public void setNodeVariableType(NodeVariableType nodeVariableType) {
         this.nodeVariableType = nodeVariableType;
     }
 
     @Override
     public Map<String, Object> getAllAttributes() {
-        return this.attributes;
+        return attributes;
     }
 
     @Override
-    public Object getAttribute(final String key) {
-        return this.attributes.get(key);
+    public Object getAttribute(String key) {
+        return attributes.get(key);
     }
 
     @Override
-    public void removeAttribute(final String key) {
-        this.attributes.remove(key);
+    public void removeAttribute(String key) {
+        attributes.remove(key);
     }
 
     @Override
-    public void addAttribute(final String key, final Object value) {
-        this.attributes.put(key, value);
+    public void addAttribute(String key, Object value) {
+        attributes.put(key, value);
     }
 
 }

@@ -38,25 +38,25 @@ public class SubsetSelectedVariablesWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
 
 
-    public SubsetSelectedVariablesWrapper(final DataWrapper data, final Parameters params) {
+    public SubsetSelectedVariablesWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
             throw new NullPointerException("The givan data must not be null");
         }
 
-        final DataModel model = data.getSelectedDataModel();
+        DataModel model = data.getSelectedDataModel();
 
         if (model instanceof DataSet) {
-            this.setDataModel(SubsetSelectedVariablesWrapper.createRectangularModel(((DataSet) model).copy()));
+            setDataModel(createRectangularModel(((DataSet) model).copy()));
         } else if (model instanceof ICovarianceMatrix) {
-            this.setDataModel(SubsetSelectedVariablesWrapper.createCovarianceModel((ICovarianceMatrix) model));
+            setDataModel(createCovarianceModel((ICovarianceMatrix) model));
         } else {
             throw new IllegalArgumentException("Expecting a rectangular data " +
                     "set or a covariance matrix.");
         }
 
-        this.setSourceGraph(data.getSourceGraph());
+        setSourceGraph(data.getSourceGraph());
 
-        LogDataUtils.logDataModelList("Parent data restricted to selected variables only.", getDataModelList());
+        LogDataUtils.logDataModelList("Parent data restricted to selected variables only.", this.getDataModelList());
 
     }
 
@@ -73,7 +73,7 @@ public class SubsetSelectedVariablesWrapper extends DataWrapper {
     //=========================== Private Methods =================================//
 
 
-    private static DataModel createRectangularModel(final DataSet data) {
+    private static DataModel createRectangularModel(DataSet data) {
         for (int i = data.getNumColumns() - 1; i >= 0; i--) {
             if (!data.isSelected(data.getVariable(i))) {
                 data.removeColumn(i);
@@ -82,21 +82,21 @@ public class SubsetSelectedVariablesWrapper extends DataWrapper {
         return data;
     }
 
-    private static DataModel createCovarianceModel(final ICovarianceMatrix data) {
+    private static DataModel createCovarianceModel(ICovarianceMatrix data) {
         int numSelected = 0;
 
-        for (final Node node : data.getVariables()) {
+        for (Node node : data.getVariables()) {
             if (data.isSelected(node)) {
                 numSelected++;
             }
         }
 
-        final int[] selectedIndices = new int[numSelected];
-        final String[] nodeNames = new String[numSelected];
+        int[] selectedIndices = new int[numSelected];
+        String[] nodeNames = new String[numSelected];
         int index = -1;
 
         for (int i = 0; i < data.getVariables().size(); i++) {
-            final Node node = data.getVariables().get(i);
+            Node node = data.getVariables().get(i);
             if (data.isSelected(node)) {
                 ++index;
                 selectedIndices[index] = i;
@@ -104,13 +104,13 @@ public class SubsetSelectedVariablesWrapper extends DataWrapper {
             }
         }
 
-        final Matrix matrix = data.getMatrix();
+        Matrix matrix = data.getMatrix();
 
-        final Matrix newMatrix = matrix.getSelection(
+        Matrix newMatrix = matrix.getSelection(
                 selectedIndices, selectedIndices).copy();
 
 
-        final ICovarianceMatrix newCov = new CovarianceMatrix(DataUtils.createContinuousVariables(nodeNames), newMatrix, matrix.rows());
+        ICovarianceMatrix newCov = new CovarianceMatrix(DataUtils.createContinuousVariables(nodeNames), newMatrix, matrix.rows());
 
         return newCov;
     }

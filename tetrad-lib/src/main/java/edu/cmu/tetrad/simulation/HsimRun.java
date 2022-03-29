@@ -25,16 +25,16 @@ import java.util.Set;
  */
 public class HsimRun {
 
-    public static void run(final String readfilename, final String filenameOut, final char delimiter, final String[] resimNodeNames, final boolean verbose) {
+    public static void run(String readfilename, String filenameOut, char delimiter, String[] resimNodeNames, boolean verbose) {
 
         //===========read data from file=============
-        final String workingDirectory = System.getProperty("user.dir");
+        String workingDirectory = System.getProperty("user.dir");
         System.out.println(workingDirectory);
         try {
-            final Path dataFile = Paths.get(readfilename);
+            Path dataFile = Paths.get(readfilename);
 
-            final VerticalDiscreteTabularDatasetFileReader dataReader = new VerticalDiscreteTabularDatasetFileReader(dataFile, DelimiterUtils.toDelimiter(delimiter));
-            final DataSet dataSet = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData());
+            VerticalDiscreteTabularDatasetFileReader dataReader = new VerticalDiscreteTabularDatasetFileReader(dataFile, DelimiterUtils.toDelimiter(delimiter));
+            DataSet dataSet = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData());
             System.out.println("cols: " + dataSet.getNumColumns() + " rows: " + dataSet.getNumRows());
 
             //testing the read file
@@ -43,17 +43,17 @@ public class HsimRun {
             //========first make the Dag for Hsim==========
             //ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
             final double penaltyDiscount = 2.0;
-            final SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
+            SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
             score.setPenaltyDiscount(penaltyDiscount);
-            final Fges fges = new Fges(score);
+            Fges fges = new Fges(score);
             fges.setVerbose(false);
 
-            final Graph estGraph = fges.search();
+            Graph estGraph = fges.search();
             System.out.println(estGraph);
 
-            final Graph estCPDAG = new EdgeListGraph(estGraph);
-            final Graph estGraphDAG = SearchGraphUtils.dagFromCPDAG(estCPDAG);
-            final Dag estDAG = new Dag(estGraphDAG);
+            Graph estCPDAG = new EdgeListGraph(estGraph);
+            Graph estGraphDAG = SearchGraphUtils.dagFromCPDAG(estCPDAG);
+            Dag estDAG = new Dag(estGraphDAG);
 
             //===========Identify the nodes to be resimulated===========
             //estDAG.getNodes()
@@ -68,29 +68,29 @@ public class HsimRun {
             //===test code, for user input specifying specific set of resim nodes====
             //user needs to specify a list or array or something of node names
             //use for loop through that collection, get each node from the names, add to the set
-            final Set<Node> simnodes = new HashSet<>();
+            Set<Node> simnodes = new HashSet<>();
 
             for (int i = 0; i < resimNodeNames.length; i++) {
-                final Node thisNode = estDAG.getNode(resimNodeNames[i]);
+                Node thisNode = estDAG.getNode(resimNodeNames[i]);
                 simnodes.add(thisNode);
             }
 
             //===========Apply the hybrid resimulation===============
-            final Hsim hsim = new Hsim(estDAG, simnodes, dataSet);
-            final DataSet newDataSet = hsim.hybridsimulate();
+            Hsim hsim = new Hsim(estDAG, simnodes, dataSet);
+            DataSet newDataSet = hsim.hybridsimulate();
 
             //write output to a new file
             DataWriter.writeRectangularData(newDataSet, new FileWriter(filenameOut), delimiter);
 
             //=======Run FGES on the output data, and compare it to the original learned graph
-            final Path dataFileOut = Paths.get(filenameOut);
-            final VerticalDiscreteTabularDatasetFileReader dataReaderOut = new VerticalDiscreteTabularDatasetFileReader(dataFileOut, DelimiterUtils.toDelimiter(delimiter));
+            Path dataFileOut = Paths.get(filenameOut);
+            VerticalDiscreteTabularDatasetFileReader dataReaderOut = new VerticalDiscreteTabularDatasetFileReader(dataFileOut, DelimiterUtils.toDelimiter(delimiter));
 
-            final DataSet dataSetOut = (DataSet) DataConvertUtils.toDataModel(dataReaderOut.readInData());
+            DataSet dataSetOut = (DataSet) DataConvertUtils.toDataModel(dataReaderOut.readInData());
 
-            final SemBicScore _score = new SemBicScore(new CovarianceMatrix(dataSetOut));
+            SemBicScore _score = new SemBicScore(new CovarianceMatrix(dataSetOut));
             _score.setPenaltyDiscount(2.0);
-            final Fges fgesOut = new Fges(_score);
+            Fges fgesOut = new Fges(_score);
             fgesOut.setVerbose(false);
 //            fgesOut.setCorrErrorsAlpha(2.0);
             //fgesOut.setOut(out);
@@ -98,11 +98,11 @@ public class HsimRun {
             // fgesOut.setMaxIndegree(1);
             // fgesOut.setCycleBound(5);
 
-            final Graph estGraphOut = fgesOut.search();
+            Graph estGraphOut = fgesOut.search();
             System.out.println(estGraphOut);
 
             SearchGraphUtils.graphComparison(estGraphOut, estGraph, System.out);
-        } catch (final Exception IOException) {
+        } catch (Exception IOException) {
             IOException.printStackTrace();
         }
     }

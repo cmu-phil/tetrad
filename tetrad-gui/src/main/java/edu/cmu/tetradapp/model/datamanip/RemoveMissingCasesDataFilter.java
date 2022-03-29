@@ -34,14 +34,14 @@ import java.util.List;
 class RemoveMissingCasesDataFilter implements DataFilter {
 
 
-    public DataSet filter(final DataSet data) {
-        final List<Node> variables = data.getVariables();
+    public DataSet filter(DataSet data) {
+        List<Node> variables = data.getVariables();
         int numRows = 0;
 
         ROWS:
         for (int row = 0; row < data.getNumRows(); row++) {
             for (int col = 0; col < data.getNumColumns(); col++) {
-                final Node variable = data.getVariable(col);
+                Node variable = data.getVariable(col);
                 if (((Variable) variable).isMissingValue(data.getObject(row, col))) {
                     continue ROWS;
                 }
@@ -50,13 +50,13 @@ class RemoveMissingCasesDataFilter implements DataFilter {
             numRows++;
         }
 
-        final DataSet newDataSet = new BoxDataSet(new DoubleDataBox(numRows, variables.size()), variables);
+        DataSet newDataSet = new BoxDataSet(new DoubleDataBox(numRows, variables.size()), variables);
         int newRow = 0;
 
         ROWS:
         for (int row = 0; row < data.getNumRows(); row++) {
             for (int col = 0; col < data.getNumColumns(); col++) {
-                final Node variable = data.getVariable(col);
+                Node variable = data.getVariable(col);
                 if (((Variable) variable).isMissingValue(data.getObject(row, col))) {
                     continue ROWS;
                 }

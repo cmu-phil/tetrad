@@ -88,7 +88,7 @@ public final class IndTestRegression implements IndependenceTest {
      */
     private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     private final DataSet dataSet;
-    private boolean verbose = false;
+    private boolean verbose;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -99,15 +99,15 @@ public final class IndTestRegression implements IndependenceTest {
      * @param dataSet A data set containing only continuous columns.
      * @param alpha   The alpha level of the test.
      */
-    public IndTestRegression(final DataSet dataSet, final double alpha) {
+    public IndTestRegression(DataSet dataSet, double alpha) {
         if (!(alpha >= 0 && alpha <= 1)) {
             throw new IllegalArgumentException("Alpha mut be in [0, 1]");
         }
 
         this.dataSet = dataSet;
-        this.data = new DenseDoubleMatrix2D(dataSet.getDoubleData().toArray());
-        this.variables = Collections.unmodifiableList(dataSet.getVariables());
-        setAlpha(alpha);
+        data = new DenseDoubleMatrix2D(dataSet.getDoubleData().toArray());
+        variables = Collections.unmodifiableList(dataSet.getVariables());
+        this.setAlpha(alpha);
     }
 
     //==========================PUBLIC METHODS=============================//
@@ -115,7 +115,7 @@ public final class IndTestRegression implements IndependenceTest {
     /**
      * Creates a new IndTestCramerT instance for a subset of the variables.
      */
-    public IndependenceTest indTestSubset(final List vars) {
+    public IndependenceTest indTestSubset(List vars) {
 //        if (vars.isEmpty()) {
 //            throw new IllegalArgumentException("Subset may not be empty.");
 //        }
@@ -158,38 +158,38 @@ public final class IndTestRegression implements IndependenceTest {
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public boolean isIndependent(final Node xVar, final Node yVar, final List<Node> zList) {
+    public boolean isIndependent(Node xVar, Node yVar, List<Node> zList) {
         if (zList == null) {
             throw new NullPointerException();
         }
 
-        for (final Node node : zList) {
+        for (Node node : zList) {
             if (node == null) {
                 throw new NullPointerException();
             }
         }
 
-        final List<Node> regressors = new ArrayList<>();
-        regressors.add(this.dataSet.getVariable(yVar.getName()));
+        List<Node> regressors = new ArrayList<>();
+        regressors.add(dataSet.getVariable(yVar.getName()));
 
-        for (final Node zVar : zList) {
-            regressors.add(this.dataSet.getVariable(zVar.getName()));
+        for (Node zVar : zList) {
+            regressors.add(dataSet.getVariable(zVar.getName()));
         }
 
-        final Regression regression = new RegressionDataset(this.dataSet);
+        Regression regression = new RegressionDataset(dataSet);
         RegressionResult result = null;
 
         try {
             result = regression.regress(xVar, regressors);
-        } catch (final Exception e) {
+        } catch (Exception e) {
             return false;
         }
 
-        final double p = result.getP()[1];
+        double p = result.getP()[1];
 
-        final boolean independent = p > this.alpha;
+        boolean independent = p > alpha;
 
-        if (this.verbose) {
+        if (verbose) {
             if (independent) {
                 TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(xVar, yVar, zList, p));
             } else {
@@ -201,32 +201,32 @@ public final class IndTestRegression implements IndependenceTest {
         return independent;
     }
 
-    public boolean isIndependent(final Node x, final Node y, final Node... z) {
-        final List<Node> zList = Arrays.asList(z);
-        return isIndependent(x, y, zList);
+    public boolean isIndependent(Node x, Node y, Node... z) {
+        List<Node> zList = Arrays.asList(z);
+        return this.isIndependent(x, y, zList);
     }
 
-    public boolean isDependent(final Node x, final Node y, final List<Node> z) {
-        return !isIndependent(x, y, z);
+    public boolean isDependent(Node x, Node y, List<Node> z) {
+        return !this.isIndependent(x, y, z);
     }
 
-    public boolean isDependent(final Node x, final Node y, final Node... z) {
-        final List<Node> zList = Arrays.asList(z);
-        return isDependent(x, y, zList);
+    public boolean isDependent(Node x, Node y, Node... z) {
+        List<Node> zList = Arrays.asList(z);
+        return this.isDependent(x, y, zList);
     }
 
     /**
      * @return the probability associated with the most recently computed independence test.
      */
     public double getPValue() {
-        return 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, Math.abs(this.fishersZ)));
+        return 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, Math.abs(fishersZ)));
     }
 
     /**
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
-    public void setAlpha(final double alpha) {
+    public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
             throw new IllegalArgumentException("Significance out of range.");
         }
@@ -238,7 +238,7 @@ public final class IndTestRegression implements IndependenceTest {
      * Gets the getModel significance level.
      */
     public double getAlpha() {
-        return this.alpha;
+        return alpha;
     }
 
     /**
@@ -246,15 +246,15 @@ public final class IndTestRegression implements IndependenceTest {
      * relations-- that is, all the variables in the given graph or the given data set.
      */
     public List<Node> getVariables() {
-        return this.variables;
+        return variables;
     }
 
     /**
      * @return the variable with the given name.
      */
-    public Node getVariable(final String name) {
-        for (int i = 0; i < getVariables().size(); i++) {
-            final Node variable = getVariables().get(i);
+    public Node getVariable(String name) {
+        for (int i = 0; i < this.getVariables().size(); i++) {
+            Node variable = this.getVariables().get(i);
 
             if (variable.getName().equals(name)) {
                 return variable;
@@ -268,10 +268,10 @@ public final class IndTestRegression implements IndependenceTest {
      * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
-        final List<Node> variables = getVariables();
-        final List<String> variableNames = new ArrayList<>();
+        List<Node> variables = this.getVariables();
+        List<String> variableNames = new ArrayList<>();
 
-        for (final Node variable : variables) {
+        for (Node variable : variables) {
             variableNames.add(variable.getName());
         }
 
@@ -279,7 +279,7 @@ public final class IndTestRegression implements IndependenceTest {
     }
 
     public String toString() {
-        return "Linear Regression Test, alpha = " + IndTestRegression.nf.format(getAlpha());
+        return "Linear Regression Test, alpha = " + nf.format(this.getAlpha());
     }
 
     //==========================PRIVATE METHODS============================//
@@ -316,54 +316,54 @@ public final class IndTestRegression implements IndependenceTest {
 //        return data.rows();
 //    }
 
-    public boolean determines(final List<Node> zList, final Node xVar) {
+    public boolean determines(List<Node> zList, Node xVar) {
         if (zList == null) {
             throw new NullPointerException();
         }
 
-        for (final Node node : zList) {
+        for (Node node : zList) {
             if (node == null) {
                 throw new NullPointerException();
             }
         }
 
-        final int size = zList.size();
-        final int[] zCols = new int[size];
+        int size = zList.size();
+        int[] zCols = new int[size];
 
-        final int xIndex = getVariables().indexOf(xVar);
+        int xIndex = this.getVariables().indexOf(xVar);
 
         for (int i = 0; i < zList.size(); i++) {
-            zCols[i] = getVariables().indexOf(zList.get(i));
+            zCols[i] = this.getVariables().indexOf(zList.get(i));
         }
 
-        final int[] zRows = new int[this.data.rows()];
-        for (int i = 0; i < this.data.rows(); i++) {
+        int[] zRows = new int[data.rows()];
+        for (int i = 0; i < data.rows(); i++) {
             zRows[i] = i;
         }
 
-        final DoubleMatrix2D Z = this.data.viewSelection(zRows, zCols);
-        final DoubleMatrix1D x = this.data.viewColumn(xIndex);
-        final DoubleMatrix2D Zt = new Algebra().transpose(Z);
-        final DoubleMatrix2D ZtZ = new Algebra().mult(Zt, Z);
-        final DoubleMatrix2D G = new DenseDoubleMatrix2D(new Matrix(ZtZ.toArray()).inverse().toArray());
+        DoubleMatrix2D Z = data.viewSelection(zRows, zCols);
+        DoubleMatrix1D x = data.viewColumn(xIndex);
+        DoubleMatrix2D Zt = new Algebra().transpose(Z);
+        DoubleMatrix2D ZtZ = new Algebra().mult(Zt, Z);
+        DoubleMatrix2D G = new DenseDoubleMatrix2D(new Matrix(ZtZ.toArray()).inverse().toArray());
 
         // Bug in Colt? Need to make a copy before multiplying to avoid
         // a ClassCastException.
-        final DoubleMatrix2D Zt2 = Zt.like();
+        DoubleMatrix2D Zt2 = Zt.like();
         Zt2.assign(Zt);
-        final DoubleMatrix2D GZt = new Algebra().mult(G, Zt2);
+        DoubleMatrix2D GZt = new Algebra().mult(G, Zt2);
 
-        final DoubleMatrix1D b_x = new Algebra().mult(GZt, x);
+        DoubleMatrix1D b_x = new Algebra().mult(GZt, x);
 
-        final DoubleMatrix1D xPred = new Algebra().mult(Z, b_x);
+        DoubleMatrix1D xPred = new Algebra().mult(Z, b_x);
 
-        final DoubleMatrix1D xRes = xPred.copy().assign(x, Functions.minus);
+        DoubleMatrix1D xRes = xPred.copy().assign(x, Functions.minus);
 
-        final double SSE = xRes.aggregate(Functions.plus, Functions.square);
-        final boolean determined = SSE < 0.0001;
+        double SSE = xRes.aggregate(Functions.plus, Functions.square);
+        boolean determined = SSE < 0.0001;
 
         if (determined) {
-            final StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder();
             sb.append("Determination found: ").append(xVar).append(
                     " is determined by {");
 
@@ -384,7 +384,7 @@ public final class IndTestRegression implements IndependenceTest {
     }
 
     public DataSet getData() {
-        return this.dataSet;
+        return dataSet;
     }
 
     @Override
@@ -409,14 +409,14 @@ public final class IndTestRegression implements IndependenceTest {
 
     @Override
     public double getScore() {
-        return getPValue();
+        return this.getPValue();
     }
 
     public boolean isVerbose() {
-        return this.verbose;
+        return verbose;
     }
 
-    public void setVerbose(final boolean verbose) {
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 }

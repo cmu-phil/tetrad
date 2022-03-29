@@ -41,12 +41,12 @@ public class FloatDataBox implements DataBox {
     /**
      * Constructs an 2D float array consisting entirely of missing values (-99).
      */
-    private FloatDataBox(final int rows, final int cols) {
-        this.data = new float[rows][cols];
+    private FloatDataBox(int rows, int cols) {
+        data = new float[rows][cols];
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                this.data[i][j] = Float.NaN;
+                data[i][j] = Float.NaN;
             }
         }
     }
@@ -54,10 +54,10 @@ public class FloatDataBox implements DataBox {
     /**
      * Constructs a new data box using the given 2D float data array as data.
      */
-    public FloatDataBox(final float[][] data) {
-        final int length = data[0].length;
+    public FloatDataBox(float[][] data) {
+        int length = data[0].length;
 
-        for (final float[] datum : data) {
+        for (float[] datum : data) {
             if (datum.length != length) {
                 throw new IllegalArgumentException("All rows must have same length.");
             }
@@ -70,7 +70,7 @@ public class FloatDataBox implements DataBox {
      * Generates a simple exemplar of this class to test serialization.
      */
     public static BoxDataSet serializableInstance() {
-        final List<Node> vars = new ArrayList<>();
+        List<Node> vars = new ArrayList<>();
         for (int i = 0; i < 4; i++) vars.add(new ContinuousVariable("X" + i));
         return new BoxDataSet(new ShortDataBox(4, 4), vars);
     }
@@ -79,28 +79,28 @@ public class FloatDataBox implements DataBox {
      * @return the number of rows in this data box.
      */
     public int numRows() {
-        return this.data.length;
+        return data.length;
     }
 
     /**
      * @return the number of columns in this data box.n
      */
     public int numCols() {
-        return this.data[0].length;
+        return data[0].length;
     }
 
     /**
      * Sets the value at the given row/column to the given Number value.
      * The value used is number.floatValue().
      */
-    public void set(final int row, final int col, final Number value) {
+    public void set(int row, int col, Number value) {
         if (value == null) {
-            synchronized (this.data) {
-                this.data[row][col] = Float.NaN;
+            synchronized (data) {
+                data[row][col] = Float.NaN;
             }
         } else {
-            synchronized (this.data) {
-                this.data[row][col] = value.floatValue();
+            synchronized (data) {
+                data[row][col] = value.floatValue();
             }
         }
     }
@@ -109,8 +109,8 @@ public class FloatDataBox implements DataBox {
      * @return the Number value at the given row and column. If the value
      * is missing (-99), null, is returned.
      */
-    public Number get(final int row, final int col) {
-        final float datum = this.data[row][col];
+    public Number get(int row, int col) {
+        float datum = data[row][col];
 
         if (datum == Float.NaN) {
             return null;
@@ -123,11 +123,11 @@ public class FloatDataBox implements DataBox {
      * @return a copy of this data box.
      */
     public DataBox copy() {
-        final FloatDataBox box = new FloatDataBox(numRows(), numCols());
+        FloatDataBox box = new FloatDataBox(this.numRows(), this.numCols());
 
-        for (int i = 0; i < numRows(); i++) {
-            for (int j = 0; j < numCols(); j++) {
-                box.set(i, j, get(i, j));
+        for (int i = 0; i < this.numRows(); i++) {
+            for (int j = 0; j < this.numCols(); j++) {
+                box.set(i, j, this.get(i, j));
             }
         }
 
@@ -138,22 +138,22 @@ public class FloatDataBox implements DataBox {
      * @return a DataBox of type FloatDataBox, but with the given dimensions.
      */
     public DataBox like() {
-        final int[] rows = new int[numRows()];
-        final int[] cols = new int[numCols()];
+        int[] rows = new int[this.numRows()];
+        int[] cols = new int[this.numCols()];
 
-        for (int i = 0; i < numRows(); i++) rows[i] = i;
-        for (int j = 0; j < numCols(); j++) cols[j] = j;
+        for (int i = 0; i < this.numRows(); i++) rows[i] = i;
+        for (int j = 0; j < this.numCols(); j++) cols[j] = j;
 
-        return viewSelection(rows, cols);
+        return this.viewSelection(rows, cols);
     }
 
     @Override
-    public DataBox viewSelection(final int[] rows, final int[] cols) {
-        final DataBox _dataBox = new FloatDataBox(rows.length, cols.length);
+    public DataBox viewSelection(int[] rows, int[] cols) {
+        DataBox _dataBox = new FloatDataBox(rows.length, cols.length);
 
         for (int i = 0; i < rows.length; i++) {
             for (int j = 0; j < cols.length; j++) {
-                _dataBox.set(i, j, get(rows[i], cols[j]));
+                _dataBox.set(i, j, this.get(rows[i], cols[j]));
             }
         }
 

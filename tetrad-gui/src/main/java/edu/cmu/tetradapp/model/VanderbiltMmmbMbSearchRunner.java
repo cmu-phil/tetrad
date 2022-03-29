@@ -31,15 +31,15 @@ public class VanderbiltMmmbMbSearchRunner extends AbstractMBSearchRunner {
     static final long serialVersionUID = 23L;
 
 
-    public VanderbiltMmmbMbSearchRunner(final DataWrapper data, final Parameters params) {
+    public VanderbiltMmmbMbSearchRunner(DataWrapper data, Parameters params) {
         super(data.getSelectedDataModel(), params);
     }
 
 
     public void execute() throws Exception {
-        final Mmmb search = new Mmmb(getIndependenceTest(), getParams().getInt("depth", -1), true);
-        this.setSearchResults(search.findMb(this.getParams().getString("targetName", null)));
-        this.setSearchName(search.getAlgorithmName());
+        Mmmb search = new Mmmb(this.getIndependenceTest(), this.getParams().getInt("depth", -1), true);
+        setSearchResults(search.findMb(getParams().getString("targetName", null)));
+        setSearchName(search.getAlgorithmName());
     }
 }
 

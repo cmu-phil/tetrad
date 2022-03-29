@@ -90,7 +90,7 @@ public abstract class AbstractAlgorithmRunner
      * A series of graphs that the search algorithm might search over, if
      * it's that kind of algorithm.
      */
-    private List<Graph> graphs = null;
+    private List<Graph> graphs;
     private Map<String, String> allParamSettings;
     final Map<String, String> paramSettings = new LinkedHashMap<>();
 
@@ -103,8 +103,8 @@ public abstract class AbstractAlgorithmRunner
      *
      * @param knowledgeBoxModel
      */
-    public AbstractAlgorithmRunner(final DataWrapper dataWrapper,
-                                   final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
+    public AbstractAlgorithmRunner(DataWrapper dataWrapper,
+                                   Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -113,20 +113,20 @@ public abstract class AbstractAlgorithmRunner
         }
 
         this.params = params;
-        this.sourceGraph = dataWrapper.getSourceGraph();
+        sourceGraph = dataWrapper.getSourceGraph();
 
-        final DataModelList dataSource = dataWrapper.getDataModelList();
+        DataModelList dataSource = dataWrapper.getDataModelList();
 
         this.dataWrapper = dataWrapper;
 
         //temporary workaround to get the knowledge box to coexist with the dataWrapper's knowledge
         if (knowledgeBoxModel == null) {
-            getParams().set("knowledge", dataWrapper.getKnowledge());
+            this.getParams().set("knowledge", dataWrapper.getKnowledge());
         } else {
-            getParams().set("knowledge", knowledgeBoxModel.getKnowledge());
+            this.getParams().set("knowledge", knowledgeBoxModel.getKnowledge());
         }
-        final List names = dataSource.getVariableNames();
-        transferVarNamesToParams(names);
+        List names = dataSource.getVariableNames();
+        this.transferVarNamesToParams(names);
     }
 
     /**
@@ -136,8 +136,8 @@ public abstract class AbstractAlgorithmRunner
      *
      * @param knowledgeBoxModel
      */
-    public AbstractAlgorithmRunner(final DataWrapper dataWrapper,
-                                   final Parameters params, final KnowledgeBoxModel knowledgeBoxModel, final IndependenceFactsModel facts) {
+    public AbstractAlgorithmRunner(DataWrapper dataWrapper,
+                                   Parameters params, KnowledgeBoxModel knowledgeBoxModel, IndependenceFactsModel facts) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -146,25 +146,25 @@ public abstract class AbstractAlgorithmRunner
         }
 
         this.params = params;
-        this.sourceGraph = dataWrapper.getSourceGraph();
+        sourceGraph = dataWrapper.getSourceGraph();
 
-        final DataModel dataSource = getSelectedDataModel(dataWrapper);
+        DataModel dataSource = this.getSelectedDataModel(dataWrapper);
 
         this.dataWrapper = dataWrapper;
 
         //temporary workaround to get the knowledge box to coexist with the dataWrapper's knowledge
         if (knowledgeBoxModel == null) {
-            getParams().set("knowledge", dataWrapper.getKnowledge());
+            this.getParams().set("knowledge", dataWrapper.getKnowledge());
         } else {
-            getParams().set("knowledge", knowledgeBoxModel.getKnowledge());
+            this.getParams().set("knowledge", knowledgeBoxModel.getKnowledge());
         }
 
-        getParams().set("independenceFacts", facts.getFacts());
-        final List names = dataSource.getVariableNames();
-        transferVarNamesToParams(names);
+        this.getParams().set("independenceFacts", facts.getFacts());
+        List names = dataSource.getVariableNames();
+        this.transferVarNamesToParams(names);
     }
 
-    public AbstractAlgorithmRunner(final DataWrapper dataWrapper, final Parameters params) {
+    public AbstractAlgorithmRunner(DataWrapper dataWrapper, Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
         }
@@ -173,20 +173,20 @@ public abstract class AbstractAlgorithmRunner
         }
 
         this.params = params;
-        this.sourceGraph = dataWrapper.getSourceGraph();
+        sourceGraph = dataWrapper.getSourceGraph();
 
-        final DataModel dataSource = getSelectedDataModel(dataWrapper);
+        DataModel dataSource = this.getSelectedDataModel(dataWrapper);
 
         this.dataWrapper = dataWrapper;
 
-        final List names = dataSource.getVariableNames();
-        transferVarNamesToParams(names);
+        List names = dataSource.getVariableNames();
+        this.transferVarNamesToParams(names);
     }
 
     /**
      * Constucts a wrapper for the given graph.
      */
-    public AbstractAlgorithmRunner(final Graph sourceGraph, final Parameters params) {
+    public AbstractAlgorithmRunner(Graph sourceGraph, Parameters params) {
         if (sourceGraph == null) {
             throw new NullPointerException(
                     "Source graph must not be null.");
@@ -195,34 +195,34 @@ public abstract class AbstractAlgorithmRunner
             throw new NullPointerException("Parameters must not be null.");
         }
         this.params = params;
-        final List<String> names = measuredNames(sourceGraph);
-        transferVarNamesToParams(names);
+        List<String> names = this.measuredNames(sourceGraph);
+        this.transferVarNamesToParams(names);
         this.sourceGraph = sourceGraph;
     }
 
-    public AbstractAlgorithmRunner(final Graph graph, final Parameters params,
-                                   final KnowledgeBoxModel knowledgeBoxModel) {
+    public AbstractAlgorithmRunner(Graph graph, Parameters params,
+                                   KnowledgeBoxModel knowledgeBoxModel) {
         this(graph, params);
         if (knowledgeBoxModel != null) {
-            getParams().set("knowledge", knowledgeBoxModel.getKnowledge());
+            this.getParams().set("knowledge", knowledgeBoxModel.getKnowledge());
         }
     }
 
-    public AbstractAlgorithmRunner(final Parameters params, final Graph... graphs) {
+    public AbstractAlgorithmRunner(Parameters params, Graph... graphs) {
         this.graphs = Arrays.asList(graphs);
         this.params = params;
     }
 
-    public AbstractAlgorithmRunner(final Parameters params, final KnowledgeBoxModel knowledgeBoxModel, final Graph... graphs) {
+    public AbstractAlgorithmRunner(Parameters params, KnowledgeBoxModel knowledgeBoxModel, Graph... graphs) {
         this.graphs = Arrays.asList(graphs);
         this.params = params;
         if (knowledgeBoxModel != null) {
-            getParams().set("knowledge", knowledgeBoxModel.getKnowledge());
+            this.getParams().set("knowledge", knowledgeBoxModel.getKnowledge());
         }
     }
 
-    public AbstractAlgorithmRunner(final IndependenceFactsModel model,
-                                   final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
+    public AbstractAlgorithmRunner(IndependenceFactsModel model,
+                                   Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         if (model == null) {
             throw new NullPointerException();
         }
@@ -232,25 +232,25 @@ public abstract class AbstractAlgorithmRunner
 
         this.params = params;
 
-        final DataModel dataSource = model.getFacts();
+        DataModel dataSource = model.getFacts();
 
         if (knowledgeBoxModel != null) {
-            getParams().set("knowledge", knowledgeBoxModel.getKnowledge());
+            this.getParams().set("knowledge", knowledgeBoxModel.getKnowledge());
         }
 
-        final List names = dataSource.getVariableNames();
-        transferVarNamesToParams(names);
-        this.dataModel = dataSource;
+        List names = dataSource.getVariableNames();
+        this.transferVarNamesToParams(names);
+        dataModel = dataSource;
     }
 
-    public AbstractAlgorithmRunner(final Graph graph, final Parameters params,
-                                   final KnowledgeBoxModel knowledgeBoxModel, final IndependenceFacts facts) {
+    public AbstractAlgorithmRunner(Graph graph, Parameters params,
+                                   KnowledgeBoxModel knowledgeBoxModel, IndependenceFacts facts) {
         this(graph, params);
         if (knowledgeBoxModel != null) {
-            getParams().set("knowledge", knowledgeBoxModel.getKnowledge());
+            this.getParams().set("knowledge", knowledgeBoxModel.getKnowledge());
         }
         if (facts != null) {
-            getParams().set("independenceFacts", facts);
+            this.getParams().set("independenceFacts", facts);
         }
     }
 
@@ -258,7 +258,7 @@ public abstract class AbstractAlgorithmRunner
     //============================PUBLIC METHODS==========================//
 
     public final Graph getResultGraph() {
-        return this.resultGraph;
+        return resultGraph;
     }
 
     /**
@@ -273,32 +273,32 @@ public abstract class AbstractAlgorithmRunner
         return null;
     }
 
-    public void setExternalGraph(final Graph graph) {
-        this.externalGraph = graph;
+    public void setExternalGraph(Graph graph) {
+        externalGraph = graph;
     }
 
     public Graph getExternalGraph() {
-        return this.externalGraph;
+        return externalGraph;
     }
 
     @Override
     public abstract String getAlgorithmName();
 
     public final Graph getSourceGraph() {
-        return this.sourceGraph;
+        return sourceGraph;
     }
 
     public final DataModel getDataModel() {
-        if (this.dataWrapper != null) {
-            final DataModelList dataModelList = this.dataWrapper.getDataModelList();
+        if (dataWrapper != null) {
+            DataModelList dataModelList = dataWrapper.getDataModelList();
 
             if (dataModelList.size() == 1) {
                 return dataModelList.get(0);
             } else {
                 return dataModelList;
             }
-        } else if (this.dataModel != null) {
-            return this.dataModel;
+        } else if (dataModel != null) {
+            return dataModel;
         } else {
 
             // Do not throw an exception here!
@@ -307,23 +307,23 @@ public abstract class AbstractAlgorithmRunner
     }
 
     final DataModelList getDataModelList() {
-        if (this.dataWrapper == null) return null;
-        return this.dataWrapper.getDataModelList();
+        if (dataWrapper == null) return null;
+        return dataWrapper.getDataModelList();
     }
 
-    public final void setResultGraph(final Graph resultGraph) {
+    public final void setResultGraph(Graph resultGraph) {
         this.resultGraph = resultGraph;
     }
 
     public final Parameters getParams() {
-        return this.params;
+        return params;
     }
 
     public Object getResettableParams() {
-        return this.getParams();
+        return getParams();
     }
 
-    public void resetParams(final Object params) {
+    public void resetParams(Object params) {
         this.params = (Parameters) params;
     }
 
@@ -333,17 +333,17 @@ public abstract class AbstractAlgorithmRunner
      * Find the dataModel model. (If it's a list, take the one that's
      * selected.)
      */
-    private DataModel getSelectedDataModel(final DataWrapper dataWrapper) {
-        final DataModelList dataModelList = dataWrapper.getDataModelList();
+    private DataModel getSelectedDataModel(DataWrapper dataWrapper) {
+        DataModelList dataModelList = dataWrapper.getDataModelList();
 
         if (dataModelList.size() > 1) {
             return dataModelList;
         }
 
-        final DataModel dataModel = dataWrapper.getSelectedDataModel();
+        DataModel dataModel = dataWrapper.getSelectedDataModel();
 
         if (dataModel instanceof DataSet) {
-            final DataSet dataSet = (DataSet) dataModel;
+            DataSet dataSet = (DataSet) dataModel;
 
             if (dataSet.isDiscrete()) {
                 return dataSet;
@@ -367,9 +367,9 @@ public abstract class AbstractAlgorithmRunner
                 "Unexpected dataModel source: " + dataModel);
     }
 
-    private List<String> measuredNames(final Graph graph) {
-        final List<String> names = new ArrayList<>();
-        for (final Node node : graph.getNodes()) {
+    private List<String> measuredNames(Graph graph) {
+        List<String> names = new ArrayList<>();
+        for (Node node : graph.getNodes()) {
             if (node.getNodeType() == NodeType.MEASURED) {
                 names.add(node.getName());
             }
@@ -377,8 +377,8 @@ public abstract class AbstractAlgorithmRunner
         return names;
     }
 
-    private void transferVarNamesToParams(final List names) {
-        getParams().set("varNames", names);
+    private void transferVarNamesToParams(List names) {
+        this.getParams().set("varNames", names);
     }
 
     /**
@@ -394,7 +394,7 @@ public abstract class AbstractAlgorithmRunner
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
@@ -404,29 +404,29 @@ public abstract class AbstractAlgorithmRunner
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
     public List<Graph> getGraphs() {
-        return this.graphs;
+        return graphs;
     }
 
 
     @Override
     public Map<String, String> getParamSettings() {
-        this.paramSettings.put("Algorithm", getAlgorithmName());
-        return this.paramSettings;
+        paramSettings.put("Algorithm", this.getAlgorithmName());
+        return paramSettings;
     }
 
     public Map<String, String> getAllParamSettings() {
-        return this.allParamSettings;
+        return allParamSettings;
     }
 
-    public void setAllParamSettings(final Map<String, String> allParamSettings) {
+    public void setAllParamSettings(Map<String, String> allParamSettings) {
         this.allParamSettings = allParamSettings;
     }
 }

@@ -1,5 +1,9 @@
 package edu.cmu.tetrad.performance;
 
+import edu.cmu.tetrad.performance.Comparison2.TableColumn;
+import edu.cmu.tetrad.performance.ComparisonParameters.Algorithm;
+import edu.cmu.tetrad.performance.ComparisonParameters.DataType;
+import edu.cmu.tetrad.performance.ComparisonParameters.IndependenceTestType;
 import edu.cmu.tetrad.sem.ScoreType;
 import edu.cmu.tetrad.util.TextTable;
 
@@ -15,8 +19,8 @@ import java.util.List;
 public class ComparisonScript {
 
     private void runFromSimulation() {
-        final ComparisonParameters params = new ComparisonParameters();
-        params.setDataType(ComparisonParameters.DataType.Continuous); // Continuous or Discrete
+        ComparisonParameters params = new ComparisonParameters();
+        params.setDataType(DataType.Continuous); // Continuous or Discrete
         params.setNumVars(12); // number of variables
         params.setNumEdges(12); // number of edges
         int minSample = 100; // smallest sample size to generate
@@ -40,21 +44,21 @@ public class ComparisonScript {
             throw new IllegalArgumentException("Cannot have setDataFromFile and setNoData both be true!");
         }
 
-        final ArrayList<Comparison2.TableColumn> tableColumns = new ArrayList<>();
-        tableColumns.add(Comparison2.TableColumn.AdjPrec);
-        tableColumns.add(Comparison2.TableColumn.AdjRec);
-        tableColumns.add(Comparison2.TableColumn.AhdPrec);
-        tableColumns.add(Comparison2.TableColumn.AhdRec);
-        tableColumns.add(Comparison2.TableColumn.SHD);
-        tableColumns.add(Comparison2.TableColumn.Elapsed);
+        ArrayList<TableColumn> tableColumns = new ArrayList<>();
+        tableColumns.add(TableColumn.AdjPrec);
+        tableColumns.add(TableColumn.AdjRec);
+        tableColumns.add(TableColumn.AhdPrec);
+        tableColumns.add(TableColumn.AhdRec);
+        tableColumns.add(TableColumn.SHD);
+        tableColumns.add(TableColumn.Elapsed);
 
-        final List<ComparisonParameters.Algorithm> algList = new ArrayList<>();
+        List<Algorithm> algList = new ArrayList<>();
 
         /** add algorithm to compare to the list algList. comment out those you don't want to consider. **/
         //algList.add(ComparisonParameters.Algorithm.PC);
         //algList.add(ComparisonParameters.Algorithm.FGES);
         //algList.add(ComparisonParameters.Algorithm.FCI);
-        algList.add(ComparisonParameters.Algorithm.SVARFCI);
+        algList.add(Algorithm.SVARFCI);
 
         /** User shouldn't need to change anything below this line **/
         /***********************************************************/
@@ -75,7 +79,7 @@ public class ComparisonScript {
         }
 
         int count = 0;
-        final TextTable avgTable = new TextTable((((maxSample - minSample) / increment) + 1) * algList.size() + 2, tableColumns.size() + 1);
+        TextTable avgTable = new TextTable((((maxSample - minSample) / increment) + 1) * algList.size() + 2, tableColumns.size() + 1);
         for (int sampleSize = minSample; sampleSize <= maxSample; sampleSize += increment) {
             params.setSampleSize(sampleSize);
             if (params.isDataFromFile()) {
@@ -84,14 +88,14 @@ public class ComparisonScript {
             } else System.out.println("sample size = " + sampleSize);
 
 
-            for (final ComparisonParameters.Algorithm alg : algList) {
+            for (Algorithm alg : algList) {
                 count++;
                 params.setAlgorithm(alg);
-                params.setIndependenceTest(ComparisonParameters.IndependenceTestType.FisherZ);
+                params.setIndependenceTest(IndependenceTestType.FisherZ);
                 params.setScore(ScoreType.SemBic);
                 // params.setOneEdgeFaithfulnessAssumed(false);
 
-                final List<ComparisonResult> resultsTrials = new ArrayList<>();
+                List<ComparisonResult> resultsTrials = new ArrayList<>();
                 for (int trial = 1; trial <= numTrials; trial++) {
                     params.setTrial(trial);
                     resultsTrials.add(Comparison2.compare(params));
@@ -121,7 +125,7 @@ public class ComparisonScript {
         System.out.println(avgTable);
     }
 
-    public static void main(final String... args) {
+    public static void main(String... args) {
         new ComparisonScript().runFromSimulation();
     }
 }

@@ -51,12 +51,12 @@ public class TestIndTestFisherZ {
     public void testDirections() {
         RandomUtil.getInstance().setSeed(48285934L);
 
-        final Graph graph1 = new EdgeListGraph();
-        final Graph graph2 = new EdgeListGraph();
+        Graph graph1 = new EdgeListGraph();
+        Graph graph2 = new EdgeListGraph();
 
-        final Node x = new GraphNode("X");
-        final Node y = new GraphNode("Y");
-        final Node z = new GraphNode("Z");
+        Node x = new GraphNode("X");
+        Node y = new GraphNode("Y");
+        Node z = new GraphNode("Z");
 
         graph1.addNode(x);
         graph1.addNode(y);
@@ -72,30 +72,30 @@ public class TestIndTestFisherZ {
         graph2.addEdge(Edges.directedEdge(x, y));
         graph2.addEdge(Edges.directedEdge(z, y));
 
-        final SemPm pm1 = new SemPm(graph1);
-        final SemPm pm2 = new SemPm(graph2);
+        SemPm pm1 = new SemPm(graph1);
+        SemPm pm2 = new SemPm(graph2);
 
-        final SemIm im1 = new SemIm(pm1);
-        final SemIm im2 = new SemIm(pm2);
+        SemIm im1 = new SemIm(pm1);
+        SemIm im2 = new SemIm(pm2);
 
         im2.setEdgeCoef(x, y, im1.getEdgeCoef(x, y));
         im2.setEdgeCoef(z, y, im1.getEdgeCoef(y, z));
 
-        final DataSet data1 = im1.simulateData(500, false);
-        final DataSet data2 = im2.simulateData(500, false);
+        DataSet data1 = im1.simulateData(500, false);
+        DataSet data2 = im2.simulateData(500, false);
 
-        final IndependenceTest test1 = new IndTestFisherZ(data1, 0.05);
-        final IndependenceTest test2 = new IndTestFisherZ(data2, 0.05);
+        IndependenceTest test1 = new IndTestFisherZ(data1, 0.05);
+        IndependenceTest test2 = new IndTestFisherZ(data2, 0.05);
 
         test1.isIndependent(data1.getVariable(x.getName()), data1.getVariable(y.getName()));
-        final double p1 = test1.getPValue();
+        double p1 = test1.getPValue();
 
         test2.isIndependent(data2.getVariable(x.getName()), data2.getVariable(z.getName()),
                 data2.getVariable(y.getName()));
-        final double p2 = test2.getPValue();
+        double p2 = test2.getPValue();
 
         test2.isIndependent(data2.getVariable(x.getName()), data2.getVariable(z.getName()));
-        final double p3 = test2.getPValue();
+        double p3 = test2.getPValue();
 
         assertEquals(0.0, p1, 0.01);
         assertEquals(0.0, p2, 0.01);
@@ -130,13 +130,13 @@ public class TestIndTestFisherZ {
 //        }
 
         for (int p = 0; p < 50; p++) {
-            final Graph graph = new EdgeListGraph();
-            final Node x = new ContinuousVariable("X");
-            final Node y = new ContinuousVariable("Y");
-            final Node w1 = new ContinuousVariable("W1");
-            final Node w2 = new ContinuousVariable("W2");
-            final Node w3 = new ContinuousVariable("W3");
-            final Node r = new ContinuousVariable("R");
+            Graph graph = new EdgeListGraph();
+            Node x = new ContinuousVariable("X");
+            Node y = new ContinuousVariable("Y");
+            Node w1 = new ContinuousVariable("W1");
+            Node w2 = new ContinuousVariable("W2");
+            Node w3 = new ContinuousVariable("W3");
+            Node r = new ContinuousVariable("R");
 
             graph.addNode(x);
             graph.addNode(y);
@@ -154,32 +154,32 @@ public class TestIndTestFisherZ {
 //            graph.addDirectedEdge(r, y);
             graph.addDirectedEdge(y, r);
 //
-            final SemPm pm = new SemPm(graph);
+            SemPm pm = new SemPm(graph);
 
-            final Parameters parameters = new Parameters();
+            Parameters parameters = new Parameters();
 
             parameters.set("coefLow", .3);
             parameters.set("coefHigh", .8);
             parameters.set("coefSymmetric", false);
 
-            final SemIm im = new SemIm(pm, parameters);
+            SemIm im = new SemIm(pm, parameters);
 
             final int N = 1000;
-            final DataSet data = im.simulateData(N, false);
-            final ICovarianceMatrix _cov = new CovarianceMatrix(data);
-            final Matrix cov = _cov.getMatrix();
+            DataSet data = im.simulateData(N, false);
+            ICovarianceMatrix _cov = new CovarianceMatrix(data);
+            Matrix cov = _cov.getMatrix();
 
-            final List<Node> nodes = _cov.getVariables();
+            List<Node> nodes = _cov.getVariables();
 
-            final int xi = nodes.indexOf(x);
-            final int yi = nodes.indexOf(y);
-            final int ri = nodes.indexOf(r);
+            int xi = nodes.indexOf(x);
+            int yi = nodes.indexOf(y);
+            int ri = nodes.indexOf(r);
 
-            final double xy = StatUtils.partialCorrelation(cov, xi, yi);
-            final double xyr = StatUtils.partialCorrelation(cov, xi, yi, ri);
+            double xy = StatUtils.partialCorrelation(cov, xi, yi);
+            double xyr = StatUtils.partialCorrelation(cov, xi, yi, ri);
 
-            final double f1 = 0.5 * sqrt(N - 3) * log(1. + xy) - log(1. - xy);
-            final double f2 = 0.5 * sqrt(N - 3 - 1) * log(1. + xyr) - log(1. - xyr);
+            double f1 = 0.5 * sqrt(N - 3) * log(1. + xy) - log(1. - xy);
+            double f2 = 0.5 * sqrt(N - 3 - 1) * log(1. + xyr) - log(1. - xyr);
 
             System.out.println(abs(f1) > abs(f2));
         }

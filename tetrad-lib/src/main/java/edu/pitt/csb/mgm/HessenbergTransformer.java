@@ -52,21 +52,21 @@ class HessenbergTransformer {
      * @param matrix matrix to transform
      * @throws NonSquareMatrixException if the matrix is not square
      */
-    HessenbergTransformer(final RealMatrix matrix) {
+    HessenbergTransformer(RealMatrix matrix) {
         if (!matrix.isSquare()) {
             throw new NonSquareMatrixException(matrix.getRowDimension(),
                     matrix.getColumnDimension());
         }
 
-        final int m = matrix.getRowDimension();
-        this.householderVectors = matrix.getData();
-        this.ort = new double[m];
-        this.cachedP = null;
-        this.cachedPt = null;
-        this.cachedH = null;
+        int m = matrix.getRowDimension();
+        householderVectors = matrix.getData();
+        ort = new double[m];
+        cachedP = null;
+        cachedPt = null;
+        cachedH = null;
 
         // transform matrix
-        transform();
+        this.transform();
     }
 
     /**
@@ -76,10 +76,10 @@ class HessenbergTransformer {
      * @return the P matrix
      */
     public RealMatrix getP() {
-        if (this.cachedP == null) {
-            final int n = this.householderVectors.length;
-            final int high = n - 1;
-            final double[][] pa = new double[n][n];
+        if (cachedP == null) {
+            int n = householderVectors.length;
+            int high = n - 1;
+            double[][] pa = new double[n][n];
 
             for (int i = 0; i < n; i++) {
                 for (int j = 0; j < n; j++) {
@@ -88,31 +88,31 @@ class HessenbergTransformer {
             }
 
             for (int m = high - 1; m >= 1; m--) {
-                if (this.householderVectors[m][m - 1] != 0.0) {
+                if (householderVectors[m][m - 1] != 0.0) {
                     for (int i = m + 1; i <= high; i++) {
-                        this.ort[i] = this.householderVectors[i][m - 1];
+                        ort[i] = householderVectors[i][m - 1];
                     }
 
                     for (int j = m; j <= high; j++) {
                         double g = 0.0;
 
                         for (int i = m; i <= high; i++) {
-                            g += this.ort[i] * pa[i][j];
+                            g += ort[i] * pa[i][j];
                         }
 
                         // Double division avoids possible underflow
-                        g = (g / this.ort[m]) / this.householderVectors[m][m - 1];
+                        g = (g / ort[m]) / householderVectors[m][m - 1];
 
                         for (int i = m; i <= high; i++) {
-                            pa[i][j] += g * this.ort[i];
+                            pa[i][j] += g * ort[i];
                         }
                     }
                 }
             }
 
-            this.cachedP = MatrixUtils.createRealMatrix(pa);
+            cachedP = MatrixUtils.createRealMatrix(pa);
         }
-        return this.cachedP;
+        return cachedP;
     }
 
     /**
@@ -122,12 +122,12 @@ class HessenbergTransformer {
      * @return the transpose of the P matrix
      */
     public RealMatrix getPT() {
-        if (this.cachedPt == null) {
-            this.cachedPt = getP().transpose();
+        if (cachedPt == null) {
+            cachedPt = this.getP().transpose();
         }
 
         // return the cached matrix
-        return this.cachedPt;
+        return cachedPt;
     }
 
     /**
@@ -136,25 +136,25 @@ class HessenbergTransformer {
      * @return the H matrix
      */
     public RealMatrix getH() {
-        if (this.cachedH == null) {
-            final int m = this.householderVectors.length;
-            final double[][] h = new double[m][m];
+        if (cachedH == null) {
+            int m = householderVectors.length;
+            double[][] h = new double[m][m];
             for (int i = 0; i < m; ++i) {
                 if (i > 0) {
                     // copy the entry of the lower sub-diagonal
-                    h[i][i - 1] = this.householderVectors[i][i - 1];
+                    h[i][i - 1] = householderVectors[i][i - 1];
                 }
 
                 // copy upper triangular part of the matrix
                 for (int j = i; j < m; ++j) {
-                    h[i][j] = this.householderVectors[i][j];
+                    h[i][j] = householderVectors[i][j];
                 }
             }
-            this.cachedH = MatrixUtils.createRealMatrix(h);
+            cachedH = MatrixUtils.createRealMatrix(h);
         }
 
         // return the cached matrix
-        return this.cachedH;
+        return cachedH;
     }
 
     /**
@@ -165,7 +165,7 @@ class HessenbergTransformer {
      * @return the main diagonal elements of the B matrix
      */
     double[][] getHouseholderVectorsRef() {
-        return this.householderVectors;
+        return householderVectors;
     }
 
     /**
@@ -173,27 +173,27 @@ class HessenbergTransformer {
      * <p>Transformation is done using Householder transforms.</p>
      */
     private void transform() {
-        final int n = this.householderVectors.length;
-        final int high = n - 1;
+        int n = householderVectors.length;
+        int high = n - 1;
 
         for (int m = 1; m <= high - 1; m++) {
             // Scale column.
             double scale = 0;
             for (int i = m; i <= high; i++) {
-                scale += FastMath.abs(this.householderVectors[i][m - 1]);
+                scale += FastMath.abs(householderVectors[i][m - 1]);
             }
 
             if (!Precision.equals(scale, 0)) {
                 // Compute Householder transformation.
                 double h = 0;
                 for (int i = high; i >= m; i--) {
-                    this.ort[i] = this.householderVectors[i][m - 1] / scale;
-                    h += this.ort[i] * this.ort[i];
+                    ort[i] = householderVectors[i][m - 1] / scale;
+                    h += ort[i] * ort[i];
                 }
-                final double g = (this.ort[m] > 0) ? -FastMath.sqrt(h) : FastMath.sqrt(h);
+                double g = (ort[m] > 0) ? -FastMath.sqrt(h) : FastMath.sqrt(h);
 
-                h -= this.ort[m] * g;
-                this.ort[m] -= g;
+                h -= ort[m] * g;
+                ort[m] -= g;
 
                 // Apply Householder similarity transformation
                 // H = (I - u*u' / h) * H * (I - u*u' / h)
@@ -201,27 +201,27 @@ class HessenbergTransformer {
                 for (int j = m; j < n; j++) {
                     double f = 0;
                     for (int i = high; i >= m; i--) {
-                        f += this.ort[i] * this.householderVectors[i][j];
+                        f += ort[i] * householderVectors[i][j];
                     }
                     f /= h;
                     for (int i = m; i <= high; i++) {
-                        this.householderVectors[i][j] -= f * this.ort[i];
+                        householderVectors[i][j] -= f * ort[i];
                     }
                 }
 
                 for (int i = 0; i <= high; i++) {
                     double f = 0;
                     for (int j = high; j >= m; j--) {
-                        f += this.ort[j] * this.householderVectors[i][j];
+                        f += ort[j] * householderVectors[i][j];
                     }
                     f /= h;
                     for (int j = m; j <= high; j++) {
-                        this.householderVectors[i][j] -= f * this.ort[j];
+                        householderVectors[i][j] -= f * ort[j];
                     }
                 }
 
-                this.ort[m] = scale * this.ort[m];
-                this.householderVectors[m][m - 1] = scale * g;
+                ort[m] = scale * ort[m];
+                householderVectors[m][m - 1] = scale * g;
             }
         }
     }

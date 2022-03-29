@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.search.TestType;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
+import edu.cmu.tetradapp.util.DoubleTextField.Filter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -41,19 +42,19 @@ import java.text.NumberFormat;
 class PurifyIndTestParamsEditor extends JPanel {
     private final Parameters params;
 
-    public PurifyIndTestParamsEditor(final Parameters params, final boolean discreteData) {
+    public PurifyIndTestParamsEditor(Parameters params, boolean discreteData) {
         this.params = params;
 
-        final NumberFormat smallNumberFormat = new DecimalFormat("0E00");
-        final DoubleTextField alphaField = new DoubleTextField(getParams().getDouble("alpha", 0.001), 8,
+        NumberFormat smallNumberFormat = new DecimalFormat("0E00");
+        DoubleTextField alphaField = new DoubleTextField(this.getParams().getDouble("alpha", 0.001), 8,
                 new DecimalFormat("0.0########"), smallNumberFormat, 1e-4);
 
-        alphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(final double value, final double oldValue) {
+        alphaField.setFilter(new Filter() {
+            public double filter(double value, double oldValue) {
                 try {
-                    getParams().set("alpha", 0.001);
+                    PurifyIndTestParamsEditor.this.getParams().set("alpha", 0.001);
                     return value;
-                } catch (final IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
@@ -63,15 +64,15 @@ class PurifyIndTestParamsEditor extends JPanel {
 //        JComboBox purifySelector = null;
 
         if (!discreteData) {
-            final TestType[] descriptions = TestType.getTestDescriptions();
+            TestType[] descriptions = TestType.getTestDescriptions();
             testSelector = new JComboBox(descriptions);
-            testSelector.setSelectedItem(getParams().get("tetradTestType", TestType.TETRAD_WISHART));
+            testSelector.setSelectedItem(this.getParams().get("tetradTestType", TestType.TETRAD_WISHART));
 
             testSelector.addActionListener(new ActionListener() {
-                public void actionPerformed(final ActionEvent e) {
-                    final JComboBox combo = (JComboBox) e.getSource();
-                    final TestType index = (TestType) combo.getSelectedItem();
-                    getParams().set("tetradTestType", index);
+                public void actionPerformed(ActionEvent e) {
+                    JComboBox combo = (JComboBox) e.getSource();
+                    TestType index = (TestType) combo.getSelectedItem();
+                    PurifyIndTestParamsEditor.this.getParams().set("tetradTestType", index);
                 }
             });
 
@@ -88,17 +89,17 @@ class PurifyIndTestParamsEditor extends JPanel {
 //            });
         }
 
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        final Box b = Box.createVerticalBox();
+        Box b = Box.createVerticalBox();
 
         if (!discreteData) {
-            final Box b1 = Box.createHorizontalBox();
+            Box b1 = Box.createHorizontalBox();
             b1.add(new JLabel("Tetrad Test:"));
             b1.add(Box.createHorizontalGlue());
             b1.add(testSelector);
-            add(b1);
-            add(Box.createHorizontalGlue());
+            this.add(b1);
+            this.add(Box.createHorizontalGlue());
 
 //            Box b2 = Box.createHorizontalBox();
 //            b2.add(new JLabel("Purify:"));
@@ -109,18 +110,18 @@ class PurifyIndTestParamsEditor extends JPanel {
         }
 
 
-        final Box b3 = Box.createHorizontalBox();
+        Box b3 = Box.createHorizontalBox();
         b3.add(new JLabel("Alpha:"));
         b3.add(Box.createHorizontalStrut(10));
         b3.add(Box.createHorizontalGlue());
         b3.add(alphaField);
         b.add(b3);
 
-        add(b, BorderLayout.CENTER);
+        this.add(b, BorderLayout.CENTER);
     }
 
     private Parameters getParams() {
-        return this.params;
+        return params;
     }
 }
 

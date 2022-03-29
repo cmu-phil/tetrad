@@ -139,7 +139,7 @@ public class BayesImWrapperObs implements SessionModel, Memorable {
         log(bayesIm);
     }
      */
-    public BayesImWrapperObs(final BayesPmWrapper bayesPmWrapper, final Parameters params) {
+    public BayesImWrapperObs(BayesPmWrapper bayesPmWrapper, Parameters params) {
         if (bayesPmWrapper == null) {
             throw new NullPointerException("BayesPmWrapper must not be null.");
         }
@@ -148,17 +148,17 @@ public class BayesImWrapperObs implements SessionModel, Memorable {
             throw new NullPointerException("Parameters must not be null.");
         }
 
-        final BayesPm bayesPm = new BayesPm(bayesPmWrapper.getBayesPm());
+        BayesPm bayesPm = new BayesPm(bayesPmWrapper.getBayesPm());
 
         if (params.getString("initializationMode", "manualRetain").equals("manualRetain")) {
-            this.bayesIm = new MlBayesImObs(bayesPm);
+            bayesIm = new MlBayesImObs(bayesPm);
         } else if (params.getString("initializationMode", "manualRetain").equals("randomRetain")) {
-            this.bayesIm = new MlBayesImObs(bayesPm, MlBayesIm.RANDOM);
+            bayesIm = new MlBayesImObs(bayesPm, MlBayesIm.RANDOM);
         } else if (params.getString("initializationMode", "manualRetain").equals("randomOverwrite")) {
-            this.bayesIm = new MlBayesImObs(bayesPm, MlBayesIm.RANDOM);
+            bayesIm = new MlBayesImObs(bayesPm, MlBayesIm.RANDOM);
         }
 
-        log(this.bayesIm);
+        this.log(bayesIm);
     }
 
 //	// from regular allowUnfaithfulness BayesIm
@@ -203,23 +203,23 @@ public class BayesImWrapperObs implements SessionModel, Memorable {
 
     //=============================PUBLIC METHODS=========================//
     public BayesIm getBayesIm() {
-        return this.bayesIm;
+        return bayesIm;
     }
 
     public Graph getGraph() {
-        return this.bayesIm.getBayesPm().getDag();
+        return bayesIm.getBayesPm().getDag();
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
     //============================== private methods ============================//
-    private void log(final BayesIm im) {
+    private void log(BayesIm im) {
         TetradLogger.getInstance().log("info",
                 "Maximum likelihood Bayes IM: Observed Variables Only");
         TetradLogger.getInstance().log("im", im.toString());
@@ -238,32 +238,32 @@ public class BayesImWrapperObs implements SessionModel, Memorable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (this.bayesIm == null) {
+        if (bayesIm == null) {
             throw new NullPointerException();
         }
     }
 
     public Graph getSourceGraph() {
-        return getGraph();
+        return this.getGraph();
     }
 
     public Graph getResultGraph() {
-        return getGraph();
+        return this.getGraph();
     }
 
     public List<String> getVariableNames() {
-        return getGraph().getNodeNames();
+        return this.getGraph().getNodeNames();
     }
 
     public List<Node> getVariables() {
-        return getGraph().getNodes();
+        return this.getGraph().getNodes();
     }
 
-    public void setBayesIm(final BayesIm bayesIm) {
+    public void setBayesIm(BayesIm bayesIm) {
         this.bayesIm = bayesIm;
     }
 }

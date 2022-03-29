@@ -45,7 +45,7 @@ public class TemplateExpander {
     }
 
     public static TemplateExpander getInstance() {
-        return TemplateExpander.INSTANCE;
+        return INSTANCE;
     }
 
     /**
@@ -68,9 +68,9 @@ public class TemplateExpander {
      *                        expanded formula contains a "$", which means there was a "$" that was not properly embedded in a TSUM or
      *                        TPROD. It may be that a TSUM or TPROD was embedded inside another TSUM or TPROD.
      */
-    public String expandTemplate(String template, final GeneralizedSemPm semPm, final Node node) throws ParseException {
-        final ExpressionParser parser = new ExpressionParser();
-        final List<String> usedNames;
+    public String expandTemplate(String template, GeneralizedSemPm semPm, Node node) throws ParseException {
+        ExpressionParser parser = new ExpressionParser();
+        List<String> usedNames;
 
         if (semPm == null && template.contains("$")) {
             throw new IllegalArgumentException("If semPm is null, the template may not contain any parameters or " +
@@ -86,10 +86,10 @@ public class TemplateExpander {
         parser.parseExpression(template);
         usedNames = parser.getParameters();
 
-        template = replaceTemplateSums(semPm, template, node);
-        template = replaceTemplateProducts(semPm, template, node);
-        template = replaceNewParameters(semPm, template, usedNames);
-        template = replaceError(semPm, template, node);
+        template = this.replaceTemplateSums(semPm, template, node);
+        template = this.replaceTemplateProducts(semPm, template, node);
+        template = this.replaceNewParameters(semPm, template, usedNames);
+        template = this.replaceError(semPm, template, node);
 
         Node error = null;
 
@@ -108,7 +108,7 @@ public class TemplateExpander {
             // This will throw an exception if the expansion without the error term added is not parseable.
             try {
                 parser.parseExpression(template);
-            } catch (final ParseException e) {
+            } catch (ParseException e) {
                 template = "";
             }
 
@@ -132,32 +132,32 @@ public class TemplateExpander {
         return template;
     }
 
-    private String replaceTemplateSums(final GeneralizedSemPm semPm, String formula, final Node node)
+    private String replaceTemplateSums(GeneralizedSemPm semPm, String formula, Node node)
             throws ParseException {
-        formula = replaceLists("TSUM", semPm, formula, node);
-        formula = replaceLists("tsum", semPm, formula, node);
+        formula = this.replaceLists("TSUM", semPm, formula, node);
+        formula = this.replaceLists("tsum", semPm, formula, node);
         return formula;
     }
 
-    private String replaceTemplateProducts(final GeneralizedSemPm semPm, String formula, final Node node)
+    private String replaceTemplateProducts(GeneralizedSemPm semPm, String formula, Node node)
             throws ParseException {
-        formula = replaceLists("TPROD", semPm, formula, node);
-        formula = replaceLists("tprod", semPm, formula, node);
+        formula = this.replaceLists("TPROD", semPm, formula, node);
+        formula = this.replaceLists("tprod", semPm, formula, node);
         return formula;
     }
 
-    private String replaceLists(final String operator, final GeneralizedSemPm semPm, String formula, final Node node)
+    private String replaceLists(String operator, GeneralizedSemPm semPm, String formula, Node node)
             throws ParseException {
-        final List<String> templateOperators = new ArrayList<>();
+        List<String> templateOperators = new ArrayList<>();
         templateOperators.add("TSUM");
         templateOperators.add("TPROD");
         templateOperators.add("tsum");
         templateOperators.add("tprod");
 
-        final Pattern p = Pattern.compile(Pattern.quote(operator));
+        Pattern p = Pattern.compile(Pattern.quote(operator));
 
         while (true) {
-            final Matcher m = p.matcher(formula);
+            Matcher m = p.matcher(formula);
 
             if (!m.find()) {
                 break;
@@ -169,7 +169,7 @@ public class TemplateExpander {
             int pos;
 
             for (pos = m.end(); pos < formula.length(); pos++) {
-                final char c = formula.charAt(pos);
+                char c = formula.charAt(pos);
 
                 if (c == '(') numLeft++;
                 else if (c == ')') numRight++;
@@ -179,13 +179,13 @@ public class TemplateExpander {
                 }
             }
 
-            final String target = formula.substring(m.end() + 1, pos);
+            String target = formula.substring(m.end() + 1, pos);
 
 //            if (!target.contains("$")) {
 //                throw new ParseException("Templating operators only apply to expressions containg $.", 0);
 //            }
 
-            for (final String _operator : templateOperators) {
+            for (String _operator : templateOperators) {
                 if (operator.equals(_operator)) continue;
 
                 if (target.contains(_operator)) {
@@ -199,10 +199,10 @@ public class TemplateExpander {
                 parents = semPm.getParents(node);
             }
 
-            final StringBuilder buf = new StringBuilder();
+            StringBuilder buf = new StringBuilder();
 
             for (int j = 0; j < parents.size(); j++) {
-                final Node parent = parents.get(j);
+                Node parent = parents.get(j);
 
                 if (!semPm.getVariableNodes().contains(parent)) {
                     continue;
@@ -224,11 +224,11 @@ public class TemplateExpander {
             String toReplace = formula.substring(m.start(), pos + 1);
 
             toReplace = Pattern.quote(toReplace);
-            final String replacement = buf.toString();
+            String replacement = buf.toString();
             formula = formula.replaceFirst(toReplace, replacement);
         }
 
-        formula = removeOperatorStrings(formula);
+        formula = this.removeOperatorStrings(formula);
 
         // lop off initial + or *.
         formula = formula.trim();
@@ -246,8 +246,8 @@ public class TemplateExpander {
         return formula;
     }
 
-    private String replaceError(final GeneralizedSemPm semPm, final String formula, final Node node) {
-        final Node error = semPm.getErrorNode(node);
+    private String replaceError(GeneralizedSemPm semPm, String formula, Node node) {
+        Node error = semPm.getErrorNode(node);
 
         if (error != null) {
             return formula.replaceAll("ERROR", error.getName());
@@ -262,14 +262,14 @@ public class TemplateExpander {
         while (found) {
             found = false;
 
-            final List<Character> operatorList = new ArrayList<>();
+            List<Character> operatorList = new ArrayList<>();
             int first = 0;
             int last = 0;
 
             for (int i = last; i < formula.length(); i++) {
-                final char symbol = formula.charAt(i);
-                final boolean plusOrTimes = '+' == symbol || '*' == symbol;
-                final boolean space = ' ' == symbol;
+                char symbol = formula.charAt(i);
+                boolean plusOrTimes = '+' == symbol || '*' == symbol;
+                boolean space = ' ' == symbol;
 
                 if (space) {
                     // continue; // (last statement)
@@ -286,7 +286,7 @@ public class TemplateExpander {
                         found = true;
                         boolean allStar = true;
 
-                        for (final Character c : operatorList) {
+                        for (Character c : operatorList) {
                             if (c != '*') {
                                 allStar = false;
                                 break;
@@ -310,38 +310,38 @@ public class TemplateExpander {
         return formula;
     }
 
-    private String replaceNewParameters(final GeneralizedSemPm semPm, String formula, final List<String> usedNames) {
+    private String replaceNewParameters(GeneralizedSemPm semPm, String formula, List<String> usedNames) {
         final String parameterPattern = "\\$|(([a-zA-Z]{1})([a-zA-Z0-9-_/]*))";
-        final Pattern p = Pattern.compile("NEW\\((" + parameterPattern + ")\\)");
+        Pattern p = Pattern.compile("NEW\\((" + parameterPattern + ")\\)");
 
         while (true) {
-            final Matcher m = p.matcher(formula);
+            Matcher m = p.matcher(formula);
 
             if (!m.find()) {
                 break;
             }
 
-            final String group0 = Pattern.quote(m.group(0));
-            final String group1 = m.group(1);
+            String group0 = Pattern.quote(m.group(0));
+            String group1 = m.group(1);
 
-            final String nextName = semPm.nextParameterName(group1, usedNames);
+            String nextName = semPm.nextParameterName(group1, usedNames);
             formula = formula.replaceFirst(group0, nextName);
             usedNames.add(nextName);
         }
 
-        final Pattern p2 = Pattern.compile("new\\((" + parameterPattern + ")\\)");
+        Pattern p2 = Pattern.compile("new\\((" + parameterPattern + ")\\)");
 
         while (true) {
-            final Matcher m = p2.matcher(formula);
+            Matcher m = p2.matcher(formula);
 
             if (!m.find()) {
                 break;
             }
 
-            final String group0 = Pattern.quote(m.group(0));
-            final String group1 = m.group(1);
+            String group0 = Pattern.quote(m.group(0));
+            String group1 = m.group(1);
 
-            final String nextName = semPm.nextParameterName(group1, usedNames);
+            String nextName = semPm.nextParameterName(group1, usedNames);
             formula = formula.replaceFirst(group0, nextName);
             usedNames.add(nextName);
         }

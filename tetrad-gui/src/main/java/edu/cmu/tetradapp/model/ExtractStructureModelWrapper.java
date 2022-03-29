@@ -38,36 +38,36 @@ public class ExtractStructureModelWrapper extends GraphWrapper implements DoNotA
     static final long serialVersionUID = 23L;
 
 
-    public ExtractStructureModelWrapper(final GraphSource source, final Parameters parameters) {
+    public ExtractStructureModelWrapper(GraphSource source, Parameters parameters) {
         this(source.getGraph());
     }
 
 
-    public ExtractStructureModelWrapper(final Graph graph) {
+    public ExtractStructureModelWrapper(Graph graph) {
         super(new EdgeListGraph());
 
-        final List<Node> latents = new ArrayList<>();
+        List<Node> latents = new ArrayList<>();
 
-        for (final Node node : graph.getNodes()) {
+        for (Node node : graph.getNodes()) {
             if (node.getNodeType() == NodeType.LATENT) {
                 latents.add(node);
             }
         }
 
-        final Graph graph2 = graph.subgraph(latents);
+        Graph graph2 = graph.subgraph(latents);
 
         // Make a deep clone so the layout below doesn't affect the original graph.
-        final Graph graph3;
+        Graph graph3;
 
         try {
             graph3 = (Graph) new MarshalledObject(graph2).get();
-        } catch (final Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
 
         GraphUtils.fruchtermanReingoldLayout(graph3);
-        setGraph(graph3);
+        this.setGraph(graph3);
 
         TetradLogger.getInstance().log("info", "\nGenerating CPDAG from DAG.");
     }
@@ -79,7 +79,7 @@ public class ExtractStructureModelWrapper extends GraphWrapper implements DoNotA
     //======================== Private Method ======================//
 
 
-    private static Graph getCPDAG(final Dag dag) {
+    private static Graph getCPDAG(Dag dag) {
         return SearchGraphUtils.cpdagFromDag(dag);
     }
 

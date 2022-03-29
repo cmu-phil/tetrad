@@ -40,13 +40,13 @@ public class TimeSeriesDataDisplayJTable extends JTable
     /**
      * Constructor. Takes a DataSet as a model.
      */
-    public TimeSeriesDataDisplayJTable(final TimeSeriesData model) {
-        setModel(new TimeSeriesDataDisplayTable(model));
-        setDefaultEditor(Number.class, new NumberCellEditor());
-        setDefaultRenderer(Number.class, new NumberCellRenderer());
-        setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+    public TimeSeriesDataDisplayJTable(TimeSeriesData model) {
+        this.setModel(new TimeSeriesDataDisplayTable(model));
+        this.setDefaultEditor(Number.class, new NumberCellEditor());
+        this.setDefaultRenderer(Number.class, new NumberCellRenderer());
+        this.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
-        int rowCount = this.dataModel.getRowCount();
+        int rowCount = dataModel.getRowCount();
         int max = 0;
 
         while (rowCount > 0) {
@@ -54,21 +54,21 @@ public class TimeSeriesDataDisplayJTable extends JTable
             max++;
         }
 
-        getColumnModel().getColumn(0).setMaxWidth(10 * max);
-        getColumnModel().getColumn(0).setCellRenderer(new RowNumberRenderer2());
+        this.getColumnModel().getColumn(0).setMaxWidth(10 * max);
+        this.getColumnModel().getColumn(0).setCellRenderer(new RowNumberRenderer2());
     }
 
     /**
      * @return the underlying DataSet model.
      */
     private TimeSeriesData getDataSet() {
-        final TimeSeriesDataDisplayTable dataDisplayTableModelDataSet =
-                (TimeSeriesDataDisplayTable) getModel();
+        TimeSeriesDataDisplayTable dataDisplayTableModelDataSet =
+                (TimeSeriesDataDisplayTable) this.getModel();
         return dataDisplayTableModelDataSet.getDataSet();
     }
 
     public DataModel getDataModel() {
-        return getDataSet();
+        return this.getDataSet();
     }
 }
 
@@ -100,24 +100,24 @@ class TimeSeriesDataDisplayTable extends AbstractTableModel {
      *
      * @param dataSet the dataSet.
      */
-    public TimeSeriesDataDisplayTable(final TimeSeriesData dataSet) {
+    public TimeSeriesDataDisplayTable(TimeSeriesData dataSet) {
         this.dataSet = dataSet;
-        this.colCount = dataSet.getNumVars();
-        this.maxRowCount = dataSet.getNumTimePoints();
+        colCount = dataSet.getNumVars();
+        maxRowCount = dataSet.getNumTimePoints();
     }
 
     /**
      * @param col the position of the column whose name is requested.
      * @return the name of the column at position 'col'.
      */
-    public String getColumnName(final int col) {
+    public String getColumnName(int col) {
 
         if (col == 0) {
             return "";    // This column displays the row number.
         }
 
-        if (col < this.colCount + 1) {
-            return this.dataSet.getVariableNames().get(col - 1);
+        if (col < colCount + 1) {
+            return dataSet.getVariableNames().get(col - 1);
         } else {
             return null;
         }
@@ -128,7 +128,7 @@ class TimeSeriesDataDisplayTable extends AbstractTableModel {
      * this number will be at least 100.
      */
     public int getRowCount() {
-        return (this.maxRowCount < 100) ? 100 : this.maxRowCount;
+        return (maxRowCount < 100) ? 100 : maxRowCount;
     }
 
     /**
@@ -136,7 +136,7 @@ class TimeSeriesDataDisplayTable extends AbstractTableModel {
      * this number will be at least 30.
      */
     public int getColumnCount() {
-        return (this.colCount < 30) ? 30 : this.colCount + 1;
+        return (colCount < 30) ? 30 : colCount + 1;
     }
 
     /**
@@ -147,12 +147,12 @@ class TimeSeriesDataDisplayTable extends AbstractTableModel {
      * model, 'null' is returned. Otherwise, the value stored in the wrapped
      * table model at the given coordinates is returned.
      */
-    public Object getValueAt(final int row, final int column) {
+    public Object getValueAt(int row, int column) {
         if (column == 0) {
             return row + 1;    // present as 1-indexed.
-        } else if (column < this.dataSet.getNumVars() + 1 &&
-                row < this.dataSet.getNumTimePoints()) {
-            return this.dataSet.getDatum(row, column - 1);
+        } else if (column < dataSet.getNumVars() + 1 &&
+                row < dataSet.getNumTimePoints()) {
+            return dataSet.getDatum(row, column - 1);
         } else {
             return null;
         }
@@ -161,7 +161,7 @@ class TimeSeriesDataDisplayTable extends AbstractTableModel {
     /**
      * @return the class of the column.
      */
-    public Class getColumnClass(final int col) {
+    public Class getColumnClass(int col) {
         return Number.class;
     }
 
@@ -169,7 +169,7 @@ class TimeSeriesDataDisplayTable extends AbstractTableModel {
      * @return the DataSet being presented.
      */
     public TimeSeriesData getDataSet() {
-        return this.dataSet;
+        return dataSet;
     }
 }
 
@@ -181,9 +181,9 @@ class RowNumberRenderer2 implements TableCellRenderer {
     /**
      * @return a label stylized for presenting row numbers in the 0th column.
      */
-    public Component getTableCellRendererComponent(final JTable table, final Object value,
-                                                   final boolean isSelected, final boolean hasFocus, final int row, final int column) {
-        final JLabel label = new JLabel(Integer.toString(row + 1));
+    public Component getTableCellRendererComponent(JTable table, Object value,
+                                                   boolean isSelected, boolean hasFocus, int row, int column) {
+        JLabel label = new JLabel(Integer.toString(row + 1));
         label.setHorizontalAlignment(SwingConstants.RIGHT);
         return label;
     }

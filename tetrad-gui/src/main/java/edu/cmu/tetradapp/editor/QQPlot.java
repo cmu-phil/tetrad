@@ -63,39 +63,39 @@ class QQPlot {
      * The min value in the comparison distribution
      */
 
-    private double minComparison = 0.0;
+    private double minComparison;
 
     /**
      * The max value in the comparison distribution
      */
 
-    private double maxComparison = 0.0;
+    private double maxComparison;
 
     /**
      * The min value in the sample
      */
-    private double minData = 0.0;
+    private double minData;
 
 
     /**
      * The max value in the sample
      */
-    private double maxData = 0.0;
+    private double maxData;
 
     /**
      * Lowest value in the q-q
      */
-    private double min = 0.0;
+    private double min;
 
     /**
      * Highest value in the q-q
      */
-    private double max = 0.0;
+    private double max;
 
     /**
      * Constructs the histogram given the dataset to wrap and the node that should be viewed.
      */
-    public QQPlot(final DataSet dataSet, Node selectedNode) {
+    public QQPlot(DataSet dataSet, Node selectedNode) {
 
         boolean testMode = false;
 
@@ -124,7 +124,7 @@ class QQPlot {
 
         this.dataSet = dataSet.copy();
         if (selectedNode == null && dataSet.getNumColumns() != 0) {
-            final int[] selected = dataSet.getSelectedIndices();
+            int[] selected = dataSet.getSelectedIndices();
             if (selected == null || selected.length == 0) {
                 for (int i = 0; i < selected.length; i++) {
                     if (dataSet.getVariable(selected[i]) instanceof ContinuousVariable) {
@@ -136,16 +136,16 @@ class QQPlot {
         }
 
         try {
-            this.selectedVariable = (ContinuousVariable) selectedNode;
-        } catch (final Exception e) {
+            selectedVariable = (ContinuousVariable) selectedNode;
+        } catch (Exception e) {
             JOptionPane.showMessageDialog(new JFrame(), "You cannot construct a q-q plot for a discrete variable!");
             throw new IllegalArgumentException("Only attempt to construct a q-q plot on a continuous variable!");
         }
 
         if (testMode)
-            testPlot();
+            this.testPlot();
         else
-            buildQQPlotData(this.selectedVariable);
+            this.buildQQPlotData(selectedVariable);
 
     }
 
@@ -155,7 +155,7 @@ class QQPlot {
      * @return the max sample value.
      */
     public double getMaxSample() {
-        return this.maxData;
+        return maxData;
     }
 
 
@@ -163,14 +163,14 @@ class QQPlot {
      * @return the min sample value.
      */
     public double getMinSample() {
-        return this.minData;
+        return minData;
     }
 
     /**
      * @return the max comparison value.
      */
     public double getMaxIdeal() {
-        return this.maxComparison;
+        return maxComparison;
     }
 
 
@@ -178,7 +178,7 @@ class QQPlot {
      * @return the min comparison value.
      */
     public double getMinIdeal() {
-        return this.minComparison;
+        return minComparison;
     }
 
     /**
@@ -186,7 +186,7 @@ class QQPlot {
      */
 
     public double getMinValue() {
-        return this.min;
+        return min;
     }
 
     /**
@@ -194,26 +194,26 @@ class QQPlot {
      */
 
     public double getMaxValue() {
-        return this.max;
+        return max;
     }
 
     /**
      * @return the node that has been selected.
      */
     public Node getSelectedVariable() {
-        return this.selectedVariable;
+        return selectedVariable;
     }
 
-    public void setSelectedVariable(final ContinuousVariable c) {
-        this.selectedVariable = c;
+    public void setSelectedVariable(ContinuousVariable c) {
+        selectedVariable = c;
     }
 
     public double[] getComparisonVariable() {
-        return this.comparisonVariable;
+        return comparisonVariable;
     }
 
     public DataSet getDataSet() {
-        return this.dataSet;
+        return dataSet;
     }
 
     //============================ Private Methods =======================//
@@ -225,36 +225,36 @@ class QQPlot {
      */
 
     private void testPlot() {
-        final ContinuousVariable c = new ContinuousVariable("test");
-        if (this.dataSet.getVariable("test") == null)
-            this.dataSet.addVariable(c);
+        ContinuousVariable c = new ContinuousVariable("test");
+        if (dataSet.getVariable("test") == null)
+            dataSet.addVariable(c);
 
-        final ContinuousVariable c2 = new ContinuousVariable("test2");
-        if (this.dataSet.getVariable("test2") == null)
-            this.dataSet.addVariable(c2);
+        ContinuousVariable c2 = new ContinuousVariable("test2");
+        if (dataSet.getVariable("test2") == null)
+            dataSet.addVariable(c2);
 
-        this.selectedVariable = c;
+        selectedVariable = c;
 
-        final int columnIndex = this.dataSet.getColumn(c);
-        final Normal g = new Normal(1, 1);
-        final Exponential e = new Exponential(1);
+        int columnIndex = dataSet.getColumn(c);
+        Normal g = new Normal(1, 1);
+        Exponential e = new Exponential(1);
         double mean = 0.0;
         double sd = 0.0;
 
-        this.minData = 10000000000000.0;
-        this.maxData = 0.0;
+        minData = 10000000000000.0;
+        maxData = 0.0;
 
-        this.minComparison = 1000000000000.0;
-        this.maxComparison = 0.0;
+        minComparison = 1000000000000.0;
+        maxComparison = 0.0;
 
-        for (int i = 0; i < this.dataSet.getNumRows(); i++) {
-            final double value = g.nextRandom();
-            final double value2 = e.nextRandom();
-            this.dataSet.setDouble(i, columnIndex, value);
-            this.dataSet.setDouble(i, columnIndex + 1, value2);
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            double value = g.nextRandom();
+            double value2 = e.nextRandom();
+            dataSet.setDouble(i, columnIndex, value);
+            dataSet.setDouble(i, columnIndex + 1, value2);
             mean += value;
-            if (value < this.minData) this.minData = value;
-            if (value > this.maxData) this.maxData = value;
+            if (value < minData) minData = value;
+            if (value > maxData) maxData = value;
 
             //System.out.println(value);
 
@@ -263,15 +263,15 @@ class QQPlot {
 
         //System.out.println(this.dataSet.getNumRows());
 
-        NormalityTests.kolmogorovSmirnov(this.dataSet, c2);
+        NormalityTests.kolmogorovSmirnov(dataSet, c2);
 
         //sort the dataset
-        for (int i = 0; i < this.dataSet.getNumRows(); i++) {
-            for (int k = i; k < this.dataSet.getNumRows(); k++) {
-                if (this.dataSet.getDouble(i, columnIndex) > this.dataSet.getDouble(k, columnIndex)) {
-                    final double temp = this.dataSet.getDouble(i, columnIndex);
-                    this.dataSet.setDouble(i, columnIndex, this.dataSet.getDouble(k, columnIndex));
-                    this.dataSet.setDouble(k, columnIndex, temp);
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            for (int k = i; k < dataSet.getNumRows(); k++) {
+                if (dataSet.getDouble(i, columnIndex) > dataSet.getDouble(k, columnIndex)) {
+                    double temp = dataSet.getDouble(i, columnIndex);
+                    dataSet.setDouble(i, columnIndex, dataSet.getDouble(k, columnIndex));
+                    dataSet.setDouble(k, columnIndex, temp);
                 }
             }
         }
@@ -286,10 +286,10 @@ class QQPlot {
         //System.out.println("**********************************");
 
         if (mean == 0.0) mean = 1.0;
-        else mean /= this.dataSet.getNumRows();
+        else mean /= dataSet.getNumRows();
 
-        for (int i = 0; i < this.dataSet.getNumRows(); i++) {
-            sd += (this.dataSet.getDouble(i, columnIndex) - mean) * (this.dataSet.getDouble(i, columnIndex) - mean);
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            sd += (dataSet.getDouble(i, columnIndex) - mean) * (dataSet.getDouble(i, columnIndex) - mean);
             //System.out.println(dataSet.getDouble(i, columnIndex));
             //System.out.println(sd);
         }
@@ -297,27 +297,27 @@ class QQPlot {
         if (sd == 0.0) {
             sd = 1.0;
         } else {
-            sd /= this.dataSet.getNumRows() - 1.0;
+            sd /= dataSet.getNumRows() - 1.0;
             sd = Math.sqrt(sd);
         }
 
         //System.out.println("Mean: " + mean + " SD: " + sd + " Min: " + this.minData + " Max: " + this.maxData);
 
-        this.comparison = new cern.jet.random.Normal(mean, sd, new MersenneTwister());
+        comparison = new cern.jet.random.Normal(mean, sd, new MersenneTwister());
 
-        calculateComparisonSet(this.comparison, this.dataSet);
+        this.calculateComparisonSet(comparison, dataSet);
         //System.out.println("CompMin " + this.minComparison + " CompMax: " + this.maxComparison);
         //System.out.println("DataMin " + this.minData + " DataMax: " + this.maxData);
 
-        if (this.minData < this.minComparison)
-            this.min = this.minData;
+        if (minData < minComparison)
+            min = minData;
         else
-            this.min = this.minComparison;
+            min = minComparison;
 
-        if (this.maxData > this.maxComparison)
-            this.max = this.maxData;
+        if (maxData > maxComparison)
+            max = maxData;
         else
-            this.max = this.maxComparison;
+            max = maxComparison;
 
         //end test code
     }
@@ -328,27 +328,27 @@ class QQPlot {
      * @param n    Normal distribution generated from the dataset.
      * @param data Dataset that n is generated from, and whose normality is in question.
      */
-    private void calculateComparisonSet(final cern.jet.random.Normal n, final DataSet data) {
+    private void calculateComparisonSet(cern.jet.random.Normal n, DataSet data) {
         //this.comparisonVariable = new ContinuousVariable("comparisonVariable");
         //data.addVariable(this.comparisonVariable);
 
-        this.comparisonVariable = new double[data.getNumRows()];
+        comparisonVariable = new double[data.getNumRows()];
 
-        final int column2 = data.getColumn(this.selectedVariable);
+        int column2 = data.getColumn(selectedVariable);
 
         //System.out.println("******* " + column2);
 
         for (int i = 0; i < data.getNumRows(); i++) {
-            final double valueAtQuantile = QQPlot.findQuantile((i + 1) / (data.getNumRows() + 1.0), this.minData, this.maxData, n, .0001, 0, 50);
+            double valueAtQuantile = findQuantile((i + 1) / (data.getNumRows() + 1.0), minData, maxData, n, .0001, 0, 50);
             //System.out.println(((i + 1) / (150 + 1.0)) + "************ " + findQuantile(.5, this.minData, this.maxData, n, .0001, 0, 50));
             //System.out.println("Column: " + column + " VaQ: " + valueAtQuantile);
-            this.comparisonVariable[i] = valueAtQuantile;
+            comparisonVariable[i] = valueAtQuantile;
 
-            if (valueAtQuantile < this.minComparison) {
-                this.minComparison = valueAtQuantile;
+            if (valueAtQuantile < minComparison) {
+                minComparison = valueAtQuantile;
             }
-            if (valueAtQuantile > this.maxComparison) {
-                this.maxComparison = valueAtQuantile;
+            if (valueAtQuantile > maxComparison) {
+                maxComparison = valueAtQuantile;
             }
             //System.out.println("*Data -- Comparison* " + data.getDouble(i, column2) + " -- " + data.getDouble(i, column));
             //System.out.println(data.getDouble(i, column2) - data.getDouble(i, column));
@@ -365,11 +365,11 @@ class QQPlot {
      * @param searchCap Desired maximum number of searches -- too high and the stack might overflow!
      * @return an estimation of the point in a Normal distribution at a specific quantile.
      */
-    private static double findQuantile(final double quantile, final double low, final double high, final cern.jet.random.Normal n, final double precision, final int count, final int searchCap) {
+    private static double findQuantile(double quantile, double low, double high, cern.jet.random.Normal n, double precision, int count, int searchCap) {
         //System.out.println("Low: " + low + "High: " + high);
-        final double mid = low + ((high - low) / 2.);
+        double mid = low + ((high - low) / 2.);
         //System.out.println("Mid: " + mid);
-        final double cdfResult = n.cdf(mid);
+        double cdfResult = n.cdf(mid);
         //System.out.println("CDF: " + cdfResult + " Abs value of difference: " + Math.abs(cdfResult - quantile) + " Count: " + count);
         if (Math.abs(cdfResult - quantile) < precision || count > searchCap) {
             //System.out.println("Found result: " + mid);
@@ -377,10 +377,10 @@ class QQPlot {
         } else {
             if (cdfResult > quantile) {
                 //System.out.println("Searching lesser");
-                return QQPlot.findQuantile(quantile, low, mid - precision, n, precision, count + 1, searchCap);
+                return findQuantile(quantile, low, mid - precision, n, precision, count + 1, searchCap);
             } else {
                 //System.out.println("Searching greater");
-                return QQPlot.findQuantile(quantile, mid + precision, high, n, precision, count + 1, searchCap);
+                return findQuantile(quantile, mid + precision, high, n, precision, count + 1, searchCap);
             }
         }
     }
@@ -388,24 +388,24 @@ class QQPlot {
     /**
      * Builds the q-q data if required, otherwise does nothing
      */
-    private void buildQQPlotData(final Node selectedNode) {
-        int columnIndex = this.dataSet.getColumn(selectedNode);
+    private void buildQQPlotData(Node selectedNode) {
+        int columnIndex = dataSet.getColumn(selectedNode);
 
         double mean = 0.0;
         double sd = 0.0;
 
-        this.minData = 10000000000000.0;
-        this.maxData = 0.0;
+        minData = 10000000000000.0;
+        maxData = 0.0;
 
-        this.minComparison = 1000000000000.0;
-        this.maxComparison = 0.0;
+        minComparison = 1000000000000.0;
+        maxComparison = 0.0;
 
         //the only case in which this should be -1 is if there's a continuous variable, but it's incomplete
         if (columnIndex == -1) {
-            for (int i = 0; i < this.dataSet.getNumColumns(); i++) {
+            for (int i = 0; i < dataSet.getNumColumns(); i++) {
                 //set selected variable if there is none
-                if (this.dataSet.getVariable(i) instanceof ContinuousVariable) {
-                    this.selectedVariable = (ContinuousVariable) this.dataSet.getVariable(i);
+                if (dataSet.getVariable(i) instanceof ContinuousVariable) {
+                    selectedVariable = (ContinuousVariable) dataSet.getVariable(i);
                     columnIndex = i;
                     break;
                 }
@@ -416,8 +416,8 @@ class QQPlot {
             }
         }
 
-        for (int i = 0; i < this.dataSet.getNumRows(); i++) {
-            final double value = this.dataSet.getDouble(i, columnIndex);
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            double value = dataSet.getDouble(i, columnIndex);
 
             if (Double.isNaN(value) || value == Double.NEGATIVE_INFINITY
                     || value == Double.POSITIVE_INFINITY) {
@@ -425,8 +425,8 @@ class QQPlot {
             }
 
             mean += value;
-            if (value < this.minData) this.minData = value;
-            if (value > this.maxData) this.maxData = value;
+            if (value < minData) minData = value;
+            if (value > maxData) maxData = value;
 
             //System.out.println(value);
 
@@ -436,10 +436,10 @@ class QQPlot {
         //System.out.println(this.dataSet.getNumRows());
 
         //sort the dataset
-        for (int i = 0; i < this.dataSet.getNumRows(); i++) {
-            for (int k = i; k < this.dataSet.getNumRows(); k++) {
-                final double value1 = this.dataSet.getDouble(i, columnIndex);
-                final double value2 = this.dataSet.getDouble(k, columnIndex);
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            for (int k = i; k < dataSet.getNumRows(); k++) {
+                double value1 = dataSet.getDouble(i, columnIndex);
+                double value2 = dataSet.getDouble(k, columnIndex);
 
                 if (Double.isNaN(value1) || value1 == Double.NEGATIVE_INFINITY
                         || value1 == Double.POSITIVE_INFINITY) {
@@ -452,9 +452,9 @@ class QQPlot {
                 }
 
                 if (value1 > value2) {
-                    final double temp = this.dataSet.getDouble(i, columnIndex);
-                    this.dataSet.setDouble(i, columnIndex, value2);
-                    this.dataSet.setDouble(k, columnIndex, temp);
+                    double temp = dataSet.getDouble(i, columnIndex);
+                    dataSet.setDouble(i, columnIndex, value2);
+                    dataSet.setDouble(k, columnIndex, temp);
                 }
             }
         }
@@ -467,11 +467,11 @@ class QQPlot {
         */
 
         if (mean == 0.0) mean = 1.0;
-        else mean /= this.dataSet.getNumRows();
+        else mean /= dataSet.getNumRows();
 
-        for (int i = 0; i < this.dataSet.getNumRows(); i++) {
-            final double value1 = this.dataSet.getDouble(i, columnIndex);
-            final double value2 = this.dataSet.getDouble(i, columnIndex);
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            double value1 = dataSet.getDouble(i, columnIndex);
+            double value2 = dataSet.getDouble(i, columnIndex);
 
             if (Double.isNaN(value1) || value1 == Double.NEGATIVE_INFINITY
                     || value1 == Double.POSITIVE_INFINITY) {
@@ -491,27 +491,27 @@ class QQPlot {
         if (sd == 0.0) {
             sd = 1.0;
         } else {
-            sd /= this.dataSet.getNumRows() - 1.0;
+            sd /= dataSet.getNumRows() - 1.0;
             sd = Math.sqrt(sd);
         }
 
         //System.out.println("Mean: " + mean + " SD: " + sd + " Min: " + this.minData + " Max: " + this.maxData);
 
-        this.comparison = new cern.jet.random.Normal(mean, sd, new MersenneTwister());
+        comparison = new cern.jet.random.Normal(mean, sd, new MersenneTwister());
 
-        calculateComparisonSet(this.comparison, this.dataSet);
+        this.calculateComparisonSet(comparison, dataSet);
         //System.out.println("CompMin " + this.minComparison + " CompMax: " + this.maxComparison);
         //System.out.println("DataMin " + this.minData + " DataMax: " + this.maxData);
 
-        if (this.minData < this.minComparison)
-            this.min = this.minData;
+        if (minData < minComparison)
+            min = minData;
         else
-            this.min = this.minComparison;
+            min = minComparison;
 
-        if (this.maxData > this.maxComparison)
-            this.max = this.maxData;
+        if (maxData > maxComparison)
+            max = maxData;
         else
-            this.max = this.maxComparison;
+            max = maxComparison;
     }
 }
 

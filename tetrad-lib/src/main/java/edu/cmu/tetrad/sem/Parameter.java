@@ -82,7 +82,7 @@ public final class Parameter implements TetradSerializable {
      *
      * @serial Any value.
      */
-    private boolean fixed = false;
+    private boolean fixed;
 
     /**
      * True iff this parameter should be initialized randomly.
@@ -97,7 +97,7 @@ public final class Parameter implements TetradSerializable {
      *
      * @serial Cannot be null.
      */
-    private Distribution distribution = Parameter.DEFAULT_DISTRIBUTION;
+    private Distribution distribution = DEFAULT_DISTRIBUTION;
 
     /**
      * If this parameter is either fixed or not initialized randomly, returns
@@ -118,7 +118,7 @@ public final class Parameter implements TetradSerializable {
      *              same as the "from" node. For covariance freeParameters, it must
      *              be different from the "from" node.)
      */
-    public Parameter(final String name, final ParamType type, final Node nodeA, final Node nodeB) {
+    public Parameter(String name, ParamType type, Node nodeA, Node nodeB) {
         if (name == null) {
             throw new NullPointerException("Name must not be null.");
         }
@@ -164,7 +164,7 @@ public final class Parameter implements TetradSerializable {
      * @return the name of the parameter.
      */
     public String getName() {
-        return this.name;
+        return name;
     }
 
     /**
@@ -173,7 +173,7 @@ public final class Parameter implements TetradSerializable {
      * @throws IllegalArgumentException if the name does not begin with a
      *                                  letter.
      */
-    public void setName(final String name) {
+    public void setName(String name) {
         if (name == null) {
             throw new NullPointerException();
         }
@@ -190,22 +190,22 @@ public final class Parameter implements TetradSerializable {
      * @return a string representation for this parameter.
      */
     public String toString() {
-        return "<" + this.name + ", " + this.type + ", " + this.nodeA + ", " +
-                this.nodeB + ", " + (this.fixed ? "fixed" : "free") + ">";
+        return "<" + name + ", " + type + ", " + nodeA + ", " +
+                nodeB + ", " + (fixed ? "fixed" : "free") + ">";
     }
 
     /**
      * @return the "from" node for the edge this parameter is associated with.
      */
     public Node getNodeA() {
-        return this.nodeA;
+        return nodeA;
     }
 
     /**
      * @return the "to" node for the edge this parameter is associated with.
      */
     public Node getNodeB() {
-        return this.nodeB;
+        return nodeB;
     }
 
     /**
@@ -213,7 +213,7 @@ public final class Parameter implements TetradSerializable {
      * This is set at construction time.
      */
     public ParamType getType() {
-        return this.type;
+        return type;
     }
 
     /**
@@ -221,7 +221,7 @@ public final class Parameter implements TetradSerializable {
      * this parameter.
      */
     public Distribution getDistribution() {
-        return this.distribution;
+        return distribution;
     }
 
     /**
@@ -231,7 +231,7 @@ public final class Parameter implements TetradSerializable {
      *
      * @see edu.cmu.tetrad.util.dist.SingleValue
      */
-    public void setDistribution(final Distribution distribution) {
+    public void setDistribution(Distribution distribution) {
         if (distribution == null) {
             throw new NullPointerException("Distribution must not be null.");
         }
@@ -242,7 +242,7 @@ public final class Parameter implements TetradSerializable {
      * @return true iff this parameter should be held fixed during estimation.
      */
     public boolean isFixed() {
-        return this.fixed;
+        return fixed;
     }
 
     /**
@@ -250,7 +250,7 @@ public final class Parameter implements TetradSerializable {
      *
      * @param fixed True if the parameter will be held fixed, false if not.
      */
-    public void setFixed(final boolean fixed) {
+    public void setFixed(boolean fixed) {
         this.fixed = fixed;
     }
 
@@ -258,13 +258,13 @@ public final class Parameter implements TetradSerializable {
      * @return the starting value if this is a fixed parameter.
      */
     public double getStartingValue() {
-        return this.startingValue;
+        return startingValue;
     }
 
     /**
      * Sets the starting value in case this is a fixed parameter.
      */
-    public void setStartingValue(final double startingValue) {
+    public void setStartingValue(double startingValue) {
         this.startingValue = startingValue;
     }
 
@@ -273,14 +273,14 @@ public final class Parameter implements TetradSerializable {
      * an initial value from its preset random distribution.
      */
     public boolean isInitializedRandomly() {
-        return this.initializedRandomly;
+        return initializedRandomly;
     }
 
     /**
      * Set to true iff this parameter should be initialized randomly by drawing
      * an initial value from its preset random distribution.
      */
-    public void setInitializedRandomly(final boolean initializedRandomly) {
+    public void setInitializedRandomly(boolean initializedRandomly) {
         this.initializedRandomly = initializedRandomly;
     }
 
@@ -297,27 +297,27 @@ public final class Parameter implements TetradSerializable {
      * @throws java.io.IOException
      * @throws ClassNotFoundException
      */
-    private void readObject(final ObjectInputStream s)
+    private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (this.name == null) {
+        if (name == null) {
             throw new NullPointerException();
         }
 
-        if (this.type == null) {
+        if (type == null) {
             throw new NullPointerException();
         }
 
-        if (this.distribution == null) {
+        if (distribution == null) {
             throw new NullPointerException();
         }
 
-        if (this.type == ParamType.VAR && this.nodeA != this.nodeB) {
+        if (type == ParamType.VAR && nodeA != nodeB) {
             throw new IllegalStateException();
         }
 
-        if (this.type == ParamType.COVAR && this.nodeA == this.nodeB) {
+        if (type == ParamType.COVAR && nodeA == nodeB) {
             throw new IllegalStateException();
         }
     }

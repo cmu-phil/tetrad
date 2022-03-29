@@ -45,14 +45,14 @@ public final class TestCovarianceMatrix {
     public void testConstruction() {
         RandomUtil.getInstance().setSeed(4828384834L);
 
-        final List<Node> variables = new LinkedList<>();
+        List<Node> variables = new LinkedList<>();
 
         for (int i = 0; i < 5; i++) {
-            final ContinuousVariable var = new ContinuousVariable("X" + i);
+            ContinuousVariable var = new ContinuousVariable("X" + i);
             variables.add(var);
         }
 
-        final DataSet dataSet = new BoxDataSet(new DoubleDataBox(10, variables.size()), variables);
+        DataSet dataSet = new BoxDataSet(new DoubleDataBox(10, variables.size()), variables);
 
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 5; j++) {
@@ -60,7 +60,7 @@ public final class TestCovarianceMatrix {
             }
         }
 
-        final DataSet _dataSet = dataSet.copy();
+        DataSet _dataSet = dataSet.copy();
 
         ICovarianceMatrix c1 = new CovarianceMatrix(dataSet);
         ICovarianceMatrix c2 = new CovarianceMatrix(dataSet);
@@ -73,7 +73,7 @@ public final class TestCovarianceMatrix {
         assertEquals(1, c3.getValue(0, 0), 0.001);
 
         // In place should modify the original covariance matrix.
-        final CorrelationMatrix c4 = new CorrelationMatrix(c1);
+        CorrelationMatrix c4 = new CorrelationMatrix(c1);
 //        assertEquals(1, c1.getValue(0, 0), 0.001);
 
         c1 = new CovarianceMatrix(_dataSet);

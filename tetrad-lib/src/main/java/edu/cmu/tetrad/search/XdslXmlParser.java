@@ -47,7 +47,7 @@ public class XdslXmlParser {
 
     private HashMap<String, Variable> namesToVars;
 
-    private boolean useDisplayNames = false;
+    private boolean useDisplayNames;
 
     /**
      * Takes an xml representation of a Bayes IM and reinstantiates the IM
@@ -55,18 +55,18 @@ public class XdslXmlParser {
      * @param element the xml of the IM
      * @return the BayesIM
      */
-    public BayesIm getBayesIm(final Element element) {
+    public BayesIm getBayesIm(Element element) {
         if (!"smile".equals(element.getQualifiedName())) {
             throw new IllegalArgumentException("Expecting " +
                     "smile" + " element.");
         }
 
-        final Elements elements = element.getChildElements();
+        Elements elements = element.getChildElements();
 
         Element element0 = null, element1 = null;
 
         for (int i = 0; i < elements.size(); i++) {
-            final Element _element = elements.get(i);
+            Element _element = elements.get(i);
 
             if ("nodes".equals(_element.getQualifiedName())) {
                 element0 = _element;
@@ -77,15 +77,15 @@ public class XdslXmlParser {
             }
         }
 
-        final Map<String, String> displayNames = mapDisplayNames(element1, this.useDisplayNames);
+        Map<String, String> displayNames = this.mapDisplayNames(element1, useDisplayNames);
 
-        final BayesIm bayesIm = buildIM(element0, displayNames);
+        BayesIm bayesIm = this.buildIM(element0, displayNames);
 
         return bayesIm;
     }
 
-    private BayesIm buildIM(final Element element0, final Map<String, String> displayNames) {
-        final Elements elements = element0.getChildElements();
+    private BayesIm buildIM(Element element0, Map<String, String> displayNames) {
+        Elements elements = element0.getChildElements();
 
         for (int i = 0; i < elements.size(); i++) {
             if (!"cpt".equals(elements.get(i).getQualifiedName())) {
@@ -93,12 +93,12 @@ public class XdslXmlParser {
             }
         }
 
-        final Dag dag = new Dag();
+        Dag dag = new Dag();
 
         // Get the nodes.
         for (int i = 0; i < elements.size(); i++) {
-            final Element cpt = elements.get(i);
-            final String name = cpt.getAttribute(0).getValue();
+            Element cpt = elements.get(i);
+            String name = cpt.getAttribute(0).getValue();
 
             if (displayNames == null) {
                 dag.addNode(new GraphNode(name));
@@ -110,32 +110,32 @@ public class XdslXmlParser {
 
         // Get the edges.
         for (int i = 0; i < elements.size(); i++) {
-            final Element cpt = elements.get(i);
+            Element cpt = elements.get(i);
 
-            final Elements cptElements = cpt.getChildElements();
+            Elements cptElements = cpt.getChildElements();
 
             for (int j = 0; j < cptElements.size(); j++) {
-                final Element cptElement = cptElements.get(j);
+                Element cptElement = cptElements.get(j);
 
                 if (cptElement.getQualifiedName().equals("parents")) {
-                    final String list = cptElement.getValue();
-                    final String[] parentNames = list.split(" ");
+                    String list = cptElement.getValue();
+                    String[] parentNames = list.split(" ");
 
-                    for (final String name : parentNames) {
+                    for (String name : parentNames) {
                         if (displayNames == null) {
-                            final edu.cmu.tetrad.graph.Node parent = dag.getNode(name);
-                            final edu.cmu.tetrad.graph.Node child = dag.getNode(cpt.getAttribute(0).getValue());
+                            edu.cmu.tetrad.graph.Node parent = dag.getNode(name);
+                            edu.cmu.tetrad.graph.Node child = dag.getNode(cpt.getAttribute(0).getValue());
                             dag.addDirectedEdge(parent, child);
                         } else {
-                            final edu.cmu.tetrad.graph.Node parent = dag.getNode(displayNames.get(name));
-                            final edu.cmu.tetrad.graph.Node child = dag.getNode(displayNames.get(cpt.getAttribute(0).getValue()));
+                            edu.cmu.tetrad.graph.Node parent = dag.getNode(displayNames.get(name));
+                            edu.cmu.tetrad.graph.Node child = dag.getNode(displayNames.get(cpt.getAttribute(0).getValue()));
                             dag.addDirectedEdge(parent, child);
                         }
                     }
                 }
             }
 
-            final String name;
+            String name;
 
             if (displayNames == null) {
                 name = cpt.getAttribute(0).getValue();
@@ -147,13 +147,13 @@ public class XdslXmlParser {
         }
 
         // PM
-        final BayesPm pm = new BayesPm(dag);
+        BayesPm pm = new BayesPm(dag);
 
         for (int i = 0; i < elements.size(); i++) {
-            final Element cpt = elements.get(i);
+            Element cpt = elements.get(i);
 
-            final String varName = cpt.getAttribute(0).getValue();
-            final Node node;
+            String varName = cpt.getAttribute(0).getValue();
+            Node node;
 
             if (displayNames == null) {
                 node = dag.getNode(varName);
@@ -161,16 +161,16 @@ public class XdslXmlParser {
                 node = dag.getNode(displayNames.get(varName));
             }
 
-            final Elements cptElements = cpt.getChildElements();
+            Elements cptElements = cpt.getChildElements();
 
-            final List<String> stateNames = new ArrayList<>();
+            List<String> stateNames = new ArrayList<>();
 
             for (int j = 0; j < cptElements.size(); j++) {
-                final Element cptElement = cptElements.get(j);
+                Element cptElement = cptElements.get(j);
 
                 if (cptElement.getQualifiedName().equals("state")) {
-                    final Attribute attribute = cptElement.getAttribute(0);
-                    final String stateName = attribute.getValue();
+                    Attribute attribute = cptElement.getAttribute(0);
+                    String stateName = attribute.getValue();
                     stateNames.add(stateName);
                 }
 
@@ -180,22 +180,22 @@ public class XdslXmlParser {
         }
 
         // IM
-        final BayesIm im = new MlBayesIm(pm);
+        BayesIm im = new MlBayesIm(pm);
 
         for (int nodeIndex = 0; nodeIndex < elements.size(); nodeIndex++) {
-            final Element cpt = elements.get(nodeIndex);
+            Element cpt = elements.get(nodeIndex);
 
-            final Elements cptElements = cpt.getChildElements();
+            Elements cptElements = cpt.getChildElements();
 
             for (int j = 0; j < cptElements.size(); j++) {
-                final Element cptElement = cptElements.get(j);
+                Element cptElement = cptElements.get(j);
 
                 if (cptElement.getQualifiedName().equals("probabilities")) {
-                    final String list = cptElement.getValue();
-                    final String[] probsStrings = list.split(" ");
-                    final List<Double> probs = new ArrayList<>();
+                    String list = cptElement.getValue();
+                    String[] probsStrings = list.split(" ");
+                    List<Double> probs = new ArrayList<>();
 
-                    for (final String probString : probsStrings) {
+                    for (String probString : probsStrings) {
                         probs.add(Double.parseDouble(probString));
                     }
 
@@ -213,24 +213,24 @@ public class XdslXmlParser {
         return im;
     }
 
-    private Map<String, String> mapDisplayNames(final Element element1, final boolean useDisplayNames) {
+    private Map<String, String> mapDisplayNames(Element element1, boolean useDisplayNames) {
         if (useDisplayNames) {
-            final Map<String, String> displayNames = new HashMap<>();
+            Map<String, String> displayNames = new HashMap<>();
 
-            final Elements elements = element1.getChildElements();
+            Elements elements = element1.getChildElements();
 
             for (int i = 0; i < elements.size(); i++) {
-                final Element nodeElement = elements.get(i);
+                Element nodeElement = elements.get(i);
 
                 if (nodeElement.getLocalName().equals("textbox")) continue;
 
-                final String varName = nodeElement.getAttribute(0).getValue();
+                String varName = nodeElement.getAttribute(0).getValue();
 
-                final Elements nodeElements = nodeElement.getChildElements();
+                Elements nodeElements = nodeElement.getChildElements();
                 String displayName = null;
 
                 for (int j = 0; j < nodeElements.size(); j++) {
-                    final Element e = nodeElements.get(j);
+                    Element e = nodeElements.get(j);
 
                     if (e.getQualifiedName().equals("name")) {
                         String value = e.getValue();
@@ -251,10 +251,10 @@ public class XdslXmlParser {
     }
 
     public boolean isUseDisplayNames() {
-        return this.useDisplayNames;
+        return useDisplayNames;
     }
 
-    public void setUseDisplayNames(final boolean useDisplayNames) {
+    public void setUseDisplayNames(boolean useDisplayNames) {
         this.useDisplayNames = useDisplayNames;
     }
 }

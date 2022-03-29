@@ -37,26 +37,26 @@ import java.util.Set;
  */
 public final class MimUtils {
 
-    public static Clusters convertToClusters(final Graph clusterGraph) {
-        final List<Node> measuredVariables = new ArrayList<>();
+    public static Clusters convertToClusters(Graph clusterGraph) {
+        List<Node> measuredVariables = new ArrayList<>();
 
-        for (final Node node : clusterGraph.getNodes()) {
+        for (Node node : clusterGraph.getNodes()) {
             if (node.getNodeType() != NodeType.LATENT) {
                 measuredVariables.add(node);
             }
         }
 
-        return MimUtils.convertToClusters(clusterGraph, measuredVariables);
+        return convertToClusters(clusterGraph, measuredVariables);
     }
 
-    public static List<List<Node>> convertToClusters2(final Graph clusterGraph) {
-        final Clusters clusters = MimUtils.convertToClusters(clusterGraph);
+    public static List<List<Node>> convertToClusters2(Graph clusterGraph) {
+        Clusters clusters = convertToClusters(clusterGraph);
 
-        final List<List<Node>> _clusters = new ArrayList<>();
+        List<List<Node>> _clusters = new ArrayList<>();
 
         for (int i = 0; i < clusters.getNumClusters(); i++) {
-            final List<Node> cluster = new ArrayList<>();
-            final List<String> cluster1 = clusters.getCluster(i);
+            List<Node> cluster = new ArrayList<>();
+            List<String> cluster1 = clusters.getCluster(i);
 
             for (int j = 0; j < cluster1.size(); j++) {
                 cluster.add(clusterGraph.getNode(cluster1.get(j)));
@@ -73,12 +73,12 @@ public final class MimUtils {
      * number of latents Li, i = 0,...,n-1, for each of which there is a list of indicators Wj, j = 0,...,m_i-1, such
      * that , Li-->Wj. Returns a Clusters object mapping i to Wj. The name for cluster i is set to Li.
      */
-    public static Clusters convertToClusters(Graph clusterGraph, final List<Node> measuredVariables) {
-        final List<String> latents = new ArrayList<>();
-        final Clusters clusters = new Clusters();
+    public static Clusters convertToClusters(Graph clusterGraph, List<Node> measuredVariables) {
+        List<String> latents = new ArrayList<>();
+        Clusters clusters = new Clusters();
         clusterGraph = GraphUtils.replaceNodes(clusterGraph, measuredVariables);
 
-        for (final Node node : clusterGraph.getNodes()) {
+        for (Node node : clusterGraph.getNodes()) {
             if (!measuredVariables.contains(node)) {
                 latents.add(node.getName());
             }
@@ -87,13 +87,13 @@ public final class MimUtils {
         Collections.sort(latents);
 
         for (int i = 0; i < latents.size(); i++) {
-            final String name = latents.get(i);
+            String name = latents.get(i);
             clusters.setClusterName(i, name);
-            final Node latent = clusterGraph.getNode(name);
-            final List<Node> measured =
+            Node latent = clusterGraph.getNode(name);
+            List<Node> measured =
                     clusterGraph.getNodesOutTo(latent, Endpoint.ARROW);
 
-            for (final Node _node : measured) {
+            for (Node _node : measured) {
                 if (measuredVariables.contains(_node)) {
                     clusters.addToCluster(i, _node.getName());
                 }
@@ -106,14 +106,14 @@ public final class MimUtils {
     /**
      * @throws Exception if the graph cannot be cloned properly due to a serialization problem.
      */
-    public static Graph extractStructureGraph(final Graph clusterGraph)
+    public static Graph extractStructureGraph(Graph clusterGraph)
             throws Exception {
-        final Set<Edge> edges = clusterGraph.getEdges();
-        final Graph structureGraph = new EdgeListGraph();
+        Set<Edge> edges = clusterGraph.getEdges();
+        Graph structureGraph = new EdgeListGraph();
 
-        for (final Edge edge : edges) {
-            final Node node1 = edge.getNode1();
-            final Node node2 = edge.getNode2();
+        for (Edge edge : edges) {
+            Node node1 = edge.getNode1();
+            Node node2 = edge.getNode2();
 
             if (node1.getNodeType() == NodeType.LATENT) {
                 if (!structureGraph.containsNode(node1)) {
@@ -133,7 +133,7 @@ public final class MimUtils {
             }
         }
 
-        final Graph clone = (Graph) new MarshalledObject(structureGraph).get();
+        Graph clone = (Graph) new MarshalledObject(structureGraph).get();
         GraphUtils.circleLayout(clone, 200, 200, 150);
         GraphUtils.fruchtermanReingoldLayout(clone);
         return clone;

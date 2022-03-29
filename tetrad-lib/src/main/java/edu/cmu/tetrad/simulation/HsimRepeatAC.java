@@ -17,44 +17,44 @@ import java.util.Set;
  */
 public class HsimRepeatAC {
 
-    private boolean verbose = false; //set this to true if you want HsimAutoRun to report information to System.out
+    private boolean verbose; //set this to true if you want HsimAutoRun to report information to System.out
     private DataSet data;
-    private boolean write = false;
+    private boolean write;
     private String filenameOut = "defaultOut";
     private char delimiter = ',';
 
     //*********Constructors*************//
-    public HsimRepeatAC(final DataSet indata) {
-        this.data = indata;
+    public HsimRepeatAC(DataSet indata) {
+        data = indata;
         //may need to make this part more complicated if CovarianceMatrix method is finicky
     }
 
-    public HsimRepeatAC(final String readfilename, final char delim) {
-        final String workingDirectory = System.getProperty("user.dir");
+    public HsimRepeatAC(String readfilename, char delim) {
+        String workingDirectory = System.getProperty("user.dir");
         System.out.println(workingDirectory);
-        final Set<String> eVars = new HashSet<String>();
+        Set<String> eVars = new HashSet<String>();
         eVars.add("MULT");
-        final Path dataFile = Paths.get(readfilename);
+        Path dataFile = Paths.get(readfilename);
 
-        final ContinuousTabularDatasetFileReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, DelimiterUtils.toDelimiter(delim));
+        ContinuousTabularDatasetFileReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, DelimiterUtils.toDelimiter(delim));
         try {
-            this.data = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData(eVars));
-        } catch (final Exception IOException) {
+            data = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData(eVars));
+        } catch (Exception IOException) {
             IOException.printStackTrace();
         }
     }
 
     //***************PUBLIC METHODS********************//
-    public double[] run(final int resimSize, final int repeat) {
+    public double[] run(int resimSize, int repeat) {
         //parameter: set of positive integers, which are resimSize values.
-        final List<Integer> schedule = new ArrayList<Integer>();
+        List<Integer> schedule = new ArrayList<Integer>();
 
         for (int i = 0; i < repeat; i++) {
             schedule.add(resimSize);
         }
 
         //Arrays.asList(5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5);
-        final double[] evalTotal;
+        double[] evalTotal;
         evalTotal = new double[5];
         evalTotal[0] = 0;
         evalTotal[1] = 0;
@@ -71,17 +71,17 @@ public class HsimRepeatAC {
         Integer count3 = 0;
         Integer count4 = 0;
 
-        for (final Integer i : schedule) {
+        for (Integer i : schedule) {
             //count++;
-            final HsimAutoC study = new HsimAutoC(this.data);
+            HsimAutoC study = new HsimAutoC(data);
             //this is done differently if write is true. in that case, HsimAutoC will be used differently
-            if (this.write) {
+            if (write) {
                 study.setWrite(true);
-                study.setFilenameOut(this.filenameOut);
-                study.setDelimiter(this.delimiter);
+                study.setFilenameOut(filenameOut);
+                study.setDelimiter(delimiter);
             }
             //pass verbose on to the lower level as well
-            if (this.verbose) {
+            if (verbose) {
                 study.setVerbose(true);
             }
 
@@ -115,7 +115,7 @@ public class HsimRepeatAC {
         evalTotal[3] = evalTotal[3] / (double) (count3);
         evalTotal[4] = evalTotal[4] / (double) (count4);
 
-        if (this.verbose) {
+        if (verbose) {
             System.out.println("Average eval scores: " + evalTotal[0] + " " + evalTotal[1]
                     + " " + evalTotal[2] + " " + evalTotal[3] + " " + evalTotal[4]);
         }
@@ -123,19 +123,19 @@ public class HsimRepeatAC {
     }
 
     //*************************Methods for setting private variables***********//
-    public void setVerbose(final boolean verbosity) {
-        this.verbose = verbosity;
+    public void setVerbose(boolean verbosity) {
+        verbose = verbosity;
     }
 
-    public void setWrite(final boolean setwrite) {
-        this.write = setwrite;
+    public void setWrite(boolean setwrite) {
+        write = setwrite;
     }
 
-    public void setFilenameOut(final String filename) {
-        this.filenameOut = filename;
+    public void setFilenameOut(String filename) {
+        filenameOut = filename;
     }
 
-    public void setDelimiter(final char delim) {
-        this.delimiter = delim;
+    public void setDelimiter(char delim) {
+        delimiter = delim;
     }
 }

@@ -28,8 +28,8 @@ public class DiscreteMixedBicScore implements ScoreWrapper {
     static final long serialVersionUID = 23L;
 
     @Override
-    public Score getScore(final DataModel dataSet, final Parameters parameters) {
-        final DiscreteMixedScore discreteMixedScore
+    public Score getScore(DataModel dataSet, Parameters parameters) {
+        DiscreteMixedScore discreteMixedScore
                 = new DiscreteMixedScore(DataUtils.getMixedDataSet(dataSet), parameters.getDouble("structurePrior"));
         discreteMixedScore.setNumCategoriesToDiscretize(parameters.getInt("numCategoriesToDiscretize"));
         return discreteMixedScore;
@@ -47,13 +47,13 @@ public class DiscreteMixedBicScore implements ScoreWrapper {
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
         parameters.add("structurePrior");
         return parameters;
     }
 
     @Override
-    public Node getVariable(final String name) {
+    public Node getVariable(String name) {
         return null;
     }
 }

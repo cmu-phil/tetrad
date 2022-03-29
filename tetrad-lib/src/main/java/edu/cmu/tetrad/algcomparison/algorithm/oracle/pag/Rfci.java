@@ -38,29 +38,29 @@ public class Rfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
     public Rfci() {
     }
 
-    public Rfci(final IndependenceWrapper test) {
+    public Rfci(IndependenceWrapper test) {
         this.test = test;
     }
 
     @Override
-    public Graph search(final DataModel dataSet, final Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            final edu.cmu.tetrad.search.Rfci search = new edu.cmu.tetrad.search.Rfci(this.test.getTest(dataSet, parameters));
-            search.setKnowledge(this.knowledge);
+            edu.cmu.tetrad.search.Rfci search = new edu.cmu.tetrad.search.Rfci(test.getTest(dataSet, parameters));
+            search.setKnowledge(knowledge);
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         } else {
-            final Rfci algorithm = new Rfci(this.test);
+            Rfci algorithm = new Rfci(test);
             //algorithm.setKnowledge(knowledge);
 //          if (externalGraph != null) {
 //      		algorithm.setExternalGraph(externalGraph);
 //  		}
-            final DataSet data = (DataSet) dataSet;
-            final GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(this.knowledge);
+            DataSet data = (DataSet) dataSet;
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
+            search.setKnowledge(knowledge);
 
             search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
             search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -86,22 +86,22 @@ public class Rfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
     }
 
     @Override
-    public Graph getComparisonGraph(final Graph graph) {
+    public Graph getComparisonGraph(Graph graph) {
         return new DagToPag2(new EdgeListGraph(graph)).convert();
     }
 
     public String getDescription() {
-        return "RFCI (Really Fast Causal Inference) using " + this.test.getDescription();
+        return "RFCI (Really Fast Causal Inference) using " + test.getDescription();
     }
 
     @Override
     public DataType getDataType() {
-        return this.test.getDataType();
+        return test.getDataType();
     }
 
     @Override
     public List<String> getParameters() {
-        final List<String> parameters = new ArrayList<>();
+        List<String> parameters = new ArrayList<>();
 
         parameters.add(Params.DEPTH);
         parameters.add(Params.MAX_PATH_LENGTH);
@@ -113,21 +113,21 @@ public class Rfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     @Override
     public IKnowledge getKnowledge() {
-        return this.knowledge;
+        return knowledge;
     }
 
     @Override
-    public void setKnowledge(final IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
     @Override
-    public void setIndependenceWrapper(final IndependenceWrapper test) {
+    public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;
     }
 
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
-        return this.test;
+        return test;
     }
 }

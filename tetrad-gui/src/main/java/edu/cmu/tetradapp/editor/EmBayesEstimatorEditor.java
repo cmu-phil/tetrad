@@ -58,82 +58,82 @@ public class EmBayesEstimatorEditor extends JPanel {
     /**
      * Constructs a new instanted model editor from a Bayes IM.
      */
-    private EmBayesEstimatorEditor(final BayesIm bayesIm,
-                                   final DataSet dataSet) {
+    private EmBayesEstimatorEditor(BayesIm bayesIm,
+                                   DataSet dataSet) {
         if (bayesIm == null) {
             throw new NullPointerException("Bayes IM must not be null.");
         }
 
-        final Graph graph = bayesIm.getBayesPm().getDag();
-        final GraphWorkbench workbench = new GraphWorkbench(graph);
-        this.wizard = new EMBayesEstimatorEditorWizard(bayesIm, workbench);
-        this.wizard.enableEditing(false);
+        Graph graph = bayesIm.getBayesPm().getDag();
+        GraphWorkbench workbench = new GraphWorkbench(graph);
+        wizard = new EMBayesEstimatorEditorWizard(bayesIm, workbench);
+        wizard.enableEditing(false);
 
         // Add a menu item to allow the BayesIm to be saved out in
         // causality lab format.
-        final JMenuBar menuBar = new JMenuBar();
-        setLayout(new BorderLayout());
-        add(menuBar, BorderLayout.NORTH);
+        JMenuBar menuBar = new JMenuBar();
+        this.setLayout(new BorderLayout());
+        this.add(menuBar, BorderLayout.NORTH);
 
-        final JMenu file = new JMenu("File");
+        JMenu file = new JMenu("File");
         menuBar.add(file);
 //        file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
         file.add(new SaveComponentImage(workbench, "Save Graph Image..."));
-        setLayout(new BorderLayout());
-        add(menuBar, BorderLayout.NORTH);
+        this.setLayout(new BorderLayout());
+        this.add(menuBar, BorderLayout.NORTH);
 
         // Rest of setup.
-        this.wizard.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(final PropertyChangeEvent evt) {
+        wizard.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
                 if ("editorValueChanged".equals(evt.getPropertyName())) {
-                    firePropertyChange("modelChanged", null, null);
+                    EmBayesEstimatorEditor.this.firePropertyChange("modelChanged", null, null);
                 }
             }
         });
 
-        final JScrollPane workbenchScroll = new JScrollPane(workbench);
+        JScrollPane workbenchScroll = new JScrollPane(workbench);
         workbenchScroll.setPreferredSize(new Dimension(400, 400));
 
-        final JScrollPane wizardScroll = new JScrollPane(getWizard());
+        JScrollPane wizardScroll = new JScrollPane(this.getWizard());
 
-        final EmBayesProperties scorer = new EmBayesProperties(dataSet, graph);
+        EmBayesProperties scorer = new EmBayesProperties(dataSet, graph);
         scorer.setGraph(graph);
 
-        final StringBuilder buf = new StringBuilder();
+        StringBuilder buf = new StringBuilder();
         buf.append("\nP-value = ").append(scorer.getLikelihoodRatioP());
         buf.append("\nDf = ").append(scorer.getPValueDf());
         /*
       Formats numbers.
          */
-        final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         buf.append("\nChi square = ").append(
                 nf.format(scorer.getPValueChisq()));
         buf.append("\nBIC score = ").append(nf.format(scorer.getBic()));
         buf.append("\n\nH0: Completely disconnected graph.");
 
-        final JTextArea modelParametersText = new JTextArea();
+        JTextArea modelParametersText = new JTextArea();
         modelParametersText.setText(buf.toString());
 
-        final JTabbedPane tabbedPane = new JTabbedPane();
+        JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.add("Model", wizardScroll);
         tabbedPane.add("Model Statistics", modelParametersText);
 
-        final JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                 workbenchScroll, tabbedPane);
         splitPane.setOneTouchExpandable(true);
         splitPane.setDividerLocation(workbenchScroll.getPreferredSize().width);
-        add(splitPane, BorderLayout.CENTER);
+        this.add(splitPane, BorderLayout.CENTER);
 
-        setName("Bayes IM Editor");
-        getWizard().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(final PropertyChangeEvent evt) {
+        this.setName("Bayes IM Editor");
+        this.getWizard().addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
                 if ("editorClosing".equals(evt.getPropertyName())) {
-                    firePropertyChange("editorClosing", null, getName());
+                    EmBayesEstimatorEditor.this.firePropertyChange("editorClosing", null, EmBayesEstimatorEditor.this.getName());
                 }
 
                 if ("closeFrame".equals(evt.getPropertyName())) {
-                    firePropertyChange("closeFrame", null, null);
-                    firePropertyChange("editorClosing", true, true);
+                    EmBayesEstimatorEditor.this.firePropertyChange("closeFrame", null, null);
+                    EmBayesEstimatorEditor.this.firePropertyChange("editorClosing", true, true);
                 }
             }
         });
@@ -142,7 +142,7 @@ public class EmBayesEstimatorEditor extends JPanel {
     /**
      * Constructs a new Bayes IM Editor from a Bayes estimator wrapper.
      */
-    public EmBayesEstimatorEditor(final EmBayesEstimatorWrapper emBayesEstWrapper) {
+    public EmBayesEstimatorEditor(EmBayesEstimatorWrapper emBayesEstWrapper) {
         this(emBayesEstWrapper.getEstimateBayesIm(),
                 //eMbayesEstWrapper.getSelectedDataModel());
                 emBayesEstWrapper.getDataSet());
@@ -151,16 +151,16 @@ public class EmBayesEstimatorEditor extends JPanel {
     /**
      * Sets the name of this editor.
      */
-    public void setName(final String name) {
-        final String oldName = getName();
+    public void setName(String name) {
+        String oldName = this.getName();
         super.setName(name);
-        this.firePropertyChange("name", oldName, getName());
+        firePropertyChange("name", oldName, this.getName());
     }
 
     /**
      * @return a reference to this editor.
      */
     private EMBayesEstimatorEditorWizard getWizard() {
-        return this.wizard;
+        return wizard;
     }
 }

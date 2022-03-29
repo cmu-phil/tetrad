@@ -44,42 +44,42 @@ public class MVPScore implements Score {
     // Log number of instances
     private final double logn;
 
-    public MVPScore(final DataSet dataSet, final double structurePrior, final int fDegree, final boolean discretize) {
+    public MVPScore(DataSet dataSet, double structurePrior, int fDegree, boolean discretize) {
 
         if (dataSet == null) {
             throw new NullPointerException();
         }
 
         this.dataSet = dataSet;
-        this.variables = dataSet.getVariables();
-        this.likelihood = new MVPLikelihood(dataSet, structurePrior, fDegree, discretize);
-        this.logn = Math.log(dataSet.getNumRows());
+        variables = dataSet.getVariables();
+        likelihood = new MVPLikelihood(dataSet, structurePrior, fDegree, discretize);
+        logn = Math.log(dataSet.getNumRows());
     }
 
-    public double localScore(final int i, final int... parents) {
+    public double localScore(int i, int... parents) {
 
-        final double lik = this.likelihood.getLik(i, parents);
-        final double dof = this.likelihood.getDoF(i, parents);
-        double sp = this.likelihood.getStructurePrior(parents.length);
+        double lik = likelihood.getLik(i, parents);
+        double dof = likelihood.getDoF(i, parents);
+        double sp = likelihood.getStructurePrior(parents.length);
 
         if (sp > 0) {
             sp = -2 * dof * sp;
         }
 
-        return 2.0 * lik - dof * this.logn + sp;
+        return 2.0 * lik - dof * logn + sp;
     }
 
-    public double localScoreDiff(final int x, final int y, final int[] z) {
-        return localScore(y, append(z, x)) - localScore(y, z);
+    public double localScoreDiff(int x, int y, int[] z) {
+        return this.localScore(y, this.append(z, x)) - this.localScore(y, z);
     }
 
     @Override
-    public double localScoreDiff(final int x, final int y) {
-        return localScore(y, x) - localScore(y);
+    public double localScoreDiff(int x, int y) {
+        return this.localScore(y, x) - this.localScore(y);
     }
 
-    private int[] append(final int[] parents, final int extra) {
-        final int[] all = new int[parents.length + 1];
+    private int[] append(int[] parents, int extra) {
+        int[] all = new int[parents.length + 1];
         System.arraycopy(parents, 0, all, 0, parents.length);
         all[parents.length] = extra;
         return all;
@@ -88,35 +88,35 @@ public class MVPScore implements Score {
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
-    public double localScore(final int i, final int parent) {
-        return localScore(i, new int[]{parent});
+    public double localScore(int i, int parent) {
+        return this.localScore(i, new int[]{parent});
     }
 
     /**
      * Specialized scoring method for no parents. Used to speed up the effect edges search.
      */
-    public double localScore(final int i) {
-        return localScore(i, new int[0]);
+    public double localScore(int i) {
+        return this.localScore(i, new int[0]);
     }
 
     public int getSampleSize() {
-        return this.dataSet.getNumRows();
+        return dataSet.getNumRows();
     }
 
     @Override
-    public boolean isEffectEdge(final double bump) {
+    public boolean isEffectEdge(double bump) {
         return bump > 0;
     }
 
     @Override
     public List<Node> getVariables() {
-        return this.variables;
+        return variables;
     }
 
     @Override
-    public Node getVariable(final String targetName) {
+    public Node getVariable(String targetName) {
 
-        for (final Node node : this.variables) {
+        for (Node node : variables) {
             if (node.getName().equals(targetName)) {
                 return node;
             }
@@ -127,11 +127,11 @@ public class MVPScore implements Score {
 
     @Override
     public int getMaxDegree() {
-        return (int) Math.ceil(Math.log(this.dataSet.getNumRows()));
+        return (int) Math.ceil(Math.log(dataSet.getNumRows()));
     }
 
     @Override
-    public boolean determines(final List<Node> z, final Node y) {
+    public boolean determines(List<Node> z, Node y) {
         return false;
     }
 

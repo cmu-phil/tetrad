@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.IntTextField;
+import edu.cmu.tetradapp.util.IntTextField.Filter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -39,7 +40,7 @@ public class Sem2DataParamsEditor extends JPanel implements ParameterEditor {
     /**
      * The parameters object being edited.
      */
-    private Parameters params = null;
+    private Parameters params;
 
     /**
      * Constructs a dialog to edit the given workbench  simulation
@@ -48,7 +49,7 @@ public class Sem2DataParamsEditor extends JPanel implements ParameterEditor {
     public Sem2DataParamsEditor() {
     }
 
-    public void setParams(final Parameters params) {
+    public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();
         }
@@ -56,30 +57,30 @@ public class Sem2DataParamsEditor extends JPanel implements ParameterEditor {
         this.params = params;
     }
 
-    public void setParentModels(final Object[] parentModels) {
+    public void setParentModels(Object[] parentModels) {
         // Do nothing.
     }
 
     public void setup() {
 
         // set up text and ties them to the parameters object being edited.
-        final IntTextField sampleSizeField = new IntTextField(getParams().getInt("sampleSize", 1000), 4);
-        sampleSizeField.setFilter(new IntTextField.Filter() {
-            public int filter(final int value, final int oldValue) {
+        IntTextField sampleSizeField = new IntTextField(this.getParams().getInt("sampleSize", 1000), 4);
+        sampleSizeField.setFilter(new Filter() {
+            public int filter(int value, int oldValue) {
                 try {
-                    getParams().set("sampleSize", value);
+                    Sem2DataParamsEditor.this.getParams().set("sampleSize", value);
                     return value;
-                } catch (final Exception e) {
+                } catch (Exception e) {
                     return oldValue;
                 }
             }
         });
-        final JCheckBox latentVarsBox = new JCheckBox("Include Latent Variables");
+        JCheckBox latentVarsBox = new JCheckBox("Include Latent Variables");
         latentVarsBox.setHorizontalTextPosition(SwingConstants.LEFT);
         latentVarsBox.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                final JCheckBox b = (JCheckBox) e.getSource();
-                getParams().set("includeLatents", b.isSelected());
+            public void actionPerformed(ActionEvent e) {
+                JCheckBox b = (JCheckBox) e.getSource();
+                Sem2DataParamsEditor.this.getParams().set("includeLatents", b.isSelected());
             }
         });
 
@@ -93,17 +94,17 @@ public class Sem2DataParamsEditor extends JPanel implements ParameterEditor {
 //        });
 
 
-        setLayout(new BorderLayout());
+        this.setLayout(new BorderLayout());
 
         // continue workbench construction.
-        final Box b6 = Box.createVerticalBox();
-        final Box b1 = Box.createHorizontalBox();
+        Box b6 = Box.createVerticalBox();
+        Box b1 = Box.createHorizontalBox();
 
         b1.add(new JLabel("Sample size:  "));
         b1.add(Box.createHorizontalGlue());
         b1.add(sampleSizeField);
 
-        final Box b2 = Box.createHorizontalBox();
+        Box b2 = Box.createHorizontalBox();
         b2.add(latentVarsBox);
         b2.add(Box.createHorizontalGlue());
 
@@ -115,7 +116,7 @@ public class Sem2DataParamsEditor extends JPanel implements ParameterEditor {
         //    b6.add(Box.createVerticalStrut(5));
         //   b6.add(hBox);
         b6.add(Box.createVerticalGlue());
-        add(b6, BorderLayout.CENTER);
+        this.add(b6, BorderLayout.CENTER);
     }
 
     public boolean mustBeShown() {
@@ -127,7 +128,7 @@ public class Sem2DataParamsEditor extends JPanel implements ParameterEditor {
      * public, but it is needed so that the textfields can edit the model.)
      */
     private synchronized Parameters getParams() {
-        return this.params;
+        return params;
     }
 }
 

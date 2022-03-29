@@ -58,7 +58,7 @@ public class ParamComparison {
      * Protected constructor for the types; this allows for extension in case
      * anyone wants to add formula types.
      */
-    private ParamComparison(final String name) {
+    private ParamComparison(String name) {
         this.name = name;
     }
 
@@ -66,16 +66,16 @@ public class ParamComparison {
      * Prints out the name of the type.
      */
     public String toString() {
-        return this.name;
+        return name;
     }
 
     // Declarations required for serialization.
-    private static int nextOrdinal = 0;
-    private final int ordinal = ParamComparison.nextOrdinal++;
-    private static final ParamComparison[] TYPES = {ParamComparison.NC, ParamComparison.LT, ParamComparison.EQ, ParamComparison.LE};
+    private static int nextOrdinal;
+    private final int ordinal = nextOrdinal++;
+    private static final ParamComparison[] TYPES = {NC, LT, EQ, LE};
 
     Object readResolve() {
-        return ParamComparison.TYPES[this.ordinal]; // Canonicalize.
+        return TYPES[ordinal]; // Canonicalize.
     }
 }
 

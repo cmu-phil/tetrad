@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
+import edu.cmu.tetradapp.util.IntTextField.Filter;
 
 import javax.swing.*;
 import java.text.DecimalFormat;
@@ -40,7 +41,7 @@ class PcLocalIndTestParamsEditor extends JComponent {
     /**
      * The parameters object being edited.
      */
-    private Parameters params = null;
+    private Parameters params;
 
     /**
      * A text field to allow the user to enter the number of dishes to
@@ -52,20 +53,20 @@ class PcLocalIndTestParamsEditor extends JComponent {
     /**
      * Constructs a dialog to edit the given gene simulation parameters object.
      */
-    public PcLocalIndTestParamsEditor(final Parameters params) {
+    public PcLocalIndTestParamsEditor(Parameters params) {
         this.params = params;
 
-        final NumberFormat smallNumberFormat = new DecimalFormat("0E00");
+        NumberFormat smallNumberFormat = new DecimalFormat("0E00");
 
         // set up text and ties them to the parameters object being edited.
-        this.alphaField = new DoubleTextField(params().getDouble("alpha", 0.001), 8,
+        alphaField = new DoubleTextField(this.params().getDouble("alpha", 0.001), 8,
                 new DecimalFormat("0.0########"), smallNumberFormat, 1e-4);
-        this.alphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(final double value, final double oldValue) {
+        alphaField.setFilter(new DoubleTextField.Filter() {
+            public double filter(double value, double oldValue) {
                 try {
-                    params().set("alpha", 0.001);
+                    PcLocalIndTestParamsEditor.this.params().set("alpha", 0.001);
                     return value;
-                } catch (final IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
@@ -75,19 +76,19 @@ class PcLocalIndTestParamsEditor extends JComponent {
       A text field to allow the user to enter the number of dishes to
       generate.
      */
-        final IntTextField depthField = new IntTextField(params().getInt("depth", -1), 4);
-        depthField.setFilter(new IntTextField.Filter() {
-            public int filter(final int value, final int oldValue) {
+        IntTextField depthField = new IntTextField(this.params().getInt("depth", -1), 4);
+        depthField.setFilter(new Filter() {
+            public int filter(int value, int oldValue) {
                 try {
-                    params().set("depth", value);
+                    PcLocalIndTestParamsEditor.this.params().set("depth", value);
                     return value;
-                } catch (final IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
         });
 
-        buildGui();
+        this.buildGui();
     }
 
     /**
@@ -96,18 +97,18 @@ class PcLocalIndTestParamsEditor extends JComponent {
      * appropriate listeners.
      */
     private void buildGui() {
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        if (this.alphaField != null) {
-            final Box b1 = Box.createHorizontalBox();
+        if (alphaField != null) {
+            Box b1 = Box.createHorizontalBox();
             b1.add(new JLabel("Alpha:"));
             b1.add(Box.createHorizontalStrut(10));
             b1.add(Box.createHorizontalGlue());
-            b1.add(this.alphaField);
-            add(b1);
+            b1.add(alphaField);
+            this.add(b1);
         }
 
-        add(Box.createHorizontalGlue());
+        this.add(Box.createHorizontalGlue());
     }
 
     /**
@@ -115,7 +116,7 @@ class PcLocalIndTestParamsEditor extends JComponent {
      * public, but it is needed so that the textfields can edit the model.)
      */
     private Parameters params() {
-        return this.params;
+        return params;
     }
 }
 

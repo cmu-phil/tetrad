@@ -28,6 +28,7 @@ import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.ImpliedOrientation;
 import edu.cmu.tetrad.search.Ling;
+import edu.cmu.tetrad.search.Ling.StoredGraphs;
 import edu.cmu.tetrad.search.MeekRules;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -48,29 +49,29 @@ public class LingRunner extends AbstractAlgorithmRunner implements GraphSource,
         PropertyChangeListener {
     static final long serialVersionUID = 23L;
     private transient List<PropertyChangeListener> listeners;
-    private transient Ling.StoredGraphs storedGraphs;
+    private transient StoredGraphs storedGraphs;
 
     //============================CONSTRUCTORS============================//
 
-    public LingRunner(final DataWrapper dataWrapper, final KnowledgeBoxModel knowledgeBoxModel) {
+    public LingRunner(DataWrapper dataWrapper, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, new Parameters(), knowledgeBoxModel);
     }
 
-    public LingRunner(final DataWrapper dataWrapper) {
+    public LingRunner(DataWrapper dataWrapper) {
         super(dataWrapper, new Parameters(), null);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public LingRunner(final GraphSource graphWrapper, final Parameters params, final KnowledgeBoxModel knowledgeBoxModel) {
+    public LingRunner(GraphSource graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
-    public LingRunner(final GraphSource graphWrapper, final Parameters params) {
+    public LingRunner(GraphSource graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params, null);
     }
 
@@ -137,22 +138,22 @@ public class LingRunner extends AbstractAlgorithmRunner implements GraphSource,
 //
 //    }
     public void execute() {
-        final DataModel source = getDataModel();
+        DataModel source = this.getDataModel();
 
         if (!(source instanceof DataSet)) {
             throw new IllegalArgumentException("Expecting a rectangular data set.");
         }
 
-        final DataSet data = (DataSet) source;
+        DataSet data = (DataSet) source;
 
         if (!data.isContinuous()) {
             throw new IllegalArgumentException("Expecting a continuous data set.");
         }
 
-        final Ling ling = new Ling(data);
-        final Parameters searchParams = getParams();
+        Ling ling = new Ling(data);
+        Parameters searchParams = this.getParams();
         ling.setThreshold(searchParams.getDouble("threshold", 0.5));
-        final Ling.StoredGraphs graphs = ling.search();
+        StoredGraphs graphs = ling.search();
         Graph graph = null;
 
         for (int i = 0; i < graphs.getNumGraphs(); i++) {
@@ -171,27 +172,27 @@ public class LingRunner extends AbstractAlgorithmRunner implements GraphSource,
             graph = new EdgeListGraph();
         }
 
-        setResultGraph(graph);
-        setStoredGraphs(graphs);
+        this.setResultGraph(graph);
+        this.setStoredGraphs(graphs);
 
-        if (getSourceGraph() != null) {
-            GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
+        if (this.getSourceGraph() != null) {
+            GraphUtils.arrangeBySourceGraph(graph, this.getSourceGraph());
         } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
 
     }
 
-    private void setStoredGraphs(final Ling.StoredGraphs graphs) {
-        this.storedGraphs = graphs;
+    private void setStoredGraphs(StoredGraphs graphs) {
+        storedGraphs = graphs;
     }
 
-    public Ling.StoredGraphs getStoredGraphs() {
-        return this.storedGraphs;
+    public StoredGraphs getStoredGraphs() {
+        return storedGraphs;
     }
 
     public Graph getGraph() {
-        return getResultGraph();
+        return this.getResultGraph();
     }
 
     /**
@@ -207,7 +208,7 @@ public class LingRunner extends AbstractAlgorithmRunner implements GraphSource,
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>
      * for the given node.
      */
-    public List<List<Triple>> getTriplesLists(final Node node) {
+    public List<List<Triple>> getTriplesLists(Node node) {
         return new LinkedList<>();
     }
 
@@ -216,8 +217,8 @@ public class LingRunner extends AbstractAlgorithmRunner implements GraphSource,
     }
 
     public ImpliedOrientation getMeekRules() {
-        final MeekRules rules = new MeekRules();
-        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
+        MeekRules rules = new MeekRules();
+        rules.setKnowledge((IKnowledge) this.getParams().get("knowledge", new Knowledge2()));
         return rules;
     }
 
@@ -227,32 +228,32 @@ public class LingRunner extends AbstractAlgorithmRunner implements GraphSource,
     }
 
     private boolean isAggressivelyPreventCycles() {
-        final Parameters params = getParams();
+        Parameters params = this.getParams();
         if (params instanceof Parameters) {
             return params.getBoolean("aggressivelyPreventCycles", false);
         }
         return false;
     }
 
-    public void propertyChange(final PropertyChangeEvent evt) {
-        firePropertyChange(evt);
+    public void propertyChange(PropertyChangeEvent evt) {
+        this.firePropertyChange(evt);
     }
 
-    private void firePropertyChange(final PropertyChangeEvent evt) {
-        for (final PropertyChangeListener l : getListeners()) {
+    private void firePropertyChange(PropertyChangeEvent evt) {
+        for (PropertyChangeListener l : this.getListeners()) {
             l.propertyChange(evt);
         }
     }
 
     private List<PropertyChangeListener> getListeners() {
-        if (this.listeners == null) {
-            this.listeners = new ArrayList<>();
+        if (listeners == null) {
+            listeners = new ArrayList<>();
         }
-        return this.listeners;
+        return listeners;
     }
 
-    public void addPropertyChangeListener(final PropertyChangeListener l) {
-        if (!getListeners().contains(l)) getListeners().add(l);
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        if (!this.getListeners().contains(l)) this.getListeners().add(l);
     }
 }
 

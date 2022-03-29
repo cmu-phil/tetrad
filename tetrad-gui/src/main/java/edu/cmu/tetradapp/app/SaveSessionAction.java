@@ -45,51 +45,51 @@ final class SaveSessionAction extends AbstractAction {
 
     private static final long serialVersionUID = -1812370698394158108L;
 
-    private boolean saved = false;
+    private boolean saved;
 
     public SaveSessionAction() {
         super("Save Session");
     }
 
     @Override
-    public void actionPerformed(final ActionEvent e) {
+    public void actionPerformed(ActionEvent e) {
         // Get the frontmost SessionWrapper.
-        final SessionEditorIndirectRef sessionEditorRef
+        SessionEditorIndirectRef sessionEditorRef
                 = DesktopController.getInstance().getFrontmostSessionEditor();
-        final SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        final SessionEditorWorkbench workbench = sessionEditor.getSessionWorkbench();
-        final SessionWrapper sessionWrapper = workbench.getSessionWrapper();
-        final TetradMetadata metadata = new TetradMetadata();
+        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
+        SessionEditorWorkbench workbench = sessionEditor.getSessionWorkbench();
+        SessionWrapper sessionWrapper = workbench.getSessionWrapper();
+        TetradMetadata metadata = new TetradMetadata();
 
-        final Path outputFile = Paths.get(
+        Path outputFile = Paths.get(
                 Preferences.userRoot().get("sessionSaveLocation", Preferences.userRoot().absolutePath()),
                 sessionWrapper.getName());
 
         if (Files.notExists(outputFile) || sessionWrapper.isNewSession()) {
-            final SaveSessionAsAction saveSessionAsAction = new SaveSessionAsAction();
+            SaveSessionAsAction saveSessionAsAction = new SaveSessionAsAction();
             saveSessionAsAction.actionPerformed(e);
-            this.saved = saveSessionAsAction.isSaved();
+            saved = saveSessionAsAction.isSaved();
 
             return;
         }
 
         if (Files.exists(outputFile)) {
-            final int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
+            int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
                     "File already exists. Overwrite?", "Save", JOptionPane.YES_NO_OPTION);
             if (ret == JOptionPane.NO_OPTION) {
-                final SaveSessionAsAction saveSessionAsAction = new SaveSessionAsAction();
+                SaveSessionAsAction saveSessionAsAction = new SaveSessionAsAction();
                 saveSessionAsAction.actionPerformed(e);
-                this.saved = saveSessionAsAction.isSaved();
+                saved = saveSessionAsAction.isSaved();
 
                 return;
             }
         }
 
-        try (final ObjectOutputStream objOut = new ObjectOutputStream(Files.newOutputStream(outputFile))) {
+        try (ObjectOutputStream objOut = new ObjectOutputStream(Files.newOutputStream(outputFile))) {
             sessionWrapper.setNewSession(false);
             objOut.writeObject(metadata);
             objOut.writeObject(sessionWrapper);
-        } catch (final IOException exception) {
+        } catch (IOException exception) {
             exception.printStackTrace(System.err);
             JOptionPane.showMessageDialog(
                     JOptionUtils.centeringComp(),
@@ -103,7 +103,7 @@ final class SaveSessionAction extends AbstractAction {
     }
 
     public boolean isSaved() {
-        return this.saved;
+        return saved;
     }
 
 }

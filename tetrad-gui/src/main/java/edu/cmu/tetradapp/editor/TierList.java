@@ -44,13 +44,13 @@ class TierList extends JScrollPane {
 
     private final Tier[] tiers;
 
-    public TierList(final IKnowledge know, final List<String> varNames,
-                    final TemporalTierEditor tierListEditor) {
+    public TierList(IKnowledge know, List<String> varNames,
+                    TemporalTierEditor tierListEditor) {
 
         super(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
-        this.vNames = varNames;
+        vNames = varNames;
 
         if (know == null) {
             throw new NullPointerException("Knowledge must not be null.");
@@ -68,22 +68,22 @@ class TierList extends JScrollPane {
 
         this.tierListEditor = tierListEditor;
 
-        setViewportView(this.constList);
+        this.setViewportView(constList);
 
         System.out.println("TierList Knowledge is: " + know);
 
         //the same kowledge
         if (know != null) {
-            this.knowledge = know;
+            knowledge = know;
         } else {
             throw new NullPointerException();
         }
 
-        this.constList.setLayout(new BoxLayout(this.constList, BoxLayout.Y_AXIS));
+        constList.setLayout(new BoxLayout(constList, BoxLayout.Y_AXIS));
 
-        final String[] names = varNames.toArray(new String[0]);
+        String[] names = varNames.toArray(new String[0]);
 
-        final String[] tierNames = new String[names.length + 1];
+        String[] tierNames = new String[names.length + 1];
 
         tierNames[0] = "Unspecified";
 
@@ -91,62 +91,62 @@ class TierList extends JScrollPane {
             tierNames[i + 1] = "Tier " + i;
         }
 
-        this.tiers = new Tier[names.length + 1];
+        tiers = new Tier[names.length + 1];
 
-        Tier.setKnowledge(this.knowledge);
+        Tier.setKnowledge(knowledge);
 
         //tiers[names.length] = new Tier(this, "Unspecified", tierNames);
 
 
-        this.tiers[names.length] = new Tier(this, -1, tierNames);
+        tiers[names.length] = new Tier(this, -1, tierNames);
         //        constList.add(tiers[names.length]);
 
-        final Box b = Box.createHorizontalBox();
-        b.add(this.tiers[names.length]);
+        Box b = Box.createHorizontalBox();
+        b.add(tiers[names.length]);
         //        b.add(Box.createGlue());
-        this.constList.add(b);
+        constList.add(b);
 
         for (int i = 0; i < names.length; i++) {
             //tiers[i] = new Tier(this, "Tier " + i, tierNames);
-            this.tiers[i] = new Tier(this, i, tierNames);
+            tiers[i] = new Tier(this, i, tierNames);
             //	 		constList.add(tiers[i]);
 
 
-            final Box b1 = Box.createHorizontalBox();
-            b1.add(this.tiers[i]);
+            Box b1 = Box.createHorizontalBox();
+            b1.add(tiers[i]);
             //            b1.add(Box.createGlue());
-            this.constList.add(b1);
+            constList.add(b1);
         }
 
         //temp.addPropertyChangeListener(this);
-        refreshInfo();    //set tiers to agree with BK
+        this.refreshInfo();    //set tiers to agree with BK
     }
 
     //load background knowledge info into constraint list
     public void refreshInfo() {
-        this.tiers[this.tiers.length - 1].setUnspecified(this.vNames);
-        this.tiers[this.tiers.length - 1].repaint();
-        this.tiers[this.tiers.length - 1].validate();
+        tiers[tiers.length - 1].setUnspecified(vNames);
+        tiers[tiers.length - 1].repaint();
+        tiers[tiers.length - 1].validate();
 
-        for (int i = 0; i < this.tiers.length - 1; i++) {
-            this.tiers[i].loadInfo();
-            this.tiers[i].repaint();
-            this.tiers[i].validate();
+        for (int i = 0; i < tiers.length - 1; i++) {
+            tiers[i].loadInfo();
+            tiers[i].repaint();
+            tiers[i].validate();
         }
 
-        repaint();
-        validate();
-        this.tierListEditor.repaint();
-        this.tierListEditor.validate();
-        repaint();
-        validate();
+        this.repaint();
+        this.validate();
+        tierListEditor.repaint();
+        tierListEditor.validate();
+        this.repaint();
+        this.validate();
     }
 
     /**
      * @return modified knowledge allowing saving.
      */
     public IKnowledge getKnowledge() {
-        return this.knowledge;
+        return knowledge;
     }
 }
 

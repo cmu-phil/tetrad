@@ -62,68 +62,68 @@ class NormalityTestEditorPanel extends JPanel {
     /**
      * Constructs the editor panel given the initial histogram and the dataset.
      */
-    public NormalityTestEditorPanel(final QQPlot qqPlot, final DataSet dataSet) {
+    public NormalityTestEditorPanel(QQPlot qqPlot, DataSet dataSet) {
         //   construct components
-        this.setLayout(new BorderLayout());
+        setLayout(new BorderLayout());
         // first build histogram and components used in the editor.
-        final QQPlot qqPlot1 = qqPlot;
-        final Node selected = qqPlot.getSelectedVariable();
+        QQPlot qqPlot1 = qqPlot;
+        Node selected = qqPlot.getSelectedVariable();
         this.dataSet = dataSet;
-        this.variableBox = new JComboBox();
-        final ListCellRenderer renderer = new VariableBoxRenderer();
-        this.variableBox.setRenderer(renderer);
-        for (final Node node : dataSet.getVariables()) {
+        variableBox = new JComboBox();
+        ListCellRenderer renderer = new VariableBoxRenderer();
+        variableBox.setRenderer(renderer);
+        for (Node node : dataSet.getVariables()) {
             if (node instanceof ContinuousVariable) {
-                this.variableBox.addItem(node);
+                variableBox.addItem(node);
                 if (node == selected) {
-                    this.variableBox.setSelectedItem(node);
+                    variableBox.setSelectedItem(node);
                 }
             }
         }
-        this.variableBox.addItemListener(new ItemListener() {
-            public void itemStateChanged(final ItemEvent e) {
+        variableBox.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
-                    final Node node = (Node) e.getItem();
-                    final QQPlot newValue = new QQPlot(NormalityTestEditorPanel.this.dataSet, node);
+                    Node node = (Node) e.getItem();
+                    QQPlot newValue = new QQPlot(NormalityTestEditorPanel.this.dataSet, node);
                     //numBarsSelector.setValue(newValue.getNumberOfCategories());
                     //   numBarsSelector.setMax(getMaxCategoryValue(newValue));
                     //System.out.println(node.getNode());
-                    changeNormalityTest(NormalityTests.runNormalityTests(NormalityTestEditorPanel.this.dataSet, (ContinuousVariable) node));
+                    NormalityTestEditorPanel.this.changeNormalityTest(NormalityTests.runNormalityTests(NormalityTestEditorPanel.this.dataSet, (ContinuousVariable) node));
                 }
             }
         });
 
         // build the gui.
-        this.add(buildEditArea(), BorderLayout.CENTER);
+        add(this.buildEditArea(), BorderLayout.CENTER);
     }
 
     //========================== Private Methods ================================//
 
-    private void changeNormalityTest(final String test) {
+    private void changeNormalityTest(String test) {
         // fire event
-        this.firePropertyChange("histogramChange", null, test);
+        firePropertyChange("histogramChange", null, test);
     }
 
 
-    private static void setPreferredAsMax(final JComponent component) {
+    private static void setPreferredAsMax(JComponent component) {
         component.setMaximumSize(component.getPreferredSize());
 
     }
 
 
     private Box buildEditArea() {
-        NormalityTestEditorPanel.setPreferredAsMax(this.variableBox);
+        setPreferredAsMax(variableBox);
 
-        final Box main = Box.createVerticalBox();
-        final Box hBox = Box.createHorizontalBox();
+        Box main = Box.createVerticalBox();
+        Box hBox = Box.createHorizontalBox();
         hBox.add(Box.createHorizontalStrut(10));
         hBox.add(new JLabel("Select Variable: "));
         hBox.add(Box.createHorizontalStrut(10));
-        hBox.add(this.variableBox);
+        hBox.add(variableBox);
         hBox.add(Box.createHorizontalGlue());
         main.add(hBox);
         main.add(Box.createVerticalStrut(5));
-        final Box hBox2 = Box.createHorizontalBox();
+        Box hBox2 = Box.createHorizontalBox();
         hBox2.add(Box.createHorizontalStrut(10));
         //hBox2.add(this.categoryField);
         hBox2.add(Box.createHorizontalGlue());
@@ -141,19 +141,19 @@ class NormalityTestEditorPanel extends JPanel {
 
     private static class VariableBoxRenderer extends DefaultListCellRenderer {
 
-        public Component getListCellRendererComponent(final JList list, final Object value, final int index, final boolean isSelected, final boolean cellHasFocus) {
-            final Node node = (Node) value;
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            Node node = (Node) value;
             if (node == null) {
-                this.setText("");
+                setText("");
             } else {
-                this.setText(node.getName());
+                setText(node.getName());
             }
             if (isSelected) {
-                setBackground(list.getSelectionBackground());
-                setForeground(list.getSelectionForeground());
+                this.setBackground(list.getSelectionBackground());
+                this.setForeground(list.getSelectionForeground());
             } else {
-                setBackground(list.getBackground());
-                setForeground(list.getForeground());
+                this.setBackground(list.getBackground());
+                this.setForeground(list.getForeground());
             }
 
             return this;

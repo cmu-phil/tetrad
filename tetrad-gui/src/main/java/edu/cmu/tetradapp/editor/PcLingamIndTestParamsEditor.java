@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
+import edu.cmu.tetradapp.util.DoubleTextField.Filter;
 
 import javax.swing.*;
 import java.text.DecimalFormat;
@@ -37,7 +38,7 @@ class PcLingamIndTestParamsEditor extends JComponent {
     /**
      * The parameters object being edited.
      */
-    private Parameters params = null;
+    private Parameters params;
 
     /**
      * A text field to allow the user to enter the number of dishes to
@@ -54,18 +55,18 @@ class PcLingamIndTestParamsEditor extends JComponent {
     /**
      * Constructs a dialog to edit the given gene simulation parameters object.
      */
-    public PcLingamIndTestParamsEditor(final Parameters params) {
+    public PcLingamIndTestParamsEditor(Parameters params) {
         this.params = params;
 
         // set up text and ties them to the parameters object being edited.
-        this.alphaField = new DoubleTextField(params().getDouble("alpha", 0.001), 8,
+        alphaField = new DoubleTextField(this.params().getDouble("alpha", 0.001), 8,
                 new DecimalFormat("0.0########"), new DecimalFormat("0.0#####E0"), 1e-4);
-        this.alphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(final double value, final double oldValue) {
+        alphaField.setFilter(new Filter() {
+            public double filter(double value, double oldValue) {
                 try {
-                    params().set("alpha", 0.001);
+                    PcLingamIndTestParamsEditor.this.params().set("alpha", 0.001);
                     return value;
-                } catch (final IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             }
@@ -84,7 +85,7 @@ class PcLingamIndTestParamsEditor extends JComponent {
 //            }
 //        });
 
-        buildGui();
+        this.buildGui();
     }
 
     /**
@@ -93,15 +94,15 @@ class PcLingamIndTestParamsEditor extends JComponent {
      * appropriate listeners.
      */
     private void buildGui() {
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        if (this.alphaField != null) {
-            final Box b1 = Box.createHorizontalBox();
+        if (alphaField != null) {
+            Box b1 = Box.createHorizontalBox();
             b1.add(new JLabel("Alpha:"));
             b1.add(Box.createHorizontalStrut(10));
             b1.add(Box.createHorizontalGlue());
-            b1.add(this.alphaField);
-            add(b1);
+            b1.add(alphaField);
+            this.add(b1);
         }
 
 //        Box b2 = Box.createHorizontalBox();
@@ -111,7 +112,7 @@ class PcLingamIndTestParamsEditor extends JComponent {
 //        b2.add(depthField);
 //        add(b2);
 
-        add(Box.createHorizontalGlue());
+        this.add(Box.createHorizontalGlue());
     }
 
     /**
@@ -119,7 +120,7 @@ class PcLingamIndTestParamsEditor extends JComponent {
      * public, but it is needed so that the textfields can edit the model.)
      */
     private Parameters params() {
-        return this.params;
+        return params;
     }
 }
 
