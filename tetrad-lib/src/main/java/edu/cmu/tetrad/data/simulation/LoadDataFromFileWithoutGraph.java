@@ -24,7 +24,6 @@ import java.util.Map;
 public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath, ParameterValues {
     static final long serialVersionUID = 23L;
     private DataSet dataSet;
-    private final int numDataSets = 1;
     private final String path;
     private final Map<String, Object> parameterValues = new HashMap<>();
 
@@ -67,7 +66,7 @@ public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath,
 
     @Override
     public int getNumDataModels() {
-        return this.numDataSets;
+        return 1;
     }
 
     @Override
@@ -81,7 +80,7 @@ public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath,
     }
 
     @Override
-    public Map<String, Object> paremeterValues() {
+    public Map<String, Object> parameterValues() {
         return this.parameterValues;
     }
 }

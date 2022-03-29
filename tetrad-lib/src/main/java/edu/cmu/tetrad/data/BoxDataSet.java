@@ -180,14 +180,14 @@ public final class BoxDataSet implements DataSet {
     /**
      * Gets the name of the data set.
      */
-    public final String getName() {
+    public String getName() {
         return this.name;
     }
 
     /**
      * Sets the name of the data set.
      */
-    public final void setName(String name) {
+    public void setName(String name) {
         if (name == null) {
             return;
 //            throw new NullPointerException("Name must not be null.");
@@ -198,7 +198,7 @@ public final class BoxDataSet implements DataSet {
     /**
      * @return the number of variables in the data set.
      */
-    public final int getNumColumns() {
+    public int getNumColumns() {
         return this.variables.size();
     }
 
@@ -206,7 +206,7 @@ public final class BoxDataSet implements DataSet {
      * @return the number of rows in the rectangular data set, which is the
      * maximum of the number of rows in the list of wrapped columns.
      */
-    public final int getNumRows() {
+    public int getNumRows() {
         return this.dataBox.numRows();
     }
 
@@ -217,7 +217,7 @@ public final class BoxDataSet implements DataSet {
      * @param row    The index of the case.
      * @param column The index of the variable.
      */
-    public final void setInt(int row, int column, int value) {
+    public void setInt(int row, int column, int value) {
         ensureRows(row + 1);
 
         Node variable = getVariable(column);
@@ -250,13 +250,6 @@ public final class BoxDataSet implements DataSet {
                 throw new IllegalArgumentException(
                         "Row or columns out of range.");
             }
-
-            // The data set shouldn't resize because of a set command--it the <row, col> are out of bounds,
-            // it should complain
-//            int newRows = Math.max(row + 1, dataBox.numRows());
-//            int newCols = Math.max(column + 1, dataBox.numCols());
-//            resize(newRows, newCols);
-//            setIntPrivate(row, column, value);
         }
     }
 
@@ -267,7 +260,7 @@ public final class BoxDataSet implements DataSet {
      * @param row    The index of the case.
      * @param column The index of the variable.
      */
-    public final void setDouble(int row, int column, double value) {
+    public void setDouble(int row, int column, double value) {
         ensureRows(row + 1);
 
         try {
@@ -277,13 +270,6 @@ public final class BoxDataSet implements DataSet {
                 throw new IllegalArgumentException(
                         "Row or columns out of range.");
             }
-
-            // The data set shouldn't resize because of a set command--it the <row, col> are out of bounds,
-            // it should complain
-///            int newRows = Math.max(row + 1, dataBox.numRows());
-//            int newCols = Math.max(column + 1, dataBox.numCols());
-//            resize(newRows, newCols);
-//            dataBox.set(row, column, value);
         }
     }
 
@@ -295,7 +281,7 @@ public final class BoxDataSet implements DataSet {
      * Primitives will be returned as corresponding wrapping objects (for
      * example, doubles as Doubles).
      */
-    public final Object getObject(int row, int col) {
+    public Object getObject(int row, int col) {
         Object variable = getVariable(col);
 
         if (variable instanceof ContinuousVariable) {
@@ -318,7 +304,7 @@ public final class BoxDataSet implements DataSet {
      * @param row The index of the case.
      * @param col The index of the variable.
      */
-    public final void setObject(int row, int col, Object value) {
+    public void setObject(int row, int col, Object value) {
         Object variable = getVariable(col);
 
         if (variable instanceof ContinuousVariable) {
@@ -336,7 +322,7 @@ public final class BoxDataSet implements DataSet {
     /**
      * @return the indices of the currently selected variables.
      */
-    public final int[] getSelectedIndices() {
+    public int[] getSelectedIndices() {
         List<Node> variables = getVariables();
         Set<Node> selection = getSelection();
 
@@ -352,13 +338,6 @@ public final class BoxDataSet implements DataSet {
         return indices;
     }
 
-//    /**
-//     * @return the set of currently selected variables.
-//     */
-//    public final Set<Node> getSelectedVariables() {
-//        return new HashSet<>(selection);
-//    }
-
     /**
      * Adds the given variable to the data set, increasing the number of columns
      * by one, moving columns i >= <code>index</code> to column i + 1, and
@@ -367,7 +346,7 @@ public final class BoxDataSet implements DataSet {
      * @throws IllegalArgumentException if the variable already exists in the
      *                                  dataset.
      */
-    public final void addVariable(Node variable) {
+    public void addVariable(Node variable) {
         if (this.variables.contains(variable)) {
             throw new IllegalArgumentException("Expecting a new variable: " + variable);
         }
@@ -391,7 +370,7 @@ public final class BoxDataSet implements DataSet {
      * by one, moving columns i >= <code>index</code> to column i + 1, and
      * inserting a column of missing values at column i.
      */
-    public final void addVariable(int index, Node variable) {
+    public void addVariable(int index, Node variable) {
         if (this.variables.contains(variable)) {
             throw new IllegalArgumentException("Expecting a new variable.");
         }
@@ -403,8 +382,7 @@ public final class BoxDataSet implements DataSet {
         this.variables.add(index, variable);
         resize(this.dataBox.numRows(), this.variables.size());
 
-        Number[][] _data
-                = new Number[this.dataBox.numRows()][this.dataBox.numCols()];
+        Number[][] _data = new Number[this.dataBox.numRows()][this.dataBox.numCols()];
 
         for (int j = 0; j < this.dataBox.numCols(); j++) {
             if (j < index) {
@@ -426,7 +404,7 @@ public final class BoxDataSet implements DataSet {
     /**
      * @return the variable at the given column.
      */
-    public final Node getVariable(int col) {
+    public Node getVariable(int col) {
         return this.variables.get(col);
     }
 
@@ -434,7 +412,7 @@ public final class BoxDataSet implements DataSet {
      * @return the index of the column of the given variable. You can also get
      * this by calling getVariables().indexOf(variable).
      */
-    public final int getColumn(Node variable) {
+    public int getColumn(Node variable) {
         return this.variables.indexOf(variable);
     }
 
@@ -444,8 +422,7 @@ public final class BoxDataSet implements DataSet {
      *
      * @throws IllegalArgumentException if the given change is not supported.
      */
-    @SuppressWarnings("ConstantConditions")
-    public final void changeVariable(Node from, Node to) {
+    public void changeVariable(Node from, Node to) {
         if (!(from instanceof DiscreteVariable
                 && to instanceof DiscreteVariable)) {
             throw new IllegalArgumentException(
@@ -492,7 +469,7 @@ public final class BoxDataSet implements DataSet {
     /**
      * @return the variable with the given name.
      */
-    public final Node getVariable(String varName) {
+    public Node getVariable(String varName) {
         for (Node variable1 : this.variables) {
             if (variable1.getName().equals(varName)) {
                 return variable1;
@@ -506,7 +483,7 @@ public final class BoxDataSet implements DataSet {
      * @return (a copy of) the List of Variables for the data set, in the order
      * of their columns.
      */
-    public final List<Node> getVariables() {
+    public List<Node> getVariables() {
         return new LinkedList<>(this.variables);
     }
 
@@ -514,14 +491,14 @@ public final class BoxDataSet implements DataSet {
      * @return a copy of the knowledge associated with this data set. (Cannot be
      * null.)
      */
-    public final IKnowledge getKnowledge() {
+    public IKnowledge getKnowledge() {
         return this.knowledge.copy();
     }
 
     /**
      * Sets knowledge to be associated with this data set. May not be null.
      */
-    public final void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -533,7 +510,7 @@ public final class BoxDataSet implements DataSet {
      * @return (a copy of) the List of Variables for the data set, in the order
      * of their columns.
      */
-    public final List<String> getVariableNames() {
+    public List<String> getVariableNames() {
         List<Node> vars = getVariables();
         List<String> names = new ArrayList<>();
 
@@ -549,7 +526,7 @@ public final class BoxDataSet implements DataSet {
      * Marks the given column as selected if 'selected' is true or deselected if
      * 'selected' is false.
      */
-    public final void setSelected(Node variable, boolean selected) {
+    public void setSelected(Node variable, boolean selected) {
         if (selected) {
             if (this.variables.contains(variable)) {
                 getSelection().add(variable);
@@ -562,7 +539,7 @@ public final class BoxDataSet implements DataSet {
     /**
      * Marks all variables as deselected.
      */
-    public final void clearSelection() {
+    public void clearSelection() {
         getSelection().clear();
     }
 
@@ -620,7 +597,7 @@ public final class BoxDataSet implements DataSet {
     /**
      * @return true iff the given column has been marked as selected.
      */
-    public final boolean isSelected(Node variable) {
+    public boolean isSelected(Node variable) {
         return getSelection().contains(variable);
     }
 
@@ -628,7 +605,7 @@ public final class BoxDataSet implements DataSet {
      * Removes the column for the variable at the given index, reducing the
      * number of columns by one.
      */
-    public final void removeColumn(int index) {
+    public void removeColumn(int index) {
         if (index < 0 || index >= this.variables.size()) {
             throw new IllegalArgumentException("Not a column in this data set: " + index);
         }
@@ -662,11 +639,9 @@ public final class BoxDataSet implements DataSet {
     /**
      * Removes the columns for the given variable from the dataset, reducing the
      * number of columns by one.
-     *
-     * @param variable
      */
     @Override
-    public final void removeColumn(Node variable) {
+    public void removeColumn(Node variable) {
         int index = this.variables.indexOf(variable);
 
         if (index != -1) {
@@ -680,11 +655,7 @@ public final class BoxDataSet implements DataSet {
      * ordering of the elements of vars will be the same as in the list of
      * variables in this DataSet.
      */
-    public final DataSet subsetColumns(List<Node> vars) {
-//        if (vars.isEmpty()) {
-//            throw new IllegalArgumentException("Subset must not be empty.");
-//        }
-
+    public DataSet subsetColumns(List<Node> vars) {
         if (!(getVariables().containsAll(vars))) {
             List<Node> missingVars = new ArrayList<>(vars);
             missingVars.removeAll(getVariables());
@@ -720,28 +691,12 @@ public final class BoxDataSet implements DataSet {
         return _dataSet;
     }
 
-//    /**
-//     * @return true if case multipliers are being used for this data set.
-//     */
-//    public final boolean isMulipliersCollapsed() {
-//        return !getMultipliers().keySet().isEmpty();
-//    }
-//    /**
-//     * @return the case multiplise for the given case (i.e. row) in the data
-//     * set. Is this is n > 1, the interpretation is that the data set
-//     * effectively contains n copies of that case.
-//     */
-//    public final int getMultiplier(int caseNumber) {
-//        Integer multiplierInt = getMultipliers().get(caseNumber);
-//        return multiplierInt == null ? 1 : multiplierInt;
-//    }
-
     /**
      * Sets the case ID fo the given case numnber to the given value.
      *
      * @throws IllegalArgumentException if the given case ID is already used.
      */
-    public final void setCaseId(int caseNumber, String id) {
+    public void setCaseId(int caseNumber, String id) {
         if (id == null) {
             this.caseIds.remove(caseNumber);
         } else if (this.caseIds.containsValue(id)) {
@@ -755,7 +710,7 @@ public final class BoxDataSet implements DataSet {
     /**
      * @return the case ID for the given case number.
      */
-    public final String getCaseId(int caseNumber) {
+    public String getCaseId(int caseNumber) {
         return this.caseIds.get(caseNumber);
     }
 
@@ -764,7 +719,7 @@ public final class BoxDataSet implements DataSet {
      * in it is continuous. (By implication, empty datasets are both discrete
      * and continuous.)
      */
-    public final boolean isContinuous() {
+    public boolean isContinuous() {
         for (int i = 0; i < getNumColumns(); i++) {
             Node variable = this.variables.get(i);
 
@@ -781,7 +736,7 @@ public final class BoxDataSet implements DataSet {
      * it is discrete. (By implication, empty datasets are both discrete and
      * continuous.)
      */
-    public final boolean isDiscrete() {
+    public boolean isDiscrete() {
         for (int i = 0; i < getNumColumns(); i++) {
             Node column = this.variables.get(i);
 
@@ -797,7 +752,7 @@ public final class BoxDataSet implements DataSet {
      * @return true if this is a mixed data set--that is, if it contains at
      * least one continuous column and one discrete columnn.
      */
-    public final boolean isMixed() {
+    public boolean isMixed() {
         int numContinuous = 0;
         int numDiscrete = 0;
 
@@ -826,7 +781,7 @@ public final class BoxDataSet implements DataSet {
      * Double.NaN, although all of the on-diagonal elements are 1.0. If that's
      * not the desired behavior, missing values can be removed or imputed first.
      */
-    public final Matrix getCorrelationMatrix() {
+    public Matrix getCorrelationMatrix() {
         if (!isContinuous()) {
             throw new IllegalStateException("Not a continuous data set.");
         }
@@ -842,7 +797,7 @@ public final class BoxDataSet implements DataSet {
      * that's not the desired behavior, missing values can be removed or imputed
      * first.
      */
-    public final Matrix getCovarianceMatrix() {
+    public Matrix getCovarianceMatrix() {
         if (!isContinuous()) {
             throw new IllegalStateException("Not a continuous data set.");
         }
@@ -850,31 +805,13 @@ public final class BoxDataSet implements DataSet {
         if (getNumColumns() == 0) return new Matrix(0, 0);
 
         return new CovarianceMatrix(this).getMatrix();
-
-//        TetradMatrix cov = new TetradMatrix(dataBox.numCols(), dataBox.numCols());
-//
-//        double[] x = new double[dataBox.numRows()];
-//        double[] y = new double[dataBox.numRows()];
-//
-//        for (int i = 0; i < dataBox.numCols(); i++) {
-//            for (int j = 0; j < dataBox.numCols(); j++) {
-//                for (int k = 0; k < dataBox.numRows(); k++) {
-//                    x[k] = dataBox.get(k, i).doubleValue();
-//                    y[k] = dataBox.get(k, j).doubleValue();
-//
-//                    cov.set(i, j, StatUtils.covariance(x, y));
-//                }
-//            }
-//        }
-//
-//        return cov;
     }
 
     /**
      * @return the value at the given row and column, rounded to the nearest
      * integer, or DiscreteVariable.MISSING_VALUE if the value is missing.
      */
-    public final int getInt(int row, int column) {
+    public int getInt(int row, int column) {
         Number value = this.dataBox.get(row, column);
 
         if (value == null) {
@@ -890,7 +827,7 @@ public final class BoxDataSet implements DataSet {
      * given row and column may be missing, in which case Double.NaN is
      * returned.
      */
-    public final double getDouble(int row, int column) {
+    public double getDouble(int row, int column) {
         Number value = this.dataBox.get(row, column);
 
         if (value == null) {
@@ -899,28 +836,6 @@ public final class BoxDataSet implements DataSet {
             return value.doubleValue();
         }
     }
-
-//    /**
-//     * Sets the case multiplier for the given case to the given number (must be
-//     * >= 1).
-//     */
-//    public final void setMultiplier(int caseNumber, int multiplier) {
-//        if (caseNumber < 0) {
-//            throw new IllegalArgumentException(
-//                    "Case numbers must be >= 0: " + caseNumber);
-//        }
-//
-//        if (multiplier < 0) {
-//            throw new IllegalArgumentException(
-//                    "Multipliers must be >= 0: " + multiplier);
-//        }
-//
-//        if (multiplier == 1) {
-//            getMultipliers().remove(caseNumber);
-//        } else {
-//            getMultipliers().put(caseNumber, multiplier);
-//        }
-//    }
 
     /**
      * @return a string, suitable for printing, of the dataset. Lines are
@@ -932,7 +847,7 @@ public final class BoxDataSet implements DataSet {
      * @see #setOutputDelimiter(Character)
      * @see DataWriter
      */
-    public final String toString() {
+    public String toString() {
         StringBuilder buf = new StringBuilder();
         List<Node> variables = getVariables();
 
@@ -1015,7 +930,7 @@ public final class BoxDataSet implements DataSet {
      * @throws IllegalStateException if this is not a continuous data set.
      * @see #getVariables
      */
-    public final Matrix getDoubleData() {
+    public Matrix getDoubleData() {
         Matrix copy = new Matrix(this.dataBox.numRows(), this.dataBox.numCols());
 
         for (int i = 0; i < this.dataBox.numRows(); i++) {
@@ -1036,7 +951,7 @@ public final class BoxDataSet implements DataSet {
      * @return a new data set in which the the column at indices[i] is placed at
      * index i, for i = 0 to indices.length - 1. (Moved over from Purify.)
      */
-    public final DataSet subsetColumns(int[] indices) {
+    public DataSet subsetColumns(int[] indices) {
         List<Node> variables = getVariables();
         List<Node> _variables = new LinkedList<>();
 
@@ -1064,7 +979,7 @@ public final class BoxDataSet implements DataSet {
         return _dataSet;
     }
 
-    public final DataSet subsetRows(int[] rows) {
+    public DataSet subsetRows(int[] rows) {
         int[] cols = new int[this.dataBox.numCols()];
 
         for (int i = 0; i < cols.length; i++) {
@@ -1080,7 +995,7 @@ public final class BoxDataSet implements DataSet {
     }
 
     @Override
-    public final DataSet subsetRowsColumns(int[] rows, int[] columns) {
+    public DataSet subsetRowsColumns(int[] rows, int[] columns) {
         List<Node> variables = getVariables();
         List<Node> _variables = new LinkedList<>();
 
@@ -1106,7 +1021,7 @@ public final class BoxDataSet implements DataSet {
     /**
      * Shifts the given column
      */
-    public final void shiftColumnDown(int row, int col, int numRowsShifted) {
+    public void shiftColumnDown(int row, int col, int numRowsShifted) {
 
         if (row >= getNumRows() || col >= getNumColumns()) {
             throw new IllegalArgumentException("Out of range:  row = " + row + " col = " + col);
@@ -1135,11 +1050,9 @@ public final class BoxDataSet implements DataSet {
 
     /**
      * Removes the given columns from the data set.
-     *
-     * @param cols
      */
     @Override
-    public final void removeCols(int[] cols) {
+    public void removeCols(int[] cols) {
         int[] rows = new int[this.dataBox.numRows()];
 
         for (int i = 0; i < this.dataBox.numRows(); i++) {
@@ -1171,7 +1084,7 @@ public final class BoxDataSet implements DataSet {
     /**
      * Removes the given rows from the data set.
      */
-    public final void removeRows(int[] selectedRows) {
+    public void removeRows(int[] selectedRows) {
 
         int[] cols = new int[this.dataBox.numCols()];
 
@@ -1194,10 +1107,6 @@ public final class BoxDataSet implements DataSet {
         this.knowledge = this.knowledge.copy(); // Might have to delete some knowledge.
     }
 
-    /**
-     * @param obj
-     * @return
-     */
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -1225,7 +1134,7 @@ public final class BoxDataSet implements DataSet {
             return false;
         }
 
-        Node[] nodes = getVariables().toArray(new Node[getVariables().size()]);
+        Node[] nodes = getVariables().toArray(new Node[0]);
         for (int i = 0; i < getNumRows(); i++) {
             for (int j = 0; j < getNumColumns(); j++) {
                 Node variable = nodes[j];
@@ -1316,10 +1225,6 @@ public final class BoxDataSet implements DataSet {
      * @param cols The number of columns in the redimensioned data.
      */
     private void resize(int rows, int cols) {
-//        for (int i = getNumColumns(); i < cols; i++) {
-//            variables.add(new ContinuousVariable("X" + i));
-//        }
-
         MixedDataBox newBox = new MixedDataBox(this.variables, rows);
 
         for (int j = 0; j < cols; j++) {
@@ -1334,13 +1239,6 @@ public final class BoxDataSet implements DataSet {
     }
 
     /**
-     * @return the set of case multipliers..
-     */
-    private Map<Integer, Integer> getMultipliers() {
-        return this.multipliers;
-    }
-
-    /**
      * Adds semantic checks to the default deserialization method. This method
      * must have the standard signature for a readObject method, and the body of
      * the method must begin with "s.defaultReadObject();". Other than that, any
@@ -1349,9 +1247,6 @@ public final class BoxDataSet implements DataSet {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private static void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -1425,11 +1320,6 @@ public final class BoxDataSet implements DataSet {
                 return index;
             } else if (element instanceof String) {
                 String label = (String) element;
-
-                if ("".equals(label)) {
-                    throw new IllegalArgumentException(
-                            "Blank category names not permitted.");
-                }
 
                 variable = accomodateCategory(variable, label);
                 int index = variable.getIndex(label);
@@ -1522,9 +1412,8 @@ public final class BoxDataSet implements DataSet {
         List<String> newCategories = new LinkedList<>(categories);
 
         if (categories.size() > numCategories) {
-            for (int i = variable.getCategories().size() - 1;
-                 i >= numCategories; i++) {
-                newCategories.remove(i);
+            if (variable.getCategories().size() > 0) {
+                newCategories.subList(0, variable.getCategories().size()).clear();
             }
         } else if (categories.size() < numCategories) {
             for (int i = categories.size(); i < numCategories; i++) {

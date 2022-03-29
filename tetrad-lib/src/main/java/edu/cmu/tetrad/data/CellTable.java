@@ -56,7 +56,7 @@ public final class CellTable {
         this.table = new MultiDimIntTable(dims);
     }
 
-    public final synchronized void addToTable(DataSet dataSet, int[] indices) {
+    public synchronized void addToTable(DataSet dataSet, int[] indices) {
         int[] dims = new int[indices.length];
 
         for (int i = 0; i < indices.length; i++) {
@@ -92,7 +92,7 @@ public final class CellTable {
      * @param varIndex the index of the variable in question.
      * @return the number of dimensions of the variable.
      */
-    public final int getNumValues(int varIndex) {
+    public int getNumValues(int varIndex) {
         return this.table.getDims(varIndex);
     }
 
@@ -107,7 +107,7 @@ public final class CellTable {
      * @param coords an array of the sort described above.
      * @return the marginal sum specified.
      */
-    public final synchronized long calcMargin(int[] coords) {
+    public synchronized long calcMargin(int[] coords) {
         internalCoordCopy(coords);
 
         int sum = 0;
@@ -140,7 +140,7 @@ public final class CellTable {
      * @param marginVars an <code>int[]</code> value
      * @return an <code>int</code> value
      */
-    public final synchronized long calcMargin(int[] coords, int[] marginVars) {
+    public synchronized long calcMargin(int[] coords, int[] marginVars) {
         internalCoordCopy(coords);
 
         for (int marginVar : marginVars) {
@@ -167,7 +167,7 @@ public final class CellTable {
         return this.missingValue;
     }
 
-    public final void setMissingValue(int missingValue) {
+    public void setMissingValue(int missingValue) {
         this.missingValue = missingValue;
     }
 

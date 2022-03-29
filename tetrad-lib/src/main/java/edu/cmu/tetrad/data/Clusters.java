@@ -44,7 +44,7 @@ public final class Clusters implements TetradSerializable {
      *
      * @serial
      */
-    private Map<String, Integer> clusters = new HashMap<>();
+    private Map<String, Integer> clusters;
 
     /**
      * Node names.
@@ -103,21 +103,18 @@ public final class Clusters implements TetradSerializable {
      * @param index the index.
      * @param var   the variable (a String name). </p> R. Silva (04/2003)
      */
-    public final void addToCluster(int index, String var) {
+    public void addToCluster(int index, String var) {
         if (isClustersBounded() && index >= getNumClusters()) {
             throw new IllegalArgumentException();
         }
 
         this.clusters.put(var, index);
-//        System.out.println("Putting " + var + " in " + index);
-//        System.out.println("Current clusters " + this);
-
     }
 
     /**
      * @return the list of edges not in any tier.
      */
-    public final List<String> getVarsNotInCluster(List<String> varNames) {
+    public List<String> getVarsNotInCluster(List<String> varNames) {
         List<String> notInCluster = new ArrayList<>(varNames);
 
         for (int i = 0; i < getNumClusters(); i++) {
@@ -132,7 +129,7 @@ public final class Clusters implements TetradSerializable {
      * @return the number of measurement clusters for use in Purify and MIM
      * Build. </p> R. Silva (04/2003)
      */
-    public final int getNumClusters() {
+    public int getNumClusters() {
         if (!isClustersBounded()) {
             return numClustersStored();
         }
@@ -144,7 +141,7 @@ public final class Clusters implements TetradSerializable {
      * Sets the number of clusters represented, or -1 if the number is allowed
      * to vary.
      */
-    public final void setNumClusters(int numClusters) {
+    public void setNumClusters(int numClusters) {
         if (numClusters < -1) {
             throw new IllegalArgumentException();
         }
@@ -156,7 +153,7 @@ public final class Clusters implements TetradSerializable {
      * @return a copy of the cluster map, which is a map from variable names to
      * integers.
      */
-    public final Map<String, Integer> getClusters() {
+    public Map<String, Integer> getClusters() {
         return new HashMap<>(this.clusters);
     }
 
@@ -164,7 +161,7 @@ public final class Clusters implements TetradSerializable {
      * @param index the index of the desired index.
      * @return a copy of this index.
      */
-    public final List<String> getCluster(int index) {
+    public List<String> getCluster(int index) {
         if (isClustersBounded() && index > getNumClusters()) {
             throw new IllegalArgumentException();
         }
@@ -183,7 +180,7 @@ public final class Clusters implements TetradSerializable {
         return cluster;
     }
 
-    public final String getClusterName(int index) {
+    public String getClusterName(int index) {
         if (isClustersBounded() && index > getNumClusters()) {
             throw new IllegalArgumentException();
         }
@@ -200,7 +197,7 @@ public final class Clusters implements TetradSerializable {
         return this.numClusters != -1;
     }
 
-    public final synchronized void setClusterName(int index, String name) {
+    public synchronized void setClusterName(int index, String name) {
         if (name == null) {
             throw new NullPointerException();
         }
@@ -227,20 +224,20 @@ public final class Clusters implements TetradSerializable {
     /**
      * Removes the given variable from the clusters.
      */
-    public final void removeFromClusters(String var) {
+    public void removeFromClusters(String var) {
         this.clusters.remove(var);
     }
 
     /**
      * Computes a hashcode.
      */
-    public final int hashCode() {
+    public int hashCode() {
         int hash = 37;
         hash += 17 * this.clusters.hashCode() + 37;
         return hash;
     }
 
-    public final boolean equals(Object o) {
+    public boolean equals(Object o) {
         if (o == this) {
             return true;
         }
@@ -256,7 +253,7 @@ public final class Clusters implements TetradSerializable {
     /**
      * @return the contents of this Knowledge object in String form.
      */
-    public final String toString() {
+    public String toString() {
         StringBuilder buf = new StringBuilder();
         buf.append("Clusters:");
 
@@ -310,8 +307,6 @@ public final class Clusters implements TetradSerializable {
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

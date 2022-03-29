@@ -63,8 +63,6 @@ class ExpressionUtils {
             return buf.toString();
 
 
-//            return "(" + expression1 + middleToken +
-//                    expression2 + ")";
         } else {
             StringBuilder buf = new StringBuilder();
             buf.append(token);

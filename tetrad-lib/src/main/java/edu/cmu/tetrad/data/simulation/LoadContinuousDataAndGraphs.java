@@ -17,6 +17,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author jdramsey
@@ -39,7 +40,7 @@ public class LoadContinuousDataAndGraphs implements Simulation {
         this.dataSets = new ArrayList<>();
 
         if (new File(this.path + "/data").exists()) {
-            int numDataSets = new File(this.path + "/data").listFiles().length;
+            int numDataSets = Objects.requireNonNull(new File(this.path + "/data").listFiles()).length;
 
             try {
                 for (int i = 0; i < numDataSets; i++) {

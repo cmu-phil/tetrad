@@ -148,23 +148,6 @@ public class KMeans implements ClusteringAlgorithm {
         return algorithm;
     }
 
-    /**
-     * Constructs a new KMeansBatch, initializing the algorithm by specifying a
-     * fixed number of centers.
-     *
-     * @param centers The recommended centers to start the algorithm with. This
-     *                is an array, with the number of rows equal to the number
-     *                of centers and the number of columns equal to the number
-     *                of columns in the data (that is, features).
-     * @return The constructed algorithm.
-     */
-    public static KMeans explicitPoints(Matrix centers) {
-        KMeans algorithm = new KMeans();
-        algorithm.centers = centers;
-
-        return algorithm;
-    }
-
     //===========================PUBLIC METHODS=======================//
 
     /**
@@ -218,9 +201,6 @@ public class KMeans implements ClusteringAlgorithm {
 
             // Step #2: Replace each center by the center of mass of its cluster.
             moveCentersToMeans();
-
-//            System.out.println("New centers: " + centers);
-//            System.out.println("Cluster counts: " + countClusterSizes());
         }
 
     }
@@ -239,7 +219,7 @@ public class KMeans implements ClusteringAlgorithm {
         List<List<Integer>> clusters = new ArrayList<>();
 
         for (int i = 0; i <= max; i++) {
-            clusters.add(new LinkedList<Integer>());
+            clusters.add(new LinkedList<>());
         }
 
         for (int i = 0; i < clusterIndices.size(); i++) {
@@ -251,10 +231,6 @@ public class KMeans implements ClusteringAlgorithm {
         }
 
         return clusters;
-    }
-
-    public Matrix getPrototypes() {
-        return this.centers.copy();
     }
 
     /**
@@ -440,10 +416,6 @@ public class KMeans implements ClusteringAlgorithm {
 
         return data.getSelection(rows, cols).copy();
     }
-
-//    private double dissimilarity(TetradVector d1, TetradVector d2) {
-//        return DissimilarityMeasures.squaredEuclideanDistance(d1, d2);
-//    }
 
     private Vector countClusterSizes() {
         Vector counts = new Vector(this.centers.rows());

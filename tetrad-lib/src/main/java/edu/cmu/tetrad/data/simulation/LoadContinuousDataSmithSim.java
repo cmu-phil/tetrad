@@ -40,7 +40,6 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
 
     @Override
     public void createData(Parameters parameters, boolean newModel) {
-//        if (!newModel && !dataSets.isEmpty()) return;
         if (!this.dataSets.isEmpty()) return;
 
         this.dataSets = new ArrayList<>();
@@ -50,6 +49,7 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
         if (dir.exists()) {
             File[] files = dir.listFiles();
 
+            assert files != null;
             for (File file : files) {
                 if (!file.getName().endsWith(".txt")) continue;
                 System.out.println("Loading data from " + file.getAbsolutePath());
@@ -68,16 +68,12 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
         if (dir2.exists()) {
             File[] files = dir2.listFiles();
 
+            assert files != null;
             for (File file : files) {
                 if (!file.getName().endsWith(".txt")) continue;
 
                 System.out.println("Loading graph from " + file.getAbsolutePath());
                 this.graph = readGraph(file);
-//            this.graph = GraphUtils.loadGraphTxt(file);
-
-//            if (!graph.isAdjacentTo(graph.getNode("X3"), graph.getNode("X4"))) {
-//                graph.addUndirectedEdge(graph.getNode("X3"), graph.getNode("X4"));
-//            }
 
                 GraphUtils.circleLayout(this.graph, 225, 200, 150);
 
@@ -106,9 +102,7 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
 
     public String getDescription() {
         try {
-            StringBuilder b = new StringBuilder();
-            b.append("Load data sets and graphs from a directory.").append("\n\n");
-            return b.toString();
+            return "Load data sets and graphs from a directory." + "\n\n";
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

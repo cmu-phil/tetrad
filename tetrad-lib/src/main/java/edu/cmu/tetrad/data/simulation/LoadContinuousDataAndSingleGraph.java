@@ -44,6 +44,7 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
         if (dir.exists()) {
             File[] files = dir.listFiles();
 
+            assert files != null;
             for (File file : files) {
                 if (!file.getName().endsWith(".txt")) continue;
                 System.out.println("Loading data from " + file.getAbsolutePath());
@@ -62,6 +63,7 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
         if (dir2.exists()) {
             File[] files = dir2.listFiles();
 
+            assert files != null;
             if (files.length != 1) {
                 throw new IllegalArgumentException("Expecting exactly one graph file.");
             }
@@ -70,10 +72,6 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
 
             System.out.println("Loading graph from " + file.getAbsolutePath());
             this.graph = GraphUtils.loadGraphTxt(file);
-
-//            if (!graph.isAdjacentTo(graph.getNode("X3"), graph.getNode("X4"))) {
-//                graph.addUndirectedEdge(graph.getNode("X3"), graph.getNode("X4"));
-//            }
 
             GraphUtils.circleLayout(this.graph, 225, 200, 150);
         }
@@ -99,9 +97,7 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
 
     public String getDescription() {
         try {
-            StringBuilder b = new StringBuilder();
-            b.append("Load data sets and graphs from a directory.").append("\n\n");
-            return b.toString();
+            return "Load data sets and graphs from a directory." + "\n\n";
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -45,7 +45,7 @@ public abstract class AbstractVariable implements Variable {
      *
      * @serial
      */
-    private String name = "??";
+    private String name;
 
     /**
      * Builds a variable having the specified name.
@@ -57,10 +57,6 @@ public abstract class AbstractVariable implements Variable {
 
         name = name.trim();
 
-//        if (!NamingProtocol.isLegalName(name)) {
-//            throw new NullPointerException(
-//                    NamingProtocol.getProtocolDescription() + ": " + name);
-//        }
         this.name = name;
     }
 
@@ -105,7 +101,7 @@ public abstract class AbstractVariable implements Variable {
      * <tt>checkValue()</tt> in order to provide for subclass-specific value
      * checking. The value should pass the test if it can be converted into an
      * equivalent object of the correct class type (see
-     * <tt>getValueClass()</tt> for this variable; otherwise, it should fail. In
+     * <tt>getValueClass()</tt>) for this variable; otherwise, it should fail. In
      * general, <tt>checkValue()</tt> should not fail a value for simply not
      * being an instance of a particular class. </p> Since this method is not
      * <tt>static</tt>, subclasses may (but need not) provide for

@@ -119,24 +119,6 @@ public class LoadDataAndGraphs implements Simulation {
     @Override
     public String getDescription() {
         return "Load data sets and graphs from a directory" + (!("".equals(this.description)) ? ": " + this.description : "");
-
-//        try {
-//            File file = new File(path, "parameters.txt");
-//            BufferedReader r = new BufferedReader(new FileReader(file));
-//
-//            StringBuilder b = new StringBuilder();
-//            b.append("Load data sets and graphs from a directory.").append("\n\n");
-//            String line;
-//
-//            while ((line = r.readLine()) != null) {
-//                if (line.trim().isEmpty()) continue;
-//                b.append(line).append("\n");
-//            }
-//
-//            return b.toString();
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
     }
 
     @Override

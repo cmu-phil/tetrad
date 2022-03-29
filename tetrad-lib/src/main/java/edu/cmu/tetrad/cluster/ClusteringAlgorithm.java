@@ -26,10 +26,10 @@ import edu.cmu.tetrad.util.Matrix;
 import java.util.List;
 
 /**
- * Represents a clusting algorithm to cluster some data. The data is a
+ * Represents a clustering algorithm to cluster some data. The data is a
  * TetradMatrix matrix with rows as cases and columns as variables. The
  * purpose of this interface is to allow a clustering algorithm to have
- * parameters set so thet it can be passed to another class to do clustering on
+ * parameters set so that it can be passed to another class to do clustering on
  * data.
  *
  * @author Joseph Ramsey
@@ -54,15 +54,6 @@ public interface ClusteringAlgorithm {
      * data has not yet been clustered.
      */
     List<List<Integer>> getClusters();
-
-    /**
-     * @return the list of prototypes for clusters as a 2D array, or null if
-     * there are not prototypes or the data has not yet been clustered. The
-     * array at (k, j) is the jth element of the kth prototype. The number of
-     * columns in this array is equal to the number of columns in the dataset
-     * provided as an argument to <code>cluster</code>.
-     */
-    Matrix getPrototypes();
 
     /**
      * True iff verbose output should be printed.

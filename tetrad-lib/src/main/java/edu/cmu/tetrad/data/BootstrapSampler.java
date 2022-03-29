@@ -73,22 +73,6 @@ public final class BootstrapSampler {
         int ncols = dataSet.getNumColumns();
 
         DataSet newDataSet = new BoxDataSet(new VerticalDoubleDataBox(newSampleSize, dataSet.getVariables().size()), dataSet.getVariables());
-//        List<Integer> indices = new ArrayList<Integer>();
-
-        // Without replacement.
-
-        // (keeping order)
-//        for (int row = 0; row < newSampleSize; row++) {
-//            indices.add(RandomUtil.getInstance().nextInt(oldSampleSize));
-//        }
-//
-//        Collections.sort(indices);
-//
-//        for (int row = 0; row < indices.size(); row++) {
-//            for (int col = 0; col < ncols; col++) {
-//                newDataSet.setObject(row, col, dataSet.getObject(indices.get(row), col));
-//            }
-//        }
         Set<Integer> oldCases = new HashSet<>();
 
         // (not keeping order)
