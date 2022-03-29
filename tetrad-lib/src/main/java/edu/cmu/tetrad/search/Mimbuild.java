@@ -21,10 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.CovarianceMatrix;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
@@ -37,6 +34,7 @@ import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.PowellOptimizer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static java.lang.Math.sqrt;
@@ -139,7 +137,7 @@ public class Mimbuild {
         }
 
         Matrix cov = getCov(measuresCov, latents, indicators);
-        CovarianceMatrix latentscov = new CovarianceMatrix(latents, cov, measuresCov.getSampleSize());
+        CovarianceMatrix latentscov = new CorrelationMatrix(latents, cov, measuresCov.getSampleSize());
         this.latentsCov = latentscov;
         Graph graph;
 
@@ -318,9 +316,7 @@ public class Mimbuild {
         // Variances of the measures.
         double[] delta = new double[measurescov.rows()];
 
-        for (int i = 0; i < delta.length; i++) {
-            delta[i] = 1;
-        }
+        Arrays.fill(delta, 1);
 
         int numNonMeasureVarianceParams = 0;
 
@@ -330,8 +326,8 @@ public class Mimbuild {
             }
         }
 
-        for (int i = 0; i < indicators.length; i++) {
-            numNonMeasureVarianceParams += indicators[i].length;
+        for (Node[] indicator : indicators) {
+            numNonMeasureVarianceParams += indicator.length;
         }
 
         double[] allParams1 = getAllParams(indicators, latentscov, loadings, delta);
@@ -388,8 +384,8 @@ public class Mimbuild {
             }
         }
 
-        for (int i = 0; i < indicators.length; i++) {
-            for (int j = 0; j < indicators[i].length; j++) {
+        for (Node[] indicator : indicators) {
+            for (int j = 0; j < indicator.length; j++) {
                 count++;
             }
         }
@@ -432,8 +428,8 @@ public class Mimbuild {
             }
         }
 
-        for (int i = 0; i < indicators.length; i++) {
-            for (int j = 0; j < indicators[i].length; j++) {
+        for (Node[] indicator : indicators) {
+            for (int j = 0; j < indicator.length; j++) {
                 count++;
             }
         }
@@ -472,8 +468,8 @@ public class Mimbuild {
         double[] values2 = new double[delta.length];
         int count = 0;
 
-        for (int i = 0; i < delta.length; i++) {
-            values2[count++] = delta[i];
+        for (double v : delta) {
+            values2[count++] = v;
         }
 
         Function2 function2 = new Function2(indicatorIndices, measurescov, loadings, latentscov, delta, count);
@@ -518,8 +514,8 @@ public class Mimbuild {
             }
         }
 
-        for (int i = 0; i < indicators.length; i++) {
-            for (int j = 0; j < indicators[i].length; j++) {
+        for (Node[] indicator : indicators) {
+            for (int j = 0; j < indicator.length; j++) {
                 count++;
             }
         }
@@ -545,8 +541,8 @@ public class Mimbuild {
             }
         }
 
-        for (int i = 0; i < delta.length; i++) {
-            values[count] = delta[i];
+        for (double v : delta) {
+            values[count] = v;
             count++;
         }
 
@@ -621,7 +617,7 @@ public class Mimbuild {
     private class Function2 implements org.apache.commons.math3.analysis.MultivariateFunction {
         private final int[][] indicatorIndices;
         private final Matrix measurescov;
-        private Matrix measuresCovInverse;
+        private final Matrix measuresCovInverse;
         private final double[][] loadings;
         private final Matrix latentscov;
         private final int numParams;
@@ -730,7 +726,7 @@ public class Mimbuild {
     private class Function4 implements org.apache.commons.math3.analysis.MultivariateFunction {
         private final int[][] indicatorIndices;
         private final Matrix measurescov;
-        private Matrix measuresCovInverse;
+        private final Matrix measuresCovInverse;
         private final double[][] loadings;
         private final Matrix latentscov;
         private final int numParams;
@@ -755,8 +751,8 @@ public class Mimbuild {
                 }
             }
 
-            for (int i = 0; i < loadings.length; i++) {
-                for (int j = 0; j < loadings[i].length; j++) {
+            for (double[] loading : loadings) {
+                for (int j = 0; j < loading.length; j++) {
                     count++;
                 }
             }
