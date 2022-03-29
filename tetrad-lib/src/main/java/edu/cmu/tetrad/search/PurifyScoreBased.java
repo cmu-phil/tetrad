@@ -1661,8 +1661,8 @@ public class PurifyScoreBased implements IPurify {
         latentCliques.add(firstClique);
 
         //Now, ready to purify
-        for (int i = 0; i < latentCliques.size(); i++) {
-            final int[] nextLatentList = (int[]) latentCliques.get(i);
+        for (final Object latentClique : latentCliques) {
+            final int[] nextLatentList = (int[]) latentClique;
             final List nextPartition = new ArrayList();
             for (int p = 0; p < nextLatentList.length; p++) {
                 nextPartition.add(partition.get(nextLatentList[p]));
