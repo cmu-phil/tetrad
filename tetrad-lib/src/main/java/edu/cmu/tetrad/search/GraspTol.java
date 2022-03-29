@@ -22,7 +22,6 @@ import static java.util.Collections.shuffle;
  */
 public class GraspTol {
     private final List<Node> variables;
-    double sNew = Double.NaN;
     private Score score;
     private IndependenceTest test;
     private IKnowledge knowledge = new Knowledge2();
@@ -248,7 +247,7 @@ public class GraspTol {
 
                 if (violatesKnowledge(scorer.getPi())) continue;
 
-                sNew = scorer.score();
+                double sNew = scorer.score();
                 if (sNew > sOld) {
                     if (verbose) {
                         System.out.printf("Edges: %d \t|\t Score Improvement: %f \t|\t Tucks Performed: %s %s \n",
@@ -268,7 +267,7 @@ public class GraspTol {
                     tucks.remove(tuck);
                 }
 
-                else if (sNew < sOld && currentDepth < depth[0] && tolCur < tol) {
+                if (sNew < sOld && currentDepth < depth[0] && tolCur < tol) {
                     graspDfsTol(scorer, sOld, depth, currentDepth + 1, tol, tolCur + 1, tucks, dfsHistory);
                 }
 

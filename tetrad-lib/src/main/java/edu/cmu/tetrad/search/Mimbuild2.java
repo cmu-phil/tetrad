@@ -90,7 +90,7 @@ public class Mimbuild2 {
     private int numParams;
     private List<Node> latents;
     private double epsilon = 1e-4;
-    private int penaltyDiscount = 1;
+    private double penaltyDiscount = 1;
     private int minClusterSize = 3;
 
     public Mimbuild2() {
@@ -143,7 +143,10 @@ public class Mimbuild2 {
         this.latentsCov = latentscov;
         Graph graph;
 
-        Grasp search = new Grasp(new IndTestFisherZ(latentscov, alpha));
+        SemBicScore score = new SemBicScore(latentscov);
+        score.setPenaltyDiscount(penaltyDiscount);
+        Grasp search = new Grasp(score);
+//        Grasp search = new Grasp(new IndTestFisherZ(latentscov, alpha));
         search.setKnowledge(knowledge);
         search.bestOrder(latentscov.getVariables());
         graph = search.getGraph(true);
@@ -242,7 +245,7 @@ public class Mimbuild2 {
         this.epsilon = epsilon;
     }
 
-    public void setPenaltyDiscount(int penaltyDiscount) {
+    public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
     }
 

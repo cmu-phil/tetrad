@@ -68,6 +68,7 @@ public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
                 Mimbuild2 mimbuild = new Mimbuild2();
                 mimbuild.setAlpha(parameters.getDouble(Params.ALPHA));
+                mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
                 mimbuild.setKnowledge((IKnowledge) parameters.get("knowledge", new Knowledge2()));
 
                 if (parameters.getBoolean("includeThreeClusters", true)) {
@@ -145,7 +146,8 @@ public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add(Params.ALPHA);
+//        parameters.add(Params.ALPHA);
+        parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.USE_WISHART);
         parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
         parameters.add(Params.VERBOSE);
