@@ -29,7 +29,6 @@ package edu.cmu.tetrad.gene.tetrad.gene.algorithm.util;
  * (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
  */
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 public class LTMatrixF extends BasicLTMatrix {
@@ -46,7 +45,7 @@ public class LTMatrixF extends BasicLTMatrix {
      * Creates a lower triangular matrix reading it from file
      * <code>fname</code>.
      */
-    public LTMatrixF(String fname) throws FileNotFoundException, IOException {
+    public LTMatrixF(String fname) throws IOException {
         super(fname);
     }
 

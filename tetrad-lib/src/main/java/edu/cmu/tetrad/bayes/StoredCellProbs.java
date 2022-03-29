@@ -64,7 +64,7 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
         }
 
         this.variables = Collections.unmodifiableList(variables);
-        Set<Object> variableSet = new HashSet<Object>(this.variables);
+        Set<Object> variableSet = new HashSet<>(this.variables);
         if (variableSet.size() < this.variables.size()) {
             throw new IllegalArgumentException("Duplicate variable.");
         }
@@ -125,7 +125,7 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
      * Generates a simple exemplar of this class to test serialization.
      */
     public static StoredCellProbs serializableInstance() {
-        return new StoredCellProbs(new ArrayList<Node>());
+        return new StoredCellProbs(new ArrayList<>());
     }
 
     //=============================PUBLIC METHODS=========================//

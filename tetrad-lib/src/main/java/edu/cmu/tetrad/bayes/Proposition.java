@@ -196,13 +196,6 @@ public final class Proposition implements TetradSerializable {
     }
 
     /**
-     * @return true iff all categories for the given variable are allowed.
-     */
-    public boolean isUnconditioned(int variable) {
-        return !isConditioned(variable);
-    }
-
-    /**
      * @return true iff the given point is true for this proposition.
      */
     public boolean isPermissibleCombination(int[] point) {
@@ -287,23 +280,6 @@ public final class Proposition implements TetradSerializable {
         }
     }
 
-//    /**
-//     * Restricts this proposition to the categories for the given variable that
-//     * are true in the given proposition.
-//     */
-//    public void restrictToProposition(Proposition proposition, int variable) {
-//        if (proposition.getVariableSource() != this.variableSource) {
-//            throw new IllegalArgumentException("Can only restrict to " +
-//                    "propositions for the same variable source.");
-//        }
-//
-//        for (int j = 0; j < allowedCategories[variable].length; j++) {
-//            if (!proposition.isAllowed(variable, j)) {
-//                removeCategory(variable, j);
-//            }
-//        }
-//    }
-
     /**
      * @return the index of the variable with the given name, or -1 if such a
      * variable does not exist.
@@ -357,9 +333,7 @@ public final class Proposition implements TetradSerializable {
      * allowed (true) or all disallowed (false).
      */
     public void setVariable(int variable, boolean allowed) {
-        for (int i = 0; i < allowedCategories[variable].length; i++) {
-            allowedCategories[variable][i] = allowed;
-        }
+        Arrays.fill(allowedCategories[variable], allowed);
     }
 
     /**
@@ -484,9 +458,6 @@ public final class Proposition implements TetradSerializable {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

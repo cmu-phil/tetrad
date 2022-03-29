@@ -95,7 +95,7 @@ public abstract class BasicGraph {
      * Support of int, long, floating point, or doubles as edge values will
      * depend on how a subclass of Graph implement the set of edges.
      */
-    public BasicGraph(String fname) throws FileNotFoundException, IOException {
+    public BasicGraph(String fname) throws IOException {
         // Create and prepare stream tokenizer
         File f = new File(fname);
         BufferedReader in = new BufferedReader(new FileReader(f));
@@ -118,7 +118,7 @@ public abstract class BasicGraph {
 
         // Read # of nodes in graph
         nt = strmTok.nextToken();
-        if (nt != strmTok.TT_NUMBER) {
+        if (nt != StreamTokenizer.TT_NUMBER) {
             throw new IllegalArgumentException(
                     "Expecting # of nodes in graph instead of: " + strmTok
                             .sval);
@@ -140,7 +140,7 @@ public abstract class BasicGraph {
         this.initializeEdges();
         while (true) {
             nt = strmTok.nextToken();
-            if (nt == strmTok.TT_EOF) {
+            if (nt == StreamTokenizer.TT_EOF) {
                 break;
             }
             int node_i = (int) strmTok.nval;

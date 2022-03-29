@@ -477,7 +477,6 @@ public class Ling {
             }
 
             Matrix sqrt = cov.sqrt();
-            ;
 
             Matrix I = Matrix.identity(rows);
             Matrix AI = I.copy();

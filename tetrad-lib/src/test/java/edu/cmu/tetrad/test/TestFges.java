@@ -1494,7 +1494,7 @@ public class TestFges {
             System.out.println(getHeader(u));
             System.out.println();
 
-            System.out.println(table.toString());
+            System.out.println(table);
         }
 
 

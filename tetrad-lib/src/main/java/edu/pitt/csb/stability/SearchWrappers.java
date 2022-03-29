@@ -62,8 +62,6 @@ public class SearchWrappers {
             return new MGMWrapper(searchParams);
         }
 
-        ;
-
         public Graph search(DataSet ds) {
             MGM m = new MGM(ds, searchParams);
             return m.search();

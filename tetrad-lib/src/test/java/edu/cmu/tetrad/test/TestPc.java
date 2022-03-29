@@ -599,7 +599,7 @@ public class TestPc {
 
         System.out.println();
 
-        System.out.println(table.toString());
+        System.out.println(table);
     }
 
     //    @Test

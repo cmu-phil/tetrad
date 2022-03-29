@@ -30,7 +30,6 @@ package edu.cmu.tetrad.gene.tetrad.gene.algorithm.util;
  * (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
  */
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 public class SymMatrixF extends LTMatrixF {
@@ -45,7 +44,7 @@ public class SymMatrixF extends LTMatrixF {
     /**
      * Creates a symmetric matrix reading it from file <code>fname</code>.
      */
-    public SymMatrixF(String fname) throws FileNotFoundException, IOException {
+    public SymMatrixF(String fname) throws IOException {
         super(fname);
     }
 

@@ -149,7 +149,7 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
         return new Evidence(this.evidence);
     }
 
-    public final void setEvidence(Evidence evidence) {
+    public void setEvidence(Evidence evidence) {
         if (evidence == null) {
             throw new NullPointerException();
         }
@@ -328,9 +328,8 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
                 Node node = updatedGraph.getNode(evidence.getNode(i).getName());
                 List<Node> parents = updatedGraph.getParents(node);
 
-                for (Object parent1 : parents) {
-                    Node parent = (Node) parent1;
-                    updatedGraph.removeEdge(node, parent);
+                for (Node parent1 : parents) {
+                    updatedGraph.removeEdge(node, parent1);
                 }
             }
         }
@@ -347,9 +346,6 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

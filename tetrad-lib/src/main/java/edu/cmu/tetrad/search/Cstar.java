@@ -493,7 +493,6 @@ public class Cstar {
             }
 
             out.flush();
-            ;
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

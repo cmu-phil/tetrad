@@ -21,6 +21,7 @@ package edu.cmu.tetrad.bayes;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.List;
@@ -31,7 +32,6 @@ import java.util.List;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
-
     static final long serialVersionUID = 23L;
 
     /**
@@ -301,9 +301,6 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

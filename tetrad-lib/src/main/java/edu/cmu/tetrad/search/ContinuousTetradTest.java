@@ -663,7 +663,7 @@ public final class ContinuousTetradTest implements TetradTest {
         prob[0] = deltaTest.getPValue();
 
         TetradLogger.getInstance().log("tetrads", new Tetrad(variables.get(i),
-                variables.get(j), variables.get(k), variables.get(l)).toString()
+                variables.get(j), variables.get(k), variables.get(l))
                 + " = 0, p = " + prob[0]);
 
 

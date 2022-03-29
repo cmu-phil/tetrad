@@ -204,7 +204,7 @@ class EvidenceEditorObs extends JPanel {
             int _i = buttonsToVariables.get(_button);
             int _j = buttonsToCategories.get(_button);
 
-            if (!proposition.isUnconditioned(_i) && proposition.isAllowed(_i, _j)) {
+            if (!!proposition.isConditioned(_i) && proposition.isAllowed(_i, _j)) {
                 _button.setBackground(Color.LIGHT_GRAY);
             } else {
                 _button.setBackground(Color.WHITE);

@@ -197,13 +197,13 @@ public class GraphChange {
         String ret = "[ ";
 //        ret = "\n" + super.toString();
         if (!removes.isEmpty())
-            ret = ret + "\n removes: " + removes.toString();
+            ret = ret + "\n removes: " + removes;
         if (!colliders.isEmpty())
-            ret = ret + "\n colliders: " + colliders.toString();
+            ret = ret + "\n colliders: " + colliders;
         if (!nonColliders.isEmpty())
-            ret = ret + "\n nonColliders: " + nonColliders.toString();
+            ret = ret + "\n nonColliders: " + nonColliders;
         if (!orients.isEmpty())
-            ret = ret + "\n orient: " + orients.toString();
+            ret = ret + "\n orient: " + orients;
         ret = ret + " ]";
         return ret;
     }

@@ -57,7 +57,7 @@ public abstract class BasicLTMatrix extends BasicMatrix {
      * has more elements an illegal argument exception will be generated.
      */
     public BasicLTMatrix(String fname)
-            throws FileNotFoundException, IOException {
+            throws IOException {
         // Create and prepare stream tokenizer
         File f = new File(fname);
         BufferedReader in = new BufferedReader(new FileReader(f));
@@ -79,7 +79,7 @@ public abstract class BasicLTMatrix extends BasicMatrix {
 
         // Read from file # of rows in the matrix
         nt = strmTok.nextToken();
-        if (nt != strmTok.TT_NUMBER) {
+        if (nt != StreamTokenizer.TT_NUMBER) {
             throw new IllegalArgumentException(
                     "Error parsing # of rows: " + strmTok.sval);
         }
@@ -98,10 +98,10 @@ public abstract class BasicLTMatrix extends BasicMatrix {
             } catch (IOException e) {
                 break;
             }
-            if (nt == strmTok.TT_EOF) {
+            if (nt == StreamTokenizer.TT_EOF) {
                 break;
             }
-            if (nt == strmTok.TT_NUMBER) {
+            if (nt == StreamTokenizer.TT_NUMBER) {
                 this.setDoubleValue(row, col, strmTok.nval);
                 if (col < row) {
                     col++;

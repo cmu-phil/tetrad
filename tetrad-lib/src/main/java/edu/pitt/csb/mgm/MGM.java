@@ -344,7 +344,7 @@ public class MGM extends ConvexProximal implements GraphSearch {
         DoubleMatrix2D beta = factory2D.make(xDat.columns(), xDat.columns()); //continuous-continuous
         DoubleMatrix1D betad = factory1D.make(xDat.columns(), 1.0); //cont squared node pot
         DoubleMatrix2D theta = factory2D.make(lsum, xDat.columns());
-        ; //continuous-discrete
+        //continuous-discrete
         DoubleMatrix2D phi = factory2D.make(lsum, lsum); //discrete-discrete
         DoubleMatrix1D alpha1 = factory1D.make(xDat.columns()); //cont linear node pot
         DoubleMatrix1D alpha2 = factory1D.make(lsum); //disc node potbeta =
