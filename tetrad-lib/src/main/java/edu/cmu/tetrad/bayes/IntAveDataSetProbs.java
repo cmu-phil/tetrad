@@ -44,7 +44,7 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
     /**
      * The data set that this is a cell count table for.
      */
-    private DataSet dataSet;
+    private final DataSet dataSet;
 
     /**
      * An array whose length is the number of dimensions of the cell and whose
@@ -55,26 +55,9 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
     private final int[] dims;
 
     /**
-     * Indicates whether bounds on coordinate values are explicitly enforced.
-     * This may slow down loops.
-     */
-    private boolean boundsEnforced = true;
-
-//    /**
-//     * The data from dataset as an array. Data beyond numRows is noise.
-//     */
-//    private int[][] untrimmedData;
-
-    /**
      * The number of rows in the data.
      */
     private final int numRows;
-
-    /**
-     * True iff a missing value case was found on the last run through the
-     * data.
-     */
-    private boolean missingValueCaseFound;
 
     //============================CONSTRUCTORS===========================//
 
@@ -109,15 +92,12 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
         int[] point = new int[dims.length];
         int count = 0;
 
-        this.missingValueCaseFound = false;
-
         point:
         for (int i = 0; i < numRows; i++) {
             for (int j = 0; j < dims.length; j++) {
                 point[j] = dataSet.getInt(i, j);
 
                 if (point[j] == DiscreteVariable.MISSING_VALUE) {
-                    this.missingValueCaseFound = true;
                     continue point;
                 }
             }
@@ -137,15 +117,12 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
         int[] point = new int[dims.length];
         int count = 0;
 
-        this.missingValueCaseFound = false;
-
         point:
         for (int i = 0; i < numRows; i++) {
             for (int j = 0; j < dims.length; j++) {
                 point[j] = dataSet.getInt(i, j);
 
                 if (point[j] == DiscreteVariable.MISSING_VALUE) {
-                    this.missingValueCaseFound = true;
                     continue point;
                 }
             }
@@ -184,7 +161,6 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
         int[] point = new int[dims.length];
         int count1 = 0;
         int count2 = 0;
-        this.missingValueCaseFound = false;
 
         point:
         for (int i = 0; i < numRows; i++) {
@@ -192,7 +168,6 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
                 point[j] = dataSet.getInt(i, j);
 
                 if (point[j] == DiscreteVariable.MISSING_VALUE) {
-                    this.missingValueCaseFound = true;
                     continue point;
                 }
             }
@@ -224,7 +199,6 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
                 condition.setVariable(i, true);
                 count1 = 0;
                 count2 = 0;
-                this.missingValueCaseFound = false;
 
                 point:
                 for (int i1 = 0; i1 < numRows; i1++) {
@@ -232,7 +206,6 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
                         point[j] = dataSet.getInt(i, j);
 
                         if (point[j] == DiscreteVariable.MISSING_VALUE) {
-                            this.missingValueCaseFound = true;
                             continue point;
                         }
                     }
@@ -273,23 +246,6 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
         return null;
     }
 
-    /**
-     * True iff bounds checking is performed on variable values indices.
-     */
-    public boolean isBoundsEnforced() {
-        return boundsEnforced;
-    }
-
-    /**
-     * True iff bounds checking is performed on variable values indices.
-     */
-    public void setBoundsEnforced(boolean boundsEnforced) {
-        this.boundsEnforced = boundsEnforced;
-    }
-
-    public boolean isMissingValueCaseFound() {
-        return missingValueCaseFound;
-    }
 }
 
 

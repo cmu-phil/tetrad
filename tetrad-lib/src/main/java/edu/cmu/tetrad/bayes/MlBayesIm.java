@@ -92,14 +92,14 @@ public final class MlBayesIm implements BayesIm {
      *
      * @serial
      */
-    private BayesPm bayesPm;
+    private final BayesPm bayesPm;
 
     /**
      * The array of nodes from the graph. Order is important.
      *
      * @serial
      */
-    private Node[] nodes;
+    private final Node[] nodes;
 
     /**
      * The list of parents for each node from the graph. Order or nodes

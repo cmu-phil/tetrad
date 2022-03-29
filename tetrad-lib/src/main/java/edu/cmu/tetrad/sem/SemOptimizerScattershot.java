@@ -291,7 +291,7 @@ public class SemOptimizerScattershot implements SemOptimizer {
          * The wrapped Sem.
          */
         private final SemIm sem;
-        private List<Parameter> freeParameters;
+        private final List<Parameter> freeParameters;
         private boolean avoidNegativeVariances = false;
 
         /**

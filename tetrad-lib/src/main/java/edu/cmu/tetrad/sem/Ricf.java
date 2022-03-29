@@ -850,12 +850,12 @@ public class Ricf {
 
     public static class RicfResult {
         private final ICovarianceMatrix covMatrix;
-        private DoubleMatrix2D shat;
-        private DoubleMatrix2D lhat;
-        private DoubleMatrix2D bhat;
-        private DoubleMatrix2D ohat;
-        private int iterations;
-        private double diff;
+        private final DoubleMatrix2D shat;
+        private final DoubleMatrix2D lhat;
+        private final DoubleMatrix2D bhat;
+        private final DoubleMatrix2D ohat;
+        private final int iterations;
+        private final double diff;
 
         public RicfResult(DoubleMatrix2D shat, DoubleMatrix2D lhat, DoubleMatrix2D bhat,
                           DoubleMatrix2D ohat, int iterations, double diff, ICovarianceMatrix covMatrix) {
@@ -905,7 +905,7 @@ public class Ricf {
     }
 
     public static class FitConGraphResult {
-        private DoubleMatrix2D shat;
+        private final DoubleMatrix2D shat;
         double deviance;
         int df;
         int iterations;

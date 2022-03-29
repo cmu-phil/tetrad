@@ -33,52 +33,52 @@ class RegressionPlane {
     /**
      * Summary string.
      */
-    private String summary;
+    private final String summary;
 
     /**
      * Variable names.
      */
-    private String[] varNames;
+    private final String[] varNames;
 
     /**
      * The number of data points.
      */
-    private int sampleSize;
+    private final int sampleSize;
 
     /**
      * The number of regressors.
      */
-    private int numRegressors;
+    private final int numRegressors;
 
     /**
      * The array of regression coefficients.
      */
-    private double[] coefs;
+    private final double[] coefs;
 
     /**
      * The array of coefT-statistics for the regression coefficients.
      */
-    private double[] coefT;
+    private final double[] coefT;
 
     /**
      * The array of coefP-values for the regression coefficients.
      */
-    private double[] coefP;
+    private final double[] coefP;
 
     /**
      * Standard errors of the coefficients
      */
-    private double[] coefSE;
+    private final double[] coefSE;
 
     /**
      * True iff this model assumes a zero intercept.
      */
-    private boolean zeroIntercept;
+    private final boolean zeroIntercept;
 
     /**
      * R square value.
      */
-    private double rSquare;
+    private final double rSquare;
 
     /**
      * Constructs a new LinRegrResult.

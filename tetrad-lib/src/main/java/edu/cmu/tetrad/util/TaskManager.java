@@ -7,7 +7,7 @@ package edu.cmu.tetrad.util;
  * @author Joseph Ramsey
  */
 public class TaskManager {
-    private static TaskManager instance = new TaskManager();
+    private static final TaskManager instance = new TaskManager();
 
     private boolean canceled;
 

@@ -48,29 +48,29 @@ public final class GeneralizedSemPm implements PM, TetradSerializable {
      *
      * @serial Cannot be null.
      */
-    private SemGraph graph;
+    private final SemGraph graph;
 
     /**
      * The list of all nodes (unmodifiable).
      *
      * @serial Cannot be null.
      */
-    private List<Node> nodes;
+    private final List<Node> nodes;
 
     /**
      * The latent and measured nodes.
      */
-    private List<Node> variableNodes;
+    private final List<Node> variableNodes;
 
     /**
      * The measured nodes.
      */
-    private List<Node> measuredNodes;
+    private final List<Node> measuredNodes;
 
     /**
      * The error nodes.
      */
-    private List<Node> errorNodes;
+    private final List<Node> errorNodes;
 
     /**
      * The freeParameters in the model, mapped to the nodes that they are associated with. Each parameter may
@@ -83,43 +83,43 @@ public final class GeneralizedSemPm implements PM, TetradSerializable {
      *
      * @serial Cannot be null.
      */
-    private Map<String, Set<Node>> referencedParameters;
+    private final Map<String, Set<Node>> referencedParameters;
 
     /**
      * The nodes of the model, variable nodes or error nodes, mapped to the other nodes that they are
      * associated with.
      */
-    private Map<Node, Set<Node>> referencedNodes;
+    private final Map<Node, Set<Node>> referencedNodes;
 
     /**
      * The map from variable nodes to equations.
      */
-    private Map<Node, Expression> nodeExpressions;
+    private final Map<Node, Expression> nodeExpressions;
 
     /**
      * The String representations of equations that were set.
      */
-    private Map<Node, String> nodeExpressionStrings;
+    private final Map<Node, String> nodeExpressionStrings;
 
     /**
      * Distributions from which initial values for freeParameters are drawn.
      */
-    private Map<String, Expression> parameterExpressions;
+    private final Map<String, Expression> parameterExpressions;
 
     /**
      * String representations of initial parameter distributions. A map from parameter names to expression strings.
      */
-    private Map<String, String> parameterExpressionStrings;
+    private final Map<String, String> parameterExpressionStrings;
 
     /**
      * Distributions from which initial values for freeParameters are drawn.
      */
-    private Map<String, Expression> parameterEstimationInitializationExpressions;
+    private final Map<String, Expression> parameterEstimationInitializationExpressions;
 
     /**
      * String representations of initial parameter distributions. A map from parameter names to expression strings.
      */
-    private Map<String, String> parameterEstimationInitializationExpressionStrings;
+    private final Map<String, String> parameterEstimationInitializationExpressionStrings;
 
     /**
      * The stored template for variables.
@@ -149,17 +149,17 @@ public final class GeneralizedSemPm implements PM, TetradSerializable {
     /**
      * A map from initial name strings to parameter templates.
      */
-    private Map<String, String> startsWithParametersTemplates;
+    private final Map<String, String> startsWithParametersTemplates;
 
     /**
      * A map from initial name strings to parameter templates.
      */
-    private Map<String, String> startsWithParametersEstimationInitializationTemplates;
+    private final Map<String, String> startsWithParametersEstimationInitializationTemplates;
 
     /**
      * A map from names to nodes, speedup.
      */
-    private Map<String, Node> namesToNodes = new HashMap<>();
+    private final Map<String, Node> namesToNodes = new HashMap<>();
 
     //===========================CONSTRUCTORS==========================//
 
@@ -991,7 +991,7 @@ public final class GeneralizedSemPm implements PM, TetradSerializable {
 //        return base + i;
     }
 
-    private Map<String, Integer> parameterSubscript = new HashMap<>();
+    private final Map<String, Integer> parameterSubscript = new HashMap<>();
 
     /**
      * @param node the given node, variable or error.

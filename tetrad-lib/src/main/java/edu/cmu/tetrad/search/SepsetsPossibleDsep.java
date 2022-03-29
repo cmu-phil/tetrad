@@ -33,13 +33,13 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class SepsetsPossibleDsep implements SepsetProducer {
-    private Graph graph;
-    private IndependenceTest independenceTest;
+    private final Graph graph;
+    private final IndependenceTest independenceTest;
     private int maxPathLength = 100;
     private IKnowledge knowledge = new Knowledge2();
     private int depth = -1;
     private boolean verbose = false;
-    private IndependenceTest test;
+    private final IndependenceTest test;
 
     public SepsetsPossibleDsep(Graph graph, IndependenceTest independenceTest, IKnowledge knowledge,
                                int depth, int maxPathLength) {

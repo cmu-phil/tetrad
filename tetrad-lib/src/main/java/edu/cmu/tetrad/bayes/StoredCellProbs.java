@@ -41,9 +41,9 @@ import java.util.*;
 public final class StoredCellProbs implements TetradSerializable, DiscreteProbs {
     static final long serialVersionUID = 23L;
 
-    private List<Node> variables;
-    private int[] parentDims;
-    private double[] probs;
+    private final List<Node> variables;
+    private final int[] parentDims;
+    private final double[] probs;
 
     //============================CONSTRUCTORS============================//
 
@@ -251,10 +251,6 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
         }
 
         return assertionTrue / conditionTrue;
-    }
-
-    public boolean isMissingValueCaseFound() {
-        return false;
     }
 
     public List<Node> getVariables() {

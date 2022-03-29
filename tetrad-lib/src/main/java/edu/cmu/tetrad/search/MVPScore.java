@@ -33,16 +33,16 @@ import java.util.List;
  */
 public class MVPScore implements Score {
 
-    private DataSet dataSet;
+    private final DataSet dataSet;
 
     // The variables of the continuousData set.
-    private List<Node> variables;
+    private final List<Node> variables;
 
     // Likelihood function
-    private MVPLikelihood likelihood;
+    private final MVPLikelihood likelihood;
 
     // Log number of instances
-    private double logn;
+    private final double logn;
 
     public MVPScore(DataSet dataSet, double structurePrior, int fDegree, boolean discretize) {
 

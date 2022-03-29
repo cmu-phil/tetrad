@@ -45,13 +45,13 @@ public class Mmhc implements GraphSearch {
     /**
      * The independence test used for the PC search.
      */
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
 
     /**
      * The maximum number of nodes conditioned on in the search.
      */
     private int depth = Integer.MAX_VALUE;
-    private DataSet data;
+    private final DataSet data;
     private IKnowledge knowledge = new Knowledge2();
 
     //=============================CONSTRUCTORS==========================//

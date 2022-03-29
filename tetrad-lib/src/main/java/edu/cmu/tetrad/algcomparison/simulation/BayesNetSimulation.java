@@ -23,7 +23,7 @@ import java.util.List;
 public class BayesNetSimulation implements Simulation {
 
     static final long serialVersionUID = 23L;
-    private RandomGraph randomGraph;
+    private final RandomGraph randomGraph;
     private BayesPm pm;
     private BayesIm im;
     private List<DataSet> dataSets = new ArrayList<>();

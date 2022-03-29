@@ -45,7 +45,7 @@ public final class Parameter implements TetradSerializable {
      * The default distribution from which initial values are drawn for this
      * distribution.
      */
-    private static Distribution DEFAULT_DISTRIBUTION =
+    private static final Distribution DEFAULT_DISTRIBUTION =
             new Normal(0.0, 1.0);
 
     /**
@@ -75,7 +75,7 @@ public final class Parameter implements TetradSerializable {
      * @serial Cannot be null. Should be ParamType.VAR if nodeA != nodeB and
      * ParamType.COVAR if nodeA == nodeB.
      */
-    private ParamType type;
+    private final ParamType type;
 
     /**
      * True iff this parameter is fixed in estimation.

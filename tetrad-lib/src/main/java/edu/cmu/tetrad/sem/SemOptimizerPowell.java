@@ -139,7 +139,7 @@ public class SemOptimizerPowell implements SemOptimizer {
          */
         private final SemIm sem;
 
-        private List<Parameter> freeParameters;
+        private final List<Parameter> freeParameters;
 
         /**
          * Constructs a new CoefFittingFunction for the given Sem.

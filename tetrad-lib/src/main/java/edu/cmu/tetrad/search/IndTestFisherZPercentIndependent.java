@@ -42,13 +42,13 @@ import static java.lang.Math.*;
  */
 public final class IndTestFisherZPercentIndependent implements IndependenceTest {
     private final List<Node> variables;
-    private List<DataSet> dataSets;
+    private final List<DataSet> dataSets;
     private double alpha;
     private double pValue = Double.NaN;
-    private int[] rows;
-    private List<Matrix> data;
-    private List<Matrix> ncov;
-    private Map<Node, Integer> variablesMap;
+    private final int[] rows;
+    private final List<Matrix> data;
+    private final List<Matrix> ncov;
+    private final Map<Node, Integer> variablesMap;
     private double percent = .75;
     private boolean fdr = true;
     private final ArrayList<RecursivePartialCorrelation> recursivePartialCorrelation;

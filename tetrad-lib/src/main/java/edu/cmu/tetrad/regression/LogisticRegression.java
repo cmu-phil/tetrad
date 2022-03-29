@@ -54,7 +54,7 @@ public class LogisticRegression implements TetradSerializable {
     /**
      * The data set that was supplied.
      */
-    private DataSet dataSet;
+    private final DataSet dataSet;
 
     /**
      * The default alpha level which may be specified otherwise in the GUI
@@ -64,7 +64,7 @@ public class LogisticRegression implements TetradSerializable {
     /**
      * The data converted into column major, to avoid unnecessary copying.
      */
-    private double[][] dataCols;
+    private final double[][] dataCols;
 
     private int[] rows;
 
@@ -390,18 +390,18 @@ public class LogisticRegression implements TetradSerializable {
         private final String[] sigMarker;
         private final double chiSq;
         private final double alpha;
-        private List<String> regressorNames;
-        private String target;
-        private int ny0;
-        private int ny1;
-        private int numRegressors;
-        private double[] coefs;
-        private double[] stdErrs;
-        private double[] probs;
-        private double[] xMeans;
-        private double[] xStdDevs;
-        private double intercept;
-        private double logLikelihood;
+        private final List<String> regressorNames;
+        private final String target;
+        private final int ny0;
+        private final int ny1;
+        private final int numRegressors;
+        private final double[] coefs;
+        private final double[] stdErrs;
+        private final double[] probs;
+        private final double[] xMeans;
+        private final double[] xStdDevs;
+        private final double intercept;
+        private final double logLikelihood;
 
 
         /**

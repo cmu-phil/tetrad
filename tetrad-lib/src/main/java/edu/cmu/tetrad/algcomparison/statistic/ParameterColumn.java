@@ -13,7 +13,7 @@ import edu.cmu.tetrad.graph.Graph;
 public class ParameterColumn implements Statistic {
     static final long serialVersionUID = 23L;
 
-    private String parameter;
+    private final String parameter;
 
     /**
      * @param parameter The name of the parameter to list. If this parameter

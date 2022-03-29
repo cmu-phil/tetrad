@@ -37,16 +37,16 @@ import cern.jet.math.Functions;
 public class ProximalGradient {
 
     // Factors to alter Lipshitz constant estimate L, used for stepsize t = 1/L
-    private double beta; //factor to increase L when Lipshitz violated
-    private double alpha; //factor to decrease L otherwise
-    private Algebra alg = new Algebra();
-    private DoubleFactory1D factory1D = DoubleFactory1D.dense;
+    private final double beta; //factor to increase L when Lipshitz violated
+    private final double alpha; //factor to decrease L otherwise
+    private final Algebra alg = new Algebra();
+    private final DoubleFactory1D factory1D = DoubleFactory1D.dense;
 
-    private boolean edgeConverge; //if this is true we look to stop optimization when the edge predictions stop changing
+    private final boolean edgeConverge; //if this is true we look to stop optimization when the edge predictions stop changing
     private int noEdgeChangeTol = 3; //number of iterations in a row with no edge changes before we break
 
-    private int printIter = 100;
-    private double backtrackTol = 1e-10;
+    private final int printIter = 100;
+    private final double backtrackTol = 1e-10;
 
 
     /**

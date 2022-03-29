@@ -45,7 +45,7 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
      *
      * @serial Cannot be null.
      */
-    private BayesIm bayesIm;
+    private final BayesIm bayesIm;
 
     /**
      * Stores evidence for all variables.

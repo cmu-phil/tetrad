@@ -19,24 +19,24 @@ import java.util.*;
  */
 public class Vicinity {
     //these are value ranges, used to constrain searches at the edges
-    private int xLow;
-    private int xHigh;
-    private int yLow;
-    private int yHigh;
-    private int zLow;
-    private int zHigh;
+    private final int xLow;
+    private final int xHigh;
+    private final int yLow;
+    private final int yHigh;
+    private final int zLow;
+    private final int zHigh;
 
     //these are the dimensions of the voxels
-    private double xDist;
-    private double yDist;
-    private double zDist;
+    private final double xDist;
+    private final double yDist;
+    private final double zDist;
 
 
-    private DataSet locationMap;
+    private final DataSet locationMap;
 
     //Vicinity4 just uses two maps, each from array to a set of edges
-    private Map<List<Integer>, Set<Edge>> Coords1 = new HashMap<>();
-    private Map<List<Integer>, Set<Edge>> Coords2 = new HashMap<>();
+    private final Map<List<Integer>, Set<Edge>> Coords1 = new HashMap<>();
+    private final Map<List<Integer>, Set<Edge>> Coords2 = new HashMap<>();
 
     public Vicinity(List<Edge> edges, DataSet locationMap, int xLow, int xHigh, int yLow, int yHigh, int zLow, int zHigh,
                     double xDist, double yDist, double zDist) {

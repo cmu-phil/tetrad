@@ -49,7 +49,7 @@ public class ConstantExpression implements Expression {
     /**
      * THe value of the expression.
      */
-    private double value;
+    private final double value;
 
 
     /**

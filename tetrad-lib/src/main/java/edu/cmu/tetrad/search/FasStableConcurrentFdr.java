@@ -56,7 +56,7 @@ public class FasStableConcurrentFdr implements IFas {
     /**
      * The independence test. This should be appropriate to the types
      */
-    private IndependenceTest test;
+    private final IndependenceTest test;
 
     /**
      * Specification of which edges are forbidden or required.
@@ -88,7 +88,7 @@ public class FasStableConcurrentFdr implements IFas {
     private Graph externalGraph;
 
     // Number formatter.
-    private NumberFormat nf = new DecimalFormat("0.00E0");
+    private final NumberFormat nf = new DecimalFormat("0.00E0");
 
     /**
      * Set to true if verbose output is desired.
@@ -96,14 +96,14 @@ public class FasStableConcurrentFdr implements IFas {
     private boolean verbose = false;
 
     // The concurrency pool.
-    private ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
+    private final ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
 
     /**
      * Where verbose output is sent.
      */
     private PrintStream out = System.out;
 
-    private int chunk = 100;
+    private final int chunk = 100;
 
     private boolean recordSepsets = true;
 
@@ -266,9 +266,9 @@ public class FasStableConcurrentFdr implements IFas {
         final List<Double> sorted = new ArrayList<>();
 
         class Depth0Task extends RecursiveTask<Boolean> {
-            private int chunk;
-            private int from;
-            private int to;
+            private final int chunk;
+            private final int from;
+            private final int to;
 
             public Depth0Task(int chunk, int from, int to) {
                 this.chunk = chunk;
@@ -333,9 +333,9 @@ public class FasStableConcurrentFdr implements IFas {
         final double cutoff = StatUtils.fdrCutoff(test.getAlpha(), sorted, false, true);
 
         class Depth0Task2 extends RecursiveTask<Boolean> {
-            private int chunk;
-            private int from;
-            private int to;
+            private final int chunk;
+            private final int from;
+            private final int to;
 
             public Depth0Task2(int chunk, int from, int to) {
                 this.chunk = chunk;
@@ -479,9 +479,9 @@ public class FasStableConcurrentFdr implements IFas {
         final List<Double> sorted = new ArrayList<>();
 
         class DepthTask extends RecursiveTask<Boolean> {
-            private int chunk;
-            private int from;
-            private int to;
+            private final int chunk;
+            private final int from;
+            private final int to;
 
             public DepthTask(int chunk, int from, int to) {
                 this.chunk = chunk;
@@ -563,9 +563,9 @@ public class FasStableConcurrentFdr implements IFas {
         System.out.println();
 
         class DepthTask2 extends RecursiveTask<Boolean> {
-            private int chunk;
-            private int from;
-            private int to;
+            private final int chunk;
+            private final int from;
+            private final int to;
 
             public DepthTask2(int chunk, int from, int to) {
                 this.chunk = chunk;

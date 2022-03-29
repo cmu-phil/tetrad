@@ -43,7 +43,7 @@ public final class KamadaKawaiLayout {
     /**
      * The graph being laid out.
      */
-    private Graph graph;
+    private final Graph graph;
 
     /**
      * The list of nodes used to construct d, p, k, and l.

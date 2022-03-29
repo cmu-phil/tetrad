@@ -32,7 +32,7 @@ import java.util.List;
  * Calculates the BDe score.
  */
 public class BDeScore implements LocalDiscreteScore {
-    private DataSet dataSet;
+    private final DataSet dataSet;
 
     public BDeScore(DataSet dataSet) {
         if (dataSet == null) {

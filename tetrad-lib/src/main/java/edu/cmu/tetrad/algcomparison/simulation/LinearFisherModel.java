@@ -27,7 +27,7 @@ public class LinearFisherModel implements Simulation, TakesData {
     static final long serialVersionUID = 23L;
     private List<DataSet> dataSets = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();
-    private RandomGraph randomGraph;
+    private final RandomGraph randomGraph;
     private List<Node> shuffledOrder;
     private List<DataModel> shocks = null;
 

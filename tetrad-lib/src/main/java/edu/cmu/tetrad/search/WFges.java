@@ -15,11 +15,11 @@ import java.util.*;
  */
 public class WFges implements GraphSearch {
 
-    private List<Node> searchVariables;
-    private Map<Node, List<Node>> variablesPerNode = new HashMap<>();
-    private Fges fges;
+    private final List<Node> searchVariables;
+    private final Map<Node, List<Node>> variablesPerNode = new HashMap<>();
+    private final Fges fges;
     private double penaltyDiscount;
-    private SemBicScore score;
+    private final SemBicScore score;
 
     public WFges(DataSet data) {
         if (data == null) throw new NullPointerException("Data was not provided.");

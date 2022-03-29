@@ -55,14 +55,14 @@ public final class BayesUpdaterClassifier
      *
      * @serial
      */
-    private BayesIm bayesIm;
+    private final BayesIm bayesIm;
 
     /**
      * The dataset to be classified.
      *
      * @serial
      */
-    private DataSet testData;
+    private final DataSet testData;
 
     /**
      * The percentage of correct estimates of the target variable.  This will be
@@ -100,7 +100,7 @@ public final class BayesUpdaterClassifier
      * "equals" method of DiscreteVariable.
      * @serial
      */
-    private List<Node> bayesImVars;
+    private final List<Node> bayesImVars;
 
     /**
      * @serial

@@ -139,8 +139,8 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
     public static class DefaultEvent implements TetradLoggerConfig.Event {
         static final long serialVersionUID = 23L;
 
-        private String id;
-        private String description;
+        private final String id;
+        private final String description;
 
 
         public DefaultEvent(String id, String description) {

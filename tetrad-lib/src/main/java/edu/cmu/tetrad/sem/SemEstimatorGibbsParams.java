@@ -41,7 +41,7 @@ public final class SemEstimatorGibbsParams implements TetradSerializable {
     private int numIterations;
     private double stretch;
 
-    private double tolerance;
+    private final double tolerance;
 
     //=============================CONSTRUCTORS============================//
 

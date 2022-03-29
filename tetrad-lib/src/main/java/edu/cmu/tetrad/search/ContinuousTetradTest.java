@@ -66,7 +66,7 @@ public final class ContinuousTetradTest implements TetradTest {
     private Matrix rho;
     private TestType sigTestType;
     private int sampleSize;
-    private DataSet dataSet;
+    private final DataSet dataSet;
     private OneFactorEstimator oneFactorEst4, oneFactorEst5, oneFactorEst6;
     private TwoFactorsEstimator twoFactorsEst4, twoFactorsEst5, twoFactorsEst6;
     private Matrix bufferMatrix;

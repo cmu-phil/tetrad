@@ -42,7 +42,7 @@ public class LinearFunction implements UpdateFunction {
      *
      * @serial
      */
-    private PolynomialFunction polynomialFunction;
+    private final PolynomialFunction polynomialFunction;
 
     //=========================CONSTRUCTORS=============================//
 

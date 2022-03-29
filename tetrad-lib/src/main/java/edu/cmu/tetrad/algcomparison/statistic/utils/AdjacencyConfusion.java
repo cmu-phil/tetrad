@@ -13,12 +13,12 @@ import java.util.Set;
  * @author jdramsey
  */
 public class AdjacencyConfusion {
-    private Graph truth;
-    private Graph est;
+    private final Graph truth;
+    private final Graph est;
     private int adjTp;
     private int adjFp;
     private int adjFn;
-    private int adjTn;
+    private final int adjTn;
 
     public AdjacencyConfusion(Graph truth, Graph est) {
         this.truth = truth;

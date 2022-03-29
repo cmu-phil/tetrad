@@ -32,7 +32,7 @@ import java.util.List;
  * Only the cumulativeProbability, density, setShift methods are implemented.
  */
 public class EmpiricalCdf implements RealDistribution {
-    private List<Double> data;
+    private final List<Double> data;
 
     public EmpiricalCdf(List<Double> data) {
         if (data == null) throw new NullPointerException();

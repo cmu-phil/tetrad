@@ -35,10 +35,10 @@ import java.util.*;
  * @author Ricardo Silva (rbas@cs.cmu.edu)
  */
 public final class MimAdjacencySearch {
-    private Graph graph;
-    private IndependenceTest ind;
-    private IKnowledge knowledge;
-    private List<Node> latents;
+    private final Graph graph;
+    private final IndependenceTest ind;
+    private final IKnowledge knowledge;
+    private final List<Node> latents;
     private int depth = Integer.MAX_VALUE;
 
     /**

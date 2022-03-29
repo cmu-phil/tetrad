@@ -40,7 +40,7 @@ import java.util.List;
  */
 public final class IndTestIndependenceFacts implements IndependenceTest {
 
-    private IndependenceFacts facts;
+    private final IndependenceFacts facts;
     private boolean verbose = false;
 
     public IndTestIndependenceFacts(IndependenceFacts facts) {

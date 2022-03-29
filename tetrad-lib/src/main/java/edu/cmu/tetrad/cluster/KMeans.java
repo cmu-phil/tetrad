@@ -91,7 +91,7 @@ public class KMeans implements ClusteringAlgorithm {
      * The dissimilarity metric being used. For K means, the metric must be
      * squared Euclidean. It's an assumption of the algorithm.
      */
-    private Dissimilarity metric = new SquaredErrorLoss();
+    private final Dissimilarity metric = new SquaredErrorLoss();
 
     /**
      * The number of centers (i.e. the number clusters) that the algorithm

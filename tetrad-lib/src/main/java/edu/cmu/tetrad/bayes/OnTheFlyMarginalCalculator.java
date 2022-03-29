@@ -49,14 +49,14 @@ public final class OnTheFlyMarginalCalculator
      *
      * @serial Cannot be null.
      */
-    private BayesPm bayesPm;
+    private final BayesPm bayesPm;
 
     /**
      * The array of nodes from the graph.  Order is important.
      *
      * @serial Cannot be null.
      */
-    private Node[] nodes;
+    private final Node[] nodes;
 
     /**
      * The list of parents for each node from the graph.  Order or nodes
@@ -80,7 +80,7 @@ public final class OnTheFlyMarginalCalculator
      *
      * @serial Cannot be null.
      */
-    private DataSet dataSet;
+    private final DataSet dataSet;
 
     /**
      * The evidence being updated on.

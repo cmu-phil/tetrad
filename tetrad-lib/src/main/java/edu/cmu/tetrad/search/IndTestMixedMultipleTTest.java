@@ -54,16 +54,16 @@ import java.util.*;
  * @author Augustus Mayo.
  */
 public class IndTestMixedMultipleTTest implements IndependenceTest {
-    private DataSet originalData;
-    private List<Node> searchVariables;
-    private DataSet internalData;
+    private final DataSet originalData;
+    private final List<Node> searchVariables;
+    private final DataSet internalData;
     private double alpha;
     private double lastP;
-    private Map<Node, List<Node>> variablesPerNode = new HashMap<>();
-    private LogisticRegression logisticRegression;
-    private RegressionDataset regression;
+    private final Map<Node, List<Node>> variablesPerNode = new HashMap<>();
+    private final LogisticRegression logisticRegression;
+    private final RegressionDataset regression;
     private boolean verbose = false;
-    private DoubleFactory2D factory2D = DoubleFactory2D.dense;
+    private final DoubleFactory2D factory2D = DoubleFactory2D.dense;
     private boolean flipLast;
     private boolean preferLinear = true;
 

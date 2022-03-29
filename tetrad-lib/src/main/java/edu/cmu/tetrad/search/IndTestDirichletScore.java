@@ -57,12 +57,12 @@ public final class IndTestDirichletScore implements IndependenceTest {
     /**
      * Formats as 0.0000.
      */
-    private static NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
     /**
      * Stores a reference to the dataset being analyzed.
      */
-    private DataSet dataSet;
+    private final DataSet dataSet;
 
     private PrintStream pValueLogger;
     private Map<Node, Integer> indexMap;
@@ -70,7 +70,7 @@ public final class IndTestDirichletScore implements IndependenceTest {
     private boolean verbose = true;
 
     private double bump;
-    private DirichletScore score;
+    private final DirichletScore score;
     private double samplePrior = 1;
     private double structurePrior = 1;
 

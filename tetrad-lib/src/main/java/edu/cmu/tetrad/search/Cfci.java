@@ -54,7 +54,7 @@ public final class Cfci implements GraphSearch {
     /**
      * The SepsetMap being constructed.
      */
-    private SepsetMap sepsets = new SepsetMap();
+    private final SepsetMap sepsets = new SepsetMap();
 
     /**
      * The background knowledge.
@@ -64,12 +64,12 @@ public final class Cfci implements GraphSearch {
     /**
      * The variables to search over (optional)
      */
-    private List<Node> variables = new ArrayList<>();
+    private final List<Node> variables = new ArrayList<>();
 
     /**
      * The independence test.
      */
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
 
     /**
      * flag for complete rule set, true if should use complete rule set, false otherwise.
@@ -114,7 +114,7 @@ public final class Cfci implements GraphSearch {
     /**
      * The logger to use.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
     private boolean verbose = false;
 

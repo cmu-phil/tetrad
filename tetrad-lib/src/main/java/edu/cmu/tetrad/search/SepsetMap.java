@@ -50,7 +50,7 @@ public final class SepsetMap implements TetradSerializable {
      */
     private Map<Set<Node>, List<Node>> sepsets = new ConcurrentHashMap<>();
     private Map<Set<Node>, Double> pValues = new ConcurrentHashMap<>();
-    private Map<Node, HashSet<Node>> parents = new HashMap<>();
+    private final Map<Node, HashSet<Node>> parents = new HashMap<>();
 //    private Set<Set<Node>> correlations;
 //    private boolean returnEmptyIfNotSet = false;
 

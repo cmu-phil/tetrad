@@ -27,7 +27,7 @@ import java.util.*;
 public class ConditionalGaussianSimulation implements Simulation {
 
     static final long serialVersionUID = 23L;
-    private RandomGraph randomGraph;
+    private final RandomGraph randomGraph;
     private List<DataSet> dataSets = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();
     private DataType dataType;
@@ -401,8 +401,8 @@ public class ConditionalGaussianSimulation implements Simulation {
 
     private class Combination {
 
-        private Parameter parameter;
-        private Set<VariableValues> paramValues;
+        private final Parameter parameter;
+        private final Set<VariableValues> paramValues;
 
         public Combination(Parameter parameter) {
             this.parameter = parameter;
@@ -435,8 +435,8 @@ public class ConditionalGaussianSimulation implements Simulation {
 
     private class VariableValues {
 
-        private DiscreteVariable variable;
-        private int value;
+        private final DiscreteVariable variable;
+        private final int value;
 
         public VariableValues(DiscreteVariable variable, int value) {
             this.variable = variable;

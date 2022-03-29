@@ -45,10 +45,10 @@ import static java.lang.Math.log;
 public class SemBicScoreImages3 implements ISemBicScore, Score {
 
     // The variables of the covariance matrix.
-    private List<Node> variables;
+    private final List<Node> variables;
 
     // Sample sizes of each data set.
-    private int[] sampleSizes;
+    private final int[] sampleSizes;
 
     // Total sample size.
     private final int N;
@@ -60,7 +60,7 @@ public class SemBicScoreImages3 implements ISemBicScore, Score {
     private boolean verbose = false;
 
     // Covariances for each of the input data sets.
-    private List<Matrix> covs = new ArrayList<>();
+    private final List<Matrix> covs = new ArrayList<>();
 
     /**
      * Constructs the score using a covariance matrix.

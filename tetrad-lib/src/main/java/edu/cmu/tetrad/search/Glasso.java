@@ -101,24 +101,24 @@ public class Glasso {
          * solution covariance matrix estimate (ia = 0)
          * (not used for ia != 0)
          */
-        private DoubleMatrix2D ww;
+        private final DoubleMatrix2D ww;
 
         /**
          * solution inverse covariance matrix estimate (ia = 0)
          * = off-diagonal lasso coefficients (ia != 0)
          */
-        private DoubleMatrix2D wwi;
+        private final DoubleMatrix2D wwi;
 
         /**
          * number of iterations
          */
-        private int niter;
+        private final int niter;
 
         /**
          * average absolute parameter change at termination
          * (not used for ia != 0)
          */
-        private double del;
+        private final double del;
 
         public Result(DoubleMatrix2D ww, DoubleMatrix2D wwi, int niter, double del) {
             this.ww = ww;

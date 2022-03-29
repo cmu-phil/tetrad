@@ -43,14 +43,14 @@ public final class SemEvidence implements TetradSerializable {
      *
      * @serial
      */
-    private SemIm semIm;
+    private final SemIm semIm;
 
     /**
      * A proposition stating what we know for each variable.
      *
      * @serial Cannot be null.
      */
-    private SemProposition proposition;
+    private final SemProposition proposition;
 
     /**
      * A manipulation indicating how the bayes Im should be manipulated before
@@ -58,7 +58,7 @@ public final class SemEvidence implements TetradSerializable {
      *
      * @serial
      */
-    private SemManipulation manipulation;
+    private final SemManipulation manipulation;
 
     //=============================CONSTRUCTORS=========================//
 

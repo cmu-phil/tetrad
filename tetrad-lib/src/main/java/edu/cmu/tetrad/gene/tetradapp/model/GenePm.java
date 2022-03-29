@@ -40,7 +40,7 @@ public abstract class GenePm implements TetradSerializable {
      *
      * @serial Cannot be null.
      */
-    private LagGraph lagGraph;
+    private final LagGraph lagGraph;
 
     /**
      * Construct a new gene pm, wrapping the given lag workbench.

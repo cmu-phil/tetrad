@@ -147,7 +147,7 @@ public final class DiscreteVariable extends AbstractVariable
      */
     private transient PropertyChangeSupport pcs;
 
-    private Map<String, Object> attributes = new HashMap<>();
+    private final Map<String, Object> attributes = new HashMap<>();
 
     //=========================CONSTRUCTORS=============================//
 

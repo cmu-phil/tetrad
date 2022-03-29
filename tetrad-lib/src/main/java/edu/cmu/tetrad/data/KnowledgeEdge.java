@@ -37,12 +37,12 @@ public final class KnowledgeEdge implements TetradSerializable {
     /**
      * @serial
      */
-    private String from;
+    private final String from;
 
     /**
      * @serial
      */
-    private String to;
+    private final String to;
 
     //===============================CONSTRUCTORS=======================//
 

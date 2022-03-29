@@ -32,14 +32,14 @@ import java.util.List;
  * Calculates the BDeu score.
  */
 public class DirichletScore implements LocalDiscreteScore, Score {
-    private List<Node> variables;
-    private int[][] data;
-    private int sampleSize;
+    private final List<Node> variables;
+    private final int[][] data;
+    private final int sampleSize;
 
     private double samplePrior = 1;
     private double structurePrior = 1;
 
-    private int[] numCategories;
+    private final int[] numCategories;
 
     private double lastBumpThreshold = 0.0;
 

@@ -42,7 +42,7 @@ public class Pc implements GraphSearch {
     /**
      * The independence test used for the PC search.g
      */
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
 
     /**
      * Forbidden and required edges for the search.
@@ -78,7 +78,7 @@ public class Pc implements GraphSearch {
     /**
      * The logger for this class. The config needs to be set.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
     /**
      * In an enumeration of triple types, these are the collider triples.

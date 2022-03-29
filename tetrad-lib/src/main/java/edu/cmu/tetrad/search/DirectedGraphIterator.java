@@ -38,7 +38,7 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 public class DirectedGraphIterator {
-    private List<Graph> graphs = new ArrayList<>();
+    private final List<Graph> graphs = new ArrayList<>();
     private int index = -1;
 
 

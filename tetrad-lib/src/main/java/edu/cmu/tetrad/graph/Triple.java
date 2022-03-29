@@ -38,9 +38,9 @@ public final class Triple implements TetradSerializable {
     // Note: Switching all uses of Underline to Triple, since they did the
     // same thing, and this allows for some useful generalizations, especially
     // since for triples it is always the case that (x, y, z) = (z, y, x).
-    private Node x;
-    private Node y;
-    private Node z;
+    private final Node x;
+    private final Node y;
+    private final Node z;
 
     /**
      * Constructs a triple of nodes.

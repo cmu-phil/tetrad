@@ -11,8 +11,8 @@ import java.util.Map;
  * @author jdramsey
  */
 public class Statistics {
-    private List<Statistic> statistics = new ArrayList<>();
-    private Map<Statistic, Double> weights = new HashMap<>();
+    private final List<Statistic> statistics = new ArrayList<>();
+    private final Map<Statistic, Double> weights = new HashMap<>();
 
     public Statistics() {
     }

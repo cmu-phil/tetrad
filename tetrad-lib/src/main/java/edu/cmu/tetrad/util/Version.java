@@ -45,7 +45,7 @@ public class Version implements TetradSerializable {
      *
      * @serial Range greater than or equal to 0.
      */
-    private int majorVersion;
+    private final int majorVersion;
 
     /**
      * The minor version number. In release a.b.c-d, b. This number increases
@@ -54,7 +54,7 @@ public class Version implements TetradSerializable {
      *
      * @serial Range greater than or equal to 0.
      */
-    private int minorVersion;
+    private final int minorVersion;
 
     /**
      * The minor release number. In release a.b.c-d, c. This number increases
@@ -63,7 +63,7 @@ public class Version implements TetradSerializable {
      *
      * @serial Range greater than or equal to 0.
      */
-    private int minorSubversion;
+    private final int minorSubversion;
 
     /**
      * The incremental release number. In release a.b.c-d, d. This number
@@ -76,7 +76,7 @@ public class Version implements TetradSerializable {
      *
      * @serial Range greater than or equal to 0.
      */
-    private int incrementalRelease;
+    private final int incrementalRelease;
 
     //===========================CONSTRUCTORS============================//
 

@@ -47,18 +47,18 @@ public class RegressionCovariance implements Regression {
     /**
      * The correlation matrix.
      */
-    private CorrelationMatrix correlations;
+    private final CorrelationMatrix correlations;
 
     /**
      * 2
      * The standard deviations for the variable in <code>correlations</code>.
      */
-    private Vector sd;
+    private final Vector sd;
 
     /**
      * The means for the variables in <code>correlations</code>. May be null.
      */
-    private Vector means;
+    private final Vector means;
 
     /**
      * The alpha level, determining which coefficients will be considered

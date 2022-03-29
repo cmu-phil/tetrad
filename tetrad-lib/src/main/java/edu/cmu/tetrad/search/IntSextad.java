@@ -8,12 +8,12 @@ import java.util.List;
 public class IntSextad implements TetradSerializable {
     static final long serialVersionUID = 23L;
 
-    private int i;
-    private int j;
-    private int k;
-    private int l;
-    private int m;
-    private int n;
+    private final int i;
+    private final int j;
+    private final int k;
+    private final int l;
+    private final int m;
+    private final int n;
 
     public IntSextad(int i, int j, int k, int l, int m, int n) {
         testDistinctness(i, j, k, l, m, n);

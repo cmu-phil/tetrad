@@ -47,30 +47,30 @@ public class BCInference {
 
     private int[] counts;
 
-    private double[] logfact;
+    private final double[] logfact;
 
     private int[][] parents;
 
     /**
      * Maximum cases (samples) to read from a text file.
      */
-    private int maxCases;
+    private final int maxCases;
 
     /**
      * Maximum number of measured nodes.
      */
-    private int maxNodes;
+    private final int maxNodes;
 
     private int maxParents;
 
     /**
      * Max value per node.
      */
-    private int maxValues;
+    private final int maxValues;
 
     private int maxCells;
 
-    private int maxLogFact;
+    private final int maxLogFact;
 
     private int countsTreePtr;
 
@@ -78,15 +78,15 @@ public class BCInference {
 
     private int numberOfNodes;
 
-    private int numberOfCases;
+    private final int numberOfCases;
 
-    private int[][] cases;
+    private final int[][] cases;
 
-    private int[] nodeDimension;
+    private final int[] nodeDimension;
 
-    private int scoreFn;
+    private final int scoreFn;
 
-    private double[][] scores;
+    private final double[][] scores;
 
     private int numberOfScores;
 

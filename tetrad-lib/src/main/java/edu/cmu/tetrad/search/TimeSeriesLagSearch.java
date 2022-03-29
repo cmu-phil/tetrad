@@ -42,7 +42,7 @@ public final class TimeSeriesLagSearch implements GraphSearch {
     /**
      * The independence test used for the PC search.
      */
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
 
     /**
      * Forbidden and required edges for the search.
@@ -52,7 +52,7 @@ public final class TimeSeriesLagSearch implements GraphSearch {
     /**
      * The maximum number of nodes conditioned on in the search.
      */
-    private int depth = 0;
+    private final int depth = 0;
 
     /**
      * The graph that's constructed during the search.

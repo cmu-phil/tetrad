@@ -34,12 +34,12 @@ import java.util.List;
 public class Sextad implements TetradSerializable {
     static final long serialVersionUID = 23L;
 
-    private Node i;
-    private Node j;
-    private Node k;
-    private Node l;
-    private Node m;
-    private Node n;
+    private final Node i;
+    private final Node j;
+    private final Node k;
+    private final Node l;
+    private final Node m;
+    private final Node n;
 
     public Sextad(Node i, Node j, Node k, Node l, Node m, Node n) {
         testDistinctness(i, j, k, l, m, n);

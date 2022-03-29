@@ -29,7 +29,7 @@ import static java.lang.Math.log;
 
 public class RBExperiments {
 
-    private int depth = 5;
+    private final int depth = 5;
     private String directory;
 
     private static class MapUtil {

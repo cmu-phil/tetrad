@@ -38,7 +38,7 @@ public final class CellTableProbs implements DiscreteProbs {
     /**
      * The data set that this is a cell count table for.
      */
-    private DataSet dataSet;
+    private final DataSet dataSet;
 
     /**
      * An array whose length is the number of dimensions of the cell and whose
@@ -60,12 +60,6 @@ public final class CellTableProbs implements DiscreteProbs {
      * The total number of points in the cell count table.
      */
     private int numPoints = 0;
-
-    /**
-     * Indicates whether bounds on coordinate values are explicitly enforced.
-     * This may slow down loops.
-     */
-    private boolean boundsEnforced = true;
 
     /**
      * True iff a missing value case was found.
@@ -269,7 +263,7 @@ public final class CellTableProbs implements DiscreteProbs {
      * True iff bounds checking is performed on variable values indices.
      */
     private boolean isBoundsEnforced() {
-        return boundsEnforced;
+        return true;
     }
 
 //    /**
@@ -337,9 +331,6 @@ public final class CellTableProbs implements DiscreteProbs {
         return -1;
     }
 
-    public boolean isMissingValueCaseFound() {
-        return missingValueCaseFound;
-    }
 }
 
 

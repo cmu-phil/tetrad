@@ -207,7 +207,7 @@ public class IonHittingSet {
      * parent's label, to be used for a more efficient run of findNextUCSigma
      */
     private static class HsNode {
-        private GraphChange path;
+        private final GraphChange path;
         private int label;
 
         public HsNode(GraphChange path, int label) {

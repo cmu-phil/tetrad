@@ -47,10 +47,10 @@ import java.util.List;
  */
 public class PossibleDsepFci {
 
-    private Graph graph;
-    private IndependenceTest test;
+    private final Graph graph;
+    private final IndependenceTest test;
 
-    private SepsetMap sepset;
+    private final SepsetMap sepset;
     private int depth = -1;
 
     /**
@@ -58,7 +58,7 @@ public class PossibleDsepFci {
      */
     private IKnowledge knowledge = new Knowledge2();
     private int maxReachablePathLength = -1;
-    private CorrelationMatrix corr;
+    private final CorrelationMatrix corr;
 
     /**
      * Creates a new SepSet and assumes that none of the variables have yet been checked.

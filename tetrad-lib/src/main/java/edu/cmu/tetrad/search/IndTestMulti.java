@@ -46,12 +46,12 @@ public final class IndTestMulti implements IndependenceTest {
     /**
      * The independence test associated with each data set.
      */
-    private List<IndependenceTest> independenceTests;
+    private final List<IndependenceTest> independenceTests;
 
     /**
      * Pooling method
      */
-    private ResolveSepsets.Method method;
+    private final ResolveSepsets.Method method;
     private double p = Double.NaN;
     private boolean verbose = false;
 

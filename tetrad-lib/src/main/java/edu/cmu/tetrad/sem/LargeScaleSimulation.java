@@ -55,8 +55,8 @@ public final class LargeScaleSimulation {
     private double[] errorVars;
     private double[] means;
     private transient TetradAlgebra algebra;
-    private List<Node> variableNodes;
-    private Graph graph;
+    private final List<Node> variableNodes;
+    private final Graph graph;
     private double coefLow = 0.0;
     private double coefHigh = 1.0;
     private double varLow = 1.0;
@@ -128,8 +128,8 @@ public final class LargeScaleSimulation {
 
             private final int from;
             private final int to;
-            private double[][] all;
-            private int chunk;
+            private final double[][] all;
+            private final int chunk;
 
             public SimulateTask(int from, int to, double[][] all, int chunk) {
                 this.from = from;

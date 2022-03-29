@@ -33,15 +33,13 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Identifiability
- * based on RowSummingExactUpdater
+ * Identifiability, based on RowSummingExactUpdater
  * <p>
  * Jin Tian and Judea Pearl.  On the Identification of Causal Effects. Technical Report R-290-L, Department of Computer
  * Science, University of California, Los Angeles, 2002.
  *
  * @author Choh Man Teng
  */
-
 public final class Identifiability implements ManipulatingBayesUpdater {
     static final long serialVersionUID = 23L;
 
@@ -50,7 +48,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
      *
      * @serial Cannot be null.
      */
-    private BayesIm bayesIm;
+    private final BayesIm bayesIm;
 
     /**
      * Stores evidence for all variables.
@@ -71,8 +69,6 @@ public final class Identifiability implements ManipulatingBayesUpdater {
 
 
     //==============================CONSTRUCTORS===========================//
-
-    /////////////////////////////////////////////////////////////////
 
     /**
      * Constructs a new updater for the given Bayes net.
@@ -155,7 +151,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     }
 
     /////////////////////////////////////////////////////////////////
-    public final void setEvidence(Evidence evidence) {
+    public void setEvidence(Evidence evidence) {
         if (evidence == null) {
             throw new NullPointerException();
         }
@@ -174,10 +170,6 @@ public final class Identifiability implements ManipulatingBayesUpdater {
 
         this.manipulatedBayesIm = createdUpdatedBayesIm(manipulatedPm);
         /*
-        this.manipulatedBayesIm = bayesIm;
-		this.bayesImProbs = new BayesImProbs(manipulatedBayesIm);
-		 */
-		/*
       The BayesIm after update, if this was calculated.
 
       */
@@ -221,22 +213,9 @@ public final class Identifiability implements ManipulatingBayesUpdater {
         // P_t(s) is identifiable and can be computed directly using
         //    any other regular updater (here: RowSummingExactUpdater)
         if (tNodesTmp.size() == 0) {
-			/*
-			 ManipulatingBayesUpdater rowSumUpdater = 
-				new RowSummingExactUpdater(bayesIm, Evidence.tautology(bayesIm));
-			return rowSumUpdater.getJointMarginal(sVariables, sValues);
-			 */
 
             Proposition prop = Proposition.tautology(bayesIm);
             for (int i = 0; i < sVariables.length; i++) {
-				/*
-				int[] variableValues = getVariableValues(i);
-				 
-				String nodeName = getVariable().get(j).getNode();
-				Node node = bayesIm.getNode(nodeName);
-				targetProp.setCategory(bayesIm.getNodeIndex(node), 
-									   variableValues[j]);		
-				*/
                 prop.setCategory(sVariables[i], sValues[i]);
             }
 
@@ -411,10 +390,6 @@ public final class Identifiability implements ManipulatingBayesUpdater {
         if (debug) {
             System.out.println("------ here1 -------------");
             System.out.println(bayesIm.getDag());
-            // watch out!  tNodes may be empty
-            //System.out.println(tNodes.get(0));
-            //System.out.println(dag.getNodes().get(1));
-            //System.out.println(tNodes.get(0).equals(dag.getNodes().get(1)));
         }
 
         dag.removeNodes(tNodes);
@@ -586,21 +561,6 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     /**
      * Set the target proposition.
      */
-	/*
-	public final void setTargetProp(Proposition targetProp) {
-        if (targetProp == null) {
-            throw new NullPointerException();
-        }
-
-		if (!targetProp.getVariableSource().getVariable().equals(bayesIm.getVariable())) {
-            throw new IllegalArgumentException("The variable list for the " +
-				"given bayesIm must be compatible with the variable list " +
-				"for the targetProp.");
-        }
-		
-        this.targetProp	= targetProp;
-	}
-	 */
 
     //==============================PRIVATE METHODS=======================//
 
@@ -968,9 +928,8 @@ public final class Identifiability implements ManipulatingBayesUpdater {
                 Node node = updatedGraph.getNode(evidence.getNode(i).getName());
                 List<Node> parents = updatedGraph.getParents(node);
 
-                for (Object parent1 : parents) {
-                    Node parent = (Node) parent1;
-                    updatedGraph.removeEdge(node, parent);
+                for (Node parent1 : parents) {
+                    updatedGraph.removeEdge(node, parent1);
                 }
             }
         }
@@ -989,9 +948,6 @@ public final class Identifiability implements ManipulatingBayesUpdater {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

@@ -49,12 +49,12 @@ public final class Proposition implements TetradSerializable {
     /**
      * @serial Cannot be null.
      */
-    private VariableSource variableSource;
+    private final VariableSource variableSource;
 
     /**
      * @serial Cannot be null.
      */
-    private boolean[][] allowedCategories;
+    private final boolean[][] allowedCategories;
 
     //===========================CONSTRUCTORS===========================//
 

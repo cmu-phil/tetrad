@@ -46,12 +46,12 @@ import java.util.concurrent.TimeUnit;
  */
 public final class SampleVcpcFast implements GraphSearch {
 
-    private int NTHREDS = Runtime.getRuntime().availableProcessors() * 5;
+    private final int NTHREDS = Runtime.getRuntime().availableProcessors() * 5;
 
     /**
      * The independence test used for the PC search.
      */
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
 
 
     /**
@@ -104,7 +104,7 @@ public final class SampleVcpcFast implements GraphSearch {
     /**
      * The logger for this class. The config needs to be set.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
     /**
      * The sepsets.
@@ -128,22 +128,22 @@ public final class SampleVcpcFast implements GraphSearch {
      */
     private IndependenceFacts facts = null;
 
-    private List<Node> variables;
+    private final List<Node> variables;
 
-    private Map<Node, Integer> indexMap;
-    private Map<String, Node> nameMap;
-    private DataSet dataSet;
-    private ICovarianceMatrix covMatrix;
+    private final Map<Node, Integer> indexMap;
+    private final Map<String, Node> nameMap;
+    private final DataSet dataSet;
+    private final ICovarianceMatrix covMatrix;
 
     private SemPm semPm = null;
     private SemIm semIm = null;
 
-    private Map<Node, Node> nodesToVariables;
+    private final Map<Node, Node> nodesToVariables;
 
     /**
      * The map from variables to nodes.
      */
-    private Map<Node, Node> variablesToNodes;
+    private final Map<Node, Node> variablesToNodes;
 
 
     //=============================CONSTRUCTORS==========================//

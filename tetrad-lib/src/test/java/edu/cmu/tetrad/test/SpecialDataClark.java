@@ -29,12 +29,12 @@ import static java.lang.Math.abs;
  */
 public class SpecialDataClark implements Simulation {
     static final long serialVersionUID = 23L;
-    private RandomGraph randomGraph;
+    private final RandomGraph randomGraph;
     private BayesPm pm;
     private BayesIm im;
     private List<DataSet> dataSets = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();
-    private List<BayesIm> ims = new ArrayList<>();
+    private final List<BayesIm> ims = new ArrayList<>();
 
     public SpecialDataClark(RandomGraph graph) {
         this.randomGraph = graph;

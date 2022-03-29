@@ -39,70 +39,70 @@ public class LogisticRegressionResult implements TetradSerializable {
     /**
      * String representation of the result
      */
-    private String result;
+    private final String result;
 
 
     /**
      * The variables.
      */
-    private String[] variableNames;
+    private final String[] variableNames;
 
 
     /**
      * The target.
      */
-    private String target;
+    private final String target;
 
     /**
      * The number of data points with target = 0.
      */
-    private int ny0;
+    private final int ny0;
 
     /**
      * The number of data points with target = 1.
      */
-    private int ny1;
+    private final int ny1;
 
 
     /**
      * The number of regressors.
      */
-    private int numRegressors;
+    private final int numRegressors;
 
     /**
      * The array of regression coefficients.
      */
-    private double[] coefs;
+    private final double[] coefs;
 
     /**
      * The array of standard errors for the regression coefficients.
      */
-    private double[] stdErrs;
+    private final double[] stdErrs;
 
     /**
      * The array of coefP-values for the regression coefficients.
      */
-    private double[] probs;
+    private final double[] probs;
 
 
     /**
      * THe array of means.
      */
-    private double[] xMeans;
+    private final double[] xMeans;
 
 
     /**
      * The array of standard devs.
      */
-    private double[] xStdDevs;
+    private final double[] xStdDevs;
 
 
-    private double intercept;
+    private final double intercept;
 
     /**
      * The log likelyhood of the regression
      */
-    private double logLikelihood;
+    private final double logLikelihood;
 
 
     /**

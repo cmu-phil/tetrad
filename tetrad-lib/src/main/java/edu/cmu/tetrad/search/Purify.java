@@ -72,8 +72,8 @@ public class Purify {
     /**
      * The logger for this class. The config needs to be set.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
-    private List<Node> variables;
+    private final TetradLogger logger = TetradLogger.getInstance();
+    private final List<Node> variables;
 
 
     /*********************************************************

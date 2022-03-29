@@ -36,15 +36,15 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 public final class BayesProperties {
-    private DataSet dataSet;
+    private final DataSet dataSet;
     private double chisq;
     private double dof;
     private double bic;
     private double likelihood;
-    private List<Node> variables;
-    private int[][] data;
-    private int sampleSize;
-    private int[] numCategories;
+    private final List<Node> variables;
+    private final int[][] data;
+    private final int sampleSize;
+    private final int[] numCategories;
 
     public BayesProperties(DataSet dataSet) {
         if (dataSet == null) {
@@ -328,8 +328,8 @@ public final class BayesProperties {
     }
 
     private class Ret {
-        private double lik;
-        private int dof;
+        private final double lik;
+        private final int dof;
 
         public Ret(double lik, int dof) {
             this.lik = lik;

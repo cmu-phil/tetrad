@@ -44,12 +44,12 @@ abstract class AbstractExpression implements Expression {
     /**
      * The position of the token--infix or prefix or both.
      */
-    private ExpressionDescriptor.Position position;
+    private final ExpressionDescriptor.Position position;
 
     /**
      * The token--for example, + or cos.
      */
-    private String token;
+    private final String token;
 
     public AbstractExpression(String token, ExpressionDescriptor.Position position, Expression... expressions) {
         this.position = position;

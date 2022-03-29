@@ -19,19 +19,19 @@ import java.util.*;
 public class AdLeafTree {
 
     // The data set the tree is for.
-    private DataSet dataSet;
+    private final DataSet dataSet;
 
     // Contains the root of the tree.
     private List<Vary> baseCase;
 
     // Indices of variables.
-    private Map<Node, Integer> nodesHash;
+    private final Map<Node, Integer> nodesHash;
 
     // Discrete data only.
-    private int[][] discreteData;
+    private final int[][] discreteData;
 
     // Dimensions of the discrete variables (otherwise 0).
-    private int[] dims;
+    private final int[] dims;
 
     public AdLeafTree(DataSet dataSet) {
         this.dataSet = dataSet;

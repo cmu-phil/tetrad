@@ -15,12 +15,12 @@ import java.util.*;
  */
 public class WGfci implements GraphSearch {
 
-    private List<Node> searchVariables;
-    private Map<Node, List<Node>> variablesPerNode = new HashMap<>();
-    private GFci gfci;
+    private final List<Node> searchVariables;
+    private final Map<Node, List<Node>> variablesPerNode = new HashMap<>();
+    private final GFci gfci;
     private double alpha;
-    private IndependenceTest test;
-    private SemBicScore score;
+    private final IndependenceTest test;
+    private final SemBicScore score;
 
     public WGfci(DataSet data) {
         this.searchVariables = data.getVariables();

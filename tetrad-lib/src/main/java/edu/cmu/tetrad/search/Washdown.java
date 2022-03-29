@@ -66,8 +66,8 @@ public class Washdown {
 
     private ICovarianceMatrix cov;
     private DataSet dataSet;
-    private List<Node> variables;
-    private double alpha;
+    private final List<Node> variables;
+    private final double alpha;
 
     public Washdown(ICovarianceMatrix cov, double alpha) {
         this.cov = cov;

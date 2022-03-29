@@ -71,33 +71,33 @@ public class MeasurementSimulator implements TetradSerializable {
     // the simulation is performed. Note that all of these parameters
     // are set to their default values as given in the spec.
 
-    private int numDishes = 1;
+    private final int numDishes = 1;
 
-    private int numCellsPerDish = 10000;
+    private final int numCellsPerDish = 10000;
 
-    private int stepsGenerated = 4;
+    private final int stepsGenerated = 4;
 
-    private int firstStepStored = 1;
+    private final int firstStepStored = 1;
 
-    private int interval = 1;
+    private final int interval = 1;
 
-    private boolean rawDataSaved = false;
+    private final boolean rawDataSaved = false;
 
-    private boolean measuredDataSaved = true;
+    private final boolean measuredDataSaved = true;
 
-    private boolean initSync = true;
+    private final boolean initSync = true;
 
-    private double dishDishVariability = 10.0;
+    private final double dishDishVariability = 10.0;
 
-    private int numSamplesPerDish = 4;
+    private final int numSamplesPerDish = 4;
 
-    private double sampleSampleVariability = 0.025;
+    private final double sampleSampleVariability = 0.025;
 
-    private double chipChipVariability = 0.1;
+    private final double chipChipVariability = 0.1;
 
-    private double pixelDigitalization = 0.025;
+    private final double pixelDigitalization = 0.025;
 
-    private boolean antilogCalculated = false;
+    private final boolean antilogCalculated = false;
 
     // Constructed parameters available for retrieval after data has
     // been simulated.
@@ -130,7 +130,7 @@ public class MeasurementSimulator implements TetradSerializable {
      */
     private int cellNumber = -1;
 
-    private boolean includeDishAndChipColumns = true;
+    private final boolean includeDishAndChipColumns = true;
 
     //=============================CONSTRUCTORS============================//
 

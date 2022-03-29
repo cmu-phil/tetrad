@@ -35,13 +35,13 @@ public class OrderedPair<E> implements TetradSerializable, TetradSerializableExc
     /**
      * The "First" node.
      */
-    private E first;
+    private final E first;
 
 
     /**
      * The "second" node.
      */
-    private E second;
+    private final E second;
 
 
     public OrderedPair(E first, E second) {

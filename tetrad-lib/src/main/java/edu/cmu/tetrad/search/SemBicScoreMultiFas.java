@@ -43,19 +43,19 @@ import java.util.*;
 public class SemBicScoreMultiFas implements ISemBicScore, Score {
 
     // The covariance matrix.
-    private List<SemBicScore> semBicScores;
+    private final List<SemBicScore> semBicScores;
 
     // The variables of the covariance matrix.
-    private List<Node> variables;
+    private final List<Node> variables;
 
-    private int sampleSize;
+    private final int sampleSize;
 
     // The penalty penaltyDiscount.
     private double penaltyDiscount = 2.0;
 
     // True if linear dependencies should return NaN for the score, and hence be
     // ignored by FGES
-    private boolean ignoreLinearDependent = false;
+    private final boolean ignoreLinearDependent = false;
 
     // The printstream output should be sent to.
     private PrintStream out = System.out;
@@ -64,11 +64,11 @@ public class SemBicScoreMultiFas implements ISemBicScore, Score {
     private boolean verbose = false;
 
     // Variables that caused computational problems and so are to be avoided.
-    private Set<Integer> forbidden = new HashSet<>();
+    private final Set<Integer> forbidden = new HashSet<>();
 
-    private Map<String, Integer> indexMap;
+    private final Map<String, Integer> indexMap;
 
-    private Map<Score, ICovarianceMatrix> covMap;
+    private final Map<Score, ICovarianceMatrix> covMap;
 
     /**
      * Constructs the score using a covariance matrix.

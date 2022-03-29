@@ -54,14 +54,14 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
      *
      * @serial Cannot be null; must be evidence.getEstIm().
      */
-    private BayesIm bayesIm;
+    private final BayesIm bayesIm;
 
     /**
      * The evidence updated on.
      *
      * @serial Cannot be null.
      */
-    private Evidence evidence;
+    private final Evidence evidence;
 
     /**
      * Stores probs that change with respect to the underlying bayesIm,
@@ -69,7 +69,7 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
      *
      * @serial Cannot be null.
      */
-    private double[][][] changedProbs;
+    private final double[][][] changedProbs;
 
     /**
      * A boolean array that is true at a position if the node at that index is
@@ -77,7 +77,7 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
      *
      * @serial Cannot be null.
      */
-    private boolean[] affectedVars;
+    private final boolean[] affectedVars;
 
     //===========================CONSTRUCTORS===========================//
 

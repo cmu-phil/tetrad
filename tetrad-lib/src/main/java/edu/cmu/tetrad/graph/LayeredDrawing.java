@@ -38,7 +38,7 @@ public final class LayeredDrawing {
     /**
      * The graph being laid out.
      */
-    private Graph graph;
+    private final Graph graph;
 
     //==============================CONSTRUCTORS===========================//
 

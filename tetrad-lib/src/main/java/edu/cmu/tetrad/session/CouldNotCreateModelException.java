@@ -29,7 +29,7 @@ package edu.cmu.tetrad.session;
  * @author Joseph Ramsey
  */
 public class CouldNotCreateModelException extends Exception {
-    private Class modelClass;
+    private final Class modelClass;
 
     public CouldNotCreateModelException(Class modelClass) {
         this.modelClass = modelClass;

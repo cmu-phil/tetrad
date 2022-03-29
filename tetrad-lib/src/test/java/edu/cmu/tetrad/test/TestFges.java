@@ -38,7 +38,10 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.*;
-import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.TextTable;
 import edu.pitt.csb.mgm.MGM;
 import edu.pitt.csb.mgm.MixedUtils;
 import edu.pitt.dbmi.data.reader.Delimiter;
@@ -61,7 +64,7 @@ import static org.junit.Assert.assertTrue;
 public class TestFges {
 
 
-    private PrintStream out = System.out;
+    private final PrintStream out = System.out;
 //    private OutputStream out =
 
     //    @Test
@@ -1414,8 +1417,8 @@ public class TestFges {
 
 
         class Pair {
-            private String algorithm;
-            private double stat;
+            private final String algorithm;
+            private final double stat;
 
             public Pair(String algorithm, double stat) {
                 this.algorithm = algorithm;

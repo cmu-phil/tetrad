@@ -77,8 +77,7 @@ public final class GraphTools {
             if (cliques.containsKey(node)) {
                 Set<Node> clique = cliques.get(node);
                 if (!clique.isEmpty()) {
-                    Set<Node> separator = new HashSet<>();
-                    separator.addAll(clique);
+                    Set<Node> separator = new HashSet<>(clique);
                     separator.retainAll(processedNodes);
                     separators.put(node, separator);
                     processedNodes.addAll(clique);
@@ -116,18 +115,16 @@ public final class GraphTools {
         }
 
         // remove subcliques
-        cliques.forEach((k1, v1) -> {
-            cliques.forEach((k2, v2) -> {
-                if ((k1 != k2) && !(v1.isEmpty() || v2.isEmpty()) && v1.containsAll(v2)) {
-                    v2.clear();
-                }
-            });
-        });
+        cliques.forEach((k1, v1) -> cliques.forEach((k2, v2) -> {
+            if ((k1 != k2) && !(v1.isEmpty() || v2.isEmpty()) && v1.containsAll(v2)) {
+                v2.clear();
+            }
+        }));
 
         // remove empty sets from map
         while (cliques.values().remove(Collections.EMPTY_SET)) {
+            // empty.
         }
-        ;
 
         return cliques;
     }
@@ -185,7 +182,7 @@ public final class GraphTools {
                 if (!numbered.contains(v)) {
                     // count the number of times node v is adjacent to numbered node w
                     int cardinality = (int) graph.getAdjacentNodes(v).stream()
-                            .filter(u -> numbered.contains(u))
+                            .filter(numbered::contains)
                             .count();
 
                     // find the maximum cardinality
@@ -224,7 +221,7 @@ public final class GraphTools {
                 .forEach(node -> {
                     List<Node> parents = graph.getParents(node);
                     if (!(parents == null || parents.isEmpty()) && parents.size() > 1) {
-                        Node[] p = parents.toArray(new Node[parents.size()]);
+                        Node[] p = parents.toArray(new Node[0]);
                         for (int i = 0; i < p.length; i++) {
                             for (int j = i + 1; j < p.length; j++) {
                                 Node node1 = p[i];

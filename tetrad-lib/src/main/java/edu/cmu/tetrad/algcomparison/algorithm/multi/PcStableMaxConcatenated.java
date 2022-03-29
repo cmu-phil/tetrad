@@ -32,8 +32,8 @@ public class PcStableMaxConcatenated implements MultiDataSetAlgorithm, HasKnowle
 
     static final long serialVersionUID = 23L;
     private boolean compareToTrue = false;
-    private IndependenceWrapper test;
-    private Algorithm externalGraph = null;
+    private final IndependenceWrapper test;
+    private final Algorithm externalGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
     public PcStableMaxConcatenated(IndependenceWrapper test, boolean compareToTrue) {

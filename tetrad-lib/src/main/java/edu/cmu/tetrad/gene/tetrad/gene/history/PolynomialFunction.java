@@ -42,21 +42,21 @@ public class PolynomialFunction implements UpdateFunction {
      *
      * @serial
      */
-    private IndexedLagGraph connectivity;
+    private final IndexedLagGraph connectivity;
 
     /**
      * The polynomials of each factor given its parents.
      *
      * @serial
      */
-    private Polynomial[] polynomials;
+    private final Polynomial[] polynomials;
 
     /**
      * Error distributions from which errors are drawn for each of the factors.
      *
      * @serial
      */
-    private Distribution[] errorDistributions;
+    private final Distribution[] errorDistributions;
 
     //=============================CONSTRUCTORS===========================//
 

@@ -54,17 +54,17 @@ public class IndTestProbabilistic implements IndependenceTest {
     /**
      * The nodes of the data set.
      */
-    private List<Node> nodes;
+    private final List<Node> nodes;
 
     /**
      * Indices of the nodes.
      */
-    private Map<Node, Integer> indices;
+    private final Map<Node, Integer> indices;
 
     /**
      * A map from independence facts to their probabilities of independence.
      */
-    private Map<IndependenceFact, Double> H;
+    private final Map<IndependenceFact, Double> H;
     private double posterior;
     private boolean verbose = false;
 

@@ -528,8 +528,8 @@ public class TestPc {
         int latentIndex = -1;
 
         class Pair {
-            private String algorithm;
-            private double stat;
+            private final String algorithm;
+            private final double stat;
 
             public Pair(String algorithm, double stat) {
                 this.algorithm = algorithm;

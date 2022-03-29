@@ -9,7 +9,7 @@ import java.util.List;
  * @author jdramsey
  */
 public class Algorithms {
-    private List<Algorithm> algorithms = new ArrayList<>();
+    private final List<Algorithm> algorithms = new ArrayList<>();
 
     public Algorithms() {
     }

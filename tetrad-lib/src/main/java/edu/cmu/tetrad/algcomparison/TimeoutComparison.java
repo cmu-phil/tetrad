@@ -1634,9 +1634,9 @@ public class TimeoutComparison {
     private class AlgorithmWrapper implements Algorithm {
 
         static final long serialVersionUID = 23L;
-        private Algorithm algorithm;
-        private Parameters parameters;
-        private List<String> overriddenParameters = new ArrayList<>();
+        private final Algorithm algorithm;
+        private final Parameters parameters;
+        private final List<String> overriddenParameters = new ArrayList<>();
 
         public AlgorithmWrapper(Algorithm algorithm, Parameters parameters) {
             this.algorithm = algorithm;
@@ -1698,8 +1698,8 @@ public class TimeoutComparison {
     private class AlgorithmSimulationWrapper implements Algorithm {
 
         static final long serialVersionUID = 23L;
-        private SimulationWrapper simulationWrapper;
-        private AlgorithmWrapper algorithmWrapper;
+        private final SimulationWrapper simulationWrapper;
+        private final AlgorithmWrapper algorithmWrapper;
         List<String> parameters = new ArrayList<>();
 
         public AlgorithmSimulationWrapper(AlgorithmWrapper algorithm, SimulationWrapper simulation) {
@@ -1748,7 +1748,7 @@ public class TimeoutComparison {
     private class SimulationWrapper implements Simulation {
 
         static final long serialVersionUID = 23L;
-        private Simulation simulation;
+        private final Simulation simulation;
         private List<Graph> graphs;
         private List<DataModel> dataModels;
         private Parameters parameters;

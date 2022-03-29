@@ -29,7 +29,7 @@ import java.util.List;
 public class LeeHastieSimulation implements Simulation, HasParameters {
 
     static final long serialVersionUID = 23L;
-    private RandomGraph randomGraph;
+    private final RandomGraph randomGraph;
     private List<DataSet> dataSets = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();
     private DataType dataType;

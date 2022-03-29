@@ -54,14 +54,14 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
      *
      * @serial Cannot be null.
      */
-    private Graph dag;
+    private final Graph dag;
 
     /**
      * The map from nodes to variables.
      *
      * @serial Cannot be null.
      */
-    private Map<Node, DiscreteVariable> nodesToVariables;
+    private final Map<Node, DiscreteVariable> nodesToVariables;
 
     //=========================CONSTRUCTORS=============================//
 

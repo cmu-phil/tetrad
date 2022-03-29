@@ -21,11 +21,11 @@ import java.util.List;
 public class LoadContinuousDataSmithSim implements Simulation, HasParameterValues {
     static final long serialVersionUID = 23L;
     private final int index;
-    private String path;
+    private final String path;
     private Graph graph = null;
     private List<DataSet> dataSets = new ArrayList<>();
-    private List<String> usedParameters = new ArrayList<>();
-    private Parameters parametersValues = new Parameters();
+    private final List<String> usedParameters = new ArrayList<>();
+    private final Parameters parametersValues = new Parameters();
 
     public LoadContinuousDataSmithSim(String path, int index) {
         this.path = path;

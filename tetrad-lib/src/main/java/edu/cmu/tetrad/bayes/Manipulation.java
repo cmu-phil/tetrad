@@ -37,14 +37,14 @@ import java.util.Arrays;
 public final class Manipulation implements TetradSerializable {
     static final long serialVersionUID = 23L;
 
-    private VariableSource variableSource;
+    private final VariableSource variableSource;
 
     /**
      * An array indicating whether each variable in turn is manipulated.
      *
      * @serial Cannot be null.
      */
-    private boolean[] manipulated;
+    private final boolean[] manipulated;
 
     //===========================CONSTRUCTORS============================//
 

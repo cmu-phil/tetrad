@@ -36,10 +36,10 @@ import java.util.*;
  * @author Joe Ramsey
  */
 public class PurifySextadBased {
-    private boolean outputMessage = true;
-    private DeltaSextadTest sextadTest;
+    private final boolean outputMessage = true;
+    private final DeltaSextadTest sextadTest;
 
-    private List<Integer> nodes;
+    private final List<Integer> nodes;
     private Graph mim;
     private double alpha = 0.05;
 

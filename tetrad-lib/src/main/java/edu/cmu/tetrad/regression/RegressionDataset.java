@@ -45,12 +45,12 @@ public class RegressionDataset implements Regression {
     /**
      * The data set.
      */
-    private Matrix data;
+    private final Matrix data;
 
     /**
      * The variables.
      */
-    private List<Node> variables;
+    private final List<Node> variables;
 
     /**
      * The significance level for determining which regressors are significant

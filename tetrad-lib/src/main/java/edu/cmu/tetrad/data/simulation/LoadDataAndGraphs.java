@@ -1,7 +1,10 @@
 package edu.cmu.tetrad.data.simulation;
 
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -19,10 +22,10 @@ import java.util.Objects;
 public class LoadDataAndGraphs implements Simulation {
 
     static final long serialVersionUID = 23L;
-    private String path;
-    private List<Graph> graphs = new ArrayList<>();
+    private final String path;
+    private final List<Graph> graphs = new ArrayList<>();
     private List<DataSet> dataSets = new ArrayList<>();
-    private List<String> usedParameters = new ArrayList<>();
+    private final List<String> usedParameters = new ArrayList<>();
     private String description = "";
 
     private transient PrintStream stdout = System.out;

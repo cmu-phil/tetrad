@@ -46,7 +46,7 @@ public class BasalInitializer implements Initializer, TetradSerializable {
      *
      * @serial
      */
-    private UpdateFunction updateFunction;
+    private final UpdateFunction updateFunction;
 
     /**
      * The average expression level that all unregulated genes are initialized
@@ -54,7 +54,7 @@ public class BasalInitializer implements Initializer, TetradSerializable {
      *
      * @serial
      */
-    private double basalExpression;
+    private final double basalExpression;
 
     /**
      * The standard deviation of a normal distribution N(basalExpression,
@@ -62,7 +62,7 @@ public class BasalInitializer implements Initializer, TetradSerializable {
      *
      * @serial
      */
-    private double initStDev;
+    private final double initStDev;
 
     //============================CONSTRUCTORS===========================//
 

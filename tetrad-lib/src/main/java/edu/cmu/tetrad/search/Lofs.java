@@ -40,11 +40,11 @@ import java.util.*;
  * @author Joseph Ramsey
  */
 public class Lofs {
-    private Graph CPDAG;
-    private List<DataSet> dataSets;
+    private final Graph CPDAG;
+    private final List<DataSet> dataSets;
     private double alpha = 0.05;
-    private ArrayList<Regression> regressions;
-    private List<Node> variables;
+    private final ArrayList<Regression> regressions;
+    private final List<Node> variables;
     private boolean r1Done = true;
     private boolean r2Done = true;
     private boolean strongR2 = false;

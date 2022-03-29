@@ -69,7 +69,7 @@ public class EigenDecomposition {
     /**
      * Maximum number of iterations accepted in the implicit QL transformation
      */
-    private short maxIter = 500;
+    private final short maxIter = 500;
     /**
      * Main diagonal of the tridiagonal matrix.
      */
@@ -420,11 +420,11 @@ public class EigenDecomposition {
         /**
          * Real part of the realEigenvalues.
          */
-        private double[] realEigenvalues;
+        private final double[] realEigenvalues;
         /**
          * Imaginary part of the realEigenvalues.
          */
-        private double[] imagEigenvalues;
+        private final double[] imagEigenvalues;
         /**
          * Eigenvectors.
          */

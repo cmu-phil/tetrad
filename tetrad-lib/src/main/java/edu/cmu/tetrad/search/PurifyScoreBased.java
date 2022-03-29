@@ -37,9 +37,9 @@ import java.util.*;
  * Settings | File Templates.
  */
 public class PurifyScoreBased implements IPurify {
-    private boolean outputMessage = true;
-    private TetradTest tetradTest;
-    private int numVars;
+    private final boolean outputMessage = true;
+    private final TetradTest tetradTest;
+    private final int numVars;
     private List forbiddenList;
 
 //     SCORE-BASED PURIFY </p> - using BIC score function and Structural EM for

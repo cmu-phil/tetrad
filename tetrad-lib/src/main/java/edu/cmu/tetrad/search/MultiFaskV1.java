@@ -28,11 +28,11 @@ public class MultiFaskV1 {
     private Graph externalGraph = null;
 
     // Elapsed time of the search, in milliseconds.
-    private long elapsed = 0;
+    private final long elapsed = 0;
 
 
     // For the Fast Adjacency Search.
-    private int depth = -1;
+    private final int depth = -1;
 
     // For the SEM BIC score, for the Fast Adjacency Search.
     private double penaltyDiscount = 1;

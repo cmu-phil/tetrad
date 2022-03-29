@@ -63,7 +63,7 @@ public final class DagToPag2 {
     /**
      * The logger to use.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
     /**
      * True iff verbose output should be printed.

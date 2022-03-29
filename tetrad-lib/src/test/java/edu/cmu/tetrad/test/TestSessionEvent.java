@@ -39,7 +39,7 @@ public class TestSessionEvent {
     /**
      * The session for the events being tested.
      */
-    private Session session = new Session("Test");
+    private final Session session = new Session("Test");
 
     /**
      * Tests whether an ADD_NODE event can be constructed properly.

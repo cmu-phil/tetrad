@@ -30,7 +30,7 @@ import java.util.List;
 public class CcdMax implements Algorithm, HasKnowledge {
 
     static final long serialVersionUID = 23L;
-    private IndependenceWrapper test;
+    private final IndependenceWrapper test;
     private IKnowledge knowledge = new Knowledge2();
 
     public CcdMax(IndependenceWrapper test) {

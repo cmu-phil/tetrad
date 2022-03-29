@@ -33,17 +33,17 @@ import java.util.List;
  */
 public class DiscreteMixedScore implements Score {
 
-    private DataSet dataSet;
+    private final DataSet dataSet;
 
     // The variables of the continuousData set.
-    private List<Node> variables;
+    private final List<Node> variables;
 
     // Likelihood function
-    private DiscreteMixedLikelihood likelihood;
+    private final DiscreteMixedLikelihood likelihood;
 
     private double penaltyDiscount = 1;
     private int numCategoriesToDiscretize = 3;
-    private double sp;
+    private final double sp;
 
     /**
      * Constructs the score using a covariance matrix.

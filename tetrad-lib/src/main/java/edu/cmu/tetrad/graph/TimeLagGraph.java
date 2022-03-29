@@ -52,7 +52,7 @@ public class TimeLagGraph implements Graph {
     private boolean pag;
     private boolean CPDAG;
 
-    private Map<String, Object> attributes = new HashMap<>();
+    private final Map<String, Object> attributes = new HashMap<>();
 
     public TimeLagGraph() {
     }
@@ -406,8 +406,8 @@ public class TimeLagGraph implements Graph {
     }
 
     public static class NodeId {
-        private String name;
-        private int lag;
+        private final String name;
+        private final int lag;
 
         public NodeId(String name, int lag) {
             this.name = name;

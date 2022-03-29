@@ -43,9 +43,9 @@ public class DeltaSextadTest {
     static final long serialVersionUID = 23L;
 
     private double[][] data;
-    private int N;
-    private ICovarianceMatrix cov;
-    private List<Node> variables;
+    private final int N;
+    private final ICovarianceMatrix cov;
+    private final List<Node> variables;
 
     // As input we require a data set and a list of non-redundant Tetrads.
 
@@ -301,8 +301,8 @@ public class DeltaSextadTest {
 
     // Represents a single covariance symbolically.
     private static class Sigma {
-        private int a;
-        private int b;
+        private final int a;
+        private final int b;
 
         public Sigma(int a, int b) {
             this.a = a;

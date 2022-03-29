@@ -46,7 +46,7 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
      *
      * @serial Cannot be null.
      */
-    private BayesIm bayesIm;
+    private final BayesIm bayesIm;
 
     /**
      * The manipulated Bayes IM--that is, bayesIm after the manipulations in
@@ -212,23 +212,6 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
         return new BayesPm(updatedGraph, bayesIm.getBayesPm());
     }
 
-//    private Dag createManipulatedGraph(Graph graph) {
-//        Dag updatedGraph = new Dag(graph);
-//
-//        for (int i = 0; i < bayesIm.getNumNodes(); ++i) {
-//            if (evidence.isManipulated(i)) {
-//                Node node = evidence.getNode(i);
-//                List<Node> parents = updatedGraph.getParents(node);
-//
-//                for (Node parent1 : parents) {
-//                    updatedGraph.removeEdge(node, parent1);
-//                }
-//            }
-//        }
-//
-//        return updatedGraph;
-//    }
-
     private Dag createManipulatedGraph(Graph graph) {
         Dag updatedGraph = new Dag(graph);
 
@@ -238,9 +221,8 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
                 Node node = updatedGraph.getNode(evidence.getNode(i).getName());
                 List<Node> parents = updatedGraph.getParents(node);
 
-                for (Object parent1 : parents) {
-                    Node parent = (Node) parent1;
-                    updatedGraph.removeEdge(node, parent);
+                for (Node parent1 : parents) {
+                    updatedGraph.removeEdge(node, parent1);
                 }
             }
         }
@@ -257,9 +239,6 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

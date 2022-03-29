@@ -27,7 +27,7 @@ public class StARS implements Algorithm, TakesExternalGraph {
     private final double low;
     private final double high;
     private final String parameter;
-    private Algorithm algorithm;
+    private final Algorithm algorithm;
     private Graph externalGraph = null;
     private DataSet _dataSet;
 
@@ -163,9 +163,9 @@ public class StARS implements Algorithm, TakesExternalGraph {
 
         class StabilityAction extends RecursiveAction {
 
-            private int chunk;
-            private int from;
-            private int to;
+            private final int chunk;
+            private final int from;
+            private final int to;
 
             private StabilityAction(int chunk, int from, int to) {
                 this.chunk = chunk;

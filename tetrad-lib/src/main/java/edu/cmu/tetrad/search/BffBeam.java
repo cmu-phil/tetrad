@@ -46,16 +46,16 @@ import java.util.*;
 public final class BffBeam implements Bff {
     private CovarianceMatrix cov = null;
     private IKnowledge knowledge = new Knowledge2();
-    private Graph externalGraph;
+    private final Graph externalGraph;
     private Graph graph;
     private double alpha = 0.05;
     private double highPValueAlpha = 0.05;
     private final NumberFormat nf = new DecimalFormat("0.0#########");
-    private Set<GraphWithPValue> significantModels = new LinkedHashSet<>();
+    private final Set<GraphWithPValue> significantModels = new LinkedHashSet<>();
     private Graph trueModel;
     private SemIm originalSemIm;
     private SemIm newSemIm;
-    private Scorer scorer;
+    private final Scorer scorer;
     private boolean checkingCycles = true;
     private Graph newDag;
     private int beamWidth = 1;
@@ -740,9 +740,9 @@ public final class BffBeam implements Bff {
             ADD, REMOVE, REDIRECT, ADD_COLLIDER, REMOVE_COLLIDER, SWAP, DOUBLE_REMOVE
         }
 
-        private Edge edge;
+        private final Edge edge;
         private Edge secondEdge;
-        private Type type;
+        private final Type type;
 
         public Move(Edge edge, Type type) {
             this.edge = edge;
@@ -775,8 +775,8 @@ public final class BffBeam implements Bff {
     }
 
     public static class GraphWithPValue {
-        private Graph graph;
-        private double pValue;
+        private final Graph graph;
+        private final double pValue;
 
         public GraphWithPValue(Graph graph, double pValue) {
             this.graph = graph;
@@ -895,12 +895,12 @@ public final class BffBeam implements Bff {
     }
 
     public static class Score {
-        private Scorer scorer;
-        private double pValue;
-        private double fml;
-        private double chisq;
-        private double bic;
-        private double aic;
+        private final Scorer scorer;
+        private final double pValue;
+        private final double fml;
+        private final double chisq;
+        private final double bic;
+        private final double aic;
         private double kic;
         private int dof;
 

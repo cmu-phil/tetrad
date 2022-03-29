@@ -681,7 +681,7 @@ public class Mimbuild {
     private class Function3 implements org.apache.commons.math3.analysis.MultivariateFunction {
         private final int[][] indicatorIndices;
         private final Matrix measurescov;
-        private Matrix measuresCovInverse;
+        private final Matrix measuresCovInverse;
         private final double[][] loadings;
         private final Matrix latentscov;
         private final int numParams;

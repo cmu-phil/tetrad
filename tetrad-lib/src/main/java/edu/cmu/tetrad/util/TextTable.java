@@ -45,7 +45,7 @@ public class TextTable {
     /**
      * The tokens to be printed out.
      */
-    private String[][] tokens;
+    private final String[][] tokens;
 
     /**
      * True if columns should be left justified, false if right justified.

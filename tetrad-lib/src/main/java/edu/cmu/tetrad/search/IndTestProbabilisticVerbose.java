@@ -55,17 +55,17 @@ public class IndTestProbabilisticVerbose implements IndependenceTest {
     private final PrintWriter out;
     private final IndTestDSep dsepTest;
 
-    private List<Node> nodes;
+    private final List<Node> nodes;
 
     /**
      * Indices of the nodes.
      */
-    private Map<Node, Integer> indices;
+    private final Map<Node, Integer> indices;
 
     /**
      * A map from independence facts to their probabilities of independence.
      */
-    private Map<IndependenceFact, Double> H;
+    private final Map<IndependenceFact, Double> H;
     private double posterior;
     private boolean verbose = false;
 

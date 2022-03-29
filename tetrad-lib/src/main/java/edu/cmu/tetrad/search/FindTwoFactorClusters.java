@@ -50,18 +50,18 @@ public class FindTwoFactorClusters {
 
     public enum Algorithm {SAG, GAP}
 
-    private CorrelationMatrix corr;
+    private final CorrelationMatrix corr;
     // The list of all variables.
-    private List<Node> variables;
+    private final List<Node> variables;
 
     // The significance level.
-    private double alpha;
+    private final double alpha;
 
     // The Delta test. Testing two sextads simultaneously.
-    private DeltaSextadTest test;
+    private final DeltaSextadTest test;
 
     // The data.
-    private transient DataModel dataModel;
+    private final transient DataModel dataModel;
 
     private List<List<Node>> clusters;
 

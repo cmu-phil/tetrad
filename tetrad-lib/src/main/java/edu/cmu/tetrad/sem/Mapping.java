@@ -44,35 +44,35 @@ public class Mapping implements TetradSerializable {
      *
      * @serial Can't be null.
      */
-    private ISemIm semIm;
+    private final ISemIm semIm;
 
     /**
      * The parameter this mapping maps.
      *
      * @serial Can't be null.
      */
-    private Parameter parameter;
+    private final Parameter parameter;
 
     /**
      * The 2D double array whose element at (i, j) to be manipulated.
      *
      * @serial Can't be null.
      */
-    private Matrix a;
+    private final Matrix a;
 
     /**
      * The left-hand coordinate of a[i][j].
      *
      * @serial Any value.
      */
-    private int i;
+    private final int i;
 
     /**
      * The right-hand coordinate of a[i][j].
      *
      * @serial Any value.
      */
-    private int j;
+    private final int j;
 
     /**
      * Constructs matrix new mapping using the given freeParameters.

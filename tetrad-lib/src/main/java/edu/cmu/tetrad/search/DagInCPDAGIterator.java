@@ -39,11 +39,11 @@ public class DagInCPDAGIterator {
      * The stack of graphs, with annotations as to the arbitrary undirected edges chosen in them and whether or not
      * these edges have already been oriented left and/or right.
      */
-    private LinkedList<DecoratedGraph> decoratedGraphs = new LinkedList<>();
+    private final LinkedList<DecoratedGraph> decoratedGraphs = new LinkedList<>();
     private Graph storedGraph;
     private boolean returnedOne = false;
     private IKnowledge knowledge = new Knowledge2();
-    private LinkedList<Triple> colliders;
+    private final LinkedList<Triple> colliders;
     private boolean allowNewColliders = true;
 
     public DagInCPDAGIterator(Graph CPDAG) {
@@ -169,11 +169,11 @@ public class DagInCPDAGIterator {
     //==============================CLASSES==============================//
 
     private static class DecoratedGraph {
-        private Graph graph;
-        private Edge edge;
+        private final Graph graph;
+        private final Edge edge;
         private boolean triedLeft = false;
         private boolean triedRight = false;
-        private IKnowledge knowledge;
+        private final IKnowledge knowledge;
         private Map<Graph, Set<Edge>> changedEdges = new HashMap<>();
         private boolean allowArbitraryOrientation = true;
 

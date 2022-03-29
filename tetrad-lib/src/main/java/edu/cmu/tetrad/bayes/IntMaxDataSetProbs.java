@@ -44,7 +44,7 @@ public final class IntMaxDataSetProbs implements DiscreteProbs {
     /**
      * The data set that this is a cell count table for.
      */
-    private DataSet dataSet;
+    private final DataSet dataSet;
 
     /**
      * An array whose length is the number of dimensions of the cell and whose
@@ -250,10 +250,6 @@ public final class IntMaxDataSetProbs implements DiscreteProbs {
         }
 
         return p;
-    }
-
-    public boolean isMissingValueCaseFound() {
-        return this.missingValueCaseFound;
     }
 
     /**

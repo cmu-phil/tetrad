@@ -44,14 +44,14 @@ import java.util.*;
 
 public final class BffGes implements Bff {
     private IKnowledge knowledge = new Knowledge2();
-    private Graph graph;
+    private final Graph graph;
     private double alpha = 0.05;
     private double highPValueAlpha = 0.05;
     private final NumberFormat nf = new DecimalFormat("0.0#########");
-    private Set<GraphWithPValue> significantModels = new HashSet<>();
+    private final Set<GraphWithPValue> significantModels = new HashSet<>();
     private SemIm originalSemIm;
     private SemIm newSemIm;
-    private Scorer scorer;
+    private final Scorer scorer;
     private Graph newDag;
 
     public BffGes(Graph graph, DataSet data) {
@@ -89,8 +89,8 @@ public final class BffGes implements Bff {
     }
 
     public static class GraphWithPValue {
-        private Graph graph;
-        private double pValue;
+        private final Graph graph;
+        private final double pValue;
 
         public GraphWithPValue(Graph graph, double pValue) {
             this.graph = graph;
@@ -761,10 +761,10 @@ public final class BffGes implements Bff {
     }
 
     public static class Score {
-        private Scorer scorer;
-        private double pValue;
-        private double fml;
-        private double chisq;
+        private final Scorer scorer;
+        private final double pValue;
+        private final double fml;
+        private final double chisq;
         private double bic;
         //        private double aic;
         private int dof;

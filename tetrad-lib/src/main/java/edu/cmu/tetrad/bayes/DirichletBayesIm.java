@@ -88,7 +88,7 @@ public final class DirichletBayesIm implements BayesIm {
      *
      * @serial
      */
-    private BayesPm bayesPm;
+    private final BayesPm bayesPm;
 
     /**
      * 1.0000 The default row size for randomly creating new rows.
@@ -102,7 +102,7 @@ public final class DirichletBayesIm implements BayesIm {
      *
      * @serial
      */
-    private Node[] nodes;
+    private final Node[] nodes;
 
     /**
      * The array of dimensionality (number of values for each node) for each of
@@ -231,6 +231,7 @@ public final class DirichletBayesIm implements BayesIm {
         }
 
         this.bayesPm = dirichletBayesIm.getBayesPm();
+        this.nextRowTotal = dirichletBayesIm.nextRowTotal;
 
         // Get the nodes from the BayesPm, fixing on an order. (This is
         // important; the nodes must always be in the same order for this
@@ -248,10 +249,6 @@ public final class DirichletBayesIm implements BayesIm {
         return new DirichletBayesIm(bayesPm);
     }
 
-    //    public static DirichletBayesIm symmetricDirichletIm(BayesPm bayesPm,
-//                                                        DirichletBayesIm oldBayesIm, double symmetricAlpha) {
-//        return new DirichletBayesIm(bayesPm, oldBayesIm, symmetricAlpha);
-//    }
     public static DirichletBayesIm symmetricDirichletIm(BayesPm bayesPm,
                                                         double symmetricAlpha) {
         return new DirichletBayesIm(bayesPm, symmetricAlpha);
@@ -651,8 +648,7 @@ public final class DirichletBayesIm implements BayesIm {
 
         if (total != 0.0) {
             for (int colIndex = 0; colIndex < numColumns; colIndex++) {
-                double probability
-                        = getProbability(nodeIndex, rowIndex, colIndex);
+                double probability = getProbability(nodeIndex, rowIndex, colIndex);
                 double prob = probability / total;
                 setProbability(nodeIndex, rowIndex, colIndex, prob);
             }
@@ -882,53 +878,6 @@ public final class DirichletBayesIm implements BayesIm {
         return dataSet;
     }
 
-    //    /**
-//     * Constructs a random sample using the given already allocated data set, to
-//     * avoid allocating more memory.
-//     */
-//    private DataSet simulateDataHelper(DataSet dataSet,
-//                                       RandomUtil randomUtil,
-//                                       boolean latentDataSaved) {
-//        if (dataSet.getNumColumns() != nodes.length) {
-//            throw new IllegalArgumentException("When rewriting the old data set, " +
-//                    "number of variables in data set must equal number of variables " +
-//                    "in Bayes net.");
-//        }
-//
-//        int sampleSize = dataSet.getNumRows();
-//
-//        int numMeasured = 0;
-//        int[] map = new int[nodes.length];
-//        List<Node> variables = new LinkedList<>();
-//
-//        for (int j = 0; j < nodes.length; j++) {
-//            if (!latentDataSaved && nodes[j].getNodeType() != NodeType.MEASURED) {
-//                continue;
-//            }
-//
-//            int numCategories = bayesPm.getNumCategories(nodes[j]);
-//            List<String> categories = new LinkedList<>();
-//
-//            for (int k = 0; k < numCategories; k++) {
-//                categories.add(bayesPm.getCategory(nodes[j], k));
-//            }
-//
-//            DiscreteVariable var =
-//                    new DiscreteVariable(nodes[j].getNode(), categories);
-//            variables.add(var);
-//            int index = ++numMeasured - 1;
-//            map[index] = j;
-//        }
-//
-//        for (int i = 0; i < variables.size(); i++) {
-//            Node node = dataSet.getVariable(i);
-//            Node _node = variables.get(i);
-//            dataSet.changeVariable(node, _node);
-//        }
-//
-//        constructSample(sampleSize, randomUtil, numMeasured, dataSet, map);
-//        return dataSet;
-//    }
     private void constructSample(int sampleSize, RandomUtil randomUtil,
                                  int numMeasured, DataSet dataSet,
                                  int[] map) {
@@ -1254,9 +1203,6 @@ public final class DirichletBayesIm implements BayesIm {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

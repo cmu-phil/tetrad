@@ -46,8 +46,8 @@ public class Edge implements TetradSerializable, Comparable {
         dd, nl, pd, pl
     }
 
-    private Node node1;
-    private Node node2;
+    private final Node node1;
+    private final Node node2;
     private Endpoint endpoint1;
     private Endpoint endpoint2;
 
@@ -56,9 +56,9 @@ public class Edge implements TetradSerializable, Comparable {
 
     private boolean bold = false;
 
-    private List<Property> properties = new ArrayList<>();
+    private final List<Property> properties = new ArrayList<>();
 
-    private List<EdgeTypeProbability> edgeTypeProbabilities = new ArrayList<>();
+    private final List<EdgeTypeProbability> edgeTypeProbabilities = new ArrayList<>();
 
     // =========================CONSTRUCTORS============================//
 

@@ -52,8 +52,8 @@ import static jgpml.covariancefunctions.MatrixOperations.exp;
  */
 public class CovSEard implements CovarianceFunction {
 
-    private int D;
-    private int numParameters;
+    private final int D;
+    private final int numParameters;
     private Matrix K = null;
 
     /**

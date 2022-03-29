@@ -47,24 +47,24 @@ import static java.lang.Math.log;
 public class SemLikelihood2 {
 
     // The covariance matrix.
-    private ICovarianceMatrix covMatrix;
+    private final ICovarianceMatrix covMatrix;
 
     // The variables of the mixed data set.
-    private List<Node> variables;
+    private final List<Node> variables;
 
     // Indices of variables.
-    private Map<Node, Integer> nodesHash;
+    private final Map<Node, Integer> nodesHash;
 
     // A constant.
-    private static double LOG2PI = log(2.0 * Math.PI);
+    private static final double LOG2PI = log(2.0 * Math.PI);
 
     /**
      * A return value for a likelihood--returns a likelihood value and the degrees of freedom
      * for it.
      */
     public class Ret {
-        private double lik;
-        private int dof;
+        private final double lik;
+        private final int dof;
 
         private Ret(double lik, int dof) {
             this.lik = lik;

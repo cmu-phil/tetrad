@@ -32,13 +32,13 @@ public class NodePair {
     /**
      * The "First" node.
      */
-    private Node first;
+    private final Node first;
 
 
     /**
      * The "second" node.
      */
-    private Node second;
+    private final Node second;
 
 
     public NodePair(Node first, Node second) {

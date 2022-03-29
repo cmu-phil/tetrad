@@ -64,13 +64,13 @@ public class ExpressionLexer {
     /**
      * The car sequenced being lexed.
      */
-    private CharSequence charSequence;
+    private final CharSequence charSequence;
 
 
     /**
      * The tokens.
      */
-    private Token[] tokens = new Token[]{Token.WHITESPACE, Token.COMMA, Token.LPAREN,
+    private final Token[] tokens = new Token[]{Token.WHITESPACE, Token.COMMA, Token.LPAREN,
             Token.NUMBER, Token.OPERATOR, Token.RPAREN, Token.PARAMETER,
             Token.EQUATION, Token.STRING
     };

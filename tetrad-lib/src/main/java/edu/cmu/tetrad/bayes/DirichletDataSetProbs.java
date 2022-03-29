@@ -41,7 +41,7 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
      *
      * @serial
      */
-    private DataSet dataSet;
+    private final DataSet dataSet;
 
     /**
      * An array whose length is the number of dimensions of the cell and whose
@@ -51,7 +51,7 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
      *
      * @serial
      */
-    private int[] dims;
+    private final int[] dims;
 
     /**
      * Indicates whether bounds on coordinate values are explicitly enforced.
@@ -66,12 +66,12 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
      *
      * @serial
      */
-    private int numRows;
+    private final int numRows;
 
     /**
      * @serial
      */
-    private double symmValue;
+    private final double symmValue;
 
     //============================CONSTRUCTORS===========================//
 
@@ -196,10 +196,6 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
         }
 
         return count2 / count1;
-    }
-
-    public boolean isMissingValueCaseFound() {
-        return false;
     }
 
     /**

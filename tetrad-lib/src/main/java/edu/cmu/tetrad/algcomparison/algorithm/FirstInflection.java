@@ -25,9 +25,9 @@ public class FirstInflection implements Algorithm, TakesExternalGraph {
     private final double high;
     private final double increment;
     private final String parameter;
-    private Algorithm algorithm;
+    private final Algorithm algorithm;
     private Graph intialGraph = null;
-    private IKnowledge knowledge = new Knowledge2();
+    private final IKnowledge knowledge = new Knowledge2();
 
     public FirstInflection(Algorithm algorithm, String parameter, double low, double high, double increment) {
         if (low >= high) {
@@ -220,8 +220,8 @@ public class FirstInflection implements Algorithm, TakesExternalGraph {
         private final double high;
         private final String paramName;
         private final DataSet _dataSet;
-        private Parameters params;
-        private DataSet dataSet;
+        private final Parameters params;
+        private final DataSet dataSet;
         Graph _previous = null;
 
         /**
@@ -282,7 +282,7 @@ public class FirstInflection implements Algorithm, TakesExternalGraph {
 //            _previous = out;
 //            return diff;
 //        }
-        private Map<Double, Graph> archive = new HashMap<>();
+        private final Map<Double, Graph> archive = new HashMap<>();
 
         @Override
         public double value(double[] parameters) {

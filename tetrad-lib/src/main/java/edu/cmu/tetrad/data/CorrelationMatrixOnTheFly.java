@@ -50,7 +50,7 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
     static final long serialVersionUID = 23L;
     private boolean verbose = false;
 
-    private ICovarianceMatrix cov;
+    private final ICovarianceMatrix cov;
 
     /**
      * The name of the covariance matrix.
@@ -98,9 +98,9 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
      *
      * @serial Cannot be null.
      */
-    private IKnowledge knowledge = new Knowledge2();
+    private final IKnowledge knowledge = new Knowledge2();
 
-    private double[][] vectors = null;
+    private final double[][] vectors = null;
 
     private double[] variances;
 

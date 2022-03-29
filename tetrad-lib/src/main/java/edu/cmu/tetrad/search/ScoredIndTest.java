@@ -38,7 +38,7 @@ public class ScoredIndTest implements Score {
     private final IndependenceTest test;
 
     // The variables of the covariance matrix.
-    private List<Node> variables;
+    private final List<Node> variables;
 
     // True if verbose output should be sent to out.
     private boolean verbose = false;

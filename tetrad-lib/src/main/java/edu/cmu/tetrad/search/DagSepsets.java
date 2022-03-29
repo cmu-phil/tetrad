@@ -34,7 +34,7 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 public class DagSepsets implements SepsetProducer {
-    private EdgeListGraph dag;
+    private final EdgeListGraph dag;
     private boolean verbose = false;
 
     public DagSepsets(Graph dag) {

@@ -40,7 +40,7 @@ import static java.lang.Math.log;
 public class Histogram {
     private Node target;
     private int numBins = 8;
-    private DataSet dataSet;
+    private final DataSet dataSet;
     private Map<Node, double[]> continuousIntervals;
     private Map<Node, Integer> discreteValues;
 

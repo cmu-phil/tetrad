@@ -39,7 +39,7 @@ import java.util.List;
  */
 public class ShiftSearch {
 
-    private List<DataModel> dataSets;
+    private final List<DataModel> dataSets;
 
     private int maxShift = 2;
     private IKnowledge knowledge = new Knowledge2();

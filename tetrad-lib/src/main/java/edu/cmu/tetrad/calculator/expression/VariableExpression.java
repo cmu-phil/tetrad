@@ -38,7 +38,7 @@ public class VariableExpression implements Expression {
     /**
      * The variable that is being evaluated.
      */
-    private String variable;
+    private final String variable;
 
 
     public VariableExpression(String variable) {

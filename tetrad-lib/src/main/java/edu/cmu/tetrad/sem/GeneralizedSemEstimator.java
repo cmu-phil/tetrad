@@ -368,9 +368,9 @@ public class GeneralizedSemEstimator {
     static class LikelihoodFittingFunction implements MultivariateFunction {
         private final GeneralizedSemPm pm;
         private final MyContext context;
-        private List<String> parameters;
-        private List<Node> tierOrdering;
-        private double[][] dataValues;
+        private final List<String> parameters;
+        private final List<Node> tierOrdering;
+        private final double[][] dataValues;
 
         /**
          * f
@@ -453,10 +453,10 @@ public class GeneralizedSemEstimator {
 
         private final GeneralizedSemPm pm;
         private final DataSet data;
-        private List<String> parameters;
-        private List<Node> tierOrdering;
+        private final List<String> parameters;
+        private final List<Node> tierOrdering;
         private int index = -1;
-        private MyContext context;
+        private final MyContext context;
 
         private List<Double> disturbances;
         private RealDistribution distribution;

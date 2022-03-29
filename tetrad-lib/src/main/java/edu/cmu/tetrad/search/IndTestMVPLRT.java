@@ -40,12 +40,12 @@ import java.util.Map;
  * @author Bryan Andrews
  */
 public class IndTestMVPLRT implements IndependenceTest {
-    private DataSet data;
-    private Map<Node, Integer> nodesHash;
+    private final DataSet data;
+    private final Map<Node, Integer> nodesHash;
     private double alpha = 0.001;
 
     // Likelihood function
-    private MVPLikelihood likelihood;
+    private final MVPLikelihood likelihood;
     private boolean verbose = false;
 
 

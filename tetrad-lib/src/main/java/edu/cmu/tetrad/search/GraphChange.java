@@ -38,10 +38,10 @@ import java.util.*;
  * "to" node (ie 1 o-> 2)
  */
 public class GraphChange {
-    private List<Edge> removes;
-    private List<Triple> colliders;
-    private List<Triple> nonColliders;
-    private List<NodePair> orients;
+    private final List<Edge> removes;
+    private final List<Triple> colliders;
+    private final List<Triple> nonColliders;
+    private final List<NodePair> orients;
 
     /**
      * Default constructor, holds no changes.

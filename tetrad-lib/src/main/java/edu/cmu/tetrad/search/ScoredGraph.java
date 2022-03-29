@@ -32,8 +32,8 @@ import edu.cmu.tetrad.util.TetradSerializable;
  */
 public class ScoredGraph implements Comparable, TetradSerializable {
     static final long serialVersionUID = 23L;
-    private Graph graph;
-    private Double score;
+    private final Graph graph;
+    private final Double score;
 
     public ScoredGraph(Graph graph, Double score) {
         this.graph = graph;

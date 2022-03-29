@@ -54,12 +54,12 @@ public class Fasts implements IFas {
      * The search graph. It is assumed going in that all of the true adjacencies of x are in this graph for every node
      * x. It is hoped (i.e. true in the large sample limit) that true adjacencies are never removed.
      */
-    private Graph graph;
+    private final Graph graph;
 
     /**
      * The independence test. This should be appropriate to the types
      */
-    private IndependenceTest test;
+    private final IndependenceTest test;
 
     /**
      * Specification of which edges are forbidden or required.
@@ -81,7 +81,7 @@ public class Fasts implements IFas {
     /**
      * The logger, by default the empty logger.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
     /**
      * The true graph, for purposes of comparison. Temporary.
@@ -108,14 +108,14 @@ public class Fasts implements IFas {
     /**
      * True if this is being run by FCI--need to skip the knowledge forbid step.
      */
-    private boolean fci = false;
+    private final boolean fci = false;
 
     /**
      * The depth 0 graph, specified initially.
      */
     private Graph externalGraph;
 
-    private NumberFormat nf = new DecimalFormat("0.00E0");
+    private final NumberFormat nf = new DecimalFormat("0.00E0");
 
     /**
      * True iff verbose output should be printed.

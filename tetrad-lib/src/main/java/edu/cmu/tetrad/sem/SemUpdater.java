@@ -49,7 +49,7 @@ public class SemUpdater implements TetradSerializable {
 
     static final long serialVersionUID = 23L;
     private SemEvidence evidence;
-    private SemIm semIm;
+    private final SemIm semIm;
 
     public SemUpdater(SemIm semIm) {
         if (semIm == null) {

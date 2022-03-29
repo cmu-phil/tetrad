@@ -25,11 +25,11 @@ import static java.lang.Math.min;
  * @author jdramsey@andrew.cmu.edu
  */
 public class Ida {
-    private DataSet dataSet;
+    private final DataSet dataSet;
     private final Graph pattern;
     private final List<Node> possibleCauses;
-    private Map<String, Integer> nodeIndices;
-    private ICovarianceMatrix allCovariances;
+    private final Map<String, Integer> nodeIndices;
+    private final ICovarianceMatrix allCovariances;
 
     public Ida(DataSet dataSet, Graph pattern, List<Node> possibleCauses) {
         this.dataSet = DataUtils.convertNumericalDiscreteToContinuous(dataSet);

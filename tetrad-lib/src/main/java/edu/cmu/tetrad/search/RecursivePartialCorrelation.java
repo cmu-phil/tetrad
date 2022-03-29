@@ -39,7 +39,7 @@ import static java.lang.Math.sqrt;
  */
 public class RecursivePartialCorrelation {
 
-    private ICovarianceMatrix corr;
+    private final ICovarianceMatrix corr;
     private final Map<Node, Integer> nodesMap = new HashMap<>();
 
     public RecursivePartialCorrelation(List<Node> nodes, Matrix cov, int sampleSize) {

@@ -51,7 +51,7 @@ public final class IndTestKciMatlab implements IndependenceTest {
     /**
      * The variables of the covariance data, in order. (Unmodifiable list.)
      */
-    private List<Node> variables;
+    private final List<Node> variables;
 
     /**
      * The significance level of the independence tests.
@@ -61,15 +61,15 @@ public final class IndTestKciMatlab implements IndependenceTest {
     /**
      * Formats as 0.0000.
      */
-    private static NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
     /**
      * Stores a reference to the dataset being analyzed.
      */
-    private DataSet dataSet;
-    private Matrix data;
-    private Map<Node, Integer> nodeMap;
-    private int numTests;
+    private final DataSet dataSet;
+    private final Matrix data;
+    private final Map<Node, Integer> nodeMap;
+    private final int numTests;
     private boolean verbose = false;
 
     //==========================CONSTRUCTORS=============================//

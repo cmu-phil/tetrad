@@ -16,7 +16,7 @@ import java.util.List;
  */
 public class TailConfusion {
 
-    private Graph truth;
+    private final Graph truth;
     private Graph est;
     private int tailsTp;
     private int tailsFp;

@@ -37,7 +37,7 @@ public class RfciBsc implements GraphSearch {
 
     private double bscD = 0.0, bscI = 0.0;
 
-    private List<Graph> pAGs = Collections.synchronizedList(new ArrayList<>());
+    private final List<Graph> pAGs = Collections.synchronizedList(new ArrayList<>());
 
     private int numRandomizedSearchModels = 10;
 
@@ -59,7 +59,7 @@ public class RfciBsc implements GraphSearch {
     /**
      * The logger for this class. The config needs to be set.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
     // Where printed output is sent.
     private PrintStream out = System.out;
@@ -74,7 +74,7 @@ public class RfciBsc implements GraphSearch {
     private boolean thresholdNoRandomConstrainSearch = true;
     private double cutoffConstrainSearch = 0.5;
 
-    private int numCandidatePagSearchTrial = 1000;
+    private final int numCandidatePagSearchTrial = 1000;
 
     public RfciBsc(Rfci rfci) {
         this.rfci = rfci;

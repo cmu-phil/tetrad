@@ -46,14 +46,14 @@ public class IndexedLagGraph implements TetradSerializable {
      *
      * @serial
      */
-    private List<String> factors;
+    private final List<String> factors;
 
     /**
      * The graph that this "snapshot" of indexedLagGraph was taken from.
      *
      * @serial
      */
-    private IndexedParent[][] parents;
+    private final IndexedParent[][] parents;
 
     //===============================CONSTRUCTORS=========================//
 

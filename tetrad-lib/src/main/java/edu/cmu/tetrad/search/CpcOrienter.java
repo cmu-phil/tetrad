@@ -42,7 +42,7 @@ public final class CpcOrienter implements Reorienter {
     /**
      * The independence test used for the PC search.
      */
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
 
     /**
      * Forbidden and required edges for the search.

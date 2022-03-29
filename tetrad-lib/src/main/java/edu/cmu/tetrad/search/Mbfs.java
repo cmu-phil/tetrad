@@ -44,7 +44,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
     /**
      * The independence test used to perform the search.
      */
-    private IndependenceTest test;
+    private final IndependenceTest test;
 
     /**
      * The list of variables being searched over. Must contain the target.
@@ -138,7 +138,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
     /**
      * The logger for this class. The config needs to be set.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
     //==============================CONSTRUCTORS==========================//
 

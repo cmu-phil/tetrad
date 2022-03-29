@@ -43,22 +43,22 @@ public class Dci {
     /**
      * The resulting class of graphs constructed using the datasets.
      */
-    private Set<Graph> output = new HashSet<>();
+    private final Set<Graph> output = new HashSet<>();
 
     /**
      * The independence tests for the datasets.
      */
-    private List<IndependenceTest> independenceTests = new ArrayList<>();
+    private final List<IndependenceTest> independenceTests = new ArrayList<>();
 
     /**
      * The variables in the datasets.
      */
-    private List<Node> variables = new ArrayList<>();
+    private final List<Node> variables = new ArrayList<>();
 
     /**
      * The sets of variables in each "marginal" dataset
      */
-    private List<Set<Node>> marginalVars = new ArrayList<>();
+    private final List<Set<Node>> marginalVars = new ArrayList<>();
 
     /**
      * The SepsetMaps constructed for each dataset
@@ -79,26 +79,26 @@ public class Dci {
     /**
      * Definite noncolliders from every dataset
      */
-    private Set<Triple> definiteNoncolliders = new HashSet<>();
+    private final Set<Triple> definiteNoncolliders = new HashSet<>();
 
     /**
      * Definite colliders from every dataset
      */
-    private Set<Triple> definiteColliders = new HashSet<>();
+    private final Set<Triple> definiteColliders = new HashSet<>();
 
     /**
      * Graph change status and sets of graphs resulting from initial and final orientation rules
      */
     private boolean changeFlag = true;
-    private List<Graph> discrimGraphs = new ArrayList<>();
-    private List<Graph> currentDiscrimGraphs = new ArrayList<>();
-    private List<Graph> finalGraphs = new ArrayList<>();
+    private final List<Graph> discrimGraphs = new ArrayList<>();
+    private final List<Graph> currentDiscrimGraphs = new ArrayList<>();
+    private final List<Graph> finalGraphs = new ArrayList<>();
 
     /**
      * Edge sequences ensuring treks
      */
     private Map<List<Node>, Map<Set<Edge>, Map<Triple, List<Set<Edge>>>>> necessaryTreks;
-    private List<Map<Set<Edge>, Map<Triple, List<Set<Edge>>>>> currentNecessaryTreks = new ArrayList<>();
+    private final List<Map<Set<Edge>, Map<Triple, List<Set<Edge>>>>> currentNecessaryTreks = new ArrayList<>();
 
     /**
      * Keeps up with getModel graph while searching for possible unshielded sets and
@@ -109,7 +109,7 @@ public class Dci {
     /**
      * Keeps up with getModel set of colliders being considered
      */
-    private Set<Triple> currentPossibleColliders = new HashSet<>();
+    private final Set<Triple> currentPossibleColliders = new HashSet<>();
 
     /**
      * Current set of nodePairs
@@ -131,7 +131,7 @@ public class Dci {
     private int maxThreads = 1;
     private int totalThreads = 0;
     private int currentThread = 0;
-    private Lock lock = new ReentrantLock();
+    private final Lock lock = new ReentrantLock();
     private Map<Integer, Map<List<Node>, Set<Node>>> allPaths;
 
 

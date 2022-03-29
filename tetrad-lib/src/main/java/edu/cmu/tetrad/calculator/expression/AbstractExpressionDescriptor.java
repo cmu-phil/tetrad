@@ -32,27 +32,27 @@ abstract class AbstractExpressionDescriptor implements ExpressionDescriptor {
     /**
      * The human readable name for the descriptor.
      */
-    private String name;
+    private final String name;
 
     /**
      * States what positions the expression can occur in.
      */
-    private Position position;
+    private final Position position;
 
     /**
      * The symbol used to represent the expression.
      */
-    private String token;
+    private final String token;
 
     /**
      * The expression sig.
      */
-    private ExpressionSignature signature;
+    private final ExpressionSignature signature;
 
     /**
      * True if the calculator should display this expression.
      */
-    private boolean display;
+    private final boolean display;
 
 
     /**
@@ -114,7 +114,7 @@ abstract class AbstractExpressionDescriptor implements ExpressionDescriptor {
         static final long serialVersionUID = 23L;
 
         private String signature;
-        private String[] arguments;
+        private final String[] arguments;
 
         public Signature(String function, boolean unlimited, boolean commulative, String... arguments) {
             if (function == null) {

@@ -44,12 +44,12 @@ public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
     /**
      * @serial Cannot be null.
      */
-    private BayesIm bayesIm;
+    private final BayesIm bayesIm;
 
     /**
      * @serial Cannot be null.
      */
-    private List<Node> variables;
+    private final List<Node> variables;
 
     //===========================CONSTRUCTORS==========================//
 
@@ -239,10 +239,6 @@ public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
         }
 
         return assertionTrue / conditionTrue;
-    }
-
-    public boolean isMissingValueCaseFound() {
-        return false;
     }
 
     public List<Node> getVariables() {

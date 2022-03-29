@@ -38,7 +38,7 @@ public final class SimulationStudy {
     /**
      * The session, nodes of which this simulation edu.cmu.tetrad.study is executing.
      */
-    private Session session;
+    private final Session session;
 
     /**
      * Support for firing SessionEvent's.

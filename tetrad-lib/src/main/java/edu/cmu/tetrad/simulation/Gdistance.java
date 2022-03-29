@@ -22,16 +22,16 @@ import java.util.concurrent.Executors;
  */
 public class Gdistance {
 
-    private DataSet locationMap;
-    private double xDist;
-    private double yDist;
-    private double zDist;
+    private final DataSet locationMap;
+    private final double xDist;
+    private final double yDist;
+    private final double zDist;
 
-    private List<Double> leastList;
+    private final List<Double> leastList;
 
     private int chunksize = 2;
 
-    private int cores = ForkJoinPoolInstance.getInstance().getPool().getParallelism();
+    private final int cores = ForkJoinPoolInstance.getInstance().getPool().getParallelism();
 
     //With the parallel version, it is better to make a constructor for central data like locationMap
     public Gdistance(DataSet locationMap, double xDist, double yDist, double zDist) {

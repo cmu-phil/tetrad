@@ -62,7 +62,7 @@ public final class GraphGeneratorRandomNumEdges {
     /**
      * Indicates the structural assumption. May be ANY_DAG, CONNECTED_DAG.
      */
-    private int structure;
+    private final int structure;
 
     /**
      * The number of nodes in a graph. The default is 4.

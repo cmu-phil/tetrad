@@ -33,9 +33,9 @@ import java.util.List;
  * Returns a sample empirical distribution for a particular expression.
  */
 public class EmpiricalDistributionForExpression {
-    private GeneralizedSemPm semPm;
-    private Node error;
-    private Context context;
+    private final GeneralizedSemPm semPm;
+    private final Node error;
+    private final Context context;
 
     public EmpiricalDistributionForExpression(GeneralizedSemPm semPm, Node error,
                                               Context context) {

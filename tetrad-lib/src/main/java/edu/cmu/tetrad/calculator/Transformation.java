@@ -134,13 +134,13 @@ public class Transformation {
         /**
          * The data.
          */
-        private DataSet data;
+        private final DataSet data;
 
 
         /**
          * Var -> index mapping.
          */
-        private Map<String, Integer> indexes = new HashMap<>();
+        private final Map<String, Integer> indexes = new HashMap<>();
 
 
         /**

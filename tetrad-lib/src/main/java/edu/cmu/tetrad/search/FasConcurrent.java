@@ -80,7 +80,7 @@ public class FasConcurrent implements IFas {
     private SepsetMap sepsets = new SepsetMap();
 
     // Number formatter.
-    private NumberFormat nf = new DecimalFormat("0.00E0");
+    private final NumberFormat nf = new DecimalFormat("0.00E0");
 
     /**
      * Set to true if verbose output is desired.
@@ -88,14 +88,14 @@ public class FasConcurrent implements IFas {
     private boolean verbose = false;
 
     // The concurrency pool.
-    private ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
+    private final ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
 
     /**
      * Where verbose output is sent.
      */
     private PrintStream out = System.out;
 
-    private int chunk = 100;
+    private final int chunk = 100;
 
     /**
      * True if the "stable" adjustment should be made.
@@ -194,7 +194,7 @@ public class FasConcurrent implements IFas {
         final List<Node> empty = Collections.emptyList();
 
         class Depth0Task implements Callable<Boolean> {
-            private int i;
+            private final int i;
 
             private Depth0Task(int i) {
                 this.i = i;
@@ -251,8 +251,8 @@ public class FasConcurrent implements IFas {
         }
 
         class DepthTask implements Callable {
-            private int i;
-            private int depth;
+            private final int i;
+            private final int depth;
 
             public DepthTask(int i, int depth) {
                 this.i = i;

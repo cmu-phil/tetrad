@@ -47,12 +47,12 @@ public final class SemProposition implements TetradSerializable {
     /**
      * @serial Cannot be null.
      */
-    private SemIm semIm;
+    private final SemIm semIm;
 
     /**
      * @serial Cannot be null.
      */
-    private double[] values;
+    private final double[] values;
 
     //===========================CONSTRUCTORS===========================//
 

@@ -58,7 +58,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
     private Matrix edgeCoef;
     private Matrix errorCovar;
     private Map<Node, Double> errorVariances;
-    private int sampleSize;
+    private final int sampleSize;
 
     public int getSampleSize() {
         return sampleSize;

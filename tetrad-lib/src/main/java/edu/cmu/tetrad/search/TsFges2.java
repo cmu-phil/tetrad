@@ -109,12 +109,12 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
     /**
      * The logger for this class. The config needs to be set.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
     /**
      * The top n graphs found by the algorithm, where n is numCPDAGsToStore.
      */
-    private LinkedList<ScoredGraph> topGraphs = new LinkedList<>();
+    private final LinkedList<ScoredGraph> topGraphs = new LinkedList<>();
 
     /**
      * The number of top CPDAGs to store.
@@ -672,9 +672,9 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
         final Set<Node> emptySet = new HashSet<>(0);
 
         class InitializeFromExistingGraphTask extends RecursiveTask<Boolean> {
-            private int chunk;
-            private int from;
-            private int to;
+            private final int chunk;
+            private final int from;
+            private final int to;
 
             public InitializeFromExistingGraphTask(int chunk, int from, int to) {
                 this.chunk = chunk;
@@ -779,9 +779,9 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
         final Set<Node> emptySet = new HashSet<>(0);
 
         class InitializeFromExistingGraphTask extends RecursiveTask<Boolean> {
-            private int chunk;
-            private int from;
-            private int to;
+            private final int chunk;
+            private final int from;
+            private final int to;
 
             public InitializeFromExistingGraphTask(int chunk, int from, int to) {
                 this.chunk = chunk;
@@ -1040,9 +1040,9 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
     private void reevaluateForward(final Set<Node> nodes, final Arrow arrow) {
         class AdjTask extends RecursiveTask<Boolean> {
             private final List<Node> nodes;
-            private int from;
-            private int to;
-            private int chunk;
+            private final int from;
+            private final int to;
+            private final int chunk;
 
             public AdjTask(int chunk, List<Node> nodes, int from, int to) {
                 this.nodes = nodes;
@@ -1208,11 +1208,11 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
     private void reevaluateBackward(Set<Node> toProcess) {
         class BackwardTask extends RecursiveTask<Boolean> {
             private final Node r;
-            private List<Node> adj;
-            private Map<Node, Integer> hashIndices;
-            private int chunk;
-            private int from;
-            private int to;
+            private final List<Node> adj;
+            private final Map<Node, Integer> hashIndices;
+            private final int chunk;
+            private final int from;
+            private final int to;
 
             public BackwardTask(Node r, List<Node> adj, int chunk, int from, int to,
                                 Map<Node, Integer> hashIndices) {
@@ -1324,11 +1324,11 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
     // See Chickering (2002). The totalScore difference resulting from added in the edge (hypothetically) is recorded
     // as the "bump".
     private static class Arrow implements Comparable<Arrow> {
-        private double bump;
-        private Node a;
-        private Node b;
-        private Set<Node> hOrT;
-        private Set<Node> naYX;
+        private final double bump;
+        private final Node a;
+        private final Node b;
+        private final Set<Node> hOrT;
+        private final Set<Node> naYX;
         private int index = 0;
 
         public Arrow(double bump, Node a, Node b, Set<Node> hOrT, Set<Node> naYX, int index) {

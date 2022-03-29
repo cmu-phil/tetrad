@@ -41,22 +41,22 @@ public class IndTestSepset implements IndependenceTest {
     /**
      * The sepset being queried
      */
-    private SepsetMapDci sepset;
+    private final SepsetMapDci sepset;
 
     /**
      * The map from nodes to variables.
      */
-    private Map<Node, Node> nodesToVariables;
+    private final Map<Node, Node> nodesToVariables;
 
     /**
      * The map from variables to nodes.
      */
-    private Map<Node, Node> variablesToNodes;
+    private final Map<Node, Node> variablesToNodes;
 
     /**
      * The list of observed variables (i.e. variables for observed nodes).
      */
-    private List<Node> observedVars;
+    private final List<Node> observedVars;
     private boolean verbose = false;
 
     /**

@@ -57,7 +57,7 @@ import java.util.concurrent.ConcurrentMap;
 public final class SvarGFci implements GraphSearch {
 
     // If a graph is provided.
-    private Graph dag = null;
+    private final Graph dag = null;
 
     // The PAG being constructed.
     private Graph graph;
@@ -66,7 +66,7 @@ public final class SvarGFci implements GraphSearch {
     private IKnowledge knowledge = new Knowledge2();
 
     // The variables to search over (optional)
-    private List<Node> variables = new ArrayList<>();
+    private final List<Node> variables = new ArrayList<>();
 
     // The conditional independence test.
     private IndependenceTest independenceTest;
@@ -84,7 +84,7 @@ public final class SvarGFci implements GraphSearch {
     private int maxIndegree = -1;
 
     // The logger to use.
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
     // True iff verbose output should be printed.
     private boolean verbose = false;
@@ -119,7 +119,7 @@ public final class SvarGFci implements GraphSearch {
     private SepsetProducer sepsets;
     private long elapsedTime;
 
-    private int depth = -1;
+    private final int depth = -1;
 
     //============================CONSTRUCTORS============================//
 

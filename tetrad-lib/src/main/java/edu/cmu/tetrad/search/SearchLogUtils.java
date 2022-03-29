@@ -36,7 +36,7 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 public class SearchLogUtils {
-    private static NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
     public static String endpointOrientedMsg(Endpoint e, Node x, Node y) {
         char endptChar = '*';
