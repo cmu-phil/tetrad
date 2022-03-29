@@ -365,7 +365,7 @@ class AddVariableListener implements ActionListener {
             if (temp > max) max = temp;
         }
 
-        sp.scrollers.add(new JScrollBar(JScrollBar.HORIZONTAL, (int) Math.floor(min), 1, (int) Math.floor(min), (int) Math.ceil(max)));
+        sp.scrollers.add(new JScrollBar(Adjustable.HORIZONTAL, (int) Math.floor(min), 1, (int) Math.floor(min), (int) Math.ceil(max)));
 
         Box hBox10 = Box.createHorizontalBox();
         hBox10.add(Box.createHorizontalStrut(10));

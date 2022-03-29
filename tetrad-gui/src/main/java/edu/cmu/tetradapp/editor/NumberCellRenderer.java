@@ -53,7 +53,7 @@ class NumberCellRenderer extends DefaultTableCellRenderer {
 
         this.nf = nf;
 
-        this.setHorizontalAlignment(JLabel.RIGHT);
+        this.setHorizontalAlignment(SwingConstants.RIGHT);
         this.setFont(new Font("Serif", Font.PLAIN, 12));
     }
 

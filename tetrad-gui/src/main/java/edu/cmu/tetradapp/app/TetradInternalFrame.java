@@ -52,7 +52,7 @@ public class TetradInternalFrame extends JInternalFrame {
         Image image = ImageUtils.getImage(this, "tyler16.png");
         this.setFrameIcon(new ImageIcon(image));
 
-        setDefaultCloseOperation(JInternalFrame.DO_NOTHING_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         this.addInternalFrameListener(new InternalFrameAdapter() {
 
             /**

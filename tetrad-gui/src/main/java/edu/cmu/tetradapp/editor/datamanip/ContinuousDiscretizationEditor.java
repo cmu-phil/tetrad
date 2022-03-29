@@ -311,9 +311,9 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
                 method == Method.EVENLY_DIVIDED_INTERNVALS);
         JRadioButton equalBuckets = new JRadioButton("Evenly Distributed Values",
                 method == Method.EQUAL_SIZE_BUCKETS);
-        none.setHorizontalTextPosition(AbstractButton.RIGHT);
-        equalInterval.setHorizontalTextPosition(AbstractButton.RIGHT);
-        equalBuckets.setHorizontalTextPosition(AbstractButton.RIGHT);
+        none.setHorizontalTextPosition(SwingConstants.RIGHT);
+        equalInterval.setHorizontalTextPosition(SwingConstants.RIGHT);
+        equalBuckets.setHorizontalTextPosition(SwingConstants.RIGHT);
 
         ButtonGroup group = new ButtonGroup();
         group.add(equalBuckets);

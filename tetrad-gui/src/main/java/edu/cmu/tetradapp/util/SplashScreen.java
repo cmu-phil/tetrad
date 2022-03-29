@@ -107,7 +107,7 @@ public class SplashScreen {
             panel.add(b, BorderLayout.CENTER);
 
             Box b1 = Box.createHorizontalBox();
-            JLabel label = new JLabel(title, JLabel.CENTER);
+            JLabel label = new JLabel(title, SwingConstants.CENTER);
             label.setFont(label.getFont().deriveFont((float) 16));
             b1.add(Box.createHorizontalGlue());
             b1.add(label);

@@ -290,9 +290,9 @@ class CovCellRenderer extends DefaultTableCellRenderer {
         }
 
         if (value instanceof Number) {
-            renderer.setHorizontalAlignment(JLabel.RIGHT);
+            renderer.setHorizontalAlignment(SwingConstants.RIGHT);
         } else {
-            renderer.setHorizontalAlignment(JLabel.LEFT);
+            renderer.setHorizontalAlignment(SwingConstants.LEFT);
         }
 
         java.util.List variables = covMatrix.getVariables();
@@ -363,7 +363,7 @@ class CovCellEditor extends DefaultCellEditor {
         super(new JTextField());
 
         textField = (JTextField) editorComponent;
-        textField.setHorizontalAlignment(JTextField.LEFT);
+        textField.setHorizontalAlignment(SwingConstants.LEFT);
         textField.setBorder(new LineBorder(Color.black));
 
         delegate = new DefaultCellEditor.EditorDelegate() {

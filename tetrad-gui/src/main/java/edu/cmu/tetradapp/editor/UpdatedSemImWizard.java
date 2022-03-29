@@ -95,7 +95,7 @@ final class UpdatedSemImWizard extends JPanel {
         marginalsPanel.add(this.createMarginalDisplay(selectedNode),
                 BorderLayout.CENTER);
 
-        JTabbedPane probsPane = new JTabbedPane(JTabbedPane.TOP);
+        JTabbedPane probsPane = new JTabbedPane(SwingConstants.TOP);
 
         this.setupMarginalsDisplay(probsPane);
 

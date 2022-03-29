@@ -128,7 +128,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
     private DataEditor createDataEditor(Simulation simulation) {
         edu.cmu.tetrad.algcomparison.simulation.Simulation sim = simulation.getSimulation();
         if (sim == null) {
-            return new DataEditor(JTabbedPane.LEFT);
+            return new DataEditor(SwingConstants.LEFT);
         } else {
             DataModelList dataModelList = new DataModelList();
             for (int i = 0; i < sim.getNumDataModels(); i++) {
@@ -138,7 +138,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
             DataWrapper wrapper = new DataWrapper(new Parameters());
             wrapper.setDataModelList(dataModelList);
 
-            return new DataEditor(wrapper, false, JTabbedPane.LEFT);
+            return new DataEditor(wrapper, false, SwingConstants.LEFT);
         }
     }
 
@@ -188,7 +188,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
 
                 DataWrapper wrapper = new DataWrapper(new Parameters());
                 wrapper.setDataModelList(simulation.getDataModelList());
-                tabbedPane.setComponentAt(2, new DataEditor(wrapper, false, JTabbedPane.LEFT));
+                tabbedPane.setComponentAt(2, new DataEditor(wrapper, false, SwingConstants.LEFT));
 
                 this.showTab();
                 this.firePropertyChange("modelChanged", null, null);

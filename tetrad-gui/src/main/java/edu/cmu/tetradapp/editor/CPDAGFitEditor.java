@@ -56,7 +56,7 @@ public class CPDAGFitEditor extends JPanel {
     //============================ Private Methods =========================//
 
     private void setup() {
-        JTabbedPane pane = new JTabbedPane(JTabbedPane.LEFT);
+        JTabbedPane pane = new JTabbedPane(SwingConstants.LEFT);
 
         DataModelList data = comparison.getDataModelList();
         List<BayesIm> bayesIms = comparison.getBayesIms();

@@ -107,7 +107,7 @@ public final class UpdatedBayesImWizard extends JPanel {
         marginalsPanel.add(marginalDisplay,
                 BorderLayout.CENTER);
 
-        JTabbedPane probsPane = new JTabbedPane(JTabbedPane.TOP);
+        JTabbedPane probsPane = new JTabbedPane(SwingConstants.TOP);
 
         this.setupMarginalsDisplay(probsPane);
 

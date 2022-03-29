@@ -213,10 +213,10 @@ public class DoubleTextField extends JTextField {
 
     private void smartSetText(NumberFormat nf, double value) {
         if (Double.isNaN(value)) {
-            this.setHorizontalAlignment(JTextField.RIGHT);
+            this.setHorizontalAlignment(SwingConstants.RIGHT);
             this.setText("");
         } else {
-            this.setHorizontalAlignment(JTextField.RIGHT);
+            this.setHorizontalAlignment(SwingConstants.RIGHT);
 
             if (Math.abs(value) < smallNumberCutoff && value != 0.0) {
                 this.setText(smallNumberFormat.format(value));

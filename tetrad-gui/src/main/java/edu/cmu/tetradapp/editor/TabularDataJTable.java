@@ -495,7 +495,7 @@ class RowNumberRenderer extends DefaultTableCellRenderer {
 
         if (row > 1) {
             this.setText(Integer.toString(row - 1));
-            label.setHorizontalAlignment(JLabel.CENTER);
+            label.setHorizontalAlignment(SwingConstants.CENTER);
             label.setFont(new Font("SansSerif", Font.BOLD, 12));
         }
 
@@ -573,7 +573,7 @@ class VariableNameRenderer extends DefaultTableCellRenderer {
 
         this.setText((String) value);
         this.setFont(new Font("SansSerif", Font.BOLD, 12));
-        this.setHorizontalAlignment(JLabel.CENTER);
+        this.setHorizontalAlignment(SwingConstants.CENTER);
     }
 }
 
@@ -615,7 +615,7 @@ class VariableNameEditor extends DefaultCellEditor {
 
                 textField.setText((String) value);
                 textField.setFont(new Font("SansSerif", Font.BOLD, 12));
-                textField.setHorizontalAlignment(JTextField.CENTER);
+                textField.setHorizontalAlignment(SwingConstants.CENTER);
                 textField.selectAll();
             }
 
@@ -673,9 +673,9 @@ class DataCellRenderer extends DefaultTableCellRenderer {
             Node variable = dataSet.getVariable(dataCol);
 
             if (variable instanceof DiscreteVariable) {
-                renderer.setHorizontalAlignment(JLabel.RIGHT);
+                renderer.setHorizontalAlignment(SwingConstants.RIGHT);
             } else {
-                renderer.setHorizontalAlignment(JLabel.RIGHT);
+                renderer.setHorizontalAlignment(SwingConstants.RIGHT);
             }
         }
 

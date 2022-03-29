@@ -55,7 +55,7 @@ public final class StringTextField extends JTextField {
     public StringTextField(String value, int size) {
         super(size);
 
-        this.setHorizontalAlignment(JTextField.LEFT);
+        this.setHorizontalAlignment(SwingConstants.LEFT);
         this.setValue(value);
         this.addActionListener(new ActionListener() {
 

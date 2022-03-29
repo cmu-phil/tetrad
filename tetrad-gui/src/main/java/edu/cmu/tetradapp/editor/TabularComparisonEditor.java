@@ -23,13 +23,13 @@ public class TabularComparisonEditor extends JPanel {
     }
 
     private void setup() {
-        JTabbedPane pane = new JTabbedPane(JTabbedPane.TOP);
+        JTabbedPane pane = new JTabbedPane(SwingConstants.TOP);
 
         pane.addTab("Comparison", this.getTableDisplay());
 
-        JTabbedPane pane2 = new JTabbedPane(JTabbedPane.LEFT);
+        JTabbedPane pane2 = new JTabbedPane(SwingConstants.LEFT);
 
-        JTabbedPane pane3 = new JTabbedPane(JTabbedPane.TOP);
+        JTabbedPane pane3 = new JTabbedPane(SwingConstants.TOP);
 
         GraphEditor graphEditor = new GraphEditor(new GraphWrapper(comparison.getTargetGraph()));
         graphEditor.enableEditing(false);

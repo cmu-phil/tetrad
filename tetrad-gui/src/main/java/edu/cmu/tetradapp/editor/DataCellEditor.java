@@ -45,7 +45,7 @@ class DataCellEditor extends DefaultCellEditor {
         super(new JTextField());
 
         textField = (JTextField) editorComponent;
-        textField.setHorizontalAlignment(JTextField.LEFT);
+        textField.setHorizontalAlignment(SwingConstants.LEFT);
         textField.setBorder(new LineBorder(Color.BLACK));
 
         delegate = new DefaultCellEditor.EditorDelegate() {

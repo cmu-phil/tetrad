@@ -61,10 +61,10 @@ public class MisclassificationsEditor extends JPanel {
 
     private void setup() {
         java.util.List<Graph> referenceGraphs = comparison.getReferenceGraphs();
-        JTabbedPane pane = new JTabbedPane(JTabbedPane.LEFT);
+        JTabbedPane pane = new JTabbedPane(SwingConstants.LEFT);
 
         for (int i = 0; i < referenceGraphs.size(); i++) {
-            JTabbedPane pane2 = new JTabbedPane(JTabbedPane.TOP);
+            JTabbedPane pane2 = new JTabbedPane(SwingConstants.TOP);
             String compareString = comparison.getComparisonString(i);
 
             JPanel panel = new JPanel();

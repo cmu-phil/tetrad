@@ -934,7 +934,7 @@ public final class SessionEditorNode extends DisplayNode {
         for (TetradLoggerConfig.Event event : events) {
             String id = event.getId();
             JCheckBox checkBox = new JCheckBox(event.getDescription());
-            checkBox.setHorizontalTextPosition(AbstractButton.RIGHT);
+            checkBox.setHorizontalTextPosition(SwingConstants.RIGHT);
             checkBox.setSelected(config.isEventActive(id));
             checkBox.addActionListener((e) -> {
                 JCheckBox box = (JCheckBox) e.getSource();

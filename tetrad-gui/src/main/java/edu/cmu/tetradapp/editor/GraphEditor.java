@@ -301,7 +301,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
 //        splitPane.setDividerLocation((int) (splitPane.getPreferredSize().getHeight() - 150));
 
         // Switching to tabbed pane because of resizing problems with the split pane... jdramsey 2021.08.25
-        JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.BOTTOM);
+        JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.BOTTOM);
         tabbedPane.addTab("Graph", new PaddingPanel(topBox));
         tabbedPane.addTab("Edges", edgeTypeTable);
 

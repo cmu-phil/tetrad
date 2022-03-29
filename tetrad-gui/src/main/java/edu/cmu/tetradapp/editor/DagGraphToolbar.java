@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetradapp.util.ImageUtils;
+import edu.cmu.tetradapp.workbench.AbstractWorkbench;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -111,27 +112,27 @@ class DagGraphToolbar extends JPanel implements PropertyChangeListener {
         move.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 move.getModel().setSelected(true);
-                DagGraphToolbar.this.setWorkbenchMode(GraphWorkbench.SELECT_MOVE);
+                DagGraphToolbar.this.setWorkbenchMode(AbstractWorkbench.SELECT_MOVE);
             }
         });
         addObserved.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 addObserved.getModel().setSelected(true);
-                DagGraphToolbar.this.setWorkbenchMode(GraphWorkbench.ADD_NODE);
+                DagGraphToolbar.this.setWorkbenchMode(AbstractWorkbench.ADD_NODE);
                 DagGraphToolbar.this.setNodeMode(GraphWorkbench.MEASURED_NODE);
             }
         });
         addLatent.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 addLatent.getModel().setSelected(true);
-                DagGraphToolbar.this.setWorkbenchMode(GraphWorkbench.ADD_NODE);
+                DagGraphToolbar.this.setWorkbenchMode(AbstractWorkbench.ADD_NODE);
                 DagGraphToolbar.this.setNodeMode(GraphWorkbench.LATENT_NODE);
             }
         });
         addDirectedEdge.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 addDirectedEdge.getModel().setSelected(true);
-                DagGraphToolbar.this.setWorkbenchMode(GraphWorkbench.ADD_EDGE);
+                DagGraphToolbar.this.setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
                 DagGraphToolbar.this.setEdgeMode(GraphWorkbench.DIRECTED_EDGE);
             }
         });

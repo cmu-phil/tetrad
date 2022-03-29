@@ -47,8 +47,8 @@ class TierList extends JScrollPane {
     public TierList(IKnowledge know, List<String> varNames,
                     TemporalTierEditor tierListEditor) {
 
-        super(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        super(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
         vNames = varNames;
 

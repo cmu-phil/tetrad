@@ -104,7 +104,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
     }
 
     public DataEditor(DataWrapper dataWrapper, boolean showMenus) {
-        this(dataWrapper, showMenus, JTabbedPane.TOP);
+        this(dataWrapper, showMenus, SwingConstants.TOP);
     }
 
     /**

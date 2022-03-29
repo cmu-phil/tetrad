@@ -58,7 +58,7 @@ class NumberCellEditor extends DefaultCellEditor {
         }
 
         textField = (JTextField) editorComponent;
-        textField.setHorizontalAlignment(JTextField.RIGHT);
+        textField.setHorizontalAlignment(SwingConstants.RIGHT);
         textField.setBorder(new LineBorder(Color.black));
         textField.setFont(new Font("Serif", Font.PLAIN, 12));
         this.setClickCountToStart(1);

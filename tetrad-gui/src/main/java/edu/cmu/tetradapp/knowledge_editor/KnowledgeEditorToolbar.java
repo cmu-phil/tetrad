@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.util.ImageUtils;
+import edu.cmu.tetradapp.workbench.AbstractWorkbench;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -160,8 +161,8 @@ class KnowledgeEditorToolbar extends JPanel {
         // Put the panel in a scrollpane.
         setLayout(new BorderLayout());
         JScrollPane scroll = new JScrollPane(buttonsPanel,
-                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+                ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         scroll.setPreferredSize(new Dimension(130, 1000));
         this.add(scroll, BorderLayout.CENTER);
     }
@@ -217,12 +218,12 @@ class KnowledgeEditorToolbar extends JPanel {
         String nodeType = nodeTypes.get(button);
 
         if ("Select".equals(nodeType)) {
-            workbench.setWorkbenchMode(KnowledgeWorkbench.SELECT_MOVE);
+            workbench.setWorkbenchMode(AbstractWorkbench.SELECT_MOVE);
         } else if ("Forbidden".equals(nodeType)) {
-            workbench.setWorkbenchMode(KnowledgeWorkbench.ADD_EDGE);
+            workbench.setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
             workbench.setEdgeMode(KnowledgeWorkbench.FORBIDDEN_EDGE);
         } else if ("Required".equals(nodeType)) {
-            workbench.setWorkbenchMode(KnowledgeWorkbench.ADD_EDGE);
+            workbench.setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
             workbench.setEdgeMode(KnowledgeWorkbench.REQUIRED_EDGE);
         } else if ("Source Layout".equals(nodeType)) {
             KnowledgeGraph graph = (KnowledgeGraph) workbench.getGraph();

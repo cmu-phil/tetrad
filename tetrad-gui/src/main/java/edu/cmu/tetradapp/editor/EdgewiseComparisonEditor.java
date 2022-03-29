@@ -56,10 +56,10 @@ public class EdgewiseComparisonEditor extends JPanel {
         this.setLayout(new BorderLayout());
 
         List<Graph> referenceGraphs = comparison.getReferenceGraphs();
-        JTabbedPane pane = new JTabbedPane(JTabbedPane.LEFT);
+        JTabbedPane pane = new JTabbedPane(SwingConstants.LEFT);
 
         for (int i = 0; i < referenceGraphs.size(); i++) {
-            JTabbedPane pane2 = new JTabbedPane(JTabbedPane.TOP);
+            JTabbedPane pane2 = new JTabbedPane(SwingConstants.TOP);
             String compareString = comparison.getComparisonString(i);
 
             Font font = new Font("Monospaced", Font.PLAIN, 14);

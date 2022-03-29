@@ -279,7 +279,7 @@ public final class TimeLagGraphEditor extends JPanel
 
         edgeTypeTable.setPreferredSize(new Dimension(820, 150));
 
-        JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.BOTTOM);
+        JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.BOTTOM);
         tabbedPane.addTab("Graph", new PaddingPanel(topBox));
         tabbedPane.addTab("Edges", edgeTypeTable);
 

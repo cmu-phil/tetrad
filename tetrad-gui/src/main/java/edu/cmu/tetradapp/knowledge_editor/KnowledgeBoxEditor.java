@@ -90,7 +90,7 @@ public class KnowledgeBoxEditor extends JPanel {
         this.knowledgeBoxModel = knowledgeBoxModel;
 
         this.setLayout(new BorderLayout());
-        JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.LEFT);
+        JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.LEFT);
         this.tabbedPane = tabbedPane;
         this.resetTabbedPane();
 

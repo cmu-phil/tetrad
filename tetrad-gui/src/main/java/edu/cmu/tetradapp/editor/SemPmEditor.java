@@ -698,7 +698,7 @@ class SemPmGraphicalEditor extends JPanel {
                 }
             });
 
-            nameField.setHorizontalAlignment(JTextField.RIGHT);
+            nameField.setHorizontalAlignment(SwingConstants.RIGHT);
             nameField.grabFocus();
             nameField.selectAll();
 

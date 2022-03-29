@@ -202,7 +202,7 @@ public class SetupLoggingAction extends AbstractAction {
 
         JCheckBox fileCheckBox = new JCheckBox(" File ");
         fileCheckBox.setSelected(TetradLogger.getInstance().isFileLoggingEnabled());
-        fileCheckBox.setHorizontalTextPosition(AbstractButton.LEFT);
+        fileCheckBox.setHorizontalTextPosition(SwingConstants.LEFT);
         fileCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JCheckBox box = (JCheckBox) e.getSource();
@@ -212,7 +212,7 @@ public class SetupLoggingAction extends AbstractAction {
 
         JCheckBox textareaCheckBox = new JCheckBox(" Log Display ");
         textareaCheckBox.setSelected(TetradLogger.getInstance().isDisplayLogEnabled());
-        textareaCheckBox.setHorizontalTextPosition(AbstractButton.LEFT);
+        textareaCheckBox.setHorizontalTextPosition(SwingConstants.LEFT);
         textareaCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JCheckBox box = (JCheckBox) e.getSource();

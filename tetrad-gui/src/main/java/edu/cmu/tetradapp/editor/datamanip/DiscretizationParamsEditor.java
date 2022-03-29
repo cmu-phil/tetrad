@@ -331,8 +331,8 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
             box.add(new JLabel(message));
             box.add(Box.createVerticalStrut(5));
             JCheckBox checkBox = new JCheckBox("Don't show this again");
-            checkBox.setHorizontalTextPosition(AbstractButton.LEFT);
-            checkBox.setHorizontalAlignment(AbstractButton.RIGHT);
+            checkBox.setHorizontalTextPosition(SwingConstants.LEFT);
+            checkBox.setHorizontalAlignment(SwingConstants.RIGHT);
             checkBox.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     JCheckBox box = (JCheckBox) e.getSource();
@@ -460,9 +460,9 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
                     method == Method.EQUAL_SIZE_BUCKETS);
             JRadioButton equalInterval = new JRadioButton("Evenly Distributed Intervals",
                     method == Method.EVENLY_DIVIDED_INTERNVALS);
-            none.setHorizontalTextPosition(AbstractButton.RIGHT);
-            equalBuckets.setHorizontalTextPosition(AbstractButton.RIGHT);
-            equalInterval.setHorizontalTextPosition(AbstractButton.RIGHT);
+            none.setHorizontalTextPosition(SwingConstants.RIGHT);
+            equalBuckets.setHorizontalTextPosition(SwingConstants.RIGHT);
+            equalInterval.setHorizontalTextPosition(SwingConstants.RIGHT);
 
             none.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {

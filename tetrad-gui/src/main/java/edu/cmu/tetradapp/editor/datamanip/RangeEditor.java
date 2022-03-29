@@ -218,9 +218,9 @@ final class RangeEditor extends JComponent {
 
         leftRangeFields[0].setEditable(false);
         rightRangeFields[maxCategory].setEditable(false);
-        leftRangeFields[0].setHorizontalAlignment(JTextField.CENTER);
+        leftRangeFields[0].setHorizontalAlignment(SwingConstants.CENTER);
         rightRangeFields[maxCategory].setHorizontalAlignment(
-                JTextField.CENTER);
+                SwingConstants.CENTER);
 
         for (int i = 0; i < this.getNumCategories() - 1; i++) {
             rightRangeFields[i] = new DoubleTextField(breakpoints[i], 6, NumberFormatUtil.getInstance().getNumberFormat());

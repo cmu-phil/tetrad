@@ -50,8 +50,8 @@ class Tier extends JPanel {
      */
     public Tier(TierList kn, int thisTier, String[] tierNames) {
 
-        jsp = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_NEVER,
-                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        jsp = new JScrollPane(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
         knowList = kn;
 

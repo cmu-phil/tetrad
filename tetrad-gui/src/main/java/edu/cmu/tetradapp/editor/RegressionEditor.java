@@ -285,7 +285,7 @@ public class RegressionEditor extends JPanel {
                         Component renderer = super.getTableCellRendererComponent(table,
                                 value, isSelected, hasFocus, row, column);
                         this.setText((String) value);
-                        this.setHorizontalAlignment(JLabel.RIGHT);
+                        this.setHorizontalAlignment(SwingConstants.RIGHT);
                         return renderer;
                     }
                 });

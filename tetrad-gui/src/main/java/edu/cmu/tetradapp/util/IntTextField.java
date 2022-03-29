@@ -66,7 +66,7 @@ public final class IntTextField extends JTextField {
         this.setValue(value);
         this.setText(Integer.toString(value));
 
-        this.setHorizontalAlignment(JTextField.RIGHT);
+        this.setHorizontalAlignment(SwingConstants.RIGHT);
         this.addActionListener(new ActionListener() {
 
             /**

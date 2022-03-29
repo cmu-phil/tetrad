@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetradapp.util.ImageUtils;
+import edu.cmu.tetradapp.workbench.AbstractWorkbench;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -126,14 +127,14 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
         move.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 move.getModel().setSelected(true);
-                GraphToolbar.this.setWorkbenchMode(GraphWorkbench.SELECT_MOVE);
+                GraphToolbar.this.setWorkbenchMode(AbstractWorkbench.SELECT_MOVE);
             }
         });
 
         addObserved.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 addObserved.getModel().setSelected(true);
-                GraphToolbar.this.setWorkbenchMode(GraphWorkbench.ADD_NODE);
+                GraphToolbar.this.setWorkbenchMode(AbstractWorkbench.ADD_NODE);
                 GraphToolbar.this.setNodeMode(GraphWorkbench.MEASURED_NODE);
             }
         });
@@ -141,7 +142,7 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
         addLatent.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 addLatent.getModel().setSelected(true);
-                GraphToolbar.this.setWorkbenchMode(GraphWorkbench.ADD_NODE);
+                GraphToolbar.this.setWorkbenchMode(AbstractWorkbench.ADD_NODE);
                 GraphToolbar.this.setNodeMode(GraphWorkbench.LATENT_NODE);
             }
         });
@@ -149,7 +150,7 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
         addDirectedEdge.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 addDirectedEdge.getModel().setSelected(true);
-                GraphToolbar.this.setWorkbenchMode(GraphWorkbench.ADD_EDGE);
+                GraphToolbar.this.setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
                 GraphToolbar.this.setEdgeMode(GraphWorkbench.DIRECTED_EDGE);
             }
         });
@@ -157,7 +158,7 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
         addNondirectedEdge.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 addNondirectedEdge.getModel().setSelected(true);
-                GraphToolbar.this.setWorkbenchMode(GraphWorkbench.ADD_EDGE);
+                GraphToolbar.this.setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
                 GraphToolbar.this.setEdgeMode(GraphWorkbench.NONDIRECTED_EDGE);
             }
         });
@@ -165,7 +166,7 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
         addUndirectedEdge.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 addUndirectedEdge.getModel().setSelected(true);
-                GraphToolbar.this.setWorkbenchMode(GraphWorkbench.ADD_EDGE);
+                GraphToolbar.this.setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
                 GraphToolbar.this.setEdgeMode(GraphWorkbench.UNDIRECTED_EDGE);
             }
         });
@@ -173,7 +174,7 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
         addPartiallyOrientedEdge.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 addPartiallyOrientedEdge.getModel().setSelected(true);
-                GraphToolbar.this.setWorkbenchMode(GraphWorkbench.ADD_EDGE);
+                GraphToolbar.this.setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
                 GraphToolbar.this.setEdgeMode(GraphWorkbench.PARTIALLY_ORIENTED_EDGE);
             }
         });
@@ -181,7 +182,7 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
         addBidirectedEdge.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 addBidirectedEdge.getModel().setSelected(true);
-                GraphToolbar.this.setWorkbenchMode(GraphWorkbench.ADD_EDGE);
+                GraphToolbar.this.setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
                 GraphToolbar.this.setEdgeMode(GraphWorkbench.BIDIRECTED_EDGE);
             }
         });

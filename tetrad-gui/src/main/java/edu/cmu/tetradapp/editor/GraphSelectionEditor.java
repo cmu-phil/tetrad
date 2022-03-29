@@ -79,7 +79,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
      * Holds the graphs.
      */
     private final GraphSelectionWrapper wrapper;
-    private final JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.LEFT);
+    private final JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.LEFT);
     private final List<GraphWorkbench> workbenches = new ArrayList<>();
     private GraphPropertiesAction graphAction;
     private TriplesAction triplesAction;

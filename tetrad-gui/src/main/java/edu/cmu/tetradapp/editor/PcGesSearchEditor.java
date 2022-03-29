@@ -271,7 +271,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
         if (this.getAlgorithmRunner().getParams() instanceof Parameters) {
             Parameters params = this.getAlgorithmRunner().getParams();
             JCheckBox preventCycles = new JCheckBox("Aggressively Prevent Cycles");
-            preventCycles.setHorizontalTextPosition(AbstractButton.RIGHT);
+            preventCycles.setHorizontalTextPosition(SwingConstants.RIGHT);
             preventCycles.setSelected(params.getBoolean("aggressivelyPreventCycles", false));
 
             preventCycles.addActionListener(new ActionListener() {

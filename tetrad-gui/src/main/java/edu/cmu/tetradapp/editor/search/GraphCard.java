@@ -64,7 +64,7 @@ public class GraphCard extends JPanel {
 
         Graph graph = algorithmRunner.getGraph();
 
-        JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.BOTTOM);
+        JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.BOTTOM);
         tabbedPane.addTab("Graph", new PaddingPanel(this.createGraphPanel(graph)));
         tabbedPane.addTab("Edges", this.createEdgeTypeTable(graph));
         this.add(tabbedPane, BorderLayout.CENTER);

@@ -315,7 +315,7 @@ class RegressionParamsEditorPanel extends JPanel {
 
     private static Box createLabel(String text) {
         JLabel label = new JLabel(text);
-        label.setAlignmentX(JLabel.LEFT_ALIGNMENT);
+        label.setAlignmentX(Component.LEFT_ALIGNMENT);
         Box box = Box.createHorizontalBox();
         box.add(label);
         box.add(Box.createHorizontalGlue());

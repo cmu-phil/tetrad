@@ -308,7 +308,7 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
 
         JPanel editors1 = this.initializeExpressionEditors();
         JScrollPane pane = new JScrollPane(editors1);
-        pane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        pane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         LayoutUtils.setAllSizes(pane, new Dimension(editors1.getPreferredSize().width + 25, 100));
 
         equationEditors.add(pane);
@@ -645,7 +645,7 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
 
         JScrollPane pane = new JScrollPane(list);
         LayoutUtils.setAllSizes(pane, new Dimension(150, 130));
-        pane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        pane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
 
         JButton select = new JButton("Select");

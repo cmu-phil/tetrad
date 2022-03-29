@@ -85,7 +85,7 @@ class TetradLogArea extends JPanel {
             TetradLogger.getInstance().addOutputStream(stream);
         }
         JScrollPane pane = new JScrollPane(textArea);
-        pane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        pane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
         // finally add the components to the panel.
         this.add(this.createHeader(), BorderLayout.NORTH);
@@ -265,7 +265,7 @@ class TetradLogArea extends JPanel {
 
         JCheckBox fileCheckBox = new JCheckBox(" File ");
         fileCheckBox.setSelected(TetradLogger.getInstance().isFileLoggingEnabled());
-        fileCheckBox.setHorizontalTextPosition(AbstractButton.LEFT);
+        fileCheckBox.setHorizontalTextPosition(SwingConstants.LEFT);
         fileCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JCheckBox box = (JCheckBox) e.getSource();
@@ -275,7 +275,7 @@ class TetradLogArea extends JPanel {
 
         JCheckBox textareaCheckBox = new JCheckBox(" Log Display ");
         textareaCheckBox.setSelected(TetradLogger.getInstance().isDisplayLogEnabled());
-        textareaCheckBox.setHorizontalTextPosition(AbstractButton.LEFT);
+        textareaCheckBox.setHorizontalTextPosition(SwingConstants.LEFT);
         textareaCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JCheckBox box = (JCheckBox) e.getSource();
