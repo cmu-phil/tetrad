@@ -23,7 +23,6 @@ package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.text.NumberFormat;
 import java.util.List;
@@ -36,7 +35,7 @@ import java.util.Map;
  *
  * @author Joseph Ramsey
  */
-public interface DataSet extends KnowledgeTransferable, DataModel, TetradSerializable {
+public interface DataSet extends DataModel {
     long serialVersionUID = 23L;
 
     /**

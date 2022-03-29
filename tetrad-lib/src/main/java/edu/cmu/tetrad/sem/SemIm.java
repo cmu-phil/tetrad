@@ -70,7 +70,7 @@ import static java.lang.Math.sqrt;
  * @author Ricardo Silva
  * @author Joseph Ramsey
  */
-public final class SemIm implements IM, ISemIm, TetradSerializable {
+public final class SemIm implements IM, ISemIm {
 
     static final long serialVersionUID = 23L;
     private static Collection<? extends String> parameterNames;

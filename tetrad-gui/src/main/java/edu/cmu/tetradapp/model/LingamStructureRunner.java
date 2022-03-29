@@ -47,7 +47,7 @@ import java.util.List;
  * @author Ricardo Silva
  */
 
-public class LingamStructureRunner extends AbstractAlgorithmRunner implements GraphSource,
+public class LingamStructureRunner extends AbstractAlgorithmRunner implements
         PropertyChangeListener {
     static final long serialVersionUID = 23L;
     private transient List<PropertyChangeListener> listeners;

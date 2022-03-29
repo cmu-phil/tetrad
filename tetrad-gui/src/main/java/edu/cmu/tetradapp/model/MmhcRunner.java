@@ -44,7 +44,7 @@ import java.util.List;
  * @author Ricardo Silva
  */
 
-public class MmhcRunner extends AbstractAlgorithmRunner implements GraphSource {
+public class MmhcRunner extends AbstractAlgorithmRunner {
     static final long serialVersionUID = 23L;
 
     //============================CONSTRUCTORS============================//

@@ -38,7 +38,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.session.ParamsResettable;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Unmarshallable;
 
@@ -53,7 +52,7 @@ import java.util.stream.Collectors;
  * @author jdramsey
  */
 public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable,
-        MultipleGraphSource, Unmarshallable, SessionModel, IndTestProducer,
+        Unmarshallable, IndTestProducer,
         KnowledgeBoxInput {
 
     static final long serialVersionUID = 23L;

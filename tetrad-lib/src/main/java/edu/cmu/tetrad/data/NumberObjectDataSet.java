@@ -22,7 +22,10 @@
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.MatrixUtils;
+import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetrad.util.StatUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -77,7 +80,7 @@ import java.util.*;
  * @see edu.cmu.tetrad.data.Knowledge2
  */
 public final class NumberObjectDataSet
-        implements DataSet, TetradSerializable {
+        implements DataSet {
     static final long serialVersionUID = 23L;
     private Map<String, String> columnToTooltip;
 
@@ -1456,7 +1459,7 @@ public final class NumberObjectDataSet
 
                 if (index == -1) {
                     throw new IllegalArgumentException(
-                            "Not a category for this variable: " + index);
+                            "Not a category for this variable: " + -1);
                 }
 
                 return index;

@@ -94,7 +94,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
 
                         if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
                             if (currChar == DataFileReader.LINE_FEED && prevChar == DataFileReader.CARRIAGE_RETURN) {
-                                prevChar = currChar;
+                                prevChar = DataFileReader.LINE_FEED;
                                 continue;
                             }
 
@@ -144,7 +144,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
 
                     if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
                         if (currChar == DataFileReader.LINE_FEED && prevChar == DataFileReader.CARRIAGE_RETURN) {
-                            prevChar = currChar;
+                            prevChar = DataFileReader.LINE_FEED;
                             continue;
                         }
 
@@ -487,7 +487,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
 
                         if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
                             if (currChar == DataFileReader.LINE_FEED && prevChar == DataFileReader.CARRIAGE_RETURN) {
-                                prevChar = currChar;
+                                prevChar = DataFileReader.LINE_FEED;
                                 continue;
                             }
 
@@ -537,7 +537,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
 
                     if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
                         if (currChar == DataFileReader.LINE_FEED && prevChar == DataFileReader.CARRIAGE_RETURN) {
-                            prevChar = currChar;
+                            prevChar = DataFileReader.LINE_FEED;
                             continue;
                         }
 
@@ -760,7 +760,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
 
                         if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
                             if (currChar == DataFileReader.LINE_FEED && prevChar == DataFileReader.CARRIAGE_RETURN) {
-                                prevChar = currChar;
+                                prevChar = DataFileReader.LINE_FEED;
                                 continue;
                             }
 
@@ -810,7 +810,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
 
                     if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
                         if (currChar == DataFileReader.LINE_FEED && prevChar == DataFileReader.CARRIAGE_RETURN) {
-                            prevChar = currChar;
+                            prevChar = DataFileReader.LINE_FEED;
                             continue;
                         }
 
@@ -1019,7 +1019,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
 
                         if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
                             if (currChar == DataFileReader.LINE_FEED && prevChar == DataFileReader.CARRIAGE_RETURN) {
-                                prevChar = currChar;
+                                prevChar = DataFileReader.LINE_FEED;
                                 continue;
                             }
 
@@ -1069,7 +1069,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
 
                     if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
                         if (currChar == DataFileReader.LINE_FEED && prevChar == DataFileReader.CARRIAGE_RETURN) {
-                            prevChar = currChar;
+                            prevChar = DataFileReader.LINE_FEED;
                             continue;
                         }
 
@@ -1246,7 +1246,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
 
                         if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
                             if (currChar == DataFileReader.LINE_FEED && prevChar == DataFileReader.CARRIAGE_RETURN) {
-                                prevChar = currChar;
+                                prevChar = DataFileReader.LINE_FEED;
                                 continue;
                             }
 
@@ -1296,7 +1296,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
 
                     if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
                         if (currChar == DataFileReader.LINE_FEED && prevChar == DataFileReader.CARRIAGE_RETURN) {
-                            prevChar = currChar;
+                            prevChar = DataFileReader.LINE_FEED;
                             continue;
                         }
 

@@ -25,7 +25,6 @@ import edu.cmu.tetrad.bayes.DirichletBayesIm;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -39,7 +38,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class DirichletBayesImWrapper implements SessionModel, KnowledgeBoxInput {
+public class DirichletBayesImWrapper implements KnowledgeBoxInput {
 
     static final long serialVersionUID = 23L;
 

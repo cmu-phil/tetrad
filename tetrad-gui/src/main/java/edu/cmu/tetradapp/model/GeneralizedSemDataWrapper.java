@@ -23,7 +23,6 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -37,7 +36,7 @@ import java.rmi.MarshalledObject;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public class GeneralizedSemDataWrapper extends DataWrapper implements SessionModel {
+public class GeneralizedSemDataWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
     private GeneralizedSemIm semIm;
     private Parameters params;

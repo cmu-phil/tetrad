@@ -22,7 +22,6 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.LogDataUtils;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -33,7 +32,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
 public class DirichletBayesDataWrapper extends DataWrapper
-        implements SessionModel, UnlistedSessionModel {
+        implements UnlistedSessionModel {
     static final long serialVersionUID = 23L;
 
     private DirichletBayesDataWrapper(DirichletBayesImWrapper wrapper,

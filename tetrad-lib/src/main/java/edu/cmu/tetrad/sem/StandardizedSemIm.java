@@ -54,7 +54,7 @@ import static java.lang.Math.sqrt;
  * </p>
  * Currently we are not allowing bidirected edges in the SEM graph.
  */
-public class StandardizedSemIm implements Simulator, TetradSerializable {
+public class StandardizedSemIm implements Simulator {
     private Matrix edgeCoef;
     private Matrix errorCovar;
     private Map<Node, Double> errorVariances;
@@ -363,7 +363,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
         double rangeHigh;
 
         if (high == Double.POSITIVE_INFINITY) {
-            rangeHigh = high;
+            rangeHigh = Double.POSITIVE_INFINITY;
         } else {
             double low = value;
 
@@ -394,7 +394,7 @@ public class StandardizedSemIm implements Simulator, TetradSerializable {
         double rangeLow;
 
         if (low == Double.NEGATIVE_INFINITY) {
-            rangeLow = low;
+            rangeLow = Double.NEGATIVE_INFINITY;
         } else {
 
             // find the boundary using binary search.

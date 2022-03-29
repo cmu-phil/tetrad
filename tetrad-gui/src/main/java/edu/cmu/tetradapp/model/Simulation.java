@@ -29,8 +29,6 @@ import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.session.SessionModel;
-import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -48,8 +46,8 @@ import java.util.Map;
  *
  * @author jdramsey
  */
-public class Simulation extends DataWrapper implements SessionModel,
-        SimulationParamsSource, GraphSource, MultipleGraphSource, MultipleDataSource {
+public class Simulation extends DataWrapper implements
+        GraphSource, MultipleGraphSource {
 
     static final long serialVersionUID = 23L;
 

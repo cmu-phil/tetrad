@@ -36,7 +36,7 @@ import java.util.*;
  * @author Joseph Ramsey
  */
 public class CpcRunner extends AbstractAlgorithmRunner
-        implements IndTestProducer, GraphSource {
+        implements IndTestProducer {
     static final long serialVersionUID = 23L;
     private Graph trueGraph;
 //    private CPC cpc = null;

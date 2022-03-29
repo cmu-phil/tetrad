@@ -25,7 +25,6 @@ import edu.cmu.tetrad.graph.NodeEqualityMode;
 import edu.cmu.tetrad.graph.NodeEqualityMode.Type;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.graph.NodeVariableType;
-import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -41,8 +40,7 @@ import java.util.Map;
  * @author Willie Wheeler 07/99
  * @author Joseph Ramsey modifications 12/00
  */
-public final class ContinuousVariable extends AbstractVariable
-        implements TetradSerializable {
+public final class ContinuousVariable extends AbstractVariable {
 
     static final long serialVersionUID = 23L;
 

@@ -39,7 +39,7 @@ import java.util.*;
  *
  * @author user
  */
-public class ADTree<A, V> extends ADTreeHelper implements Serializable {
+public class ADTree<A, V> extends ADTreeHelper {
 
     private final Map<A, Integer> attributeLookup;
     private final List<A> attributes;

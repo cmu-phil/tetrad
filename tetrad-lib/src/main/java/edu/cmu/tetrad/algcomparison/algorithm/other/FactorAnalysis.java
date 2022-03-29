@@ -136,9 +136,9 @@ public class FactorAnalysis implements Algorithm {
         for (int i = 0; i < matrix.rows() + 1; i++) {
             for (int j = 0; j < matrix.columns() + 1; j++) {
                 if (i > 0 && j == 0) {
-                    table.setToken(i, j, "X" + i);
+                    table.setToken(i, 0, "X" + i);
                 } else if (i == 0 && j > 0) {
-                    table.setToken(i, j, "Factor " + j);
+                    table.setToken(0, j, "Factor " + j);
                 } else if (i > 0 && j > 0) {
                     double coefficient = matrix.get(i - 1, j - 1);
                     String token = !Double.isNaN(coefficient) ? nf.format(coefficient) : "Undefined";

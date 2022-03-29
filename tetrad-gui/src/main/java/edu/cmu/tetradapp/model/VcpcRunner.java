@@ -39,7 +39,7 @@ import java.util.Set;
  * @author Joseph Ramsey
  */
 public class VcpcRunner extends AbstractAlgorithmRunner
-        implements IndTestProducer, GraphSource {
+        implements IndTestProducer {
     static final long serialVersionUID = 23L;
     private Graph dag;
     private IndependenceFactsModel independenceFactsModel;

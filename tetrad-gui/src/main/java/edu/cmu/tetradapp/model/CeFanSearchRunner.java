@@ -42,7 +42,7 @@ import java.util.List;
  */
 
 public class CeFanSearchRunner extends AbstractAlgorithmRunner
-        implements IndTestProducer, GraphSource {
+        implements IndTestProducer {
     static final long serialVersionUID = 23L;
 
     //=========================CONSTRUCTORS===============================//

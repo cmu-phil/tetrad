@@ -27,7 +27,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -42,7 +41,7 @@ import java.util.*;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBoxInput,
+public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
         DoNotAddOldModel, SimulationParamsSource, MultipleDataSource {
 
     static final long serialVersionUID = 23L;

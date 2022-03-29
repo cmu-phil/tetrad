@@ -43,7 +43,7 @@ import java.util.List;
  * @author Frank Wimberly after Joe Ramsey's PcRunner
  */
 public class FgesMbRunner extends AbstractAlgorithmRunner implements
-        IndTestProducer, GraphSource, IFgesRunner, Indexable {
+        IndTestProducer, IFgesRunner, Indexable {
     static final long serialVersionUID = 23L;
 
     private transient FgesMb fges;

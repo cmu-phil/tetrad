@@ -41,7 +41,7 @@ import java.util.Set;
  * @author Joseph Ramsey
  */
 public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
-        implements IndTestProducer, GraphSource {
+        implements IndTestProducer {
     static final long serialVersionUID = 23L;
     private IndependenceFactsModel independenceFactsModel;
     private Graph trueGraph;

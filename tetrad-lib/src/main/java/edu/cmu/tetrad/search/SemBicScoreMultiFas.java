@@ -40,7 +40,7 @@ import java.util.*;
  *
  * @author Joseph Ramsey
  */
-public class SemBicScoreMultiFas implements ISemBicScore, Score {
+public class SemBicScoreMultiFas implements ISemBicScore {
 
     // The covariance matrix.
     private final List<SemBicScore> semBicScores;

@@ -29,7 +29,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.BufferedReader;
@@ -42,7 +41,7 @@ import java.util.*;
  *
  * @author Joseph Ramsey
  */
-public class IndependenceFactsModel implements SessionModel, KnowledgeBoxInput {
+public class IndependenceFactsModel implements KnowledgeBoxInput {
     static final long serialVersionUID = 23L;
 
     private IndependenceFacts facts = new IndependenceFacts();

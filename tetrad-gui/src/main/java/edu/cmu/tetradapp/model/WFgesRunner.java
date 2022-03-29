@@ -30,7 +30,6 @@ import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-import edu.cmu.tetrad.util.Unmarshallable;
 import edu.cmu.tetradapp.model.FgesRunner.Type;
 
 import java.beans.PropertyChangeEvent;
@@ -47,8 +46,8 @@ import java.util.Map;
  * @author Ricardo Silva
  */
 
-public class WFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner, GraphSource,
-        PropertyChangeListener, IGesRunner, Indexable, DoNotAddOldModel, Unmarshallable {
+public class WFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
+        PropertyChangeListener, IGesRunner, Indexable, DoNotAddOldModel {
     static final long serialVersionUID = 23L;
     private LinkedHashMap<String, String> allParamSettings;
 

@@ -206,7 +206,7 @@ public class SemOptimizerScattershot implements SemOptimizer {
             if (width == 1) {
                 int t = 0;
                 while (++t < 2000) {
-                    if (!this.findLowerRandomLocal(fcn, pTemp, width / 5, 10)) break;
+                    if (!this.findLowerRandomLocal(fcn, pTemp, 1 / 5, 10)) break;
                 }
             }
 

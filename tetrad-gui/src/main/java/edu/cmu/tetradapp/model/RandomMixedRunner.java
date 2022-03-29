@@ -40,7 +40,7 @@ import java.util.Set;
  * @author Joseph Ramsey
  */
 public class RandomMixedRunner extends AbstractAlgorithmRunner
-        implements IndTestProducer, GraphSource {
+        implements IndTestProducer {
     static final long serialVersionUID = 23L;
     private Graph externalGraph;
     Set<Edge> pcAdjacent;

@@ -197,7 +197,7 @@ public class ProximalGradient {
                 if (noEdgeChangeCount >= noEdgeChangeTol) {
                     System.out.println("Edges converged at iter: " + iterCount + " with |dx|/|x|: " + dx);
                     System.out.println("Iter: " + iterCount + " |dx|/|x|: " + dx + " normX: " + norm2(X) + " nll: " +
-                            Fx + " reg: " + Gx + " DiffEdges: " + diffEdges + " L: " + L);
+                            Fx + " reg: " + Gx + " DiffEdges: " + 0 + " L: " + L);
                     break;
                 }
                 // negative noEdgeChangeTol stops when diffEdges <= |noEdgeChangeTol|

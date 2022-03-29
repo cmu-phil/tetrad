@@ -39,7 +39,7 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 public class FciRunner extends AbstractAlgorithmRunner
-        implements IndTestProducer, GraphSource, IonInput {
+        implements IndTestProducer, IonInput {
     static final long serialVersionUID = 23L;
 
     //=========================CONSTRUCTORS================================//

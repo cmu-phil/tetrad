@@ -24,7 +24,6 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.session.SessionNode;
-import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
@@ -39,8 +38,7 @@ import java.io.ObjectInputStream;
  * @see edu.cmu.tetrad.graph.GraphNode
  * @see SessionWrapper
  */
-public class SessionNodeWrapper extends GraphNode
-        implements TetradSerializable {
+public class SessionNodeWrapper extends GraphNode {
     static final long serialVersionUID = 23L;
 
     /**

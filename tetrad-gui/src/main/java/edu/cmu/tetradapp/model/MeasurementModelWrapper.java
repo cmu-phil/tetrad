@@ -27,7 +27,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.ClusterUtils;
 import edu.cmu.tetrad.session.ParamsResettable;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.IOException;
@@ -43,7 +42,7 @@ import java.util.List;
  * @author Joseph Ramsey
  * @author Erin Korber (added remove latents functionality July 2004)
  */
-public final class MeasurementModelWrapper implements SessionModel, ParamsResettable,
+public final class MeasurementModelWrapper implements ParamsResettable,
         KnowledgeBoxInput {
     static final long serialVersionUID = 23L;
 

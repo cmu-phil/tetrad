@@ -26,7 +26,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -40,7 +39,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class GeneralizedSemImWrapper implements SessionModel, KnowledgeBoxInput {
+public class GeneralizedSemImWrapper implements KnowledgeBoxInput {
 
     static final long serialVersionUID = 23L;
 

@@ -97,7 +97,7 @@ public class LowerCovarianceDataFileValidation extends AbstractDataFileValidatio
 
                     if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
                         if (currChar == DataFileReader.LINE_FEED && prevChar == DataFileReader.CARRIAGE_RETURN) {
-                            prevChar = currChar;
+                            prevChar = DataFileReader.LINE_FEED;
                             continue;
                         }
 
@@ -369,7 +369,7 @@ public class LowerCovarianceDataFileValidation extends AbstractDataFileValidatio
 
                     if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
                         if (currChar == DataFileReader.LINE_FEED && prevChar == DataFileReader.CARRIAGE_RETURN) {
-                            prevChar = currChar;
+                            prevChar = DataFileReader.LINE_FEED;
                             continue;
                         }
 
@@ -528,7 +528,7 @@ public class LowerCovarianceDataFileValidation extends AbstractDataFileValidatio
 
                     if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
                         if (currChar == DataFileReader.LINE_FEED && prevChar == DataFileReader.CARRIAGE_RETURN) {
-                            prevChar = currChar;
+                            prevChar = DataFileReader.LINE_FEED;
                             continue;
                         }
 

@@ -38,7 +38,7 @@ import java.util.List;
  * @author Daniel Malinsky
  */
 public class SvarGFciRunner extends AbstractAlgorithmRunner
-        implements IndTestProducer, GraphSource {
+        implements IndTestProducer {
     static final long serialVersionUID = 23L;
 
     private transient List<PropertyChangeListener> listeners;

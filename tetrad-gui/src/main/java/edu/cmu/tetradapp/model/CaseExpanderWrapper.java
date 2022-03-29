@@ -25,13 +25,12 @@ import edu.cmu.tetrad.data.CaseExpander;
 import edu.cmu.tetrad.data.DataFilter;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.LogDataUtils;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 /**
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public class CaseExpanderWrapper extends DataWrapper implements SessionModel {
+public class CaseExpanderWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
 
     private CaseExpanderWrapper(DataWrapper wrapper) {

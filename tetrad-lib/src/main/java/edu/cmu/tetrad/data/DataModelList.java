@@ -21,7 +21,6 @@
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -37,7 +36,7 @@ import java.util.List;
  * @see DataModel
  */
 public final class DataModelList extends AbstractList<DataModel>
-        implements DataModel, TetradSerializable {
+        implements DataModel {
 
     static final long serialVersionUID = 23L;
 

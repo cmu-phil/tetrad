@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.TetradSerializable;
 
 /**
  * Interface implemented by classes, instantiations of which are capable of
@@ -35,7 +34,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  *
  * @author Joseph Ramsey
  */
-public interface Variable extends Node, TetradSerializable {
+public interface Variable extends Node {
 
     /**
      * Required serial version UID for serialization. Must be 23L.

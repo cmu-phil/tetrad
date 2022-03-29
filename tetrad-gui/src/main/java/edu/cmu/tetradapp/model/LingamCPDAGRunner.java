@@ -39,7 +39,7 @@ import java.util.List;
  */
 
 public class LingamCPDAGRunner extends AbstractAlgorithmRunner implements
-        GraphSource, PropertyChangeListener {
+        PropertyChangeListener {
     static final long serialVersionUID = 23L;
     private transient List<PropertyChangeListener> listeners;
     private Graph CPDAG;

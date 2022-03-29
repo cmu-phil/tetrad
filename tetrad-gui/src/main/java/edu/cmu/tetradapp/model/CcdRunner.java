@@ -43,7 +43,7 @@ import java.util.List;
  */
 
 public class CcdRunner extends AbstractAlgorithmRunner
-        implements IndTestProducer, GraphSource {
+        implements IndTestProducer {
     static final long serialVersionUID = 23L;
 
     //=========================CONSTRUCTORS===============================//

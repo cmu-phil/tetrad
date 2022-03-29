@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * Calculates the BDeu score.
  */
-public class DirichletScore implements LocalDiscreteScore, Score {
+public class DirichletScore implements LocalDiscreteScore {
     private final List<Node> variables;
     private final int[][] data;
     private final int sampleSize;

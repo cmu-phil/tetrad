@@ -24,7 +24,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -43,7 +42,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
+public final class UpdatedBayesIm implements BayesIm {
 
     static final long serialVersionUID = 23L;
     private static final double ALLOWABLE_DIFFERENCE = 1.0e-10;

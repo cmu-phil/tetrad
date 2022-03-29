@@ -127,7 +127,7 @@ class TabularDataTransferHandler extends TransferHandler {
                     }
 
                     if (displayRow == 1) {
-                        String s = (String) tabularData.getValueAt(displayRow, displayCol);
+                        String s = (String) tabularData.getValueAt(1, displayCol);
 
                         if (s.trim().equals("")) {
                             s = "C" + (displayCol - 1);

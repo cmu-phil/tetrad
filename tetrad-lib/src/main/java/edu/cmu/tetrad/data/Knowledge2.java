@@ -21,7 +21,6 @@
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.CharArrayWriter;
 import java.io.IOException;
@@ -53,7 +52,7 @@ import java.util.stream.Collectors;
  * @author Joseph Ramsey
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public final class Knowledge2 implements TetradSerializable, IKnowledge {
+public final class Knowledge2 implements IKnowledge {
 
     private static final long serialVersionUID = 23L;
 

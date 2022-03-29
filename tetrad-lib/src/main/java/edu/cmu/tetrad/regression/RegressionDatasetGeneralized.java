@@ -135,7 +135,7 @@ public class RegressionDatasetGeneralized implements Regression {
         for (int i = 0; i < X.rows(); i++) {
             for (int j = 0; j < X.columns(); j++) {
                 if (j == 0) {
-                    X.set(i, j, 1);
+                    X.set(i, 0, 1);
                 } else {
                     X.set(i, j, xSub.get(i, j - 1));
                 }

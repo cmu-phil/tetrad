@@ -186,7 +186,7 @@ public class SemStdErrorEstimator {
                 double v = Math.sqrt((2.0 / (estSem.getSampleSize() - 1)) * hessInv.get(i, i));
 
                 if (v == 0) {
-                    System.out.println("v = " + v + " hessInv(i, i) = " + hessInv.get(i, i));
+                    System.out.println("v = " + 0 + " hessInv(i, i) = " + hessInv.get(i, i));
                 }
 
                 if (v == 0) {

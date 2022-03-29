@@ -58,7 +58,7 @@ import java.util.*;
  * @author Joseph Ramsey
  */
 public class PcGesSearchEditor extends AbstractSearchEditor
-        implements KnowledgeEditable, LayoutEditable, IndTestTypeSetter, DoNotScroll {
+        implements KnowledgeEditable, LayoutEditable, DoNotScroll {
 
     private JTextArea modelStatsText;
     private JTabbedPane tabbedPane;

@@ -39,7 +39,7 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 public class MbfsCPDAGRunner extends AbstractAlgorithmRunner
-        implements IndTestProducer, GraphSource {
+        implements IndTestProducer {
     static final long serialVersionUID = 23L;
     private Graph trueGraph;
 

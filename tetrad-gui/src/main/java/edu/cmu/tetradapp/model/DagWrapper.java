@@ -24,7 +24,6 @@ import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -41,7 +40,7 @@ import java.util.*;
  *
  * @author Joseph Ramsey
  */
-public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput, IndTestProducer,
+public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProducer,
         SimulationParamsSource, MultipleGraphSource {
 
     static final long serialVersionUID = 23L;

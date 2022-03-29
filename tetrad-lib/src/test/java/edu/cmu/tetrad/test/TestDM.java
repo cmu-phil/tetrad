@@ -1130,7 +1130,7 @@ public class TestDM {
         if (useGES == false) {
 
             search.setAlphaPC(.05);
-            search.setUseFges(useGES);
+            search.setUseFges(false);
 
             search.setData(data);
             search.setTrueInputs(trueInputs);

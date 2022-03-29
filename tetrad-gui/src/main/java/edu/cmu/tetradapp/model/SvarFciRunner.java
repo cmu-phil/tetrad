@@ -43,7 +43,7 @@ import java.util.List;
  * @author Daniel Malinsky
  */
 public class SvarFciRunner extends AbstractAlgorithmRunner
-        implements IndTestProducer, GraphSource, IonInput {
+        implements IndTestProducer, IonInput {
     static final long serialVersionUID = 23L;
     private IKnowledge knowledge;
 

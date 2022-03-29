@@ -32,6 +32,6 @@ public interface MetadataWriter {
 
     String writeAsString(Metadata metadata) throws JsonProcessingException;
 
-    void write(Metadata metadata, Path outputFile) throws JsonProcessingException, IOException;
+    void write(Metadata metadata, Path outputFile) throws IOException;
 
 }

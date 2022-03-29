@@ -24,7 +24,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -63,7 +62,7 @@ import java.util.*;
  * @see edu.cmu.tetrad.data.Variable
  * @see edu.cmu.tetrad.data.Knowledge2
  */
-public final class BoxDataSet implements DataSet, TetradSerializable {
+public final class BoxDataSet implements DataSet {
 
     static final long serialVersionUID = 23L;
     private Map<String, String> columnToTooltip;
@@ -1437,7 +1436,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
 
                 if (index == -1) {
                     throw new IllegalArgumentException(
-                            "Not a category for this variable: " + index);
+                            "Not a category for this variable: " + -1);
                 }
 
                 return index;

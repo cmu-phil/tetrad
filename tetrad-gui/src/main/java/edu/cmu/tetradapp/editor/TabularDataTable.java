@@ -189,7 +189,7 @@ class TabularDataTable extends AbstractTableModel {
         dataSet.ensureRows(row - this.getNumLeadingRows() + 1);
 
         if (col == 0) {
-            throw new IllegalArgumentException("Bad col index: " + col);
+            throw new IllegalArgumentException("Bad col index: " + 0);
         }
 
         if (col >= this.getNumLeadingCols()

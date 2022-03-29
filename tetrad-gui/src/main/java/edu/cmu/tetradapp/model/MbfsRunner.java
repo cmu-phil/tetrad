@@ -45,7 +45,7 @@ import java.util.List;
  * @author Frank Wimberly after Joe Ramsey's PcRunner
  */
 public class MbfsRunner extends AbstractAlgorithmRunner implements
-        IndTestProducer, GraphSource {
+        IndTestProducer {
     static final long serialVersionUID = 23L;
 
     /**

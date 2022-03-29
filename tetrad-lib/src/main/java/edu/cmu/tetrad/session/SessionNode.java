@@ -66,7 +66,7 @@ import java.util.*;
  * @see SessionAdapter
  * @see SessionEvent
  */
-public class SessionNode implements Node, TetradSerializable {
+public class SessionNode implements Node {
 
     static final long serialVersionUID = 23L;
 

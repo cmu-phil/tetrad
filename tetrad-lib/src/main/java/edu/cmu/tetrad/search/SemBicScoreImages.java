@@ -34,7 +34,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class SemBicScoreImages implements ISemBicScore, Score {
+public class SemBicScoreImages implements ISemBicScore {
 
     // The covariance matrix.
     private final List<SemBicScore> semBicScores;

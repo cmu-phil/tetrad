@@ -21,7 +21,6 @@
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.TetradSerializable;
 
 /**
  * <p>
@@ -37,7 +36,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
 public interface DataModel
-        extends KnowledgeTransferable, VariableSource, TetradSerializable {
+        extends KnowledgeTransferable, VariableSource {
 
     long serialVersionUID = 23L;
 

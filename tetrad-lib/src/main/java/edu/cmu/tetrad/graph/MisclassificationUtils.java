@@ -118,7 +118,7 @@ public class MisclassificationUtils {
 
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
-                if (i == 3 && j == 3) table2.setToken(i + 1, j + 1, "*");
+                if (i == 3 && j == 3) table2.setToken(3 + 1, j + 1, "*");
                 else table2.setToken(i + 1, j + 1, "" + counts[i][j]);
             }
         }
@@ -182,13 +182,13 @@ public class MisclassificationUtils {
             int n = getTypeTop(estConvert);
 
             if (n == 5) {
-                counts[m][n]++;
+                counts[m][5]++;
             }
         }
 
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 6; j++) {
-                if (i == 7 && j == 5) table2.setToken(i + 1, j + 1, "*");
+                if (i == 7 && j == 5) table2.setToken(7 + 1, j + 1, "*");
                 else table2.setToken(i + 1, j + 1, "" + counts[i][j]);
             }
         }

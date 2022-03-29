@@ -144,7 +144,7 @@ public class RegressionDataset implements Regression {
             for (int i = 0; i < x.rows(); i++) {
                 for (int j = 0; j < x.columns(); j++) {
                     if (j == 0) {
-                        x.set(i, j, 1);
+                        x.set(i, 0, 1);
                     } else {
                         x.set(i, j, xSub.get(i, j - 1));
                     }

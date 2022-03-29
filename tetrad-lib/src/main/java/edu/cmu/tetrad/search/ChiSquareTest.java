@@ -185,7 +185,7 @@ public class ChiSquareTest {
         // If df == 0, this is definitely an indepedent table.
         if (df == 0) {
             final double pValue = 1.0;
-            return new Result(xSquare, pValue, df, true);
+            return new Result(xSquare, pValue, 0, true);
         }
 
         double pValue = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(xSquare);

@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.gene.tetrad.gene.history;
 
-import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.Normal;
 
@@ -38,7 +37,7 @@ import java.io.ObjectInputStream;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public class BasalInitializer implements Initializer, TetradSerializable {
+public class BasalInitializer implements Initializer {
     static final long serialVersionUID = 23L;
 
     /**

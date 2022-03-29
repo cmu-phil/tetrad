@@ -41,7 +41,7 @@ import java.util.List;
  */
 
 public class LofsRunner extends AbstractAlgorithmRunner implements
-        GraphSource, PropertyChangeListener, KnowledgeBoxInput,
+        PropertyChangeListener, KnowledgeBoxInput,
         DoNotAddOldModel {
     static final long serialVersionUID = 23L;
     private transient List<PropertyChangeListener> listeners;

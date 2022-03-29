@@ -42,7 +42,7 @@ import static java.lang.Math.log;
  *
  * @author Joseph Ramsey
  */
-public class SemBicScoreImages3 implements ISemBicScore, Score {
+public class SemBicScoreImages3 implements ISemBicScore {
 
     // The variables of the covariance matrix.
     private final List<Node> variables;

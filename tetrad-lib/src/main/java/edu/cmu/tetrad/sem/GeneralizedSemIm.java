@@ -51,7 +51,7 @@ import static edu.cmu.tetrad.util.StatUtils.sd;
  *
  * @author Joseph Ramsey
  */
-public class GeneralizedSemIm implements IM, Simulator, TetradSerializable {
+public class GeneralizedSemIm implements IM, Simulator {
     static final long serialVersionUID = 23L;
 
     /**

@@ -27,7 +27,6 @@ import edu.cmu.tetrad.data.VariableSource;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.PM;
 import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -46,7 +45,7 @@ import java.util.*;
  * @see edu.cmu.tetrad.graph.Dag
  * @see BayesIm
  */
-public final class BayesPm implements PM, VariableSource, TetradSerializable {
+public final class BayesPm implements PM, VariableSource {
     static final long serialVersionUID = 23L;
 
     /**

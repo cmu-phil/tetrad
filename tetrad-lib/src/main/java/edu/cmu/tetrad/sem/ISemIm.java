@@ -24,7 +24,6 @@ package edu.cmu.tetrad.sem;
 import edu.cmu.tetrad.data.Simulator;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.util.List;
 
@@ -33,7 +32,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public interface ISemIm extends Simulator, TetradSerializable {
+public interface ISemIm extends Simulator {
     long serialVersionUID = 23L;
 
     SemPm getSemPm();

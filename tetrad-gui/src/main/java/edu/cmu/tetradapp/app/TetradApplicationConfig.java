@@ -307,7 +307,7 @@ public class TetradApplicationConfig {
         while (i < size) {
             char c = text.charAt(i);
             if (c == ' ') {
-                builder.append(c);
+                builder.append(' ');
                 // skip until non whitespace is found
                 while (i < size - 1 && c == ' ') {
                     i++;

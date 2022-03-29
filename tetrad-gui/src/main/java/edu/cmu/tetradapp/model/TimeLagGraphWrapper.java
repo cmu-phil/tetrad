@@ -25,7 +25,6 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -43,7 +42,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class TimeLagGraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInput {
+public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
     static final long serialVersionUID = 23L;
 
     /**

@@ -211,7 +211,7 @@ public final class DiscreteTetradTest implements TetradTest {
             }
             values[i] = new int[vSize];
             if (i == 0) {
-                valueIndices[i] = 0;
+                valueIndices[0] = 0;
             } else {
                 valueIndices[i] = valueIndices[i - 1] + vSize - 1;
             }
@@ -638,7 +638,7 @@ public final class DiscreteTetradTest implements TetradTest {
             if (i == 0) {
                 for (int j = 1;
                      j < values[currentVar2].length + 1; j++) {
-                    currentFiBuffer[i][j] = 0.;
+                    currentFiBuffer[0][j] = 0.;
                 }
             } else if (i < values[currentVar1].length) {
                 for (int j = 1;
@@ -1672,7 +1672,7 @@ public final class DiscreteTetradTest implements TetradTest {
                 }
             }
             if (i == 0) {
-                coeff[i] = 1.;
+                coeff[0] = 1.;
             } else {
                 coeff[i] = semIm.getParamValue(uParent, uNode);
             }

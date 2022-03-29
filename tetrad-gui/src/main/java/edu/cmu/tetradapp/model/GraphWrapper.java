@@ -29,7 +29,6 @@ import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -49,7 +48,7 @@ import java.util.Map;
  *
  * @author Joseph Ramsey
  */
-public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInput, IonInput, IndTestProducer,
+public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProducer,
         SimulationParamsSource, GraphSettable, MultipleGraphSource {
     static final long serialVersionUID = 23L;
     private int numModels = 1;

@@ -41,7 +41,7 @@ import java.util.List;
  * @author Ricardo Silva
  */
 
-public class PValueImproverWrapper extends AbstractAlgorithmRunner implements GraphSource {
+public class PValueImproverWrapper extends AbstractAlgorithmRunner {
     static final long serialVersionUID = 23L;
 
     public enum AlgorithmType {

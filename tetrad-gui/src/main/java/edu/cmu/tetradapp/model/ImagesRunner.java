@@ -42,7 +42,7 @@ import java.util.List;
  * @author Ricardo Silva
  */
 
-public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner, GraphSource,
+public class ImagesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
         PropertyChangeListener, IGesRunner, Indexable {
     static final long serialVersionUID = 23L;
 

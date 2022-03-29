@@ -39,7 +39,7 @@ import java.util.Map;
  * @author Joseph Ramsey
  */
 public class PcStableMaxLocalRunner extends AbstractAlgorithmRunner
-        implements IndTestProducer, GraphSource {
+        implements IndTestProducer {
     static final long serialVersionUID = 23L;
     private Graph trueGraph;
     private Graph sourceGraph;

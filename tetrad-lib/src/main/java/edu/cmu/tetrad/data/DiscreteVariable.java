@@ -23,7 +23,6 @@ package edu.cmu.tetrad.data;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.graph.NodeVariableType;
-import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -51,8 +50,7 @@ import java.util.*;
  *
  * @author Joseph Ramsey
  */
-public final class DiscreteVariable extends AbstractVariable
-        implements TetradSerializable {
+public final class DiscreteVariable extends AbstractVariable {
 
     static final long serialVersionUID = 23L;
 

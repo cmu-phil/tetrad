@@ -3444,7 +3444,7 @@ public final class GraphUtils {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 6; j++) {
                 if (i == 7 && j == 5) {
-                    table2.setToken(i + 1, j + 1, "*");
+                    table2.setToken(7 + 1, j + 1, "*");
                 } else {
                     table2.setToken(i + 1, j + 1, "" + nf.format(counts[i][j]));
                 }
@@ -3496,7 +3496,7 @@ public final class GraphUtils {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 6; j++) {
                 if (i == 7 && j == 5) {
-                    table2.setToken(i + 1, j + 1, "*");
+                    table2.setToken(7 + 1, j + 1, "*");
                 } else {
                     table2.setToken(i + 1, j + 1, "" + counts[i][j]);
                 }

@@ -677,7 +677,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     public final void setWorkbenchMode(int workbenchMode) {
         if (workbenchMode == SELECT_MOVE) {
             if (this.workbenchMode != SELECT_MOVE) {
-                this.workbenchMode = workbenchMode;
+                this.workbenchMode = SELECT_MOVE;
                 this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
                 this.deselectAll();
             } else {
@@ -685,12 +685,12 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             }
         } else if (workbenchMode == ADD_NODE) {
             if (this.workbenchMode != ADD_NODE) {
-                this.workbenchMode = workbenchMode;
+                this.workbenchMode = ADD_NODE;
                 this.deselectAll();
             }
         } else if (workbenchMode == ADD_EDGE) {
             if (this.workbenchMode != ADD_EDGE) {
-                this.workbenchMode = workbenchMode;
+                this.workbenchMode = ADD_EDGE;
                 this.deselectAll();
             }
         } else {

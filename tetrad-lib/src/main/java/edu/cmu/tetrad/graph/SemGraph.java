@@ -21,8 +21,6 @@
 
 package edu.cmu.tetrad.graph;
 
-import edu.cmu.tetrad.util.TetradSerializable;
-
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -52,7 +50,7 @@ import java.util.*;
  *
  * @author Joseph Ramsey
  */
-public final class SemGraph implements Graph, TetradSerializable {
+public final class SemGraph implements Graph {
     static final long serialVersionUID = 23L;
 
     /**

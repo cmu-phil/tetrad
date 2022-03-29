@@ -23,7 +23,6 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -40,7 +39,7 @@ import java.util.*;
  *
  * @author Joseph Ramsey
  */
-public class SemGraphWrapper implements SessionModel, GraphSource,
+public class SemGraphWrapper implements GraphSource,
         KnowledgeBoxInput, SimulationParamsSource, DoNotAddOldModel, MultipleGraphSource {
 
     static final long serialVersionUID = 23L;
