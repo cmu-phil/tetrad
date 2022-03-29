@@ -373,7 +373,7 @@ public class MagSemBicScore implements Score {
         return Double.isNaN(v);
     }
 
-//    @Override
+    //    @Override
     public DataModel getData() {
         return this.dataModel;
     }

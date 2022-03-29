@@ -25,9 +25,9 @@ import java.util.List;
 /**
  * Adjusts GFCI to use a permutation algorithm (such as GRaSP) to do the initial
  * steps of finding adjacencies and unshielded colliders.
- *
+ * <p>
  * GFCI reference is this:
- *
+ * <p>
  * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
  * for Latent Variable Models," JMLR 2016.
  *

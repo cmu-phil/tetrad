@@ -69,11 +69,11 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
     private Graph sourceGraph;
 
     /**
-//     * A list of known variables. Variables can be looked up in this list and
-//     * reused where appropriate.
-//     *
-//     * @serial Can be null.
-//     */
+     //     * A list of known variables. Variables can be looked up in this list and
+     //     * reused where appropriate.
+     //     *
+     //     * @serial Can be null.
+     //     */
 //    private List<Node> knownVariables;
 
     /**
@@ -393,12 +393,12 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
     }
 
     /**
-//     * Sets the source graph.
-//     */
+     * //     * Sets the source graph.
+     * //
+     */
 //    public void setKnownVariables(List<Node> variables) {
 //        this.knownVariables = variables;
 //    }
-
     public Map getDiscretizationSpecs() {
         return this.discretizationSpecs;
     }

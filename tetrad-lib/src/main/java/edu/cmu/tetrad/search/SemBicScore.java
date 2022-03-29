@@ -372,7 +372,7 @@ public class SemBicScore implements Score {
         return Double.isNaN(v);
     }
 
-//    @Override
+    //    @Override
     public DataModel getData() {
         return this.dataModel;
     }

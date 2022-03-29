@@ -2781,53 +2781,62 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h3>The BPC/Mimbuild Algorithm</h3>
 
-<h4>Description</h4>
+    <h4>Description</h4>
 
-<div id="bpc">
+    <div id="bpc">
 
-<p>Searches for causal structure over latent variables, where the true models are Multiple Indicator Models (MIM’s) as described in the Graphs section.
-The idea is this. There is a set of latent (unmeasured) variables over which a directed acyclic model has been defined.
-Then for each of these latent L there are 3 (preferably 4) or more measures of that variable—that is,
-    measured variables that are all children of L.
-    Under these conditions, one may define tetrad constraints (see Spirtes et al., 2000).
-    There is a theorem to the effect that if certain CPDAGs of these tetrad constraints hold,
-    there must be a latent common cause of all of them (the Tetrad Representation Theorem, see Silva et al., 2003,
-    where the BPC (“Build Pure Clusters”) algorithm is defined and discussed.) Moreover, once one has such a
-    “measurement model,”
-    once can estimate a covariance matrix over the latent variables that are parents of the measures and use some
-    algorithm such as PC or GES to estimate a CPDAG over the latents.
-    The algorithm to run PC or GES on this covariance matrix is called MimBuild (“MIM” is the the graph, Multiple
-    Indicator Model; “Build” means build).
-    In this way, one may recover causal structure over the latents. The more measures one has for each latent, the
-    better the result is, generally.
-    The larger the sample size the better. One important issue is that the algorithm is sensitive to so-called
-    “impurities”—that is,
-    causal edges among the measured variables, or between measured variables and unintended latent.
-    The algorithm will in effect remove one measure in each impure pair from consideration.
+        <p>Searches for causal structure over latent variables, where the true models are Multiple Indicator Models
+            (MIM’s) as described in the Graphs section.
+            The idea is this. There is a set of latent (unmeasured) variables over which a directed acyclic model has
+            been defined.
+            Then for each of these latent L there are 3 (preferably 4) or more measures of that variable—that is,
+            measured variables that are all children of L.
+            Under these conditions, one may define tetrad constraints (see Spirtes et al., 2000).
+            There is a theorem to the effect that if certain CPDAGs of these tetrad constraints hold,
+            there must be a latent common cause of all of them (the Tetrad Representation Theorem, see Silva et al.,
+            2003,
+            where the BPC (“Build Pure Clusters”) algorithm is defined and discussed.) Moreover, once one has such a
+            “measurement model,”
+            once can estimate a covariance matrix over the latent variables that are parents of the measures and use
+            some
+            algorithm such as PC or GES to estimate a CPDAG over the latents.
+            The algorithm to run PC or GES on this covariance matrix is called MimBuild (“MIM” is the the graph,
+            Multiple
+            Indicator Model; “Build” means build).
+            In this way, one may recover causal structure over the latents. The more measures one has for each latent,
+            the
+            better the result is, generally.
+            The larger the sample size the better. One important issue is that the algorithm is sensitive to so-called
+            “impurities”—that is,
+            causal edges among the measured variables, or between measured variables and unintended latent.
+            The algorithm will in effect remove one measure in each impure pair from consideration.
 
-    The
-    algorithm to run PC or GES on this covariance matrix is
-    called MimBuild (“MIM” is the graph, Multiple Indicator Model; “Build” means build). MimBUILD is an optional
-    choice inside FOFC
-    In this way, one may recover causal structure over the latents. The more measures one has for each latent
-    the better the result is, generally.
+            The
+            algorithm to run PC or GES on this covariance matrix is
+            called MimBuild (“MIM” is the graph, Multiple Indicator Model; “Build” means build). MimBUILD is an optional
+            choice inside FOFC
+            In this way, one may recover causal structure over the latents. The more measures one has for each latent
+            the better the result is, generally.
 
-</p>
+        </p>
 
-</div>
+    </div>
 
-<h4>Input Assumptions</h4>
+    <h4>Input Assumptions</h4>
 
-<p>Continuous data, a collection of measurements in the above sense, excluding the latent variables (which are to be learned).</p>
+    <p>Continuous data, a collection of measurements in the above sense, excluding the latent variables (which are to be
+        learned).</p>
 
-<h4>Output Format</h4>
+    <h4>Output Format</h4>
 
-<p>For BPC, a measurement model, in the above sense. This is represented as a clustering of variables; it may be inferred that
-there is a single latent for each output cluster. For MimBuild, a CPDAG over the latent variables, one for each cluster.</p>
+    <p>For BPC, a measurement model, in the above sense. This is represented as a clustering of variables; it may be
+        inferred that
+        there is a single latent for each output cluster. For MimBuild, a CPDAG over the latent variables, one for each
+        cluster.</p>
 
-<h4>Parameters</h4>
+    <h4>Parameters</h4>
 
-<p><a href="#maxit">alpha</a>, <a href="#useWishart">useWishart</a></p>
+    <p><a href="#maxit">alpha</a>, <a href="#useWishart">useWishart</a></p>
 
 
     <h3>The FOFC/MIMBUILD Algorithm</h3>
@@ -4872,7 +4881,8 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
 
         <h3 class="parameter_description" id="numLatents">numLatents</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="numLatents_short_desc">Number of additional latent variables (min = 0)</span></li>
+            <li>Short Description: <span
+                    id="numLatents_short_desc">Number of additional latent variables (min = 0)</span></li>
             <li>Long Description: <span id="numLatents_long_desc">
                 Thye numbger of additional latent variables to include in the datasets</span>
             </li>
@@ -6481,6 +6491,7 @@ there is a single latent for each output cluster. For MimBuild, a CPDAG over the
 <script>
 window.ga=function(){ga.q.push(arguments)};ga.q=[];ga.l=+new Date;
 ga('create','UA-XXXXX-Y','auto');ga('send','pageview')
+
 
 
 

@@ -1,10 +1,7 @@
 package edu.cmu.tetrad.data;
 
-import edu.cmu.tetrad.graph.Node;
-
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 /**
  * @author jdramsey

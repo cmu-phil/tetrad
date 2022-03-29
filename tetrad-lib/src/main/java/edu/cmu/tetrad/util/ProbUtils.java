@@ -1728,7 +1728,7 @@ public class ProbUtils {
         double gh;
         double gk;
         double gw =
-                        0;
+                0;
         double h2;
         double h4;
         double rr;
@@ -1742,7 +1742,7 @@ public class ProbUtils {
         double temp;
         double w2;
         double wh =
-                        0;
+                0;
         double wk = 0;
         int is = 0;
         int myflag = 1;
