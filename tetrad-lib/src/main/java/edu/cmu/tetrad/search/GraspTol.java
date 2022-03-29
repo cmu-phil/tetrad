@@ -35,9 +35,9 @@ public class GraspTol {
     private boolean cachingScores = true;
     private int uncoveredDepth = 1;
     private int nonSingularDepth = 1;
+    private int toleranceDepth = 0;
     private boolean useDataOrder = true;
     private boolean allowRandomnessInsideAlgorithm = false;
-    private int tol = 0;
 
     // other params
     private int depth = 4;
@@ -167,7 +167,7 @@ public class GraspTol {
         for (int[] depth : depths) {
             do {
                 sOld = sNew;
-                graspDfsTol(scorer, sOld, depth, 1, tol, 0, new HashSet<>(), new HashSet<>());
+                graspDfsTol(scorer, sOld, depth, 1, toleranceDepth, 0, new HashSet<>(), new HashSet<>());
                 sNew = scorer.score();
             } while (sNew > sOld);
         }
@@ -248,15 +248,14 @@ public class GraspTol {
                 if (violatesKnowledge(scorer.getPi())) continue;
 
                 double sNew = scorer.score();
+
                 if (sNew > sOld) {
                     if (verbose) {
                         System.out.printf("Edges: %d \t|\t Score Improvement: %f \t|\t Tucks Performed: %s %s \n",
                                 scorer.getNumEdges(), sNew - sOld, tucks, tuck);
                     }
                     return;
-                }
-
-                if (sNew == sOld && currentDepth < depth[0]) {
+                } else if (sNew == sOld && currentDepth < depth[0]) {
                     tucks.add(tuck);
                     if (currentDepth > depth[1]) {
                         if (!dfsHistory.contains(tucks)) {
@@ -265,10 +264,10 @@ public class GraspTol {
                         }
                     }
                     tucks.remove(tuck);
-                }
-
-                if (sNew < sOld && currentDepth < depth[0] && tolCur < tol) {
+                } else if (sNew < sOld && currentDepth < depth[0] && tolCur < tol) {
+                    tucks.add(tuck);
                     graspDfsTol(scorer, sOld, depth, currentDepth + 1, tol, tolCur + 1, tucks, dfsHistory);
+                    tucks.remove(tuck);
                 }
 
                 if (scorer.score() > sOld) return;
@@ -362,7 +361,7 @@ public class GraspTol {
         this.allowRandomnessInsideAlgorithm = allowRandomnessInsideAlgorithm;
     }
 
-    public void setTol(int tol) {
-        this.tol = tol;
+    public void setToleranceDepth(int toleranceDepth) {
+        this.toleranceDepth = toleranceDepth;
     }
 }
