@@ -558,7 +558,7 @@ public class Ricf {
 
             int moved = -1;
 
-            while (true) {
+            do {
                 addNodesToRight(L1, L2, graph, nodes, moved);
 
                 if (isMaximal(L1, L2, graph, nodes)) {
@@ -567,10 +567,7 @@ public class Ricf {
 
                 moved = moveLastBack(L1, L2);
 
-                if (moved == -1) {
-                    break;
-                }
-            }
+            } while (moved != -1);
         }
 
         return cliques;
@@ -756,9 +753,6 @@ public class Ricf {
             List<Node> list1 = mag.getNodesOutTo(nodes.get(i), Endpoint.ARROW);
             List<Node> list2 = mag.getNodesInTo(nodes.get(i), Endpoint.ARROW);
             list1.retainAll(list2);
-
-            List<Node> list3 = new LinkedList<>(nodes);
-            list3.removeAll(list1);
 
             int[] indices = new int[list1.size()];
 

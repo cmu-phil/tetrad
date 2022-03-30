@@ -253,43 +253,6 @@ public final class DagScorer implements TetradSerializable, Scorer {
         return fml;
     }
 
-    public double getLogLikelihood() {
-        Matrix SigmaTheta; // Do this once.
-
-        try {
-            SigmaTheta = implCovarMeas();
-        } catch (Exception e) {
-            return Double.NaN;
-        }
-
-        Matrix sStar = sampleCovar();
-
-        double logDetSigmaTheta = logDet(SigmaTheta);
-        double traceSStarSigmaInv = traceABInv(sStar, SigmaTheta);
-        int pPlusQ = getMeasuredNodes().size();
-
-        return -(getSampleSize() / 2.) * pPlusQ * Math.log(2 * Math.PI)
-                - (getSampleSize() / 2.) * logDetSigmaTheta
-                - (getSampleSize() / 2.) * traceSStarSigmaInv;
-    }
-
-    /**
-     * The negative  of the log likelihood function for the getModel model, with
-     * the constant chopped off. (Bollen 134). This is an alternative, more
-     * efficient, optimization function to Fml which produces the same result
-     * when minimized.
-     */
-    public double getTruncLL() {
-        // Formula Bollen p. 263.
-        Matrix Sigma = implCovarMeas();
-
-        // Using (n - 1) / n * s as in Bollen p. 134 causes sinkholes to open
-        // up immediately. Not sure why.
-        Matrix S = sampleCovar();
-        int n = getSampleSize();
-        return -(n - 1) / 2. * (logDet(Sigma) + traceAInvB(Sigma, S));
-    }
-
     private Matrix sampleCovar() {
         return getSampleCovar();
     }
@@ -305,19 +268,6 @@ public final class DagScorer implements TetradSerializable, Scorer {
     public double getBicScore() {
         int dof = getDof();
         return getChiSquare() - dof * Math.log(getSampleSize());
-    }
-
-    public double getAicScore() {
-        int dof = getDof();
-        return getChiSquare() - 2 * dof;
-    }
-
-    public double getKicScore() {
-        double fml = getFml();
-        int edgeCount = this.dag.getNumEdges();
-        int sampleSize = getSampleSize();
-
-        return -fml + (edgeCount * Math.log(sampleSize));
     }
 
     /**
@@ -345,8 +295,6 @@ public final class DagScorer implements TetradSerializable, Scorer {
      * it. (That's what the "s.defaultReadObject();" is for. See J. Bloch,
      * Effective Java, for help.
      *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject
     (ObjectInputStream
@@ -442,48 +390,6 @@ public final class DagScorer implements TetradSerializable, Scorer {
 
         return this.logDetSample;
     }
-
-//    private double traceSSigmaInv2(TetradMatrix s,
-//                                  TetradMatrix sigma) {
-//
-//        // Note that at this point the sem and the sample covar MUST have the
-//        // same variables in the same order.
-//        TetradMatrix inverse = TetradAlgebra.inverse(sigma);
-//
-//        for (int i = 0; i < sigma.rows(); i++) {
-//            for (int j = 0; j < sigma.columns(); j++) {
-//                if (sigma.get(i, j) < 1e-10) {
-//                    sigma.set(i, j, 0);
-//                }
-//            }
-//        }
-//
-//        System.out.println("Sigma = " + sigma);
-//
-//        for (int i = 0; i < inverse.rows(); i++) {
-//            for (int j = 0; j < inverse.columns(); j++) {
-//                if (inverse.get(i, j) < 1e-10) {
-//                    inverse.set(i, j, 0);
-//                }
-//            }
-//        }
-//
-//        System.out.println("Inverse of signa = " + inverse);
-//
-//        for (int i = 0; i < getFreeParameters().size(); i++) {
-//            System.out.println(i + ". " + getFreeParameters().get(i));
-//        }
-//
-//        TetradMatrix product = TetradAlgebra.times(s, inverse);
-//
-//        double v = MatrixUtils.trace(product);
-//
-//        if (v < -1e-8) {
-//            throw new IllegalArgumentException("Trace was negative.");
-//        }
-//
-//        return v;
-//    }
 
     public DataSet getDataSet() {
         return this.dataSet;

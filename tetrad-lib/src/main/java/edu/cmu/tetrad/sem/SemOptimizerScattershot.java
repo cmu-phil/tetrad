@@ -206,7 +206,7 @@ public class SemOptimizerScattershot implements SemOptimizer {
             if (width == 1) {
                 int t = 0;
                 while (++t < 2000) {
-                    if (!findLowerRandomLocal(fcn, pTemp, 1 / 5, 10)) break;
+                    if (!findLowerRandomLocal(fcn, pTemp)) break;
                 }
             }
 
@@ -220,8 +220,7 @@ public class SemOptimizerScattershot implements SemOptimizer {
         return false;
     }
 
-    private boolean findLowerRandomLocal(FittingFunction fcn, double[] p,
-                                         double width, int numPoints) {
+    private boolean findLowerRandomLocal(FittingFunction fcn, double[] p) {
         double fP = fcn.evaluate(p);
 
         if (Double.isNaN(fP)) {
@@ -237,8 +236,8 @@ public class SemOptimizerScattershot implements SemOptimizer {
         double[] pTemp = new double[p.length];
         System.arraycopy(p, 0, pTemp, 0, p.length);
 
-        for (int i = 0; i < numPoints; i++) {
-            randomPointAboutCenter(pTemp, fixedP, width);
+        for (int i = 0; i < 10; i++) {
+            randomPointAboutCenter(pTemp, fixedP, 0.2);
             double f = fcn.evaluate(pTemp);
 
             if (f == Double.POSITIVE_INFINITY) {
@@ -248,7 +247,7 @@ public class SemOptimizerScattershot implements SemOptimizer {
 
             if (f < fP) {
                 System.arraycopy(pTemp, 0, p, 0, pTemp.length);
-                TetradLogger.getInstance().log("optimization", "Cube width = " + width + " FML = " + f);
+                TetradLogger.getInstance().log("optimization", "Cube width = " + 0.2 + " FML = " + f);
                 return true;
             }
         }

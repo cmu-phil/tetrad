@@ -96,16 +96,7 @@ public final class SemEstimatorGibbs {
      */
 
     // using different constructor for now
-    //public SemEstimatorGibbs(SemPm semPm, SemEstimatorGibbsParams params) {
-    //	this.dataSet = dataSet;
-    //	this.semPm = semPm;
-    //	this.params = params;
-    //}
     public SemEstimatorGibbs(SemPm semPm, SemIm startIm, double[][] sampleCovars, boolean flatPrior, double stretch, int numIterations) {
-        /*
-      For now, we are moving SemEstimatorGibbsParams variables into this
-      class for easier testing
-     */
         this.semPm = semPm;
         this.startIm = startIm;
         this.flatPrior = flatPrior;
@@ -311,6 +302,17 @@ public final class SemEstimatorGibbs {
 
     }
 
+    public SemEstimatorGibbs(int numIterations, double stretch1, double stretch2, double tolerance, double priorVariance, SemPm semPm, SemIm startIm, boolean flatPrior) {
+        this.numIterations = numIterations;
+        this.stretch1 = stretch1;
+        this.stretch2 = stretch2;
+        this.tolerance = tolerance;
+        this.priorVariance = priorVariance;
+        this.semPm = semPm;
+        this.startIm = startIm;
+        this.flatPrior = flatPrior;
+    }
+
     private double brent(int param, double ax, double bx, double cx, double tol, double[] xmin, List<Parameter> parameters) {
 
         final int ITMAX = 100;
@@ -322,8 +324,8 @@ public final class SemEstimatorGibbs {
         //init
         x = w = v = bx;
         e = d = 0.0;
-        a = (ax < cx) ? ax : cx;
-        b = (ax > cx) ? ax : cx;
+        a = Math.min(ax, cx);
+        b = Math.max(ax, cx);
         fw = fv = fx = neglogpost(param, x, parameters);
 
         for (iter = 1; iter <= ITMAX; iter++) {
@@ -508,53 +510,6 @@ public final class SemEstimatorGibbs {
     }
 
 
-//    private DataSet subset(DataSet dataSet, SemPm semPm) {
-//
-//        String[] measuredVarNames = semPm.getMeasuredVarNames();
-//        int[] varIndices = new int[measuredVarNames.length];
-//
-//        for (int i = 0; i < measuredVarNames.length; i++) {
-//            Node variable = dataSet.getVariable(measuredVarNames[i]);
-//            varIndices[i] = dataSet.getVariable().indexOf(variable);
-//        }
-//
-//        return dataSet.subsetColumns(varIndices);
-//    }
-
-
-//    /**
-//     * Sets the means of variables in the SEM IM based on the given data set.
-//     *
-//     * @param semIm   SemIm
-//     * @param dataSet The data produced by iterating the sampler
-//     */
-//    private void setMeans(SemIm semIm, TetradMatrix dataSet) {
-//
-//        double[] means = new double[semIm.getSemPm().getVariableNodes().size()];
-//        int numMeans = means.length;
-//
-//        if (dataSet == null) {
-//            for (int i = 0; i < numMeans; i++) {
-//                means[i] = 0.0;
-//            }
-//        } else {
-//            double[] sum = new double[numMeans];
-//
-//            for (int j = 0; j < dataSet.columns(); j++) {
-//                for (int i = 0; i < dataSet.rows(); i++) {
-//                    sum[j] += dataSet.get(i, j);
-//                }
-//
-//                means[j] = sum[j] / dataSet.rows();
-//            }
-//        }
-//
-//        for (int i = 0; i < semIm.getVariableNodes().size(); i++) {
-//            Node node = semIm.getVariableNodes().get(i);
-//            semIm.setMean(node, means[i]);
-//        }
-//    }
-
     public SemPm getSemPm() {
         return this.semPm;
     }
@@ -574,20 +529,11 @@ public final class SemEstimatorGibbs {
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-//        if (semPm == null) {
-//            throw new NullPointerException();
-//        }
-
-//        if (dataSet == null) {
-//            throw new NullPointerException();
-//        }
     }
 }
 

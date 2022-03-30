@@ -159,10 +159,6 @@ public class SemOptimizerEm implements SemOptimizer {
         return this.numRestarts;
     }
 
-    public Matrix getExpectedCovarianceMatrix() {
-        return new Matrix(this.expectedCov);
-    }
-
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
@@ -309,7 +305,8 @@ public class SemOptimizerEm implements SemOptimizer {
 
                 for (int i = 0; i < coefs.size(); i++) {
 
-                    if (this.semIm.getSemPm().getParameter(nodes.get(this.parents[idx][i]), node) != null && !this.semIm.getSemPm().getParameter(nodes.get(this.parents[idx][i]), node).isFixed()) {
+                    this.semIm.getSemPm().getParameter(nodes.get(this.parents[idx][i]), node);
+                    if (!this.semIm.getSemPm().getParameter(nodes.get(this.parents[idx][i]), node).isFixed()) {
                         this.semIm.setEdgeCoef(nodes.get(this.parents[idx][i]), node, coefs.get(i));
                     }
                 }

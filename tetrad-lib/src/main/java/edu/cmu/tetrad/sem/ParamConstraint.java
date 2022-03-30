@@ -150,10 +150,6 @@ public class ParamConstraint implements TetradSerializable {
 
     }
 
-    public Parameter getParam1() {
-        return this.param1;
-    }
-
     public SemIm getSemIm() {
         return this.semIm;
     }

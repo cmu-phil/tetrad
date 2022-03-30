@@ -41,15 +41,7 @@ public interface Scorer {
 
     double getFml();
 
-    double getLogLikelihood();
-
-    double getTruncLL();
-
     double getBicScore();
-
-    double getAicScore();
-
-    double getKicScore();
 
     double getChiSquare();
 

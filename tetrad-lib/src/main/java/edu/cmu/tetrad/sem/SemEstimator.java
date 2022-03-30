@@ -207,10 +207,6 @@ public final class SemEstimator implements TetradSerializable {
             this.semOptimizer = defaultOptimizer;
         }
 
-//        if (!(defaultOptimizer instanceof SemOptimizerRegression)) {
-//            semOptimizer = defaultOptimizer;
-//        }
-
         getSemOptimizer().setNumRestarts(this.numRestarts);
         getSemOptimizer().optimize(semIm);
 
@@ -262,15 +258,6 @@ public final class SemEstimator implements TetradSerializable {
 
     private SemOptimizer getSemOptimizer() {
         return this.semOptimizer;
-    }
-
-    public void setTrueSemIm(SemIm semIm) {
-        /*
-      The true SEM IM. If this is included. then its score will be printed
-      out.
-     */
-        SemIm trueSemIm = new SemIm(semIm);
-        trueSemIm.setCovMatrix(this.getCovMatrix());
     }
 
     /**
@@ -328,8 +315,6 @@ public final class SemEstimator implements TetradSerializable {
 
         return optimizer;
 
-//        optimizer.optimize(semIm);
-//        this.semOptimizer = optimizer;
     }
 
     private boolean containsFixedParam() {
@@ -450,8 +435,6 @@ public final class SemEstimator implements TetradSerializable {
      * it. (That's what the "s.defaultReadObject();" is for. See J. Bloch,
      * Effective Java, for help.
      *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream
                                     s)

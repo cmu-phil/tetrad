@@ -105,7 +105,7 @@ public final class Parameter implements TetradSerializable {
      *
      * @serial Any value.
      */
-    private double startingValue = +1.0d;
+    private double startingValue = 1.0d;
 
     //================================CONSTRUCTORS=======================//
 
@@ -294,18 +294,12 @@ public final class Parameter implements TetradSerializable {
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
         if (this.name == null) {
-            throw new NullPointerException();
-        }
-
-        if (this.type == null) {
             throw new NullPointerException();
         }
 

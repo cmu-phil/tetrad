@@ -49,9 +49,6 @@ class Tsls {
     private List<String> fixedLoadings;
     private DataSet dataSet;
     private String nodeName;
-    private double[][] asymptLCovar;
-    private double[] A_hat;
-    private String[] lNames;
 
     /**
      * We require a DataSet (with continuous dataSet) and a SemPm with matching
@@ -84,7 +81,7 @@ class Tsls {
 
     public SemIm estimate() {
         this.semIm = new SemIm(this.spm);
-        this.semIm = estimateCoeffs(this.semIm);
+        estimateCoeffs(this.semIm);
         return this.semIm;
     }
 
@@ -149,7 +146,7 @@ class Tsls {
         }
     }
 
-    private SemIm estimateCoeffs(SemIm semIm) {
+    private void estimateCoeffs(SemIm semIm) {
 
         //System.out.print("\n****************\nCalling 2SLS... ");
         SemGraph semGraph = semIm.getSemPm().getGraph();
@@ -193,7 +190,6 @@ class Tsls {
             List<Node> endo_parents = new LinkedList<>();
             List<Node> exo_parents = new LinkedList<>();
             Iterator<Node> it_p = semGraph.getParents(current).iterator();
-            this.lNames = new String[lx.size() + ly.size()];
             while (it_p.hasNext()) {
                 Node node = it_p.next();
                 if (node.getNodeType() == NodeType.ERROR) {
@@ -217,8 +213,8 @@ class Tsls {
             if (c == 0) {
                 continue;
             }
+
             double[][] Z = new double[n][c];
-            int count = 0;
 
             for (int i = 0; i < endp_a_m.length; i++) {
                 Node node = (Node) endp_a_m[i];
@@ -226,31 +222,21 @@ class Tsls {
                 Node variable = this.dataSet.getVariable(name);
                 int colIndex = this.dataSet.getVariables().indexOf(variable);
 
-//                Column column = dataSet.getColumnObject(variable);
-//                double column_data[] = (double[]) column.getRawData();
-
                 for (int j = 0; j < n; j++) {
-//                    Z[j][i] = column_data[j];
                     Z[j][i] = this.dataSet.getDouble(j, colIndex);
                 }
-
-                this.lNames[count++] = (endo_parents.get(i)).getName();
             }
+
             for (int i = 0; i < exop_a_m.length; i++) {
                 Node node = (Node) exop_a_m[i];
                 String name = node.getName();
                 Node variable = this.dataSet.getVariable(name);
                 int colIndex = this.dataSet.getVariables().indexOf(variable);
 
-//                Column column = dataSet.getColumnObject(variable);
-//                double column_data[] = (double[]) column.getRawData();
-
                 for (int j = 0; j < n; j++) {
-//                    Z[j][endp_a_m.length + i] = column_data[j];
                     Z[j][endp_a_m.length + i] = this.dataSet.getDouble(j, colIndex);
 
                 }
-                this.lNames[count++] = exo_parents.get(i).getName();
             }
             // Build V, the matrix containing the data for the nonfixed measurements
             // associated with the parents of the getModel (endogenous) latent node
@@ -294,9 +280,6 @@ class Tsls {
                 Node variable = this.dataSet.getVariable(name);
                 int colIndex = this.dataSet.getVariables().indexOf(variable);
 
-//                Column column = dataSet.getColumnObject(variable);
-//                double column_data[] = (double[]) column.getRawData();
-
                 for (int j = 0; j < n; j++) {
 //                    V[j][i] = column_data[j];
                     V[j][i] = this.dataSet.getDouble(j, colIndex);
@@ -307,9 +290,6 @@ class Tsls {
                 String name = node.getName();
                 Node variable = this.dataSet.getVariable(name);
                 int colIndex = this.dataSet.getVariables().indexOf(variable);
-
-//                Column column = dataSet.getColumnObject(variable);
-//                double column_data[] = (double[]) column.getRawData();
 
                 for (int j = 0; j < n; j++) {
 //                    V[j][endp_a_m.length + i] = column_data[j];
@@ -323,10 +303,6 @@ class Tsls {
                 String name = node.getName();
                 Node variable = this.dataSet.getVariable(name);
                 int colIndex = this.dataSet.getVariables().indexOf(variable);
-
-//                Column column = dataSet.getColumnObject(variable);
-//
-//                System.arraycopy(column.getRawData(), 0, yi, 0, n);
 
                 for (int i = 0; i < n; i++) {
                     yi[i] = this.dataSet.getDouble(i, colIndex);
@@ -349,7 +325,7 @@ class Tsls {
                     MatrixUtils.inverse(
                             MatrixUtils.product(MatrixUtils.transpose(V), V)),
                     MatrixUtils.product(MatrixUtils.transpose(V), Z)));
-            this.A_hat = MatrixUtils.product(MatrixUtils.inverse(
+            double[] a_hat = MatrixUtils.product(MatrixUtils.inverse(
                             MatrixUtils.product(MatrixUtils.transpose(Z_hat), Z_hat)),
                     MatrixUtils.product(MatrixUtils.transpose(Z_hat), yi));
             //Set the edge for the fixed measurement
@@ -357,14 +333,14 @@ class Tsls {
             semIm.setParamValue(current, my1.get(position), 1.);
             // Set the edge for the latents
             for (int i = 0; i < endp_a.length; i++) {
-                semIm.setParamValue((Node) endp_a[i], current, this.A_hat[i]);
+                semIm.setParamValue((Node) endp_a[i], current, a_hat[i]);
             }
             for (int i = 0; i < exop_a.length; i++) {
                 semIm.setParamValue((Node) exop_a[i], current,
-                        this.A_hat[endp_a.length + i]);
+                        a_hat[endp_a.length + i]);
             }
             if (this.nodeName != null && this.nodeName.equals(current.getName())) {
-                computeAsymptLatentCovar(yi, this.A_hat, Z, Z_hat,
+                computeAsymptLatentCovar(yi, a_hat, Z, Z_hat,
                         this.dataSet.getNumRows());
                 break;
             }
@@ -419,23 +395,9 @@ class Tsls {
             }
             // Regress other_measures over the fixed measurement x1 (y1) correspondent
             // to the measurement variable that is being evaluated
-            int n = this.dataSet.getNumRows(), c = other_measures.size();
+            int n, c = other_measures.size();
             if (c == 0) {
                 continue;
-            }
-            double[][] Z = new double[n][c];
-            for (int i = 0; i < c; i++) {
-                Node variable = this.dataSet.getVariable(
-                        (other_measures.get(i)).getName());
-                int varIndex = this.dataSet.getVariables().indexOf(variable);
-
-//                Column column = dataSet.getColumnObject(variable);
-//                double column_data[] = (double[]) column.getRawData();
-
-                for (int j = 0; j < n; j++) {
-//                    Z[j][i] = column_data[j];
-                    Z[j][i] = this.dataSet.getDouble(varIndex, j);
-                }
             }
 
             // Build C, the column matrix containing the data for the fixed
@@ -443,8 +405,6 @@ class Tsls {
             // observed node (as assumed by the structure of our measurement model).
             Node variable = this.dataSet.getVariable(fixed_measurement.getName());
             int colIndex = this.dataSet.getVariables().indexOf(variable);
-//            Column column = dataSet.getColumnObject(variable);
-//            double C[] = (double[]) column.getRawData();
 
             double[] C = new double[this.dataSet.getNumRows()];
 
@@ -461,15 +421,11 @@ class Tsls {
             // of the error term of the others and that each measurement is
             // taken with respect to only one latent.
             n = this.dataSet.getNumRows();
-            c = other_measures.size();
             double[][] V = new double[n][c];
             for (int i = 0; i < c; i++) {
                 Node variable2 = this.dataSet.getVariable(
                         (other_measures.get(i)).getName());
                 int var2index = this.dataSet.getVariables().indexOf(variable2);
-
-//                Column column = dataSet.getColumnObject(variable2);
-//                double column_data[] = (double[]) column.getRawData();
 
                 for (int j = 0; j < n; j++) {
 //                    V[j][i] = column_data[j];
@@ -484,8 +440,6 @@ class Tsls {
                 yi[i] = this.dataSet.getDouble(i, var3Index);
             }
 
-//            Object rawData = dataSet.getColumnObject(variable3).getRawData();
-//            System.arraycopy(rawData, 0, yi, 0, n);
             double[] C_hat = MatrixUtils.product(V, MatrixUtils.product(
                     MatrixUtils.inverse(
                             MatrixUtils.product(MatrixUtils.transpose(V), V)),
@@ -496,18 +450,17 @@ class Tsls {
             semIm.setParamValue(current_latent, current, A_hat);
         }
 
-        return semIm;
     }
 
     private void computeAsymptLatentCovar(double[] y, double[] A_hat,
                                           double[][] Z, double[][] Z_hat, double n) {
         double[] yza = MatrixUtils.subtract(y, MatrixUtils.product(Z, A_hat));
         double sigma_ui = MatrixUtils.innerProduct(yza, yza) / n;
-        this.asymptLCovar = MatrixUtils.inverse(
+        double[][] asymptLCovar = MatrixUtils.inverse(
                 MatrixUtils.product(MatrixUtils.transpose(Z_hat), Z_hat));
 
-        for (double[] anAsymptLCovar : this.asymptLCovar) {
-            for (int j = 0; j < this.asymptLCovar.length; j++) {
+        for (double[] anAsymptLCovar : asymptLCovar) {
+            for (int j = 0; j < asymptLCovar.length; j++) {
                 anAsymptLCovar[j] *= sigma_ui;
             }
         }
@@ -516,20 +469,6 @@ class Tsls {
     /*
      * Get variance for the edge from source to nodeName
      **/
-
-    public double getEdgePValue(String source) {
-        if (this.asymptLCovar == null) {
-            return 0.;
-        }
-        for (int i = 0; i < this.lNames.length; i++) {
-            if (this.lNames[i].equals(source)) {
-                double z = Math.abs(this.A_hat[i] / Math.sqrt(this.asymptLCovar[i][i]));
-                System.out.println("Asymptotic Z = " + z);
-                return 2.0 * (1.0 - edu.cmu.tetrad.util.ProbUtils.normalCdf(z));
-            }
-        }
-        return 0.;
-    }
 
 }
 

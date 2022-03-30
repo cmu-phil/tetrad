@@ -67,9 +67,7 @@ public final class SemProposition implements TetradSerializable {
         this.semIm = semIm;
         this.values = new double[semIm.getVariableNodes().size()];
 
-        for (int i = 0; i < this.values.length; i++) {
-            this.values[i] = Double.NaN;
-        }
+        Arrays.fill(this.values, Double.NaN);
     }
 
     public SemProposition(SemProposition proposition) {
@@ -80,28 +78,6 @@ public final class SemProposition implements TetradSerializable {
     public static SemProposition tautology(SemIm semIm) {
         return new SemProposition(semIm);
     }
-
-//    /**
-//     * Copies the info out of the old proposition into a new proposition for the
-//     * new BayesIm.
-//     */
-//    public SemProposition(SemIm semIm, SemProposition proposition) {
-//        this(semIm);
-//
-//        if (proposition == null) {
-//            throw new NullPointerException();
-//        }
-//    }
-
-//    /**
-//     * Copies the info out of the old proposition into a new proposition for the
-//     * new BayesIm.
-//     */
-//    public SemProposition(SemProposition proposition) {
-//        this.semIm = proposition.semIm;
-//        this.values = new double[proposition.values.length];
-//        System.arraycopy(proposition.values, 0, this.values, 0, values.length);
-//    }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
@@ -169,7 +145,7 @@ public final class SemProposition implements TetradSerializable {
     }
 
     public String toString() {
-        List nodes = this.semIm.getVariableNodes();
+        List<Node> nodes = this.semIm.getVariableNodes();
         StringBuilder buf = new StringBuilder();
         buf.append("\nProposition: ");
 
@@ -191,8 +167,6 @@ public final class SemProposition implements TetradSerializable {
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -208,12 +182,12 @@ public final class SemProposition implements TetradSerializable {
     }
 
     public double getValue(Node node) {
-        List nodes = this.semIm.getVariableNodes();
+        List<Node> nodes = this.semIm.getVariableNodes();
         return this.values[nodes.indexOf(node)];
     }
 
     public void setValue(Node node, double value) {
-        List nodes = this.semIm.getVariableNodes();
+        List<Node> nodes = this.semIm.getVariableNodes();
         this.values[nodes.indexOf(node)] = value;
     }
 }

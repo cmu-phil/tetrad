@@ -99,7 +99,7 @@ public interface ISemIm extends Simulator {
 
     double getStdDev(Node node, Matrix implCovar);
 
-    List getMeasuredNodes();
+    List<Node> getMeasuredNodes();
 
     Matrix getImplCovarMeas();
 
@@ -115,7 +115,6 @@ public interface ISemIm extends Simulator {
 
     boolean isSimulatedPositiveDataOnly();
 
-    void setSimulatedPositiveDataOnly(boolean simulatedPositiveDataOnly);
 }
 
 

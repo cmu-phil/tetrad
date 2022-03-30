@@ -81,46 +81,6 @@ public final class SemEvidence implements TetradSerializable {
         this.manipulation = new SemManipulation(evidence.manipulation);
     }
 
-//    /**
-//     * Copy constructor.
-//     */
-//    public SemEvidence(SemEvidence evidence) {
-//        if (evidence == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        this.semIm = evidence.getSemIm();
-//        this.proposition = new SemProposition(semIm, evidence.getProposition());
-//        this.manipulation = new SemManipulation(evidence.manipulation);
-//    }
-
-//    /**
-//     * Wraps the proposition. The Bayes IM and manipulation will be null.
-//     */
-//    public SemEvidence(SemProposition proposition) {
-//        if (proposition == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        this.semIm = proposition.getSemIm();
-//        this.proposition = new SemProposition(proposition);
-//        this.manipulation = new SemManipulation(semIm);
-//    }
-
-//    public SemEvidence(SemEvidence evidence, SemIm semIm) {
-//        if (semIm == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        if (evidence == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        this.semIm = semIm;
-//        this.proposition = new SemProposition(semIm, evidence.getProposition());
-//        this.manipulation = new SemManipulation(evidence.manipulation);
-//    }
-
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
@@ -252,8 +212,6 @@ public final class SemEvidence implements TetradSerializable {
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

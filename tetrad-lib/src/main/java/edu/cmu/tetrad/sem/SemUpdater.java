@@ -107,9 +107,6 @@ public class SemUpdater implements TetradSerializable {
             means.set(i, manipulatedSemIm.getMean(manipulatedSemIm.getVariableNodes().get(i)));
         }
 
-//        System.out.println("vars = " + semIm.getVariableNodes());
-//        System.out.println("means = " + means);
-
         Matrix implcov = manipulatedSemIm.getImplCovar(true);
 
         // Updating on x2 = X.
@@ -139,24 +136,13 @@ public class SemUpdater implements TetradSerializable {
         Vector EX = means.viewSelection(xIndices);
         Vector EY = means.viewSelection(yIndices);
 
-        int[] x2 = new int[nodesInEvidence.size()];
         Vector X = new Vector(nodesInEvidence.size());
-
-        for (int i = 0; i < nodesInEvidence.size(); i++) {
-            Node _node = nodesInEvidence.get(i);
-            x2[i] = evidence.getNodeIndex(_node);
-        }
 
         for (int i = 0; i < nodesInEvidence.size(); i++) {
             int j = evidence.getNodeIndex(nodesInEvidence.get(i));
             X.set(i, evidence.getProposition().getValue(j));
         }
 
-//        System.out.println("covyx = " + covyx);
-//        System.out.println("varx = " + varx);
-//        System.out.println("X = " + X);
-//        System.out.println("EX = " + EX);
-//        System.out.println("EY = " + EY);
         Vector xminusex = X.minus(EX);
 
         Vector mu = new Vector(manipulatedSemIm.getVariableNodes().size());

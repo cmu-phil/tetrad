@@ -89,6 +89,7 @@ public class TemplateExpander {
         template = replaceTemplateSums(semPm, template, node);
         template = replaceTemplateProducts(semPm, template, node);
         template = replaceNewParameters(semPm, template, usedNames);
+        assert semPm != null;
         template = replaceError(semPm, template, node);
 
         Node error = null;
@@ -117,11 +118,14 @@ public class TemplateExpander {
             }
         }
 
-        if (node != null && node != error && !template.contains(error.getName())) {
-            if (template.trim().equals("")) {
-                template = error.getName();
-            } else {
-                template += " + " + error.getName();
+        if (node != null && node != error) {
+            assert error != null;
+            if (!template.contains(error.getName())) {
+                if (template.trim().equals("")) {
+                    template = error.getName();
+                } else {
+                    template += " + " + error.getName();
+                }
             }
         }
 
@@ -271,39 +275,39 @@ public class TemplateExpander {
                 boolean plusOrTimes = '+' == symbol || '*' == symbol;
                 boolean space = ' ' == symbol;
 
-                if (space) {
-                    // continue; // (last statement)
-                } else if (plusOrTimes) {
-                    if (operatorList.isEmpty()) {
-                        first = i;
-                    }
+                if (!space) {
+                    if (plusOrTimes) {
+                        if (operatorList.isEmpty()) {
+                            first = i;
+                        }
 
-                    operatorList.add(symbol);
-                } else {
-                    last = i - 1;
+                        operatorList.add(symbol);
+                    } else {
+                        last = i - 1;
 
-                    if (operatorList.size() > 1) {
-                        found = true;
-                        boolean allStar = true;
+                        if (operatorList.size() > 1) {
+                            found = true;
+                            boolean allStar = true;
 
-                        for (Character c : operatorList) {
-                            if (c != '*') {
-                                allStar = false;
-                                break;
+                            for (Character c : operatorList) {
+                                if (c != '*') {
+                                    allStar = false;
+                                    break;
+                                }
+                            }
+
+                            if (allStar) {
+                                formula = formula.substring(0, first - 1) + " * " +
+                                        formula.substring(last + 1);
+                            } else {
+                                formula = formula.substring(0, first - 1) + " + " +
+                                        formula.substring(last + 1);
                             }
                         }
 
-                        if (allStar) {
-                            formula = formula.substring(0, first - 1) + " * " +
-                                    formula.substring(last + 1);
-                        } else {
-                            formula = formula.substring(0, first - 1) + " + " +
-                                    formula.substring(last + 1);
-                        }
+                        operatorList.clear();
+                        continue WHILE;
                     }
-
-                    operatorList.clear();
-                    continue WHILE;
                 }
             }
         }
@@ -324,7 +328,7 @@ public class TemplateExpander {
             String group0 = Pattern.quote(m.group(0));
             String group1 = m.group(1);
 
-            String nextName = semPm.nextParameterName(group1, usedNames);
+            String nextName = semPm.nextParameterName(group1);
             formula = formula.replaceFirst(group0, nextName);
             usedNames.add(nextName);
         }
@@ -341,7 +345,7 @@ public class TemplateExpander {
             String group0 = Pattern.quote(m.group(0));
             String group1 = m.group(1);
 
-            String nextName = semPm.nextParameterName(group1, usedNames);
+            String nextName = semPm.nextParameterName(group1);
             formula = formula.replaceFirst(group0, nextName);
             usedNames.add(nextName);
         }

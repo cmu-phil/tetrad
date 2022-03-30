@@ -74,9 +74,6 @@ public class ParamComparison {
     private final int ordinal = ParamComparison.nextOrdinal++;
     private static final ParamComparison[] TYPES = {ParamComparison.NC, ParamComparison.LT, ParamComparison.EQ, ParamComparison.LE};
 
-    Object readResolve() {
-        return ParamComparison.TYPES[this.ordinal]; // Canonicalize.
-    }
 }
 
 

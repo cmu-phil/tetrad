@@ -65,17 +65,6 @@ public class GeneralizedSemIm implements IM, Simulator {
     private final Map<String, Double> parameterValues;
 
     /**
-     * True iff only positive data should be simulated.
-     */
-    private boolean simulatePositiveDataOnly;
-
-    /**
-     * The coefficient of a (linear) self-loop for each variable, or NaN if there is none.
-     */
-    private final double selfLoopCoef = Double.NaN;
-
-
-    /**
      * Constructs a new GeneralizedSemIm from the given GeneralizedSemPm by picking values for each of
      * the freeParameters from their initial distributions.
      *
@@ -91,11 +80,7 @@ public class GeneralizedSemIm implements IM, Simulator {
         for (String parameter : parameters) {
             Expression expression = pm.getParameterExpression(parameter);
 
-            Context context = new Context() {
-                public Double getValue(String var) {
-                    return GeneralizedSemIm.this.parameterValues.get(var);
-                }
-            };
+            Context context = GeneralizedSemIm.this.parameterValues::get;
 
             double initialValue = expression.evaluate(context);
             this.parameterValues.put(parameter, initialValue);
@@ -300,7 +285,6 @@ public class GeneralizedSemIm implements IM, Simulator {
 //        return simulateDataMinimizeSurface(sampleSize, latentDataSaved);
 //        return simulateDataAvoidInfinity(sampleSize, latentDataSaved);
         return simulateDataFisher(sampleSize);
-//        return simulateDataNSteps(sampleSize, latentDataSaved);
     }
 
     @Override
@@ -327,11 +311,7 @@ public class GeneralizedSemIm implements IM, Simulator {
 
         List<Node> lag0Nodes = timeLagGraph.getLag0Nodes();
 
-        for (Node node : new ArrayList<>(lag0Nodes)) {
-            if (node.getNodeType() == NodeType.ERROR) {
-                lag0Nodes.remove(node);
-            }
-        }
+        lag0Nodes.removeIf(node -> node.getNodeType() == NodeType.ERROR);
 
         DataSet fullData = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, variables.size()), variables);
 
@@ -345,42 +325,30 @@ public class GeneralizedSemIm implements IM, Simulator {
 
         List<Node> tierOrdering = contemporaneousDag.getCausalOrdering();
 
-        for (Node node : new ArrayList<>(tierOrdering)) {
-            if (node.getNodeType() == NodeType.ERROR) {
-                tierOrdering.remove(node);
-            }
-        }
+        tierOrdering.removeIf(node -> node.getNodeType() == NodeType.ERROR);
 
         Map<String, Double> variableValues = new HashMap<>();
 
-        Context context = new Context() {
-            public Double getValue(String term) {
-                Double value = GeneralizedSemIm.this.parameterValues.get(term);
+        Context context = term -> {
+            Double value = GeneralizedSemIm.this.parameterValues.get(term);
 
-                if (value != null) {
-                    return value;
-                }
+            if (value != null) {
+                return value;
+            }
 
-                value = variableValues.get(term);
+            value = variableValues.get(term);
 
-                if (value != null) {
-                    return value;
-                } else {
-                    return RandomUtil.getInstance().nextNormal(0, 1);
-                }
+            if (value != null) {
+                return value;
+            } else {
+                return RandomUtil.getInstance().nextNormal(0, 1);
             }
         };
 
-        ROW:
         for (int currentStep = 0; currentStep < sampleSize; currentStep++) {
             for (Node node : tierOrdering) {
                 Expression expression = this.pm.getNodeExpression(node);
                 double value = expression.evaluate(context);
-
-                if (isSimulatePositiveDataOnly() && value < 0) {
-                    currentStep--;
-                    continue ROW;
-                }
 
                 int col = nodeIndices.get(node);
                 fullData.setDouble(currentStep, col, value);
@@ -423,22 +391,20 @@ public class GeneralizedSemIm implements IM, Simulator {
 
         Map<String, Double> variableValues = new HashMap<>();
 
-        Context context = new Context() {
-            public Double getValue(String term) {
-                Double value = GeneralizedSemIm.this.parameterValues.get(term);
+        Context context = term -> {
+            Double value = GeneralizedSemIm.this.parameterValues.get(term);
 
-                if (value != null) {
-                    return value;
-                }
-
-                value = variableValues.get(term);
-
-                if (value != null) {
-                    return value * 2 / std.get(term);
-                }
-
-                throw new IllegalArgumentException("No value recorded for '" + term + "'");
+            if (value != null) {
+                return value;
             }
+
+            value = variableValues.get(term);
+
+            if (value != null) {
+                return value * 2 / std.get(term);
+            }
+
+            throw new IllegalArgumentException("No value recorded for '" + term + "'");
         };
 
         List<Node> continuousVariables = new LinkedList<>();
@@ -466,21 +432,6 @@ public class GeneralizedSemIm implements IM, Simulator {
             tierIndices[i] = nonErrorVariables.indexOf(tierOrdering.get(i));
         }
 
-        int[][] _parents = new int[variables.size()][];
-
-        for (int i = 0; i < variables.size(); i++) {
-            Node node = variables.get(i);
-            List<Node> parents = graph.getParents(node);
-
-            _parents[i] = new int[parents.size()];
-
-            for (int j = 0; j < parents.size(); j++) {
-                Node _parent = parents.get(j);
-                _parents[i][j] = variables.indexOf(_parent);
-            }
-        }
-
-
         // Do the simulation.
         for (int tier = 0; tier < variables.size(); tier++) {
             double[] v = new double[sampleSize];
@@ -499,18 +450,6 @@ public class GeneralizedSemIm implements IM, Simulator {
                 double value = expression.evaluate(context);
                 v[row] = value;
                 variableValues.put(node.getName(), value);
-
-
-//                if (isSimulatePositiveDataOnly() && value < 0) {
-//                    row--;
-//                    continue ROW;
-//                }
-
-//                if (!Double.isNaN(selfLoopCoef) && row > 0) {
-//                    value += selfLoopCoef * fullDataSet.getDouble(row - 1, col);
-//                }
-
-//                value = min(max(value, -5.), 5.);
 
                 fullDataSet.setDouble(row, col, value);
             }
@@ -548,22 +487,20 @@ public class GeneralizedSemIm implements IM, Simulator {
 
         DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, continuousVariables.size()), continuousVariables);
 
-        Context context = new Context() {
-            public Double getValue(String term) {
-                Double value = GeneralizedSemIm.this.parameterValues.get(term);
+        Context context = term -> {
+            Double value = GeneralizedSemIm.this.parameterValues.get(term);
 
-                if (value != null) {
-                    return value;
-                }
-
-                value = variableValues.get(term);
-
-                if (value != null) {
-                    return value;
-                }
-
-                throw new IllegalArgumentException("No value recorded for '" + term + "'");
+            if (value != null) {
+                return value;
             }
+
+            value = variableValues.get(term);
+
+            if (value != null) {
+                return value;
+            }
+
+            throw new IllegalArgumentException("No value recorded for '" + term + "'");
         };
 
         double[] _metric = new double[1];
@@ -608,7 +545,6 @@ public class GeneralizedSemIm implements IM, Simulator {
         MultivariateOptimizer search = new PowellOptimizer(1e-7, 1e-7);
 
         // Do the simulation.
-        ROW:
         for (int row = 0; row < sampleSize; row++) {
 
             // Take random draws from error distributions.
@@ -633,7 +569,7 @@ public class GeneralizedSemIm implements IM, Simulator {
                 variableValues.put(variable.getName(), 0.0);// RandomUtil.getInstance().nextUniform(-5, 5));
             }
 
-            while (true) {
+            do {
 
                 double[] values = new double[variableNodes.size()];
 
@@ -650,23 +586,11 @@ public class GeneralizedSemIm implements IM, Simulator {
                 values = pair.getPoint();
 
                 for (int i = 0; i < variableNodes.size(); i++) {
-                    if (isSimulatePositiveDataOnly() && values[i] < 0) {
-                        row--;
-                        continue ROW;
-                    }
-
-                    if (!Double.isNaN(this.selfLoopCoef) && row > 0) {
-                        values[i] += this.selfLoopCoef * fullDataSet.getDouble(row - 1, i);
-                    }
-
                     variableValues.put(variableNodes.get(i).getName(), values[i]);
                     fullDataSet.setDouble(row, i, values[i]);
                 }
 
-                if (_metric[0] < 0.01) {
-                    break; // while
-                }
-            }
+            } while (!(_metric[0] < 0.01));
         }
 
         if (latentDataSaved) {
@@ -694,22 +618,20 @@ public class GeneralizedSemIm implements IM, Simulator {
 
         DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, continuousVariables.size()), continuousVariables);
 
-        Context context = new Context() {
-            public Double getValue(String term) {
-                Double value = GeneralizedSemIm.this.parameterValues.get(term);
+        Context context = term -> {
+            Double value = GeneralizedSemIm.this.parameterValues.get(term);
 
-                if (value != null) {
-                    return value;
-                }
-
-                value = variableValues.get(term);
-
-                if (value != null) {
-                    return value;
-                }
-
-                throw new IllegalArgumentException("No value recorded for '" + term + "'");
+            if (value != null) {
+                return value;
             }
+
+            value = variableValues.get(term);
+
+            if (value != null) {
+                return value;
+            }
+
+            throw new IllegalArgumentException("No value recorded for '" + term + "'");
         };
 
         boolean allInRange = true;
@@ -799,33 +721,13 @@ public class GeneralizedSemIm implements IM, Simulator {
             }
 
             if (!allInRange) {
-                if (count < 10000) {
-                    row--;
-                    System.out.println("Trying another starting point...");
-                    continue;
-                } else {
-                    System.out.println("Couldn't converge in simulation.");
-
-                    for (int i = 0; i < variableNodes.size(); i++) {
-                        fullDataSet.setDouble(row, i, Double.NaN);
-                    }
-
-                    return fullDataSet;
-                }
+                row--;
+                System.out.println("Trying another starting point...");
+                continue;
             }
 
             for (int i = 0; i < variableNodes.size(); i++) {
                 double value = variableValues.get(variableNodes.get(i).getName());
-
-                if (isSimulatePositiveDataOnly() && value < 0) {
-                    row--;
-                    continue ROW;
-                }
-
-                if (!Double.isNaN(this.selfLoopCoef) && row > 0) {
-                    value += this.selfLoopCoef * fullDataSet.getDouble(row - 1, i);
-                }
-
                 fullDataSet.setDouble(row, i, value);
             }
         }
@@ -879,22 +781,20 @@ public class GeneralizedSemIm implements IM, Simulator {
 
         Map<String, Double> variableValues = new HashMap<>();
 
-        Context context = new Context() {
-            public Double getValue(String term) {
-                Double value = GeneralizedSemIm.this.parameterValues.get(term);
+        Context context = term -> {
+            Double value = GeneralizedSemIm.this.parameterValues.get(term);
 
-                if (value != null) {
-                    return value;
-                }
-
-                value = variableValues.get(term);
-
-                if (value != null) {
-                    return value;
-                }
-
-                throw new IllegalArgumentException("No value recorded for '" + term + "'");
+            if (value != null) {
+                return value;
             }
+
+            value = variableValues.get(term);
+
+            if (value != null) {
+                return value;
+            }
+
+            throw new IllegalArgumentException("No value recorded for '" + term + "'");
         };
 
         List<Node> variableNodes = this.pm.getVariableNodes();
@@ -990,22 +890,20 @@ public class GeneralizedSemIm implements IM, Simulator {
 
         List<Node> variableNodes = this.pm.getVariableNodes();
 
-        Context context = new Context() {
-            public Double getValue(String term) {
-                Double value = GeneralizedSemIm.this.parameterValues.get(term);
+        Context context = term -> {
+            Double value = GeneralizedSemIm.this.parameterValues.get(term);
 
-                if (value != null) {
-                    return value;
-                }
-
-                value = variableValues.get(term);
-
-                if (value != null) {
-                    return value;
-                }
-
-                throw new IllegalArgumentException("No value recorded for '" + term + "'");
+            if (value != null) {
+                return value;
             }
+
+            value = variableValues.get(term);
+
+            if (value != null) {
+                return value;
+            }
+
+            throw new IllegalArgumentException("No value recorded for '" + term + "'");
         };
 
         // Take random draws from error distributions.
@@ -1089,22 +987,20 @@ public class GeneralizedSemIm implements IM, Simulator {
 
         DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, continuousVariables.size()), continuousVariables);
 
-        Context context = new Context() {
-            public Double getValue(String term) {
-                Double value = GeneralizedSemIm.this.parameterValues.get(term);
+        Context context = term -> {
+            Double value = GeneralizedSemIm.this.parameterValues.get(term);
 
-                if (value != null) {
-                    return value;
-                }
-
-                value = variableValues.get(term);
-
-                if (value != null) {
-                    return value;
-                }
-
-                throw new IllegalArgumentException("No value recorded for '" + term + "'");
+            if (value != null) {
+                return value;
             }
+
+            value = variableValues.get(term);
+
+            if (value != null) {
+                return value;
+            }
+
+            throw new IllegalArgumentException("No value recorded for '" + term + "'");
         };
 
         // Do the simulation.
@@ -1190,14 +1086,6 @@ public class GeneralizedSemIm implements IM, Simulator {
                 this.parameterValues.put(parameter, parameterValues.get(parameter));
             }
         }
-    }
-
-    private boolean isSimulatePositiveDataOnly() {
-        return this.simulatePositiveDataOnly;
-    }
-
-    public void setSimulatePositiveDataOnly(boolean simulatedPositiveDataOnly) {
-        this.simulatePositiveDataOnly = simulatedPositiveDataOnly;
     }
 }
 

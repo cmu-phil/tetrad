@@ -178,10 +178,6 @@ public class SemOptimizerPowell implements SemOptimizer {
                 return 100000;
             }
 
-            if (Double.isNaN(fml)) {
-                return 100000;
-            }
-
             if (fml < 0) {
                 return 100000;
             }

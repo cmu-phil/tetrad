@@ -71,39 +71,6 @@ public final class SemManipulation implements TetradSerializable {
         this.manipulated = Arrays.copyOf(manipulation.manipulated, manipulation.manipulated.length);
     }
 
-//    /**
-//     * Copy constructor.
-//     */
-//    public SemManipulation(SemManipulation evidence) {
-//        if (evidence == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        this.semIm = evidence.getSemIm();
-//        this.manipulated = new boolean[semIm.getVariableNodes().size()];
-//
-//        for (int i = 0; i < manipulated.length; i++) {
-//            this.manipulated[i] = evidence.isManipulated(i);
-//        }
-//    }
-
-//    public SemManipulation(SemManipulation evidence, SemIm semIm) {
-//        if (semIm == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        if (evidence == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        this.semIm = semIm;
-//        this.manipulated = new boolean[semIm.getVariableNodes().size()];
-//
-//        for (int i = 0; i < manipulated.length; i++) {
-//            this.manipulated[i] = evidence.isManipulated(i);
-//        }
-//    }
-
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
@@ -113,15 +80,8 @@ public final class SemManipulation implements TetradSerializable {
 
     //===========================PUBLIC METHODS=========================//
 
-//    /**
-//     * @return the Bayes IM that this is evidence for.
-//     */
-//    private SemIm getSemIm() {
-//        return this.semIm;
-//    }
-
     public int getNodeIndex(String nodeName) {
-        List nodes = this.semIm.getSemPm().getVariableNodes();
+        List<Node> nodes = this.semIm.getSemPm().getVariableNodes();
 
         for (int i = 0; i < nodes.size(); i++) {
             Node node = (Node) nodes.get(i);
@@ -205,8 +165,6 @@ public final class SemManipulation implements TetradSerializable {
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
