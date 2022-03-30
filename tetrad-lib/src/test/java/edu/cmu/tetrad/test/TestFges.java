@@ -44,10 +44,8 @@ import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TextTable;
 import edu.pitt.csb.mgm.MGM;
 import edu.pitt.csb.mgm.MixedUtils;
-import edu.pitt.dbmi.data.reader.Delimiter;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.text.DecimalFormat;
@@ -938,51 +936,6 @@ public class TestFges {
         return newGraph;
     }
 
-    //    @Test
-    public void testAjData() {
-        final double penalty = 4;
-
-        try {
-
-            for (int i = 0; i < 50; i++) {
-                File dataPath = new File("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/2016.05.25/" +
-                        "Simulated_data_for_Madelyn/simulation/data/DAG_" + i + "_data.txt");
-                DataSet Dk = DataUtils.loadContinuousData(dataPath, "//", '\"',
-                        "*", true, Delimiter.TAB);
-
-                File graphPath = new File("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/2016.05.25/" +
-                        "Simulated_data_for_Madelyn/simulation/networks/DAG_" + i + "_graph.txt");
-
-                Graph dag = GraphUtils.loadGraphTxt(graphPath);
-
-                long start = System.currentTimeMillis();
-
-//            Graph CPDAG = searchSemFges(Dk);
-//            Graph CPDAG = searchBdeuFges(Dk, k);
-                Graph CPDAG = searchMixedFges(Dk, penalty);
-
-                long stop = System.currentTimeMillis();
-
-                long elapsed = stop - start;
-                long elapsedSeconds = elapsed / 1000;
-
-                Graph trueCPDAG = SearchGraphUtils.cpdagForDag(dag);
-
-                GraphUtils.GraphComparison comparison = SearchGraphUtils.getGraphComparison(CPDAG, trueCPDAG);
-                NumberFormat nf = new DecimalFormat("0.00");
-
-                System.out.println(i +
-                        "\t" + nf.format(comparison.getAdjPrec()) +
-                        "\t" + nf.format(comparison.getAdjRec()) +
-                        "\t" + nf.format(comparison.getAhdPrec()) +
-                        "\t" + nf.format(comparison.getAhdRec()) +
-                        "\t" + elapsedSeconds);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     private Graph searchSemFges(DataSet Dk, double penalty) {
         Dk = DataUtils.convertNumericalDiscreteToContinuous(Dk);
         SemBicScore score = new SemBicScore(new CovarianceMatrix(Dk));
@@ -1011,7 +964,7 @@ public class TestFges {
     }
 
     private Graph searchMixedFges(DataSet dk, double penalty) {
-        MixedBicScore score = new MixedBicScore(dk);
+        ConditionalGaussianScore score = new ConditionalGaussianScore(dk, penalty, 0.0, true);
         score.setPenaltyDiscount(penalty);
         Fges fges = new Fges(score);
         return fges.search();
@@ -1159,7 +1112,7 @@ public class TestFges {
             DataSet data = getMixedDataAjStyle(dag, numCategories, sampleSize);
 
             Graph out;
-            final double penalty = 4;
+            final double penalty = 2;
 
             long start = System.currentTimeMillis();
 

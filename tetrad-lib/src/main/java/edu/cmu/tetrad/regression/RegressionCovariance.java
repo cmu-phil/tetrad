@@ -39,11 +39,6 @@ import java.util.List;
  */
 public class RegressionCovariance implements Regression {
 
-//    /**
-//     * Decimal format for all numbers.
-//     */
-//    private NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-
     /**
      * The correlation matrix.
      */
@@ -249,7 +244,7 @@ public class RegressionCovariance implements Regression {
         double[] seArray = sqErr.toArray();
 
         return new RegressionResult(false, vNames, n,
-                bArray, tArray, pArray, seArray, r2, rss, this.alpha, null, null);
+                bArray, tArray, pArray, seArray, r2, rss, this.alpha, null);
     }
 
     public RegressionResult regress(Node target, Node... regressors) {
@@ -291,28 +286,6 @@ public class RegressionCovariance implements Regression {
 
         return graph;
     }
-
-//    private String createSummary(int n, int k, double rss, double r2, int[] allIndices, List<Node> regressors, TetradVector b, TetradVector se, TetradVector t, TetradVector p) {
-//        String summary = "\n REGRESSION RESULT";
-//        summary += "\n n = " + n + ", k = " + k + ", alpha = " + alpha + "\n";
-//
-//        // add the SSE and R^2
-//        String rssString = nf.format(rss);
-//        summary += " SSE = " + rssString + "\n";
-//        String r2String = nf.format(r2);
-//        summary += " R^2 = " + r2String + "\n\n";
-//        summary += " VAR\tCOEF\tSE\tT\tP\n";
-//
-//        for (int i = 0; i < allIndices.length; i++) {
-//            String variableName = (i > 0) ? regressors.get(i - 1).getNode() : "const";
-//
-//            summary += " " + variableName + "\t" + nf.format(b.get(i)) +
-//                    "\t" + nf.format(se.get(i)) + "\t" + nf.format(t.get(i)) +
-//                    "\t" + nf.format(p.get(i)) + "\t" +
-//                    ((p.get(i) < alpha) ? "significant " : "") + "\n";
-//        }
-//        return summary;
-//    }
 
     private static Vector zeroMeans(int numVars) {
         return new Vector(numVars);

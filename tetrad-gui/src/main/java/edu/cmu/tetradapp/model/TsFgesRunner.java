@@ -149,8 +149,8 @@ public class TsFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner
                     score.setStructurePrior(structurePrior);
                     this.fges = new TsFges2(score);
                 } else {
-                    MixedBicScore gesScore = new MixedBicScore(dataSet);
-                    gesScore.setPenaltyDiscount(penaltyDiscount);
+                    ConditionalGaussianScore gesScore = new ConditionalGaussianScore(dataSet,
+                            penaltyDiscount, 0.0, true);
                     this.fges = new TsFges2(gesScore);
                 }
             } else if (model instanceof ICovarianceMatrix) {

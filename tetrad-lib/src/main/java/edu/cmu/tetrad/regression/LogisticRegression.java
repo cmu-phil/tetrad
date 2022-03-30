@@ -308,18 +308,10 @@ public class LogisticRegression implements TetradSerializable {
             }
         }
 
-        //report = report + (" (Converged) \n");
-
-//        EdgeListGraph outgraph = new EdgeListGraph();
-//        Node targNode = new GraphNode(targetName);
-//        outgraph.addNode(targNode);
-
         double chiSq = llN - ll;
 
         //Indicates whether each coefficient is significant at the alpha level.
-        String[] sigMarker = new String[numRegressors];
         double[] pValues = new double[numRegressors + 1];
-        double[] zScores = new double[numRegressors + 1];
 
         for (int j = 1; j <= numRegressors; j++) {
             par[j] = par[j] / xStdDevs[j];
@@ -329,13 +321,11 @@ public class LogisticRegression implements TetradSerializable {
             double prob = norm(Math.abs(zScore));
 
             pValues[j] = prob;
-            zScores[j] = zScore;
         }
 
         parStdErr[0] = Math.sqrt(arr[0][0]);
         double zScore = par[0] / parStdErr[0];
         pValues[0] = norm(zScore);
-        zScores[0] = zScore;
 
         double intercept = par[0];
 
@@ -343,7 +333,7 @@ public class LogisticRegression implements TetradSerializable {
 
         return new Result(targetName,
                 regressorNames, xMeans, xStdDevs, numRegressors, ny0, ny1, coefficients,
-                parStdErr, pValues, intercept, ll, sigMarker, chiSq, this.alpha
+                parStdErr, pValues, intercept, ll, chiSq, this.alpha
         );
     }
 
@@ -387,7 +377,6 @@ public class LogisticRegression implements TetradSerializable {
 
     public static class Result implements TetradSerializable {
         static final long serialVersionUID = 23L;
-        private final String[] sigMarker;
         private final double chiSq;
         private final double alpha;
         private final List<String> regressorNames;
@@ -406,19 +395,17 @@ public class LogisticRegression implements TetradSerializable {
 
         /**
          * Constructs a new LinRegrResult.
-         *
+         *  @param numRegressors the number of regressors
          * @param ny0           the number of cases with target = 0.
          * @param ny1           the number of cases with target = 1.
-         * @param numRegressors the number of regressors
          * @param coefs         the array of regression coefficients.
          * @param stdErrs       the array of std errors of the coefficients.
          * @param probs         the array of P-values for the regression
-         *                      coefficients.
          */
         public Result(String target, List<String> regressorNames, double[] xMeans, double[] xStdDevs,
                       int numRegressors, int ny0, int ny1, double[] coefs,
                       double[] stdErrs, double[] probs, double intercept, double logLikelihood,
-                      String[] sigmMarker, double chiSq, double alpha) {
+                      double chiSq, double alpha) {
 
 
             if (regressorNames.size() != numRegressors) {
@@ -460,7 +447,6 @@ public class LogisticRegression implements TetradSerializable {
             this.stdErrs = stdErrs;
             this.probs = probs;
             this.logLikelihood = logLikelihood;
-            this.sigMarker = sigmMarker;
             this.chiSq = chiSq;
             this.alpha = alpha;
         }
@@ -469,8 +455,8 @@ public class LogisticRegression implements TetradSerializable {
          * Generates a simple exemplar of this class to test serialization.
          */
         public static Result serializableInstance() {
-            return new Result("X1", new ArrayList<String>(), new double[1], new double[1], 0, 0, 0,
-                    new double[1], new double[1], new double[1], 1.5, 0.0, new String[0], 0.0, 0.05);
+            return new Result("X1", new ArrayList<>(), new double[1], new double[1], 0, 0, 0,
+                    new double[1], new double[1], new double[1], 1.5, 0.0, 0.0, 0.05);
         }
 
         /**
@@ -556,31 +542,27 @@ public class LogisticRegression implements TetradSerializable {
 
         public String toString() {
             NumberFormat nf = new DecimalFormat("0.0000");
-            String report = "";
+            StringBuilder report = new StringBuilder();
 
-            report = report + (this.ny0 + " cases have " + this.target + " = 0; " + this.ny1 +
-                    " cases have " + this.target + " = 1.\n");
+            report.append(this.ny0).append(" cases have ").append(this.target).append(" = 0; ").append(this.ny1).append(" cases have ").append(this.target).append(" = 1.\n");
 
-            report = report + ("Overall Model Fit...\n");
-            report = report + ("  Chi Square = " + nf.format(this.chiSq) + "; df = " +
-                    this.numRegressors + "; " + "p = " +
-                    nf.format(new ChiSquaredDistribution(this.numRegressors).cumulativeProbability(this.chiSq)) + "\n");
-            report = report + ("\nCoefficients and Standard Errors...\n");
-            report = report + ("\tCoeff.\tStdErr\tprob.\tsig.");
+            report.append("Overall Model Fit...\n");
+            report.append("  Chi Square = ").append(nf.format(this.chiSq)).append("; df = ").append(this.numRegressors).append("; ").append("p = ").append(nf.format(new ChiSquaredDistribution(this.numRegressors).cumulativeProbability(this.chiSq))).append("\n");
+            report.append("\nCoefficients and Standard Errors...\n");
+            report.append("\tCoeff.\tStdErr\tprob.\tsig.");
 
-            report += "\n";
+            report.append("\n");
 
             for (int i = 0; i < this.regressorNames.size(); i++) {
-                report += "\n" + this.regressorNames.get(i) +
-                        "\t" + nf.format(this.coefs[i + 1]) +
-                        "\t" + nf.format(this.stdErrs[i + 1]) +
-                        "\t" + nf.format(this.probs[i + 1]) +
-                        "\t" + (this.probs[i + 1] < this.alpha ? "*" : "");
+                report.append("\n").append(this.regressorNames.get(i)).append("\t")
+                        .append(nf.format(this.coefs[i + 1])).append("\t").append(nf.format(this.stdErrs[i + 1]))
+                        .append("\t").append(nf.format(this.probs[i + 1])).append("\t")
+                        .append(this.probs[i + 1] < this.alpha ? "*" : "");
             }
 
-            report = report + ("\n\nIntercept = " + nf.format(this.intercept) + "\n");
+            report.append("\n\nIntercept = ").append(nf.format(this.intercept)).append("\n");
 
-            return report;
+            return report.toString();
         }
     }
 
@@ -596,8 +578,6 @@ public class LogisticRegression implements TetradSerializable {
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

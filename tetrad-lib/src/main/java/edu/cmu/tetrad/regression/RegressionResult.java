@@ -109,11 +109,6 @@ public class RegressionResult implements TetradSerializable {
     private final double alpha;
 
     /**
-     * Teh predicted values.
-     */
-    private final Vector yHat;
-
-    /**
      * The residuals.
      */
     private final Vector res;
@@ -148,14 +143,8 @@ public class RegressionResult implements TetradSerializable {
      * @param alpha                The alpha value for the regression,
      *                             determining which regressors are taken to be
      */
-    public RegressionResult(boolean zeroInterceptAssumed, String[] regressorNames,
-                            int n, double[] b, double[] t,
-                            double[] p, double[] se, double r2,
-                            double rss, double alpha, Vector yHat, Vector res) {
-//        if (regressorNames == null) {
-//            throw new NullPointerException();
-//        }
-
+    public RegressionResult(boolean zeroInterceptAssumed, String[] regressorNames, int n, double[] b, double[] t,
+                            double[] p, double[] se, double r2, double rss, double alpha, Vector res) {
         if (b == null) {
             throw new NullPointerException();
         }
@@ -186,7 +175,6 @@ public class RegressionResult implements TetradSerializable {
         this.alpha = alpha;
         this.rss = rss;
 
-        this.yHat = yHat;
         this.res = res;
     }
 
@@ -196,15 +184,7 @@ public class RegressionResult implements TetradSerializable {
     public static RegressionResult serializableInstance() {
         return new RegressionResult(true, new String[0],
                 10, new double[0], new double[0], new double[0],
-                new double[0], 0, 0, 0, null, null);
-    }
-
-    public boolean isZeroInterceptAssumed() {
-        return this.zeroInterceptAssumed;
-    }
-
-    public double getRSquared() {
-        return this.r2;
+                new double[0], 0, 0, 0, null);
     }
 
     /**
@@ -327,17 +307,12 @@ public class RegressionResult implements TetradSerializable {
 
         String rssString = nf.format(this.rss);
         String r2String = nf.format(this.r2);
-        String preamble = "\n REGRESSION RESULT" +
+        return "\n REGRESSION RESULT" +
                 "\n n = " + this.n + ", k = " +
                 (getNumRegressors() + 1) + ", alpha = " + this.alpha +
                 "\n" + " SSE = " + rssString +
                 "\n" + " R^2 = " + r2String +
                 "\n";
-        return preamble;
-    }
-
-    public Vector getYHat() {
-        return this.yHat;
     }
 
     public Vector getResiduals() {
