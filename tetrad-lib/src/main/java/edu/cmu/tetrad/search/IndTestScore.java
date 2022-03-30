@@ -29,7 +29,6 @@ import edu.cmu.tetrad.util.Matrix;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -43,7 +42,6 @@ public class IndTestScore implements IndependenceTest {
 
     private final Score score;
     private final List<Node> variables;
-    private final HashMap<Node, Integer> variablesHash;
     private double bump = Double.NaN;
     private final DataModel data;
     private boolean verbose;
@@ -56,12 +54,6 @@ public class IndTestScore implements IndependenceTest {
         if (score == null) throw new NullPointerException();
         this.score = score;
         this.variables = score.getVariables();
-        this.variablesHash = new HashMap<>();
-
-        for (int i = 0; i < this.variables.size(); i++) {
-            this.variablesHash.put(this.variables.get(i), i);
-        }
-
         this.data = data;
     }
 
@@ -126,10 +118,6 @@ public class IndTestScore implements IndependenceTest {
      */
     public double getPValue() {
         return this.bump;
-    }
-
-    public double getPValue(Node x, Node y, List<Node> z) {
-        return getPValue();
     }
 
     /**

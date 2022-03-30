@@ -43,7 +43,6 @@ public class IndTestProbabilistic implements IndependenceTest {
     /**
      * Calculates probabilities of independence for conditional independence facts.
      */
-//    private BCInference bci;
     private boolean threshold;
 
     /**
@@ -83,14 +82,6 @@ public class IndTestProbabilistic implements IndependenceTest {
             throw new IllegalArgumentException("Not a discrete data set.");
 
         }
-
-//        for (int i = 0; i < dataSet.getNumRows(); i++) {
-//            for (int j = 0; j < dataSet.getNumColumns(); j++) {
-//                if (dataSet.getInt(i, j) == -99) {
-//                    throw new IllegalArgumentException("Please remove or impute missing values.");
-//                }
-//            }
-//        }
 
         this.nodes = dataSet.getVariables();
 

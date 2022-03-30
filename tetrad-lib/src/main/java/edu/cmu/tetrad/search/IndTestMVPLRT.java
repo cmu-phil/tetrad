@@ -42,7 +42,7 @@ import java.util.Map;
 public class IndTestMVPLRT implements IndependenceTest {
     private final DataSet data;
     private final Map<Node, Integer> nodesHash;
-    private double alpha = 0.001;
+    private double alpha;
 
     // Likelihood function
     private final MVPLikelihood likelihood;

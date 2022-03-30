@@ -62,10 +62,6 @@ public final class IndTestType implements TetradSerializable {
             new IndTestType("Fisher Z Pooled Residuals", DataType.Continuous);
     public static final IndTestType FISHER = new IndTestType("Fisher (Fisher Z)", DataType.Continuous);
     public static final IndTestType TIPPETT = new IndTestType("Tippett (Fisher Z)", DataType.Continuous);
-    public static final IndTestType MIXED_REGR_LRT = new IndTestType("Mixed Regression Likelihood Ratio Test",
-            DataType.Mixed);
-    public static final IndTestType MIXED_CG_LRT
-            = new IndTestType("Mixed Conditional Gaussian Likelihood Ratio Test", DataType.Mixed);
 
     /**
      * The name of this dataType.
@@ -76,7 +72,7 @@ public final class IndTestType implements TetradSerializable {
     /**
      * Protected constructor for the types; this allows for extension in case anyone wants to add formula types.
      */
-    protected IndTestType(String name, DataType type) {
+    private IndTestType(String name, DataType type) {
         this.name = name;
         this.dataType = type;
     }

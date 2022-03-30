@@ -25,7 +25,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
@@ -52,7 +51,6 @@ public final class IndTestMulti implements IndependenceTest {
      * Pooling method
      */
     private final ResolveSepsets.Method method;
-    private double p = Double.NaN;
     private boolean verbose;
 
 //    private DataSet concatenatedData;
@@ -70,14 +68,6 @@ public final class IndTestMulti implements IndependenceTest {
         this.variables = independenceTests.get(0).getVariables();
         this.independenceTests = independenceTests;
         this.method = method;
-
-        List<DataSet> dataSets = new ArrayList<>();
-
-        for (IndependenceTest test : independenceTests) {
-            dataSets.add((DataSet) test.getData());
-        }
-
-//        this.concatenatedData = DataUtils.concatenate(dataSets);
     }
 
     //==========================PUBLIC METHODS=============================//
@@ -108,46 +98,6 @@ public final class IndTestMulti implements IndependenceTest {
         return independent;
     }
 
-    public boolean isIndependentPooledFisher2(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
-        double alpha = independenceTests.get(0).getAlpha();
-        List<Double> pValues = IndTestMulti.getAvailablePValues(independenceTests, x, y, condSet);
-
-        double tf = 0.0;
-        int numPValues = 0;
-
-        for (double p : pValues) {
-//            if (p > 0) {
-            tf += -2.0 * Math.log(p);
-            numPValues++;
-//            }
-        }
-
-        double p = 1.0 - ProbUtils.chisqCdf(tf, 2 * numPValues);
-        this.p = p;
-
-        return (p > alpha);
-    }
-
-    private static List<Double> getAvailablePValues(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
-        List<Double> allPValues = new ArrayList<>();
-
-        for (IndependenceTest test : independenceTests) {
-            List<Node> localCondSet = new ArrayList<>();
-            for (Node node : condSet) {
-                localCondSet.add(test.getVariable(node.getName()));
-            }
-
-            try {
-                test.isIndependent(test.getVariable(x.getName()), test.getVariable(y.getName()), localCondSet);
-                allPValues.add(test.getPValue());
-            } catch (Exception e) {
-                // Skip that test.
-            }
-        }
-
-        return allPValues;
-    }
-
     public boolean isIndependent(Node x, Node y, Node... z) {
         List<Node> zList = Arrays.asList(z);
         return isIndependent(x, y, zList);
@@ -162,16 +112,10 @@ public final class IndTestMulti implements IndependenceTest {
         return isDependent(x, y, zList);
     }
 
-    /**
-     * @throws UnsupportedOperationException
-     */
     public double getPValue() {
-        return this.p;
+        return Double.NaN;
     }
 
-    /**
-     * @throws UnsupportedOperationException
-     */
     public void setAlpha(double alpha) {
         throw new UnsupportedOperationException();
     }
@@ -217,19 +161,12 @@ public final class IndTestMulti implements IndependenceTest {
         return variableNames;
     }
 
-    /**
-     * @throws UnsupportedOperationException
-     */
-    public boolean determines(List z, Node x) throws UnsupportedOperationException {
+    public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
 
-    /**
-     * @throws UnsupportedOperationException
-     */
     public DataSet getData() {
         throw new UnsupportedOperationException();
-//        return concatenatedData;
     }
 
     @Override

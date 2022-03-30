@@ -78,8 +78,6 @@ class IndTestMenuItems {
         if (testType != IndTestType.FISHER_Z &&
                 testType != IndTestType.FISHER_ZD &&
                 testType != IndTestType.SEM_BIC &&
-                testType != IndTestType.FISHER_Z_BOOTSTRAP &&
-//                testType != IndTestType.CORRELATION_T &&
                 testType != IndTestType.CONDITIONAL_CORRELATION &&
                 testType != IndTestType.LINEAR_REGRESSION &&
                 testType != IndTestType.MIXED_MLR) {

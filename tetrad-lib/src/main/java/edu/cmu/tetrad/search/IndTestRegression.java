@@ -69,16 +69,6 @@ public final class IndTestRegression implements IndependenceTest {
     private double alpha;
 
     /**
-     * The cutoff value for 'alpha' area in the two tails of the partial correlation distribution function.
-     */
-    private final double thresh = Double.NaN;
-
-    /**
-     * The last calculated partial correlation, needed to calculate relative strength.
-     */
-    private final double storedR = 0.;
-
-    /**
      * The value of the Fisher's Z statistic associated with the las calculated partial correlation.
      */
     private double fishersZ;
@@ -115,37 +105,7 @@ public final class IndTestRegression implements IndependenceTest {
     /**
      * Creates a new IndTestCramerT instance for a subset of the variables.
      */
-    public IndependenceTest indTestSubset(List vars) {
-//        if (vars.isEmpty()) {
-//            throw new IllegalArgumentException("Subset may not be empty.");
-//        }
-//
-//        for (int i = 0; i < vars.size(); i++) {
-//            if (!variables.contains(vars.get(i))) {
-//                throw new IllegalArgumentException(
-//                        "All vars must be original vars");
-//            }
-//        }
-//
-//        double[][] m = new double[vars.size()][vars.size()];
-//
-//        for (int i = 0; i < vars.size(); i++) {
-//            for (int j = 0; j < vars.size(); j++) {
-//                double val = data.getValue(variables.indexOf(vars.get(i)),
-//                        variables.indexOf(vars.get(j)));
-//                m[i][j] = val;
-//            }
-//        }
-//
-//        int sampleSize = covMatrix().getN();
-//        CorrelationMatrix newCorrMatrix = new CorrelationMatrix(vars, m,
-//                sampleSize);
-//
-//        double alphaNew = getAlternativePenalty();
-//        IndependenceTest newIndTest = new IndTestCramerT(newCorrMatrix,
-//                alphaNew);
-//        return newIndTest;
-//
+    public IndependenceTest indTestSubset(List<Node> vars) {
         return null;
     }
 
@@ -177,7 +137,7 @@ public final class IndTestRegression implements IndependenceTest {
         }
 
         Regression regression = new RegressionDataset(this.dataSet);
-        RegressionResult result = null;
+        RegressionResult result;
 
         try {
             result = regression.regress(xVar, regressors);
@@ -283,38 +243,6 @@ public final class IndTestRegression implements IndependenceTest {
     }
 
     //==========================PRIVATE METHODS============================//
-
-//    /**
-//     * Return the p-value of the last calculated independence fact.
-//     *
-//     * @return this p-value.  When accessed through the IndependenceChecker
-//     *         interface, this p-value should only be considered to be a
-//     *         relative strength.
-//     */
-//    private double getRelativeStrength() {
-//
-//        // precondition:  pdf is the most recently used partial
-//        // correlation distribution function, and storedR is the most
-//        // recently calculated partial correlation.
-//        return 2.0 * Integrator.getArea(npdf, Math.abs(storedR), 9.0, 100);
-//    }
-
-//    /**
-//     * Computes that value x such that P(abs(N(0,1) > x) < alpha.  Note that
-//     * this is a two sided test of the null hypothesis that the Fisher's Z
-//     * value, which is distributed as N(0,1) is not equal to 0.0.
-//     */
-//    private double cutoffGaussian() {
-//        npdf = new NormalPdf();
-//        final double upperBound = 9.0;
-//        final double delta = 0.001;
-//        //        double alpha = this.alpha/2.0;    //Two sided test
-//        return CutoffFinder.getCutoff(npdf, upperBound, alpha, delta);
-//    }
-
-//    private int sampleSize() {
-//        return data.rows();
-//    }
 
     public boolean determines(List<Node> zList, Node xVar) {
         if (zList == null) {

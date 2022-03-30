@@ -86,6 +86,7 @@ public class IntSextad implements TetradSerializable {
     }
 
     public boolean equals(Object o) {
+        if (!(o instanceof IntSextad)) return false;
         IntSextad sextad = (IntSextad) o;
 
         boolean leftEquals = this.i == sextad.i && this.j == sextad.j && this.k == sextad.k ||

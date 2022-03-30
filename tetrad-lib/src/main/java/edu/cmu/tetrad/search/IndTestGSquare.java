@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
@@ -67,12 +66,6 @@ public final class IndTestGSquare implements IndependenceTest {
     private final double alpha;
 
     /**
-     * The G Square value associted with a particular call of isIndependent. Set in that method and not in the
-     * constructor.
-     */
-    private double gSquare;
-
-    /**
      * The p value associated with the most recent call of isIndependent.
      */
     private double pValue;
@@ -115,21 +108,13 @@ public final class IndTestGSquare implements IndependenceTest {
         this.alpha = alpha;
 
         this.variables = new ArrayList<>(dataSet.getVariables());
-
-        int[] numVals = new int[this.variables.size()];
-
-        for (int i = 0; i < this.variables.size(); i++) {
-            DiscreteVariable v = (DiscreteVariable) (this.variables.get(i));
-            numVals[i] = v.getNumCategories();
-        }
-
         this.gSquareTest = new GSquareTest(dataSet, alpha);
     }
 
     /**
      * Creates a new IndTestGSquare for a subset of the variables.
      */
-    public IndependenceTest indTestSubset(List vars) {
+    public IndependenceTest indTestSubset(List<Node> vars) {
         if (vars.isEmpty()) {
             throw new IllegalArgumentException("Subset may not be empty.");
         }
@@ -147,13 +132,6 @@ public final class IndTestGSquare implements IndependenceTest {
 
         DataSet newDataSet = this.dataSet.subsetColumns(indices);
         return new IndTestGSquare(newDataSet, this.alpha);
-    }
-
-    /**
-     * @return the G Square value.
-     */
-    public double getGSquare() {
-        return this.gSquare;
     }
 
     /**
@@ -212,26 +190,23 @@ public final class IndTestGSquare implements IndependenceTest {
         //        System.out.println("Testing " + x + " _||_ " + y + " | " + z);
 
         GSquareTest.Result result = this.gSquareTest.calcGSquare(testIndices);
-        this.gSquare = result.getGSquare();
         this.pValue = result.getPValue();
 
+        String sb;
         if (result.isIndep()) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("INDEPENDENCE ACCEPTED: ");
-            sb.append(SearchLogUtils.independenceFact(x, y, z));
-            sb.append("\tp = ").append(IndTestGSquare.nf.format(result.getPValue())).append(
-                    "\tg^2 = ").append(IndTestGSquare.nf.format(result.getGSquare())).append(
-                    "\tdf = ").append(result.getDf());
-            TetradLogger.getInstance().log("independencies", sb.toString());
+            sb = "INDEPENDENCE ACCEPTED: " +
+                    SearchLogUtils.independenceFact(x, y, z) +
+                    "\tp = " + IndTestGSquare.nf.format(result.getPValue()) +
+                    "\tg^2 = " + IndTestGSquare.nf.format(result.getGSquare()) +
+                    "\tdf = " + result.getDf();
         } else {
-            StringBuilder sb = new StringBuilder();
-            sb.append("Not independent: ");
-            sb.append(SearchLogUtils.independenceFact(x, y, z));
-            sb.append("\tp = ").append(IndTestGSquare.nf.format(result.getPValue())).append(
-                    "\tg^2 = ").append(IndTestGSquare.nf.format(result.getGSquare())).append(
-                    "\tdf = ").append(result.getDf());
-            TetradLogger.getInstance().log("independencies", sb.toString());
+            sb = "Not independent: " +
+                    SearchLogUtils.independenceFact(x, y, z) +
+                    "\tp = " + IndTestGSquare.nf.format(result.getPValue()) +
+                    "\tg^2 = " + IndTestGSquare.nf.format(result.getGSquare()) +
+                    "\tdf = " + result.getDf();
         }
+        TetradLogger.getInstance().log("independencies", sb);
 
         return result.isIndep();
     }

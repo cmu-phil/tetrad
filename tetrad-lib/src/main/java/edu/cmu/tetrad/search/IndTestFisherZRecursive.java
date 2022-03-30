@@ -24,13 +24,11 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -63,16 +61,6 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
     private double alpha;
 
     /**
-     * The value of the Fisher's Z statistic associated with the las calculated partial correlation.
-     */
-    private double pValue;
-
-    /**
-     * Formats as 0.0000.
-     */
-    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-
-    /**
      * Stores a reference to the dataset being analyzed.
      */
     private DataSet dataSet;
@@ -91,7 +79,6 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
     /**
      * Constructs a new Independence test which checks independence facts based on the correlation matrix implied by the
      * given data set (must be continuous). The given significance level is used.
-     *
      * @param dataSet A data set containing only continuous columns.
      * @param alpha   The alpha level of the test.
      */

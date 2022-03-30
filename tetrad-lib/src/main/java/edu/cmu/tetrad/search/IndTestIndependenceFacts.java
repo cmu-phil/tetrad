@@ -45,9 +45,6 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
 
     public IndTestIndependenceFacts(IndependenceFacts facts) {
         this.facts = facts;
-
-//        System.out.println("Independence Facts for test: ");
-//        System.out.println(facts);
     }
 
 

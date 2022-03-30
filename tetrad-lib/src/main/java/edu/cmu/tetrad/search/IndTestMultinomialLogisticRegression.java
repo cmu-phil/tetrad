@@ -161,7 +161,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
 
         List<Double> pValues = new ArrayList<>();
 
-        int[] _rows = getNonMissingRows(x, y, z);
+        int[] _rows = getNonMissingRows();
         this.logisticRegression.setRows(_rows);
 
         for (Node _x : this.variablesPerNode.get(x)) {
@@ -176,8 +176,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
             LogisticRegression.Result result0 = logisticRegression.regress((DiscreteVariable) _x, regressors0);
 
             // With y.
-            List<Node> regressors1 = new ArrayList<>();
-            regressors1.addAll(variablesPerNode.get(y));
+            List<Node> regressors1 = new ArrayList<>(variablesPerNode.get(y));
 
             for (Node _z : z) {
                 regressors1.addAll(variablesPerNode.get(_z));
@@ -220,58 +219,13 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
 
     int[] _rows;
 
-    // This takes an inordinate amount of time. -jdramsey 20150929
-    private int[] getNonMissingRows(Node x, Node y, List<Node> z) {
-//        List<Integer> rows = new ArrayList<Integer>();
-//
-//        I:
-//        for (int i = 0; i < internalData.getNumRows(); i++) {
-//            for (Node node : variablesPerNode.get(x)) {
-//                if (isMissing(node, i)) continue I;
-//            }
-//
-//            for (Node node : variablesPerNode.get(y)) {
-//                if (isMissing(node, i)) continue I;
-//            }
-//
-//            for (Node _z : z) {
-//                for (Node node : variablesPerNode.get(_z)) {
-//                    if (isMissing(node, i)) continue I;
-//                }
-//            }
-//
-//            rows.add(i);
-//        }
-
-//        int[] _rows = new int[rows.size()];
-//        for (int k = 0; k < rows.size(); k++) _rows[k] = rows.get(k);
-
+    private int[] getNonMissingRows() {
         if (this._rows == null) {
             this._rows = new int[this.internalData.getNumRows()];
             for (int k = 0; k < this._rows.length; k++) this._rows[k] = k;
         }
 
         return this._rows;
-    }
-
-    private boolean isMissing(Node x, int i) {
-        int j = this.internalData.getColumn(x);
-
-        if (x instanceof DiscreteVariable) {
-            int v = this.internalData.getInt(i, j);
-
-            if (v == -99) {
-                return true;
-            }
-        }
-
-        if (x instanceof ContinuousVariable) {
-            double v = this.internalData.getDouble(i, j);
-
-            return Double.isNaN(v);
-        }
-
-        return false;
     }
 
     private boolean isIndependentRegression(Node x, Node y, List<Node> z) {
@@ -296,7 +250,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
             regressors.addAll(this.variablesPerNode.get(_z));
         }
 
-        int[] _rows = getNonMissingRows(x, y, z);
+        int[] _rows = getNonMissingRows();
         this.regression.setRows(_rows);
 
         RegressionResult result;

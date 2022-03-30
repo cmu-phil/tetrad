@@ -21,11 +21,6 @@
 
 package edu.cmu.tetrad.search;
 
-import cern.colt.matrix.DoubleFactory2D;
-import cern.colt.matrix.DoubleMatrix1D;
-import cern.colt.matrix.DoubleMatrix2D;
-import cern.colt.matrix.linalg.Algebra;
-import cern.jet.math.Functions;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
@@ -63,8 +58,6 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
     private final LogisticRegression logisticRegression;
     private final RegressionDataset regression;
     private boolean verbose;
-    private final DoubleFactory2D factory2D = DoubleFactory2D.dense;
-    private boolean flipLast;
     private boolean preferLinear = true;
 
     public IndTestMixedMultipleTTest(DataSet data, double alpha) {
@@ -103,52 +96,20 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
      */
     public boolean isIndependent(Node x, Node y, List<Node> z) {
         if (x instanceof DiscreteVariable && y instanceof DiscreteVariable) {
-            this.flipLast = false;
             return isIndependentMultinomialLogisticRegression(x, y, z);
         } else if (x instanceof DiscreteVariable) {
             if (this.preferLinear) {
-                this.flipLast = true;
                 return isIndependentRegression(y, x, z);
             } else {
-                this.flipLast = false;
                 return isIndependentMultinomialLogisticRegression(x, y, z);
             }
         } else {
             if (y instanceof DiscreteVariable && !this.preferLinear) {
-                this.flipLast = true;
                 return isIndependentMultinomialLogisticRegression(y, x, z);
             } else {
-                this.flipLast = false;
                 return isIndependentRegression(x, y, z);
             }
         }
-    }
-
-    public double[] dependencePvals(Node x, Node y, List<Node> z) {
-        if (x instanceof DiscreteVariable && y instanceof DiscreteVariable) {
-            this.flipLast = false;
-            return dependencePvalsLogit(x, y, z);
-        } else if (x instanceof DiscreteVariable) {
-            if (this.preferLinear) {
-                this.flipLast = true;
-                return dependencePvalsLinear(y, x, z);
-            } else {
-                this.flipLast = false;
-                return dependencePvalsLogit(x, y, z);
-            }
-        } else {
-            if (y instanceof DiscreteVariable && !this.preferLinear) {
-                this.flipLast = true;
-                return dependencePvalsLogit(y, x, z);
-            } else {
-                this.flipLast = false;
-                return dependencePvalsLinear(x, y, z);
-            }
-        }
-    }
-
-    public boolean getFlipLast() {
-        return this.flipLast;
     }
 
     private List<Node> expandVariable(DataSet dataSet, Node node) {
@@ -214,29 +175,21 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
             }
         }
 
-        List<Double> pValues = new ArrayList<>();
-
-        int[] _rows = getNonMissingRows(x, y, z);
+        int[] _rows = getNonMissingRows();
         this.logisticRegression.setRows(_rows);
 
-        List<Node> yzDumList = new ArrayList<>();
         List<Node> yzList = new ArrayList<>();
         yzList.add(y);
         yzList.addAll(z);
         //List<Node> zList = new ArrayList<>();
 
-        yzDumList.addAll(this.variablesPerNode.get(y));
+        List<Node> yzDumList = new ArrayList<>(this.variablesPerNode.get(y));
         for (Node _z : z) {
             yzDumList.addAll(this.variablesPerNode.get(_z));
             //zList.addAll(variablesPerNode.get(_z));
         }
 
-        //double[][] coeffsDep = new double[variablesPerNode.get(x).size()][];
-        //DoubleMatrix2D coeffsNull = DoubleFactory2D.dense.make(zList.size(), variablesPerNode.get(x).size());
-        //DoubleMatrix2D coeffsDep = DoubleFactory2D.dense.make(yzDumList.size()+1, variablesPerNode.get(x).size());
         double[] sumLnP = new double[yzList.size()];
-        for (int i = 0; i < sumLnP.length; i++)
-            sumLnP[i] = 0.0;
 
         for (int i = 0; i < this.variablesPerNode.get(x).size(); i++) {
             Node _x = this.variablesPerNode.get(x).get(i);
@@ -257,8 +210,6 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
 
                     //this is exactly the same test as the linear case
                     double val = (1.0 - ProbUtils.tCdf(wald, n - k)) * 2;
-                    //System.out.println(_x.getName() + "\t" + yzDumList.get(coefIndex-1).getName() + "\t" + val + "\t" + (n-k));
-                    //if(val <= 0) System.out.println("Zero p-val t-test: p " + val + " stat " + wald + " k " + k + " n " + n);
                     sumLnP[j] += Math.log(val);
                     coefIndex++;
                 }
@@ -295,30 +246,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
     int[] _rows;
 
     // This takes an inordinate amount of time. -jdramsey 20150929
-    private int[] getNonMissingRows(Node x, Node y, List<Node> z) {
-//        List<Integer> rows = new ArrayList<Integer>();
-//
-//        I:
-//        for (int i = 0; i < internalData.getNumRows(); i++) {
-//            for (Node node : variablesPerNode.get(x)) {
-//                if (isMissing(node, i)) continue I;
-//            }
-//
-//            for (Node node : variablesPerNode.get(y)) {
-//                if (isMissing(node, i)) continue I;
-//            }
-//
-//            for (Node _z : z) {
-//                for (Node node : variablesPerNode.get(_z)) {
-//                    if (isMissing(node, i)) continue I;
-//                }
-//            }
-//
-//            rows.add(i);
-//        }
-
-//        int[] _rows = new int[rows.size()];
-//        for (int k = 0; k < rows.size(); k++) _rows[k] = rows.get(k);
+    private int[] getNonMissingRows() {
 
         if (this._rows == null) {
             this._rows = new int[this.internalData.getNumRows()];
@@ -326,46 +254,6 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
         }
 
         return this._rows;
-    }
-
-    private boolean isMissing(Node x, int i) {
-        int j = this.internalData.getColumn(x);
-
-        if (x instanceof DiscreteVariable) {
-            int v = this.internalData.getInt(i, j);
-
-            if (v == -99) {
-                return true;
-            }
-        }
-
-        if (x instanceof ContinuousVariable) {
-            double v = this.internalData.getDouble(i, j);
-
-            return Double.isNaN(v);
-        }
-
-        return false;
-    }
-
-    private double multiLL(DoubleMatrix2D coeffs, Node dep, List<Node> indep) {
-
-        DoubleMatrix2D indepData = this.factory2D.make(this.internalData.subsetColumns(indep).getDoubleData().toArray());
-        List<Node> depList = new ArrayList<>();
-        depList.add(dep);
-        DoubleMatrix2D depData = this.factory2D.make(this.internalData.subsetColumns(depList).getDoubleData().toArray());
-
-        int N = indepData.rows();
-        DoubleMatrix2D probs = Algebra.DEFAULT.mult(this.factory2D.appendColumns(this.factory2D.make(N, 1, 1.0), indepData), coeffs);
-
-        probs = this.factory2D.appendColumns(this.factory2D.make(indepData.rows(), 1, 1.0), probs).assign(Functions.exp);
-        double ll = 0;
-        for (int i = 0; i < N; i++) {
-            DoubleMatrix1D curRow = probs.viewRow(i);
-            curRow.assign(Functions.div(curRow.zSum()));
-            ll += Math.log(curRow.get((int) depData.get(i, 0)));
-        }
-        return ll;
     }
 
     private double[] dependencePvalsLinear(Node x, Node y, List<Node> z) {
@@ -383,19 +271,18 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
             }
         }
 
-        List<Node> yzDumList = new ArrayList<>();
         List<Node> yzList = new ArrayList<>();
         yzList.add(y);
         yzList.addAll(z);
         //List<Node> zList = new ArrayList<>();
 
-        yzDumList.addAll(this.variablesPerNode.get(y));
+        List<Node> yzDumList = new ArrayList<>(this.variablesPerNode.get(y));
         for (Node _z : z) {
             yzDumList.addAll(this.variablesPerNode.get(_z));
             //zList.addAll(variablesPerNode.get(_z));
         }
 
-        int[] _rows = getNonMissingRows(x, y, z);
+        int[] _rows = getNonMissingRows();
         this.regression.setRows(_rows);
 
         RegressionResult result;
@@ -422,7 +309,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
                 pVec[i] = 0;
             }
 
-            for (Node n : curDummy) {
+            for (Node ignored : curDummy) {
                 pVec[i] += Math.log(pCoef[coeffInd]);
                 coeffInd++;
             }
@@ -437,7 +324,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
     }
 
     private boolean isIndependentRegression(Node x, Node y, List<Node> z) {
-        double p = dependencePvalsLinear(x, y, z)[0];
+        double p = Objects.requireNonNull(dependencePvalsLinear(x, y, z))[0];
         //result.getP()[1];
         this.lastP = p;
 

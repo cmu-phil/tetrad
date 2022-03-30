@@ -107,10 +107,6 @@ final class IndTestChooser {
             return getCovMatrixTest((ICovarianceMatrix) dataSource, params);
         }
 
-        if (dataSource instanceof TimeSeriesData) {
-            return timeSeriesTest((TimeSeriesData) dataSource, params);
-        }
-
         if (dataSource instanceof IndependenceFacts) {
             return new IndTestIndependenceFacts((IndependenceFacts) dataSource);
         }
@@ -143,10 +139,6 @@ final class IndTestChooser {
         }
         if (IndTestType.FISHER_ZD == testType) {
             return new IndTestFisherZGeneralizedInverse(dataSet, params.getDouble("alpha", 0.001));
-        }
-        if (IndTestType.LINEAR_REGRESSION == testType) {
-            return new IndTestLaggedRegression(dataSet,
-                    params.getDouble("alpha", 0.001), 1);
         }
         if (IndTestType.SEM_BIC == testType) {
             return new IndTestScore(new SemBicScore(new CovarianceMatrix(dataSet)));
@@ -218,14 +210,6 @@ final class IndTestChooser {
                                               Parameters params) {
         return new IndTestFisherZ(covMatrix,
                 params.getDouble("alpha", 0.001));
-    }
-
-    private IndependenceTest timeSeriesTest(TimeSeriesData data,
-                                            Parameters params) {
-        IndTestTimeSeries test = new IndTestTimeSeries(data.getData(), data.getVariables());
-        test.setAlpha(params.getDouble("alpha", 0.001));
-        test.setNumLags(params.getInt("numLags", 1));
-        return test;
     }
 }
 
