@@ -104,37 +104,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
     /**
      * Creates a new IndTestCramerT instance for a subset of the variables.
      */
-    public IndependenceTest indTestSubset(List vars) {
-//        if (vars.isEmpty()) {
-//            throw new IllegalArgumentException("Subset may not be empty.");
-//        }
-//
-//        for (int i = 0; i < vars.size(); i++) {
-//            if (!variables.contains(vars.get(i))) {
-//                throw new IllegalArgumentException(
-//                        "All vars must be original vars");
-//            }
-//        }
-//
-//        double[][] m = new double[vars.size()][vars.size()];
-//
-//        for (int i = 0; i < vars.size(); i++) {
-//            for (int j = 0; j < vars.size(); j++) {
-//                double val = data.getValue(variables.indexOf(vars.get(i)),
-//                        variables.indexOf(vars.get(j)));
-//                m[i][j] = val;
-//            }
-//        }
-//
-//        int sampleSize = covMatrix().getN();
-//        CorrelationMatrix newCorrMatrix = new CorrelationMatrix(vars, m,
-//                sampleSize);
-//
-//        double alphaNew = getAlternativePenalty();
-//        IndependenceTest newIndTest = new IndTestCramerT(newCorrMatrix,
-//                alphaNew);
-//        return newIndTest;
-//
+    public IndependenceTest indTestSubset(List<Node> vars) {
         return null;
     }
 
@@ -215,9 +185,6 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
         this.fishersZ = Math.sqrt(sampleSize() - z.size() - 3.0) *
                 0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
 
-//        this.fishersZ = 0.5 * Math.sqrt(sampleSize() - z.size() - 3.0) *
-//                Math.log(Math.abs(1.0 + r) / Math.abs(1.0 - r));
-
         if (Double.isNaN(this.fishersZ)) {
             throw new IllegalArgumentException("The Fisher's Z " +
                     "score for independence fact " + xVar + " _||_ " + yVar +
@@ -231,11 +198,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
         //Two sided
 
         if (this.verbose) {
-            if (indFisher) {
-                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(xVar, yVar, z, getPValue()));
-            } else {
-                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(xVar, yVar, z, getPValue()));
-            }
+            TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(xVar, yVar, z, getPValue()));
         }
 
         return indFisher;
@@ -260,12 +223,6 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
      */
     public double getPValue() {
         return 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, Math.abs(this.fishersZ)));
-
-//        double q = 2.0 * Integrator.getArea(npdf, 0.0, Math.abs(fishersZ), 100);
-//        if (q > 1.0) {
-//            q = 1.0;
-//        }
-//        return 1.0 - q;
     }
 
     /**
@@ -355,12 +312,6 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
         }
 
         return lowerBound;
-
-//        npdf = new NormalPdf();
-//        final double upperBound = 9.0;
-//        final double delta = 0.001;
-//                double alpha = this.alpha/2.0;    //Two sided test
-//        return CutoffFinder.getCutoff(npdf, upperBound, alpha, delta);
     }
 
     private int sampleSize() {
@@ -415,12 +366,6 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
 
         double variance = SSE / (this.data.rows() - (zList.size() + 1));
 
-//        ChiSquare chiSquare = new ChiSquare(data.rows(),
-//                PersistentRandomUtil.getInstance().getEngine());
-//
-//        double p = chiSquare.cdf(sum);
-//        boolean determined = p < 1 - getAlternativePenalty();
-//
         boolean determined = variance < getAlpha();
 
         if (determined) {

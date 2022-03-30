@@ -238,7 +238,7 @@ public class IndTestDSep implements IndependenceTest {
         return nodeNames;
     }
 
-    public boolean determines(List z, Node x1) {
+    public boolean determines(List<Node> z, Node x1) {
         return false; //z.contains(x1);
     }
 

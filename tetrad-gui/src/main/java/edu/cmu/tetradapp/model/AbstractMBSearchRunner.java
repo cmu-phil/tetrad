@@ -190,9 +190,6 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
             if (IndTestType.FISHER_ZD == type) {
                 return new IndTestFisherZGeneralizedInverse(this.source, this.params.getDouble("alpha", 0.001));
             }
-            if (IndTestType.FISHER_Z_BOOTSTRAP == type) {
-                return new IndTestFisherZBootstrap(this.source, this.params.getDouble("alpha", 0.001), 15, this.source.getNumRows() / 2);
-            }
             if (IndTestType.LINEAR_REGRESSION == type) {
                 return new IndTestRegression(this.source, this.params.getDouble("alpha", 0.001));
             } else {

@@ -68,7 +68,6 @@ public final class IndTestFisherZ implements IndependenceTest {
     private DataSet dataSet;
     private boolean verbose = true;
     private double p = Double.NaN;
-    private boolean sellke;
     private double r = Double.NaN;
 
 
@@ -486,10 +485,6 @@ public final class IndTestFisherZ implements IndependenceTest {
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-    }
-
-    public void setSellke(boolean sellke) {
-        this.sellke = sellke;
     }
 
     private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodesHash) {

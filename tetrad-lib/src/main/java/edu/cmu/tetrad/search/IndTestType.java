@@ -50,8 +50,6 @@ public final class IndTestType implements TetradSerializable {
             new IndTestType("Multinomial Logistic Regression", DataType.Mixed);
     public static final IndTestType FISHER_ZD =
             new IndTestType("Fisher's Z (Deterministic)", DataType.Continuous);
-    public static final IndTestType FISHER_Z_BOOTSTRAP =
-            new IndTestType("Fisher's Z (Bootstrap)", DataType.Continuous);
     public static final IndTestType G_SQUARE = new IndTestType("G Square", DataType.Discrete);
     public static final IndTestType CHI_SQUARE = new IndTestType("Chi Square", DataType.Discrete);
     public static final IndTestType D_SEPARATION =
@@ -103,7 +101,6 @@ public final class IndTestType implements TetradSerializable {
     private static final IndTestType[] TYPES = {IndTestType.DEFAULT, IndTestType.CORRELATION_T, IndTestType.FISHER_Z,
             IndTestType.LINEAR_REGRESSION, IndTestType.CONDITIONAL_CORRELATION, IndTestType.SEM_BIC, IndTestType.LOGISTIC_REGRESSION,
             IndTestType.MIXED_MLR, IndTestType.FISHER_ZD,
-            IndTestType.FISHER_Z_BOOTSTRAP,
             IndTestType.G_SQUARE, IndTestType.CHI_SQUARE,
             IndTestType.D_SEPARATION, IndTestType.TIME_SERIES,
 

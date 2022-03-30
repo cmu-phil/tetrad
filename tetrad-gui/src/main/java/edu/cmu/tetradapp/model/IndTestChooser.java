@@ -144,9 +144,6 @@ final class IndTestChooser {
         if (IndTestType.FISHER_ZD == testType) {
             return new IndTestFisherZGeneralizedInverse(dataSet, params.getDouble("alpha", 0.001));
         }
-        if (IndTestType.FISHER_Z_BOOTSTRAP == testType) {
-            return new IndTestFisherZBootstrap(dataSet, params.getDouble("alpha", 0.001), 15, dataSet.getNumRows());
-        }
         if (IndTestType.LINEAR_REGRESSION == testType) {
             return new IndTestLaggedRegression(dataSet,
                     params.getDouble("alpha", 0.001), 1);
