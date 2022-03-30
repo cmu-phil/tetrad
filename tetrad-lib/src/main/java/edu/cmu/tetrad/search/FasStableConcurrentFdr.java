@@ -159,7 +159,7 @@ public class FasStableConcurrentFdr implements IFas {
         List<Node> nodes = graph.getNodes();
 
         for (Node node : nodes) {
-            adjacencies.put(node, new HashSet<Node>());
+            adjacencies.put(node, new HashSet<>());
         }
 
 
@@ -261,7 +261,6 @@ public class FasStableConcurrentFdr implements IFas {
         }
 
         List<Node> empty = Collections.emptyList();
-        Map<Double, Edge> scoredEdges = new ConcurrentSkipListMap<>();
 
         List<Double> sorted = new ArrayList<>();
 
@@ -312,7 +311,6 @@ public class FasStableConcurrentFdr implements IFas {
                         }
                     }
 
-                    return true;
                 } else {
                     int mid = (this.to + this.from) / 2;
 
@@ -323,8 +321,8 @@ public class FasStableConcurrentFdr implements IFas {
                     right.compute();
                     left.join();
 
-                    return true;
                 }
+                return true;
             }
         }
 
@@ -392,7 +390,6 @@ public class FasStableConcurrentFdr implements IFas {
                         }
                     }
 
-                    return true;
                 } else {
                     int mid = (this.to + this.from) / 2;
 
@@ -403,8 +400,8 @@ public class FasStableConcurrentFdr implements IFas {
                     right.compute();
                     left.join();
 
-                    return true;
                 }
+                return true;
             }
         }
 
@@ -449,18 +446,6 @@ public class FasStableConcurrentFdr implements IFas {
         return max;
     }
 
-//    private boolean freeDegreeGreaterThanDepth(Map<Node, Set<Node>> adjacencies, int depth) {
-//        for (Node x : adjacencies.keySet()) {
-//            Set<Node> opposites = adjacencies.get(x);
-//
-//            if (opposites.size() - 1 > depth) {
-//                return true;
-//            }
-//        }
-//
-//        return false;
-//    }
-
     private boolean searchAtDepth(List<Node> nodes, IndependenceTest test,
                                   Map<Node, Set<Node>> adjacencies,
                                   int depth) {
@@ -503,7 +488,7 @@ public class FasStableConcurrentFdr implements IFas {
 
                         EDGE:
                         for (Node y : adjx) {
-                            if (!existsShortPath(x, y, 3, adjacencies)) {
+                            if (!existsShortPath(x, y, adjacencies)) {
                                 continue;
                             }
 
@@ -539,7 +524,6 @@ public class FasStableConcurrentFdr implements IFas {
                         }
                     }
 
-                    return true;
                 } else {
                     int mid = (this.to + this.from) / 2;
 
@@ -550,8 +534,8 @@ public class FasStableConcurrentFdr implements IFas {
                     right.compute();
                     left.join();
 
-                    return true;
                 }
+                return true;
             }
         }
 
@@ -620,7 +604,6 @@ public class FasStableConcurrentFdr implements IFas {
                         }
                     }
 
-                    return true;
                 } else {
                     int mid = (this.to + this.from) / 2;
 
@@ -631,8 +614,8 @@ public class FasStableConcurrentFdr implements IFas {
                     right.compute();
                     left.join();
 
-                    return true;
                 }
+                return true;
             }
         }
 
@@ -725,18 +708,7 @@ public class FasStableConcurrentFdr implements IFas {
         return this.out;
     }
 
-    /**
-     * True if sepsets should be recorded. This is not necessary for all algorithms.
-     */
-    public boolean isRecordSepsets() {
-        return this.recordSepsets;
-    }
-
-    public void setRecordSepsets(boolean recordSepsets) {
-        this.recordSepsets = recordSepsets;
-    }
-
-    private boolean existsShortPath(Node x, Node z, int bound, Map<Node, Set<Node>> adjacencies) {
+    private boolean existsShortPath(Node x, Node z, Map<Node, Set<Node>> adjacencies) {
         Queue<Node> Q = new LinkedList<>();
         Set<Node> V = new HashSet<>();
         Q.offer(x);
@@ -750,7 +722,7 @@ public class FasStableConcurrentFdr implements IFas {
             if (e == t) {
                 e = null;
                 distance++;
-                if (distance > (bound == -1 ? 1000 : bound)) return false;
+                if (distance > 3) return false;
             }
 
             for (Node c : adjacencies.get(t)) {

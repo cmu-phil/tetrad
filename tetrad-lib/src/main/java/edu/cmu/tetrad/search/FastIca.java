@@ -248,15 +248,6 @@ public class FastIca {
      * (the default). if algorithmType == DEFLATION the components are extracted
      * one at a time.
      */
-    public int getAlgorithmType() {
-        return this.algorithmType;
-    }
-
-    /**
-     * If algorithmType == PARALLEL the components are extracted simultaneously
-     * (the default). if algorithmType == DEFLATION the components are extracted
-     * one at a time.
-     */
     public void setAlgorithmType(int algorithmType) {
         if (!(algorithmType == FastIca.DEFLATION || algorithmType == FastIca.PARALLEL)) {
             throw new IllegalArgumentException("Value should be DEFLATION or PARALLEL.");
@@ -301,14 +292,6 @@ public class FastIca {
         }
 
         this.alpha = alpha;
-    }
-
-    /**
-     * A logical value indicating whether rows of the data matrix 'X' should be
-     * standardized beforehand.
-     */
-    public boolean isRowNorm() {
-        return this.rowNorm;
     }
 
     /**
@@ -418,10 +401,10 @@ public class FastIca {
             TetradLogger.getInstance().log("info", "Centering");
         }
 
-        this.X = center(this.X);
+        center(this.X);
 
         if (this.rowNorm) {
-            this.X = scale(this.X);
+            scale(this.X);
         }
 
         if (this.verbose) {
@@ -450,7 +433,7 @@ public class FastIca {
             b = icaDeflation(X1, this.tolerance, this.function, this.alpha,
                     this.maxIterations, this.verbose, this.wInit);
         } else if (this.algorithmType == FastIca.PARALLEL) {
-            b = icaParallel(X1, this.numComponents, this.tolerance, this.function, this.alpha,
+            b = icaParallel(X1, this.numComponents, this.tolerance, this.alpha,
                     this.maxIterations, this.verbose, this.wInit);
         } else {
             throw new IllegalStateException();
@@ -618,7 +601,7 @@ public class FastIca {
     }
 
     private Matrix icaParallel(Matrix X, int numComponents,
-                               double tolerance, int function, double alpha,
+                               double tolerance, double alpha,
                                int maxIterations, boolean verbose, Matrix wInit) {
         int p = X.columns();
         Matrix W = wInit;
@@ -703,16 +686,15 @@ public class FastIca {
         return W;
     }
 
-    private Matrix scale(Matrix x) {
+    private void scale(Matrix x) {
         for (int i = 0; i < x.rows(); i++) {
             Vector u = x.getRow(i).scalarMult(1.0 / rms(x.getRow(i)));
             x.assignRow(i, u);
         }
 
-        return x;
     }
 
-    private Matrix center(Matrix x) {
+    private void center(Matrix x) {
         for (int i = 0; i < x.rows(); i++) {
             Vector u = x.getRow(i);
             double mean = mean(u);
@@ -722,7 +704,6 @@ public class FastIca {
             }
         }
 
-        return x;
     }
 
 
@@ -773,21 +754,14 @@ public class FastIca {
         }
 
         public String toString() {
-            StringBuilder buf = new StringBuilder();
-
-            buf.append("\n\nX:\n");
-            buf.append(this.X);
-
-            buf.append("\n\nK:\n");
-            buf.append(this.K);
-
-            buf.append("\n\nW:\n");
-            buf.append(this.W);
-
-            buf.append("\n\nS:\n");
-            buf.append(this.S);
-
-            return buf.toString();
+            return "\n\nX:\n" +
+                    this.X +
+                    "\n\nK:\n" +
+                    this.K +
+                    "\n\nW:\n" +
+                    this.W +
+                    "\n\nS:\n" +
+                    this.S;
         }
     }
 }

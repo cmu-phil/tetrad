@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
@@ -87,16 +86,6 @@ public class FasFdr implements IFas {
     private final TetradLogger logger = TetradLogger.getInstance();
 
     /**
-     * The true graph, for purposes of comparison. Temporary.
-     */
-    private Graph trueGraph;
-
-    /**
-     * The number of false dependence judgements, judged from the true graph using d-separation. Temporary.
-     */
-    private int numFalseDependenceJudgments;
-
-    /**
      * The number of dependence judgements. Temporary.
      */
     private int numDependenceJudgement;
@@ -106,17 +95,7 @@ public class FasFdr implements IFas {
      */
     private SepsetMap sepset = new SepsetMap();
 
-    /**
-     * True if this is being run by FCI--need to skip the knowledge forbid step.
-     */
-    private final boolean fci = false;
-
-    /**
-     * The depth 0 graph, specified initially.
-     */
-    private Graph externalGraph;
-
-//    private List<Double> pValues = new ArrayList<Double>();
+    //    private List<Double> pValues = new ArrayList<Double>();
 
     private final NumberFormat nf = new DecimalFormat("0.00E0");
 
@@ -124,7 +103,7 @@ public class FasFdr implements IFas {
      * True iff verbose output should be printed.
      */
     private boolean verbose;
-    private final List pValueList = new ArrayList();
+    private final List<Double> pValueList = new ArrayList<>();
 
     private PrintStream out = System.out;
 
@@ -133,11 +112,13 @@ public class FasFdr implements IFas {
     /**
      * Constructs a new FastAdjacencySearch.
      */
-    public FasFdr(IndependenceTest test) {
+    public FasFdr(IndependenceTest test, int numIndependenceTests, int numDependenceJudgement) {
         this.graph = new EdgeListGraph(test.getVariables());
         this.test = test;
         this.alpha = test.getAlpha();
         this.cov = test.getCov().getMatrix();
+        this.numIndependenceTests = numIndependenceTests;
+        this.numDependenceJudgement = numDependenceJudgement;
     }
 
     //==========================PUBLIC METHODS===========================//
@@ -215,7 +196,7 @@ public class FasFdr implements IFas {
         Map<Node, Set<Node>> adjacencies = new HashMap<>();
 
         for (Node node : nodes) {
-            adjacencies.put(node, new TreeSet<Node>());
+            adjacencies.put(node, new TreeSet<>());
         }
         return adjacencies;
     }
@@ -241,41 +222,6 @@ public class FasFdr implements IFas {
     }
 
 
-    private Map<Node, Set<Node>> completeGraph(List<Node> nodes) {
-        Map<Node, Set<Node>> adjacencies = new HashMap<>();
-
-        for (int i = 0; i < nodes.size(); i++) {
-            adjacencies.put(nodes.get(i), new HashSet<Node>());
-        }
-
-        for (int i = 0; i < nodes.size(); i++) {
-            Node x = nodes.get(i);
-
-            for (int j = i + 1; j < nodes.size(); j++) {
-                Node y = nodes.get(j);
-                adjacencies.get(x).add(y);
-                adjacencies.get(y).add(x);
-            }
-        }
-
-        return adjacencies;
-    }
-
-    private void searchiCovAdj(List<Node> nodes, List<Node> graphNodes, IndependenceTest test, Map<Node, Set<Node>> adjacencies) {
-        boolean removed;
-
-        do {
-            removed = false;
-
-            for (Node x : nodes) {
-                List<Node> adj = new ArrayList<>(adjacencies.get(x));
-                adj.add(x);
-                removed = removed || searchICov(adj, test, adjacencies, false);
-            }
-        } while (removed);
-    }
-
-
     private Map<Node, Set<Node>> copy(Map<Node, Set<Node>> adjacencies) {
         Map<Node, Set<Node>> copy = new HashMap<>();
 
@@ -285,70 +231,6 @@ public class FasFdr implements IFas {
 
         return copy;
     }
-
-//    public Map<Node, Set<Node>> searchMapOnly() {
-//        this.logger.log("info", "Starting Fast Adjacency Search.");
-//        graph.removeEdges(graph.getEdges());
-//
-//        sepset = new SepsetMap();
-//
-//        int _depth = depth;
-//
-//        if (_depth == -1) {
-//            _depth = 1000;
-//        }
-//
-//
-//        pValueList.clear();
-//
-//        Map<Node, Set<Node>> adjacencies = new HashMap<Node, Set<Node>>();
-//        List<Node> nodes = graph.getNodes();
-//
-//        Map<Node, Set<Node>> _adjacencies = copy(adjacencies);
-//        test.setAlternativePenalty(alpha);
-//        searchICov(nodes, test, adjacencies);
-//        double cutoff = StatUtils.fdr(test.getAlternativePenalty(), pValueList, false);
-//        test.setAlternativePenalty(cutoff);
-//        adjacencies = _adjacencies;
-//        searchICov(nodes, test, adjacencies);
-//
-////        adjacencies = new HashMap<Node, Set<Node>>();
-////        nodes = graph.getNodes();
-////
-////        for (Node node : nodes) {
-////            adjacencies.put(node, new TreeSet<Node>());
-////        }
-////
-////        test.setAlternativePenalty(alpha);
-////
-////        searchAtDepth0(nodes, test, adjacencies);
-////
-////        cutoff = StatUtils.fdr(test.getAlternativePenalty(), pValueList, false);
-////
-////        test.setAlternativePenalty(cutoff);
-////
-////        searchAtDepth0(nodes, test, adjacencies);
-//
-//        for (int d = 0; d <= _depth; d++) {
-//            boolean more;
-//
-//            test.setAlternativePenalty(alpha);
-//
-//            searchAtDepth(nodes, test, adjacencies, d);
-//
-//            cutoff = StatUtils.fdr(test.getAlternativePenalty(), pValueList, false);
-//
-//            test.setAlternativePenalty(cutoff);
-//
-//            more = searchAtDepth(nodes, test, adjacencies, d);
-//
-//            if (!more) {
-//                break;
-//            }
-//        }
-//
-//        return adjacencies;
-//    }
 
     public int getDepth() {
         return this.depth;
@@ -413,16 +295,10 @@ public class FasFdr implements IFas {
                             if (node != x && node != y) theRest.add(node);
                         }
 
-//                        for (Node node : graphNodes) {
-//                            if (!nodes.contains(node)) theRest.add(node);
-//                        }
-
                         getSepsets().set(x, y, theRest);
 
                         if (this.verbose) {
                             this.out.println(SearchLogUtils.independenceFactMsg(x, y, theRest, test.getPValue()));
-//                            out.println(x + " _||_ " + y + " | the rest" + " p = " +
-//                                    nf.format(test.getScore()));
                         }
 
                         removed = true;
@@ -430,10 +306,6 @@ public class FasFdr implements IFas {
                         adjacencies.get(x).add(y);
                         adjacencies.get(y).add(x);
 
-//                    if (verbose) {
-//                        out.println(SearchLogUtils.dependenceFactMsg(x, y, empty) + " p = " +
-//                                nf.format(test.getScore()));
-//                    }
                     }
                 } else {
                     if (independent) {
@@ -462,73 +334,6 @@ public class FasFdr implements IFas {
         }
 
         return removed;
-    }
-
-    private boolean searchAtDepth0(List<Node> nodes, IndependenceTest test, Map<Node, Set<Node>> adjacencies) {
-        List<Node> empty = Collections.emptyList();
-        for (int i = 0; i < nodes.size(); i++) {
-            if ((i + 1) % 100 == 0) this.out.println("Node # " + (i + 1));
-
-            Node x = nodes.get(i);
-
-//            if (missingCol(test.getContinuousData(), x)) {
-//                continue;
-//            }
-
-            for (int j = i + 1; j < nodes.size(); j++) {
-
-                Node y = nodes.get(j);
-
-//                if (missingCol(test.getContinuousData(), y)) {
-//                    continue;
-//                }
-
-                if (this.externalGraph != null) {
-                    Node x2 = this.externalGraph.getNode(x.getName());
-                    Node y2 = this.externalGraph.getNode(y.getName());
-
-                    if (!this.externalGraph.isAdjacentTo(x2, y2)) {
-                        continue;
-                    }
-                }
-
-
-                boolean independent;
-
-                try {
-                    independent = test.isIndependent(x, y, empty);
-                    this.pValueList.add(test.getPValue());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    independent = false;
-                }
-
-                this.numIndependenceTests++;
-
-                boolean noEdgeRequired =
-                        this.knowledge.noEdgeRequired(x.getName(), y.getName());
-
-
-                if (independent && noEdgeRequired) {
-                    getSepsets().set(x, y, empty);
-
-                    if (this.verbose) {
-                        this.out.println(SearchLogUtils.independenceFact(x, y, empty) + " p = " +
-                                this.nf.format(test.getPValue()));
-                    }
-                } else if (!forbiddenEdge(x, y)) {
-                    adjacencies.get(x).add(y);
-                    adjacencies.get(y).add(x);
-                }
-            }
-        }
-
-        return freeDegree(nodes, adjacencies) > 0;
-    }
-
-    // Returns true just in case there are no defined values in the column.
-    private boolean missingCol(DataModel data, Node x) {
-        return false;
     }
 
     private int freeDegree(List<Node> nodes, Map<Node, Set<Node>> adjacencies) {
@@ -566,7 +371,6 @@ public class FasFdr implements IFas {
     }
 
     private boolean searchAtDepth(List<Node> nodes, IndependenceTest test, Map<Node, Set<Node>> adjacencies, int depth) {
-        int numRemoved = 0;
         int count = 0;
 
         for (Node x : nodes) {
@@ -602,7 +406,6 @@ public class FasFdr implements IFas {
                         if (independent && noEdgeRequired) {
                             adjacencies.get(x).remove(y);
                             adjacencies.get(y).remove(x);
-                            numRemoved++;
                             getSepsets().set(x, y, condSet);
 
                             if (this.verbose) {
@@ -611,20 +414,11 @@ public class FasFdr implements IFas {
                             }
                             continue EDGE;
                         }
-//                        else {
-//                            if (verbose) {
-//                                out.println("Dependence: " + SearchLogUtils.independenceFact(x, y, condSet) + " p = " +
-//                                        nf.format(test.getScore()));
-//                            }
-//                        }
 
                     }
                 }
             }
         }
-
-//        out.println("Num removed = " + numRemoved);
-//        return numRemoved > 0;
 
         return freeDegree(nodes, adjacencies) > depth;
     }
@@ -654,11 +448,6 @@ public class FasFdr implements IFas {
     }
 
     public void setTrueGraph(Graph trueGraph) {
-        this.trueGraph = trueGraph;
-    }
-
-    public int getNumFalseDependenceJudgments() {
-        return this.numFalseDependenceJudgments;
     }
 
     public int getNumDependenceJudgments() {
@@ -669,8 +458,7 @@ public class FasFdr implements IFas {
         return this.sepset;
     }
 
-    public void setExternalGraph(Graph externalGraph) {
-        this.externalGraph = externalGraph;
+    public void setExternalGraph() {
     }
 
     public boolean isVerbose() {

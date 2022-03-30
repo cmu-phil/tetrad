@@ -26,7 +26,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
 
 import java.util.Collections;
 
@@ -158,13 +157,6 @@ public final class FasLofs implements GraphSearch {
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
-
-    //======================================== PRIVATE METHODS ====================================//
-
-    private boolean knowledgeOrients(Node left, Node right) {
-        return this.knowledge.isForbidden(right.getName(), left.getName()) || this.knowledge.isRequired(left.getName(), right.getName());
-    }
-
 }
 
 

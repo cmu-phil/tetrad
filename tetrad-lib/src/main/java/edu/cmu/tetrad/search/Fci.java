@@ -106,11 +106,6 @@ public final class Fci implements GraphSearch {
     private boolean verbose;
 
     /**
-     * FAS initial graph.
-     */
-    private Graph externalGraph;
-
-    /**
      * FAS heuristic
      */
     private int heuristic;
@@ -253,13 +248,6 @@ public final class Fci implements GraphSearch {
         this.elapsedTime = stop - start;
 
         return graph;
-    }
-
-    /**
-     * Sets the initial graph to use for FAS.
-     */
-    public void setExternalGraph(Graph externalGraph) {
-        this.externalGraph = externalGraph;
     }
 
     /**

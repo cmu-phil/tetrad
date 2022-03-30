@@ -280,7 +280,6 @@ public final class FciMax implements GraphSearch {
                         doNode(this.graph, scores, this.nodes.get(i));
                     }
 
-                    return true;
                 } else {
                     int mid = (this.to + this.from) / 2;
 
@@ -291,8 +290,8 @@ public final class FciMax implements GraphSearch {
                     right.compute();
                     left.join();
 
-                    return true;
                 }
+                return true;
             }
         }
 

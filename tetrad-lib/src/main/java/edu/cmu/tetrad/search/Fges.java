@@ -81,8 +81,6 @@ public final class Fges implements GraphSearch, GraphScorer {
     private final ForkJoinPool pool;
     // The maximum number of threads to use.
     private final int maxThreads;
-    GraphScore graphScore;
-    private boolean turning;
     private boolean faithfulnessAssumed = true;
     private final int depth = 10000;
     /**
@@ -182,17 +180,6 @@ public final class Fges implements GraphSearch, GraphScorer {
     }
 
     //===========================CONSTRUCTORS=============================//
-
-    public void setTurning(boolean turning) {
-        this.turning = turning;
-    }
-
-    public void setTrueDag(Graph dag) {
-        if (dag == null) throw new IllegalArgumentException("True graph must be non-null in this setter.");
-        dag = GraphUtils.replaceNodes(dag, this.variables);
-        GraphScore graphScore = new GraphScore(dag);
-        this.graphScore = graphScore;
-    }
 
     //==========================PUBLIC METHODS==========================//
 
@@ -304,15 +291,13 @@ public final class Fges implements GraphSearch, GraphScorer {
     public void setExternalGraph(Graph externalGraph) {
         externalGraph = GraphUtils.replaceNodes(externalGraph, this.variables);
 
-        if (externalGraph != null) {
-            if (this.verbose) {
-                this.out.println("Initial graph variables: " + externalGraph.getNodes());
-                this.out.println("Data set variables: " + this.variables);
-            }
+        if (this.verbose) {
+            this.out.println("Initial graph variables: " + externalGraph.getNodes());
+            this.out.println("Data set variables: " + this.variables);
+        }
 
-            if (!new HashSet<>(externalGraph.getNodes()).equals(new HashSet<>(this.variables))) {
-                throw new IllegalArgumentException("Variables aren't the same.");
-            }
+        if (!new HashSet<>(externalGraph.getNodes()).equals(new HashSet<>(this.variables))) {
+            throw new IllegalArgumentException("Variables aren't the same.");
         }
 
         this.externalGraph = externalGraph;
@@ -544,21 +529,13 @@ public final class Fges implements GraphSearch, GraphScorer {
                 continue;
             }
 
-//            double _bump = insertEval(x, y, arrow.getHOrT(), arrow.naYX,
-//                    arrow.parents, hashIndices, true);
-
             insert(x, y, arrow.getHOrT(), arrow.getBump());
 
             Set<Node> process = revertToCPDAG();
 
-//            System.out.println("Graph after insert " + graph);
-
             process.add(x);
             process.add(y);
             process.addAll(getCommonAdjacents(x, y));
-//            process.addAll(graph.getAdjacentNodes(x));
-//            process.addAll(graph.getAdjacentNodes(y));
-
 
             reevaluateForward(new HashSet<>(process));
         }
@@ -600,7 +577,7 @@ public final class Fges implements GraphSearch, GraphScorer {
             complement.removeAll(arrow.getHOrT());
 
             double _bump = deleteEval(x, y, complement,
-                    arrow.parents, this.hashIndices, true);
+                    arrow.parents, this.hashIndices);
 
             delete(x, y, arrow.getHOrT(), _bump, arrow.getNaYX());
 
@@ -617,29 +594,6 @@ public final class Fges implements GraphSearch, GraphScorer {
     // Returns true if knowledge is not empty.
     private boolean existsKnowledge() {
         return !this.knowledge.isEmpty();
-    }
-
-    // Initiaizes the sorted arrows lists for the backward search.
-    private void initializeArrowsBackward() {
-        for (Edge edge : this.graph.getEdges()) {
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
-
-            if (existsKnowledge()) {
-                if (!getKnowledge().noEdgeRequired(x.getName(), y.getName())) {
-                    continue;
-                }
-            }
-
-            if (edge.pointsTowards(y)) {
-                calculateArrowsBackward(x, y);
-            } else if (edge.pointsTowards(x)) {
-                calculateArrowsBackward(y, x);
-            } else {
-                calculateArrowsBackward(x, y);
-                calculateArrowsBackward(y, x);
-            }
-        }
     }
 
     // Calcuates new arrows based on changes in the graph for the forward search.
@@ -725,9 +679,6 @@ public final class Fges implements GraphSearch, GraphScorer {
 
     // Calculates the new arrows for an a->b edge.
     private void calculateArrowsForward(Node a, Node b) {
-//        if (mode == Mode.heuristicSpeedup && !effectEdgesGraph.isAdjacentTo(a, b)) {
-//            return;
-//        }
 
         if (this.adjacencies != null && !this.adjacencies.isAdjacentTo(a, b)) {
             return;
@@ -764,7 +715,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         while ((choice = gen.next()) != null) {
             Set<Node> _T = GraphUtils.asSet(choice, TNeighbors);
 
-            double _bump = insertEval(a, b, _T, naYX, parents, this.hashIndices, false);
+            double _bump = insertEval(a, b, _T, naYX, parents, this.hashIndices);
 
             if (_bump > maxBump) {
                 maxT = _T;
@@ -795,15 +746,12 @@ public final class Fges implements GraphSearch, GraphScorer {
         class BackwardTask implements Callable<Boolean> {
             private final Node r;
             private final List<Node> adj;
-            private final Map<Node, Integer> hashIndices;
             private final int chunk;
             private final int from;
             private final int to;
 
-            private BackwardTask(Node r, List<Node> adj, int chunk, int from, int to,
-                                 Map<Node, Integer> hashIndices) {
+            private BackwardTask(Node r, List<Node> adj, int chunk, int from, int to) {
                 this.adj = adj;
-                this.hashIndices = hashIndices;
                 this.chunk = chunk;
                 this.from = from;
                 this.to = to;
@@ -840,7 +788,7 @@ public final class Fges implements GraphSearch, GraphScorer {
             List<Node> adjacentNodes = this.graph.getAdjacentNodes(r);
             adjacentNodes.retainAll(toProcess);
             BackwardTask task = new BackwardTask(r, adjacentNodes, getChunkSize(adjacentNodes.size()), 0,
-                    adjacentNodes.size(), this.hashIndices);
+                    adjacentNodes.size());
 
             if (this.maxThreads == 1) {
                 task.call();
@@ -882,10 +830,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         while ((choice = gen.next()) != null) {
             Set<Node> complement = GraphUtils.asSet(choice, _naYX);
 
-//            Set<Node> h = new HashSet<>(naYX);
-//            h.removeAll(complement);
-
-            double _bump = deleteEval(a, b, complement, parents, this.hashIndices, false);
+            double _bump = deleteEval(a, b, complement, parents, this.hashIndices);
 
             if (_bump > maxBump) {
                 maxBump = _bump;
@@ -930,22 +875,22 @@ public final class Fges implements GraphSearch, GraphScorer {
 
     // Evaluate the Insert(X, Y, TNeighbors) operator (Definition 12 from Chickering, 2002).
     private double insertEval(Node x, Node y, Set<Node> T, Set<Node> naYX, Set<Node> parents,
-                              Map<Node, Integer> hashIndices, boolean blathering) {
+                              Map<Node, Integer> hashIndices) {
         Set<Node> set = new HashSet<>(naYX);
         set.addAll(T);
         set.addAll(parents);
 
-        return scoreGraphChange(x, y, set, hashIndices, blathering);
+        return scoreGraphChange(x, y, set, hashIndices);
     }
 
     // Evaluate the Delete(X, Y, TNeighbors) operator (Definition 12 from Chickering, 2002).
     private double deleteEval(Node x, Node y, Set<Node> complement, Set<Node> parents,
-                              Map<Node, Integer> hashIndices, boolean blathering) {
+                              Map<Node, Integer> hashIndices) {
         Set<Node> set = new HashSet<>(complement);
         set.addAll(parents);
         set.remove(x);
 
-        return -scoreGraphChange(x, y, set, hashIndices, blathering);
+        return -scoreGraphChange(x, y, set, hashIndices);
     }
 
     // Do an actual insertion. (Definition 12 from Chickering, 2002).
@@ -1273,8 +1218,6 @@ public final class Fges implements GraphSearch, GraphScorer {
         if (this.score instanceof GraphScore) return 0.0;
         dag = GraphUtils.replaceNodes(dag, getVariables());
 
-        if (dag == null) throw new NullPointerException("DAG not specified.");
-
         Score score = this.score.defaultScore();
 
         double _score = 0;
@@ -1311,7 +1254,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     }
 
     private double scoreGraphChange(Node x, Node y, Set<Node> parents,
-                                    Map<Node, Integer> hashIndices, boolean blathering) {
+                                    Map<Node, Integer> hashIndices) {
         int xIndex = hashIndices.get(x);
         int yIndex = hashIndices.get(y);
 
@@ -1330,23 +1273,7 @@ public final class Fges implements GraphSearch, GraphScorer {
             parentIndices[count++] = hashIndices.get(parent);
         }
 
-        double v = this.score.localScoreDiff(xIndex, yIndex, parentIndices);
-
-        blathering = false;
-
-        if (blathering && this.graphScore != null) {
-            double _v = this.graphScore.localScoreDiff(xIndex, yIndex, parentIndices);
-
-            if (v > 0 && _v < 0) {
-                System.out.println("Type I: Falsely judged dependent " + x + " ~_||_ " + y + " | " + parents + " v = " + v);
-            } else if (v < 0 && _v > 0) {
-                System.out.println("TYPE II: Falsely judged independent " + x + " _||_ " + y + " | " + parents + " v = " + v);
-            } else {
-//                System.out.println("OK! " +  x + " _||_ " + y + " | " + parents + " v = " + v);
-            }
-        }
-
-        return v;
+        return this.score.localScoreDiff(xIndex, yIndex, parentIndices);
     }
 
     private List<Node> getVariables() {
@@ -1550,12 +1477,6 @@ public final class Fges implements GraphSearch, GraphScorer {
 
                     if (bump > 0) {
                         Fges.this.effectEdgesGraph.addEdge(Edges.undirectedEdge(x, y));
-//                        addArrowForward(x, y, emptySet, emptySet, emptySet, emptySet, bump);
-//                        addArrowForward(y, x, emptySet, emptySet, emptySet, emptySet, bump);
-//
-//                        arrowsMap.put(directedEdge(x, y), new ArrowConfig(emptySet, emptySet, emptySet));
-//                        arrowsMap.put(directedEdge(y, x), new ArrowConfig(emptySet, emptySet, emptySet));
-
                     }
                 }
             }
@@ -1564,7 +1485,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         }
     }
 
-    private class ArrowConfig {
+    private static class ArrowConfig {
         private Set<Node> T;
         private Set<Node> nayx;
         private Set<Node> parents;
@@ -1581,10 +1502,6 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         public void setT(Set<Node> t) {
             this.T = t;
-        }
-
-        public Set<Node> getNayx() {
-            return this.nayx;
         }
 
         public void setNayx(Set<Node> nayx) {
@@ -1613,17 +1530,13 @@ public final class Fges implements GraphSearch, GraphScorer {
         }
     }
 
-    private class ArrowConfigBackward {
+    private static class ArrowConfigBackward {
         private Set<Node> nayx;
         private Set<Node> parents;
 
         public ArrowConfigBackward(Set<Node> nayx, Set<Node> parents) {
             this.setNayx(nayx);
             this.setParents(parents);
-        }
-
-        public Set<Node> getNayx() {
-            return this.nayx;
         }
 
         public void setNayx(Set<Node> nayx) {

@@ -227,18 +227,17 @@ public final class FciOrient {
                     if (this.verbose) {
                         this.logger.log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(a, b, c));
                         this.out.println(SearchLogUtils.colliderOrientedMsg(a, b, c));
-                        final String location = "R0";
 
-                        printWrongColliderMessage(a, b, c, location, graph);
+                        printWrongColliderMessage(a, b, c, graph);
                     }
                 }
             }
         }
     }
 
-    private void printWrongColliderMessage(Node a, Node b, Node c, String location, Graph graph) {
+    private void printWrongColliderMessage(Node a, Node b, Node c, Graph graph) {
         if (this.truePag != null && graph.isDefCollider(a, b, c) && !this.truePag.isDefCollider(a, b, c)) {
-            this.out.println(location + ": Orienting collider by mistake: " + a + "*->" + b + "<-*" + c);
+            this.out.println("R0" + ": Orienting collider by mistake: " + a + "*->" + b + "<-*" + c);
         }
     }
 
