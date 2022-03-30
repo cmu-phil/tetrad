@@ -217,7 +217,7 @@ public final class Params {
     public static final String SIMULATION_ERROR_TYPE = "simulationErrorType";
     public static final String SIMULATION_PARAM1 = "simulationParam1";
     public static final String SIMULATION_PARAM2 = "simulationParam2";
-    public static final String SELECTION_ALPHA = "selectionAlpha";
+    public static final String SELECTION_MIN_EFFECT = "selectionMinEffect";
     public static final String NUM_SUBSAMPLES = "numSubsamples";
     public static final String TARGET_NAMES = "targetNames";
     public static final String CSTAR_Q = "cstarQ";

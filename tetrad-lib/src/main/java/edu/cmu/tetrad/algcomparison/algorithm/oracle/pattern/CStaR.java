@@ -4,7 +4,6 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -16,6 +15,7 @@ import edu.cmu.tetrad.search.Cstar.PatternAlgorithm;
 import edu.cmu.tetrad.search.Cstar.SampleStyle;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -26,7 +26,7 @@ import java.util.List;
         command = "cstar",
         algoType = AlgType.forbid_latent_common_causes
 )
-@Experimental
+//@Experimental
 public class CStaR implements Algorithm, TakesIndependenceWrapper {
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
@@ -46,14 +46,19 @@ public class CStaR implements Algorithm, TakesIndependenceWrapper {
         cStaR.setNumSubsamples(parameters.getInt(Params.NUM_SUBSAMPLES));
         cStaR.setqFrom(parameters.getInt(Params.CSTAR_Q));
         cStaR.setqTo(parameters.getInt(Params.CSTAR_Q));
+        cStaR.setSelectionAlpha(parameters.getDouble(Params.SELECTION_MIN_EFFECT));
         cStaR.setqIncrement(1);
         cStaR.setPatternAlgorithm(PatternAlgorithm.PC_STABLE);
         cStaR.setSampleStyle(SampleStyle.SPLIT);
-        cStaR.setVerbose(parameters.getBoolean("verbose"));
+        cStaR.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         List<Node> possibleEffects = new ArrayList<>();
 
-        String targetName = parameters.getString("targetNames");
+        String targetName = parameters.getString(Params.TARGET_NAMES);
+
+        if (targetName.trim().equalsIgnoreCase("")) {
+            throw new IllegalStateException("Please specify target name(s).");
+        }
 
         if (targetName.trim().equalsIgnoreCase("all")) {
             for (String name : dataSet.getVariableNames()) {
@@ -78,7 +83,7 @@ public class CStaR implements Algorithm, TakesIndependenceWrapper {
 
         records = allRecords.getLast();
 
-        System.out.println(cStaR.makeTable(getRecords(), false));
+        TetradLogger.getInstance().forceLogMessage(cStaR.makeTable(getRecords(), true));
 
         return cStaR.makeGraph(this.getRecords());
     }
@@ -101,12 +106,13 @@ public class CStaR implements Algorithm, TakesIndependenceWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>(test.getParameters());
-        parameters.add(Params.SELECTION_ALPHA);
+        parameters.add(Params.SELECTION_MIN_EFFECT);
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.NUM_SUBSAMPLES);
         parameters.add(Params.TARGET_NAMES);
         parameters.add(Params.CSTAR_Q);
         parameters.add(Params.PARALLELISM);
+        parameters.add(Params.VERBOSE);
         return parameters;
     }
 

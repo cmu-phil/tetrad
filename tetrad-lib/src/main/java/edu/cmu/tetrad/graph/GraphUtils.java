@@ -1771,7 +1771,15 @@ public final class GraphUtils {
         List<Node> convertedNodes = new LinkedList<>();
 
         for (Node node : originalNodes) {
+            if (node == null) {
+                throw new NullPointerException("Null node among original nodes.");
+            }
+
             for (Node _node : newNodes) {
+                if (_node == null) {
+                    throw new NullPointerException("Null node among new nodes.");
+                }
+
                 if (node.getName().equals(_node.getName())) {
                     convertedNodes.add(_node);
                     break;

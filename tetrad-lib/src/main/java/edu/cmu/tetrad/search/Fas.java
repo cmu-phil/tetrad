@@ -124,7 +124,9 @@ public class Fas implements IFas {
      * @return a SepSet, which indicates which variables are independent conditional on which other variables
      */
     public Graph search() {
-        this.logger.log("info", "Starting Fast Adjacency Search.");
+        if (verbose) {
+            this.logger.log("info", "Starting Fast Adjacency Search.");
+        }
 
         this.test.setVerbose(this.verbose);
 
@@ -218,7 +220,9 @@ public class Fas implements IFas {
             }
         }
 
-        this.logger.log("info", "Finishing Fast Adjacency Search.");
+        if (verbose) {
+            this.logger.log("info", "Finishing Fast Adjacency Search.");
+        }
 
         return graph;
     }
@@ -339,7 +343,6 @@ public class Fas implements IFas {
                     if (this.verbose) {
                         TetradLogger.getInstance().forceLogMessage(SearchLogUtils.independenceFact(x, y, Z) +
                                 " score = " + this.nf.format(test.getScore()));
-                        this.out.println(SearchLogUtils.independenceFactMsg(x, y, Z, test.getPValue()));
                     }
 
                     return true;

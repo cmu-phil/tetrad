@@ -207,8 +207,10 @@ public class PcStable implements GraphSearch {
      * All of the given nodes must be in the domain of the given conditional independence test.
      */
     public Graph search(List<Node> nodes) {
-        this.logger.log("info", "Starting PC algorithm");
-        this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
+        if (verbose) {
+            this.logger.log("info", "Starting PC algorithm");
+            this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
+        }
 
         long startTime = System.currentTimeMillis();
 
@@ -242,13 +244,17 @@ public class PcStable implements GraphSearch {
         rules.setKnowledge(this.knowledge);
         rules.orientImplied(this.graph);
 
-        this.logger.log("graph", "\nReturning this graph: " + this.graph);
+        if (verbose) {
+            this.logger.log("graph", "\nReturning this graph: " + this.graph);
+        }
 
         this.elapsedTime = System.currentTimeMillis() - startTime;
 
-        this.logger.log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
-        this.logger.log("info", "Finishing PC Algorithm.");
-        this.logger.flush();
+        if (verbose) {
+            this.logger.log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
+            this.logger.log("info", "Finishing PC Algorithm.");
+            this.logger.flush();
+        }
 
         return this.graph;
     }

@@ -15,15 +15,19 @@ import java.util.concurrent.*;
 /**
  * An adaptation of the CStaR algorithm (Steckoven et al., 2012).
  * <p>
- * Stekhoven, D. J., Moraes, I., Sveinbjörnsson, G., Hennig, L., Maathuis, M. H., & Bühlmann, P. (2012). Causal stability ranking. Bioinformatics, 28(21), 2819-2823.
+ * Stekhoven, D. J., Moraes, I., Sveinbjörnsson, G., Hennig, L., Maathuis, M. H., & Bühlmann, P. (2012).
+ * Causal stability ranking. Bioinformatics, 28(21), 2819-2823.
  * <p>
- * Meinshausen, N., & Bühlmann, P. (2010). Stability selection. Journal of the Royal Statistical Society: Series B (Statistical Methodology), 72(4), 417-473.
+ * Meinshausen, N., & Bühlmann, P. (2010). Stability selection. Journal of the Royal Statistical Society:
+ * Series B (Statistical Methodology), 72(4), 417-473.
  * <p>
- * Colombo, D., & Maathuis, M. H. (2014). Order-independent constraint-based causal structure learning. The Journal of Machine Learning Research, 15(1), 3741-3782.
+ * Colombo, D., & Maathuis, M. H. (2014). Order-independent constraint-based causal structure learning.
+ * The Journal of Machine Learning Research, 15(1), 3741-3782.
  *
  * @author jdramsey@andrew.cmu.edu
  */
 public class Cstar {
+
     public enum PatternAlgorithm {FGES, PC_STABLE}
 
     public enum SampleStyle {BOOTSTRAP, SPLIT}
@@ -32,6 +36,7 @@ public class Cstar {
     private int qFrom = 1;
     private int qTo = 1;
     private int qIncrement = 1;
+    private double selectionAlpha = 0.0;
 
     private int parallelism = Runtime.getRuntime().availableProcessors() * 10;
     private IndependenceTest test;
@@ -43,7 +48,7 @@ public class Cstar {
 
     private Graph trueDag;
 
-    private class Tuple {
+    private static class Tuple {
         private final Node cause;
         private final Node effect;
         private final double pi;
@@ -121,6 +126,9 @@ public class Cstar {
     public Cstar() {
     }
 
+
+
+
     /**
      * Returns records for a set of variables with expected number of false positives bounded by q.
      *
@@ -148,6 +156,9 @@ public class Cstar {
      */
     public LinkedList<LinkedList<Record>> getRecords(DataSet dataSet, List<Node> possibleCauses, List<Node> possibleEffects,
                                                      IndependenceTest test, String path) {
+        System.out.println("path = " + path);
+        test.setVerbose(false);
+
         possibleEffects = GraphUtils.replaceNodes(possibleEffects, dataSet.getVariables());
         possibleCauses = GraphUtils.replaceNodes(possibleCauses, dataSet.getVariables());
 
@@ -171,6 +182,8 @@ public class Cstar {
 
         if (path != null) {
             _dir = new File(path);
+            System.out.println("dir = " + _dir.getAbsolutePath());
+//            _dir.delete();
             _dir.mkdirs();
         }
 
@@ -200,9 +213,6 @@ public class Cstar {
         } else {
             throw new IllegalArgumentException("Expecting Fisher Z, Chi Square, Sem BIC, or Conditional Gaussian Score.");
         }
-
-        List<Node> augmented = new ArrayList<>(possibleEffects);
-        augmented.addAll(possibleCauses);
 
         List<Map<Integer, Map<Node, Double>>> minimalEffects = new ArrayList<>();
 
@@ -244,7 +254,8 @@ public class Cstar {
                         sampler.setWithoutReplacements(true);
                         sample = sampler.sample(this._dataSet, this._dataSet.getNumRows() / 2);
                     } else {
-                        throw new IllegalArgumentException("That type of sample is not configured: " + Cstar.this.sampleStyle);
+                        throw new IllegalArgumentException("That type of sample is not configured: "
+                                + Cstar.this.sampleStyle);
                     }
 
                     Graph pattern = null;
@@ -270,7 +281,9 @@ public class Cstar {
                                     + Cstar.this.patternAlgorithm);
                         }
 
-                        TetradLogger.getInstance().forceLogMessage("# edges = " + pattern.getNumEdges());
+//                        System.out.println("Pattern = " + pattern);
+
+//                        TetradLogger.getInstance().forceLogMessage("# edges = " + pattern.getNumEdges());
 
                         edgesTotal[0] += pattern.getNumEdges();
                         edgesCount[0]++;
@@ -299,9 +312,9 @@ public class Cstar {
                     }
 
 
-                    if (Cstar.this.verbose) {
-                        TetradLogger.getInstance().forceLogMessage("Bootstrap " + (this.k + 1));
-                    }
+//                    if (Cstar.this.verbose) {
+//                        TetradLogger.getInstance().forceLogMessage("Bootstrap " + (this.k + 1));
+//                    }
 
                     return effects;
                 } catch (Exception e) {
@@ -414,7 +427,9 @@ public class Cstar {
                         Node causeNode = tuple.getCauseNode();
                         Node effectNode = tuple.getEffectNode();
 
-                        records.add(new Record(causeNode, effectNode, tuple.getPi(), avg, this.q, p));
+                        if (tuple.getMinBeta() > selectionAlpha) {
+                            records.add(new Record(causeNode, effectNode, tuple.getPi(), avg, this.q, p));
+                        }
                     }
 
                     allRecords.add(records);
@@ -680,6 +695,10 @@ public class Cstar {
         this.verbose = verbose;
     }
 
+    public void setSelectionAlpha(double selectionAlpha) {
+        this.selectionAlpha = selectionAlpha;
+    }
+
     public void setSampleStyle(SampleStyle sampleStyle) {
         this.sampleStyle = sampleStyle;
     }
@@ -700,13 +719,16 @@ public class Cstar {
 
     private Graph getPatternPcStable(DataSet sample) {
         IndependenceTest test = getIndependenceTest(sample, this.test);
+        test.setVerbose(false);
         PcStable pc = new PcStable(test);
+        pc.setVerbose(false);
         return pc.search();
     }
 
     private Graph getPatternFges(DataSet sample) {
         Score score = new ScoredIndTest(getIndependenceTest(sample, this.test));
         Fges fges = new Fges(score, 1);
+        fges.setVerbose(false);
         return fges.search();
     }
 
@@ -749,9 +771,9 @@ public class Cstar {
             BoxDataSet data = new BoxDataSet(new DoubleDataBox(effects), vars);
             if (file != null) {
                 PrintStream out = new PrintStream(new FileOutputStream(file));
-                out.println(data);
+//                out.println(data);
             } else {
-                TetradLogger.getInstance().forceLogMessage(data.toString());
+//                TetradLogger.getInstance().forceLogMessage(data.toString());
             }
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
@@ -762,7 +784,7 @@ public class Cstar {
         try {
             DataSet dataSet = DataUtils.loadContinuousData(file, "//", '\"', "*", true, Delimiter.TAB);
 
-            TetradLogger.getInstance().forceLogMessage("Loaded data " + dataSet.getNumRows() + " x " + dataSet.getNumColumns());
+//            TetradLogger.getInstance().forceLogMessage("Loaded data " + dataSet.getNumRows() + " x " + dataSet.getNumColumns());
 
             return dataSet.getDoubleData().toArray();
         } catch (IOException e) {
