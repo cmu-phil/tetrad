@@ -290,14 +290,14 @@ public class ParameterTab extends JPanel {
     }
 
     private void simulate() {
-        int ret = JOptionPane.showConfirmDialog(getPanel(), "Simulate new graph(s) and dataset(s)?",
+        int ret = JOptionPane.showConfirmDialog(getPanel(), "Simulate new dataset(s)?",
                 "Confirm", JOptionPane.OK_CANCEL_OPTION);
 
         if (ret == JOptionPane.CANCEL_OPTION) {
-            JOptionPane.showMessageDialog(getPanel(), "Keeping existing graph(s) and datasets(s)");
+            JOptionPane.showMessageDialog(getPanel(), "Keeping existing datasets(s)");
             return;
         } else {
-//            JOptionPane.showMessageDialog(getPanel(), "Created new graph(s) and datasets(s)...");
+            JOptionPane.showMessageDialog(getPanel(), "Created new datasets(s); check the Data tab");
         }
 
         new WatchedProcess((Window) getTopLevelAncestor()) {
@@ -324,7 +324,6 @@ public class ParameterTab extends JPanel {
                     }
                 }
             }
-
         };
     }
 
