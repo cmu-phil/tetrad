@@ -10,7 +10,7 @@ import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.DagToPag2;
+import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.search.GFci;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -102,7 +102,7 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return new DagToPag2(graph).convert();
+        return new DagToPag(graph).convert();
     }
 
     @Override

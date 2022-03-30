@@ -45,7 +45,6 @@ public class FactorAnalysis {
     private final CovarianceMatrix covariance;
 
     // method-specific fields that get used
-    private LinkedList<Double> dValues;
     private LinkedList<Matrix> factorLoadingVectors;
     private double threshold = 0.001;
     private int numFactors = 2;
@@ -100,7 +99,6 @@ public class FactorAnalysis {
      */
     public Matrix successiveResidual() {
         this.factorLoadingVectors = new LinkedList<>();
-        this.dValues = new LinkedList<>();
 
         Matrix residual = this.covariance.getMatrix().copy();
         Matrix unitVector = new Matrix(residual.rows(), 1);
@@ -284,7 +282,6 @@ public class FactorAnalysis {
             f = ui.scalarMult(1.0 / d);
         }
 
-        this.dValues.add(d);
         this.factorLoadingVectors.add(f);
         return true;
     }

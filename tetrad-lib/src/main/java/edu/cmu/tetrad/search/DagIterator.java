@@ -60,11 +60,6 @@ public class DagIterator {
                     "directed and undirected edges: " + edge);
         }
 
-//        if (CPDAG.existsDirectedCycle()) {
-//            throw new IllegalArgumentException("The graph must be acyclic: " +
-//                    DataGraphUtils.directedCycle(CPDAG));
-//        }
-
         this.decoratedGraphs.add(new DecoratedGraph(CPDAG));
     }
 

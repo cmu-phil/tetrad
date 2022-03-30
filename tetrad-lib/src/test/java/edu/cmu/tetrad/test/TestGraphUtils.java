@@ -23,7 +23,7 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.DagToPag2;
+import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
@@ -283,7 +283,7 @@ public final class TestGraphUtils {
     @Test
     public void testPagColoring() {
         Graph dag = GraphUtils.randomGraph(30, 5, 50, 10, 10, 10, false);
-        Graph pag = new DagToPag2(dag).convert();
+        Graph pag = new DagToPag(dag).convert();
 
         GraphUtils.addPagColoring(pag);
 

@@ -478,7 +478,7 @@ public class TestDM {
         try {
             FileOutputStream out = new FileOutputStream(file);
             PrintStream outStream = new PrintStream(out);
-            outStream.println(result.getDmStructure().latentStructToEdgeListGraph(result.getDmStructure()));
+            outStream.println(result.getDmStructure().latentStructToEdgeListGraph());
             outStream.println();
         } catch (java.io.FileNotFoundException e) {
             print("Can't write to file.");
@@ -564,7 +564,7 @@ public class TestDM {
         result.setAlphaPC(.000001);
         result.setAlphaSober(.000001);
 
-        result.setDiscount(initialDiscount);
+        result.setDiscount();
 
         result
                 = readAndSearchData("src/edu/cmu/tetradproj/amurrayw/final_joined_data_no_par.txt",
@@ -576,7 +576,7 @@ public class TestDM {
         try {
             FileOutputStream out = new FileOutputStream(file);
             PrintStream outStream = new PrintStream(out);
-            outStream.println(result.getDmStructure().latentStructToEdgeListGraph(result.getDmStructure()));
+            outStream.println(result.getDmStructure().latentStructToEdgeListGraph());
             //outStream.println();
         } catch (java.io.FileNotFoundException e) {
             print("Can't write to file.");
@@ -776,7 +776,7 @@ public class TestDM {
         print("");
         print("" + search.getDmStructure());
 
-        print("graph.existsDirectedCycle: " + search.getDmStructure().latentStructToEdgeListGraph(search.getDmStructure()).existsDirectedCycle());
+        print("graph.existsDirectedCycle: " + search.getDmStructure().latentStructToEdgeListGraph().existsDirectedCycle());
 
         print("Graph structure: " + search);
 
@@ -859,7 +859,7 @@ public class TestDM {
         print("");
         print("" + search.getDmStructure());
 
-        print("graph.existsDirectedCycle: " + search.getDmStructure().latentStructToEdgeListGraph(search.getDmStructure()).existsDirectedCycle());
+        print("graph.existsDirectedCycle: " + search.getDmStructure().latentStructToEdgeListGraph().existsDirectedCycle());
 
         print("Graph structure: " + search);
 
@@ -879,14 +879,14 @@ public class TestDM {
         try {
             FileOutputStream out = new FileOutputStream(file);
             PrintStream outStream = new PrintStream(out);
-            outStream.println(result.getDmStructure().latentStructToEdgeListGraph(result.getDmStructure()));
+            outStream.println(result.getDmStructure().latentStructToEdgeListGraph());
             outStream.println();
         } catch (java.io.FileNotFoundException e) {
             print("Can't write to file.");
 
         }
 
-        System.out.println(result.getDmStructure().latentStructToEdgeListGraph(result.getDmStructure()));
+        System.out.println(result.getDmStructure().latentStructToEdgeListGraph());
         print("DONE");
     }
 
@@ -929,7 +929,7 @@ public class TestDM {
         result.setAlphaPC(1e-6);
         result.setAlphaSober(1e-6);
 
-        result.setDiscount(initialDiscount);
+        result.setDiscount();
 
         result
                 = readAndSearchData("src/edu/cmu/tetradproj/amurrayw/final_joined_data_no_par_fixed.txt",
@@ -941,7 +941,7 @@ public class TestDM {
         try {
             FileOutputStream out = new FileOutputStream(file);
             PrintStream outStream = new PrintStream(out);
-            outStream.println(result.getDmStructure().latentStructToEdgeListGraph(result.getDmStructure()));
+            outStream.println(result.getDmStructure().latentStructToEdgeListGraph());
             //outStream.println();
         } catch (java.io.FileNotFoundException e) {
             print("Can't write to file.");

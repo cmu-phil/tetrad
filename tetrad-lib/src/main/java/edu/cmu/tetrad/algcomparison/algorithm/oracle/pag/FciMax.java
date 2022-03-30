@@ -9,7 +9,7 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.DagToPag2;
+import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -97,7 +97,7 @@ public class FciMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return new DagToPag2(new EdgeListGraph(graph)).convert();
+        return new DagToPag(new EdgeListGraph(graph)).convert();
     }
 
     public String getDescription() {

@@ -78,29 +78,11 @@ public class DiscreteMixedLikelihood {
     // A constant.
     private static final double LOG2PI = log(2.0 * Math.PI);
 
-    private List<List<Integer>> partition(List<DiscreteVariable> discrete_parents) {
-        List<List<Integer>> cells = new ArrayList<>();
-        HashMap<String, Integer> keys = new HashMap<>();
-        for (int i = 0; i < this.dataSet.getNumRows(); i++) {
-            String key = "";
-            for (int j = 0; j < discrete_parents.size(); j++) {
-                key += ((Integer) this.dataSet.getInt(i, this.dataSet.getColumn(discrete_parents.get(j)))).toString();
-            }
-            if (!keys.containsKey(key)) {
-                keys.put(key, cells.size());
-                cells.add(keys.get(key), new ArrayList<Integer>());
-            }
-            cells.get(keys.get(key)).add(i);
-        }
-
-        return cells;
-    }
-
     /**
      * A return value for a likelihood--returns a likelihood value and the degrees of freedom
      * for it.
      */
-    public class Ret {
+    public static class Ret {
         private final double lik;
         private final int dof;
 
@@ -238,8 +220,8 @@ public class DiscreteMixedLikelihood {
             APlus.add((DiscreteVariable) target);
         }
 
-        Ret ret1 = likelihoodJoint(XPlus, APlus, target);
-        Ret ret2 = likelihoodJoint(X, A, target);
+        Ret ret1 = likelihoodJoint(XPlus, APlus);
+        Ret ret2 = likelihoodJoint(X, A);
 
         return new Ret(ret1.getLik() - ret2.getLik(), ret1.getDof() - ret2.getDof());
     }
@@ -258,7 +240,7 @@ public class DiscreteMixedLikelihood {
 
     // The likelihood of the joint over all of these mixedVariables, assuming conditional Gaussian,
     // continuous and discrete.
-    private Ret likelihoodJoint(List<ContinuousVariable> X, List<DiscreteVariable> A, Node target) {
+    private Ret likelihoodJoint(List<ContinuousVariable> X, List<DiscreteVariable> A) {
         A = new ArrayList<>(A);
         X = new ArrayList<>(X);
 
@@ -294,13 +276,13 @@ public class DiscreteMixedLikelihood {
                 try {
 
                     // Determinant will be zero if data are linearly dependent.
+                    Matrix cov;
                     if (a > continuousCols.length + 5) {
-                        Matrix cov = cov(getSubsample(continuousCols, cell));
-                        c2 += a * gaussianLikelihood(k, cov);
+                        cov = cov(getSubsample(continuousCols, cell));
                     } else {
-                        Matrix cov = cov(getSubsample(continuousCols, this.all));
-                        c2 += a * gaussianLikelihood(k, cov);
+                        cov = cov(getSubsample(continuousCols, this.all));
                     }
+                    c2 += a * gaussianLikelihood(k, cov);
                 } catch (Exception e) {
                     // No contribution.
                 }

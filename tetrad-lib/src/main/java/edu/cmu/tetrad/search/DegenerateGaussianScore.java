@@ -119,7 +119,6 @@ public class DegenerateGaussianScore implements Score {
                 B.remove(i);
 
                 this.embedding.put(i_, new ArrayList<>(keys.values()));
-                i_++;
 
             } else {
 
@@ -134,9 +133,9 @@ public class DegenerateGaussianScore implements Score {
                 index2.add(i);
                 this.embedding.put(i_, index2);
                 i++;
-                i_++;
 
             }
+            i_++;
         }
         double[][] B_ = new double[n][B.size()];
         for (int j = 0; j < B.size(); j++) {
@@ -333,7 +332,7 @@ public class DegenerateGaussianScore implements Score {
                 if (Double.isNaN(this.ddata.getDouble(k, j))) continue K;
             }
 
-            for (int p : parents) {
+            for (int ignored : parents) {
                 Node pp = this.variables.get(i);
 
                 List<Integer> AA = new ArrayList<>(this.embedding.get(this.nodesHash.get(pp)));

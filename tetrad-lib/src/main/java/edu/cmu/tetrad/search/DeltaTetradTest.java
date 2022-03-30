@@ -42,13 +42,8 @@ public class DeltaTetradTest {
     private final ICovarianceMatrix cov;
     private int df;
     private double chisq;
-    //    private double[][][][] fourthMoment;
-//    private int numVars;
-//    private double[] means;
     private final List<Node> variables;
     private final Map<Node, Integer> variablesHash;
-//    private boolean cacheFourthMoments = false;
-
 
     // As input we require a data set and a list of non-redundant Tetrads.
 
@@ -89,11 +84,6 @@ public class DeltaTetradTest {
             this.variablesHash.put(this.variables.get(i), i);
         }
 
-//        this.means = new double[numVars];
-//
-//        for (int i = 0; i < numVars; i++) {
-//            means[i] = mean(data[i], N);
-//        }
     }
 
     /**
@@ -116,11 +106,6 @@ public class DeltaTetradTest {
         }
     }
 
-//    private void initializeForthMomentMatrix(List<Node> variables) {
-//        int n = variables.size();
-//        fourthMoment = new double[n][n][n][n];
-//    }
-
     /**
      * Takes a list of tetrads for the given data set and returns the chi square value for the test. We assume that the
      * tetrads are non-redundant; if not, a matrix exception will be thrown.
@@ -133,7 +118,6 @@ public class DeltaTetradTest {
 
         // Need a list of symbolic covariances--i.e. covariances that appear in tetrads.
         Set<Sigma> boldSigmaSet = new LinkedHashSet<>();
-        List<Sigma> boldSigma = new ArrayList<>();
 
         for (Tetrad tetrad : tetrads) {
             boldSigmaSet.add(new Sigma(tetrad.getI(), tetrad.getK()));
@@ -142,9 +126,7 @@ public class DeltaTetradTest {
             boldSigmaSet.add(new Sigma(tetrad.getJ(), tetrad.getL()));
         }
 
-        for (Sigma sigma : boldSigmaSet) {
-            boldSigma.add(sigma);
-        }
+        List<Sigma> boldSigma = new ArrayList<>(boldSigmaSet);
 
         // Need a matrix of variances and covariances of sample covariances.
         Matrix sigma_ss = new Matrix(boldSigma.size(), boldSigma.size());
@@ -262,36 +244,6 @@ public class DeltaTetradTest {
         return getForthMoment(x, y, z, w);
     }
 
-//    private void setForthMoment(int x, int y, int z, int w, double sxyzw) {
-//        fourthMoment[x][y][z][w] = sxyzw;
-//        fourthMoment[x][y][w][z] = sxyzw;
-//        fourthMoment[x][w][z][y] = sxyzw;
-//        fourthMoment[x][w][y][z] = sxyzw;
-//        fourthMoment[x][z][y][w] = sxyzw;
-//        fourthMoment[x][z][w][y] = sxyzw;
-//
-//        fourthMoment[y][x][z][w] = sxyzw;
-//        fourthMoment[y][x][w][z] = sxyzw;
-//        fourthMoment[y][z][x][w] = sxyzw;
-//        fourthMoment[y][z][w][x] = sxyzw;
-//        fourthMoment[y][w][x][z] = sxyzw;
-//        fourthMoment[y][w][z][x] = sxyzw;
-//
-//        fourthMoment[z][x][y][w] = sxyzw;
-//        fourthMoment[z][x][w][y] = sxyzw;
-//        fourthMoment[z][y][x][w] = sxyzw;
-//        fourthMoment[z][y][w][x] = sxyzw;
-//        fourthMoment[z][w][x][y] = sxyzw;
-//        fourthMoment[z][w][y][x] = sxyzw;
-//
-//        fourthMoment[w][x][y][z] = sxyzw;
-//        fourthMoment[w][x][z][y] = sxyzw;
-//        fourthMoment[w][y][x][z] = sxyzw;
-//        fourthMoment[w][y][z][x] = sxyzw;
-//        fourthMoment[w][z][x][y] = sxyzw;
-//        fourthMoment[w][z][y][x] = sxyzw;
-//    }
-
     private double getForthMoment(int x, int y, int z, int w) {
 //        if (cacheFourthMoments) {
 //            if (fourthMoment == null) {
@@ -364,10 +316,6 @@ public class DeltaTetradTest {
         return 0.0;
     }
 
-//    public void setCacheFourthMoments(boolean cacheFourthMoments) {
-//        this.cacheFourthMoments = cacheFourthMoments;
-//    }
-
     private static class Sigma {
         private final Node a;
         private final Node b;
@@ -432,16 +380,6 @@ public class DeltaTetradTest {
         return (1.0 / N) * sum;
     }
 
-//    private double mean(double array[], int N) {
-//        int i;
-//        double sum = 0;
-//
-//        for (i = 0; i < N; i++) {
-//            sum += array[i];
-//        }
-//
-//        return sum / N;
-//    }
 }
 
 

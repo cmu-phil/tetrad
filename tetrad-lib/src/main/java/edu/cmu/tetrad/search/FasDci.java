@@ -171,9 +171,6 @@ public class FasDci {
             }
         }
 
-//        this.logger.info("Depth = " + ((depth == Integer
-//               .MAX_VALUE) ? "Unlimited" : Integer.toString(depth)));
-
         SepsetMapDci sepset = new SepsetMapDci();
 
         int _depth = this.depth;
@@ -197,21 +194,6 @@ public class FasDci {
 
         return sepset;
     }
-
-//    private void verifySepsetIntegrity(SepsetMap sepset) {
-//        for (Node x : graph.getNodes()) {
-//            for (Node y : graph.getNodes()) {
-//                if (x == y) {
-//                    continue;
-//                }
-//
-//                if (graph.isAdjacentTo(y, x) && sepset.get(x, y) != null) {
-//                    System.out.println(x + " " + y + " integrity check failed.");
-//                }
-//            }
-//        }
-//    }
-
 
     public int getDepth() {
         return this.depth;

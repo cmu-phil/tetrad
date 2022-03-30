@@ -26,7 +26,9 @@ import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 
 /**
@@ -42,8 +44,6 @@ import java.util.*;
  * @author Alex Smith, December 2008
  * @author Joseph Ramsey
  * @author Choh-Man Teng
- * @deprecated Use DagToPag2 instead, which fixes an important bug, and is a lot faster to boot.
- * What's not to like?
  */
 public final class DagToPag {
 
@@ -84,8 +84,6 @@ public final class DagToPag {
     //========================PUBLIC METHODS==========================//
 
     public Graph convert() {
-        if (this.dag == null) throw new NullPointerException();
-
         this.logger.log("info", "Starting DAG to PAG_of_the_true_DAG.");
 
         if (this.verbose) {
@@ -98,7 +96,7 @@ public final class DagToPag {
             System.out.println("DAG to PAG_of_the_true_DAG: Starting collider orientation");
         }
 
-        orientUnshieldedColliders2(graph, this.dag);
+        orientUnshieldedColliders(graph, this.dag);
 
         if (this.verbose) {
             System.out.println("DAG to PAG_of_the_true_DAG: Starting final orientation");
@@ -106,7 +104,6 @@ public final class DagToPag {
 
         FciOrient fciOrient = new FciOrient(new DagSepsets(this.dag));
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.skipDiscriminatingPathRule(false);
         fciOrient.setChangeFlag(false);
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.doFinalOrientation(graph);
@@ -120,7 +117,7 @@ public final class DagToPag {
 
     private Graph calcAdjacencyGraph() {
         List<Node> allNodes = this.dag.getNodes();
-        List<Node> measured = new ArrayList<>();
+        List<Node> measured = new ArrayList<Node>();
 
         for (Node node : allNodes) {
             if (node.getNodeType() == NodeType.MEASURED) {
@@ -131,77 +128,28 @@ public final class DagToPag {
         Graph graph = new EdgeListGraph(measured);
 
         for (int i = 0; i < measured.size(); i++) {
-            DagToPag.addAdjacencies(measured.get(i), this.dag, graph);
+            for (int j = i + 1; j < measured.size(); j++) {
+                Node n1 = measured.get(i);
+                Node n2 = measured.get(j);
+
+                List<Node> inducingPath = GraphUtils.getInducingPath(n1, n2, this.dag);
+
+                boolean exists = inducingPath != null;
+
+                if (exists) {
+                    graph.addEdge(Edges.nondirectedEdge(n1, n2));
+                }
+            }
         }
 
         return graph;
     }
 
-    public static Set<Node> addAdjacencies(Node x, Graph dag, Graph builtGraph) {
-        if (x.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
-
-        LinkedList<Node> path = new LinkedList<>();
-        path.add(x);
-
-        Set<Node> induced = new HashSet<>();
-
-        for (Node b : dag.getAdjacentNodes(x)) {
-            DagToPag.collectInducedNodesVisit2(dag, x, b, path, builtGraph);
-        }
-
-        return induced;
-    }
-
-    public static void collectInducedNodesVisit2(Graph dag, Node x, Node b, LinkedList<Node> path,
-                                                 Graph builtGraph) {
-
-        if (path.contains(b)) {
-            return;
-        }
-
-        path.addLast(b);
-
-        if (b.getNodeType() == NodeType.MEASURED && path.size() >= 2) {
-            Node y = path.getLast();
-
-            for (int i = 0; i < path.size() - 2; i++) {
-                Node _a = path.get(i);
-                Node _b = path.get(i + 1);
-                Node _c = path.get(i + 2);
-
-                if (_b.getNodeType() == NodeType.MEASURED) {
-                    if (!dag.isDefCollider(_a, _b, _c)) {
-                        path.removeLast();
-                        return;
-                    }
-                }
-
-                if (dag.isDefCollider(_a, _b, _c)) {
-                    if (!(dag.isAncestorOf(_b, x) || dag.isAncestorOf(_b, y))) {
-                        path.removeLast();
-                        return;
-                    }
-                }
-            }
-
-            if (!builtGraph.isAdjacentTo(x, b)) {
-                builtGraph.addEdge(Edges.nondirectedEdge(x, b));
-            }
-        }
-
-        for (Node c : dag.getAdjacentNodes(b)) {
-            DagToPag.collectInducedNodesVisit2(dag, x, c, path, builtGraph);
-        }
-
-        path.removeLast();
-    }
-
-
     private void orientUnshieldedColliders(Graph graph, Graph dag) {
         graph.reorientAllWith(Endpoint.CIRCLE);
 
         List<Node> allNodes = dag.getNodes();
-        List<Node> measured = new ArrayList<>();
+        List<Node> measured = new ArrayList<Node>();
 
         for (Node node : allNodes) {
             if (node.getNodeType() == NodeType.MEASURED) {
@@ -243,48 +191,6 @@ public final class DagToPag {
         }
     }
 
-    private void orientUnshieldedColliders2(Graph graph, Graph dag) {
-//        graph.reorientAllWith(Endpoint.CIRCLE);
-
-        List<Node> allNodes = dag.getNodes();
-        List<Node> measured = new ArrayList<>();
-
-        for (Node node : allNodes) {
-            if (node.getNodeType() == NodeType.MEASURED) {
-                measured.add(node);
-            }
-        }
-
-        for (Node b : measured) {
-            List<Node> adjb = graph.getAdjacentNodes(b);
-
-            if (adjb.size() < 2) continue;
-
-            for (int i = 0; i < adjb.size(); i++) {
-                for (int j = i + 1; j < adjb.size(); j++) {
-                    Node a = adjb.get(i);
-                    Node c = adjb.get(j);
-
-//                    List<Node> d = new ArrayList<>();
-//                    d.add(a);
-//                    d.add(c);
-//
-//                    List<Node> anc = dag.getAncestors(d);
-
-                    if (!graph.isAdjacentTo(a, c) && !dag.isAncestorOf(b, a) && !dag.isAncestorOf(b, c)) {// !anc.contains(b)) {
-
-//                        if (verbose) {
-//                            System.out.println("Orienting collider " + a + "*->" + b + "<-*" + c);
-//                        }
-
-                        graph.setEndpoint(a, b, Endpoint.ARROW);
-                        graph.setEndpoint(c, b, Endpoint.ARROW);
-                    }
-                }
-            }
-        }
-    }
-
     private boolean foundCollider(Graph dag, Node a, Node b, Node c) {
         boolean ipba = DagToPag.existsInducingPathInto(b, a, dag);
         boolean ipbc = DagToPag.existsInducingPathInto(b, c, dag);
@@ -317,7 +223,7 @@ public final class DagToPag {
         if (x.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
         if (y.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
 
-        LinkedList<Node> path = new LinkedList<>();
+        LinkedList<Node> path = new LinkedList<Node>();
         path.add(x);
 
         for (Node b : graph.getAdjacentNodes(x)) {

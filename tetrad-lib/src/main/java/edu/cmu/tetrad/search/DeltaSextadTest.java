@@ -125,12 +125,6 @@ public class DeltaSextadTest {
         for (IntSextad sextad : sextads) {
             List<Integer> _nodes = sextad.getNodes();
 
-//            for (int i = 0; i < _nodes.size(); i++) {
-//                for (int j = i; j < _nodes.size(); j++) {
-//                    boldSigmaSet.add(new Sigma(_nodes.get(i), _nodes.get(j)));
-//                }
-//            }
-//
             for (int k1 = 0; k1 < 3; k1++) {
                 for (int k2 = 0; k2 < 3; k2++) {
                     boldSigmaSet.add(new Sigma(_nodes.get(k1), _nodes.get(3 + k2)));

@@ -37,7 +37,7 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.DagToPag2;
+import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -203,7 +203,7 @@ public class TestGeneralResamplingTest {
         BayesPm pm = new BayesPm(dag, 2, 3);
         BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
 
-        DagToPag2 dagToPag = new DagToPag2(dag);
+        DagToPag dagToPag = new DagToPag(dag);
         Graph truePag = dagToPag.convert();
 
         //System.out.println("Truth PAG_of_the_true_DAG Graph:");
@@ -267,7 +267,7 @@ public class TestGeneralResamplingTest {
 
         Graph dag = TestGeneralResamplingTest.makeDiscreteDAG(numVars, numLatentConfounders, edgesPerNode);
 
-        DagToPag2 dagToPag = new DagToPag2(dag);
+        DagToPag dagToPag = new DagToPag(dag);
         Graph truePag = dagToPag.convert();
 
         //System.out.println("Truth PAG_of_the_true_DAG Graph:");
@@ -327,7 +327,7 @@ public class TestGeneralResamplingTest {
 
         Graph dag = TestGeneralResamplingTest.makeContinuousDAG(numVars, numLatentConfounders, edgesPerNode);
 
-        DagToPag2 dagToPag = new DagToPag2(dag);
+        DagToPag dagToPag = new DagToPag(dag);
         Graph truePag = dagToPag.convert();
 
         //System.out.println("Truth PAG_of_the_true_DAG Graph:");
@@ -393,7 +393,7 @@ public class TestGeneralResamplingTest {
 
         Graph dag = TestGeneralResamplingTest.makeDiscreteDAG(numVars, numLatentConfounders, edgesPerNode);
 
-        DagToPag2 dagToPag = new DagToPag2(dag);
+        DagToPag dagToPag = new DagToPag(dag);
         Graph truePag = dagToPag.convert();
 
         //System.out.println("Truth PAG_of_the_true_DAG Graph:");

@@ -25,12 +25,9 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -79,23 +76,15 @@ public class FasConcurrent implements IFas {
      */
     private SepsetMap sepsets = new SepsetMap();
 
-    // Number formatter.
-    private final NumberFormat nf = new DecimalFormat("0.00E0");
-
     /**
      * Set to true if verbose output is desired.
      */
     private boolean verbose;
 
-    // The concurrency pool.
-    private final ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
-
     /**
      * Where verbose output is sent.
      */
     private PrintStream out = System.out;
-
-    private final int chunk = 100;
 
     /**
      * True if the "stable" adjustment should be made.
@@ -143,7 +132,7 @@ public class FasConcurrent implements IFas {
         List<Node> nodes = graph.getNodes();
 
         for (Node node : nodes) {
-            adjacencies.put(node, new HashSet<Node>());
+            adjacencies.put(node, new HashSet<>());
         }
 
         for (int d = 0; d <= _depth; d++) {
@@ -215,7 +204,7 @@ public class FasConcurrent implements IFas {
         ExecutorService pool = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors());
 
         try {
-            List<Future<Boolean>> futures = pool.invokeAll(tasks);
+            pool.invokeAll(tasks);
         } catch (InterruptedException exception) {
             this.out.print("Task has been interrupted");
             Thread.currentThread().interrupt();
@@ -250,7 +239,7 @@ public class FasConcurrent implements IFas {
             adjacenciesCopy.put(node, new HashSet<>(adjacencies.get(node)));
         }
 
-        class DepthTask implements Callable {
+        class DepthTask implements Callable<Boolean> {
             private final int i;
             private final int depth;
 
@@ -260,7 +249,7 @@ public class FasConcurrent implements IFas {
             }
 
             public Boolean call() {
-                doNodeAtDepth(this.i, nodes, adjacenciesCopy, this.depth, FasConcurrent.this.test, adjacencies);
+                doNodeAtDepth(this.i, nodes, this.depth, FasConcurrent.this.test, adjacencies);
                 return true;
             }
         }
@@ -274,9 +263,9 @@ public class FasConcurrent implements IFas {
         ExecutorService pool = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors());
 
         try {
-            List<Future<Boolean>> futures = pool.invokeAll(tasks);
+            pool.invokeAll(tasks);
         } catch (InterruptedException exception) {
-            this.out.printf("Task has been interrupted");//, dateTimeNow(), task.run.index + 1);
+            this.out.print("Task has been interrupted");//, dateTimeNow(), task.run.index + 1);
             Thread.currentThread().interrupt();
         }
 
@@ -377,10 +366,10 @@ public class FasConcurrent implements IFas {
                 adjacencies.get(y).add(x);
             }
         }
-//        }
     }
 
-    private void doNodeAtDepth(int i, List<Node> nodes, Map<Node, Set<Node>> adjacenciesCopy, int depth, IndependenceTest test, Map<Node, Set<Node>> adjacencies) {
+    private void doNodeAtDepth(int i, List<Node> nodes, int depth, IndependenceTest test, Map<Node,
+            Set<Node>> adjacencies) {
         if (this.verbose) {
             if ((i + 1) % 1000 == 0) System.out.println("i = " + (i + 1));
         }

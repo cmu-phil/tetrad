@@ -42,9 +42,9 @@ public class DagInCPDAGIterator {
     private final LinkedList<DecoratedGraph> decoratedGraphs = new LinkedList<>();
     private Graph storedGraph;
     private boolean returnedOne;
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge;
     private final LinkedList<Triple> colliders;
-    private boolean allowNewColliders = true;
+    private boolean allowNewColliders;
 
     public DagInCPDAGIterator(Graph CPDAG) {
         this(CPDAG, new Knowledge2(), false, true);
@@ -52,10 +52,6 @@ public class DagInCPDAGIterator {
 
     public DagInCPDAGIterator(Graph CPDAG, IKnowledge knowledge) {
         this(CPDAG, knowledge, false, true);
-    }
-
-    public DagInCPDAGIterator(Graph CPDAG, boolean allowArbitraryOrientations) {
-        this(CPDAG, new Knowledge2(), allowArbitraryOrientations, true);
     }
 
     /**
@@ -83,18 +79,8 @@ public class DagInCPDAGIterator {
             throw new IllegalArgumentException("The CPDAG already violates that knowledge.");
         }
 
-//        for (Edge edge : CPDAG.getEdges()) {
-//            if (Edges.isDirectedEdge(edge) || Edges.isUndirectedEdge(edge)) {
-//                continue;
-//            }
-//
-//            if (Edges.isBidirectedEdge(edge)) {
-//                continue;
-//            }
-//        }
-
         HashMap<Graph, Set<Edge>> changedEdges = new HashMap<>();
-        changedEdges.put(CPDAG, new HashSet<Edge>());
+        changedEdges.put(CPDAG, new HashSet<>());
 
         this.decoratedGraphs.add(new DecoratedGraph(CPDAG, getKnowledge(), changedEdges,
                 allowArbitraryOrientations));
@@ -175,7 +161,7 @@ public class DagInCPDAGIterator {
         private boolean triedRight;
         private final IKnowledge knowledge;
         private Map<Graph, Set<Edge>> changedEdges = new HashMap<>();
-        private boolean allowArbitraryOrientation = true;
+        private boolean allowArbitraryOrientation;
 
         public DecoratedGraph(Graph graph, IKnowledge knowledge, Map<Graph, Set<Edge>> changedEdges, boolean allowArbitraryOrientation) {
             this.graph = graph;
@@ -208,10 +194,6 @@ public class DagInCPDAGIterator {
         public String toString() {
             return this.graph.toString();
         }
-
-//        public void triedDirectLeft() {
-//            triedLeft = true;
-//        }
 
         public boolean isOrientable() {
             if (this.edge == null) {
@@ -320,9 +302,6 @@ public class DagInCPDAGIterator {
             return this.allowArbitraryOrientation;
         }
 
-        public void setAllowArbitraryOrientation(boolean allowArbitraryOrientation) {
-            this.allowArbitraryOrientation = allowArbitraryOrientation;
-        }
     }
 }
 

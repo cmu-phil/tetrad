@@ -60,7 +60,6 @@ public class DirichletScore implements LocalDiscreteScore {
             VerticalIntDataBox box = (VerticalIntDataBox) dataBox;
 
             this.data = box.getVariableVectors();
-            this.sampleSize = dataSet.getNumRows();
         } else {
             this.data = new int[dataSet.getNumColumns()][];
             this.variables = dataSet.getVariables();
@@ -73,8 +72,8 @@ public class DirichletScore implements LocalDiscreteScore {
                 }
             }
 
-            this.sampleSize = dataSet.getNumRows();
         }
+        this.sampleSize = dataSet.getNumRows();
 
         List<Node> variables = dataSet.getVariables();
         this.numCategories = new int[variables.size()];
@@ -160,27 +159,13 @@ public class DirichletScore implements LocalDiscreteScore {
 
             if (rowScore == 0) continue;
             score += rowScore;
-
             score -= 2 * cellCount;
-
-//            score -= .5 * cellCount * Math.log(sampleSize);
         }
 
-
-//        double h = Math.log(1.0 / r) * sampleSize;
-
-//        System.out.println("(1/r)^N = " + h + " score = " + score);
 
         this.lastBumpThreshold = 0.01;//((r - 1) * q * FastMath.log(getStructurePrior()));
 
         return score;
-    }
-
-    private double getPriorForStructure(int numParents) {
-        double e = getStructurePrior();
-        double k = numParents;
-        double n = this.data.length;
-        return k * Math.log(e / n) + (n - k) * Math.log(1.0 - (e / n));
     }
 
     @Override
@@ -203,87 +188,11 @@ public class DirichletScore implements LocalDiscreteScore {
     @Override
     public double localScore(int node, int parent) {
         return localScore(node, new int[]{parent});
-
-//        // Number of categories for node.
-//        int r = numCategories[node];
-//
-//        // Numbers of categories of parents.
-//        int q = numCategories[parent];
-//
-//        // Conditional cell coefs of data for node given parents(node).
-//        int n_jk[][] = new int[q][r];
-//        int n_j[] = new int[q];
-//
-//        int[] parentData = data[parent];
-//        int[] childData = data[node];
-//
-//        for (int i = 0; i < sampleSize; i++) {
-//            int parentValue = parentData[i];
-//            int childValue = childData[i];
-//            n_jk[parentValue][childValue]++;
-//            n_j[parentValue]++;
-//        }
-//
-//        //Finally, compute the score
-//        double score = r * q * Math.log(getStructurePrior());
-//
-//        final double cellPrior = getSamplePrior() / (r * q);
-//        final double rowPrior = getSamplePrior() / q;
-//
-//        for (int j = 0; j < q; j++) {
-//            score -= Gamma.logGamma(rowPrior + n_j[j]);
-//
-//            for (int k = 0; k < r; k++) {
-//                score += Gamma.logGamma(cellPrior + n_jk[j][k]);
-//            }
-//        }
-//
-//        score += q * Gamma.logGamma(rowPrior);
-//        score -= r * q * Gamma.logGamma(cellPrior);
-//
-//        lastBumpThreshold = 0.01;//((r - 1) * q * FastMath.log(getStructurePrior()));
-//
-//        return score;
     }
 
     @Override
     public double localScore(int node) {
         return localScore(node, new int[0]);
-
-//        // Number of categories for node.
-//        int r = numCategories[node];
-//
-//        // Conditional cell coefs of data for node given parents(node).
-//        int n_jk[] = new int[numCategories[node]];
-//        int n_j = 0;
-//
-//        int[] childData = data[node];
-//
-//        for (int i = 0; i < sampleSize; i++) {
-//            int childValue = childData[i];
-//            n_jk[childValue]++;
-//            n_j++;
-//        }
-//
-//        //Finally, compute the score
-//        int q = 1;
-//        double score = r * q * Math.log(getStructurePrior());
-//
-//        final double cellPrior = getSamplePrior() / r;
-//        final double rowPrior = getSamplePrior();
-//
-//        score -= Gamma.logGamma(rowPrior + n_j);
-//
-//        for (int k = 0; k < r; k++) {
-//            score += Gamma.logGamma(cellPrior + n_jk[k]);
-//        }
-//
-//        score += Gamma.logGamma(rowPrior);
-//        score -= r * Gamma.logGamma(cellPrior);
-//
-//        lastBumpThreshold = 0.01;//((r - 1) * q * FastMath.log(getStructurePrior()));
-//
-//        return score;
     }
 
     @Override

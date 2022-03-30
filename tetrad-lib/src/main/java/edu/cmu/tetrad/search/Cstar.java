@@ -46,7 +46,7 @@ public class Cstar {
 
     private boolean verbose;
 
-    private Graph trueDag;
+    private Graph trueDag = null;
 
     private static class Tuple {
         private final Node cause;

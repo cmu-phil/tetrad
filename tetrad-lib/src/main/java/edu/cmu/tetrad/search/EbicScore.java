@@ -237,10 +237,6 @@ public class EbicScore implements Score {
         return _z;
     }
 
-    public void setCorrelationThreshold(double correlationThreshold) {
-        this.correlationThreshold = correlationThreshold;
-    }
-
     public void setGamma(double gamma) {
         this.gamma = gamma;
     }

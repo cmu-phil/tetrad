@@ -190,28 +190,8 @@ public class Dci {
         this.depth = depth;
     }
 
-    // for multithreading
-
-    public void setMaxThreads(int threads) {
-        if (threads < 1) {
-            throw new IllegalArgumentException("There must be at least 1 thread running");
-        }
-        maxThreads = threads;
-    }
-
-    public int getMaxThreads() {
-        return maxThreads;
-    }
-
     public long getElapsedTime() {
         return elapsedTime;
-    }
-
-    /**
-     * Sets the pooling method used to resolve inconsistenceis (optional)
-     */
-    public void setPoolingMethod(ResolveSepsets.Method method) {
-        this.method = method;
     }
 
     /**
@@ -291,10 +271,10 @@ public class Dci {
             Set<Edge> edgesToRemove = itr.next();
             Set<Map<Triple, List<Set<Edge>>>> colliderSets = possibleSkeletons.get(edgesToRemove);
             Graph newGraph = new EdgeListGraph(graph);
-            newGraph.removeEdges(new ArrayList(edgesToRemove));
+            newGraph.removeEdges(new ArrayList<>(edgesToRemove));
             this.oldGraph = newGraph;
             if (colliderSets.isEmpty()) {
-                allColliderCombinations(newGraph, edgesToRemove, new HashSet<Triple>(), possibleSkeletons.size());
+                allColliderCombinations(newGraph, edgesToRemove, new HashSet<>(), possibleSkeletons.size());
             } else {
                 for (Map<Triple, List<Set<Edge>>> colliderSet : colliderSets) {
                     for (Graph newNewGraph : generateSkeletons(newGraph, colliderSet)) {
@@ -314,13 +294,6 @@ public class Dci {
         this.elapsedTime = System.currentTimeMillis() - this.elapsedTime;
         System.out.println(this.output.size());
         return new ArrayList<>(this.output);
-    }
-
-    /**
-     * @return maximum memory usage
-     */
-    public double getMaxMemUsage() {
-        return this.maxMemory;
     }
 
     //============================= Private Methods ============================//

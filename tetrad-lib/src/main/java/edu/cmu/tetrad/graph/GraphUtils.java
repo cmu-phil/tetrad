@@ -24,7 +24,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
-import edu.cmu.tetrad.search.DagToPag2;
+import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.*;
@@ -5122,7 +5122,7 @@ public final class GraphUtils {
             return SearchGraphUtils.cpdagForDag(graph);
         } else if ("PAG".equals(type)) {
             params.set("graphComparisonType", "PAG");
-            return new DagToPag2(graph).convert();
+            return new DagToPag(graph).convert();
         } else {
             params.set("graphComparisonType", "DAG");
             return new EdgeListGraph(graph);

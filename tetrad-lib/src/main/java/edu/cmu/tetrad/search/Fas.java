@@ -88,11 +88,6 @@ public class Fas implements IFas {
     private boolean verbose;
 
     /**
-     * Out printstream.
-     */
-    private PrintStream out = System.out;
-
-    /**
      * Which heuristic to use to fix variable order (1, 2, 3, or 0 = none).
      */
     private int heuristic;
@@ -435,7 +430,6 @@ public class Fas implements IFas {
 
     @Override
     public void setOut(PrintStream out) {
-        this.out = out;
     }
 
     public void setHeuristic(int heuristic) {

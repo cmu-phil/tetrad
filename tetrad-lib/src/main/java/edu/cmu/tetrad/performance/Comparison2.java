@@ -187,14 +187,14 @@ public class Comparison2 {
                 }
                 Fci search = new Fci(test);
                 result.setResultGraph(search.search());
-                result.setCorrectResult(new DagToPag2(trueDag).convert());
+                result.setCorrectResult(new DagToPag(trueDag).convert());
             } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.GFCI) {
                 if (test == null) {
                     throw new IllegalArgumentException("Test not set.");
                 }
                 GFci search = new GFci(test, score);
                 result.setResultGraph(search.search());
-                result.setCorrectResult(new DagToPag2(trueDag).convert());
+                result.setCorrectResult(new DagToPag(trueDag).convert());
             } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {
                 if (test == null) {
                     throw new IllegalArgumentException("Test not set.");
@@ -484,14 +484,14 @@ public class Comparison2 {
             }
             Fci search = new Fci(test);
             result.setResultGraph(search.search());
-            result.setCorrectResult(new DagToPag2(trueDag).convert());
+            result.setCorrectResult(new DagToPag(trueDag).convert());
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.GFCI) {
             if (test == null) {
                 throw new IllegalArgumentException("Test not set.");
             }
             GFci search = new GFci(test, score);
             result.setResultGraph(search.search());
-            result.setCorrectResult(new DagToPag2(trueDag).convert());
+            result.setCorrectResult(new DagToPag(trueDag).convert());
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {
             if (test == null) {
                 throw new IllegalArgumentException("Test not set.");
