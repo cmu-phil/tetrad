@@ -126,7 +126,7 @@ public final class Cfci implements GraphSearch {
      * Constructs a new FCI search for the given independence test and background knowledge.
      */
     public Cfci(IndependenceTest independenceTest) {
-        if (independenceTest == null || this.knowledge == null) {
+        if (independenceTest == null) {
             throw new NullPointerException();
         }
 
@@ -167,9 +167,7 @@ public final class Cfci implements GraphSearch {
         //List<Node> variables = independenceTest.getVariable();       - Robert Tillman 2008
         List<Node> nodes = new LinkedList<>();
 
-        for (Node variable : this.variables) {
-            nodes.add(variable);
-        }
+        nodes.addAll(this.variables);
 
         this.graph = new EdgeListGraph(nodes);
         this.graph.fullyConnect(Endpoint.TAIL);

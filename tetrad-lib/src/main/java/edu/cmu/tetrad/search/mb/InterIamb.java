@@ -106,22 +106,6 @@ public class InterIamb implements MbSearch {
                 cmb.add(_f);
             }
 
-//            boolean changed = true;
-//
-//            while (changed) {
-//                changed = false;
-//
-//                for (Node node : new LinkedList<Node>(cmb)) {
-//                    cmb.remove(node);
-//
-//                    if (independenceTest.isIndependent(node, target, cmb)) {
-//                        changed = true;
-//                        continue;
-//                    }
-//
-//                    cmb.add(node);
-//                }
-//            }
         }
 
         return cmb;

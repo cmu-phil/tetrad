@@ -52,12 +52,10 @@ public class KernelUtils {
             for (int i = 0; i < m; i++) {
                 for (int j = i; j < m; j++) {
                     double keval = kernel.eval(dataset.getDouble(i, col), dataset.getDouble(j, col));
-                    if (k == 0) {
-                        gram.set(i, j, keval);
-                    } else {
+                    if (k != 0) {
                         keval *= gram.get(i, j);
-                        gram.set(i, j, keval);
                     }
+                    gram.set(i, j, keval);
                 }
             }
         }
@@ -77,8 +75,7 @@ public class KernelUtils {
         Matrix gram = KernelUtils.constructGramMatrix(kernels, dataset, nodes);
         Matrix H = KernelUtils.constructH(m);
         Matrix KH = gram.times(H);
-        Matrix HKH = H.times(KH);
-        return HKH;
+        return H.times(KH);
     }
 
     /**
@@ -197,18 +194,6 @@ public class KernelUtils {
         }
         return keval;
     }
-
-////     computes the trace
-//
-//    private static double trace(TetradMatrix A, int m) {
-//        double trace = 0.0;
-//        for (int i = 0; i < m; i++) {
-//            trace += A.get(i, i);
-//        }
-//        return trace;
-//    }
-
-
 }
 
 

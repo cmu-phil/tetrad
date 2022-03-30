@@ -36,29 +36,17 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 public class BpcTetradPurifyWashdown {
-    private DataSet dataSet;
-    private ICovarianceMatrix cov;
     private final List<Node> variables;
     private final TetradTest test;
-    private double alpha;
-    private static final int MAX_CLIQUE_TRIALS = 50;
-    private final IndependenceTest indTest;
-    private final boolean depthOne = false;
-    private EdgeListGraph depthOneGraph;
 
     public BpcTetradPurifyWashdown(ICovarianceMatrix cov, TestType testType, double alpha) {
-        this.cov = cov;
         this.variables = cov.getVariables();
         this.test = new ContinuousTetradTest(cov, testType, alpha);
-        this.alpha = alpha;
-        this.indTest = new IndTestFisherZ(cov, alpha);
     }
 
     public BpcTetradPurifyWashdown(DataSet dataSet, TestType testType, double alpha) {
-        this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
         this.test = new ContinuousTetradTest(dataSet, testType, alpha);
-        this.indTest = new IndTestFisherZ(dataSet, alpha);
     }
 
     public Graph search() {
@@ -77,11 +65,7 @@ public class BpcTetradPurifyWashdown {
 
         Graph graph = new EdgeListGraph();
 
-        for (List<Node> cluster : new ArrayList<>(clustering)) {
-            if (cluster.size() < 3) {
-                clustering.remove(cluster);
-            }
-        }
+        clustering.removeIf(cluster -> cluster.size() < 3);
 
         for (int i = 0; i < clustering.size(); i++) {
             List<Node> cluster = clustering.get(i);

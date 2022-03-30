@@ -50,7 +50,7 @@ public class Mmhc implements GraphSearch {
     /**
      * The maximum number of nodes conditioned on in the search.
      */
-    private int depth = Integer.MAX_VALUE;
+    private int depth;
     private final DataSet data;
     private IKnowledge knowledge = new Knowledge2();
 

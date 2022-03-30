@@ -71,8 +71,7 @@ public final class KernelGaussian implements Kernel {
      * @param j second point
      */
     public double eval(double i, double j) {
-        double evalKernel = Math.exp(-.5 * (Math.pow((i - j), 2) / Math.pow(this.sigma, 2)));
-        return evalKernel;
+        return Math.exp(-.5 * (Math.pow((i - j), 2) / Math.pow(this.sigma, 2)));
     }
 
     /**
@@ -102,13 +101,13 @@ public final class KernelGaussian implements Kernel {
             }
         }
 
-        this.sigma = find(diff, 0, (m - 1));
+        this.sigma = find(diff, (m - 1));
     }
 
     // private method for finding median distance
 
-    private double find(double[] a, int from, int to) {
-        int low = from;
+    private double find(double[] a, int to) {
+        int low = 0;
         int high = to;
         int median = (low + high) / 2;
         do {

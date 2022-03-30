@@ -55,7 +55,7 @@ public final class Mmmb implements MbSearch {
     /**
      * The maximum number of variables conditioned on.
      */
-    int depth = -1;
+    int depth;
 
     /**
      * Number of independence tests.
@@ -148,7 +148,7 @@ public final class Mmmb implements MbSearch {
         currentMb.remove(t);
 
         HashSet<Node> diff = new HashSet<>(currentMb);
-        diff.removeAll(getPc(t));
+        getPc(t).forEach(diff::remove);
         diff.remove(t);
 
         //for each x in PCPC \ PC

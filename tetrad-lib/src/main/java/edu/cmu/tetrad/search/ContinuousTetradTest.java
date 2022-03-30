@@ -55,13 +55,7 @@ import static java.lang.Math.abs;
 
 public final class ContinuousTetradTest implements TetradTest {
     private double sig;
-    private double sig1;
-    private double sig2;
-    private double sig3;
     private double[] prob;
-    //    private double fourthMM[][][][];
-    private boolean[] bvalues;
-    private boolean outputMessage;
     private ICovarianceMatrix covMatrix;
     //    private CorrelationMatrix corrMatrix;
     private Matrix rho;
@@ -99,11 +93,6 @@ public final class ContinuousTetradTest implements TetradTest {
         setSignificance(sig);
         this.sampleSize = dataSet.getNumRows();
         this.variables = dataSet.getVariables();
-//        if (sigTestType == TestType.TETRAD_DELTA) {
-//            setCovMatrix(new CovarianceMatrix(dataSet));
-//            fourthMM = getFourthMomentsMatrix(dataSet);
-//        }
-
 
         initialization();
     }
@@ -158,18 +147,11 @@ public final class ContinuousTetradTest implements TetradTest {
 
     public void setSignificance(double sig) {
         this.sig = sig;
-        this.sig1 = sig / 3.;
-        this.sig2 = 2. * sig / 3.;
-        this.sig3 = sig;
     }
 
     public DataSet getDataSet() {
         return this.dataSet;
     }
-
-//    public CorrelationMatrix getCorrMatrix() {
-//        return this.corrMatrix;
-//    }
 
     @Override
     public ICovarianceMatrix getCovMatrix() {
@@ -210,9 +192,8 @@ public final class ContinuousTetradTest implements TetradTest {
 
     private void initialization() {
         this.sampleSize = this.covMatrix.getSampleSize();
-        this.outputMessage = false;
+        //    private double fourthMM[][][][];
         this.prob = new double[3];
-        this.bvalues = new boolean[3];
         this.oneFactorEst4 = new OneFactorEstimator(this.covMatrix, this.sig, 4);
         this.oneFactorEst5 = new OneFactorEstimator(this.covMatrix, this.sig, 5);
         this.oneFactorEst6 = new OneFactorEstimator(this.covMatrix, this.sig, 6);
@@ -234,15 +215,6 @@ public final class ContinuousTetradTest implements TetradTest {
      */
 
     public boolean tetradScore1(int v1, int v2, int v3, int v4) {
-        /*if (tetradHolds(v1, v3, v4, v2) != tetradHolds(v4, v2, v1, v3)) {
-            System.out.println("!");
-            modeX = true;
-            tetradHolds(v1, v3, v4, v2);
-            System.out.println(prob[0]);
-            tetradHolds(v4, v2, v1, v3);
-            System.out.println(prob[0]);
-            System.exit(0);
-        }*/
         return tetradHolds(v1, v3, v4, v2) && !tetradHolds(v1, v3, v2, v4) &&
                 !tetradHolds(v1, v4, v2, v3);
     }
@@ -261,7 +233,6 @@ public final class ContinuousTetradTest implements TetradTest {
 
     public boolean tetradHolds(int v1, int v2, int v3, int v4) {
         evalTetradDifference(v1, v2, v3, v4);
-        this.bvalues[0] = (this.prob[0] >= this.sig);
         return this.prob[0] >= this.sig;
     }
 
@@ -281,72 +252,6 @@ public final class ContinuousTetradTest implements TetradTest {
      * PRIVATE METHODS
      */
 
-//    /**
-//     * Note: this implementation could be more optimized. This is the simplest way of computing this matrix, and will
-//     * take exactly sampleSize * (corrMatrix.getSize() ^ 4) steps.
-//     */
-//
-//    private double[][][][] getFourthMomentsMatrix(DataSet dataSet) {
-//        printlnMessage(
-//                "Bollen's test preparation: starting computation of fourth moments");
-//        int numVars = corrMatrix.getSize();
-//        double fourthMM[][][][] = new double[numVars][numVars][numVars][numVars];
-//
-//        double data[][] = dataSet.getDoubleData().transpose().toArray();
-//        double means[] = new double[numVars];
-//
-//        for (int i = 0; i < numVars; i++) {
-//            means[i] = 0.;
-//        }
-//
-//        for (int d = 0; d < sampleSize; d++) {
-//            for (int i = 0; i < numVars; i++) {
-//                means[i] += data[i][d];
-//            }
-//        }
-//
-//        for (int i = 0; i < numVars; i++) {
-//            means[i] /= sampleSize;
-//        }
-//
-//        for (int i = 0; i < numVars; i++) {
-//            for (int j = 0; j < numVars; j++) {
-//                for (int k = 0; k < numVars; k++) {
-//                    for (int t = 0; t < numVars; t++) {
-//                        fourthMM[i][j][k][t] = 0.;
-//                    }
-//                }
-//            }
-//        }
-//
-//        for (int d = 0; d < sampleSize; d++) {
-//            for (int i = 0; i < numVars; i++) {
-//                for (int j = 0; j < numVars; j++) {
-//                    for (int k = 0; k < numVars; k++) {
-//                        for (int t = 0; t < numVars; t++) {
-//                            fourthMM[i][j][k][t] += (data[i][d] - means[i]) *
-//                                    (data[j][d] - means[j]) *
-//                                    (data[k][d] - means[k]) *
-//                                    (data[t][d] - means[t]);
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//
-//        for (int i = 0; i < numVars; i++) {
-//            for (int j = 0; j < numVars; j++) {
-//                for (int k = 0; k < numVars; k++) {
-//                    for (int t = 0; t < numVars; t++) {
-//                        fourthMM[i][j][k][t] /= sampleSize;
-//                    }
-//                }
-//            }
-//        }
-//
-//        printlnMessage("Done with fourth moments");
-//        return fourthMM;
-//    }
     private void evalTetradDifferences(int i, int j, int k, int l) {
         switch (this.sigTestType) {
             case TETRAD_BASED:
@@ -430,7 +335,6 @@ public final class ContinuousTetradTest implements TetradTest {
     private boolean wishartEvalTetradDifferences2(int i, int j, int k, int l, double alpha) {
         double TAUijkl;
         double TAUijlk;
-        double TAUiklj;
         double ratio;
 
         TAUijkl = this.rho.get(i, j) * this.rho.get(k, l) -
@@ -474,9 +378,6 @@ public final class ContinuousTetradTest implements TetradTest {
 
         this.prob[0] = pValue;
 
-//        TetradLogger.getInstance().log("tetrads", new Tetrad(variables.get(i),
-//                variables.get(j), variables.get(k), variables.get(l)).toString()
-//                + " = 0, p = " + pValue);
     }
 
     private void wishartEvalTetradDifference(int i1, int j1, int k1, int l1, int i2, int j2, int k2, int l2) {
@@ -515,14 +416,6 @@ public final class ContinuousTetradTest implements TetradTest {
         this.bufferMatrix.set(3, 2, this.rho.get(a3, a2));
         this.bufferMatrix.set(3, 3, this.rho.get(a3, a3));
 
-
-//        int[] indices = {a0, a1, a2, a3};
-//        for (int i = 0; i < 4; i++) {
-//            for (int j = 0; j < 4; j++) {
-//                bufferMatrix.set(i, j, rho.get(indices[i], indices[j]));
-//            }
-//        }
-//        TetradMatrix sub = rho.getSelection(indices, indices);
         double product1 = this.rho.get(a0, a0) * this.rho.get(a3, a3) - this.rho.get(a0, a3) * this.rho.get(a0, a3);
         double product2 = this.rho.get(a1, a1) * this.rho.get(a2, a2) - this.rho.get(a1, a2) * this.rho.get(a1, a2);
         double n = this.sampleSize;
@@ -568,47 +461,6 @@ public final class ContinuousTetradTest implements TetradTest {
      */
 
     private void bollenEvalTetradDifferences(int i, int j, int k, int l) {
-//        double TAUijkl, TAUijlk, TAUiklj;
-//        double ratio;
-//
-//        TAUijkl = getCovMatrix().getValue(i, j) * getCovMatrix().getValue(k, l) -
-//                getCovMatrix().getValue(i, k) * getCovMatrix().getValue(j, l);
-//
-//        double bt = bollenTetradStatistic(i, j, k, l);
-//
-//        ratio = TAUijkl / Math.sqrt(bt);
-//
-//        if (ratio > 0.0) {
-//            ratio = -ratio;
-//        }
-//
-//        prob[0] = 2.0 * ProbUtils.normalCdf(ratio);
-//
-//        TAUijlk = getCovMatrix().getValue(i, j) * getCovMatrix().getValue(k, l) -
-//                getCovMatrix().getValue(i, l) * getCovMatrix().getValue(j, k);
-//
-//        bt = bollenTetradStatistic(i, j, l, k);
-//
-//        ratio = TAUijlk / Math.sqrt(bt);
-//
-//        if (ratio > 0.0) {
-//            ratio = -ratio;
-//        }
-//
-//        prob[1] = 2.0 * ProbUtils.normalCdf(ratio);
-//
-//        TAUiklj = getCovMatrix().getValue(i, k) * getCovMatrix().getValue(j, l) -
-//                getCovMatrix().getValue(i, l) * getCovMatrix().getValue(j, k);
-//
-//        bt = bollenTetradStatistic(i, k, l, j);
-//
-//        ratio = TAUiklj / Math.sqrt(bt);
-//
-//        if (ratio > 0.0) {
-//            ratio = -ratio;
-//        }
-//
-//        prob[2] = 2.0 * ProbUtils.normalCdf(ratio);
 
         if (this.deltaTest == null) {
             if (this.dataSet != null) {
@@ -635,21 +487,6 @@ public final class ContinuousTetradTest implements TetradTest {
 
 
     private void bollenEvalTetradDifference(int i, int j, int k, int l) {
-//        double TAUijkl;
-//        double ratio;
-//
-//        TAUijkl = getCovMatrix().getValue(i, j) * getCovMatrix().getValue(k, l) -
-//                getCovMatrix().getValue(i, k) * getCovMatrix().getValue(j, l);
-//
-//        double bt = bollenTetradStatistic(i, j, k, l);
-//
-//        ratio = TAUijkl / Math.sqrt(bt);
-//
-//        if (ratio > 0.0) {
-//            ratio = -ratio;
-//        }
-//
-//        prob[0] = 2.0 * ProbUtils.normalCdf(ratio);
 
         Node ci = getVariables().get(i);
         Node cj = getVariables().get(j);
@@ -674,71 +511,6 @@ public final class ContinuousTetradTest implements TetradTest {
 
     }
 
-//    private double bollenTetradStatistic(int t1a, int t2, int t3, int t4) {
-//        if (getCovMatrix() == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        if (fourthMM == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        double prod2323 = getCovMatrix().getValue(t2, t3) * getCovMatrix().getValue(t2, t3) *
-//                fourthMM[t1a][t1a][t4][t4];
-//        double prod1414 = getCovMatrix().getValue(t1a, t4) * getCovMatrix().getValue(t1a, t4) *
-//                fourthMM[t2][t2][t3][t3];
-//        double prod2424 = getCovMatrix().getValue(t2, t4) * getCovMatrix().getValue(t2, t4) *
-//                fourthMM[t1a][t1a][t3][t3];
-//        double prod1313 = getCovMatrix().getValue(t1a, t3) * getCovMatrix().getValue(t1a, t3) *
-//                fourthMM[t2][t2][t4][t4];
-//        double prod2314 = getCovMatrix().getValue(t2, t3) * getCovMatrix().getValue(t1a, t4) *
-//                fourthMM[t1a][t2][t3][t4];
-//        double prod2324 = getCovMatrix().getValue(t2, t3) * getCovMatrix().getValue(t2, t4) *
-//                fourthMM[t1a][t1a][t3][t4];
-//        double prod2313 = getCovMatrix().getValue(t2, t3) * getCovMatrix().getValue(t1a, t3) *
-//                fourthMM[t1a][t2][t4][t4];
-//        double prod1233 = getCovMatrix().getValue(t1a, t4) * getCovMatrix().getValue(t2, t4) *
-//                fourthMM[t1a][t2][t3][t3];
-//        double prod1413 = getCovMatrix().getValue(t1a, t4) * getCovMatrix().getValue(t1a, t3) *
-//                fourthMM[t2][t2][t3][t4];
-//        double prod2413 = getCovMatrix().getValue(t2, t4) * getCovMatrix().getValue(t1a, t3) *
-//                fourthMM[t1a][t2][t3][t4];
-//        double cov2314 = getCovMatrix().getValue(t2, t3) * getCovMatrix().getValue(t1a, t4);
-//        double cov2413 = getCovMatrix().getValue(t2, t4) * getCovMatrix().getValue(t1a, t3);
-//        double nStat = prod2323 + prod1414 + prod2424 + prod1313
-//                + 2 * (prod2314 - prod2324 - prod2313 - prod1233 - prod1413 + prod2413)
-//                - 4 * Math.pow(cov2314 - cov2413, 2.);
-//        double stat = nStat / sampleSize;
-//        if (stat < 0.) {
-//            stat = 0.000001;
-//        }
-//        return stat;
-//    }
-
-    void printMessage(String message) {
-        if (this.outputMessage) {
-            System.out.print(message);
-        }
-    }
-
-    void printlnMessage(String message) {
-        if (this.outputMessage) {
-            System.out.println(message);
-        }
-    }
-
-    void printlnMessage() {
-        if (this.outputMessage) {
-            System.out.println();
-        }
-    }
-
-    void printlnMessage(boolean flag) {
-        if (this.outputMessage) {
-            System.out.println(flag);
-        }
-    }
-
     public void setCovMatrix(ICovarianceMatrix covMatrix) {
         this.covMatrix = covMatrix;
     }
@@ -752,10 +524,9 @@ public final class ContinuousTetradTest implements TetradTest {
      * significance testing
      */
 
-    abstract class SimpleFactorEstimator {
+    abstract static class SimpleFactorEstimator {
         ICovarianceMatrix sampleCov, subSampleCov;
         double sig;
-        int[] indices;
         int nvar;
         SemPm semPm;
         String[] varNames, submatrixNames;
@@ -771,11 +542,6 @@ public final class ContinuousTetradTest implements TetradTest {
             this.nvar = nvar;
             this.varNames = sampleCov.getVariableNames().toArray(new String[0]);
             this.submatrixNames = new String[nvar];
-        }
-
-        public void refreshDataMatrix(ICovarianceMatrix sampleCov) {
-            this.sampleCov = sampleCov;
-            this.varNames = sampleCov.getVariableNames().toArray(new String[0]);
         }
 
         public void init(int[] indices) {
@@ -804,18 +570,12 @@ public final class ContinuousTetradTest implements TetradTest {
 
         public boolean isSignificant() {
             throw new UnsupportedOperationException(); // Need to remove dependence on PAL.
-//            MimBuildEstimator estimator =
-//                    MimBuildEstimator.newInstance(subSampleCov, semPm, 3, 1);
-//            estimator.estimate();
-//            SemIm semIm = estimator.getEstimatedSem();
-//            //System.out.println("Model p-value: " + semIm.getLikelihoodRatioP());
-//            return semIm.getScore() > sig;
         }
 
         protected abstract SemPm buildSemPm(int[] indices);
     }
 
-    class OneFactorEstimator extends SimpleFactorEstimator {
+    static class OneFactorEstimator extends SimpleFactorEstimator {
         static final long serialVersionUID = 23L;
 
         public OneFactorEstimator(ICovarianceMatrix sampleCov, double sig,
@@ -839,7 +599,7 @@ public final class ContinuousTetradTest implements TetradTest {
 
     }
 
-    class TwoFactorsEstimator extends SimpleFactorEstimator {
+    static class TwoFactorsEstimator extends SimpleFactorEstimator {
         static final long serialVersionUID = 23L;
 
         int nleft;
@@ -913,46 +673,6 @@ public final class ContinuousTetradTest implements TetradTest {
         int[] indices = {v1, v2, v3, v4, v5, v6};
         this.twoFactorsEst6.init(indices, 3);
         return this.twoFactorsEst6.isSignificant();
-    }
-
-    public int tempTetradScore(int v1, int v2, int v3, int v4) {
-        evalTetradDifferences(v1, v2, v3, v4);
-//        System.out.println(prob[0]);
-//        System.out.println(prob[1]);
-//        System.out.println(prob[2]);
-        for (int i = 0; i < 3; i++) {
-            this.bvalues[i] = (this.prob[i] >= this.sig);
-        }
-        //Order p-values for FDR (false discovery rate) decision
-        double tempProb;
-        if (this.prob[1] < this.prob[0] && this.prob[1] < this.prob[2]) {
-            tempProb = this.prob[0];
-            this.prob[0] = this.prob[1];
-            this.prob[1] = tempProb;
-        } else if (this.prob[2] < this.prob[0] && this.prob[2] < this.prob[0]) {
-            tempProb = this.prob[0];
-            this.prob[0] = this.prob[2];
-            this.prob[2] = tempProb;
-        }
-        if (this.prob[2] < this.prob[1]) {
-            tempProb = this.prob[1];
-            this.prob[1] = this.prob[2];
-            this.prob[2] = tempProb;
-        }
-        if (this.prob[2] <= this.sig3) {
-            return 0;
-        }
-        if (this.prob[1] <= this.sig2) {
-            return 1;
-        }
-        if (this.prob[0] <= this.sig1) {
-            //This is the case of 2 tetrad constraints holding, which is
-            //a logical impossibility. On a future version we may come up with
-            //better, more powerful ways of deciding what to do. Right now,
-            //the default is to do just as follows:
-            return 3;
-        }
-        return 3;
     }
 
 }

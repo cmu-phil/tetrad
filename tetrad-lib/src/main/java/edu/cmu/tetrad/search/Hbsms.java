@@ -28,7 +28,7 @@ import edu.cmu.tetrad.sem.SemIm;
 /**
  * Interface for Bff (Best Fit Finder) algorithm. See implementations.
  */
-public interface Bff {
+public interface Hbsms {
     void setAlpha(double alpha);
 
     void setBeamWidth(int beamWidth);

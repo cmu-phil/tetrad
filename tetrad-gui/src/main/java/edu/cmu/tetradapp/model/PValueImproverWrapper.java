@@ -216,15 +216,15 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         Graph graph2 = new EdgeListGraph(this.externalGraph);
         graph2 = GraphUtils.replaceNodes(graph2, dataModel.getVariables());
 
-        Bff search;
+        Hbsms search;
 
         if (dataModel instanceof DataSet) {
             DataSet dataSet = (DataSet) dataModel;
 
             if (getAlgorithmType() == AlgorithmType.BEAM) {
-                search = new BffBeam(graph2, dataSet, knowledge);
+                search = new HbmsBeam(graph2, dataSet, knowledge);
             } else if (getAlgorithmType() == AlgorithmType.FGES) {
-                search = new BffGes(graph2, dataSet);
+                search = new HbsmsGes(graph2, dataSet);
                 search.setKnowledge(knowledge);
             } else {
                 throw new IllegalStateException();
@@ -233,7 +233,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
             CovarianceMatrix covarianceMatrix = (CovarianceMatrix) dataModel;
 
             if (getAlgorithmType() == AlgorithmType.BEAM) {
-                search = new BffBeam(graph2, covarianceMatrix, knowledge);
+                search = new HbmsBeam(graph2, covarianceMatrix, knowledge);
             } else if (getAlgorithmType() == AlgorithmType.FGES) {
                 throw new IllegalArgumentException("GES method requires a dataset; a covariance matrix was provided.");
 //                search = new BffGes(graph2, covarianceMatrix);

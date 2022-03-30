@@ -50,7 +50,7 @@ public class ConditionalGaussianOtherScore implements Score {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public ConditionalGaussianOtherScore(DataSet dataSet, double sp, boolean discretize) {
+    public ConditionalGaussianOtherScore(DataSet dataSet, double sp) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
@@ -60,7 +60,6 @@ public class ConditionalGaussianOtherScore implements Score {
         this.sp = sp;
 
         this.likelihood = new ConditionalGaussianOtherLikelihood(dataSet);
-        //this.likelihood.setDiscretize(discretize);
     }
 
     /**

@@ -29,9 +29,7 @@ import edu.cmu.tetrad.graph.Node;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Implements a conditional Gaussian BIC score for FGS.
@@ -44,7 +42,6 @@ public class ConditionalGaussianScore implements Score {
 
     // The variables of the continuousData set.
     private final List<Node> variables;
-    private final Map<Node, Integer> nodesHash;
 
     // Likelihood function
     private final ConditionalGaussianLikelihood likelihood;
@@ -66,14 +63,6 @@ public class ConditionalGaussianScore implements Score {
         this.penaltyDiscount = penaltyDiscount;
         this.structurePrior = structurePrior;
 
-        Map<Node, Integer> nodesHash = new HashMap<>();
-
-        for (int j = 0; j < this.variables.size(); j++) {
-            nodesHash.put(this.variables.get(j), j);
-        }
-
-        this.nodesHash = nodesHash;
-
         this.likelihood = new ConditionalGaussianLikelihood(dataSet);
 
         this.likelihood.setNumCategoriesToDiscretize(this.numCategoriesToDiscretize);
@@ -90,7 +79,6 @@ public class ConditionalGaussianScore implements Score {
 
         ConditionalGaussianLikelihood.Ret ret = this.likelihood.getLikelihood(i, parents);
 
-        int N = this.dataSet.getNumRows();
         double lik = ret.getLik();
         int k = ret.getDof();
 
@@ -105,14 +93,14 @@ public class ConditionalGaussianScore implements Score {
             if (this.variables.get(i) instanceof DiscreteVariable) {
                 if (this.dataSet.getInt(k, i) == -99) continue;
             } else if (this.variables.get(i) instanceof ContinuousVariable) {
-                if (Double.isNaN(this.dataSet.getInt(k, i))) continue;
+                this.dataSet.getInt(k, i);
             }
 
             for (int p : parents) {
                 if (this.variables.get(i) instanceof DiscreteVariable) {
                     if (this.dataSet.getInt(k, p) == -99) continue K;
                 } else if (this.variables.get(i) instanceof ContinuousVariable) {
-                    if (Double.isNaN(this.dataSet.getInt(k, p))) continue K;
+                    this.dataSet.getInt(k, p);
                 }
             }
 

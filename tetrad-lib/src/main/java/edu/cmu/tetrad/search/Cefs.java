@@ -78,11 +78,6 @@ public final class Cefs {
     private int[] maxRemainingAtDepth;
 
     /**
-     * Information to help understand what part of the search is taking the most time.
-     */
-    private Node[] maxVariableAtDepth;
-
-    /**
      * The set of nodes that edges should not be drawn to in the addDepthZeroAssociates method.
      */
     private Set<Node> visited;
@@ -96,17 +91,12 @@ public final class Cefs {
      * The true graph, if known. If this is provided, notes will be printed out for edges removed that are in the true
      * Markov blanket.
      */
-    private Dag trueMb;
+    private Dag trueMb = null;
 
     /**
      * Knowledge.
      */
     private IKnowledge knowledge = new Knowledge2();
-
-    /**
-     * The list of all unshielded triples.
-     */
-    private Set<Triple> allTriples;
 
     /**
      * Set of unshielded colliders from the triple orientation step.
@@ -187,7 +177,6 @@ public final class Cefs {
     public Graph search(String targetName) {
         long start = System.currentTimeMillis();
         this.numIndependenceTests = 0;
-        this.allTriples = new HashSet<>();
         this.ambiguousTriples = new HashSet<>();
         this.colliderTriples = new HashSet<>();
         this.noncolliderTriples = new HashSet<>();
@@ -201,9 +190,7 @@ public final class Cefs {
 
         // Some statistics.
         this.maxRemainingAtDepth = new int[20];
-        this.maxVariableAtDepth = new Node[20];
         Arrays.fill(this.maxRemainingAtDepth, -1);
-        Arrays.fill(this.maxVariableAtDepth, null);
 
         TetradLogger.getInstance().log("info", "target = " + getTarget());
 
@@ -239,24 +226,6 @@ public final class Cefs {
 
         TetradLogger.getInstance().log("graph", "After step 2 (prune PC)" + graph);
 
-//        // Step 3. Get associates for each node now two links away from the
-//        // target, removing edges based on those associates where possible.
-//        // After this step, adjacencies to adjacencies of the target are parents
-//        // or children of adjacencies to the target. Call this set PCPC.
-//        LogUtils.getInstance().info("BEGINNING step 3 (prune PCPC).");
-//
-//        for (Node v : graph.getAdjacentNodes(getTarget())) {
-//            for (Node w : graph.getAdjacentNodes(v)) {
-//                if (getVisited().contains(w)) {
-//                    continue;
-//                }
-//
-//                constructFan(w, graph);
-//            }
-//        }
-//
-//        LogUtils.getInstance().fine("After step 3 (prune PCPC)" + graph);
-
         TetradLogger.getInstance().log("info", "BEGINNING step 4 (PC Orient).");
 
         SearchGraphUtils.pcOrientbk(this.knowledge, graph, graph.getNodes());
@@ -271,30 +240,9 @@ public final class Cefs {
 
         TetradLogger.getInstance().log("graph", "After step 4 (PC Orient)" + graph);
 
-//        LogUtils.getInstance().info("BEGINNING step 5 (Trim graph to {T} U PC U " +
-//                "{Parents(Children(T))}).");
-
-//        MbUtils.trimToMbNodes(graph, getTarget());
         MbUtils.trimToAdjacents(graph, this.target);
 
-//        LogUtils.getInstance().fine(
-//                "After step 5 (Trim graph to {T} U PC U {Parents(Children(T))})" +
-//                        graph);
-//
-//        LogUtils.getInstance().info("BEGINNING step 6 (Remove edges among P and P of C).");
-//
-//        MbUtils.trimEdgesAmongParents(graph, getTarget());
-//        MbUtils.trimEdgesAmongParentsOfChildren(graph, getTarget());
-
         TetradLogger.getInstance().log("graph", "After step 6 (Remove edges among P and P of C)" + graph);
-//        TetradLogger.getInstance().log("details", "Bounds: ");
-//
-//        for (int i = 0; i < maxRemainingAtDepth.length; i++) {
-//            if (maxRemainingAtDepth[i] != -1) {
-//                TetradLogger.getInstance().log("details", "\ta" + i + " = " + maxRemainingAtDepth[i] +
-//                                " (" + maxVariableAtDepth[i] + ")");
-//            }
-//        }
 
         finishUp(start, graph);
 
@@ -351,13 +299,6 @@ public final class Cefs {
      */
     public Dag getTrueMb() {
         return this.trueMb;
-    }
-
-    /**
-     * Sets the true MB; should be done before running the search to get on-the-fly comparisons.
-     */
-    public void setTrueMb(Dag trueMb) {
-        this.trueMb = trueMb;
     }
 
     /**
@@ -436,13 +377,13 @@ public final class Cefs {
                 continue;
             }
 
-            if (!independent(v, w, new LinkedList<Node>()) && !edgeForbidden(v, w)) {
+            if (!independent(v, w, new LinkedList<>()) && !edgeForbidden(v, w)) {
                 addEdge(graph, w, v);
                 numAssociated++;
             }
         }
 
-        noteMaxAtDepth(0, numAssociated, v);
+        noteMaxAtDepth(0, numAssociated);
     }
 
     private void prune(Node node, Graph graph) {
@@ -499,7 +440,7 @@ public final class Cefs {
         }
 
         int numAdjacents = graph.getAdjacentNodes(node).size();
-        noteMaxAtDepth(depth, numAdjacents, node);
+        noteMaxAtDepth(depth, numAdjacents);
     }
 
     private void finishUp(long start, Graph graph) {
@@ -570,11 +511,10 @@ public final class Cefs {
         return target;
     }
 
-    private void noteMaxAtDepth(int depth, int numAdjacents, Node to) {
+    private void noteMaxAtDepth(int depth, int numAdjacents) {
         if (depth < this.maxRemainingAtDepth.length &&
                 numAdjacents > this.maxRemainingAtDepth[depth]) {
             this.maxRemainingAtDepth[depth] = numAdjacents;
-            this.maxVariableAtDepth[depth] = to;
         }
     }
 
@@ -607,8 +547,6 @@ public final class Cefs {
                 if (graph.isAdjacentTo(x, z)) {
                     continue;
                 }
-
-                this.allTriples.add(new Triple(x, y, z));
 
                 TripleType type = getTripleType(graph, x, y, z, test, depth);
 

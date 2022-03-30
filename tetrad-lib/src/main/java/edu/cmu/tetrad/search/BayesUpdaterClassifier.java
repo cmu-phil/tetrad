@@ -79,21 +79,6 @@ public final class BayesUpdaterClassifier
      */
     private DiscreteVariable targetVariable;
 
-    /**
-     * True iff a missing value case was found on the last run through the
-     * data.
-     *
-     * @serial
-     */
-    private boolean missingValueCaseFound;
-
-    /**
-     * The cutoff used for binary classifications.
-     *
-     * @serial
-     */
-    private double binaryCutoff = 0.5;
-
     /*
      * The variables in the dataset to be classified.  These should be
      * the same variables as in the training dataset according to the
@@ -154,7 +139,7 @@ public final class BayesUpdaterClassifier
 
     //==========================PUBLIC METHODS========================//
 
-    public void setTarget(String target, int targetCategory) {
+    public void setTarget(String target) {
 
         //Find the target variable using its name.
         DiscreteVariable targetVariable = null;
@@ -240,8 +225,6 @@ public final class BayesUpdaterClassifier
             int itarget = evidence.getNodeIndex(this.targetVariable.getName());
             evidence.getProposition().setVariable(itarget, true);
 
-            this.missingValueCaseFound = false;
-
             //Restrict all other variables to their observed values in
             //this case.
             for (int j = 0; j < getBayesImVars().size(); j++) {
@@ -252,7 +235,6 @@ public final class BayesUpdaterClassifier
                 int observedValue = selectedData.getInt(i, j);
 
                 if (observedValue == DiscreteVariable.MISSING_VALUE) {
-                    this.missingValueCaseFound = true;
                     continue;
                 }
 
@@ -313,8 +295,6 @@ public final class BayesUpdaterClassifier
                 TetradLogger.getInstance().log("details", "Case " + i + " does not return valid marginal.");
 
                 for (int m = 0; m < nvars; m++) {
-                    //System.out.print(getBayesImVars()
-                    //        .get(m).getNode());
                     TetradLogger.getInstance().log("details", "  " + selectedData.getDouble(i, m));
                 }
 
@@ -435,22 +415,6 @@ public final class BayesUpdaterClassifier
         return this.totalUsableCases;
     }
 
-    public boolean isMissingValueCaseFound() {
-        return this.missingValueCaseFound;
-    }
-
-    public double getBinaryCutoff() {
-        return this.binaryCutoff;
-    }
-
-    public void setBinaryCutoff(double binaryCutoff) {
-        if (binaryCutoff < 0.0 || binaryCutoff > 1.0) {
-            throw new IllegalArgumentException();
-        }
-
-        this.binaryCutoff = binaryCutoff;
-    }
-
     public List<Node> getBayesImVars() {
         return this.bayesImVars;
     }
@@ -465,8 +429,6 @@ public final class BayesUpdaterClassifier
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -485,9 +447,6 @@ public final class BayesUpdaterClassifier
             throw new NullPointerException();
         }
 
-        if (this.binaryCutoff < 0.0 || this.binaryCutoff > 1.0) {
-            throw new IllegalStateException();
-        }
     }
 }
 

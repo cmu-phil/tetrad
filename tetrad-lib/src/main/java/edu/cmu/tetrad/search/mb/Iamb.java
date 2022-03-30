@@ -104,23 +104,6 @@ public class Iamb implements MbSearch {
             cmb.add(f);
         }
 
-//        boolean changed = true;
-//
-//        while (changed) {
-//            changed = false;
-//
-//            for (Node node : new LinkedList<Node>(cmb)) {
-//                cmb.remove(node);
-//
-//                if (independenceTest.isIndependent(node, target, cmb)) {
-//                    changed = true;
-//                    continue;
-//                }
-//
-//                cmb.add(node);
-//            }
-//        }
-
         return cmb;
     }
 

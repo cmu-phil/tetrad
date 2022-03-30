@@ -30,7 +30,7 @@ public class ConditionalGaussianOtherBicScore implements ScoreWrapper {
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         ConditionalGaussianOtherScore conditionalGaussianScore
-                = new ConditionalGaussianOtherScore(DataUtils.getMixedDataSet(dataSet), parameters.getDouble("structurePrior"), parameters.getInt("discretize") > 0);
+                = new ConditionalGaussianOtherScore(DataUtils.getMixedDataSet(dataSet), parameters.getDouble("structurePrior"));
         conditionalGaussianScore.setNumCategoriesToDiscretize(parameters.getInt("numCategoriesToDiscretize"));
         return conditionalGaussianScore;
     }

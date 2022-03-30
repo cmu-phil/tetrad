@@ -256,7 +256,7 @@ public class BayesUpdaterClassifierEditor extends JPanel {
         String category = (String) getCategoryDropdown().getSelectedItem();
         int catIndex = variable.getIndex(category);
 
-        getClassifier().setTarget(varName, catIndex);
+        getClassifier().setTarget(varName);
         getClassifier().classify();
     }
 

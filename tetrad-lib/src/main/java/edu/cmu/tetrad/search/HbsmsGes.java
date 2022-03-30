@@ -42,7 +42,7 @@ import java.util.*;
  * @author Joseph Ramsey
  */
 
-public final class BffGes implements Bff {
+public final class HbsmsGes implements Hbsms {
     private IKnowledge knowledge = new Knowledge2();
     private final Graph graph;
     private double alpha = 0.05;
@@ -54,7 +54,7 @@ public final class BffGes implements Bff {
     private final Scorer scorer;
     private Graph newDag;
 
-    public BffGes(Graph graph, DataSet data) {
+    public HbsmsGes(Graph graph, DataSet data) {
         if (graph == null) throw new NullPointerException("Graph not specified.");
 
         final boolean allowArbitraryOrientations = true;
@@ -238,8 +238,8 @@ public final class BffGes implements Bff {
                         continue;
                     }
 
-                    List<Node> tNeighbors = BffGes.getTNeighbors(_x, _y, graph);
-                    List<Set<Node>> tSubsets = BffGes.powerSet(tNeighbors);
+                    List<Node> tNeighbors = HbsmsGes.getTNeighbors(_x, _y, graph);
+                    List<Set<Node>> tSubsets = HbsmsGes.powerSet(tNeighbors);
 
                     for (Set<Node> tSubset : tSubsets) {
 
@@ -319,8 +319,8 @@ public final class BffGes implements Bff {
                     continue;
                 }
 
-                List<Node> hNeighbors = BffGes.getHNeighbors(_x, _y, graph);
-                List<Set<Node>> hSubsets = BffGes.powerSet(hNeighbors);
+                List<Node> hNeighbors = HbsmsGes.getHNeighbors(_x, _y, graph);
+                List<Set<Node>> hSubsets = HbsmsGes.powerSet(hNeighbors);
 
                 for (Set<Node> hSubset : hSubsets) {
                     if (!validSetByKnowledge(_x, _y, hSubset, false)) {
@@ -337,7 +337,7 @@ public final class BffGes implements Bff {
                         continue;
                     }
 
-                    if (!BffGes.validDelete(_x, _y, hSubset, graph)) {
+                    if (!HbsmsGes.validDelete(_x, _y, hSubset, graph)) {
                         continue;
                     }
 
@@ -496,7 +496,7 @@ public final class BffGes implements Bff {
 
     private boolean validInsert(Node x, Node y, Set<Node> subset, Graph graph) {
         List<Node> naYXT = new LinkedList<>(subset);
-        naYXT.addAll(BffGes.findNaYX(x, y, graph));
+        naYXT.addAll(HbsmsGes.findNaYX(x, y, graph));
 
         return GraphUtils.isClique(naYXT, graph) && isSemiDirectedBlocked(x, y, naYXT, graph, new HashSet<Node>());
 
@@ -507,7 +507,7 @@ public final class BffGes implements Bff {
      */
     private static boolean validDelete(Node x, Node y, Set<Node> h,
                                        Graph graph) {
-        List<Node> naYXH = BffGes.findNaYX(x, y, graph);
+        List<Node> naYXH = HbsmsGes.findNaYX(x, y, graph);
         naYXH.removeAll(h);
         return GraphUtils.isClique(naYXH, graph);
     }

@@ -109,19 +109,11 @@ public class HitonMb implements MbSearch {
         // Sort variables by decreasing association with the target.
         this.sortedVariables = new LinkedList<>(this.variables);
 
-        Collections.sort(this.sortedVariables, new Comparator<Node>() {
-            public int compare(Node o1, Node o2) {
-                double score1 = o1 == t ? 1.0 : association(o1, t);
-                double score2 = o2 == t ? 1.0 : association(o2, t);
+        this.sortedVariables.sort((o1, o2) -> {
+            double score1 = o1 == t ? 1.0 : association(o1, t);
+            double score2 = o2 == t ? 1.0 : association(o2, t);
 
-                if (score1 < score2) {
-                    return 1;
-                } else if (score1 > score2) {
-                    return -1;
-                } else {
-                    return 0;
-                }
-            }
+            return Double.compare(score2, score1);
         });
 
         List<Node> nodes = hitonMb(t);
@@ -155,7 +147,7 @@ public class HitonMb implements MbSearch {
         currentMb.remove(t);
 
         HashSet<Node> diff = new HashSet<>(currentMb);
-        diff.removeAll(getPc(t));
+        getPc(t).forEach(diff::remove);
         diff.remove(t);
 
         //for each x in PCPC \ PC
@@ -303,7 +295,7 @@ public class HitonMb implements MbSearch {
      */
     private double association(Node x, Node y) {
         this.numIndTests++;
-        this.independenceTest.isIndependent(x, y, new LinkedList<Node>());
+        this.independenceTest.isIndependent(x, y, new LinkedList<>());
         return 1.0 - this.independenceTest.getPValue();
     }
 

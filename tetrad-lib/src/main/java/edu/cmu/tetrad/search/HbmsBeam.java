@@ -43,7 +43,7 @@ import java.util.*;
  * @author Joseph Ramsey
  */
 
-public final class BffBeam implements Bff {
+public final class HbmsBeam implements Hbsms {
     private final CovarianceMatrix cov;
     private IKnowledge knowledge = new Knowledge2();
     private final Graph externalGraph;
@@ -60,7 +60,7 @@ public final class BffBeam implements Bff {
     private Graph newDag;
     private int beamWidth = 1;
 
-    public BffBeam(Graph graph, DataSet data, IKnowledge knowledge) {
+    public HbmsBeam(Graph graph, DataSet data, IKnowledge knowledge) {
         if (graph == null) graph = new EdgeListGraph(data.getVariables());
 
         this.knowledge = knowledge;
@@ -70,7 +70,7 @@ public final class BffBeam implements Bff {
         this.scorer = new DagScorer(this.cov);
     }
 
-    public BffBeam(Graph graph, CovarianceMatrix cov, IKnowledge knowledge) {
+    public HbmsBeam(Graph graph, CovarianceMatrix cov, IKnowledge knowledge) {
         if (graph == null) graph = new EdgeListGraph(cov.getVariables());
 
         this.knowledge = knowledge;
@@ -412,7 +412,7 @@ public final class BffBeam implements Bff {
         Edge firstEdge = move.getFirstEdge();
         Edge secondEdge = move.getSecondEdge();
 
-        if (firstEdge != null && move.getType() == BffBeam.Move.Type.ADD) {
+        if (firstEdge != null && move.getType() == HbmsBeam.Move.Type.ADD) {
             graph.removeEdge(firstEdge.getNode1(), firstEdge.getNode2());
             graph.addEdge(firstEdge);
 
@@ -431,15 +431,15 @@ public final class BffBeam implements Bff {
             }
 
 
-        } else if (firstEdge != null && move.getType() == BffBeam.Move.Type.REMOVE) {
+        } else if (firstEdge != null && move.getType() == HbmsBeam.Move.Type.REMOVE) {
             graph.removeEdge(firstEdge);
-        } else if (firstEdge != null && move.getType() == BffBeam.Move.Type.DOUBLE_REMOVE) {
+        } else if (firstEdge != null && move.getType() == HbmsBeam.Move.Type.DOUBLE_REMOVE) {
             graph.removeEdge(firstEdge);
             graph.removeEdge(secondEdge);
-        } else if (firstEdge != null && move.getType() == BffBeam.Move.Type.REDIRECT) {
+        } else if (firstEdge != null && move.getType() == HbmsBeam.Move.Type.REDIRECT) {
             graph.removeEdge(graph.getEdge(firstEdge.getNode1(), firstEdge.getNode2()));
             graph.addEdge(firstEdge);
-        } else if (firstEdge != null && secondEdge != null && move.getType() == BffBeam.Move.Type.ADD_COLLIDER) {
+        } else if (firstEdge != null && secondEdge != null && move.getType() == HbmsBeam.Move.Type.ADD_COLLIDER) {
             Edge existingEdge1 = graph.getEdge(firstEdge.getNode1(), firstEdge.getNode2());
             Edge existingEdge2 = graph.getEdge(secondEdge.getNode1(), secondEdge.getNode2());
 
@@ -453,10 +453,10 @@ public final class BffBeam implements Bff {
 
             graph.addEdge(firstEdge);
             graph.addEdge(secondEdge);
-        } else if (firstEdge != null && secondEdge != null && move.getType() == BffBeam.Move.Type.REMOVE_COLLIDER) {
+        } else if (firstEdge != null && secondEdge != null && move.getType() == HbmsBeam.Move.Type.REMOVE_COLLIDER) {
             graph.removeEdge(firstEdge);
             graph.removeEdge(secondEdge);
-        } else if (firstEdge != null && secondEdge != null && move.getType() == BffBeam.Move.Type.SWAP) {
+        } else if (firstEdge != null && secondEdge != null && move.getType() == HbmsBeam.Move.Type.SWAP) {
             graph.removeEdge(firstEdge);
             Edge secondEdgeStar = graph.getEdge(secondEdge.getNode1(), secondEdge.getNode2());
 
@@ -497,7 +497,7 @@ public final class BffBeam implements Bff {
 
                 if (!graph.isAncestorOf(nodes.get(j), nodes.get(i))) {
                     Edge edge = Edges.directedEdge(nodes.get(i), nodes.get(j));
-                    moves.add(new Move(edge, BffBeam.Move.Type.ADD));
+                    moves.add(new Move(edge, HbmsBeam.Move.Type.ADD));
                 }
             }
         }
@@ -520,7 +520,7 @@ public final class BffBeam implements Bff {
                 continue;
             }
 
-            moves.add(new Move(edge, BffBeam.Move.Type.REMOVE));
+            moves.add(new Move(edge, HbmsBeam.Move.Type.REMOVE));
         }
 
         return moves;
@@ -548,7 +548,7 @@ public final class BffBeam implements Bff {
                 continue;
             }
 
-            moves.add(new Move(Edges.directedEdge(j, i), BffBeam.Move.Type.REDIRECT));
+            moves.add(new Move(Edges.directedEdge(j, i), HbmsBeam.Move.Type.REDIRECT));
         }
 
         return moves;
@@ -585,7 +585,7 @@ public final class BffBeam implements Bff {
                             continue;
                         }
 
-                        moves.add(new Move(edge1, edge2, BffBeam.Move.Type.ADD_COLLIDER));
+                        moves.add(new Move(edge1, edge2, HbmsBeam.Move.Type.ADD_COLLIDER));
                     }
                 }
             }
@@ -613,10 +613,10 @@ public final class BffBeam implements Bff {
 
                 if (graph.getEdge(a, b) != null && graph.getEdge(b, c) != null &&
                         graph.getEdge(a, b).pointsTowards(b) && graph.getEdge(b, c).pointsTowards(c)) {
-                    moves.add(new Move(Edges.directedEdge(a, b), Edges.directedEdge(b, c), BffBeam.Move.Type.SWAP));
+                    moves.add(new Move(Edges.directedEdge(a, b), Edges.directedEdge(b, c), HbmsBeam.Move.Type.SWAP));
                 } else if (graph.getEdge(b, a) != null && graph.getEdge(a, c) != null &&
                         graph.getEdge(b, a).pointsTowards(a) && graph.getEdge(a, c).pointsTowards(c)) {
-                    moves.add(new Move(Edges.directedEdge(b, a), Edges.directedEdge(a, c), BffBeam.Move.Type.SWAP));
+                    moves.add(new Move(Edges.directedEdge(b, a), Edges.directedEdge(a, c), HbmsBeam.Move.Type.SWAP));
                 }
             }
         }
@@ -648,11 +648,11 @@ public final class BffBeam implements Bff {
                 if (edge1 != null && edge2 != null && edge3 != null &&
                         edge1.pointsTowards(a) && edge3.pointsTowards(c) &&
                         edge2.pointsTowards(c)) {
-                    moves.add(new Move(Edges.directedEdge(b, c), Edges.directedEdge(c, a), BffBeam.Move.Type.SWAP));
+                    moves.add(new Move(Edges.directedEdge(b, c), Edges.directedEdge(c, a), HbmsBeam.Move.Type.SWAP));
                 } else if (edge1 != null && edge2 != null && edge3 != null &&
                         edge3.pointsTowards(a) && edge1.pointsTowards(b) &&
                         edge2.pointsTowards(b)) {
-                    moves.add(new Move(Edges.directedEdge(b, c), Edges.directedEdge(b, a), BffBeam.Move.Type.SWAP));
+                    moves.add(new Move(Edges.directedEdge(b, c), Edges.directedEdge(b, a), HbmsBeam.Move.Type.SWAP));
                 }
             }
         }
@@ -681,7 +681,7 @@ public final class BffBeam implements Bff {
                     Edge edge1 = Edges.directedEdge(a, b);
                     Edge edge2 = Edges.directedEdge(c, b);
 
-                    moves.add(new Move(edge1, edge2, BffBeam.Move.Type.REMOVE_COLLIDER));
+                    moves.add(new Move(edge1, edge2, HbmsBeam.Move.Type.REMOVE_COLLIDER));
                 }
             }
         }
@@ -696,7 +696,7 @@ public final class BffBeam implements Bff {
         // Remove moves:
         for (int i = 0; i < edges.size(); i++) {
             for (int j = i + 1; j < edges.size(); j++) {
-                moves.add(new Move(edges.get(i), edges.get(j), BffBeam.Move.Type.DOUBLE_REMOVE));
+                moves.add(new Move(edges.get(i), edges.get(j), HbmsBeam.Move.Type.DOUBLE_REMOVE));
             }
         }
 
@@ -742,14 +742,14 @@ public final class BffBeam implements Bff {
 
         private final Edge edge;
         private Edge secondEdge;
-        private final BffBeam.Move.Type type;
+        private final HbmsBeam.Move.Type type;
 
-        public Move(Edge edge, BffBeam.Move.Type type) {
+        public Move(Edge edge, HbmsBeam.Move.Type type) {
             this.edge = edge;
             this.type = type;
         }
 
-        public Move(Edge edge, Edge secondEdge, BffBeam.Move.Type type) {
+        public Move(Edge edge, Edge secondEdge, HbmsBeam.Move.Type type) {
             this.edge = edge;
             this.secondEdge = secondEdge;
             this.type = type;
@@ -763,7 +763,7 @@ public final class BffBeam implements Bff {
             return this.secondEdge;
         }
 
-        public BffBeam.Move.Type getType() {
+        public HbmsBeam.Move.Type getType() {
             return this.type;
         }
 

@@ -72,7 +72,7 @@ public class AdLeafTree {
      * and so on, to the last variable.
      */
     public List<List<Integer>> getCellLeaves(List<DiscreteVariable> A) {
-        A.sort(Comparator.comparingInt(o -> this.nodesHash.get(o)));
+        A.sort(Comparator.comparingInt(this.nodesHash::get));
 
         if (this.baseCase == null) {
             Vary vary = new Vary();
@@ -104,13 +104,7 @@ public class AdLeafTree {
      * and so on, to the last variable.
      */
     public List<List<List<Integer>>> getCellLeaves(List<DiscreteVariable> A, DiscreteVariable B) {
-        Collections.sort(A, new Comparator<DiscreteVariable>() {
-
-            @Override
-            public int compare(DiscreteVariable o1, DiscreteVariable o2) {
-                return Integer.compare(AdLeafTree.this.nodesHash.get(o1), AdLeafTree.this.nodesHash.get(o2));
-            }
-        });
+        A.sort(Comparator.comparingInt(AdLeafTree.this.nodesHash::get));
 
         if (this.baseCase == null) {
             Vary vary = new Vary();
@@ -165,11 +159,11 @@ public class AdLeafTree {
                 _rows.add(i);
             }
 
-            this.subVaries.add(new HashMap<Integer, Vary>());
+            this.subVaries.add(new HashMap<>());
             this.numCategories = 1;
             this.rows.add(_rows);
             this.subVaries = new ArrayList<>();
-            this.subVaries.add(new HashMap<Integer, Vary>());
+            this.subVaries.add(new HashMap<>());
         }
 
         public Vary(int col, int numCategories, List<Integer> supRows, int[][] discreteData) {
@@ -177,11 +171,11 @@ public class AdLeafTree {
             this.numCategories = numCategories;
 
             for (int i = 0; i < numCategories; i++) {
-                this.rows.add(new ArrayList<Integer>());
+                this.rows.add(new ArrayList<>());
             }
 
             for (int i = 0; i < numCategories; i++) {
-                this.subVaries.add(new HashedMap<Integer, Vary>());
+                this.subVaries.add(new HashedMap<>());
             }
 
             for (int i : supRows) {

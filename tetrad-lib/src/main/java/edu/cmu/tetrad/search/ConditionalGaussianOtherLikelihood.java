@@ -88,7 +88,7 @@ public class ConditionalGaussianOtherLikelihood {
      * A return value for a likelihood--returns a likelihood value and the degrees of freedom
      * for it.
      */
-    public class Ret {
+    public static class Ret {
         private final double lik;
         private final int dof;
 
@@ -287,13 +287,13 @@ public class ConditionalGaussianOtherLikelihood {
                 try {
 
                     // Determinant will be zero if data are linearly dependent.
+                    Matrix cov;
                     if (a > continuousCols.length + 10) {
-                        Matrix cov = cov(getSubsample(continuousCols, cell));
-                        c2 += a * gaussianLikelihood(k, cov);
+                        cov = cov(getSubsample(continuousCols, cell));
                     } else {
-                        Matrix cov = cov(getSubsample(continuousCols, this.all));
-                        c2 += a * gaussianLikelihood(k, cov);
+                        cov = cov(getSubsample(continuousCols, this.all));
                     }
+                    c2 += a * gaussianLikelihood(k, cov);
                 } catch (Exception e) {
                     // No contribution.
                 }
@@ -408,32 +408,6 @@ public class ConditionalGaussianOtherLikelihood {
 
         // Only count dof for continuous cells that contributed to the likelihood calculation.
         int dof = f(A) * B.getNumCategories() + f(A) * p * h(X);
-        return new Ret(lnL, dof);
-    }
-
-    private Ret likelihoodJointMultinomial(List<ContinuousVariable> X, List<DiscreteVariable> A) {
-        List<DiscreteVariable> W = new ArrayList<>(A);
-
-        for (ContinuousVariable x : X) {
-            DiscreteVariable w = (DiscreteVariable) this.dataSet.getVariable(x.getName());
-            W.add(w);
-        }
-
-        double lnL = 0;
-        int N = this.dataSet.getNumRows();
-
-        List<List<Integer>> cells = this.adTree.getCellLeaves(W);
-
-        for (List<Integer> cell : cells) {
-            int a = cell.size();
-            if (a == 0) continue;
-
-            if (W.size() > 0) {
-                lnL += a * multinomialLikelihood(a, N);
-            }
-        }
-
-        int dof = f(W);
         return new Ret(lnL, dof);
     }
 
