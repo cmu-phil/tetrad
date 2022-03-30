@@ -78,11 +78,6 @@ public final class GraphUtils {
         }
     }
 
-    public static void hierarchicalLayout(Graph graph) {
-        LayeredDrawing layout = new LayeredDrawing(graph);
-        layout.doLayout();
-    }
-
     public static void kamadaKawaiLayout(Graph graph,
                                          boolean randomlyInitialized, double naturalEdgeLength,
                                          double springConstant, double stopEnergy) {

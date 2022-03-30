@@ -227,20 +227,10 @@ public final class Dag implements Graph {
     }
 
     public boolean existsDirectedPathFromTo(Node node1, Node node2) {
-//        resetDPath();
-//        reconstituteDpath();
-
-//        node1 = graph.getNode(node1.getNode());
-//        node2 = graph.getNode(node2.getNode());
-
-        //System.out.println(MatrixUtils.toString(dpath));
 
 
         int index1 = this.nodesHash.get(node1);
         int index2 = this.nodesHash.get(node2);
-
-//        int index1 = dpathNodes.indexOf(node1);
-//        int index2 = dpathNodes.indexOf(node2);
 
         return this.dpath[index1][index2] == 1;
     }
@@ -583,7 +573,7 @@ public final class Dag implements Graph {
         }
     }
 
-    public final void transferNodesAndEdges(Graph graph)
+    public void transferNodesAndEdges(Graph graph)
             throws IllegalArgumentException {
         this.getGraph().transferNodesAndEdges(graph);
         for (Node node : this.getGraph().getNodes()) {
@@ -591,7 +581,7 @@ public final class Dag implements Graph {
         }
     }
 
-    public final void transferAttributes(Graph graph)
+    public void transferAttributes(Graph graph)
             throws IllegalArgumentException {
         this.getGraph().transferAttributes(graph);
     }

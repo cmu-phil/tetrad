@@ -117,11 +117,8 @@ public final class GraphGeneratorRandomNumEdges {
      * @param structure One of ANY_DAG, POLYTREE, or CONNECTED_DAG.
      */
     public GraphGeneratorRandomNumEdges(int structure) {
-        switch (structure) {
-            case GraphGeneratorRandomNumEdges.ANY_DAG:
-                break;
-            default:
-                throw new IllegalArgumentException("Unrecognized structure.");
+        if (structure != GraphGeneratorRandomNumEdges.ANY_DAG) {
+            throw new IllegalArgumentException("Unrecognized structure.");
         }
 
         this.structure = structure;
@@ -205,10 +202,6 @@ public final class GraphGeneratorRandomNumEdges {
 
         if (maxEdges > getMaxPossibleEdges()) {
             maxEdges = getMaxPossibleEdges();
-//            System.out.println("\nThe value maxEdges = " +
-//                    maxEdges + " is too high; it has been set to the maximum " +
-//                    "number of possible edges, which is " +
-//                    getMaxPossibleEdges() + ".");
         }
 
         this.maxEdges = maxEdges;
@@ -254,11 +247,9 @@ public final class GraphGeneratorRandomNumEdges {
     }
 
     public String toString() {
-        String buf = "\nStructural information for generated graph:" +
+        return "\nStructural information for generated graph:" +
                 "\n\tNumber of nodes:" + getNumNodes() +
                 "\n\tNumber of transitions between samples:" + getNumIterations();
-
-        return buf;
     }
 
     //================================PRIVATE METHODS======================//

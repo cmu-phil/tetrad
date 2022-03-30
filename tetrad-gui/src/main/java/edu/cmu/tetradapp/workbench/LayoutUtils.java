@@ -494,7 +494,7 @@ public class LayoutUtils {
             }
         }
 
-        GraphUtils.hierarchicalLayout(graph);
+        GraphUtils.circleLayout(graph, 225, 200, 150);
         layoutEditable.layoutByGraph(graph);
         LayoutUtils.layout = Layout.layered;
     }

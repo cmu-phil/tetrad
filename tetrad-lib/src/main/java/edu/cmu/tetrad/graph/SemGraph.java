@@ -36,10 +36,10 @@ import java.util.*;
  * an error node that has N as its only child, E-->N. Error nodes for exogenous
  * nodes are always implicit in the graph. So as nodes become endogenous, error
  * nodes are added for them, and as they become exogenous, error nodes are
- * removed for them. Correlated errors are represented using bidirected edges
- * among exogenous nodes. Bidirected edges may therefore be added among any
+ * removed for them. Correlated errors are represented using directed edges
+ * among exogenous nodes. Directed edges may therefore be added among any
  * exogenous nodes in the graph, though the easiest way to add (or remove)
- * exogenous nodes is determine which non-exogenous nodes N1, N2 they are
+ * exogenous nodes is to determine which non-exogenous nodes N1, N2 they are
  * representing correlated errors for and then to use this formulation:</p>
  * <pre>
  *     addBidirectedEdge(getExogenous(node1), getExogenous(node2));
@@ -160,6 +160,8 @@ public final class SemGraph implements Graph {
         }
 
         this.errorNodes = new HashMap<>(graph.errorNodes);
+        this.pag = graph.pag;
+        this.cpdag = graph.cpdag;
 
         if (graph.showErrorTerms) {
             for (Node node : this.graph.getNodes()) {
@@ -231,20 +233,6 @@ public final class SemGraph implements Graph {
         List<Node> found = new LinkedList<>();
         Set<Node> notFound = new HashSet<>(getNodes());
 
-//        for (Node node1 : getNodes()) {
-//            notFound.add(node1);
-//        }
-
-//        List<Node> errorTerms = new LinkedList<Node>();
-//
-//        for (Node node : notFound) {
-//            if (node.getNodeType() == NodeType.ERROR) {
-//                errorTerms.add(node);
-//            }
-//        }
-//
-//        notFound.removeAll(errorTerms);
-
         while (!notFound.isEmpty()) {
             for (Iterator<Node> it = notFound.iterator(); it.hasNext(); ) {
                 Node node = it.next();
@@ -296,12 +284,12 @@ public final class SemGraph implements Graph {
         return isExogenous(node) ? node : this.errorNodes.get(node);
     }
 
-    public final void transferNodesAndEdges(Graph graph)
+    public void transferNodesAndEdges(Graph graph)
             throws IllegalArgumentException {
         throw new UnsupportedOperationException();
     }
 
-    public final void transferAttributes(Graph graph)
+    public void transferAttributes(Graph graph)
             throws IllegalArgumentException {
         throw new UnsupportedOperationException();
     }
@@ -516,11 +504,6 @@ public final class SemGraph implements Graph {
                 return false;
             }
 
-//            if (!isExogenous(node1) || !isExogenous(node2)) {
-//                throw new IllegalArgumentException("Nodes for a bidirected " +
-//                        "edge must be exogenous: " + edge);
-//            }
-
             getGraph().addEdge(edge);
             return true;
         } else {
@@ -607,8 +590,8 @@ public final class SemGraph implements Graph {
     public boolean removeEdges(Collection<Edge> edges) {
         boolean change = false;
 
-        for (Object edge : edges) {
-            boolean _change = removeEdge((Edge) edge);
+        for (Edge edge : edges) {
+            boolean _change = removeEdge(edge);
             change = change || _change;
         }
 
@@ -638,8 +621,7 @@ public final class SemGraph implements Graph {
         List<Node> children = getGraph().getChildren(node);
         getGraph().removeNode(node);
 
-        for (int i = 0; i > children.size(); i++) {
-            Node child = children.get(i);
+        for (Node child : children) {
             adjustErrorForNode(child);
         }
 
@@ -908,9 +890,9 @@ public final class SemGraph implements Graph {
      * node.
      */
     private void adjustErrorForNode(Node node) {
+        Node errorNode = getErrorNode(node);
         if (!this.showErrorTerms) {
 //            if (!isShowErrorTerms() || shouldBeExogenous(node)) {
-            Node errorNode = getErrorNode(node);
 
             if (errorNode != null && this.graph.containsNode(errorNode)) {
                 moveAttachedBidirectedEdges(errorNode, node);
@@ -919,7 +901,6 @@ public final class SemGraph implements Graph {
                 this.errorNodes.remove(errorNode);
             }
         } else {
-            Node errorNode = getErrorNode(node);
 
             if (errorNode == null) {
                 addErrorNode(node);
@@ -928,21 +909,6 @@ public final class SemGraph implements Graph {
             errorNode = getErrorNode(node);
             moveAttachedBidirectedEdges(node, errorNode);
         }
-    }
-
-    /**
-     * @return true iff the given (non-error) term ought to be exogenous.
-     */
-    private boolean shouldBeExogenous(Node node) {
-        List<Node> parents = getGraph().getParents(node);
-
-        for (Node parent : parents) {
-            if (parent.getNodeType() != NodeType.ERROR) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     /**
@@ -955,8 +921,6 @@ public final class SemGraph implements Graph {
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

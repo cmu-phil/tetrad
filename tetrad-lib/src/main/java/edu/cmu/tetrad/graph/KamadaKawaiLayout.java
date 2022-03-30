@@ -29,7 +29,6 @@ import edu.cmu.tetrad.util.TetradAlgebra;
 import javax.swing.*;
 import java.text.NumberFormat;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -122,12 +121,10 @@ public final class KamadaKawaiLayout {
         List<List<Node>> components =
                 GraphUtils.connectedComponents(this.graph);
 
-        Collections.sort(components, new Comparator<List<Node>>() {
-            public int compare(List<Node> o1, List<Node> o2) {
-                int i1 = o1.size();
-                int i2 = o2.size();
-                return i2 < i1 ? -1 : i2 == i1 ? 0 : 1;
-            }
+        components.sort((o1, o2) -> {
+            int i1 = o1.size();
+            int i2 = o2.size();
+            return Integer.compare(i2, i1);
         });
 
         for (List<Node> component1 : components) {
@@ -345,10 +342,10 @@ public final class KamadaKawaiLayout {
 
                 final double h = 1.e-2;
 
-                double partialXX = secondPartial(m[0], 0, 0, h);
-                double partialXY = secondPartial(m[0], 0, 1, h);
+                double partialXX = secondPartial(m[0], 0, 0);
+                double partialXY = secondPartial(m[0], 0, 1);
                 double partialX = firstPartial(m[0], 0, h);
-                double partialYY = secondPartial(m[0], 1, 1, h);
+                double partialYY = secondPartial(m[0], 1, 1);
                 double partialY = firstPartial(m[0], 1, h);
 
                 a.set(0, 0, partialXX);
@@ -436,28 +433,28 @@ public final class KamadaKawaiLayout {
         return (energy2 - energy1) / (2. * h);
     }
 
-    private double secondPartial(int m, int i, int j, double h) {
+    private double secondPartial(int m, int i, int j) {
         double storedX = this.p[m][0];
         double storedY = this.p[m][1];
 
-        this.p[m][i] += h;
-        this.p[m][j] += h;
+        this.p[m][i] += 0.01;
+        this.p[m][j] += 0.01;
         double ff1 = energy();
 
-        this.p[m][j] -= 2 * h;
+        this.p[m][j] -= 2 * 0.01;
         double ff2 = energy();
 
-        this.p[m][i] -= 2 * h;
-        this.p[m][j] += 2 * h;
+        this.p[m][i] -= 2 * 0.01;
+        this.p[m][j] += 2 * 0.01;
         double ff3 = energy();
 
-        this.p[m][j] -= 2 * h;
+        this.p[m][j] -= 2 * 0.01;
         double ff4 = energy();
 
         this.p[m][0] = storedX;
         this.p[m][1] = storedY;
 
-        return (ff1 - ff2 - ff3 + ff4) / (4.0 * h * h);
+        return (ff1 - ff2 - ff3 + ff4) / (4.0 * 0.01 * 0.01);
     }
 
     private double distance(int i, int j) {

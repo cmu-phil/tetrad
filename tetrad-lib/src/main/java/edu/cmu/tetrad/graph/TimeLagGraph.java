@@ -21,10 +21,6 @@
 
 package edu.cmu.tetrad.graph;
 
-//import edu.cmu.tetrad.data.IKnowledge;
-//import edu.cmu.tetrad.data.Knowledge2;
-
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.*;
@@ -50,7 +46,7 @@ public class TimeLagGraph implements Graph {
     private List<Node> lag0Nodes = new ArrayList<>();
 
     private boolean pag;
-    private boolean CPDAG;
+    private boolean cpdag;
 
     private final Map<String, Object> attributes = new HashMap<>();
 
@@ -62,12 +58,10 @@ public class TimeLagGraph implements Graph {
         this.maxLag = graph.getMaxLag();
         this.numInitialLags = graph.getNumInitialLags();
         this.lag0Nodes = graph.getLag0Nodes();
+        this.pag = graph.pag;
+        this.cpdag = graph.cpdag;
 
-        this.graph.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                getPcs().firePropertyChange(evt);
-            }
-        });
+        this.graph.addPropertyChangeListener(evt -> getPcs().firePropertyChange(evt));
     }
 
     /**
@@ -397,12 +391,12 @@ public class TimeLagGraph implements Graph {
 
     @Override
     public boolean isCPDAG() {
-        return this.CPDAG;
+        return this.cpdag;
     }
 
     @Override
     public void setCPDAG(boolean CPDAG) {
-        this.CPDAG = CPDAG;
+        this.cpdag = CPDAG;
     }
 
     public static class NodeId {

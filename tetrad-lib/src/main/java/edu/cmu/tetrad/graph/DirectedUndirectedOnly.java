@@ -47,45 +47,6 @@ public final class DirectedUndirectedOnly implements GraphConstraint {
     //=============================PUBLIC METHODS=========================//
 
     /**
-     * Checks whether a new edge satisfies the constraint in this graph.
-     *
-     * @param edge  the edge to check.
-     * @param graph the graph to check.
-     * @return true if the new edge may be added, false if not.
-     */
-    public boolean isEdgeAddable(Edge edge, Graph graph) {
-
-        return (Edges.isDirectedEdge(edge) || Edges.isNondirectedEdge(edge) ||
-                Edges.isUndirectedEdge(edge));
-    }
-
-    /**
-     * @param node  the node to check.
-     * @param graph the graph to check.
-     * @return true.
-     */
-    public boolean isNodeAddable(Node node, Graph graph) {
-        return true;
-    }
-
-    /**
-     * @param edge  the edge to check.
-     * @param graph the graph to check.
-     * @return true.
-     */
-    public boolean isEdgeRemovable(Edge edge, Graph graph) {
-        return true;
-    }
-
-    /**
-     * @param graph the graph to check.
-     * @return true.
-     */
-    public boolean isNodeRemovable(Node node, Graph graph) {
-        return true;
-    }
-
-    /**
      * @return this representation.
      */
     public String toString() {

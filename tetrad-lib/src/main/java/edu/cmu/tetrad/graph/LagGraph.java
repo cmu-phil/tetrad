@@ -36,7 +36,6 @@ public class LagGraph implements Graph {
 
     private Dag graph = new Dag();
     private final List<String> variables = new ArrayList<>();
-    private final int numLags = 0;
     private final Map<String, List<Node>> laggedVariables = new HashMap<>();
     private boolean pag;
     private boolean CPDAG;
@@ -56,7 +55,7 @@ public class LagGraph implements Graph {
         }
 
         this.variables.add(variable);
-        this.laggedVariables.put(variable, new ArrayList<Node>());
+        this.laggedVariables.put(variable, new ArrayList<>());
 
         for (String node : this.variables) {
             List<Node> _lags = this.laggedVariables.get(node);

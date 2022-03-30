@@ -743,31 +743,6 @@ public class EdgeListGraph implements Graph {
         return GraphUtils.getSepset(x, y, this);
     }
 
-    public Set<Node> zAncestors(List<Node> z) {
-        Queue<Node> Q = new ArrayDeque<>();
-        Set<Node> V = new HashSet<>();
-
-        for (Node node : z) {
-            Q.offer(node);
-            V.add(node);
-        }
-
-        while (!Q.isEmpty()) {
-            Node t = Q.poll();
-
-            for (Node c : getParents(t)) {
-//                if (c == t) continue;
-                if (V.contains(c)) {
-                    continue;
-                }
-                V.add(c);
-                Q.offer(c);
-            }
-        }
-
-        return V;
-    }
-
     public boolean isDSeparatedFrom(List<Node> x, List<Node> y, List<Node> z) {
         return !isDConnectedTo(x, y, z);
     }

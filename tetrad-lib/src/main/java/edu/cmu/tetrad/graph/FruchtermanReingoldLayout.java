@@ -22,7 +22,8 @@
 package edu.cmu.tetrad.graph;
 
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Lays out a graph by linearly summing repulsive force between all nodes and
@@ -87,12 +88,10 @@ public final class FruchtermanReingoldLayout {
         List<List<Node>> components =
                 GraphUtils.connectedComponents(this.graph());
 
-        Collections.sort(components, new Comparator<List<Node>>() {
-            public int compare(List<Node> o1, List<Node> o2) {
-                int i1 = o1.size();
-                int i2 = o2.size();
-                return i2 < i1 ? -1 : i2 == i1 ? 0 : 1;
-            }
+        components.sort((o1, o2) -> {
+            int i1 = o1.size();
+            int i2 = o2.size();
+            return Integer.compare(i2, i1);
         });
 
         for (List<Node> component1 : components) {
@@ -109,20 +108,12 @@ public final class FruchtermanReingoldLayout {
             Node node = nodes.get(i);
             nodePosition()[i][0] = node.getCenterX();
             nodePosition()[i][1] = node.getCenterY();
-
-            //pos[i][0] = RandomUtil.nextInt(600);
-            //pos[i][1] = RandomUtil.nextInt(600);
         }
 
         List<Edge> edges = new ArrayList<>(GraphUtils.undirectedGraph(graph()).getEdges());
 
-        for (Iterator<Edge> i = edges.iterator(); i.hasNext(); ) {
-            Edge edge = i.next();
-            if (!nodes.contains(edge.getNode1()) ||
-                    !nodes.contains(edge.getNode2())) {
-                i.remove();
-            }
-        }
+        edges.removeIf(edge -> !nodes.contains(edge.getNode1()) ||
+                !nodes.contains(edge.getNode2()));
 
         this.edges = new int[edges.size()][2];
 
@@ -134,7 +125,7 @@ public final class FruchtermanReingoldLayout {
             this.edges()[i][1] = u;
         }
 
-        double avgDegree = 2 * this.graph.getNumEdges() / this.graph.getNumNodes();
+        double avgDegree = 2 * this.graph.getNumEdges() / (double) this.graph.getNumNodes();
 
         setOptimalDistance(20.0 + 20.0 * avgDegree);
         setTemperature(5.0);
@@ -154,12 +145,7 @@ public final class FruchtermanReingoldLayout {
 
                     if (norm == 0.0) {
                         norm = 0.1;
-//                        continue;
                     }
-//
-//                    if (norm > 4.0 * getOptimalDistance()) {
-//                        continue;
-//                    }
 
                     double repulsiveForce = fr(norm);
 
@@ -180,12 +166,7 @@ public final class FruchtermanReingoldLayout {
 
                 if (norm == 0.0) {
                     norm = 0.1;
-//                    continue;
                 }
-
-//                if (norm < 1.5 * getOptimalDistance()) {
-//                    continue;
-//                }
 
                 double attractiveForce = fa(norm);
                 double attractX = (deltaX / norm) * attractiveForce;
@@ -210,10 +191,6 @@ public final class FruchtermanReingoldLayout {
 
             for (int v = 0; v < numNodes; v++) {
                 double norm = norm(nodeDisposition()[v][0], nodeDisposition()[v][1]);
-
-//                if (norm == 0.0) {
-//                    continue;
-//                }
 
                 nodePosition()[v][0] += (nodeDisposition()[v][0] / norm) *
                         Math.min(norm, getTemperature());

@@ -254,10 +254,6 @@ public final class UniformGraphGenerator {
 
         if (maxEdges > getMaxPossibleEdges()) {
             maxEdges = getMaxPossibleEdges();
-//            System.out.println("\nThe value maxEdges = " +
-//                    maxEdges + " is too high; it has been set to the maximum " +
-//                    "number of possible edges, which is " +
-//                    getMaxPossibleEdges() + ".");
         }
 
         this.maxEdges = maxEdges;
@@ -344,7 +340,7 @@ public final class UniformGraphGenerator {
     }
 
     public String toString() {
-        String buf = "\nStructural information for generated graph:" +
+        return "\nStructural information for generated graph:" +
                 "\n\tNumber of nodes:" + getNumNodes() +
                 "\n\tMax degree for each node:" + getMaxDegree() +
                 "\n\tMaximum number of incoming edges for each node:" +
@@ -356,8 +352,6 @@ public final class UniformGraphGenerator {
                 " possibles" +
                 "\n\tNumber of transitions between samples:" +
                 getNumIterations();
-
-        return buf;
     }
 
     //================================PRIVATE METHODS======================//
@@ -425,14 +419,12 @@ public final class UniformGraphGenerator {
                     removeEdge();
                     reverseDirection();
 
-                    if (totalEdges < getMaxEdges() && maxDegreeNotExceeded() &&
-                            maxIndegreeNotExceeded() &&
-                            maxOutdegreeNotExceeded() && isAcyclic()) {
-                        addEdge();
-                    } else {
+                    if (totalEdges >= getMaxEdges() || !maxDegreeNotExceeded() ||
+                            !maxIndegreeNotExceeded() ||
+                            !maxOutdegreeNotExceeded() || !isAcyclic()) {
                         reverseDirection();
-                        addEdge();
                     }
+                    addEdge();
                 } else {
                     removeEdge();
                     totalEdges--;

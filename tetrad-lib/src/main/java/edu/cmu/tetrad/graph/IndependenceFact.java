@@ -33,7 +33,8 @@ import java.util.*;
  *
  * @author Joseph Ramsey
  */
-public final class IndependenceFact implements Comparable, TetradSerializable {
+public final class IndependenceFact implements Comparable<IndependenceFact>,
+        TetradSerializable {
     static final long serialVersionUID = 23L;
 
     private final Node x;
@@ -76,23 +77,23 @@ public final class IndependenceFact implements Comparable, TetradSerializable {
         return new IndependenceFact(new GraphNode("X"), new GraphNode("Y"));
     }
 
-    public final Node getX() {
+    public Node getX() {
         return this.x;
     }
 
-    public final Node getY() {
+    public Node getY() {
         return this.y;
     }
 
-    public final List<Node> getZ() {
+    public List<Node> getZ() {
         return new LinkedList<>(this._z);
     }
 
-    public final int hashCode() {
+    public int hashCode() {
         return 1;
     }
 
-    public final boolean equals(Object obj) {
+    public boolean equals(Object obj) {
         if (!(obj instanceof IndependenceFact)) {
             return false;
         }
@@ -150,9 +151,7 @@ public final class IndependenceFact implements Comparable, TetradSerializable {
      * reflect independence fact equality. So sorted sets should not be used to check for
      * independence fact existence, for instance. -jdramsey.
      */
-    public int compareTo(Object o) {
-        IndependenceFact fact = (IndependenceFact) o;
-
+    public int compareTo(IndependenceFact fact) {
         int c = getX().getName().compareTo(fact.getX().getName());
 
         if (c != 0) return c;
@@ -194,8 +193,6 @@ public final class IndependenceFact implements Comparable, TetradSerializable {
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

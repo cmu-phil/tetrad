@@ -21,7 +21,10 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphNode;
+import edu.cmu.tetrad.graph.Node;
 import org.junit.Test;
 
 import static junit.framework.TestCase.assertFalse;
@@ -37,7 +40,7 @@ public final class TestCollisions {
 
     @Test
     public void testMatrixGraph() {
-        checkGraph(new EndpointMatrixGraph());
+        checkGraph(new EdgeListGraph());
     }
 
     @Test

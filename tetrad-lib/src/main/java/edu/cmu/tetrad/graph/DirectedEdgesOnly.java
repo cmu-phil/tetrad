@@ -47,34 +47,6 @@ public final class DirectedEdgesOnly implements GraphConstraint {
 
 
     /**
-     * @return true iff the given edge is a directed edge.
-     */
-    public boolean isEdgeAddable(Edge edge, Graph graph) {
-        return Edges.isDirectedEdge(edge);
-    }
-
-    /**
-     * @return true;
-     */
-    public boolean isNodeAddable(Node node, Graph graph) {
-        return true;
-    }
-
-    /**
-     * @return true;
-     */
-    public boolean isEdgeRemovable(Edge edge, Graph graph) {
-        return true;
-    }
-
-    /**
-     * @return true;
-     */
-    public boolean isNodeRemovable(Node node, Graph graph) {
-        return true;
-    }
-
-    /**
      * @return a string representation of the constraint.
      */
     public String toString() {

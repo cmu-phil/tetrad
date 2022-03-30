@@ -34,50 +34,6 @@ public interface GraphConstraint extends TetradSerializable {
     long serialVersionUID = 23L;
 
     /**
-     * Checks to make sure that adding the specified edge will comply with the
-     * graph constraint.
-     *
-     * @param edge  the edge to check.
-     * @param graph the graph to check.
-     * @return true if adding the edge would satisfy the constraint, false if
-     * not.
-     */
-    boolean isEdgeAddable(Edge edge, Graph graph);
-
-    /**
-     * Checks to make sure that adding the specified node will comply with the
-     * graph constraint.
-     *
-     * @param node  the node to check.
-     * @param graph the graph to check.
-     * @return true if adding the node would satisfy the constraint, false if
-     * not.
-     */
-    boolean isNodeAddable(Node node, Graph graph);
-
-    /**
-     * Checks to make sure that removing the specified edge will comply with the
-     * graph constraint.
-     *
-     * @param edge  the edge to check.
-     * @param graph the graph to check.
-     * @return true if removing the edge would satisfy the constraint, false if
-     * not.
-     */
-    boolean isEdgeRemovable(Edge edge, Graph graph);
-
-    /**
-     * Checks to make sure that removing the specified node will comply with the
-     * graph constraint.
-     *
-     * @param node  the node to check.
-     * @param graph the graph to check.
-     * @return true if removing the node would satisfy the constraint, false, if
-     * not.
-     */
-    boolean isNodeRemovable(Node node, Graph graph);
-
-    /**
      * @return this string.
      */
     String toString();

@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.util.TetradSerializable;
+import org.jetbrains.annotations.NotNull;
 
 import java.beans.PropertyChangeListener;
 import java.util.Map;
@@ -69,8 +70,6 @@ public interface Node extends TetradSerializable, Comparable<Node> {
     /**
      * Sets the type (domain, interventional status, interventional value..) for
      * this node variable
-     *
-     * @param nodeVariableType
      */
     void setNodeVariableType(NodeVariableType nodeVariableType);
 
@@ -127,7 +126,7 @@ public interface Node extends TetradSerializable, Comparable<Node> {
     /**
      * Alphabetical order.
      */
-    int compareTo(Node node);
+    int compareTo(@NotNull Node node);
 
     Map<String, Object> getAllAttributes();
 

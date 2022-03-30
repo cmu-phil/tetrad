@@ -22,8 +22,8 @@
 package edu.cmu.tetradapp.workbench;
 
 
+import edu.cmu.tetrad.graph.FruchtermanReingoldLayout;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.LayeredDrawing;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetradapp.util.LayoutEditable;
 
@@ -99,7 +99,7 @@ final class DistanceFromSelected {
 
     public void doLayout() {
         if (this.selected.isEmpty()) {
-            new LayeredDrawing(this.graph).doLayout();
+            new FruchtermanReingoldLayout(this.graph).doLayout();
             return;
         }
 

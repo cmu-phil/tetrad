@@ -62,26 +62,26 @@ public final class Triple implements TetradSerializable {
         return new Triple(new GraphNode("X"), new GraphNode("Y"), new GraphNode("Z"));
     }
 
-    public final Node getX() {
+    public Node getX() {
         return this.x;
     }
 
-    public final Node getY() {
+    public Node getY() {
         return this.y;
     }
 
-    public final Node getZ() {
+    public Node getZ() {
         return this.z;
     }
 
-    public final int hashCode() {
+    public int hashCode() {
         int hash = 17;
         hash += 19 * this.x.hashCode() * this.z.hashCode();
         hash += 23 * this.y.hashCode();
         return hash;
     }
 
-    public final boolean equals(Object obj) {
+    public boolean equals(Object obj) {
         if (!(obj instanceof Triple)) {
             return false;
         }
@@ -91,10 +91,6 @@ public final class Triple implements TetradSerializable {
                 this.z == triple.z)
                 || (this.x == triple.z && this.y == triple.y &&
                 this.z == triple.x);
-//        return (x.equals(triple.x) && y.equals(triple.y) &&
-//                z.equals(triple.z))
-//                || (x.equals(triple.z) && y.equals(triple.y) &&
-//                z.equals(triple.x));
     }
 
     public String toString() {
