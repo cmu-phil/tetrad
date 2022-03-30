@@ -74,7 +74,7 @@ final class Lineizer {
     /**
      * @return true iff more tokens exist in the line.
      */
-    public final boolean hasMoreLines() {
+    public boolean hasMoreLines() {
         if (this.tempLine == null) {
             try {
                 this.tempLine = readLine();
@@ -90,7 +90,7 @@ final class Lineizer {
     /**
      * Return the next token in the line.
      */
-    public final String nextLine() {
+    public String nextLine() {
         this.lineNumber++;
 
         if (this.tempLine == null) {

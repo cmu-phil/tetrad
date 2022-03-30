@@ -65,7 +65,7 @@ public final class DiscreteVariableType implements TetradSerializable {
     /**
      * Prints out the name of the type.
      */
-    public final String toString() {
+    public String toString() {
         return this.name;
     }
 
@@ -74,7 +74,7 @@ public final class DiscreteVariableType implements TetradSerializable {
     private final int ordinal = DiscreteVariableType.nextOrdinal++;
     private static final DiscreteVariableType[] TYPES = {DiscreteVariableType.NOMINAL, DiscreteVariableType.ORDINAL};
 
-    final Object readResolve() throws ObjectStreamException {
+    Object readResolve() throws ObjectStreamException {
         return DiscreteVariableType.TYPES[this.ordinal]; // Canonicalize.
     }
 }

@@ -30,7 +30,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * @author Joseph Ramsey
  */
 public interface DataBox extends TetradSerializable {
-    long serialVersionUID = 23L;
+    static final long serialVersionUID = 23L;
 
     /**
      * @return the (fixed) number of rows of the dataset.

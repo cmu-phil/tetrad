@@ -47,10 +47,6 @@ public interface IKnowledge extends TetradSerializable {
 
     boolean equals(Object o);
 
-    Iterator<KnowledgeEdge> explicitlyForbiddenEdgesIterator();
-
-    Iterator<KnowledgeEdge> explicitlyRequiredEdgesIterator();
-
     Iterator<KnowledgeEdge> forbiddenEdgesIterator();
 
     List<KnowledgeGroup> getKnowledgeGroups();
@@ -88,8 +84,6 @@ public interface IKnowledge extends TetradSerializable {
     void removeFromTiers(String var);
 
     void removeKnowledgeGroup(int index);
-
-    void removeVariable(String varName);
 
     Iterator<KnowledgeEdge> requiredEdgesIterator();
 

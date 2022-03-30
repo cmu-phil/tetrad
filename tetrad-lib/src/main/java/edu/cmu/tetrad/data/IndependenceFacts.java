@@ -52,6 +52,8 @@ public class IndependenceFacts implements DataModel {
     public IndependenceFacts(IndependenceFacts facts) {
         this();
         this.unsortedFacts = new HashSet<>(facts.unsortedFacts);
+        this.name = facts.name;
+        this.knowledge = facts.knowledge.copy();
     }
 
     /**

@@ -154,8 +154,6 @@ public final class DataModelList extends AbstractList<DataModel>
     /**
      * Check if the modeList is empty Need to override this since this class is
      * extending AbstractList.
-     *
-     * @return
      */
     @Override
     public boolean isEmpty() {
@@ -166,8 +164,6 @@ public final class DataModelList extends AbstractList<DataModel>
      * Use this to check if the dataModelList only contains the default empty
      * dataset that is being used to populat the empty spreadsheet - Added by
      * Kevin
-     *
-     * @return
      */
     public boolean containsEmptyData() {
         if (this.modelList.isEmpty()) {
@@ -304,9 +300,6 @@ public final class DataModelList extends AbstractList<DataModel>
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

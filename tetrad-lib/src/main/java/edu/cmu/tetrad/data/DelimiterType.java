@@ -76,14 +76,14 @@ public final class DelimiterType implements TetradSerializable {
      * @return the CPDAG representing this delimiter type. This CPDAG can be
      * used to parse, using a matcher.
      */
-    public final Pattern getPattern() {
+    public Pattern getPattern() {
         return this.pattern;
     }
 
     /**
      * Prints out the name of the type.
      */
-    public final String toString() {
+    public String toString() {
         return this.name;
     }
 
@@ -92,7 +92,7 @@ public final class DelimiterType implements TetradSerializable {
     private final int ordinal = DelimiterType.nextOrdinal++;
     private static final DelimiterType[] TYPES = {DelimiterType.WHITESPACE, DelimiterType.TAB, DelimiterType.COMMA};
 
-    final Object readResolve() throws ObjectStreamException {
+    Object readResolve() throws ObjectStreamException {
         return DelimiterType.TYPES[this.ordinal]; // Canonicalize.
     }
 }

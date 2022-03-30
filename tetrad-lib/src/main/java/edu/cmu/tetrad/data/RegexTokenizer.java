@@ -57,17 +57,12 @@ public final class RegexTokenizer {
     /**
      * The quote character.
      */
-    private char quoteChar = '"';
+    private char quoteChar;
 
     /**
      * A flag indicating that the last token has been parsed.
      */
     private boolean finalTokenParsed;
-
-    /**
-     * True iff the previous token returned was quoted.
-     */
-    private boolean previousTokenQuoted;
 
     /**
      * True iff the parser should be aware of quotation marks and remove
@@ -97,14 +92,14 @@ public final class RegexTokenizer {
     /**
      * @return true iff more tokens exist in the line.
      */
-    public final boolean hasMoreTokens() {
+    public boolean hasMoreTokens() {
         return !this.finalTokenParsed;
     }
 
     /**
      * @return the next token in the line.
      */
-    public final String nextToken() {
+    public String nextToken() {
         if (this.position != this.chars.length() && this.quoteSensitive && this.chars.charAt(this.position) == this.quoteChar) {
             boolean match = this.quoteCharMatcher.find(this.position + 1);
             int end = match ? this.quoteCharMatcher.end() : this.chars.length();
@@ -118,7 +113,6 @@ public final class RegexTokenizer {
                 this.finalTokenParsed = true;
             }
 
-            this.previousTokenQuoted = true;
             return token.toString();
         } else {
             boolean match = this.delimiterMatcher.find(this.position);
@@ -131,7 +125,6 @@ public final class RegexTokenizer {
                 this.finalTokenParsed = true;
             }
 
-            this.previousTokenQuoted = false;
             return token.toString();
         }
     }
@@ -144,21 +137,6 @@ public final class RegexTokenizer {
         this.quoteSensitive = quoteSensitive;
     }
 
-    /**
-     * True iff the parser should be aware of quotation marks and remove them
-     * from returned strings.
-     */
-    public boolean isQuoteSensitive() {
-        return this.quoteSensitive;
-    }
-
-    /**
-     * True iff the token just returned by nextToken() is enclosed in quotes
-     * (where "quote" means the provided quote mark).
-     */
-    public boolean isPreviousTokenQuoted() {
-        return this.previousTokenQuoted;
-    }
 }
 
 

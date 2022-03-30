@@ -128,13 +128,9 @@ public class VerticalIntDataBox implements DataBox {
         int[] ints = this.data[col];
 
         if (value == null) {
-            synchronized (ints) {
-                ints[row] = -99;
-            }
+            ints[row] = -99;
         } else {
-            synchronized (ints) {
-                ints[row] = value.intValue();
-            }
+            ints[row] = value.intValue();
         }
     }
 

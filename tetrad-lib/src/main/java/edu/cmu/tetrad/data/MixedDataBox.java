@@ -42,9 +42,6 @@ public class MixedDataBox implements DataBox {
     /**
      * The variables here are used only to determine which columns are discrete
      * and which are continuous; bounds checking is not done.
-     *
-     * @param variables
-     * @param numRows
      */
     public MixedDataBox(List<Node> variables, int numRows) {
         this.variables = variables;
@@ -124,8 +121,6 @@ public class MixedDataBox implements DataBox {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @return
      */
     public static BoxDataSet serializableInstance() {
         List<Node> vars = new ArrayList<>();
@@ -152,10 +147,6 @@ public class MixedDataBox implements DataBox {
     /**
      * Sets the value at the given row/column to the given Number value. The
      * value used is number.doubleValue().
-     *
-     * @param row
-     * @param col
-     * @param value
      */
     @Override
     public void set(int row, int col, Number value) {
@@ -179,8 +170,6 @@ public class MixedDataBox implements DataBox {
     }
 
     /**
-     * @param row
-     * @param col
      * @return the Number value at the given row and column. If the value is
      * missing (-99), null, is returned.
      */
@@ -192,7 +181,7 @@ public class MixedDataBox implements DataBox {
 
         if (this.continuousData[col] != null) {
             double v = this.continuousData[col][row];
-            return v == Double.NaN ? null : v;
+            return Double.isNaN(v) ? null : v;
         } else if (this.discreteData[col] != null) {
             double v = this.discreteData[col][row];
             return v == -99 ? null : v;

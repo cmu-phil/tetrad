@@ -109,13 +109,6 @@ public class Discretizer {
         this.specs.put(node, spec);
     }
 
-    /**
-     * Indicates that the given variable should not be discretized.
-     */
-    public void notDiscretized(Node node) {
-        this.specs.remove(node);
-    }
-
     public void setVariablesCopied(boolean unselectedVariabledCopied) {
         this.variablesCopied = unselectedVariabledCopied;
     }
@@ -250,52 +243,6 @@ public class Discretizer {
         for (int i = 0; i < breakpoints.length; i++) {
             breakpoints[i] = data[n * (i + 1)];
         }
-
-//        List<Chunk> chunks = new ArrayList<Chunk>(data.length);
-//        int startChunkCount = 0;
-//        double lastValue = data[0];
-//        for (int i = 0; i < data.length; i++) {
-//            double value = data[i];
-//            if (value != lastValue) {
-
-//                chunks.add(new Chunk(startChunkCount, i, value));
-//                startChunkCount = i;
-//            }
-//            lastValue = value;
-//        }
-//        chunks.add(new Chunk(startChunkCount, data.length, data[data.length - 1]));
-//
-//        // now find the breakpoints.
-////        double interval = data.length / (double) numberOfCategories;
-//        double interval = data.length / numberOfCategories;
-//        double[] breakpoints = new double[numberOfCategories - 1];
-//        int current = 0;
-//        int freq = 0;
-//        for (Chunk chunk : chunks) {
-//            int valuesInChunk = chunk.getNumberOfValuesInChunk();
-//            int halfChunk = (int) (valuesInChunk * .5);
-//            // if more than half the values in the chunk fit this bucket then put here,
-//            // otherwise the chunk should be added to the next bucket.
-//            if (freq + halfChunk <= interval) {
-//                freq += valuesInChunk;
-//            } else {
-//                freq = valuesInChunk;
-//            }
-//
-//            if (interval <= freq) {
-//                freq = 0;
-//                if (current < breakpoints.length) {
-//                    breakpoints[current++] = chunk.value;
-//                }
-//            }
-//        }
-//
-//        for (int i = current; i < breakpoints.length; i++) {
-//            breakpoints[i] = Double.POSITIVE_INFINITY;
-//        }
-//
-//        double[] _breakpoints = new double[current];
-//        System.arraycopy(breakpoints, 0, _breakpoints, 0, current);
 
         return breakpoints;
     }

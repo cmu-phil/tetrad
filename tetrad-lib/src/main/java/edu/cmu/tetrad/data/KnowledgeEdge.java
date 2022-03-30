@@ -70,21 +70,21 @@ public final class KnowledgeEdge implements TetradSerializable {
     /**
      * @return the tail node of the edge.
      */
-    public final String getFrom() {
+    public String getFrom() {
         return this.from;
     }
 
     /**
      * @return the head node of the edge.
      */
-    public final String getTo() {
+    public String getTo() {
         return this.to;
     }
 
     /**
      * Reteurns true if (from1, to1) == (from2, to2).
      */
-    public final boolean equals(Object object) {
+    public boolean equals(Object object) {
         if (object == null) {
             return false;
         }
@@ -100,7 +100,7 @@ public final class KnowledgeEdge implements TetradSerializable {
     /**
      * @return a good hashcode.
      */
-    public final int hashCode() {
+    public int hashCode() {
         int hashCode = 31 + this.from.hashCode();
         return 37 * hashCode + this.to.hashCode();
     }
@@ -118,21 +118,10 @@ public final class KnowledgeEdge implements TetradSerializable {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-
-        if (this.from == null) {
-            throw new NullPointerException();
-        }
-
-        if (this.to == null) {
-            throw new NullPointerException();
-        }
     }
 }
 

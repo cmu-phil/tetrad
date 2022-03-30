@@ -467,22 +467,6 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     }
 
     /**
-     * Checks the sample size, variable, and matrix information.
-     */
-    private void checkMatrix() {
-        for (Node variable : this.variables) {
-            if (variable == null) {
-                throw new NullPointerException();
-            }
-        }
-
-        if (this.sampleSize < 1) {
-            throw new IllegalArgumentException(
-                    "Sample size must be at least 1.");
-        }
-    }
-
-    /**
      * Adds semantic checks to the default deserialization method. This method
      * must have the standard signature for a readObject method, and the body of
      * the method must begin with "s.defaultReadObject();". Other than that, any

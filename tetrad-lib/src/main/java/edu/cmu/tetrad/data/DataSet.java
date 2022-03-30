@@ -85,11 +85,6 @@ public interface DataSet extends DataModel {
      */
     void ensureRows(int rows);
 
-//    /**
-//     * @return the case multiplier for the given case.
-//     */
-//    int getMultiplier(int caseNumber);
-
     /**
      * @return the column index of the given variable.
      */
@@ -181,11 +176,6 @@ public interface DataSet extends DataModel {
      */
     List<Node> getVariables();
 
-//    /**
-//     * @return true if case multipliers are being used in this data set.
-//     */
-//    boolean isMulipliersCollapsed();
-
     /**
      * @return true if this is a continuous data set--that is, if it contains at
      * least one column and all of the columns are continuous.
@@ -229,24 +219,6 @@ public interface DataSet extends DataModel {
      */
     void removeRows(int[] selectedRows);
 
-//    /**
-//     * Sets the case multiplier for the given case to the given number (must be
-//     * >= 1).
-//     */
-//    void setMultiplier(int caseNumber, int multiplier);
-
-    /**
-     * Sets the case ID fo the given case numnber to the given value.
-     *
-     * @throws IllegalArgumentException if the given case ID is already used.
-     */
-    void setCaseId(int caseNumber, String id);
-
-    /**
-     * @return the case ID for the given case number.
-     */
-    String getCaseId(int caseNumber);
-
     /**
      * Sets the value at the given (row, column) to the given double value,
      * assuming the variable for the column is continuous.
@@ -280,11 +252,6 @@ public interface DataSet extends DataModel {
     void setSelected(Node variable, boolean selected);
 
     DataSet subsetRowsColumns(int[] rows, int[] columns);
-
-    /**
-     * Shifts the given column down one.
-     */
-    void shiftColumnDown(int row, int col, int numRowsShifted);
 
     /**
      * Creates and returns a dataset consisting of those variables in the list
@@ -331,14 +298,8 @@ public interface DataSet extends DataModel {
      */
     void permuteRows();
 
-    void setColumnToTooltip(Map<String, String> columnToTooltip);
-
     Map<String, String> getColumnToTooltip();
 
-
-    /**
-     * Equals
-     */
     boolean equals(Object o);
 
     DataSet copy();

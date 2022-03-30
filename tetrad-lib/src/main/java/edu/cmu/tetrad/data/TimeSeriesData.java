@@ -102,11 +102,11 @@ public final class TimeSeriesData implements DataModel {
 
     //=================================PUBLIC METHODS======================//
 
-    public final String getName() {
+    public String getName() {
         return this.name;
     }
 
-    public final void setName(String name) {
+    public void setName(String name) {
         if (name == null) {
             throw new NullPointerException("Name must not be null.");
         }
@@ -138,24 +138,24 @@ public final class TimeSeriesData implements DataModel {
         return null;
     }
 
-    public final List<Node> getVariables() {
+    public List<Node> getVariables() {
         List<String> varNames = getVariableNames();
         List<Node> vars = new LinkedList<>();
 
-        for (Object varName : varNames) {
-            vars.add(new ContinuousVariable((String) varName));
+        for (String varName : varNames) {
+            vars.add(new ContinuousVariable(varName));
         }
 
         return vars;
     }
 
-    public final IKnowledge getKnowledge() {
+    public IKnowledge getKnowledge() {
         System.out.println();
 
         return this.knowledge.copy();
     }
 
-    public final void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -167,23 +167,23 @@ public final class TimeSeriesData implements DataModel {
      * @return (a copy of) the List of Variables for the data set, in the order
      * of their columns.
      */
-    public final List<String> getVariableNames() {
+    public List<String> getVariableNames() {
         return this.varNames;
     }
 
-    public final Matrix getData() {
+    public Matrix getData() {
         return this.data2.copy();
     }
 
-    public final int getNumTimePoints() {
+    public int getNumTimePoints() {
         return getData().rows();
     }
 
-    public final int getNumVars() {
+    public int getNumVars() {
         return getVariableNames().size();
     }
 
-    public final double getDatum(int row, int col) {
+    public double getDatum(int row, int col) {
         return this.data2.get(row, col);
     }
 
@@ -196,9 +196,6 @@ public final class TimeSeriesData implements DataModel {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

@@ -287,35 +287,6 @@ public final class Knowledge2 implements IKnowledge {
     }
 
     /**
-     * Iterator over the knowledge's explicitly forbidden edges.
-     */
-    @Override
-    public Iterator<KnowledgeEdge> explicitlyForbiddenEdgesIterator() {
-        Set<OrderedPair<Set<String>>> copy = new HashSet<>(this.forbiddenRulesSpecs);
-        copy.removeAll(forbiddenTierRules());
-
-        this.knowledgeGroups.forEach(e -> copy.remove(this.knowledgeGroupRules.get(e)));
-
-        Set<KnowledgeEdge> edges = new HashSet<>();
-
-        copy.forEach(o -> {
-            for (String s1 : o.getFirst()) {
-                o.getSecond().forEach(s2 -> edges.add(new KnowledgeEdge(s1, s2)));
-            }
-        });
-
-        return edges.iterator();
-    }
-
-    /**
-     * Iterator over the KnowledgeEdge's explicitly required edges.
-     */
-    @Override
-    public Iterator<KnowledgeEdge> explicitlyRequiredEdgesIterator() {
-        return requiredEdgesIterator();
-    }
-
-    /**
      * Iterator over the KnowledgeEdge's representing forbidden edges.
      */
     @Override
@@ -542,30 +513,6 @@ public final class Knowledge2 implements IKnowledge {
         this.requiredRulesSpecs.remove(old);
 
         this.knowledgeGroups.remove(index);
-    }
-
-    /**
-     * Removes the given variable from the list of myNodes and all rules.
-     */
-    @Override
-    public void removeVariable(String name) {
-        if (!checkVarName(name)) {
-            throw new IllegalArgumentException("Bad variable name: " + name);
-        }
-
-        this.variables.remove(name);
-
-        this.forbiddenRulesSpecs.forEach(o -> {
-            o.getFirst().remove(name);
-            o.getSecond().remove(name);
-        });
-
-        this.requiredRulesSpecs.forEach(o -> {
-            o.getFirst().remove(name);
-            o.getSecond().remove(name);
-        });
-
-        this.tierSpecs.forEach(tier -> tier.remove(name));
     }
 
     /**

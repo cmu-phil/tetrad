@@ -112,7 +112,7 @@ public final class KnowledgeGroup implements TetradSerializable {
      * Generates a simple exemplar of this class to test serialization.
      */
     public static KnowledgeGroup serializableInstance() {
-        return new KnowledgeGroup(KnowledgeGroup.REQUIRED, new HashSet<String>(0), new HashSet<String>(0));
+        return new KnowledgeGroup(KnowledgeGroup.REQUIRED, new HashSet<>(0), new HashSet<>(0));
     }
 
 
@@ -172,22 +172,6 @@ public final class KnowledgeGroup implements TetradSerializable {
 
 
     /**
-     * States whether this group has a conflict with the given one.
-     *
-     * @return true iff there is a conflict.
-     */
-    public boolean isConflict(KnowledgeGroup group) {
-        // if they have different types, then if they share an edge there is a conflict.
-        if (this.type != group.type) {
-            return KnowledgeGroup.intersect(this.fromGroup, group.fromGroup) && KnowledgeGroup.intersect(this.toGroup, group.toGroup);
-        }
-        // otherwise they either don't share edges or are the same type and no conflicts
-        // exist (as at worst they will have edges in common).
-        return false;
-    }
-
-
-    /**
      * Equals when they are the same type and have the same edges.
      */
     public boolean equals(Object o) {
@@ -231,9 +215,6 @@ public final class KnowledgeGroup implements TetradSerializable {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

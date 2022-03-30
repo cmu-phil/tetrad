@@ -71,10 +71,6 @@ public final class BoxDataSet implements DataSet {
         return this.columnToTooltip;
     }
 
-    public void setColumnToTooltip(Map<String, String> columnToTooltip) {
-        this.columnToTooltip = columnToTooltip;
-    }
-
     /**
      * The name of the data model. This is not used internally; it is only here
      * in case an external class wants this dataset to have a name.
@@ -692,29 +688,6 @@ public final class BoxDataSet implements DataSet {
     }
 
     /**
-     * Sets the case ID fo the given case numnber to the given value.
-     *
-     * @throws IllegalArgumentException if the given case ID is already used.
-     */
-    public void setCaseId(int caseNumber, String id) {
-        if (id == null) {
-            this.caseIds.remove(caseNumber);
-        } else if (this.caseIds.containsValue(id)) {
-            throw new IllegalArgumentException("Case ID's must be unique; that one "
-                    + "has already been used: " + id);
-        } else {
-            this.caseIds.put(caseNumber, id);
-        }
-    }
-
-    /**
-     * @return the case ID for the given case number.
-     */
-    public String getCaseId(int caseNumber) {
-        return this.caseIds.get(caseNumber);
-    }
-
-    /**
      * @return true iff this is a continuous data set--that is, if every column
      * in it is continuous. (By implication, empty datasets are both discrete
      * and continuous.)
@@ -1016,36 +989,6 @@ public final class BoxDataSet implements DataSet {
         // Might have to delete some knowledge.
         _dataSet.knowledge = this.knowledge.copy();
         return _dataSet;
-    }
-
-    /**
-     * Shifts the given column
-     */
-    public void shiftColumnDown(int row, int col, int numRowsShifted) {
-
-        if (row >= getNumRows() || col >= getNumColumns()) {
-            throw new IllegalArgumentException("Out of range:  row = " + row + " col = " + col);
-        }
-
-        int lastRow = -1;
-
-        for (int i = getNumRows() - 1; i >= row; i--) {
-            if (this.dataBox.get(i, col) != null) {
-                lastRow = i;
-                break;
-            }
-        }
-
-        if (lastRow == -1) {
-            return;
-        }
-
-        resize(getNumRows() + numRowsShifted, getNumColumns());
-
-        for (int i = getNumRows() - 1; i >= row + numRowsShifted; i--) {
-            this.dataBox.set(i, col, this.dataBox.get(i - numRowsShifted, col));
-            this.dataBox.set(i - numRowsShifted, col, null);
-        }
     }
 
     /**
