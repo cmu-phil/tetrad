@@ -183,8 +183,12 @@ public class Cstar {
         if (path != null) {
             _dir = new File(path);
             System.out.println("dir = " + _dir.getAbsolutePath());
-//            _dir.delete();
-            _dir.mkdirs();
+
+            boolean b =_dir.mkdirs();
+
+            if (b) {
+                System.out.println("Creating directories for " + _dir.getAbsolutePath());
+            }
         }
 
         File dir = _dir;
@@ -281,10 +285,6 @@ public class Cstar {
                                     + Cstar.this.patternAlgorithm);
                         }
 
-//                        System.out.println("Pattern = " + pattern);
-
-//                        TetradLogger.getInstance().forceLogMessage("# edges = " + pattern.getNumEdges());
-
                         edgesTotal[0] += pattern.getNumEdges();
                         edgesCount[0]++;
 
@@ -310,11 +310,6 @@ public class Cstar {
                             saveMatrix(effects, null);
                         }
                     }
-
-
-//                    if (Cstar.this.verbose) {
-//                        TetradLogger.getInstance().forceLogMessage("Bootstrap " + (this.k + 1));
-//                    }
 
                     return effects;
                 } catch (Exception e) {
@@ -416,12 +411,8 @@ public class Cstar {
                     });
 
                     LinkedList<Record> records = new LinkedList<>();
-                    double sum = 0.0;
 
-                    for (int i = 0; i < tuples.size() /*Math.min(q, tuples.size())*/; i++) {
-                        Tuple tuple = tuples.get(i);
-
-                        sum += tuple.getPi();
+                    for (Tuple tuple : tuples) {
                         double avg = tuple.getMinBeta();
 
                         Node causeNode = tuple.getCauseNode();
@@ -602,7 +593,7 @@ public class Cstar {
         table.setToken(0, column++, "PCER");
 
         if (this.trueDag != null) {
-            table.setToken(0, column++, "SUM(FP)");
+            table.setToken(0, column, "SUM(FP)");
         }
 
         double sumPi = 0.0;
@@ -641,7 +632,7 @@ public class Cstar {
             if (this.trueDag != null) {
                 boolean ancestor = this.trueDag.isAncestorOf(this.trueDag.getNode(cause.getName()), this.trueDag.getNode(effect.getName()));
                 if (ancestor) ancestorCount++;
-                table.setToken(i + 1, column++, nf.format((R - ancestorCount)));
+                table.setToken(i + 1, column, nf.format((R - ancestorCount)));
             }
         }
 
@@ -701,10 +692,6 @@ public class Cstar {
 
     public void setSampleStyle(SampleStyle sampleStyle) {
         this.sampleStyle = sampleStyle;
-    }
-
-    public void setTrueDag(Graph trueDag) {
-        this.trueDag = trueDag;
     }
 
     //=============================PRIVATE==============================//
@@ -771,9 +758,7 @@ public class Cstar {
             BoxDataSet data = new BoxDataSet(new DoubleDataBox(effects), vars);
             if (file != null) {
                 PrintStream out = new PrintStream(new FileOutputStream(file));
-//                out.println(data);
-            } else {
-//                TetradLogger.getInstance().forceLogMessage(data.toString());
+                out.println(data);
             }
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
