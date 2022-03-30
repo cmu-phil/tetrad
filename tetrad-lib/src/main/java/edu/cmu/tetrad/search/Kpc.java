@@ -112,16 +112,6 @@ public class Kpc implements GraphSearch {
     private double alpha;
 
     /**
-     * Use incomplete Choleksy factorization for Gram matrices
-     */
-    private double useIncompleteCholesky = 1e-18;
-
-    /**
-     * The regularizer for singular matrices
-     */
-    private double regularizer = .0001;
-
-    /**
      * The number of bootstrap samples to generate during independence testing
      */
     private int perms = 100;
@@ -252,7 +242,7 @@ public class Kpc implements GraphSearch {
             throw new NullPointerException();
         }
 
-        List allNodes = getIndependenceTest().getVariables();
+        List<Node> allNodes = getIndependenceTest().getVariables();
         if (!allNodes.containsAll(nodes)) {
             throw new IllegalArgumentException("All of the given nodes must " +
                     "be in the domain of the independence test provided.");
@@ -328,28 +318,11 @@ public class Kpc implements GraphSearch {
     }
 
     /**
-     * Sets the precision for the Incomplete Choleksy factorization method for approximating Gram matrices. A value <= 0
-     * indicates that the Incomplete Cholesky method should not be used and instead use the exact matrices.
-     */
-    public void setIncompleteCholesky(double precision) {
-        this.useIncompleteCholesky = precision;
-        this.independenceTest.setIncompleteCholesky(precision);
-    }
-
-    /**
      * Set the number of bootstrap samples to use
      */
     public void setPerms(int perms) {
         this.perms = perms;
         this.independenceTest.setPerms(perms);
-    }
-
-    /**
-     * Sets the regularizer
-     */
-    public void setRegularizer(double regularizer) {
-        this.regularizer = regularizer;
-        this.independenceTest.setRegularizer(regularizer);
     }
 
     /**
@@ -363,7 +336,7 @@ public class Kpc implements GraphSearch {
      * Gets the getModel precision for the Incomplete Cholesky
      */
     public double getPrecision() {
-        return this.useIncompleteCholesky;
+        return 1e-18;
     }
 
     /**
@@ -371,13 +344,6 @@ public class Kpc implements GraphSearch {
      */
     public int getPerms() {
         return this.perms;
-    }
-
-    /**
-     * Gets the getModel regularizer
-     */
-    public double getRegularizer() {
-        return this.regularizer;
     }
 
     //===============================PRIVATE METHODS=======================//

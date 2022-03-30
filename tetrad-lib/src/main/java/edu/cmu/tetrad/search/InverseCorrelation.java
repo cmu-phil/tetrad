@@ -75,19 +75,6 @@ public class InverseCorrelation {
                     Node y = graph.getNodes().get(j);
                     graph.addUndirectedEdge(x, y);
                 }
-
-//                if (abs(fisherZ) > threshold) {
-//                    System.out.println(fisherZ + " &&& " + p);
-//                    Node x = graph.getNodes().get(i);
-//                    Node y = graph.getNodes().get(j);
-//                    graph.addUndirectedEdge(x, y);
-//                }
-
-//                if (Math.abs(inverse.get(i, j)) > threshold) {
-//                    Node x = graph.getNodes().get(i);
-//                    Node y = graph.getNodes().get(j);
-//                    graph.addUndirectedEdge(x, y);
-//                }
             }
         }
 
