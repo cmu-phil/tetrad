@@ -626,7 +626,6 @@ public class FindOneFactorClusters {
     // Finds clusters of size 4 or higher for the tetrad-first algorithm.
     private Set<List<Integer>> findPureClusters(List<Integer> _variables) {
         Set<List<Integer>> clusters = new HashSet<>();
-        List<Integer> allVariables = allVariables();
 
         VARIABLES:
         while (!_variables.isEmpty()) {
@@ -654,7 +653,7 @@ public class FindOneFactorClusters {
                 // remove all latent-measure impurities between pairs of latents.
                 if (pure(cluster)) {
 
-                    addOtherVariables(_variables, allVariables, cluster);
+                    addOtherVariables(_variables, cluster);
 
                     if (this.verbose) {
                         log("Cluster found: " + variablesForIndices(cluster));
@@ -672,7 +671,7 @@ public class FindOneFactorClusters {
         return clusters;
     }
 
-    private void addOtherVariables(List<Integer> _variables, List<Integer> allVariables, List<Integer> cluster) {
+    private void addOtherVariables(List<Integer> _variables, List<Integer> cluster) {
         O:
         for (int o : _variables) {
             if (cluster.contains(o)) continue;

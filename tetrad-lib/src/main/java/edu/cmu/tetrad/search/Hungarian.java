@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.util.RandomUtil;
 
+import java.util.Arrays;
 import java.util.Scanner;
 
 import static java.lang.Math.floor;
@@ -93,10 +94,10 @@ public class Hungarian {
     //works for arrays where all values are >= 0.
     {
         double largest = 0;
-        for (int i = 0; i < array.length; i++) {
-            for (int j = 0; j < array[i].length; j++) {
-                if (array[i][j] > largest) {
-                    largest = array[i][j];
+        for (double[] doubles : array) {
+            for (double aDouble : doubles) {
+                if (aDouble > largest) {
+                    largest = aDouble;
                 }
             }
         }
@@ -151,26 +152,26 @@ public class Hungarian {
         int[] zero_RC = new int[2];                                                                //Position of last zero from Step 4.
         int step = 1;
         boolean done = false;
-        while (done == false)        //main execution loop
+        while (!done)        //main execution loop
         {
             switch (step) {
                 case 1:
-                    step = Hungarian.hg_step1(step, cost);
+                    step = Hungarian.hg_step1(cost);
                     break;
                 case 2:
-                    step = Hungarian.hg_step2(step, cost, mask, rowCover, colCover);
+                    step = Hungarian.hg_step2(cost, mask, rowCover, colCover);
                     break;
                 case 3:
-                    step = Hungarian.hg_step3(step, mask, colCover);
+                    step = Hungarian.hg_step3(mask, colCover);
                     break;
                 case 4:
                     step = Hungarian.hg_step4(step, cost, mask, rowCover, colCover, zero_RC);
                     break;
                 case 5:
-                    step = Hungarian.hg_step5(step, mask, rowCover, colCover, zero_RC);
+                    step = Hungarian.hg_step5(mask, rowCover, colCover, zero_RC);
                     break;
                 case 6:
-                    step = Hungarian.hg_step6(step, cost, rowCover, colCover, maxCost);
+                    step = Hungarian.hg_step6(cost, rowCover, colCover, maxCost);
                     break;
                 case 7:
                     done = true;
@@ -190,21 +191,13 @@ public class Hungarian {
 
         //If you want to return the min or max sum, in your own main method
         //instead of the assignment array, then use the following code:
-        /*
-                 double sum = 0;
-                 for (int i=0; i<assignment.length; i++)
-                 {
-                         sum = sum + array[assignment[i][0]][assignment[i][1]];
-                 }
-                 return sum;
-                 */
         //Of course you must also change the header of the method to:
         //public static double hgAlgorithm (double[][] array, String sumType)
 
         return assignment;
     }
 
-    public static int hg_step1(int step, double[][] cost) {
+    public static int hg_step1(double[][] cost) {
         //What STEP 1 does:
         //For each row of the cost matrix, find the smallest element
         //and subtract it from from every other element in its row.
@@ -225,11 +218,10 @@ public class Hungarian {
             }
         }
 
-        step = 2;
-        return step;
+        return 2;
     }
 
-    public static int hg_step2(int step, double[][] cost, int[][] mask, int[] rowCover, int[] colCover) {
+    public static int hg_step2(double[][] cost, int[][] mask, int[] rowCover, int[] colCover) {
         //What STEP 2 does:
         //Marks uncovered zeros as starred and covers their row and column.
 
@@ -245,29 +237,29 @@ public class Hungarian {
 
         Hungarian.clearCovers(rowCover, colCover);        //Reset cover vectors.
 
-        step = 3;
-        return step;
+        return 3;
     }
 
-    public static int hg_step3(int step, int[][] mask, int[] colCover) {
+    public static int hg_step3(int[][] mask, int[] colCover) {
         //What STEP 3 does:
         //Cover columns of starred zeros. Check if all columns are covered.
 
-        for (int i = 0; i < mask.length; i++)        //Cover columns of starred zeros.
-        {
-            for (int j = 0; j < mask[i].length; j++) {
-                if (mask[i][j] == 1) {
+        //Cover columns of starred zeros.
+        for (int[] ints : mask) {
+            for (int j = 0; j < ints.length; j++) {
+                if (ints[j] == 1) {
                     colCover[j] = 1;
                 }
             }
         }
 
         int count = 0;
-        for (int j = 0; j < colCover.length; j++)        //Check if all columns are covered.
-        {
-            count = count + colCover[j];
+        //Check if all columns are covered.
+        for (int i : colCover) {
+            count = count + i;
         }
 
+        int step;
         if (count >= mask.length)        //Should be cost.length but ok, because mask has same dimensions.
         {
             step = 7;
@@ -286,8 +278,8 @@ public class Hungarian {
 
         int[] row_col = new int[2];        //Holds row and col of uncovered zero.
         boolean done = false;
-        while (done == false) {
-            row_col = Hungarian.findUncoveredZero(row_col, cost, rowCover, colCover);
+        while (!done) {
+            Hungarian.findUncoveredZero(row_col, cost, rowCover, colCover);
             if (row_col[0] == -1) {
                 done = true;
                 step = 6;
@@ -303,7 +295,7 @@ public class Hungarian {
                     }
                 }
 
-                if (starInRow == true) {
+                if (starInRow) {
                     rowCover[row_col[0]] = 1;        //Cover the star's row.
                     colCover[row_col[1]] = 0;        //Uncover its column.
                 } else {
@@ -318,14 +310,14 @@ public class Hungarian {
         return step;
     }
 
-    public static int[] findUncoveredZero        //Aux 1 for hg_step4.
+    public static void findUncoveredZero        //Aux 1 for hg_step4.
     (int[] row_col, double[][] cost, int[] rowCover, int[] colCover) {
         row_col[0] = -1;        //Just a check value. Not a real index.
         row_col[1] = 0;
 
         int i = 0;
         boolean done = false;
-        while (done == false) {
+        while (!done) {
             int j = 0;
             while (j < cost[i].length) {
                 if (cost[i][j] == 0 && rowCover[i] == 0 && colCover[j] == 0) {
@@ -341,10 +333,9 @@ public class Hungarian {
             }
         }//end outer while
 
-        return row_col;
     }
 
-    public static int hg_step5(int step, int[][] mask, int[] rowCover, int[] colCover, int[] zero_RC) {
+    public static int hg_step5(int[][] mask, int[] rowCover, int[] colCover, int[] zero_RC) {
         //What STEP 5 does:
         //Construct series of alternating primes and stars. Start with prime from step 4.
         //Take star in the same column. Next take prime in the same row as the star. Finish
@@ -357,7 +348,7 @@ public class Hungarian {
         path[count][1] = zero_RC[1];                                                                //Column of last prime.
 
         boolean done = false;
-        while (done == false) {
+        while (!done) {
             int r = Hungarian.findStarInCol(mask, path[count][1]);
             if (r >= 0) {
                 count = count + 1;
@@ -367,7 +358,7 @@ public class Hungarian {
                 done = true;
             }
 
-            if (done == false) {
+            if (!done) {
                 int c = Hungarian.findPrimeInRow(mask, path[count][0]);
                 count = count + 1;
                 path[count][0] = path[count - 1][0];        //Row of primed zero.
@@ -379,8 +370,7 @@ public class Hungarian {
         Hungarian.clearCovers(rowCover, colCover);
         Hungarian.erasePrimes(mask);
 
-        step = 3;
-        return step;
+        return 3;
 
     }
 
@@ -432,15 +422,11 @@ public class Hungarian {
 
     public static void clearCovers                        //Aux 5 for hg_step5 (and not only).
     (int[] rowCover, int[] colCover) {
-        for (int i = 0; i < rowCover.length; i++) {
-            rowCover[i] = 0;
-        }
-        for (int j = 0; j < colCover.length; j++) {
-            colCover[j] = 0;
-        }
+        Arrays.fill(rowCover, 0);
+        Arrays.fill(colCover, 0);
     }
 
-    public static int hg_step6(int step, double[][] cost, int[] rowCover, int[] colCover, double maxCost) {
+    public static int hg_step6(double[][] cost, int[] rowCover, int[] colCover, double maxCost) {
         //What STEP 6 does:
         //Find smallest uncovered value in cost: a. Add it to every element of covered rows
         //b. Subtract it from every element of uncovered columns. Go to step 4.
@@ -458,8 +444,7 @@ public class Hungarian {
             }
         }
 
-        step = 4;
-        return step;
+        return 4;
     }
 
     public static double findSmallest                //Aux 1 for hg_step6.
@@ -508,9 +493,9 @@ public class Hungarian {
         //<COMMENT> TO AVOID PRINTING THE MATRIX FOR WHICH THE ASSIGNMENT IS CALCULATED
         System.out.println("\n(Printing out only 2 decimals)\n");
         System.out.println("The matrix is:");
-        for (int i = 0; i < array.length; i++) {
-            for (int j = 0; j < array[i].length; j++) {
-                System.out.printf("%.2f\t", array[i][j]);
+        for (double[] doubles : array) {
+            for (double aDouble : doubles) {
+                System.out.printf("%.2f\t", aDouble);
             }
             System.out.println();
         }
@@ -518,18 +503,16 @@ public class Hungarian {
         //</COMMENT>*/
 
         double startTime = System.nanoTime();
-        int[][] assignment = new int[array.length][2];
+        int[][] assignment;
         assignment = Hungarian.hgAlgorithm(array, sumType);        //Call Hungarian algorithm.
         double endTime = System.nanoTime();
 
         System.out.println("The winning assignment (" + sumType + " sum) is:\n");
         double sum = 0;
-        for (int i = 0; i < assignment.length; i++) {
-            //<COMMENT> to avoid printing the elements that make up the assignment
-            System.out.printf("array(%d,%d) = %.2f\n", (assignment[i][0] + 1), (assignment[i][1] + 1),
-                    array[assignment[i][0]][assignment[i][1]]);
-            sum = sum + array[assignment[i][0]][assignment[i][1]];
-            //</COMMENT>
+        for (int[] ints : assignment) {
+            System.out.printf("array(%d,%d) = %.2f\n", (ints[0] + 1), (ints[1] + 1),
+                    array[ints[0]][ints[1]]);
+            sum = sum + array[ints[0]][ints[1]];
         }
 
         System.out.printf("\nThe %s is: %.2f\n", sumType, sum);

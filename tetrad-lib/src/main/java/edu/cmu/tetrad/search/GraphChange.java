@@ -88,8 +88,8 @@ public class GraphChange {
             if (other.colliders.contains(nonColide))
                 return false;
 
-        Collection colidePairsOther = makePairs(other.colliders);
-        Collection nonColidePairsOther = makePairs(other.nonColliders);
+        Collection<OrderedNodePair> colidePairsOther = makePairs(other.colliders);
+        Collection<OrderedNodePair> nonColidePairsOther = makePairs(other.nonColliders);
 
         /* checks for overlap between removes and noncolliders */
         for (Edge e : this.removes) {
@@ -99,8 +99,8 @@ public class GraphChange {
                 return false;
         }
 
-        Collection colidePairsThis = makePairs(this.colliders);
-        Collection nonColidePairsThis = makePairs(this.nonColliders);
+        Collection<OrderedNodePair> colidePairsThis = makePairs(this.colliders);
+        Collection<OrderedNodePair> nonColidePairsThis = makePairs(this.nonColliders);
 
         /* checks for overlap between removes and colliders/orients*/
         for (Edge e : other.removes) {
@@ -120,7 +120,7 @@ public class GraphChange {
      */
     public Graph applyTo(Graph graph) {
         Graph output = new EdgeListGraph(graph);
-        output = makeNewEdges(output);
+        makeNewEdges(output);
 
         for (Triple t : this.nonColliders)
             output.addUnderlineTriple(t.getX(), t.getY(), t.getZ());
@@ -295,7 +295,7 @@ public class GraphChange {
      * Takes a graph and recreates all edges. Used in order to copy a graph, because the copy constructor does not go
      * all the way down through the datastructures to make entirely new objects for everything
      */
-    private Graph makeNewEdges(Graph graph) {
+    private void makeNewEdges(Graph graph) {
         Set<Edge> origEdges = graph.getEdges();
 
         for (Edge e : origEdges) {
@@ -305,7 +305,6 @@ public class GraphChange {
             graph.addEdge(newEdge);
         }
 
-        return graph;
     }
 
 
@@ -313,7 +312,7 @@ public class GraphChange {
      * Almost a direct copy of edu.cmu.tetrad.graph.NodePair. While  NodePairs can be partially tricked into preserving
      * order of nodes, its .equals does not acknowledge said convention, thus the need for OrderedNodePairs on occasion
      */
-    private class OrderedNodePair extends NodePair {
+    private static class OrderedNodePair extends NodePair {
 
         public OrderedNodePair(Node first, Node second) {
             super(first, second);

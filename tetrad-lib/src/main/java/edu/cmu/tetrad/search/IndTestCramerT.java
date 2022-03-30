@@ -323,7 +323,7 @@ public final class IndTestCramerT implements IndependenceTest {
         return null;
     }
 
-    public boolean determines(List z, Node x) throws UnsupportedOperationException {
+    public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         int[] parents = new int[z.size()];
 
         for (int j = 0; j < parents.length; j++) {

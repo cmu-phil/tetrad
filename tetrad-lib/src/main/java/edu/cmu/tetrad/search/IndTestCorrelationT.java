@@ -336,10 +336,6 @@ public final class IndTestCorrelationT implements IndependenceTest {
         return "Fisher's Z, alpha = " + IndTestCorrelationT.nf.format(getAlpha());
     }
 
-    public void setPValueLogger(PrintStream pValueLogger) {
-        this.pValueLogger = pValueLogger;
-    }
-
     //==========================PRIVATE METHODS============================//
 
     private int sampleSize() {

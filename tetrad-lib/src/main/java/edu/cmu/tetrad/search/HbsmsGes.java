@@ -46,13 +46,11 @@ public final class HbsmsGes implements Hbsms {
     private IKnowledge knowledge = new Knowledge2();
     private final Graph graph;
     private double alpha = 0.05;
-    private double highPValueAlpha = 0.05;
     private final NumberFormat nf = new DecimalFormat("0.0#########");
     private final Set<GraphWithPValue> significantModels = new HashSet<>();
     private SemIm originalSemIm;
     private SemIm newSemIm;
     private final Scorer scorer;
-    private Graph newDag;
 
     public HbsmsGes(Graph graph, DataSet data) {
         if (graph == null) throw new NullPointerException("Graph not specified.");
@@ -78,14 +76,6 @@ public final class HbsmsGes implements Hbsms {
         if (pValue > this.alpha) {
             getSignificantModels().add(new GraphWithPValue(graph, pValue));
         }
-    }
-
-    public void setNewDag(Graph newDag) {
-        this.newDag = newDag;
-    }
-
-    public Graph getNewDag() {
-        return this.newDag;
     }
 
     public static class GraphWithPValue {
@@ -120,10 +110,6 @@ public final class HbsmsGes implements Hbsms {
     public Score scoreGraph(Graph graph) {
         Graph dag = SearchGraphUtils.dagFromCPDAG(graph, getKnowledge());
 
-        if (dag == null) {
-            return Score.negativeInfinity();
-        }
-
         this.scorer.score(dag);
         return new Score(this.scorer);
     }
@@ -141,44 +127,13 @@ public final class HbsmsGes implements Hbsms {
     }
 
     public void setHighPValueAlpha(double highPValueAlpha) {
-        this.highPValueAlpha = highPValueAlpha;
     }
 
     public Score scoreDag(Graph dag) {
-//        SemPm semPm = new SemPm(dag);
-//        SemEstimator semEstimator = new SemEstimator(dataSet, semPm, new SemOptimizerEm());
-//        semEstimator.estimate();
-//        SemIm estimatedSem = semEstimator.getEstimatedSem();
-//        return new Score(estimatedSem);
 
         this.scorer.score(dag);
         return new Score(this.scorer);
     }
-
-//    private void removeHighPValueEdges(Graph bestGraph) {
-//        boolean changed = true;
-//
-//        while (changed) {
-//            changed = false;
-//            Score score = scoreGraph(bestGraph);
-//            SemIm estSem = score.getEstimatedSem();
-//
-//            for (Parameter param : estSem.getSemPm().getParameters()) {
-//                if (param.getType() != ParamType.COEF) {
-//                    continue;
-//                }
-//
-//                double p = estSem.getScore(param, 10000);
-//                Edge edge = bestGraph.getEdge(param.getNodeA(), param.getNodeB());
-//
-//                if (p > getHighPValueAlpha()) {
-//                    System.out.println("Removing edge " + edge + " because it has p = " + p);
-//                    bestGraph.removeEdge(edge);
-//                    changed = true;
-//                }
-//            }
-//        }
-//    }
 
     public Graph search() {
         Score score1 = scoreGraph(getGraph());
@@ -190,17 +145,11 @@ public final class HbsmsGes implements Hbsms {
 
         saveModelIfSignificant(getGraph());
 
-//        removeHighPValueEdges(getGraph());
-
         // Do forward search.
         score = fes(getGraph(), score);
 
         // Do backward search.
         bes(getGraph(), score);
-
-//        removeHighPValueEdges(getGraph());
-
-        setNewDag(SearchGraphUtils.dagFromCPDAG(getGraph()));
 
         Score _score = scoreGraph(getGraph());
         this.newSemIm = _score.getEstimatedSem();
@@ -243,13 +192,13 @@ public final class HbsmsGes implements Hbsms {
 
                     for (Set<Node> tSubset : tSubsets) {
 
-                        if (!validSetByKnowledge(_x, _y, tSubset, true)) {
+                        if (invalidSetByKnowledge(_x, _y, tSubset, true)) {
                             continue;
                         }
 
                         Graph graph2 = new EdgeListGraph(graph);
 
-                        tryInsert(_x, _y, tSubset, graph2, true);
+                        tryInsert(_x, _y, tSubset, graph2);
 
                         if (graph2.existsDirectedCycle()) {
                             continue;
@@ -278,7 +227,7 @@ public final class HbsmsGes implements Hbsms {
 
             if (x != null) {
                 score = bestScore;
-                insert(x, y, t, graph, true);
+                insert(x, y, t, graph);
                 rebuildCPDAG(graph);
 
                 saveModelIfSignificant(graph);
@@ -291,11 +240,10 @@ public final class HbsmsGes implements Hbsms {
         return score;
     }
 
-    private double bes(Graph graph, double initialScore) {
+    private void bes(Graph graph, double initialScore) {
         TetradLogger.getInstance().log("info", "** BACKWARD ELIMINATION SEARCH");
         TetradLogger.getInstance().log("info", "Initial Score = " + this.nf.format(initialScore));
-        double score = initialScore;
-        double bestScore = score;
+        double bestScore = initialScore;
         Node x, y;
         Set<Node> t = new HashSet<>();
         do {
@@ -323,13 +271,13 @@ public final class HbsmsGes implements Hbsms {
                 List<Set<Node>> hSubsets = HbsmsGes.powerSet(hNeighbors);
 
                 for (Set<Node> hSubset : hSubsets) {
-                    if (!validSetByKnowledge(_x, _y, hSubset, false)) {
+                    if (invalidSetByKnowledge(_x, _y, hSubset, false)) {
                         continue;
                     }
 
                     Graph graph2 = new EdgeListGraph(graph);
 
-                    tryDelete(_x, _y, hSubset, graph2, true);
+                    tryDelete(_x, _y, hSubset, graph2);
 
                     double evalScore = scoreGraph(graph2).getScore();
 
@@ -348,16 +296,12 @@ public final class HbsmsGes implements Hbsms {
                 }
             }
             if (x != null) {
-//                if (scoreGraph(graph).getScore() < alpha) {
-//                    return score;
-//                }
 
                 if (!graph.isAdjacentTo(x, y)) {
                     throw new IllegalArgumentException("trying to delete a nonexistent edge! " + x + "---" + y);
                 }
 
-                score = bestScore;
-                delete(x, y, t, graph, true);
+                delete(x, y, t, graph);
 
 
                 rebuildCPDAG(graph);
@@ -366,7 +310,6 @@ public final class HbsmsGes implements Hbsms {
             }
         } while (x != null);
 
-        return score;
     }
 
 
@@ -375,7 +318,7 @@ public final class HbsmsGes implements Hbsms {
      * (Definition 12 from Chickering, 2002).
      **/
 
-    private void tryInsert(Node x, Node y, Set<Node> subset, Graph graph, boolean log) {
+    private void tryInsert(Node x, Node y, Set<Node> subset, Graph graph) {
         graph.addDirectedEdge(x, y);
 
         for (Node t : subset) {
@@ -388,17 +331,15 @@ public final class HbsmsGes implements Hbsms {
             graph.removeEdge(t, y);
             graph.addDirectedEdge(t, y);
 
-            if (log) {
-                TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldEdge + " to " +
-                        graph.getEdge(t, y));
-            }
+            TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldEdge + " to " +
+                    graph.getEdge(t, y));
         }
     }
 
     /**
      * Do an actual deletion (Definition 13 from Chickering, 2002).
      */
-    private void tryDelete(Node x, Node y, Set<Node> subset, Graph graph, boolean log) {
+    private void tryDelete(Node x, Node y, Set<Node> subset, Graph graph) {
         graph.removeEdge(x, y);
 
         for (Node h : subset) {
@@ -406,27 +347,23 @@ public final class HbsmsGes implements Hbsms {
                 graph.removeEdge(x, h);
                 graph.addDirectedEdge(x, h);
 
-                if (log) {
-                    Edge oldEdge = graph.getEdge(x, h);
-                    TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldEdge + " to " +
-                            graph.getEdge(x, h));
-                }
+                Edge oldEdge = graph.getEdge(x, h);
+                TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldEdge + " to " +
+                        graph.getEdge(x, h));
             }
 
             if (Edges.isUndirectedEdge(graph.getEdge(y, h))) {
                 graph.removeEdge(y, h);
                 graph.addDirectedEdge(y, h);
 
-                if (log) {
-                    Edge oldEdge = graph.getEdge(y, h);
-                    TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldEdge + " to " +
-                            graph.getEdge(y, h));
-                }
+                Edge oldEdge = graph.getEdge(y, h);
+                TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldEdge + " to " +
+                        graph.getEdge(y, h));
             }
         }
     }
 
-    private void insert(Node x, Node y, Set<Node> subset, Graph graph, boolean log) {
+    private void insert(Node x, Node y, Set<Node> subset, Graph graph) {
         if (graph.isAdjacentTo(x, y)) {
             return;
         }
@@ -443,19 +380,17 @@ public final class HbsmsGes implements Hbsms {
             graph.removeEdge(t, y);
             graph.addDirectedEdge(t, y);
 
-            if (log) {
-                TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldEdge + " to " +
-                        graph.getEdge(t, y));
-            }
+            TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldEdge + " to " +
+                    graph.getEdge(t, y));
         }
     }
 
     /**
      * Do an actual deletion (Definition 13 from Chickering, 2002).
      */
-    private void delete(Node x, Node y, Set<Node> subset, Graph graph, boolean log) {
+    private void delete(Node x, Node y, Set<Node> subset, Graph graph) {
 
-        if (log) {
+        {
             Edge oldEdge = graph.getEdge(x, y);
             System.out.println(graph.getNumEdges() + ". DELETE " + oldEdge +
                     " " + subset +
@@ -469,22 +404,18 @@ public final class HbsmsGes implements Hbsms {
                 graph.removeEdge(x, h);
                 graph.addDirectedEdge(x, h);
 
-                if (log) {
-                    Edge oldEdge = graph.getEdge(x, h);
-                    TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldEdge + " to " +
-                            graph.getEdge(x, h));
-                }
+                Edge oldEdge = graph.getEdge(x, h);
+                TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldEdge + " to " +
+                        graph.getEdge(x, h));
             }
 
             if (Edges.isUndirectedEdge(graph.getEdge(y, h))) {
                 graph.removeEdge(y, h);
                 graph.addDirectedEdge(y, h);
 
-                if (log) {
-                    Edge oldEdge = graph.getEdge(y, h);
-                    TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldEdge + " to " +
-                            graph.getEdge(y, h));
-                }
+                Edge oldEdge = graph.getEdge(y, h);
+                TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldEdge + " to " +
+                        graph.getEdge(y, h));
             }
         }
     }
@@ -498,7 +429,7 @@ public final class HbsmsGes implements Hbsms {
         List<Node> naYXT = new LinkedList<>(subset);
         naYXT.addAll(HbsmsGes.findNaYX(x, y, graph));
 
-        return GraphUtils.isClique(naYXT, graph) && isSemiDirectedBlocked(x, y, naYXT, graph, new HashSet<Node>());
+        return GraphUtils.isClique(naYXT, graph) && isSemiDirectedBlocked(x, y, naYXT, graph, new HashSet<>());
 
     }
 
@@ -571,79 +502,29 @@ public final class HbsmsGes implements Hbsms {
         return naYX;
     }
 
-    private boolean validSetByKnowledge(Node x, Node y, Set<Node> subset,
-                                        boolean insertMode) {
+    private boolean invalidSetByKnowledge(Node x, Node y, Set<Node> subset,
+                                          boolean insertMode) {
         if (insertMode) {
             for (Node aSubset : subset) {
                 if (getKnowledge().isForbidden(aSubset.getName(),
                         y.getName())) {
-                    return false;
+                    return true;
                 }
             }
         } else {
             for (Node nextElement : subset) {
                 if (getKnowledge().isForbidden(x.getName(),
                         nextElement.getName())) {
-                    return false;
+                    return true;
                 }
                 if (getKnowledge().isForbidden(y.getName(),
                         nextElement.getName())) {
-                    return false;
+                    return true;
                 }
             }
         }
-        return true;
+        return false;
     }
-
-//    private double scoreGraphChange(Node y, Set<Node> parents1,
-//                                    Set<Node> parents2, Graph graph) {
-//        graph = SearchGraphUtils.dagFromCPDAG(graph);
-//
-//        List<Node> currentParents = graph.getParents(y);
-//        List<Node> currentChildren = graph.getChildren(y);
-//
-//        for (Node node : currentParents) {
-//            graph.removeEdge(node, y);
-//        }
-//
-//        for (Node node : currentChildren) {
-//            graph.removeEdge(y, node);
-//        }
-//
-//        for (Node node : parents1) {
-//            graph.addDirectedEdge(node, y);
-//        }
-//
-//        double score1 = scoreGraph(graph).getScore();
-//
-//        saveModelIfSignificant(graph);
-//
-//        for (Node node : parents1) {
-//            graph.removeEdge(node, y);
-//        }
-//
-//        for (Node node : parents2) {
-//            graph.addDirectedEdge(node, y);
-//        }
-//
-//        double score2 = scoreGraph(graph).getScore();
-//
-//        saveModelIfSignificant(graph);
-//
-//        for (Node node : parents2) {
-//            graph.removeEdge(node, y);
-//        }
-//
-//        for (Node node : currentParents) {
-//            graph.addDirectedEdge(node, y);
-//        }
-//
-//        for (Node node : currentChildren) {
-//            graph.addDirectedEdge(y, node);
-//        }
-//
-//        return score1 - score2;
-//    }
 
     /**
      * Verifies if every semidirected path from y to x contains a node in naYXT.
@@ -780,13 +661,6 @@ public final class HbsmsGes implements Hbsms {
             this.dof = scorer.getDof();
         }
 
-        private Score() {
-            this.scorer = null;
-            this.pValue = 0.0;
-            this.fml = Double.POSITIVE_INFINITY;
-            this.chisq = 0.0;
-        }
-
         public SemIm getEstimatedSem() {
             return this.scorer.getEstSem();
         }
@@ -796,46 +670,13 @@ public final class HbsmsGes implements Hbsms {
         }
 
         public double getScore() {
-//            double fml = estimatedSem.getFml();
-//            int freeParams = estimatedSem.getNumFreeParams();
-//            int sampleSize = estimatedSem.getSampleSize();
-//            return -(sampleSize - 1) * fml - (freeParams * Math.log(sampleSize));
-//            return -getChisq();
 
-//            if (getMaxEdgeP() > 0.05) {
-//                return Double.NEGATIVE_INFINITY;
-//            }
-
-//            return -fml;
-//            return -chisq;
             return -this.bic;
 //            return -aic;
         }
 
         public double getFml() {
             return this.fml;
-        }
-
-//        public double getChisq() {
-//            return chisq;
-//        }
-
-//        public double getMaxEdgeP() {
-//            double maxP = Double.NEGATIVE_INFINITY;
-//
-//            for (Parameter param : estimatedSem.getSemPm().getParameters()) {
-//                if (param.getType() != ParamType.COEF) {
-//                    continue;
-//                }
-//                double p = this.estimatedSem.getScore(param, 10000);
-//                if (p > maxP) maxP = p;
-//            }
-//
-//            return maxP;
-//        }
-
-        public static Score negativeInfinity() {
-            return new Score();
         }
 
         public int getDof() {
@@ -851,89 +692,6 @@ public final class HbsmsGes implements Hbsms {
         }
     }
 
-//    /**
-//     * This method straightforwardly applies the standard definition of the numerical estimates of the second order
-//     * partial derivatives.  See for example Section 5.7 of Numerical Recipes in C.
-//     */
-//    public double secondPartialDerivative(FittingFunction f, int i, int j,
-//                                          double[] p, double delt) {
-//        double[] arg = new double[p.length];
-//        System.arraycopy(p, 0, arg, 0, p.length);
-//
-//        arg[i] += delt;
-//        arg[j] += delt;
-//        double ff1 = f.evaluate(arg);
-//
-//        arg[j] -= 2 * delt;
-//        double ff2 = f.evaluate(arg);
-//
-//        arg[i] -= 2 * delt;
-//        arg[j] += 2 * delt;
-//        double ff3 = f.evaluate(arg);
-//
-//        arg[j] -= 2 * delt;
-//        double ff4 = f.evaluate(arg);
-//
-//        double fsSum = ff1 - ff2 - ff3 + ff4;
-//
-//        return fsSum / (4.0 * delt * delt);
-//    }
-
-//    /**
-//     * Evaluates a fitting function for an array of parameters.
-//     *
-//     * @author Joseph Ramsey
-//     */
-//    interface FittingFunction {
-//
-//        /**
-//         * @return the value of the function for the given array of parameter values.
-//         */
-//        double evaluate(double[] argument);
-//
-//        /**
-//         * @return the number of parameters.
-//         */
-//        int getNumParameters();
-//    }
-
-//    /**
-//     * Wraps a Sem for purposes of calculating its fitting function for given parameter values.
-//     *
-//     * @author Joseph Ramsey
-//     */
-//    static class SemFittingFunction implements FittingFunction {
-//
-//        /**
-//         * The wrapped Sem.
-//         */
-//        private final SemIm sem;
-//
-//        /**
-//         * Constructs a new CoefFittingFunction for the given Sem.
-//         */
-//        public SemFittingFunction(SemIm sem) {
-//            this.sem = sem;
-//        }
-//
-//        /**
-//         * Computes the maximum likelihood function value for the given parameters values as given by the optimizer.
-//         * These values are mapped to parameter values.
-//         */
-//        public double evaluate(double[] parameters) {
-//            sem.setFreeParamValues(parameters);
-//
-//            // This needs to be FML-- see Bollen p. 109.
-//            return sem.getScore();
-//        }
-//
-//        /**
-//         * @return the number of arguments. Required by the MultivariateFunction interface.
-//         */
-//        public int getNumParameters() {
-//            return this.sem.getNumFreeParams();
-//        }
-//    }
 }
 
 

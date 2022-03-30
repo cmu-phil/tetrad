@@ -55,7 +55,6 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
     private double pValue = Double.NaN;
 
     private boolean verbose;
-    private boolean fastFDR;
     private int numCategoriesToDiscretize = 3;
 
     public IndTestConditionalGaussianLRT(DataSet data, double alpha, boolean discretize) {
@@ -272,10 +271,6 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-    }
-
-    public void setFastFDR(boolean fastFDR) {
-        this.fastFDR = fastFDR;
     }
 
     public void setNumCategoriesToDiscretize(int numCategoriesToDiscretize) {

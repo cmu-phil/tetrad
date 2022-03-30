@@ -238,13 +238,6 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     //==========================PUBLIC METHODS==========================//
 
     /**
-     * Returns superstructure graph
-     */
-    public Graph getGraphToOrient() {
-        return this.graphToOrient;
-    }
-
-    /**
      * Set to true if it is assumed that all path pairs with one length 1 path do not cancelAll.
      */
     public void setFaithfulnessAssumed(boolean faithfulness) {
@@ -515,24 +508,6 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
         this.depth = depth;
     }
 
-    /**
-     * A bound on cycle length.
-     */
-    public int getCycleBound() {
-        return this.cycleBound;
-    }
-
-    /**
-     * A bound on cycle length.
-     *
-     * @param cycleBound The bound, >= 1, or -1 for unlimited.
-     */
-    public void setCycleBound(int cycleBound) {
-        if (!(cycleBound == -1 || cycleBound >= 1))
-            throw new IllegalArgumentException("Cycle bound needs to be -1 or >= 1: " + cycleBound);
-        this.cycleBound = cycleBound;
-    }
-
     //===========================PRIVATE METHODS========================//
 
     // Simultaneously finds the first edge to add to an empty graph and finds all length 1 undirectedPaths that are
@@ -578,7 +553,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
                                     continue;
                                 }
 
-                                if (!validSetByKnowledge(y, emptySet)) {
+                                if (invalidSetByKnowledge(y, emptySet)) {
                                     continue;
                                 }
                             }
@@ -617,7 +592,6 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
                         }
                     }
 
-                    return true;
                 } else {
                     int mid = (this.to + this.from) / 2;
 
@@ -628,8 +602,8 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
 
                     ForkJoinTask.invokeAll(tasks);
 
-                    return true;
                 }
+                return true;
             }
         }
 
@@ -829,7 +803,6 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
                         }
                     }
 
-                    return true;
                 } else {
                     int mid = (this.to + this.from) / 2;
 
@@ -840,8 +813,8 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
 
                     ForkJoinTask.invokeAll(tasks);
 
-                    return true;
                 }
+                return true;
             }
         }
 
@@ -888,7 +861,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
             if (!GraphUtils.isClique(union, graph)) continue;
 
             if (existsKnowledge()) {
-                if (!validSetByKnowledge(b, s)) {
+                if (invalidSetByKnowledge(b, s)) {
                     continue;
                 }
             }
@@ -940,7 +913,6 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
                         }
                     }
 
-                    return true;
                 } else {
                     int mid = (this.to + this.from) / 2;
 
@@ -951,8 +923,8 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
 
                     ForkJoinTask.invokeAll(tasks);
 
-                    return true;
                 }
+                return true;
             }
         }
 
@@ -997,7 +969,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
             if (!GraphUtils.isClique(diff, graph)) continue;
 
             if (existsKnowledge()) {
-                if (!validSetByKnowledge(b, h)) {
+                if (invalidSetByKnowledge(b, h)) {
                     continue;
                 }
             }
@@ -1306,7 +1278,6 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
             if (this.knowledge.isForbidden(A, B)) {
                 Node nodeA = edge.getNode1();
                 Node nodeB = edge.getNode2();
-                if (nodeA == null || nodeB == null) throw new NullPointerException();
 
                 if (graph.isAdjacentTo(nodeA, nodeB) && !graph.isChildOf(nodeA, nodeB)) {
                     if (!graph.isAncestorOf(nodeA, nodeB)) {
@@ -1326,7 +1297,6 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
             } else if (this.knowledge.isForbidden(B, A)) {
                 Node nodeA = edge.getNode2();
                 Node nodeB = edge.getNode1();
-                if (nodeA == null || nodeB == null) throw new NullPointerException();
 
                 if (graph.isAdjacentTo(nodeA, nodeB) && !graph.isChildOf(nodeA, nodeB)) {
                     if (!graph.isAncestorOf(nodeA, nodeB)) {
@@ -1349,13 +1319,13 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     // Use background knowledge to decide if an insert or delete operation does not orient edges in a forbidden
     // direction according to prior knowledge. If some orientation is forbidden in the subset, the whole subset is
     // forbidden.
-    private boolean validSetByKnowledge(Node y, Set<Node> subset) {
+    private boolean invalidSetByKnowledge(Node y, Set<Node> subset) {
         for (Node node : subset) {
             if (getKnowledge().isForbidden(node.getName(), y.getName())) {
-                return false;
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
     // Find all nodes that are connected to Y by an undirected edge that are adjacent to X (that is, by undirected or

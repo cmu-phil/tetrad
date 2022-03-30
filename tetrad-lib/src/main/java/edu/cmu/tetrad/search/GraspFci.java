@@ -184,7 +184,6 @@ public final class GraspFci implements GraphSearch {
 
         for (Triple triple : triples) {
             Node b = triple.getX();
-            Node c = triple.getY();
             Node d = triple.getZ();
 
             graph.removeEdge(b, d);

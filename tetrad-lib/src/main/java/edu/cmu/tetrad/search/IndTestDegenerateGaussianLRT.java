@@ -151,7 +151,6 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
                 B.remove(i);
 
                 this.embedding.put(i_, new ArrayList<>(keys.values()));
-                i_++;
 
             } else {
 
@@ -166,9 +165,9 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
                 index2.add(i);
                 this.embedding.put(i_, index2);
                 i++;
-                i_++;
 
             }
+            i_++;
         }
 
         double[][] B_ = new double[n][B.size()];

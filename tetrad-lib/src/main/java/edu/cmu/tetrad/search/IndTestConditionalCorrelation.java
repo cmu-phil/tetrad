@@ -69,11 +69,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
     private final DataSet dataSet;
 
     /**
-     * True iff the fast FDR adjustment should be made.
-     */
-    private boolean fastFDR;
-
-    /**
      * True if verbose output should be printed.
      */
     private boolean verbose;
@@ -269,13 +264,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
         this.verbose = verbose;
     }
 
-    /**
-     * Number of functions to use in (truncated) basis.
-     */
-    public int getNumFunctions() {
-        return this.cci.getNumFunctions();
-    }
-
     public void setNumFunctions(int numFunctions) {
         this.cci.setNumFunctions(numFunctions);
     }
@@ -294,10 +282,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
 
     public void setBasis(ConditionalCorrelationIndependence.Basis basis) {
         this.cci.setBasis(basis);
-    }
-
-    public void setFastFDR(boolean fastFDR) {
-        this.fastFDR = fastFDR;
     }
 
     public void setKernelRegressionSampleSize(int i) {

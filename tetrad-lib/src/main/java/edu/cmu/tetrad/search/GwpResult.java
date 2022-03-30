@@ -69,10 +69,6 @@ public class GwpResult {
             return new double[]{this.nCorrect, this.directedWrongWay, this.undirectedWhenShouldBeDirected, this.directedWhenShouldBeUndirected};
         }
 
-//		public double loss(){
-//
-//		}
-
     }
 
     public static class CoefficientEvaluationResult implements PartialEvaluationResult {
@@ -124,12 +120,7 @@ public class GwpResult {
                     0.5 * this.ori.directedWhenShouldBeUndirected;
 
             double adjLoss = 1.5 * this.adj.errorsOfOmission + 1.0 * this.adj.errorsOfCommission;
-
-            //			System.out.println("adjLoss = " + adjLoss);
-//			System.out.println("oriLoss = " + oriLoss);
-            double loss = adjLoss + oriLoss;
-//			System.out.println("returning loss = " + loss);
-            return loss;
+            return adjLoss + oriLoss;
         }
 
     }

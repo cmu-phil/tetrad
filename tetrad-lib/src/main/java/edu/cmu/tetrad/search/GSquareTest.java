@@ -40,45 +40,8 @@ import static java.lang.Math.log;
  */
 public final class GSquareTest extends ChiSquareTest {
 
-//    /**
-//     * The data set this test uses.
-//     */
-//    private DataSet dataSet;
-//
-//    /**
-//     * The number of values for each variable in the data.
-//     */
-//    private int[] dims;
-//
-//    /**
-//     * Stores the data in the form of a cell table.
-//     */
-//    private CellTable cellTable;
-
-//    /**
-//     * The significance level of the test.
-//     */
-//    private double alpha = 0.05;
-
     public GSquareTest(DataSet dataSet, double alpha) {
         super(dataSet, alpha);
-//        if (alpha < 0.0 || alpha > 1.0) {
-//            throw new IllegalArgumentException("Significance level must be " +
-//                    "between 0.0 and 1.0: " + alpha);
-//        }
-//
-//        this.dims = new int[dataSet.getNumColumns()];
-//
-//        for (int i = 0; i < dims.length; i++) {
-//            DiscreteVariable variable =
-//                    (DiscreteVariable) dataSet.getVariable(i);
-//            this.dims[i] = variable.getNumCategories();
-//        }
-//
-//        this.dataSet = dataSet;
-//        this.alpha = alpha;
-//        this.cellTable = new CellTable(null);
-//        this.cellTable.setMissingValue(DiscreteVariable.MISSING_VALUE);
     }
 
     /**
@@ -206,159 +169,6 @@ public final class GSquareTest extends ChiSquareTest {
         return new Result(g2, pValue, df, indep);
     }
 
-//    public boolean isDetermined(int[] testIndices, double p) {
-//
-//        // Reset the cell table for the columns referred to in
-//        // 'testIndices.' Do cell coefs for those columns.
-////        this.cellTable.reset(selectFromArray(dims, testIndices));
-////        this.cellTable.addToTable(selectFromArray(data, testIndices),
-////                CellTable.COLUMN_MAJOR);
-//
-//        this.getCellTable().addToTable(getDataModel(), testIndices);
-//
-//        // Indicator arrays to tell the cell table which margins
-//        // to calculate. For x _||_ y | z1, z2, ..., we want to
-//        // calculate the margin for x, the margin for y, and the
-//        // margin for x and y. (These will be used later.)
-//        int[] firstVar = new int[]{0};
-//
-//        int[] condDims = new int[testIndices.length - 1];
-//        System.arraycopy(selectFromArray(getDims(), testIndices), 1, condDims, 0,
-//                condDims.length);
-//
-//        int[] coords = new int[testIndices.length];
-//        int numValues = this.getCellTable().getNumValues(0);
-//
-//        CombinationIterator combinationIterator =
-//                new CombinationIterator(condDims);
-//
-//        while (combinationIterator.hasNext()) {
-//            int[] combination = (int[]) combinationIterator.next();
-//            System.arraycopy(combination, 0, coords, 1, combination.length);
-//
-//            long total = this.getCellTable().calcMargin(coords, firstVar);
-//
-//            if (total == 0) {
-//                continue;
-//            }
-//
-//            boolean existsDominator = false;
-//
-//            for (int i = 0; i < numValues; i++) {
-//                coords[0] = i;
-//
-//                long numi = this.getCellTable().getValue(coords);
-//
-//                if ((double) numi / total >= p) {
-//                    existsDominator = true;
-//                }
-//            }
-//
-//            if (!existsDominator) {
-//                return false;
-//            }
-//        }
-//
-//        return true;
-//    }
-
-//    public boolean isSplitDetermined(int[] testIndices, double p) {
-//
-//        // Reset the cell table for the columns referred to in
-//        // 'testIndices.' Do cell coefs for those columns.
-//        this.getCellTable().addToTable(getDataModel(), testIndices);
-//
-//        // Indicator arrays to tell the cell table which margins
-//        // to calculate. For x _||_ y | z1, z2, ..., we want to
-//        // calculate the margin for x, the margin for y, and the
-//        // margin for x and y. (These will be used later.)
-//        int[] firstVar = new int[]{0};
-//        int[] secondVar = new int[]{1};
-//        int[] bothVars = new int[]{0, 1};
-//
-//        int[] condDims = new int[testIndices.length - 2];
-//        System.arraycopy(selectFromArray(getDims(), testIndices), 2, condDims, 0,
-//                condDims.length);
-//
-//        int[] coords = new int[testIndices.length];
-//        int numRows = this.getCellTable().getNumValues(0);
-//        int numCols = this.getCellTable().getNumValues(1);
-//
-//        boolean[] attestedRows = new boolean[numRows];
-//        boolean[] attestedCols = new boolean[numCols];
-//
-//        CombinationIterator combinationIterator =
-//                new CombinationIterator(condDims);
-//
-//        while (combinationIterator.hasNext()) {
-//            int[] combination = (int[]) combinationIterator.next();
-//
-//            System.arraycopy(combination, 0, coords, 2, combination.length);
-//            Arrays.fill(attestedRows, true);
-//            Arrays.fill(attestedCols, true);
-//
-//            long total = this.getCellTable().calcMargin(coords, bothVars);
-//
-//            if (total == 0) {
-//                continue;
-//            }
-//
-//            boolean dominates = false;
-//
-//            marginals:
-//            for (int i = 0; i < numRows; i++) {
-//                for (int j = 0; j < numCols; j++) {
-//                    coords[0] = i;
-//                    coords[1] = j;
-//
-//                    long sumRow = this.getCellTable().calcMargin(coords, secondVar);
-//                    long sumCol = this.getCellTable().calcMargin(coords, firstVar);
-//
-//                    if ((double) sumRow / total >= 0.99) {
-//                        dominates = true;
-//                        break marginals;
-//                    }
-//
-//                    if ((double) sumCol / total >= 0.99) {
-//                        dominates = true;
-//                        break marginals;
-//                    }
-//                }
-//
-//            }
-//
-//            if (!dominates) {
-//                return false;
-//            }
-//        }
-//
-//        return true;
-//    }
-
-//    /**
-//     * @return the getModel significance level being used for tests.
-//     */
-//    public double getAlternativePenalty() {
-//        return this.alpha;
-//    }
-
-//    /**
-//     * Sets the significance level to be used for tests.
-//     */
-//    public void setAlternativePenalty(double alpha) {
-//        this.alpha = alpha;
-//    }
-
-//    private static int[] selectFromArray(int[] arr, int[] indices) {
-//        int[] retArr = new int[indices.length];
-//
-//        for (int i = 0; i < indices.length; i++) {
-//            retArr[i] = arr[indices[i]];
-//        }
-//
-//        return retArr;
-//    }
-
     /**
      * Simple class to store the parameters of the result returned by the G Square test.
      *
@@ -396,19 +206,19 @@ public final class GSquareTest extends ChiSquareTest {
             this.isIndep = isIndep;
         }
 
-        public final double getGSquare() {
+        public double getGSquare() {
             return this.gSquare;
         }
 
-        public final double getPValue() {
+        public double getPValue() {
             return this.pValue;
         }
 
-        public final int getDf() {
+        public int getDf() {
             return this.df;
         }
 
-        public final boolean isIndep() {
+        public boolean isIndep() {
             return this.isIndep;
         }
     }
