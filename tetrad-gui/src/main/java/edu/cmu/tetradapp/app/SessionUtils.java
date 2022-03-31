@@ -176,37 +176,6 @@ final class SessionUtils {
         return modelConfig.getName();
     }
 
-//    private static void launchHelpForName(String helpName, String descrip) {
-//        JHelp jhelp = new JHelp(TetradHelpBroker.getInstance().getHelpSet());
-//        JComponent centeringComp = JOptionUtils.centeringComp();
-//
-//        try {
-//            jhelp.setCurrentID(helpName);
-//        }
-//        catch (BadIDException e1) {
-//            System.out.println("Expected ID = " + helpName);
-//        }
-//
-//        jhelp.setPreferredSize(new Dimension(600, 500));
-//        Object owner = centeringComp.getTopLevelAncestor();
-//        JDialog dialog;
-//
-//        if (owner instanceof Dialog) {
-//            dialog = new JDialog((Dialog) owner, "Help for \"" + descrip + "\"",
-//                    true);
-//        } else {
-//            dialog = new JDialog((Frame) owner, "Help for \"" + descrip + "\"",
-//                    true);
-//        }
-//
-//        dialog.setResizable(true);
-//        dialog.getContentPane().add(jhelp, BorderLayout.CENTER);
-//        dialog.pack();
-//        dialog.setSize(new Dimension(900, 600));
-//        dialog.setLocationRelativeTo(centeringComp);
-//        dialog.setVisible(true);
-//    }
-
 
 }
 

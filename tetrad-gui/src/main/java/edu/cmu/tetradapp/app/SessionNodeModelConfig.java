@@ -70,12 +70,6 @@ public interface SessionNodeModelConfig {
     JPanel getEditorInstance(Object[] arguments);
 
 
-//    /**
-//     * @return a newly created instance of the parameters for this model.
-//     */
-//    Parameters getParametersInstance();
-
-
     /**
      * @return a newly created instance of the parameter editor for the params
      * returned by <code>getParametersInstance()</code> or null if there is no such

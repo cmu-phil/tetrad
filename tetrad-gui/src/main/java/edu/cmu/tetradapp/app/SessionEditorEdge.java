@@ -126,27 +126,22 @@ final class SessionEditorEdge extends DisplayEdge {
         return new Polygon(xpoint, ypoint, 4);
     }
 
-    private void drawDice(Graphics g, boolean erase, Color c) {
+    private void drawDice(Graphics g, Color c) {
 
         Polygon dice = getDiceSleeve();
 
-        if (erase) {
-            g.setColor(Color.white);
-            g.fillPolygon(dice);
-        } else {
-            Circle[] dicedot = getDiceDot();
+        Circle[] dicedot = getDiceDot();
 
-            g.setColor(c);
-            g.fillPolygon(dice);
-            g.setColor(SessionEditorEdge.DIE_DOT);
-            g.drawPolygon(dice);
+        g.setColor(c);
+        g.fillPolygon(dice);
+        g.setColor(SessionEditorEdge.DIE_DOT);
+        g.drawPolygon(dice);
 
-            int height = dicedot[0].radius * 2;
+        int height = dicedot[0].radius * 2;
 
-            for (Circle aDicedot : dicedot) {
-                g.fillOval(aDicedot.center.x, aDicedot.center.y, height,
-                        height);
-            }
+        for (Circle aDicedot : dicedot) {
+            g.fillOval(aDicedot.center.x, aDicedot.center.y, height,
+                    height);
         }
     }
 
@@ -212,31 +207,6 @@ final class SessionEditorEdge extends DisplayEdge {
 
     private Polygon getDiceSleeve() {
         return SessionEditorEdge.calcDiceSleeve(getDiceArea());
-    }
-
-    /**
-     * @return the mode of this edge, RANDOMIZED or UNRANDOMIZED.
-     */
-    public int getSessionEdgeMode() {
-        return this.sessionEdgeMode;
-    }
-
-    /**
-     * Determines whether this display edge represents a randomized edge or an
-     * unrandomized edge.  (Randomized edges are displayed with a little die on
-     * them.)
-     *
-     * @return true if this edge represents a randomized edge, false if not.
-     */
-    public boolean isRandomized() {
-
-        if (this.sessionEdgeMode == SessionEditorEdge.RANDOMIZED) {
-            return true;
-        } else if (this.sessionEdgeMode == SessionEditorEdge.UNRANDOMIZED) {
-            return false;
-        } else {
-            throw new IllegalStateException();
-        }
     }
 
     /**
@@ -311,7 +281,7 @@ final class SessionEditorEdge extends DisplayEdge {
         setConnectedPoints(pp);
 
         if (this.sessionEdgeMode == SessionEditorEdge.RANDOMIZED) {
-            drawDice(g, false, this.curr_color);
+            drawDice(g, this.curr_color);
         }
     }
 

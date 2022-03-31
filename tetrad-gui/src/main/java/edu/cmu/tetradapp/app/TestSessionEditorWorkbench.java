@@ -46,7 +46,7 @@ public final class TestSessionEditorWorkbench extends TestCase {
         super(name);
     }
 
-    public final void setUp() {
+    public void setUp() {
 
         Session session = new Session("Test");
         SessionWrapper sessionWrapper = new SessionWrapper(session);
@@ -54,14 +54,9 @@ public final class TestSessionEditorWorkbench extends TestCase {
         this.workbench = new SessionEditorWorkbench(sessionWrapper);
     }
 
-    public final void testAddNodes() {
+    public void testAddNodes() {
         this.workbench.setNextButtonType("Graph");
 
-        //        Node tetradNode = this.workbench.getNewModelNode();
-
-        //        assertEquals("Graph1", tetradNode.getNode());
-
-        //AbstractGraphNode graphNode = this.workbench.getNewDisplayNode(tetradNode);
     }
 
     /**

@@ -25,14 +25,11 @@ import edu.cmu.tetradapp.workbench.AbstractWorkbench;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -161,14 +158,12 @@ final class SessionEditorToolbar extends JPanel {
 //        }
         // Add an action listener to help send messages to the
         // workbench.
-        ChangeListener changeListener = new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                JToggleButton _button = (JToggleButton) e.getSource();
+        ChangeListener changeListener = e -> {
+            JToggleButton _button = (JToggleButton) e.getSource();
 
-                if (_button.getModel().isSelected()) {
-                    setWorkbenchMode(_button);
+            if (_button.getModel().isSelected()) {
+                setWorkbenchMode(_button);
 //                    setCursor(workbench.getCursor());
-                }
             }
         };
 
@@ -179,6 +174,7 @@ final class SessionEditorToolbar extends JPanel {
         // Select the Select button.
         JToggleButton button = getButtonForType(this.selectType);
 
+        assert button != null;
         button.getModel().setSelected(true);
 
         // Add the buttons to the workbench.
@@ -195,45 +191,42 @@ final class SessionEditorToolbar extends JPanel {
 
         // Add property change listener so that selection can be moved
         // back to "SELECT_MOVE" after an action.
-        workbench.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent e) {
-                if (!isRespondingToEvents()) {
-                    return;
-                }
+        workbench.addPropertyChangeListener(e -> {
+            if (!isRespondingToEvents()) {
+                return;
+            }
 
-                String propertyName = e.getPropertyName();
-                if ("nodeAdded".equals(propertyName)) {
-                    if (!isShiftDown()) {
-                        resetSelectMove();
-                    }
-                } else if ("edgeAdded".equals(propertyName)) {
-                    // keep edge select type selected
-                    JToggleButton selectButton = getButtonForType(SessionEditorToolbar.this.edgeSelectType);
-                    if (!(selectButton.isSelected())) {
-                        selectButton.doClick();
-                        selectButton.requestFocus();
-                    }
+            String propertyName = e.getPropertyName();
+            if ("nodeAdded".equals(propertyName)) {
+                if (!isShiftDown()) {
+                    resetSelectMove();
+                }
+            } else if ("edgeAdded".equals(propertyName)) {
+                // keep edge select type selected
+                JToggleButton selectButton = getButtonForType(SessionEditorToolbar.this.edgeSelectType);
+                assert selectButton != null;
+                if (!(selectButton.isSelected())) {
+                    selectButton.doClick();
+                    selectButton.requestFocus();
                 }
             }
         });
 
         KeyboardFocusManager.getCurrentKeyboardFocusManager()
-                .addKeyEventDispatcher(new KeyEventDispatcher() {
-                    public boolean dispatchKeyEvent(KeyEvent e) {
-                        int keyCode = e.getKeyCode();
-                        int id = e.getID();
+                .addKeyEventDispatcher(e -> {
+                    int keyCode = e.getKeyCode();
+                    int id = e.getID();
 
-                        if (keyCode == KeyEvent.VK_SHIFT) {
-                            if (id == KeyEvent.KEY_PRESSED) {
-                                setShiftDown(true);
-                            } else if (id == KeyEvent.KEY_RELEASED) {
-                                setShiftDown(false);
-                                resetSelectMove();
-                            }
+                    if (keyCode == KeyEvent.VK_SHIFT) {
+                        if (id == KeyEvent.KEY_PRESSED) {
+                            setShiftDown(true);
+                        } else if (id == KeyEvent.KEY_RELEASED) {
+                            setShiftDown(false);
+                            resetSelectMove();
                         }
-
-                        return false;
                     }
+
+                    return false;
                 });
 
         resetSelectMove();
@@ -244,20 +237,12 @@ final class SessionEditorToolbar extends JPanel {
      */
     private void resetSelectMove() {
         JToggleButton selectButton = getButtonForType(this.selectType);
+        assert selectButton != null;
         if (!(selectButton.isSelected())) {
             selectButton.doClick();
             selectButton.requestFocus();
         }
     }
-
-//    /**
-//     * Sets the selection back to Flowchart.
-//     */
-//    public void resetFlowchart() {
-//        JToggleButton edgeButton = getButtonForType(edgeType);
-//        edgeButton.doClick();
-//        edgeButton.requestFocus();
-//    }
 
     /**
      * True iff the toolbar is responding to events. This may need to be turned
@@ -352,25 +337,13 @@ final class SessionEditorToolbar extends JPanel {
         } else if (edgeType.equals(nodeType)) {
             this.workbench.setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
             this.workbench.setNextButtonType(null);
-//            setCursor(workbench.getCursor());
 
-//            Toolkit toolkit = Toolkit.getDefaultToolkit();
-//            Image image = ImageUtils.getImage(this, "arrowCursorImage.png");
-//            Cursor c = toolkit.createCustomCursor(image, new Point(10, 10), "img");
-//            setCursor(c);
-//            workbench.setCursor(c);
             setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
             this.workbench.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         } else {
             this.workbench.setWorkbenchMode(AbstractWorkbench.ADD_NODE);
             this.workbench.setNextButtonType(nodeType);
 
-//            Toolkit toolkit = Toolkit.getDefaultToolkit();
-//            Image image = ImageUtils.getImage(this, "cursorImage.png");
-//            Cursor c = toolkit.createCustomCursor(image, new Point(10, 10), "img");
-//            setCursor(c);
-//            workbench.setCursor(c);
-//            setCursor(workbench.getCursor());
             setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
             this.workbench.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
 
@@ -382,11 +355,9 @@ final class SessionEditorToolbar extends JPanel {
      * button exists.
      */
     private JToggleButton getButtonForType(String nodeType) {
-        for (Object o : this.nodeTypes.keySet()) {
-            JToggleButton button = (JToggleButton) o;
-
-            if (nodeType.equals(this.nodeTypes.get(button))) {
-                return button;
+        for (JToggleButton o : this.nodeTypes.keySet()) {
+            if (nodeType.equals(this.nodeTypes.get(o))) {
+                return o;
             }
         }
 
@@ -400,14 +371,6 @@ final class SessionEditorToolbar extends JPanel {
     private void setShiftDown(boolean shiftDown) {
         this.shiftDown = shiftDown;
     }
-
-//    public boolean isControlDown() {
-//        return shiftDown;
-//    }
-//
-//    private void setControlDown(boolean shiftDown) {
-//        this.shiftDown = shiftDown;
-//    }
 
     /**
      * Holds info for constructing a single button.
@@ -452,10 +415,6 @@ final class SessionEditorToolbar extends JPanel {
 
         public String getDisplayName() {
             return this.displayName;
-        }
-
-        public void setNodeTypeName(String nodeTypeName) {
-            this.nodeTypeName = nodeTypeName;
         }
 
         public String getImagePrefix() {

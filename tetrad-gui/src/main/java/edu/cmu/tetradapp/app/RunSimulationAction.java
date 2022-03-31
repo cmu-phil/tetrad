@@ -55,21 +55,14 @@ class RunSimulationAction extends AbstractAction {
 
     private void executeNode() {
         Set<SessionNode> children = this.sessionEditorNode.getChildren();
-        boolean noEmptyChildren = true;
 
         for (SessionNode child : children) {
             if (child.getModel() == null) {
-                noEmptyChildren = false;
                 break;
             }
         }
 
         Component centeringComp = this.sessionEditorNode;
-
-//        if (!noEmptyChildren) {
-//            JOptionPane.showMessageDialog(centeringComp, "Nothing to run.");
-//            return;
-//        }
 
         Object[] options = {"Simulate", "Cancel"};
 
@@ -99,7 +92,7 @@ class RunSimulationAction extends AbstractAction {
         }
 
         if (selection == 0) {
-            executeSessionNode(this.sessionEditorNode.getSessionNode(), true);
+            executeSessionNode(this.sessionEditorNode.getSessionNode());
         }
     }
 
@@ -111,43 +104,15 @@ class RunSimulationAction extends AbstractAction {
     }
 
 
-    private void executeSessionNode(SessionNode sessionNode, boolean overwrite) {
+    private void executeSessionNode(SessionNode sessionNode) {
         Window owner = (Window) this.sessionEditorNode.getTopLevelAncestor();
 
         new WatchedProcess(owner) {
             public void watch() {
                 SessionEditorWorkbench workbench = getWorkbench();
 
-//                {
-////                    int ret = JOptionPane.showConfirmDialog(sessionEditorNode, "Start a new log?");
-////
-////                    if (ret == JOptionPane.YES_OPTION) {
-//                        try {
-//                            TetradLogger.getInstance().setNextOutputStream();
-//                        } catch (IllegalStateException e) {
-////                    TetradLogger.getInstance().removeNextOutputStream();
-//                            e.printStackTrace();
-//                            return;
-//                        }
-////                    }
-//                }
+                workbench.getSimulationStudy().execute(sessionNode, true);
 
-                workbench.getSimulationStudy().execute(sessionNode, overwrite);
-
-//                {
-//                    // Start another log. Only stop when the log display is closed.
-////                    int ret = JOptionPane.showConfirmDialog(sessionEditorNode, "Finish this log and start another one?");
-////
-////                    if (ret == JOptionPane.YES_OPTION) {
-//                        try {
-//                            TetradLogger.getInstance().setNextOutputStream();
-//                        } catch (IllegalStateException e) {
-////                    TetradLogger.getInstance().removeNextOutputStream();
-//                            e.printStackTrace();
-//                            return;
-//                        }
-////                    }
-//                }
             }
         };
     }

@@ -424,8 +424,6 @@ public class TetradApplicationConfig {
             chooser.setSessionNode(sessionNode);
             chooser.setNodeId(this.id);
             chooser.setTitle(this.chooserTitle);
-//            chooser.setNodeName(sessionNode.getDisplayName());
-//            chooser.setModelConfigs(new ArrayList<SessionNodeModelConfig>(this.models));
             chooser.setModelConfigs(new ArrayList<>(filteredModels));
             chooser.setup();
             return chooser;
@@ -555,20 +553,6 @@ public class TetradApplicationConfig {
             }
         }
 
-        //        public Parameters getParametersInstance() {
-//            if (this.params != null) {
-//                try {
-//                    return (Parameters) this.params.newInstance();
-//                }
-//                catch (ClassCastException e) {
-//                    throw new IllegalStateException("Model params doesn't implement Parameters", e);
-//                }
-//                catch (Exception e) {
-//                    throw new IllegalStateException("Error instantiating params, must be empty constructor", e);
-//                }
-//            }
-//            return null;
-//        }
         public ParameterEditor getParameterEditorInstance() {
             if (this.paramsEditor != null) {
                 try {

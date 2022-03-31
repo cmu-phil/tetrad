@@ -44,12 +44,6 @@ final class WindowMenuListener implements MenuListener, ActionListener {
     private final JMenu windowMenu;
 
     /**
-     * The desktop pane that the session editors presented by
-     * <code>windowMenu</code> are situated.
-     */
-    //private final JDesktopPane desktopPane;
-
-    /**
      * A map from menu items to the internal frames they represent, used to
      * determine which session editor to navigate to.
      */
@@ -118,12 +112,11 @@ final class WindowMenuListener implements MenuListener, ActionListener {
 
         Collections.sort(titles);
 
-        for (Object title1 : titles) {
-            String title = (String) title1;
-            JMenuItem item = new JMenuItem(title);
+        for (String title1 : titles) {
+            JMenuItem item = new JMenuItem(title1);
             this.windowMenu.add(item);
             item.addActionListener(this);
-            this.itemsToFrames.put(item, titlesToFrames.get(title));
+            this.itemsToFrames.put(item, titlesToFrames.get(title1));
         }
     }
 

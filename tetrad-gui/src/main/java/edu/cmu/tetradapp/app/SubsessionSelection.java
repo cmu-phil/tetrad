@@ -105,8 +105,6 @@ final class SubsessionSelection implements Transferable {
                     (List) new MarshalledObject(this.sessionElements).get();
             Point point = EditorUtils.getTopLeftPoint(returnList);
             point.translate(50, 50);
-//            List returnList = this.sessionElements;
-//            this.sessionElements = null;
             this.numPastes++;
             return returnList;
         } catch (ClassNotFoundException e) {
