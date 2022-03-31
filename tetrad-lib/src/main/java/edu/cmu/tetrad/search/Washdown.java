@@ -90,9 +90,34 @@ public class Washdown {
         do {
             clusters = purify(clusters);
 
+//            System.out.println("Discards = " + disgards);
+//
+//            if (disgards == null) {
+//                break;
+//            }
+
             List<Node> disgards = getDiscards(clusters, this.variables);
 
             clusters.add(disgards);
+
+//            for (Node node : disgards) {
+//                for (int i = 0; i < clusters.size(); i++) {
+//                    List<Node> cluster = clusters.get(i);
+//                    if (cluster.contains(node)) {
+//                        if (clusters.size() < i + 2) {
+//                            clusters.add(new ArrayList<Node>());
+//                        }
+//
+//                        System.out.println("Bumping " + node);
+//
+//                        cluster.remove(node);
+//                        clusters.get(i + 1).add(node);
+//                        break;
+//                    }
+//                }
+//            }
+//
+//            clusters = removeEmpty(clusters);
 
             pValue = pValue(clusters);
 
@@ -111,7 +136,6 @@ public class Washdown {
             for (List<Node> cluster : clusters) {
                 if (cluster.contains(node)) {
                     found = true;
-                    break;
                 }
             }
 
@@ -125,6 +149,7 @@ public class Washdown {
 
     private List<List<Node>> purify(List<List<Node>> clusters) {
         List<Node> keep = new ArrayList<>(this.variables);
+        List<Node> disgards = new ArrayList<>();
         double bestGof = gof(clusters);
         System.out.println("Purify Best GOF = " + bestGof + " clusters = " + clusters);
 
@@ -137,14 +162,14 @@ public class Washdown {
 //            double bestGof = Double.POSITIVE_INFINITY;
             Node bestNode = null;
 
-            for (Node node : keep) {
-                List<List<Node>> _clusters = removeVar(node, clusters);
+            for (int i = 0; i < keep.size(); i++) {
+                List<List<Node>> _clusters = removeVar(keep.get(i), clusters);
                 double _gof = gof(_clusters);
                 System.out.println("     GOF = " + gof(_clusters) + "P value = " + pValue(_clusters) + " clusters = " + _clusters);
 
                 if (_gof < bestGof) {
                     bestGof = _gof;
-                    bestNode = node;
+                    bestNode = keep.get(i);
                 }
             }
 
@@ -154,6 +179,7 @@ public class Washdown {
 
             clusters = removeVar(bestNode, clusters);
             keep.remove(bestNode);
+            disgards.add(bestNode);
         }
     }
 
@@ -210,7 +236,9 @@ public class Washdown {
 
         SemIm est = estimator.estimate();
 
-        return est.getPValue();
+        double pValue = est.getPValue();
+
+        return pValue;
     }
 
     private List<List<Node>> removeEmpty(List<List<Node>> clusters) {

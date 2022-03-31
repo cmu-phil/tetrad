@@ -39,6 +39,7 @@ public class Tetrad {
     private final double pValue;
 
     public Tetrad(Node i, Node j, Node k, Node l) {
+//        testDistinctness(i, j, k, l);
         this.i = i;
         this.j = j;
         this.k = k;
@@ -47,12 +48,27 @@ public class Tetrad {
     }
 
     public Tetrad(Node i, Node j, Node k, Node l, double pValue) {
+//        testDistinctness(i, j, k, l);
         this.i = i;
         this.j = j;
         this.k = k;
         this.l = l;
         this.pValue = pValue;
     }
+
+//    private void testDistinctness(Node i, Node j, Node k, Node l) {
+//        if (i == j || i == k || i == l) {
+//            throw new IllegalArgumentException("Nodes not distinct.");
+//        }
+//
+//        if (j == k || j == l) {
+//            throw new IllegalArgumentException("Nodes not distinct.");
+//        }
+//
+//        if (k == l) {
+//            throw new IllegalArgumentException("Nodes not distinct.");
+//        }
+//    }
 
     public Node getI() {
         return this.i;
@@ -71,6 +87,10 @@ public class Tetrad {
     }
 
     public int hashCode() {
+//        int hash = i.hashCode();
+//        hash += 17 * hash + j.hashCode();
+//        hash += 17 * hash + k.hashCode();
+//        hash += 17 * hash + l.hashCode();
 
         int hash = 17 * this.i.hashCode() * this.j.hashCode();
         hash += 29 * this.k.hashCode() * this.l.hashCode();
@@ -79,7 +99,7 @@ public class Tetrad {
     }
 
     public boolean equals(Object o) {
-        if (!(o instanceof Tetrad)) return false;
+        if (o == null) return false;
         Tetrad tetrad = (Tetrad) o;
         return (this.i == tetrad.i && this.j == tetrad.j && this.k == tetrad.k && this.l == tetrad.l)
                 || (this.i == tetrad.j && this.j == tetrad.i && this.k == tetrad.k && this.l == tetrad.l)

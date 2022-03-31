@@ -39,6 +39,7 @@ public class TeyssierScorer {
 
     private boolean useScore = true;
     private boolean useVermaPearl;
+    private boolean useBackwardScoring;
     private boolean cachingScores = true;
 
     public TeyssierScorer(IndependenceTest test, Score score) {
@@ -100,6 +101,10 @@ public class TeyssierScorer {
         this.useScore = false;
     }
 
+    public void setUseBackwardScoring(boolean useBackwardScoring) {
+        this.useBackwardScoring = useBackwardScoring;
+    }
+
     /**
      * Scores the given permutation. This needs to be done initially before any move or tuck
      * operations are performed.
@@ -140,6 +145,45 @@ public class TeyssierScorer {
     }
 
     /**
+     * Performs a tuck operation. If pi[x] < pi[y], moves y to index of x; otherwise moves x to index of y.
+     *
+     * @param x The first variable.
+     * @param y The second variable.
+     */
+    public void tuck(Node x, Node y) {
+        if (index(x) < index(y)) {
+            moveTo(y, index(x));
+        } else if (index(x) > index(y)) {
+            moveTo(x, index(y));
+        }
+    }
+
+    /**
+     * Moves v to a new index.
+     *
+     * @param v       The variable to move.
+     * @param toIndex The index to move v to.
+     */
+    public void moveTo(Node v, int toIndex) {
+        if (!this.pi.contains(v)) return;
+
+        int vIndex = index(v);
+
+        if (vIndex == toIndex) return;
+
+        if (lastMoveSame(vIndex, toIndex)) return;
+
+        this.pi.remove(v);
+        this.pi.add(toIndex, v);
+
+        if (toIndex < vIndex) {
+            updateScores(toIndex, vIndex);
+        } else {
+            updateScores(vIndex, toIndex);
+        }
+    }
+
+    /**
      * Swaps m and n in the permutation.
      *
      * @param m The first variable.
@@ -153,7 +197,7 @@ public class TeyssierScorer {
         this.pi.set(i, n);
         this.pi.set(j, m);
 
-        if (invalidKnowledgeOrder(this.pi)) {
+        if (!validKnowledgeOrder(this.pi)) {
             this.pi.set(i, m);
             this.pi.set(j, n);
             return false;
@@ -307,6 +351,37 @@ public class TeyssierScorer {
         return new ArrayList<>(pairs);
     }
 
+    public Map<Node, Set<Node>> getAdjMap() {
+        Map<Node, Set<Node>> adjMap = new HashMap<>();
+        for (Node node1 : getPi()) {
+            if (!adjMap.containsKey(node1)) {
+                adjMap.put(node1, new HashSet<>());
+            }
+            for (Node node2 : getParents(node1)) {
+                if (!adjMap.containsKey(node2)) {
+                    adjMap.put(node2, new HashSet<>());
+                }
+                adjMap.get(node1).add(node2);
+                adjMap.get(node2).add(node1);
+            }
+        }
+        return adjMap;
+    }
+
+
+    public Map<Node, Set<Node>> getChildMap() {
+        Map<Node, Set<Node>> childMap = new HashMap<>();
+        for (Node node1 : getPi()) {
+            for (Node node2 : getParents(node1)) {
+                if (!childMap.containsKey(node2)) {
+                    childMap.put(node2, new HashSet<>());
+                }
+                childMap.get(node2).add(node1);
+            }
+        }
+        return childMap;
+    }
+
     public Set<Node> getAncestors(Node node) {
         Set<Node> ancestors = new HashSet<>();
         collectAncestorsVisit(node, ancestors);
@@ -427,6 +502,15 @@ public class TeyssierScorer {
         return this.pi.size();
     }
 
+    /**
+     * Shuffles the current permutation and rescores it.
+     */
+    public void shuffleVariables() {
+        this.pi = new LinkedList<>(this.pi);
+        shuffle(this.pi);
+        score(this.pi);
+    }
+
     public List<Node> getShuffledVariables() {
         List<Node> variables = getPi();
         shuffle(variables);
@@ -487,16 +571,31 @@ public class TeyssierScorer {
         return true;
     }
 
-    private boolean invalidKnowledgeOrder(List<Node> order) {
+    /**
+     * A convenience method to reset the score cache if it becomes larger than a certain
+     * size.
+     *
+     * @param maxSize The maximum size of the score cache; it the if the score cache is
+     *                larger than this it will be cleared.
+     */
+    public void resetCacheIfTooBig(int maxSize) {
+        if (this.cache.size() > maxSize) {
+            this.cache = new HashMap<>();
+            System.out.println("Clearing cacche...");
+            System.gc();
+        }
+    }
+
+    private boolean validKnowledgeOrder(List<Node> order) {
         for (int i = 0; i < order.size(); i++) {
             for (int j = i + 1; j < order.size(); j++) {
                 if (this.knowledge.isForbidden(order.get(i).getName(), order.get(j).getName())) {
-                    return true;
+                    return false;
                 }
             }
         }
 
-        return false;
+        return true;
     }
 
     private void initializeScores() {
@@ -557,6 +656,7 @@ public class TeyssierScorer {
 
     private void recalculate(int p) {
         if (this.prefixes.get(p) == null || !this.prefixes.get(p).containsAll(getPrefix(p))) {
+            Pair p1 = this.scores.get(p);
             Pair p2 = getParentsInternal(p);
             this.scores.set(p, p2);
         }
@@ -591,6 +691,13 @@ public class TeyssierScorer {
 
         float sMax = score(n, new HashSet<>());
         List<Node> prefix = new ArrayList<>(getPrefix(p));
+
+        // Backward scoring only from the prefix variables
+        if (this.useBackwardScoring) {
+            parents.addAll(prefix);
+            sMax = score(n, parents);
+            changed = false;
+        }
 
         // Grow-shrink
         while (changed) {
@@ -765,7 +872,7 @@ public class TeyssierScorer {
         this.pi.remove(v);
         this.pi.add(toIndex, v);
 
-        if (invalidKnowledgeOrder(this.pi)) {
+        if (!validKnowledgeOrder(this.pi)) {
             goToBookmark(-55);
         }
 

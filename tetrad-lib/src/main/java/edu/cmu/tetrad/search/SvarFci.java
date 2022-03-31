@@ -21,18 +21,19 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 
 /**
@@ -104,6 +105,9 @@ public final class SvarFci implements GraphSearch {
      */
     private boolean verbose;
     private double penaltyDiscount = 2;
+    private int possibleDsepDepth = -1;
+    private final CorrelationMatrix corr;
+
 
     //============================CONSTRUCTORS============================//
 
@@ -111,12 +115,16 @@ public final class SvarFci implements GraphSearch {
      * Constructs a new FCI search for the given independence test and background knowledge.
      */
     public SvarFci(IndependenceTest independenceTest) {
-        if (independenceTest == null) {
+        if (independenceTest == null || this.knowledge == null) {
             throw new NullPointerException();
         }
 
         this.independenceTest = independenceTest;
         this.variables.addAll(independenceTest.getVariables());
+        buildIndexing(independenceTest.getVariables());
+
+        this.corr = new CorrelationMatrix(independenceTest.getCov());
+
     }
 
     /**
@@ -124,7 +132,7 @@ public final class SvarFci implements GraphSearch {
      * search over.
      */
     public SvarFci(IndependenceTest independenceTest, List<Node> searchVars) {
-        if (independenceTest == null) {
+        if (independenceTest == null || this.knowledge == null) {
             throw new NullPointerException();
         }
 
@@ -143,8 +151,10 @@ public final class SvarFci implements GraphSearch {
                 remVars.add(node1);
             }
         }
-
         this.variables.removeAll(remVars);
+
+        this.corr = new CorrelationMatrix(independenceTest.getCov());
+
     }
 
     //========================PUBLIC METHODS==========================//
@@ -163,7 +173,21 @@ public final class SvarFci implements GraphSearch {
     }
 
     public Graph search() {
+        return search(getIndependenceTest().getVariables());
+    }
+
+//    public Graph search(List<Node> nodes) {
+//        return search(new FasStableConcurrent(getIndependenceTest()));
+////        return search(new Fas(getIndependenceTest()));
+//    }
+
+    public Graph search(List<Node> nodes) {
         return search(new Fasts(getIndependenceTest()));
+//        return search(new Fas(getIndependenceTest()));
+    }
+
+
+    public void setExternalGraph(Graph externalGraph) {
     }
 
     public Graph search(IFas fas) {
@@ -232,6 +256,10 @@ public final class SvarFci implements GraphSearch {
 
         // Step CI C (Zhang's step F3.)
         long time5 = System.currentTimeMillis();
+        //fciOrientbk(getKnowledge(), graph, independenceTest.getVariable());    - Robert Tillman 2008
+//        fciOrientbk(getKnowledge(), graph, variables);
+//        new FciOrient(graph, new Sepsets(this.sepsets)).ruleR0(new Sepsets(this.sepsets));
+
         long time6 = System.currentTimeMillis();
         this.logger.log("info", "Step CI C: " + (time6 - time5) / 1000. + "s");
 
@@ -334,6 +362,82 @@ public final class SvarFci implements GraphSearch {
 
     //===========================PRIVATE METHODS=========================//
 
+    private void buildIndexing(List<Node> nodes) {
+        ConcurrentMap<Node, Integer> hashIndices = new ConcurrentHashMap<>();
+        for (Node node : nodes) {
+            hashIndices.put(node, this.variables.indexOf(node));
+        }
+    }
+
+    /**
+     * Orients according to background knowledge
+     */
+    private void fciOrientbk(IKnowledge bk, Graph graph, List<Node> variables) {
+        this.logger.log("info", "Starting BK Orientation.");
+
+        for (Iterator<KnowledgeEdge> it =
+             bk.forbiddenEdgesIterator(); it.hasNext(); ) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            KnowledgeEdge edge = it.next();
+
+            //match strings to variables in the graph.
+            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
+            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+
+
+            if (from == null || to == null) {
+                continue;
+            }
+
+            if (graph.getEdge(from, to) == null) {
+                continue;
+            }
+
+            // Orient to*->from
+            graph.setEndpoint(to, from, Endpoint.ARROW);
+            graph.setEndpoint(from, to, Endpoint.CIRCLE);
+            this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+        }
+
+        for (Iterator<KnowledgeEdge> it =
+             bk.requiredEdgesIterator(); it.hasNext(); ) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            KnowledgeEdge edge = it.next();
+
+            //match strings to variables in this graph
+            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
+            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+
+            if (from == null || to == null) {
+                continue;
+            }
+
+            if (graph.getEdge(from, to) == null) {
+                continue;
+            }
+
+            graph.setEndpoint(to, from, Endpoint.TAIL);
+            graph.setEndpoint(from, to, Endpoint.ARROW);
+            this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+        }
+
+        this.logger.log("info", "Finishing BK Orientation.");
+    }
+
+    public int getPossibleDsepDepth() {
+        return this.possibleDsepDepth;
+    }
+
+    public void setPossibleDsepDepth(int possibleDsepDepth) {
+        this.possibleDsepDepth = possibleDsepDepth;
+    }
+
     // removeSimilarPairs based on orientSimilarPairs in SvarFciOrient.java by Entner and Hoyer
     // this version removes edges from graph instead of list of adjacencies
     private void removeSimilarPairs(IndependenceTest test, Node x, Node y, List<Node> condSet) {
@@ -352,11 +456,14 @@ public final class SvarFci implements GraphSearch {
         int ntiers = this.knowledge.getNumTiers();
         int indx_tier = this.knowledge.isInWhichTier(x);
         int indy_tier = this.knowledge.isInWhichTier(y);
+        int max_tier = Math.max(indx_tier, indy_tier);
         int tier_diff = Math.max(indx_tier, indy_tier) - Math.min(indx_tier, indy_tier);
         int indx_comp = -1;
         int indy_comp = -1;
-        List<String> tier_x = this.knowledge.getTier(indx_tier);
-        List<String> tier_y = this.knowledge.getTier(indy_tier);
+        List tier_x = this.knowledge.getTier(indx_tier);
+//            Collections.sort(tier_x);
+        List tier_y = this.knowledge.getTier(indy_tier);
+//            Collections.sort(tier_y);
 
         int i;
         for (i = 0; i < tier_x.size(); ++i) {
@@ -386,9 +493,9 @@ public final class SvarFci implements GraphSearch {
             String B;
             Node y1;
             if (indx_tier >= indy_tier) {
-                List<String> tmp_tier1 = this.knowledge.getTier(i + tier_diff);
+                List tmp_tier1 = this.knowledge.getTier(i + tier_diff);
 //                   Collections.sort(tmp_tier1);
-                List<String> tmp_tier2 = this.knowledge.getTier(i);
+                List tmp_tier2 = this.knowledge.getTier(i);
 //                   Collections.sort(tmp_tier2);
                 A = (String) tmp_tier1.get(indx_comp);
                 B = (String) tmp_tier2.get(indy_comp);
@@ -397,6 +504,8 @@ public final class SvarFci implements GraphSearch {
                 if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;
                 x1 = test.getVariable(A);
                 y1 = test.getVariable(B);
+                //adjacencies.get(x1).remove(y1);
+                //adjacencies.get(y1).remove(x1);
                 this.graph.removeEdge(x1, y1);
                 System.out.println("removed edge between " + x1 + " and " + y1 + " because of structure knowledge");
                 List<Node> condSetAB = new ArrayList<>();
@@ -406,7 +515,8 @@ public final class SvarFci implements GraphSearch {
                     }
 
                     int ind_temptier = this.knowledge.isInWhichTier(tempNode);
-                    List<String> temptier = this.knowledge.getTier(ind_temptier);
+                    List temptier = this.knowledge.getTier(ind_temptier);
+//                       Collections.sort(temptier);
                     int ind_temp = -1;
                     for (int j = 0; j < temptier.size(); ++j) {
                         if (Thread.currentThread().isInterrupted()) {
@@ -420,15 +530,23 @@ public final class SvarFci implements GraphSearch {
                     }
                     int cond_diff = indx_tier - ind_temptier;
                     int condAB_tier = this.knowledge.isInWhichTier(x1) - cond_diff;
-
+//                    System.out.println("tempNode = " + tempNode);
+//                    System.out.println("ind_temptier = " + ind_temptier);
+//                    System.out.println("indx_tier = " + indx_tier);
+//                    System.out.println("cond_diff = " + cond_diff);
+//                    System.out.println("condAB_tier = " + condAB_tier);
+//                    System.out.println("max_tier = " + max_tier);
+//                    System.out.println("ntiers = " + ntiers);
                     if (condAB_tier < 0 || condAB_tier > (ntiers - 1)
                             || this.knowledge.getTier(condAB_tier).size() == 1) { // added condition for time tier 05.29.2016
+//                        List<Node> empty = Collections.emptyList();
+//                        getSepsets2().set(x1, y1, empty); // added 05.01.2016
                         System.out.println("Warning: For nodes " + x1 + "," + y1 + " the conditioning variable is outside "
                                 + "of window, so not added to SepSet");
                         continue;
                     }
-
-                    List<String> new_tier = this.knowledge.getTier(condAB_tier);
+                    List new_tier = this.knowledge.getTier(condAB_tier);
+//                       Collections.sort(new_tier);
                     String tempNode1 = (String) new_tier.get(ind_temp);
                     System.out.println("adding variable " + tempNode1 + " to SepSet");
                     condSetAB.add(test.getVariable(tempNode1));
@@ -436,8 +554,12 @@ public final class SvarFci implements GraphSearch {
                 System.out.println("done");
                 getSepsets().set(x1, y1, condSetAB);
             } else {
-                List<String> tmp_tier1 = this.knowledge.getTier(i);
-                List<String> tmp_tier2 = this.knowledge.getTier(i + tier_diff);
+                //System.out.println("############## WARNING (removeSimilarPairs): did not catch x,y pair " + x + ", " + y);
+                //System.out.println();
+                List tmp_tier1 = this.knowledge.getTier(i);
+//                   Collections.sort(tmp_tier1);
+                List tmp_tier2 = this.knowledge.getTier(i + tier_diff);
+//                   Collections.sort(tmp_tier2);
                 A = (String) tmp_tier1.get(indx_comp);
                 B = (String) tmp_tier2.get(indy_comp);
                 if (A.equals(B)) continue;
@@ -445,6 +567,8 @@ public final class SvarFci implements GraphSearch {
                 if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;
                 x1 = test.getVariable(A);
                 y1 = test.getVariable(B);
+                //adjacencies.get(x1).remove(y1);
+                //adjacencies.get(y1).remove(x1);
                 this.graph.removeEdge(x1, y1);
                 System.out.println("removed edge between " + x1 + " and " + y1 + " because of structure knowledge");
                 List<Node> condSetAB = new ArrayList<>();
@@ -454,9 +578,9 @@ public final class SvarFci implements GraphSearch {
                     }
 
                     int ind_temptier = this.knowledge.isInWhichTier(tempNode);
-                    List<String> temptier = this.knowledge.getTier(ind_temptier);
+                    List temptier = this.knowledge.getTier(ind_temptier);
+//                       Collections.sort(temptier);
                     int ind_temp = -1;
-
                     for (int j = 0; j < temptier.size(); ++j) {
                         if (getNameNoLag(tempNode.getName()).equals(getNameNoLag(temptier.get(j)))) {
                             ind_temp = j;
@@ -466,15 +590,23 @@ public final class SvarFci implements GraphSearch {
 
                     int cond_diff = indx_tier - ind_temptier;
                     int condAB_tier = this.knowledge.isInWhichTier(x1) - cond_diff;
-
+//                   System.out.println("tempNode = " + tempNode);
+//                   System.out.println("ind_temptier = " + ind_temptier);
+//                   System.out.println("indx_tier = " + indx_tier);
+//                   System.out.println("cond_diff = " + cond_diff);
+//                   System.out.println("condAB_tier = " + condAB_tier);
+//                   System.out.println("max_tier = " + max_tier);
+//                   System.out.println("ntiers = " + ntiers);
                     if (condAB_tier < 0 || condAB_tier > (ntiers - 1)
                             || this.knowledge.getTier(condAB_tier).size() == 1) { // added condition for time tier 05.29.2016
+//                        List<Node> empty = Collections.emptyList();
+//                        getSepsets2().set(x1, y1, empty); // added 05.01.2016
                         System.out.println("Warning: For nodes " + x1 + "," + y1 + " the conditioning variable is outside "
                                 + "of window, so not added to SepSet");
                         continue;
                     }
-
-                    List<String> new_tier = this.knowledge.getTier(condAB_tier);
+                    List new_tier = this.knowledge.getTier(condAB_tier);
+//                       Collections.sort(new_tier);
                     String tempNode1 = (String) new_tier.get(ind_temp);
                     System.out.println("adding variable " + tempNode1 + " to SepSet");
                     condSetAB.add(test.getVariable(tempNode1));
