@@ -27,7 +27,10 @@ import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static java.lang.Double.NaN;
 import static java.lang.Math.*;
@@ -77,7 +80,7 @@ public final class StatUtils {
         int count = 0;
 
         for (int i = 0; i < N; i++) {
-            if (!Double.isNaN(array[i])) {
+            if (array[i] != -99) {
                 sum += array[i];
                 count++;
             }
@@ -924,8 +927,6 @@ public final class StatUtils {
      * array2.
      */
     public static double correlation(double[] array1, double[] array2, int N) {
-//        array1 = DataUtils.center(array1);
-//        array2 = DataUtils.center(array2);
 
         double covXY = StatUtils.sxy(array1, array2, N);
         double covXX = StatUtils.sxy(array1, array1, N);
@@ -1398,12 +1399,6 @@ public final class StatUtils {
             kurt += s * s * s * s;
         }
 
-//        if (variance == 0) {
-////            return kurt;
-//            throw new ArithmeticException(
-//                    "There is no kurtosis when the variance is zero.");
-//        }
-
         kurt = kurt / N;
 
         kurt = kurt / (variance * variance) - 3.0;
@@ -1763,29 +1758,6 @@ public final class StatUtils {
         return (-inverse.get(0, 1)) / sqrt(inverse.get(0, 0) * inverse.get(1, 1));
     }
 
-//    public static synchronized double partialCorrelationWhittaker(Matrix submatrix) {
-//        double cov = partialCovariance(submatrix);
-//
-//        int[] selection1 = new int[submatrix.rows()];
-//        int[] selection2 = new int[submatrix.rows()];
-//
-//        selection1[0] = 0;
-//        selection1[1] = 0;
-//        for (int i = 2; i < selection1.length; i++) selection1[i] = i;
-//
-//        Matrix var1Matrix = submatrix.getSelection(selection1, selection1);
-//        double var1 = partialCovariance(var1Matrix);
-//
-//        selection2[0] = 1;
-//        selection2[1] = 1;
-//        for (int i = 2; i < selection2.length; i++) selection2[i] = i;
-//
-//        Matrix var2Matrix = submatrix.getSelection(selection2, selection2);
-//        double var2 = partialCovariance(var2Matrix);
-//
-//        return cov / Math.sqrt(var1 * var2);
-//    }
-
     /**
      * @return the partial correlation(x, y | z) where these represent the column/row indices
      * of the desired variables in <code>covariance</code>
@@ -1823,16 +1795,11 @@ public final class StatUtils {
         _f = StatUtils.standardizeData(_f);
 
         for (int k = 0; k < _f.length; k++) {
-//            _f[k] = Math.abs(_f[k]);
-//            _f[k] = Math.pow(Math.tanh(_f[k]), 2.0);
             _f[k] = abs(_f[k]);
         }
 
         double expected = StatUtils.mean(_f);
         double diff = expected - sqrt(2.0 / PI);
-//
-//        System.out.println("ttt " + pow2 + " " + Math.sqrt(2 / Math.PI));
-//        double diff = expected - pow2;
         return diff * diff;
     }
 
@@ -1861,8 +1828,6 @@ public final class StatUtils {
 
         return log(expected);
 
-//        double diff = logExpected - 0.5;
-//        return Math.abs(diff);
     }
 
     public static double logCoshExp() {
@@ -1995,12 +1960,7 @@ public final class StatUtils {
     // Calculates the log of a list of terms, where the argument consists of the logs of the terms.
     public static double logsum(List<Double> logs) {
 
-        Collections.sort(logs, new Comparator<Double>() {
-            @Override
-            public int compare(Double o1, Double o2) {
-                return -Double.compare(o1, o2);
-            }
-        });
+        logs.sort((o1, o2) -> -Double.compare(o1, o2));
 
         double sum = 0.0;
         int N = logs.size() - 1;
@@ -2074,7 +2034,7 @@ public final class StatUtils {
         allData[0] = x;
         allData[1] = y;
 
-        for (int i = 0; i < z.length; i++) allData[i + 2] = z[i];
+        System.arraycopy(z, 0, allData, 2, z.length);
 
         double[][] subdata = new double[allData.length][rows.size()];
 
@@ -2145,8 +2105,6 @@ public final class StatUtils {
         double exy = 0.0;
         double exx = 0.0;
         double eyy = 0.0;
-        double exm = 0.0;
-        double eym = 0.0;
 
         int n = 0;
 
@@ -2156,8 +2114,6 @@ public final class StatUtils {
                     exy += x[k] * y[k];
                     exx += x[k] * x[k];
                     eyy += y[k] * y[k];
-                    exm += x[k];
-                    eym += y[k];
                     n++;
                 }
             } else if (direction < threshold) {
@@ -2165,8 +2121,6 @@ public final class StatUtils {
                     exy += x[k] * y[k];
                     exx += x[k] * x[k];
                     eyy += y[k] * y[k];
-                    exm += x[k];
-                    eym += y[k];
                     n++;
                 }
             }

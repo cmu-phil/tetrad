@@ -55,7 +55,7 @@ public final class IndexedMatrix {
     /**
      * @return Ibid.
      */
-    public final int[] getIndices() {
+    public int[] getIndices() {
         return this.indices;
     }
 
@@ -66,7 +66,7 @@ public final class IndexedMatrix {
      *
      * @param indices The indices of the submatrix desired.
      */
-    public final void setIndices(int[] indices) {
+    public void setIndices(int[] indices) {
         if (indices == null) {
             throw new NullPointerException("Permutation must not be null.");
         }
@@ -82,7 +82,7 @@ public final class IndexedMatrix {
      * @param j The column value in teh remapped indices of the cell desired.
      * @return Ibid.
      */
-    public final double getValue(int i, int j) {
+    public double getValue(int i, int j) {
         return this.matrix[this.indices[i]][this.indices[j]];
     }
 

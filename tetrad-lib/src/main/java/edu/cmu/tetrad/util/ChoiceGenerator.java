@@ -85,7 +85,7 @@ public final class ChoiceGenerator {
      * @param b the number of objects in the desired selection.
      */
     public ChoiceGenerator(int a, int b) {
-        if ((a < 0) || (b < 0) || (a < b)) {
+        if ((b < 0) || (a < b)) {
             throw new IllegalArgumentException(
                     "For 'a choose b', a and b must be " +
                             "nonnegative with a >= b: " + "a = " + a +

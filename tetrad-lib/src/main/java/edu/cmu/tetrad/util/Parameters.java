@@ -137,7 +137,7 @@ public class Parameters implements TetradSerializable {
     public boolean getBoolean(String name, boolean defaultValue) {
         Object b = get(name, defaultValue);
 
-        if (b == null || !(b instanceof Boolean)) {
+        if (!(b instanceof Boolean)) {
             return false;
         }
 
@@ -210,10 +210,6 @@ public class Parameters implements TetradSerializable {
 
         if (objects == null) {
             ParamDescription paramDescription = ParamDescriptions.getInstance().get(name);
-            if (paramDescription == null) {
-                throw new IllegalArgumentException("A description of '" + name + "' has "
-                        + "not been given in ParamDescriptions.");
-            }
             return new Object[]{paramDescription.getDefaultValue()};
         } else {
             return objects;

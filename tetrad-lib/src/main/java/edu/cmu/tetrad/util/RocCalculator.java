@@ -21,6 +21,8 @@
 
 package edu.cmu.tetrad.util;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,7 +37,7 @@ public class RocCalculator {
     public static final int ASCENDING = 0;
     private static final int DESCENDING = 1;
 
-    private int direction = RocCalculator.ASCENDING;
+    private int direction;
 
     private int[][] points;
     private final ScoreCategoryPair[] scoreCatPairs;
@@ -206,7 +208,7 @@ public class RocCalculator {
         }
     }
 
-    private static class ScoreCategoryPair implements Comparable {
+    private static class ScoreCategoryPair implements Comparable<ScoreCategoryPair> {
         private final double score;
         private final boolean hasProperty;
 
@@ -225,8 +227,8 @@ public class RocCalculator {
             return this.hasProperty;
         }
 
-        public int compareTo(Object other) {
-            if (getScore() < ((ScoreCategoryPair) other).getScore()) {
+        public int compareTo(@NotNull ScoreCategoryPair other) {
+            if (getScore() < other.getScore()) {
                 return -1;
             } else if (getScore() == ((ScoreCategoryPair) other).getScore()) {
                 return 0;

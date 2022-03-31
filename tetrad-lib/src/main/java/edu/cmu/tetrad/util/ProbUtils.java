@@ -854,7 +854,7 @@ public class ProbUtils {
                     beta + r * Math.log(xin) + t * Math.log(ProbUtils.one - xin));
 
             if (y * yprev <= ProbUtils.zero) {
-                prev = (sq > fpu) ? sq : fpu;
+                prev = Math.max(sq, fpu);
             }
 
             g = ProbUtils.one;

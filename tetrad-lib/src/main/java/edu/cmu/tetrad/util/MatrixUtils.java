@@ -52,7 +52,6 @@ public final class MatrixUtils {
      * @param mat     matrix to copy
      * @param nRow    number of repeat copy of row
      * @param mColumn number of repeat copy of column
-     * @return
      */
     public static double[][] repmat(double[][] mat, int nRow, int mColumn) {
         int numOfRow = mat.length;
@@ -69,9 +68,7 @@ public final class MatrixUtils {
     /**
      * Make a n repeat copy of the rows and columns of the matrix mat.
      *
-     * @param mat
      * @param n   number of repeat copy
-     * @return
      */
     public static double[][] repmat(double[][] mat, int n) {
         int numOfRow = mat.length;
@@ -168,8 +165,6 @@ public final class MatrixUtils {
     public static boolean equals(double[][] ma, double[][] mb,
                                  double tolerance) {
         return new Matrix(ma).equals(new Matrix(mb), tolerance);
-        //new Property(tolerance).equals(TetradMatrix.instance(ma),
-        //     TetradMatrix.instance(mb));
     }
 
     /**
@@ -644,9 +639,6 @@ public final class MatrixUtils {
      */
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public static boolean isPositiveDefinite(Matrix matrix) {
-//        DoubleMatrix2D _matrix = new DenseDoubleMatrix2D(matrix.toArray());
-//        System.out.println(MatrixUtils.toString(new CholeskyDecomposition(_matrix).getL().toArray()));
-//        return new CholeskyDecomposition(_matrix).isSymmetricPositiveDefinite();
 
         try {
             new RectangularCholeskyDecomposition(new BlockRealMatrix(matrix.toArray()));
@@ -661,9 +653,6 @@ public final class MatrixUtils {
         RealMatrix L = new org.apache.commons.math3.linear.CholeskyDecomposition(new BlockRealMatrix(covar.toArray())).getL();
         return new Matrix(L.getData());
 
-//        DoubleMatrix2D _covar = new DenseDoubleMatrix2D(covar.toArray());
-//        DoubleMatrix2D l = new CholeskyDecomposition(_covar).getL();
-//        return new TetradMatrix(l.toArray());
     }
 
     /**

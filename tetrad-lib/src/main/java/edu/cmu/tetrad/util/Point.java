@@ -21,12 +21,14 @@
 
 package edu.cmu.tetrad.util;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * Implements an n-dimensional point.
  *
  * @author Joseph Ramsey
  */
-public class Point implements Comparable {
+public class Point implements Comparable<Point> {
 
     /**
      * A vector representing the point coordinates.
@@ -61,15 +63,13 @@ public class Point implements Comparable {
      * True iff the given object is a point with the same coordinates as
      * this one.
      *
-     * @param o Ibid.
+     * @param p Ibid.
      * @return Ibid.
      */
-    public int compareTo(Object o) {
-        if (o == this) {
+    public int compareTo(@NotNull Point p) {
+        if (p == this) {
             return 0;
         }
-
-        Point p = (Point) o;
 
         for (int i = 0; i < getSize(); i++) {
             if (getValue(i) != p.getValue(i)) {

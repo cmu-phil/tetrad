@@ -93,15 +93,15 @@ public final class MultidataUtils {
     private static void combineMultipleMixedDiscreteData(List<DataModel> dataModels, List<Node> variables, int[][] combinedData, int numOfRows, int numOfColumns) {
         DiscreteVariable[] discreteVars = variables.stream()
                 .map(e -> (e instanceof DiscreteVariable) ? (DiscreteVariable) e : null)
-                .toArray(size -> new DiscreteVariable[size]);
+                .toArray(DiscreteVariable[]::new);
 
         DiscreteVariable[][] dataVariables = dataModels.stream()
-                .map(e -> e.getVariables().stream().map(v -> (v instanceof DiscreteVariable) ? (DiscreteVariable) v : null).toArray(size -> new DiscreteVariable[size]))
-                .toArray(size -> new DiscreteVariable[size][]);
+                .map(e -> e.getVariables().stream().map(v -> (v instanceof DiscreteVariable) ? (DiscreteVariable) v : null).toArray(DiscreteVariable[]::new))
+                .toArray(DiscreteVariable[][]::new);
 
         MixedDataBox[] models = dataModels.stream()
                 .map(e -> (MixedDataBox) ((BoxDataSet) e).getDataBox())
-                .toArray(size -> new MixedDataBox[size]);
+                .toArray(MixedDataBox[]::new);
 
         for (int col = 0; col < numOfColumns; col++) {
             if (discreteVars[col] != null) {
@@ -112,8 +112,8 @@ public final class MultidataUtils {
                     MixedDataBox model = models[i];
                     int[][] data = model.getDiscreteData();
                     int[] values = data[col];
-                    for (int j = 0; j < values.length; j++) {
-                        rowData[row++] = discreteVars[col].getIndex(var.getCategory(values[j]));
+                    for (int value : values) {
+                        rowData[row++] = discreteVars[col].getIndex(var.getCategory(value));
                     }
                 }
                 combinedData[col] = rowData;
@@ -153,7 +153,7 @@ public final class MultidataUtils {
 
         Node[] continuousVars = variables.stream()
                 .map(e -> (e instanceof ContinuousVariable) ? e : null)
-                .toArray(size -> new Node[size]);
+                .toArray(Node[]::new);
 
         for (int col = 0; col < numOfColumns; col++) {
             if (continuousVars[col] != null) {
@@ -181,14 +181,13 @@ public final class MultidataUtils {
     public static void combineDiscreteDataToDiscreteVerticalData(List<DataModel> dataModels, List<Node> variables, int[][] combinedData, int numOfRows, int numOfColumns) {
         DiscreteVariable[] discreteVars = variables.stream()
                 .map(e -> (e instanceof DiscreteVariable) ? (DiscreteVariable) e : null)
-                .toArray(size -> new DiscreteVariable[size]);
+                .toArray(DiscreteVariable[]::new);
 
-        DataModel[] models = dataModels.stream()
-                .toArray(size -> new DataModel[size]);
+        DataModel[] models = dataModels.toArray(new DataModel[0]);
 
         DiscreteVariable[][] dataVariables = dataModels.stream()
-                .map(e -> e.getVariables().stream().map(v -> (DiscreteVariable) v).toArray(size -> new DiscreteVariable[size]))
-                .toArray(size -> new DiscreteVariable[size][]);
+                .map(e -> e.getVariables().stream().map(v -> (DiscreteVariable) v).toArray(DiscreteVariable[]::new))
+                .toArray(DiscreteVariable[][]::new);
 
         for (int col = 0; col < numOfColumns; col++) {
             int[] rowData = new int[numOfRows];
@@ -198,25 +197,8 @@ public final class MultidataUtils {
                 VerticalIntDataBox dataBox = (VerticalIntDataBox) ((BoxDataSet) models[i]).getDataBox();
                 int[][] data = dataBox.getVariableVectors();
                 int[] values = data[col];
-                for (int j = 0; j < values.length; j++) {
-                    rowData[row++] = discreteVars[col].getIndex(var.getCategory(values[j]));
-                }
-            }
-            combinedData[col] = rowData;
-        }
-    }
-
-    public static void combineContinuousDataToContinuousVerticalData(List<DataModel> dataModels, double[][] combinedData, int numOfRows, int numOfColumns) {
-        List<DoubleDataBox> models = dataModels.stream()
-                .map(e -> (DoubleDataBox) ((BoxDataSet) e).getDataBox())
-                .collect(Collectors.toList());
-        for (int col = 0; col < numOfColumns; col++) {
-            double[] rowData = new double[numOfRows];
-            int row = 0;
-            for (DoubleDataBox dataBox : models) {
-                double[][] data = dataBox.getData();
-                for (double[] rData : data) {
-                    rowData[row++] = rData[col];
+                for (int value : values) {
+                    rowData[row++] = discreteVars[col].getIndex(var.getCategory(value));
                 }
             }
             combinedData[col] = rowData;
@@ -229,7 +211,6 @@ public final class MultidataUtils {
                     DataBox dataBox = ((BoxDataSet) e).getDataBox();
                     DoubleDataBox box2 = new DoubleDataBox(dataBox.numRows(), dataBox.numCols());
 
-                    double[][] m = new double[dataBox.numRows()][dataBox.numCols()];
                     for (int i = 0; i < dataBox.numRows(); i++) {
                         for (int j = 0; j < dataBox.numCols(); j++) {
                             box2.set(i, j, dataBox.get(i, j));
@@ -289,7 +270,7 @@ public final class MultidataUtils {
             for (Node node : nodeList) {
                 if (node instanceof DiscreteVariable) {
                     Set<String> categories = varCategories[index];
-                    variables.add(new DiscreteVariable(node.getName(), categories.stream().collect(Collectors.toList())));
+                    variables.add(new DiscreteVariable(node.getName(), new ArrayList<>(categories)));
                 } else {
                     variables.add(node);
                 }
@@ -325,7 +306,7 @@ public final class MultidataUtils {
             int index = 0;
             for (Node dataVar : dataVars) {
                 Set<String> categories = varCategories[index++];
-                variables.add(new DiscreteVariable(dataVar.getName(), categories.stream().collect(Collectors.toList())));
+                variables.add(new DiscreteVariable(dataVar.getName(), new ArrayList<>(categories)));
             }
         }
     }

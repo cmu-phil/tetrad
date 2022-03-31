@@ -37,13 +37,13 @@ public class Comparison {
         ComparisonResult result = new ComparisonResult(params);
 
         if (params.getDataFile() != null) {
-            dataSet = Comparison.loadDataFile(params.getDataFile());
+            dataSet = Comparison.loadDataFile();
 
             if (params.getGraphFile() == null) {
                 throw new IllegalArgumentException("True graph file not set.");
             }
 
-            trueDag = Comparison.loadGraphFile(params.getGraphFile());
+            trueDag = Comparison.loadGraphFile();
         } else {
             if (params.getNumVars() == -1) {
                 throw new IllegalArgumentException("Number of variables not set.");
@@ -118,6 +118,7 @@ public class Comparison {
                 throw new IllegalArgumentException("Alpha not set.");
             }
 
+            assert dataSet != null;
             test = new IndTestFisherZ(dataSet, params.getAlpha());
 
             params.setDataType(ComparisonParameters.DataType.Continuous);
@@ -130,6 +131,7 @@ public class Comparison {
                 throw new IllegalArgumentException("Alpha not set.");
             }
 
+            assert dataSet != null;
             test = new IndTestChiSquare(dataSet, params.getAlpha());
 
             params.setDataType(ComparisonParameters.DataType.Discrete);
@@ -234,11 +236,11 @@ public class Comparison {
         return result;
     }
 
-    private static Graph loadGraphFile(String graphFile) {
+    private static Graph loadGraphFile() {
         return null;
     }
 
-    private static DataSet loadDataFile(String dataFile) {
+    private static DataSet loadDataFile() {
         return null;
     }
 

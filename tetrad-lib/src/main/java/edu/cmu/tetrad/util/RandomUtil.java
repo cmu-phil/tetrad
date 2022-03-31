@@ -51,7 +51,6 @@ public class RandomUtil {
      */
     private static final RandomUtil randomUtil = new RandomUtil();
     private static long seedUniquifier = 8682522807148012L;
-    private static long current;
     private final Map<Long, RandomGenerator> seedsToGenerators = new HashedMap<>();
     // Random number generator from the Apache library.
     private RandomGenerator randomGenerator;
@@ -60,10 +59,6 @@ public class RandomUtil {
 
     //========================================CONSTRUCTORS===================================//
     private long seed;
-
-//    public Random() {
-//        this(seedUniquifier() ^ System.nanoTime());
-//    }
 
     /**
      * Constructs a new random number generator based on the getModel date in milliseconds.
@@ -225,8 +220,6 @@ public class RandomUtil {
     }
 
     /**
-     * @param mu
-     * @param beta
      * @return Ibid.
      */
     public double nextGumbel(double mu, double beta) {
