@@ -27,7 +27,6 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.editor.FinalizingParameterEditor;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.util.IntSpinner;
-import edu.cmu.tetradapp.util.IntSpinner.Filter;
 import edu.cmu.tetradapp.workbench.LayoutUtils;
 
 import javax.swing.*;
@@ -35,11 +34,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.List;
 import java.util.*;
-import java.util.prefs.Preferences;
 
 /**
  * Allows the user to specify how a selected list of columns should be
@@ -59,13 +55,6 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
      * A map from nodes to their editors.
      */
     private final Map<Node, DiscretizationEditor> nodeEditors = new HashMap<>();
-
-
-    /**
-     * The params we are editing.
-     */
-//    private DiscretizationParams params;
-
 
     /**
      * A tabbed pane to store the editors in.
@@ -175,19 +164,6 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
         JScrollPane editorScrollPane = new JScrollPane(this.editorPane);
         editorScrollPane.setPreferredSize(new Dimension(400, 350));
 
-//        JCheckBox copyUnselectedCheckBox =
-//                new JCheckBox("Copy unselected columns into new data set");
-//        copyUnselectedCheckBox.setHorizontalTextPosition(AbstractButton.LEFT);
-//        copyUnselectedCheckBox.setSelected(Preferences.userRoot().getBoolean(
-//                "copyUnselectedColumns", false));
-//        copyUnselectedCheckBox.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent e) {
-//                JCheckBox checkBox = (JCheckBox) e.getSource();
-//                Preferences.userRoot().putBoolean("copyUnselectedColumns",
-//                        checkBox.isSelected());
-//            }
-//        });
-
         discretizeVariableList.setSelectedIndex(0);
 
         Box hBox = Box.createHorizontalBox();
@@ -221,13 +197,6 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
         vBox.add(Box.createVerticalStrut(5));
         vBox.add(editorScrollPane);
 
-//        Box b4 = Box.createHorizontalBox();
-//        b4.add(Box.createHorizontalGlue());
-//        b4.add(copyUnselectedCheckBox);
-
-//        vBox.add(b4);
-//        vBox.add(Box.createVerticalStrut(10));
-
         hBox.add(vBox);
         hBox.add(Box.createHorizontalStrut(5));
 
@@ -258,7 +227,6 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
     /**
      * Sets the previous params, must be <code>DiscretizationParams</code>.
      *
-     * @param params
      */
     public void setParams(Parameters params) {
         this.parameters = params;
@@ -322,37 +290,13 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
     }
 
 
-    private boolean globalChangeVerification() {
-        if (!Preferences.userRoot().getBoolean("ignoreGlobalDiscretizationWarning", false)) {
-            Box box = Box.createVerticalBox();
-            final String message = "<html>This action will change the number of categories for all selected variables<br>" +
-                    "and override any previous work. Are you sure you want continue?</html>";
-            box.add(new JLabel(message));
-            box.add(Box.createVerticalStrut(5));
-            JCheckBox checkBox = new JCheckBox("Don't show this again");
-            checkBox.setHorizontalTextPosition(SwingConstants.LEFT);
-            checkBox.setHorizontalAlignment(SwingConstants.RIGHT);
-            checkBox.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    JCheckBox box = (JCheckBox) e.getSource();
-                    Preferences.userRoot().putBoolean("ignoreGlobalDiscretizationWarning", box.isSelected());
-                }
-            });
-            box.add(checkBox);
-            box.add(Box.createVerticalStrut(5));
-            int option = JOptionPane.showConfirmDialog(this, box, "Discretization Warning", JOptionPane.YES_NO_OPTION);
-            return JOptionPane.YES_OPTION == option;
-        }
-        return true;
-    }
-
     /**
      * Changes the number of categories on the editors for the given nodes.
      */
     private void changeNumberOfCategories(int numOfCats, List<Node> nodes) {
         for (Node node : nodes) {
             DiscretizationEditor editor = this.nodeEditors.get(node);
-            if (editor != null && editor instanceof ContinuousDiscretizationEditor) {
+            if (editor instanceof ContinuousDiscretizationEditor) {
                 ((ContinuousDiscretizationEditor) editor).setNumCategories(numOfCats);
             }
         }
@@ -365,7 +309,7 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
     private void changeMethod(List<Node> nodes, ContinuousDiscretizationEditor.Method method) {
         for (Node node : nodes) {
             DiscretizationEditor editor = nodeEditors.get(node);
-            if (editor != null && editor instanceof ContinuousDiscretizationEditor) {
+            if (editor instanceof ContinuousDiscretizationEditor) {
                 ((ContinuousDiscretizationEditor) editor).setMethod(method);
             }
         }
@@ -379,7 +323,7 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
         ContinuousDiscretizationEditor.Method method = null;
         for (Node node : nodes) {
             DiscretizationEditor editor = nodeEditors.get(node);
-            if (editor != null && editor instanceof ContinuousDiscretizationEditor) {
+            if (editor instanceof ContinuousDiscretizationEditor) {
                 ContinuousDiscretizationEditor _editor = (ContinuousDiscretizationEditor) editor;
 
                 if (method != null && method != _editor.getMethod()) {
@@ -403,7 +347,7 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
         }
         DiscretizationEditor editor = nodeEditors.get(nodes.get(0));
 
-        if (editor != null && editor instanceof ContinuousDiscretizationEditor) {
+        if (editor instanceof ContinuousDiscretizationEditor) {
             ContinuousDiscretizationEditor _editor = (ContinuousDiscretizationEditor) editor;
 
             int value = _editor.getNumCategories();
@@ -439,14 +383,9 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
             IntSpinner spinner = new IntSpinner(DiscretizationParamsEditor.this.getDefaultCategoryNum(vars), 1, 3);
             ContinuousDiscretizationEditor.Method method = DiscretizationParamsEditor.this.getCommonMethod(vars);
             spinner.setMin(2);
-            spinner.setFilter(new Filter() {
-                public int filter(int oldValue, int newValue) {
-                    if (true) {//globalChangeVerification()) {
-                        DiscretizationParamsEditor.this.changeNumberOfCategories(newValue, nodes);
-                        return newValue;
-                    }
-                    return oldValue;
-                }
+            spinner.setFilter((oldValue, newValue) -> {
+                DiscretizationParamsEditor.this.changeNumberOfCategories(newValue, nodes);
+                return newValue;
             });
 
             Box vBox = Box.createVerticalBox();
@@ -463,23 +402,11 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
             equalBuckets.setHorizontalTextPosition(SwingConstants.RIGHT);
             equalInterval.setHorizontalTextPosition(SwingConstants.RIGHT);
 
-            none.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    DiscretizationParamsEditor.this.changeMethod(nodes, ContinuousDiscretizationEditor.Method.NONE);
-                }
-            });
+            none.addActionListener(e -> DiscretizationParamsEditor.this.changeMethod(nodes, ContinuousDiscretizationEditor.Method.NONE));
 
-            equalBuckets.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    DiscretizationParamsEditor.this.changeMethod(nodes, ContinuousDiscretizationEditor.Method.EQUAL_SIZE_BUCKETS);
-                }
-            });
+            equalBuckets.addActionListener(e -> DiscretizationParamsEditor.this.changeMethod(nodes, ContinuousDiscretizationEditor.Method.EQUAL_SIZE_BUCKETS));
 
-            equalInterval.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    DiscretizationParamsEditor.this.changeMethod(nodes, ContinuousDiscretizationEditor.Method.EVENLY_DIVIDED_INTERNVALS);
-                }
-            });
+            equalInterval.addActionListener(e -> DiscretizationParamsEditor.this.changeMethod(nodes, ContinuousDiscretizationEditor.Method.EVENLY_DIVIDED_INTERNVALS));
 
             ButtonGroup group = new ButtonGroup();
             group.add(none);

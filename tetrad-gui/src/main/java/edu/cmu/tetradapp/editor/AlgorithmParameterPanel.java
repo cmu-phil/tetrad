@@ -52,8 +52,6 @@ public class AlgorithmParameterPanel extends JPanel {
 
     private static final long serialVersionUID = 274638263704283474L;
 
-    protected static final String DEFAULT_TITLE_BORDER = "Algorithm Parameters";
-
     protected final JPanel mainPanel = new JPanel();
 
     public AlgorithmParameterPanel() {
@@ -92,8 +90,6 @@ public class AlgorithmParameterPanel extends JPanel {
             params = new LinkedHashSet<>();
             // Thresholds
             params.add(Params.NUM_RANDOMIZED_SEARCH_MODELS);
-            //params.add(Params.THRESHOLD_NO_RANDOM_DATA_SEARCH);
-            //params.add(Params.CUTOFF_DATA_SEARCH);
             this.mainPanel.add(createSubPanel(title, params, parameters));
             this.mainPanel.add(Box.createVerticalStrut(10));
 
@@ -285,30 +281,6 @@ public class AlgorithmParameterPanel extends JPanel {
         });
 
         return field;
-    }
-
-    // Joe's old implementation with dropdown yes or no
-    protected JComboBox getBooleanBox(String parameter, Parameters parameters, boolean defaultValue) {
-        JComboBox<String> box = new JComboBox<>(new String[]{"Yes", "No"});
-
-        boolean aBoolean = parameters.getBoolean(parameter, defaultValue);
-        if (aBoolean) {
-            box.setSelectedItem("Yes");
-        } else {
-            box.setSelectedItem("No");
-        }
-
-        box.addActionListener((e) -> {
-            if (((JComboBox) e.getSource()).getSelectedItem().equals("Yes")) {
-                parameters.set(parameter, true);
-            } else {
-                parameters.set(parameter, false);
-            }
-        });
-
-        box.setMaximumSize(box.getPreferredSize());
-
-        return box;
     }
 
     // Zhou's new implementation with yes/no radio buttons

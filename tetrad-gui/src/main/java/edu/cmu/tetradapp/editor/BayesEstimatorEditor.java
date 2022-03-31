@@ -33,10 +33,6 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.text.NumberFormat;
 
 /**
@@ -90,10 +86,11 @@ public class BayesEstimatorEditor extends JPanel {
                 comp.addItem(i + 1);
             }
 
-            comp.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    BayesEstimatorEditor.this.wrapper.setModelIndex(((Integer) comp.getSelectedItem()).intValue() - 1);
+            comp.addActionListener(e -> {
+                Object selectedItem = comp.getSelectedItem();
+
+                if (selectedItem instanceof Integer) {
+                    BayesEstimatorEditor.this.wrapper.setModelIndex((Integer) selectedItem - 1);
                     resetBayesImEditor();
                     validate();
                 }
@@ -141,11 +138,9 @@ public class BayesEstimatorEditor extends JPanel {
         this.wizard = new BayesEstimatorEditorWizard(bayesIm, workbench);
         this.wizard.enableEditing(false);
 
-        this.wizard.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("editorValueChanged".equals(evt.getPropertyName())) {
-                    firePropertyChange("modelChanged", null, null);
-                }
+        this.wizard.addPropertyChangeListener(evt -> {
+            if ("editorValueChanged".equals(evt.getPropertyName())) {
+                firePropertyChange("modelChanged", null, null);
             }
         });
 
@@ -185,16 +180,14 @@ public class BayesEstimatorEditor extends JPanel {
         panel.add(splitPane, BorderLayout.CENTER);
 
         setName("Bayes IM Editor");
-        getWizard().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("editorClosing".equals(evt.getPropertyName())) {
-                    firePropertyChange("editorClosing", null, getName());
-                }
+        getWizard().addPropertyChangeListener(evt -> {
+            if ("editorClosing".equals(evt.getPropertyName())) {
+                firePropertyChange("editorClosing", null, getName());
+            }
 
-                if ("closeFrame".equals(evt.getPropertyName())) {
-                    firePropertyChange("closeFrame", null, null);
-                    firePropertyChange("editorClosing", true, true);
-                }
+            if ("closeFrame".equals(evt.getPropertyName())) {
+                firePropertyChange("closeFrame", null, null);
+                firePropertyChange("editorClosing", true, true);
             }
         });
 

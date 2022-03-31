@@ -29,9 +29,9 @@ import javax.swing.*;
 import javax.swing.border.MatteBorder;
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Allows the user to choose a variable in a Bayes net and edit the parameters
@@ -129,9 +129,13 @@ final class BayesEstimatorEditorWizard extends JPanel {
 
         workbench.addPropertyChangeListener((evt) -> {
             if (evt.getPropertyName().equals("selectedNodes")) {
-                List selection = (List) (evt.getNewValue());
-                if (selection.size() == 1) {
-                    this.varNamesComboBox.setSelectedItem(selection.get(0));
+                Object newValue = evt.getNewValue();
+
+                if (newValue instanceof List) {
+                    List selection = (List) newValue;
+                    if (selection.size() == 1) {
+                        this.varNamesComboBox.setSelectedItem(selection.get(0));
+                    }
                 }
             }
         });
@@ -146,7 +150,7 @@ final class BayesEstimatorEditorWizard extends JPanel {
 
         Graph graph = bayesIm.getBayesPm().getDag();
 
-        List<Node> nodes = graph.getNodes().stream().collect(Collectors.toList());
+        List<Node> nodes = new ArrayList<>(graph.getNodes());
         Collections.sort(nodes);
         nodes.forEach(varNameComboBox::addItem);
 

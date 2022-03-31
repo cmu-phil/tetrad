@@ -195,7 +195,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
         //JTabbedPane tabbedPane = new JTabbedPane();
         this.modelStatsText = new JTextArea();
         this.tabbedPane = new JTabbedPane();
-        this.tabbedPane.add("forbid_latent_common_causes", workbenchScroll(resultLabel));
+        this.tabbedPane.add("forbid_latent_common_causes", workbenchScroll());
 
         /*if (getAlgorithmRunner().getSelectedDataModel() instanceof DataSet) {
             tabbedPane.add("Model Statistics", modelStatsText);

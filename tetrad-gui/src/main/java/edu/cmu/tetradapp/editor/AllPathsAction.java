@@ -99,8 +99,6 @@ class AllPathsAction extends AbstractAction implements ClipboardOwner {
             }
         };
 
-//        JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), b,
-//                "Graph Properties", JOptionPane.PLAIN_MESSAGE);
     }
 
     private void addTreks(Node node1, Node node2, Graph graph, JTextArea textArea) {

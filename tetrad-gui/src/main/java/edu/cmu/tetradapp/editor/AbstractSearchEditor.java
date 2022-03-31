@@ -41,7 +41,7 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -269,8 +269,6 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
                     throw new RuntimeException(e);
                 }
 
-//                getWorkbenchScroll().setBorder(
-//                        new TitledBorder(getResultLabel()));
                 Graph resultGraph = resultGraph();
 
                 doDefaultArrangement(resultGraph);
@@ -287,23 +285,21 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
             }
         };
 
-        Thread watcher = new Thread() {
-            public void run() {
-                while (true) {
-                    try {
-                        Thread.sleep(300);
+        Thread watcher = new Thread(() -> {
+            while (true) {
+                try {
+                    Thread.sleep(300);
 
-                        if (!process.isAlive()) {
-                            getExecuteButton().setEnabled(true);
-                            return;
-                        }
-                    } catch (InterruptedException e) {
+                    if (!process.isAlive()) {
                         getExecuteButton().setEnabled(true);
                         return;
                     }
+                } catch (InterruptedException e) {
+                    getExecuteButton().setEnabled(true);
+                    return;
                 }
             }
-        };
+        });
 
         watcher.start();
     }
@@ -349,12 +345,12 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
     void setup(String resultLabel) {
         setLayout(new BorderLayout());
         add(getToolbar(), BorderLayout.WEST);
-        add(workbenchScroll(resultLabel), BorderLayout.CENTER);
+        add(workbenchScroll(), BorderLayout.CENTER);
         add(menuBar(), BorderLayout.NORTH);
     }
 
 
-    JScrollPane workbenchScroll(String resultLabel) {
+    JScrollPane workbenchScroll() {
         Graph resultGraph = resultGraph();
 
         Graph sourceGraph = this.algorithmRunner.getSourceGraph();
@@ -371,18 +367,6 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
             GraphUtils.arrangeBySourceGraph(resultGraph, latestWorkbenchGraph);
         }
 
-//        boolean arrangedAll = DataGraphUtils.arrangeBySourceGraph(resultGraph,
-//                latestWorkbenchGraph);
-//
-//        if (!arrangedAll) {
-//            arrangedAll =
-//                    DataGraphUtils.arrangeBySourceGraph(resultGraph, sourceGraph);
-//        }
-
-//        if (!arrangedAll) {
-//            DataGraphUtils.circleLayout(resultGraph, 200, 200, 150);
-//        }
-
         this.workbench = new GraphWorkbench(resultGraph);
 
         this.graphHistory.clear();
@@ -391,8 +375,6 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
         this.workbench.setAllowDoubleClickActions(false);
         this.workbench.setAllowNodeEdgeSelection(true);
         this.workbenchScroll = new JScrollPane(this.workbench);
-//        workbenchScroll.setPreferredSize(new Dimension(450, 450));
-//        workbenchScroll.setBorder(new TitledBorder(resultLabel));
 
         this.workbench.addMouseListener(new MouseAdapter() {
             public void mouseExited(MouseEvent e) {
@@ -423,13 +405,11 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
         menuBar.add(file);
         JMenu fileMenu = new GraphFileMenu(this, getWorkbench());
         file.add(fileMenu);
-//        file.add(new SaveGraph(this, "Save Graph..."));
-//        file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
         file.add(new SaveComponentImage(this.workbench, "Save Graph Image..."));
 
         JMenu edit = new JMenu("Edit");
         JMenuItem copy = new JMenuItem(new CopySubgraphAction(this));
-        copy.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
+        copy.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
         edit.add(copy);
 
         menuBar.add(edit);

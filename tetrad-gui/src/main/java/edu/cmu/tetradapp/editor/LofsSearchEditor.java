@@ -104,7 +104,7 @@ public class LofsSearchEditor extends AbstractSearchEditor
         setLayout(new BorderLayout());
         add(getToolbar(), BorderLayout.WEST);
         JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.add("forbid_latent_common_causes", workbenchScroll(resultLabel));
+        tabbedPane.add("forbid_latent_common_causes", workbenchScroll());
 
         add(tabbedPane, BorderLayout.CENTER);
         add(menuBar(), BorderLayout.NORTH);

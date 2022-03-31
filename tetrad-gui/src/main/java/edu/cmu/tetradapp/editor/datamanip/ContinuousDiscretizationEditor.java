@@ -28,11 +28,7 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.util.IntSpinner;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.text.NumberFormat;
 import java.util.LinkedList;
 import java.util.List;
@@ -90,7 +86,7 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
     /**
      * The default number of categories to use.
      */
-    private int numberOfCategories = 2;
+    private int numberOfCategories;
 
 
     /**
@@ -140,12 +136,10 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
         this.categorySpinner.setSize(this.categorySpinner.getPreferredSize());
         this.categorySpinner.setMinimumSize(this.categorySpinner.getPreferredSize());
         this.categorySpinner.setFilter(new MyFilter());
-        this.categorySpinner.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                JSpinner spinner = (JSpinner) e.getSource();
-                if (!spinner.getValue().equals(ContinuousDiscretizationEditor.this.numberOfCategories)) {
-                    setNumCategories((Integer) spinner.getValue());
-                }
+        this.categorySpinner.addChangeListener(e -> {
+            JSpinner spinner = (JSpinner) e.getSource();
+            if (!spinner.getValue().equals(ContinuousDiscretizationEditor.this.numberOfCategories)) {
+                setNumCategories((Integer) spinner.getValue());
             }
         });
 
@@ -319,25 +313,19 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
         group.add(equalInterval);
         group.add(none);
 
-        none.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                ContinuousDiscretizationEditor.this.method = Method.NONE;
-                setNumCategories(ContinuousDiscretizationEditor.this.numberOfCategories);
-            }
+        none.addActionListener(e -> {
+            ContinuousDiscretizationEditor.this.method = Method.NONE;
+            setNumCategories(ContinuousDiscretizationEditor.this.numberOfCategories);
         });
 
-        equalInterval.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                ContinuousDiscretizationEditor.this.method = Method.EVENLY_DIVIDED_INTERNVALS;
-                setNumCategories(ContinuousDiscretizationEditor.this.numberOfCategories);
-            }
+        equalInterval.addActionListener(e -> {
+            ContinuousDiscretizationEditor.this.method = Method.EVENLY_DIVIDED_INTERNVALS;
+            setNumCategories(ContinuousDiscretizationEditor.this.numberOfCategories);
         });
 
-        equalBuckets.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                ContinuousDiscretizationEditor.this.method = Method.EQUAL_SIZE_BUCKETS;
-                setNumCategories(ContinuousDiscretizationEditor.this.numberOfCategories);
-            }
+        equalBuckets.addActionListener(e -> {
+            ContinuousDiscretizationEditor.this.method = Method.EQUAL_SIZE_BUCKETS;
+            setNumCategories(ContinuousDiscretizationEditor.this.numberOfCategories);
         });
 
 //        System.out.println("Method = " + method);

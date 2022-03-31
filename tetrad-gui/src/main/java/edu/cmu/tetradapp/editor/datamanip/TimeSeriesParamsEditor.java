@@ -26,8 +26,6 @@ import edu.cmu.tetradapp.editor.ParameterEditor;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
 
 /**
@@ -52,7 +50,6 @@ public class TimeSeriesParamsEditor extends JPanel implements ParameterEditor {
     /**
      * Sets the parameters.
      *
-     * @param params
      */
     public void setParams(Parameters params) {
         this.params = params;
@@ -74,11 +71,9 @@ public class TimeSeriesParamsEditor extends JPanel implements ParameterEditor {
         JSpinner jSpinner = new JSpinner(model);
         jSpinner.setPreferredSize(jSpinner.getPreferredSize());
 
-        model.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                SpinnerNumberModel model = (SpinnerNumberModel) e.getSource();
-                TimeSeriesParamsEditor.this.params.set("numTimeLags", model.getNumber().intValue());
-            }
+        model.addChangeListener(e -> {
+            SpinnerNumberModel model1 = (SpinnerNumberModel) e.getSource();
+            TimeSeriesParamsEditor.this.params.set("numTimeLags", model1.getNumber().intValue());
         });
 
         Box b1 = Box.createHorizontalBox();

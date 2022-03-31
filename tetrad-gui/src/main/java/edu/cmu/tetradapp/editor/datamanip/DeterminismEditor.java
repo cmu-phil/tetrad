@@ -36,8 +36,6 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
 
     private Parameters parameters;
 
-    private final String fullyDeterminisedDomainVar = "fullyDeterminisedDomainVar";
-
     //==========================CONSTUCTORS===============================//
 
     /**
@@ -82,10 +80,10 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
         mergedList.forEach(indexSet -> {
             List<String> varNameList = new LinkedList<>();
 
-            Integer[] indexArray = indexSet.toArray(new Integer[indexSet.size()]);
+            Integer[] indexArray = indexSet.toArray(new Integer[0]);
 
-            for (int i = 0; i < indexArray.length; i++) {
-                varNameList.add(this.sourceDataSetCopy.getVariable(indexArray[i]).getName());
+            for (Integer integer : indexArray) {
+                varNameList.add(this.sourceDataSetCopy.getVariable(integer).getName());
             }
 
             String varNames = String.join(", ", varNameList);
@@ -129,7 +127,6 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
     /**
      * Sets the previous params, must be <code>DiscretizationParams</code>.
      *
-     * @param params
      */
     @Override
     public void setParams(Parameters params) {
@@ -139,7 +136,6 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
     /**
      * The parent model should be a <code>DataWrapper</code>.
      *
-     * @param parentModels
      */
     @Override
     public void setParentModels(Object[] parentModels) {
@@ -187,7 +183,6 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
     /**
      * Determinism detection among interventional variables
      *
-     * @return
      */
     private List<Set<Integer>> detectDeterministicVars() {
         List<Set<Integer>> deterministicList = new ArrayList<>();
@@ -210,10 +205,11 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
                         } else {
                             // Add new attribute to domain variables that are fully determinised
                             // But don't merge
+                            String fullyDeterminisedDomainVar = "fullyDeterminisedDomainVar";
                             if (outerVar.getNodeVariableType() == NodeVariableType.DOMAIN) {
-                                outerVar.addAttribute(this.fullyDeterminisedDomainVar, true);
+                                outerVar.addAttribute(fullyDeterminisedDomainVar, true);
                             } else {
-                                innerVar.addAttribute(this.fullyDeterminisedDomainVar, true);
+                                innerVar.addAttribute(fullyDeterminisedDomainVar, true);
                             }
                         }
                     }
@@ -254,7 +250,6 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
     /**
      * Merge the deterministic interventional variables and create new dataset
      *
-     * @param mergedList
      */
     private void mergeDeterministicVars(List<Set<Integer>> mergedList) {
         List<Integer> toBeRemovedColumns = new LinkedList<>();
@@ -263,7 +258,7 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
             List<Node> varList = new LinkedList<>();
             List<String> varNameList = new LinkedList<>();
 
-            Integer[] indexArray = indexSet.toArray(new Integer[indexSet.size()]);
+            Integer[] indexArray = indexSet.toArray(new Integer[0]);
 
             for (int i = 0; i < indexArray.length; i++) {
                 varList.add(this.sourceDataSetCopy.getVariable(indexArray[i]));
@@ -284,8 +279,8 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
 
             //Use this hierarchy for determining the merged variable's type: [value] > [status]
             NodeVariableType mergedNodeVariableType = mergedNode.getNodeVariableType();
-            for (int i = 0; i < indexArray.length; i++) {
-                Node node = this.sourceDataSetCopy.getVariable(indexArray[i]);
+            for (Integer integer : indexArray) {
+                Node node = this.sourceDataSetCopy.getVariable(integer);
                 if ((node.getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE) && (node.getNodeVariableType() != mergedNodeVariableType)) {
                     mergedNode.setNodeVariableType(NodeVariableType.INTERVENTION_VALUE);
                     break;
@@ -306,17 +301,14 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
         });
 
         // Now scan all the coloumns and create the data box
-        DataSet dataBox = createDataBoxData(nodeList, origIndexMap);
 
         // Finally convert to data model
-        this.mergedDataSet = dataBox;
+        this.mergedDataSet = createDataBoxData(nodeList, origIndexMap);
     }
 
     /**
      * Check to see if the dataset has interventional variables
      *
-     * @param model
-     * @return
      */
     private boolean containsInterventionalVariables(DataModel model) {
         List<String> interventionalVars = new LinkedList<>();
@@ -333,9 +325,6 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
     /**
      * Determine if discrete variable x and discrete variable y are deterministic
      *
-     * @param x
-     * @param y
-     * @return
      */
     private boolean isDeterministic(Node x, Node y) {
         // For now only check between discrete variables
@@ -369,9 +358,6 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
     /**
      * Create BoxDataSet from the target nodes
      *
-     * @param nodeList
-     * @param origIndexMap
-     * @return
      */
     private BoxDataSet createDataBoxData(List<Node> nodeList, Map<Node, Integer> origIndexMap) {
         // Now scan all the coloumns and create the data box
@@ -425,9 +411,6 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
     /**
      * The data can only be mixed or discrete. This won't be used for now
      *
-     * @param nodeList
-     * @param origIndexMap
-     * @return
      */
     private BoxDataSet createContinuousDataBox(List<Node> nodeList, Map<Node, Integer> origIndexMap) {
         int numOfCols = nodeList.size();

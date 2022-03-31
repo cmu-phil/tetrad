@@ -159,27 +159,26 @@ final class RangeEditor extends JComponent {
             this.categoryFields[i] = new StringTextField(category, 6);
             StringTextField _field = this.categoryFields[i];
 
-            this.categoryFields[i].setFilter(new StringTextField.Filter() {
-                public String filter(String value, String oldValue) {
-                    if (RangeEditor.this.labels.get(_field) != null) {
-                        int index = RangeEditor.this.labels.get(_field);
+            this.categoryFields[i].setFilter((value, oldValue) -> {
+                if (RangeEditor.this.labels.get(_field) != null) {
+                    int index = RangeEditor.this.labels.get(_field);
 
-                        if (value == null) {
-                            value = RangeEditor.this.categories.get(index);
-                        }
-
-                        for (int i = 0; i < RangeEditor.this.categories.size(); i++) {
-                            if (i != index &&
-                                    RangeEditor.this.categories.get(i).equals(value)) {
-                                value = RangeEditor.this.categories.get(index);
-                            }
-                        }
-
-                        RangeEditor.this.categories.set(index, value);
+                    if (value == null) {
+                        value = RangeEditor.this.categories.get(index);
                     }
 
-                    return value;
+                    for (int i1 = 0; i1 < RangeEditor.this.categories.size(); i1++) {
+                        if (i1 != index &&
+                                RangeEditor.this.categories.get(i1).equals(value)) {
+                            value = RangeEditor.this.categories.get(index);
+                            break;
+                        }
+                    }
+
+                    RangeEditor.this.categories.set(index, value);
                 }
+
+                return value;
             });
 
             this.labels.put(this.categoryFields[i], i);
@@ -200,20 +199,12 @@ final class RangeEditor extends JComponent {
         this.leftRangeFields[0] = new DoubleTextField(
                 Double.NEGATIVE_INFINITY, 6, NumberFormatUtil.getInstance().getNumberFormat());
         this.leftRangeFields[0].setFilter(
-                new DoubleTextField.Filter() {
-                    public double filter(double value, double oldValue) {
-                        return oldValue;
-                    }
-                });
+                (value, oldValue) -> oldValue);
 
         rightRangeFields[maxCategory] = new DoubleTextField(
                 Double.POSITIVE_INFINITY, 6, NumberFormatUtil.getInstance().getNumberFormat());
         rightRangeFields[maxCategory].setFilter(
-                new DoubleTextField.Filter() {
-                    public double filter(double value, double oldValue) {
-                        return oldValue;
-                    }
-                });
+                (value, oldValue) -> oldValue);
 
         leftRangeFields[0].setEditable(false);
         rightRangeFields[maxCategory].setEditable(false);
@@ -230,33 +221,30 @@ final class RangeEditor extends JComponent {
             leftRangeFields[i + 1].setEditable(editableRange);
             labels.put(leftRangeFields[i + 1], i + 1);
 
-            Object label = labels.get(leftRangeFields[i + 1]);
+            Integer label = labels.get(leftRangeFields[i + 1]);
             leftRangeFields[i + 1].setFilter(
-                    new DoubleTextField.Filter() {
-                        public double filter(double value,
-                                             double oldValue) {
-                            if (label == null) {
-                                return oldValue;
-                            }
-
-                            int index = (Integer) label;
-
-                            if (index - 1 > 0 &&
-                                    !(RangeEditor.this.breakpoints[index - 2] < value)) {
-                                value = RangeEditor.this.breakpoints[index - 1];
-                            }
-
-                            if (index - 1 < RangeEditor.this.breakpoints.length - 1 &&
-                                    !(value < RangeEditor.this.breakpoints[index])) {
-                                value = RangeEditor.this.breakpoints[index - 1];
-                            }
-
-                            RangeEditor.this.breakpoints[index - 1] = value;
-
-                            getRightRangeFields()[index - 1].setValue(
-                                    value);
-                            return value;
+                    (value, oldValue) -> {
+                        if (label == null) {
+                            return oldValue;
                         }
+
+                        int index = label;
+
+                        if (index - 1 > 0 &&
+                                !(RangeEditor.this.breakpoints[index - 2] < value)) {
+                            value = RangeEditor.this.breakpoints[index - 1];
+                        }
+
+                        if (index - 1 < RangeEditor.this.breakpoints.length - 1 &&
+                                !(value < RangeEditor.this.breakpoints[index])) {
+                            value = RangeEditor.this.breakpoints[index - 1];
+                        }
+
+                        RangeEditor.this.breakpoints[index - 1] = value;
+
+                        getRightRangeFields()[index - 1].setValue(
+                                value);
+                        return value;
                     });
 
 

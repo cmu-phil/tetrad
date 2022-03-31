@@ -108,7 +108,7 @@ public class GlassoSearchEditor extends AbstractSearchEditor
         add(getToolbar(), BorderLayout.WEST);
         JTextArea modelStatsText = new JTextArea();
         JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.add("forbid_latent_common_causes", workbenchScroll(resultLabel));
+        tabbedPane.add("forbid_latent_common_causes", workbenchScroll());
         add(tabbedPane, BorderLayout.CENTER);
         add(menuBar(), BorderLayout.NORTH);
     }

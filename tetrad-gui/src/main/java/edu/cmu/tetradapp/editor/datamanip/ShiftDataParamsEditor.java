@@ -34,11 +34,7 @@ import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.util.TextAreaOutputStream;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.Preferences;
@@ -67,7 +63,6 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
     /**
      * Sets the parameters.
      *
-     * @param params
      */
     public void setParams(Parameters params) {
         this.params = params;
@@ -116,13 +111,11 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
         JSpinner maxVarsSpinner = new JSpinner(maxVarsModel);
         maxVarsSpinner.setMaximumSize(maxVarsSpinner.getPreferredSize());
 
-        maxVarsSpinner.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                JSpinner spinner = (JSpinner) e.getSource();
-                SpinnerNumberModel model = (SpinnerNumberModel) spinner.getModel();
-                int value = (Integer) model.getValue();
-                Preferences.userRoot().putInt("shiftSearchMaxNumShifts", value);
-            }
+        maxVarsSpinner.addChangeListener(e -> {
+            JSpinner spinner = (JSpinner) e.getSource();
+            SpinnerNumberModel model = (SpinnerNumberModel) spinner.getModel();
+            int value = (Integer) model.getValue();
+            Preferences.userRoot().putInt("shiftSearchMaxNumShifts", value);
         });
 
         SpinnerModel maxShiftModel = new SpinnerNumberModel(
@@ -130,13 +123,11 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
         JSpinner maxShiftSpinner = new JSpinner(maxShiftModel);
         maxShiftSpinner.setMaximumSize(maxShiftSpinner.getPreferredSize());
 
-        maxShiftSpinner.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                JSpinner spinner = (JSpinner) e.getSource();
-                SpinnerNumberModel model = (SpinnerNumberModel) spinner.getModel();
-                int value = (Integer) model.getValue();
-                Preferences.userRoot().putInt("shiftSearchMaxShift", value);
-            }
+        maxShiftSpinner.addChangeListener(e -> {
+            JSpinner spinner = (JSpinner) e.getSource();
+            SpinnerNumberModel model = (SpinnerNumberModel) spinner.getModel();
+            int value = (Integer) model.getValue();
+            Preferences.userRoot().putInt("shiftSearchMaxShift", value);
         });
 
         JButton searchButton = new JButton("Search");
@@ -146,25 +137,19 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
         JScrollPane textScroll = new JScrollPane(textArea);
         textScroll.setPreferredSize(new Dimension(500, 200));
 
-        searchButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                Thread thread = new Thread() {
-                    public void run() {
-                        textArea.setText("");
-                        doShiftSearch(dataSets, textArea);
-                    }
-                };
+        searchButton.addActionListener(actionEvent -> {
+            Thread thread = new Thread(() -> {
+                textArea.setText("");
+                doShiftSearch(dataSets, textArea);
+            });
 
-                thread.start();
-            }
+            thread.start();
         });
 
-        stopButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                if (ShiftDataParamsEditor.this.search != null) {
-                    ShiftDataParamsEditor.this.search.stop();
-                    TaskManager.getInstance().setCanceled(true);
-                }
+        stopButton.addActionListener(actionEvent -> {
+            if (ShiftDataParamsEditor.this.search != null) {
+                ShiftDataParamsEditor.this.search.stop();
+                TaskManager.getInstance().setCanceled(true);
             }
         });
 
@@ -173,12 +158,10 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
         directionBox.setSelectedItem(this.params.getBoolean("forwardSearch", true) ? "forward" : "backward");
         directionBox.setMaximumSize(directionBox.getPreferredSize());
 
-        directionBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JComboBox source = (JComboBox) actionEvent.getSource();
-                String selected = (String) source.getSelectedItem();
-                ShiftDataParamsEditor.this.params.set("forwardSearch", "forward".equals(selected));
-            }
+        directionBox.addActionListener(actionEvent -> {
+            JComboBox source = (JComboBox) actionEvent.getSource();
+            String selected = (String) source.getSelectedItem();
+            ShiftDataParamsEditor.this.params.set("forwardSearch", "forward".equals(selected));
         });
 
         Box b1 = Box.createVerticalBox();
@@ -228,12 +211,10 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
 
         add(tabbedPane, BorderLayout.CENTER);
 
-        tabbedPane.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent changeEvent) {
-                System.out.println("a1 shown");
-                a1.removeAll();
-                setUpA1(dataSets, a1);
-            }
+        tabbedPane.addChangeListener(changeEvent -> {
+            System.out.println("a1 shown");
+            a1.removeAll();
+            setUpA1(dataSets, a1);
         });
     }
 
@@ -260,14 +241,12 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
             shiftSpinner.setMaximumSize(shiftSpinner.getPreferredSize());
             int nodeIndex = i;
 
-            shiftSpinner.addChangeListener(new ChangeListener() {
-                public void stateChanged(ChangeEvent e) {
-                    JSpinner spinner = (JSpinner) e.getSource();
-                    SpinnerNumberModel model = (SpinnerNumberModel) spinner.getModel();
-                    int value = (Integer) model.getValue();
-                    _shifts[nodeIndex] = value;
-                    ShiftDataParamsEditor.this.params.set("shifts", _shifts);
-                }
+            shiftSpinner.addChangeListener(e -> {
+                JSpinner spinner = (JSpinner) e.getSource();
+                SpinnerNumberModel model = (SpinnerNumberModel) spinner.getModel();
+                int value = (Integer) model.getValue();
+                _shifts[nodeIndex] = value;
+                ShiftDataParamsEditor.this.params.set("shifts", _shifts);
             });
 
             a5.add(new JLabel("    Shift for "));
@@ -290,26 +269,8 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
         this.search.setForwardSearch(this.params.getBoolean("forwardSearch", true));
         int[] backshifts = this.search.search();
 
-//        List<DataSet> backshiftedDataSets = shiftDataSets(dataSets, backshifts);
-//
-//        DataModelList _list = new DataModelList();
-//
-//        for (DataSet dataSet : backshiftedDataSets) {
-//            _list.add(dataSet);
-//        }
-
         this.params.set("shifts", backshifts);
     }
-
-//    private List<DataSet> shiftDataSets(List<DataSet> dataSets, int[] shifts) {
-//        List<DataSet> shiftedDataSets = new ArrayList<DataSet>();
-//
-//        for (DataSet dataSet : dataSets) {
-//            shiftedDataSets.add(TimeSeriesUtils.createShiftedData(dataSet, shifts));
-//        }
-//
-//        return shiftedDataSets;
-//    }
 
     /**
      * @return true

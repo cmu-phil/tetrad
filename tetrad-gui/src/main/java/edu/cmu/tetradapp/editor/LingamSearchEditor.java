@@ -101,7 +101,7 @@ public class LingamSearchEditor extends AbstractSearchEditor
         add(getToolbar(), BorderLayout.WEST);
         //JTabbedPane tabbedPane = new JTabbedPane();
         JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.add("Result", workbenchScroll(resultLabel));
+        tabbedPane.add("Result", workbenchScroll());
 
         /*if (getAlgorithmRunner().getSelectedDataModel() instanceof DataSet) {
             tabbedPane.add("Model Statistics", modelStatsText);
