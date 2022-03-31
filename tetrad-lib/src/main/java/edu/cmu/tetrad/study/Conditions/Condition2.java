@@ -84,7 +84,7 @@ public class Condition2 {
 
         comparison.compareFromFiles("/Users/user/comparison-data/condition_2",
                 "/Users/user/causal-comparisons/condition_2",
-                algorithms, statistics, parameters);
+                algorithms);
     }
 
     public void compileTable() {

@@ -77,17 +77,13 @@ public class Comparison {
     private boolean sortByUtility;
     private String dataPath;
     private String resultsPath;
-    private final boolean parallelized = false;
     private boolean saveCPDAGs;
     private boolean saveData = true;
     private boolean savePags;
-    //    private boolean saveTrueDags = false;
-    private ArrayList<String> dirs;
     private ComparisonGraph comparisonGraph = ComparisonGraph.true_DAG;
 
-    public void compareFromFiles(String filePath, Algorithms algorithms,
-                                 Statistics statistics, Parameters parameters) {
-        compareFromFiles(filePath, filePath, algorithms, statistics, parameters);
+    public void compareFromFiles(String filePath, Algorithms algorithms) {
+        compareFromFiles(filePath, filePath, algorithms);
     }
 
     /**
@@ -97,12 +93,8 @@ public class Comparison {
      *                    been saved.
      * @param resultsPath Path to the file where the results should be stored.
      * @param algorithms  The list of algorithms to be compared.
-     * @param statistics  The list of statistics on which to compare the
-     *                    algorithm, and their utility weights.
-     * @param parameters  The list of parameters and their values.
      */
-    public void compareFromFiles(String dataPath, String resultsPath, Algorithms algorithms,
-                                 Statistics statistics, Parameters parameters) {
+    public void compareFromFiles(String dataPath, String resultsPath, Algorithms algorithms) {
         for (Algorithm algorithm : algorithms.getAlgorithms()) {
             if (algorithm instanceof ExternalAlgorithm) {
                 throw new IllegalArgumentException("Not expecting any implementations of ExternalAlgorithm here.");
@@ -121,8 +113,6 @@ public class Comparison {
             throw new NullPointerException("No files in " + file.getAbsolutePath());
         }
 
-        this.dirs = new ArrayList<String>();
-
         int count = 0;
 
         for (File dir : dirs) {
@@ -135,7 +125,6 @@ public class Comparison {
         for (int i = 1; i <= count; i++) {
             File _dir = new File(dataPath, "save/" + i);
             simulations.add(new LoadDataAndGraphs(_dir.getAbsolutePath()));
-            this.dirs.add(_dir.getAbsolutePath());
         }
 
     }
@@ -169,8 +158,6 @@ public class Comparison {
             throw new NullPointerException("No files in " + file.getAbsolutePath());
         }
 
-        this.dirs = new ArrayList<String>();
-
         int count = 0;
 
         for (File dir : dirs) {
@@ -183,7 +170,6 @@ public class Comparison {
         for (int i = 1; i <= count; i++) {
             File _dir = new File(dataPath, "save/" + i);
             simulations.add(new LoadDataAndGraphs(_dir.getAbsolutePath()));
-            this.dirs.add(_dir.getAbsolutePath());
         }
 
         compareFromSimulations(this.resultsPath, simulations, outputFileName, algorithms, statistics, parameters);
@@ -297,9 +283,6 @@ public class Comparison {
 
                 if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm) {
                     ExternalAlgorithm external = (ExternalAlgorithm) algorithmWrapper.getAlgorithm();
-//                    external.setSimulation(simulationWrapper.getSimulation());
-//                    external.setPath(dirs.get(simulationWrappers.indexOf(simulationWrapper)));
-//                    external.setPath(resultsPath);
                     external.setSimIndex(simulationWrappers.indexOf(external.getSimulation()));
                 }
 
@@ -313,25 +296,17 @@ public class Comparison {
                 statistics, numRuns, stdout);
 
         // Print out the preliminary information for statistics types, etc.
-        if (allStats != null) {
-            this.out.println();
-            this.out.println("Statistics:");
-            this.out.println();
+        this.out.println();
+        this.out.println("Statistics:");
+        this.out.println();
 
-            for (Statistic stat : statistics.getStatistics()) {
-                this.out.println(stat.getAbbreviation() + " = " + stat.getDescription());
-            }
+        for (Statistic stat : statistics.getStatistics()) {
+            this.out.println(stat.getAbbreviation() + " = " + stat.getDescription());
         }
 
         this.out.println();
-//        out.println("Parameters:");
-////        out.println(parameters);
-//        out.println();
 
-//        printParameters(new ArrayList<>(parameters.getParametersNames()), parameters, out);
-//
-//        out.println();
-        if (allStats != null) {
+        {
             int numTables = allStats.length;
             int numStats = allStats[0][0].length - 1;
 
@@ -372,12 +347,8 @@ public class Comparison {
 
                 printParameters(simulation.getParameters(), simulation.getSimulationSpecificParameters(), this.out);
 
-//                    for (String param : simulation.getParameters()) {
-//                        out.println(param + " = " + simulation.getValue(param));
-//                    }
                 this.out.println();
             }
-//            }
 
             this.out.println("Algorithms:");
             this.out.println();
@@ -541,12 +512,6 @@ public class Comparison {
                     dir4.mkdirs();
                 }
 
-//                File dir5 = null;
-//
-//                if (isSaveTrueDags()) {
-//                    dir5 = new File(subdir, "truedags");
-//                    dir5.mkdirs();
-//                }
                 for (int j = 0; j < simulationWrapper.getNumDataModels(); j++) {
                     File file2 = new File(dir1, "graph." + (j + 1) + ".txt");
                     Graph graph = simulationWrapper.getTrueGraph(j);
@@ -571,11 +536,6 @@ public class Comparison {
                         GraphUtils.saveGraph(new DagToPag(graph).convert(), file4, false);
                     }
 
-//                    if (isSaveTrueDags()) {
-//                        File file5 = new File(dir5, "truedag." + (j + 1) + ".txt");
-//                        GraphUtils.saveGraph(graph, file5, false);
-//
-//                    }
                 }
 
                 PrintStream out = new PrintStream(new FileOutputStream(new File(subdir, "parameters.txt")));
@@ -621,10 +581,8 @@ public class Comparison {
                 return;
             }
 
-            File subdir = dir;
-
-            File dir1 = new File(subdir, "graph");
-            File dir2 = new File(subdir, "data");
+            File dir1 = new File(dir, "graph");
+            File dir2 = new File(dir, "data");
 
             dir1.mkdirs();
             dir2.mkdirs();
@@ -632,14 +590,14 @@ public class Comparison {
             File dir3 = null;
 
             if (isSaveCPDAGs()) {
-                dir3 = new File(subdir, "cpdags");
+                dir3 = new File(dir, "cpdags");
                 dir3.mkdirs();
             }
 
             File dir4 = null;
 
             if (isSavePags()) {
-                dir4 = new File(subdir, "pags");
+                dir4 = new File(dir, "pags");
                 dir4.mkdirs();
             }
 
@@ -681,21 +639,11 @@ public class Comparison {
 
             Parameters allParams = new Parameters();
 
-            List<Class> algorithms = new ArrayList<>();
-            List<Class> statistics = new ArrayList<>();
-            List<Class> independenceWrappers = new ArrayList<>();
-            List<Class> scoreWrappers = new ArrayList<>();
-            List<Class> simulations = new ArrayList<>();
-
-            algorithms.addAll(getClasses(Algorithm.class));
-
-            statistics.addAll(getClasses(Statistic.class));
-
-            independenceWrappers.addAll(getClasses(IndependenceWrapper.class));
-
-            scoreWrappers.addAll(getClasses(ScoreWrapper.class));
-
-            simulations.addAll(getClasses(Simulation.class));
+            List<Class> algorithms = new ArrayList<>(getClasses(Algorithm.class));
+            List<Class> statistics = new ArrayList<>(getClasses(Statistic.class));
+            List<Class> independenceWrappers = new ArrayList<>(getClasses(IndependenceWrapper.class));
+            List<Class> scoreWrappers = new ArrayList<>(getClasses(ScoreWrapper.class));
+            List<Class> simulations = new ArrayList<>(getClasses(Simulation.class));
 
             out.println("Available Algorithms:");
             out.println();
@@ -865,39 +813,6 @@ public class Comparison {
         }
     }
 
-    //    private void printParameters(HasParameters hasParameters, PrintStream out, Parameters allParams) {
-//        List<String> paramDescriptions = new ArrayList<>(hasParameters.getParameters());
-//        if (paramDescriptions.isEmpty()) return;
-//        out.print("\tParameters: ");
-//
-//        for (int i = 0; i < paramDescriptions.size(); i++) {
-//            out.print(paramDescriptions.get(i));
-//            out.print(" = ");
-//            Object[] values = allParams.getValues(paramDescriptions.get(i));
-//            if (values == null || values.length == 0) {
-//                out.print("no default");
-//
-//                if (i < paramDescriptions.size() - 1) {
-//                    out.print("; ");
-//                    if ((i + 1) % 4 == 0) out.print("\n\t\t");
-//                }
-//
-//                continue;
-//            }
-//
-//            for (int j = 0; j < values.length; j++) {
-//                out.print(values[j]);
-//                if (j < values.length - 1) out.print(",");
-//            }
-//
-//            if (i < paramDescriptions.size() - 1) {
-//                out.print("; ");
-//                if ((i + 1) % 4 == 0) out.print("\n\t\t");
-//            }
-//        }
-//
-//        out.println();
-//    }
     private List<Class> getClasses(Class type) {
         Reflections reflections = new Reflections();
         Set<Class> allClasses = reflections.getSubTypesOf(type);
@@ -972,51 +887,8 @@ public class Comparison {
             }
         }
 
-        if (!isParallelized()) {
-            for (AlgorithmTask task : tasks) {
-                task.compute();
-            }
-        } else {
-            class Task extends RecursiveTask<Boolean> {
-
-                final List<AlgorithmTask> tasks;
-
-                public Task(List<AlgorithmTask> tasks) {
-                    this.tasks = tasks;
-                }
-
-                @Override
-                protected Boolean compute() {
-                    Queue<AlgorithmTask> tasks = new ArrayDeque<>();
-
-                    for (AlgorithmTask task : this.tasks) {
-                        tasks.add(task);
-                        task.fork();
-
-                        for (AlgorithmTask _task : new ArrayList<>(tasks)) {
-                            if (_task.isDone()) {
-                                _task.join();
-                                tasks.remove(_task);
-                            }
-                        }
-
-                        while (tasks.size() > Runtime.getRuntime().availableProcessors()) {
-                            AlgorithmTask _task = tasks.poll();
-                            _task.join();
-                        }
-                    }
-
-                    for (AlgorithmTask task : tasks) {
-                        task.join();
-                    }
-
-                    return true;
-                }
-            }
-
-            Task task = new Task(tasks);
-
-            ForkJoinPoolInstance.getInstance().getPool().invoke(task);
+        for (AlgorithmTask task : tasks) {
+            task.compute();
         }
 
         return allStats;
@@ -1068,14 +940,6 @@ public class Comparison {
         this.sortByUtility = sortByUtility;
     }
 
-    public boolean isParallelized() {
-        return this.parallelized;
-    }
-
-//    public void setParallelized(boolean parallelized) {
-//        this.parallelized = parallelized;
-//    }
-
     /**
      * @return True if CPDAGs should be saved out.
      */
@@ -1097,39 +961,15 @@ public class Comparison {
         return this.savePags;
     }
 
-    /**
-     * @return True if CPDAGs should be saved out.
-     */
     public void setSavePags(boolean savePags) {
         this.savePags = savePags;
     }
-
-//    /**
-//     * @return True if CPDAGs should be saved out.
-//     */
-//    public boolean isSaveTrueDags() {
-//        return saveTrueDags;
-//    }
-//
-//    /**
-//     * @param savePags True if CPDAGs should be saved out.
-//     */
-//    public void setSaveTrueDags(boolean saveTrueDags) {
-//        this.saveTrueDags = saveTrueDags;
-//    }
 
     /**
      * @return True if CPDAGs should be saved out.
      */
     public boolean isSaveData() {
         return this.saveData;
-    }
-
-    /**
-     * @return True if CPDAGs should be saved out.
-     */
-    public void setSaveData(boolean saveData) {
-        this.saveData = saveData;
     }
 
     /**
@@ -1160,20 +1000,6 @@ public class Comparison {
      */
     public boolean isSaveGraphs() {
         return this.saveGraphs;
-    }
-
-    /**
-     * @return True if data should be copied before analyzing it.
-     */
-    public boolean isCopyData() {
-        return this.copyData;
-    }
-
-    /**
-     * @param copyData True if data should be copied before analyzing it.
-     */
-    public void setCopyData(boolean copyData) {
-        this.copyData = copyData;
     }
 
     /**
@@ -1341,7 +1167,7 @@ public class Comparison {
 
         long elapsed = stop - start;
 
-        saveGraph(this.resultsPath, graphOut, run.getRunIndex(), simIndex, algIndex, algorithmWrapper, elapsed, stdout);
+        saveGraph(this.resultsPath, graphOut, run.getRunIndex(), simIndex, algorithmWrapper, elapsed, stdout);
 
         if (trueGraph != null) {
             graphOut = GraphUtils.replaceNodes(graphOut, trueGraph.getNodes());
@@ -1389,44 +1215,42 @@ public class Comparison {
 
             truth[0] = new EdgeListGraph(comparisonGraph);
 
-            if (data.isMixed() && comparisonGraph != null) {
+            if (data.isMixed()) {
                 truth[1] = getSubgraph(comparisonGraph, true, true, simulationWrapper.getDataModel(run.getRunIndex()));
                 truth[2] = getSubgraph(comparisonGraph, true, false, simulationWrapper.getDataModel(run.getRunIndex()));
                 truth[3] = getSubgraph(comparisonGraph, false, false, simulationWrapper.getDataModel(run.getRunIndex()));
             }
 
-            if (comparisonGraph != null) {
-                for (int u = 0; u < numGraphTypes; u++) {
-                    if (!this.graphTypeUsed[u]) {
+            for (int u = 0; u < numGraphTypes; u++) {
+                if (!this.graphTypeUsed[u]) {
+                    continue;
+                }
+
+                int statIndex = -1;
+
+                for (Statistic _stat : statistics.getStatistics()) {
+                    statIndex++;
+
+                    if (_stat instanceof ParameterColumn) {
                         continue;
                     }
 
-                    int statIndex = -1;
+                    double stat;
 
-                    for (Statistic _stat : statistics.getStatistics()) {
-                        statIndex++;
-
-                        if (_stat instanceof ParameterColumn) {
-                            continue;
-                        }
-
-                        double stat;
-
-                        if (_stat instanceof ElapsedTime) {
-                            stat = elapsed / 1000.0;
-                        } else {
-                            stat = _stat.getValue(truth[u], est[u], data);
-                        }
-
-                        allStats[u][run.getAlgSimIndex()][statIndex][run.getRunIndex()] = stat;
+                    if (_stat instanceof ElapsedTime) {
+                        stat = elapsed / 1000.0;
+                    } else {
+                        stat = _stat.getValue(truth[u], est[u], data);
                     }
+
+                    allStats[u][run.getAlgSimIndex()][statIndex][run.getRunIndex()] = stat;
                 }
             }
 
         }
     }
 
-    private void saveGraph(String resultsPath, Graph graph, int i, int simIndex, int algIndex,
+    private void saveGraph(String resultsPath, Graph graph, int i, int simIndex,
                            AlgorithmWrapper algorithmWrapper, long elapsed, PrintStream stdout) {
         if (!this.saveGraphs) {
             return;
@@ -1695,7 +1519,7 @@ public class Comparison {
         for (int t = 0; t < wrappers.size(); t++) {
             int j = -1;
 
-            Iterator it2 = statistics.getStatistics().iterator();
+            Iterator<Statistic> it2 = statistics.getStatistics().iterator();
 
             double sum = 0.0;
             double max = 0.0;
@@ -1734,19 +1558,16 @@ public class Comparison {
             }
         }
 
-        Collections.sort(order, new Comparator<Integer>() {
-            @Override
-            public int compare(Integer o1, Integer o2) {
-                double u1 = _utilities[o1];
-                double u2 = _utilities[o2];
-                if (Double.isNaN(u1)) {
-                    u1 = 0.0;
-                }
-                if (Double.isNaN(u2)) {
-                    u2 = 0.0;
-                }
-                return -Double.compare(u1, u2);
+        order.sort((o1, o2) -> {
+            double u1 = _utilities[o1];
+            double u2 = _utilities[o2];
+            if (Double.isNaN(u1)) {
+                u1 = 0.0;
             }
+            if (Double.isNaN(u2)) {
+                u2 = 0.0;
+            }
+            return -Double.compare(u1, u2);
         });
 
         int[] newOrder = new int[algorithmSimulationWrappers.size()];
@@ -1808,7 +1629,7 @@ public class Comparison {
         }
     }
 
-    private class AlgorithmWrapper implements Algorithm {
+    private static class AlgorithmWrapper implements Algorithm {
 
         static final long serialVersionUID = 23L;
         private final Algorithm algorithm;
@@ -1872,18 +1693,15 @@ public class Comparison {
         }
     }
 
-    private class AlgorithmSimulationWrapper implements Algorithm {
+    private static class AlgorithmSimulationWrapper implements Algorithm {
 
         static final long serialVersionUID = 23L;
         private final SimulationWrapper simulationWrapper;
         private final AlgorithmWrapper algorithmWrapper;
-        List<String> parameters = new ArrayList<>();
 
         public AlgorithmSimulationWrapper(AlgorithmWrapper algorithm, SimulationWrapper simulation) {
             this.algorithmWrapper = algorithm;
             this.simulationWrapper = simulation;
-            this.parameters.addAll(this.algorithmWrapper.getParameters());
-            this.parameters.addAll(this.simulationWrapper.getParameters());
         }
 
         @Override
@@ -1922,7 +1740,7 @@ public class Comparison {
         }
     }
 
-    private class SimulationWrapper implements Simulation {
+    private static class SimulationWrapper implements Simulation {
         static final long serialVersionUID = 23L;
         private final Simulation simulation;
         private List<Graph> graphs;
