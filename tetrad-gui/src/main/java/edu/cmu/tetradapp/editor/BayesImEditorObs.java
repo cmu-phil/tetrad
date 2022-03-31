@@ -28,8 +28,6 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
 import java.awt.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 /**
  * An editor for Bayes net instantiated models. Assumes that the workbench and
@@ -78,8 +76,6 @@ public class BayesImEditorObs extends JPanel {
         JMenuBar menuBar = new JMenuBar();
         JMenu file = new JMenu("File");
         menuBar.add(file);
-        //file.add(new SaveBayesImXmlAction(this));
-        //file.add(new LoadBayesImXmlAction(wrapper, this));
         file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
         file.add(new SaveComponentImage(workbench, "Save Graph Image..."));
         setLayout(new BorderLayout());
@@ -88,11 +84,9 @@ public class BayesImEditorObs extends JPanel {
         this.wizard = new BayesImEditorWizardObs(bayesIm, workbench);
         this.wizard.enableEditing(false);
 
-        this.wizard.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("editorValueChanged".equals(evt.getPropertyName())) {
-                    firePropertyChange("modelChanged", null, null);
-                }
+        this.wizard.addPropertyChangeListener(evt -> {
+            if ("editorValueChanged".equals(evt.getPropertyName())) {
+                firePropertyChange("modelChanged", null, null);
             }
         });
 
@@ -108,21 +102,19 @@ public class BayesImEditorObs extends JPanel {
         add(splitPane, BorderLayout.CENTER);
 
         setName("Bayes IM Obs Editor");
-        getWizard().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("editorClosing".equals(evt.getPropertyName())) {
-                    firePropertyChange("editorClosing", null, getName());
-                }
+        getWizard().addPropertyChangeListener(evt -> {
+            if ("editorClosing".equals(evt.getPropertyName())) {
+                firePropertyChange("editorClosing", null, getName());
+            }
 
-                if ("closeFrame".equals(evt.getPropertyName())) {
-                    firePropertyChange("closeFrame", null, null);
-                    firePropertyChange("editorClosing", true, true);
-                }
+            if ("closeFrame".equals(evt.getPropertyName())) {
+                firePropertyChange("closeFrame", null, null);
+                firePropertyChange("editorClosing", true, true);
+            }
 
-                if ("modelChanged".equals(evt.getPropertyName())) {
-                    firePropertyChange("modelChanged", evt.getOldValue(),
-                            evt.getNewValue());
-                }
+            if ("modelChanged".equals(evt.getPropertyName())) {
+                firePropertyChange("modelChanged", evt.getOldValue(),
+                        evt.getNewValue());
             }
         });
     }

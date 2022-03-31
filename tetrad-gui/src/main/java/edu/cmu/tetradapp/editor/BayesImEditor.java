@@ -27,10 +27,6 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 /**
  * An editor for Bayes net instantiated models. Assumes that the workbench and
@@ -77,13 +73,10 @@ public class BayesImEditor extends JPanel {
 
             comp.setSelectedIndex(wrapper.getModelIndex());
 
-            comp.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    wrapper.setModelIndex(comp.getSelectedIndex() - 1);
-                    setEditorPanel();
-                    validate();
-                }
+            comp.addActionListener(e -> {
+                wrapper.setModelIndex(comp.getSelectedIndex() - 1);
+                setEditorPanel();
+                validate();
             });
 
             comp.setMaximumSize(comp.getPreferredSize());
@@ -121,11 +114,9 @@ public class BayesImEditor extends JPanel {
         this.wizard = new BayesImEditorWizard(bayesIm, workbench);
         this.wizard.enableEditing(false);
 
-        this.wizard.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("editorValueChanged".equals(evt.getPropertyName())) {
-                    firePropertyChange("modelChanged", null, null);
-                }
+        this.wizard.addPropertyChangeListener(evt -> {
+            if ("editorValueChanged".equals(evt.getPropertyName())) {
+                firePropertyChange("modelChanged", null, null);
             }
         });
 
@@ -141,21 +132,19 @@ public class BayesImEditor extends JPanel {
         panel.add(splitPane, BorderLayout.CENTER);
 
         setName("Bayes IM Editor");
-        getWizard().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("editorClosing".equals(evt.getPropertyName())) {
-                    firePropertyChange("editorClosing", null, getName());
-                }
+        getWizard().addPropertyChangeListener(evt -> {
+            if ("editorClosing".equals(evt.getPropertyName())) {
+                firePropertyChange("editorClosing", null, getName());
+            }
 
-                if ("closeFrame".equals(evt.getPropertyName())) {
-                    firePropertyChange("closeFrame", null, null);
-                    firePropertyChange("editorClosing", true, true);
-                }
+            if ("closeFrame".equals(evt.getPropertyName())) {
+                firePropertyChange("closeFrame", null, null);
+                firePropertyChange("editorClosing", true, true);
+            }
 
-                if ("modelChanged".equals(evt.getPropertyName())) {
-                    firePropertyChange("modelChanged", evt.getOldValue(),
-                            evt.getNewValue());
-                }
+            if ("modelChanged".equals(evt.getPropertyName())) {
+                firePropertyChange("modelChanged", evt.getOldValue(),
+                        evt.getNewValue());
             }
         });
 
@@ -180,8 +169,7 @@ public class BayesImEditor extends JPanel {
         return this.wizard;
     }
 
-    public void getBayesIm(BayesIm bayesIm) {
-//        this.wrapper.setBayesIm(bayesIm);
+    public void getBayesIm() {
         removeAll();
         setEditorPanel();
         revalidate();

@@ -26,8 +26,6 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import javax.swing.*;
 import javax.swing.border.MatteBorder;
 import java.awt.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 /**
  * Allows the user to choose a variable in a Bayes net and edit the parameters
@@ -43,7 +41,6 @@ public final class BayesImEditorWizardObs extends JPanel {
     private static final long serialVersionUID = -2275425522013903246L;
 
     private final BayesIm bayesIm;
-    private JComboBox varNamesComboBox;
     private final GraphWorkbench workbench;
 
     private boolean enableEditing = true;
@@ -63,11 +60,9 @@ public final class BayesImEditorWizardObs extends JPanel {
         setFont(new Font("SanSerif", Font.BOLD, 12));
 
         BayesImNodeEditingTableObs editingTable = new BayesImNodeEditingTableObs(bayesIm);
-        editingTable.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("modelChanged".equals(evt.getPropertyName())) {
-                    firePropertyChange("modelChanged", null, null);
-                }
+        editingTable.addPropertyChangeListener(evt -> {
+            if ("modelChanged".equals(evt.getPropertyName())) {
+                firePropertyChange("modelChanged", null, null);
             }
         });
 
@@ -118,10 +113,6 @@ public final class BayesImEditorWizardObs extends JPanel {
 
     public BayesIm getBayesIm() {
         return this.bayesIm;
-    }
-
-    private GraphWorkbench getWorkbench() {
-        return this.workbench;
     }
 
     public boolean isEnableEditing() {
