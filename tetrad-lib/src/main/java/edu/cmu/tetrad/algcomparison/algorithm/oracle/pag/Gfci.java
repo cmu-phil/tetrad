@@ -69,10 +69,6 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
         } else {
             Gfci algorithm = new Gfci(this.test, this.score);
 
-            //algorithm.setKnowledge(knowledge);
-//          if (externalGraph != null) {
-//      		algorithm.setExternalGraph(externalGraph);
-//  		}
             DataSet data = (DataSet) dataSet;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(this.knowledge);
@@ -86,7 +82,6 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
                 case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
                     break;
                 case 2:
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;

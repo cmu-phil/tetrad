@@ -90,7 +90,6 @@ public class MultiFaskV1 implements MultiDataSetAlgorithm, HasKnowledge {
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
                 case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
                     break;
                 case 2:
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
@@ -124,7 +123,6 @@ public class MultiFaskV1 implements MultiDataSetAlgorithm, HasKnowledge {
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
                 case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
                     break;
                 case 2:
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
@@ -141,8 +139,6 @@ public class MultiFaskV1 implements MultiDataSetAlgorithm, HasKnowledge {
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
-//        return SearchGraphUtils.patternForDag(graph);
-//        return new TsDagToPag(new EdgeListGraph(graph)).convert();
     }
 
     @Override

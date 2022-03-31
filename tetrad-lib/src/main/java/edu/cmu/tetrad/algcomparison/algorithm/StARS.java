@@ -29,7 +29,6 @@ public class StARS implements Algorithm, TakesExternalGraph {
     private final String parameter;
     private final Algorithm algorithm;
     private Graph externalGraph;
-    private DataSet _dataSet;
 
     public StARS(Algorithm algorithm, String parameter, double low, double high) {
         if (low >= high) {
@@ -43,15 +42,11 @@ public class StARS implements Algorithm, TakesExternalGraph {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        this._dataSet = (DataSet) dataSet;
+        DataSet _dataSet;
 
-//        int numVars = Math.min(50, ((DataSet) dataSet).getNumColumns());
-//        int[] cols = new int[numVars];
-//        for (int i = 0; i < numVars; i++) cols[i] = i;
-        this._dataSet = (DataSet) dataSet;//.subsetColumns(cols);
+        _dataSet = (DataSet) dataSet;//.subsetColumns(cols);
 
         double percentageB = parameters.getDouble("percentSubsampleSize");
-        double tolerance = parameters.getDouble("StARS.tolerance");
         double beta = parameters.getDouble("StARS.cutoff");
         int numSubsamples = parameters.getInt("numSubsamples");
 
@@ -62,11 +57,9 @@ public class StARS implements Algorithm, TakesExternalGraph {
         for (int i = 0; i < numSubsamples; i++) {
             BootstrapSampler sampler = new BootstrapSampler();
             sampler.setWithoutReplacements(true);
-            samples.add(sampler.sample(this._dataSet, (int) (percentageB * this._dataSet.getNumRows())));
+            samples.add(sampler.sample(_dataSet, (int) (percentageB * _dataSet.getNumRows())));
         }
 
-//        double pFrom = low;
-//        double pTo = high;
         double maxD = Double.NEGATIVE_INFINITY;
         double _lambda = Double.NaN;
 
@@ -80,66 +73,6 @@ public class StARS implements Algorithm, TakesExternalGraph {
             }
         }
 
-//        double D1 = getD(parameters, parameter, low, samples, algorithm);
-//        System.out.println("D1 (low) = " + D1);
-//        double D2 = getD(parameters, parameter, high, samples, algorithm);
-//        System.out.println("D2 (high) = " + D2);
-//
-//        double lastD;
-//        double pMid;
-//        double pBest;
-//        double bestD;
-//
-//        if (D1 > D2 && D1 < beta) {
-//            lastD = D1;
-//            pBest = low;
-//            bestD = D1;
-//        } else if (D2 > D1 && D2 < beta) {
-//            lastD = D2;
-//            pBest = high;
-//            bestD = D2;
-//        } else {
-//            lastD = Double.NEGATIVE_INFINITY;
-//            pBest = (low + high) / 2.0;
-//            bestD = Double.NEGATIVE_INFINITY;
-//        }
-//
-//        System.out.println("lastD = " + lastD);
-//
-//        while (abs(pFrom - pTo) > tolerance) {
-//            pMid = (pFrom + pTo) / 2.0;
-//            double D = getD(parameters, parameter, pMid, samples, algorithm);
-//            System.out.println("pFrom = " + pFrom + " pTo = " + pTo + " pMid = " + pMid + " D = " + D);
-//
-//            if (D1 > D2) {
-//                if (D > bestD && D < beta) {
-//                    pTo = pMid;
-//                    pBest = pMid;
-//                    bestD = D;
-//                } else {
-//                    pFrom = pMid;
-//                }
-//            } else {
-//                if (D > bestD && D < beta) {
-//                    pFrom = pMid;
-//                    pBest = pMid;
-//                    bestD = D;
-//                } else {
-//                    pTo = pMid;
-//                }
-//            }
-//
-//            lastD = D;
-//            System.out.println("lastD = " + lastD + " pBest = " + pBest);
-//        }
-//
-//        if (D1 > bestD) {
-//            pBest = low;
-//        }
-//
-//        if (D2 > bestD) {
-//            pBest = high;
-//        }
         System.out.println("FINAL: lambda = " + _lambda + " D = " + maxD);
 
         System.out.println(this.parameter + " = " + StARS.getValue(_lambda, parameters));
@@ -154,11 +87,6 @@ public class StARS implements Algorithm, TakesExternalGraph {
 
         List<Graph> graphs = new ArrayList<>();
 
-//        for (DataSet d : samples) {
-//            Graph e = GraphUtils.undirectedGraph(algorithm.search(d, params));
-//            e = GraphUtils.replaceNodes(e, samples.get(0).getVariables());
-//            graphs.add(e);
-//        }
         ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
 
         class StabilityAction extends RecursiveAction {
@@ -210,8 +138,8 @@ public class StARS implements Algorithm, TakesExternalGraph {
                 Node x = nodes.get(i);
                 Node y = nodes.get(j);
 
-                for (int k = 0; k < graphs.size(); k++) {
-                    if (graphs.get(k).isAdjacentTo(x, y)) {
+                for (Graph graph : graphs) {
+                    if (graph.isAdjacentTo(x, y)) {
                         theta += 1.0;
                     }
                 }

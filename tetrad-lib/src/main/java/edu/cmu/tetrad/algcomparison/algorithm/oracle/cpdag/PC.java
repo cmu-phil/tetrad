@@ -105,7 +105,6 @@ public class PC implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
                 case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
                     break;
                 case 2:
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;

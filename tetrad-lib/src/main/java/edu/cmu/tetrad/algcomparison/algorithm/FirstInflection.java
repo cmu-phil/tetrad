@@ -1,16 +1,14 @@
 package edu.cmu.tetrad.algcomparison.algorithm;
 
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
-import org.apache.commons.math3.analysis.MultivariateFunction;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -27,7 +25,6 @@ public class FirstInflection implements Algorithm, TakesExternalGraph {
     private final String parameter;
     private final Algorithm algorithm;
     private Graph intialGraph;
-    private final IKnowledge knowledge = new Knowledge2();
 
     public FirstInflection(Algorithm algorithm, String parameter, double low, double high, double increment) {
         if (low >= high) {
@@ -89,6 +86,7 @@ public class FirstInflection implements Algorithm, TakesExternalGraph {
                     _parameters.set(this.parameter, value);
                     this.intialGraph = this.algorithm.search(dataSet, _parameters);
 
+                    assert _previous != null;
                     this.intialGraph = GraphUtils.replaceNodes(this.intialGraph, _previous.getNodes());
                     Set<Edge> edges1 = this.intialGraph.getEdges();
 
@@ -151,6 +149,7 @@ public class FirstInflection implements Algorithm, TakesExternalGraph {
                     _parameters.set(this.parameter, value);
                     this.intialGraph = this.algorithm.search(dataSet, _parameters);
 
+                    assert _previous != null;
                     this.intialGraph = GraphUtils.replaceNodes(this.intialGraph, _previous.getNodes());
                     Set<Edge> edges1 = this.intialGraph.getEdges();
 
@@ -179,169 +178,11 @@ public class FirstInflection implements Algorithm, TakesExternalGraph {
 
         return _previous;
 
-//        double tolerance = parameters.getDouble("StARS.tolerance");
-//
-//        MultivariateOptimizer search = new PowellOptimizer(tolerance, tolerance);
-//        FittingFunction f = new FittingFunction(_parameters, algorithm, low, high, parameter, (DataSet) dataSet);
-//        PointValuePair p = search.optimize(
-//                new InitialGuess(new double[]{increment, increment}),
-//                new ObjectiveFunction(f),
-//                GoalType.MINIMIZE,
-//                new MaxEval(100000)
-//        );
-//
-//
-//        double[] point = p.getPoint();
-//
-//        double p1 = point[0];
-//        double p2 = point[1];
-//
-//        p1 = Math.round(p1 * 10.0) / 10.0;
-//        p2 = Math.round(p2 * 10.0) / 10.0;
-//
-//        double value = Math.max(p1, p2);
-//
-////        double value = (p.getPoint()[0] + p.getPoint()[1]) / 2;
-//        System.out.println(parameter + " = " + getValue(value, parameters));
-//        _parameters.set(parameter, getValue(value, parameters));
-//
-//        return algorithm.search(dataSet, _parameters);
     }
 
     @Override
     public void setExternalGraph(Algorithm externalGraph) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    static class FittingFunction implements MultivariateFunction {
-
-        private final Algorithm algorithm;
-        private final double low;
-        private final double high;
-        private final String paramName;
-        private final DataSet _dataSet;
-        private final Parameters params;
-        private final DataSet dataSet;
-        Graph _previous;
-
-        /**
-         * Constructs a new CoefFittingFunction for the given Sem.
-         */
-        public FittingFunction(Parameters params, Algorithm algorithm,
-                               double low, double high, String paramName, DataSet dataSet) {
-            this.params = params;
-            this.algorithm = algorithm;
-            this.low = low;
-            this.high = high;
-            this.paramName = paramName;
-            this.dataSet = dataSet;
-            int numVars = Math.min(20, dataSet.getNumColumns());
-
-            int[] cols = new int[numVars];
-            for (int i = 0; i < numVars; i++) {
-                cols[i] = i;
-            }
-
-            this._dataSet = dataSet.subsetColumns(cols);
-        }
-
-        /**
-         * Computes the maximum likelihood function value for the given
-         * parameter values as given by the optimizer. These values are mapped
-         * to parameter values.
-         */
-//        public double value0(double[] parameters) {
-//            double p = parameters[0];
-//            if (p < low) return 10000;
-//            if (p > high) return 10000;
-//            double _p = getValue(p, params);
-//            params.set(paramName, _p);
-//            Graph out = algorithm.search(dataSet, params);
-//
-//            if (_previous == null) {
-//                _previous = out;
-//                return out.getNumEdges();
-//            }
-//
-//            out = GraphUtils.replaceNodes(out, _previous.getNodes());
-//
-//            Set<Edge> e1 = out.getEdges();
-//            e1.removeAll(_previous.getEdges());
-//
-//            Set<Edge> e2 = _previous.getEdges();
-//            e2.removeAll(out.getEdges());
-//
-//            int numEdges = out.getNumEdges();
-//
-//            int diff = e1.size() + e2.size();
-//
-//            System.out.println(paramName + " = " + params.getDouble(paramName)
-//                    + " # edges = " + numEdges
-//                    + " # additional = " + diff);
-//
-//            _previous = out;
-//            return diff;
-//        }
-        private final Map<Double, Graph> archive = new HashMap<>();
-
-        @Override
-        public double value(double[] parameters) {
-            double p1 = parameters[0];
-            double p2 = parameters[1];
-
-            p1 = Math.round(p1 * 10.0) / 10.0;
-            p2 = Math.round(p2 * 10.0) / 10.0;
-
-            if (p1 < this.low) {
-                return 10000;
-            }
-            if (p1 > this.high) {
-                return 10000;
-            }
-            if (p2 < this.low) {
-                return 10000;
-            }
-            if (p2 > this.high) {
-                return 10000;
-            }
-//            if (p1 == p2) return 10000;
-            if (Math.abs(p1 - p2) < 0.1) {
-                return 100000;
-            }
-
-            double _p1 = FirstInflection.getValue(p1, this.params);
-            double _p2 = FirstInflection.getValue(p2, this.params);
-
-            if (this.archive.get(_p1) == null) {
-                this.params.set(this.paramName, _p1);
-                this.archive.put(_p1, this.algorithm.search(this._dataSet, this.params));
-            }
-
-            Graph out1 = this.archive.get(_p1);
-
-            if (this.archive.get(_p2) == null) {
-                this.params.set(this.paramName, _p2);
-                this.archive.put(_p2, this.algorithm.search(this._dataSet, this.params));
-            }
-
-            Graph out2 = this.archive.get(_p2);
-
-            Set<Edge> e1 = out1.getEdges();
-            e1.removeAll(out2.getEdges());
-
-            Set<Edge> e2 = out2.getEdges();
-            e2.removeAll(out1.getEdges());
-
-            int diff = e1.size() + e2.size();
-
-            int numEdges1 = out1.getNumEdges();
-            int numEdges2 = out2.getNumEdges();
-            System.out.println(this.paramName + " = " + p1 + ", " + p2
-                    + " # edges 1 = " + numEdges1 + " # edges 2  " + numEdges2
-                    + " # additional = " + diff);
-
-            return diff;
-        }
     }
 
     private static double getValue(double value, Parameters parameters) {
@@ -383,6 +224,5 @@ public class FirstInflection implements Algorithm, TakesExternalGraph {
     @Override
     public void setExternalGraph(Graph externalGraph) {
         // TODO Auto-generated method stub
-        this.intialGraph = this.intialGraph;
     }
 }

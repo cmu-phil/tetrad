@@ -8,7 +8,6 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -28,7 +27,6 @@ public class LinearFisherModel implements Simulation, TakesData {
     private List<DataSet> dataSets = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();
     private final RandomGraph randomGraph;
-    private List<Node> shuffledOrder;
     private final List<DataModel> shocks;
 
     public LinearFisherModel(RandomGraph graph) {
@@ -142,25 +140,6 @@ public class LinearFisherModel implements Simulation, TakesData {
 
             dataSet.setName("" + (i + 1));
 
-//            if (parameters.getDouble("percentDiscrete") > 0.0) {
-//                if (this.shuffledOrder == null) {
-//                    List<Node> shuffledNodes = new ArrayList<>(dataSet.getVariables());
-//                    Collections.shuffle(shuffledNodes);
-//                    this.shuffledOrder = shuffledNodes;
-//                }
-//
-//                Discretizer discretizer = new Discretizer(dataSet);
-//
-//                for (int k = 0; k < shuffledOrder.size() * parameters.getDouble("percentDiscrete") * 0.01; k++) {
-//                    discretizer.equalIntervals(dataSet.getVariable(shuffledOrder.get(k).getName()),
-//                            parameters.getInt("numCategories"));
-//                }
-//
-//                String name = dataSet.getName();
-//                dataSet = discretizer.discretize();
-//                dataSet.setName(name);
-//            }
-
             if (parameters.getBoolean(Params.STANDARDIZE)) {
                 dataSet = DataUtils.standardizeData(dataSet);
             }
@@ -190,8 +169,7 @@ public class LinearFisherModel implements Simulation, TakesData {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
-        parameters.addAll(this.randomGraph.getParameters());
+        List<String> parameters = new ArrayList<>(this.randomGraph.getParameters());
 
         if (this.shocks != null) {
             parameters.remove(Params.NUM_MEASURES);
@@ -207,7 +185,6 @@ public class LinearFisherModel implements Simulation, TakesData {
         parameters.add(Params.INCLUDE_NEGATIVE_COEFS);
         parameters.add(Params.ERRORS_NORMAL);
         parameters.add(Params.NUM_RUNS);
-//        parameters.add("percentDiscrete");
         parameters.add(Params.NUM_CATEGORIES);
         parameters.add(Params.DIFFERENT_GRAPHS);
         parameters.add(Params.SAMPLE_SIZE);

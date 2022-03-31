@@ -57,16 +57,9 @@ public class FciMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
-//            if (externalGraph != null) {
-//                search.setExternalGraph(externalGraph);
-//            }
             return search.search();
         } else {
             FciMax algorithm = new FciMax(this.test);
-            //algorithm.setKnowledge(knowledge);
-//          if (externalGraph != null) {
-//      		algorithm.setExternalGraph(externalGraph);
-//  		}
 
             DataSet data = (DataSet) dataSet;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
@@ -81,7 +74,6 @@ public class FciMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
                 case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
                     break;
                 case 2:
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;

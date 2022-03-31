@@ -36,7 +36,7 @@ import edu.cmu.tetrad.util.Parameters;
 /**
  * An example script to simulate time series data and run a comparison analysis on it.
  *
- * @authors jdramsey, dmalinsky
+ * @author jdramsey, dmalinsky
  */
 public class ExampleCompareSimulationTimeSeries {
     public static void main(String... args) {

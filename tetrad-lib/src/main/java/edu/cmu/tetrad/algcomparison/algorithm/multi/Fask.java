@@ -136,7 +136,6 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
                 case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
                     break;
                 case 2:
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;

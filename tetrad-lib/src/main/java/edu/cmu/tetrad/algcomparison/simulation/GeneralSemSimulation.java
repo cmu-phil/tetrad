@@ -29,7 +29,6 @@ public class GeneralSemSimulation implements Simulation {
     private GeneralizedSemPm pm;
     private GeneralizedSemIm im;
     private List<DataSet> dataSets = new ArrayList<>();
-    private final List<DataSet> dataWithLatents = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();
     private List<GeneralizedSemIm> ims = new ArrayList<>();
 
@@ -97,7 +96,6 @@ public class GeneralSemSimulation implements Simulation {
 
             dataSet.setName("" + (i + 1));
             this.dataSets.add(DataUtils.restrictToMeasured(dataSet));
-            this.dataWithLatents.add(dataSet);
         }
     }
 
@@ -188,7 +186,7 @@ public class GeneralSemSimulation implements Simulation {
             pm.setParametersTemplate(parameters.getString(Params.GENERAL_SEM_PARAMETER_TEMPLATE));
 
         } catch (ParseException e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
 
         return pm;

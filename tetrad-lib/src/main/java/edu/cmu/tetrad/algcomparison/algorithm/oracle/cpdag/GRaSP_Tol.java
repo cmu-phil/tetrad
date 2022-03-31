@@ -135,8 +135,6 @@ public class GRaSP_Tol implements Algorithm, UsesScoreWrapper, TakesIndependence
         params.add(Params.GRASP_USE_VERMA_PEARL);
         params.add(Params.GRASP_USE_DATA_ORDER);
         params.add(Params.GRASP_ALLOW_RANDOMNESS_INSIDE_ALGORITHM);
-//        params.add(Params.CACHE_SCORES);
-//        params.add(Params.OUTPUT_CPDAG);
         params.add(Params.VERBOSE);
 
         // Parameters

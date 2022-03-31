@@ -87,7 +87,6 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
                 case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
                     break;
                 case 2:
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
@@ -121,7 +120,6 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
                 case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
                     break;
                 case 2:
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;

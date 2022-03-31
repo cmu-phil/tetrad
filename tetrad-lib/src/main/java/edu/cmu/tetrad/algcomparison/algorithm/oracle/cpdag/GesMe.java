@@ -19,8 +19,6 @@ import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import static java.lang.Math.sqrt;
@@ -98,17 +96,12 @@ public class GesMe implements Algorithm {
                 indices.add(i);
             }
 
-            Collections.sort(indices, new Comparator<Integer>() {
-                @Override
-                public int compare(Integer o1, Integer o2) {
-                    return -Double.compare(vars[o1], vars[o2]);
-                }
-            });
+            indices.sort((o1, o2) -> -Double.compare(vars[o1], vars[o2]));
 
             NumberFormat nf = new DecimalFormat("0.000");
 
-            for (int i = 0; i < indices.size(); i++) {
-                System.out.println(nf.format(vars[indices.get(i)]) + " ");
+            for (Integer index : indices) {
+                System.out.println(nf.format(vars[index]) + " ");
             }
 
             System.out.println();
@@ -191,7 +184,6 @@ public class GesMe implements Algorithm {
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
                 case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
                     break;
                 case 2:
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
@@ -242,15 +234,6 @@ public class GesMe implements Algorithm {
         return parameters;
     }
 
-    //    @Override
-//    public IKnowledge getKnowledge() {
-//        return knowledge;
-//    }
-//
-//    @Override
-//    public void setKnowledge(IKnowledge knowledge) {
-//        this.knowledge = knowledge;
-//    }
     public void setCompareToTrue(boolean compareToTrue) {
         this.compareToTrue = compareToTrue;
     }
@@ -264,7 +247,7 @@ public class GesMe implements Algorithm {
                     table.setToken(i, 0, "X" + i);
                 } else if (i == 0 && j > 0) {
                     table.setToken(0, j, "Factor " + j);
-                } else if (i > 0 && j > 0) {
+                } else if (i > 0) {
                     double coefficient = matrix.get(i - 1, j - 1);
                     String token = !Double.isNaN(coefficient) ? nf.format(coefficient) : "Undefined";
                     token += Math.abs(coefficient) > threshold ? "*" : " ";

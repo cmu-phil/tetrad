@@ -124,9 +124,6 @@ public class SemSimulation implements Simulation {
             parameters.addAll(this.randomGraph.getParameters());
         }
 
-//        if (pm == null) {
-//            parameters.addAll(SemPm.getParameterNames());
-//        }
         if (this.im == null) {
             parameters.addAll(SemIm.getParameterNames());
         }
@@ -165,18 +162,11 @@ public class SemSimulation implements Simulation {
 
             if (pm == null) {
                 pm = new SemPm(graph);
-                im = new SemIm(pm, parameters);
-                this.ims.add(im);
-                return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
-            } else {
-                im = new SemIm(pm, parameters);
-                this.ims.add(im);
-                return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
             }
-        } else {
-            this.ims.add(im);
-            return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
+            im = new SemIm(pm, parameters);
         }
+        this.ims.add(im);
+        return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
     }
 
     public List<SemIm> getSemIms() {

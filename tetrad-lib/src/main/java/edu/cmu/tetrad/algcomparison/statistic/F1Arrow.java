@@ -35,7 +35,6 @@ public class F1Arrow implements Statistic {
         int arrowTp = arrowConfusion.getArrowsTp();
         int arrowFp = arrowConfusion.getArrowsFp();
         int arrowFn = arrowConfusion.getArrowsFn();
-        int arrowTn = arrowConfusion.getArrowsTn();
         double arrowPrecision = arrowTp / (double) (arrowTp + arrowFp);
         double arrowRecall = arrowTp / (double) (arrowTp + arrowFn);
         return 2 * (arrowPrecision * arrowRecall) / (arrowPrecision + arrowRecall);

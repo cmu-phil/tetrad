@@ -46,10 +46,7 @@ public class CpcStable implements Algorithm, HasKnowledge, TakesIndependenceWrap
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            Graph init = null;
-            if (this.algorithm != null) {
-//                init = algorithm.search(dataSet, parameters);
-            }
+            //                init = algorithm.search(dataSet, parameters);
             PcAll search = new PcAll(this.test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setKnowledge(this.knowledge);
@@ -75,7 +72,6 @@ public class CpcStable implements Algorithm, HasKnowledge, TakesIndependenceWrap
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
                 case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
                     break;
                 case 2:
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;

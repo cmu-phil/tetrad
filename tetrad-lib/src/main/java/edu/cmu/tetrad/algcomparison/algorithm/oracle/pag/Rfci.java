@@ -54,10 +54,6 @@ public class Rfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
             return search.search();
         } else {
             Rfci algorithm = new Rfci(this.test);
-            //algorithm.setKnowledge(knowledge);
-//          if (externalGraph != null) {
-//      		algorithm.setExternalGraph(externalGraph);
-//  		}
             DataSet data = (DataSet) dataSet;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(this.knowledge);
@@ -71,7 +67,6 @@ public class Rfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
                 case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
                     break;
                 case 2:
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;

@@ -96,11 +96,7 @@ public class BooleanGlassSimulation implements Simulation {
         final int ySpace = 100;
         List<Node> lag0Nodes = graph.getLag0Nodes();
 
-        Collections.sort(lag0Nodes, new Comparator<Node>() {
-            public int compare(Node o1, Node o2) {
-                return o1.getCenterX() - o2.getCenterX();
-            }
-        });
+        lag0Nodes.sort(Comparator.comparingInt(Node::getCenterX));
 
         int x = xStart - xSpace;
 
@@ -114,7 +110,7 @@ public class BooleanGlassSimulation implements Simulation {
                 Node _node = graph.getNode(id.getName(), lag);
 
                 if (_node == null) {
-                    System.out.println("Couldn't find " + _node);
+                    System.out.println("Couldn't find " + null);
                     continue;
                 }
 

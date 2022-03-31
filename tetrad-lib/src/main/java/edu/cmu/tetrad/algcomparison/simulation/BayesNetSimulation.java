@@ -145,14 +145,12 @@ public class BayesNetSimulation implements Simulation {
                     int maxCategories = parameters.getInt(Params.MAX_CATEGORIES);
                     pm = new BayesPm(graph, minCategories, maxCategories);
                     im = new MlBayesIm(pm, MlBayesIm.RANDOM);
-                    this.ims.add(im);
-                    return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
                 } else {
                     im = new MlBayesIm(pm, MlBayesIm.RANDOM);
                     this.im = im;
-                    this.ims.add(im);
-                    return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
                 }
+                this.ims.add(im);
+                return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
             } else {
                 this.ims.add(im);
                 return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);

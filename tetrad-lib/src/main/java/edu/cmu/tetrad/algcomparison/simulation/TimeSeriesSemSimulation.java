@@ -17,7 +17,6 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -76,44 +75,6 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
             dataSet.setKnowledge(this.knowledge.copy());
             this.dataSets.add(dataSet);
 
-//            LargeScaleSimulation sim = new LargeScaleSimulation(graph);
-//            if (parameters.getDouble("coefHigh") > 0.80) {
-//                System.out.println("Coefficients have been set (perhaps by default) too " +
-//                        "high for stationary time series.");
-//                System.out.println("Setting coefficient range to [0.20,0.60].");
-//                sim.setCoefRange(0.20, 0.60);
-//            } else sim.setCoefRange(parameters.getDouble("coefLow"), parameters.getDouble("coefHigh"));
-//            boolean isStableTetradMatrix;
-//            int attempt = 1;
-//            int tierSize = parameters.getInt("numMeasures") + parameters.getInt("numLatents"); //params.getNumVars();
-//            int[] sub = new int[tierSize];
-//            int[] sub2 = new int[tierSize];
-//            for (int j = 0; j < tierSize; j++) {
-//                sub[j] = j;
-//                sub2[j] = tierSize + j;
-//            }
-//            DataSet dataSet;
-//            do {
-//                dataSet = sim.simulateDataFisher(parameters.getInt("sampleSize")); //params.getSampleSize());
-//
-//                TetradMatrix coefMat = new TetradMatrix(sim.getCoefficientMatrix());
-//                TetradMatrix B = coefMat.getSelection(sub, sub);
-//                TetradMatrix Gamma1 = coefMat.getSelection(sub2, sub);
-//                TetradMatrix Gamma0 = TetradMatrix.identity(tierSize).minus(B);
-//                TetradMatrix A1 = Gamma0.inverse().times(Gamma1);
-//
-//                isStableTetradMatrix = TimeSeriesUtils.allEigenvaluesAreSmallerThanOneInModulus(A1);
-//                attempt++;
-//            } while ((!isStableTetradMatrix) && attempt <= 5);
-//            if (!isStableTetradMatrix) {
-//                System.out.println("%%%%%%%%%% WARNING %%%%%%%% not a stable coefficient matrix, forcing coefs to [0.15,0.3]");
-//                System.out.println("Made " + (attempt - 1) + " attempts to get stable matrix.");
-//                sim.setCoefRange(0.15, 0.3);
-//                dataSet = sim.simulateDataFisher(parameters.getInt("sampleSize"));//params.getSampleSize());
-//            } //else System.out.println("Coefficient matrix is stable.");
-//            dataSet.setName("" + (i + 1));
-//            dataSet.setKnowledge(knowledge.copy());
-//            dataSets.add(dataSet);
         }
     }
 
@@ -183,11 +144,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
         final int ySpace = 100;
         List<Node> lag0Nodes = graph.getLag0Nodes();
 
-        Collections.sort(lag0Nodes, new Comparator<Node>() {
-            public int compare(Node o1, Node o2) {
-                return o1.getCenterX() - o2.getCenterX();
-            }
-        });
+        lag0Nodes.sort(Comparator.comparingInt(Node::getCenterX));
 
         int x = xStart - xSpace;
 

@@ -83,7 +83,6 @@ public class PcStableMaxConcatenated implements MultiDataSetAlgorithm, HasKnowle
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
                 case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
                     break;
                 case 2:
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
@@ -117,7 +116,6 @@ public class PcStableMaxConcatenated implements MultiDataSetAlgorithm, HasKnowle
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
                 case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
                     break;
                 case 2:
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
@@ -143,8 +141,7 @@ public class PcStableMaxConcatenated implements MultiDataSetAlgorithm, HasKnowle
     @Override
     public String getDescription() {
         return "PC-Max (\"Peter and Clark\") on concatenating datasets using " + this.test.getDescription()
-                + (this.externalGraph != null ? " with initial graph from "
-                + this.externalGraph.getDescription() : "");
+                + "";
     }
 
     @Override
@@ -180,7 +177,4 @@ public class PcStableMaxConcatenated implements MultiDataSetAlgorithm, HasKnowle
         this.knowledge = knowledge;
     }
 
-    public void setCompareToTrue(boolean compareToTrue) {
-        this.compareToTrue = compareToTrue;
-    }
 }

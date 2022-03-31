@@ -145,7 +145,7 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
                 }
             }
         } catch (ParseException e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
 
         return pm;

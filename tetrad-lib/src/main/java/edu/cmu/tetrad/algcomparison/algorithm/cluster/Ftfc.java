@@ -40,7 +40,7 @@ public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            ICovarianceMatrix cov = null;
+            ICovarianceMatrix cov;
 
             if (dataSet instanceof DataSet) {
                 cov = DataUtils.getCovMatrix(dataSet);
@@ -86,7 +86,6 @@ public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
                 case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
                     break;
                 case 2:
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;

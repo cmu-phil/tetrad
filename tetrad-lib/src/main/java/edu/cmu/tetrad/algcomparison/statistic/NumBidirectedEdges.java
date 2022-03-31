@@ -27,14 +27,12 @@ public class NumBidirectedEdges implements Statistic {
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int numBidirected = 0;
-        int numTotal = 0;
 
         for (Edge edge : estGraph.getEdges()) {
             if (Edges.isBidirectedEdge(edge)) {
                 numBidirected++;
             }
 
-            numTotal++;
         }
 
         return numBidirected;

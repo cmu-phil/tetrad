@@ -116,7 +116,6 @@ public class FactorAnalysis implements Algorithm {
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
                 case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
                     break;
                 case 2:
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
@@ -139,7 +138,7 @@ public class FactorAnalysis implements Algorithm {
                     table.setToken(i, 0, "X" + i);
                 } else if (i == 0 && j > 0) {
                     table.setToken(0, j, "Factor " + j);
-                } else if (i > 0 && j > 0) {
+                } else if (i > 0) {
                     double coefficient = matrix.get(i - 1, j - 1);
                     String token = !Double.isNaN(coefficient) ? nf.format(coefficient) : "Undefined";
                     token += Math.abs(coefficient) > threshold ? "*" : " ";

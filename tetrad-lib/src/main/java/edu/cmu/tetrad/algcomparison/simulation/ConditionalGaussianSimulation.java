@@ -399,7 +399,7 @@ public class ConditionalGaussianSimulation implements Simulation {
         this.meanHigh = meanHigh;
     }
 
-    private class Combination {
+    private static class Combination {
 
         private final Parameter parameter;
         private final Set<VariableValues> paramValues;
@@ -433,7 +433,7 @@ public class ConditionalGaussianSimulation implements Simulation {
         }
     }
 
-    private class VariableValues {
+    private static class VariableValues {
 
         private final DiscreteVariable variable;
         private final int value;
@@ -472,15 +472,14 @@ public class ConditionalGaussianSimulation implements Simulation {
         for (int i = 0; i < nodes.size(); i++) {
             Node n = nodes.get(i);
             int nL = m.get(n.getName());
+            Node nNew;
             if (nL > 0) {
-                Node nNew = new DiscreteVariable(n.getName(), nL);
-                nNew.setNodeType(n.getNodeType());
-                nodes.set(i, nNew);
+                nNew = new DiscreteVariable(n.getName(), nL);
             } else {
-                Node nNew = new ContinuousVariable(n.getName());
-                nNew.setNodeType(n.getNodeType());
-                nodes.set(i, nNew);
+                nNew = new ContinuousVariable(n.getName());
             }
+            nNew.setNodeType(n.getNodeType());
+            nodes.set(i, nNew);
 
         }
 

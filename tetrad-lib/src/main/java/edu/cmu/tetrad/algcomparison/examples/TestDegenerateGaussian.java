@@ -52,9 +52,6 @@ public class TestDegenerateGaussian {
         parameters.set("maxCategories", 4);
         parameters.set("differentGraphs", true);
 
-//        parameters.set("varLow", 2.0);
-//        parameters.set("varHigh", 2.0);
-
         parameters.set("sampleSize", 1000);
         parameters.set("percentDiscrete", 50);
 
@@ -83,13 +80,10 @@ public class TestDegenerateGaussian {
         algorithms.add(new Fges(new ConditionalGaussianBicScore()));
         algorithms.add(new Fges(new DegenerateGaussianBicScore()));
         algorithms.add(new PcStable(new DegenerateGaussianLRT()));
-//        algorithms.add(new CpcStable(new MultinomialLogisticRegressionWald(), new Mgm()));
-//        algorithms.add(new Fges(new BdeuScore()));
 
         Simulations simulations = new Simulations();
         simulations.add(new ConditionalGaussianSimulation(new RandomForward()));
         simulations.add(new LeeHastieSimulation(new RandomForward()));
-//        simulations.add(new BayesNetSimulation(new RandomForward()));
 
         Comparison comparison = new Comparison();
 
@@ -97,7 +91,6 @@ public class TestDegenerateGaussian {
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
-        //comparison.setParallelized(false);
 
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
     }

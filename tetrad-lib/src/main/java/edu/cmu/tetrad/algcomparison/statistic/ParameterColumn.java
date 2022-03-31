@@ -24,36 +24,21 @@ public class ParameterColumn implements Statistic {
     }
 
     @Override
-    /**
-     * Returns the name of the parameter.
-     */
     public String getAbbreviation() {
         return this.parameter;
     }
 
     @Override
-    /**
-     * Return "Extra column for " + parameter".
-     */
     public String getDescription() {
         return "Extra column for " + this.parameter;
     }
 
     @Override
-    /**
-     * This value is obtained by the Comparison class internally.
-     * @throws UnsupportedOperationException
-     */
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    /**
-     * This is not a column that can be included in a utility calculations. This
-     * will thow an exception.
-     * @throws UnsupportedOperationException
-     */
     public double getNormValue(double value) {
         throw new UnsupportedOperationException();
     }

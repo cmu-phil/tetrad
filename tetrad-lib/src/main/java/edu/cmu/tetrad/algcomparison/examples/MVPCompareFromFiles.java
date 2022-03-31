@@ -72,14 +72,7 @@ public class MVPCompareFromFiles {
 
         Algorithms algorithms = new Algorithms();
 
-//        algorithms.add(new Fges(new ConditionalGaussianBicScore()));
-//        algorithms.add(new Fges(new ConditionalGaussianOtherBicScore()));
         algorithms.add(new Fges(new MVPBicScore()));
-//        algorithms.add(new Fges(new MNLRBicScore()));
-//        algorithms.add(new Fges(new DiscreteMixedBicScore()));
-//        algorithms.add(new Cpc(new ConditionalGaussianLRT()));
-//        algorithms.add(new Cpc(new MVPLRT()));
-//        algorithms.add(new Cpc(new MNLRLRT(), new Mgm()));
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);

@@ -91,7 +91,7 @@ public class ExternalAlgorithmPcalgGes extends ExternalAlgorithm {
             String line;
             Graph graph = new EdgeListGraph(vars);
 
-            for (int i = 0; i < vars.size(); i++) {
+            for (Node var : vars) {
                 line = r.readLine();
                 String[] tokens = line.split(",");
 
@@ -99,14 +99,13 @@ public class ExternalAlgorithmPcalgGes extends ExternalAlgorithm {
                     String trim = token.trim();
                     if (trim.isEmpty()) continue;
                     int j = Integer.parseInt(trim) - 1;
-                    Node v1 = vars.get(i);
                     Node v2 = vars.get(j);
 
-                    if (!graph.isAdjacentTo(v2, v1)) {
-                        graph.addDirectedEdge(v2, v1);
+                    if (!graph.isAdjacentTo(v2, var)) {
+                        graph.addDirectedEdge(v2, var);
                     } else {
-                        graph.removeEdge(v2, v1);
-                        graph.addUndirectedEdge(v2, v1);
+                        graph.removeEdge(v2, var);
+                        graph.addUndirectedEdge(v2, var);
                     }
                 }
             }

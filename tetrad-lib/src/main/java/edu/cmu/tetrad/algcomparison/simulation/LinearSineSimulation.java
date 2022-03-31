@@ -227,7 +227,6 @@ public class LinearSineSimulation implements Simulation {
                 value += intercept.get(key)[0];
                 if (!continuousParents.isEmpty()) {
                     for (int x = 0; x < parents.length; x++) {
-                        String key2 = continuousParents.get(x).toString();
                         value += linear.get(key)[x] * parents[x] + beta.get(key)[x] * Math.sin(parents[x] / (gamma.get(key)[x]));
                     }
                 }

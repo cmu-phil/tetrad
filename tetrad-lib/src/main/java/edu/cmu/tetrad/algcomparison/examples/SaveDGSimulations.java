@@ -36,23 +36,17 @@ public class SaveDGSimulations {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
         parameters.set("numRuns", 30);
-//        parameters.set("numMeasures", 500);
         parameters.set("numMeasures", 100, 500, 1000);
         parameters.set("avgDegree", 4);
-//        parameters.set("avgDegree", 2, 4, 6);
         parameters.set("maxDegree", 100);
-//        parameters.set("maxIndegree", 6);
         parameters.set("numCategories", 3);
         parameters.set("minCategories", 2);
         parameters.set("maxCategories", 4);
         parameters.set("sampleSize", 1000);
-//        parameters.set("sampleSize", 200, 1000, 5000);
         parameters.set("percentDiscrete", 50);
-//        parameters.set("percentDiscrete", 100);
         parameters.set("differentGraphs", true);
 
         Simulation simulation = new ConditionalGaussianSimulation(new RandomForward());
-//        Simulation simulation = new LeeHastieSimulation(new RandomForward());
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);

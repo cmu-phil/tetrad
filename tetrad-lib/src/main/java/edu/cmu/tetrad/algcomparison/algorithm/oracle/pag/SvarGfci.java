@@ -54,9 +54,6 @@ public class SvarGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapp
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-//    	if (!(dataSet instanceof TimeSeriesData)) {
-//            throw new IllegalArgumentException("You need a (labeled) time series data set to run SvarGFCI.");
-//        }
 
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             if (this.knowledge != null) {
@@ -85,7 +82,6 @@ public class SvarGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapp
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
                 case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
                     break;
                 case 2:
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
