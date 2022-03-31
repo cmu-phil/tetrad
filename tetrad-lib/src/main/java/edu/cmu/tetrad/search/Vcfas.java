@@ -21,15 +21,12 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.*;
 
 /**
@@ -46,7 +43,7 @@ import java.util.*;
 public class Vcfas {
 
     /**
-     * The search graph. It is assumed going in that all of the true adjacencies of x are in this graph for every node
+     * The search graph. It is assumed going in that all the true adjacencies of x are in this graph for every node
      * x. It is hoped (i.e. true in the large sample limit) that true adjacencies are never removed.
      */
     private final Graph graph;
@@ -68,51 +65,16 @@ public class Vcfas {
     private int depth = 1000;
 
     /**
-     * The number of independence tests.
-     */
-    private int numIndependenceTests;
-
-
-    /**
      * The logger, by default the empty logger.
      */
     private final TetradLogger logger = TetradLogger.getInstance();
 
-    /**
-     * The true graph, for purposes of comparison. Temporary.
-     */
-    private Graph trueGraph;
-
-    /**
-     * The number of false dependence judgements, judged from the true graph using d-separation. Temporary.
-     */
-    private int numFalseDependenceJudgments;
-
-    /**
-     * The number of dependence judgements. Temporary.
-     */
-    private int numDependenceJudgement;
-
-    /**
-     * The sepsets found during the search.
-     */
-    //  private SepsetMap sepset = new SepsetMap();
-
     private final Map<Edge, List<Node>> apparentlyNonadjacencies = new HashMap<>();
-
-    /**
-     * True if this is being run by FCI--need to skip the knowledge forbid step.
-     */
-    private final boolean fci = false;
 
     /**
      * The depth 0 graph, specified initially.
      */
     private Graph externalGraph;
-
-//    private List<Double> pValues = new ArrayList<Double>();
-
-    private final NumberFormat nf = new DecimalFormat("0.00E0");
 
     /**
      * True iff verbose output should be printed.
@@ -162,18 +124,10 @@ public class Vcfas {
         List<Node> nodes = this.graph.getNodes();
 
         for (Node node : nodes) {
-            adjacencies.put(node, new TreeSet<Node>());
+            adjacencies.put(node, new TreeSet<>());
         }
 
 //        complete graph
-//        for (Node node : nodes) {
-//            adjacencies.put(node, new TreeSet<Node>());
-//
-//            for (Node node2 : nodes) {
-//                if (node == node2) continue;
-//                adjacencies.get(node).add(node2);
-//            }
-//        }
 
         for (int d = 0; d <= _depth; d++) {
             boolean more;
@@ -209,43 +163,6 @@ public class Vcfas {
         return this.graph;
     }
 
-    public Map<Node, Set<Node>> searchMapOnly() {
-        this.logger.log("info", "Starting Fast Adjacency Search.");
-        this.graph.removeEdges(this.graph.getEdges());
-
-        //sepset = new SepsetMap();
-
-        int _depth = this.depth;
-
-        if (_depth == -1) {
-            _depth = 1000;
-        }
-
-
-        Map<Node, Set<Node>> adjacencies = new HashMap<>();
-        List<Node> nodes = this.graph.getNodes();
-
-        for (Node node : nodes) {
-            adjacencies.put(node, new TreeSet<Node>());
-        }
-
-        for (int d = 0; d <= _depth; d++) {
-            boolean more;
-
-            if (d == 0) {
-                more = searchAtDepth0(nodes, this.test, adjacencies);
-            } else {
-                more = searchAtDepth(nodes, this.test, adjacencies, d);
-            }
-
-            if (!more) {
-                break;
-            }
-        }
-
-        return adjacencies;
-    }
-
     public int getDepth() {
         return this.depth;
     }
@@ -279,17 +196,9 @@ public class Vcfas {
 
             Node x = nodes.get(i);
 
-//            if (missingCol(test.getContinuousData(), x)) {
-//                continue;
-//            }
-
             for (int j = i + 1; j < nodes.size(); j++) {
 
                 Node y = nodes.get(j);
-
-//                if (missingCol(test.getContinuousData(), y)) {
-//                    continue;
-//                }
 
                 if (this.externalGraph != null) {
                     Node x2 = this.externalGraph.getNode(x.getName());
@@ -304,7 +213,6 @@ public class Vcfas {
                 boolean independent;
 
                 try {
-                    this.numIndependenceTests++;
                     independent = test.isIndependent(x, y, empty);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -317,26 +225,9 @@ public class Vcfas {
 
                 if (independent && noEdgeRequired) {
                     getApparentlyNonadjacencies().put(Edges.undirectedEdge(x, y), empty);
-
-//                    TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, empty) + " p = " +
-//                            nf.format(test.getScore()));
-
-                    if (this.verbose) {
-//                        System.out.println(SearchLogUtils.independenceFact(x, y, empty) + " p = " +
-//                                nf.format(test.getScore()));
-                    }
-
                 } else if (!forbiddenEdge(x, y)) {
                     adjacencies.get(x).add(y);
                     adjacencies.get(y).add(x);
-
-//                    TetradLogger.getInstance().log("dependencies", SearchLogUtils.independenceFact(x, y, empty) + " p = " +
-//                            nf.format(test.getScore()));
-
-//                    if (verbose) {
-//                        System.out.println(SearchLogUtils.dependenceFactMsg(x, y, empty) + " p = " +
-//                                nf.format(test.getScore()));
-//                    }
                 }
             }
         }
@@ -346,26 +237,6 @@ public class Vcfas {
                 freeDegree(nodes, adjacencies)
 
                         > 0;
-    }
-
-    // Returns true just in case there are no defined values in the column.
-    private boolean missingCol(DataModel data, Node x) {
-        return false;
-
-//        if (data instanceof DataSet) {
-//            DataSet dataSet = (DataSet) data;
-//            int j = dataSet.getColumn(dataSet.getVariable(x.getNode()));
-//
-//            for (int i = 0; i < dataSet.getNumRows(); i++) {
-//                if (!Double.isNaN(dataSet.getDouble(i, j))) {
-//                    return false;
-//                }
-//            }
-//
-//            return true;
-//        }
-//
-//        return false;
     }
 
     private int freeDegree(List<Node> nodes, Map<Node, Set<Node>> adjacencies) {
@@ -403,7 +274,6 @@ public class Vcfas {
     }
 
     private boolean searchAtDepth(List<Node> nodes, IndependenceTest test, Map<Node, Set<Node>> adjacencies, int depth) {
-        int numRemoved = 0;
         int count = 0;
 
         for (Node x : nodes) {
@@ -416,18 +286,6 @@ public class Vcfas {
                 List<Node> _adjx = new ArrayList<>(adjacencies.get(x));
                 _adjx.remove(y);
                 List<Node> ppx = possibleParents(x, _adjx, this.knowledge);
-//                final Node _x = x;
-//
-//                Collections.sort(ppx, new Comparator<Node>() {
-//                    @Override
-//                    public int compare(Node node1, Node node2) {
-//                        test.isIndependent(_x, node1);
-//                        double p1 = test.getScore();
-//                        test.isIndependent(_x, node2);
-//                        double p2 = test.getScore();
-//                        return Double.compare(p2, p1);
-//                    }
-//                });
 
                 if (ppx.size() >= depth) {
                     ChoiceGenerator cg = new ChoiceGenerator(ppx.size(), depth);
@@ -439,7 +297,6 @@ public class Vcfas {
                         boolean independent;
 
                         try {
-                            this.numIndependenceTests++;
                             independent = test.isIndependent(x, y, condSet);
                         } catch (Exception e) {
                             independent = false;
@@ -451,7 +308,6 @@ public class Vcfas {
                         if (independent && noEdgeRequired) {
                             adjacencies.get(x).remove(y);
                             adjacencies.get(y).remove(x);
-                            numRemoved++;
                             getApparentlyNonadjacencies().put(Edges.undirectedEdge(x, y), condSet);
 
                             if (this.verbose) {
@@ -460,19 +316,10 @@ public class Vcfas {
 
                             continue EDGE;
                         }
-//                        else {
-//                            if (verbose) {
-//                                System.out.println(SearchLogUtils.dependenceFactMsg(x, y, condSet, test.getScore()));
-//                            }
-//
-//                        }
                     }
                 }
             }
         }
-
-//        System.out.println("Num removed = " + numRemoved);
-//        return numRemoved > 0;
 
         return freeDegree(nodes, adjacencies) > depth;
     }
@@ -497,22 +344,6 @@ public class Vcfas {
         return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
     }
 
-    public int getNumIndependenceTests() {
-        return this.numIndependenceTests;
-    }
-
-    public void setTrueGraph(Graph trueGraph) {
-        this.trueGraph = trueGraph;
-    }
-
-    public int getNumFalseDependenceJudgments() {
-        return this.numFalseDependenceJudgments;
-    }
-
-    public int getNumDependenceJudgments() {
-        return this.numDependenceJudgement;
-    }
-
     public Map<Edge, List<Node>> getApparentlyNonadjacencies() {
         return this.apparentlyNonadjacencies;
     }
@@ -529,39 +360,12 @@ public class Vcfas {
         this.verbose = verbose;
     }
 
-
-    public boolean isAggressivelyPreventCycles() {
-        return false;
-    }
-
-
-    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
-
-    }
-
-
     public IndependenceTest getIndependenceTest() {
         return null;
     }
 
-
-    public Graph search(List<Node> nodes) {
-        return null;
-    }
-
-
-    public long getElapsedTime() {
-        return 0;
-    }
-
-
     public List<Node> getNodes() {
         return this.test.getVariables();
-    }
-
-
-    public List<Triple> getAmbiguousTriples(Node node) {
-        return null;
     }
 }
 

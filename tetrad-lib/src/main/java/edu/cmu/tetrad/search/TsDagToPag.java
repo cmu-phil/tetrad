@@ -48,9 +48,7 @@ import java.util.List;
  * @author Daniel Malinsky
  */
 public final class TsDagToPag {
-
     private final Graph dag;
-//    private final IndTestDSep dsep;
 
     /*
      * The background knowledge.
@@ -72,7 +70,6 @@ public final class TsDagToPag {
      */
     private boolean verbose;
     private int maxPathLength = -1;
-    private Graph truePag;
 
     //============================CONSTRUCTORS============================//
 
@@ -81,7 +78,6 @@ public final class TsDagToPag {
      */
     public TsDagToPag(Graph dag) {
         this.dag = dag;
-        int numLags = 1; // need to fix this!
         List<Node> variables = dag.getNodes();
         List<Integer> laglist = new ArrayList<>();
         IKnowledge knowledge = new Knowledge2();
@@ -91,25 +87,23 @@ public final class TsDagToPag {
             String tmp;
             if (varName.indexOf(':') == -1) {
                 lag = 0;
-                laglist.add(lag);
             } else {
                 tmp = varName.substring(varName.indexOf(':') + 1);
                 lag = Integer.parseInt(tmp);
-                laglist.add(lag);
             }
+            laglist.add(lag);
         }
-        numLags = Collections.max(laglist);
+        int numLags = Collections.max(laglist);
         for (Node node : variables) {
             String varName = node.getName();
             String tmp;
             if (varName.indexOf(':') == -1) {
                 lag = 0;
-                laglist.add(lag);
             } else {
                 tmp = varName.substring(varName.indexOf(':') + 1);
                 lag = Integer.parseInt(tmp);
-                laglist.add(lag);
             }
+            laglist.add(lag);
             knowledge.addToTier(numLags - lag, node.getName());
         }
 
@@ -235,27 +229,10 @@ public final class TsDagToPag {
         boolean ipbc = TsDagToPag.existsInducingPathInto(b, c, dag, this.knowledge);
 
         if (!(ipba && ipbc)) {
-            printTrueDefCollider(a, b, c, false);
             return false;
         }
 
-        printTrueDefCollider(a, b, c, true);
-
         return true;
-    }
-
-    private void printTrueDefCollider(Node a, Node b, Node c, boolean found) {
-        if (this.truePag != null) {
-            boolean defCollider = this.truePag.isDefCollider(a, b, c);
-
-            if (this.verbose) {
-                if (!found && defCollider) {
-                    System.out.println("FOUND COLLIDER FCI");
-                } else if (found && !defCollider) {
-                    System.out.println("DIDN'T FIND COLLIDER FCI");
-                }
-            }
-        }
     }
 
     public static boolean existsInducingPathInto(Node x, Node y, Graph graph, IKnowledge knowledge) {
@@ -276,40 +253,6 @@ public final class TsDagToPag {
 
         return false;
     }
-
-//    private static boolean existsInducingPathVisit(Graph graph, Node a, Node b, Node x, Node y,
-//                                                   LinkedList<Node> path) {
-//        if (b == y) {
-//            path.addLast(b);
-//            return true;
-//        }
-//
-//        if (path.contains(b)) {
-//            return false;
-//        }
-//
-//        path.addLast(b);
-//
-//        for (Node c : graph.getAdjacentNodes(b)) {
-//            if (c == a) continue;
-//
-//            if (b.getNodeType() == NodeType.MEASURED) {
-//                if (!graph.isDefCollider(a, b, c)) continue;
-//
-//                if (!(graph.isAncestorOf(b, x) || graph.isAncestorOf(b, y))) {
-//                    continue;
-//                }
-//            }
-//
-//            if (DataGraphUtils.existsInducingPathVisit(graph, b, c, x, y, path)) {
-//                return true;
-//            }
-//        }
-//
-//        path.removeLast();
-//        return false;
-//    }
-
 
     public IKnowledge getKnowledge() {
         return this.knowledge;
@@ -357,15 +300,6 @@ public final class TsDagToPag {
     public void setMaxPathLength(int maxPathLength) {
         this.maxPathLength = maxPathLength;
     }
-
-    public Graph getTruePag() {
-        return this.truePag;
-    }
-
-    public void setTruePag(Graph truePag) {
-        this.truePag = truePag;
-    }
-
 
     public static boolean existsInducingPathVisitts(Graph graph, Node a, Node b, Node x, Node y,
                                                     LinkedList<Node> path, IKnowledge knowledge) {

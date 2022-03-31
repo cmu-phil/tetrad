@@ -292,10 +292,6 @@ public final class DiscreteTetradTest implements TetradTest {
         return this.tempProb;
     }
 
-    public double tetradPValue(int i1, int j1, int k1, int l1, int i2, int j2, int k2, int l2) {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
     public boolean tetradHolds(int i, int j, int k, int l) {
         twoFactorTest(i, l, j, k);
         this.prob[0] = this.tempProb;
@@ -514,10 +510,6 @@ public final class DiscreteTetradTest implements TetradTest {
 
     public boolean oneFactorTest(int i, int j, int k, int l, int x) {
         throw new UnsupportedOperationException();
-    }
-
-    public boolean oneFactorTest(int i, int j, int k, int l, int x, int y) {
-        throw new UnsupportedOperationException(); // Need to remove dependence on PAL.
     }
 
     public boolean twoFactorTest(int i, int j, int k, int l) {

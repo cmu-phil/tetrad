@@ -50,11 +50,6 @@ public final class TimeSeriesLagSearch implements GraphSearch {
     private IKnowledge knowledge = new Knowledge2();
 
     /**
-     * The maximum number of nodes conditioned on in the search.
-     */
-    private final int depth = 0;
-
-    /**
      * The graph that's constructed during the search.
      */
     private Graph graph;
@@ -63,11 +58,6 @@ public final class TimeSeriesLagSearch implements GraphSearch {
      * Elapsed time of last search.
      */
     private long elapsedTime;
-
-    /**
-     * The list of all unshielded triples.
-     */
-    private Set<Triple> allTriples;
 
     /**
      * Set of unshielded colliders from the triple orientation step.
@@ -120,28 +110,10 @@ public final class TimeSeriesLagSearch implements GraphSearch {
         this.aggressivelyPreventCycles = aggressivelyPreventCycles;
     }
 
-//    /**
-//     * Sets the maximum number of variables conditioned on in any conditional
-//     * independence test. If set to -1, the value of 1000 will be used. May
-//     * not be set to Integer.MAX_VALUE, due to a Java bug on multi-core systems.
-//     */
-//    public final void setMaxIndegree(int depth) {
-//        if (depth < -1) {
-//            throw new IllegalArgumentException("Depth must be -1 or >= 0: "  + depth);
-//        }
-//
-//        if (depth == Integer.MAX_VALUE) {
-//            throw new IllegalArgumentException("Depth must not be Integer.MAX_VALUE, " +
-//                    "due to a known bug.");
-//        }
-//
-//        this.depth = depth;
-//    }
-
     /**
      * @return the elapsed time of search in milliseconds, after <code>search()</code> has been run.
      */
-    public final long getElapsedTime() {
+    public long getElapsedTime() {
         return this.elapsedTime;
     }
 
@@ -165,14 +137,6 @@ public final class TimeSeriesLagSearch implements GraphSearch {
      */
     public IndependenceTest getIndependenceTest() {
         return this.independenceTest;
-    }
-
-    /**
-     * @return the depth of the search--that is, the maximum number of variables conditioned on in any conditional
-     * independence test.
-     */
-    public int getDepth() {
-        return this.depth;
     }
 
     /**
@@ -200,18 +164,10 @@ public final class TimeSeriesLagSearch implements GraphSearch {
     }
 
     /**
-     * @return the set of all triples found during the most recent run of the algorithm. Non-null after a call to
-     * <code>search()</code>.
-     */
-    public Set<Triple> getAllTriples() {
-        return new HashSet<>(this.allTriples);
-    }
-
-    /**
      * Runs PC starting with a fully connected graph over all of the variables in the domain of the independence test.
      * See PC for caveats. The number of possible cycles and bidirected edges is far less with CPC than with PC.
      */
-    public final Graph search() {
+    public Graph search() {
         return search(this.independenceTest.getVariables());
     }
 
@@ -223,14 +179,9 @@ public final class TimeSeriesLagSearch implements GraphSearch {
         TetradLogger.getInstance().log("info", "Starting TimeSeriesLagSearch.");
         TetradLogger.getInstance().log("info", "Independence test = " + this.independenceTest + ".");
         long startTime = System.currentTimeMillis();
-        this.allTriples = new HashSet<>();
         this.ambiguousTriples = new HashSet<>();
         this.colliderTriples = new HashSet<>();
         this.noncolliderTriples = new HashSet<>();
-
-        if (getIndependenceTest() == null) {
-            throw new NullPointerException();
-        }
 
         List<Node> allNodes = getIndependenceTest().getVariables();
         if (!allNodes.containsAll(nodes)) {
@@ -249,14 +200,7 @@ public final class TimeSeriesLagSearch implements GraphSearch {
         // on purpose; it is not used in this search.
         fas.search();
 
-//        SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
-        orientUnshieldedTriples(this.knowledge, getIndependenceTest(), 3);
-//        MeekRules meekRules = new MeekRules();
-//
-//        meekRules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
-//        meekRules.setKnowledge(knowledge);
-//
-//        meekRules.orientImplied(graph);
+        orientUnshieldedTriples(this.knowledge, getIndependenceTest());
 
         TetradLogger.getInstance().log("graph", "\nReturning this graph: " + this.graph);
 
@@ -269,35 +213,7 @@ public final class TimeSeriesLagSearch implements GraphSearch {
         logTriples();
 
         TetradLogger.getInstance().flush();
-//        SearchGraphUtils.verifySepsetIntegrity(sepsetMap, graph);
         return this.graph;
-    }
-
-    /**
-     * Orients the given graph using CPC orientation with the conditional independence test provided in the
-     * constructor.
-     */
-    public final Graph orientationForGraph(Dag trueGraph) {
-        Graph graph = new EdgeListGraph(this.independenceTest.getVariables());
-
-        for (Edge edge : trueGraph.getEdges()) {
-            Node nodeA = edge.getNode1();
-            Node nodeB = edge.getNode2();
-
-            Node _nodeA = this.independenceTest.getVariable(nodeA.getName());
-            Node _nodeB = this.independenceTest.getVariable(nodeB.getName());
-
-            graph.addUndirectedEdge(_nodeA, _nodeB);
-        }
-
-        SearchGraphUtils.pcOrientbk(this.knowledge, graph, graph.getNodes());
-        orientUnshieldedTriples(this.knowledge, getIndependenceTest(), this.depth);
-        MeekRules meekRules = new MeekRules();
-        meekRules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
-        meekRules.setKnowledge(this.knowledge);
-        meekRules.orientImplied(graph);
-
-        return graph;
     }
 
     //==========================PRIVATE METHODS===========================//
@@ -323,19 +239,14 @@ public final class TimeSeriesLagSearch implements GraphSearch {
         }
     }
 
-    private void orientUnshieldedTriples(IKnowledge knowledge,
-                                         IndependenceTest test, int depth) {
+    private void orientUnshieldedTriples(IKnowledge knowledge, IndependenceTest test) {
         TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
-
-//        System.out.println("orientUnshieldedTriples 1");
 
         this.colliderTriples = new HashSet<>();
         this.noncolliderTriples = new HashSet<>();
         this.ambiguousTriples = new HashSet<>();
 
         for (Node y : this.graph.getNodes()) {
-//            System.out.println("orientUnshieldedTriples 2");
-
             List<Node> adjacentNodes = this.graph.getAdjacentNodes(y);
 
             if (adjacentNodes.size() < 2) {
@@ -346,8 +257,6 @@ public final class TimeSeriesLagSearch implements GraphSearch {
             int[] combination;
 
             while ((combination = cg.next()) != null) {
-//                System.out.println("orientUnshieldedTriples 3");
-
                 Node x = adjacentNodes.get(combination[0]);
                 Node z = adjacentNodes.get(combination[1]);
 
@@ -355,17 +264,9 @@ public final class TimeSeriesLagSearch implements GraphSearch {
                     continue;
                 }
 
-                getAllTriples().add(new Triple(x, y, z));
-
-//                System.out.println("orientUnshieldedTriples 4");
-
-                SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType(x, y, z, test, depth, graph);
-
-//                System.out.println("orientUnshieldedTriples 5");
+                SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType(x, y, z, test, 3, graph);
 
                 if (type == SearchGraphUtils.CpcTripleType.COLLIDER) {
-//                    System.out.println("orientUnshieldedTriples 6");
-
                     if (this.colliderAllowed(x, y, z, knowledge)) {
                         graph.setEndpoint(x, y, Endpoint.ARROW);
                         graph.setEndpoint(z, y, Endpoint.ARROW);
@@ -375,14 +276,10 @@ public final class TimeSeriesLagSearch implements GraphSearch {
 
                     colliderTriples.add(new Triple(x, y, z));
                 } else if (type == SearchGraphUtils.CpcTripleType.AMBIGUOUS) {
-//                    System.out.println("orientUnshieldedTriples 7");
-
                     Triple triple = new Triple(x, y, z);
                     this.ambiguousTriples.add(triple);
                     this.graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                 } else {
-//                    System.out.println("orientUnshieldedTriples 8");
-
                     this.noncolliderTriples.add(new Triple(x, y, z));
                 }
             }

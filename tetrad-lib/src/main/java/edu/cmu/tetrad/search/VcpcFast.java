@@ -30,9 +30,6 @@ import edu.cmu.tetrad.util.CombinationGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Implements a convervative version of PC, in which the Markov condition is assumed but faithfulness is tested
@@ -41,8 +38,6 @@ import java.util.concurrent.TimeUnit;
  * @author Joseph Ramsey (this version).
  */
 public final class VcpcFast implements GraphSearch {
-
-    private final int NTHREDS = Runtime.getRuntime().availableProcessors() * 5;
 
     /**
      * The independence test used for the PC search.
@@ -68,11 +63,6 @@ public final class VcpcFast implements GraphSearch {
     private long elapsedTime;
 
     /**
-     * The list of all unshielded triples.
-     */
-    private Set<Triple> allTriples;
-
-    /**
      * Set of unshielded colliders from the triple orientation step.
      */
     private Set<Triple> colliderTriples;
@@ -89,11 +79,6 @@ public final class VcpcFast implements GraphSearch {
 
     private Set<Edge> definitelyNonadjacencies;
 
-    private Set<Node> markovInAllCPDAGs;
-
-    private static Set<List<Node>> powerSet;
-
-
     private boolean aggressivelyPreventCycles;
 
     /**
@@ -105,11 +90,6 @@ public final class VcpcFast implements GraphSearch {
      * The sepsets.
      */
     private Map<Edge, List<Node>> apparentlyNonadjacencies;
-
-    /**
-     * True iff orientation should be done.
-     */
-    private boolean doOrientation = true;
 
     /**
      * Whether verbose output about independencies is output.
@@ -156,7 +136,7 @@ public final class VcpcFast implements GraphSearch {
      * Sets the maximum number of variables conditioned on in any conditional independence test. If set to -1, the value
      * of 1000 will be used. May not be set to Integer.MAX_VALUE, due to a Java bug on multi-core systems.
      */
-    public final void setDepth(int depth) {
+    public void setDepth(int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException("Depth must be -1 or >= 0: " + depth);
         }
@@ -172,7 +152,7 @@ public final class VcpcFast implements GraphSearch {
     /**
      * @return the elapsed time of search in milliseconds, after <code>search()</code> has been run.
      */
-    public final long getElapsedTime() {
+    public long getElapsedTime() {
         return this.elapsedTime;
     }
 
@@ -231,20 +211,8 @@ public final class VcpcFast implements GraphSearch {
         return new HashSet<>(this.noncolliderTriples);
     }
 
-    /**
-     * @return the set of all triples found during the most recent run of the algorithm. Non-null after a call to
-     * <code>search()</code>.
-     */
-    public Set<Triple> getAllTriples() {
-        return new HashSet<>(this.allTriples);
-    }
-
     public Set<Edge> getAdjacencies() {
-        Set<Edge> adjacencies = new HashSet<>();
-        for (Edge edge : this.graph.getEdges()) {
-            adjacencies.add(edge);
-        }
-        return adjacencies;
+        return new HashSet<>(this.graph.getEdges());
     }
 
     public Set<Edge> getApparentNonadjacencies() {
@@ -275,33 +243,17 @@ public final class VcpcFast implements GraphSearch {
     public Graph search() {
         this.logger.log("info", "Starting VCCPC algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
-        this.allTriples = new HashSet<>();
         this.ambiguousTriples = new HashSet<>();
         this.colliderTriples = new HashSet<>();
         this.noncolliderTriples = new HashSet<>();
         Vcfas fas = new Vcfas(getIndependenceTest());
         this.definitelyNonadjacencies = new HashSet<>();
-        this.markovInAllCPDAGs = new HashSet<>();
 
 //        this.logger.log("info", "Variables " + independenceTest.getVariable());
 
         long startTime = System.currentTimeMillis();
 
-        if (getIndependenceTest() == null) {
-            throw new NullPointerException();
-        }
-
         List<Node> allNodes = getIndependenceTest().getVariables();
-
-//        if (!allNodes.containsAll(nodes)) {
-//            throw new IllegalArgumentException("All of the given nodes must " +
-//                    "be in the domain of the independence test provided.");
-//        }
-
-//        Fas fas = new Fas(graph, getIndependenceTest());
-//        FasStableConcurrent fas = new FasStableConcurrent(graph, getIndependenceTest());
-//        Fas6 fas = new Fas6(graph, getIndependenceTest());
-//        fas = new FasICov(graph, (IndTestFisherZ) getIndependenceTest());
 
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
@@ -313,23 +265,20 @@ public final class VcpcFast implements GraphSearch {
 
         this.apparentlyNonadjacencies = fas.getApparentlyNonadjacencies();
 
-        if (isDoOrientation()) {
-            if (this.verbose) {
-                System.out.println("CPC orientation...");
-            }
-            SearchGraphUtils.pcOrientbk(this.knowledge, this.graph, allNodes);
-            orientUnshieldedTriples(this.knowledge, getIndependenceTest(), getDepth());
-//            orientUnshieldedTriplesConcurrent(knowledge, getIndependenceTest(), getMaxIndegree());
-            MeekRules meekRules = new MeekRules();
-
-            meekRules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
-            meekRules.setKnowledge(this.knowledge);
-
-            meekRules.orientImplied(this.graph);
+        if (this.verbose) {
+            System.out.println("CPC orientation...");
         }
+        SearchGraphUtils.pcOrientbk(this.knowledge, this.graph, allNodes);
+        orientUnshieldedTriples(this.knowledge, getIndependenceTest(), getDepth());
+//            orientUnshieldedTriplesConcurrent(knowledge, getIndependenceTest(), getMaxIndegree());
+        MeekRules meekRules = new MeekRules();
 
+        meekRules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
+        meekRules.setKnowledge(this.knowledge);
 
-        List<Triple> ambiguousTriples = new ArrayList(this.graph.getAmbiguousTriples());
+        meekRules.orientImplied(this.graph);
+
+        List<Triple> ambiguousTriples = new ArrayList<>(this.graph.getAmbiguousTriples());
 
         int[] dims = new int[ambiguousTriples.size()];
 
@@ -353,20 +302,15 @@ public final class VcpcFast implements GraphSearch {
 
         while ((combination = generator.next()) != null) {
             Graph _graph = new EdgeListGraph(this.graph);
-            newColliders.put(_graph, new ArrayList<Triple>());
-            newNonColliders.put(_graph, new ArrayList<Triple>());
-            for (Graph graph : newColliders.keySet()) {
-//                System.out.println("$$$ " + newColliders.get(graph));
-            }
+            newColliders.put(_graph, new ArrayList<>());
+            newNonColliders.put(_graph, new ArrayList<>());
+
             for (int k = 0; k < combination.length; k++) {
-//                System.out.println("k = " + combination[k]);
                 Triple triple = ambiguousTriples.get(k);
                 _graph.removeAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
 
-
                 if (combination[k] == 0) {
                     newColliders.get(_graph).add(triple);
-//                    System.out.println(newColliders.get(_graph));
                     Node x = triple.getX();
                     Node y = triple.getY();
                     Node z = triple.getZ();
@@ -382,20 +326,12 @@ public final class VcpcFast implements GraphSearch {
             patterns.add(_graph);
         }
 
-        List<Graph> _patterns = new ArrayList<>(patterns);
-
         ///    Takes patterns and runs them through basic constraints to ensure consistent patterns (e.g. no cycles, no bidirected edges).
 
         GRAPH:
-
         for (Graph graph : new ArrayList<>(patterns)) {
-//            _graph = new EdgeListGraph(graph);
-
-//            System.out.println("graph = " + graph + " in keyset? " + newColliders.containsKey(graph));
-//
             List<Triple> colliders = newColliders.get(graph);
             List<Triple> nonColliders = newNonColliders.get(graph);
-
 
             for (Triple triple : colliders) {
                 Node x = triple.getX();
@@ -441,27 +377,16 @@ public final class VcpcFast implements GraphSearch {
                 }
             }
 
-//            for (Edge edge : graph.getEdges()) {
-//                if (Edges.isBidirectedEdge(edge)) {
-//                    patterns.remove(graph);
-//                    continue Graph;
-//                }
-//            }
-
             MeekRules rules = new MeekRules();
             rules.orientImplied(graph);
             if (graph.existsDirectedCycle()) {
                 patterns.remove(graph);
-                continue GRAPH;
             }
-
         }
-
 
 ////        4/8/15 Local Relative Markov (M2)
 
         MARKOV:
-
         for (Edge edge : this.apparentlyNonadjacencies.keySet()) {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
@@ -509,61 +434,6 @@ public final class VcpcFast implements GraphSearch {
 
         //Modified VCPC to be faster but less correct 4/14/15
 
-//        IndependenceTest test = independenceTest;
-////
-//        MARKOV:
-//        for (Edge edge : apparentlyNonadjacencies.keySet()) {
-//            Node x = edge.getNode1();
-//            Node y = edge.getNode2();
-//            //        Build Power sets from boundary.
-//            powerSet = new HashSet<List<Node>>();
-//            Set<Node> ssX = new HashSet<Node>(boundary(x, graph));
-//            List<Node> listX = new ArrayList<Node>(ssX);
-//            buildPowerSet(listX, listX.size());
-//            Set<List<Node>> bdryX = powerSet;
-//            powerSet = new HashSet<List<Node>>();
-//            Set<Node> ssY = new HashSet<Node>(boundary(y, graph));
-//            List<Node> listY = new ArrayList<Node>(ssY);
-//            buildPowerSet(listY, listY.size());
-//            Set<List<Node>> bdryY = powerSet;
-//            for (List<Node> boundaryX : bdryX) {
-//                List<Node> futureX = new ArrayList<Node>(future(x, graph));
-//                if (y == x) {
-//                    continue;
-//                }
-//                if (boundaryX.contains(y)) {
-//                    continue;
-//                }
-//                if (!futureX.contains(y)) {
-//                    if (!test.isIndependent(x, y, boundaryX)) {
-//                        continue MARKOV;
-//                    }
-//                }
-//            }
-//            for (List<Node> boundaryY : bdryY) {
-//                List<Node> futureX = new ArrayList<Node>(future(x, graph));
-//                List<Node> futureY = new ArrayList<Node>(future(y, graph));
-//                if (y == x) {
-//                    continue;
-//                }
-//                if (boundaryY.contains(x)) {
-//                    continue;
-//                }
-//                if (!futureY.contains(x)) {
-//                    if (!test.isIndependent(y, x, boundaryY)) {
-//                        continue MARKOV;
-//                    }
-//                }
-//            }
-//            definitelyNonadjacencies.add(edge);
-////            apparentlyNonadjacencies.remove(edge);
-//        }
-//        for (Edge edge : definitelyNonadjacencies) {
-//            if (apparentlyNonadjacencies.keySet().contains(edge)) {
-//                apparentlyNonadjacencies.keySet().remove(edge);
-//            }
-//        }
-
         System.out.println("VCPC:");
 
 //        System.out.println("# of patterns: " + patterns.size());
@@ -575,22 +445,6 @@ public final class VcpcFast implements GraphSearch {
 
         System.out.println("# of Apparent Nonadj: " + this.apparentlyNonadjacencies.size());
         System.out.println("# of Definite Nonadj: " + this.definitelyNonadjacencies.size());
-
-//        System.out.println("aMIGUOUS tRIPLES: " + ambiguousTriples);
-//        System.out.println("Definitely Nonadjacencies:");
-//        for (Edge edge : definitelyNonadjacencies) {
-//            System.out.println(edge);
-//        }
-//        System.out.println("markov in all patterns:" + markovInAllPatterns);
-////        System.out.println("patterns:" + patterns);
-//        System.out.println("Apparently Nonadjacencies:");
-//        for (Edge edge : apparentlyNonadjacencies.keySet()) {
-//            System.out.println(edge);
-//        }
-//        System.out.println("Definitely Nonadjacencies:");
-//        for (Edge edge : definitelyNonadjacencies) {
-//            System.out.println(edge);
-//        }
 
         TetradLogger.getInstance().log("apparentlyNonadjacencies", "\n Apparent Non-adjacencies" + this.apparentlyNonadjacencies);
         TetradLogger.getInstance().log("definitelyNonadjacencies", "\n Definite Non-adjacencies" + this.definitelyNonadjacencies);
@@ -604,221 +458,16 @@ public final class VcpcFast implements GraphSearch {
         return this.graph;
     }
 
-    /**
-     * Orients the given graph using CPC orientation with the conditional independence test provided in the
-     * constructor.
-     */
-    public final Graph orientationForGraph(Dag trueGraph) {
-        Graph graph = new EdgeListGraph(this.independenceTest.getVariables());
-        for (Edge edge : trueGraph.getEdges()) {
-            Node nodeA = edge.getNode1();
-            Node nodeB = edge.getNode2();
-
-            Node _nodeA = this.independenceTest.getVariable(nodeA.getName());
-            Node _nodeB = this.independenceTest.getVariable(nodeB.getName());
-            graph.addUndirectedEdge(_nodeA, _nodeB);
-        }
-        SearchGraphUtils.pcOrientbk(this.knowledge, graph, graph.getNodes());
-        orientUnshieldedTriples(this.knowledge, getIndependenceTest(), this.depth);
-        MeekRules meekRules = new MeekRules();
-        meekRules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
-        meekRules.setKnowledge(this.knowledge);
-        meekRules.orientImplied(graph);
-        return graph;
-    }
-
     //==========================PRIVATE METHODS===========================//
 
 //    Takes patterns and, with respect to a node and its boundary, finds all possible combinations of orientations
 //    of its boundary such that no new colliders are created. For each combination, a new pattern is added to the
 //    list dagPatterns.
 
-    private List<Graph> dagPatterns(Node x, Graph graph) {
-        List<Graph> dagPatterns = new ArrayList<>();
-        List<Node> boundaryX = new ArrayList<>(boundary(x, graph));
 
-        BOUNDARY1:
-
-        for (Node a : boundaryX) {
-            Graph dag = new EdgeListGraph(graph);
-
-            if (dag.getEdge(x, a).pointsTowards(a)) {
-                continue;
-            }
-
-            if (Edges.isUndirectedEdge(dag.getEdge(x, a))) {
-                dag.setEndpoint(a, x, Endpoint.ARROW);
-            }
-
-
-            List<Node> otherNodesX = new ArrayList<>(boundaryX);
-            otherNodesX.remove(a);
-            for (Node b : otherNodesX) {
-                if (dag.getEdge(x, b).pointsTowards(x)) {
-                    continue BOUNDARY1;
-                }
-                if (Edges.isUndirectedEdge(dag.getEdge(x, b))) {
-                    List<Node> boundaryB = new ArrayList<>(boundary(b, dag));
-                    boundaryB.remove(x);
-                    for (Node c : boundaryB) {
-                        if (dag.isParentOf(c, b)) {
-                            continue BOUNDARY1;
-                        }
-                    }
-                    dag.setEndpoint(x, b, Endpoint.ARROW);
-                }
-            }
-            dagPatterns.add(dag);
-        }
-
-        Graph _dag = new EdgeListGraph(graph);
-        List<Node> newCollider = new ArrayList<>();
-
-        BOUNDARY2:
-
-        for (Node v : boundaryX) {
-
-            if (_dag.getEdge(x, v).pointsTowards(v)) {
-                continue;
-            }
-
-            if (Edges.isUndirectedEdge(_dag.getEdge(x, v))) {
-
-                _dag.setEndpoint(x, v, Endpoint.ARROW);
-
-                List<Node> boundaryV = new ArrayList<>(boundary(v, _dag));
-                boundaryV.remove(x);
-
-                for (Node d : boundaryV) {
-                    if (_dag.isParentOf(d, v)) {
-                        newCollider.add(v);
-                    }
-                }
-
-            }
-        }
-        if (newCollider.size() == 0) {
-            dagPatterns.add(_dag);
-        }
-        return dagPatterns;
-    }
-
-
-    private List<Graph> ePatterns(Node x, Graph graph) {
-        List<Graph> ePatterns = new ArrayList<>();
-        List<Node> boundaryX = new ArrayList<>(boundary(x, graph));
-
-        BOUNDARY1:
-
-        for (Node a : boundaryX) {
-            Graph pattern = new EdgeListGraph(graph);
-
-            if (pattern.getEdge(x, a).pointsTowards(a)) {
-                continue;
-            }
-
-            if (Edges.isUndirectedEdge(pattern.getEdge(x, a))) {
-                pattern.setEndpoint(a, x, Endpoint.ARROW);
-            }
-
-            List<Node> otherNodesX = new ArrayList<>(boundaryX);
-            otherNodesX.remove(a);
-            for (Node b : otherNodesX) {
-                if (pattern.getEdge(x, b).pointsTowards(x)) {
-                    continue BOUNDARY1;
-                }
-                if (Edges.isUndirectedEdge(pattern.getEdge(x, b))) {
-                    List<Node> boundaryB = new ArrayList<>(boundary(b, pattern));
-                    boundaryB.remove(x);
-                    for (Node c : boundaryB) {
-                        if (pattern.isParentOf(c, b)) {
-                            continue BOUNDARY1;
-                        }
-                    }
-                    pattern.setEndpoint(x, b, Endpoint.ARROW);
-                }
-            }
-            ePatterns.add(pattern);
-        }
-
-        Graph _dag = new EdgeListGraph(graph);
-        List<Node> newCollider = new ArrayList<>();
-
-        BOUNDARY2:
-
-        for (Node v : boundaryX) {
-
-            if (_dag.getEdge(x, v).pointsTowards(v)) {
-                continue;
-            }
-
-            if (Edges.isUndirectedEdge(_dag.getEdge(x, v))) {
-
-                _dag.setEndpoint(x, v, Endpoint.ARROW);
-
-                List<Node> boundaryV = new ArrayList<>(boundary(v, _dag));
-                boundaryV.remove(x);
-
-                for (Node d : boundaryV) {
-                    if (_dag.isParentOf(d, v)) {
-                        newCollider.add(v);
-                    }
-                }
-
-            }
-        }
-        if (newCollider.size() == 0) {
-            ePatterns.add(_dag);
-        }
-        return ePatterns;
-    }
-
-
-    private static void buildPowerSet(List<Node> boundary, int count) {
-        VcpcFast.powerSet.add(boundary);
-
-        for (int i = 0; i < boundary.size(); i++) {
-            List<Node> temp = new ArrayList<>(boundary);
-            temp.remove(i);
-            VcpcFast.buildPowerSet(temp, temp.size());
-        }
-    }
-
-
-//    Tests if a node x is markov by using an independence test to test if x is independent of variables
+    //    Tests if a node x is markov by using an independence test to test if x is independent of variables
 //    not in its boundary conditional on its boundary and if x is independent of variables not in its future
 //    conditional on its boundary.
-
-    private boolean isMarkov(Node node, Graph graph) {
-//        Graph dag = SearchGraphUtils.dagFromPattern(graph);
-        System.out.println(graph);
-        IndependenceTest test = this.independenceTest;
-
-        Node x = node;
-
-//        for (Node x : graph.getNodes()) {
-        List<Node> future = new ArrayList<>(future(x, graph));
-        List<Node> boundary = new ArrayList<>(boundary(x, graph));
-
-        for (Node y : graph.getNodes()) {
-            if (y == x) {
-                continue;
-            }
-            if (future.contains(y)) {
-                continue;
-            }
-            if (boundary.contains(y)) {
-                continue;
-            }
-            System.out.println(SearchLogUtils.independenceFact(x, y, boundary) + " " + test.isIndependent(x, y, boundary));
-            if (!test.isIndependent(x, y, boundary)) {
-                return false;
-            }
-        }
-//        }
-
-        return true;
-    }
 
     //    For a node x, adds nodes y such that either y-x or y->x to the boundary of x
     private Set<Node> boundary(Node x, Graph graph) {
@@ -835,7 +484,7 @@ public final class VcpcFast implements GraphSearch {
     //      For a node x, adds nodes y such that either x->..->y or x-..-..->..->y to the future of x
     private Set<Node> future(Node x, Graph graph) {
         Set<Node> futureNodes = new HashSet<>();
-        LinkedList path = new LinkedList<>();
+        LinkedList<Node> path = new LinkedList<>();
         VcpcFast.futureNodeVisit(graph, x, path, futureNodes);
         futureNodes.remove(x);
         List<Node> adj = graph.getAdjacentNodes(x);
@@ -854,9 +503,6 @@ public final class VcpcFast implements GraphSearch {
         Endpoint E2 = edge2.getProximalEndpoint(node);
         Endpoint E3 = edge2.getDistalEndpoint(node);
         Endpoint E4 = edge1.getDistalEndpoint(node);
-//        if (E1 == Endpoint.ARROW && E2 == Endpoint.TAIL && E3 == Endpoint.TAIL) {
-//            return null;
-//        }
         if (E1 == Endpoint.ARROW && E2 == Endpoint.ARROW && E3 == Endpoint.TAIL) {
             return null;
         }
@@ -880,101 +526,22 @@ public final class VcpcFast implements GraphSearch {
             int size = path.size();
             if (path.size() < 2) {
                 c = edge2.getDistalNode(b);
-                if (c == null) {
-                    continue;
-                }
-                if (path.contains(c)) {
-                    continue;
-                }
             } else {
                 Node a = path.get(size - 2);
                 Edge edge1 = graph.getEdge(a, b);
                 c = VcpcFast.traverseFuturePath(b, edge1, edge2);
-                if (c == null) {
-                    continue;
-                }
-                if (path.contains(c)) {
-                    continue;
-                }
+            }
+            if (c == null) {
+                continue;
+            }
+            if (path.contains(c)) {
+                continue;
             }
             VcpcFast.futureNodeVisit(graph, c, path, futureNodes);
         }
         path.removeLast();
     }
 
-
-//    private void logTriples() {
-//        TetradLogger.getInstance().log("info", "\nCollider triples:");
-//
-//        for (Triple triple : colliderTriples) {
-//            TetradLogger.getInstance().log("info", "Collider: " + triple);
-//        }
-//
-//        TetradLogger.getInstance().log("info", "\nNoncollider triples:");
-//
-//        for (Triple triple : noncolliderTriples) {
-//            TetradLogger.getInstance().log("info", "Noncollider: " + triple);
-//        }
-//
-//        TetradLogger.getInstance().log("info", "\nAmbiguous triples (i.e. list of triples for which " +
-//                "\nthere is ambiguous data about whether they are colliders or not):");
-//
-//        for (Triple triple : getAmbiguousTriples()) {
-//            TetradLogger.getInstance().log("info", "Ambiguous: " + triple);
-//        }
-//    }
-//
-////        Original triple orientation procedure.
-//    private void orientUnshieldedTriples(IKnowledge knowledge,
-//                                         IndependenceTest test, int depth) {
-//        TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
-//        colliderTriples = new HashSet<Triple>();
-//        noncolliderTriples = new HashSet<Triple>();
-//        ambiguousTriples = new HashSet<Triple>();
-//        List<Node> nodes = graph.getNodes();
-//        for (Node y : nodes) {
-//            List<Node> adjacentNodes = graph.getAdjacentNodes(y);
-//            if (adjacentNodes.size() < 2) {
-//                continue;
-//            }
-//            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-//            int[] combination;
-//
-//            while ((combination = cg.next()) != null) {
-//                Node x = adjacentNodes.get(combination[0]);
-//                Node z = adjacentNodes.get(combination[1]);
-//
-//                if (this.graph.isAdjacentTo(x, z)) {
-//                    continue;
-//                }
-//                getAllTriples().add(new Triple(x, y, z));
-//                SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType(x, y, z, test, depth, graph, verbose);
-////                SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType2(x, y, z, test, depth, graph);
-//
-//                if (type == SearchGraphUtils.CpcTripleType.COLLIDER) {
-//                    if (colliderAllowed(x, y, z, knowledge)) {
-//                        graph.setEndpoint(x, y, Endpoint.ARROW);
-//                        graph.setEndpoint(z, y, Endpoint.ARROW);
-//
-//                        TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(x, y, z));
-//                    }
-//
-//                    colliderTriples.add(new Triple(x, y, z));
-//                } else if (type == SearchGraphUtils.CpcTripleType.AMBIGUOUS) {
-//                    Triple triple = new Triple(x, y, z);
-//                    ambiguousTriples.add(triple);
-//                    graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
-//                    Edge edge = Edges.undirectedEdge(x, z);
-//                    definitelyNonadjacencies.add(edge);
-//                } else {
-//                    noncolliderTriples.add(new Triple(x, y, z));
-//                }
-//            }
-//        }
-//        TetradLogger.getInstance().log("info", "Finishing Collider Orientation.");
-//    }
-
-//// Population version.
 
     private void orientUnshieldedTriples(IKnowledge knowledge,
                                          IndependenceTest test, int depth) {
@@ -1005,7 +572,6 @@ public final class VcpcFast implements GraphSearch {
                     continue;
                 }
 
-                getAllTriples().add(new Triple(x, y, z));
                 CpcTripleType type = getPopulationTripleType(x, y, z, test, depth, this.graph, this.verbose);
 //                SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType2(x, y, z, test, depth, graph);
 
@@ -1033,109 +599,18 @@ public final class VcpcFast implements GraphSearch {
         TetradLogger.getInstance().log("info", "Finishing Collider Orientation.");
     }
 
-    private void orientUnshieldedTriplesConcurrent(IKnowledge knowledge,
-                                                   IndependenceTest test, int depth) {
-        ExecutorService executor = Executors.newFixedThreadPool(this.NTHREDS);
-
-        TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
-
-        Graph graph = new EdgeListGraph(getGraph());
-
-//        System.out.println("orientUnshieldedTriples 1");
-
-        this.colliderTriples = new HashSet<>();
-        this.noncolliderTriples = new HashSet<>();
-        this.ambiguousTriples = new HashSet<>();
-        List<Node> nodes = graph.getNodes();
-
-        for (Node _y : nodes) {
-            Node y = _y;
-
-            List<Node> adjacentNodes = graph.getAdjacentNodes(y);
-
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
-
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-            int[] combination;
-
-            while ((combination = cg.next()) != null) {
-                Node x = adjacentNodes.get(combination[0]);
-                Node z = adjacentNodes.get(combination[1]);
-
-                if (graph.isAdjacentTo(x, z)) {
-                    continue;
-                }
-
-                Runnable worker = new Runnable() {
-                    @Override
-                    public void run() {
-
-                        getAllTriples().add(new Triple(x, y, z));
-                        SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType(x, y, z, test, depth, getGraph());
-//                        SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType2(x, y, z, test, depth, getGraph());
-//                        SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType4(x, y, z, test, depth, getGraph());
-//
-                        if (type == SearchGraphUtils.CpcTripleType.COLLIDER) {
-                            if (colliderAllowed(x, y, z, knowledge)) {
-                                getGraph().setEndpoint(x, y, Endpoint.ARROW);
-                                getGraph().setEndpoint(z, y, Endpoint.ARROW);
-
-                                TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(x, y, z));
-                            }
-
-                            VcpcFast.this.colliderTriples.add(new Triple(x, y, z));
-                        } else if (type == SearchGraphUtils.CpcTripleType.AMBIGUOUS) {
-                            Triple triple = new Triple(x, y, z);
-                            VcpcFast.this.ambiguousTriples.add(triple);
-                            getGraph().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
-                        } else {
-                            VcpcFast.this.noncolliderTriples.add(new Triple(x, y, z));
-                        }
-                    }
-                };
-
-                executor.execute(worker);
-            }
-        }
-
-        // This will make the executor accept no new threads
-        // and finish all existing threads in the queue
-        executor.shutdown();
-        try {
-            // Wait until all threads are finish
-            executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-            System.out.println("Finished all threads");
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        TetradLogger.getInstance().log("info", "Finishing Collider Orientation.");
-    }
-
-
     public CpcTripleType getPopulationTripleType(Node x, Node y, Node z,
                                                  IndependenceTest test, int depth,
                                                  Graph graph, boolean verbose) {
-//        if ((x.getNode().equals("X5") && z.getNode().equals("X7"))
-//            || (x.getNode().equals("X7") && z.getNode().equals("X5"))) {
-//            System.out.println();
-//        }
 
         // JOE HERE ARE THE FACTS.
-
         setFacts(this.facts);
         System.out.println("NameS" + this.facts.getVariableNames());
-
-
-        IndependenceTest test1 = new IndTestDSep(graph);
 
         int numSepsetsContainingY = 0;
         int numSepsetsNotContainingY = 0;
 
         List<Node> _nodes = graph.getAdjacentNodes(x);
-
 
         _nodes.remove(z);
         TetradLogger.getInstance().log("adjacencies", "Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
@@ -1170,23 +645,6 @@ public final class VcpcFast implements GraphSearch {
                         System.out.println("This is not Indep by facts: " + x + " _||_ " + z + " | " + cond);
                     }
 
-//                    if (!test1.isIndependent(x, z, cond)) {
-//                        if (facts.isIndependent(x, z, cond)) {
-//                            if (cond.contains(y)) {
-//                                numSepsetsContainingY++;
-//                            } else {
-//                                numSepsetsNotContainingY++;
-//                            }
-//                        }
-//                        if (facts.isIndependent(z, x, cond)) {
-//                            if (cond.contains(y)) {
-//                                numSepsetsContainingY++;
-//                            } else {
-//                                numSepsetsNotContainingY++;
-//                            }
-//                        }
-//                    }
-//
                     if (numSepsetsContainingY > 0 && numSepsetsNotContainingY > 0) {
                         return CpcTripleType.AMBIGUOUS;
                     }
@@ -1252,18 +710,6 @@ public final class VcpcFast implements GraphSearch {
                                                IKnowledge knowledge) {
         return knowledge == null || !knowledge.isRequired(to.toString(), from.toString()) &&
                 !knowledge.isForbidden(from.toString(), to.toString());
-    }
-
-    public Map<Edge, List<Node>> getApparentlyNonadjacencies() {
-        return this.apparentlyNonadjacencies;
-    }
-
-    public boolean isDoOrientation() {
-        return this.doOrientation;
-    }
-
-    public void setDoOrientation(boolean doOrientation) {
-        this.doOrientation = doOrientation;
     }
 
     /**

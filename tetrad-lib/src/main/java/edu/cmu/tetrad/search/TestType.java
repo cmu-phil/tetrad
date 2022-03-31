@@ -27,7 +27,6 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * An enumeration of the test types for BuildPureClusters, and Purify.
  */
 public enum TestType implements TetradSerializable {
-    /*POPULATION,*/
 
     // This one will work and does a good job for medium sized models.
     GAUSSIAN_PVALUE,

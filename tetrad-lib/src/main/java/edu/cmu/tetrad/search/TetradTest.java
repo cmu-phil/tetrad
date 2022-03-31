@@ -47,13 +47,9 @@ public interface TetradTest {
 
     double tetradPValue(int i, int j, int k, int q);
 
-    double tetradPValue(int i1, int j1, int k1, int l1, int i2, int j2, int k2, int l2);
-
     boolean oneFactorTest(int a, int b, int c, int d);
 
     boolean oneFactorTest(int a, int b, int c, int d, int e);
-
-    boolean oneFactorTest(int a, int b, int c, int d, int e, int f);
 
     boolean twoFactorTest(int a, int b, int c, int d);
 

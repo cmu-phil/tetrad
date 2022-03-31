@@ -56,7 +56,7 @@ public class TsFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner
     private transient List<PropertyChangeListener> listeners;
     private List<ScoredGraph> topGraphs;
     private int index;
-    private transient TsFges2 fges;
+    private transient TsFges fges;
     private transient Graph externalGraph;
 
     //============================CONSTRUCTORS============================//
@@ -124,7 +124,7 @@ public class TsFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner
 
         if (model instanceof Graph) {
             GraphScore gesScore = new GraphScore((Graph) model);
-            this.fges = new TsFges2(gesScore);
+            this.fges = new TsFges(gesScore);
             this.fges.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
             this.fges.setVerbose(true);
         } else {
@@ -140,24 +140,24 @@ public class TsFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner
 //                    SvrScore gesScore = new SvrScore((DataSet) model);
                     gesScore.setPenaltyDiscount(penaltyDiscount);
                     System.out.println("Score done");
-                    this.fges = new TsFges2(gesScore);
+                    this.fges = new TsFges(gesScore);
                 } else if (dataSet.isDiscrete()) {
                     double samplePrior = getParams().getDouble("samplePrior", 1);
                     double structurePrior = getParams().getDouble("structurePrior", 1);
                     BDeuScore score = new BDeuScore(dataSet);
                     score.setSamplePrior(samplePrior);
                     score.setStructurePrior(structurePrior);
-                    this.fges = new TsFges2(score);
+                    this.fges = new TsFges(score);
                 } else {
                     ConditionalGaussianScore gesScore = new ConditionalGaussianScore(dataSet,
                             penaltyDiscount, 0.0, true);
-                    this.fges = new TsFges2(gesScore);
+                    this.fges = new TsFges(gesScore);
                 }
             } else if (model instanceof ICovarianceMatrix) {
                 SemBicScore gesScore = new SemBicScore((ICovarianceMatrix) model);
                 gesScore.setPenaltyDiscount(penaltyDiscount);
                 gesScore.setPenaltyDiscount(penaltyDiscount);
-                this.fges = new TsFges2(gesScore);
+                this.fges = new TsFges(gesScore);
             } else if (model instanceof DataModelList) {
                 DataModelList list = (DataModelList) model;
 
@@ -179,11 +179,11 @@ public class TsFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner
                     if (params.getBoolean("firstNontriangular", false)) {
                         SemBicScoreImages fgesScore = new SemBicScoreImages(list);
                         fgesScore.setPenaltyDiscount(penalty);
-                        this.fges = new TsFges2(fgesScore);
+                        this.fges = new TsFges(fgesScore);
                     } else {
                         SemBicScoreImages fgesScore = new SemBicScoreImages(list);
                         fgesScore.setPenaltyDiscount(penalty);
-                        this.fges = new TsFges2(fgesScore);
+                        this.fges = new TsFges(fgesScore);
                     }
                 } else if (allDiscrete(list)) {
                     double structurePrior = getParams().getDouble("structurePrior", 1);
@@ -194,9 +194,9 @@ public class TsFgesRunner extends AbstractAlgorithmRunner implements IFgesRunner
                     fgesScore.setStructurePrior(structurePrior);
 
                     if (params.getBoolean("firstNontriangular", false)) {
-                        this.fges = new TsFges2(fgesScore);
+                        this.fges = new TsFges(fgesScore);
                     } else {
-                        this.fges = new TsFges2(fgesScore);
+                        this.fges = new TsFges(fgesScore);
                     }
                 } else {
                     throw new IllegalArgumentException("Data must be either all discrete or all continuous.");

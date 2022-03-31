@@ -24,7 +24,6 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
-import edu.cmu.tetrad.data.Variable;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
@@ -44,8 +43,6 @@ import java.util.Map;
  * @author mattheweasterday
  */
 public class XdslXmlParser {
-
-    private HashMap<String, Variable> namesToVars;
 
     private boolean useDisplayNames;
 
@@ -79,9 +76,8 @@ public class XdslXmlParser {
 
         Map<String, String> displayNames = mapDisplayNames(element1, this.useDisplayNames);
 
-        BayesIm bayesIm = buildIM(element0, displayNames);
-
-        return bayesIm;
+        assert element0 != null;
+        return buildIM(element0, displayNames);
     }
 
     private BayesIm buildIM(Element element0, Map<String, String> displayNames) {
@@ -122,15 +118,16 @@ public class XdslXmlParser {
                     String[] parentNames = list.split(" ");
 
                     for (String name : parentNames) {
+                        Node parent;
+                        Node child;
                         if (displayNames == null) {
-                            edu.cmu.tetrad.graph.Node parent = dag.getNode(name);
-                            edu.cmu.tetrad.graph.Node child = dag.getNode(cpt.getAttribute(0).getValue());
-                            dag.addDirectedEdge(parent, child);
+                            parent = dag.getNode(name);
+                            child = dag.getNode(cpt.getAttribute(0).getValue());
                         } else {
-                            edu.cmu.tetrad.graph.Node parent = dag.getNode(displayNames.get(name));
-                            edu.cmu.tetrad.graph.Node child = dag.getNode(displayNames.get(cpt.getAttribute(0).getValue()));
-                            dag.addDirectedEdge(parent, child);
+                            parent = dag.getNode(displayNames.get(name));
+                            child = dag.getNode(displayNames.get(cpt.getAttribute(0).getValue()));
                         }
+                        dag.addDirectedEdge(parent, child);
                     }
                 }
             }
@@ -248,10 +245,6 @@ public class XdslXmlParser {
         } else {
             return null;
         }
-    }
-
-    public boolean isUseDisplayNames() {
-        return this.useDisplayNames;
     }
 
     public void setUseDisplayNames(boolean useDisplayNames) {

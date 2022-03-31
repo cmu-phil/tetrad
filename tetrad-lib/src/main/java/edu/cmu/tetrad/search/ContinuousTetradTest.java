@@ -241,11 +241,6 @@ public final class ContinuousTetradTest implements TetradTest {
         return this.prob[0];
     }
 
-    public double tetradPValue(int i1, int j1, int k1, int l1, int i2, int j2, int k2, int l2) {
-        evalTetradDifference(i1, j1, k1, l1, i2, j2, k2, l2);
-        return this.prob[0];
-    }
-
 
     /**
      * --------------------------------------------------------------------------
@@ -647,13 +642,6 @@ public final class ContinuousTetradTest implements TetradTest {
         int[] indices = {v1, v2, v3, v4, v5};
         this.oneFactorEst5.init(indices);
         return this.oneFactorEst5.isSignificant();
-    }
-
-    public boolean oneFactorTest(int v1, int v2, int v3, int v4, int v5,
-                                 int v6) {
-        int[] indices = {v1, v2, v3, v4, v5, v6};
-        this.oneFactorEst6.init(indices);
-        return this.oneFactorEst6.isSignificant();
     }
 
     public boolean twoFactorTest(int v1, int v2, int v3, int v4) {

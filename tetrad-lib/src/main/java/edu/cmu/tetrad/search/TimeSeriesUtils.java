@@ -34,7 +34,6 @@ import org.apache.commons.math3.linear.EigenDecomposition;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -61,7 +60,6 @@ public class TimeSeriesUtils {
         }
 
         Regression regression = new RegressionDataset(timeLags);
-//        Regression regression = new RegressionDatasetGeneralized(timeLags);
 
         Matrix residuals = new Matrix(timeLags.getNumRows(), timeSeries.getNumColumns());
 
@@ -69,7 +67,6 @@ public class TimeSeriesUtils {
             Node target = timeLags.getVariable(i);
             RegressionResult result = regression.regress(target, regressors);
             Vector residualsColumn = result.getResiduals();
-//            residuals.viewColumn(i).assign(residualsColumn);
             residuals.assignColumn(i, residualsColumn);
         }
 
@@ -134,105 +131,18 @@ public class TimeSeriesUtils {
         return new BoxDataSet(new DoubleDataBox(residuals.toArray()), timeSeries.getVariables());
     }
 
-    private int[] eliminateMissing(int[] parents, int dataIndex, DataSet dataSet, List<Node> missingVariables) {
-        List<Integer> _parents = new ArrayList<>();
-
-        for (int k : parents) {
-            if (!missingVariables.contains(dataSet.getVariable(k))) {
-                _parents.add(k);
-            }
-        }
-
-        int[] _parents2 = new int[_parents.size()];
-
-        for (int i = 0; i < _parents.size(); i++) {
-            _parents2[i] = _parents.get(i);
-        }
-
-        return _parents2;
-    }
-
-    public static VarResult structuralVar(DataSet timeSeries, int numLags) {
-        DataSet timeLags = TimeSeriesUtils.createLagData(timeSeries, numLags);
-        IKnowledge knowledge = timeLags.getKnowledge().copy();
-
-        for (int i = 0; i <= numLags; i++) {
-            knowledge.setTierForbiddenWithin(i, true);
-        }
-
-        Score score;
-
-        if (timeLags.isDiscrete()) {
-            score = new BDeuScore(timeLags);
-        } else if (timeLags.isContinuous()) {
-            SemBicScore semBicScore = new SemBicScore(new CovarianceMatrix(timeLags));
-            semBicScore.setPenaltyDiscount(2.0);
-            score = semBicScore;
-        } else {
-            throw new IllegalArgumentException("Mixed data set");
-        }
-
-        Fges search = new Fges(score);
-        search.setKnowledge(knowledge);
-        Graph graph = search.search();
-
-        // want to collapse graph here...
-        Graph collapsedVarGraph = new EdgeListGraph(timeSeries.getVariables());
-
-        for (Edge edge : graph.getEdges()) {
-            String node1_before = edge.getNode1().getName();
-            String node2_before = edge.getNode2().getName();
-
-            String node1_after = node1_before.substring(0, node1_before.indexOf("."));
-            String node2_after = node2_before.substring(0, node2_before.indexOf("."));
-
-            Node node1 = collapsedVarGraph.getNode(node1_after);
-            Node node2 = collapsedVarGraph.getNode(node2_after);
-
-            Edge _edge = new Edge(node1, node2, edge.getEndpoint1(), edge.getEndpoint2());
-
-            if (!collapsedVarGraph.containsEdge(_edge)) {
-                collapsedVarGraph.addEdge(_edge);
-            }
-        }
-
-        Matrix residuals = new Matrix(timeLags.getNumRows(), timeSeries.getNumColumns());
-        Regression regression = new RegressionDataset(timeLags);
-
-        for (int i = 0; i < timeSeries.getNumColumns(); i++) {
-            Node target = timeLags.getVariable(i);
-
-            List<Node> regressors = new ArrayList<>();
-
-            // Collect up parents from each lagged variable behind
-            // timelags.getVariable(i).
-            for (int j = 0; j <= 0 /*numLags*/; j++) {
-                Node variable = timeLags.getVariable(i + j * timeSeries.getNumColumns());
-                regressors.addAll(graph.getParents(variable));
-            }
-
-            RegressionResult result = regression.regress(target, regressors);
-            Vector residualsColumn = result.getResiduals();
-//            residuals.viewColumn(i).assign(residualsColumn);
-            residuals.assignColumn(i, residualsColumn);
-        }
-
-        return new VarResult(new BoxDataSet(new DoubleDataBox(residuals.toArray()), timeSeries.getVariables()),
-                collapsedVarGraph);
-    }
-
     public static DataSet createShiftedData(DataSet data, int[] shifts) {
         Matrix data2 = data.getDoubleData();
 
         int min = Integer.MAX_VALUE;
         int max = Integer.MIN_VALUE;
 
-        for (int i1 = 0; i1 < shifts.length; i1++) {
-            if (shifts[i1] < min) {
-                min = shifts[i1];
+        for (int shift : shifts) {
+            if (shift < min) {
+                min = shift;
             }
-            if (shifts[i1] > max) {
-                max = shifts[i1];
+            if (shift > max) {
+                max = shift;
             }
         }
 
@@ -258,76 +168,6 @@ public class TimeSeriesUtils {
         }
 
         return new BoxDataSet(new DoubleDataBox(shiftedData.toArray()), data.getVariables());
-    }
-
-    public static class VarResult {
-
-        private final DataSet residuals;
-        private final Graph collapsedVarGraph;
-
-        public VarResult(DataSet dataSet, Graph collapsedVarGraph) {
-            this.residuals = dataSet;
-            this.collapsedVarGraph = collapsedVarGraph;
-        }
-
-        public DataSet getResiduals() {
-            return this.residuals;
-        }
-
-        public Graph getCollapsedVarGraph() {
-            return this.collapsedVarGraph;
-        }
-    }
-
-    public static double[] getSelfLoopCoefs(DataSet timeSeries) {
-        DataSet timeLags = TimeSeriesUtils.createLagData(timeSeries, 1);
-
-        double[] coefs = new double[timeSeries.getNumColumns()];
-
-        for (int j = 0; j < timeSeries.getNumColumns(); j++) {
-            Node target = timeLags.getVariable(j);
-            Node selfLoop = timeLags.getVariable(j + timeSeries.getNumColumns());
-            List<Node> regressors = Collections.singletonList(selfLoop);
-
-            Regression regression = new RegressionDataset(timeLags);
-            RegressionResult result = regression.regress(target, regressors);
-            coefs[j] = result.getCoef()[1];
-        }
-
-        return coefs;
-    }
-
-    public static double sumOfArCoefficients(DataSet timeSeries, int numLags) {
-        DataSet timeLags = TimeSeriesUtils.createLagData(timeSeries, numLags);
-        List<Node> regressors = new ArrayList<>();
-
-        for (int i = timeSeries.getNumColumns(); i < timeLags.getNumColumns(); i++) {
-            regressors.add(timeLags.getVariable(i));
-        }
-
-        Regression regression = new RegressionDataset(timeLags);
-        Matrix residuals = new Matrix(timeLags.getNumRows(), timeSeries.getNumColumns());
-
-        double sum = 0.0;
-        int n = 0;
-
-        for (int i = 0; i < timeSeries.getNumColumns(); i++) {
-            Node target = timeLags.getVariable(i);
-            RegressionResult result = regression.regress(target, regressors);
-
-            double[] coef = result.getCoef();
-
-            for (int k = 0; k < coef.length; k++) {
-                sum += coef[k] * coef[k];
-                n++;
-            }
-
-            Vector residualsColumn = result.getResiduals();
-//            residuals.viewColumn(i).assign(residualsColumn);
-            residuals.assignColumn(i, residualsColumn);
-        }
-
-        return sum / n;
     }
 
     /**
@@ -401,50 +241,15 @@ public class TimeSeriesUtils {
             }
         }
 
-////        System.out.println("Variable list before the sort = " + newVariables);
-//        Collections.sort(newVariables, new Comparator<Node>() {
-//            @Override
-//            public int compare(Node o1, Node o2) {
-//                String name1 = getNameNoLag(o1);
-//                String name2 = getNameNoLag(o2);
-//
-////                System.out.println("name 1 = " + name1);
-////                System.out.println("name 2 = " + name2);
-//                String prefix1 = getPrefix(name1);
-//                String prefix2 = getPrefix(name2);
-//
-////                System.out.println("prefix 1 = " + prefix1);
-////                System.out.println("prefix 2 = " + prefix2);
-//                int index1 = getIndex(name1);
-//                int index2 = getIndex(name2);
-//
-////                System.out.println("index 1 = " + index1);
-////                System.out.println("index 2 = " + index2);
-//                if (getLag(o1.getName()) == getLag(o2.getName())) {
-//                    if (prefix1.compareTo(prefix2) == 0) {
-//                        return Integer.compare(index1, index2);
-//                    } else {
-//                        return prefix1.compareTo(prefix2);
-//                    }
-//
-//                } else {
-//                    return getLag(o1.getName()) - getLag(o2.getName());
-//                }
-//            }
-//        });
-
-//        System.out.println("Variable list after the sort = " + newVariables);
         for (Node node : newVariables) {
             String varName = node.getName();
             String tmp;
             int lag;
             if (varName.indexOf(':') == -1) {
                 lag = 0;
-//                laglist.add(lag);
             } else {
                 tmp = varName.substring(varName.indexOf(':') + 1);
                 lag = Integer.parseInt(tmp);
-//                laglist.add(lag);
             }
             knowledge.addToTier(numLags - lag, node.getName());
         }
@@ -487,163 +292,6 @@ public class TimeSeriesUtils {
         }
 
         return data;
-
-
-//        List<Node> variables = data.getVariables();
-//        int dataSize = variables.size();
-//        int laggedRows = data.getNumRows() - numLags;
-//        IKnowledge knowledge = new Knowledge2();
-//        Node[][] laggedNodes = new Node[numLags + 1][dataSize];
-//        List<Node> newVariables = new ArrayList<>((numLags + 1) * dataSize + 2); // added 1 to this
-//
-//        for (int lag = 0; lag <= numLags; lag++) {
-//            for (int col = 0; col < dataSize; col++) {
-//                Node node = variables.get(col);
-//                String varName = node.getName();
-//                Node laggedNode;
-//                String name = varName;
-//
-//                if (lag != 0) {
-//                    name = name + ":" + lag;
-//                }
-//
-//                if (node instanceof ContinuousVariable) {
-//                    laggedNode = new ContinuousVariable(name);
-//                } else if (node instanceof DiscreteVariable) {
-//                    DiscreteVariable var = (DiscreteVariable) node;
-//                    laggedNode = new DiscreteVariable(var);
-//                    laggedNode.setName(name);
-//                } else {
-//                    throw new IllegalStateException("Node must be either continuous or discrete");
-//                }
-//                newVariables.add(laggedNode);
-//                laggedNode.setCenter(80 * col + 50, 80 * (numLags - lag) + 50);
-//                laggedNodes[lag][col] = laggedNode;
-////                knowledge.addToTier(numLags - lag + 1, laggedNode.getName());
-//            }
-//        }
-//
-//        String name = "time";
-//        Node indexNode = new ContinuousVariable(name);
-//        indexNode.setName(name);
-//        newVariables.add(indexNode);
-//        indexNode.setCenter(50, 80 * (numLags - 1) + 50);
-//        knowledge.addToTier(0, indexNode.getName());
-//
-//        //        System.out.println("Variable list before the sort = " + variables);
-//        Collections.sort(newVariables, new Comparator<Node>() {
-//            @Override
-//            public int compare(Node o1, Node o2) {
-//                String name1 = getNameNoLag(o1);
-//                String name2 = getNameNoLag(o2);
-//
-////                System.out.println("name 1 = " + name1);
-////                System.out.println("name 2 = " + name2);
-//                String prefix1 = getPrefix(name1);
-//                String prefix2 = getPrefix(name2);
-//
-////                System.out.println("prefix 1 = " + prefix1);
-////                System.out.println("prefix 2 = " + prefix2);
-//                int index1 = getIndex(name1);
-//                int index2 = getIndex(name2);
-//
-////                System.out.println("index 1 = " + index1);
-////                System.out.println("index 2 = " + index2);
-//                if (getLag(o1.getName()) == getLag(o2.getName())) {
-//                    if (prefix1.compareTo(prefix2) == 0) {
-//                        return Integer.compare(index1, index2);
-//                    } else {
-//                        return prefix1.compareTo(prefix2);
-//                    }
-//
-//                } else {
-//                    return getLag(o1.getName()) - getLag(o2.getName());
-//                }
-//            }
-//        });
-//
-////        System.out.println("Variable list after the sort = " + variables);
-//        for (Node node : newVariables) {
-//            String varName = node.getName();
-//            if (varName.equals("time")) {
-//                continue;
-//            }
-//            String tmp;
-//            int lag;
-//            if (varName.indexOf(':') == -1) {
-//                lag = 0;
-////                laglist.add(lag);
-//            } else {
-//                tmp = varName.substring(varName.indexOf(':') + 1, varName.length());
-//                lag = Integer.parseInt(tmp);
-////                laglist.add(lag);
-//            }
-//            knowledge.addToTier(numLags - lag + 1, node.getName());
-//        }
-//
-//        DataSet laggedData = new ColtDataSet(laggedRows, newVariables);
-//        for (int lag = 0; lag <= numLags; lag++) {
-//            for (int col = 0; col < dataSize; col++) {
-//                for (int row = 0; row < laggedRows; row++) {
-//                    Node laggedNode = laggedNodes[lag][col];
-//                    if (laggedNode instanceof ContinuousVariable) {
-//                        double value = data.getDouble(row + numLags - lag, col);
-//                        laggedData.setDouble(row, col + lag * dataSize, value);
-//                    } else {
-//                        int value = data.getInt(row + numLags - lag, col);
-//                        laggedData.setInt(row, col + lag * dataSize, value);
-//                    }
-//                }
-//            }
-//        }
-//
-//        // fill indexNode with for loop over rows
-//        for (int row = 0; row < laggedRows; row++) {
-//            laggedData.setDouble(row, dataSize + numLags * dataSize, row + 1);
-//        }
-//
-//        knowledge.setDefaultToKnowledgeLayout(true);
-//        laggedData.setKnowledge(knowledge);
-//        System.out.println("Knowledge set to : " + knowledge);
-//        return laggedData;
-    }
-
-    /**
-     * Creates dataset of differenced variables from a lagged dataset
-     * Input must have associated knowledge in tiers
-     * Variables must be continuous
-     */
-    public static DataSet createDifferencedData(DataSet data) {
-        IKnowledge knowledge;
-        if (data.getKnowledge().isEmpty()) {
-            throw new IllegalStateException("Need to input a lagged dataset with knowledge tiers");
-        } else {
-            knowledge = data.getKnowledge();
-        }
-        List<Node> variables = data.getVariables();
-        int dataSize = variables.size();
-        int numRows = data.getNumRows();
-        // rename variables?
-
-        int numTiers = knowledge.getNumTiers();
-        int numVars = dataSize / numTiers;
-
-        List<Node> nodes = variables.subList(0, numVars);
-        DataSet differencedData = new BoxDataSet(new VerticalDoubleDataBox(numRows, nodes.size()), nodes);
-//        for (int tier = 1; tier < numTiers; tier++) {
-        final int tier = 1;
-        for (int col = 0; col < numVars; col++) {
-            if (!(variables.get(col) instanceof ContinuousVariable)) {
-                throw new IllegalStateException("All variables must be continuous");
-            }
-            for (int row = 0; row < numRows; row++) {
-                double value = data.getDouble(row, (tier - 1) * numVars + col);
-                double lagvalue = data.getDouble(row, tier * numVars + col);
-
-                differencedData.setDouble(row, col, value - lagvalue);
-            }
-        }
-        return differencedData;
     }
 
     public static TimeLagGraph graphToLagGraph(Graph _graph, int numLags) {
@@ -670,8 +318,6 @@ public class TimeSeriesUtils {
 
             Node from = edge.getNode1();
             Node to = edge.getNode2();
-//            System.out.println("From node = " + from.getName());
-//            System.out.println("To node = " + to.getName());
             Node _from = graph.getNode(from.getName(), 0);
             Node _to = graph.getNode(to.getName(), 0);
             Edge edge1 = new Edge(_from, _to, Endpoint.TAIL, Endpoint.ARROW);
@@ -712,20 +358,6 @@ public class TimeSeriesUtils {
     }
 
     public static String getPrefix(String s) {
-//        int y = 0;
-//        for (int i = s.length() - 1; i >= 0; i--) {
-//            try {
-//                y = Integer.parseInt(s.substring(i));
-//            } catch (NumberFormatException e) {
-//                return s.substring(0, y);
-//            }
-//        }
-//
-//        throw new IllegalArgumentException("Not character prefix.");
-
-//        if(s.indexOf(':')== -1) return s;
-//        String tmp = s.substring(0,s.indexOf(':')-1);
-//        return tmp;
         return s.substring(0, 1);
     }
 
@@ -750,8 +382,6 @@ public class TimeSeriesUtils {
     }
 
     public static IKnowledge getKnowledge(Graph graph) {
-//        System.out.println("Entering getKnowledge ... ");
-        int numLags = 1; // need to fix this!
         List<Node> variables = graph.getNodes();
         List<Integer> laglist = new ArrayList<>();
         IKnowledge knowledge = new Knowledge2();
@@ -761,69 +391,54 @@ public class TimeSeriesUtils {
             String tmp;
             if (varName.indexOf(':') == -1) {
                 lag = 0;
-                laglist.add(lag);
             } else {
                 tmp = varName.substring(varName.indexOf(':') + 1);
                 lag = Integer.parseInt(tmp);
-                laglist.add(lag);
             }
+            laglist.add(lag);
         }
-        numLags = Collections.max(laglist);
 
-//        System.out.println("Variable list before the sort = " + variables);
-        Collections.sort(variables, new Comparator<Node>() {
-            @Override
-            public int compare(Node o1, Node o2) {
-                String name1 = TimeSeriesUtils.getNameNoLag(o1);
-                String name2 = TimeSeriesUtils.getNameNoLag(o2);
+        int numLags = Collections.max(laglist);
 
-//                System.out.println("name 1 = " + name1);
-//                System.out.println("name 2 = " + name2);
-                String prefix1 = TimeSeriesUtils.getPrefix(name1);
-                String prefix2 = TimeSeriesUtils.getPrefix(name2);
+        variables.sort((o1, o2) -> {
+            String name1 = TimeSeriesUtils.getNameNoLag(o1);
+            String name2 = TimeSeriesUtils.getNameNoLag(o2);
+            String prefix1 = TimeSeriesUtils.getPrefix(name1);
+            String prefix2 = TimeSeriesUtils.getPrefix(name2);
+            int index1 = TimeSeriesUtils.getIndex(name1);
+            int index2 = TimeSeriesUtils.getIndex(name2);
 
-//                System.out.println("prefix 1 = " + prefix1);
-//                System.out.println("prefix 2 = " + prefix2);
-                int index1 = TimeSeriesUtils.getIndex(name1);
-                int index2 = TimeSeriesUtils.getIndex(name2);
-
-//                System.out.println("index 1 = " + index1);
-//                System.out.println("index 2 = " + index2);
-                if (TimeSeriesUtils.getLag(o1.getName()) == TimeSeriesUtils.getLag(o2.getName())) {
-                    if (prefix1.compareTo(prefix2) == 0) {
-                        return Integer.compare(index1, index2);
-                    } else {
-                        return prefix1.compareTo(prefix2);
-                    }
+            if (TimeSeriesUtils.getLag(o1.getName()) == TimeSeriesUtils.getLag(o2.getName())) {
+                if (prefix1.compareTo(prefix2) == 0) {
+                    return Integer.compare(index1, index2);
                 } else {
-                    return TimeSeriesUtils.getLag(o1.getName()) - TimeSeriesUtils.getLag(o2.getName());
+                    return prefix1.compareTo(prefix2);
                 }
+            } else {
+                return TimeSeriesUtils.getLag(o1.getName()) - TimeSeriesUtils.getLag(o2.getName());
             }
         });
 
-//        System.out.println("Variable list after the sort = " + variables);
         for (Node node : variables) {
             String varName = node.getName();
             String tmp;
             if (varName.indexOf(':') == -1) {
                 lag = 0;
-//                laglist.add(lag);
             } else {
                 tmp = varName.substring(varName.indexOf(':') + 1);
                 lag = Integer.parseInt(tmp);
-//                laglist.add(lag);
             }
+
             knowledge.addToTier(numLags - lag, node.getName());
         }
 
-        //System.out.println("Knowledge in graph = " + knowledge);
         return knowledge;
     }
 
     public static boolean allEigenvaluesAreSmallerThanOneInModulus(Matrix mat) {
-
         double[] realEigenvalues = new double[0];
         double[] imagEigenvalues = new double[0];
+
         try {
             EigenDecomposition dec = new EigenDecomposition(new BlockRealMatrix(mat.toArray()));
             realEigenvalues = dec.getRealEigenvalues();
@@ -844,5 +459,4 @@ public class TimeSeriesUtils {
         }
         return true;
     }
-
 }
