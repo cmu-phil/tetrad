@@ -260,11 +260,6 @@ public final class SvarGFci implements GraphSearch {
         return this.graph;
     }
 
-    @Override
-    public long getElapsedTime() {
-        return this.elapsedTime;
-    }
-
     private void setScore() {
         this.sampleSize = this.independenceTest.getSampleSize();
         double penaltyDiscount = getPenaltyDiscount();

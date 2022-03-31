@@ -72,15 +72,7 @@ public class PcGesSearchEditor extends AbstractSearchEditor
         super(runner, "Result forbid_latent_common_causes");
     }
 
-    public PcGesSearchEditor(PcStableMaxRunner runner) {
-        super(runner, "Result forbid_latent_common_causes");
-    }
-
     public PcGesSearchEditor(PcStableRunner runner) {
-        super(runner, "Result forbid_latent_common_causes");
-    }
-
-    public PcGesSearchEditor(PcCPDAGRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }
 

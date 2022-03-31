@@ -54,12 +54,7 @@ public class PermutationMatrixPair {
     }
 
     public String toString() {
-        StringBuilder buf = new StringBuilder();
-
-        buf.append("Permutation: " + this.permutation);
-        buf.append("matrix W : " + this.matrixW);
-
-        return buf.toString();
+        return "Permutation: " + this.permutation + "matrix W : " + this.matrixW;
     }
 }
 

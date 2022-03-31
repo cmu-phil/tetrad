@@ -1079,7 +1079,7 @@ public final class Vcpc implements GraphSearch {
                     public void run() {
 
                         getAllTriples().add(new Triple(x, y, z));
-                        SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType(x, y, z, test, depth, getGraph(), Vcpc.this.verbose);
+                        SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType(x, y, z, test, depth, getGraph());
 //                        SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType2(x, y, z, test, depth, getGraph());
 //                        SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType4(x, y, z, test, depth, getGraph());
 //

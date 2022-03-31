@@ -36,8 +36,7 @@ public class SepsetsConservative implements SepsetProducer {
     private final Graph graph;
     private final IndependenceTest independenceTest;
     private final SepsetMap extraSepsets;
-    private int depth = 3;
-    private boolean verbose;
+    private int depth;
 
     public SepsetsConservative(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth) {
         this.graph = graph;
@@ -209,7 +208,6 @@ public class SepsetsConservative implements SepsetProducer {
 
     @Override
     public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
     }
 
     public IndependenceTest getIndependenceTest() {

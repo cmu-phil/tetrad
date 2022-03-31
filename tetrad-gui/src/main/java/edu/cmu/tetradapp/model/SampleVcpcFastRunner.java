@@ -26,7 +26,6 @@ import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -43,19 +42,11 @@ import java.util.Set;
 public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
         implements IndTestProducer {
     static final long serialVersionUID = 23L;
-    private IndependenceFactsModel independenceFactsModel;
-    private Graph trueGraph;
-//    private Vcpc vcpc = null;
-
-    private SemPm semPm;
 
     private SemIm semIm;
-
-
     private Set<Edge> sfVcpcAdjacent;
     private Set<Edge> sfVcpcApparent;
     private Set<Edge> sfVcpcDefinite;
-    private List<Node> sfVcpcNodes;
 
     //============================CONSTRUCTORS============================//
 
@@ -113,12 +104,6 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-    public SampleVcpcFastRunner(GraphSource graphWrapper, Parameters params, IndependenceFactsModel model) {
-        super(graphWrapper.getGraph(), params);
-        this.independenceFactsModel = model;
-    }
-
-
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
@@ -140,16 +125,6 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
 
     public SampleVcpcFastRunner(SemGraphWrapper dagWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dagWrapper.getGraph(), params, knowledgeBoxModel);
-    }
-
-    public SampleVcpcFastRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params) {
-        super(dataWrapper, params, null);
-        this.trueGraph = graphWrapper.getGraph();
-    }
-
-    public SampleVcpcFastRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
-        super(dataWrapper, params, knowledgeBoxModel);
-        this.trueGraph = graphWrapper.getGraph();
     }
 
     public SampleVcpcFastRunner(IndependenceFactsModel model, Parameters params) {
@@ -175,32 +150,14 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
 
     public void execute() {
         IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
-        Parameters searchParams = getParams();
-
-        Parameters params =
-                searchParams;
-
-
+        Parameters params = getParams();
         SampleVcpcFast sfvcpc = new SampleVcpcFast(getIndependenceTest());
 
         sfvcpc.setKnowledge(knowledge);
         sfvcpc.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
         sfvcpc.setDepth(params.getInt("depth", -1));
-        if (this.independenceFactsModel != null) {
-            sfvcpc.setFacts(this.independenceFactsModel.getFacts());
-        }
 
-//        vcpc.setSemPm(semPm);
-//
-//        if (semPm != null) {
-//            vcpc.setSemPm(getSemPm());
-//        }
         sfvcpc.setSemIm(this.semIm);
-
-//        if (semIm != null) {
-//            vcpc.setSemIm(getEstIm());
-//        }
-
         Graph graph = sfvcpc.search();
 
         if (getSourceGraph() != null) {
@@ -237,8 +194,6 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
      */
     public List<String> getTriplesClassificationTypes() {
         List<String> names = new ArrayList<>();
-//        names.add("ColliderDiscovery");
-//        names.add("Noncolliders");
         names.add("Ambiguous Triples");
         return names;
     }
@@ -249,8 +204,6 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
     public List<List<Triple>> getTriplesLists(Node node) {
         List<List<Triple>> triplesList = new ArrayList<>();
         Graph graph = getGraph();
-//        triplesList.add(DataGraphUtils.getCollidersFromGraph(node, graph));
-//        triplesList.add(DataGraphUtils.getNoncollidersFromGraph(node, graph));
         triplesList.add(GraphUtils.getAmbiguousTriplesFromGraph(node, graph));
         return triplesList;
     }
@@ -287,14 +240,11 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
         return this.semIm;
     }
 
-    public SemPm getSemPm() {
-        return this.semPm;
-    }
     //========================== Private Methods ===============================//
 
     private boolean isAggressivelyPreventCycles() {
         Parameters params = getParams();
-        if (params instanceof Parameters) {
+        if (params != null) {
             return params.getBoolean("aggressivelyPreventCycles", false);
         }
         return false;
@@ -304,12 +254,8 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
         this.sfVcpcAdjacent = sfvcpc.getAdjacencies();
         this.sfVcpcApparent = sfvcpc.getApparentNonadjacencies();
         this.sfVcpcDefinite = sfvcpc.getDefiniteNonadjacencies();
-        this.sfVcpcNodes = getGraph().getNodes();
     }
 
-//    public Vcpc getVcpc() {
-//        return vcpc;
-//    }
 }
 
 

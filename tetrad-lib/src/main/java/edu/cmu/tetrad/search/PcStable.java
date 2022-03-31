@@ -84,11 +84,6 @@ public class PcStable implements GraphSearch {
     private final TetradLogger logger = TetradLogger.getInstance();
 
     /**
-     * The initial graph for the Fast Adjacency Search, or null if there is none.
-     */
-    private Graph externalGraph;
-
-    /**
      * Prints independencies info to out.
      */
     private boolean verbose;
@@ -270,10 +265,6 @@ public class PcStable implements GraphSearch {
 
     public List<Node> getNodes() {
         return this.graph.getNodes();
-    }
-
-    public void setExternalGraph(Graph externalGraph) {
-        this.externalGraph = externalGraph;
     }
 
     public void setVerbose(boolean verbose) {

@@ -131,11 +131,7 @@ public class SemBicScore implements Score {
             Matrix bStar = SemBicScore.bStar(b);
             return (bStar.transpose().times(cov).times(bStar).get(0, 0));
         } catch (SingularMatrixException e) {
-//            List<Node> variables = covariances.getVariables();
-//            List<Node> p = new ArrayList<>();
-//            for (int _p : parents) p.add(variables.get(_p));
-            throw new RuntimeException("Singularity");// + variables.get(i) + " | " + p);
-//            return NEGATIVE_INFINITY;
+            throw new RuntimeException("Singularity");
         }
     }
 
@@ -383,10 +379,6 @@ public class SemBicScore implements Score {
 
         this.dataModel = covariances;
 
-//        double n = covariances.getSampleSize();
-//        double ess = DataUtils.getEss(covariances);
-//
-//        System.out.println("n = " + n + " ess = " + ess);
     }
 
     private static int[] append(int[] z, int x) {

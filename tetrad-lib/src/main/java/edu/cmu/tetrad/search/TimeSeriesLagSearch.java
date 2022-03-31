@@ -359,7 +359,7 @@ public final class TimeSeriesLagSearch implements GraphSearch {
 
 //                System.out.println("orientUnshieldedTriples 4");
 
-                SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType(x, y, z, test, depth, graph, false);
+                SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType(x, y, z, test, depth, graph);
 
 //                System.out.println("orientUnshieldedTriples 5");
 

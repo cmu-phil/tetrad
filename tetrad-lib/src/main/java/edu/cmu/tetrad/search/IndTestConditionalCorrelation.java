@@ -41,7 +41,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public final class IndTestConditionalCorrelation implements IndependenceTest, ScoreForFact {
+public final class IndTestConditionalCorrelation implements IndependenceTest {
 
     /**
      * The instance of CCI that is wrapped.
@@ -242,11 +242,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
     @Override
     public double getScore() {
         return this.score;
-    }
-
-    @Override
-    public double getScoreForFact(IndependenceFact fact) {
-        return this.cci.isIndependent(fact.getX(), fact.getY(), fact.getZ());
     }
 
     /**

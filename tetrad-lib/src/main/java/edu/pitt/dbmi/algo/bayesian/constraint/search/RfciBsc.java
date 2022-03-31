@@ -671,11 +671,6 @@ public class RfciBsc implements GraphSearch {
         return lnQ;
     }
 
-    @Override
-    public long getElapsedTime() {
-        return (this.stop - this.start);
-    }
-
     public void setNumRandomizedSearchModels(int numRandomizedSearchModels) {
         this.numRandomizedSearchModels = numRandomizedSearchModels;
     }

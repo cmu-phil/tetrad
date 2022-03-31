@@ -9,7 +9,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.IndTestScore;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.PcStableMax;
-import edu.cmu.tetrad.search.SemBicScoreImages3;
+import edu.cmu.tetrad.search.SemBicScoreImages;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -38,13 +38,13 @@ public class ImagesPcStableMax implements MultiDataSetAlgorithm, HasKnowledge {
     @Override
     public Graph search(List<DataModel> dataModels, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            List<DataSet> dataSets = new ArrayList<>();
+            List<DataModel> dataSets = new ArrayList<>();
 
             for (DataModel dataModel : dataModels) {
                 dataSets.add((DataSet) dataModel);
             }
 
-            SemBicScoreImages3 score = new SemBicScoreImages3(dataSets);
+            SemBicScoreImages score = new SemBicScoreImages(dataSets);
             score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
             IndependenceTest test = new IndTestScore(score);
             PcStableMax search = new PcStableMax(test);
@@ -74,7 +74,6 @@ public class ImagesPcStableMax implements MultiDataSetAlgorithm, HasKnowledge {
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
                 case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
                     break;
                 case 2:
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;
@@ -108,7 +107,6 @@ public class ImagesPcStableMax implements MultiDataSetAlgorithm, HasKnowledge {
                     edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                     break;
                 case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
                     break;
                 case 2:
                     edgeEnsemble = ResamplingEdgeEnsemble.Majority;

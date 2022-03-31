@@ -80,11 +80,6 @@ public final class Rfci implements GraphSearch {
     private boolean completeRuleSetUsed;
 
     /**
-     * True iff the possible dsep search is done.
-     */
-    private final boolean possibleDsepSearchDone = true;
-
-    /**
      * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
      */
     private int maxPathLength = -1;
@@ -108,8 +103,6 @@ public final class Rfci implements GraphSearch {
      * True iff verbose output should be printed.
      */
     private boolean verbose;
-    private Graph truePag;
-
 
     //============================CONSTRUCTORS============================//
 
@@ -117,7 +110,7 @@ public final class Rfci implements GraphSearch {
      * Constructs a new FCI search for the given independence test and background knowledge.
      */
     public Rfci(IndependenceTest independenceTest) {
-        if (independenceTest == null || this.knowledge == null) {
+        if (independenceTest == null) {
             throw new NullPointerException();
         }
 
@@ -130,7 +123,7 @@ public final class Rfci implements GraphSearch {
      * search over.
      */
     public Rfci(IndependenceTest independenceTest, List<Node> searchVars) {
-        if (independenceTest == null || this.knowledge == null) {
+        if (independenceTest == null) {
             throw new NullPointerException();
         }
 
@@ -257,13 +250,6 @@ public final class Rfci implements GraphSearch {
 
     private List<Node> getSepset(Node i, Node k) {
         return this.sepsets.get(i, k);
-    }
-
-
-    private void printWrongColliderMessage(Node a, Node b, Node c, String location) {
-        if (this.truePag != null && this.graph.isDefCollider(a, b, c) && !this.truePag.isDefCollider(a, b, c)) {
-            System.out.println(location + ": Orienting collider by mistake: " + a + "*->" + b + "<-*" + c);
-        }
     }
 
     ////////////////////////////////////////////
@@ -411,8 +397,6 @@ public final class Rfci implements GraphSearch {
 
                 this.graph.setEndpoint(i, j, Endpoint.ARROW);
                 this.graph.setEndpoint(k, j, Endpoint.ARROW);
-
-                printWrongColliderMessage(i, j, k, "R0_RFCI");
             }
         }
 
@@ -456,17 +440,6 @@ public final class Rfci implements GraphSearch {
     // and remove the edge <x, y> if background knowledge allows
     /////////////////////////////////////////////////////////////////////////////
     private void setMinSepSet(List<Node> sepSet, Node x, Node y) {
-        // It is assumed that BK has been considered before calling this method
-        // (for example, setting independent1 and independent2 in ruleR0_RFCI)
-        /*
-        // background knowledge requires this edge
-		if (knowledge.noEdgeRequired(x.getNode(), y.getNode()))
-		{
-			return;
-		}
-		 */
-
-
         List<Node> empty = Collections.emptyList();
         boolean indep;
 
@@ -489,11 +462,7 @@ public final class Rfci implements GraphSearch {
             while ((combination = cg.next()) != null) {
                 List<Node> condSet = GraphUtils.asList(combination, sepSet);
 
-                try {
-                    indep = this.independenceTest.isIndependent(x, y, condSet);
-                } catch (Exception e) {
-                    indep = false;
-                }
+                indep = this.independenceTest.isIndependent(x, y, condSet);
 
                 if (indep) {
                     getSepsets().set(x, y, condSet);

@@ -102,7 +102,7 @@ public class PossibleDConnectingPath {
         Set<Node> conditions = new HashSet<>(z);
         Set<Node> closure = PossibleDConnectingPath.getConditioningClosure(pag, z);
         Set<List<Node>> paths = new HashSet<>();
-        PossibleDConnectingPath.findPaths(pag, paths, null, x, y, conditions, closure, new LinkedList<Node>());
+        PossibleDConnectingPath.findPaths(pag, paths, null, x, y, conditions, closure, new LinkedList<>());
         for (List<Node> path : paths) {
             connectingPaths.add(new PossibleDConnectingPath(pag, conditions, path));
         }
@@ -129,7 +129,7 @@ public class PossibleDConnectingPath {
         Set<Node> conditions = new HashSet<>(z);
         Set<Node> closure = PossibleDConnectingPath.getConditioningClosure(pag, z);
         Set<List<Node>> paths = new HashSet<>();
-        PossibleDConnectingPath.findPathsOfLength(pag, paths, null, x, y, conditions, closure, new LinkedList<Node>(), length);
+        PossibleDConnectingPath.findPathsOfLength(pag, paths, null, x, y, conditions, closure, new LinkedList<>(), length);
         for (List<Node> path : paths) {
             connectingPaths.add(new PossibleDConnectingPath(pag, conditions, path));
         }

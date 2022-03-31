@@ -245,11 +245,6 @@ public final class GraspFci implements GraphSearch {
         return nodes.size() == 4;
     }
 
-    @Override
-    public long getElapsedTime() {
-        return 0;
-    }
-
     public IKnowledge getKnowledge() {
         return this.knowledge;
     }

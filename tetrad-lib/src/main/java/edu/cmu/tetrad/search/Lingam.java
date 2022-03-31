@@ -155,23 +155,6 @@ public class Lingam {
         return graph;
     }
 
-//    // Inverse permutation, restores original order.
-//    private int[] inverse(int[] k) {
-//        int[] ki = new int[k.length];
-//
-//        for (int i = 0; i < ki.length; i++) {
-//            ki[k[i]] = i;
-//        }
-//
-////        int[] kj = new int[k.length];
-////
-////        for (int i = 0; i < k.length; i++) {
-////            kj[i] = ki[k[i]];
-////        }
-//
-//        return ki;
-//    }
-
     //================================PUBLIC METHODS========================//
 
     public void setPenaltyDiscount(double penaltyDiscount) {

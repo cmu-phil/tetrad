@@ -24,13 +24,14 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.TetradSerializable;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Stores a graph with a score.
  *
  * @author Joseph Ramsey
  */
-public class ScoredGraph implements Comparable, TetradSerializable {
+public class ScoredGraph implements Comparable<ScoredGraph>, TetradSerializable {
     static final long serialVersionUID = 23L;
     private final Graph graph;
     private final Double score;
@@ -56,17 +57,15 @@ public class ScoredGraph implements Comparable, TetradSerializable {
         return this.score.hashCode();
     }
 
-    public boolean equals(Object o) {
-        ScoredGraph _scoredGraph = (ScoredGraph) o;
-
-        if (!this.score.equals(_scoredGraph.getScore())) {
+    public boolean equals(ScoredGraph o) {
+        if (!this.score.equals(((ScoredGraph) o).getScore())) {
             return false;
         }
 
-        return this.graph.equals(_scoredGraph.getGraph());
+        return this.graph.equals(((ScoredGraph) o).getGraph());
     }
 
-    public int compareTo(Object o) {
+    public int compareTo(@NotNull ScoredGraph o) {
         Double thisScore = getScore();
         Double otherScore = ((ScoredGraph) o).getScore();
         return thisScore.compareTo(otherScore);

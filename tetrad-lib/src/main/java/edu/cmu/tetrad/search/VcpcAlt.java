@@ -831,7 +831,7 @@ public final class VcpcAlt implements GraphSearch {
                 }
 
                 getAllTriples().add(new Triple(x, y, z));
-                SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType(x, y, z, test, depth, graph, verbose);
+                SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType(x, y, z, test, depth, graph);
 //                SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType2(x, y, z, test, depth, graph);
 
                 if (type == SearchGraphUtils.CpcTripleType.COLLIDER) {
@@ -898,7 +898,7 @@ public final class VcpcAlt implements GraphSearch {
                     public void run() {
 
                         VcpcAlt.this.getAllTriples().add(new Triple(x, y, z));
-                        SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType(x, y, z, test, depth, VcpcAlt.this.getGraph(), verbose);
+                        SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType(x, y, z, test, depth, VcpcAlt.this.getGraph());
 //                        SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType2(x, y, z, test, depth, getGraph());
 //                        SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType4(x, y, z, test, depth, getGraph());
 //

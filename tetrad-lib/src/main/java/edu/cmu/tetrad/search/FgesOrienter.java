@@ -105,11 +105,6 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     private int depth = -1;
 
     /**
-     * A bound on cycle length.
-     */
-    private int cycleBound = -1;
-
-    /**
      * The score for discrete searches.
      */
     private LocalDiscreteScore discreteScore;
@@ -206,17 +201,6 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
         }
 
         this.out.println("GES constructor done");
-    }
-
-    /**
-     * Continuous case--where a covariance matrix is already available.
-     */
-    public FgesOrienter(ICovarianceMatrix covMatrix) {
-        this.out.println("GES(orient) constructor");
-
-        setCovMatrix(covMatrix);
-
-        this.out.println("GES(orient) constructor done");
     }
 
     // This will "orient" graph
@@ -390,17 +374,6 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
      */
     public int getnumCPDAGsToStore() {
         return this.numCPDAGsToStore;
-    }
-
-    /**
-     * Sets the number of CPDAGs to store. This should be set to zero for fast search.
-     */
-    public void setnumCPDAGsToStore(int numCPDAGsToStore) {
-        if (numCPDAGsToStore < 0) {
-            throw new IllegalArgumentException("# graphs to store must at least 0: " + numCPDAGsToStore);
-        }
-
-        this.numCPDAGsToStore = numCPDAGsToStore;
     }
 
     /**
@@ -1229,8 +1202,8 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
         // Note s U NaYX must be a clique, but this has already been checked. Nevertheless, at this
         // point it must be verified that all nodes in s U NaYX are neighbors of Y, since some of
         // the edges g---Y may have been oriented in the interim.
-        return allNeighbors(y, union, graph) && !existsUnblockedSemiDirectedPath(y, x, union, graph, this.cycleBound);
-
+        int cycleBound = -1;
+        return allNeighbors(y, union, graph) && !existsUnblockedSemiDirectedPath(y, x, union, graph, cycleBound);
     }
 
     // Returns true if all of the members of 'union' are neighbors of y.
@@ -1447,7 +1420,6 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     // Runs Meek rules on just the changed nodes.
     private Set<Node> meekOrientRestricted(Graph graph, List<Node> nodes, IKnowledge knowledge) {
         MeekRulesRestricted rules = new MeekRulesRestricted();
-        rules.setOrientInPlace(false);
         rules.setKnowledge(knowledge);
         rules.orientImplied(graph, new HashSet<>(nodes));
         return rules.getVisitedNodes();

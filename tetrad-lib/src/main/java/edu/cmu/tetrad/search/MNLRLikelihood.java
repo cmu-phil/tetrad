@@ -245,13 +245,7 @@ public class MNLRLikelihood {
             }
         }
 
-//        int p = continuous_parents.size();
-
         List<List<Integer>> cells = this.adTree.getCellLeaves(discrete_parents);
-        //List<List<Integer>> cells = partition(discrete_parents, 0).cells;
-
-//        int[] continuousCols = new int[p];
-//        for (int j = 0; j < p; j++) continuousCols[j] = nodesHash.get(continuous_parents.get(j));
 
         for (List<Integer> cell : cells) {
             int r = cell.size();

@@ -62,38 +62,19 @@ public class MbClassify implements DiscreteClassifier {
 
     //============================CONSTRUCTOR===========================//
 
-    /**
-     * Constructs a new MbClassify, passing parameters in.
-     *
-     * @param train      The training data. Should be discrete.
-     * @param test       The test data. Should be discrete and should contain all of the relevant variables from the
-     *                   training data.
-     * @param target     The name of the target variable. Should be in the trainin data.
-     * @param alpha      The significance level for MBFS.
-     * @param depth      The depth for MBFS.
-     * @param prior      The symmetric alpha for the Dirichlet prior for Dirichlet estimation.
-     * @param maxMissing The maximum number of missing values allowed. Cases with more than this number of missing
-     *                   values among the variables in the DAG found by MBFS will be skipped.
-     */
-    public MbClassify(DataSet train, DataSet test,
-                      String target, double alpha, int depth, double prior, int maxMissing) {
-        setup(train, test, target, alpha, depth, prior, maxMissing);
-    }
-
     public MbClassify(String trainPath, String testPath, String targetString,
                       String alphaString, String depthString, String priorString, String maxMissingString) {
         try {
-            StringBuilder buf = new StringBuilder();
-            buf.append("MbClassify ");
-            buf.append(trainPath).append(" ");
-            buf.append(testPath).append(" ");
-            buf.append(targetString).append(" ");
-            buf.append(alphaString).append(" ");
-            buf.append(depthString).append(" ");
-            buf.append(priorString).append(" ");
-            buf.append(maxMissingString).append(" ");
+            String s = "MbClassify " +
+                    trainPath + " " +
+                    testPath + " " +
+                    targetString + " " +
+                    alphaString + " " +
+                    depthString + " " +
+                    priorString + " " +
+                    maxMissingString + " ";
 
-            TetradLogger.getInstance().log("info", buf.toString());
+            TetradLogger.getInstance().log("info", s);
 
             DataSet train = DataUtils.loadContinuousData(new File(trainPath), "//", '\"',
                     "*", true, Delimiter.TAB);
@@ -153,8 +134,6 @@ public class MbClassify implements DiscreteClassifier {
 
         Mbfs search = new Mbfs(indTest, this.depth);
         search.setDepth(this.depth);
-//        Hiton search = new Hiton(indTest, depth);
-//        Mmmb search = new Mmmb(indTest, depth);
         List<Node> mbPlusTarget = search.findMb(this.target);
         mbPlusTarget.add(this.train.getVariable(this.target));
 
@@ -163,11 +142,7 @@ public class MbClassify implements DiscreteClassifier {
         System.out.println("subset vars = " + subset.getVariables());
 
         Pc cpdagSearch = new Pc(new IndTestChiSquare(subset, 0.05));
-//        cpdagSearch.setMaxIndegree(depth);
         Graph mbCPDAG = cpdagSearch.search();
-
-//        MbFanSearch search = new MbFanSearch(indTest, depth);
-//        Graph mbCPDAG = search.search(target);
 
         TetradLogger.getInstance().log("details", "CPDAG = " + mbCPDAG);
         MbUtils.trimToMbNodes(mbCPDAG, this.train.getVariable(this.target), true);
@@ -198,7 +173,7 @@ public class MbClassify implements DiscreteClassifier {
 
         //To parameterize the Bayes net we need the number of values
         //of each variable.
-        List varsTrain = trainDataSubset.getVariables();
+        List<Node> varsTrain = trainDataSubset.getVariables();
 
         for (int i1 = 0; i1 < varsTrain.size(); i1++) {
             DiscreteVariable trainingVar = (DiscreteVariable) varsTrain.get(i1);
@@ -322,10 +297,6 @@ public class MbClassify implements DiscreteClassifier {
         for (int k = 0; k < numCases; k++) {
             int estimatedCategory = estimatedCategories[k];
             int observedValue = testSubset.getInt(k, targetIndex);
-
-//            if (observedValue < 0) {
-//                continue;
-//            }
 
             if (estimatedCategory < 0) {
                 continue;

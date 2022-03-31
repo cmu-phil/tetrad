@@ -116,11 +116,6 @@ public class WFges implements GraphSearch {
         return out;
     }
 
-    @Override
-    public long getElapsedTime() {
-        return 0;
-    }
-
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
     }

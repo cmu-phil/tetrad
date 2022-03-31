@@ -24,11 +24,9 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Clusters;
 import edu.cmu.tetrad.graph.*;
 
-import java.rmi.MarshalledObject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Holds some utility methods for Purify, Build Clusters, and Mimbuild.
@@ -58,8 +56,8 @@ public final class MimUtils {
             List<Node> cluster = new ArrayList<>();
             List<String> cluster1 = clusters.getCluster(i);
 
-            for (int j = 0; j < cluster1.size(); j++) {
-                cluster.add(clusterGraph.getNode(cluster1.get(j)));
+            for (String s : cluster1) {
+                cluster.add(clusterGraph.getNode(s));
             }
 
             _clusters.add(cluster);
@@ -101,42 +99,6 @@ public final class MimUtils {
         }
 
         return clusters;
-    }
-
-    /**
-     * @throws Exception if the graph cannot be cloned properly due to a serialization problem.
-     */
-    public static Graph extractStructureGraph(Graph clusterGraph)
-            throws Exception {
-        Set<Edge> edges = clusterGraph.getEdges();
-        Graph structureGraph = new EdgeListGraph();
-
-        for (Edge edge : edges) {
-            Node node1 = edge.getNode1();
-            Node node2 = edge.getNode2();
-
-            if (node1.getNodeType() == NodeType.LATENT) {
-                if (!structureGraph.containsNode(node1)) {
-                    structureGraph.addNode(node1);
-                }
-            }
-
-            if (node2.getNodeType() == NodeType.LATENT) {
-                if (!structureGraph.containsNode(node2)) {
-                    structureGraph.addNode(node2);
-                }
-            }
-
-            if (node1.getNodeType() == NodeType.LATENT &&
-                    node2.getNodeType() == NodeType.LATENT) {
-                structureGraph.addEdge(edge);
-            }
-        }
-
-        Graph clone = (Graph) new MarshalledObject(structureGraph).get();
-        GraphUtils.circleLayout(clone, 200, 200, 150);
-        GraphUtils.fruchtermanReingoldLayout(clone);
-        return clone;
     }
 }
 

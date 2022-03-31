@@ -167,11 +167,6 @@ public final class GFci implements GraphSearch {
         return this.graph;
     }
 
-    @Override
-    public long getElapsedTime() {
-        return this.elapsedTime;
-    }
-
     /**
      * @param maxDegree The maximum indegree of the output graph.
      */

@@ -75,11 +75,6 @@ public class PcStableMax implements GraphSearch {
     private final TetradLogger logger = TetradLogger.getInstance();
 
     /**
-     * The initial graph for the Fast Adjacency Search, or null if there is none.
-     */
-    private Graph externalGraph;
-
-    /**
      * True if verbose output should be printed.
      */
     private boolean verbose;
@@ -223,11 +218,7 @@ public class PcStableMax implements GraphSearch {
     }
 
     public Set<Edge> getAdjacencies() {
-        Set<Edge> adjacencies = new HashSet<>();
-        for (Edge edge : this.graph.getEdges()) {
-            adjacencies.add(edge);
-        }
-        return adjacencies;
+        return new HashSet<>(this.graph.getEdges());
     }
 
     public Set<Edge> getNonadjacencies() {
@@ -242,10 +233,6 @@ public class PcStableMax implements GraphSearch {
         return this.graph.getNodes();
     }
 
-    public void setExternalGraph(Graph externalGraph) {
-        this.externalGraph = externalGraph;
-    }
-
     public boolean isVerbose() {
         return this.verbose;
     }
@@ -256,10 +243,6 @@ public class PcStableMax implements GraphSearch {
 
     public void setUseHeuristic(boolean useHeuristic) {
         this.useHeuristic = useHeuristic;
-    }
-
-    public boolean isUseHeuristic() {
-        return this.useHeuristic;
     }
 
     public void setMaxPathLength(int maxPathLength) {

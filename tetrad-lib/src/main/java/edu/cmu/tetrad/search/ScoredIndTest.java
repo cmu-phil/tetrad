@@ -85,18 +85,9 @@ public class ScoredIndTest implements Score {
         return localScoreDiff(x, y, new int[0]);
     }
 
-
-    int[] append(int[] parents, int extra) {
-        int[] all = new int[parents.length + 1];
-        System.arraycopy(parents, 0, all, 0, parents.length);
-        all[parents.length] = extra;
-        return all;
-    }
-
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
-
     public double localScore(int i, int parent) {
         throw new UnsupportedOperationException();
     }

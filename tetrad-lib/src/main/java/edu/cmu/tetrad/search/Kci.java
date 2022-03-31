@@ -39,7 +39,7 @@ import static java.lang.Math.*;
  * @author Vineet Raghu on 7/3/2016
  * @author jdramsey refactoring 7/4/2018
  */
-public class Kci implements IndependenceTest, ScoreForFact {
+public class Kci implements IndependenceTest {
 
     // The supplied data set, standardized
     private final DataSet data;
@@ -320,11 +320,6 @@ public class Kci implements IndependenceTest, ScoreForFact {
 
     public double getScore() {
         return getAlpha() - getPValue();
-    }
-
-    @Override
-    public double getScoreForFact(IndependenceFact fact) {
-        return getAlpha() - this.pValues.get(fact);
     }
 
     public boolean isApproximate() {

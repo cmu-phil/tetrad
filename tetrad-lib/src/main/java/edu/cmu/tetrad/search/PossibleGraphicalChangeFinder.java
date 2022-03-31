@@ -37,17 +37,6 @@ class PossibleGraphicalChangeFinder {
 
 
     /**
-     * The pag that the undirectedPaths are relative to.
-     */
-    private final Graph pag;
-
-
-    /**
-     * The separation sets.
-     */
-    private final List<List<Node>> separations;
-
-    /**
      * Constructs the finder given the undirectedPaths that must be blocked.
      */
     public PossibleGraphicalChangeFinder(Graph pag, Collection<Collection<Node>> separations) {
@@ -57,10 +46,10 @@ class PossibleGraphicalChangeFinder {
         if (separations == null) {
             throw new NullPointerException("The given separation sets must not be null.");
         }
-        this.pag = pag;
-        this.separations = new ArrayList<>();
+
+        List<List<Node>> separations1 = new ArrayList<>();
         for (Collection<Node> sep : separations) {
-            this.separations.add(new ArrayList<>(sep));
+            separations1.add(new ArrayList<>(sep));
         }
     }
 }

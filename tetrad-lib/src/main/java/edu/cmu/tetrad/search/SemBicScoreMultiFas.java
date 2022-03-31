@@ -26,14 +26,14 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
-import java.io.PrintStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Implements the continuous BIC score for FGES.
@@ -55,16 +55,9 @@ public class SemBicScoreMultiFas implements ISemBicScore {
 
     // True if linear dependencies should return NaN for the score, and hence be
     // ignored by FGES
-    private final boolean ignoreLinearDependent = false;
-
-    // The printstream output should be sent to.
-    private PrintStream out = System.out;
 
     // True if verbose output should be sent to out.
     private boolean verbose;
-
-    // Variables that caused computational problems and so are to be avoided.
-    private final Set<Integer> forbidden = new HashSet<>();
 
     private final Map<String, Integer> indexMap;
 
@@ -178,14 +171,6 @@ public class SemBicScoreMultiFas implements ISemBicScore {
         return this.semBicScores.get(index).localScore(i, parents);
     }
 
-
-    int[] append(int[] parents, int extra) {
-        int[] all = new int[parents.length + 1];
-        System.arraycopy(parents, 0, all, 0, parents.length);
-        all[parents.length] = extra;
-        return all;
-    }
-
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
@@ -222,10 +207,6 @@ public class SemBicScoreMultiFas implements ISemBicScore {
         }
 
         return sum / count;
-    }
-
-    public void setOut(PrintStream out) {
-        this.out = out;
     }
 
     public double getPenaltyDiscount() {
@@ -265,51 +246,9 @@ public class SemBicScoreMultiFas implements ISemBicScore {
         return false;
     }
 
-    public void setAlternativePenalty(double value) {
-    }
-
     @Override
     public int getSampleSize() {
         return this.sampleSize;
-    }
-
-    // Calculates the BIC score.
-//    private double score(double residualVariance, int n, int p, double c) {
-//        return -n * Math.log(residualVariance) - c * (2 * p + 1) * Math.log(n);
-//    }
-//
-    private Matrix getSelection1(ICovarianceMatrix cov, int[] rows) {
-        return cov.getSelection(rows, rows);
-    }
-
-    private Vector getSelection2(ICovarianceMatrix cov, int[] rows, int k) {
-        return cov.getSelection(rows, new int[]{k}).getColumn(0);
-    }
-
-    // Prints a smallest subset of parents that causes a singular matrix exception.
-    private void printMinimalLinearlyDependentSet(int[] parents, ICovarianceMatrix cov) {
-        List<Node> _parents = new ArrayList<>();
-        for (int p : parents) _parents.add(this.variables.get(p));
-
-        DepthChoiceGenerator gen = new DepthChoiceGenerator(_parents.size(), _parents.size());
-        int[] choice;
-
-        while ((choice = gen.next()) != null) {
-            int[] sel = new int[choice.length];
-            List<Node> _sel = new ArrayList<>();
-            for (int m = 0; m < choice.length; m++) {
-                sel[m] = parents[m];
-                _sel.add(this.variables.get(sel[m]));
-            }
-
-            Matrix m = cov.getSelection(sel, sel);
-
-            try {
-                m.inverse();
-            } catch (Exception e2) {
-                this.out.println("### Linear dependence among variables: " + _sel);
-            }
-        }
     }
 
     private List<Node> getVariableList(int[] indices) {
@@ -343,8 +282,8 @@ public class SemBicScoreMultiFas implements ISemBicScore {
         Map<Score, ICovarianceMatrix> covMap = new HashMap<>();
         SemBicScore score;
 
-        for (int i = 0; i < scores.size(); i++) {
-            score = scores.get(i);
+        for (SemBicScore semBicScore : scores) {
+            score = semBicScore;
             covMap.put(score, score.getCovariances());
         }
 

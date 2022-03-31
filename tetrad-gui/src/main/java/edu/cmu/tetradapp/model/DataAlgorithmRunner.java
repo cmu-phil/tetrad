@@ -170,7 +170,6 @@ public class DataAlgorithmRunner extends AbstractAlgorithmRunner
         pc.setKnowledge(knowledge);
         pc.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
         pc.setDepth(depth);
-        pc.setExternalGraph(this.externalGraph);
         graph = pc.search();
 
         System.out.println(graph);

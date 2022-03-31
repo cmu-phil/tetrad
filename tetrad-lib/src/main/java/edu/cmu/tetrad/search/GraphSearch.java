@@ -28,8 +28,6 @@ import edu.cmu.tetrad.graph.Graph;
  */
 public interface GraphSearch {
     Graph search();
-
-    long getElapsedTime();
 }
 
 

@@ -185,7 +185,7 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
         svcpc.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
         svcpc.setDepth(params.getInt("depth", -1));
         if (this.independenceFactsModel != null) {
-            svcpc.setFacts(this.independenceFactsModel.getFacts());
+            svcpc.setFacts();
         }
 
 //        vcpc.setSemPm(semPm);

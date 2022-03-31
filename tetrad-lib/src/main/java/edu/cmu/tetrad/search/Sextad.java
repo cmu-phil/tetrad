@@ -133,7 +133,6 @@ public class Sextad implements TetradSerializable {
 
     public boolean equals(Object o) {
         if (!(o instanceof Sextad)) throw new IllegalArgumentException();
-        if (o == null) return false;
         Sextad sextad = (Sextad) o;
 
         boolean leftEquals = this.i == sextad.i && this.j == sextad.j && this.k == sextad.k ||

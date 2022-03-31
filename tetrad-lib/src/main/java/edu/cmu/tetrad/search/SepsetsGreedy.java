@@ -36,9 +36,8 @@ public class SepsetsGreedy implements SepsetProducer {
     private final Graph graph;
     private final IndependenceTest independenceTest;
     private final SepsetMap extraSepsets;
-    private int depth = 3;
+    private int depth;
     private boolean verbose;
-    private Graph dag;
 
     public SepsetsGreedy(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth) {
         this.graph = graph;

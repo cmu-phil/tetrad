@@ -129,7 +129,7 @@ public final class SepsetMapDci {
     }
 
     public LinkedHashSet<Node> get(Node x) {
-        return this.parents.get(x) == null ? new LinkedHashSet<Node>() : this.parents.get(x);
+        return this.parents.get(x) == null ? new LinkedHashSet<>() : this.parents.get(x);
     }
 
     public Set<Set<Node>> getSeparatedPairs() {
@@ -156,8 +156,6 @@ public final class SepsetMapDci {
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

@@ -138,7 +138,7 @@ public class MbUtils {
      * Removes edges among the parents of the target.
      */
     public static void trimEdgesAmongParents(Graph graph, Node target) {
-        List parents = graph.getParents(target);
+        List<Node> parents = graph.getParents(target);
 
         if (parents.size() >= 2) {
             ChoiceGenerator cg = new ChoiceGenerator(parents.size(), 2);
@@ -171,7 +171,7 @@ public class MbUtils {
         }
 
         parents.remove(target);
-        parents.removeAll(graph.getAdjacentNodes(target));
+        graph.getAdjacentNodes(target).forEach(parents::remove);
         List<Node> parentsOfChildren = new ArrayList<>(parents);
 
         if (parentsOfChildren.size() >= 2) {
@@ -203,49 +203,6 @@ public class MbUtils {
                 graph.removeNode(node);
             }
         }
-    }
-
-    public static void trimToNeighborhood(Graph graph,
-                                          List<Node> neighborhood) {
-        List<Node> irrelevantNodes = graph.getNodes();
-        irrelevantNodes.removeAll(neighborhood);
-
-        graph.removeNodes(irrelevantNodes);
-    }
-
-    /**
-     * Trims <code>graph</code> to variables whose least distance to the target is no more than <code>distance</code>
-     */
-    public static void trimToDistance(Graph graph, Node target, int distance) {
-        Set<Node> nodes = MbUtils.getNeighborhood(graph, target, distance);
-
-        List<Node> irrelevantNodes = graph.getNodes();
-        irrelevantNodes.removeAll(nodes);
-
-        graph.removeNodes(irrelevantNodes);
-    }
-
-    public static Set<Node> getNeighborhood(Graph graph, Node target,
-                                            int distance) {
-        if (distance < 1) {
-            throw new IllegalArgumentException("Distance must be >= 1.");
-        }
-
-        Set<Node> nodes = new HashSet<>();
-        nodes.add(target);
-        Set<Node> tier = new HashSet<>(nodes);
-
-        for (int i = 0; i < distance; i++) {
-            Set<Node> adjacents = new HashSet<>();
-
-            for (Node aTier : tier) {
-                adjacents.addAll(graph.getAdjacentNodes(aTier));
-            }
-
-            nodes.addAll(adjacents);
-            tier = new HashSet<>(adjacents);
-        }
-        return nodes;
     }
 
     /**

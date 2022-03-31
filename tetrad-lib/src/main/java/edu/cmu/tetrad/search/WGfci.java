@@ -116,11 +116,6 @@ public class WGfci implements GraphSearch {
         return out;
     }
 
-    @Override
-    public long getElapsedTime() {
-        return 0;
-    }
-
     public void setAlpha(double alpha) {
         this.alpha = alpha;
     }

@@ -27,10 +27,6 @@ public class SemBicScorer {
 
         dag = GraphUtils.replaceNodes(dag, data.getVariables());
 
-        if (dag == null) {
-            throw new NullPointerException("Dag was not specified.");
-        }
-
         Map<Node, Integer> hashIndices = SemBicScorer.buildIndexing(dag.getNodes());
 
         double _score = 0.0;

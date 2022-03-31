@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.Matrix;
@@ -50,10 +49,6 @@ public class ShiftSearch {
     private boolean forwardSearch;
 
     public ShiftSearch(List<DataModel> dataSets) {
-        this(dataSets, null);
-    }
-
-    public ShiftSearch(List<DataModel> dataSets, Graph measuredDag) {
         this.dataSets = dataSets;
     }
 
@@ -75,28 +70,26 @@ public class ShiftSearch {
         DepthChoiceGenerator generator = new DepthChoiceGenerator(nodes.size(), getMaxNumShifts());
         int[] choice;
 
-        CHOICE:
         while ((choice = generator.next()) != null) {
             shifts = new int[nodes.size()];
 
             double zSize = Math.pow(getMaxShift(), choice.length);
             int iIndex = this.dataSets.get(0).getVariables().indexOf(this.dataSets.get(0).getVariable("I"));
 
-            Z:
             for (int z = 0; z < zSize; z++) {
                 if (this.scheduleStop) break;
 
                 int _z = z;
 
-                for (int i = 0; i < choice.length; i++) {
-                    if (choice[i] == iIndex) {
+                for (int j : choice) {
+                    if (j == iIndex) {
                         continue;
                     }
 
-                    shifts[choice[i]] = (_z % (getMaxShift()) + 1);
+                    shifts[j] = (_z % (getMaxShift()) + 1);
 
                     if (!this.forwardSearch) {
-                        shifts[choice[i]] = -shifts[choice[i]];
+                        shifts[j] = -shifts[j];
                     }
 
                     _z /= getMaxShift();
@@ -126,7 +119,7 @@ public class ShiftSearch {
         StringBuilder buf = new StringBuilder();
 
         for (int i = 0; i < shifts.length; i++) {
-            buf.append(nodes.get(i) + "=" + shifts[i] + " ");
+            buf.append(nodes.get(i)).append("=").append(shifts[i]).append(" ");
         }
 
         buf.append(b);
@@ -151,20 +144,6 @@ public class ShiftSearch {
         }
 
         return ensureNumRows(shiftedDataSets2, maxNumRows);
-
-//        return shiftedDataSets2;
-    }
-
-    private List<DataSet> truncateDataSets(List<DataSet> dataSets, int topMargin, int bottomMargin) {
-        List<DataSet> truncatedData = new ArrayList<>();
-
-        for (DataSet dataSet : dataSets) {
-            Matrix mat = dataSet.getDoubleData();
-            Matrix mat2 = mat.getPart(topMargin, mat.rows() - topMargin - bottomMargin - 1, 0, mat.columns() - 1);
-            truncatedData.add(new BoxDataSet(new DoubleDataBox(mat2.toArray()), dataSet.getVariables()));
-        }
-
-        return truncatedData;
     }
 
     private List<DataModel> ensureNumRows(List<DataModel> dataSets, int numRows) {

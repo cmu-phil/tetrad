@@ -115,33 +115,16 @@ public class ProbabilisticMAPIndependence implements IndependenceTest {
 
     @Override
     public boolean isIndependent(Node x, Node y, List<Node> z) {
-        Node[] _z = z.toArray(new Node[z.size()]);
+        Node[] _z = z.toArray(new Node[0]);
         return isIndependent(x, y, _z);
     }
 
     @Override
     public boolean isIndependent(Node x, Node y, Node... z) {
-//        IndependenceFact key = new IndependenceFact(x, y, z);
-//
-//        if (!H.containsKey(key)) {
         double pInd = probConstraint(BCInference.OP.independent, x, y, z);
-//            H.put(key, pInd);
-//        }
-//
-//        double pInd = H.get(key);
-
-        double p = this.probOp(BCInference.OP.independent, pInd);
-
+        double p = this.probOp(pInd);
         posterior = p;
-
         return p > 0.5;
-
-//        if (RandomUtil.getInstance().nextDouble() < p) {
-//            return true;
-//        }
-//        else {
-//            return false;
-//        }
     }
 
     public double probConstraint(BCInference.OP op, Node x, Node y, Node[] z) {
@@ -158,7 +141,7 @@ public class ProbabilisticMAPIndependence implements IndependenceTest {
 
     @Override
     public boolean isDependent(Node x, Node y, List<Node> z) {
-        Node[] _z = z.toArray(new Node[z.size()]);
+        Node[] _z = z.toArray(new Node[0]);
         return !this.isIndependent(x, y, _z);
     }
 
@@ -245,14 +228,10 @@ public class ProbabilisticMAPIndependence implements IndependenceTest {
         return new HashMap<>(H);
     }
 
-    private double probOp(BCInference.OP type, double pInd) {
+    private double probOp(double pInd) {
         double probOp;
 
-        if (BCInference.OP.independent == type) {
-            probOp = pInd;
-        } else {
-            probOp = 1.0 - pInd;
-        }
+        probOp = pInd;
 
         return probOp;
     }

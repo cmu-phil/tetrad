@@ -40,13 +40,9 @@ import static edu.cmu.tetrad.data.Discretizer.getEqualFrequencyBreakPoints;
  *
  * @author Bryan Andrews
  */
-
-
 public class MVPLikelihood {
 
     private final DataSet dataSet;
-
-    private DataSet discreteDataSet;
 
     // The variables of the dataset.
     private final List<Node> variables;
@@ -63,9 +59,6 @@ public class MVPLikelihood {
     // Discrete data only.
     private final int[][] discreteData;
 
-    // All discrete data
-    private int[][] allDiscrete;
-
     // Partitions
     private final AdLeafTree adTree;
 
@@ -77,9 +70,6 @@ public class MVPLikelihood {
 
     // Discretize
     private final boolean discretize;
-
-    // Number of categories to use to discretize continuous mixedVariables.
-    private final int numCategoriesToDiscretize = 3;
 
     public MVPLikelihood(DataSet dataSet, double structurePrior, int fDegree, boolean discretize) {
 
@@ -119,14 +109,14 @@ public class MVPLikelihood {
         }
 
         if (discretize) {
-            this.discreteDataSet = useErsatzVariables();
-            this.discreteVariables = this.discreteDataSet.getVariables();
-            this.adTree = new AdLeafTree(this.discreteDataSet);
-            this.allDiscrete = new int[dataSet.getNumColumns()][];
+            DataSet discreteDataSet = useErsatzVariables();
+            this.discreteVariables = discreteDataSet.getVariables();
+            this.adTree = new AdLeafTree(discreteDataSet);
+            // All discrete data
             for (int j = 0; j < dataSet.getNumColumns(); j++) {
-                int[] col = new int[this.discreteDataSet.getNumRows()];
-                for (int i = 0; i < this.discreteDataSet.getNumRows(); i++) {
-                    col[i] = this.discreteDataSet.getInt(i, j);
+                int[] col = new int[discreteDataSet.getNumRows()];
+                for (int i = 0; i < discreteDataSet.getNumRows(); i++) {
+                    col[i] = discreteDataSet.getInt(i, j);
                 }
                 this.discreteData[j] = col;
             }
@@ -164,11 +154,11 @@ public class MVPLikelihood {
             for (int i = 0; i < n; i++) ones.set(i, 1);
             r = ones.scalarMult(ones.dotProduct(Y) / (double) Math.max(n, 2)).minus(Y);
             sigma2 = r.dotProduct(r) / n;
-            lik = -(n / 2) * (Math.log(2 * Math.PI) + Math.log(sigma2) + 1);
+            lik = -(n / 2.) * (Math.log(2 * Math.PI) + Math.log(sigma2) + 1);
         } else if (sigma2 == 0) {
             lik = 0;
         } else {
-            lik = -(n / 2) * (Math.log(2 * Math.PI) + Math.log(sigma2) + 1);
+            lik = -(n / 2.) * (Math.log(2 * Math.PI) + Math.log(sigma2) + 1);
         }
 
 
@@ -269,9 +259,9 @@ public class MVPLikelihood {
                 double[] mean = new double[p];
                 double[] var = new double[p];
                 for (int i = 0; i < p; i++) {
-                    for (int j = 0; j < r; j++) {
-                        mean[i] += this.continuousData[continuousCols[i]][cell.get(j)];
-                        var[i] += Math.pow(this.continuousData[continuousCols[i]][cell.get(j)], 2);
+                    for (Integer integer : cell) {
+                        mean[i] += this.continuousData[continuousCols[i]][integer];
+                        var[i] += Math.pow(this.continuousData[continuousCols[i]][integer], 2);
                     }
                     mean[i] /= r;
                     var[i] /= r;
@@ -305,6 +295,7 @@ public class MVPLikelihood {
                     }
                     lik += multipleRegression(target, subset);
                 } else {
+                    assert c instanceof DiscreteVariable;
                     Matrix target = new Matrix(r, ((DiscreteVariable) c).getNumCategories());
                     for (int i = 0; i < r; i++) {
                         target.set(i, this.discreteData[child_index][cell.get(i)], 1);
@@ -340,12 +331,7 @@ public class MVPLikelihood {
             }
         }
 
-        int p = continuous_parents.size();
-
         List<List<Integer>> cells = this.adTree.getCellLeaves(discrete_parents);
-
-        int[] continuousCols = new int[p];
-        for (int j = 0; j < p; j++) continuousCols[j] = this.nodesHash.get(continuous_parents.get(j));
 
         for (List<Integer> cell : cells) {
             int r = cell.size();
@@ -358,6 +344,7 @@ public class MVPLikelihood {
                 if (c instanceof ContinuousVariable) {
                     dof += degree * continuous_parents.size() + 1;
                 } else {
+                    assert c instanceof DiscreteVariable;
                     dof += ((degree * continuous_parents.size()) + 1) * (((DiscreteVariable) c).getNumCategories() - 1);
                 }
             }
@@ -392,7 +379,8 @@ public class MVPLikelihood {
 
     private DataSet useErsatzVariables() {
         List<Node> nodes = new ArrayList<>();
-        int numCategories = this.numCategoriesToDiscretize;
+        // Number of categories to use to discretize continuous mixedVariables.
+        int numCategories = 3;
 
         for (Node x : this.variables) {
             if (x instanceof ContinuousVariable) {

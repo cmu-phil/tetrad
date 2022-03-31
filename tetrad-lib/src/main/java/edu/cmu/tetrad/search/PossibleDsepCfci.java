@@ -99,7 +99,7 @@ final class PossibleDsepCfci {
      * constructor (if any), possibly augmented by some edge removals in this step. The GaSearchGraph passed in the
      * constructor is directly changed.
      */
-    public final SepsetMap search() {
+    public SepsetMap search() {
         for (int i = 0; i < this.nodes.size(); i++) {
             Node node1 = this.nodes.get(i);
 
@@ -201,11 +201,9 @@ final class PossibleDsepCfci {
      */
     private Set<Node> getPossibleDsep(Node node1, Node node2, int maxPathLength) {
         List<Node> initialNodes = Collections.singletonList(node1);
-        List<Node> c = null;
-        List<Node> d = null;
 
         Set<Node> reachable = SearchGraphUtils.getReachableNodes(initialNodes,
-                this.legalPairs, c, d, this.graph, maxPathLength);
+                this.legalPairs, null, null, this.graph, maxPathLength);
 
         reachable.remove(node1);
         reachable.remove(node2);
@@ -219,7 +217,7 @@ final class PossibleDsepCfci {
         return this.depth;
     }
 
-    public final void setDepth(int depth) {
+    public void setDepth(int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException(
                     "Depth must be -1 (unlimited) or >= 0: " + depth);
@@ -232,7 +230,7 @@ final class PossibleDsepCfci {
         return this.knowledge;
     }
 
-    public final void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 

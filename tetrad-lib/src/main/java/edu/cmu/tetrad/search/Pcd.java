@@ -96,21 +96,6 @@ public class Pcd implements GraphSearch {
      */
     private int numIndependenceTests;
 
-    /**
-     * The true graph, for purposes of comparison. Temporary.
-     */
-    private Graph trueGraph;
-
-    /**
-     * The number of dependence judgements from FAS. Temporary.
-     */
-    private int numDependenceJudgements;
-
-    /**
-     * The initial graph for the Fast Adjacency Search, or null if there is none.
-     */
-    private Graph externalGraph;
-
     private boolean verbose;
 
     private boolean fdr;
@@ -258,12 +243,11 @@ public class Pcd implements GraphSearch {
         this.sepsets = fas.getSepsets();
 
         this.numIndependenceTests = fas.getNumIndependenceTests();
-        this.numDependenceJudgements = fas.getNumDependenceJudgments();
 
         enumerateTriples();
 
         SearchGraphUtils.pcOrientbk(this.knowledge, this.graph, nodes);
-        SearchGraphUtils.pcdOrientC(this.sepsets, getIndependenceTest(), this.knowledge, this.graph);
+        SearchGraphUtils.pcdOrientC(getIndependenceTest(), this.knowledge, this.graph);
 
         MeekRules rules = new MeekRules();
         rules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
@@ -305,11 +289,7 @@ public class Pcd implements GraphSearch {
     }
 
     public Set<Edge> getAdjacencies() {
-        Set<Edge> adjacencies = new HashSet<>();
-        for (Edge edge : this.graph.getEdges()) {
-            adjacencies.add(edge);
-        }
-        return adjacencies;
+        return new HashSet<>(this.graph.getEdges());
     }
 
     public Set<Edge> getNonadjacencies() {
@@ -361,40 +341,8 @@ public class Pcd implements GraphSearch {
         return this.numIndependenceTests;
     }
 
-    public void setTrueGraph(Graph trueGraph) {
-        this.trueGraph = trueGraph;
-    }
-
-    public int getNumDependenceJudgements() {
-        return this.numDependenceJudgements;
-    }
-
     public List<Node> getNodes() {
         return this.graph.getNodes();
-    }
-
-    public List<Triple> getColliders(Node node) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public List<Triple> getNoncolliders(Node node) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public List<Triple> getAmbiguousTriples(Node node) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public List<Triple> getUnderlineTriples(Node node) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public List<Triple> getDottedUnderlineTriples(Node node) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public void setExternalGraph(Graph externalGraph) {
-        this.externalGraph = externalGraph;
     }
 
     public boolean isVerbose() {

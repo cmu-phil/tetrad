@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Edge;
@@ -58,15 +57,13 @@ public class PossibleDsepFci {
      */
     private IKnowledge knowledge = new Knowledge2();
     private int maxReachablePathLength = -1;
-    private final CorrelationMatrix corr;
 
     /**
      * Creates a new SepSet and assumes that none of the variables have yet been checked.
-     *
-     * @param graph The GaSearchGraph on which to work
+     *  @param graph The GaSearchGraph on which to work
      * @param test  The IndependenceChecker to use as an oracle
      */
-    public PossibleDsepFci(Graph graph, IndependenceTest test, CorrelationMatrix corr) {
+    public PossibleDsepFci(Graph graph, IndependenceTest test) {
         if (graph == null) {
             throw new NullPointerException("null GaSearchGraph passed in " +
                     "PossibleDSepSearch constructor!");
@@ -79,7 +76,6 @@ public class PossibleDsepFci {
         this.graph = graph;
         this.test = test;
         this.sepset = new SepsetMap();
-        this.corr = corr;
 
         setMaxPathLength(this.maxReachablePathLength);
     }
@@ -218,10 +214,6 @@ public class PossibleDsepFci {
 
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
-    }
-
-    public int getMaxReachablePathLength() {
-        return this.maxReachablePathLength == Integer.MAX_VALUE ? -1 : this.maxReachablePathLength;
     }
 
     public void setMaxPathLength(int maxReachablePathLength) {

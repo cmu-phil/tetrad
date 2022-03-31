@@ -228,7 +228,7 @@ public class LingamCPDAGRunner extends AbstractAlgorithmRunner implements
         }
 
 //        LingOrientationFixedStructure pcLingam2 = new LingOrientationFixedStructure(CPDAG, _dataSets);
-        LingamCPDAG2 pcLingam2 = new LingamCPDAG2(CPDAG, _dataSets);
+        LingamPattern2 pcLingam2 = new LingamPattern2(CPDAG, _dataSets);
         pcLingam2.setAlpha(getParams().getDouble("alpha", 0.001));
 
         Graph graph = pcLingam2.search();

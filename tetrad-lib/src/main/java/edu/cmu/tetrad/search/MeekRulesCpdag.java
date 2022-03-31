@@ -41,7 +41,7 @@ import java.util.Set;
  *
  * @author Joseph Ramsey
  */
-public class MeekRulesCPDAG implements ImpliedOrientation {
+public class MeekRulesCpdag implements ImpliedOrientation {
 
     private IKnowledge IKnowledge;
 
@@ -61,7 +61,7 @@ public class MeekRulesCPDAG implements ImpliedOrientation {
     /**
      * Constructs the <code>MeekRules</code> with no logging.
      */
-    public MeekRulesCPDAG() {
+    public MeekRulesCpdag() {
 
     }
 
@@ -121,11 +121,11 @@ public class MeekRulesCPDAG implements ImpliedOrientation {
 
                 if (graph.getEndpoint(b, a) == Endpoint.ARROW &&
                         graph.isUndirectedFromTo(a, c)) {
-                    if (!MeekRulesCPDAG.isUnshieldedNoncollider(b, a, c, graph)) {
+                    if (MeekRulesCpdag.isShieldedNoncollider(b, a, c, graph)) {
                         continue;
                     }
 
-                    if (MeekRulesCPDAG.isArrowpointAllowed(a, c, IKnowledge) && !createsCycle(a, c, graph)) {
+                    if (MeekRulesCpdag.isArrowpointAllowed(a, c, IKnowledge) && !graph.isAncestorOf(c, a)) {
                         graph.setEndpoint(a, c, Endpoint.ARROW);
 
                         this.logger.log("impliedOrientation", SearchLogUtils.edgeOrientedMsg(
@@ -136,11 +136,11 @@ public class MeekRulesCPDAG implements ImpliedOrientation {
                     }
                 } else if (graph.getEndpoint(c, a) == Endpoint.ARROW &&
                         graph.isUndirectedFromTo(a, b)) {
-                    if (!MeekRulesCPDAG.isUnshieldedNoncollider(b, a, c, graph)) {
+                    if (MeekRulesCpdag.isShieldedNoncollider(b, a, c, graph)) {
                         continue;
                     }
 
-                    if (MeekRulesCPDAG.isArrowpointAllowed(a, b, IKnowledge) && !createsCycle(a, b, graph)) {
+                    if (MeekRulesCpdag.isArrowpointAllowed(a, b, IKnowledge) && !graph.isAncestorOf(b, a)) {
                         graph.setEndpoint(a, b, Endpoint.ARROW);
 
                         this.logger.log("impliedOrientation", SearchLogUtils.edgeOrientedMsg(
@@ -177,7 +177,7 @@ public class MeekRulesCPDAG implements ImpliedOrientation {
                 if (graph.isDirectedFromTo(b, a) &&
                         graph.isDirectedFromTo(a, c) &&
                         graph.isUndirectedFromTo(b, c)) {
-                    if (MeekRulesCPDAG.isArrowpointAllowed(b, c, IKnowledge) && !createsCycle(b, c, graph)) {
+                    if (MeekRulesCpdag.isArrowpointAllowed(b, c, IKnowledge) && !graph.isAncestorOf(c, b)) {
                         graph.setEndpoint(b, c, Endpoint.ARROW);
                         this.logger.log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek R2", graph.getEdge(b, c)));
                         meekR2(graph, IKnowledge);
@@ -185,7 +185,7 @@ public class MeekRulesCPDAG implements ImpliedOrientation {
                 } else if (graph.isDirectedFromTo(c, a) &&
                         graph.isDirectedFromTo(a, b) &&
                         graph.isUndirectedFromTo(c, b)) {
-                    if (MeekRulesCPDAG.isArrowpointAllowed(c, b, IKnowledge) && !createsCycle(c, b, graph)) {
+                    if (MeekRulesCpdag.isArrowpointAllowed(c, b, IKnowledge) && !graph.isAncestorOf(b, c)) {
                         graph.setEndpoint(c, b, Endpoint.ARROW);
                         this.logger.log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek R2", graph.getEdge(c, b)));
                         meekR2(graph, IKnowledge);
@@ -240,13 +240,13 @@ public class MeekRulesCPDAG implements ImpliedOrientation {
                         continue;
                     }
 
-                    if (!MeekRulesCPDAG.isUnshieldedNoncollider(c, a, d, graph)) {
+                    if (MeekRulesCpdag.isShieldedNoncollider(c, a, d, graph)) {
                         continue;
                     }
 
                     if (graph.isDirectedFromTo(c, b) &&
                             graph.isDirectedFromTo(d, b)) {
-                        if (MeekRulesCPDAG.isArrowpointAllowed(a, b, IKnowledge) && !createsCycle(a, b, graph)) {
+                        if (MeekRulesCpdag.isArrowpointAllowed(a, b, IKnowledge) && !graph.isAncestorOf(b, a)) {
                             graph.setEndpoint(a, b, Endpoint.ARROW);
 
                             this.logger.log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek R3", graph.getEdge(a, b)));
@@ -301,13 +301,13 @@ public class MeekRulesCPDAG implements ImpliedOrientation {
                         continue;
                     }
 
-                    if (!MeekRulesCPDAG.isUnshieldedNoncollider(c, a, b, graph)) {
+                    if (MeekRulesCpdag.isShieldedNoncollider(c, a, b, graph)) {
                         continue;
                     }
 
                     if (graph.isDirectedFromTo(b, d) &&
                             graph.isDirectedFromTo(d, c)) {
-                        if (MeekRulesCPDAG.isArrowpointAllowed(a, c, IKnowledge) && !createsCycle(a, c, graph)) {
+                        if (MeekRulesCpdag.isArrowpointAllowed(a, c, IKnowledge) && !graph.isAncestorOf(c, a)) {
                             graph.setEndpoint(a, c, Endpoint.ARROW);
 
                             this.logger.log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek T1", graph.getEdge(a, c)));
@@ -317,7 +317,7 @@ public class MeekRulesCPDAG implements ImpliedOrientation {
                         }
                     } else if (graph.isDirectedFromTo(c, d) &&
                             graph.isDirectedFromTo(d, b)) {
-                        if (MeekRulesCPDAG.isArrowpointAllowed(a, b, IKnowledge) && !createsCycle(a, b, graph)) {
+                        if (MeekRulesCpdag.isArrowpointAllowed(a, b, IKnowledge) && !graph.isAncestorOf(b, a)) {
                             graph.setEndpoint(a, b, Endpoint.ARROW);
 
                             this.logger.log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek T1", graph.getEdge(a, b)));
@@ -333,26 +333,26 @@ public class MeekRulesCPDAG implements ImpliedOrientation {
         return changed;
     }
 
-    private static boolean isUnshieldedNoncollider(Node a, Node b, Node c,
-                                                   Graph graph) {
+    private static boolean isShieldedNoncollider(Node a, Node b, Node c,
+                                                 Graph graph) {
         if (graph.isAmbiguousTriple(a, b, c)) {
-            return false;
+            return true;
         }
 
         if (!graph.isAdjacentTo(a, b)) {
-            return false;
+            return true;
         }
 
         if (!graph.isAdjacentTo(c, b)) {
-            return false;
+            return true;
         }
 
         if (graph.isAdjacentTo(a, c)) {
-            return false;
+            return true;
         }
 
-        return !(graph.getEndpoint(a, b) == Endpoint.ARROW &&
-                graph.getEndpoint(c, b) == Endpoint.ARROW);
+        return graph.getEndpoint(a, b) == Endpoint.ARROW &&
+                graph.getEndpoint(c, b) == Endpoint.ARROW;
 
     }
 
@@ -361,13 +361,6 @@ public class MeekRulesCPDAG implements ImpliedOrientation {
         if (IKnowledge == null) return true;
         return !IKnowledge.isRequired(to.toString(), from.toString()) &&
                 !IKnowledge.isForbidden(from.toString(), to.toString());
-    }
-
-    /**
-     * @return true if orienting x-->y would create a cycle.
-     */
-    private boolean createsCycle(Node x, Node y, Graph graph) {
-        return graph.isAncestorOf(y, x);
     }
 
     public boolean isAggressivelyPreventCycles() {

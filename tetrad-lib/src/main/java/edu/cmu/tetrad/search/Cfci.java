@@ -196,7 +196,7 @@ public final class Cfci implements GraphSearch {
             // Step FCI D.
             long time3 = System.currentTimeMillis();
 
-            PossibleDsepFci possibleDSep = new PossibleDsepFci(this.graph, this.independenceTest, this.corr);
+            PossibleDsepFci possibleDSep = new PossibleDsepFci(this.graph, this.independenceTest);
             possibleDSep.setDepth(getDepth());
             possibleDSep.setKnowledge(getKnowledge());
             possibleDSep.setMaxPathLength(getMaxReachablePathLength());

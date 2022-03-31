@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 
@@ -38,22 +37,6 @@ import java.util.List;
 public class SearchLogUtils {
     private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-    public static String endpointOrientedMsg(Endpoint e, Node x, Node y) {
-        char endptChar = '*';
-
-        if (e == Endpoint.TAIL) {
-            endptChar = '-';
-        } else if (e == Endpoint.ARROW) {
-            endptChar = '>';
-        } else if (e == Endpoint.CIRCLE) {
-            endptChar = 'o';
-        }
-
-        String msg = "Orienting endpoint: " + x.getName() + " *-" + endptChar +
-                " " + y.getName();
-        return msg;
-    }
-
     public static String edgeOrientedMsg(String reason, Edge edge) {
         return "Orienting edge (" + reason + "): " + edge;
     }
@@ -68,13 +51,13 @@ public class SearchLogUtils {
                 y.getName() + " <-* " + z.getName();
     }
 
-    public static String colliderOrientedMsg(Node x, Node y, Node z, List sepset) {
+    public static String colliderOrientedMsg(Node x, Node y, Node z, List<Node> sepset) {
         return "Orienting collider: " + x.getName() + " *-> " +
                 y.getName() + " <-* " + z.getName() + "\t(Sepset = " + sepset +
                 ")";
     }
 
-    public static String determinismDetected(List sepset, Node x) {
+    public static String determinismDetected(List<Node> sepset, Node x) {
         return "Determinism detected: " + sepset + " -> " + x.getName();
     }
 
@@ -112,7 +95,7 @@ public class SearchLogUtils {
         sb.append(" _||_ ");
         sb.append(y.getName());
 
-        Iterator it = condSet.iterator();
+        Iterator<Node> it = condSet.iterator();
 
         if (it.hasNext()) {
             sb.append(" | ");
