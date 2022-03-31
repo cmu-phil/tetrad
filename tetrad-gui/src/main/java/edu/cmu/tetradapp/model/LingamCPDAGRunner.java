@@ -182,9 +182,9 @@ public class LingamCPDAGRunner extends AbstractAlgorithmRunner implements
         // Images plus lingam orientation on multiple subjects.
         for (DataModel dataModel : dataSets) {
             DataSet dataSet = (DataSet) dataModel;
-            LingamCPDAG lingamCPDAG = new LingamCPDAG(CPDAG, dataSet);
-            lingamCPDAG.setAlpha(getParams().getDouble("alpha", 0.001));
-            Graph _graph = lingamCPDAG.search();
+            LingamPattern lingamPattern = new LingamPattern(CPDAG, dataSet);
+            lingamPattern.setAlpha(getParams().getDouble("alpha", 0.001));
+            Graph _graph = lingamPattern.search();
 
             System.out.println(_graph);
 

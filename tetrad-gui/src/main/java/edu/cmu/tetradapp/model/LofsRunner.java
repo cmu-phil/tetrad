@@ -252,9 +252,9 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
         // Images plus lingam orientation on multiple subjects.
         for (DataModel dataModel : dataSets) {
             DataSet dataSet = (DataSet) dataModel;
-            LingamCPDAG lingamCPDAG = new LingamCPDAG(CPDAG, dataSet);
-            lingamCPDAG.setAlpha(getParams().getDouble("alpha", 0.001));
-            Graph _graph = lingamCPDAG.search();
+            LingamPattern lingamPattern = new LingamPattern(CPDAG, dataSet);
+            lingamPattern.setAlpha(getParams().getDouble("alpha", 0.001));
+            Graph _graph = lingamPattern.search();
 
             System.out.println(_graph);
 
@@ -302,11 +302,9 @@ public class LofsRunner extends AbstractAlgorithmRunner implements
         lofs.setAlpha(getParams().getDouble("alpha", 0.001));
         lofs.setRule((Lofs2.Rule) params.get("rule", Lofs2.Rule.R3));
         lofs.setOrientStrongerDirection(params.getBoolean("orientStrongerDirection", true));
-        lofs.setEdgeCorrected(params.getBoolean("meanCenterResiduals", false));
         lofs.setR2Orient2Cycles(params.getBoolean("r2Orient2Cycles", false));
         lofs.setScore((Lofs.Score) params.get("score", Lofs.Score.andersonDarling));
         lofs.setEpsilon(params.getDouble("epsilon", .1));
-        lofs.setZeta(params.getDouble("zeta", 1));
         lofs.setSelfLoopStrength(params.getDouble("selfLoopStrength", 0.0));
         lofs.setKnowledge((IKnowledge) params.get("knowledge", new Knowledge2()));
 

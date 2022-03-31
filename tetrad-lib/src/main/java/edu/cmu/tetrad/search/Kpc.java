@@ -391,10 +391,6 @@ public class Kpc implements GraphSearch {
         this.trueGraph = trueGraph;
     }
 
-    public int getNumDependenceJudgements() {
-        return this.numDependenceJudgements;
-    }
-
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }

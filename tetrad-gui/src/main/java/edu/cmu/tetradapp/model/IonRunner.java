@@ -28,7 +28,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.IonJoeModifications;
+import edu.cmu.tetrad.search.Ion2;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -198,7 +198,7 @@ public class IonRunner extends AbstractAlgorithmRunner
     public void execute() {
         System.out.println("Executing.");
 
-        IonJoeModifications ion = new IonJoeModifications(getGraphs());
+        Ion2 ion = new Ion2(getGraphs());
 
         ion.setAdjacencySearch(getParams().getBoolean("pruneByAdjacencies", true));
         ion.setPathLengthSearch(getParams().getBoolean("pruneByPathLength", true));

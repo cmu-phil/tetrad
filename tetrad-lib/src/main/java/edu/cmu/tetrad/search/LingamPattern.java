@@ -25,8 +25,6 @@ import cern.colt.list.DoubleArrayList;
 import cern.jet.stat.Descriptive;
 import edu.cmu.tetrad.data.AndersonDarlingTest;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
@@ -42,37 +40,27 @@ import java.util.List;
 
 /**
  * Implements the Lingam CPDAG algorithm as specified in Hoyer et al., "Causal discovery of linear acyclic models with
- * arbitrary distributions," UAI 2008. The test for normality used for residuals is Anderson-Darling, following ad.test
+ * arbitrary distributions," UAI 2008. The test for normality used for residuals is Anderson-Darling, following 'ad.test'
  * in the nortest package of R. The default alpha level is 0.05--that is, p values from AD below 0.05 are taken to
  * indicate nongaussianity.
  * <p>
- * It is assumed that the CPDAG is the result of a CPDAG search such as PC or GES. In any case, it is important that
- * the residuals be independent for ICA to work.
+ * It is assumed that the CPDAG is the result of a CPDAG search such as PC or GES. In any
+ * case, it is important that the residuals be independent for ICA to work.
  *
  * @author Joseph Ramsey
  */
-public class LingamCPDAG {
-    private final Graph CPDAG;
+public class LingamPattern {
+    private final Graph cpdag;
     private final DataSet dataSet;
-    private IKnowledge knowledge = new Knowledge2();
-    private Graph bestDag;
-    private Graph ngDagCPDAG;
     private double[] pValues;
     private double alpha = 0.05;
-    private long timeLimit = -1;
-    private final int numSamples = 200;
-
-    /**
-     * The logger for this class. The config needs to be set.
-     */
-    private final TetradLogger logger = TetradLogger.getInstance();
 
     //===============================CONSTRUCTOR============================//
 
-    public LingamCPDAG(Graph CPDAG, DataSet dataSet)
+    public LingamPattern(Graph cpdag, DataSet dataSet)
             throws IllegalArgumentException {
 
-        if (CPDAG == null) {
+        if (cpdag == null) {
             throw new IllegalArgumentException("CPDAG must be specified.");
         }
 
@@ -80,24 +68,22 @@ public class LingamCPDAG {
             throw new IllegalArgumentException("Data set must be specified.");
         }
 
-        this.CPDAG = CPDAG;
+        this.cpdag = cpdag;
         this.dataSet = dataSet;
     }
 
     //===============================PUBLIC METHODS========================//
 
-    public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+    public void setKnowledge() {
     }
 
     public Graph search() {
-        long initialTime = System.currentTimeMillis();
 
-        Graph _CPDAG = GraphUtils.bidirectedToUndirected(getCPDAG());
+        Graph _cpdag = GraphUtils.bidirectedToUndirected(getCpdag());
 
         TetradLogger.getInstance().log("info", "Making list of all dags in CPDAG...");
 
-        List<Graph> dags = SearchGraphUtils.getAllGraphsByDirectingUndirectedEdges(_CPDAG);
+        List<Graph> dags = SearchGraphUtils.getAllGraphsByDirectingUndirectedEdges(_cpdag);
 
         TetradLogger.getInstance().log("normalityTests", "Anderson Darling P value for Variables\n");
         NumberFormat nf = new DecimalFormat("0.0000");
@@ -134,7 +120,6 @@ public class LingamCPDAG {
         }
 
         Graph dag = dags.get(maxj);
-        this.bestDag = new EdgeListGraph(dags.get(maxj));
         this.pValues = scores.get(maxj).pvals;
 
         TetradLogger.getInstance().log("graph", "winning dag = " + dag);
@@ -144,8 +129,6 @@ public class LingamCPDAG {
         for (int j = 0; j < getDataSet().getNumColumns(); j++) {
             TetradLogger.getInstance().log("normalityTests", getDataSet().getVariable(j) + ": " + nf.format(scores.get(maxj).pvals[j]));
         }
-
-//        System.out.println();
 
         Graph ngDagCPDAG = SearchGraphUtils.cpdagFromDag(dag);
 
@@ -181,14 +164,7 @@ public class LingamCPDAG {
             }
         }
 
-//        System.out.println();
-//
-//        System.out.println("Applying Meek rules.");
-//        System.out.println();
-
         new MeekRules().orientImplied(ngDagCPDAG);
-
-        this.ngDagCPDAG = ngDagCPDAG;
 
         TetradLogger.getInstance().log("graph", "Returning: " + ngDagCPDAG);
         return ngDagCPDAG;
@@ -197,8 +173,6 @@ public class LingamCPDAG {
     //=============================PRIVATE METHODS=========================//
 
     private Score getScore(Graph dag, Matrix data, List<Node> variables) {
-//        System.out.println("Scoring DAG: " + dag);
-
         Regression regression = new RegressionDataset(data, variables);
 
         List<Node> nodes = dag.getNodes();
@@ -262,36 +236,12 @@ public class LingamCPDAG {
         this.alpha = alpha;
     }
 
-    public Graph getNgDagCPDAG() {
-        return this.ngDagCPDAG;
-    }
-
-    public Graph getBestDag() {
-        return this.bestDag;
-    }
-
-    public void setTimeLimit(long timeLimit) {
-        this.timeLimit = timeLimit;
-    }
-
-    private Graph getCPDAG() {
-        return this.CPDAG;
+    private Graph getCpdag() {
+        return this.cpdag;
     }
 
     private DataSet getDataSet() {
         return this.dataSet;
-    }
-
-    private IKnowledge getKnowledge() {
-        return this.knowledge;
-    }
-
-    private long getTimeLimit() {
-        return this.timeLimit;
-    }
-
-    private int getNumSamples() {
-        return this.numSamples;
     }
 
     private static class Score {

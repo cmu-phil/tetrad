@@ -28,18 +28,8 @@ import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.*;
-import org.apache.commons.math3.analysis.MultivariateFunction;
-import org.apache.commons.math3.optim.InitialGuess;
-import org.apache.commons.math3.optim.MaxEval;
-import org.apache.commons.math3.optim.PointValuePair;
-import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
-import org.apache.commons.math3.optim.nonlinear.scalar.MultivariateOptimizer;
-import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
-import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.PowellOptimizer;
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.*;
 
 import static edu.cmu.tetrad.util.MatrixUtils.transpose;
@@ -68,7 +58,6 @@ public class Lofs2 {
     private double alpha = 1.1;
     private List<Regression> regressions;
     private List<Node> variables;
-    private final List<String> varnames;
     private boolean orientStrongerDirection;
     private boolean r2Orient2Cycles = true;
 
@@ -76,9 +65,6 @@ public class Lofs2 {
     private double epsilon = 1.0;
     private IKnowledge knowledge = new Knowledge2();
     private Rule rule = Rule.R1;
-    private final double delta = 0.0;
-    private double zeta;
-    private boolean edgeCorrected;
     private double selfLoopStrength;
 
     //===============================CONSTRUCTOR============================//
@@ -94,24 +80,13 @@ public class Lofs2 {
             throw new IllegalArgumentException("CPDAG must be specified.");
         }
 
-//        for (DataSet dataSet : dataSets) {
-//            for (int j = 0; j < dataSet.getNumRows(); j++) {
-//                for (int i = 0; i < dataSet.getNumColumns(); i++) {
-//                    if (isNaN(dataSet.getDouble(j, i))) {
-//                        throw new IllegalArgumentException("Please remove or impute missing values.");
-//                    }
-//                }
-//            }
-//        }
-
         this.CPDAG = CPDAG;
         this.variables = dataSets.get(0).getVariables();
-        this.varnames = dataSets.get(0).getVariableNames();
 
         List<DataSet> dataSets2 = new ArrayList<>();
 
-        for (int i = 0; i < dataSets.size(); i++) {
-            DataSet dataSet = new BoxDataSet(new DoubleDataBox(dataSets.get(i).getDoubleData().toArray()), this.variables);
+        for (DataSet set : dataSets) {
+            DataSet dataSet = new BoxDataSet(new DoubleDataBox(set.getDoubleData().toArray()), this.variables);
             dataSets2.add(dataSet);
         }
 
@@ -124,14 +99,6 @@ public class Lofs2 {
         this.rule = rule;
     }
 
-    public boolean isEdgeCorrected() {
-        return this.edgeCorrected;
-    }
-
-    public void setEdgeCorrected(boolean C) {
-        this.edgeCorrected = C;
-    }
-
     public double getSelfLoopStrength() {
         return this.selfLoopStrength;
     }
@@ -142,7 +109,7 @@ public class Lofs2 {
 
     // orientStrongerDirection list of past and present rules.
     public enum Rule {
-        IGCI, R1TimeLag, R1, R2, R3, R4, Tanh, EB, Skew, SkewE, RSkew, RSkewE,
+        IGCI, R1TimeLag, R1, R2, R3, Tanh, EB, Skew, SkewE, RSkew, RSkewE,
         Patel, Patel25, Patel50, Patel75, Patel90, FastICA, RC
     }
 
@@ -163,9 +130,6 @@ public class Lofs2 {
         } else if (this.rule == Rule.R3) {
             graph = GraphUtils.undirectedGraph(skeleton);
             ruleR3(graph);
-        } else if (this.rule == Rule.R4) {
-            graph = GraphUtils.undirectedGraph(skeleton);
-            return ruleR4(graph);
         } else if (this.rule == Rule.EB) {
             graph = GraphUtils.undirectedGraph(skeleton);
             return entropyBased(graph);
@@ -288,15 +252,14 @@ public class Lofs2 {
         IKnowledge knowledge = null;
         List<Node> dataNodes = null;
 
-        for (DataModel dataModel : this.dataSets) {
-            if (!(dataModel instanceof DataSet)) {
-                throw new IllegalArgumentException("Only tabular data sets can be converted to time lagged form.");
+        for (DataSet dataModel : this.dataSets) {
+            if (dataModel == null) {
+                throw new IllegalArgumentException("Dataset is not supplied.");
             }
 
-            DataSet dataSet = (DataSet) dataModel;
-            DataSet lags = TimeSeriesUtils.createLagData(dataSet, 1);
-            if (dataSet.getName() != null) {
-                lags.setName(dataSet.getName());
+            DataSet lags = TimeSeriesUtils.createLagData(dataModel, 1);
+            if (dataModel.getName() != null) {
+                lags.setName(dataModel.getName());
             }
             timeSeriesDataSets.add(lags);
 
@@ -417,12 +380,6 @@ public class Lofs2 {
                     parents = _parents;
                 }
             }
-
-//            double p = pValue(node, parents);
-//
-//            if (p > alpha) {
-//                continue;
-//            }
 
             for (double score : scoreReports.keySet()) {
                 TetradLogger.getInstance().log("score", "For " + node + " parents = " + scoreReports.get(score) + " score = " + -score);
@@ -571,18 +528,6 @@ public class Lofs2 {
                 double yPlus = score(y, condyPlus);
                 double yMinus = score(y, condyMinus);
 
-                double p3 = pValue(y, condyPlus);
-
-//                if (p3 > alpha) {
-//                    continue;
-//                }
-
-                double p4 = pValue(y, condyMinus);
-
-//                if (p4 > alpha) {
-//                    continue;
-//                }
-
                 boolean forbiddenLeft = this.knowledge.isForbidden(y.getName(), x.getName());
                 boolean forbiddenRight = this.knowledge.isForbidden(x.getName(), y.getName());
 
@@ -593,13 +538,12 @@ public class Lofs2 {
                         double score = combinedScore(xPlus, yMinus);
 
                         if ((yPlus <= yMinus + delta && xMinus <= xPlus + delta) || forbiddenRight) {
-                            StringBuilder builder = new StringBuilder();
 
-                            builder.append("\nStrong ").append(y).append("->").append(x).append(" ").append(score);
-                            builder.append("\n   Parents(").append(x).append(") = ").append(condxMinus);
-                            builder.append("\n   Parents(").append(y).append(") = ").append(condyMinus);
+                            String s = "\nStrong " + y + "->" + x + " " + score +
+                                    "\n   Parents(" + x + ") = " + condxMinus +
+                                    "\n   Parents(" + y + ") = " + condyMinus;
 
-                            scoreReports.put(-score, builder.toString());
+                            scoreReports.put(-score, s);
 
                             if (score > max) {
                                 max = score;
@@ -607,25 +551,23 @@ public class Lofs2 {
                                 right = false;
                             }
                         } else {
-                            StringBuilder builder = new StringBuilder();
 
-                            builder.append("\nNo directed edge ").append(x).append("--").append(y).append(" ").append(score);
-                            builder.append("\n   Parents(").append(x).append(") = ").append(condxMinus);
-                            builder.append("\n   Parents(").append(y).append(") = ").append(condyMinus);
+                            String s = "\nNo directed edge " + x + "--" + y + " " + score +
+                                    "\n   Parents(" + x + ") = " + condxMinus +
+                                    "\n   Parents(" + y + ") = " + condyMinus;
 
-                            scoreReports.put(-score, builder.toString());
+                            scoreReports.put(-score, s);
                         }
                     } else if ((xPlus <= yPlus + delta && yMinus <= xMinus + delta) || forbiddenLeft) {
                         double score = combinedScore(yPlus, xMinus);
 
                         if (yMinus <= yPlus + delta && xPlus <= xMinus + delta) {
-                            StringBuilder builder = new StringBuilder();
 
-                            builder.append("\nStrong ").append(x).append("->").append(y).append(" ").append(score);
-                            builder.append("\n   Parents(").append(x).append(") = ").append(condxMinus);
-                            builder.append("\n   Parents(").append(y).append(") = ").append(condyMinus);
+                            String s = "\nStrong " + x + "->" + y + " " + score +
+                                    "\n   Parents(" + x + ") = " + condxMinus +
+                                    "\n   Parents(" + y + ") = " + condyMinus;
 
-                            scoreReports.put(-score, builder.toString());
+                            scoreReports.put(-score, s);
 
                             if (score > max) {
                                 max = score;
@@ -633,46 +575,39 @@ public class Lofs2 {
                                 right = true;
                             }
                         } else {
-                            StringBuilder builder = new StringBuilder();
 
-                            builder.append("\nNo directed edge ").append(x).append("--").append(y).append(" ").append(score);
-                            builder.append("\n   Parents(").append(x).append(") = ").append(condxMinus);
-                            builder.append("\n   Parents(").append(y).append(") = ").append(condyMinus);
+                            String s = "\nNo directed edge " + x + "--" + y + " " + score +
+                                    "\n   Parents(" + x + ") = " + condxMinus +
+                                    "\n   Parents(" + y + ") = " + condyMinus;
 
-                            scoreReports.put(-score, builder.toString());
+                            scoreReports.put(-score, s);
                         }
                     } else if (yPlus <= xPlus + delta && yMinus <= xMinus + delta) {
                         double score = combinedScore(yPlus, xMinus);
 
-                        StringBuilder builder = new StringBuilder();
+                        String s = "\nNo directed edge " + x + "--" + y + " " + score +
+                                "\n   Parents(" + x + ") = " + condxMinus +
+                                "\n   Parents(" + y + ") = " + condyMinus;
 
-                        builder.append("\nNo directed edge ").append(x).append("--").append(y).append(" ").append(score);
-                        builder.append("\n   Parents(").append(x).append(") = ").append(condxMinus);
-                        builder.append("\n   Parents(").append(y).append(") = ").append(condyMinus);
-
-                        scoreReports.put(-score, builder.toString());
+                        scoreReports.put(-score, s);
                     } else if (xPlus <= yPlus + delta && xMinus <= yMinus + delta) {
                         double score = combinedScore(yPlus, xMinus);
 
-                        StringBuilder builder = new StringBuilder();
+                        String s = "\nNo directed edge " + x + "--" + y + " " + score +
+                                "\n   Parents(" + x + ") = " + condxMinus +
+                                "\n   Parents(" + y + ") = " + condyMinus;
 
-                        builder.append("\nNo directed edge ").append(x).append("--").append(y).append(" ").append(score);
-                        builder.append("\n   Parents(").append(x).append(") = ").append(condxMinus);
-                        builder.append("\n   Parents(").append(y).append(") = ").append(condyMinus);
-
-                        scoreReports.put(-score, builder.toString());
+                        scoreReports.put(-score, s);
                     }
                 } else {
                     if ((yPlus <= xPlus + delta && xMinus <= yMinus + delta) || forbiddenRight) {
                         double score = combinedScore(xPlus, yMinus);
 
-                        StringBuilder builder = new StringBuilder();
+                        String s = "\nWeak " + y + "->" + x + " " + score +
+                                "\n   Parents(" + x + ") = " + condxMinus +
+                                "\n   Parents(" + y + ") = " + condyMinus;
 
-                        builder.append("\nWeak ").append(y).append("->").append(x).append(" ").append(score);
-                        builder.append("\n   Parents(").append(x).append(") = ").append(condxMinus);
-                        builder.append("\n   Parents(").append(y).append(") = ").append(condyMinus);
-
-                        scoreReports.put(-score, builder.toString());
+                        scoreReports.put(-score, s);
 
                         if (score > max) {
                             max = score;
@@ -682,13 +617,11 @@ public class Lofs2 {
                     } else if ((xPlus <= yPlus + delta && yMinus <= xMinus + delta) || forbiddenLeft) {
                         double score = combinedScore(yPlus, xMinus);
 
-                        StringBuilder builder = new StringBuilder();
+                        String s = "\nWeak " + x + "->" + y + " " + score +
+                                "\n   Parents(" + x + ") = " + condxMinus +
+                                "\n   Parents(" + y + ") = " + condyMinus;
 
-                        builder.append("\nWeak ").append(x).append("->").append(y).append(" ").append(score);
-                        builder.append("\n   Parents(").append(x).append(") = ").append(condxMinus);
-                        builder.append("\n   Parents(").append(y).append(") = ").append(condyMinus);
-
-                        scoreReports.put(-score, builder.toString());
+                        scoreReports.put(-score, s);
 
                         if (score > max) {
                             max = score;
@@ -698,23 +631,19 @@ public class Lofs2 {
                     } else if (yPlus <= xPlus + delta && yMinus <= xMinus + delta) {
                         double score = combinedScore(yPlus, xMinus);
 
-                        StringBuilder builder = new StringBuilder();
+                        String s = "\nNo directed edge " + x + "--" + y + " " + score +
+                                "\n   Parents(" + x + ") = " + condxMinus +
+                                "\n   Parents(" + y + ") = " + condyMinus;
 
-                        builder.append("\nNo directed edge ").append(x).append("--").append(y).append(" ").append(score);
-                        builder.append("\n   Parents(").append(x).append(") = ").append(condxMinus);
-                        builder.append("\n   Parents(").append(y).append(") = ").append(condyMinus);
-
-                        scoreReports.put(-score, builder.toString());
+                        scoreReports.put(-score, s);
                     } else if (xPlus <= yPlus + delta && xMinus <= yMinus + delta) {
                         double score = combinedScore(yPlus, xMinus);
 
-                        StringBuilder builder = new StringBuilder();
+                        String s = "\nNo directed edge " + x + "--" + y + " " + score +
+                                "\n   Parents(" + x + ") = " + condxMinus +
+                                "\n   Parents(" + y + ") = " + condyMinus;
 
-                        builder.append("\nNo directed edge ").append(x).append("--").append(y).append(" ").append(score);
-                        builder.append("\n   Parents(").append(x).append(") = ").append(condxMinus);
-                        builder.append("\n   Parents(").append(y).append(") = ").append(condyMinus);
-
-                        scoreReports.put(-score, builder.toString());
+                        scoreReports.put(-score, s);
                     }
                 }
             }
@@ -740,7 +669,7 @@ public class Lofs2 {
     }
 
 
-    private Graph ruleR3(Graph graph) {
+    private void ruleR3(Graph graph) {
         List<DataSet> standardized = DataUtils.standardizeData(this.dataSets);
         setDataSets(standardized);
 
@@ -756,8 +685,6 @@ public class Lofs2 {
 
             resolveOneEdgeMaxR3(graph, x, y);
         }
-
-        return graph;
 
     }
 
@@ -810,407 +737,6 @@ public class Lofs2 {
         }
     }
 
-    public Graph ruleR4(Graph graph) {
-        List<Node> nodes = this.dataSets.get(0).getVariables();
-        graph = GraphUtils.replaceNodes(graph, nodes);
-
-        // For each row, list the columns of W in that row that are parameters. Note that the diagonal
-        // is fixed to 1, so diagonal elements aren't parameters.
-        List<List<Integer>> rows = new ArrayList<>();
-        List<List<List<Double>>> paramsforDataSets = new ArrayList<>();
-        List<List<Double>> avgParams = new ArrayList<>();
-
-        for (int k = 0; k < nodes.size(); k++) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            List<Node> adj = graph.getAdjacentNodes(nodes.get(k));
-            List<Integer> row = new ArrayList<>();
-            List<Double> avgParam = new ArrayList<>();
-            List<Node> nodesInRow = new ArrayList<>();
-
-            for (Node node : adj) {
-                if (this.knowledge.isForbidden(node.getName(), nodes.get(k).getName())) {
-                    continue;
-                }
-
-                int j = nodes.indexOf(node);
-                row.add(j);
-                avgParam.add(0.0);
-                nodesInRow.add(node);
-            }
-
-            for (Node node : nodes) {
-                if (this.knowledge.isRequired(node.getName(), nodes.get(k).getName())) {
-                    if (!nodesInRow.contains(node)) {
-                        int j = nodes.indexOf(node);
-                        row.add(j);
-                        avgParam.add(0.0);
-                        nodesInRow.add(node);
-                    }
-                }
-            }
-
-//            row.add(k);
-//            avgParam.add(0.0);
-
-            rows.add(row);
-            avgParams.add(avgParam);
-        }
-
-        // Estimate parameters for each data set.
-        for (int i = 0; i < this.dataSets.size(); i++) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            Matrix data = this.dataSets.get(i).getDoubleData();
-            List<List<Double>> parameters = new ArrayList<>();
-
-            // Note that the 1's along the diagonal of W are hard coded into the code for calculating scores.
-            // Otherwise list doubles to correspond to each parameter.
-            for (int k = 0; k < nodes.size(); k++) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                List<Double> params = new ArrayList<>();
-
-                for (int j : rows.get(k)) {
-                    params.add(0.0);
-                }
-
-                parameters.add(params);
-            }
-
-            double range = this.zeta;
-
-            // Estimate the parameters.
-            optimizeAllRows(data, range, rows, parameters);
-
-            // Print out the estimated coefficients (I - W) for off-diagonals.
-            printEstimatedCoefs(nodes, rows, parameters);
-
-            // Remember the parameters for this dataset.
-            paramsforDataSets.add(parameters);
-        }
-
-        // Note that the average of each parameter across data sets will be used. If there is just one
-        // data set, this is just the parameter.
-        if (!isOrientStrongerDirection()) {
-            Graph _graph = new EdgeListGraph(nodes);
-
-            for (int i = 0; i < rows.size(); i++) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                for (int _j = 0; _j < rows.get(i).size(); _j++) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        break;
-                    }
-
-                    double param = avg(paramsforDataSets, i, _j);
-                    avgParams.get(i).set(_j, param);
-                    int j = rows.get(i).get(_j);
-
-                    if (i == j) continue;
-
-                    Node node1 = nodes.get(j);
-                    Node node2 = nodes.get(i);
-
-                    Edge edge1 = Edges.directedEdge(node1, node2);
-
-                    if (abs(param) >= this.epsilon) {
-                        _graph.addEdge(edge1);
-                    }
-                }
-            }
-
-            return _graph;
-        } else {
-            Graph _graph = new EdgeListGraph(nodes);
-
-            for (int i = 0; i < rows.size(); i++) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                for (int _j = 0; _j < rows.get(i).size(); _j++) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        break;
-                    }
-
-                    int j = rows.get(i).get(_j);
-
-                    if (j > i) continue;
-
-                    double param1 = avg(paramsforDataSets, i, _j);
-                    avgParams.get(i).set(_j, param1);
-
-                    double param2 = 0.0;
-
-                    for (int _i = 0; _i < rows.get(j).size(); _i++) {
-                        if (Thread.currentThread().isInterrupted()) {
-                            break;
-                        }
-
-                        int i2 = rows.get(j).get(_i);
-
-                        if (i2 == i) {
-                            param2 = avg(paramsforDataSets, j, _i);
-                            avgParams.get(j).set(_i, param2);
-                            break;
-                        }
-                    }
-
-                    if (param2 == 0) {
-                        throw new IllegalArgumentException();
-                    }
-
-                    if (i == j) continue;
-
-                    Node node1 = nodes.get(j);
-                    Node node2 = nodes.get(i);
-                    Edge edge1 = Edges.directedEdge(node1, node2);
-                    Edge edge2 = Edges.directedEdge(node2, node1);
-
-                    if (abs(param1) > abs(param2)) {
-                        _graph.addEdge(edge1);
-                    } else if (abs(param1) < abs(param2)) {
-                        _graph.addEdge(edge2);
-                    } else {
-                        _graph.addUndirectedEdge(node1, node2);
-                    }
-                }
-            }
-
-            // Print the average coefficients.
-            printEstimatedCoefs(nodes, rows, avgParams);
-
-            return _graph;
-        }
-    }
-
-    private void printEstimatedCoefs(List<Node> nodes, List<List<Integer>> rows, List<List<Double>> parameters) {
-        NumberFormat nf = new DecimalFormat("0.0000");
-
-        for (int g = 0; g < rows.size(); g++) {
-            System.out.print(nodes.get(g) + "\t");
-            for (int h = 0; h < rows.get(g).size(); h++) {
-                System.out.print(nodes.get(rows.get(g).get(h)) + ":" + nf.format(-parameters.get(g).get(h)) + "\t");
-            }
-
-            System.out.println();
-        }
-    }
-
-    private double avg(List<List<List<Double>>> paramsforDataSets, int i, int j) {
-
-        // The average of non-missing coefficients.
-        double sum = 0.0;
-        int count = 0;
-
-        for (List<List<Double>> params : paramsforDataSets) {
-            Double coef = params.get(i).get(j);
-
-            if (!isNaN(coef)) {
-                sum += coef;
-                count++;
-            }
-        }
-
-        return sum / count;
-    }
-
-    private void optimizeAllRows(Matrix data, double range,
-                                 List<List<Integer>> rows, List<List<Double>> parameters) {
-
-        for (int i = 0; i < rows.size(); i++) {
-            System.out.println("Optimizing row = " + i);
-
-            try {
-                optimizeRow(i, data, range, rows, parameters);
-            } catch (IllegalStateException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private void optimizeRow(int rowIndex, Matrix data,
-                             double range, List<List<Integer>> rows,
-                             List<List<Double>> parameters) {
-        System.out.println("A");
-
-        int numParams = rows.get(rowIndex).size();
-
-        double[] dLeftMin = new double[numParams];
-        double[] dRightMin = new double[numParams];
-
-        double[] values = new double[numParams];
-        final double delta = 0.1;
-
-        if (false) { //isEdgeCorrected()) {
-            final double min = -2;
-            final double max = 2;
-
-            int[] dims = new int[values.length];
-
-            final int numBins = 5;
-            for (int i = 0; i < values.length; i++) dims[i] = numBins;
-
-            CombinationGenerator gen = new CombinationGenerator(dims);
-            int[] comb;
-            List<Double> maxParams = new ArrayList<>();
-
-            for (int i = 0; i < values.length; i++) maxParams.add(0.0);
-
-            double maxV = Double.NEGATIVE_INFINITY;
-
-            while ((comb = gen.next()) != null) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                List<Double> params = new ArrayList<>();
-
-                for (int i = 0; i < values.length; i++) {
-                    params.add(min + (max - min) * (comb[i] / (double) numBins));
-                }
-
-                parameters.set(rowIndex, params);
-
-                double v = scoreRow(rowIndex, data, rows, parameters);
-
-                if (v > maxV) {
-                    maxV = v;
-                    maxParams = params;
-                }
-            }
-
-            System.out.println("maxparams = " + maxParams);
-
-            parameters.set(rowIndex, maxParams);
-
-            for (int i = 0; i < values.length; i++) {
-                dLeftMin[i] = -range;
-                dRightMin[i] = range;
-                values[i] = maxParams.get(i);
-            }
-        } else if (false) {
-            for (int i = 0; i < numParams; i++) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                parameters.get(rowIndex).set(i, -range);
-                double vLeft = scoreRow(rowIndex, data, rows, parameters);
-                double dLeft = -range;
-
-                // Search from the left for the first valley; mark that as dleft.
-                for (double d = -range + delta; d < range; d += delta) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        break;
-                    }
-
-                    parameters.get(rowIndex).set(i, d);
-                    double v = scoreRow(rowIndex, data, rows, parameters);
-                    if (isNaN(v)) continue;
-                    if (v > vLeft) break;
-                    vLeft = v;
-                    dLeft = d;
-                }
-
-                parameters.get(rowIndex).set(i, range);
-                double vRight = scoreRow(rowIndex, data, rows, parameters);
-                double dRight = range;
-
-                // Similarly for dright. Will take dleft and dright to be bounds for the parameter,
-                // to avoid high scores at the boundaries.
-                for (double d = range - delta; d > -range; d -= delta) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        break;
-                    }
-
-                    parameters.get(rowIndex).set(i, d);
-                    double v = scoreRow(rowIndex, data, rows, parameters);
-                    if (isNaN(v)) continue;
-                    if (v > vRight) break;
-                    vRight = v;
-                    dRight = d;
-                }
-
-                // If dleft dright ended up reversed, re-reverse them.
-                if (dLeft > dRight) {
-                    double temp = dRight;
-                    dLeft = dRight;
-                    dRight = temp;
-                }
-
-                System.out.println("dLeft = " + dLeft + " dRight = " + dRight);
-
-                dLeftMin[i] = dLeft;
-                dRightMin[i] = dRight;
-
-                values[i] = (dLeft + dRight) / 2.0;
-            }
-        } else {
-
-            // Default case: search for the maximum score over the entire range.
-            for (int i = 0; i < numParams; i++) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                dLeftMin[i] = -range;
-                dRightMin[i] = range;
-
-                values[i] = 0;
-            }
-        }
-
-        MultivariateFunction function = new MultivariateFunction() {
-            public double value(double[] values) {
-                System.out.println(Arrays.toString(values));
-
-                for (int i = 0; i < values.length; i++) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        break;
-                    }
-
-                    parameters.get(rowIndex).set(i, values[i]);
-                }
-
-                double v = scoreRow(rowIndex, data, rows, parameters);
-
-                if (isNaN(v)) {
-                    return Double.POSITIVE_INFINITY; // was 10000
-                }
-
-                return -v;
-            }
-        };
-
-        try {
-            MultivariateOptimizer search = new PowellOptimizer(1e-7, 1e-7);
-
-            PointValuePair pair = search.optimize(
-                    new InitialGuess(values),
-                    new ObjectiveFunction(function),
-                    GoalType.MINIMIZE,
-                    new MaxEval(100000));
-
-            values = pair.getPoint();
-        } catch (Exception e) {
-            e.printStackTrace();
-
-            for (int i = 0; i < values.length; i++) {
-                parameters.get(rowIndex).set(i, Double.NaN);
-            }
-        }
-    }
-
     private double[] col;
 
     // rowIndex is for the W matrix, not for the data.
@@ -1246,40 +772,6 @@ public class Lofs2 {
         }
 
         return score(this.col);
-    }
-
-    public double rowPValue(int rowIndex, Matrix data, List<List<Integer>> rows, List<List<Double>> parameters) {
-        if (this.col == null) {
-            this.col = new double[data.rows()];
-        }
-
-        List<Integer> cols = rows.get(rowIndex);
-
-        for (int i = 0; i < data.rows(); i++) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            double d = 0.0;
-
-            for (int j = 0; j < cols.size(); j++) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                int _j = cols.get(j);
-                double coef = parameters.get(rowIndex).get(j);
-                double value = data.get(i, _j);
-                d += coef * value;
-            }
-
-            // Add in the diagonal, assumed to consist entirely of 1's.
-            d += 1.0 * data.get(i, rowIndex);
-
-            this.col[i] = d;
-        }
-
-        return aSquaredP(this.col);
     }
 
     private Graph entropyBased(Graph graph) {
@@ -1456,8 +948,8 @@ public class Lofs2 {
 
     // @param empirical True if the skew signs are estimated empirically.
     private Graph robustSkewGraph(Graph graph, boolean empirical) {
-        List<DataSet> _dataSets = new ArrayList<>();
-        for (DataSet dataSet : this.dataSets) _dataSets.add(dataSet);// DataUtils.standardizeData(dataSet));
+        // DataUtils.standardizeData(dataSet));
+        List<DataSet> _dataSets = new ArrayList<>(this.dataSets);
         DataSet dataSet = DataUtils.concatenate(_dataSets);
         graph = GraphUtils.replaceNodes(graph, dataSet.getVariables());
         dataSet = DataUtils.standardizeData(dataSet);
@@ -1524,10 +1016,6 @@ public class Lofs2 {
         return log(cosh(Math.max(x, 0)));
     }
 
-    private double g2(double x) {
-        return log(cosh(Math.max(-x, 0)));
-    }
-
     // cutoff is NaN if no thresholding is to be done, otherwise a threshold between 0 and 1.
     private Graph patelTauOrientation(Graph graph, double cutoff) {
         List<DataSet> centered = DataUtils.center(this.dataSets);
@@ -1547,7 +1035,7 @@ public class Lofs2 {
             Node _x = dataSet.getVariable(x.getName());
             Node _y = dataSet.getVariable(y.getName());
 
-            List<double[]> ret = prepareData(dataSet, _x, _y, false, false);
+            List<double[]> ret = prepareData(dataSet, _x, _y);
             double[] xData = ret.get(0);
             double[] yData = ret.get(1);
 
@@ -1608,8 +1096,8 @@ public class Lofs2 {
         }
 
         double theta1 = dotProduct(d1b, d2b) / XT;
-        double theta2 = dotProduct(d1b, minus(1, d2b)) / XT;
-        double theta3 = dotProduct(d2b, minus(1, d1b)) / XT;
+        double theta2 = dotProduct(d1b, minus(d2b)) / XT;
+        double theta3 = dotProduct(d2b, minus(d1b)) / XT;
 //        double theta4= dotProduct(minus(1, d1b), minus(1, d2b))/XT;
 
         double tau_12;
@@ -1630,11 +1118,11 @@ public class Lofs2 {
         return p;
     }
 
-    private double[] minus(int s, double[] x) {
+    private double[] minus(double[] x) {
         double[] y = new double[x.length];
 
         for (int i = 0; i < x.length; i++) {
-            y[i] = s - x[i];
+            y[i] = 1 - x[i];
         }
 
         return y;
@@ -1690,7 +1178,7 @@ public class Lofs2 {
         return data2;
     }
 
-    private List<double[]> prepareData(DataSet concatData, Node _x, Node _y, boolean skewCorrection, boolean coefCorrection) {
+    private List<double[]> prepareData(DataSet concatData, Node _x, Node _y) {
         int xIndex = concatData.getColumn(_x);
         int yIndex = concatData.getColumn(_y);
 
@@ -1713,35 +1201,6 @@ public class Lofs2 {
         for (int i = 0; i < xValues.size(); i++) {
             xData[i] = xValues.get(i);
             yData[i] = yValues.get(i);
-        }
-
-        if (skewCorrection) {
-            double xSkew = skewness(xData);
-            double ySkew = skewness(yData);
-
-            for (int i = 0; i < xData.length; i++) xData[i] *= signum(xSkew);
-            for (int i = 0; i < yData.length; i++) yData[i] *= signum(ySkew);
-        }
-
-        if (coefCorrection) {
-            double coefX;
-            try {
-                coefX = regressionCoef(xData, yData);
-            } catch (Exception e) {
-                coefX = Double.NaN;
-            }
-
-            double coefY;
-
-            try {
-                coefY = regressionCoef(yData, xData);
-            } catch (Exception e) {
-                coefY = Double.NaN;
-            }
-
-            for (int i = 0; i < xData.length; i++) xData[i] *= signum(coefX);
-            for (int i = 0; i < yData.length; i++) yData[i] *= signum(coefY);
-
         }
 
         List<double[]> ret = new ArrayList<>();
@@ -1794,10 +1253,6 @@ public class Lofs2 {
         this.epsilon = epsilon;
     }
 
-    public void setZeta(double zeta) {
-        this.zeta = zeta;
-    }
-
     public void setKnowledge(IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
@@ -1806,33 +1261,11 @@ public class Lofs2 {
         this.knowledge = knowledge;
     }
 
-    private double aSquared(double[] x) {
-        return new AndersonDarlingTest(x).getASquaredStar();
-    }
-
-    private double aSquaredP(double[] x) {
-        return new AndersonDarlingTest(x).getP();
-    }
-
     /**
      * @return the probability associated with the most recently computed independence test.
      */
     public double getPValue(double fisherZ) {
         return 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, abs(fisherZ)));
-    }
-
-    private static class Pair {
-        int index;
-        double value;
-
-        public Pair(int index, double value) {
-            this.index = index;
-            this.value = value;
-        }
-
-        public String toString() {
-            return "<" + this.index + ", " + this.value + ">";
-        }
     }
 
     private Graph igci(Graph graph) {
@@ -1860,7 +1293,7 @@ public class Lofs2 {
             double[] xCol = matrix.getColumn(xIndex).toArray();
             double[] yCol = matrix.getColumn(yIndex).toArray();
 
-            double f = igci(xCol, yCol, 2, 1);
+            double f = igci(xCol, yCol);
 
             graph.removeEdges(x, y);
 
@@ -1881,236 +1314,69 @@ public class Lofs2 {
         return _graph;
     }
 
-    private double igci(double[] x, double[] y, int refMeasure, int estimator) {
+    private double igci(double[] x, double[] y) {
         int m = x.length;
 
         if (m != y.length) {
             throw new IllegalArgumentException("Vectors must be the same length.");
         }
 
-        switch (refMeasure) {
-            case 1:
-                // uniform reference measure
+        // uniform reference measure
 
-                double minx = min(x);
-                double maxx = max(x);
-                double miny = min(y);
-                double maxy = max(y);
+        double meanx = mean(x);
+        double stdx = sd(x);
+        double meany = mean(y);
+        double stdy = sd(y);
 
-                for (int i = 0; i < x.length; i++) {
-                    x[i] = (x[i] - minx) / (maxx - minx);
-                    y[i] = (y[i] - miny) / (maxy - miny);
-                }
-
-                break;
-
-            case 2:
-                double meanx = mean(x);
-                double stdx = sd(x);
-                double meany = mean(y);
-                double stdy = sd(y);
-
-                // Gaussian reference measure
-                for (int i = 0; i < x.length; i++) {
-                    x[i] = (x[i] - meanx) / stdx;
-                    y[i] = (y[i] - meany) / stdy;
-                }
-
-                break;
-
-            default:
-                throw new IllegalArgumentException("Warning: unknown reference measure - no scaling applied.");
+        // Gaussian reference measure
+        for (int i = 0; i < x.length; i++) {
+            x[i] = (x[i] - meanx) / stdx;
+            y[i] = (y[i] - meany) / stdy;
         }
 
 
         double f;
 
-        if (estimator == 1) {
-            // difference of entropies
+        // difference of entropies
 
-            double[] x1 = Arrays.copyOf(x, x.length);
-            Arrays.sort(x1);
+        double[] x1 = Arrays.copyOf(x, x.length);
+        Arrays.sort(x1);
 
-            x1 = removeNaN(x1);
+        x1 = removeNaN(x1);
 
-            double[] y1 = Arrays.copyOf(y, y.length);
-            Arrays.sort(y1);
+        double[] y1 = Arrays.copyOf(y, y.length);
+        Arrays.sort(y1);
 
-            y1 = removeNaN(y1);
+        y1 = removeNaN(y1);
 
-            int n1 = x1.length;
-            double hx = 0.0;
-            for (int i = 0; i < n1 - 1; i++) {
-                double delta = x1[i + 1] - x1[i];
-                if (delta != 0) {
-                    hx = hx + log(abs(delta));
-                }
+        int n1 = x1.length;
+        double hx = 0.0;
+        for (int i = 0; i < n1 - 1; i++) {
+            double delta = x1[i + 1] - x1[i];
+            if (delta != 0) {
+                hx = hx + log(abs(delta));
             }
-
-            hx = hx / (n1 - 1) + psi(n1) - psi(1);
-
-            int n2 = y1.length;
-            double hy = 0.0;
-            for (int i = 0; i < n2 - 1; i++) {
-                double delta = y1[i + 1] - y1[i];
-
-                if (delta != 0) {
-                    if (isNaN(delta)) {
-                        throw new IllegalArgumentException();
-                    }
-
-                    hy = hy + log(abs(delta));
-                }
-            }
-
-            hy = hy / (n2 - 1) + psi(n2) - psi(1);
-
-            f = hy - hx;
-        } else if (estimator == 2) {
-            // integral-approximation based estimator
-            double a = 0;
-            double b = 0;
-
-            List<Pair> _x = new ArrayList<>();
-
-            for (int i = 0; i < x.length; i++) {
-                _x.add(new Pair(i, x[i]));
-            }
-
-            Collections.sort(_x, new Comparator<Pair>() {
-                public int compare(Pair pair1, Pair pair2) {
-                    return new Double(pair1.value).compareTo(pair2.value);
-                }
-            });
-
-            List<Pair> _y = new ArrayList<>();
-
-            for (int i = 0; i < y.length; i++) {
-                _y.add(new Pair(i, y[i]));
-            }
-
-            Collections.sort(_y, new Comparator<Pair>() {
-                public int compare(Pair pair1, Pair pair2) {
-                    return new Double(pair1.value).compareTo(pair2.value);
-                }
-            });
-
-            for (int i = 0; i < m - 1; i++) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                double X1 = x[_x.get(i).index];
-                double X2 = x[_x.get(i + 1).index];
-                double Y1 = y[_x.get(i).index];
-                double Y2 = y[_x.get(i + 1).index];
-
-                if (X2 != X1 && Y2 != Y1) {
-                    a = a + log(abs((Y2 - Y1) / (X2 - X1)));
-                }
-
-                X1 = x[_y.get(i).index];
-                X2 = x[_y.get(i + 1).index];
-                Y1 = y[_y.get(i).index];
-                Y2 = y[_y.get(i + 1).index];
-
-                if (Y2 != Y1 && X2 != X1) {
-                    b = b + log(abs((X2 - X1) / (Y2 - Y1)));
-                }
-            }
-
-            f = (a - b) / m;
-        } else if (estimator == 3) {
-            // integral-approximation based estimator
-            double a = 0;
-
-            x = Arrays.copyOf(x, x.length);
-            y = Arrays.copyOf(y, y.length);
-
-            Arrays.sort(x);
-            Arrays.sort(y);
-
-            for (int i = 0; i < m - 1; i++) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                double X1 = x[i];
-                double X2 = x[i + 1];
-                double Y1 = y[i];
-                double Y2 = y[i + 1];
-
-                if (X2 != X1 && Y2 != Y1) {
-                    a = a + log((Y2 - Y1) / (X2 - X1));
-                }
-            }
-
-            f = a / m;
-        } else if (estimator == 4) {
-            // integral-approximation based estimator
-            double a = 0;
-            double b = 0;
-
-            x = Arrays.copyOf(x, x.length);
-            y = Arrays.copyOf(y, y.length);
-
-            Arrays.sort(x);
-            Arrays.sort(y);
-
-            for (int i = 0; i < m - 1; i++) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                double X1 = x[i];
-                double X2 = x[i + 1];
-                double Y1 = y[i];
-                double Y2 = y[i + 1];
-
-                if (X2 != X1 && Y2 != Y1) {
-                    a = a + log((Y2 - Y1) / (X2 - X1));
-                }
-
-                if (Y2 != Y1 && X2 != X1) {
-                    b = b + log((X2 - X1) / (Y2 - Y1));
-                }
-            }
-
-            f = (a - b) / m;
-        } else if (estimator == 5) {
-            double a = 0;
-
-            x = Arrays.copyOf(x, x.length);
-            y = Arrays.copyOf(y, y.length);
-
-            Arrays.sort(x);
-            Arrays.sort(y);
-
-            for (int i = 0; i < m - 1; i++) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                double X1 = x[i];
-                double X2 = x[i + 1];
-                double Y1 = y[i] - y[0];
-                double Y2 = y[i + 1] - y[0];
-
-                if (X2 != X1 && Y2 != Y1) {
-                    a += ((Y2 + Y1) / 2.0) * (X2 - X1);
-                }
-            }
-
-            a -= ((y[m - 1] - y[0]) * (x[m - 1] - x[0])) / 2.0;
-
-
-            System.out.println("a = " + a);
-//            f = b-a;
-            f = a;
-
-        } else {
-            throw new IllegalArgumentException("Estimator must be 1 or 2: " + estimator);
         }
+
+        hx = hx / (n1 - 1) + psi(n1) - psi(1);
+
+        int n2 = y1.length;
+        double hy = 0.0;
+        for (int i = 0; i < n2 - 1; i++) {
+            double delta = y1[i + 1] - y1[i];
+
+            if (delta != 0) {
+                if (isNaN(delta)) {
+                    throw new IllegalArgumentException();
+                }
+
+                hy = hy + log(abs(delta));
+            }
+        }
+
+        hy = hy / (n2 - 1) + psi(n2) - psi(1);
+
+        f = hy - hx;
 
         return f;
 
@@ -2119,9 +1385,9 @@ public class Lofs2 {
     private double[] removeNaN(double[] data) {
         List<Double> _leaveOutMissing = new ArrayList<>();
 
-        for (int i = 0; i < data.length; i++) {
-            if (!isNaN(data[i])) {
-                _leaveOutMissing.add(data[i]);
+        for (double datum : data) {
+            if (!isNaN(datum)) {
+                _leaveOutMissing.add(datum);
             }
         }
 
@@ -2151,26 +1417,6 @@ public class Lofs2 {
         return result;
     }
 
-    private double min(double[] x) {
-        double min = Double.POSITIVE_INFINITY;
-
-        for (double _x : x) {
-            if (_x < min) min = _x;
-        }
-
-        return min;
-    }
-
-    private double max(double[] x) {
-        double max = Double.NEGATIVE_INFINITY;
-
-        for (double _x : x) {
-            if (_x > max) max = _x;
-        }
-
-        return max;
-    }
-
 
     private double combinedScore(double score1, double score2) {
         return score1 + score2;
@@ -2180,19 +1426,19 @@ public class Lofs2 {
         if (this.score == Lofs.Score.andersonDarling) {
             return andersonDarlingPASquare(y, parents);
         } else if (this.score == Lofs.Score.kurtosis) {
-            return abs(kurtosis(residuals(y, parents, true, true)));
+            return abs(kurtosis(residuals(y, parents, true)));
         } else if (this.score == Lofs.Score.entropy) {
             return entropy(y, parents);
         } else if (this.score == Lofs.Score.skew) {
-            return abs(skewness(residuals(y, parents, true, true)));
+            return abs(skewness(residuals(y, parents, true)));
         } else if (this.score == Lofs.Score.fifthMoment) {
-            return abs(standardizedFifthMoment(residuals(y, parents, true, true)));
+            return abs(standardizedFifthMoment(residuals(y, parents, true)));
         } else if (this.score == Lofs.Score.absoluteValue) {
             return meanAbsolute(y, parents);
         } else if (this.score == Lofs.Score.exp) {
             return expScoreUnstandardized(y, parents);
         } else if (this.score == Lofs.Score.other) {
-            double[] _f = residuals(y, parents, true, true);
+            double[] _f = residuals(y, parents, true);
             return score(_f);
         } else if (this.score == Lofs.Score.logcosh) {
             return logCoshScore(y, parents);
@@ -2229,13 +1475,13 @@ public class Lofs2 {
     //=============================PRIVATE METHODS=========================//
 
     private double meanAbsolute(Node node, List<Node> parents) {
-        double[] _f = residuals(node, parents, false, true);
+        double[] _f = residuals(node, parents, false);
 
         return StatUtils.meanAbsolute(_f);
     }
 
     private double expScoreUnstandardized(Node node, List<Node> parents) {
-        double[] _f = residuals(node, parents, false, true);
+        double[] _f = residuals(node, parents, false);
 
         return expScoreUnstandardized(_f);
     }
@@ -2243,8 +1489,8 @@ public class Lofs2 {
     private double expScoreUnstandardized(double[] _f) {
         double sum = 0.0;
 
-        for (int k = 0; k < _f.length; k++) {
-            sum += exp(_f[k]);
+        for (double v : _f) {
+            sum += exp(v);
         }
 
         double expected = sum / _f.length;
@@ -2252,11 +1498,11 @@ public class Lofs2 {
     }
 
     private double logCoshScore(Node node, List<Node> parents) {
-        double[] _f = residuals(node, parents, true, true);
+        double[] _f = residuals(node, parents, true);
         return StatUtils.logCoshScore(_f);
     }
 
-    private double[] residuals(Node node, List<Node> parents, boolean standardize, boolean removeNaN) {
+    private double[] residuals(Node node, List<Node> parents, boolean standardize) {
         List<Double> _residuals = new ArrayList<>();
 
         Node target = getVariable(this.variables, node.getName());
@@ -2309,7 +1555,7 @@ public class Lofs2 {
             }
 
             for (double _x : residualsSingleDataset) {
-                if (removeNaN && isNaN(_x)) continue;
+                if (isNaN(_x)) continue;
                 _residuals.add(_x);
             }
         }
@@ -2320,7 +1566,7 @@ public class Lofs2 {
             _f[k] = _residuals.get(k);
         }
 
-        if (standardize && removeNaN) {
+        if (standardize) {
             _f = DataUtils.standardizeData(_f);
         }
 
@@ -2328,13 +1574,13 @@ public class Lofs2 {
     }
 
     private double andersonDarlingPASquare(Node node, List<Node> parents) {
-        double[] _f = residuals(node, parents, true, true);
+        double[] _f = residuals(node, parents, true);
 //        return new AndersonDarlingTest(_f).getASquaredStar();
         return new AndersonDarlingTest(_f).getASquared();
     }
 
     private double entropy(Node node, List<Node> parents) {
-        double[] _f = residuals(node, parents, true, true);
+        double[] _f = residuals(node, parents, true);
         return maxEntApprox(_f);
     }
 
@@ -2365,12 +1611,12 @@ public class Lofs2 {
                 }
             }
 
-            for (int g = 0; g < regressors.size(); g++) {
+            for (Node regressor : regressors) {
                 if (Thread.currentThread().isInterrupted()) {
                     break;
                 }
 
-                int regressorCol = dataSet.getColumn(regressors.get(g));
+                int regressorCol = dataSet.getColumn(regressor);
 
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
                     if (isNaN(dataSet.getDouble(i, regressorCol))) {
@@ -2508,8 +1754,8 @@ public class Lofs2 {
 
         double _h = 1.0;
 
-        for (int i = 0; i < y.length; i++) {
-            _h *= h(y[i]);
+        for (double[] doubles : y) {
+            _h *= h(doubles);
         }
 
         _h = (y.length == 0) ? 1.0 : pow(_h, 1.0 / (y.length));
@@ -2603,8 +1849,8 @@ public class Lofs2 {
     private double distance(double[][] yCols, int i, int j) {
         double sum = 0.0;
 
-        for (int m = 0; m < yCols.length; m++) {
-            double d = yCols[m][i] - yCols[m][j];
+        for (double[] yCol : yCols) {
+            double d = yCol[i] - yCol[j];
             sum += d * d;
         }
 
@@ -2613,8 +1859,6 @@ public class Lofs2 {
 
 
     private double resolveOneEdgeMaxR3(double[] x, double[] y) {
-        TetradLogger.getInstance().log("info", "\nEDGE " + x + " --- " + y);
-
         OLSMultipleLinearRegression regression = new OLSMultipleLinearRegression();
         double[][] _x = new double[1][];
         _x[0] = x;
@@ -2639,8 +1883,6 @@ public class Lofs2 {
     }
 
     private double resolveOneEdgeMaxR3b(double[] x, double[] y) {
-        TetradLogger.getInstance().log("info", "\nEDGE " + x + " --- " + y);
-
         int N = x.length;
 
         double[][] yCols = new double[1][N];

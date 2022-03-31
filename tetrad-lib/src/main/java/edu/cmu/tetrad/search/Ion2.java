@@ -39,7 +39,7 @@ import java.util.*;
  * @author Robert Tillman
  * @author Joseph Ramsey
  */
-public class IonJoeModifications {
+public class Ion2 {
 
     // prune using path length
     private boolean pathLengthSearch = true;
@@ -99,7 +99,7 @@ public class IonJoeModifications {
      *
      * @param pags The PAGs to be integrated
      */
-    public IonJoeModifications(List<Graph> pags) {
+    public Ion2(List<Graph> pags) {
         for (Graph pag : pags) {
             this.input.add(pag);
 
@@ -444,7 +444,7 @@ public class IonJoeModifications {
             for (IonIndependenceFacts fact : this.associations) {
                 for (List<Node> nodes : fact.getZ()) {
                     if (nodes.isEmpty()) {
-                        List<List<Node>> treks = IonJoeModifications.treks(pag, fact.x, fact.y);
+                        List<List<Node>> treks = Ion2.treks(pag, fact.x, fact.y);
                         if (treks.size() == 1) {
                             List<Node> trek = treks.get(0);
                             List<Triple> triples = new ArrayList<>();
@@ -477,7 +477,7 @@ public class IonJoeModifications {
                 for (IonIndependenceFacts fact : this.associations) {
                     for (List<Node> nodes : fact.getZ()) {
                         if (nodes.isEmpty()) {
-                            if (IonJoeModifications.treks(newPag, fact.x, fact.y).isEmpty()) {
+                            if (Ion2.treks(newPag, fact.x, fact.y).isEmpty()) {
                                 elimTreks = true;
                             }
                             // stop looping once the empty set is found
@@ -1698,7 +1698,7 @@ public class IonJoeModifications {
 
     public static List<List<Node>> treks(Graph graph, Node node1, Node node2) {
         List<List<Node>> paths = new LinkedList<>();
-        IonJoeModifications.treks(graph, node1, node2, new LinkedList<Node>(), paths);
+        Ion2.treks(graph, node1, node2, new LinkedList<Node>(), paths);
         return paths;
     }
 
@@ -1739,7 +1739,7 @@ public class IonJoeModifications {
                 continue;
             }
 
-            IonJoeModifications.treks(graph, next, node2, path, paths);
+            Ion2.treks(graph, next, node2, path, paths);
         }
 
         path.removeLast();

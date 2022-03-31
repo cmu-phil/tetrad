@@ -45,11 +45,8 @@ public class Lofs {
     private double alpha = 0.05;
     private final ArrayList<Regression> regressions;
     private final List<Node> variables;
-    private boolean r1Done = true;
-    private boolean r2Done = true;
     private boolean strongR2;
     private boolean meekDone;
-    private boolean r2Orient2Cycles = true;
     private boolean meanCenterResiduals;
 
     public enum Score {
@@ -61,8 +58,11 @@ public class Lofs {
 
     //===============================CONSTRUCTOR============================//
 
-    public Lofs(Graph CPDAG, List<DataSet> dataSets)
+    public Lofs(Graph CPDAG, List<DataSet> dataSets, boolean strongR2, boolean meekDone, boolean meanCenterResiduals)
             throws IllegalArgumentException {
+        this.strongR2 = strongR2;
+        this.meekDone = meekDone;
+        this.meanCenterResiduals = meanCenterResiduals;
 
         if (CPDAG == null) {
             throw new IllegalArgumentException("CPDAG must be specified.");
@@ -174,7 +174,7 @@ public class Lofs {
                 continue;
             }
 
-            resolveOneEdgeMax(graph, x, y, isStrongR2(), new EdgeListGraph(graph));
+            resolveOneEdgeMax(graph, x, y, isStrongR2());
         }
     }
 
@@ -201,7 +201,7 @@ public class Lofs {
         return pValue(node, parents) > getAlpha();
     }
 
-    private void resolveOneEdgeMax(Graph graph, Node x, Node y, boolean strong, Graph oldGraph) {
+    private void resolveOneEdgeMax(Graph graph, Node x, Node y, boolean strong) {
         if (RandomUtil.getInstance().nextDouble() > 0.5) {
             Node temp = x;
             x = y;
@@ -240,12 +240,6 @@ public class Lofs {
             while ((choicey = geny.next()) != null) {
                 List<Node> condyMinus = GraphUtils.asList(choicey, neighborsy);
 
-//                List<Node> parentsY = oldGraph.getParents(y);
-//                parentsY.remove(x);
-//                if (!condyMinus.containsAll(parentsY)) {
-//                    continue;
-//                }
-
                 List<Node> condyPlus = new ArrayList<>(condyMinus);
                 condyPlus.add(x);
 
@@ -264,13 +258,11 @@ public class Lofs {
                         double score = combinedScore(xPlus, yMinus);
 
                         if (yPlus <= yMinus + delta && xMinus <= xPlus + delta) {
-                            StringBuilder builder = new StringBuilder();
+                            String s = "\nStrong " + y + "->" + x + " " + score +
+                                    "\n   Parents(" + x + ") = " + condxMinus +
+                                    "\n   Parents(" + y + ") = " + condyMinus;
 
-                            builder.append("\nStrong " + y + "->" + x + " " + score);
-                            builder.append("\n   Parents(" + x + ") = " + condxMinus);
-                            builder.append("\n   Parents(" + y + ") = " + condyMinus);
-
-                            scoreReports.put(-score, builder.toString());
+                            scoreReports.put(-score, s);
 
                             if (score > max) {
                                 max = score;
@@ -278,25 +270,21 @@ public class Lofs {
                                 right = false;
                             }
                         } else {
-                            StringBuilder builder = new StringBuilder();
+                            String s = "\nNo directed edge " + x + "--" + y + " " + score +
+                                    "\n   Parents(" + x + ") = " + condxMinus +
+                                    "\n   Parents(" + y + ") = " + condyMinus;
 
-                            builder.append("\nNo directed edge " + x + "--" + y + " " + score);
-                            builder.append("\n   Parents(" + x + ") = " + condxMinus);
-                            builder.append("\n   Parents(" + y + ") = " + condyMinus);
-
-                            scoreReports.put(-score, builder.toString());
+                            scoreReports.put(-score, s);
                         }
                     } else if (xPlus <= yPlus + delta && yMinus <= xMinus + delta) {
                         double score = combinedScore(yPlus, xMinus);
 
                         if (yMinus <= yPlus + delta && xPlus <= xMinus + delta) {
-                            StringBuilder builder = new StringBuilder();
+                            String s = "\nStrong " + x + "->" + y + " " + score +
+                                    "\n   Parents(" + x + ") = " + condxMinus +
+                                    "\n   Parents(" + y + ") = " + condyMinus;
 
-                            builder.append("\nStrong " + x + "->" + y + " " + score);
-                            builder.append("\n   Parents(" + x + ") = " + condxMinus);
-                            builder.append("\n   Parents(" + y + ") = " + condyMinus);
-
-                            scoreReports.put(-score, builder.toString());
+                            scoreReports.put(-score, s);
 
                             if (score > max) {
                                 max = score;
@@ -304,46 +292,38 @@ public class Lofs {
                                 right = true;
                             }
                         } else {
-                            StringBuilder builder = new StringBuilder();
+                            String s = "\nNo directed edge " + x + "--" + y + " " + score +
+                                    "\n   Parents(" + x + ") = " + condxMinus +
+                                    "\n   Parents(" + y + ") = " + condyMinus;
 
-                            builder.append("\nNo directed edge " + x + "--" + y + " " + score);
-                            builder.append("\n   Parents(" + x + ") = " + condxMinus);
-                            builder.append("\n   Parents(" + y + ") = " + condyMinus);
-
-                            scoreReports.put(-score, builder.toString());
+                            scoreReports.put(-score, s);
                         }
                     } else if (yPlus <= xPlus + delta && yMinus <= xMinus + delta) {
                         double score = combinedScore(yPlus, xMinus);
 
-                        StringBuilder builder = new StringBuilder();
+                        String s = "\nNo directed edge " + x + "--" + y + " " + score +
+                                "\n   Parents(" + x + ") = " + condxMinus +
+                                "\n   Parents(" + y + ") = " + condyMinus;
 
-                        builder.append("\nNo directed edge " + x + "--" + y + " " + score);
-                        builder.append("\n   Parents(" + x + ") = " + condxMinus);
-                        builder.append("\n   Parents(" + y + ") = " + condyMinus);
-
-                        scoreReports.put(-score, builder.toString());
+                        scoreReports.put(-score, s);
                     } else if (xPlus <= yPlus + delta && xMinus <= yMinus + delta) {
                         double score = combinedScore(yPlus, xMinus);
 
-                        StringBuilder builder = new StringBuilder();
+                        String s = "\nNo directed edge " + x + "--" + y + " " + score +
+                                "\n   Parents(" + x + ") = " + condxMinus +
+                                "\n   Parents(" + y + ") = " + condyMinus;
 
-                        builder.append("\nNo directed edge " + x + "--" + y + " " + score);
-                        builder.append("\n   Parents(" + x + ") = " + condxMinus);
-                        builder.append("\n   Parents(" + y + ") = " + condyMinus);
-
-                        scoreReports.put(-score, builder.toString());
+                        scoreReports.put(-score, s);
                     }
                 } else {
                     if (yPlus <= xPlus + delta && xMinus <= yMinus + delta) {
                         double score = combinedScore(xPlus, yMinus);
 
-                        StringBuilder builder = new StringBuilder();
+                        String s = "\nWeak " + y + "->" + x + " " + score +
+                                "\n   Parents(" + x + ") = " + condxMinus +
+                                "\n   Parents(" + y + ") = " + condyMinus;
 
-                        builder.append("\nWeak " + y + "->" + x + " " + score);
-                        builder.append("\n   Parents(" + x + ") = " + condxMinus);
-                        builder.append("\n   Parents(" + y + ") = " + condyMinus);
-
-                        scoreReports.put(-score, builder.toString());
+                        scoreReports.put(-score, s);
 
                         if (score > max) {
                             max = score;
@@ -353,13 +333,11 @@ public class Lofs {
                     } else if (xPlus <= yPlus + delta && yMinus <= xMinus + delta) {
                         double score = combinedScore(yPlus, xMinus);
 
-                        StringBuilder builder = new StringBuilder();
+                        String s = "\nWeak " + x + "->" + y + " " + score +
+                                "\n   Parents(" + x + ") = " + condxMinus +
+                                "\n   Parents(" + y + ") = " + condyMinus;
 
-                        builder.append("\nWeak " + x + "->" + y + " " + score);
-                        builder.append("\n   Parents(" + x + ") = " + condxMinus);
-                        builder.append("\n   Parents(" + y + ") = " + condyMinus);
-
-                        scoreReports.put(-score, builder.toString());
+                        scoreReports.put(-score, s);
 
                         if (score > max) {
                             max = score;
@@ -369,23 +347,19 @@ public class Lofs {
                     } else if (yPlus <= xPlus + delta && yMinus <= xMinus + delta) {
                         double score = combinedScore(yPlus, xMinus);
 
-                        StringBuilder builder = new StringBuilder();
+                        String s = "\nNo directed edge " + x + "--" + y + " " + score +
+                                "\n   Parents(" + x + ") = " + condxMinus +
+                                "\n   Parents(" + y + ") = " + condyMinus;
 
-                        builder.append("\nNo directed edge " + x + "--" + y + " " + score);
-                        builder.append("\n   Parents(" + x + ") = " + condxMinus);
-                        builder.append("\n   Parents(" + y + ") = " + condyMinus);
-
-                        scoreReports.put(-score, builder.toString());
+                        scoreReports.put(-score, s);
                     } else if (xPlus <= yPlus + delta && xMinus <= yMinus + delta) {
                         double score = combinedScore(yPlus, xMinus);
 
-                        StringBuilder builder = new StringBuilder();
+                        String s = "\nNo directed edge " + x + "--" + y + " " + score +
+                                "\n   Parents(" + x + ") = " + condxMinus +
+                                "\n   Parents(" + y + ") = " + condyMinus;
 
-                        builder.append("\nNo directed edge " + x + "--" + y + " " + score);
-                        builder.append("\n   Parents(" + x + ") = " + condxMinus);
-                        builder.append("\n   Parents(" + y + ") = " + condyMinus);
-
-                        scoreReports.put(-score, builder.toString());
+                        scoreReports.put(-score, s);
                     }
                 }
             }
@@ -437,12 +411,10 @@ public class Lofs {
 
         List<Double> _residuals = new ArrayList<>();
 
-        Node _target = node;
-        List<Node> _regressors = parents;
-        Node target = getVariable(this.variables, _target.getName());
+        Node target = getVariable(this.variables, node.getName());
         List<Node> regressors = new ArrayList<>();
 
-        for (Node _regressor : _regressors) {
+        for (Node _regressor : parents) {
             Node variable = getVariable(this.variables, _regressor.getName());
             regressors.add(variable);
         }
@@ -493,77 +465,13 @@ public class Lofs {
         return score;
     }
 
-    private double localScoreB(Node node, List<Node> parents) {
-
-        double score = 0.0;
-        double maxScore = Double.NEGATIVE_INFINITY;
-
-        Node _target = node;
-        List<Node> _regressors = parents;
-        Node target = getVariable(this.variables, _target.getName());
-        List<Node> regressors = new ArrayList<>();
-
-        for (Node _regressor : _regressors) {
-            Node variable = getVariable(this.variables, _regressor.getName());
-            regressors.add(variable);
-        }
-
-        DATASET:
-        for (int m = 0; m < this.dataSets.size(); m++) {
-            RegressionResult result = this.regressions.get(m).regress(target, regressors);
-            Vector residualsSingleDataset = result.getResiduals();
-            DoubleArrayList _residualsSingleDataset = new DoubleArrayList(residualsSingleDataset.toArray());
-
-            for (int h = 0; h < residualsSingleDataset.size(); h++) {
-                if (Double.isNaN(residualsSingleDataset.get(h))) {
-                    continue DATASET;
-                }
-            }
-
-            double mean = Descriptive.mean(_residualsSingleDataset);
-            double std = Descriptive.standardDeviation(Descriptive.variance(_residualsSingleDataset.size(),
-                    Descriptive.sum(_residualsSingleDataset), Descriptive.sumOfSquares(_residualsSingleDataset)));
-
-            for (int i2 = 0; i2 < _residualsSingleDataset.size(); i2++) {
-                _residualsSingleDataset.set(i2, (_residualsSingleDataset.get(i2) - mean) / std);
-            }
-
-            double[] _f = new double[_residualsSingleDataset.size()];
-
-            for (int k = 0; k < _residualsSingleDataset.size(); k++) {
-                _f[k] = _residualsSingleDataset.get(k);
-            }
-
-            DoubleArrayList f = new DoubleArrayList(_f);
-
-            for (int k = 0; k < f.size(); k++) {
-                f.set(k, Math.abs(f.get(k)));
-            }
-
-            double _mean = Descriptive.mean(f);
-            double diff = _mean - Math.sqrt(2.0 / Math.PI);
-            score += diff * diff;
-
-            if (score > maxScore) {
-                maxScore = score;
-            }
-        }
-
-
-        double avg = score / this.dataSets.size();
-
-        return avg;
-    }
-
     private double andersonDarlingPASquareStar(Node node, List<Node> parents) {
         List<Double> _residuals = new ArrayList<>();
 
-        Node _target = node;
-        List<Node> _regressors = parents;
-        Node target = getVariable(this.variables, _target.getName());
+        Node target = getVariable(this.variables, node.getName());
         List<Node> regressors = new ArrayList<>();
 
-        for (Node _regressor : _regressors) {
+        for (Node _regressor : parents) {
             Node variable = getVariable(this.variables, _regressor.getName());
             regressors.add(variable);
         }
@@ -582,14 +490,11 @@ public class Lofs {
             DoubleArrayList _residualsSingleDataset = new DoubleArrayList(residualsSingleDataset.toArray());
 
             double mean = Descriptive.mean(_residualsSingleDataset);
-            double std = Descriptive.standardDeviation(Descriptive.variance(_residualsSingleDataset.size(),
-                    Descriptive.sum(_residualsSingleDataset), Descriptive.sumOfSquares(_residualsSingleDataset)));
 
-            // By centering the individual residual columns, all moments of the mixture become weighted averages of the moments
-            // of the individual columns. http://en.wikipedia.org/wiki/Mixture_distribution#Finite_and_countable_mixtures
+            // By centering the individual residual columns, all moments of the mixture become weighted
+            // averages of the momentsof the individual columns. http://en.wikipedia.org/wiki/Mixture_
+            // distribution#Finite_and_countable_mixtures
             for (int i2 = 0; i2 < _residualsSingleDataset.size(); i2++) {
-//                _residualsSingleDataset.set(i2, (_residualsSingleDataset.get(i2) - mean) / std);
-//                _residualsSingleDataset.set(i2, (_residualsSingleDataset.get(i2)) / std);
                 if (isMeanCenterResiduals()) {
                     _residualsSingleDataset.set(i2, (_residualsSingleDataset.get(i2) - mean));
                 }
@@ -609,69 +514,13 @@ public class Lofs {
         return new AndersonDarlingTest(_f).getASquaredStar();
     }
 
-    private double andersonDarlingPASquareStarB(Node node, List<Node> parents) {
-        List<Double> _residuals = new ArrayList<>();
-
-        Node _target = node;
-        List<Node> _regressors = parents;
-        Node target = getVariable(this.variables, _target.getName());
-        List<Node> regressors = new ArrayList<>();
-
-        for (Node _regressor : _regressors) {
-            Node variable = getVariable(this.variables, _regressor.getName());
-            regressors.add(variable);
-        }
-
-        double sum = 0.0;
-
-        DATASET:
-        for (int m = 0; m < this.dataSets.size(); m++) {
-            RegressionResult result = this.regressions.get(m).regress(target, regressors);
-            Vector residualsSingleDataset = result.getResiduals();
-
-            for (int h = 0; h < residualsSingleDataset.size(); h++) {
-                if (Double.isNaN(residualsSingleDataset.get(h))) {
-                    continue DATASET;
-                }
-            }
-
-            DoubleArrayList _residualsSingleDataset = new DoubleArrayList(residualsSingleDataset.toArray());
-
-            double mean = Descriptive.mean(_residualsSingleDataset);
-            double std = Descriptive.standardDeviation(Descriptive.variance(_residualsSingleDataset.size(),
-                    Descriptive.sum(_residualsSingleDataset), Descriptive.sumOfSquares(_residualsSingleDataset)));
-
-            // By centering the individual residual columns, all moments of the mixture become weighted averages of the moments
-            // of the individual columns. http://en.wikipedia.org/wiki/Mixture_distribution#Finite_and_countable_mixtures
-            for (int i2 = 0; i2 < _residualsSingleDataset.size(); i2++) {
-//                _residualsSingleDataset.set(i2, (_residualsSingleDataset.get(i2) - mean) / std);
-//                _residualsSingleDataset.set(i2, (_residualsSingleDataset.get(i2)) / std);
-                if (isMeanCenterResiduals()) {
-                    _residualsSingleDataset.set(i2, (_residualsSingleDataset.get(i2) - mean));
-                }
-            }
-
-            double[] _f = new double[_residuals.size()];
-
-            for (int k = 0; k < _residuals.size(); k++) {
-                _f[k] = _residuals.get(k);
-            }
-
-            sum += new AndersonDarlingTest(_f).getASquaredStar();
-        }
-
-        return sum / this.dataSets.size();
-    }
-
     private double pValue(Node node, List<Node> parents) {
         List<Double> _residuals = new ArrayList<>();
 
-        Node _target = node;
-        List<Node> _regressors = parents;
-        Node target = getVariable(this.variables, _target.getName());
+        Node target = getVariable(this.variables, node.getName());
         List<Node> regressors = new ArrayList<>();
 
-        for (Node _regressor : _regressors) {
+        for (Node _regressor : parents) {
             Node variable = getVariable(this.variables, _regressor.getName());
             regressors.add(variable);
         }
@@ -690,15 +539,11 @@ public class Lofs {
             DoubleArrayList _residualsSingleDataset = new DoubleArrayList(residualsSingleDataset.toArray());
 
             double mean = Descriptive.mean(_residualsSingleDataset);
-            double std = Descriptive.standardDeviation(Descriptive.variance(_residualsSingleDataset.size(),
-                    Descriptive.sum(_residualsSingleDataset), Descriptive.sumOfSquares(_residualsSingleDataset)));
 
             for (int i2 = 0; i2 < _residualsSingleDataset.size(); i2++) {
-//                _residualsSingleDataset.set(i2, (_residualsSingleDataset.get(i2) - mean) / std);
                 if (isMeanCenterResiduals()) {
                     _residualsSingleDataset.set(i2, (_residualsSingleDataset.get(i2) - mean));
                 }
-//                _residualsSingleDataset.set(i2, (_residualsSingleDataset.get(i2)));
             }
 
             for (int k = 0; k < _residualsSingleDataset.size(); k++) {
@@ -718,12 +563,10 @@ public class Lofs {
     private double[] residual(Node node, List<Node> parents) {
         List<Double> _residuals = new ArrayList<>();
 
-        Node _target = node;
-        List<Node> _regressors = parents;
-        Node target = getVariable(this.variables, _target.getName());
+        Node target = getVariable(this.variables, node.getName());
         List<Node> regressors = new ArrayList<>();
 
-        for (Node _regressor : _regressors) {
+        for (Node _regressor : parents) {
             Node variable = getVariable(this.variables, _regressor.getName());
             regressors.add(variable);
         }
@@ -742,13 +585,9 @@ public class Lofs {
             DoubleArrayList _residualsSingleDataset = new DoubleArrayList(residualsSingleDataset.toArray());
 
             double mean = Descriptive.mean(_residualsSingleDataset);
-//            double std = Descriptive.sd(Descriptive.variance(_residualsSingleDataset.size(),
-//                    Descriptive.sum(_residualsSingleDataset), Descriptive.sumOfSquares(_residualsSingleDataset)));
 
             for (int i2 = 0; i2 < _residualsSingleDataset.size(); i2++) {
-//                _residualsSingleDataset.set(i2, (_residualsSingleDataset.get(i2) - mean) / std);
                 _residualsSingleDataset.set(i2, (_residualsSingleDataset.get(i2) - mean));
-//                _residualsSingleDataset.set(i2, (_residualsSingleDataset.get(i2)));
             }
 
             for (int k = 0; k < _residualsSingleDataset.size(); k++) {
@@ -792,43 +631,23 @@ public class Lofs {
     }
 
     public boolean isR1Done() {
-        return this.r1Done;
-    }
-
-    public void setR1Done(boolean r1Done) {
-        this.r1Done = r1Done;
+        return true;
     }
 
     public boolean isR2Done() {
-        return this.r2Done;
-    }
-
-    public void setR2Done(boolean r2Done) {
-        this.r2Done = r2Done;
+        return true;
     }
 
     public boolean isMeekDone() {
         return this.meekDone;
     }
 
-    public void setMeekDone(boolean meekDone) {
-        this.meekDone = meekDone;
-    }
-
     public boolean isStrongR2() {
         return this.strongR2;
     }
 
-    public void setStrongR2(boolean strongR2) {
-        this.strongR2 = strongR2;
-    }
-
-    public void setR2Orient2Cycles(boolean r2Orient2Cycles) {
-        this.r2Orient2Cycles = r2Orient2Cycles;
-    }
-
     public boolean isR2Orient2Cycles() {
-        return this.r2Orient2Cycles;
+        return true;
     }
 
     public Score getScore() {
@@ -845,10 +664,6 @@ public class Lofs {
 
     public boolean isMeanCenterResiduals() {
         return this.meanCenterResiduals;
-    }
-
-    public void setMeanCenterResiduals(boolean meanCenterResiduals) {
-        this.meanCenterResiduals = meanCenterResiduals;
     }
 
 }

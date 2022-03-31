@@ -222,9 +222,6 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
             rulebox.setSelectedItem("R2");
         } else if (_rule == Lofs2.Rule.R3) {
             rulebox.setSelectedItem("R3");
-        } else if (_rule == Lofs2.Rule.R4) {
-            rulebox.setSelectedItem("R4");
-            this.enableR4Items();
         } else if (_rule == Lofs2.Rule.Tanh) {
             rulebox.setSelectedItem("Tanh");
         } else if (_rule == Lofs2.Rule.Skew) {
@@ -262,8 +259,6 @@ public class LofsSearchEditorNew extends AbstractSearchEditor
                 } else if ("R3".equals(item)) {
                     searchParams.set("rule", Lofs2.Rule.R3);
                 } else if ("R4".equals(item)) {
-                    searchParams.set("rule", Lofs2.Rule.R4);
-                } else if ("EB".equals(item)) {
                     searchParams.set("rule", Lofs2.Rule.EB);
                 } else if ("Tanh".equals(item)) {
                     searchParams.set("rule", Lofs2.Rule.Tanh);
