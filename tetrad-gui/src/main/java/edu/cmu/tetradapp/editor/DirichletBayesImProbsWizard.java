@@ -29,9 +29,9 @@ import javax.swing.*;
 import javax.swing.border.MatteBorder;
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Allows the user to choose a variable in a Bayes net and edit the parameters
@@ -52,7 +52,6 @@ final class DirichletBayesImProbsWizard extends JPanel {
     private final GraphWorkbench workbench;
     private DirichletBayesImNodeProbsTable editingTable;
     private final JPanel tablePanel;
-    private boolean showProbs = true;
 
     private boolean enableEditing = true;
 
@@ -163,7 +162,7 @@ final class DirichletBayesImProbsWizard extends JPanel {
 
         Graph graph = bayesIm.getBayesPm().getDag();
 
-        List<Node> nodes = graph.getNodes().stream().collect(Collectors.toList());
+        List<Node> nodes = new ArrayList<>(graph.getNodes());
         Collections.sort(nodes);
         nodes.forEach(varNameComboBox::addItem);
 
@@ -209,14 +208,6 @@ final class DirichletBayesImProbsWizard extends JPanel {
 
     private GraphWorkbench getWorkbench() {
         return this.workbench;
-    }
-
-    public boolean isShowProbs() {
-        return this.showProbs;
-    }
-
-    public void setShowProbs(boolean showProbs) {
-        this.showProbs = showProbs;
     }
 
     public boolean isEnableEditing() {

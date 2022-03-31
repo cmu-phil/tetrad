@@ -73,14 +73,12 @@ public class DirichletEstimatorParamsEditor extends JPanel implements ParameterE
 
         DoubleTextField symmetricAlphaField = new DoubleTextField(
                 this.params.getDouble("symmetricAlpha", 1.0), 5, NumberFormatUtil.getInstance().getNumberFormat());
-        symmetricAlphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(double value, double oldValue) {
-                try {
-                    DirichletEstimatorParamsEditor.this.params.set("symmetricAlpha", value);
-                    return value;
-                } catch (IllegalArgumentException e) {
-                    return oldValue;
-                }
+        symmetricAlphaField.setFilter((value, oldValue) -> {
+            try {
+                DirichletEstimatorParamsEditor.this.params.set("symmetricAlpha", value);
+                return value;
+            } catch (IllegalArgumentException e) {
+                return oldValue;
             }
         });
 

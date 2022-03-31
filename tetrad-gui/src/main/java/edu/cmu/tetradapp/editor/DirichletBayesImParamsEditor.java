@@ -27,8 +27,6 @@ import edu.cmu.tetradapp.util.DoubleTextField;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 /**
  * Edits the parameters for simulating data from Bayes nets.
@@ -86,14 +84,12 @@ public class DirichletBayesImParamsEditor extends JPanel implements ParameterEdi
 
         DoubleTextField symmetricAlphaField = new DoubleTextField(
                 this.params.getDouble("symmetricAlpha", 1.0), 5, NumberFormatUtil.getInstance().getNumberFormat());
-        symmetricAlphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(double value, double oldValue) {
-                try {
-                    DirichletBayesImParamsEditor.this.params.set("symmetricAlpha", value);
-                    return value;
-                } catch (IllegalArgumentException e) {
-                    return oldValue;
-                }
+        symmetricAlphaField.setFilter((value, oldValue) -> {
+            try {
+                DirichletBayesImParamsEditor.this.params.set("symmetricAlpha", value);
+                return value;
+            } catch (IllegalArgumentException e) {
+                return oldValue;
             }
         });
 
@@ -107,18 +103,14 @@ public class DirichletBayesImParamsEditor extends JPanel implements ParameterEdi
             throw new IllegalStateException();
         }
 
-        manual.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                getParams().set("initializationMode", "manual");
-                symmetricAlphaField.setEnabled(false);
-            }
+        manual.addActionListener(e -> {
+            getParams().set("initializationMode", "manual");
+            symmetricAlphaField.setEnabled(false);
         });
 
-        randomRetain.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                getParams().set("initializationMode", "symmetricPrior");
-                symmetricAlphaField.setEnabled(true);
-            }
+        randomRetain.addActionListener(e -> {
+            getParams().set("initializationMode", "symmetricPrior");
+            symmetricAlphaField.setEnabled(true);
         });
 
         // continue workbench construction.

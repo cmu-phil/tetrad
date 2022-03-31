@@ -214,9 +214,9 @@ class CovMatrixTable extends AbstractTableModel {
     private void setVariableName(int index, String name) {
         List variables = getCovMatrix().getVariables();
 
-        for (int i = 0; i < variables.size(); i++) {
+        for (Object o : variables) {
             ContinuousVariable _variable =
-                    (ContinuousVariable) variables.get(i);
+                    (ContinuousVariable) o;
             if (name.equals(_variable.getName())) {
                 return;
             }

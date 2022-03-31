@@ -62,12 +62,6 @@ class DescriptiveStatsAction extends AbstractAction {
             return;
         }
         // if there are missing values warn and don't display descriptive statistics.
-//        if(DataUtils.containsMissingValue(dataSet)){
-//            JOptionPane.showMessageDialog(findOwner(), new JLabel("<html>Data has missing values, " +
-//                    "remove all missing values before<br>" +
-//                    "generating descriptive statistics.</html>"));
-//            return;
-//        }
 
         Node selected = null;
 
@@ -97,9 +91,13 @@ class DescriptiveStatsAction extends AbstractAction {
         DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
 
         //if nothing is selected, select something by default
-        if (selected == null && dataSet.getNumColumns() != 0) {
-            selected = dataSet.getVariable(0);
+        if (selected == null) {
+            assert dataSet != null;
+            if (dataSet.getNumColumns() != 0) {
+                selected = dataSet.getVariable(0);
+            }
         }
+        assert dataSet != null;
         DescriptiveStatsEditorPanel editorPanel = new DescriptiveStatsEditorPanel(selected, dataSet);
 
         JTextArea display = new JTextArea(DescriptiveStats.generateDescriptiveStats(dataSet,

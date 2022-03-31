@@ -24,7 +24,6 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.session.DelegatesEditing;
-import edu.cmu.tetradapp.model.IdentifiabilityWrapper;
 import edu.cmu.tetradapp.model.UpdaterWrapper;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
@@ -32,11 +31,9 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 /**
  * Lets the user calculate updated probabilities for a Bayes net.
@@ -118,21 +115,12 @@ public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
         file.add(new SaveComponentImage(this.workbench, "Save Graph Image..."));
         add(menuBar, BorderLayout.NORTH);
 
-        this.workbench.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (BayesUpdaterEditorObs.this.mode == BayesUpdaterEditorObs.MULTI_VALUE &&
-                        "selectedNodes".equals(evt.getPropertyName())) {
-                    setMode(BayesUpdaterEditorObs.MULTI_VALUE);
-                }
+        this.workbench.addPropertyChangeListener(evt -> {
+            if (BayesUpdaterEditorObs.this.mode == BayesUpdaterEditorObs.MULTI_VALUE &&
+                    "selectedNodes".equals(evt.getPropertyName())) {
+                setMode(BayesUpdaterEditorObs.MULTI_VALUE);
             }
         });
-    }
-
-    /**
-     * Constructs a new instanted model editor from a Bayes IM wrapper.
-     */
-    public BayesUpdaterEditorObs(IdentifiabilityWrapper wrapper) {
-        this((UpdaterWrapper) wrapper);
     }
 
     //================================PUBLIC METHODS========================//
@@ -233,12 +221,10 @@ public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
         this.evidenceWizardSingle =
                 new EvidenceWizardSingleObs(updaterWrapper, getWorkbench());
         getEvidenceWizardSingle().addPropertyChangeListener(
-                new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent e) {
-                        if ("updateButtonPressed".equals(e.getPropertyName())) {
-                            resetSingleResultPanel();
-                            show("viewSingleResult");
-                        }
+                e -> {
+                    if ("updateButtonPressed".equals(e.getPropertyName())) {
+                        resetSingleResultPanel();
+                        show("viewSingleResult");
                     }
                 });
         this.cardPanel.add(new JScrollPane(getEvidenceWizardSingle()),
@@ -247,12 +233,10 @@ public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
         this.evidenceWizardMultiple =
                 new EvidenceWizardMultipleObs(updaterWrapper, getWorkbench());
         getEvidenceWizardMultiple().addPropertyChangeListener(
-                new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent e) {
-                        if ("updateButtonPressed".equals(e.getPropertyName())) {
-                            resetMultipleResultPanel();
-                            show("viewMultiResult");
-                        }
+                e -> {
+                    if ("updateButtonPressed".equals(e.getPropertyName())) {
+                        resetMultipleResultPanel();
+                        show("viewMultiResult");
                     }
                 });
         this.cardPanel.add(new JScrollPane(getEvidenceWizardMultiple()),
@@ -283,7 +267,7 @@ public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
         menuBar.add(evidenceMenu);
         JMenuItem editEvidence = new JMenuItem("Edit Evidence");
         editEvidence.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.ALT_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.ALT_DOWN_MASK));
         evidenceMenu.add(editEvidence);
 
         JMenu modeMenu = new JMenu("Mode");
@@ -306,23 +290,11 @@ public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
         modeMenu.add(singleVariable);
         modeMenu.add(multiVariable);
 
-        editEvidence.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setMode(BayesUpdaterEditorObs.this.mode);
-            }
-        });
+        editEvidence.addActionListener(e -> setMode(BayesUpdaterEditorObs.this.mode));
 
-        singleVariable.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setMode(BayesUpdaterEditorObs.SINGLE_VALUE);
-            }
-        });
+        singleVariable.addActionListener(e -> setMode(BayesUpdaterEditorObs.SINGLE_VALUE));
 
-        multiVariable.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setMode(BayesUpdaterEditorObs.MULTI_VALUE);
-            }
-        });
+        multiVariable.addActionListener(e -> setMode(BayesUpdaterEditorObs.MULTI_VALUE));
 
         return menuBar;
     }
@@ -357,11 +329,9 @@ public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
         UpdatedBayesImWizardObs wizard = new UpdatedBayesImWizardObs(
                 getUpdaterWrapper(), getWorkbench(), this.updatedBayesImWizardTab,
                 getSelectedNode());
-        wizard.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent e) {
-                if ("updatedBayesImWizardTab".equals(e.getPropertyName())) {
-                    BayesUpdaterEditorObs.this.updatedBayesImWizardTab = ((Integer) (e.getNewValue()));
-                }
+        wizard.addPropertyChangeListener(e -> {
+            if ("updatedBayesImWizardTab".equals(e.getPropertyName())) {
+                BayesUpdaterEditorObs.this.updatedBayesImWizardTab = ((Integer) (e.getNewValue()));
             }
         });
         this.singleResultPanel.removeAll();

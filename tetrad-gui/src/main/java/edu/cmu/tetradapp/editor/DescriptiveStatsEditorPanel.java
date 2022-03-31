@@ -22,14 +22,11 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.util.LinkedList;
 
 /**
  * Created by IntelliJ IDEA.
@@ -51,15 +48,6 @@ class DescriptiveStatsEditorPanel extends JPanel {
      */
     private final DataSet dataSet;
 
-    private QQPlot qqPlot;
-
-
-    /**
-     * The discrete variables of the data set (may be empty).
-     */
-    private final LinkedList<DiscreteVariable> variables = new LinkedList<>();
-
-
     /**
      * Constructs the editor panel given the initial histogram and the dataset.
      */
@@ -79,12 +67,10 @@ class DescriptiveStatsEditorPanel extends JPanel {
             }
 //            }
         }
-        this.variableBox.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    Node node = (Node) e.getItem();
-                    changeDescriptiveStats(DescriptiveStats.generateDescriptiveStats(DescriptiveStatsEditorPanel.this.dataSet, node));
-                }
+        this.variableBox.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                Node node = (Node) e.getItem();
+                changeDescriptiveStats(DescriptiveStats.generateDescriptiveStats(DescriptiveStatsEditorPanel.this.dataSet, node));
             }
         });
 

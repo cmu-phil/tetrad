@@ -146,14 +146,12 @@ public final class FciSearchParamEditor extends JPanel implements ParameterEdito
 
         IntTextField depthField =
                 new IntTextField(this.params.getInt("depth", -1), 4);
-        depthField.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
-                try {
-                    FciSearchParamEditor.this.params.set("depth", value);
-                    return value;
-                } catch (Exception e) {
-                    return oldValue;
-                }
+        depthField.setFilter((value, oldValue) -> {
+            try {
+                FciSearchParamEditor.this.params.set("depth", value);
+                return value;
+            } catch (Exception e) {
+                return oldValue;
             }
         });
 
@@ -162,15 +160,13 @@ public final class FciSearchParamEditor extends JPanel implements ParameterEdito
         if (!Double.isNaN(alpha)) {
             this.alphaField =
                     new DoubleTextField(alpha, 4, NumberFormatUtil.getInstance().getNumberFormat());
-            this.alphaField.setFilter(new DoubleTextField.Filter() {
-                public double filter(double value, double oldValue) {
-                    try {
-                        FciSearchParamEditor.this.params.set("alpha", 0.001);
-                        Preferences.userRoot().putDouble("alpha", value);
-                        return value;
-                    } catch (Exception e) {
-                        return oldValue;
-                    }
+            this.alphaField.setFilter((value, oldValue) -> {
+                try {
+                    FciSearchParamEditor.this.params.set("alpha", 0.001);
+                    Preferences.userRoot().putDouble("alpha", value);
+                    return value;
+                } catch (Exception e) {
+                    return oldValue;
                 }
             });
         }
@@ -205,9 +201,6 @@ public final class FciSearchParamEditor extends JPanel implements ParameterEdito
         return false;
     }
 
-    private Parameters getParams() {
-        return this.params;
-    }
 }
 
 

@@ -265,7 +265,7 @@ public class EdgeTypeTable extends JPanel {
         return false;
     }
 
-    private class EdgeInfoTable extends JTable {
+    private static class EdgeInfoTable extends JTable {
 
         private static final long serialVersionUID = -4052775309418269033L;
 
@@ -300,7 +300,7 @@ public class EdgeTypeTable extends JPanel {
 
     }
 
-    private class StripedRowTableCellRenderer extends DefaultTableCellRenderer {
+    private static class StripedRowTableCellRenderer extends DefaultTableCellRenderer {
 
         private static final long serialVersionUID = 4603884548966502824L;
 

@@ -130,11 +130,6 @@ public class FactorAnalysisEditor extends AbstractSearchEditor {
 
     //================================PRIVATE METHODS====================//
 
-    private JComponent getIndTestParamBox() {
-        Parameters params = getAlgorithmRunner().getParams();
-        return getIndTestParamBox(params);
-    }
-
     /**
      * Factory to return the correct param editor for independence test params.
      * This will go in a little box in the search editor.
@@ -144,18 +139,16 @@ public class FactorAnalysisEditor extends AbstractSearchEditor {
             throw new NullPointerException();
         }
 
-        if (params instanceof Parameters) {
-            if (getAlgorithmRunner() instanceof IFgesRunner) {
-                IFgesRunner gesRunner = ((IFgesRunner) getAlgorithmRunner());
-                return new FgesIndTestParamsEditor(params, gesRunner.getType());
-            }
+        if (getAlgorithmRunner() instanceof IFgesRunner) {
+            IFgesRunner gesRunner = ((IFgesRunner) getAlgorithmRunner());
+            return new FgesIndTestParamsEditor(params, gesRunner.getType());
         }
 
         if (getAlgorithmRunner().getSourceGraph() instanceof TimeLagGraph) {
             return new TimeSeriesIndTestParamsEditor(getAlgorithmRunner().getParams());
         }
 
-        if (getAlgorithmRunner().getSourceGraph() instanceof Graph) {
+        if (getAlgorithmRunner().getSourceGraph() != null) {
             return new IndTestParamsEditor(params);
         }
 

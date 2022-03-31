@@ -32,8 +32,6 @@ import edu.cmu.tetradapp.util.DoubleTextField;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,14 +77,12 @@ public class BuildPureClustersParamsEditor extends JPanel implements ParameterEd
     public void setup() {
         DoubleTextField alphaField = new DoubleTextField(
                 this.params.getDouble("alpha", 0.001), 4, NumberFormatUtil.getInstance().getNumberFormat());
-        alphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(double value, double oldValue) {
-                try {
-                    getParams().set("alpha", 0.001);
-                    return value;
-                } catch (Exception e) {
-                    return oldValue;
-                }
+        alphaField.setFilter((value, oldValue) -> {
+            try {
+                getParams().set("alpha", 0.001);
+                return value;
+            } catch (Exception e) {
+                return oldValue;
             }
         });
 
@@ -94,24 +90,20 @@ public class BuildPureClustersParamsEditor extends JPanel implements ParameterEd
         JComboBox testSelector = new JComboBox(descriptions);
         testSelector.setSelectedItem(getParams().get("tetradTestType", TestType.TETRAD_WISHART));
 
-        testSelector.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JComboBox combo = (JComboBox) e.getSource();
-                TestType testType = (TestType) combo.getSelectedItem();
-                getParams().set("tetradTestType", testType);
-            }
+        testSelector.addActionListener(e -> {
+            JComboBox combo = (JComboBox) e.getSource();
+            TestType testType = (TestType) combo.getSelectedItem();
+            getParams().set("tetradTestType", testType);
         });
 
         TestType[] purifyDescriptions = TestType.getPurifyTestDescriptions();
         JComboBox purifySelector = new JComboBox(purifyDescriptions);
         purifySelector.setSelectedItem(getParams().get("purifyTestType", TestType.NONE));
 
-        purifySelector.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JComboBox combo = (JComboBox) e.getSource();
-                TestType testType = (TestType) combo.getSelectedItem();
-                getParams().set("purifyTestType", testType);
-            }
+        purifySelector.addActionListener(e -> {
+            JComboBox combo = (JComboBox) e.getSource();
+            TestType testType = (TestType) combo.getSelectedItem();
+            getParams().set("purifyTestType", testType);
         });
 
         //Where is it setting the appropriate knowledge for the search?
@@ -138,13 +130,6 @@ public class BuildPureClustersParamsEditor extends JPanel implements ParameterEd
             DataSet dataSet = (DataSet) dataModel;
             isDiscreteModel = dataSet.isDiscrete();
 
-            //            try {
-            //                new DataSet((DataSet) dataModel);
-            //                isDiscreteModel = true;
-            //            }
-            //            catch (IllegalArgumentException e) {
-            //                isDiscreteModel = false;
-            //            }
         }
 
         this.params.set("varNames", varNames);

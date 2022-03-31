@@ -28,20 +28,16 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.text.NumberFormat;
@@ -60,8 +56,6 @@ import java.util.ArrayList;
 class BayesImNodeEditingTableObs extends JTable {
     private int focusRow;
     private int focusCol;
-    private int lastX;
-    private int lastY;
 
     /**
      * Constructs a new editing table from a given editing table model.
@@ -72,11 +66,9 @@ class BayesImNodeEditingTableObs extends JTable {
         }
 
         Model model = new Model(bayesIm, this);
-        model.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("modelChanged".equals(evt.getPropertyName())) {
-                    firePropertyChange("modelChanged", null, null);
-                }
+        model.addPropertyChangeListener(evt -> {
+            if ("modelChanged".equals(evt.getPropertyName())) {
+                firePropertyChange("modelChanged", null, null);
             }
         });
         setModel(model);
@@ -92,24 +84,16 @@ class BayesImNodeEditingTableObs extends JTable {
 
         ListSelectionModel rowSelectionModel = getSelectionModel();
 
-        rowSelectionModel.addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                ListSelectionModel m = (ListSelectionModel) (e.getSource());
-                setFocusRow(m.getAnchorSelectionIndex());
-            }
+        rowSelectionModel.addListSelectionListener(e -> {
+            ListSelectionModel m = (ListSelectionModel) (e.getSource());
+            setFocusRow(m.getAnchorSelectionIndex());
         });
 
         ListSelectionModel columnSelectionModel = getColumnModel()
                 .getSelectionModel();
 
         columnSelectionModel.addListSelectionListener(
-                new ListSelectionListener() {
-                    public void valueChanged(ListSelectionEvent e) {
-                        ListSelectionModel m =
-                                (ListSelectionModel) (e.getSource());
-                        setFocusColumn();
-                    }
-                });
+                e -> setFocusColumn());
 
         addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
@@ -153,77 +137,70 @@ class BayesImNodeEditingTableObs extends JTable {
                 new JMenuItem("Randomize entire table");
         JMenuItem clearEntireTable = new JMenuItem("Clear entire table");
 
-        randomizeEntireTable.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                /*if (existsCompleteRow(bayesIm, nodeIndex)) {*/
-                int ret = JOptionPane.showConfirmDialog(
-                        JOptionUtils.centeringComp(),
-                        "This will modify all values in the table. " +
-                                "Continue?", "Warning",
-                        JOptionPane.YES_NO_OPTION);
+        randomizeEntireTable.addActionListener(e1 -> {
+            /*if (existsCompleteRow(bayesIm, nodeIndex)) {*/
+            int ret = JOptionPane.showConfirmDialog(
+                    JOptionUtils.centeringComp(),
+                    "This will modify all values in the table. " +
+                            "Continue?", "Warning",
+                    JOptionPane.YES_NO_OPTION);
 
-                if (ret == JOptionPane.NO_OPTION) {
-                    return;
-                }
-                /*}*/
-
-                BayesImNodeEditingTableObs editingTable =
-                        BayesImNodeEditingTableObs.this;
-                TableCellEditor cellEditor = editingTable.getCellEditor();
-
-                if (cellEditor != null) {
-                    cellEditor.cancelCellEditing();
-                }
-
-                // randomize the jpd
-                //getBayesIm().getJPD().createRandomCellTable();
-                getBayesIm().createRandomCellTable();
-
-                getEditingTableModel().fireTableDataChanged();
-                firePropertyChange("modelChanged", null, null);
+            if (ret == JOptionPane.NO_OPTION) {
+                return;
             }
+            /*}*/
+
+            BayesImNodeEditingTableObs editingTable =
+                    BayesImNodeEditingTableObs.this;
+            TableCellEditor cellEditor = editingTable.getCellEditor();
+
+            if (cellEditor != null) {
+                cellEditor.cancelCellEditing();
+            }
+
+            // randomize the jpd
+            //getBayesIm().getJPD().createRandomCellTable();
+            getBayesIm().createRandomCellTable();
+
+            getEditingTableModel().fireTableDataChanged();
+            firePropertyChange("modelChanged", null, null);
         });
 
-        clearEntireTable.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                //if (existsCompleteRow(bayesIm, nodeIndex)) {
-                int ret = JOptionPane.showConfirmDialog(
-                        JOptionUtils.centeringComp(),
-                        "This will delete all values in the table. " +
-                                "Continue?", "Warning",
-                        JOptionPane.YES_NO_OPTION);
+        clearEntireTable.addActionListener(e12 -> {
+            //if (existsCompleteRow(bayesIm, nodeIndex)) {
+            int ret = JOptionPane.showConfirmDialog(
+                    JOptionUtils.centeringComp(),
+                    "This will delete all values in the table. " +
+                            "Continue?", "Warning",
+                    JOptionPane.YES_NO_OPTION);
 
-                if (ret == JOptionPane.NO_OPTION) {
-                    return;
-                }
-                //}
-
-                BayesImNodeEditingTableObs editingTable =
-                        BayesImNodeEditingTableObs.this;
-                TableCellEditor cellEditor = editingTable.getCellEditor();
-
-                if (cellEditor != null) {
-                    cellEditor.cancelCellEditing();
-                }
-
-                // clear the jpd
-                getBayesIm().getJPD().clearCellTable();
-
-                getEditingTableModel().fireTableDataChanged();
-                firePropertyChange("modelChanged", null, null);
+            if (ret == JOptionPane.NO_OPTION) {
+                return;
             }
+            //}
+
+            BayesImNodeEditingTableObs editingTable =
+                    BayesImNodeEditingTableObs.this;
+            TableCellEditor cellEditor = editingTable.getCellEditor();
+
+            if (cellEditor != null) {
+                cellEditor.cancelCellEditing();
+            }
+
+            // clear the jpd
+            getBayesIm().getJPD().clearCellTable();
+
+            getEditingTableModel().fireTableDataChanged();
+            firePropertyChange("modelChanged", null, null);
         });
 
         popup.add(randomizeEntireTable);
         popup.add(clearEntireTable);
 
-        this.lastX = e.getX();
-        this.lastY = e.getY();
-
         popup.show((Component) e.getSource(), e.getX(), e.getY());
     }
 
-    public void setModel(TableModel model) {
+    public void setModel(@NotNull TableModel model) {
         super.setModel(model);
     }
 
@@ -259,7 +236,6 @@ class BayesImNodeEditingTableObs extends JTable {
         int failedCol = editingTableModel.getFailedCol();
 
         if (failedCol != -1) {
-            int col = failedCol;
             editingTableModel.resetFailedCol();
         }
 
@@ -280,19 +256,6 @@ class BayesImNodeEditingTableObs extends JTable {
         return getEditingTableModel().getBayesIm();
     }
 
-    private int getLastX() {
-        return this.lastX;
-    }
-
-    private int getLastY() {
-        return this.lastY;
-    }
-
-
-    //////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////
-
-
     //////////////////////////////////////////
     // The abstract table model of the jpd
     //////////////////////////////////////////
@@ -303,12 +266,6 @@ class BayesImNodeEditingTableObs extends JTable {
          * The BayesIm being edited.
          */
         private final MlBayesImObs bayesIm;
-
-        /**
-         * The messageAnchor that takes the user through the process of editing
-         * the probability tables.
-         */
-        private final JComponent messageAnchor;
 
         private int failedRow = -1;
         private int failedCol = -1;
@@ -331,22 +288,6 @@ class BayesImNodeEditingTableObs extends JTable {
 
             // cast the bayesIm to MlBayesImObs
             this.bayesIm = (MlBayesImObs) bayesIm;
-
-            this.messageAnchor = messageAnchor;
-
-            // construct an arrayList of observed nodes
-
-            // two equivalent ways
-			/*
-			Graph graph = bayesIm.getBayesPm().getDag();
-			for (Object o : graph.getNodes()) {
-				Node nodeO = (Node) o;
-				if (nodeO.getNodeType() == NodeType.MEASURED)
-				{
-					obsNodes.add(nodeO);
-				}
-			}
-			*/
 
             for (int i = 0; i < bayesIm.getNumNodes(); i++) {
                 Node nodeO = bayesIm.getNode(i);
@@ -605,10 +546,6 @@ class BayesImNodeEditingTableObs extends JTable {
         // cast the bayesIm to MlBayesImObs
         public MlBayesImObs getBayesIm() {
             return this.bayesIm;
-        }
-
-        public JComponent getMessageAnchor() {
-            return this.messageAnchor;
         }
 
         public int getFailedRow() {

@@ -27,10 +27,7 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
 /**
@@ -84,32 +81,26 @@ public class CovMatrixDisplay extends JPanel implements DataModelContainer {
         }
 
         getCovMatrixJTable().addPropertyChangeListener(
-                new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        if ("modelChanged".equals(evt.getPropertyName())) {
-                            firePropertyChange("modelChanged", null, null);
-                        }
+                evt -> {
+                    if ("modelChanged".equals(evt.getPropertyName())) {
+                        firePropertyChange("modelChanged", null, null);
+                    }
 
-                        if ("tableChanged".equals(evt.getPropertyName())) {
-                            CovMatrixJTable source =
-                                    (CovMatrixJTable) evt.getSource();
+                    if ("tableChanged".equals(evt.getPropertyName())) {
+                        CovMatrixJTable source =
+                                (CovMatrixJTable) evt.getSource();
 
-                            if (!source.isEditingMatrixPositiveDefinite()) {
-                                CovMatrixDisplay.this.label.setText("Matrix not positive definite.");
-                                CovMatrixDisplay.this.restoreButton.setEnabled(true);
-                            } else {
-                                CovMatrixDisplay.this.label.setText(" ");
-                                CovMatrixDisplay.this.restoreButton.setEnabled(false);
-                            }
+                        if (!source.isEditingMatrixPositiveDefinite()) {
+                            CovMatrixDisplay.this.label.setText("Matrix not positive definite.");
+                            CovMatrixDisplay.this.restoreButton.setEnabled(true);
+                        } else {
+                            CovMatrixDisplay.this.label.setText(" ");
+                            CovMatrixDisplay.this.restoreButton.setEnabled(false);
                         }
                     }
                 });
 
-        this.restoreButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                getCovMatrixJTable().restore();
-            }
-        });
+        this.restoreButton.addActionListener(e -> getCovMatrixJTable().restore());
     }
 
     public DataModel getDataModel() {

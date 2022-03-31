@@ -27,8 +27,6 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
@@ -50,14 +48,12 @@ class BuildPureClustersIndTestParamsEditor extends JComponent {
         DoubleTextField alphaField = new DoubleTextField(getParams().getDouble("alpha", 0.001), 8,
                 new DecimalFormat("0.0########"), smallNumberFormat, 1e-4);
 
-        alphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(double value, double oldValue) {
-                try {
-                    getParams().set("alpha", 0.001);
-                    return value;
-                } catch (IllegalArgumentException e) {
-                    return oldValue;
-                }
+        alphaField.setFilter((value, oldValue) -> {
+            try {
+                getParams().set("alpha", 0.001);
+                return value;
+            } catch (IllegalArgumentException e) {
+                return oldValue;
             }
         });
 
@@ -66,55 +62,51 @@ class BuildPureClustersIndTestParamsEditor extends JComponent {
         if (!discreteData) {
             TestType[] descriptions = TestType.getTestDescriptions();
             testSelector.removeAllItems();
-            for (int i = 0; i < descriptions.length; i++) {
-                testSelector.addItem(descriptions[i]);
+            for (TestType description : descriptions) {
+                testSelector.addItem(description);
             }
 
             testSelector.setSelectedItem(getParams().get("tetradTestType", TestType.TETRAD_WISHART));
 
-            testSelector.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    JComboBox combo = (JComboBox) e.getSource();
-                    TestType index = (TestType) combo.getSelectedItem();
-                    getParams().set("tetradTestType", index);
-                }
+            testSelector.addActionListener(e -> {
+                JComboBox combo = (JComboBox) e.getSource();
+                TestType index = (TestType) combo.getSelectedItem();
+                getParams().set("tetradTestType", index);
             });
         }
 
-        JComboBox algorithmSelector = null;
+        JComboBox algorithmSelector;
 
 //        final BpcAlgorithmType[] descriptions = BpcAlgorithmType.getAlgorithmDescriptions();
         BpcAlgorithmType[] descriptions = {BpcAlgorithmType.BUILD_PURE_CLUSTERS};
         algorithmSelector = new JComboBox(descriptions);
         algorithmSelector.setSelectedItem(getParams().get("bpcAlgorithmthmType", BpcAlgorithmType.FIND_ONE_FACTOR_CLUSTERS));
 
-        algorithmSelector.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JComboBox combo = (JComboBox) e.getSource();
-                BpcAlgorithmType type = (BpcAlgorithmType) combo.getSelectedItem();
-                getParams().set("bpcAlgorithmType", type);
+        algorithmSelector.addActionListener(e -> {
+            JComboBox combo = (JComboBox) e.getSource();
+            BpcAlgorithmType type = (BpcAlgorithmType) combo.getSelectedItem();
+            getParams().set("bpcAlgorithmType", type);
 
-                if (type == BpcAlgorithmType.FIND_TWO_FACTOR_CLUSTERS) {
-                    testSelector.removeAllItems();
-                    testSelector.addItem(TestType.SAG);
-                    testSelector.addItem(TestType.GAP);
-                    testSelector.revalidate();
-                } else {
-                    testSelector.removeAllItems();
-                    testSelector.addItem(TestType.TETRAD_WISHART);
-                    testSelector.addItem(TestType.TETRAD_DELTA);
+            if (type == BpcAlgorithmType.FIND_TWO_FACTOR_CLUSTERS) {
+                testSelector.removeAllItems();
+                testSelector.addItem(TestType.SAG);
+                testSelector.addItem(TestType.GAP);
+                testSelector.revalidate();
+            } else {
+                testSelector.removeAllItems();
+                testSelector.addItem(TestType.TETRAD_WISHART);
+                testSelector.addItem(TestType.TETRAD_DELTA);
 
-                    testSelector.revalidate();
-                }
-
-
-                if (paramsPureClusters.get("tetradTestType", TestType.TETRAD_WISHART) == TestType.TETRAD_WISHART) {
-                    testSelector.setSelectedItem(TestType.TETRAD_WISHART);
-                } else {
-                    testSelector.setSelectedItem(TestType.TETRAD_DELTA);
-                }
-
+                testSelector.revalidate();
             }
+
+
+            if (paramsPureClusters.get("tetradTestType", TestType.TETRAD_WISHART) == TestType.TETRAD_WISHART) {
+                testSelector.setSelectedItem(TestType.TETRAD_WISHART);
+            } else {
+                testSelector.setSelectedItem(TestType.TETRAD_DELTA);
+            }
+
         });
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -141,12 +133,6 @@ class BuildPureClustersIndTestParamsEditor extends JComponent {
         add(b4);
         add(Box.createHorizontalGlue());
 
-//        if (discreteData) {
-//            paramsPureClusters.setPurifyTestType(
-//                    BuildPureClusters.PURIFY_TEST_DISCRETE_LRT);
-//            paramsPureClusters.setTetradTestType(BuildPureClusters.TEST_DISCRETE);
-//
-//        }
     }
 
     private Parameters getParams() {

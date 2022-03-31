@@ -28,11 +28,7 @@ import edu.cmu.tetradapp.model.DirichletEstimatorWrapper;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 /**
  * An editor for Bayes net instantiated models. Assumes that the workbench and
@@ -50,7 +46,7 @@ public class DirichletBayesImEditor extends JPanel {
     private final DirichletBayesImCountsWizard countsWizard;
 
     /**
-     * Constructs a new instanted model editor from a Bayes IM.
+     * Constructs a new instantiated model editor from a Bayes IM.
      */
     private DirichletBayesImEditor(DirichletBayesIm dirichletBayesIm) {
         if (dirichletBayesIm == null) {
@@ -78,19 +74,15 @@ public class DirichletBayesImEditor extends JPanel {
 
         this.countsWizard = new DirichletBayesImCountsWizard(dirichletBayesIm, workbench);
 
-        this.probsWizard.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("editorValueChanged".equals(evt.getPropertyName())) {
-                    firePropertyChange("modelChanged", null, null);
-                }
+        this.probsWizard.addPropertyChangeListener(evt -> {
+            if ("editorValueChanged".equals(evt.getPropertyName())) {
+                firePropertyChange("modelChanged", null, null);
             }
         });
 
-        this.countsWizard.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("editorValueChanged".equals(evt.getPropertyName())) {
-                    firePropertyChange("modelChanged", null, null);
-                }
+        this.countsWizard.addPropertyChangeListener(evt -> {
+            if ("editorValueChanged".equals(evt.getPropertyName())) {
+                firePropertyChange("modelChanged", null, null);
             }
         });
 
@@ -102,11 +94,9 @@ public class DirichletBayesImEditor extends JPanel {
         tabbedPane.add("Probabilities", probsScroll);
         tabbedPane.add("Pseudocounts", countsScroll);
 
-        tabbedPane.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                JTabbedPane tabbedPane = (JTabbedPane) e.getSource();
-                tabbedPane.getSelectedComponent().requestFocus();
-            }
+        tabbedPane.addChangeListener(e -> {
+            JTabbedPane tabbedPane1 = (JTabbedPane) e.getSource();
+            tabbedPane1.getSelectedComponent().requestFocus();
         });
 
         workbenchScroll.setPreferredSize(new Dimension(400, 400));
@@ -120,17 +110,15 @@ public class DirichletBayesImEditor extends JPanel {
 
         setName("Dirichlet Bayes IM Editor");
         getProbsWizard().addPropertyChangeListener(
-                new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        if ("editorClosing".equals(evt.getPropertyName())) {
-                            firePropertyChange("editorClosing", null,
-                                    getName());
-                        }
+                evt -> {
+                    if ("editorClosing".equals(evt.getPropertyName())) {
+                        firePropertyChange("editorClosing", null,
+                                getName());
+                    }
 
-                        if ("closeFrame".equals(evt.getPropertyName())) {
-                            firePropertyChange("closeFrame", null, null);
-                            firePropertyChange("editorClosing", true, true);
-                        }
+                    if ("closeFrame".equals(evt.getPropertyName())) {
+                        firePropertyChange("closeFrame", null, null);
+                        firePropertyChange("editorClosing", true, true);
                     }
                 });
     }

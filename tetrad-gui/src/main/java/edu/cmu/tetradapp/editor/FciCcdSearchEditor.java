@@ -39,8 +39,6 @@ import edu.cmu.tetradapp.workbench.LayoutMenu;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.List;
 import java.util.Map;
 
@@ -133,11 +131,7 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
     protected JPanel getToolbar() {
         JPanel toolbar = new JPanel();
         getExecuteButton().setText("Execute*");
-        getExecuteButton().addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                execute();
-            }
-        });
+        getExecuteButton().addActionListener(e -> execute());
 
         Box b1 = Box.createVerticalBox();
         b1.add(getParamsPanel());
@@ -217,26 +211,25 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
 
         menuBar.add(graph);
 
-        showDags.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Window owner = (Window) getTopLevelAncestor();
+        showDags.addActionListener(e -> {
+            Window owner = (Window) getTopLevelAncestor();
 
-                new WatchedProcess(owner) {
-                    public void watch() {
+            new WatchedProcess(owner) {
+                public void watch() {
 
-                        // Needs to be a CPDAG search; this isn't checked
-                        // before running the algorithm because of allowable
-                        // "slop"--e.g. bidirected edges.
-                        AlgorithmRunner runner = getAlgorithmRunner();
-                        Graph graph = runner.getGraph();
+                    // Needs to be a CPDAG search; this isn't checked
+                    // before running the algorithm because of allowable
+                    // "slop"--e.g. bidirected edges.
+                    AlgorithmRunner runner = getAlgorithmRunner();
+                    Graph graph1 = runner.getGraph();
 
 
-                        if (graph == null) {
-                            JOptionPane.showMessageDialog(
-                                    JOptionUtils.centeringComp(),
-                                    "No result gaph.");
-                            return;
-                        }
+                    if (graph1 == null) {
+                        JOptionPane.showMessageDialog(
+                                JOptionUtils.centeringComp(),
+                                "No result gaph.");
+                        return;
+                    }
 
 //                        if (runner instanceof ImagesRunner) {
 //                            GraphScorer scorer = ((ImagesRunner) runner).getGraphScorer();
@@ -252,18 +245,17 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
 //                            editorWindow.setVisible(true);
 //                        }
 //                        else {
-                        CPDAGDisplay display = new CPDAGDisplay(graph);
-                        GraphWorkbench workbench = getWorkbench();
+                    CPDAGDisplay display = new CPDAGDisplay(graph1);
+                    GraphWorkbench workbench = getWorkbench();
 
-                        EditorWindow editorWindow =
-                                new EditorWindow(display, "Independence Facts",
-                                        "Close", false, workbench);
-                        DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
-                        editorWindow.setVisible(true);
+                    EditorWindow editorWindow =
+                            new EditorWindow(display, "Independence Facts",
+                                    "Close", false, workbench);
+                    DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
+                    editorWindow.setVisible(true);
 //                        }
-                    }
-                };
-            }
+                }
+            };
         });
 
 //        meekOrient.addActionListener(new ActionListener() {
@@ -277,56 +269,47 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
 //            }
 //        });
 
-        dagInCPDAG.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Graph graph = new EdgeListGraph(getGraph());
+        dagInCPDAG.addActionListener(e -> {
+            Graph graph13 = new EdgeListGraph(getGraph());
 
-                // Removing bidirected edges from the CPDAG before selecting a DAG.                                   4
-                for (Edge edge : graph.getEdges()) {
-                    if (Edges.isBidirectedEdge(edge)) {
-                        graph.removeEdge(edge);
-                    }
+            // Removing bidirected edges from the CPDAG before selecting a DAG.                                   4
+            for (Edge edge : graph13.getEdges()) {
+                if (Edges.isBidirectedEdge(edge)) {
+                    graph13.removeEdge(edge);
                 }
-
-                Graph dag = SearchGraphUtils.dagFromCPDAG(graph);
-
-                getGraphHistory().add(dag);
-                getWorkbench().setGraph(dag);
-
-                ((AbstractAlgorithmRunner) getAlgorithmRunner()).setResultGraph(dag);
-                firePropertyChange("modelChanged", null, null);
             }
+
+            Graph dag = SearchGraphUtils.dagFromCPDAG(graph13);
+
+            getGraphHistory().add(dag);
+            getWorkbench().setGraph(dag);
+
+            ((AbstractAlgorithmRunner) getAlgorithmRunner()).setResultGraph(dag);
+            firePropertyChange("modelChanged", null, null);
         });
 
-        gesOrient.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                DataModel dataModel = getAlgorithmRunner().getDataModel();
+        gesOrient.addActionListener(e -> {
+            DataModel dataModel = getAlgorithmRunner().getDataModel();
 
-                Graph graph = SearchGraphUtils.reorient(getGraph(), dataModel, getKnowledge());
+            Graph graph12 = SearchGraphUtils.reorient(getGraph(), dataModel, getKnowledge());
 
-                getGraphHistory().add(graph);
-                getWorkbench().setGraph(graph);
-                firePropertyChange("modelChanged", null, null);
-            }
-
+            getGraphHistory().add(graph12);
+            getWorkbench().setGraph(graph12);
+            firePropertyChange("modelChanged", null, null);
         });
 
-        nextGraph.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Graph next = getGraphHistory().next();
-                getWorkbench().setGraph(next);
-                ((AbstractAlgorithmRunner) getAlgorithmRunner()).setResultGraph(next);
-                firePropertyChange("modelChanged", null, null);
-            }
+        nextGraph.addActionListener(e -> {
+            Graph next = getGraphHistory().next();
+            getWorkbench().setGraph(next);
+            ((AbstractAlgorithmRunner) getAlgorithmRunner()).setResultGraph(next);
+            firePropertyChange("modelChanged", null, null);
         });
 
-        previousGraph.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Graph previous = getGraphHistory().previous();
-                getWorkbench().setGraph(previous);
-                ((AbstractAlgorithmRunner) getAlgorithmRunner()).setResultGraph(previous);
-                firePropertyChange("modelChanged", null, null);
-            }
+        previousGraph.addActionListener(e -> {
+            Graph previous = getGraphHistory().previous();
+            getWorkbench().setGraph(previous);
+            ((AbstractAlgorithmRunner) getAlgorithmRunner()).setResultGraph(previous);
+            firePropertyChange("modelChanged", null, null);
         });
 
 //        if (getAlgorithmRunner().supportsKnowledge()) {
@@ -374,9 +357,7 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
         Box b2 = Box.createVerticalBox();
 
         JComponent indTestParamBox = getIndTestParamBox();
-        if (indTestParamBox != null) {
-            b2.add(indTestParamBox);
-        }
+        b2.add(indTestParamBox);
 
         paramsPanel.add(b2);
         paramsPanel.setBorder(new TitledBorder("Parameters"));
@@ -397,10 +378,8 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
             throw new NullPointerException();
         }
 
-        if (params instanceof Parameters) {
-            FgesRunner fgesRunner = ((FgesRunner) getAlgorithmRunner());
-            return new FgesIndTestParamsEditor(params, fgesRunner.getType());
-        }
+        FgesRunner fgesRunner = ((FgesRunner) getAlgorithmRunner());
+        return new FgesIndTestParamsEditor(params, fgesRunner.getType());
 
 //        if (params instanceof LagIndTestParams) {
 //            return new TimeSeriesIndTestParamsEditor(
@@ -428,7 +407,6 @@ public class FciCcdSearchEditor extends AbstractSearchEditor
 //            return new ParamsEditor((Parameters) params);
 //        }
 
-        return new IndTestParamsEditor(params);
     }
 
     protected void doDefaultArrangement(Graph resultGraph) {

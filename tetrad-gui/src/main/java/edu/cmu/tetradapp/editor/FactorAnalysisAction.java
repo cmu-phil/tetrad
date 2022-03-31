@@ -83,12 +83,6 @@ public class FactorAnalysisAction extends AbstractAction {
         DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
         window.setVisible(true);
 
-        /*
-        EditorWindow window2 = new EditorWindow(new GraphEditor(new DirectedGraph()), "Factor Analysis", "Close", false, dataEditor);
-        window2.setLocation(800, 400);
-        DesktopController.getInstance().addEditorWindow(window2, JLayeredPane.PALETTE_LAYER);
-        window2.setVisible(true);
-        */
     }
 
     private JPanel createDialog(FactorAnalysis analysis) {
@@ -103,17 +97,11 @@ public class FactorAnalysisAction extends AbstractAction {
         String output = "Unrotated Factor Loading Matrix:\n";
 
         output += tableString(unrotatedSolution, nf, Double.POSITIVE_INFINITY);
-//        String temp = unrotatedSolution.toString();
-//        temp = temp.split("\n", 2)[1];
-//        output += temp;
 
         if (unrotatedSolution.columns() != 1) {
             output += "\n\nRotated Matrix (using sequential varimax):\n";
 
             output += tableString(rotatedSolution, nf, threshold);
-            //        temp = rotatedSolution.toString();
-            //        temp = temp.split("\n", 2)[1];
-            //        output += temp;
 
         }
 
@@ -129,6 +117,7 @@ public class FactorAnalysisAction extends AbstractAction {
 
         Vector<Node> observedVariables = new Vector<>();
 
+        assert dataSet != null;
         for (Node a : dataSet.getVariables()) {
             graph.addNode(a);
             observedVariables.add(a);
@@ -190,7 +179,7 @@ public class FactorAnalysisAction extends AbstractAction {
                     table.setToken(i, 0, "X" + i);
                 } else if (i == 0 && j > 0) {
                     table.setToken(0, j, "Factor " + j);
-                } else if (i > 0 && j > 0) {
+                } else if (i > 0) {
                     double coefficient = matrix.get(i - 1, j - 1);
                     String token = !Double.isNaN(coefficient) ? nf.format(coefficient) : "Undefined";
                     token += Math.abs(coefficient) > threshold ? "*" : " ";

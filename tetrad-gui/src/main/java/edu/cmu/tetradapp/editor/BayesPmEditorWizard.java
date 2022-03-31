@@ -33,6 +33,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.List;
 import java.util.*;
@@ -325,14 +326,12 @@ final class BayesPmEditorWizard extends JPanel {
                             + "<br>paste multiple times." + "</html>");
         });
 
-        paste.addActionListener((e) -> {
-            pasteCategories();
-        });
+        paste.addActionListener((e) -> pasteCategories());
 
         copy.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
         paste.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK));
 
         transfer.add(copy);
         transfer.add(paste);
@@ -367,8 +366,7 @@ final class BayesPmEditorWizard extends JPanel {
 
         Graph graphModel = bayesPm.getDag();
 
-        List<Node> nodes = graphModel.getNodes().stream().collect(Collectors.toList());
-        Collections.sort(nodes);
+        List<Node> nodes = graphModel.getNodes().stream().sorted().collect(Collectors.toList());
         nodes.forEach(this.variableChooser::addItem);
 
         if (this.variableChooser.getItemCount() > 0) {
@@ -629,8 +627,8 @@ final class BayesPmEditorWizard extends JPanel {
                                 + categories.size());
             }
 
-            for (int i = 0; i < categories.size(); i++) {
-                if (categories.get(i) == null) {
+            for (Object category : categories) {
+                if (category == null) {
                     throw new NullPointerException();
                 }
             }

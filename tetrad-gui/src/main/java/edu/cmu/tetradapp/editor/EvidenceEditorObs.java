@@ -33,7 +33,6 @@ import javax.swing.border.LineBorder;
 import javax.swing.plaf.basic.BasicButtonUI;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.HashMap;
 
 /**
@@ -108,50 +107,48 @@ class EvidenceEditorObs extends JPanel {
 
                 this.buttons[i][j] = button;
 
-                button.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        JToggleButton button = (JToggleButton) e.getSource();
-                        int i = EvidenceEditorObs.this.buttonsToVariables.get(button);
-                        int j = EvidenceEditorObs.this.buttonsToCategories.get(button);
+                button.addActionListener(e -> {
+                    JToggleButton button1 = (JToggleButton) e.getSource();
+                    int i1 = EvidenceEditorObs.this.buttonsToVariables.get(button1);
+                    int j1 = EvidenceEditorObs.this.buttonsToCategories.get(button1);
 
-                        Proposition proposition =
-                                getEvidence().getProposition();
+                    Proposition proposition =
+                            getEvidence().getProposition();
 
-                        if (proposition.getNumAllowed(i) ==
-                                getEvidence().getNumCategories(i)) {
-                            proposition.setCategory(i, j);
-                            // for now, all evidence is assumed to be manipulated
-                            // (for identifiability)
-                            getEvidence().setManipulated(i, true);
-                            JCheckBox checkbox = EvidenceEditorObs.this.variablesToCheckboxes.get(i);
-                            checkbox.setSelected(true);
-                        } else if (proposition.getNumAllowed(i) == 1) {
-                            if (proposition.getSingleCategory(i) == j) {
-                                proposition.removeCategory(i, j);
-                            } else {
-                                // disallow selecting more than one category
-                                // in a variable
-                                if ((ActionEvent.SHIFT_MASK &
-                                        e.getModifiers()) != 1) {
-                                    proposition.setVariable(i, false);
-                                }
-                                //proposition.addCategory(i, j);
-                                proposition.setCategory(i, j);
+                    if (proposition.getNumAllowed(i1) ==
+                            getEvidence().getNumCategories(i1)) {
+                        proposition.setCategory(i1, j1);
+                        // for now, all evidence is assumed to be manipulated
+                        // (for identifiability)
+                        getEvidence().setManipulated(i1, true);
+                        JCheckBox checkbox = EvidenceEditorObs.this.variablesToCheckboxes.get(i1);
+                        checkbox.setSelected(true);
+                    } else if (proposition.getNumAllowed(i1) == 1) {
+                        if (proposition.getSingleCategory(i1) == j1) {
+                            proposition.removeCategory(i1, j1);
+                        } else {
+                            // disallow selecting more than one category
+                            // in a variable
+                            if ((ActionEvent.SHIFT_MASK &
+                                    e.getModifiers()) != 1) {
+                                proposition.setVariable(i1, false);
                             }
-                        } else { // toggle
-                            if (proposition.isAllowed(i, j)) {
-                                proposition.removeCategory(i, j);
-                            } else {
-                                proposition.addCategory(i, j);
-                            }
+                            //proposition.addCategory(i, j);
+                            proposition.setCategory(i1, j1);
                         }
-
-                        if (proposition.getNumAllowed(i) == 0) {
-                            proposition.setVariable(i, true);
+                    } else { // toggle
+                        if (proposition.isAllowed(i1, j1)) {
+                            proposition.removeCategory(i1, j1);
+                        } else {
+                            proposition.addCategory(i1, j1);
                         }
-
-                        resetSelected(i);
                     }
+
+                    if (proposition.getNumAllowed(i1) == 0) {
+                        proposition.setVariable(i1, true);
+                    }
+
+                    resetSelected(i1);
                 });
 
                 c.add(button);
@@ -167,26 +164,22 @@ class EvidenceEditorObs extends JPanel {
             checkbox.setSelected(getEvidence().isManipulated(i));
             this.checkBoxesToVariables.put(checkbox, i);
             this.variablesToCheckboxes.put(i, checkbox);
-            checkbox.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    JCheckBox checkbox = (JCheckBox) e.getSource();
-                    boolean selected = checkbox.isSelected();
-                    Object o = EvidenceEditorObs.this.checkBoxesToVariables.get(checkbox);
-                    int variable = (Integer) o;
+            checkbox.addActionListener(e -> {
+                JCheckBox checkbox1 = (JCheckBox) e.getSource();
+                int variable = this.checkBoxesToVariables.get(checkbox1);
 
-                    if (getEvidence().getProposition().getSingleCategory(
-                            variable) == -1) {
-                        JOptionPane.showMessageDialog(checkbox,
-                                "Please choose a single category to manipulate on.");
-                        checkbox.setSelected(false);
-                        getEvidence().setManipulated(variable, false);
-                    } else {
-                        // for now, always check the manipulated checkbox
-                        // (for identifiability) whenever some variable value
-                        // is selected
-                        getEvidence().setManipulated(variable, true);
-                        checkbox.setSelected(true);
-                    }
+                if (getEvidence().getProposition().getSingleCategory(
+                        variable) == -1) {
+                    JOptionPane.showMessageDialog(checkbox1,
+                            "Please choose a single category to manipulate on.");
+                    checkbox1.setSelected(false);
+                    getEvidence().setManipulated(variable, false);
+                } else {
+                    // for now, always check the manipulated checkbox
+                    // (for identifiability) whenever some variable value
+                    // is selected
+                    getEvidence().setManipulated(variable, true);
+                    checkbox1.setSelected(true);
                 }
             });
             checkbox.setBackground(Color.WHITE);
@@ -204,7 +197,7 @@ class EvidenceEditorObs extends JPanel {
             int _i = this.buttonsToVariables.get(_button);
             int _j = this.buttonsToCategories.get(_button);
 
-            if (!!proposition.isConditioned(_i) && proposition.isAllowed(_i, _j)) {
+            if (proposition.isConditioned(_i) && proposition.isAllowed(_i, _j)) {
                 _button.setBackground(Color.LIGHT_GRAY);
             } else {
                 _button.setBackground(Color.WHITE);

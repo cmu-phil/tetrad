@@ -27,8 +27,6 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -44,15 +42,6 @@ public class BayesPmEditor extends JPanel
 
     private final JPanel targetPanel;
     private final BayesPmWrapper wrapper;
-    /**
-     * True iff the editing of measured variables is allowed.
-     */
-    private boolean editingMeasuredVariablesAllowed = true;
-
-    /**
-     * True iff the editing of latent variables is allowed.
-     */
-    private boolean editingLatentVariablesAllowed = true;
 
     /**
      * The wizard that lets the user edit values.
@@ -82,13 +71,10 @@ public class BayesPmEditor extends JPanel
                 comp.addItem(i + 1);
             }
 
-            comp.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    wrapper.setModelIndex(((Integer) comp.getSelectedItem()).intValue() - 1);
-                    setEditorPanel();
-                    validate();
-                }
+            comp.addActionListener(e -> {
+                wrapper.setModelIndex((Integer) comp.getSelectedItem() - 1);
+                setEditorPanel();
+                validate();
             });
 
             comp.setMaximumSize(comp.getPreferredSize());
@@ -142,7 +128,7 @@ public class BayesPmEditor extends JPanel
         wizard.addPropertyChangeListener(this);
 
         wizard.setEditingLatentVariablesAllowed(isEditingLatentVariablesAllowed());
-        wizard.setEditingMeasuredVariablesAllowed(isEditingMeasuredVariablesAllowed());
+        wizard.setEditingMeasuredVariablesAllowed(true);
         this.wizard = wizard;
 
         this.targetPanel.add(panel, BorderLayout.CENTER);
@@ -182,33 +168,10 @@ public class BayesPmEditor extends JPanel
     }
 
     /**
-     * True iff the editing of measured variables is allowed.
-     */
-    private boolean isEditingMeasuredVariablesAllowed() {
-        return this.editingMeasuredVariablesAllowed;
-    }
-
-    /**
-     * True iff the editing of measured variables is allowed.
-     */
-    public void setEditingMeasuredVariablesAllowed(boolean editingMeasuredVariablesAllowed) {
-        this.editingMeasuredVariablesAllowed = editingMeasuredVariablesAllowed;
-        this.wizard.setEditingMeasuredVariablesAllowed(isEditingMeasuredVariablesAllowed());
-    }
-
-    /**
      * True iff the editing of latent variables is allowed.
      */
     private boolean isEditingLatentVariablesAllowed() {
-        return this.editingLatentVariablesAllowed;
-    }
-
-    /**
-     * True iff the editing of latent variables is allowed.
-     */
-    public void setEditingLatentVariablesAllowed(boolean editingLatentVariablesAllowed) {
-        this.editingLatentVariablesAllowed = editingLatentVariablesAllowed;
-        this.wizard.setEditingLatentVariablesAllowed(isEditingLatentVariablesAllowed());
+        return true;
     }
 
 }

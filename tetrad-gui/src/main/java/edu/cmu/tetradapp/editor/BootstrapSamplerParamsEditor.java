@@ -21,10 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.util.IntTextField;
 
 import javax.swing.*;
@@ -49,17 +46,6 @@ public class BootstrapSamplerParamsEditor extends JPanel implements ParameterEdi
     }
 
     public void setParentModels(Object[] parentModels) {
-        for (Object parentModel : parentModels) {
-            //            System.out.println(parentModel);
-            //
-            if (parentModel instanceof DataWrapper) {
-                DataModel dataModel = ((DataWrapper) parentModel).getSelectedDataModel();
-                //
-                if (dataModel instanceof DataSet) {
-                    DataSet parentDataSet = (DataSet) dataModel;
-                }
-            }
-        }
     }
 
     public void setup() {
@@ -81,14 +67,12 @@ public class BootstrapSamplerParamsEditor extends JPanel implements ParameterEdi
         setLayout(new BorderLayout());
 
         IntTextField sampleSizeField = new IntTextField(this.params.getInt("sampleSize", 1000), 6);
-        sampleSizeField.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
-                try {
-                    BootstrapSamplerParamsEditor.this.params.set("sampleSize", value);
-                    return value;
-                } catch (IllegalArgumentException e) {
-                    return oldValue;
-                }
+        sampleSizeField.setFilter((value, oldValue) -> {
+            try {
+                BootstrapSamplerParamsEditor.this.params.set("sampleSize", value);
+                return value;
+            } catch (IllegalArgumentException e) {
+                return oldValue;
             }
         });
 

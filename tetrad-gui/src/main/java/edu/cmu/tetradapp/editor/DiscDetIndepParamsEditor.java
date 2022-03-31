@@ -62,26 +62,22 @@ class DiscDetIndepParamsEditor extends JComponent {
         this.alphaField = new DoubleTextField(params.getDouble("alpha", 0.001), 5,
                 NumberFormatUtil.getInstance().getNumberFormat());
 
-        this.alphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(double value, double oldValue) {
-                try {
-                    params().set("alpha", 0.001);
-                    return value;
-                } catch (IllegalArgumentException e) {
-                    return oldValue;
-                }
+        this.alphaField.setFilter((value, oldValue) -> {
+            try {
+                params().set("alpha", 0.001);
+                return value;
+            } catch (IllegalArgumentException e) {
+                return oldValue;
             }
         });
 
         this.depthField = new IntTextField(params.getInt("depth", -1), 5);
-        this.depthField.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
-                try {
-                    params().set("depth", value);
-                    return value;
-                } catch (IllegalArgumentException e) {
-                    return oldValue;
-                }
+        this.depthField.setFilter((value, oldValue) -> {
+            try {
+                params().set("depth", value);
+                return value;
+            } catch (IllegalArgumentException e) {
+                return oldValue;
             }
         });
 

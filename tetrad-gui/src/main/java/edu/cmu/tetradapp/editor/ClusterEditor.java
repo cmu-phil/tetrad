@@ -29,8 +29,6 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.MatteBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -101,9 +99,6 @@ public final class ClusterEditor extends JPanel {
     }
 
     private Box clusterDisplay() {
-//        if (clusters.getNumClusters() < 1) {
-//            clusters.setNumClusters(1);
-//        }
 
         Box b = Box.createVerticalBox();
         b.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -113,16 +108,14 @@ public final class ClusterEditor extends JPanel {
         b1.add(Box.createHorizontalGlue());
         b1.add(new JLabel("# Clusters = "));
         int numClusters = this.clusters.getNumClusters();
-        numClusters = numClusters < 3 ? 3 : numClusters;
+        numClusters = Math.max(numClusters, 3);
         SpinnerNumberModel spinnerNumberModel
                 = new SpinnerNumberModel(numClusters, 3, 100, 1);
-        spinnerNumberModel.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                SpinnerNumberModel model = (SpinnerNumberModel) e.getSource();
-                int numClusters = model.getNumber().intValue();
-                setNumDisplayClusters(numClusters);
-                ClusterEditor.this.clusters.setNumClusters(numClusters);
-            }
+        spinnerNumberModel.addChangeListener(e -> {
+            SpinnerNumberModel model = (SpinnerNumberModel) e.getSource();
+            int numClusters1 = model.getNumber().intValue();
+            setNumDisplayClusters(numClusters1);
+            ClusterEditor.this.clusters.setNumClusters(numClusters1);
         });
 
         JSpinner spinner = new JSpinner(spinnerNumberModel);
@@ -150,8 +143,7 @@ public final class ClusterEditor extends JPanel {
             int numStoredClusters = getClustersPrivate().getNumClusters();
             int n = (int) Math.pow(getVarNames().size(), 0.5);
             int defaultNumClusters = n + 1;
-            int numClusters2 = numStoredClusters
-                    < defaultNumClusters ? defaultNumClusters : numStoredClusters;
+            int numClusters2 = Math.max(numStoredClusters, defaultNumClusters);
             this.clusters.setNumClusters(numClusters2);
         } else {
             this.clusters.setNumClusters(numClusters);
@@ -249,31 +241,27 @@ public final class ClusterEditor extends JPanel {
 
             setLayoutOrientation(orientation);
             setVisibleRowCount(0);
-            this.setCellRenderer(new ListCellRenderer() {
-                public Component getListCellRendererComponent(JList list,
-                                                              Object value, int index, boolean isSelected,
-                                                              boolean cellHasFocus) {
-                    Color fillColor = new Color(153, 204, 204);
-                    Color selectedFillColor = new Color(255, 204, 102);
+            this.setCellRenderer((list, value, index, isSelected, cellHasFocus) -> {
+                Color fillColor = new Color(153, 204, 204);
+                Color selectedFillColor = new Color(255, 204, 102);
 
-                    JLabel comp = new JLabel(" " + value + " ");
-                    comp.setOpaque(true);
+                JLabel comp = new JLabel(" " + value + " ");
+                comp.setOpaque(true);
 
-                    if (isSelected) {
-                        comp.setForeground(Color.BLACK);
-                        comp.setBackground(selectedFillColor);
-                    } else {
-                        comp.setForeground(Color.BLACK);
-                        comp.setBackground(fillColor);
-                    }
-
-                    comp.setHorizontalAlignment(SwingConstants.CENTER);
-                    comp.setBorder(new CompoundBorder(
-                            new MatteBorder(2, 2, 2, 2, Color.WHITE),
-                            new LineBorder(Color.BLACK)));
-
-                    return comp;
+                if (isSelected) {
+                    comp.setForeground(Color.BLACK);
+                    comp.setBackground(selectedFillColor);
+                } else {
+                    comp.setForeground(Color.BLACK);
+                    comp.setBackground(fillColor);
                 }
+
+                comp.setHorizontalAlignment(SwingConstants.CENTER);
+                comp.setBorder(new CompoundBorder(
+                        new MatteBorder(2, 2, 2, 2, Color.WHITE),
+                        new LineBorder(Color.BLACK)));
+
+                return comp;
             });
 
             // Confession: We only care about ACTION_MOVE, but on my Windows
@@ -353,9 +341,7 @@ public final class ClusterEditor extends JPanel {
                         dropTargetDropEvent.dropComplete(true);
                     }
                 }
-            } catch (UnsupportedFlavorException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
+            } catch (UnsupportedFlavorException | IOException e) {
                 e.printStackTrace();
             }
         }

@@ -34,8 +34,6 @@ import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -77,11 +75,9 @@ public class FgesDisplay extends JPanel implements GraphEditable {
         SpinnerNumberModel model =
                 new SpinnerNumberModel(numCPDAGs == 0 ? 1 : indexable.getIndex() + 1, 1, numCPDAGs == 0 ? 1 : numCPDAGs, 1);
 
-        model.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                getIndexable().setIndex((Integer) model.getValue() - 1);
-                setCPDAG();
-            }
+        model.addChangeListener(e -> {
+            getIndexable().setIndex((Integer) model.getValue() - 1);
+            setCPDAG();
         });
 
 //        spinner = new JSpinner();
@@ -147,11 +143,9 @@ public class FgesDisplay extends JPanel implements GraphEditable {
         int numCPDAGs = this.topGraphs.size();
 
         SpinnerNumberModel model = new SpinnerNumberModel(numCPDAGs, 0, numCPDAGs, 1);
-        model.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                getIndexable().setIndex((Integer) model.getValue() - 1);
-                setCPDAG();
-            }
+        model.addChangeListener(e -> {
+            getIndexable().setIndex((Integer) model.getValue() - 1);
+            setCPDAG();
         });
 
         this.spinner.setModel(model);
@@ -193,9 +187,7 @@ public class FgesDisplay extends JPanel implements GraphEditable {
         getWorkbench().pasteSubgraph(sessionElements, upperLeft);
         getWorkbench().deselectAll();
 
-        for (int i = 0; i < sessionElements.size(); i++) {
-
-            Object o = sessionElements.get(i);
+        for (Object o : sessionElements) {
 
             if (o instanceof GraphNode) {
                 Node modelNode = (Node) o;
@@ -226,9 +218,6 @@ public class FgesDisplay extends JPanel implements GraphEditable {
         return this.indexable;
     }
 
-    private void setIndexable(Indexable indexable) {
-        this.indexable = indexable;
-    }
 }
 
 

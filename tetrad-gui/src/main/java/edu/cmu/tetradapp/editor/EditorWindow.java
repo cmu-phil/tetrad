@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.session.ModificationRegistery;
 import edu.cmu.tetradapp.util.EditorWindowIndirectRef;
 import edu.cmu.tetradapp.util.FinalizingEditor;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.event.InternalFrameAdapter;
@@ -84,7 +85,7 @@ public class EditorWindow extends JInternalFrame
     }
 
     @Override
-    public int compareTo(Object o) {
+    public int compareTo(@NotNull Object o) {
         EditorWindow to = (EditorWindow) o;
         return ((EditorWindow) o).getName().compareTo(to.getName());
 

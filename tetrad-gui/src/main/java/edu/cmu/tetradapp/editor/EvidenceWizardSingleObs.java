@@ -21,7 +21,6 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.JOptionUtils;
@@ -31,8 +30,6 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
 import javax.swing.border.MatteBorder;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 /**
  * Lets the user visually add and remove evidence, perform updates, and view
@@ -102,39 +99,33 @@ class EvidenceWizardSingleObs extends JPanel {
         add(Box.createVerticalGlue());
 
         // Add listeners.
-        updateButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                DisplayNode graphNode = getWorkbench().getSelectedNode();
+        updateButton.addActionListener(e -> {
+            DisplayNode graphNode = getWorkbench().getSelectedNode();
 
-                if (graphNode == null) {
-                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                            "Please select exactly one node in the graph.");
-                    return;
-                }
-
-                Node tetradNode = graphNode.getModelNode();
-                String selectedNodeName = tetradNode.getName();
-
-                getUpdaterWrapper().getParams().set("evidence", EvidenceWizardSingleObs.this.evidenceEditor.getEvidence());
-                getUpdaterWrapper().getParams().set("variable", updaterWrapper.getBayesUpdater().getBayesIm().getBayesPm().getVariable(tetradNode));
-                getUpdaterWrapper().getBayesUpdater().setEvidence(EvidenceWizardSingleObs.this.evidenceEditor.getEvidence());
-
-
-                Graph updatedGraph = getUpdaterWrapper().getBayesUpdater().getManipulatedGraph();
-                Node selectedNode = updatedGraph.getNode(selectedNodeName);
-
-                getWorkbench().setGraph(updatedGraph);
-                getWorkbench().deselectAll();
-                getWorkbench().selectNode(selectedNode);
-
-                firePropertyChange("updateButtonPressed", null, null);
-                firePropertyChange("modelChanged", null, null);
+            if (graphNode == null) {
+                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                        "Please select exactly one node in the graph.");
+                return;
             }
-        });
-    }
 
-    public BayesIm getBayesIM() {
-        return getUpdaterWrapper().getBayesUpdater().getUpdatedBayesIm();
+            Node tetradNode = graphNode.getModelNode();
+            String selectedNodeName = tetradNode.getName();
+
+            getUpdaterWrapper().getParams().set("evidence", EvidenceWizardSingleObs.this.evidenceEditor.getEvidence());
+            getUpdaterWrapper().getParams().set("variable", updaterWrapper.getBayesUpdater().getBayesIm().getBayesPm().getVariable(tetradNode));
+            getUpdaterWrapper().getBayesUpdater().setEvidence(EvidenceWizardSingleObs.this.evidenceEditor.getEvidence());
+
+
+            Graph updatedGraph = getUpdaterWrapper().getBayesUpdater().getManipulatedGraph();
+            Node selectedNode = updatedGraph.getNode(selectedNodeName);
+
+            getWorkbench().setGraph(updatedGraph);
+            getWorkbench().deselectAll();
+            getWorkbench().selectNode(selectedNode);
+
+            firePropertyChange("updateButtonPressed", null, null);
+            firePropertyChange("modelChanged", null, null);
+        });
     }
 
     private UpdaterWrapper getUpdaterWrapper() {

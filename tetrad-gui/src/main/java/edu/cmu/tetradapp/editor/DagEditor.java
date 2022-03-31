@@ -49,6 +49,7 @@ import javax.swing.event.InternalFrameEvent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.net.URL;
@@ -89,7 +90,7 @@ public final class DagEditor extends JPanel
      * Sets the name of this editor.
      */
     @Override
-    public final void setName(String name) {
+    public void setName(String name) {
         String oldName = getName();
         super.setName(name);
         firePropertyChange("name", oldName, getName());
@@ -314,7 +315,6 @@ public final class DagEditor extends JPanel
     /**
      * Updates the graph in workbench when changing graph model
      *
-     * @param graph
      */
     private void updateGraphWorkbench(Graph graph) {
         this.workbench = new GraphWorkbench(graph);
@@ -326,7 +326,6 @@ public final class DagEditor extends JPanel
     /**
      * Updates bootstrap table on adding/removing edges or graph changes
      *
-     * @param graph
      */
     private void updateBootstrapTable(Graph graph) {
         this.edgeTypeTable.update(graph);
@@ -337,7 +336,6 @@ public final class DagEditor extends JPanel
     /**
      * Creates the UI component for choosing from multiple graph models
      *
-     * @param dagWrapper
      */
     private void modelSelectin(DagWrapper dagWrapper) {
         int numModels = dagWrapper.getNumModels();
@@ -407,9 +405,9 @@ public final class DagEditor extends JPanel
         JMenuItem paste = new JMenuItem(new PasteSubgraphAction(this));
 
         copy.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
         paste.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK));
 
         edit.add(copy);
         edit.add(paste);
@@ -426,10 +424,6 @@ public final class DagEditor extends JPanel
 
         graph.add(new GraphPropertiesAction(getWorkbench()));
         graph.add(new PathsAction(getWorkbench()));
-//        graph.add(new DirectedPathsAction(getWorkbench()));
-//        graph.add(new TreksAction(getWorkbench()));
-//        graph.add(new AllPathsAction(getWorkbench()));
-//        graph.add(new NeighborhoodsAction(getWorkbench()));
 
 
         randomGraph.addActionListener(e -> {

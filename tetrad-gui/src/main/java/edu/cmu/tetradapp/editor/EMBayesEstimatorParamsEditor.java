@@ -68,14 +68,12 @@ public class EMBayesEstimatorParamsEditor extends JPanel implements ParameterEdi
         DoubleTextField toleranceField =
                 new DoubleTextField(
                         this.params.getDouble("tolerance", 0.0001), 8, NumberFormatUtil.getInstance().getNumberFormat());
-        toleranceField.setFilter(new DoubleTextField.Filter() {
-            public double filter(double value, double oldValue) {
-                try {
-                    EMBayesEstimatorParamsEditor.this.params.set("tolerance", value);
-                    return value;
-                } catch (IllegalArgumentException e) {
-                    return oldValue;
-                }
+        toleranceField.setFilter((value, oldValue) -> {
+            try {
+                EMBayesEstimatorParamsEditor.this.params.set("tolerance", value);
+                return value;
+            } catch (IllegalArgumentException e) {
+                return oldValue;
             }
         });
 

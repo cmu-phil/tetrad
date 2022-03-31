@@ -77,26 +77,22 @@ class FciIndTestParamsEditor extends JComponent {
         // set up text and ties them to the parameters object being edited.
         this.alphaField = new DoubleTextField(params().getDouble("alpha", 0.001), 8,
                 new DecimalFormat("0.0########"), smallNumberFormat, 1e-4);
-        this.alphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(double value, double oldValue) {
-                try {
-                    params().set("alpha", 0.001);
-                    return value;
-                } catch (IllegalArgumentException e) {
-                    return oldValue;
-                }
+        this.alphaField.setFilter((value, oldValue) -> {
+            try {
+                params().set("alpha", 0.001);
+                return value;
+            } catch (IllegalArgumentException e) {
+                return oldValue;
             }
         });
 
         this.depthField = new IntTextField(params().getInt("depth", -1), 5);
-        this.depthField.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
-                try {
-                    FciIndTestParamsEditor.this.params().set("depth", value);
-                    return value;
-                } catch (IllegalArgumentException e) {
-                    return oldValue;
-                }
+        this.depthField.setFilter((value, oldValue) -> {
+            try {
+                FciIndTestParamsEditor.this.params().set("depth", value);
+                return value;
+            } catch (IllegalArgumentException e) {
+                return oldValue;
             }
         });
 
@@ -139,27 +135,23 @@ class FciIndTestParamsEditor extends JComponent {
 
         possibleDsepCheckBox = new JCheckBox();
         possibleDsepCheckBox.setSelected(this.params().getBoolean("possibleDsepDone", true));
-        possibleDsepCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                if (RFCI_CheckBox.isSelected()) {
-                    FciIndTestParamsEditor.this.params().set("possibleDsepDone", false);
-                    possibleDsepCheckBox.setSelected(false);
-                    return;
-                }
-                JCheckBox source = (JCheckBox) actionEvent.getSource();
-                FciIndTestParamsEditor.this.params().set("possibleDsepDone", source.isSelected());
+        possibleDsepCheckBox.addActionListener(actionEvent -> {
+            if (RFCI_CheckBox.isSelected()) {
+                FciIndTestParamsEditor.this.params().set("possibleDsepDone", false);
+                possibleDsepCheckBox.setSelected(false);
+                return;
             }
+            JCheckBox source = (JCheckBox) actionEvent.getSource();
+            FciIndTestParamsEditor.this.params().set("possibleDsepDone", source.isSelected());
         });
 
         maxReachablePathLengthField = new IntTextField(this.params().getInt("maxReachablePathLength", -1), 3);
-        maxReachablePathLengthField.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
-                try {
-                    params().set("maxReachablePathLength", value);
-                    return value;
-                } catch (Exception e) {
-                    return oldValue;
-                }
+        maxReachablePathLengthField.setFilter((value, oldValue) -> {
+            try {
+                params().set("maxReachablePathLength", value);
+                return value;
+            } catch (Exception e) {
+                return oldValue;
             }
         });
 

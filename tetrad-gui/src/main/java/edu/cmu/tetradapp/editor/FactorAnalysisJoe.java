@@ -22,7 +22,6 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
-import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.util.Matrix;
@@ -47,22 +46,18 @@ import java.util.Vector;
  * @author Mike Freenor
  */
 class FactorAnalysisJoe {
-    private final ICovarianceMatrix covarianceMatrix;
     private final CorrelationMatrix correlationMatrix;
 
     // method-specific fields that get used
     private Vector<Double> dValues;
     private Vector<Matrix> factorLoadingVectors;
-    private Vector<Matrix> residualMatrices;
 
 
     public FactorAnalysisJoe(ICovarianceMatrix covarianceMatrix) {
-        this.covarianceMatrix = covarianceMatrix;
         this.correlationMatrix = new CorrelationMatrix(covarianceMatrix);
     }
 
     public FactorAnalysisJoe(DataSet dataSet) {
-        this.covarianceMatrix = new CovarianceMatrix(dataSet);
         this.correlationMatrix = new CorrelationMatrix(dataSet);
     }
 
@@ -84,8 +79,6 @@ class FactorAnalysisJoe {
      */
     public void unity(CorrelationMatrix r) {
         Matrix residual = r.getMatrix();
-        //System.out.println("About to compute unity estimate:");
-        //System.out.println(residual.toString());
         for (int i = 0; i < residual.columns(); i++) {
             residual.set(i, i, 1);
         }
@@ -102,8 +95,6 @@ class FactorAnalysisJoe {
      */
     public void largestNonDiagonalMagnitude(CorrelationMatrix r) {
         Matrix residual = r.getMatrix();
-        //System.out.println("About to compute magnitude estimate:");
-        //System.out.println(residual.toString());
         for (int i = 0; i < residual.columns(); i++) {
             double max = 0;
             for (int j = 0; j < residual.columns(); j++) {
@@ -226,10 +217,10 @@ class FactorAnalysisJoe {
         loadTestMatrix();
 
         this.factorLoadingVectors = new Vector<>();
-        this.residualMatrices = new Vector<>();
+        Vector<Matrix> residualMatrices = new Vector<>();
         this.dValues = new Vector<>();
 
-        this.residualMatrices.add(this.correlationMatrix.getMatrix());
+        residualMatrices.add(this.correlationMatrix.getMatrix());
 
         Matrix unitVector = new Matrix(9, 1);
         for (int i = 0; i < 9; i++) {
@@ -237,7 +228,7 @@ class FactorAnalysisJoe {
         }
 
         //find the first fact                   or loading vector
-        successiveResidualHelper(this.residualMatrices.lastElement(),
+        successiveResidualHelper(residualMatrices.lastElement(),
                 unitVector);
 
         int failSafe = 0;
@@ -249,9 +240,9 @@ class FactorAnalysisJoe {
                     FactorAnalysisJoe.transpose(this.factorLoadingVectors.lastElement()));
 //            System.out.println("Prod = " + prod);
 
-            Matrix residual = FactorAnalysisJoe.matrixSubtract(this.residualMatrices.lastElement(), prod);
-            this.residualMatrices.add(residual);
-            successiveResidualHelper(this.residualMatrices.lastElement(), unitVector);
+            Matrix residual = FactorAnalysisJoe.matrixSubtract(residualMatrices.lastElement(), prod);
+            residualMatrices.add(residual);
+            successiveResidualHelper(residualMatrices.lastElement(), unitVector);
 
             failSafe++;
             if (failSafe > 500) break;
@@ -292,21 +283,6 @@ class FactorAnalysisJoe {
             uVectors.add(uVector);
             dScalars.add(dScalar);
 
-//
-//            TetradMatrix oldFactorLoading = (TetradMatrix)factorLoadings.lastElement();
-////            TetradMatrix newUVector = matrixMult((TetradMatrix)correlationMatrix.getMatrix(),
-////                                                        (TetradMatrix)factorLoadings.lastElement());
-//            TetradMatrix newUVector = matrixMult((TetradMatrix)uVectors.lastElement(),
-//                                                        (TetradMatrix)factorLoadings.lastElement());
-//            uVectors.add(newUVector);
-//            TetradMatrix newLScalar = matrixMult(transpose(oldFactorLoading), newUVector);
-
-//            if (lVeco.get(0, 0) < 0) throw new IllegalArgumentException();
-
-//            double newDScalar = Math.sqrt(lVector.get(0, 0));
-//            dScalars.add(newDScalar);
-//            TetradMatrix _aVector = matrixDiv(newDScalar, uVector);
-//            aVectors.add(_aVector);
             System.out.println("New D Scalar: " + dScalar);
 
             if (Math.sqrt((dScalar / (Double) dScalars.get(dScalars.size() - 2)) - 1) < .00001) {
@@ -325,64 +301,6 @@ class FactorAnalysisJoe {
     /*
      * Centroid method with unity.
      */
-    /*
-    public TetradMatrix centroidUnity()
-    {
-        loadTestMatrix();
-
-        //calculate residual matrix with 0's in the diagonal
-        TetradMatrix residualMatrix = TetradMatrix.instance(correlationMatrix.getMatrix().toArray());
-        residualMatrix = matrixSubtract(residualMatrix, diag(residualMatrix));
-        System.out.println("0th residual matrix with 0's in the diagonal:");
-        System.out.println(residualMatrix);
-
-        TetradMatrix unitVector = TetradMatrix.instance(9, 1);
-        for(int i = 0; i < unitVector.rows(); i++)
-        {
-            unitVector.set(i, 0, 1);
-        }
-
-        System.out.println("Here's our unit vector.");
-        System.out.println(unitVector);
-
-        System.out.println("Multiplying our residual matrix by the unit vector:");
-        TetradMatrix resTimesSignVector = FactorAnalysis.matrixMult(residualMatrix, unitVector);
-
-        System.out.println("Time to find alpha_1:");
-        double maxValue = Math.abs(resTimesSignVector.get(0, 0));
-        int index = 0;
-        for(int i = 1; i < resTimesSignVector.rows(); i++)
-        {
-            if(Math.abs(resTimesSignVector.get(i, 0)) > maxValue)
-            {
-                maxValue = Math.abs(resTimesSignVector.get(i, 0));
-                index = i;
-            }
-        }
-
-        System.out.println("Alpha index is " + index);
-        unitVector.set(index, 0, unitVector.get(index, 0) * -1);
-
-        System.out.println("Now the sign vector looks like this:");
-        System.out.println(unitVector);
-
-        System.out.println("The " + index + "th column of residual matrix:");
-        TetradMatrix column = TetradMatrix.instance(9, 1);
-        for(int i = 0; i < 9; i++)
-        {
-            column.set(i, 0, residualMatrix.get(i, index));
-        }
-        System.out.println(column);
-        TetradMatrix pV = FactorAnalysis.matrixMult(unitVector.get(index, 0), column);
-
-        System.out.println("2 * that:");
-        TetradMatrix pV2 = FactorAnalysis.matrixMult(2, pV);
-        TetradMatrix newResidualTimesSign = FactorAnalysis.matrixAdd(resTimesSignVector, pV2);
-
-
-        return null;
-    }
-    */
 
     //================= MATRIX FUNCTIONS =================//
 
@@ -504,8 +422,6 @@ class FactorAnalysisJoe {
     }
 
     private static Matrix transpose(Matrix a) {
-        //System.out.println("About to transpose:");
-        //System.out.println(a);
 
         Matrix result = new Matrix(a.columns(), a.rows());
 
@@ -515,8 +431,6 @@ class FactorAnalysisJoe {
             }
         }
 
-        //System.out.println("Result is:");
-        //System.out.println(result);
         return result;
     }
 
@@ -530,7 +444,7 @@ class FactorAnalysisJoe {
 
     private static double vectorSum(Vector<Double> vector) {
         double sum = 0;
-        for (int i = 0; i < vector.size(); i++) sum += vector.get(i);
+        for (Double aDouble : vector) sum += aDouble;
         return sum;
     }
 }
