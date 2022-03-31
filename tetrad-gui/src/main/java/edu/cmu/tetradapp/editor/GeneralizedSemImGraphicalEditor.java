@@ -35,7 +35,6 @@ import javax.swing.event.InternalFrameEvent;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
@@ -61,7 +60,7 @@ class GeneralizedSemImGraphicalEditor extends JPanel {
      * The set of launched editors--or rather, the nodes for the launched
      * editors.
      */
-    private Map<Object, EditorWindow> launchedEditors = new HashMap<>();
+    private Map<Object, EditorWindow> launchedEditors;
 
     private boolean enableEditing = true;
 

@@ -33,8 +33,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.text.ParseException;
@@ -191,32 +189,28 @@ class GeneralizedExpressionEditor extends JComponent {
 
         JButton insertButton = new JButton("Insert");
 
-        insertButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                String token = (String) expressionsBox.getSelectedItem();
-                String signature;
+        insertButton.addActionListener(actionEvent -> {
+            String token = (String) expressionsBox.getSelectedItem();
+            String signature;
 
-                if ("-New Parameter-".equals(token)) {
-                    signature = GeneralizedExpressionEditor.this.nextParameterName("b");
-                } else {
-                    signature = expressionsMap.get(token);
-                }
-
-                while (signature.contains("%")) {
-                    signature = signature.replaceFirst("%", GeneralizedExpressionEditor.this.nextParameterName("b"));
-                }
-
-                expressionTextPane.replaceSelection(signature);
+            if ("-New Parameter-".equals(token)) {
+                signature = GeneralizedExpressionEditor.this.nextParameterName();
+            } else {
+                signature = expressionsMap.get(token);
             }
+
+            while (signature.contains("%")) {
+                signature = signature.replaceFirst("%", GeneralizedExpressionEditor.this.nextParameterName());
+            }
+
+            expressionTextPane.replaceSelection(signature);
         });
 
         errorTermCheckBox = new JCheckBox("Automatically add error term");
         errorTermCheckBox.setSelected(Preferences.userRoot().getBoolean("automaticallyAddErrorTerms", true));
-        errorTermCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                JCheckBox box = (JCheckBox) event.getSource();
-                Preferences.userRoot().putBoolean("automaticallyAddErrorTerms", box.isSelected());
-            }
+        errorTermCheckBox.addActionListener(event -> {
+            JCheckBox box = (JCheckBox) event.getSource();
+            Preferences.userRoot().putBoolean("automaticallyAddErrorTerms", box.isSelected());
         });
 
         Box b = Box.createVerticalBox();
@@ -385,7 +379,7 @@ class GeneralizedExpressionEditor extends JComponent {
             try {
                 // Add the text to the document
                 doc.insertString(0, semPm.getParameterExpressionString(parameter), null);
-            } catch (BadLocationException e) {
+            } catch (BadLocationException ignored) {
             }
         } catch (Exception e) {
             System.exit(1);
@@ -415,23 +409,21 @@ class GeneralizedExpressionEditor extends JComponent {
 
         JButton insertButton = new JButton("Insert");
 
-        insertButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                String token = (String) expressionsBox.getSelectedItem();
-                String signature;
+        insertButton.addActionListener(actionEvent -> {
+            String token = (String) expressionsBox.getSelectedItem();
+            String signature;
 
-                if ("-New Parameter-".equals(token)) {
-                    signature = GeneralizedExpressionEditor.this.nextParameterName("b");
-                } else {
-                    signature = expressionsMap.get(token);
-                }
-
-                while (signature.contains("%")) {
-                    signature = signature.replaceFirst("%", GeneralizedExpressionEditor.this.nextParameterName("b"));
-                }
-
-                expressionTextPane.replaceSelection(signature);
+            if ("-New Parameter-".equals(token)) {
+                signature = GeneralizedExpressionEditor.this.nextParameterName();
+            } else {
+                signature = expressionsMap.get(token);
             }
+
+            while (signature.contains("%")) {
+                signature = signature.replaceFirst("%", GeneralizedExpressionEditor.this.nextParameterName());
+            }
+
+            expressionTextPane.replaceSelection(signature);
         });
 
         errorTermCheckBox = new JCheckBox("Automatically add error term");
@@ -454,12 +446,6 @@ class GeneralizedExpressionEditor extends JComponent {
         b4.add(insertButton);
         b.add(b4);
         b.add(Box.createVerticalStrut(5));
-
-//        Box b4 = Box.createHorizontalBox();
-//        b4.add(new JLabel("Type expression here:"));
-//        b4.add(Box.createHorizontalGlue());
-//        b.add(b4);
-//        b.add(Box.createVerticalStrut(5));
 
         JScrollPane expressionScroll = new JScrollPane(expressionTextPane);
         expressionScroll.setPreferredSize(new Dimension(500, 50));
@@ -566,10 +552,9 @@ class GeneralizedExpressionEditor extends JComponent {
     }
 
     /**
-     * @param base The base of the paramter name.
      * @return the next parameter in the sequence base1, base2,... that's not already being used by the SEM PM.
      */
-    private String nextParameterName(String base) {
+    private String nextParameterName() {
         Set<String> parameters = semPm.getParameters();
         parameters.addAll(latestParser.getParameters());
 
@@ -581,7 +566,7 @@ class GeneralizedExpressionEditor extends JComponent {
 
         loop:
         while (true) {
-            String name = base + (++i);
+            String name = "b" + (++i);
 
             for (String parameter : parameters) {
                 if (parameter.equals(name)) {
@@ -592,7 +577,7 @@ class GeneralizedExpressionEditor extends JComponent {
             break;
         }
 
-        return base + i;
+        return "b" + i;
     }
 
     //==================================================PRIVATE METHODS=========================================//
@@ -778,13 +763,13 @@ class GeneralizedExpressionEditor extends JComponent {
         if (node != null) {
             List<Node> parents = semPm.getParents(node);
 
-            for (int i = 0; i < parents.size(); i++) {
-                expressionsMap.put(parents.get(i).getName(), parents.get(i).getName());
+            for (Node parent : parents) {
+                expressionsMap.put(parent.getName(), parent.getName());
             }
         }
 
-        for (int i = 0; i < expressions.length; i++) {
-            expressionsMap.put(expressions[i][0], expressions[i][1]);
+        for (String[] expression : expressions) {
+            expressionsMap.put(expression[0], expression[1]);
         }
 
         return expressionsMap;

@@ -24,7 +24,6 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.SemGraph;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
-import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.session.DelegatesEditing;
 import edu.cmu.tetradapp.model.GeneralizedSemEstimatorWrapper;
 import edu.cmu.tetradapp.model.GeneralizedSemImWrapper;
@@ -40,8 +39,6 @@ import javax.swing.event.AncestorListener;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.Preferences;
@@ -74,11 +71,6 @@ public final class GeneralizedSemImEditor extends JPanel implements DelegatesEdi
      * A reference to the error terms menu item so it can be reset.
      */
     private final JMenuItem errorTerms;
-
-    /**
-     * Edits the initial distributions of the parameters.
-     */
-    private GeneralizedSemImParamsEditor paramsEditor;
 
     /**
      * A common map of nodes to launched editors so that they can all be closed
@@ -121,75 +113,69 @@ public final class GeneralizedSemImEditor extends JPanel implements DelegatesEdi
             this.errorTerms.setText("Show Error Terms");
         }
 
-        this.errorTerms.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JMenuItem menuItem = (JMenuItem) e.getSource();
+        this.errorTerms.addActionListener(e -> {
+            JMenuItem menuItem = (JMenuItem) e.getSource();
 
-                if ("Hide Error Terms".equals(menuItem.getText())) {
-                    menuItem.setText("Show Error Terms");
-                    SemGraph graph = (SemGraph) GeneralizedSemImEditor.this.graphicalEditor.getWorkbench().getGraph();
-                    graph.setShowErrorTerms(false);
-                    wrapper.setShowErrors(false);
-                    graphicalEditor().refreshLabels();
-                } else if ("Show Error Terms".equals(menuItem.getText())) {
-                    menuItem.setText("Hide Error Terms");
-                    SemGraph graph = (SemGraph) GeneralizedSemImEditor.this.graphicalEditor.getWorkbench().getGraph();
-                    graph.setShowErrorTerms(true);
-                    wrapper.setShowErrors(true);
-                    graphicalEditor().refreshLabels();
-                }
+            if ("Hide Error Terms".equals(menuItem.getText())) {
+                menuItem.setText("Show Error Terms");
+                SemGraph graph1 = (SemGraph) GeneralizedSemImEditor.this.graphicalEditor.getWorkbench().getGraph();
+                graph1.setShowErrorTerms(false);
+                wrapper.setShowErrors(false);
+                graphicalEditor().refreshLabels();
+            } else if ("Show Error Terms".equals(menuItem.getText())) {
+                menuItem.setText("Hide Error Terms");
+                SemGraph graph1 = (SemGraph) GeneralizedSemImEditor.this.graphicalEditor.getWorkbench().getGraph();
+                graph1.setShowErrorTerms(true);
+                wrapper.setShowErrors(true);
+                graphicalEditor().refreshLabels();
             }
         });
 
         JMenuItem lengthCutoff = new JMenuItem("Formula Cutoff");
 
-        lengthCutoff.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                int length = Preferences.userRoot().getInt("maxExpressionLength", 25);
+        lengthCutoff.addActionListener(event -> {
+            int length = Preferences.userRoot().getInt("maxExpressionLength", 25);
 
-                IntTextField lengthField = new IntTextField(length, 4);
-                lengthField.setFilter(new IntTextField.Filter() {
-                    public int filter(int value, int oldValue) {
-                        try {
-                            if (value > 0) {
-                                Preferences.userRoot().putInt("maxExpressionLength", value);
-                                return value;
-                            } else {
-                                return 0;
-                            }
-                        } catch (Exception e) {
-                            return oldValue;
-                        }
+            IntTextField lengthField = new IntTextField(length, 4);
+            lengthField.setFilter((value, oldValue) -> {
+                try {
+                    if (value > 0) {
+                        Preferences.userRoot().putInt("maxExpressionLength", value);
+                        return value;
+                    } else {
+                        return 0;
                     }
-                });
+                } catch (Exception e) {
+                    return oldValue;
+                }
+            });
 
-                Box b = Box.createVerticalBox();
+            Box b = Box.createVerticalBox();
 
-                Box b1 = Box.createHorizontalBox();
-                b1.add(new JLabel("Formulas longer than "));
-                b1.add(lengthField);
-                b1.add(new JLabel(" will be replaced in the graph by \"--long formula--\"."));
-                b.add(b1);
+            Box b1 = Box.createHorizontalBox();
+            b1.add(new JLabel("Formulas longer than "));
+            b1.add(lengthField);
+            b1.add(new JLabel(" will be replaced in the graph by \"--long formula--\"."));
+            b.add(b1);
 
-                b.setBorder(new EmptyBorder(5, 5, 5, 5));
+            b.setBorder(new EmptyBorder(5, 5, 5, 5));
 
-                JPanel panel = new JPanel();
-                panel.setLayout(new BorderLayout());
-                panel.add(b, BorderLayout.CENTER);
+            JPanel panel = new JPanel();
+            panel.setLayout(new BorderLayout());
+            panel.add(b, BorderLayout.CENTER);
 
-                EditorWindow editorWindow
-                        = new EditorWindow(panel, "Apply Templates", "OK", false, GeneralizedSemImEditor.this);
+            EditorWindow editorWindow
+                    = new EditorWindow(panel, "Apply Templates", "OK", false, GeneralizedSemImEditor.this);
 
-                editorWindow.addInternalFrameListener(new InternalFrameAdapter() {
-                    public void internalFrameClosing(InternalFrameEvent event) {
-                        graphicalEditor.refreshLabels();
-                    }
-                });
+            editorWindow.addInternalFrameListener(new InternalFrameAdapter() {
+                public void internalFrameClosing(InternalFrameEvent event) {
+                    graphicalEditor.refreshLabels();
+                }
+            });
 
-                DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
-                editorWindow.pack();
-                editorWindow.setVisible(true);
-            }
+            DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
+            editorWindow.pack();
+            editorWindow.setVisible(true);
         });
 
         JMenu tools = new JMenu("Tools");
@@ -258,75 +244,69 @@ public final class GeneralizedSemImEditor extends JPanel implements DelegatesEdi
             errorTerms.setText("Show Error Terms");
         }
 
-        errorTerms.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JMenuItem menuItem = (JMenuItem) e.getSource();
+        errorTerms.addActionListener(e -> {
+            JMenuItem menuItem = (JMenuItem) e.getSource();
 
-                if ("Hide Error Terms".equals(menuItem.getText())) {
-                    menuItem.setText("Show Error Terms");
-                    SemGraph graph = (SemGraph) graphicalEditor.getWorkbench().getGraph();
-                    graph.setShowErrorTerms(false);
-                    wrapper.setShowErrors(false);
-                    GeneralizedSemImEditor.this.graphicalEditor().refreshLabels();
-                } else if ("Show Error Terms".equals(menuItem.getText())) {
-                    menuItem.setText("Hide Error Terms");
-                    SemGraph graph = (SemGraph) graphicalEditor.getWorkbench().getGraph();
-                    graph.setShowErrorTerms(true);
-                    wrapper.setShowErrors(true);
-                    GeneralizedSemImEditor.this.graphicalEditor().refreshLabels();
-                }
+            if ("Hide Error Terms".equals(menuItem.getText())) {
+                menuItem.setText("Show Error Terms");
+                SemGraph graph1 = (SemGraph) graphicalEditor.getWorkbench().getGraph();
+                graph1.setShowErrorTerms(false);
+                wrapper.setShowErrors(false);
+                GeneralizedSemImEditor.this.graphicalEditor().refreshLabels();
+            } else if ("Show Error Terms".equals(menuItem.getText())) {
+                menuItem.setText("Hide Error Terms");
+                SemGraph graph1 = (SemGraph) graphicalEditor.getWorkbench().getGraph();
+                graph1.setShowErrorTerms(true);
+                wrapper.setShowErrors(true);
+                GeneralizedSemImEditor.this.graphicalEditor().refreshLabels();
             }
         });
 
         JMenuItem lengthCutoff = new JMenuItem("Formula Cutoff");
 
-        lengthCutoff.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                int length = Preferences.userRoot().getInt("maxExpressionLength", 25);
+        lengthCutoff.addActionListener(event -> {
+            int length = Preferences.userRoot().getInt("maxExpressionLength", 25);
 
-                IntTextField lengthField = new IntTextField(length, 4);
-                lengthField.setFilter(new IntTextField.Filter() {
-                    public int filter(int value, int oldValue) {
-                        try {
-                            if (value > 0) {
-                                Preferences.userRoot().putInt("maxExpressionLength", value);
-                                return value;
-                            } else {
-                                return 0;
-                            }
-                        } catch (Exception e) {
-                            return oldValue;
-                        }
+            IntTextField lengthField = new IntTextField(length, 4);
+            lengthField.setFilter((value, oldValue) -> {
+                try {
+                    if (value > 0) {
+                        Preferences.userRoot().putInt("maxExpressionLength", value);
+                        return value;
+                    } else {
+                        return 0;
                     }
-                });
+                } catch (Exception e) {
+                    return oldValue;
+                }
+            });
 
-                Box b = Box.createVerticalBox();
+            Box b = Box.createVerticalBox();
 
-                Box b1 = Box.createHorizontalBox();
-                b1.add(new JLabel("Formulas longer than "));
-                b1.add(lengthField);
-                b1.add(new JLabel(" will be replaced in the graph by \"--long formula--\"."));
-                b.add(b1);
+            Box b1 = Box.createHorizontalBox();
+            b1.add(new JLabel("Formulas longer than "));
+            b1.add(lengthField);
+            b1.add(new JLabel(" will be replaced in the graph by \"--long formula--\"."));
+            b.add(b1);
 
-                b.setBorder(new EmptyBorder(5, 5, 5, 5));
+            b.setBorder(new EmptyBorder(5, 5, 5, 5));
 
-                JPanel panel = new JPanel();
-                panel.setLayout(new BorderLayout());
-                panel.add(b, BorderLayout.CENTER);
+            JPanel panel = new JPanel();
+            panel.setLayout(new BorderLayout());
+            panel.add(b, BorderLayout.CENTER);
 
-                EditorWindow editorWindow
-                        = new EditorWindow(panel, "Apply Templates", "OK", false, GeneralizedSemImEditor.this);
+            EditorWindow editorWindow
+                    = new EditorWindow(panel, "Apply Templates", "OK", false, GeneralizedSemImEditor.this);
 
-                editorWindow.addInternalFrameListener(new InternalFrameAdapter() {
-                    public void internalFrameClosing(InternalFrameEvent event) {
-                        GeneralizedSemImEditor.this.graphicalEditor.refreshLabels();
-                    }
-                });
+            editorWindow.addInternalFrameListener(new InternalFrameAdapter() {
+                public void internalFrameClosing(InternalFrameEvent event) {
+                    GeneralizedSemImEditor.this.graphicalEditor.refreshLabels();
+                }
+            });
 
-                DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
-                editorWindow.pack();
-                editorWindow.setVisible(true);
-            }
+            DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
+            editorWindow.pack();
+            editorWindow.setVisible(true);
         });
 
         JMenu tools = new JMenu("Tools");
@@ -356,10 +336,6 @@ public final class GeneralizedSemImEditor extends JPanel implements DelegatesEdi
             public void ancestorMoved(AncestorEvent ancestorEvent) {
             }
         });
-    }
-
-    private SemGraph getSemGraph() {
-        return getSemPm().getGraph();
     }
 
     public JComponent getEditDelegate() {
@@ -405,11 +381,6 @@ public final class GeneralizedSemImEditor extends JPanel implements DelegatesEdi
         this.errorTerms.setText("Show Error Terms");
     }
 
-    //========================PRIVATE METHODS===========================//
-    private GeneralizedSemPm getSemPm() {
-        return this.semIm.getSemPm();
-    }
-
     private GeneralizedSemImGraphicalEditor graphicalEditor() {
         if (this.graphicalEditor == null) {
             this.graphicalEditor = new GeneralizedSemImGraphicalEditor(getSemIm(), this.launchedEditors);
@@ -423,13 +394,6 @@ public final class GeneralizedSemImEditor extends JPanel implements DelegatesEdi
             this.listEditor = new GeneralizedSemImListEditor(getSemIm(), this.launchedEditors);
         }
         return this.listEditor;
-    }
-
-    private GeneralizedSemImParamsEditor parametersEditor() {
-        if (this.paramsEditor == null) {
-            this.paramsEditor = new GeneralizedSemImParamsEditor(getSemIm(), this.launchedEditors);
-        }
-        return this.paramsEditor;
     }
 
     private GeneralizedSemIm getSemIm() {

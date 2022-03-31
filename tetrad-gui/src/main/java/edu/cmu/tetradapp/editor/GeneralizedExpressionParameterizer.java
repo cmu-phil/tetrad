@@ -21,7 +21,6 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.calculator.expression.Expression;
 import edu.cmu.tetrad.calculator.parser.ExpressionParser;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
@@ -63,10 +62,8 @@ class GeneralizedExpressionParameterizer extends JComponent {
         }
 
         this.semPm = semIm.getSemPm();
-        GeneralizedSemIm semIm1 = semIm;
         this.node = node;
 
-        Node errorNode = this.semPm.getErrorNode(node);
         String expressionString1 = this.semPm.getNodeExpressionString(node);
 
         Set<String> otherVariables = new LinkedHashSet<>();
@@ -88,7 +85,6 @@ class GeneralizedExpressionParameterizer extends JComponent {
         }
 
 
-        Expression expression = this.semPm.getNodeExpression(node);
         String expressionString = this.semPm.getNodeExpressionString(node);
         Set<String> referencedParameters = this.semPm.getReferencedParameters(node);
 
@@ -153,13 +149,11 @@ class GeneralizedExpressionParameterizer extends JComponent {
             MyTextField field = new MyTextField(parameter, semIm.getParameterValue(parameter), 8,
                     NumberFormatUtil.getInstance().getNumberFormat());
 
-            field.setFilter(new DoubleTextField.Filter() {
-                public double filter(double value, double oldValue) {
-                    GeneralizedExpressionParameterizer.this.substitutedValues.put(field.getParameter(), value);
-                    GeneralizedExpressionParameterizer.this.resultTextPane.setText(node + " = " + semIm.getNodeSubstitutedString(node,
-                            GeneralizedExpressionParameterizer.this.substitutedValues));
-                    return value;
-                }
+            field.setFilter((value, oldValue) -> {
+                GeneralizedExpressionParameterizer.this.substitutedValues.put(field.getParameter(), value);
+                GeneralizedExpressionParameterizer.this.resultTextPane.setText(node + " = " + semIm.getNodeSubstitutedString(node,
+                        GeneralizedExpressionParameterizer.this.substitutedValues));
+                return value;
             });
 
             c.add(field);

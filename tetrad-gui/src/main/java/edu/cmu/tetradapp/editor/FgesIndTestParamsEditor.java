@@ -25,12 +25,9 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.FgesRunner;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
-import edu.cmu.tetradapp.util.IntTextField.Filter;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
@@ -65,97 +62,72 @@ class FgesIndTestParamsEditor extends JComponent {
             cellPriorField = new DoubleTextField(
                     this.getFgesIndTestParams().getDouble("samplePrior", 1), 5, nf, smallNf, 1e-4);
 
-            cellPriorField.setFilter(new DoubleTextField.Filter() {
-                public double filter(double value, double oldValue) {
-                    try {
-                        FgesIndTestParamsEditor.this.getFgesIndTestParams().set("samplePrior", value);
-                        return value;
-                    } catch (IllegalArgumentException e) {
-                        return oldValue;
-                    }
+            cellPriorField.setFilter((value, oldValue) -> {
+                try {
+                    FgesIndTestParamsEditor.this.getFgesIndTestParams().set("samplePrior", value);
+                    return value;
+                } catch (IllegalArgumentException e) {
+                    return oldValue;
                 }
             });
 
             structurePriorField = new DoubleTextField(
                     this.getFgesIndTestParams().getDouble("structurePrior", 1), 5, nf);
-            structurePriorField.setFilter(new DoubleTextField.Filter() {
-                public double filter(double value, double oldValue) {
-                    try {
-                        FgesIndTestParamsEditor.this.getFgesIndTestParams().set("structurePrior", value);
-                        return value;
-                    } catch (IllegalArgumentException e) {
-                        return oldValue;
-                    }
+            structurePriorField.setFilter((value, oldValue) -> {
+                try {
+                    FgesIndTestParamsEditor.this.getFgesIndTestParams().set("structurePrior", value);
+                    return value;
+                } catch (IllegalArgumentException e) {
+                    return oldValue;
                 }
             });
 
-//            this.defaultStructurePrior =
-//                    new JButton("Default structure prior = 0.05");
             Font font = new Font("Dialog", Font.BOLD, 10);
-//            this.defaultStructurePrior.setFont(font);
-//            this.defaultStructurePrior.setBorder(null);
-//            this.defaultStructurePrior.addActionListener(new ActionListener() {
-//                public void actionPerformed(ActionEvent e) {
-//                    structurePriorField.setValue(0.05);
-//                }
-//            });
 
             uniformStructurePrior =
                     new JButton("Default structure prior = 1.0");
             uniformStructurePrior.setFont(font);
             uniformStructurePrior.setBorder(null);
-            uniformStructurePrior.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    structurePriorField.setValue(1.0);
-                }
-            });
+            uniformStructurePrior.addActionListener(e -> structurePriorField.setValue(1.0));
         } else {
             penaltyDiscount = new DoubleTextField(
                     this.getFgesIndTestParams().getDouble("penaltyDiscount", 4), 5, nf);
-            penaltyDiscount.setFilter(new DoubleTextField.Filter() {
-                public double filter(double value, double oldValue) {
-                    try {
-                        FgesIndTestParamsEditor.this.getFgesIndTestParams().set("penaltyDiscount", value);
-                        return value;
-                    } catch (IllegalArgumentException e) {
-                        return oldValue;
-                    }
+            penaltyDiscount.setFilter((value, oldValue) -> {
+                try {
+                    FgesIndTestParamsEditor.this.getFgesIndTestParams().set("penaltyDiscount", value);
+                    return value;
+                } catch (IllegalArgumentException e) {
+                    return oldValue;
                 }
             });
         }
 
         numCPDAGsToSave = new IntTextField(
                 this.getFgesIndTestParams().getInt("numCPDAGsToSave", 1), 5);
-        numCPDAGsToSave.setFilter(new Filter() {
-            public int filter(int value, int oldValue) {
-                try {
-                    FgesIndTestParamsEditor.this.getFgesIndTestParams().set("numCPDAGToSave", value);
-                    return value;
-                } catch (IllegalArgumentException e) {
-                    return oldValue;
-                }
+        numCPDAGsToSave.setFilter((value, oldValue) -> {
+            try {
+                FgesIndTestParamsEditor.this.getFgesIndTestParams().set("numCPDAGToSave", value);
+                return value;
+            } catch (IllegalArgumentException e) {
+                return oldValue;
             }
         });
 
         depth = new IntTextField(this.getFgesIndTestParams().getInt("depth", -1), 4);
-        depth.setFilter(new Filter() {
-            public int filter(int value, int oldValue) {
-                try {
-                    FgesIndTestParamsEditor.this.getFgesIndTestParams().set("depth", value);
-                    return value;
-                } catch (IllegalArgumentException e) {
-                    return oldValue;
-                }
+        depth.setFilter((value, oldValue) -> {
+            try {
+                FgesIndTestParamsEditor.this.getFgesIndTestParams().set("depth", value);
+                return value;
+            } catch (IllegalArgumentException e) {
+                return oldValue;
             }
         });
 
         faithfulnessAssumed = new JCheckBox();
         faithfulnessAssumed.setSelected(this.getFgesIndTestParams().getBoolean("faithfulnessAssumed", true));
-        faithfulnessAssumed.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JCheckBox source = (JCheckBox) actionEvent.getSource();
-                FgesIndTestParamsEditor.this.getFgesIndTestParams().set("faithfulnessAssumed", source.isSelected());
-            }
+        faithfulnessAssumed.addActionListener(actionEvent -> {
+            JCheckBox source = (JCheckBox) actionEvent.getSource();
+            FgesIndTestParamsEditor.this.getFgesIndTestParams().set("faithfulnessAssumed", source.isSelected());
         });
 
         this.buildGui();

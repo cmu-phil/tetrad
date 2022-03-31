@@ -20,7 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.JsonUtils;
 import edu.cmu.tetradapp.app.TetradDesktop;
@@ -118,10 +117,8 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        switch (evt.getPropertyName()) {
-            case "algoFwdBtn":
-                this.algoFwdBtn.setEnabled((boolean) evt.getNewValue());
-                break;
+        if ("algoFwdBtn".equals(evt.getPropertyName())) {
+            this.algoFwdBtn.setEnabled((boolean) evt.getNewValue());
         }
     }
 
@@ -184,14 +181,6 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
             public void watch() {
                 AlgorithmModel algoModel = GeneralAlgorithmEditor.this.algorithmCard.getSelectedAlgorithm();
                 if (algoModel != null) {
-//                    paramBkBtn.setEnabled(false);
-//                    paramFwdBtn.setEnabled(false);
-
-                    if (algoModel.getAlgorithm().getAnnotation().algoType() != AlgType.orient_pairwise
-                            && GeneralAlgorithmEditor.this.algorithmRunner.getDataModelList().getModelList().size() == 1) {
-                        String algoName = algoModel.getAlgorithm().getAnnotation().name();
-                    }
-
                     try {
                         GeneralAlgorithmEditor.this.algorithmCard.saveStates();
                         GeneralAlgorithmEditor.this.algorithmRunner.execute();
@@ -228,7 +217,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         return true;
     }
 
-    private class SingleButtonCard extends JPanel {
+    private static class SingleButtonCard extends JPanel {
 
         private static final long serialVersionUID = 7154917933096522203L;
 
@@ -283,7 +272,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
 
     }
 
-    private class DualButtonCard extends JPanel {
+    private static class DualButtonCard extends JPanel {
 
         private static final long serialVersionUID = 7995297102462362969L;
 
