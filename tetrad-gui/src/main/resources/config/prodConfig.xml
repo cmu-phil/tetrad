@@ -1473,10 +1473,6 @@
             <!--<event id="impliedOrientations" description="Implied Orientations" default="on"/>-->
             <!--<event id="graph" description="Graph" default="on"/>-->
             <!--</logger>-->
-            <!--<model-class>edu.cmu.tetradapp.model.WFgesRunner</model-class>-->
-            <!--<editor-class>edu.cmu.tetradapp.editor.FgesSearchEditor-->
-            <!--</editor-class>-->
-            <!--</model>-->
             <!--<model name="IMaGES" acronym="IMaGES" help="fges"-->
             <!--category="forbid_latent_common_causes Searches">-->
             <!--<logger>-->

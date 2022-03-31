@@ -76,10 +76,6 @@ public class FgesSearchEditor extends AbstractSearchEditor
         super(runner, "Result forbid_latent_common_causes");
     }
 
-    public FgesSearchEditor(WFgesRunner runner) {
-        super(runner, "Result forbid_latent_common_causes");
-    }
-
     public FgesSearchEditor(FgesMbRunner runner) {
         super(runner, "Result forbid_latent_common_causes");
     }

@@ -29,26 +29,14 @@ package edu.cmu.tetrad.search;
  */
 class XdslXmlConstants {
 
-    public static final String BAYES_NET = "bayesNet";
-    public static final String BN_VARIABLES = "bnVariables";
     public static final String PARENTS = "parents";
-    public static final String CPTS = "cpts";
-    public static final String DISCRETE_VARIABLE = "discreteVariable";
-    public static final String CATEGORY = "category";
-    public static final String PARENTS_FOR = "parentsFor";
-    public static final String PARENT = "parent";
     public static final String CPT = "cpt";
     public static final String ROW = "row";
     public static final String NAME = "name";
-    public static final String INDEX = "index";
     public static final String LATENT = "latent";
     public static final String X = "x";
     public static final String Y = "y";
-    public static final String ROW_SUM_TOLERANCE = "rowSumTolerance";
     public static final String VARIABLE = "variable";
-    public static final String NUM_ROWS = "numRows";
-    public static final String NUM_COLS = "numCols";
-    public static final String YES = "yes";
 }
 
 
