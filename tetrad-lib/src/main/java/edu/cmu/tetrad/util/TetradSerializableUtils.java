@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -352,8 +352,8 @@ public class TetradSerializableUtils {
      *                          originally thrown exception as root cause.
      * @see #getCurrentDirectory()
      */
-    private void serializeClass(Class clazz,
-                                Map<String, List<String>> classFields) throws RuntimeException {
+    private void serializeClass(Class clazz, Map<String, List<String>> classFields)
+            throws RuntimeException {
         File current = new File(getCurrentDirectory());
 
         if (!current.exists() || !current.isDirectory()) {
@@ -380,9 +380,22 @@ public class TetradSerializableUtils {
             int numFields = getNumNonSerialVersionUIDFields(clazz);
 
             if (numFields > 0) {
-                Method method =
-                        clazz.getMethod("serializableInstance");
-                Object object = method.invoke(null);
+                Method method = null;
+                try {
+                    method = clazz.getMethod("serializableInstance");
+                } catch (NoSuchMethodException e) {
+                    System.out.println("\nThis class does not have the expected 'serializableInstance' method: " + clazz);
+                } catch (SecurityException e) {
+                    e.printStackTrace();
+                }
+                Object object = null;
+                try {
+                    if (method != null) {
+                        object = method.invoke(null);
+                    }
+                } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+                    throw new RuntimeException(e);
+                }
 
                 File file = new File(current, clazz.getName() + ".ser");
                 boolean created = file.createNewFile();
@@ -410,14 +423,9 @@ public class TetradSerializableUtils {
             throw new RuntimeException(("There is no static final long field " +
                     "'serialVersionUID' in " + clazz +
                     ". Please make one and set it " + "to 23L."));
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
         } catch (IllegalAccessException e) {
             throw new RuntimeException("The method serializableInstance() of " +
                     "class " + clazz + " is not public.", e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException("Unable to statically call the " +
-                    "serializableInstance() method of class " + clazz + ".", e);
         } catch (IOException e) {
             throw new RuntimeException(
                     "Could not create a new, writeable file " + "in " +
