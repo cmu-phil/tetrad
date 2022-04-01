@@ -99,7 +99,7 @@ class QQPlot {
         this.dataSet = dataSet.copy();
         if (selectedNode == null && dataSet.getNumColumns() != 0) {
             int[] selected = dataSet.getSelectedIndices();
-            assert selected != null && selected.length != 0 || selected != null;
+            assert selected != null;
         }
 
         try {
