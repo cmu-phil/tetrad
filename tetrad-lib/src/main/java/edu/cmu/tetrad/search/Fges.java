@@ -40,7 +40,7 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 /**
- * GesSearch is an implementation of the GES algorithm, as specified in
+ * Fges is an implementation of the GES algorithm, as specified in
  * Chickering (2002) "Optimal structure identification with greedy search"
  * Journal of Machine Learning Research. It works for both BayesNets and SEMs.
  * <p>
