@@ -63,7 +63,6 @@ public class LogisticRegressionEditor extends JPanel {
     private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
     public LogisticRegressionEditor(LogisticRegressionRunner regressionRunner) {
-        LogisticRegressionRunner regRunner = regressionRunner;
 
         DataSet dataSet = (DataSet) regressionRunner.getDataModel();
 
@@ -86,9 +85,9 @@ public class LogisticRegressionEditor extends JPanel {
         tabbedPane.add("Model", new JScrollPane(this.modelParameters));
         tabbedPane.add("Output Graph", new JScrollPane(workbench));
 
-        Parameters params = regRunner.getParams();
+        Parameters params = regressionRunner.getParams();
         RegressionParamsEditorPanel paramsPanel
-                = new RegressionParamsEditorPanel(regressionRunner, params, regRunner.getDataModel(), true);
+                = new RegressionParamsEditorPanel(regressionRunner, params, regressionRunner.getDataModel(), true);
 
         Box b = Box.createVerticalBox();
         Box b1 = Box.createHorizontalBox();
@@ -114,7 +113,10 @@ public class LogisticRegressionEditor extends JPanel {
             }
 
             comp.addActionListener((e) -> {
-                regressionRunner.setModelIndex(((Integer) comp.getSelectedItem()) - 1);
+                Object selectedItem = comp.getSelectedItem();
+                if (selectedItem instanceof  Integer) {
+                    regressionRunner.setModelIndex(((Integer) selectedItem) - 1);
+                }
             });
 
             comp.setMaximumSize(comp.getPreferredSize());
@@ -131,11 +133,11 @@ public class LogisticRegressionEditor extends JPanel {
 
         //this.modelParameters.setFont(new Font("Monospaced", Font.PLAIN, 12));
         executeButton.addActionListener((e) -> {
-            regRunner.setAlpha(paramsPanel.getParams().getDouble("alpha", 0.001));
-            regRunner.execute();
+            regressionRunner.setAlpha(paramsPanel.getParams().getDouble("alpha", 0.001));
+            regressionRunner.execute();
             //  modelParameters.setText(regRunner.getReport());
-            print(regRunner.getResult(), regRunner.getAlpha());
-            Graph outGraph = regRunner.getOutGraph();
+            print(regressionRunner.getResult(), regressionRunner.getAlpha());
+            Graph outGraph = regressionRunner.getOutGraph();
             GraphUtils.circleLayout(outGraph, 200, 200, 150);
             GraphUtils.fruchtermanReingoldLayout(outGraph);
             workbench.setGraph(outGraph);
@@ -164,32 +166,32 @@ public class LogisticRegressionEditor extends JPanel {
             return;
         }
         // print cases
-        String text = result.getNy0() + " cases have " + result.getTarget() + " = 0; ";
-        text += result.getNy1() + " cases have " + result.getTarget() + " = 1.\n\n";
+        StringBuilder text = new StringBuilder(result.getNy0() + " cases have " + result.getTarget() + " = 0; ");
+        text.append(result.getNy1()).append(" cases have ").append(result.getTarget()).append(" = 1.\n\n");
         // print avgs/SD
-        text += "Var\tAvg\tSD\n";
+        text.append("Var\tAvg\tSD\n");
         for (int i = 1; i <= result.getNumRegressors(); i++) {
-            text += result.getRegressorNames().get(i - 1) + "\t";
-            text += this.nf.format(result.getxMeans()[i]) + "\t";
-            text += this.nf.format(result.getxStdDevs()[i]) + "\n";
+            text.append(result.getRegressorNames().get(i - 1)).append("\t");
+            text.append(this.nf.format(result.getxMeans()[i])).append("\t");
+            text.append(this.nf.format(result.getxStdDevs()[i])).append("\n");
         }
-        text += "\nCoefficients and Standard Errors:\n";
-        text += "Var\tCoeff.\tStdErr\tProb.\tSig.\n";
+        text.append("\nCoefficients and Standard Errors:\n");
+        text.append("Var\tCoeff.\tStdErr\tProb.\tSig.\n");
         for (int i = 1; i <= result.getNumRegressors(); i++) {
-            text += result.getRegressorNames().get(i - 1) + "\t";
-            text += this.nf.format(result.getCoefs()[i]) + "\t";
-            text += this.nf.format(result.getStdErrs()[i]) + "\t";
-            text += this.nf.format(result.getProbs()[i]) + "\t";
+            text.append(result.getRegressorNames().get(i - 1)).append("\t");
+            text.append(this.nf.format(result.getCoefs()[i])).append("\t");
+            text.append(this.nf.format(result.getStdErrs()[i])).append("\t");
+            text.append(this.nf.format(result.getProbs()[i])).append("\t");
             if (result.getProbs()[i] < alpha) {
-                text += "*\n";
+                text.append("*\n");
             } else {
-                text += "\n";
+                text.append("\n");
             }
         }
 
-        text += "\n\nIntercept = " + this.nf.format(result.getIntercept()) + "\n";
+        text.append("\n\nIntercept = ").append(this.nf.format(result.getIntercept())).append("\n");
 
-        this.modelParameters.setText(text);
+        this.modelParameters.setText(text.toString());
     }
 
 }

@@ -53,16 +53,6 @@ public class NoteEditor extends JPanel {
 
     //============================ Private Methods =========================//
 
-
-    private boolean isLegal(String text) {
-//        if (!NamingProtocol.isLegalName(text)) {
-//            JOptionPane.showMessageDialog(this, NamingProtocol.getProtocolDescription() + ": " + text);
-//            return false;
-//        }
-        return true;
-    }
-
-
     private void setup() {
         Font font = new Font("Monospaced", Font.PLAIN, 14);
         JTextPane textPane = new JTextPane(this.noteModel.getNote());
@@ -119,13 +109,9 @@ public class NoteEditor extends JPanel {
             if (this.current.equals(text)) {
                 return;
             }
-            if (isLegal(text)) {
-                this.current = text;
-                NoteEditor.this.noteModel.setName(text);
-                NoteEditor.this.firePropertyChange("changeNodeLabel", null, text);
-            } else {
-                this.field.setText(this.current);
-            }
+            this.current = text;
+            NoteEditor.this.noteModel.setName(text);
+            NoteEditor.this.firePropertyChange("changeNodeLabel", null, text);
         }
     }
 

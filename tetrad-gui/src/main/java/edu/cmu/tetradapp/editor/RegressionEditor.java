@@ -36,10 +36,6 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 /**
  * Allows the user to execute a multiple linear regression in the GUI. Contains
@@ -66,7 +62,7 @@ public class RegressionEditor extends JPanel {
      * A large text area into which the (String) output of the regression result
      * is dumped. (This is what needs to change.)
      */
-    private JTextArea reportText = new JTextArea();
+    private JTextArea reportText;
 
     /**
      * Presents the same information in reportText as a text preamble with a
@@ -94,11 +90,9 @@ public class RegressionEditor extends JPanel {
         Graph outGraph = new EdgeListGraph();
 
         JButton executeButton = new JButton("Execute");
-        executeButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                runRegression();
-                TetradLogger.getInstance().log("result", RegressionEditor.this.reportText.getText());
-            }
+        executeButton.addActionListener(e -> {
+            runRegression();
+            TetradLogger.getInstance().log("result", RegressionEditor.this.reportText.getText());
         });
 
         this.workbench = new GraphWorkbench(outGraph);
@@ -110,7 +104,7 @@ public class RegressionEditor extends JPanel {
         this.reportText.setFont(new Font("Monospaced", Font.PLAIN, 12));
         this.reportText.setTabSize(10);
 
-        if (this.runner != null && this.runner.getResult() != null) {
+        if (this.runner.getResult() != null) {
             this.reportText.setText(this.runner.getResult().toString());
         }
 
@@ -125,13 +119,11 @@ public class RegressionEditor extends JPanel {
         RegressionParamsEditorPanel editorPanel = new RegressionParamsEditorPanel(this.runner, this.runner.getParams(),
                 this.runner.getDataModel(), false);
 
-        editorPanel.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                String propertyName = evt.getPropertyName();
+        editorPanel.addPropertyChangeListener(evt -> {
+            String propertyName = evt.getPropertyName();
 
-                if ("significanceChanged".equals(propertyName)) {
-                    runRegression();
-                }
+            if ("significanceChanged".equals(propertyName)) {
+                runRegression();
             }
         });
 
@@ -156,10 +148,10 @@ public class RegressionEditor extends JPanel {
                 comp.addItem(i + 1);
             }
 
-            comp.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    RegressionEditor.this.runner.setModelIndex(((Integer) comp.getSelectedItem()).intValue() - 1);
+            comp.addActionListener(e -> {
+                Object selectedItem = comp.getSelectedItem();
+                if (selectedItem instanceof Integer) {
+                    RegressionEditor.this.runner.setModelIndex((Integer) selectedItem - 1);
                 }
             });
 

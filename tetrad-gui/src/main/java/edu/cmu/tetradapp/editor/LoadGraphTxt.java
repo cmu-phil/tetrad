@@ -83,10 +83,6 @@ class LoadGraphTxt extends AbstractAction {
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         return chooser;
     }
-
-    private GraphEditable getGraphEditable() {
-        return this.graphEditable;
-    }
 }
 
 

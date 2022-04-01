@@ -71,14 +71,12 @@ public class MissingDataInjectorParamsEditor extends JPanel implements Parameter
 
         DoubleTextField probField =
                 new DoubleTextField(this.params.getDouble("prob", 0.02), 6, NumberFormatUtil.getInstance().getNumberFormat());
-        probField.setFilter(new DoubleTextField.Filter() {
-            public double filter(double value, double oldValue) {
-                try {
-                    MissingDataInjectorParamsEditor.this.params.set("prob", value);
-                    return value;
-                } catch (IllegalArgumentException e) {
-                    return oldValue;
-                }
+        probField.setFilter((value, oldValue) -> {
+            try {
+                MissingDataInjectorParamsEditor.this.params.set("prob", value);
+                return value;
+            } catch (IllegalArgumentException e) {
+                return oldValue;
             }
         });
 

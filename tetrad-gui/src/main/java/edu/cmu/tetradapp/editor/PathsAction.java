@@ -34,7 +34,6 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -65,12 +64,7 @@ class PathsAction extends AbstractAction implements ClipboardOwner {
         scroll.setPreferredSize(new Dimension(600, 400));
 
         List<Node> allNodes = graph.getNodes();
-        Collections.sort(allNodes, new Comparator<Node>() {
-            @Override
-            public int compare(Node o1, Node o2) {
-                return o1.compareTo(o2);
-            }
-        });
+        allNodes.sort(Comparator.naturalOrder());
         allNodes.add(new GraphNode("SELECT_ALL"));
         Node[] array = allNodes.toArray(new Node[0]);
 
@@ -84,23 +78,21 @@ class PathsAction extends AbstractAction implements ClipboardOwner {
 
         JComboBox node1Box = new JComboBox(array);
 
-        node1Box.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JComboBox box = (JComboBox) e.getSource();
-                Node node = (Node) box.getSelectedItem();
-                System.out.println(node);
+        node1Box.addActionListener(e1 -> {
+            JComboBox box = (JComboBox) e1.getSource();
+            Node node = (Node) box.getSelectedItem();
+            System.out.println(node);
 
-                if ("SELECT_ALL".equals(node.getName())) {
-                    PathsAction.this.nodes1 = new ArrayList<>(graph.getNodes());
-                } else {
-                    PathsAction.this.nodes1 = Collections.singletonList(node);
-                }
-
-                Preferences.userRoot().put("pathFrom", node.getName());
-
-//                update(graph, textArea, nodes1, nodes2, method);
+            assert node != null;
+            if ("SELECT_ALL".equals(node.getName())) {
+                PathsAction.this.nodes1 = new ArrayList<>(graph.getNodes());
+            } else {
+                PathsAction.this.nodes1 = Collections.singletonList(node);
             }
 
+            Preferences.userRoot().put("pathFrom", node.getName());
+
+//                update(graph, textArea, nodes1, nodes2, method);
         });
 
         node1Box.setSelectedItem(this.nodes1.get(0));
@@ -115,23 +107,20 @@ class PathsAction extends AbstractAction implements ClipboardOwner {
 
         JComboBox node2Box = new JComboBox(array);
 
-        node2Box.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JComboBox box = (JComboBox) e.getSource();
-                Node node = (Node) box.getSelectedItem();
-                System.out.println(node);
+        node2Box.addActionListener(e12 -> {
+            JComboBox box = (JComboBox) e12.getSource();
+            Node node = (Node) box.getSelectedItem();
+            System.out.println(node);
 
-                if ("SELECT_ALL".equals(node.getName())) {
-                    PathsAction.this.nodes2 = new ArrayList<>(graph.getNodes());
-                } else {
-                    PathsAction.this.nodes2 = Collections.singletonList(node);
-                }
-
-                Preferences.userRoot().put("pathTo", node.getName());
-
-//                update(graph, textArea, nodes1, nodes2, method);
+            if ("SELECT_ALL".equals(node.getName())) {
+                PathsAction.this.nodes2 = new ArrayList<>(graph.getNodes());
+            } else {
+                PathsAction.this.nodes2 = Collections.singletonList(node);
             }
 
+            Preferences.userRoot().put("pathTo", node.getName());
+
+//                update(graph, textArea, nodes1, nodes2, method);
         });
 
         node2Box.setSelectedItem(this.nodes2.get(0));
@@ -140,39 +129,31 @@ class PathsAction extends AbstractAction implements ClipboardOwner {
                 "Adjacents"});
         this.method = Preferences.userRoot().get("pathMethod", "Directed Paths");
 
-        methodBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JComboBox box = (JComboBox) e.getSource();
-                PathsAction.this.method = (String) box.getSelectedItem();
-                Preferences.userRoot().put("pathMethod", PathsAction.this.method);
+        methodBox.addActionListener(e13 -> {
+            JComboBox box = (JComboBox) e13.getSource();
+            PathsAction.this.method = (String) box.getSelectedItem();
+            Preferences.userRoot().put("pathMethod", PathsAction.this.method);
 //                update(graph, textArea, nodes1, nodes2, method);
-            }
         });
 
         methodBox.setSelectedItem(this.method);
 
         IntTextField maxField = new IntTextField(Preferences.userRoot().getInt("pathMaxLength", 3), 2);
 
-        maxField.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
-                try {
-                    setMaxLength(value);
+        maxField.setFilter((value, oldValue) -> {
+            try {
+                setMaxLength(value);
 //                    update(graph, textArea, nodes1, nodes2, method);
-                    return value;
-                } catch (Exception e) {
-                    return oldValue;
-                }
+                return value;
+            } catch (Exception e14) {
+                return oldValue;
             }
         });
 
         JButton updateButton = new JButton(("Update"));
 
-        updateButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                update(graph, PathsAction.this.textArea, PathsAction.this.nodes1, PathsAction.this.nodes2, PathsAction.this.method);
-            }
-        });
+        updateButton.addActionListener(e15 -> update(graph, PathsAction.this.textArea,
+                PathsAction.this.nodes1, PathsAction.this.nodes2, PathsAction.this.method));
 
         allDirectedPaths(graph, this.textArea, this.nodes1, this.nodes2);
 
@@ -228,6 +209,8 @@ class PathsAction extends AbstractAction implements ClipboardOwner {
                 }
             }
         };
+
+        process.watch();
     }
 
     private void allDirectedPaths(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
@@ -241,15 +224,14 @@ class PathsAction extends AbstractAction implements ClipboardOwner {
                 if (!directedPaths.isEmpty()) {
                     textArea.append("\n\nFrom " + node1 + " to " + node2 + ":");
 
-                    for (int k = 0; k < directedPaths.size(); k++) {
+                    for (List<Node> directedPath : directedPaths) {
                         textArea.append("\n    ");
-                        List<Node> path = directedPaths.get(k);
 
-                        textArea.append(path.get(0).toString());
+                        textArea.append(directedPath.get(0).toString());
 
-                        for (int m = 1; m < path.size(); m++) {
-                            Node n0 = path.get(m - 1);
-                            Node n1 = path.get(m);
+                        for (int m = 1; m < directedPath.size(); m++) {
+                            Node n0 = directedPath.get(m - 1);
+                            Node n1 = directedPath.get(m);
 
                             Edge edge = graph.getEdge(n0, n1);
 
@@ -272,15 +254,14 @@ class PathsAction extends AbstractAction implements ClipboardOwner {
                 if (!directedPaths.isEmpty()) {
                     textArea.append("\n\nFrom " + node2 + " to " + node1 + ":");
 
-                    for (int k = 0; k < directedPaths.size(); k++) {
+                    for (List<Node> directedPath : directedPaths) {
                         textArea.append("\n    ");
-                        List<Node> path = directedPaths.get(k);
 
-                        textArea.append(path.get(0).toString());
+                        textArea.append(directedPath.get(0).toString());
 
-                        for (int m = 1; m < path.size(); m++) {
-                            Node n0 = path.get(m - 1);
-                            Node n1 = path.get(m);
+                        for (int m = 1; m < directedPath.size(); m++) {
+                            Node n0 = directedPath.get(m - 1);
+                            Node n1 = directedPath.get(m);
 
                             Edge edge = graph.getEdge(n0, n1);
 
@@ -321,15 +302,14 @@ class PathsAction extends AbstractAction implements ClipboardOwner {
 
                 textArea.append("\n\nFrom " + node1 + " to " + node2 + ":");
 
-                for (int k = 0; k < directedPaths.size(); k++) {
+                for (List<Node> directedPath : directedPaths) {
                     textArea.append("\n    ");
-                    List<Node> path = directedPaths.get(k);
 
-                    textArea.append(path.get(0).toString());
+                    textArea.append(directedPath.get(0).toString());
 
-                    for (int m = 1; m < path.size(); m++) {
-                        Node n0 = path.get(m - 1);
-                        Node n1 = path.get(m);
+                    for (int m = 1; m < directedPath.size(); m++) {
+                        Node n0 = directedPath.get(m - 1);
+                        Node n1 = directedPath.get(m);
 
                         Edge edge = graph.getEdge(n0, n1);
 
@@ -366,9 +346,7 @@ class PathsAction extends AbstractAction implements ClipboardOwner {
 
                 textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
 
-                for (int k = 0; k < treks.size(); k++) {
-                    List<Node> trek = treks.get(k);
-
+                for (List<Node> trek : treks) {
                     textArea.append("\n    " + GraphUtils.pathString(trek, graph));
                 }
             }

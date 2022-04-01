@@ -65,12 +65,6 @@ class QQPlotAction extends AbstractAction {
             return;
         }
         // if there are missing values warn and don't display q-q plot.
-//        if(DataUtils.containsMissingValue(dataSet)){
-//            JOptionPane.showMessageDialog(findOwner(), new JLabel("<html>Data has missing values, " +
-//                    "remove all missing values before<br>" +
-//                    "displaying data in a Q-Q plot.</html>"));
-//            return;
-//        }
 
         int[] selected = dataSet.getSelectedIndices();
         // if more then one column is selected then open up more than one histogram
@@ -95,9 +89,6 @@ class QQPlotAction extends AbstractAction {
                 editorWindow.setVisible(true);
 
 
-//                dialog.pack();
-//                setLocation(dialog, index);
-//                dialog.setVisible(true);
             }
         } else {
             JPanel dialog = createQQPlotDialog(null);
@@ -109,10 +100,6 @@ class QQPlotAction extends AbstractAction {
             editorWindow.pack();
             editorWindow.setVisible(true);
 
-//            JDialog dialog = createQQPlotDialog(null);
-//            dialog.pack();
-//            dialog.setLocationRelativeTo(dialog.getOwner());
-//            dialog.setVisible(true);
         }
     }
 
@@ -120,37 +107,13 @@ class QQPlotAction extends AbstractAction {
 
 
     /**
-     * Sets the location on the given dialog for the given index.
-     */
-    private void setLocation(JDialog dialog, int index) {
-        Rectangle bounds = dialog.getBounds();
-        JFrame frame = findOwner();
-        Dimension dim;
-        if (frame == null) {
-            dim = Toolkit.getDefaultToolkit().getScreenSize();
-        } else {
-            dim = frame.getSize();
-        }
-
-        int x = (int) (150 * Math.cos(index * 15 * (Math.PI / 180)));
-        int y = (int) (150 * Math.sin(index * 15 * (Math.PI / 180)));
-        x += (dim.width - bounds.width) / 2;
-        y += (dim.height - bounds.height) / 2;
-        dialog.setLocation(x, y);
-    }
-
-
-    /**
      * Creates a dialog that is showing the histogram for the given node (if null
      * one is selected for you)
      */
     private JPanel createQQPlotDialog(Node selected) {
-        final String dialogTitle = "Q-Q Plots";
         JPanel panel = new JPanel(); //new JPanel(findOwner(), dialogTitle, false);
         panel.setLayout(new BorderLayout());
 
-//        dialog.setResizable(false);
-//        dialog.getContentPane().setLayout(new BorderLayout());
         DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
 
         QQPlot qqPlot = new QQPlot(dataSet, selected);
@@ -179,9 +142,6 @@ class QQPlotAction extends AbstractAction {
         panel.add(bar, BorderLayout.NORTH);
         panel.add(vBox, BorderLayout.CENTER);
 
-//        dialog.getContentPane().add(bar, BorderLayout.NORTH);
-//        dialog.getContentPane().add(vBox, BorderLayout.CENTER);
-//        return dialog;
         return panel;
     }
 

@@ -53,14 +53,6 @@ public class GraphIntersectionsEditor extends JPanel {
     //============================ Private Methods =========================//
 
 
-    private boolean isLegal(String text) {
-//        if (!NamingProtocol.isLegalName(text)) {
-//            JOptionPane.showMessageDialog(this, NamingProtocol.getProtocolDescription() + ": " + text);
-//            return false;
-//        }
-        return true;
-    }
-
     private void setup() {
         String compareString = GraphUtils.getIntersectionComparisonString(this.graphs);
 

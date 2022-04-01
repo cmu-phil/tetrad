@@ -28,8 +28,6 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -124,67 +122,51 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
 //        addBidirectedEdge.addFocusListener(focusListener);
 
         // add listeners
-        this.move.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                GraphToolbar.this.move.getModel().setSelected(true);
-                setWorkbenchMode(AbstractWorkbench.SELECT_MOVE);
-            }
+        this.move.addActionListener(e -> {
+            GraphToolbar.this.move.getModel().setSelected(true);
+            setWorkbenchMode(AbstractWorkbench.SELECT_MOVE);
         });
 
-        this.addObserved.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                GraphToolbar.this.addObserved.getModel().setSelected(true);
-                setWorkbenchMode(AbstractWorkbench.ADD_NODE);
-                setNodeMode(GraphWorkbench.MEASURED_NODE);
-            }
+        this.addObserved.addActionListener(e -> {
+            GraphToolbar.this.addObserved.getModel().setSelected(true);
+            setWorkbenchMode(AbstractWorkbench.ADD_NODE);
+            setNodeMode(GraphWorkbench.MEASURED_NODE);
         });
 
-        this.addLatent.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                GraphToolbar.this.addLatent.getModel().setSelected(true);
-                setWorkbenchMode(AbstractWorkbench.ADD_NODE);
-                setNodeMode(GraphWorkbench.LATENT_NODE);
-            }
+        this.addLatent.addActionListener(e -> {
+            GraphToolbar.this.addLatent.getModel().setSelected(true);
+            setWorkbenchMode(AbstractWorkbench.ADD_NODE);
+            setNodeMode(GraphWorkbench.LATENT_NODE);
         });
 
-        this.addDirectedEdge.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                GraphToolbar.this.addDirectedEdge.getModel().setSelected(true);
-                setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
-                setEdgeMode(GraphWorkbench.DIRECTED_EDGE);
-            }
+        this.addDirectedEdge.addActionListener(e -> {
+            GraphToolbar.this.addDirectedEdge.getModel().setSelected(true);
+            setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
+            setEdgeMode(GraphWorkbench.DIRECTED_EDGE);
         });
 
-        this.addNondirectedEdge.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                GraphToolbar.this.addNondirectedEdge.getModel().setSelected(true);
-                setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
-                setEdgeMode(GraphWorkbench.NONDIRECTED_EDGE);
-            }
+        this.addNondirectedEdge.addActionListener(e -> {
+            GraphToolbar.this.addNondirectedEdge.getModel().setSelected(true);
+            setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
+            setEdgeMode(GraphWorkbench.NONDIRECTED_EDGE);
         });
 
-        this.addUndirectedEdge.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                GraphToolbar.this.addUndirectedEdge.getModel().setSelected(true);
-                setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
-                setEdgeMode(GraphWorkbench.UNDIRECTED_EDGE);
-            }
+        this.addUndirectedEdge.addActionListener(e -> {
+            GraphToolbar.this.addUndirectedEdge.getModel().setSelected(true);
+            setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
+            setEdgeMode(GraphWorkbench.UNDIRECTED_EDGE);
         });
 
-        this.addPartiallyOrientedEdge.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                GraphToolbar.this.addPartiallyOrientedEdge.getModel().setSelected(true);
-                setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
-                setEdgeMode(GraphWorkbench.PARTIALLY_ORIENTED_EDGE);
-            }
+        this.addPartiallyOrientedEdge.addActionListener(e -> {
+            GraphToolbar.this.addPartiallyOrientedEdge.getModel().setSelected(true);
+            setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
+            setEdgeMode(GraphWorkbench.PARTIALLY_ORIENTED_EDGE);
         });
 
-        this.addBidirectedEdge.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                GraphToolbar.this.addBidirectedEdge.getModel().setSelected(true);
-                setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
-                setEdgeMode(GraphWorkbench.BIDIRECTED_EDGE);
-            }
+        this.addBidirectedEdge.addActionListener(e -> {
+            GraphToolbar.this.addBidirectedEdge.getModel().setSelected(true);
+            setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
+            setEdgeMode(GraphWorkbench.BIDIRECTED_EDGE);
         });
 
         // add buttons to the toolbar.
@@ -212,10 +194,6 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
      */
     private void setWorkbenchMode(int mode) {
         this.workbench.setWorkbenchMode(mode);
-//        Toolkit toolkit = Toolkit.getDefaultToolkit();
-//        Image image = ImageUtils.getImage(this, "cursorImage.png");
-//        Cursor c = toolkit.createCustomCursor(image, new Point(10, 10), "img");
-//        setCursor(c);
 
         setCursor(this.workbench.getCursor());
     }
@@ -271,26 +249,6 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
         this.addBidirectedEdge.setEnabled(true);
         this.addUndirectedEdge.setEnabled(true);
     }
-
-//    /**
-//     * Adds semantic checks to the default deserialization method. This method
-//     * must have the standard signature for a readObject method, and the body of
-//     * the method must begin with "s.defaultReadObject();". Other than that, any
-//     * semantic checks can be specified and do not need to stay the same from
-//     * version to version. A readObject method of this form may be added to any
-//     * class, even if Tetrad sessions were previously saved out using a version
-//     * of the class that didn't include it. (That's what the
-//     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-//     *
-//     * @throws java.io.IOException
-//     * @throws ClassNotFoundException
-//     */
-//    private void readObject(ObjectInputStream s)
-//            throws IOException, ClassNotFoundException {
-//        s.defaultReadObject();
-//
-//        move.doClick();
-//    }
 
 }
 

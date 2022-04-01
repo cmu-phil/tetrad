@@ -51,15 +51,12 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.*;
 import java.util.prefs.Preferences;
 
 /**
@@ -97,7 +94,6 @@ public final class LoadDataSettings extends JPanel {
     private JRadioButton singleCharDelimiterRadioButton;
     private JComboBox singleCharDelimiterComboBox;
 
-    private JRadioButton noneQuoteRadioButton;
     private JRadioButton doubleQuoteRadioButton;
     private JRadioButton singleQuoteRadioButton;
 
@@ -112,7 +108,6 @@ public final class LoadDataSettings extends JPanel {
 
     private JRadioButton missingValueStarRadioButton;
     private JRadioButton missingValueQuestionRadioButton;
-    private JRadioButton missingValueOtherRadioButton;
     private StringTextField missingStringField;
 
     private final Dimension labelSize;
@@ -131,7 +126,7 @@ public final class LoadDataSettings extends JPanel {
     }
 
     // Step 1 items
-    public final Box basicSettings() throws IOException {
+    public Box basicSettings() throws IOException {
         // Data loading params layout
         Box basicSettingsBox = Box.createVerticalBox();
 
@@ -225,47 +220,44 @@ public final class LoadDataSettings extends JPanel {
         this.tabularRadioButton.setSelected(true);
 
         // Event listener
-        this.tabularRadioButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                JRadioButton button = (JRadioButton) actionEvent.getSource();
-                // Just enable disabled buttons, do not change the previous selections - Zhou
-                if (button.isSelected()) {
-                    // Enable metadata file upload when there's also column header
-                    if (LoadDataSettings.this.firstRowVarNamesYesRadioButton.isSelected()) {
-                        LoadDataSettings.this.metadataFileButton.setEnabled(true);
-                    }
+        this.tabularRadioButton.addActionListener(actionEvent -> {
+            JRadioButton button = (JRadioButton) actionEvent.getSource();
+            // Just enable disabled buttons, do not change the previous selections - Zhou
+            if (button.isSelected()) {
+                // Enable metadata file upload when there's also column header
+                if (LoadDataSettings.this.firstRowVarNamesYesRadioButton.isSelected()) {
+                    LoadDataSettings.this.metadataFileButton.setEnabled(true);
+                }
 
-                    // Enable the discrete/mixed radio button if it's disabled by clicking covariance data
-                    if (!LoadDataSettings.this.discRadioButton.isEnabled()) {
-                        LoadDataSettings.this.discRadioButton.setEnabled(true);
-                    }
+                // Enable the discrete/mixed radio button if it's disabled by clicking covariance data
+                if (!LoadDataSettings.this.discRadioButton.isEnabled()) {
+                    LoadDataSettings.this.discRadioButton.setEnabled(true);
+                }
 
-                    if (!LoadDataSettings.this.mixedRadioButton.isEnabled()) {
-                        LoadDataSettings.this.mixedRadioButton.setEnabled(true);
-                    }
+                if (!LoadDataSettings.this.mixedRadioButton.isEnabled()) {
+                    LoadDataSettings.this.mixedRadioButton.setEnabled(true);
+                }
 
-                    // Enable variable names in first row
-                    if (!LoadDataSettings.this.firstRowVarNamesYesRadioButton.isEnabled()) {
-                        LoadDataSettings.this.firstRowVarNamesYesRadioButton.setEnabled(true);
-                    }
+                // Enable variable names in first row
+                if (!LoadDataSettings.this.firstRowVarNamesYesRadioButton.isEnabled()) {
+                    LoadDataSettings.this.firstRowVarNamesYesRadioButton.setEnabled(true);
+                }
 
-                    if (!LoadDataSettings.this.firstRowVarNamesNoRadioButton.isEnabled()) {
-                        LoadDataSettings.this.firstRowVarNamesNoRadioButton.setEnabled(true);
-                    }
+                if (!LoadDataSettings.this.firstRowVarNamesNoRadioButton.isEnabled()) {
+                    LoadDataSettings.this.firstRowVarNamesNoRadioButton.setEnabled(true);
+                }
 
-                    // Enable case Id options
-                    if (!LoadDataSettings.this.idUnlabeledFirstColRadioButton.isEnabled()) {
-                        LoadDataSettings.this.idUnlabeledFirstColRadioButton.setEnabled(true);
-                    }
+                // Enable case Id options
+                if (!LoadDataSettings.this.idUnlabeledFirstColRadioButton.isEnabled()) {
+                    LoadDataSettings.this.idUnlabeledFirstColRadioButton.setEnabled(true);
+                }
 
-                    if (!LoadDataSettings.this.idLabeledColRadioButton.isEnabled()) {
-                        LoadDataSettings.this.idLabeledColRadioButton.setEnabled(true);
-                    }
+                if (!LoadDataSettings.this.idLabeledColRadioButton.isEnabled()) {
+                    LoadDataSettings.this.idLabeledColRadioButton.setEnabled(true);
+                }
 
-                    if (!LoadDataSettings.this.idStringField.isEnabled()) {
-                        LoadDataSettings.this.idStringField.setEnabled(true);
-                    }
+                if (!LoadDataSettings.this.idStringField.isEnabled()) {
+                    LoadDataSettings.this.idStringField.setEnabled(true);
                 }
             }
         });
@@ -348,32 +340,29 @@ public final class LoadDataSettings extends JPanel {
         JLabel selectedMetadataFileName = new JLabel("No metadata file slected");
 
         // Add file button listener
-        this.metadataFileButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Show file chooser
-                JFileChooser fileChooser = new JFileChooser();
-                String sessionSaveLocation = Preferences.userRoot().get("fileSaveLocation", "");
-                fileChooser.setCurrentDirectory(new File(sessionSaveLocation));
-                fileChooser.setFileFilter(new FileNameExtensionFilter("*.json", "json"));
-                fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                // Only allow to add one file at a time
-                fileChooser.setMultiSelectionEnabled(true);
-                // Customize dialog title bar text
-                fileChooser.setDialogTitle("Load metadata JSON file");
-                // The second argument sets both the title for the dialog window and the label for the approve button
-                int _ret = fileChooser.showDialog(SwingUtilities.getWindowAncestor(LoadDataSettings.this.metadataFileButton), "Choose");
+        this.metadataFileButton.addActionListener(e -> {
+            // Show file chooser
+            JFileChooser fileChooser = new JFileChooser();
+            String sessionSaveLocation = Preferences.userRoot().get("fileSaveLocation", "");
+            fileChooser.setCurrentDirectory(new File(sessionSaveLocation));
+            fileChooser.setFileFilter(new FileNameExtensionFilter("*.json", "json"));
+            fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            // Only allow to add one file at a time
+            fileChooser.setMultiSelectionEnabled(true);
+            // Customize dialog title bar text
+            fileChooser.setDialogTitle("Load metadata JSON file");
+            // The second argument sets both the title for the dialog window and the label for the approve button
+            int _ret = fileChooser.showDialog(SwingUtilities.getWindowAncestor(LoadDataSettings.this.metadataFileButton), "Choose");
 
-                if (_ret == JFileChooser.CANCEL_OPTION) {
-                    return;
-                }
-
-                // Now we have the interventional metadata file
-                LoadDataSettings.this.metadataFile = fileChooser.getSelectedFile();
-
-                // Show the selected file name
-                selectedMetadataFileName.setText(LoadDataSettings.this.metadataFile.getName());
+            if (_ret == JFileChooser.CANCEL_OPTION) {
+                return;
             }
+
+            // Now we have the interventional metadata file
+            LoadDataSettings.this.metadataFile = fileChooser.getSelectedFile();
+
+            // Show the selected file name
+            selectedMetadataFileName.setText(LoadDataSettings.this.metadataFile.getName());
         });
 
         // File choose button box
@@ -521,11 +510,7 @@ public final class LoadDataSettings extends JPanel {
             case '\t':
                 this.singleCharDelimiterRadioButton.setSelected(true);
                 this.singleCharDelimiterComboBox.setSelectedItem("Tab");
-                break;
-            case ' ':
-                // Whitespace covers space, so we use whitespace instead of space here
-                this.whitespaceDelimiterRadioButton.setSelected(true);
-                break;
+                break;// Whitespace covers space, so we use whitespace instead of space here
             case ':':
                 this.singleCharDelimiterRadioButton.setSelected(true);
                 this.singleCharDelimiterComboBox.setSelectedItem("Colon");
@@ -596,7 +581,7 @@ public final class LoadDataSettings extends JPanel {
     }
 
     // Step 2 items
-    public final Box advancedSettings() {
+    public Box advancedSettings() {
         // Data loading params layout
         Box advancedSettingsBox = Box.createVerticalBox();
 
@@ -742,17 +727,17 @@ public final class LoadDataSettings extends JPanel {
         // Quote Character
         Box quoteCharBox = Box.createHorizontalBox();
 
-        this.noneQuoteRadioButton = new JRadioButton("None");
+        JRadioButton noneQuoteRadioButton = new JRadioButton("None");
         this.doubleQuoteRadioButton = new JRadioButton("\"");
         this.singleQuoteRadioButton = new JRadioButton("'");
 
         ButtonGroup quoteCharBtnGrp = new ButtonGroup();
-        quoteCharBtnGrp.add(this.noneQuoteRadioButton);
+        quoteCharBtnGrp.add(noneQuoteRadioButton);
         quoteCharBtnGrp.add(this.doubleQuoteRadioButton);
         quoteCharBtnGrp.add(this.singleQuoteRadioButton);
 
         // Select None by default
-        this.noneQuoteRadioButton.setSelected(true);
+        noneQuoteRadioButton.setSelected(true);
 
         // Add label into this label box to size
         Box quoteCharLabelBox = Box.createHorizontalBox();
@@ -767,7 +752,7 @@ public final class LoadDataSettings extends JPanel {
         // Option 1
         Box quoteCharOption1Box = Box.createHorizontalBox();
         quoteCharOption1Box.setPreferredSize(new Dimension(160, 30));
-        quoteCharOption1Box.add(this.noneQuoteRadioButton);
+        quoteCharOption1Box.add(noneQuoteRadioButton);
 
         // Option 2
         Box quoteCharOption2Box = Box.createHorizontalBox();
@@ -798,12 +783,12 @@ public final class LoadDataSettings extends JPanel {
 
         this.missingValueStarRadioButton = new JRadioButton("*");
         this.missingValueQuestionRadioButton = new JRadioButton("?");
-        this.missingValueOtherRadioButton = new JRadioButton("Other: ");
+        JRadioButton missingValueOtherRadioButton = new JRadioButton("Other: ");
 
         ButtonGroup missingDataMarkerBtnGrp = new ButtonGroup();
         missingDataMarkerBtnGrp.add(this.missingValueStarRadioButton);
         missingDataMarkerBtnGrp.add(this.missingValueQuestionRadioButton);
-        missingDataMarkerBtnGrp.add(this.missingValueOtherRadioButton);
+        missingDataMarkerBtnGrp.add(missingValueOtherRadioButton);
 
         // Missing string field: other
         this.missingStringField = new StringTextField("", 6);
@@ -825,7 +810,7 @@ public final class LoadDataSettings extends JPanel {
         // Option 3
         Box missingDataMarkerOption3Box = Box.createHorizontalBox();
         missingDataMarkerOption3Box.setPreferredSize(new Dimension(260, 30));
-        missingDataMarkerOption3Box.add(this.missingValueOtherRadioButton);
+        missingDataMarkerOption3Box.add(missingValueOtherRadioButton);
         missingDataMarkerOption3Box.add(this.missingStringField);
 
         // Add label into this label box to size
@@ -879,9 +864,6 @@ public final class LoadDataSettings extends JPanel {
 
     /**
      * Determine the delimiter for a text data file.
-     *
-     * @param file
-     * @return
      */
     private char getInferredDelimiter(File file) throws IOException {
         System.out.println("Infer demiliter for file: " + file.getName());
@@ -902,14 +884,12 @@ public final class LoadDataSettings extends JPanel {
 
     /**
      * Get delimiter character
-     *
-     * @return
      */
     private Delimiter getDelimiterType() {
         if (this.whitespaceDelimiterRadioButton.isSelected()) {
             return Delimiter.WHITESPACE;
         } else if (this.singleCharDelimiterRadioButton.isSelected()) {
-            String singleCharDelimiter = this.singleCharDelimiterComboBox.getSelectedItem().toString();
+            String singleCharDelimiter = Objects.requireNonNull(this.singleCharDelimiterComboBox.getSelectedItem()).toString();
 
             switch (singleCharDelimiter) {
                 case "Comma":
@@ -944,8 +924,6 @@ public final class LoadDataSettings extends JPanel {
 
     /**
      * To check if the label is specified while that radio button is selected
-     *
-     * @return
      */
     public boolean isColumnLabelSpecified() {
         if (this.idLabeledColRadioButton.isSelected()) {
@@ -958,8 +936,6 @@ public final class LoadDataSettings extends JPanel {
     /**
      * To check if comment marker is supplied while Other radio button is
      * selected
-     *
-     * @return
      */
     public boolean isOtherCommentMarkerSpecified() {
         if (this.commentOtherRadioButton.isSelected()) {
@@ -985,11 +961,6 @@ public final class LoadDataSettings extends JPanel {
 
     /**
      * Genearate the column header when not provided
-     *
-     * @param file
-     * @param delimiter
-     * @return
-     * @throws IOException
      */
     private DataColumn[] generateTabularColumns(File file, Delimiter delimiter) throws IOException {
         DataColumn[] dataColumns = null;
@@ -1004,9 +975,8 @@ public final class LoadDataSettings extends JPanel {
         // Set data type for each column
         // It really doesn't matter for mixed data
         boolean isDiscrete = false;
-        if (this.contRadioButton.isSelected()) {
-            isDiscrete = false;
-        } else if (this.discRadioButton.isSelected()) {
+
+        if (this.discRadioButton.isSelected()) {
             isDiscrete = true;
         }
 
@@ -1024,9 +994,6 @@ public final class LoadDataSettings extends JPanel {
 
     /**
      * Validate each file based on the specified settings
-     *
-     * @param file
-     * @return
      */
     public List<ValidationResult> validateDataWithSettings(File file) throws IOException {
         Delimiter delimiter = getDelimiterType();
@@ -1057,9 +1024,11 @@ public final class LoadDataSettings extends JPanel {
                 } else if (this.idUnlabeledFirstColRadioButton.isSelected()) {
                     // Exclude the first column
                     tabularColumnValidationResults = tabularColumnValidation.validate(new int[]{1});
-                } else if (this.idLabeledColRadioButton.isSelected() && !this.idStringField.getText().isEmpty()) {
+                } else if (this.idLabeledColRadioButton.isSelected()
+                        && !this.idStringField.getText().isEmpty()) {
                     // Exclude the specified labled columns
-                    tabularColumnValidationResults = tabularColumnValidation.validate(new HashSet<>(Arrays.asList(this.idStringField.getText())));
+                    tabularColumnValidationResults = tabularColumnValidation.validate(new HashSet<>(
+                            Collections.singletonList(this.idStringField.getText())));
                 }
 
                 // Step 2: Read in columns for later use if nothing wrong with the columns validation
@@ -1112,10 +1081,8 @@ public final class LoadDataSettings extends JPanel {
                 // Missing data marker setting for data validaiton only, not for column validation
                 tabularDataValidation.setMissingDataMarker(missingDataMarker);
 
-                List<ValidationResult> tabularDataValidationResults = tabularDataValidation.validate(dataColumns, hasHeader);
-
                 // At this point, no need to use the column validation results at all
-                return tabularDataValidationResults;
+                return tabularDataValidation.validate(dataColumns, hasHeader);
             }
         } else if (this.covarianceRadioButton.isSelected()) {
             CovarianceValidation covarianceValidation = new LowerCovarianceDataFileValidation(file.toPath(), delimiter);
@@ -1146,9 +1113,8 @@ public final class LoadDataSettings extends JPanel {
         // Set data type for each column
         // It really doesn't matter for mixed data
         boolean isDiscrete = false;
-        if (this.contRadioButton.isSelected()) {
-            isDiscrete = false;
-        } else if (this.discRadioButton.isSelected()) {
+
+        if (this.discRadioButton.isSelected()) {
             isDiscrete = true;
         }
 
@@ -1161,7 +1127,8 @@ public final class LoadDataSettings extends JPanel {
             dataColumns = columnReader.readInDataColumns(new int[]{1}, isDiscrete);
         } else if (this.idLabeledColRadioButton.isSelected() && !this.idStringField.getText().isEmpty()) {
             // Exclude the specified labled columns
-            dataColumns = columnReader.readInDataColumns(new HashSet<>(Arrays.asList(this.idStringField.getText())), isDiscrete);
+            dataColumns = columnReader.readInDataColumns(new HashSet<>(
+                    Collections.singletonList(this.idStringField.getText())), isDiscrete);
         }
 
         return dataColumns;
@@ -1169,12 +1136,9 @@ public final class LoadDataSettings extends JPanel {
 
     /**
      * Kevin's data reader
-     *
-     * @param file
-     * @return DataModel on success
      */
     public DataModel loadDataWithSettings(File file) throws IOException {
-        DataModel dataModel = null;
+        DataModel dataModel;
 
         Delimiter delimiter = getDelimiterType();
         boolean hasHeader = isVarNamesFirstRow();

@@ -90,21 +90,13 @@ public final class LoadDataDialog extends JPanel {
 
     private Box filePreviewBox;
 
-    private Box validationResultsBox;
-
     private String previewBoxBorderTitle;
-
-    private String validationResultsContainerBorderTitle;
 
     private final String defaulyPreviewBoxBorderTitle;
 
     private Box container;
 
-    private Box settingsContainer;
-
     private Box previewContainer;
-
-    private Box buttonsContainer;
 
     private Box fileListBox;
 
@@ -113,18 +105,6 @@ public final class LoadDataDialog extends JPanel {
     private Box advancedSettingsBox;
 
     private Box validationResultsContainer;
-
-    private Box filesToValidateBox;
-
-    private Box validationSummaryBox;
-
-    private Box validationMessageBox;
-
-    private final int validationWarnErrMsgThreshold = 10;
-
-    private Box buttonsBox;
-
-    private JButton addFileButton;
 
     private JButton settingsButton;
 
@@ -190,18 +170,18 @@ public final class LoadDataDialog extends JPanel {
         this.advancedSettingsBox = this.loadDataSettings.advancedSettings();
 
         // Contains file list and format/options
-        this.settingsContainer = Box.createVerticalBox();
+        Box settingsContainer = Box.createVerticalBox();
 
-        this.settingsContainer.add(this.basicSettingsBox);
-        this.settingsContainer.add(Box.createVerticalStrut(10));
-        this.settingsContainer.add(this.advancedSettingsBox);
+        settingsContainer.add(this.basicSettingsBox);
+        settingsContainer.add(Box.createVerticalStrut(10));
+        settingsContainer.add(this.advancedSettingsBox);
         //advancedSettingsBox.setVisible(false);
 
         // Add some padding between settingsContainer and preview container
-        this.settingsContainer.add(Box.createVerticalStrut(10));
+        settingsContainer.add(Box.createVerticalStrut(10));
 
         // Add to overall container
-        this.container.add(this.settingsContainer);
+        this.container.add(settingsContainer);
 
         // Preview container, contains file list and raw data preview
         this.previewContainer = Box.createHorizontalBox();
@@ -296,10 +276,10 @@ public final class LoadDataDialog extends JPanel {
         this.fileListBox.add(Box.createVerticalStrut(10));
 
         // Add new files button
-        this.addFileButton = new JButton("Add more files to the loading list ...");
+        JButton addFileButton = new JButton("Add more files to the loading list ...");
 
         // Add file button listener
-        this.addFileButton.addActionListener((e) -> {
+        addFileButton.addActionListener((e) -> {
             // Show file chooser
             JFileChooser fileChooser = new JFileChooser();
             String sessionSaveLocation = Preferences.userRoot().get("fileSaveLocation", "");
@@ -331,7 +311,7 @@ public final class LoadDataDialog extends JPanel {
             }
         });
 
-        this.fileListBox.add(this.addFileButton);
+        this.fileListBox.add(addFileButton);
 
         // Use a titled border with 5 px inside padding - Zhou
         final String fileListBoxBorderTitle = "Files (right click to remove selected file)";
@@ -380,18 +360,18 @@ public final class LoadDataDialog extends JPanel {
         // Validation result
         this.validationResultsContainer = Box.createVerticalBox();
 
-        this.validationSummaryBox = Box.createHorizontalBox();
+        Box validationSummaryBox = Box.createHorizontalBox();
 
         JLabel validationSummaryText = new JLabel("Please review. You can change the settings or add/remove files by clicking the Settings button.");
 
-        this.validationSummaryBox.add(validationSummaryText);
+        validationSummaryBox.add(validationSummaryText);
 
-        this.validationResultsBox = Box.createHorizontalBox();
+        Box validationResultsBox = Box.createHorizontalBox();
 
         // A list of files to review
-        this.filesToValidateBox = Box.createVerticalBox();
-        this.filesToValidateBox.setMinimumSize(new Dimension(305, 430));
-        this.filesToValidateBox.setMaximumSize(new Dimension(305, 430));
+        Box filesToValidateBox = Box.createVerticalBox();
+        filesToValidateBox.setMinimumSize(new Dimension(305, 430));
+        filesToValidateBox.setMaximumSize(new Dimension(305, 430));
 
         // Create a new list model based on validation results
         this.validationFileList = new JList(this.validatedFileListModel);
@@ -413,36 +393,36 @@ public final class LoadDataDialog extends JPanel {
         this.filesToValidateScrollPane = new JScrollPane(this.validationFileList);
         this.filesToValidateScrollPane.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        this.filesToValidateBox.add(this.filesToValidateScrollPane);
+        filesToValidateBox.add(this.filesToValidateScrollPane);
 
-        this.validationResultsBox.add(this.filesToValidateBox);
+        validationResultsBox.add(filesToValidateBox);
 
         // Add gap between file list and message content
-        this.validationResultsBox.add(Box.createHorizontalStrut(10), 1);
+        validationResultsBox.add(Box.createHorizontalStrut(10), 1);
 
         // Review content, contains errors or summary of loading
-        this.validationMessageBox = Box.createVerticalBox();
-        this.validationMessageBox.setMinimumSize(new Dimension(560, 430));
-        this.validationMessageBox.setMaximumSize(new Dimension(560, 430));
+        Box validationMessageBox = Box.createVerticalBox();
+        validationMessageBox.setMinimumSize(new Dimension(560, 430));
+        validationMessageBox.setMaximumSize(new Dimension(560, 430));
 
         this.validationResultTextPane.setContentType("text/html");
         this.validationResultTextPane.setEditable(false);
 
         JScrollPane summaryScrollPane = new JScrollPane(this.validationResultTextPane);
-        this.validationMessageBox.add(summaryScrollPane);
+        validationMessageBox.add(summaryScrollPane);
 
-        this.validationResultsBox.add(this.validationMessageBox);
+        validationResultsBox.add(validationMessageBox);
 
         // Put things into container
-        this.validationResultsContainer.add(this.validationSummaryBox);
+        this.validationResultsContainer.add(validationSummaryBox);
         this.validationResultsContainer.add(Box.createVerticalStrut(10));
-        this.validationResultsContainer.add(this.validationResultsBox);
+        this.validationResultsContainer.add(validationResultsBox);
 
         // Show the default selected filename as preview border title
-        this.validationResultsContainerBorderTitle = "Validate";
+        String validationResultsContainerBorderTitle = "Validate";
 
         // Use a titled border with 5 px inside padding - Zhou
-        this.validationResultsContainer.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(this.validationResultsContainerBorderTitle), new EmptyBorder(5, 5, 5, 5)));
+        this.validationResultsContainer.setBorder(new CompoundBorder(BorderFactory.createTitledBorder(validationResultsContainerBorderTitle), new EmptyBorder(5, 5, 5, 5)));
 
         // Add to overall container
         this.container.add(this.validationResultsContainer);
@@ -507,11 +487,11 @@ public final class LoadDataDialog extends JPanel {
 
             // Show all errors in one popup
             if (!inputErrors.isEmpty()) {
-                String inputErrorMessages = "";
+                StringBuilder inputErrorMessages = new StringBuilder();
                 for (String error : inputErrors) {
-                    inputErrorMessages = inputErrorMessages + error + "\n";
+                    inputErrorMessages.append(error).append("\n");
                 }
-                JOptionPane.showMessageDialog(this.container, inputErrorMessages, "Input Error",
+                JOptionPane.showMessageDialog(this.container, inputErrorMessages.toString(), "Input Error",
                         JOptionPane.ERROR_MESSAGE);
                 return;
             }
@@ -609,31 +589,31 @@ public final class LoadDataDialog extends JPanel {
         });
 
         // Buttons container
-        this.buttonsContainer = Box.createVerticalBox();
+        Box buttonsContainer = Box.createVerticalBox();
 
         // Add some padding between preview/summary and buttons container
-        this.buttonsContainer.add(Box.createVerticalStrut(20));
+        buttonsContainer.add(Box.createVerticalStrut(20));
 
         // Buttons box
-        this.buttonsBox = Box.createHorizontalBox();
-        this.buttonsBox.add(this.settingsButton);
+        Box buttonsBox = Box.createHorizontalBox();
+        buttonsBox.add(this.settingsButton);
         // Don't use Box.createHorizontalStrut(20)
-        this.buttonsBox.add(Box.createRigidArea(new Dimension(20, 0)));
-        this.buttonsBox.add(this.validateButton);
-        this.buttonsBox.add(Box.createRigidArea(new Dimension(20, 0)));
-        this.buttonsBox.add(this.loadButton);
+        buttonsBox.add(Box.createRigidArea(new Dimension(20, 0)));
+        buttonsBox.add(this.validateButton);
+        buttonsBox.add(Box.createRigidArea(new Dimension(20, 0)));
+        buttonsBox.add(this.loadButton);
 
         // Default to only show step forward button
         this.settingsButton.setVisible(false);
         this.loadButton.setVisible(false);
         // Add to buttons container
-        this.buttonsContainer.add(this.buttonsBox);
+        buttonsContainer.add(buttonsBox);
 
         // Add to overall container
 //        container.add(buttonsContainer);
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.add(this.container, BorderLayout.CENTER);
-        mainPanel.add(this.buttonsContainer, BorderLayout.SOUTH);
+        mainPanel.add(buttonsContainer, BorderLayout.SOUTH);
 
         // Dialog without dialog buttons, because we use Load button to handle data loading
         // If we use the buttons come with JOptionPane.showOptionDialog(), the data loader dialog
@@ -697,18 +677,16 @@ public final class LoadDataDialog extends JPanel {
 
     /**
      * Validate files with specified settings
-     *
-     * @return
      */
     private void validateAllFiles() {
-        for (int i = 0; i < this.loadedFiles.size(); i++) {
+        for (File loadedFile : this.loadedFiles) {
             try {
                 StringBuilder strBuilder = new StringBuilder();
                 strBuilder.append("<p>Validation result of ");
-                strBuilder.append(this.loadedFiles.get(i).getName());
+                strBuilder.append(loadedFile.getName());
                 strBuilder.append(":</p>");
 
-                List<ValidationResult> results = this.loadDataSettings.validateDataWithSettings(this.loadedFiles.get(i));
+                List<ValidationResult> results = this.loadDataSettings.validateDataWithSettings(loadedFile);
 
                 List<ValidationResult> infos = new LinkedList<>();
                 List<ValidationResult> warnings = new LinkedList<>();
@@ -737,18 +715,19 @@ public final class LoadDataDialog extends JPanel {
                 }
 
                 // Show warning messages
+                int validationWarnErrMsgThreshold = 10;
                 if (!warnings.isEmpty()) {
                     int warnCount = warnings.size();
 
                     strBuilder.append("<p style=\"color: orange;\"><b>Warning (total ");
                     strBuilder.append(warnCount);
 
-                    if (warnCount > this.validationWarnErrMsgThreshold) {
+                    if (warnCount > validationWarnErrMsgThreshold) {
                         strBuilder.append(", showing the first ");
-                        strBuilder.append(this.validationWarnErrMsgThreshold);
+                        strBuilder.append(validationWarnErrMsgThreshold);
                         strBuilder.append("): </b><br />");
 
-                        warnings.subList(0, this.validationWarnErrMsgThreshold).forEach(e -> {
+                        warnings.subList(0, validationWarnErrMsgThreshold).forEach(e -> {
                             strBuilder.append(e.getMessage());
                             strBuilder.append("<br />");
                         });
@@ -772,14 +751,14 @@ public final class LoadDataDialog extends JPanel {
 
                     strBuilder.append("<p style=\"color: red;\"><b>Validation failed!<br>Please fix the following ");
 
-                    if (errorCount > this.validationWarnErrMsgThreshold) {
-                        strBuilder.append(this.validationWarnErrMsgThreshold);
+                    if (errorCount > validationWarnErrMsgThreshold) {
+                        strBuilder.append(validationWarnErrMsgThreshold);
                         strBuilder.append(errorCountString);
                         strBuilder.append(" (total ");
                         strBuilder.append(errorCount);
                         strBuilder.append(") and validate again:</b><br />");
 
-                        errors.subList(0, this.validationWarnErrMsgThreshold).forEach(e -> {
+                        errors.subList(0, validationWarnErrMsgThreshold).forEach(e -> {
                             // Remember to excape the html tags if the data file contains any
                             strBuilder.append(escapeHtml4(e.getMessage()));
                             strBuilder.append("<br />");
@@ -800,13 +779,13 @@ public final class LoadDataDialog extends JPanel {
 
                     // Also add the file name to failed list
                     // this determines if to show the Load button
-                    this.failedFiles.add(this.loadedFiles.get(i).getName());
-                } else if (this.loadedFiles.get(i).length() == 0) {
+                    this.failedFiles.add(loadedFile.getName());
+                } else if (loadedFile.length() == 0) {
                     // We don't allow users to load empty file
                     strBuilder.append("<p style=\"color: red;\"><b>This is an empty data file!</b></p>");
                     // Also add the file name to failed list
                     // this determines if to show the Load button
-                    this.failedFiles.add(this.loadedFiles.get(i).getName());
+                    this.failedFiles.add(loadedFile.getName());
                 } else {
                     strBuilder.append("<p style=\"color: green;\"><b>Validation passed with no error!</b></p>");
                 }
@@ -824,15 +803,15 @@ public final class LoadDataDialog extends JPanel {
         // Create the validation file list with marker prefix
         // so users know if this file passed the validation or not
         // just by looking at the file name prefix - Zhou
-        for (int i = 0; i < this.loadedFiles.size(); i++) {
+        for (File loadedFile : this.loadedFiles) {
             // Default to the check mark
             String unicodePrefix = "\u2713";
-            if (this.failedFiles.contains(this.loadedFiles.get(i).getName())) {
+            if (this.failedFiles.contains(loadedFile.getName())) {
                 // Cross mark
                 unicodePrefix = "\u2717";
             }
             // Add the unicode marker
-            this.validatedFileListModel.addElement("[" + unicodePrefix + "] " + this.loadedFiles.get(i).getName());
+            this.validatedFileListModel.addElement("[" + unicodePrefix + "] " + loadedFile.getName());
         }
 
         // Set the default selected file
@@ -863,8 +842,6 @@ public final class LoadDataDialog extends JPanel {
 
     /**
      * This is called by LoadDataAction.java
-     *
-     * @return
      */
     public DataModelList getDataModels() {
         return this.dataModelList;
@@ -872,9 +849,6 @@ public final class LoadDataDialog extends JPanel {
 
     /**
      * Set the validation result content
-     *
-     * @param output
-     * @param textPane
      */
     private void setValidationResult(String output, JTextPane textPane) {
         // Wrap the output in html
@@ -885,9 +859,6 @@ public final class LoadDataDialog extends JPanel {
 
     /**
      * Set the file preview content
-     *
-     * @param file
-     * @param textArea
      */
     private void setPreview(File file, JTextArea textArea) {
         try {

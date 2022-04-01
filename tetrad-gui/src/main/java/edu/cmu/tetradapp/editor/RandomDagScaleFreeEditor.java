@@ -62,73 +62,57 @@ class RandomDagScaleFreeEditor extends JPanel {
         DoubleTextField scaleFreeDeltaOutField = new DoubleTextField(getScaleFreeDeltaOut(), 4, nf);
 
         // set up text and ties them to the parameters object being edited.
-        this.numNodesField.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
-                if (value == RandomDagScaleFreeEditor.this.numNodesField.getValue()) {
-                    return oldValue;
-                }
-
-                try {
-                    setNumMeasuredNodes(value);
-                } catch (Exception e) {
-                    // Ignore.
-                }
-
-                return value;
+        this.numNodesField.setFilter((value, oldValue) -> {
+            if (value == RandomDagScaleFreeEditor.this.numNodesField.getValue()) {
+                return oldValue;
             }
+
+            try {
+                setNumMeasuredNodes(value);
+            } catch (Exception e) {
+                // Ignore.
+            }
+
+            return value;
         });
 
-        this.numLatentsField.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
-                if (value == RandomDagScaleFreeEditor.this.numLatentsField.getValue()) {
-                    return oldValue;
-                }
-
-                try {
-                    setNumLatents(value);
-                } catch (Exception e) {
-                    // Ignore.
-                }
-
-                return value;
+        this.numLatentsField.setFilter((value, oldValue) -> {
+            if (value == RandomDagScaleFreeEditor.this.numLatentsField.getValue()) {
+                return oldValue;
             }
+
+            try {
+                setNumLatents(value);
+            } catch (Exception e) {
+                // Ignore.
+            }
+
+            return value;
         });
 
-        scaleFreeAlphaField.setFilter(new DoubleTextField.Filter() {
-            @Override
-            public double filter(double value, double oldValue) {
-                RandomDagScaleFreeEditor.this.setScaleFreeAlpha(value);
-                RandomDagScaleFreeEditor.this.setGamma();
-                return value;
-            }
+        scaleFreeAlphaField.setFilter((value, oldValue) -> {
+            RandomDagScaleFreeEditor.this.setScaleFreeAlpha(value);
+            RandomDagScaleFreeEditor.this.setGamma();
+            return value;
         });
 
-        scaleFreeBetaField.setFilter(new DoubleTextField.Filter() {
-            @Override
-            public double filter(double value, double oldValue) {
-                RandomDagScaleFreeEditor.this.setScaleFreeBeta(value);
-                RandomDagScaleFreeEditor.this.setGamma();
-                return value;
-            }
+        scaleFreeBetaField.setFilter((value, oldValue) -> {
+            RandomDagScaleFreeEditor.this.setScaleFreeBeta(value);
+            RandomDagScaleFreeEditor.this.setGamma();
+            return value;
         });
 
         scaleFreeGammaField.setEnabled(false);
         this.setGamma();
 
-        scaleFreeDeltaInField.setFilter(new DoubleTextField.Filter() {
-            @Override
-            public double filter(double value, double oldValue) {
-                RandomDagScaleFreeEditor.this.setScaleFreeDeltaIn(value);
-                return value;
-            }
+        scaleFreeDeltaInField.setFilter((value, oldValue) -> {
+            RandomDagScaleFreeEditor.this.setScaleFreeDeltaIn(value);
+            return value;
         });
 
-        scaleFreeDeltaOutField.setFilter(new DoubleTextField.Filter() {
-            @Override
-            public double filter(double value, double oldValue) {
-                setScaleFreeDeltaOut(value);
-                return value;
-            }
+        scaleFreeDeltaOutField.setFilter((value, oldValue) -> {
+            setScaleFreeDeltaOut(value);
+            return value;
         });
 
 
@@ -231,20 +215,8 @@ class RandomDagScaleFreeEditor extends JPanel {
         Preferences.userRoot().putInt("newGraphNumLatents", numLatentNodes);
     }
 
-    public int getMaxDegree() {
-        return Preferences.userRoot().getInt("randomGraphMaxDegree", 6);
-    }
-
-    public int getMaxIndegree() {
-        return Preferences.userRoot().getInt("randomGraphMaxIndegree", 3);
-    }
-
     public boolean isConnected() {
         return Preferences.userRoot().getBoolean("randomGraphConnected", false);
-    }
-
-    public boolean isAddCycles() {
-        return Preferences.userRoot().getBoolean("randomGraphAddCycles", false);
     }
 
     public double getScaleFreeAlpha() {

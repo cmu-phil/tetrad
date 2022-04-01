@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Objects;
 
 /**
  * Edits the parameters for generating random graphs.
@@ -49,7 +50,7 @@ class RandomMimParamsEditor extends JPanel {
         numFactors.addItem("2");
 
         numFactors.addActionListener((e) -> {
-            if (numFactors.getSelectedItem().equals("1")) {
+            if (Objects.equals(numFactors.getSelectedItem(), "1")) {
                 parameters.set("randomMimNumFactors", 1);
             } else if (numFactors.getSelectedItem().equals("2")) {
                 parameters.set("randomMimNumFactors", 2);

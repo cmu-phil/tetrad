@@ -71,9 +71,6 @@ public class EditorWindow extends JInternalFrame
             throw new NullPointerException("Editor must not be null.");
         }
 
-//        if (buttonName == null) {
-//            throw new NullPointerException("Button name must not be null.");
-//        }
         this.buttonName = buttonName;
         doSetup(editor, cancellable);
 

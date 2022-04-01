@@ -50,15 +50,6 @@ public class MisclassificationsEditor extends JPanel {
         setup();
     }
 
-    //============================ Private Methods =========================//
-    private boolean isLegal(String text) {
-//        if (!NamingProtocol.isLegalName(text)) {
-//            JOptionPane.showMessageDialog(this, NamingProtocol.getProtocolDescription() + ": " + text);
-//            return false;
-//        }
-        return true;
-    }
-
     private void setup() {
         java.util.List<Graph> referenceGraphs = this.comparison.getReferenceGraphs();
         JTabbedPane pane = new JTabbedPane(SwingConstants.LEFT);

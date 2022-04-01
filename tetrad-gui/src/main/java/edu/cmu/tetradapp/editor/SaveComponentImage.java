@@ -46,7 +46,7 @@ public class SaveComponentImage extends AbstractAction {
     /**
      * The action name, to be used as a title to the save dialog.
      */
-    private String actionName = "Save";
+    private String actionName;
 
     public SaveComponentImage(JComponent comp, String actionName) {
         super(actionName);
@@ -84,28 +84,6 @@ public class SaveComponentImage extends AbstractAction {
         return this.comp;
     }
 
-//    /**
-//     * Filters out all but .png file when loading and saving.
-//     *
-//     * @author Joseph Ramsey jdramsey@andrew.cmu.edu
-//     */
-//    private static class PngFileFilter extends FileFilter {
-//
-//        /**
-//         * Accepts a file if its name ends with ".tet".
-//         */
-//        public boolean accept(File file) {
-//            return file.isDirectory() || file.getNode().endsWith(".png");
-//        }
-//
-//        /**
-//         * @return the description of this file filter that will be displayed in
-//         * a JFileChooser.
-//         */
-//        public String getDescription() {
-//            return "PNG Image (.png)";
-//        }
-//    }
 }
 
 

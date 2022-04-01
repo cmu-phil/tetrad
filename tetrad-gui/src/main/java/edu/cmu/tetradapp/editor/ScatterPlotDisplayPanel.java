@@ -34,7 +34,6 @@ import java.awt.event.MouseMotionListener;
 import java.awt.geom.Ellipse2D;
 import java.text.NumberFormat;
 import java.util.Map;
-import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -44,7 +43,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author Michael Freenor
  */
-class ScatterPlotDisplayPanelOld extends JPanel {
+class ScatterPlotDisplayPanel extends JPanel {
 
 
     /**
@@ -60,7 +59,6 @@ class ScatterPlotDisplayPanelOld extends JPanel {
     private int HEIGHT = 600 + this.PADDINGOTHER;
     private int WIDTH = 600 + this.PADDINGLEFT;
     private int SPACE = 2;
-    private int DASH = 10;
 
 
     /**
@@ -89,7 +87,7 @@ class ScatterPlotDisplayPanelOld extends JPanel {
     /**
      * Constructs the scatterplot dipslay panel given the initial scatterplot to display.
      */
-    public ScatterPlotDisplayPanelOld(ScatterPlotOld scatterPlot) {
+    public ScatterPlotDisplayPanel(ScatterPlotOld scatterPlot) {
         this.scatterPlot = scatterPlot;
 
         if (scatterPlot == null) {
@@ -109,10 +107,7 @@ class ScatterPlotDisplayPanelOld extends JPanel {
         if (scatterPlot == null) {
             throw new NullPointerException("The given scatter plot must not be null");
         }
-        /*
-      A cached string displaying what is being viewed in the histogram.
-     */
-        String displayString = null;
+
         this.scatterPlot = scatterPlot;
         this.repaint();
     }
@@ -140,14 +135,12 @@ class ScatterPlotDisplayPanelOld extends JPanel {
         int widthMinStr = fontMetrics.stringWidth(minStr);
         int widthMaxStr = fontMetrics.stringWidth(maxStr);
 
-        int maxWidth = Math.max(widthMinStr, widthMaxStr);
-
-        this.PADDINGLEFT = maxWidth;
+        this.PADDINGLEFT = Math.max(widthMinStr, widthMaxStr);
         this.PADDINGOTHER = 50;
         this.HEIGHT = 600 + this.PADDINGOTHER;
         this.WIDTH = 600 + this.PADDINGLEFT;
         this.SPACE = 2;
-        this.DASH = 10;
+        int DASH = 10;
 
         setSize(new Dimension(this.WIDTH + 2 * this.SPACE, this.HEIGHT));
 
@@ -162,28 +155,24 @@ class ScatterPlotDisplayPanelOld extends JPanel {
         g2d.fillRect(this.PADDINGLEFT, 0, (this.WIDTH + this.SPACE) - this.PADDINGLEFT, height);
 
         //border
-        g2d.setColor(ScatterPlotDisplayPanelOld.LINE_COLOR);
+        g2d.setColor(ScatterPlotDisplayPanel.LINE_COLOR);
         g2d.drawRect(this.PADDINGLEFT, 0, (this.WIDTH + this.SPACE) - this.PADDINGLEFT, height - 2 * this.SPACE);
 
         // draw the buttom line
-        g2d.setColor(ScatterPlotDisplayPanelOld.LINE_COLOR);
+        g2d.setColor(ScatterPlotDisplayPanel.LINE_COLOR);
 
-//        double least = Math.floor(this.scatterPlot.getMinSample());
-//        double greatest = Math.ceil(this.scatterPlot.getMaxSample());
         g2d.drawString(minStr, this.PADDINGLEFT + 5, height + 15);
-        g2d.drawLine(this.PADDINGLEFT, height + this.DASH, this.PADDINGOTHER, height);
+        g2d.drawLine(this.PADDINGLEFT, height + DASH, this.PADDINGOTHER, height);
         g2d.drawString(maxStr, this.WIDTH - widthMaxStr, height + 15);
-        g2d.drawLine(this.WIDTH + this.SPACE, height + this.DASH, this.WIDTH + this.SPACE, height);
-//        int size = (WIDTH - PADDINGLEFT) / 4;
+        g2d.drawLine(this.WIDTH + this.SPACE, height + DASH, this.WIDTH + this.SPACE, height);
 
         // draw the side line
-        g2d.setColor(ScatterPlotDisplayPanelOld.LINE_COLOR);
+        g2d.setColor(ScatterPlotDisplayPanel.LINE_COLOR);
         final int topY = 0;
-//        String top = "" + Math.ceil(this.scatterPlot.getMaxSample());
         g2d.drawString(maxStr, this.PADDINGLEFT - fontMetrics.stringWidth(maxStr), topY + 10);
-        g2d.drawLine(this.PADDINGLEFT - this.DASH, topY, this.PADDINGOTHER, topY);
+        g2d.drawLine(this.PADDINGLEFT - DASH, topY, this.PADDINGOTHER, topY);
         g2d.drawString(minStr, this.PADDINGLEFT - fontMetrics.stringWidth(minStr), height - 2);
-        g2d.drawLine(this.PADDINGLEFT - this.DASH, height, this.PADDINGOTHER, height);
+        g2d.drawLine(this.PADDINGLEFT - DASH, height, this.PADDINGOTHER, height);
 
         //draw the origin lines if they should go on the screen -- first find out where they exist
         if (this.scatterPlot.getMinSample() < 0 && this.scatterPlot.getMaxSample() > 0) {
@@ -220,8 +209,6 @@ class ScatterPlotDisplayPanelOld extends JPanel {
              */
 
             Parameters params = new Parameters();
-            Vector<String> regressors = new Vector();
-            regressors.add(this.scatterPlot.getXVariable().getName());
             params.set("targetName", this.scatterPlot.getYVariable().getName());
 
             if (this.scatterPlot.getIndexSet().size() != this.scatterPlot.getDataSet().getNumRows()) {
@@ -246,21 +233,13 @@ class ScatterPlotDisplayPanelOld extends JPanel {
 
             double[] regLeft = plotPoint(least, coef[0] + coef[1] * least, least, greatest);
             double[] regRight = plotPoint(greatest, coef[0] + coef[1] * greatest, least, greatest);
-            g2d.setColor(ScatterPlotDisplayPanelOld.LINE_COLOR);
+            g2d.setColor(ScatterPlotDisplayPanel.LINE_COLOR);
             g2d.drawLine((int) regLeft[0] + 2, (int) regLeft[1] + 2, (int) regRight[0] + 2, (int) regRight[1] + 2);
         }
 
         // draw the display string.
-        g2d.setColor(ScatterPlotDisplayPanelOld.LINE_COLOR);
-//        g2d.drawString(getDisplayString(), PADDINGOTHER, HEIGHT - 5);
+        g2d.setColor(ScatterPlotDisplayPanel.LINE_COLOR);
     }
-
-//    private String getDisplayString() {
-//        if (this.displayString == null) {
-//            this.displayString = "Showing: " + scatterPlot.getYVariable().getNode();
-//        }
-//        return this.displayString;
-//    }
 
     /**
      * @param x        Location along the X axis.
@@ -293,19 +272,6 @@ class ScatterPlotDisplayPanelOld extends JPanel {
         return this.size;
     }
 
-    //========================== private methods ==========================//
-
-    private static int getMax(int[] freqs) {
-        int max = freqs[0];
-        for (int i = 1; i < freqs.length; i++) {
-            int current = freqs[i];
-            if (max < current) {
-                max = current;
-            }
-        }
-        return max;
-    }
-
     //============================ Inner class =====================================//
 
     private class MouseMovementListener implements MouseMotionListener {
@@ -316,14 +282,13 @@ class ScatterPlotDisplayPanelOld extends JPanel {
 
         public void mouseMoved(MouseEvent e) {
             Point point = e.getPoint();
-            for (Rectangle rect : ScatterPlotDisplayPanelOld.this.rectMap.keySet()) {
+            for (Rectangle rect : ScatterPlotDisplayPanel.this.rectMap.keySet()) {
                 if (rect.contains(point)) {
                     break;
                 }
             }
         }
     }
-
 }
 
 

@@ -28,7 +28,9 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -112,39 +114,29 @@ class SemGraphToolbar extends JPanel implements PropertyChangeListener {
         this.addBidirectedEdge.addFocusListener(focusListener);
 
         // add listeners
-        this.move.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                SemGraphToolbar.this.move.getModel().setSelected(true);
-                setWorkbenchMode(AbstractWorkbench.SELECT_MOVE);
-            }
+        this.move.addActionListener(e -> {
+            SemGraphToolbar.this.move.getModel().setSelected(true);
+            setWorkbenchMode(AbstractWorkbench.SELECT_MOVE);
         });
-        this.addObserved.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                SemGraphToolbar.this.addObserved.getModel().setSelected(true);
-                setWorkbenchMode(AbstractWorkbench.ADD_NODE);
-                setNodeMode(GraphWorkbench.MEASURED_NODE);
-            }
+        this.addObserved.addActionListener(e -> {
+            SemGraphToolbar.this.addObserved.getModel().setSelected(true);
+            setWorkbenchMode(AbstractWorkbench.ADD_NODE);
+            setNodeMode(GraphWorkbench.MEASURED_NODE);
         });
-        this.addLatent.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                SemGraphToolbar.this.addLatent.getModel().setSelected(true);
-                setWorkbenchMode(AbstractWorkbench.ADD_NODE);
-                setNodeMode(GraphWorkbench.LATENT_NODE);
-            }
+        this.addLatent.addActionListener(e -> {
+            SemGraphToolbar.this.addLatent.getModel().setSelected(true);
+            setWorkbenchMode(AbstractWorkbench.ADD_NODE);
+            setNodeMode(GraphWorkbench.LATENT_NODE);
         });
-        this.addDirectedEdge.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                SemGraphToolbar.this.addDirectedEdge.getModel().setSelected(true);
-                setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
-                setEdgeMode(GraphWorkbench.DIRECTED_EDGE);
-            }
+        this.addDirectedEdge.addActionListener(e -> {
+            SemGraphToolbar.this.addDirectedEdge.getModel().setSelected(true);
+            setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
+            setEdgeMode(GraphWorkbench.DIRECTED_EDGE);
         });
-        this.addBidirectedEdge.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                SemGraphToolbar.this.addBidirectedEdge.getModel().setSelected(true);
-                setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
-                setEdgeMode(GraphWorkbench.BIDIRECTED_EDGE);
-            }
+        this.addBidirectedEdge.addActionListener(e -> {
+            SemGraphToolbar.this.addBidirectedEdge.getModel().setSelected(true);
+            setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
+            setEdgeMode(GraphWorkbench.BIDIRECTED_EDGE);
         });
 
         // add buttons to the toolbar.

@@ -111,7 +111,7 @@ class RegressionParamsEditorPanel extends JPanel {
             RegressionParamsEditorPanel.getSourceList().setCellRenderer(new LogisticRegRenderer());
         }
         VariableListModel variableModel = (VariableListModel) RegressionParamsEditorPanel.getSourceList().getModel();
-        RegressionParamsEditorPanel.RESPONSE_FIELD = createResponse(RegressionParamsEditorPanel.getSourceList(), 100);
+        RegressionParamsEditorPanel.RESPONSE_FIELD = createResponse(RegressionParamsEditorPanel.getSourceList());
 
         // if regressors are already set use'em.
         List<String> regressors = regressionModel.getRegressorNames();
@@ -322,7 +322,7 @@ class RegressionParamsEditorPanel extends JPanel {
         return box;
     }
 
-    private JTextField createResponse(JList list, int width) {
+    private JTextField createResponse(JList list) {
         JTextField pane = new JTextField();
         pane.setFont(RegressionParamsEditorPanel.getFONT());
         pane.setFocusable(true);
@@ -336,7 +336,7 @@ class RegressionParamsEditorPanel extends JPanel {
             pane.setText("Hello");
         }
         pane.setCaretPosition(0);
-        LayoutUtils.setAllSizes(pane, new Dimension(width, pane.getPreferredSize().height));
+        LayoutUtils.setAllSizes(pane, new Dimension(100, pane.getPreferredSize().height));
         if (target == null) {
             pane.setText(null);
         }
@@ -539,7 +539,7 @@ class RegressionParamsEditorPanel extends JPanel {
                 }
             }
             if (selected != null) {
-                ListTransferable t = new ListTransferable(Arrays.asList(selected));
+                ListTransferable t = new ListTransferable(Collections.singletonList(selected));
                 dge.startDrag(DragSource.DefaultMoveDrop, t, this);
             }
         }

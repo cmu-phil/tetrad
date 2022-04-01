@@ -23,14 +23,11 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.util.LinkedList;
 
 /**
  * Created by IntelliJ IDEA.
@@ -52,14 +49,6 @@ class QQPlotEditorPanel extends JPanel {
      */
     private final DataSet dataSet;
 
-    private QQPlot qqPlot;
-
-
-    /**
-     * The discrete variables of the data set (may be empty).
-     */
-    private final LinkedList<DiscreteVariable> variables = new LinkedList<>();
-
 
     /**
      * Constructs the editor panel given the initial histogram and the dataset.
@@ -68,7 +57,6 @@ class QQPlotEditorPanel extends JPanel {
         //   construct components
         this.setLayout(new BorderLayout());
         // first build histogram and components used in the editor.
-        this.qqPlot = qqPlot;
         Node selected = qqPlot.getSelectedVariable();
         this.dataSet = dataSet;
         this.variableBox = new JComboBox();
@@ -82,16 +70,11 @@ class QQPlotEditorPanel extends JPanel {
                 }
             }
         }
-        this.variableBox.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    Node node = (Node) e.getItem();
-                    QQPlot newValue = new QQPlot(QQPlotEditorPanel.this.dataSet, node);
-                    //numBarsSelector.setValue(newValue.getNumberOfCategories());
-                    //   numBarsSelector.setMax(getMaxCategoryValue(newValue));
-                    //System.out.println(node.getNode());
-                    changeQQPlot(newValue);
-                }
+        this.variableBox.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                Node node = (Node) e.getItem();
+                QQPlot newValue = new QQPlot(QQPlotEditorPanel.this.dataSet, node);
+                changeQQPlot(newValue);
             }
         });
 
@@ -102,7 +85,6 @@ class QQPlotEditorPanel extends JPanel {
     //========================== Private Methods ================================//
 
     private void changeQQPlot(QQPlot qqPlot) {
-        this.qqPlot = qqPlot;
         // fire event
         this.firePropertyChange("histogramChange", null, qqPlot);
     }

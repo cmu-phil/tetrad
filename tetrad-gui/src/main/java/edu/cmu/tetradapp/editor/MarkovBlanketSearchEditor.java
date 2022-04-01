@@ -40,7 +40,9 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.io.CharArrayWriter;
 import java.io.PrintWriter;
 import java.util.List;
@@ -190,35 +192,22 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
             }
         };
 
-//        getWorkbenchScroll().setBorder(
-//                             new TitledBorder(getResultLabel()));
-//                     Graph resultGraph = resultGraph();
-//
-//                     doDefaultArrangement(resultGraph);
-//                     getWorkbench().setBackground(Color.WHITE);
-//                     getWorkbench().setGraph(resultGraph);
-//                     getGraphHistory().clear();
-//                     getGraphHistory().add(resultGraph);
-//                     getWorkbench().repaint();
 
+        Thread watcher = new Thread(() -> {
+            while (true) {
+                try {
+                    Thread.sleep(300);
 
-        Thread watcher = new Thread() {
-            public void run() {
-                while (true) {
-                    try {
-                        Thread.sleep(300);
-
-                        if (!process.isAlive()) {
-                            getExecuteButton().setEnabled(true);
-                            return;
-                        }
-                    } catch (InterruptedException e) {
+                    if (!process.isAlive()) {
                         getExecuteButton().setEnabled(true);
                         return;
                     }
+                } catch (InterruptedException e) {
+                    getExecuteButton().setEnabled(true);
+                    return;
                 }
             }
-        };
+        });
 
         watcher.start();
     }
@@ -254,11 +243,7 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
     private JPanel createToolbar() {
         JPanel toolbar = new JPanel();
         getExecuteButton().setText("Execute*");
-        getExecuteButton().addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                execute();
-            }
-        });
+        getExecuteButton().addActionListener(e -> execute());
 
         Box b1 = Box.createVerticalBox();
         b1.add(getParamEditor());
@@ -289,32 +274,28 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
     private JComponent getParamEditor() {
         Box box = Box.createVerticalBox();
         JComboBox comboBox = new JComboBox(this.algorithmRunner.getSource().getVariableNames().toArray());
-        comboBox.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                String s = (String) e.getItem();
-                if (s != null) {
-                    MarkovBlanketSearchEditor.this.algorithmRunner.getParams().set("targetName", s);
-                }
+        comboBox.addItemListener(e -> {
+            String s = (String) e.getItem();
+            if (s != null) {
+                MarkovBlanketSearchEditor.this.algorithmRunner.getParams().set("targetName", s);
             }
         });
         DoubleTextField alphaField = new DoubleTextField(getParams().getDouble("alpha", 0.001), 4,
                 NumberFormatUtil.getInstance().getNumberFormat());
-        alphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(double value, double oldValue) {
-                try {
-                    getParams().set("alpha", 0.001);
-                    Preferences.userRoot().putDouble("alpha",
-                            getParams().getDouble("alpha", 0.001));
-                    return value;
-                } catch (Exception e) {
-                    return oldValue;
-                }
+        alphaField.setFilter((value, oldValue) -> {
+            try {
+                getParams().set("alpha", 0.001);
+                Preferences.userRoot().putDouble("alpha",
+                        getParams().getDouble("alpha", 0.001));
+                return value;
+            } catch (Exception e) {
+                return oldValue;
             }
         });
 
         box.add(comboBox);
         box.add(Box.createVerticalStrut(4));
-        box.add(createLabeledComponent("Alpha", alphaField));
+        box.add(createLabeledComponent(alphaField));
 
 
         box.setBorder(new TitledBorder("Parameters"));
@@ -322,9 +303,9 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
     }
 
 
-    private Box createLabeledComponent(String label, JComponent comp) {
+    private Box createLabeledComponent(JComponent comp) {
         Box box = Box.createHorizontalBox();
-        box.add(new JLabel(label));
+        box.add(new JLabel("Alpha"));
         box.add(Box.createHorizontalStrut(5));
         box.add(comp);
         box.add(Box.createHorizontalGlue());
@@ -362,14 +343,12 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
 
         JMenu edit = new JMenu("Edit");
         JMenuItem copyCells = new JMenuItem("Copy Cells");
-        copyCells.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
-        copyCells.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Action copyAction = TransferHandler.getCopyAction();
-                ActionEvent actionEvent = new ActionEvent(MarkovBlanketSearchEditor.this.table,
-                        ActionEvent.ACTION_PERFORMED, "copy");
-                copyAction.actionPerformed(actionEvent);
-            }
+        copyCells.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
+        copyCells.addActionListener(e -> {
+            Action copyAction = TransferHandler.getCopyAction();
+            ActionEvent actionEvent = new ActionEvent(MarkovBlanketSearchEditor.this.table,
+                    ActionEvent.ACTION_PERFORMED, "copy");
+            copyAction.actionPerformed(actionEvent);
         });
         edit.add(copyCells);
 
@@ -406,7 +385,7 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
     }
 
     public GraphWorkbench getWorkbench() {
-        return getWorkbench();
+        return null;
     }
 
     /**

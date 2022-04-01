@@ -23,8 +23,8 @@ import edu.cmu.tetrad.graph.*;
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Apr 30, 2019 2:30:18 PM
@@ -103,7 +103,7 @@ public class EdgeTypeTable extends JPanel {
 
             tableModel.setColumnIdentifiers(EdgeTypeTable.EDGES_AND_EDGE_TYPES);
 
-            List<Edge> edges = graph.getEdges().stream().collect(Collectors.toList());
+            List<Edge> edges = new ArrayList<>(graph.getEdges());
             Edges.sortEdges(edges);
             edges.forEach(edge -> {
                 String[] rowData = new String[EdgeTypeTable.EDGES_AND_EDGE_TYPES.length];
@@ -119,7 +119,7 @@ public class EdgeTypeTable extends JPanel {
 
             tableModel.setColumnIdentifiers(EdgeTypeTable.EDGES);
 
-            List<Edge> edges = graph.getEdges().stream().collect(Collectors.toList());
+            List<Edge> edges = new ArrayList<>(graph.getEdges());
             Edges.sortEdges(edges);
             edges.forEach(edge -> {
                 String[] rowData = new String[EdgeTypeTable.EDGES.length];

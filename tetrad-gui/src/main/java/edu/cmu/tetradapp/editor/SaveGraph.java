@@ -50,12 +50,12 @@ public class SaveGraph extends AbstractAction {
     /**
      * A reference to the title, to be used a dialog title.
      */
-    private String title = "";
+    private String title;
 
     /**
      * True if the graph should be saved in XML, false if in text.
      */
-    private Type type = Type.xml;
+    private Type type;
 
     public enum Type {text, xml, json, r, dot}
 

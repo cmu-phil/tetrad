@@ -176,8 +176,7 @@ public class ScatterPlot {
      * @return a vector containing the filtered values.
      */
     public Vector<Point2D.Double> getSievedValues() {
-        Vector<Point2D.Double> pairs = pairs(this.x, this.y);
-        return pairs;
+        return pairs(this.x, this.y);
     }
 
     /**

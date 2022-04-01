@@ -21,18 +21,13 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 /**
  * Edits the parameters for simulating data from Bayes nets.
@@ -53,17 +48,6 @@ public class LogParamsEditor extends JPanel implements ParameterEditor {
     }
 
     public void setParentModels(Object[] parentModels) {
-        for (Object parentModel : parentModels) {
-            //            System.out.println(parentModel);
-            //
-            if (parentModel instanceof DataWrapper) {
-                DataModel dataModel = ((DataWrapper) parentModel).getSelectedDataModel();
-                //
-                if (dataModel instanceof DataSet) {
-                    DataSet parentDataSet = (DataSet) dataModel;
-                }
-            }
-        }
     }
 
     public void setup() {
@@ -85,26 +69,22 @@ public class LogParamsEditor extends JPanel implements ParameterEditor {
         setLayout(new BorderLayout());
 
         DoubleTextField aField = new DoubleTextField(this.params.getDouble("a", 10.0), 6, NumberFormatUtil.getInstance().getNumberFormat());
-        aField.setFilter(new DoubleTextField.Filter() {
-            public double filter(double value, double oldValue) {
-                try {
-                    LogParamsEditor.this.params.set("a", value);
-                    return value;
-                } catch (IllegalArgumentException e) {
-                    return oldValue;
-                }
+        aField.setFilter((value, oldValue) -> {
+            try {
+                LogParamsEditor.this.params.set("a", value);
+                return value;
+            } catch (IllegalArgumentException e) {
+                return oldValue;
             }
         });
 
         IntTextField baseField = new IntTextField(this.params.getInt("base", 0), 4);
-        baseField.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
-                try {
-                    LogParamsEditor.this.params.set("base", value);
-                    return value;
-                } catch (IllegalArgumentException e) {
-                    return oldValue;
-                }
+        baseField.setFilter((value, oldValue) -> {
+            try {
+                LogParamsEditor.this.params.set("base", value);
+                return value;
+            } catch (IllegalArgumentException e) {
+                return oldValue;
             }
         });
 
@@ -130,11 +110,9 @@ public class LogParamsEditor extends JPanel implements ParameterEditor {
 
         JCheckBox unlog = new JCheckBox();
         unlog.setSelected(this.params.getBoolean("unlog", false));
-        unlog.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JCheckBox box = (JCheckBox) e.getSource();
-                LogParamsEditor.this.params.set("unlog", box.isSelected());
-            }
+        unlog.addActionListener(e -> {
+            JCheckBox box = (JCheckBox) e.getSource();
+            LogParamsEditor.this.params.set("unlog", box.isSelected());
         });
 
         Box b8 = Box.createHorizontalBox();

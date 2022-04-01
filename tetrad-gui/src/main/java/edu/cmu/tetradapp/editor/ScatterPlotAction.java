@@ -113,7 +113,7 @@ class ScatterPlotAction extends AbstractAction {
 
         ScatterPlotOld scatterPlot = new ScatterPlotOld(dataSet, yVariable, xVariable);
         ScatterPlotEditorPanel editorPanel = new ScatterPlotEditorPanel(scatterPlot, dataSet);
-        ScatterPlotDisplayPanelOld display = new ScatterPlotDisplayPanelOld(scatterPlot);
+        ScatterPlotDisplayPanel display = new ScatterPlotDisplayPanel(scatterPlot);
         editorPanel.addPropertyChangeListener(new ScatterPlotListener(display));
 
         JMenuBar bar = new JMenuBar();
@@ -157,10 +157,10 @@ class ScatterPlotAction extends AbstractAction {
      */
     private static class ScatterPlotListener implements PropertyChangeListener {
 
-        private final ScatterPlotDisplayPanelOld display;
+        private final ScatterPlotDisplayPanel display;
 
 
-        public ScatterPlotListener(ScatterPlotDisplayPanelOld display) {
+        public ScatterPlotListener(ScatterPlotDisplayPanel display) {
             this.display = display;
         }
 

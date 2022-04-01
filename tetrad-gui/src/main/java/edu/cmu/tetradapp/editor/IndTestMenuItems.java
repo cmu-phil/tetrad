@@ -29,8 +29,6 @@ import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.util.JOptionUtils;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 /**
  * A common way to add menu items to independence test menus to make these menus consistent across editors.
@@ -62,11 +60,9 @@ class IndTestMenuItems {
         } else if (dataModel instanceof DataModelList) {
             DataModelList dataSets = (DataModelList) dataModel;
 
-            boolean continuous = true;
-
             for (DataModel _dataModel : dataSets) {
                 DataSet dataSet = (DataSet) _dataModel;
-                if (!dataSet.isContinuous()) continuous = false;
+                dataSet.isContinuous();
             }
 
             IndTestMenuItems.addMultiTestMenuItems(test, setter);
@@ -89,16 +85,6 @@ class IndTestMenuItems {
         group.add(fishersZ);
         test.add(fishersZ);
 
-//        JCheckBoxMenuItem fishersZD =
-//                new JCheckBoxMenuItem("Fisher's Z - Generalized Inverse");
-//        group.add(fishersZD);
-//        test.add(fishersZD);
-//
-//        JCheckBoxMenuItem fishersZBootstrap =
-//                new JCheckBoxMenuItem("Fisher's Z - Bootstrap");
-//        group.add(fishersZBootstrap);
-//        test.add(fishersZBootstrap);
-
         JCheckBoxMenuItem tTest = new JCheckBoxMenuItem("Correlation T");
         group.add(tTest);
         test.add(tTest);
@@ -120,11 +106,7 @@ class IndTestMenuItems {
         group.add(bicBump);
         test.add(bicBump);
 
-        logr.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setter.setTestType(IndTestType.MIXED_MLR);
-            }
-        });
+        logr.addActionListener(e -> setter.setTestType(IndTestType.MIXED_MLR));
 
         testType = setter.getTestType();
         if (testType == IndTestType.FISHER_Z) {
@@ -145,68 +127,34 @@ class IndTestMenuItems {
             bicBump.setSelected(true);
         }
 
-        fishersZ.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setter.setTestType(IndTestType.FISHER_Z);
-                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                        "Using Fisher's Z.");
-            }
+        fishersZ.addActionListener(e -> {
+            setter.setTestType(IndTestType.FISHER_Z);
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                    "Using Fisher's Z.");
         });
 
-//        fishersZD.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent e) {
-//                setTestType(IndTestType.FISHER_ZD);
-//                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-//                        "Using Fisher's Z - Generalized Inverse.");
-//            }
-//        });
-
-//        fishersZBootstrap.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent e) {
-//                setTestType(IndTestType.FISHER_Z_BOOTSTRAP);
-//                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-//                        "Using Fisher's Z - Bootstrap.");
-//            }
-//        });
-
-//        tTest.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent e) {
-//                setter.setTestType(IndTestType.CORRELATION_T);
-//                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-//                        "Using Correlation T.");
-//            }
-//        });
-
-        conditionalCorrelation.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setter.setTestType(IndTestType.CONDITIONAL_CORRELATION);
-                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                        "Using Conditional Correlation.");
-            }
+        conditionalCorrelation.addActionListener(e -> {
+            setter.setTestType(IndTestType.CONDITIONAL_CORRELATION);
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                    "Using Conditional Correlation.");
         });
 
-        linRegrTest.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setter.setTestType(IndTestType.LINEAR_REGRESSION);
-                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                        "Using linear regression test.");
-            }
+        linRegrTest.addActionListener(e -> {
+            setter.setTestType(IndTestType.LINEAR_REGRESSION);
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                    "Using linear regression test.");
         });
 
-        logr.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setter.setTestType(IndTestType.MIXED_MLR);
-                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                        "Using multinomial logistic regression test.");
-            }
+        logr.addActionListener(e -> {
+            setter.setTestType(IndTestType.MIXED_MLR);
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                    "Using multinomial logistic regression test.");
         });
 
-        bicBump.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setter.setTestType(IndTestType.SEM_BIC);
-                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                        "Using the BIC bump test.");
-            }
+        bicBump.addActionListener(e -> {
+            setter.setTestType(IndTestType.SEM_BIC);
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                    "Using the BIC bump test.");
         });
 
     }
@@ -256,36 +204,28 @@ class IndTestMenuItems {
             bicBump.setSelected(true);
         }
 
-        fisherZPoolResiduals.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setter.setTestType(IndTestType.POOL_RESIDUALS_FISHER_Z);
-                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                        "Using Pooled Residuals Fisher Z");
-            }
+        fisherZPoolResiduals.addActionListener(e -> {
+            setter.setTestType(IndTestType.POOL_RESIDUALS_FISHER_Z);
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                    "Using Pooled Residuals Fisher Z");
         });
 
-        fisher.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setter.setTestType(IndTestType.FISHER);
-                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                        "Using Fisher");
-            }
+        fisher.addActionListener(e -> {
+            setter.setTestType(IndTestType.FISHER);
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                    "Using Fisher");
         });
 
-        tippett.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setter.setTestType(IndTestType.TIPPETT);
-                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                        "Using Tippett");
-            }
+        tippett.addActionListener(e -> {
+            setter.setTestType(IndTestType.TIPPETT);
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                    "Using Tippett");
         });
 
-        bicBump.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setter.setTestType(IndTestType.SEM_BIC);
-                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                        "Using BIC Bump (IMaGES)");
-            }
+        bicBump.addActionListener(e -> {
+            setter.setTestType(IndTestType.SEM_BIC);
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                    "Using BIC Bump (IMaGES)");
         });
     }
 
@@ -312,25 +252,13 @@ class IndTestMenuItems {
         if (testType == IndTestType.FISHER_Z) {
             fishersZ.setSelected(true);
         }
-//        else if (testType == IndTestType.CORRELATION_T) {
-//            tTest.setSelected(true);
-//        }
 
-        fishersZ.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setter.setTestType(IndTestType.FISHER_Z);
-                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                        "Using Fisher's Z.");
-            }
+        fishersZ.addActionListener(e -> {
+            setter.setTestType(IndTestType.FISHER_Z);
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                    "Using Fisher's Z.");
         });
 
-//        tTest.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent e) {
-//                setter.setTestType(IndTestType.CORRELATION_T);
-//                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-//                        "Using Cramer's T.");
-//            }
-//        });
     }
 
     static void addDiscreteTestMenuItems(JMenu test, IndTestTypeSetter setter) {
@@ -362,28 +290,22 @@ class IndTestMenuItems {
             logr.setSelected(true);
         }
 
-        chiSquare.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setter.setTestType(IndTestType.CHI_SQUARE);
-                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                        "Using Chi Square.");
-            }
+        chiSquare.addActionListener(e -> {
+            setter.setTestType(IndTestType.CHI_SQUARE);
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                    "Using Chi Square.");
         });
 
-        gSquare.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setter.setTestType(IndTestType.G_SQUARE);
-                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                        "Using G square.");
-            }
+        gSquare.addActionListener(e -> {
+            setter.setTestType(IndTestType.G_SQUARE);
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                    "Using G square.");
         });
 
-        logr.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setter.setTestType(IndTestType.MIXED_MLR);
-                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                        "Using multinomial logistic regression test.");
-            }
+        logr.addActionListener(e -> {
+            setter.setTestType(IndTestType.MIXED_MLR);
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                    "Using multinomial logistic regression test.");
         });
     }
 
@@ -399,11 +321,7 @@ class IndTestMenuItems {
         test.add(logr);
         logr.setSelected(true);
 
-        logr.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setter.setTestType(IndTestType.MIXED_MLR);
-            }
-        });
+        logr.addActionListener(e -> setter.setTestType(IndTestType.MIXED_MLR));
     }
 
     private static void addGraphTestMenuItems(JMenu test, IndTestTypeSetter setter) {
@@ -418,11 +336,7 @@ class IndTestMenuItems {
         test.add(dsep);
         dsep.setSelected(true);
 
-        dsep.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setter.setTestType(IndTestType.D_SEPARATION);
-            }
-        });
+        dsep.addActionListener(e -> setter.setTestType(IndTestType.D_SEPARATION));
     }
 
 }

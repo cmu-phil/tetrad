@@ -23,7 +23,6 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetradapp.util.DesktopController;
 
 import javax.swing.*;
@@ -65,14 +64,8 @@ class NormalityTestAction extends AbstractAction {
             return;
         }
         // if there are missing values warn and don't display q-q plot.
-//        if(DataUtils.containsMissingValue(dataSet)){
-//            JOptionPane.showMessageDialog(findOwner(), new JLabel("<html>Data has missing values, " +
-//                    "remove all missing values before<br>" +
-//                    "running normality tests.</html>"));
-//            return;
-//        }
 
-        JPanel panel = createNormalityTestDialog(null);
+        JPanel panel = createNormalityTestDialog();
 
         EditorWindow window = new EditorWindow(panel,
                 "Normality Tests", "Close", false, this.dataEditor);
@@ -85,34 +78,15 @@ class NormalityTestAction extends AbstractAction {
 
 
     /**
-     * Sets the location on the given dialog for the given index.
-     */
-    private void setLocation(JDialog dialog, int index) {
-        Rectangle bounds = dialog.getBounds();
-        JFrame frame = findOwner();
-        Dimension dim;
-        if (frame == null) {
-            dim = Toolkit.getDefaultToolkit().getScreenSize();
-        } else {
-            dim = frame.getSize();
-        }
-
-        int x = (int) (150 * Math.cos(index * 15 * (Math.PI / 180)));
-        int y = (int) (150 * Math.sin(index * 15 * (Math.PI / 180)));
-        x += (dim.width - bounds.width) / 2;
-        y += (dim.height - bounds.height) / 2;
-        dialog.setLocation(x, y);
-    }
-
-
-    /**
      * Creates a dialog that is showing the histogram for the given node (if null
      * one is selected for you)
      */
-    private JPanel createNormalityTestDialog(Node selected) {
+    private JPanel createNormalityTestDialog(
+
+    ) {
         DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
 
-        QQPlot qqPlot = new QQPlot(dataSet, selected);
+        QQPlot qqPlot = new QQPlot(dataSet, null);
         NormalityTestEditorPanel editorPanel = new NormalityTestEditorPanel(qqPlot, dataSet);
 
         JTextArea display = new JTextArea(NormalityTests.runNormalityTests(dataSet,

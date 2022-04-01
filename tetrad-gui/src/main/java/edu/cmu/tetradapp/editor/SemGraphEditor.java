@@ -50,6 +50,7 @@ import javax.swing.event.InternalFrameEvent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.net.URL;
@@ -71,7 +72,6 @@ public final class SemGraphEditor extends JPanel
 
     private GraphWorkbench workbench;
     private final SemGraphWrapper semGraphWrapper;
-    private JMenuItem errorTerms;
     private final Parameters parameters;
 
     private final JScrollPane graphEditorScroll = new JScrollPane();
@@ -98,7 +98,7 @@ public final class SemGraphEditor extends JPanel
      * Sets the name of this editor.
      */
     @Override
-    public final void setName(String name) {
+    public void setName(String name) {
         String oldName = getName();
         super.setName(name);
         firePropertyChange("name", oldName, getName());
@@ -135,9 +135,7 @@ public final class SemGraphEditor extends JPanel
         getWorkbench().pasteSubgraph(sessionElements, upperLeft);
         getWorkbench().deselectAll();
 
-        for (int i = 0; i < sessionElements.size(); i++) {
-
-            Object o = sessionElements.get(i);
+        for (Object o : sessionElements) {
 
             if (o instanceof GraphNode) {
                 Node modelNode = (Node) o;
@@ -181,10 +179,6 @@ public final class SemGraphEditor extends JPanel
         } catch (Exception e) {
             throw new RuntimeException("Not a SEM graph.", e);
         }
-    }
-
-    private SemGraphWrapper getSemGraphWrapper() {
-        return this.semGraphWrapper;
     }
 
     @Override
@@ -325,8 +319,6 @@ public final class SemGraphEditor extends JPanel
 
     /**
      * Updates the graph in workbench when changing graph model
-     *
-     * @param graph
      */
     private void updateGraphWorkbench(Graph graph) {
         this.workbench = new GraphWorkbench(graph);
@@ -337,8 +329,6 @@ public final class SemGraphEditor extends JPanel
 
     /**
      * Updates bootstrap table on adding/removing edges or graph changes
-     *
-     * @param graph
      */
     private void updateBootstrapTable(Graph graph) {
         this.edgeTypeTable.update(graph);
@@ -348,8 +338,6 @@ public final class SemGraphEditor extends JPanel
 
     /**
      * Creates the UI component for choosing from multiple graph models
-     *
-     * @param semGraphWrapper
      */
     private void modelSelectin(SemGraphWrapper semGraphWrapper) {
         int numModels = semGraphWrapper.getNumModels();
@@ -417,9 +405,9 @@ public final class SemGraphEditor extends JPanel
         JMenuItem paste = new JMenuItem(new PasteSubgraphAction(this));
 
         copy.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
         paste.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK));
 
         edit.add(copy);
         edit.add(paste);
@@ -436,21 +424,17 @@ public final class SemGraphEditor extends JPanel
 
         graph.add(new GraphPropertiesAction(getWorkbench()));
         graph.add(new PathsAction(getWorkbench()));
-//        graph.add(new DirectedPathsAction(getWorkbench()));
-//        graph.add(new TreksAction(getWorkbench()));
-//        graph.add(new AllPathsAction(getWorkbench()));
-//        graph.add(new NeighborhoodsAction(getWorkbench()));
         graph.addSeparator();
 
-        this.errorTerms = new JMenuItem();
+        JMenuItem errorTerms = new JMenuItem();
 
         if (getSemGraph().isShowErrorTerms()) {
-            this.errorTerms.setText("Hide Error Terms");
+            errorTerms.setText("Hide Error Terms");
         } else {
-            this.errorTerms.setText("Show Error Terms");
+            errorTerms.setText("Show Error Terms");
         }
 
-        this.errorTerms.addActionListener(e -> {
+        errorTerms.addActionListener(e -> {
             JMenuItem menuItem = (JMenuItem) e.getSource();
             if ("Hide Error Terms".equals(menuItem.getText())) {
                 menuItem.setText("Show Error Terms");
@@ -461,7 +445,7 @@ public final class SemGraphEditor extends JPanel
             }
         });
 
-        graph.add(this.errorTerms);
+        graph.add(errorTerms);
         graph.addSeparator();
 
         JMenuItem correlateExogenous
@@ -543,8 +527,7 @@ public final class SemGraphEditor extends JPanel
 
         List<Node> exoNodes = new LinkedList<>();
 
-        for (int i = 0; i < nodes.size(); i++) {
-            Node node = nodes.get(i);
+        for (Node node : nodes) {
             if (graph.isExogenous(node)) {
                 exoNodes.add(node);
             }
@@ -558,8 +541,7 @@ public final class SemGraphEditor extends JPanel
                 Node node2 = exoNodes.get(j);
                 List<Edge> edges = graph.getEdges(node1, node2);
 
-                for (int k = 0; k < edges.size(); k++) {
-                    Edge edge = edges.get(k);
+                for (Edge edge : edges) {
                     if (Edges.isBidirectedEdge(edge)) {
                         continue loop;
                     }
@@ -579,7 +561,7 @@ public final class SemGraphEditor extends JPanel
             if (Edges.isBidirectedEdge(edge)) {
                 try {
                     graph.removeEdge(edge);
-                } catch (Exception e) {
+                } catch (Exception ignored) {
                 }
             }
         }

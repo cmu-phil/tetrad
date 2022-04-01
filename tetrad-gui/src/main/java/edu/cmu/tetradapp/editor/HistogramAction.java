@@ -124,6 +124,7 @@ class HistogramAction extends AbstractAction {
      */
     private JPanel createHistogramPanel(Node selected) {
         DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
+        assert dataSet != null;
         Histogram histogram = new Histogram(dataSet);
         histogram.setTarget(selected == null ? null : selected.getName());
         HistogramView view = new HistogramView(histogram);

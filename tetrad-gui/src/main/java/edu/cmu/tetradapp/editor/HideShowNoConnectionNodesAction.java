@@ -1,6 +1,3 @@
-/**
- *
- */
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Edge;
