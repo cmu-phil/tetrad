@@ -346,8 +346,8 @@ public class Ling {
     }
 
     private static class Mapping {
-        private int i;
-        private int j;
+        private final int i;
+        private final int j;
 
         public Mapping(int i, int j) {
             this.i = i;

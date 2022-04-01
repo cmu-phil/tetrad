@@ -496,7 +496,7 @@ public class DMSearch {
             testResult = test.isIndependent(outputsLatent.first(), outputsLatentEffect.first(), latentList);
         } catch (SingularMatrixException error) {
             if (this.verbose) {
-                System.out.println(error.toString());
+                System.out.println(error);
                 System.out.println("SingularMatrixException Error!!!!!! Evaluated as:");
                 System.out.println("outputsLatent.first()");
                 System.out.println(outputsLatent.first());

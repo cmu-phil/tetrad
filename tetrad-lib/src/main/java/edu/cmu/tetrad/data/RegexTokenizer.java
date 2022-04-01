@@ -57,7 +57,7 @@ public final class RegexTokenizer {
     /**
      * The quote character.
      */
-    private char quoteChar;
+    private final char quoteChar;
 
     /**
      * A flag indicating that the last token has been parsed.

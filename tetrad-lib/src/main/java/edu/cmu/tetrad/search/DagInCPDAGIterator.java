@@ -42,9 +42,9 @@ public class DagInCPDAGIterator {
     private final LinkedList<DecoratedGraph> decoratedGraphs = new LinkedList<>();
     private Graph storedGraph;
     private boolean returnedOne;
-    private IKnowledge knowledge;
+    private final IKnowledge knowledge;
     private final LinkedList<Triple> colliders;
-    private boolean allowNewColliders;
+    private final boolean allowNewColliders;
 
     public DagInCPDAGIterator(Graph CPDAG) {
         this(CPDAG, new Knowledge2(), false, true);
@@ -161,7 +161,7 @@ public class DagInCPDAGIterator {
         private boolean triedRight;
         private final IKnowledge knowledge;
         private Map<Graph, Set<Edge>> changedEdges = new HashMap<>();
-        private boolean allowArbitraryOrientation;
+        private final boolean allowArbitraryOrientation;
 
         public DecoratedGraph(Graph graph, IKnowledge knowledge, Map<Graph, Set<Edge>> changedEdges, boolean allowArbitraryOrientation) {
             this.graph = graph;

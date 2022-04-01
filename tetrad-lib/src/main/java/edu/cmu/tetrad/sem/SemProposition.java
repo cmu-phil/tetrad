@@ -150,7 +150,7 @@ public final class SemProposition implements TetradSerializable {
         buf.append("\nProposition: ");
 
         for (int i = 0; i < nodes.size(); i++) {
-            Node node = (Node) nodes.get(i);
+            Node node = nodes.get(i);
             buf.append("\n").append(node).append(" = ").append(this.values[i]);
         }
 

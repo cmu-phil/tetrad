@@ -53,7 +53,7 @@ public final class IndTestHsic implements IndependenceTest {
     /**
      * The variables of the covariance matrix, in order. (Unmodifiable list.)
      */
-    private List<Node> variables;
+    private final List<Node> variables;
 
     /**
      * The significance level of the independence tests.

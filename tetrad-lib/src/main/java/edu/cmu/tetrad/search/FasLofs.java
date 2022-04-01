@@ -44,7 +44,7 @@ public final class FasLofs implements GraphSearch {
 
     // The data sets being analyzed. They must all have the same variables and the same
     // number of records.
-    private DataSet dataSet;
+    private final DataSet dataSet;
 
     // For the Fast Adjacency Search.
     private int depth = -1;

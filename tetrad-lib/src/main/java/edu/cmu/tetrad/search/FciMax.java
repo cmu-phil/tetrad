@@ -262,7 +262,7 @@ public final class FciMax implements GraphSearch {
         class Task extends RecursiveTask<Boolean> {
             final int from;
             final int to;
-            int chunk = 20;
+            final int chunk = 20;
             final List<Node> nodes;
             final Graph graph;
 

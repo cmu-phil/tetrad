@@ -84,7 +84,7 @@ public final class SemManipulation implements TetradSerializable {
         List<Node> nodes = this.semIm.getSemPm().getVariableNodes();
 
         for (int i = 0; i < nodes.size(); i++) {
-            Node node = (Node) nodes.get(i);
+            Node node = nodes.get(i);
 
             if (node.getName().equals(nodeName)) {
                 return i;

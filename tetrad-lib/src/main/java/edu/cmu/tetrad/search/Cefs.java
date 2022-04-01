@@ -91,7 +91,7 @@ public final class Cefs {
      * The true graph, if known. If this is provided, notes will be printed out for edges removed that are in the true
      * Markov blanket.
      */
-    private Dag trueMb = null;
+    private final Dag trueMb = null;
 
     /**
      * Knowledge.

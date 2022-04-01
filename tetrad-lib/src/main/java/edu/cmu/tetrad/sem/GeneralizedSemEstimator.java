@@ -349,7 +349,7 @@ public class GeneralizedSemEstimator {
         private final DataSet data;
         private final List<String> parameters;
         private final List<Node> tierOrdering;
-        private int index;
+        private final int index;
         private final MyContext context;
 
         private List<Double> disturbances;

@@ -77,7 +77,7 @@ public class FasFdr implements IFas {
     /**
      * The number of independence tests.
      */
-    private int numIndependenceTests;
+    private final int numIndependenceTests;
 
 
     /**
@@ -88,7 +88,7 @@ public class FasFdr implements IFas {
     /**
      * The number of dependence judgements. Temporary.
      */
-    private int numDependenceJudgement;
+    private final int numDependenceJudgement;
 
     /**
      * The sepsets found during the search.

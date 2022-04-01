@@ -647,9 +647,9 @@ public final class HbsmsGes implements Hbsms {
         private final double pValue;
         private final double fml;
         private final double chisq;
-        private double bic;
+        private final double bic;
         //        private double aic;
-        private int dof;
+        private final int dof;
 
         public Score(Scorer scorer) {
             this.scorer = scorer;

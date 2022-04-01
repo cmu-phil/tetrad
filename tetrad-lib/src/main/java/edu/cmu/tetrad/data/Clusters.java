@@ -45,7 +45,7 @@ public final class Clusters implements TetradSerializable {
      *
      * @serial
      */
-    private Map<String, Integer> clusters;
+    private final Map<String, Integer> clusters;
 
     /**
      * Node names.

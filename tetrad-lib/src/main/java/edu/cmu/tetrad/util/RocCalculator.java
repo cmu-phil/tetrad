@@ -37,7 +37,7 @@ public class RocCalculator {
     public static final int ASCENDING = 0;
     private static final int DESCENDING = 1;
 
-    private int direction;
+    private final int direction;
 
     private int[][] points;
     private final ScoreCategoryPair[] scoreCatPairs;
@@ -228,7 +228,7 @@ public class RocCalculator {
         public int compareTo(@NotNull ScoreCategoryPair other) {
             if (getScore() < other.getScore()) {
                 return -1;
-            } else if (getScore() == ((ScoreCategoryPair) other).getScore()) {
+            } else if (getScore() == other.getScore()) {
                 return 0;
             } else {
                 return 1;

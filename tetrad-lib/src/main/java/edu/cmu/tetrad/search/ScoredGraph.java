@@ -58,16 +58,16 @@ public class ScoredGraph implements Comparable<ScoredGraph>, TetradSerializable 
     }
 
     public boolean equals(ScoredGraph o) {
-        if (!this.score.equals(((ScoredGraph) o).getScore())) {
+        if (!this.score.equals(o.getScore())) {
             return false;
         }
 
-        return this.graph.equals(((ScoredGraph) o).getGraph());
+        return this.graph.equals(o.getGraph());
     }
 
     public int compareTo(@NotNull ScoredGraph o) {
         Double thisScore = getScore();
-        Double otherScore = ((ScoredGraph) o).getScore();
+        Double otherScore = o.getScore();
         return thisScore.compareTo(otherScore);
     }
 }

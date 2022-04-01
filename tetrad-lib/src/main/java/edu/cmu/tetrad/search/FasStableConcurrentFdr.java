@@ -105,7 +105,7 @@ public class FasStableConcurrentFdr implements IFas {
 
     private final int chunk = 100;
 
-    private boolean recordSepsets = true;
+    private final boolean recordSepsets = true;
 
     //==========================CONSTRUCTORS=============================//
 

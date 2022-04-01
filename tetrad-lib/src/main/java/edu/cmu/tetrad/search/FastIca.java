@@ -171,7 +171,7 @@ public class FastIca {
      * A data matrix with n rows representing observations and p columns
      * representing variables.
      */
-    private Matrix X;
+    private final Matrix X;
 
     /**
      * The number of independent components to be extracted.

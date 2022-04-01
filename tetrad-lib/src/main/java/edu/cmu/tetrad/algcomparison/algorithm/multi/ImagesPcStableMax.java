@@ -41,7 +41,7 @@ public class ImagesPcStableMax implements MultiDataSetAlgorithm, HasKnowledge {
             List<DataModel> dataSets = new ArrayList<>();
 
             for (DataModel dataModel : dataModels) {
-                dataSets.add((DataSet) dataModel);
+                dataSets.add(dataModel);
             }
 
             SemBicScoreImages score = new SemBicScoreImages(dataSets);

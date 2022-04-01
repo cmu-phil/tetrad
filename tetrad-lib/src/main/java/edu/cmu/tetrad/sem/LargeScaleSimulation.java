@@ -632,8 +632,8 @@ public final class LargeScaleSimulation {
                 tmp_tier1 = knowledge.getTier(i);
                 tmp_tier2 = knowledge.getTier(i + tier_diff);
             }
-            A = (String) tmp_tier1.get(indx_comp);
-            B = (String) tmp_tier2.get(indy_comp);
+            A = tmp_tier1.get(indx_comp);
+            B = tmp_tier2.get(indy_comp);
             if (A.equals(B)) {
                 continue;
             }

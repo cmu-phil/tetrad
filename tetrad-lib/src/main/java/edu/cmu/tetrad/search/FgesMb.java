@@ -88,7 +88,7 @@ public final class FgesMb {
     /**
      * If non-null, edges not adjacent in this graph will not be added.
      */
-    private Graph boundGraph = null;
+    private final Graph boundGraph = null;
 
     /**
      * Elapsed time of the most recent search.

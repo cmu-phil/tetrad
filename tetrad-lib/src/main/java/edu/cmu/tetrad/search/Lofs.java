@@ -45,9 +45,9 @@ public class Lofs {
     private double alpha = 0.05;
     private final ArrayList<Regression> regressions;
     private final List<Node> variables;
-    private boolean strongR2;
-    private boolean meekDone;
-    private boolean meanCenterResiduals;
+    private final boolean strongR2;
+    private final boolean meekDone;
+    private final boolean meanCenterResiduals;
 
     public enum Score {
         andersonDarling, skew, kurtosis, fifthMoment, absoluteValue,

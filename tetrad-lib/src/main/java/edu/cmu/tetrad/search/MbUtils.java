@@ -145,8 +145,8 @@ public class MbUtils {
             int[] choice;
 
             while ((choice = cg.next()) != null) {
-                Node v = (Node) parents.get(choice[0]);
-                Node w = (Node) parents.get(choice[1]);
+                Node v = parents.get(choice[0]);
+                Node w = parents.get(choice[1]);
 
                 Edge edge = graph.getEdge(v, w);
 

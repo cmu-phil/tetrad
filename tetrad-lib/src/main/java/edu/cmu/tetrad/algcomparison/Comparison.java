@@ -1524,7 +1524,7 @@ public class Comparison {
             double max = 0.0;
 
             while (it2.hasNext()) {
-                Statistic stat = (Statistic) it2.next();
+                Statistic stat = it2.next();
                 j++;
 
                 double weight = statistics.getWeight(stat);
