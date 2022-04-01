@@ -52,7 +52,7 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
      */
     public KnowledgeWorkbench(KnowledgeGraph graph) {
         super(graph);
-        setNodeEdgeErrorsReported(true);
+        setNodeEdgeErrorsReported();
         setRightClickPopupAllowed(false);
         this.setAllowEdgeReorientations(false);
     }

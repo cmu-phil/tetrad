@@ -35,8 +35,6 @@ public interface IDisplayEdge {
 
     void launchAssociatedEditor();
 
-    void toggleSelected();
-
     void updateTrackPoint(Point p);
 
     DisplayNode getNode1();

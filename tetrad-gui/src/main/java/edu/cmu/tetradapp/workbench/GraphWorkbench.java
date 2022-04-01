@@ -24,8 +24,6 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetradapp.model.EditorUtils;
 
 import java.awt.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -137,13 +135,11 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
             throw new IllegalStateException();
         }
 
-        displayNode.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("resetGraph".equals(evt.getPropertyName())) {
-                    setGraph(getGraph());
-                } else if ("editingValueChanged".equals(evt.getPropertyName())) {
-                    firePropertyChange("modelChanged", null, null);
-                }
+        displayNode.addPropertyChangeListener(evt -> {
+            if ("resetGraph".equals(evt.getPropertyName())) {
+                setGraph(getGraph());
+            } else if ("editingValueChanged".equals(evt.getPropertyName())) {
+                firePropertyChange("modelChanged", null, null);
             }
         });
 

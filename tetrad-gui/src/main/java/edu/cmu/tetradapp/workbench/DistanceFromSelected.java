@@ -145,46 +145,7 @@ final class DistanceFromSelected {
 
         tiers.add(selected);
 
-        Set<Node> all = new HashSet<>();
-        all.addAll(selected);
-
-//        Set<Node> augmented = new HashSet<Node>();
-//
-//        while (true) {
-//            for (Node node : all) {
-//                augmented.addAll(graph.getAdjacentNodes(node));
-//            }
-//
-//            augmented.removeAll(all);
-//
-//            if (augmented.isEmpty()) {
-//                break;
-//            } else {
-//                ArrayList<Node> newNodes = new ArrayList<Node>(augmented);
-//                Collections.sort(newNodes);
-//
-//                // Do some heuristic uncrossing of edges in successive tiers.
-//                List<Node> tier1 = tiers.get(tiers.size() - 1);
-//                List<Node> tier2 = new ArrayList<Node>(newNodes);
-//
-//                List<Node> saveArray = new ArrayList<Node>(tier2);
-//                int saveCrossings = Integer.MAX_VALUE;
-//
-//                for (int j = 0; j < 40 /* * tier2.size()*/; j++) {
-//                    Collections.shuffle(saveArray);
-//                    int numCrossings = numCrossings(tier1, tier2, graph);
-//
-//                    if (numCrossings < saveCrossings) {
-//                        saveArray = new ArrayList<Node>(tier2);
-//                        saveCrossings = numCrossings;
-//                    }
-//                }
-//
-//                tiers.add(saveArray);
-////                tiers.add(newNodes);
-//                all.addAll(augmented);
-//            }
-//        }
+        Set<Node> all = new HashSet<>(selected);
 
         while (true) {
             List<Node> tier1 = tiers.get(tiers.size() - 1);
@@ -212,48 +173,6 @@ final class DistanceFromSelected {
 
     //============================PRIVATE METHODS=========================//
 
-
-    private int numCrossings(List<Node> tier1, List<Node> tier2, Graph graph) {
-        if (tier2.size() < 2) {
-            return 0;
-        }
-
-        int numCrossings = 0;
-
-        for (int i = 0; i < tier1.size(); i++) {
-            for (int j = i + 1; j < tier1.size(); j++) {
-                Node n11 = tier1.get(i);
-                Node n12 = tier1.get(j);
-
-                List<Node> adj1 = graph.getAdjacentNodes(n11);
-                List<Node> adj2 = graph.getAdjacentNodes(n12);
-
-                for (Node n21 : adj1) {
-                    for (Node n22 : adj2) {
-                        int i1 = tier2.indexOf(n21);
-                        int i2 = tier2.indexOf(n22);
-
-                        if (i1 != -1 && i2 != -1 && i2 > i1) {
-                            numCrossings++;
-                        }
-                    }
-                }
-
-//                for (int ii = 0; ii < tier2.size(); ii++) {
-//                    for (int jj = ii + 1; jj < tier2.size(); jj++) {
-//                        Node n21 = tier2.get(ii);
-//                        Node n22 = tier2.get(jj);
-//
-//                        if (graph.isAdjacentTo(n11, n22) && graph.isAdjacentTo(n12, n21)) {
-//                            numCrossings++;
-//                        }
-//                    }
-//                }
-            }
-        }
-
-        return numCrossings;
-    }
 
     private void placeNodes(Node node, Map<Node, Integer> tiers, Graph graph) {
         if (tiers.containsKey(node)) {

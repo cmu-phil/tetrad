@@ -529,13 +529,6 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     /**
-     * Toggles the selection status of the component.
-     */
-    public final void toggleSelected() {
-        setSelected(!isSelected());
-    }
-
-    /**
      * Updates the position of the free end of the edge while it is in the
      * HALF_ANCHORED mode.
      *

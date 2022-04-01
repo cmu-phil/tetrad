@@ -25,8 +25,6 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetradapp.model.EditorUtils;
 
 import java.awt.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,7 +49,7 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
     //====================PRIVATE FIELDS=================================//
     private int nodeType = TimeLagGraphWorkbench.MEASURED_NODE;
     private int edgeMode = TimeLagGraphWorkbench.DIRECTED_EDGE;
-    private List rememberedNodes = new ArrayList<>();
+    private List<Node> rememberedNodes = new ArrayList<>();
 
     //========================CONSTRUCTORS===============================//
 
@@ -70,12 +68,10 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
         super(graph);
         setRightClickPopupAllowed(true);
 
-        graph.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("editingFinished".equals(evt.getPropertyName())) {
-                    System.out.println("EDITING FINISHED!");
-                    timeLagLayout();
-                }
+        graph.addPropertyChangeListener(evt -> {
+            if ("editingFinished".equals(evt.getPropertyName())) {
+                System.out.println("EDITING FINISHED!");
+                timeLagLayout();
             }
         });
     }
@@ -116,7 +112,7 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
                     Node _node = graph.getNode(id.getName(), lag);
 
                     if (_node == null) {
-                        System.out.println("Couldn't find " + _node);
+                        System.out.println("Couldn't find node");
                         continue;
                     }
 
@@ -157,7 +153,7 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
                     Node _node = graph.getNode(id.getName(), lag);
 
                     if (_node == null) {
-                        System.out.println("Couldn't find " + _node);
+                        System.out.println("Couldn't find node");
                         continue;
                     }
 
@@ -238,13 +234,11 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
             throw new IllegalStateException();
         }
 
-        displayNode.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("resetGraph".equals(evt.getPropertyName())) {
-                    setGraph(getGraph());
-                } else if ("editingValueChanged".equals(evt.getPropertyName())) {
-                    firePropertyChange("modelChanged", null, null);
-                }
+        displayNode.addPropertyChangeListener(evt -> {
+            if ("resetGraph".equals(evt.getPropertyName())) {
+                setGraph(getGraph());
+            } else if ("editingValueChanged".equals(evt.getPropertyName())) {
+                firePropertyChange("modelChanged", null, null);
             }
         });
 

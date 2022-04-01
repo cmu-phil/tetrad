@@ -29,8 +29,6 @@ import edu.cmu.tetrad.util.TetradSerializableExcluded;
 
 import javax.swing.*;
 import java.awt.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -80,11 +78,9 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
         this.modelNode = modelNode;
         setName(modelNode.getName());
 
-        modelNode.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("name".equals(evt.getPropertyName())) {
-                    setName((String) (evt.getNewValue()));
-                }
+        modelNode.addPropertyChangeListener(evt -> {
+            if ("name".equals(evt.getPropertyName())) {
+                setName((String) (evt.getNewValue()));
             }
         });
     }

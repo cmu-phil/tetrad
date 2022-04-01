@@ -1,6 +1,3 @@
-/**
- *
- */
 package edu.cmu.tetradapp.workbench;
 
 import edu.cmu.tetrad.util.TetradSerializableExcluded;

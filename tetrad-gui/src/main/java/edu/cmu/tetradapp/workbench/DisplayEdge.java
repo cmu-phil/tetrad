@@ -166,23 +166,14 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      * The color that unselected edges will be drawn in.
      */
     private Color lineColor = new Color(78, 117, 175);
-//    private Color lineColor = Color.black;
 
-
-//    public Color lineColor = new Color(99, 101, 188);
-//    public Color lineColor = new Color(0, 4, 255);
-//    public Color lineColor = new Color(52, 55, 217);
 
     /**
      * The color that selected edges will be drawn in.
      */
 
 
-//    private Color selectedColor = new Color(78, 117, 175).darker();
-//    private Color selectedColor = new Color(238, 180, 34); // Dark yellow
     private Color selectedColor = new Color(221, 66, 32);   // this one
-//    public Color selectedColor = new Color(255, 151, 0);
-//    public Color selectedColor = new Color(255, 123, 0);
 
     //    private Color highlightedColor = Color.red.darker().darker();
     private Color highlightedColor = new Color(238, 180, 34);
@@ -575,9 +566,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         if (this.mode != DisplayEdge.HALF_ANCHORED) {
             this.mode = (selected ? DisplayEdge.ANCHORED_SELECTED : DisplayEdge.ANCHORED_UNSELECTED);
             firePropertyChange("selected", oldSelected, selected);
-            if (oldSelected != selected) {
-                repaint();
-            }
+            repaint();
         }
     }
 
@@ -585,13 +574,6 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      * Launches the editor for this edge, if there is one.
      */
     public void launchAssociatedEditor() {
-    }
-
-    /**
-     * Toggles the selection status of the component.
-     */
-    public final void toggleSelected() {
-        setSelected(!isSelected());
     }
 
     /**
@@ -1013,11 +995,6 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
 
                 setBounds(r1.getBounds().union(r2.getBounds()));
 
-                //                node1RelativeBounds = new Rectangle(getNode1().getBounds());
-                //                node2RelativeBounds = new Rectangle(getNode2().getBounds());
-                //
-                //                node1RelativeBounds.translate(-getLocation().x, -getLocation().y);
-                //                node2RelativeBounds.translate(-getLocation().x, -getLocation().y);
                 break;
 
             default:
@@ -1027,10 +1004,6 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
 
     private boolean isShowAdjacenciesOnly() {
         return this.showAdjacenciesOnly;
-    }
-
-    public final void setShowAdjacenciesOnly(boolean showAdjacenciesOnly) {
-        this.showAdjacenciesOnly = showAdjacenciesOnly;
     }
 
     public final Edge getModelEdge() {
@@ -1102,12 +1075,12 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      * Handles <code>ComponentEvent</code>s.
      */
     private final class ComponentHandler extends ComponentAdapter {
-        public final void componentMoved(ComponentEvent e) {
+        public void componentMoved(ComponentEvent e) {
             resetBounds();
             repaint();
         }
 
-        public final void componentResized(ComponentEvent e) {
+        public void componentResized(ComponentEvent e) {
             resetBounds();
             repaint();
         }
@@ -1124,7 +1097,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
          * @param evt A PropertyChangeEvent object describing the event source
          *            and the property that has changed.
          */
-        public final void propertyChange(PropertyChangeEvent evt) {
+        public void propertyChange(PropertyChangeEvent evt) {
             String name = evt.getPropertyName();
 
             if ("selected".equals(name)) {

@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.workbench;
 
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
@@ -75,7 +76,7 @@ public class GraphNodeError extends DisplayNode {
     }
 
     public void doDoubleClickAction() {
-        doDoubleClickAction(null);
+        doDoubleClickAction(new EdgeListGraph());
     }
 
     //==========================PRIVATE METHODS=========================//

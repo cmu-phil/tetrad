@@ -70,13 +70,11 @@ public class MeasuredDisplaySmallComp extends JComponent implements DisplayComp 
     public void paint(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
         FontMetrics fm = getFontMetrics(new Font("Monospaced", Font.PLAIN, 3));
-        int width = getPreferredSize().width;
         String name = getName();
 
         if (name.startsWith("X")) name = name.substring(1);
 
-        int stringWidth = fm.stringWidth(name);
-        final int stringX = 2; //(width - stringWidth) / 2;
+        final int stringX = 2;
         int stringY = 4 * fm.getAscent() + DisplayNodeUtils.getPixelGap();
 
         g2.setColor(isSelected() ? DisplayNodeUtils.getNodeSelectedFillColor() :
@@ -94,12 +92,6 @@ public class MeasuredDisplaySmallComp extends JComponent implements DisplayComp 
      * Calculates the size of the component based on its name.
      */
     public Dimension getPreferredSize() {
-        FontMetrics fm = getFontMetrics(DisplayNodeUtils.getFont());
-//        int width = fm.stringWidth(getNode()) + fm.getMaxAdvance();
-//        int height = 2 * DisplayNodeUtils.getPixelGap() + fm.getAscent() + 3;
-//        width = (width < 60) ? 60 : width;
-//        return new Dimension(width, height);
-
         return new Dimension(30, 30);
     }
 

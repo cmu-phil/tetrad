@@ -120,9 +120,7 @@ public final class Tetrad implements PropertyChangeListener {
 
         // Check if we should skip checking for latest version
         SplashScreen.show("Loading Tetrad...", 1000);
-        EventQueue.invokeLater(() -> {
-            new Tetrad().launchFrame();
-        });
+        EventQueue.invokeLater(() -> new Tetrad().launchFrame());
     }
 
     //===============================PRIVATE METHODS=======================//
@@ -176,28 +174,15 @@ public final class Tetrad implements PropertyChangeListener {
                 double width = height * (4.0 / 3);
 
                 return new Dimension((int) width, (int) height);
-//                return Toolkit.getDefaultToolkit().getScreenSize();
 
-//                Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
-//                return new Dimension(size.width - 100, size.height - 100);
             }
 
-//            public Dimension getMinimumSize() {
-//                return Toolkit.getDefaultToolkit().getScreenSize();
-////                return new Dimension(400, 400);
-//            }
-//////
-//            public Dimension getMaximumSize() {
-//                return Toolkit.getDefaultToolkit().getScreenSize();
-//            }
         };
 
         // Fixing a bug caused by switch to Oracle Java (at least for Mac), although I must say the following
         // code is what should have worked to begin with. Bug was that sessions would appear only in the lower
         // left hand corner of the screen.
         this.frame.setPreferredSize(Toolkit.getDefaultToolkit().getScreenSize());
-//        this.frame.setMinimumSize(Toolkit.getDefaultToolkit().getScreenSize());
-//        this.frame.setMaximumSize(Toolkit.getDefaultToolkit().getScreenSize());
 
         getFrame().setContentPane(getDesktop());
         getFrame().pack();
@@ -224,11 +209,6 @@ public final class Tetrad implements PropertyChangeListener {
 
         SplashScreen.hide();
 
-//        try {
-//            Preferences.userRoot().clear();
-//        } catch (BackingStoreException e) {
-//            e.printStackTrace();
-//        }
     }
 
     /**

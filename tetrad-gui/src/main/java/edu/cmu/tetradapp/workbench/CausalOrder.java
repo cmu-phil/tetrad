@@ -101,13 +101,10 @@ final class CausalOrder {
      */
     private List<List<Node>> getTiers() {
         Set<Node> found = new HashSet<>();
-        Set<Node> notFound = new HashSet<>();
         List<List<Node>> tiers = new LinkedList<>();
 
         // first copy all the nodes into 'notFound'.
-        for (Node node1 : this.graph.getNodes()) {
-            notFound.add(node1);
-        }
+        Set<Node> notFound = new HashSet<>(this.graph.getNodes());
 
         // repeatedly run through the nodes left in 'notFound'.  If any node
         // has all of its parents already in 'found', then add it to the
@@ -127,7 +124,7 @@ final class CausalOrder {
             }
 
             // shift all the nodes in this tier from 'notFound' to 'found'.
-            notFound.removeAll(thisTier);
+            thisTier.forEach(notFound::remove);
             found.addAll(thisTier);
 
             // add the getModel tier to the list of tiers.

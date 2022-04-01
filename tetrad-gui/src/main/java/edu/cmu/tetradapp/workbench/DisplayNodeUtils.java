@@ -37,13 +37,6 @@ public class DisplayNodeUtils {
     private static final Color NODE_TEXT_COLOR = new Color(0, 1, 53);
 
 
-//    private static final Color NODE_FILL_COLOR = Color.white;
-//    private static final Color NODE_EDGE_COLOR = Color.black;
-//    private static final Color NODE_SELECTED_FILL_COLOR = Color.gray;
-//    private static final Color NODE_SELECTED_EDGE_COLOR = Color.red;
-//    private static final Color NODE_TEXT_COLOR = Color.black;
-
-
     private static final Font FONT = new Font("Dialog", Font.BOLD, 12);
     private static final int PIXEL_GAP = 7;
 
