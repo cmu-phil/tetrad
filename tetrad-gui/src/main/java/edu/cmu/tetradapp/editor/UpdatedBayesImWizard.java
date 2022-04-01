@@ -34,19 +34,11 @@ import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.text.NumberFormat;
 import java.util.List;
 
@@ -122,38 +114,32 @@ public final class UpdatedBayesImWizard extends JPanel {
         add(new JScrollPane(probsPane), BorderLayout.CENTER);
 
         // Add listeners.
-        this.varNamesComboBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Node node = (Node) (UpdatedBayesImWizard.this.varNamesComboBox.getSelectedItem());
-                setCurrentNode(node);
-            }
+        this.varNamesComboBox.addActionListener(e -> {
+            Node node = (Node) (UpdatedBayesImWizard.this.varNamesComboBox.getSelectedItem());
+            setCurrentNode(node);
         });
 
-        this.varNamesComboBox2.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Node node = (Node) (UpdatedBayesImWizard.this.varNamesComboBox2.getSelectedItem());
-                setCurrentNode(node);
-            }
+        this.varNamesComboBox2.addActionListener(e -> {
+            Node node = (Node) (UpdatedBayesImWizard.this.varNamesComboBox2.getSelectedItem());
+            setCurrentNode(node);
         });
 
-        workbench.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent e) {
-                if (e.getPropertyName().equals("selectedNodes")) {
-                    List selection = (List) (e.getNewValue());
+        workbench.addPropertyChangeListener(e -> {
+            if (e.getPropertyName().equals("selectedNodes")) {
+                List selection = (List) (e.getNewValue());
 
-                    if (selection.size() == 1) {
-                        Node node = (Node) (selection.get(0));
-                        UpdatedBayesImWizard.this.varNamesComboBox.setSelectedItem(node);
+                if (selection.size() == 1) {
+                    Node node = (Node) (selection.get(0));
+                    UpdatedBayesImWizard.this.varNamesComboBox.setSelectedItem(node);
 
-                        DisplayNode graphNode = getWorkbench().getSelectedNode();
+                    DisplayNode graphNode = getWorkbench().getSelectedNode();
 
-                        if (graphNode == null) {
-                            return;
-                        }
-
-                        Node tetradNode = graphNode.getModelNode();
-                        updaterWrapper.getParams().set("variable", updaterWrapper.getBayesUpdater().getBayesIm().getBayesPm().getVariable(tetradNode));
+                    if (graphNode == null) {
+                        return;
                     }
+
+                    Node tetradNode = graphNode.getModelNode();
+                    updaterWrapper.getParams().set("variable", updaterWrapper.getBayesUpdater().getBayesIm().getBayesPm().getVariable(tetradNode));
                 }
             }
         });
@@ -161,12 +147,10 @@ public final class UpdatedBayesImWizard extends JPanel {
 
     private void setupMarginalsDisplay(JTabbedPane probsPane) {
         probsPane.add("Marginal Probabilities", this.marginalsPanel);
-        probsPane.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                JTabbedPane tabbedPane = (JTabbedPane) e.getSource();
-                int tab = tabbedPane.getSelectedIndex();
-                firePropertyChange("updatedBayesImWizardTab", null, tab);
-            }
+        probsPane.addChangeListener(e -> {
+            JTabbedPane tabbedPane = (JTabbedPane) e.getSource();
+            int tab = tabbedPane.getSelectedIndex();
+            firePropertyChange("updatedBayesImWizardTab", null, tab);
         });
     }
 
@@ -439,32 +423,6 @@ public final class UpdatedBayesImWizard extends JPanel {
         return bar;
     }
 
-//    private double[] calculatePriorMarginals(int nodeIndex) {
-//        Evidence evidence = updaterWrapper.getBayesUpdater().getEvidence();
-//        updaterWrapper.getBayesUpdater().setEvidence(new Evidence(evidence.getVariableSource()));
-//
-//        double[] marginals = new double[evidence.getNumCategories(nodeIndex)];
-//
-//        for (int i = 0;
-//                i < updaterWrapper.getBayesUpdater().getVariableSource().getNumColumns(nodeIndex); i++) {
-//            marginals[i] = updaterWrapper.getBayesUpdater().getMarginal(nodeIndex, i);
-//        }
-//
-//        updaterWrapper.getBayesUpdater().setEvidence(evidence);
-//        return marginals;
-//    }
-//
-//    private double[] calculateUpdatedMarginals(int nodeIndex) {
-//        double[] marginals = new double[evidence.getNumCategories(nodeIndex)];
-//
-//        for (int i = 0;
-//                i < updaterWrapper.getBayesUpdater().getVariableSource().getNumColumns(nodeIndex); i++) {
-//            marginals[i] = updaterWrapper.getBayesUpdater().getMarginal(nodeIndex, i);
-//        }
-//
-//        return marginals;
-//    }
-
     /**
      * Sets the getModel display to reflect the stored values of the getModel
      * selectedNode.
@@ -569,23 +527,19 @@ final class UpdaterEditingTable extends JTable {
 
         ListSelectionModel rowSelectionModel = getSelectionModel();
 
-        rowSelectionModel.addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                ListSelectionModel m = (ListSelectionModel) (e.getSource());
-                setFocusRow(m.getAnchorSelectionIndex());
-            }
+        rowSelectionModel.addListSelectionListener(e -> {
+            ListSelectionModel m = (ListSelectionModel) (e.getSource());
+            setFocusRow(m.getAnchorSelectionIndex());
         });
 
         ListSelectionModel columnSelectionModel = getColumnModel()
                 .getSelectionModel();
 
         columnSelectionModel.addListSelectionListener(
-                new ListSelectionListener() {
-                    public void valueChanged(ListSelectionEvent e) {
-                        ListSelectionModel m =
-                                (ListSelectionModel) (e.getSource());
-                        setFocusColumn(m.getAnchorSelectionIndex());
-                    }
+                e -> {
+                    ListSelectionModel m =
+                            (ListSelectionModel) (e.getSource());
+                    setFocusColumn(m.getAnchorSelectionIndex());
                 });
 
         setFocusRow(0);
@@ -655,7 +609,7 @@ final class UpdaterEditingTable extends JTable {
             col = getNumParents();
         }
 
-        this.focusCol = col < getNumParents() ? getNumParents() : col;
+        this.focusCol = Math.max(col, getNumParents());
 
         if (this.focusCol >= getNumParents() &&
                 this.focusCol < getColumnCount()) {

@@ -33,7 +33,6 @@ import java.util.List;
  */
 class TierList extends JScrollPane {
     private final IKnowledge knowledge;
-    private final JPanel constList = new JPanel();
 
     /**
      * Field TierListEditor
@@ -68,54 +67,45 @@ class TierList extends JScrollPane {
 
         this.tierListEditor = tierListEditor;
 
-        setViewportView(this.constList);
+        JPanel constList = new JPanel();
+        setViewportView(constList);
 
         System.out.println("TierList Knowledge is: " + know);
 
         //the same kowledge
-        if (know != null) {
-            this.knowledge = know;
-        } else {
-            throw new NullPointerException();
-        }
+        this.knowledge = know;
 
-        this.constList.setLayout(new BoxLayout(this.constList, BoxLayout.Y_AXIS));
+        constList.setLayout(new BoxLayout(constList, BoxLayout.Y_AXIS));
 
-        String[] names = varNames.toArray(new String[0]);
-
-        String[] tierNames = new String[names.length + 1];
+        String[] tierNames = new String[varNames.size() + 1];
 
         tierNames[0] = "Unspecified";
 
-        for (int i = 0; i < names.length; i++) {
+        for (int i = 0; i < varNames.size(); i++) {
             tierNames[i + 1] = "Tier " + i;
         }
 
-        this.tiers = new Tier[names.length + 1];
+        this.tiers = new Tier[varNames.size() + 1];
 
         Tier.setKnowledge(this.knowledge);
 
         //tiers[names.length] = new Tier(this, "Unspecified", tierNames);
 
 
-        this.tiers[names.length] = new Tier(this, -1, tierNames);
-        //        constList.add(tiers[names.length]);
+        this.tiers[varNames.size()] = new Tier(this, -1, tierNames);
 
         Box b = Box.createHorizontalBox();
-        b.add(this.tiers[names.length]);
-        //        b.add(Box.createGlue());
-        this.constList.add(b);
+        b.add(this.tiers[varNames.size()]);
+        constList.add(b);
 
-        for (int i = 0; i < names.length; i++) {
-            //tiers[i] = new Tier(this, "Tier " + i, tierNames);
+        for (int i = 0; i < varNames.size(); i++) {
             this.tiers[i] = new Tier(this, i, tierNames);
-            //	 		constList.add(tiers[i]);
 
 
             Box b1 = Box.createHorizontalBox();
             b1.add(this.tiers[i]);
             //            b1.add(Box.createGlue());
-            this.constList.add(b1);
+            constList.add(b1);
         }
 
         //temp.addPropertyChangeListener(this);

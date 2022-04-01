@@ -103,8 +103,7 @@ class TabularDataTransferHandler extends TransferHandler {
                 cols = tabularData.getSelectedColumns();
             }
 
-            if (rows == null || cols == null || rows.length == 0 ||
-                    cols.length == 0) {
+            if (cols == null || rows.length == 0 || cols.length == 0) {
                 return null;
             }
 
@@ -133,11 +132,7 @@ class TabularDataTransferHandler extends TransferHandler {
                             s = "C" + (displayCol - 1);
                         }
 
-                        String val = "";
-
-                        if (s != null) {
-                            val = s;
-                        }
+                        String val = s;
 
                         buf.append(val).append("\t");
                     } else {
@@ -161,16 +156,6 @@ class TabularDataTransferHandler extends TransferHandler {
                                         // Let's quote all Strings...
                                         datumString = "\"" + datumObj + "\"";
 
-//                                        // This is done to prevent integer discrete
-//                                        // columns from being reinterpreted,
-//                                        // on paste, as continuous columns.
-//                                        try {
-//                                            Double.parseDouble((String) datumObj);
-//                                            datumString = "\"" + datumObj.toString() + "\"";
-//                                        }
-//                                        catch (NumberFormatException e) {
-//                                            datumString = datumObj.toString();
-//                                        }
                                     } else {
                                         throw new IllegalArgumentException();
                                     }
@@ -266,9 +251,7 @@ class TabularDataTransferHandler extends TransferHandler {
                 }
 
                 doPaste(s, startRow, startCol, shiftDown, tabularData);
-            } catch (UnsupportedFlavorException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
+            } catch (UnsupportedFlavorException | IOException e) {
                 e.printStackTrace();
             }
 
@@ -401,10 +384,9 @@ class TabularDataTransferHandler extends TransferHandler {
                 int i = 0;
                 String _name;
 
-                while (true) {
+                do {
                     _name = name + "_" + (++i);
-                    if (dataSet.getVariable(_name) == null) break;
-                }
+                } while (dataSet.getVariable(_name) != null);
 
                 node.setName(_name);
             }
@@ -467,8 +449,7 @@ class TabularDataTransferHandler extends TransferHandler {
       The number of initial "special" columns not used to display the data
       set.
      */
-        final int numLeadingCols = 1;
-        return numLeadingCols;
+        return 1;
     }
 
     private int getNumLeadingRows() {
@@ -476,8 +457,7 @@ class TabularDataTransferHandler extends TransferHandler {
       The number of initial "special" rows not used to display the data
       set.
      */
-        final int numLeadingRows = 2;
-        return numLeadingRows;
+        return 2;
     }
 }
 

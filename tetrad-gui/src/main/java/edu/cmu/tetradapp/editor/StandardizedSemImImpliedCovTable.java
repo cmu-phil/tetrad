@@ -78,12 +78,12 @@ final class StandardizedSemImImpliedCovTable extends AbstractTableModel {
 
         if (measured() && covariances()) {
             this.matrix = getSemIm().getImplCovarMeas().toArray();
-        } else if (measured() && !covariances()) {
+        } else if (measured()) {
             this.matrix = StandardizedSemImImpliedCovTable.corr(getSemIm().getImplCovarMeas().toArray());
-        } else if (!measured() && covariances()) {
+        } else if (covariances()) {
             Matrix implCovarC = getSemIm().getImplCovar();
             this.matrix = implCovarC.toArray();
-        } else if (!measured() && !covariances()) {
+        } else {
             Matrix implCovarC = getSemIm().getImplCovar();
             this.matrix = StandardizedSemImImpliedCovTable.corr(implCovarC.toArray());
         }

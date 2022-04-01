@@ -58,15 +58,6 @@ class TabularDataTable extends AbstractTableModel {
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
     /**
-     * Table header notations
-     */
-    private final String columnHeaderNotationDefault = "C";
-    private final String columnHeaderNotationContinuous = "-C";
-    private final String columnHeaderNotationDiscrete = "-D";
-    private final String columnHeaderNotationInterventionStatus = "-I_S";
-    private final String columnHeaderNotationInterventionValue = "-I_V";
-
-    /**
      * Constructs a new DisplayTableModel to wrap the given dataSet.
      *
      * @param dataSet the dataSet.
@@ -88,7 +79,7 @@ class TabularDataTable extends AbstractTableModel {
      */
     public int getRowCount() {
         int maxRowCount = this.dataSet.getNumRows() + 3;
-        return (maxRowCount < 100) ? 100 : maxRowCount;
+        return Math.max(maxRowCount, 100);
     }
 
     /**
@@ -129,19 +120,24 @@ class TabularDataTable extends AbstractTableModel {
             if (row == 0) {
                 // Append "-D" notation to discrete variables, "-C" for continuous
                 // and append additional "-I" for those added interventional variables - Zhou
-                String columnHeader = this.columnHeaderNotationDefault + (columnIndex + 1);
+                String columnHeaderNotationDefault = "C";
+                String columnHeader = columnHeaderNotationDefault + (columnIndex + 1);
 
                 if (variable instanceof DiscreteVariable) {
-                    columnHeader += this.columnHeaderNotationDiscrete;
+                    String columnHeaderNotationDiscrete = "-D";
+                    columnHeader += columnHeaderNotationDiscrete;
                 } else if (variable instanceof ContinuousVariable) {
-                    columnHeader += this.columnHeaderNotationContinuous;
+                    String columnHeaderNotationContinuous = "-C";
+                    columnHeader += columnHeaderNotationContinuous;
                 }
 
                 // Add header notations for interventional status and value
                 if (variable.getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS) {
-                    columnHeader += this.columnHeaderNotationInterventionStatus;
+                    String columnHeaderNotationInterventionStatus = "-I_S";
+                    columnHeader += columnHeaderNotationInterventionStatus;
                 } else if (variable.getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE) {
-                    columnHeader += this.columnHeaderNotationInterventionValue;
+                    String columnHeaderNotationInterventionValue = "-I_V";
+                    columnHeader += columnHeaderNotationInterventionValue;
                 }
 
                 return columnHeader;
@@ -211,46 +207,6 @@ class TabularDataTable extends AbstractTableModel {
         this.pcs.firePropertyChange("modelChanged", null, null);
     }
 
-    /**
-     * Col index here is JTable index.
-     */
-    private void addColumnsOutTo(int col) {
-        for (int i = this.dataSet.getNumColumns() + getNumLeadingCols();
-             i <= col; i++) {
-            ContinuousVariable var = new ContinuousVariable("");
-            this.dataSet.addVariable(var);
-
-            System.out.println("Adding " + var + " col " + this.dataSet.getColumn(var));
-        }
-
-        this.pcs.firePropertyChange("modelChanged", null, null);
-    }
-
-    private String newColumnName(String suggestedName) {
-        if (!existsColByName(suggestedName)) {
-            return suggestedName;
-        }
-
-        int i = 0;
-
-        while (true) {
-            String proposedName = suggestedName + "-" + (++i);
-            if (!existsColByName(proposedName)) {
-                return proposedName;
-            }
-        }
-    }
-
-    private boolean existsColByName(String proposedName) {
-        for (int i = 0; i < this.dataSet.getNumColumns(); i++) {
-            String name = this.dataSet.getVariable(i).getName();
-            if (name.equals(proposedName)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private void setColumnName(int col, Object value) {
         String oldName = this.dataSet.getVariable(col - getNumLeadingCols()).getName();
         String newName = (String) value;
@@ -259,14 +215,6 @@ class TabularDataTable extends AbstractTableModel {
             return;
         }
 
-//        try {
-//            pcs.firePropertyChange("propesedVariableNameChange", oldName, newName);
-//        } catch (IllegalArgumentException e) {
-//            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), e.getMessage());
-//            return;
-//        }
-//
-//        pcs.firePropertyChange("variableNameChange", oldName, newName);
         this.dataSet.getVariable(col - getNumLeadingCols()).setName(newName);
         this.pcs.firePropertyChange("modelChanged", null, null);
         this.pcs.firePropertyChange("variableNameChanged", oldName, newName);
@@ -303,7 +251,7 @@ class TabularDataTable extends AbstractTableModel {
             variable = swapDiscreteColumnForContinuous(col);
         }
 
-        if (value instanceof String && ((String) value).trim().equals("*")) {
+        if (((String) value).trim().equals("*")) {
             value = ((Variable) variable).getMissingValueMarker();
         }
 
@@ -370,8 +318,7 @@ class TabularDataTable extends AbstractTableModel {
       The number of initial "special" columns not used to display the data
       set.
          */
-        final int numLeadingRows = 2;
-        return numLeadingRows;
+        return 2;
     }
 
     private int getNumLeadingCols() {
@@ -379,8 +326,8 @@ class TabularDataTable extends AbstractTableModel {
       The number of initial "special" columns not used to display the data
       set.
          */
-        final int numLeadingCols = 1;
-        return numLeadingCols;
+
+        return 1;
     }
 
     public void setCategoryNamesShown(boolean selected) {

@@ -73,7 +73,8 @@ public final class TimeLagGraphEditor extends JPanel
     private final EdgeTypeTable edgeTypeTable;
 
     //===========================CONSTRUCTOR========================//
-    public TimeLagGraphEditor(TimeLagGraphWrapper timeLagGraphWrapper) {
+    public TimeLagGraphEditor(TimeLagGraphWrapper timeLagGraphWrapper, CopyLayoutAction copyLayoutAction) {
+        this.copyLayoutAction = copyLayoutAction;
         setLayout(new BorderLayout());
         this.layoutEditable = this;
         this.edgeTypeTable = new EdgeTypeTable();
@@ -87,7 +88,7 @@ public final class TimeLagGraphEditor extends JPanel
      * Sets the name of this editor.
      */
     @Override
-    public final void setName(String name) {
+    public void setName(String name) {
         String oldName = getName();
         super.setName(name);
         firePropertyChange("name", oldName, getName());
@@ -126,9 +127,7 @@ public final class TimeLagGraphEditor extends JPanel
         getWorkbench().pasteSubgraph(sessionElements, upperLeft);
         getWorkbench().deselectAll();
 
-        for (int i = 0; i < sessionElements.size(); i++) {
-
-            Object o = sessionElements.get(i);
+        for (Object o : sessionElements) {
 
             if (o instanceof GraphNode) {
                 Node modelNode = (Node) o;
@@ -298,7 +297,6 @@ public final class TimeLagGraphEditor extends JPanel
     /**
      * Updates bootstrap table on adding/removing edges or graph changes
      *
-     * @param graph
      */
     private void updateBootstrapTable(Graph graph) {
         this.edgeTypeTable.update(graph);
@@ -331,17 +329,6 @@ public final class TimeLagGraphEditor extends JPanel
         TimeLagGraph graph = (TimeLagGraph) getLayoutEditable().getGraph();
         JMenu edit = new JMenu("Number-of-Lags = " + graph.getMaxLag());
 
-//        JMenuItem copy = new JMenuItem(new CopySubgraphAction(this));
-//        JMenuItem paste = new JMenuItem(new PasteSubgraphAction(this));
-//
-//        copy.setAccelerator(
-//                KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
-//        paste.setAccelerator(
-//                KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK));
-//
-//        edit.add(copy);
-//        edit.add(paste);
-//        edit.addSeparator();
         JMenuItem configuration = new JMenuItem("Configuration...");
         edit.add(configuration);
 
@@ -455,10 +442,6 @@ public final class TimeLagGraphEditor extends JPanel
 
     private LayoutEditable getLayoutEditable() {
         return this.layoutEditable;
-    }
-
-    private CopyLayoutAction getCopyLayoutAction() {
-        return this.copyLayoutAction;
     }
 
 }

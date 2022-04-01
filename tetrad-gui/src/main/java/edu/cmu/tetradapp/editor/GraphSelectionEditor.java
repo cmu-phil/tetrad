@@ -48,14 +48,13 @@ import java.awt.datatransfer.*;
 import java.awt.dnd.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.CharArrayReader;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Lets the user select a subgraph of a possible large graph and display it.
@@ -68,7 +67,6 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
     private static final long serialVersionUID = 2754618060275627122L;
 
     private final GraphEditorOptionsPanel graphEditorOptionsPanel;
-    private JPanel workbenchScrollsPanel = new JPanel();
     private final JComboBox<GraphSelectionWrapper.Type> graphTypeCombo = new JComboBox<>();
 
     private final HelpSet helpSet;
@@ -79,6 +77,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
     private final GraphSelectionWrapper wrapper;
     private final JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.LEFT);
     private final List<GraphWorkbench> workbenches = new ArrayList<>();
+    private final JPanel workbenchScrollsPanel;
     private GraphPropertiesAction graphAction;
     private TriplesAction triplesAction;
     private Map<String, List<Integer>> layoutGraph;
@@ -87,7 +86,6 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
     /**
      * Constructs a graph selection editor.
      *
-     * @param wrapper
      * @throws NullPointerException if <code>wrapper</code> is null.
      */
     public GraphSelectionEditor(GraphSelectionWrapper wrapper) {
@@ -123,7 +121,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         this.setSelectedGraphType(wrapper.getType());
 
         // Graph panel on right
-        workbenchScrollsPanel = this.workbenchScrollsPanel(wrapper);
+        this.workbenchScrollsPanel = this.workbenchScrollsPanel(wrapper);
 
         // splitPane contains subgraph setting options on left and graph on right
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
@@ -138,27 +136,25 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         // "Graph It" button
         JButton executeButton = new JButton("Graph It!");
 
-        executeButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Window owner = (Window) GraphSelectionEditor.this.getTopLevelAncestor();
+        executeButton.addActionListener(e -> {
+            Window owner = (Window) GraphSelectionEditor.this.getTopLevelAncestor();
 
-                new WatchedProcess(owner) {
-                    public void watch() {
-                        GraphWorkbench workbench = GraphSelectionEditor.this.getWorkbench();
-                        List<DisplayNode> displayNodes = workbench.getSelectedNodes();
-                        List<Node> newSelected = new ArrayList<>();
-                        for (DisplayNode node : displayNodes) {
-                            newSelected.add(node.getModelNode());
-                        }
-
-                        if (!newSelected.isEmpty()) {
-                            graphEditorOptionsPanel.setSelected(newSelected);
-                        }
-
-                        GraphSelectionEditor.this.tabbedPaneGraphs(wrapper);
+            new WatchedProcess(owner) {
+                public void watch() {
+                    GraphWorkbench workbench = GraphSelectionEditor.this.getWorkbench();
+                    List<DisplayNode> displayNodes = workbench.getSelectedNodes();
+                    List<Node> newSelected = new ArrayList<>();
+                    for (DisplayNode node : displayNodes) {
+                        newSelected.add(node.getModelNode());
                     }
-                };
-            }
+
+                    if (!newSelected.isEmpty()) {
+                        graphEditorOptionsPanel.setSelected(newSelected);
+                    }
+
+                    GraphSelectionEditor.this.tabbedPaneGraphs(wrapper);
+                }
+            };
         });
 
         workbenchScrollsPanel.validate();
@@ -218,9 +214,9 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         graphTypeCombo.setSelectedItem(wrapper.getType());
 
         graphTypeCombo.addActionListener(e -> {
-            GraphSelectionWrapper.Type selectedItem = (GraphSelectionWrapper.Type) graphTypeCombo.getSelectedItem();
-            wrapper.setType(selectedItem);
-            this.setSelectedGraphType(selectedItem);
+            AtomicReference<GraphSelectionWrapper.Type> selectedItem = new AtomicReference<>((GraphSelectionWrapper.Type) graphTypeCombo.getSelectedItem());
+            wrapper.setType(selectedItem.get());
+            this.setSelectedGraphType(selectedItem.get());
         });
     }
 
@@ -308,11 +304,9 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
             GraphWorkbench workbench = new GraphWorkbench();
             this.workbenches.add(workbench);
 
-            workbench.addPropertyChangeListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if ("modelChanged".equals(evt.getPropertyName())) {
-                        firePropertyChange("modelChanged", null, null);
-                    }
+            workbench.addPropertyChangeListener(evt -> {
+                if ("modelChanged".equals(evt.getPropertyName())) {
+                    firePropertyChange("modelChanged", null, null);
                 }
             });
 
@@ -334,7 +328,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
                 int selectedIndex = panel.getSelectedIndex();
                 selectedIndex = selectedIndex == -1 ? 0 : selectedIndex;
                 this.graphAction.setGraph(wrapper.getGraphs().get(selectedIndex), getWorkbench());
-                this.triplesAction.setGraph(wrapper.getGraphs().get(selectedIndex), getWorkbench());
+                this.triplesAction.setGraph(wrapper.getGraphs().get(selectedIndex));
             }
         });
 
@@ -354,18 +348,8 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
     private void tabbedPaneGraphs(GraphSelectionWrapper wrapper) {
         wrapper.calculateSelection();
 
-//        if (wrapper.getSelectedVariables() == null || wrapper.getSelectedVariables().isEmpty()) {
-//            first500Variables(wrapper);
-//        }
-
         for (int i = 0; i < this.tabbedPane.getTabCount(); i++) {
             Graph selection = wrapper.getSelectionGraph(i);
-
-//            if (selection.getNumNodes() > 500) {
-//                throw new IllegalArgumentException("That is too many nodes for me to display ("
-//                        + selection.getNumNodes() + ") I can only go up to 500 nodes.\n"
-//                        + "Try a smaller selection.");
-//            }
 
             if (!this.layoutGraph.isEmpty()) {
                 for (Node node : selection.getNodes()) {
@@ -375,10 +359,8 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
                         node.setCenter(center.get(0), center.get(1));
                     }
                 }
-            } else {
-//                GraphUtils.circleLayout(selection, 200, 200, 150);
-//                GraphUtils.fruchtermanReingoldLayout(selection);
             }
+
 
             GraphWorkbench workbench = getWorkbench(i);
             workbench.setGraph(selection);
@@ -395,10 +377,6 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
 
     /**
      * File save menu - Zhou
-     *
-     * @param editable
-     * @param comp
-     * @return
      */
     private JMenu createSaveMenu(GraphEditable editable) {
         JMenu save = new JMenu("Save As");
@@ -418,11 +396,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         this.graphAction = new GraphPropertiesAction(getWorkbench());
         graph.add(this.graphAction);
         graph.add(new PathsAction(getWorkbench()));
-//        graph.add(new DirectedPathsAction(getWorkbench()));
-//        graph.add(new TreksAction(getWorkbench()));
-//        graph.add(new AllPathsAction(getWorkbench()));
-//        graph.add(new NeighborhoodsAction(getWorkbench()));
-        this.triplesAction = new TriplesAction(this.wrapper.getGraphs().get(0), getWorkbench());
+        this.triplesAction = new TriplesAction(this.wrapper.getGraphs().get(0));
         graph.add(this.triplesAction);
 
         return graph;
@@ -482,18 +456,6 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         }
 
         return getWorkbench(selectedIndex);
-
-//        Graph graph = workbenches.get(selectedIndex).getGraph();
-//
-//        for (Node node : graph.getNodes()) {
-//            List<Integer> center = layoutGraph.get(node.getName());
-//
-//            if (center != null) {
-//                node.setCenter(center.get(0), center.get(1));
-//            }
-//        }
-//
-//        return workbenches.get(selectedIndex);
     }
 
     public GraphWorkbench getWorkbench(int selectionIndex) {
@@ -518,15 +480,6 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         this.prevSelected = selectedIndex;
 
         return this.workbenches.get(selectionIndex);
-    }
-
-    public void saveLayout() {
-        int selectedIndex = this.tabbedPane.getSelectedIndex();
-        if (selectedIndex == -1) {
-            selectedIndex = 0;
-        }
-        Graph layout = this.wrapper.getSelectionGraph(selectedIndex);
-        setLayoutGraph(layout);
     }
 
     @Override
@@ -554,9 +507,6 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
                     node.setCenter(center.get(0), center.get(1));
                 }
             }
-        }
-        if (graphs == null) {
-            graphs = new ArrayList<>();
         }
         this.wrapper.setGraphs(graphs);
         workbenchScrollsPanel(this.wrapper);
@@ -610,13 +560,9 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         // The font to render fields in.
         private final Font _font = new Font("Dialog", Font.PLAIN, 12);
 
-        private final GraphSelectionWrapper graphSelectionWrapper;
-
         /**
          * Constructs the editor given the <code>Parameters</code> and the
          * <code>DataModel</code> that should be used.
-         *
-         * @param graphSelectionWrapper
          */
         public GraphEditorOptionsPanel(GraphSelectionWrapper graphSelectionWrapper) {
             if (graphSelectionWrapper == null) {
@@ -628,7 +574,6 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
             this.atMost = new JRadioButton("At Most");
             this.atLeast = new JRadioButton("At Least");
             this.nField = new IntTextField(GraphSelectionEditor.this.wrapper.getN(), 2);
-            this.graphSelectionWrapper = graphSelectionWrapper;
             this.dualListPanel = new DualListPanel();
             this.sourceList = this.dualListPanel.getSourceList();
             this.selectedList = this.dualListPanel.getSelectedList();
@@ -701,15 +646,9 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
                 atLeast.setSelected(true);
             }
 
-            equals.addActionListener((e) -> {
-                wrapper.setNType(nType.equals);
-            });
-            atMost.addActionListener((e) -> {
-                wrapper.setNType(nType.atMost);
-            });
-            atLeast.addActionListener((e) -> {
-                wrapper.setNType(nType.atLeast);
-            });
+            equals.addActionListener((e) -> wrapper.setNType(nType.equals));
+            atMost.addActionListener((e) -> wrapper.setNType(nType.atMost));
+            atLeast.addActionListener((e) -> wrapper.setNType(nType.atLeast));
             nField.setFilter((value, oldValue) -> {
                 try {
                     wrapper.setN(value);
@@ -927,9 +866,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
             List<Node> selected = list.getSelectedValuesList();
             List<Node> selectedList = new ArrayList<>(selected == null ? 0 : selected.size());
             if (selected != null) {
-                for (Object o : selected) {
-                    selectedList.add((Node) o);
-                }
+                selectedList.addAll(selected);
             }
             return selectedList;
         }
@@ -1066,8 +1003,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
                     selected = list.getSelectedValuesList();
                 }
                 if (selected != null) {
-                    List<Node> nodes = new ArrayList<>();
-                    nodes.addAll(selected);
+                    List<Node> nodes = new ArrayList<>(selected);
                     ListTransferable t = new ListTransferable(nodes);
                     dge.startDrag(DragSource.DefaultMoveDrop, t, this);
                 }
@@ -1200,11 +1136,6 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         /**
          * Creates a new copy subsession action for the given LayoutEditable and
          * clipboard.
-         *
-         * @param component
-         * @param wrapper
-         * @param sourceList
-         * @param selectedList
          */
         public GraphSelectionTextInputAction(JComponent component, GraphSelectionWrapper wrapper,
                                              JList<Node> sourceList, JList<Node> selectedList) {
@@ -1218,8 +1149,6 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         /**
          * Copies a parentally closed selection of session nodes in the
          * frontmost session editor to the clipboard.
-         *
-         * @param e
          */
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
@@ -1277,7 +1206,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
                 String text = this.textArea.getText();
 
                 BufferedReader r = new BufferedReader(new CharArrayReader(text.toCharArray()));
-                String line = null;
+                String line;
 
                 while ((line = r.readLine()) != null) {
                     Node node = this.wrapper.getOriginalGraph().getNode(line);

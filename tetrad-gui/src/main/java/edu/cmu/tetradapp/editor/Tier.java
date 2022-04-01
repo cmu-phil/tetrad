@@ -25,8 +25,6 @@ import edu.cmu.tetrad.data.IKnowledge;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -79,7 +77,7 @@ class Tier extends JPanel {
         add(new JLabel("Tier " + this.num));
         add(this.jsp);
 
-        List t = Tier.know.getTier(this.num);
+        List<String> t = Tier.know.getTier(this.num);
 
         this.view.setLayout(new BoxLayout(this.view, BoxLayout.X_AXIS));
 
@@ -100,25 +98,23 @@ class Tier extends JPanel {
             cBox.setMaximumSize(new Dimension(80, 50));
             this.view.add(cBox);
 
-            cBox.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    JComboBox cb = (JComboBox) e.getSource();
-                    int newTier = cb.getSelectedIndex() - 2;
-                    String s = (String) cb.getItemAt(0);
+            cBox.addActionListener(e -> {
+                JComboBox cb = (JComboBox) e.getSource();
+                int newTier = cb.getSelectedIndex() - 2;
+                String s = (String) cb.getItemAt(0);
 
-                    if (newTier == -2) {
-                        return;
-                    }
-
-                    //know.unspecifyTier(s);
-                    Tier.know.removeFromTiers(s);
-
-                    if (newTier >= 0) {
-                        Tier.know.addToTier(newTier, s);
-                    }
-
-                    Tier.this.knowList.refreshInfo();
+                if (newTier == -2) {
+                    return;
                 }
+
+                //know.unspecifyTier(s);
+                Tier.know.removeFromTiers(s);
+
+                if (newTier >= 0) {
+                    Tier.know.addToTier(newTier, s);
+                }
+
+                Tier.this.knowList.refreshInfo();
             });
 
         }
@@ -177,25 +173,23 @@ class Tier extends JPanel {
             cBox.setMaximumSize(new Dimension(80, 50));
             this.view.add(cBox);
 
-            cBox.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    JComboBox cb = (JComboBox) e.getSource();
-                    int newTier = cb.getSelectedIndex() - 2;
-                    String s = (String) cb.getItemAt(0);
+            cBox.addActionListener(e -> {
+                JComboBox cb = (JComboBox) e.getSource();
+                int newTier = cb.getSelectedIndex() - 2;
+                String s = (String) cb.getItemAt(0);
 
-                    if (newTier == -2) {
-                        return;
-                    }
-
-                    //know.unspecifyTier(s);
-                    Tier.know.removeFromTiers(s);
-
-                    if (newTier >= 0) {
-                        Tier.know.addToTier(newTier, s);
-                    }
-
-                    Tier.this.knowList.refreshInfo();
+                if (newTier == -2) {
+                    return;
                 }
+
+                //know.unspecifyTier(s);
+                Tier.know.removeFromTiers(s);
+
+                if (newTier >= 0) {
+                    Tier.know.addToTier(newTier, s);
+                }
+
+                Tier.this.knowList.refreshInfo();
             });
 
         }

@@ -22,7 +22,6 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.Variable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.JOptionUtils;
@@ -73,8 +72,6 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
      */
     public TabularDataJTable(DataSet model) {
 
-//		System.out.println("Calling constructor "
-//				+ Arrays.toString(Thread.currentThread().getStackTrace()));
         TabularDataTable dataModel = new TabularDataTable(model);
 
         dataModel.addPropertyChangeListener(this);
@@ -82,7 +79,7 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
         setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 //		System.out.println("dataModel: "+model.getColumnToTooltip());
         this.columnToTooltip
-                = model.getColumnToTooltip() != null ? model.getColumnToTooltip() : new Hashtable<String, String>();
+                = model.getColumnToTooltip() != null ? model.getColumnToTooltip() : new Hashtable<>();
         int rowCount = this.dataModel.getRowCount();
         int max = 0;
 
@@ -186,17 +183,6 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
 
     @Override
     public Component prepareRenderer(TableCellRenderer renderer, int rowIndex, int vColIndex) {
-//		if (columnToTooltip == null) {
-//			columnToTooltip = new Hashtable<String, String>();
-//			 	columnToTooltip.put("ADJ_COR", "Adjacencies in the reference graph that are in the true graph.");
-//	        	columnToTooltip.put("ADJ_FN", "Adjacencies in the true graph that are not in the reference graph.");
-//	        	columnToTooltip.put("ADJ_FP", "Adjacencies in the reference graph that are not in the true graph.");
-//	        	columnToTooltip.put("AHD_COR", "Arrowpoints in the reference graph that are in the true graph.");
-//	        	columnToTooltip.put("AHD_FN", "Arrowpoints in the true graph that are not in the reference graph.");
-//	        	columnToTooltip.put("AHD_FP", "Arrowpoints in the reference graph that are not in the true graph.");
-//
-//		}
-//	 	System.out.println("columnToTooltip " + columnToTooltip);
         Component c = super.prepareRenderer(renderer, rowIndex, vColIndex);
         if (c instanceof JComponent) {
             JComponent jc = (JComponent) c;
@@ -445,8 +431,7 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
         /*
 	  The number of initial "special" columns not used to display the data set.
          */
-        final int numLeadingCols = 1;
-        return numLeadingCols;
+        return 1;
     }
 
     /**
@@ -503,63 +488,6 @@ class RowNumberRenderer extends DefaultTableCellRenderer {
     }
 }
 
-//class MultiplierRenderer extends DefaultTableCellRenderer {
-//	public Component getTableCellRendererComponent(JTable table, Object value,
-//			boolean isSelected, boolean hasFocus, int row, int column) {
-//		JLabel label = (JLabel) super.getTableCellRendererComponent(table,
-//				value, isSelected, hasFocus, row, column);
-//
-//		if (value == null) {
-//			setText("");
-//		} else {
-//			setText(value.toString());
-//		}
-//
-//		label.setHorizontalAlignment(JLabel.CENTER);
-//		label.setFont(new Font("SansSerif", Font.BOLD, 10));
-//		label.setForeground(Color.DARK_GRAY);
-//
-//		return label;
-//	}
-//}
-//class MultiplierEditor extends DefaultCellEditor {
-//	private final JTextField textField;
-//
-//	/**
-//	 * Constructs a new number cell editor.
-//	 */
-//	public MultiplierEditor() {
-//		super(new JTextField());
-//
-//		textField = (JTextField) editorComponent;
-//		textField.setHorizontalAlignment(JTextField.CENTER);
-//		textField.setFont(new Font("SansSerif", Font.BOLD, 10));
-//		textField.setForeground(Color.DARK_GRAY);
-//		textField.setBorder(new LineBorder(Color.black));
-//
-//		delegate = new EditorDelegate() {
-//			public void setValue(Object value) {
-//				if (value instanceof Integer) {
-//					textField.setText(value.toString());
-//				}
-//
-//				textField.selectAll();
-//			}
-//
-//			/**
-//			 * Overrides delegate; gets the text value from the cell to send
-//			 * back to the model.
-//			 *
-//			 * @return this text value.
-//			 */
-//			public Object getCellEditorValue() {
-//				return textField.getText();
-//			}
-//		};
-//
-//		textField.addActionListener(delegate);
-//	}
-//}
 class VariableNameRenderer extends DefaultTableCellRenderer {
 
     public void setValue(Object value) {
@@ -669,14 +597,7 @@ class DataCellRenderer extends DefaultTableCellRenderer {
 
         if (this.dataSet.getNumColumns() > 0 && col >= getNumLeadingCols()
                 && col < this.dataSet.getNumColumns() + getNumLeadingCols()) {
-            int dataCol = col - getNumLeadingCols();
-            Node variable = this.dataSet.getVariable(dataCol);
-
-            if (variable instanceof DiscreteVariable) {
-                renderer.setHorizontalAlignment(SwingConstants.RIGHT);
-            } else {
-                renderer.setHorizontalAlignment(SwingConstants.RIGHT);
-            }
+            renderer.setHorizontalAlignment(SwingConstants.RIGHT);
         }
 
         return renderer;

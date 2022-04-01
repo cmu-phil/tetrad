@@ -31,8 +31,6 @@ import javax.swing.*;
 import javax.swing.border.MatteBorder;
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
@@ -81,11 +79,9 @@ final class StructEMBayesSearchEditorWizard extends JPanel {
 
         Node node = (Node) (this.varNamesComboBox.getSelectedItem());
         this.editingTable = new BayesEstimatorNodeEditingTable(node, bayesIm);
-        this.editingTable.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("editorValueChanged".equals(evt.getPropertyName())) {
-                    firePropertyChange("editorValueChanged", null, null);
-                }
+        this.editingTable.addPropertyChangeListener(evt -> {
+            if ("editorValueChanged".equals(evt.getPropertyName())) {
+                firePropertyChange("editorValueChanged", null, null);
             }
         });
 
@@ -125,42 +121,36 @@ final class StructEMBayesSearchEditorWizard extends JPanel {
         add(b1, BorderLayout.CENTER);
 
         // Add listeners.
-        this.varNamesComboBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Node node = (Node) (StructEMBayesSearchEditorWizard.this.varNamesComboBox.getSelectedItem());
-                getWorkbench().scrollWorkbenchToNode(node);
-                setCurrentNode(node);
-            }
+        this.varNamesComboBox.addActionListener(e -> {
+            Node node1 = (Node) (StructEMBayesSearchEditorWizard.this.varNamesComboBox.getSelectedItem());
+            getWorkbench().scrollWorkbenchToNode(node1);
+            setCurrentNode(node1);
         });
 
-        nextButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                int current = StructEMBayesSearchEditorWizard.this.varNamesComboBox.getSelectedIndex();
-                int max = StructEMBayesSearchEditorWizard.this.varNamesComboBox.getItemCount();
+        nextButton.addActionListener(e -> {
+            int current = StructEMBayesSearchEditorWizard.this.varNamesComboBox.getSelectedIndex();
+            int max = StructEMBayesSearchEditorWizard.this.varNamesComboBox.getItemCount();
 
-                ++current;
+            ++current;
 
-                if (current == max) {
-                    JOptionPane.showMessageDialog(
-                            StructEMBayesSearchEditorWizard.this,
-                            "There are no more variables.");
-                }
-
-                int set = (current < max) ? current : 0;
-
-                StructEMBayesSearchEditorWizard.this.varNamesComboBox.setSelectedIndex(set);
+            if (current == max) {
+                JOptionPane.showMessageDialog(
+                        StructEMBayesSearchEditorWizard.this,
+                        "There are no more variables.");
             }
+
+            int set = (current < max) ? current : 0;
+
+            StructEMBayesSearchEditorWizard.this.varNamesComboBox.setSelectedIndex(set);
         });
 
-        workbench.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent e) {
-                if (e.getPropertyName().equals("selectedNodes")) {
-                    List selection = (List) (e.getNewValue());
+        workbench.addPropertyChangeListener(e -> {
+            if (e.getPropertyName().equals("selectedNodes")) {
+                List selection = (List) (e.getNewValue());
 
-                    if (selection.size() == 1) {
-                        Node node = (Node) (selection.get(0));
-                        StructEMBayesSearchEditorWizard.this.varNamesComboBox.setSelectedItem(node);
-                    }
+                if (selection.size() == 1) {
+                    Node node12 = (Node) (selection.get(0));
+                    StructEMBayesSearchEditorWizard.this.varNamesComboBox.setSelectedItem(node12);
                 }
             }
         });

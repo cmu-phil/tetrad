@@ -102,8 +102,7 @@ class TemporalTierEditor extends JPanel
      */
     public void propertyChange(PropertyChangeEvent e) {
 
-        //System.out.println("prop change");
-        //firePropertyChange("TemporalTierEditor",null,null);
+
         this.tierList.repaint();
         validate();
     }
@@ -132,14 +131,6 @@ class TemporalTierEditor extends JPanel
             this.tierList.refreshInfo();
             validate();
         }
-        /*
-        if (a.getSource() == this.nameTiers) {
-            knowledge.varNameTiers();
-            tierList.repaint();
-            tierList.refreshInfo();
-            validate();
-        }
-        */
     }
 }
 

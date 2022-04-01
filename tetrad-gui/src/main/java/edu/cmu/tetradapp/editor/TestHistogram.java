@@ -21,18 +21,10 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.BoxDataSet;
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.VerticalDoubleDataBox;
-import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-
-import java.util.LinkedList;
-import java.util.List;
 
 
 /**
@@ -46,13 +38,6 @@ public class TestHistogram extends TestCase {
     }
 
     public void test1() {
-        List<Node> nodes = new LinkedList<>();
-
-        Node x1 = new ContinuousVariable("X1");
-        Node x2 = new ContinuousVariable("X2");
-        nodes.add(x1);
-        nodes.add(x2);
-
         Matrix dataMatrix = new Matrix(10, 2);
 
         dataMatrix.set(0, 0, 0);
@@ -76,11 +61,6 @@ public class TestHistogram extends TestCase {
         dataMatrix.set(7, 1, 0);
         dataMatrix.set(8, 1, 0);
         dataMatrix.set(9, 1, 1);
-
-
-        DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(dataMatrix.transpose().toArray()), nodes);
-
-//        Histogram histogram = new Histogram(dataSet, );
     }
 
     /**

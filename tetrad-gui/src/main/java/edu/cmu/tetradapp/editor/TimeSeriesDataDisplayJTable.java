@@ -128,7 +128,7 @@ class TimeSeriesDataDisplayTable extends AbstractTableModel {
      * this number will be at least 100.
      */
     public int getRowCount() {
-        return (this.maxRowCount < 100) ? 100 : this.maxRowCount;
+        return Math.max(this.maxRowCount, 100);
     }
 
     /**
