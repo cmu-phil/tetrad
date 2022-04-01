@@ -732,7 +732,6 @@ public final class Fges implements GraphSearch, GraphScorer {
                                  Set<Node> parents, double bump) {
         Arrow arrow = new Arrow(bump, a, b, hOrT, TNeighbors, naYX, parents, this.arrowIndex++);
         this.sortedArrows.add(arrow);
-//        System.out.println(arrow);
     }
 
     private void addArrowBackward(Node a, Node b, Set<Node> hOrT, Set<Node> naYX,
