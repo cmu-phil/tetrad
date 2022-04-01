@@ -23,7 +23,6 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;
@@ -115,23 +114,16 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         double score = this.cci.isIndependent(x, y, z);
         this.score = score;
         double p = this.cci.getPValue(score);
+        boolean independent = p > this.alpha;
 
         if (this.verbose) {
-            IndependenceFact fact = new IndependenceFact(x, y, z);
-
-            String s;
-
-            if (p > this.alpha) {
-                s = fact + " INDEPENDENT p = " + p;
-            } else {
-                s = fact + " dependent p = " + p;
+            if (independent) {
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFactMsg(x, y, z, p));
             }
-
-            System.out.println(s);
-            TetradLogger.getInstance().log("info", s);
         }
 
-        return p > this.alpha;
+        return independent;
     }
 
     public boolean isIndependent(Node x, Node y, Node... z) {

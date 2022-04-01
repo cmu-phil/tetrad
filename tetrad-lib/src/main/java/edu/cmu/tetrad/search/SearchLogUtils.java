@@ -35,8 +35,6 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 public class SearchLogUtils {
-    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-
     public static String edgeOrientedMsg(String reason, Edge edge) {
         return "Orienting edge (" + reason + "): " + edge;
     }
@@ -63,12 +61,13 @@ public class SearchLogUtils {
 
     public static String independenceFactMsg(Node x, Node y, List<Node> condSet, double pValue) {
         StringBuilder sb = new StringBuilder();
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
         sb.append("Independence accepted: ");
         sb.append(SearchLogUtils.independenceFact(x, y, condSet));
 
         if (!Double.isNaN(pValue)) {
-            sb.append("\tp = ").append(SearchLogUtils.nf.format(pValue));
+            sb.append("\tp = ").append(nf.format(pValue));
         }
 
         return sb.toString();
@@ -76,12 +75,13 @@ public class SearchLogUtils {
 
     public static String dependenceFactMsg(Node x, Node y, List<Node> condSet, double pValue) {
         StringBuilder sb = new StringBuilder();
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
         sb.append("Dependent: ");
         sb.append(SearchLogUtils.independenceFact(x, y, condSet));
 
         if (!Double.isNaN(pValue)) {
-            sb.append("\tp = ").append(SearchLogUtils.nf.format(pValue));
+            sb.append("\tp = ").append(nf.format(pValue));
         }
 
         return sb.toString();

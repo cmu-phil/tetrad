@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
@@ -191,7 +192,17 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
         double q = 0.5 * (log(1.0 + r) - Math.log(1.0 - r));
         double fisherZ = sqrt(n - 3 - z.size()) * abs(q);
         this.fisherZ = fisherZ;
-        return fisherZ < this.cutoff;
+
+        boolean independent = fisherZ < this.cutoff;
+
+        if (this.verbose) {
+            if (independent) {
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
+            }
+        }
+
+        return independent;
     }
 
     private double partialCorrelation(Node x, Node y, List<Node> z) throws SingularMatrixException {

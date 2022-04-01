@@ -367,13 +367,6 @@ public class FasDeterministic implements IFas {
                             adjacencies.get(y).remove(x);
                             getSepsets().set(x, y, condSet);
 
-                            TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, condSet) + " p = " +
-                                    this.nf.format(test.getPValue()));
-
-                            if (this.verbose) {
-                                this.out.println(SearchLogUtils.independenceFactMsg(x, y, condSet, test.getPValue()));
-                            }
-
                             continue EDGE;
                         }
                     }

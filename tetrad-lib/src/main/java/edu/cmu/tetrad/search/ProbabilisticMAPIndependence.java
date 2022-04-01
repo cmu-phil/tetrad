@@ -28,12 +28,10 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Uses BCInference by Cooper and Bui to calculate probabilistic conditional independence judgments.
@@ -124,7 +122,16 @@ public class ProbabilisticMAPIndependence implements IndependenceTest {
         double pInd = probConstraint(BCInference.OP.independent, x, y, z);
         double p = this.probOp(pInd);
         posterior = p;
-        return p > 0.5;
+        boolean independent = p > 0.5;
+
+        if (this.verbose) {
+            if (independent) {
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFactMsg(x, y, Arrays.asList(z), p));
+            }
+        }
+
+        return independent;
     }
 
     public double probConstraint(BCInference.OP op, Node x, Node y, Node[] z) {

@@ -335,13 +335,9 @@ public class Fas implements IFas {
 
                     getSepsets().set(x, y, Z);
 
-                    if (this.verbose) {
-                        TetradLogger.getInstance().forceLogMessage(SearchLogUtils.independenceFact(x, y, Z) +
-                                " score = " + this.nf.format(test.getScore()));
-                    }
-
                     return true;
                 }
+
             }
         }
 

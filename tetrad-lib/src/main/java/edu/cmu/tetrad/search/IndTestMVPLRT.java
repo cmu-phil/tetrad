@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
@@ -127,7 +128,16 @@ public class IndTestMVPLRT implements IndependenceTest {
         }
         this.pValue = Math.min(p_0, p_1);
 
-        return this.pValue > this.alpha;
+        boolean independent = this.pValue > this.alpha;
+
+        if (this.verbose) {
+            if (independent) {
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
+            }
+        }
+
+        return independent;
     }
 
     public boolean isIndependent(Node x, Node y, Node... z) {

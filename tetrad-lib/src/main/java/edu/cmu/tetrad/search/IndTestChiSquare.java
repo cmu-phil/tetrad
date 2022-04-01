@@ -203,13 +203,11 @@ public final class IndTestChiSquare implements IndependenceTest {
         this.df = result.getDf();
         this.pValue = result.getPValue();
 
-        if (result.isIndep()) {
-            String sb = "INDEPENDENCE ACCEPTED: " +
-                    SearchLogUtils.independenceFact(x, y, z) +
-                    "\tp = " + nf.format(result.getPValue()) +
-                    "\tx^2 = " + nf.format(result.getXSquare()) +
-                    "\tdf = " + result.getDf();
-            TetradLogger.getInstance().log("independencies", sb);
+        if (verbose) {
+            if (result.isIndep()) {
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFactMsg(x, y, z, this.pValue));
+            }
         }
 
         this.facts.add(new IndependenceFact(x, y, z));

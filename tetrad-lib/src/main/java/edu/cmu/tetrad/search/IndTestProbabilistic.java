@@ -29,6 +29,7 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference;
 
 import java.util.*;
@@ -201,6 +202,13 @@ public class IndTestProbabilistic implements IndependenceTest {
             ind = (p >= cutoff);
         } else {
             ind = RandomUtil.getInstance().nextDouble() < p;
+        }
+
+        if (this.verbose) {
+            if (ind) {
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFactMsg(x, y, Arrays.asList(z), p));
+            }
         }
 
         return ind;

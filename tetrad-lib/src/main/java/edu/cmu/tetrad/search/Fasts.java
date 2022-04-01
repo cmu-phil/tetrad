@@ -473,13 +473,6 @@ public class Fasts implements IFas {
                             // This is the added component to enforce repeating structure
                             removeSimilarPairs(adjacencies, test, x, y, condSet);
 
-
-                            if (this.verbose) {
-                                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, condSet) +
-                                        " score = " + this.nf.format(test.getScore()));
-                                this.out.println(SearchLogUtils.independenceFactMsg(x, y, condSet, test.getPValue()));
-                            }
-
                             continue EDGE;
                         }
                     }

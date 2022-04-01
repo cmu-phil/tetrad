@@ -181,7 +181,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
         int[] _rows = getNonMissingRows(x, y, z);
         this.logisticRegression.setRows(_rows);
 
-        boolean indep;
+        boolean independent;
 
         double p = 1.0;
         for (Node _x : this.variablesPerNode.get(x)) {
@@ -223,16 +223,16 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
 
                 //faster but won't find min p
                 if (p <= this.alpha) {
-                    indep = false;
+                    independent = false;
                     this.lastP = p;
 
-                    if (indep) {
+                    if (independent) {
                         TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, p));
                     } else {
                         TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, p));
                     }
 
-                    return indep;
+                    return independent;
                 }
             }
 
@@ -241,17 +241,18 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
         // Choose the minimum of the p-values
         // This is only one method that can be used, this requires every coefficient to be significant
 
-        indep = p > this.alpha;
+        independent = p > this.alpha;
 
         this.lastP = p;
 
-        if (indep) {
-            TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, p));
-        } else {
-            TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, p));
+        if (this.verbose) {
+            if (independent) {
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFactMsg(x, y, z, p));
+            }
         }
 
-        return indep;
+        return independent;
     }
 
     // This takes an inordinate amount of time. -jdramsey 20150929
@@ -332,15 +333,16 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
         }
         this.lastP = p;
 
-        boolean indep = p > this.alpha;
+        boolean independent = p > this.alpha;
 
-        if (indep) {
-            TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, p));
-        } else {
-            TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, p));
+        if (this.verbose) {
+            if (independent) {
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFactMsg(x, y, z, p));
+            }
         }
 
-        return indep;
+        return independent;
     }
 
 

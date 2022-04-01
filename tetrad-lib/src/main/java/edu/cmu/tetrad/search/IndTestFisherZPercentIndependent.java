@@ -142,12 +142,8 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
 
         if (this.verbose) {
             if (independent) {
-                TetradLogger.getInstance().log("independencies",
+                TetradLogger.getInstance().forceLogMessage(
                         SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
-//            System.out.println(SearchLogUtils.independenceFactMsg(x, y, z, getScore()));
-            } else {
-                TetradLogger.getInstance().log("dependencies",
-                        SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
             }
         }
 

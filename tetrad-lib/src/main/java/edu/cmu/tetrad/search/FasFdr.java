@@ -297,10 +297,6 @@ public class FasFdr implements IFas {
 
                         getSepsets().set(x, y, theRest);
 
-                        if (this.verbose) {
-                            this.out.println(SearchLogUtils.independenceFactMsg(x, y, theRest, test.getPValue()));
-                        }
-
                         removed = true;
                     } else if (!forbiddenEdge(x, y)) {
                         adjacencies.get(x).add(y);

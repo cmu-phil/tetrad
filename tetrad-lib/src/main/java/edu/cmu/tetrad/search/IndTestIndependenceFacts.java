@@ -64,13 +64,8 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
 
         if (this.verbose) {
             if (independent) {
-                TetradLogger.getInstance().log("independencies",
-                        SearchLogUtils.independenceFactMsg(x, y, z, Double.NaN));
-//            System.out.println(SearchLogUtils.independenceFactMsg(x, y, z, Double.NaN));
-            } else {
-                TetradLogger.getInstance().log("dependencies",
-                        SearchLogUtils.dependenceFactMsg(x, y, z, Double.NaN));
-//            System.out.println(SearchLogUtils.dependenceFactMsg(x, y, z, Double.NaN));
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
             }
         }
 

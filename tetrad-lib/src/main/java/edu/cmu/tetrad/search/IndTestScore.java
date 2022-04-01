@@ -26,7 +26,10 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetrad.util.TetradLogger;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -81,7 +84,18 @@ public class IndTestScore implements IndependenceTest {
 
         double v = this.score.localScoreDiff(this.variables.indexOf(x), this.variables.indexOf(y), varIndices(z));
         this.bump = v;
-        return v <= 0;
+
+        boolean independent = v <= 0;
+
+        if (this.verbose) {
+            if (independent) {
+                NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFact(x, y, z) + " score = " + nf.format(score));
+            }
+        }
+
+        return independent;
     }
 
     private int[] varIndices(List<Node> z) {

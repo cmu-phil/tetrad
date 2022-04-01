@@ -177,6 +177,13 @@ public class IndTestDSep implements IndependenceTest {
             this.pvalue = 0.0;
         }
 
+        if (this.verbose) {
+            if (dSeparated) {
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFactMsg(x, y, z, this.pvalue));
+            }
+        }
+
         return dSeparated;
     }
 

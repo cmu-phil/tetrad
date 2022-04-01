@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.StatUtils;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
@@ -210,9 +211,19 @@ public final class IndTestFisherZ implements IndependenceTest {
     public synchronized boolean isIndependent(Node x, Node y, List<Node> z) {
         double p = getPValue(x, y, z);
 
-        if (Double.isNaN(p)) return true;
-        else {
-            return p > this.alpha;
+        boolean independent = p > this.alpha;
+
+        if (this.verbose) {
+            if (independent) {
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFactMsg(x, y, z, p));
+            }
+        }
+
+        if (Double.isNaN(p)) {
+            return true;
+        } else {
+            return independent;
         }
     }
 
@@ -422,7 +433,7 @@ public final class IndTestFisherZ implements IndependenceTest {
      * @return a string representation of this test.
      */
     public String toString() {
-        return "Fisher Z, alpha = " + new DecimalFormat("0.0E0").format(getAlpha());
+        return "Fisher Z, alpha = " + new DecimalFormat("0.0###").format(getAlpha());
     }
 
     private int sampleSize() {

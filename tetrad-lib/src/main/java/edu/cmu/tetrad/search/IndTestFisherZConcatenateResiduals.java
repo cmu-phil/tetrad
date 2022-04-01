@@ -165,12 +165,8 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
 
         if (this.verbose) {
             if (independent) {
-                TetradLogger.getInstance().log("independencies",
-                        SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
-                System.out.println(SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
-            } else {
-                TetradLogger.getInstance().log("dependencies",
-                        SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFactMsg(x, y, z, this.pValue));
             }
         }
 
@@ -302,16 +298,10 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
         return variableNames;
     }
 
-    /**
-     * @throws UnsupportedOperationException
-     */
     public boolean determines(List z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
 
-    /**
-     * @throws UnsupportedOperationException
-     */
     public DataSet getData() {
         return DataUtils.concatenate(this.dataSets);
     }

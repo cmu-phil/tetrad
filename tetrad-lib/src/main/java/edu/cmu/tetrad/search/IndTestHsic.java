@@ -314,15 +314,15 @@ public final class IndTestHsic implements IndependenceTest {
         this.pValue = 1.0 - evalCdf;
 
         // reject if pvalue <= alpha
-        if (this.pValue <= this.alpha) {
-            TetradLogger.getInstance().log("dependencies", SearchLogUtils
-                    .dependenceFactMsg(x, y, z, getPValue()));
-            return false;
-        }
+        boolean independent = this.pValue <= this.alpha;
+
         if (this.verbose) {
-            TetradLogger.getInstance().log("independencies", SearchLogUtils
-                    .independenceFactMsg(x, y, z, getPValue()));
+            if (independent) {
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
+            }
         }
+
         return true;
     }
 

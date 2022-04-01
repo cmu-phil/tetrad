@@ -157,6 +157,12 @@ public final class IndTestRegression implements IndependenceTest {
             }
         }
 
+        if (this.verbose) {
+            if (independent) {
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFactMsg(xVar, yVar, zList, p));
+            }
+        }
 
         return independent;
     }

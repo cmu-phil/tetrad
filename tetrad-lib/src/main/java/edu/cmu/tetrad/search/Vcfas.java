@@ -303,10 +303,6 @@ public class Vcfas {
                             adjacencies.get(y).remove(x);
                             getApparentlyNonadjacencies().put(Edges.undirectedEdge(x, y), condSet);
 
-                            if (this.verbose) {
-                                System.out.println(SearchLogUtils.independenceFactMsg(x, y, condSet, test.getPValue()));
-                            }
-
                             continue EDGE;
                         }
                     }

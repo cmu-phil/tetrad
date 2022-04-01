@@ -192,21 +192,12 @@ public final class IndTestGSquare implements IndependenceTest {
         GSquareTest.Result result = this.gSquareTest.calcGSquare(testIndices);
         this.pValue = result.getPValue();
 
-        String sb;
-        if (result.isIndep()) {
-            sb = "INDEPENDENCE ACCEPTED: " +
-                    SearchLogUtils.independenceFact(x, y, z) +
-                    "\tp = " + IndTestGSquare.nf.format(result.getPValue()) +
-                    "\tg^2 = " + IndTestGSquare.nf.format(result.getGSquare()) +
-                    "\tdf = " + result.getDf();
-        } else {
-            sb = "Not independent: " +
-                    SearchLogUtils.independenceFact(x, y, z) +
-                    "\tp = " + IndTestGSquare.nf.format(result.getPValue()) +
-                    "\tg^2 = " + IndTestGSquare.nf.format(result.getGSquare()) +
-                    "\tdf = " + result.getDf();
+        if (this.verbose) {
+            if (result.isIndep()) {
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
+            }
         }
-        TetradLogger.getInstance().log("independencies", sb);
 
         return result.isIndep();
     }

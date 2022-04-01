@@ -26,8 +26,10 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
+import java.text.NumberFormat;
 import java.util.*;
 
 
@@ -144,22 +146,19 @@ public class IndTestSepset implements IndependenceTest {
                     }
                     independent = true;
                     break;
-//                    return true;
                 }
             }
         }
 
         if (this.verbose) {
             if (independent) {
-                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
-            } else {
-                TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
+                NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFact(x, y, z) + " score = " + SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
             }
         }
 
         return independent;
-
-//        return false;
     }
 
     public boolean isIndependent(Node x, Node y, Node... z) {

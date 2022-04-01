@@ -249,9 +249,8 @@ public final class IndTestCramerT implements IndependenceTest {
 
         if (this.verbose) {
             if (independent) {
-                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, pValue));
-            } else {
-                TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, pValue));
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFactMsg(x, y, z, pValue));
             }
         }
 

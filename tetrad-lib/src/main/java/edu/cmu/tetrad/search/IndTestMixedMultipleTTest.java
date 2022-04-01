@@ -230,17 +230,18 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
 
     private boolean isIndependentMultinomialLogisticRegression(Node x, Node y, List<Node> z) {
         double p = dependencePvalsLogit(x, y, z)[0];
-        boolean indep = p > this.alpha;
+        boolean independent = p > this.alpha;
         //0 corresponds to y
         this.lastP = p;
 
-        if (indep) {
-            TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, p));
-        } else {
-            TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, p));
+        if (this.verbose) {
+            if (independent) {
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
+            }
         }
 
-        return indep;
+        return independent;
     }
 
     int[] _rows;
@@ -328,17 +329,16 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
         //result.getP()[1];
         this.lastP = p;
 
-        boolean indep = p > this.alpha;
+        boolean independent = p > this.alpha;
 
         if (this.verbose) {
-            if (indep) {
-                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, p));
-            } else {
-                TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, p));
+            if (independent) {
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
             }
         }
 
-        return indep;
+        return independent;
     }
 
 

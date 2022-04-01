@@ -27,6 +27,7 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
@@ -124,7 +125,16 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
             this.pValue = 1.0 - new ChiSquaredDistribution(dof0).cumulativeProbability(2.0 * lik0);
         }
 
-        return this.pValue > this.alpha;
+        boolean independent = this.pValue > this.alpha;
+
+        if (this.verbose) {
+            if (independent) {
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFactMsg(x, y, z, this.pValue));
+            }
+        }
+
+        return independent;
     }
 
     private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodesHash) {

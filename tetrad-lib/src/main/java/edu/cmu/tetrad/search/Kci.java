@@ -195,14 +195,14 @@ public class Kci implements IndependenceTest {
             double p = getPValue();
 
             if (independent) {
-                System.out.println(fact + " INDEPENDENT p = " + p);
-                TetradLogger.getInstance().log("info", fact + " Independent");
-
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFactMsg(x, y, z, p));
             } else {
-                System.out.println(fact + " dependent p = " + p);
-                TetradLogger.getInstance().log("info", fact.toString());
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.dependenceFactMsg(x, y, z, p));
             }
         }
+
 
         return independent;
     }

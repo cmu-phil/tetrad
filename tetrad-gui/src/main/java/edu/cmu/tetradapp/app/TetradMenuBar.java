@@ -129,6 +129,7 @@ final class TetradMenuBar extends JMenuBar {
         });
 
         settingsMenu.add(loggingSettingMenuItem);
+        settingsMenu.add(new JMenuItem(new NumberFormatAction()));
         settingsMenu.add(showExperimentalBox);
 
         fileMenu.add(settingsMenu);
@@ -155,7 +156,6 @@ final class TetradMenuBar extends JMenuBar {
         JMenuItem cut = new JMenuItem(new CutSubsessionAction());
         JMenuItem copy = new JMenuItem(new CopySubsessionAction());
         JMenuItem paste = new JMenuItem(new PasteSubsessionAction());
-        JMenuItem numberFormat = new JMenuItem(new NumberFormatAction());
 
         cut.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK));
@@ -168,7 +168,6 @@ final class TetradMenuBar extends JMenuBar {
         editMenu.add(copy);
         editMenu.add(paste);
         editMenu.addSeparator();
-        editMenu.add(numberFormat);
     }
 
 
