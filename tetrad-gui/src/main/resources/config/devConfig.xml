@@ -790,16 +790,6 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>
-            <!--<model name="Average Over Clusters" acronym="AvgClusters"-->
-            <!--help="avgclusters" category="Column operations">-->
-            <!--<logger>-->
-            <!--<event id="info" description="Information" default="on"/>-->
-            <!--<event id="data" description="Data"/>-->
-            <!--</logger>-->
-            <!--<model-class>edu.cmu.tetradapp.model.AverageOverClusters-->
-            <!--</model-class>-->
-            <!--<editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>-->
-            <!--</model>-->
             <model name="Implied Covariance Matrix--Measured" acronym="Implied Covar Meas" help="data"
                    category="implied">
                 <logger>

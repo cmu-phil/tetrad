@@ -108,34 +108,6 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
         this(new Dag(wrapper.getResultGraph()));
     }
 
-    public DagWrapper(PcRunner wrapper) {
-        this(new Dag(wrapper.getResultGraph()));
-    }
-
-    public DagWrapper(CcdRunner2 wrapper) {
-        this(new Dag(wrapper.getResultGraph()));
-    }
-
-    public DagWrapper(MimBuildRunner wrapper) {
-        this(new Dag(wrapper.getResultGraph()));
-    }
-
-    public DagWrapper(PurifyRunner wrapper) {
-        this(new Dag(wrapper.getResultGraph()));
-    }
-
-    public DagWrapper(BuildPureClustersRunner wrapper) {
-        this(new Dag(wrapper.getResultGraph()));
-    }
-
-    public DagWrapper(MbfsRunner wrapper) {
-        this(new Dag(wrapper.getResultGraph()));
-    }
-
-    public DagWrapper(CeFanSearchRunner wrapper) {
-        this(new Dag(wrapper.getResultGraph()));
-    }
-
     public DagWrapper(DataWrapper wrapper) {
         if (wrapper instanceof Simulation) {
             Simulation simulation = (Simulation) wrapper;

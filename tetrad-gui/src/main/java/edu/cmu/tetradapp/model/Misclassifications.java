@@ -74,10 +74,6 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
     private Set<Edge> pcNonadjacent;
     private List<Node> pcNodes;
 
-    private Set<Edge> cpcAdjacent;
-    private Set<Edge> cpcNonadjacent;
-    private List<Node> cpcNodes;
-
     private String name;
     private final Parameters params;
     private List<Graph> targetGraphs = new ArrayList<>();
@@ -86,10 +82,6 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
     private NumberFormat nf;
 
     //=============================CONSTRUCTORS==========================//
-
-//    public Misclassifications(GeneralAlgorithmRunner model, Parameters params) {
-//        this(model, model.getDataWrapper(), params);
-//    }
 
     /**
      * Compares the results of a PC to a reference workbench by counting errors
@@ -114,43 +106,6 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
             setPcFields((PcRunner) model1);
         }
 
-        if (model1 instanceof CpcRunner && model2 instanceof PcRunner) {
-            this.useCpcOutputs = true;
-            setCpcFields((CpcRunner) model1);
-            setPcFields((PcRunner) model2);
-        }
-
-        if ((model2 instanceof CpcRunner && model1 instanceof PcRunner)) {
-            this.useCpcOutputs = true;
-            setCpcFields((CpcRunner) model2);
-            setPcFields((PcRunner) model1);
-        }
-
-        if (model1 instanceof VcpcRunner && model2 instanceof CpcRunner) {
-            this.useVcpcOutputs = true;
-            setVcpcFields((VcpcRunner) model1);
-            setCpcFields((CpcRunner) model2);
-        }
-
-        if ((model2 instanceof VcpcRunner && model1 instanceof CpcRunner)) {
-            this.useVcpcOutputs = true;
-            setVcpcFields((VcpcRunner) model2);
-            setCpcFields((CpcRunner) model1);
-        }
-
-        if (model1 instanceof CpcRunner && model2 instanceof SampleVcpcRunner) {
-            this.useScpcOutputs = true;
-            setCpcFields((CpcRunner) model1);
-            setSvcpcFields((SampleVcpcRunner) model2);
-        }
-
-        if ((model2 instanceof CpcRunner && model1 instanceof SampleVcpcRunner)) {
-            this.useScpcOutputs = true;
-            setCpcFields((CpcRunner) model2);
-            setSvcpcFields((SampleVcpcRunner) model1);
-        }
-
-
         if (model1 instanceof VcpcRunner && model2 instanceof SampleVcpcRunner) {
             this.useSvcpcOutputs = true;
             setVcpcFields((VcpcRunner) model1);
@@ -163,40 +118,6 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
             setSvcpcFields((SampleVcpcRunner) model1);
 
         }
-
-        if (model1 instanceof CpcRunner && model2 instanceof SampleVcpcFastRunner) {
-            this.useSFcpcOutputs = true;
-            setCpcFields((CpcRunner) model1);
-            setSfvcpcFields((SampleVcpcFastRunner) model2);
-        }
-
-        if ((model2 instanceof CpcRunner && model1 instanceof SampleVcpcFastRunner)) {
-            this.useSFcpcOutputs = true;
-            setCpcFields((CpcRunner) model2);
-            setSfvcpcFields((SampleVcpcFastRunner) model1);
-
-        }
-
-        if (model1 instanceof CpcRunner && model2 instanceof VcpcFastRunner) {
-            this.useFcpcOutputs = true;
-            setCpcFields((CpcRunner) model1);
-            setVcpcFastFields((VcpcFastRunner) model2);
-        }
-
-        // Need to be able to construct this object even if the models are
-        // null. Otherwise the interface is annoying.
-//        if (model2 == null) {
-//            model2 = new DagWrapper(new Dag());
-//        }
-//
-//        if (model1 == null) {
-//            model1 = new DagWrapper(new Dag());
-//        }
-
-//        if (!(model1 instanceof MultipleGraphSource) ||
-//                !(model2 instanceof MultipleGraphSource)) {
-//            throw new IllegalArgumentException("Must be graph sources.");
-//        }
 
         this.params = params;
 
@@ -355,12 +276,6 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
         this.pcAdjacent = pc.getAdj();
         this.pcNonadjacent = pc.getNonAdj();
         this.pcNodes = pc.getGraph().getNodes();
-    }
-
-    private void setCpcFields(CpcRunner cpc) {
-        this.cpcAdjacent = cpc.getAdj();
-        this.cpcNonadjacent = cpc.getNonAdj();
-        this.cpcNodes = cpc.getGraph().getNodes();
     }
 
     /**
@@ -546,9 +461,6 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
 
     private String adjacencyMisclassificationsFive() {
 
-        if (this.cpcNodes == null) {
-            throw new NullPointerException("Please run CPC first, jerk");
-        }
         if (this.sVcpcNodes == null) {
             throw new NullPointerException("Please run sVCPC first, jerk");
         }
@@ -561,15 +473,7 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
         Set<Edge> nonAdjDefNonAdj = new HashSet<>();
 
 
-        Set<Edge> cpcAdj = MisclassificationUtils.convertNodes(this.cpcAdjacent, this.sVcpcNodes);
-        Set<Edge> cpcNonadj = MisclassificationUtils.convertNodes(this.cpcNonadjacent, this.sVcpcNodes);
-
         Set<Edge> svcpcAdj = new HashSet<>(this.sVcpcAdjacent);
-
-        for (Edge edge : cpcAdj) {
-            edge.setEndpoint1(Endpoint.TAIL);
-            edge.setEndpoint2(Endpoint.TAIL);
-        }
 
         for (Edge edge : svcpcAdj) {
             edge.setEndpoint1(Endpoint.TAIL);
@@ -579,49 +483,8 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
 
         int[][] tableAdj = new int[4][3];
 
-        for (Edge edge : cpcAdj) {
-
-            if (svcpcAdj.contains(edge)) {
-                tableAdj[0][0]++;
-                tableAdj[0][2]++;
-                tableAdj[3][0]++;
-            }
-            if (this.sVcpcApparent.contains(edge)) {
-                tableAdj[1][0]++;
-                tableAdj[1][2]++;
-                tableAdj[3][0]++;
-                adjAppNonAdj.add(edge);
-            }
-            if (this.sVcpcDefinite.contains(edge)) {
-                tableAdj[2][0]++;
-                tableAdj[2][2]++;
-                tableAdj[3][0]++;
-                adjDefNonAdj.add(edge);
-            }
-        }
-
         TetradLogger.getInstance().log("adjacenciesApp", "\n Adjacencies marked Apparent Non-adjacent" + adjAppNonAdj);
         TetradLogger.getInstance().log("adjacenciesDef", "\n Adjacencies marked Definite Non-adjacent" + adjDefNonAdj);
-
-        for (Edge edge : cpcNonadj) {
-            if (svcpcAdj.contains(edge)) {
-                tableAdj[0][1]++;
-                tableAdj[0][2]++;
-                tableAdj[3][1]++;
-            }
-            if (this.sVcpcApparent.contains(edge)) {
-                tableAdj[1][1]++;
-                tableAdj[1][2]++;
-                tableAdj[3][1]++;
-                nonAdjAppNonAdj.add(edge);
-            }
-            if (this.sVcpcDefinite.contains(edge)) {
-                tableAdj[2][1]++;
-                tableAdj[2][2]++;
-                tableAdj[3][1]++;
-                nonAdjDefNonAdj.add(edge);
-            }
-        }
 
         TetradLogger.getInstance().log("nonadjacenciesApp", "\n Non-Adjacencies marked Apparent Non-adjacent" + nonAdjAppNonAdj);
         TetradLogger.getInstance().log("nonadjacenciesDef", "\n Non-Adjacencies marked Definite Non-adjacent" + nonAdjDefNonAdj);
@@ -653,9 +516,6 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
 
     private String adjacencyMisclassificationsSix() {
 
-        if (this.cpcNodes == null) {
-            throw new NullPointerException("Please run CPC first, jerk");
-        }
         if (this.sfVcpcNodes == null) {
             throw new NullPointerException("Please run sfVCPC first, jerk");
         }
@@ -668,15 +528,7 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
         Set<Edge> nonAdjDefNonAdj = new HashSet<>();
 
 
-        Set<Edge> cpcAdj = MisclassificationUtils.convertNodes(this.cpcAdjacent, this.sfVcpcNodes);
-        Set<Edge> cpcNonadj = MisclassificationUtils.convertNodes(this.cpcNonadjacent, this.sfVcpcNodes);
-
         Set<Edge> sfvcpcAdj = new HashSet<>(this.sfVcpcAdjacent);
-
-        for (Edge edge : cpcAdj) {
-            edge.setEndpoint1(Endpoint.TAIL);
-            edge.setEndpoint2(Endpoint.TAIL);
-        }
 
         for (Edge edge : sfvcpcAdj) {
             edge.setEndpoint1(Endpoint.TAIL);
@@ -686,49 +538,8 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
 
         int[][] tableAdj = new int[4][3];
 
-        for (Edge edge : cpcAdj) {
-
-            if (sfvcpcAdj.contains(edge)) {
-                tableAdj[0][0]++;
-                tableAdj[0][2]++;
-                tableAdj[3][0]++;
-            }
-            if (this.sfVcpcApparent.contains(edge)) {
-                tableAdj[1][0]++;
-                tableAdj[1][2]++;
-                tableAdj[3][0]++;
-                adjAppNonAdj.add(edge);
-            }
-            if (this.sfVcpcDefinite.contains(edge)) {
-                tableAdj[2][0]++;
-                tableAdj[2][2]++;
-                tableAdj[3][0]++;
-                adjDefNonAdj.add(edge);
-            }
-        }
-
         TetradLogger.getInstance().log("adjacenciesApp", "\n Adjacencies marked Apparent Non-adjacent" + adjAppNonAdj);
         TetradLogger.getInstance().log("adjacenciesDef", "\n Adjacencies marked Definite Non-adjacent" + adjDefNonAdj);
-
-        for (Edge edge : cpcNonadj) {
-            if (sfvcpcAdj.contains(edge)) {
-                tableAdj[0][1]++;
-                tableAdj[0][2]++;
-                tableAdj[3][1]++;
-            }
-            if (this.sfVcpcApparent.contains(edge)) {
-                tableAdj[1][1]++;
-                tableAdj[1][2]++;
-                tableAdj[3][1]++;
-                nonAdjAppNonAdj.add(edge);
-            }
-            if (this.sfVcpcDefinite.contains(edge)) {
-                tableAdj[2][1]++;
-                tableAdj[2][2]++;
-                tableAdj[3][1]++;
-                nonAdjDefNonAdj.add(edge);
-            }
-        }
 
         TetradLogger.getInstance().log("nonadjacenciesApp", "\n Non-Adjacencies marked Apparent Non-adjacent" + nonAdjAppNonAdj);
         TetradLogger.getInstance().log("nonadjacenciesDef", "\n Non-Adjacencies marked Definite Non-adjacent" + nonAdjDefNonAdj);
@@ -759,9 +570,6 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
 
     private String adjacencyMisclassificationsSeven() {
 
-        if (this.cpcNodes == null) {
-            throw new NullPointerException("Please run CPC first, jerk");
-        }
         if (this.fvcpcNodes == null) {
             throw new NullPointerException("Please run fVCPC first, jerk");
         }
@@ -774,15 +582,7 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
         Set<Edge> nonAdjDefNonAdj = new HashSet<>();
 
 
-        Set<Edge> cpcAdj = MisclassificationUtils.convertNodes(this.cpcAdjacent, this.fvcpcNodes);
-        Set<Edge> cpcNonadj = MisclassificationUtils.convertNodes(this.cpcNonadjacent, this.fvcpcNodes);
-
         Set<Edge> fvcpcAdj = new HashSet<>(this.fvcpcAdjacent);
-
-        for (Edge edge : cpcAdj) {
-            edge.setEndpoint1(Endpoint.TAIL);
-            edge.setEndpoint2(Endpoint.TAIL);
-        }
 
         for (Edge edge : fvcpcAdj) {
             edge.setEndpoint1(Endpoint.TAIL);
@@ -792,49 +592,8 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
 
         int[][] tableAdj = new int[4][3];
 
-        for (Edge edge : cpcAdj) {
-
-            if (fvcpcAdj.contains(edge)) {
-                tableAdj[0][0]++;
-                tableAdj[0][2]++;
-                tableAdj[3][0]++;
-            }
-            if (this.fvcpcApparent.contains(edge)) {
-                tableAdj[1][0]++;
-                tableAdj[1][2]++;
-                tableAdj[3][0]++;
-                adjAppNonAdj.add(edge);
-            }
-            if (this.fvcpcDefinite.contains(edge)) {
-                tableAdj[2][0]++;
-                tableAdj[2][2]++;
-                tableAdj[3][0]++;
-                adjDefNonAdj.add(edge);
-            }
-        }
-
         TetradLogger.getInstance().log("adjacenciesApp", "\n Adjacencies marked Apparent Non-adjacent" + adjAppNonAdj);
         TetradLogger.getInstance().log("adjacenciesDef", "\n Adjacencies marked Definite Non-adjacent" + adjDefNonAdj);
-
-        for (Edge edge : cpcNonadj) {
-            if (fvcpcAdj.contains(edge)) {
-                tableAdj[0][1]++;
-                tableAdj[0][2]++;
-                tableAdj[3][1]++;
-            }
-            if (this.fvcpcApparent.contains(edge)) {
-                tableAdj[1][1]++;
-                tableAdj[1][2]++;
-                tableAdj[3][1]++;
-                nonAdjAppNonAdj.add(edge);
-            }
-            if (this.fvcpcDefinite.contains(edge)) {
-                tableAdj[2][1]++;
-                tableAdj[2][2]++;
-                tableAdj[3][1]++;
-                nonAdjDefNonAdj.add(edge);
-            }
-        }
 
         TetradLogger.getInstance().log("nonadjacenciesApp", "\n Non-Adjacencies marked Apparent Non-adjacent" + nonAdjAppNonAdj);
         TetradLogger.getInstance().log("nonadjacenciesDef", "\n Non-Adjacencies marked Definite Non-adjacent" + nonAdjDefNonAdj);
@@ -866,9 +625,6 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
 
     private String adjacencyMisclassificationsOne() {
 
-        if (this.cpcNodes == null) {
-            throw new NullPointerException("Please run CPC first, jerk");
-        }
         if (this.vcpcNodes == null) {
             throw new NullPointerException("Please run VCPC first, or see Nich");
         }
@@ -881,15 +637,7 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
         Set<Edge> nonAdjDefNonAdj = new HashSet<>();
 
 
-        Set<Edge> cpcAdj = MisclassificationUtils.convertNodes(this.cpcAdjacent, this.vcpcNodes);
-        Set<Edge> cpcNonadj = MisclassificationUtils.convertNodes(this.cpcNonadjacent, this.vcpcNodes);
-
         Set<Edge> vcpcAdj = new HashSet<>(this.vcpcAdjacent);
-
-        for (Edge edge : cpcAdj) {
-            edge.setEndpoint1(Endpoint.TAIL);
-            edge.setEndpoint2(Endpoint.TAIL);
-        }
 
         for (Edge edge : vcpcAdj) {
             edge.setEndpoint1(Endpoint.TAIL);
@@ -899,49 +647,8 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
 
         int[][] tableAdj = new int[4][3];
 
-        for (Edge edge : cpcAdj) {
-
-            if (vcpcAdj.contains(edge)) {
-                tableAdj[0][0]++;
-                tableAdj[0][2]++;
-                tableAdj[3][0]++;
-            }
-            if (this.vcpcApparent.contains(edge)) {
-                tableAdj[1][0]++;
-                tableAdj[1][2]++;
-                tableAdj[3][0]++;
-                adjAppNonAdj.add(edge);
-            }
-            if (this.vcpcDefinite.contains(edge)) {
-                tableAdj[2][0]++;
-                tableAdj[2][2]++;
-                tableAdj[3][0]++;
-                adjDefNonAdj.add(edge);
-            }
-        }
-
         TetradLogger.getInstance().log("adjacenciesApp", "\n Adjacencies marked Apparent Non-adjacent" + adjAppNonAdj);
         TetradLogger.getInstance().log("adjacenciesDef", "\n Adjacencies marked Definite Non-adjacent" + adjDefNonAdj);
-
-        for (Edge edge : cpcNonadj) {
-            if (vcpcAdj.contains(edge)) {
-                tableAdj[0][1]++;
-                tableAdj[0][2]++;
-                tableAdj[3][1]++;
-            }
-            if (this.vcpcApparent.contains(edge)) {
-                tableAdj[1][1]++;
-                tableAdj[1][2]++;
-                tableAdj[3][1]++;
-                nonAdjAppNonAdj.add(edge);
-            }
-            if (this.vcpcDefinite.contains(edge)) {
-                tableAdj[2][1]++;
-                tableAdj[2][2]++;
-                tableAdj[3][1]++;
-                nonAdjDefNonAdj.add(edge);
-            }
-        }
 
         TetradLogger.getInstance().log("nonadjacenciesApp", "\n Non-Adjacencies marked Apparent Non-adjacent" + nonAdjAppNonAdj);
         TetradLogger.getInstance().log("nonadjacenciesDef", "\n Non-Adjacencies marked Definite Non-adjacent" + nonAdjDefNonAdj);
@@ -973,25 +680,13 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
 
     private String adjacencyMisclassificationsTwo() {
 
-        if (this.cpcNodes == null) {
-            throw new NullPointerException("Please run CPC first, jerk");
-        }
         if (this.pcNodes == null) {
             throw new NullPointerException("Please run PC first, or see Nich");
         }
 
         this.nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-        Set<Edge> cpcAdj = MisclassificationUtils.convertNodes(this.cpcAdjacent, this.pcNodes);
-        Set<Edge> cpcNonadj = MisclassificationUtils.convertNodes(this.cpcNonadjacent, this.pcNodes);
-
-
         Set<Edge> pcAdj = new HashSet<>(this.pcAdjacent);
-
-        for (Edge edge : cpcAdj) {
-            edge.setEndpoint1(Endpoint.TAIL);
-            edge.setEndpoint2(Endpoint.TAIL);
-        }
 
         for (Edge edge : pcAdj) {
             edge.setEndpoint1(Endpoint.TAIL);
@@ -999,35 +694,6 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
         }
 
         int[][] tableAdj = new int[3][3];
-
-        for (Edge edge : cpcAdj) {
-
-            if (pcAdj.contains(edge)) {
-                tableAdj[0][0]++;
-                tableAdj[0][2]++;
-                tableAdj[2][0]++;
-            }
-            if (this.pcNonadjacent.contains(edge)) {
-                tableAdj[1][0]++;
-                tableAdj[1][2]++;
-                tableAdj[2][0]++;
-
-            }
-        }
-
-        for (Edge edge : cpcNonadj) {
-            if (pcAdj.contains(edge)) {
-                tableAdj[0][1]++;
-                tableAdj[0][2]++;
-                tableAdj[2][1]++;
-            }
-            if (this.pcNonadjacent.contains(edge)) {
-                tableAdj[1][1]++;
-                tableAdj[1][2]++;
-                tableAdj[2][1]++;
-            }
-
-        }
 
         StringBuilder builder = new StringBuilder();
 

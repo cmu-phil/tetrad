@@ -116,10 +116,6 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public ForbiddenGraphModel(LofsRunner wrapper, Parameters params) {
-        this((KnowledgeBoxInput) wrapper, params);
-    }
-
     public ForbiddenGraphModel(MeasurementModelWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }

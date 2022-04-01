@@ -118,10 +118,6 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
         this(wrapper.getGraph(), null);
     }
 
-    public ScoredGraphsWrapper(CpcRunner wrapper, Parameters parameters) {
-        this(wrapper.getGraph(), null);
-    }
-
     /**
      * Generates a simple exemplar of this class to test serialization.
      *

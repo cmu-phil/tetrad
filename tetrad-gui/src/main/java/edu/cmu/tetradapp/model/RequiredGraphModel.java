@@ -117,10 +117,6 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public RequiredGraphModel(LofsRunner wrapper, Parameters params) {
-        this((KnowledgeBoxInput) wrapper, params);
-    }
-
     public RequiredGraphModel(MeasurementModelWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
