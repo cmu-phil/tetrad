@@ -64,17 +64,17 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.26</version>
+            <version>1.7.36</version>
         </dependency>
         <dependency> <!--For java annotations used by annotated algorithms-->
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>
-            <version>0.9.11</version>
+            <version>0.10.2</version>
         </dependency>
         <dependency>
             <groupId>de.bwaldvogel</groupId>
             <artifactId>liblinear</artifactId>
-            <version>1.95</version>
+            <version>2.43</version>
         </dependency>
     </dependencies>
 </project>
