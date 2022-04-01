@@ -740,36 +740,6 @@ public class Kci implements IndependenceTest {
                 RealVector t = ed.getEigenvector(topIndices.get(i));
                 this.V.assignColumn(i, new Vector(t.toArray()));
             }
-//            } else {
-//                SingularValueDecomposition svd = new SingularValueDecomposition(new BlockRealMatrix(k.toArray()));
-//
-//                List<Double> evxAll = asList(svd.getSingularValues());
-//
-//                List<Integer> indx = series(evxAll.size()); // 1 2 3...
-//                topIndices = getTopIndices(evxAll, indx, getThreshold());
-//
-//                D = new Matrix(topIndices.size(), topIndices.size());
-//
-//                for (int i = 0; i < topIndices.size(); i++) {
-//                    D.set(i, i, Math.sqrt(evxAll.get(topIndices.get(i))));
-//                }
-//
-//                RealMatrix V0 = svd.getV();
-//
-//                V = new Matrix(V0.getRowDimension(), topIndices.size());
-//
-//                for (int i = 0; i < V.columns(); i++) {
-//                    double[] t = V0.getColumn(topIndices.get(i));
-//                    V.assignColumn(i, new Vector(t));
-//                }
-//
-//                topEigenvalues = new ArrayList<>();
-//
-//                for (int t : topIndices) {
-//                    getTopEigenvalues().add(evxAll.get(t));
-//                }
-//
-//            }
 
             return this;
         }
