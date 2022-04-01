@@ -139,7 +139,7 @@ public class Purify {
                 // Should type these ones.
 
                 if (testType == TestType.TETRAD_DELTA) {
-                    this.tetradTest = new ContinuousTetradTest(this.dataSet, testType, sig);
+                    this.tetradTest = new ContinuousTetradTest(this.dataSet, TestType.TETRAD_DELTA, sig);
                 } else {
                     this.tetradTest = new ContinuousTetradTest(this.correlationMatrix,
                             testType, sig);
