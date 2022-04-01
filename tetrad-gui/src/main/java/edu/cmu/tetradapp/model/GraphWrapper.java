@@ -73,6 +73,8 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
     }
 
     public GraphWrapper(GraphSource graphSource, Parameters parameters) {
+        this.parameters = parameters;
+
         if (graphSource instanceof Simulation) {
             Simulation simulation = (Simulation) graphSource;
             this.graphs = simulation.getGraphs();
@@ -111,6 +113,7 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
     }
 
     public GraphWrapper(Simulation simulation, Parameters parameters) {
+        this.parameters = parameters;
         this.graphs = simulation.getGraphs();
         this.numModels = this.graphs.size();
         this.modelIndex = 0;

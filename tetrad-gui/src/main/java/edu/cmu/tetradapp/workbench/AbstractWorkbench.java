@@ -665,11 +665,11 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         return this.modelEdgesToDisplay;
     }
 
-    public final Map getModelNodesToDisplay() {
+    public final Map<Node, Object> getModelNodesToDisplay() {
         return this.modelNodesToDisplay;
     }
 
-    private Map getDisplayToModel() {
+    private Map<Object, Object> getDisplayToModel() {
         return this.displayToModel;
     }
 
@@ -937,8 +937,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
         this.modelEdgesToDisplay = new HashMap<>();
         this.modelNodesToDisplay = new HashMap<>();
-        this.displayToModel = new HashMap();
-        this.displayToLabels = new HashMap();
+        this.displayToModel = new HashMap<>();
+        this.displayToLabels = new HashMap<>();
 
         removeAll();
         graph.addPropertyChangeListener(this.propChangeHandler);
@@ -2654,8 +2654,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     private void reconstiteMaps() {
         this.modelEdgesToDisplay = new HashMap<>(getModelEdgesToDisplay());
         this.modelNodesToDisplay = new HashMap<>(getModelNodesToDisplay());
-        this.displayToModel = new HashMap(this.displayToModel);
-        this.displayToLabels = new HashMap(this.displayToLabels);
+        this.displayToModel = new HashMap<>(this.displayToModel);
+        this.displayToLabels = new HashMap<>(this.displayToLabels);
     }
 
     private IDisplayEdge getTrackedEdge() {

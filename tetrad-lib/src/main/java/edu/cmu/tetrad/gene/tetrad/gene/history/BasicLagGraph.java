@@ -54,7 +54,7 @@ public final class BasicLagGraph implements LagGraph {
      *
      * @serial
      */
-    protected SortedMap<String, SortedSet<LaggedFactor>> connectivity;
+    private final SortedMap<String, SortedSet<LaggedFactor>> connectivity;
 
     /**
      * The maximum allowable lag. edges may not be added with lags greater than
@@ -91,9 +91,6 @@ public final class BasicLagGraph implements LagGraph {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static BasicLagGraph serializableInstance() {
         BasicLagGraph lagGraph = new BasicLagGraph();
@@ -189,7 +186,7 @@ public final class BasicLagGraph implements LagGraph {
                     "Illegal lag specified: " + laggedFactor);
         }
 
-        TreeSet list = (TreeSet) this.connectivity.get(factor);
+        TreeSet<LaggedFactor> list = (TreeSet<LaggedFactor>) this.connectivity.get(factor);
 
         if (list != null) {
             return list.contains(laggedFactor);
@@ -204,7 +201,7 @@ public final class BasicLagGraph implements LagGraph {
      * @param factor the "into" factor.
      * @return the set of lagged factors into this factor.
      */
-    public SortedSet getParents(String factor) {
+    public SortedSet<LaggedFactor> getParents(String factor) {
         return this.connectivity.get(factor);
     }
 
@@ -217,7 +214,7 @@ public final class BasicLagGraph implements LagGraph {
      */
     public void removeEdge(String factor, LaggedFactor laggedFactor) {
 
-        TreeSet list = (TreeSet) this.connectivity.get(factor);
+        TreeSet<LaggedFactor> list = (TreeSet<LaggedFactor>) this.connectivity.get(factor);
 
         if (list != null) {
             list.remove(laggedFactor);

@@ -28,10 +28,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 /**
  * @author kaalpurush
@@ -40,12 +37,7 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
 
     static final long serialVersionUID = 23L;
 
-    /**
-     * @serial @deprecated
-     */
-    private IKnowledge knowledge;
-
-    private Graph resultGraph = new EdgeListGraph();
+    private final Graph resultGraph;
 
     public RequiredGraphModel(BayesPmWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
@@ -121,27 +113,13 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
     public RequiredGraphModel(Parameters params, KnowledgeBoxInput input) {
         super(new KnowledgeBoxInput[]{input}, params);
 
-        if (params == null) {
-            throw new NullPointerException();
-        }
-
         if (input == null) {
             throw new NullPointerException();
         }
 
-        SortedSet<Node> variableNodes = new TreeSet<>(input.getVariables());
-        SortedSet<String> variableNames = new TreeSet<>(input.getVariableNames());
-
-        /**
-         * @serial @deprecated
-         */
-        //    private List<Knowledge> knowledgeList;
-        List<Node> variables = new ArrayList<>(variableNodes);
-        List<String> variableNames1 = new ArrayList<>(variableNames);
-
         this.resultGraph = input.getResultGraph();
 
-        createKnowledge(params);
+        createKnowledge();
 
         TetradLogger.getInstance().log("info", "Knowledge");
 
@@ -154,7 +132,7 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
         }
     }
 
-    private void createKnowledge(Parameters params) {
+    private void createKnowledge() {
         IKnowledge knwl = getKnowledge();
         if (knwl == null) {
             return;
@@ -179,13 +157,14 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
                 }
 
                 Edge edge = this.resultGraph.getEdge(n1, n2);
-                if (edge == null) {
-                    continue;
-                } else if (edge.isDirected()) {
-                    knwl.setRequired(edge.getNode1().getName(), edge.getNode2().getName());
-                } else if (Edges.isUndirectedEdge(edge)) {
-                    knwl.setRequired(n1.getName(), n2.getName());
-                    knwl.setRequired(n2.getName(), n1.getName());
+
+                if (edge != null) {
+                    if (edge.isDirected()) {
+                        knwl.setRequired(edge.getNode1().getName(), edge.getNode2().getName());
+                    } else if (Edges.isUndirectedEdge(edge)) {
+                        knwl.setRequired(n1.getName(), n2.getName());
+                        knwl.setRequired(n2.getName(), n1.getName());
+                    }
                 }
             }
         }

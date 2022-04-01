@@ -39,8 +39,7 @@ import java.util.*;
 /**
  * @author kaalpurush
  */
-public class KnowledgeBoxModel implements SessionModel, ParamsResettable, KnowledgeEditable//,
-        /*KnowledgeBoxInput,*//* KnowledgeBoxNotifiable*/ {
+public class KnowledgeBoxModel implements SessionModel, ParamsResettable, KnowledgeEditable {
 
     static final long serialVersionUID = 23L;
     private final Graph sourceGraph = new EdgeListGraph();
@@ -113,10 +112,6 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
         }
 
         TetradLogger.getInstance().log("info", "Knowledge");
-        if (!this.knowledge.isEmpty()) {
-            // printing out is bad for large knowledge input
-//            TetradLogger.getInstance().log("knowledge", params.get("knowledge", new Knowledge2()).toString());
-        }
     }
 
     /**
@@ -140,13 +135,12 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
         }
     }
 
-    private IKnowledge createKnowledge(IKnowledge knowledge) {
+    private void createKnowledge(IKnowledge knowledge) {
         knowledge.clear();
         this.variableNames.clear();
         for (String varName : knowledge.getVariables()) {
             knowledge.addVariable(varName);
         }
-        return knowledge;
     }
 
     @Override

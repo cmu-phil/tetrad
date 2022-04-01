@@ -41,7 +41,6 @@ import java.util.List;
  */
 public class PurifyRunner extends AbstractMimRunner implements GraphSource, KnowledgeBoxInput {
     static final long serialVersionUID = 23L;
-//    private DeltaSextadTest sextadTest;
 
     //============================CONSTRUCTORS============================//
 

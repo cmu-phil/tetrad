@@ -182,24 +182,22 @@ public class ActiveLagGraph implements LagGraph {
 
             // search through and find edges which were sourced by this factor
             // and remove them
-            ArrayList toDelete = new ArrayList();
-            SortedSet factors = getFactors();
+            ArrayList<LaggedFactor> toDelete = new ArrayList<>();
+            SortedSet<String> factors = getFactors();
             // have to search through all destination factors to find edges to remove
-            for (Object value : factors) {
-                String destFactor = (String) value;
-                SortedSet parents = this.lagGraph.getParents(destFactor);
+            for (String value : factors) {
+                SortedSet<LaggedFactor> parents = this.lagGraph.getParents(value);
 
                 // find edges sourced by factor
-                for (Object parent : parents) {
-                    LaggedFactor lf = (LaggedFactor) parent;
-                    if (lf.getFactor().equals(factor)) {
-                        toDelete.add(lf);
+                for (LaggedFactor parent : parents) {
+                    if (parent.getFactor().equals(factor)) {
+                        toDelete.add(parent);
                     }
                 }
 
                 // remove those edges
                 for (Object o : toDelete) {
-                    removeEdge(destFactor, (LaggedFactor) o);
+                    removeEdge(value, (LaggedFactor) o);
                 }
                 toDelete.clear();
             }
@@ -241,7 +239,7 @@ public class ActiveLagGraph implements LagGraph {
         return this.lagGraph.existsEdge(factor, laggedFactor);
     }
 
-    public SortedSet getParents(String factor) {
+    public SortedSet<LaggedFactor> getParents(String factor) {
         return this.lagGraph.getParents(factor);
     }
 

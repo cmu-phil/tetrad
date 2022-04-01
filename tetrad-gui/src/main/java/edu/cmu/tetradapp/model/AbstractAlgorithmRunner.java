@@ -123,7 +123,7 @@ public abstract class AbstractAlgorithmRunner
         } else {
             getParams().set("knowledge", knowledgeBoxModel.getKnowledge());
         }
-        List names = dataSource.getVariableNames();
+        List<String> names = dataSource.getVariableNames();
         transferVarNamesToParams(names);
     }
 
@@ -156,7 +156,7 @@ public abstract class AbstractAlgorithmRunner
         }
 
         getParams().set("independenceFacts", facts.getFacts());
-        List names = dataSource.getVariableNames();
+        List<String> names = dataSource.getVariableNames();
         transferVarNamesToParams(names);
     }
 
@@ -175,7 +175,7 @@ public abstract class AbstractAlgorithmRunner
 
         this.dataWrapper = dataWrapper;
 
-        List names = dataSource.getVariableNames();
+        List<String> names = dataSource.getVariableNames();
         transferVarNamesToParams(names);
     }
 
@@ -234,7 +234,7 @@ public abstract class AbstractAlgorithmRunner
             getParams().set("knowledge", knowledgeBoxModel.getKnowledge());
         }
 
-        List names = dataSource.getVariableNames();
+        List<String> names = dataSource.getVariableNames();
         transferVarNamesToParams(names);
         this.dataModel = dataSource;
     }
@@ -373,7 +373,7 @@ public abstract class AbstractAlgorithmRunner
         return names;
     }
 
-    private void transferVarNamesToParams(List names) {
+    private void transferVarNamesToParams(List<String> names) {
         getParams().set("varNames", names);
     }
 

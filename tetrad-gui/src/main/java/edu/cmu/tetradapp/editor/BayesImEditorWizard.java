@@ -48,7 +48,7 @@ public final class BayesImEditorWizard extends JPanel {
     private static final long serialVersionUID = -588986830104732678L;
 
     private final BayesIm bayesIm;
-    private final JComboBox varNamesComboBox;
+    private final JComboBox<Node> varNamesComboBox;
     private final GraphWorkbench workbench;
     private BayesImNodeEditingTable editingTable;
     private final JPanel tablePanel;

@@ -40,7 +40,6 @@ import java.util.List;
  *
  * @author Ricardo Silva
  */
-
 public class PValueImproverWrapper extends AbstractAlgorithmRunner {
     static final long serialVersionUID = 23L;
 

@@ -301,8 +301,7 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
     }
 
     public List<DataModel> getDataModels() {
-        List<DataModel> dataModels = new ArrayList<>(this.dataModelList);
-        return dataModels;
+        return new ArrayList<>(this.dataModelList);
     }
 
     public void setDataModelList(DataModelList dataModelList) {

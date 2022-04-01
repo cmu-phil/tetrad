@@ -62,7 +62,7 @@ public class YeastPcCcdSearchWrapper {
                 {1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
                 {0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1}};
 
-        List listOfNames = new ArrayList();
+        List<String> listOfNames = new ArrayList<>();
 
         // get the file containing the file names
 
@@ -81,7 +81,6 @@ public class YeastPcCcdSearchWrapper {
 
         OutputStream s1 = null;
         OutputStream s2 = null;
-        final boolean verbose = true;
 
         try {
             s1 = new FileOutputStream(outverbosefile);
@@ -128,43 +127,43 @@ public class YeastPcCcdSearchWrapper {
 
             int[] PC05Accuracy;
             PC05Accuracy = YeastPcCcdSearchWrapper.PCAccuracy(0.05, ngenes, cds, bk, yeastReg,
-                    listOfNames, d1, verbose);
+                    listOfNames, d1);
 
             int[] PC10Accuracy;
             PC10Accuracy = YeastPcCcdSearchWrapper.PCAccuracy(0.10, ngenes, cds, bk, yeastReg,
-                    listOfNames, d1, verbose);
+                    listOfNames, d1);
 
             int[] PC15Accuracy;
             PC15Accuracy = YeastPcCcdSearchWrapper.PCAccuracy(0.15, ngenes, cds, bk, yeastReg,
-                    listOfNames, d1, verbose);
+                    listOfNames, d1);
 
             int[] PC20Accuracy;
             PC20Accuracy = YeastPcCcdSearchWrapper.PCAccuracy(0.20, ngenes, cds, bk, yeastReg,
-                    listOfNames, d1, verbose);
+                    listOfNames, d1);
 
             int[] PC30Accuracy;
             PC30Accuracy = YeastPcCcdSearchWrapper.PCAccuracy(0.30, ngenes, cds, bk, yeastReg,
-                    listOfNames, d1, verbose);
+                    listOfNames, d1);
 
             int[] CCD05Accuracy;
-            CCD05Accuracy = YeastPcCcdSearchWrapper.CcdAccuracy(0.05, ngenes, cds, bk, yeastReg,
-                    listOfNames, d1, verbose);
+            CCD05Accuracy = YeastPcCcdSearchWrapper.CcdAccuracy(0.05, ngenes, cds, yeastReg,
+                    listOfNames, d1);
 
             int[] CCD10Accuracy;
-            CCD10Accuracy = YeastPcCcdSearchWrapper.CcdAccuracy(0.10, ngenes, cds, bk, yeastReg,
-                    listOfNames, d1, verbose);
+            CCD10Accuracy = YeastPcCcdSearchWrapper.CcdAccuracy(0.10, ngenes, cds, yeastReg,
+                    listOfNames, d1);
 
             int[] CCD15Accuracy;
-            CCD15Accuracy = YeastPcCcdSearchWrapper.CcdAccuracy(0.15, ngenes, cds, bk, yeastReg,
-                    listOfNames, d1, verbose);
+            CCD15Accuracy = YeastPcCcdSearchWrapper.CcdAccuracy(0.15, ngenes, cds, yeastReg,
+                    listOfNames, d1);
 
             int[] CCD20Accuracy;
-            CCD20Accuracy = YeastPcCcdSearchWrapper.CcdAccuracy(0.20, ngenes, cds, bk, yeastReg,
-                    listOfNames, d1, verbose);
+            CCD20Accuracy = YeastPcCcdSearchWrapper.CcdAccuracy(0.20, ngenes, cds, yeastReg,
+                    listOfNames, d1);
 
             int[] CCD30Accuracy;
-            CCD30Accuracy = YeastPcCcdSearchWrapper.CcdAccuracy(0.30, ngenes, cds, bk, yeastReg,
-                    listOfNames, d1, verbose);
+            CCD30Accuracy = YeastPcCcdSearchWrapper.CcdAccuracy(0.30, ngenes, cds, yeastReg,
+                    listOfNames, d1);
 
             //if(!verbose) {
             d2.writeBytes("yeastTRN \t");
@@ -224,8 +223,8 @@ public class YeastPcCcdSearchWrapper {
     }
 
     private static int[] CcdAccuracy(double alpha, int ngenes,
-                                     DataSet cds, IKnowledge bk, int[][] yeastReg, List names,
-                                     DataOutputStream d, boolean v) {
+                                     DataSet cds, int[][] yeastReg, List<String> names,
+                                     DataOutputStream d) {
 
         int[] falsePosNeg = new int[2];
 
@@ -238,13 +237,12 @@ public class YeastPcCcdSearchWrapper {
         int[][] ccdModelAdj = new int[ngenes][ngenes];
 
         int nvariables = names.size();
-//        int ntimes = nvariables / ngenes;
 
         for (int i = 0; i < nvariables; i++) {
-            String namei = (String) names.get(i);
+            String namei = names.get(i);
 
             for (int j = 0; j < nvariables; j++) {
-                String namej = (String) names.get(j);
+                String namej = names.get(j);
 
                 ccdModelAdj[i][j] = 0;
 
@@ -274,28 +272,24 @@ public class YeastPcCcdSearchWrapper {
         falsePosNeg[0] = falsePositives;
         falsePosNeg[1] = falseNegatives;
 
-        if (v) {
-            try {
-                d.writeBytes("\n \n");
-                d.writeBytes("  Results of CCD search with alpha = " + alpha);
-                d.writeBytes("  false+ " + falsePositives + "\t");
-                d.writeBytes("false- " + falseNegatives + "\n");
-                d.writeBytes("  Adjacency matrix of estimated model:  \n");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        try {
+            d.writeBytes("\n \n");
+            d.writeBytes("  Results of CCD search with alpha = " + alpha);
+            d.writeBytes("  false+ " + falsePositives + "\t");
+            d.writeBytes("false- " + falseNegatives + "\n");
+            d.writeBytes("  Adjacency matrix of estimated model:  \n");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        if (v) {
-            YeastPcCcdSearchWrapper.printAdjMatrix(ccdModelAdj, names, d);
-        }
+        YeastPcCcdSearchWrapper.printAdjMatrix(ccdModelAdj, names, d);
 
         return falsePosNeg;
     }
 
     private static int[] PCAccuracy(double alpha, int ngenes,
-                                    DataSet cds, IKnowledge bk, int[][] yeastReg, List names,
-                                    DataOutputStream d, boolean v) {
+                                    DataSet cds, IKnowledge bk, int[][] yeastReg, List<String> names,
+                                    DataOutputStream d) {
 
         int[] falsePosNeg = new int[2];
 
@@ -312,10 +306,10 @@ public class YeastPcCcdSearchWrapper {
 //        int ntimes = nvariables / ngenes;
 
         for (int i = 0; i < nvariables; i++) {
-            String namei = (String) names.get(i);
+            String namei = names.get(i);
 
             for (int j = 0; j < nvariables; j++) {
-                String namej = (String) names.get(j);
+                String namej = names.get(j);
 
                 pcModelAdj[i][j] = 0;
 
@@ -345,27 +339,23 @@ public class YeastPcCcdSearchWrapper {
         falsePosNeg[0] = falsePositives;
         falsePosNeg[1] = falseNegatives;
 
-        if (v) {
-            try {
-                d.writeBytes("\n \n");
-                d.writeBytes("  Results of PC search with alpha = " + alpha);
+        try {
+            d.writeBytes("\n \n");
+            d.writeBytes("  Results of PC search with alpha = " + alpha);
 
-                d.writeBytes("  false+ " + falsePositives + "\t");
-                d.writeBytes("false- " + falseNegatives + "\n");
-                d.writeBytes("  Adjacency matrix of estimated model:  \n");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            d.writeBytes("  false+ " + falsePositives + "\t");
+            d.writeBytes("false- " + falseNegatives + "\n");
+            d.writeBytes("  Adjacency matrix of estimated model:  \n");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        if (v) {
-            YeastPcCcdSearchWrapper.printAdjMatrix(pcModelAdj, names, d);
-        }
+        YeastPcCcdSearchWrapper.printAdjMatrix(pcModelAdj, names, d);
 
         return falsePosNeg;
     }
 
-    private static void printAdjMatrix(int[][] adjMat, List listOfNames,
+    private static void printAdjMatrix(int[][] adjMat, List<String> listOfNames,
                                        DataOutputStream d) {
         for (int i = 0; i < adjMat.length; i++) {
             try {

@@ -45,8 +45,6 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
     static final long serialVersionUID = 23L;
     private IndependenceFactsModel independenceFactsModel;
     private Graph trueGraph;
-//    private Vcpc vcpc = null;
-
     private SemPm semPm;
 
     private SemIm semIm;

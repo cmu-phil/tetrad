@@ -110,7 +110,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
 
         DataModel data = getDataModel(dataWrapper);
         getParams().set("knowledge", dataWrapper.getKnowledge());
-        List names = data.getVariableNames();
+        List<String> names = data.getVariableNames();
         transferVarNamesToParams(names);
         this.dataModel = data;
     }
@@ -128,7 +128,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
 //        this.sourceGraph = wrapper.getSourceGraph();
 
         DataModel data = wrapper.getData();
-        List names = data.getVariableNames();
+        List<String> names = data.getVariableNames();
         transferVarNamesToParams(names);
         this.dataModel = data;
     }
@@ -143,7 +143,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
         this.sourceGraph = runner.getSourceGraph();
 
         DataModel dataSource = runner.getData();
-        List names = dataSource.getVariableNames();
+        List<String> names = dataSource.getVariableNames();
         transferVarNamesToParams(names);
         this.dataModel = dataSource;
     }
@@ -254,7 +254,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
                 "Unexpected dataModel source: " + dataModel);
     }
 
-    private void transferVarNamesToParams(List names) {
+    private void transferVarNamesToParams(List<String> names) {
         getParams().set("varNames", names);
     }
 
