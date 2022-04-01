@@ -41,7 +41,7 @@ public class TextAreaOutputStream extends OutputStream implements TetradLogger.L
     /**
      * A string bugger used to buffer lines.
      */
-    private StringBuilder buf = new StringBuilder();
+    private final StringBuilder buf = new StringBuilder();
 
     /**
      * The length of string written to the text area.

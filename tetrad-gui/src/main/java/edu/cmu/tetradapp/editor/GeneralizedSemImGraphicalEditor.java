@@ -60,7 +60,7 @@ class GeneralizedSemImGraphicalEditor extends JPanel {
      * The set of launched editors--or rather, the nodes for the launched
      * editors.
      */
-    private Map<Object, EditorWindow> launchedEditors;
+    private final Map<Object, EditorWindow> launchedEditors;
 
     private boolean enableEditing = true;
 

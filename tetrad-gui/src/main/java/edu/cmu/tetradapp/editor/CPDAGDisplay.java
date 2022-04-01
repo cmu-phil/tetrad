@@ -58,7 +58,7 @@ public class CPDAGDisplay extends JPanel implements GraphEditable {
             return;
         }
 
-        Graph dag = (Graph) dags.get(0);
+        Graph dag = dags.get(0);
         this.workbench = new GraphWorkbench(dag);
 
         SpinnerNumberModel model =
@@ -66,7 +66,7 @@ public class CPDAGDisplay extends JPanel implements GraphEditable {
         model.addChangeListener(e -> {
             int index = model.getNumber().intValue();
             CPDAGDisplay.this.workbench.setGraph(
-                    (Graph) dags.get(index - 1));
+                    dags.get(index - 1));
         });
 
         JSpinner spinner = new JSpinner();
@@ -91,11 +91,11 @@ public class CPDAGDisplay extends JPanel implements GraphEditable {
                     int index =
                             model1.getNumber().intValue();
                     CPDAGDisplay.this.workbench.setGraph(
-                            (Graph) dags.get(index - 1));
+                            dags.get(index - 1));
                 });
                 spinner.setModel(model1);
                 totalLabel.setText(" of " + dags.size());
-                CPDAGDisplay.this.workbench.setGraph((Graph) dags.get(0));
+                CPDAGDisplay.this.workbench.setGraph(dags.get(0));
             } else if ("Orient ---, <->".equals(option)) {
                 List _dags = SearchGraphUtils.generateCpdagDags(graph, true);
                 dags.clear();
@@ -107,11 +107,11 @@ public class CPDAGDisplay extends JPanel implements GraphEditable {
                     int index =
                             model1.getNumber().intValue();
                     CPDAGDisplay.this.workbench.setGraph(
-                            (Graph) dags.get(index - 1));
+                            dags.get(index - 1));
                 });
                 spinner.setModel(model1);
                 totalLabel.setText(" of " + dags.size());
-                CPDAGDisplay.this.workbench.setGraph((Graph) dags.get(0));
+                CPDAGDisplay.this.workbench.setGraph(dags.get(0));
             }
         });
 

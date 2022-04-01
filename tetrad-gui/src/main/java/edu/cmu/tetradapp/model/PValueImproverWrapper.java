@@ -56,7 +56,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
     private transient List<PropertyChangeListener> listeners;
     private final DataWrapper dataWrapper;
 
-    private Parameters params = new Parameters();
+    private final Parameters params = new Parameters();
     private Parameters params2;
     private SemIm estSem;
     private Graph trueDag;

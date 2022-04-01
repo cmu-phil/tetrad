@@ -62,7 +62,7 @@ public class RegressionEditor extends JPanel {
      * A large text area into which the (String) output of the regression result
      * is dumped. (This is what needs to change.)
      */
-    private JTextArea reportText;
+    private final JTextArea reportText;
 
     /**
      * Presents the same information in reportText as a text preamble with a

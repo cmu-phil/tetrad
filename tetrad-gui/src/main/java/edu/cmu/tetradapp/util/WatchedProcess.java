@@ -74,7 +74,7 @@ public abstract class WatchedProcess {
      * It must be set to true for posted versions. There's unit test that checks
      * for that.
      */
-    private static boolean SHOW_DIALOG = true;
+    private static final boolean SHOW_DIALOG = true;
 
     /**
      * The object on which the watch dialog should be centered.

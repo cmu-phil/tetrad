@@ -974,11 +974,7 @@ public final class LoadDataSettings extends JPanel {
 
         // Set data type for each column
         // It really doesn't matter for mixed data
-        boolean isDiscrete = false;
-
-        if (this.discRadioButton.isSelected()) {
-            isDiscrete = true;
-        }
+        boolean isDiscrete = this.discRadioButton.isSelected();
 
         // Generate data columns with exclusions
         // Handle case ID column based on different selections
@@ -1112,11 +1108,7 @@ public final class LoadDataSettings extends JPanel {
 
         // Set data type for each column
         // It really doesn't matter for mixed data
-        boolean isDiscrete = false;
-
-        if (this.discRadioButton.isSelected()) {
-            isDiscrete = true;
-        }
+        boolean isDiscrete = this.discRadioButton.isSelected();
 
         // Handle case ID column based on different selections
         if (this.idNoneRadioButton.isSelected()) {

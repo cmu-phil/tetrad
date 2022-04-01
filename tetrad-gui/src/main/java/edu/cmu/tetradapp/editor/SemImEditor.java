@@ -244,8 +244,8 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
          */
         private boolean editIntercepts;
         private JTabbedPane tabbedPane;
-        private String graphicalEditorTitle;
-        private String tabularEditorTitle;
+        private final String graphicalEditorTitle;
+        private final String tabularEditorTitle;
         private boolean editable = true;
         private int matrixSelection;
         private JCheckBoxMenuItem meansItem;
@@ -1351,7 +1351,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         private final SemImWrapper wrapper;
         private final OneEditor editor;
-        private int maxFreeParamsForStatistics;
+        private final int maxFreeParamsForStatistics;
         private boolean editable = true;
 
         public ParamTableModel(SemImWrapper wrapper, OneEditor editor,
@@ -1759,7 +1759,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         /**
          * The matrix being displayed. (This varies.)
          */
-        private double[][] matrix;
+        private final double[][] matrix;
 
         /**
          * Constructs a new table for the given covariance matrix, the nodes for

@@ -381,7 +381,7 @@ final class SessionEditorToolbar extends JPanel {
          * This is the name used to construct nodes on the graph of this type.
          * Need to coordinate with session.
          */
-        private String nodeTypeName;
+        private final String nodeTypeName;
 
         /**
          * The name displayed on the button.

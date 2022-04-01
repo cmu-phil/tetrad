@@ -282,7 +282,7 @@ class DiscreteDiscretizationEditor extends JPanel implements DiscretizationEdito
             List<String> categories = spec.getCategories();
 
             for (int i = 0; i < this.oldVariable.getNumCategories(); i++) {
-                this.rangeFields[i].setValue((String) categories.get(remap[i]));
+                this.rangeFields[i].setValue(categories.get(remap[i]));
             }
         }
     }

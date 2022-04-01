@@ -55,7 +55,7 @@ public class SaveGraph extends AbstractAction {
     /**
      * True if the graph should be saved in XML, false if in text.
      */
-    private Type type;
+    private final Type type;
 
     public enum Type {text, xml, json, r, dot}
 

@@ -46,7 +46,7 @@ public class SaveComponentImage extends AbstractAction {
     /**
      * The action name, to be used as a title to the save dialog.
      */
-    private String actionName;
+    private final String actionName;
 
     public SaveComponentImage(JComponent comp, String actionName) {
         super(actionName);

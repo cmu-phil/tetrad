@@ -62,7 +62,7 @@ final class StandardizedSemImImpliedCovTable extends AbstractTableModel {
     /**
      * The matrix being displayed. (This varies.)
      */
-    private double[][] matrix;
+    private final double[][] matrix;
 
     /**
      * Constructs a new table for the given covariance matrix, the nodes for
