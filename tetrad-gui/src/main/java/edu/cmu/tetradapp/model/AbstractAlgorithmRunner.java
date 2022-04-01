@@ -180,7 +180,7 @@ public abstract class AbstractAlgorithmRunner
     }
 
     /**
-     * Constucts a wrapper for the given graph.
+     * Constructs a wrapper for the given graph.
      */
     public AbstractAlgorithmRunner(Graph sourceGraph, Parameters params) {
         if (sourceGraph == null) {
