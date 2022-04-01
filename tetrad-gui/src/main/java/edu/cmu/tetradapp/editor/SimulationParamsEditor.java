@@ -49,13 +49,9 @@ public class SimulationParamsEditor extends JPanel implements ParameterEditor {
     }
 
     public void setParentModels(Object[] parentModels) {
-        Object[] parentModels1 = parentModels;
     }
 
     public void setup() {
-
-
-//        ParameterPanel parameterPanel = new ParameterPanel(params, );
     }
 
     public boolean mustBeShown() {

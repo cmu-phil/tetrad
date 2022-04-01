@@ -51,7 +51,6 @@ public class SemUpdaterEditor extends JPanel {
     private final SemUpdater semUpdater;
 
     private final Map<JCheckBox, Integer> checkBoxesToVariables = new HashMap<>();
-    private final Map<Integer, JCheckBox> variablesToCheckboxes = new HashMap<>();
     private final Map<Integer, DoubleTextField> variablesToTextFields = new HashMap<>();
     private final SemImEditor semImEditor;
     private final LinkedList<DoubleTextField> focusTraversalOrder = new LinkedList<>();
@@ -59,8 +58,6 @@ public class SemUpdaterEditor extends JPanel {
 
     /**
      * Constructs a new instantiated model editor from a SEM Updater.
-     *
-     * @param semUpdater
      */
     public SemUpdaterEditor(SemUpdater semUpdater) {
         if (semUpdater == null) {
@@ -160,7 +157,6 @@ public class SemUpdaterEditor extends JPanel {
 
             checkbox.setSelected(evidence.isManipulated(i));
             this.checkBoxesToVariables.put(checkbox, i);
-            this.variablesToCheckboxes.put(i, checkbox);
             checkbox.addActionListener((e) -> {
                 JCheckBox chkbox = (JCheckBox) e.getSource();
                 boolean selected = chkbox.isSelected();
@@ -260,8 +256,6 @@ public class SemUpdaterEditor extends JPanel {
 
     /**
      * Constructs a new instantiated model editor from a SEM IM wrapper.
-     *
-     * @param wrapper
      */
     public SemUpdaterEditor(SemUpdaterWrapper wrapper) {
         this(wrapper.getSemUpdater());

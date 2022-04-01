@@ -33,8 +33,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.text.NumberFormat;
 import java.util.List;
 
@@ -49,11 +47,6 @@ final class StandardizedSemImGraphicalEditor extends JPanel {
      * Font size for parameter values in the graph.
      */
     private static final Font SMALL_FONT = new Font("Dialog", Font.PLAIN, 10);
-
-    /**
-     * Background color of the edit panel when you click on the parameters.
-     */
-    private static final Color LIGHT_YELLOW = new Color(255, 255, 215);
 
     /**
      * The SemIM being edited.
@@ -127,13 +120,8 @@ final class StandardizedSemImGraphicalEditor extends JPanel {
     /**
      * Constructs a SemIm graphical editor for the given SemIm.
      */
-    public StandardizedSemImGraphicalEditor(StandardizedSemIm semIm, StandardizedSemImEditor editor) {
+    public StandardizedSemImGraphicalEditor(StandardizedSemIm semIm) {
         this.semIm = semIm;
-        /*
-      The editor that sits inside the SemImEditor that allows the user to edit
-      the SemIm graphically.
-         */
-        StandardizedSemImEditor editor1 = editor;
 
         setLayout(new BorderLayout());
         JScrollPane scroll = new JScrollPane(workbench());
@@ -151,17 +139,15 @@ final class StandardizedSemImGraphicalEditor extends JPanel {
         this.slider = new JSlider();
         setEditorToEdge(semIm.getSemPm().getGraph().getEdges().iterator().next());
 
-        this.valueField.setFilter(new DoubleTextField.Filter() {
-            public double filter(double value, double oldValue) {
-                if (value == Double.POSITIVE_INFINITY || value == Double.NEGATIVE_INFINITY || (value < StandardizedSemImGraphicalEditor.this.max && value > StandardizedSemImGraphicalEditor.this.min)) {
-                    setSliderToValue(value, StandardizedSemImGraphicalEditor.this.min, StandardizedSemImGraphicalEditor.this.max);
-                    semIm().setParameterValue(StandardizedSemImGraphicalEditor.this.editingEdge, value);
-                    resetLabels();
-                    StandardizedSemImGraphicalEditor.this.firePropertyChange("modelChanged", null, null);
-                    return value;
-                } else {
-                    return oldValue;
-                }
+        this.valueField.setFilter((value, oldValue) -> {
+            if (value == Double.POSITIVE_INFINITY || value == Double.NEGATIVE_INFINITY || (value < StandardizedSemImGraphicalEditor.this.max && value > StandardizedSemImGraphicalEditor.this.min)) {
+                setSliderToValue(value, StandardizedSemImGraphicalEditor.this.min, StandardizedSemImGraphicalEditor.this.max);
+                semIm().setParameterValue(StandardizedSemImGraphicalEditor.this.editingEdge, value);
+                resetLabels();
+                StandardizedSemImGraphicalEditor.this.firePropertyChange("modelChanged", null, null);
+                return value;
+            } else {
+                return oldValue;
             }
         });
 
@@ -181,7 +167,6 @@ final class StandardizedSemImGraphicalEditor extends JPanel {
             public synchronized void stateChanged(ChangeEvent e) {
                 double value = getValueFromSlider(StandardizedSemImGraphicalEditor.this.min, StandardizedSemImGraphicalEditor.this.max);
                 StandardizedSemImGraphicalEditor.this.valueField.setValue(value);
-//                semIm().setParameterValue(editingEdge, value);
                 resetLabels();
             }
         });
@@ -343,12 +328,10 @@ final class StandardizedSemImGraphicalEditor extends JPanel {
             getWorkbench().setAllowDoubleClickActions(false);
             getWorkbench().setAllowEdgeReorientations(false);
             getWorkbench().addPropertyChangeListener(
-                    new PropertyChangeListener() {
-                        public void propertyChange(PropertyChangeEvent evt) {
-                            if ("BackgroundClicked".equals(
-                                    evt.getPropertyName())) {
-                                finishEdit();
-                            }
+                    evt -> {
+                        if ("BackgroundClicked".equals(
+                                evt.getPropertyName())) {
+                            finishEdit();
                         }
                     });
             resetLabels();
@@ -365,14 +348,14 @@ final class StandardizedSemImGraphicalEditor extends JPanel {
     }
 
     public void resetLabels() {
-        for (Object o : graph().getEdges()) {
-            resetEdgeLabel((Edge) (o));
+        for (Edge o : graph().getEdges()) {
+            resetEdgeLabel(o);
         }
 
         List<Node> nodes = graph().getNodes();
 
-        for (Object node : nodes) {
-            resetNodeLabel((Node) node);
+        for (Node node : nodes) {
+            resetNodeLabel(node);
         }
 
         workbench().repaint();
@@ -402,7 +385,6 @@ final class StandardizedSemImGraphicalEditor extends JPanel {
         }
 
         int n = this.slider.getMaximum() - this.slider.getMinimum();
-        double x;
 
         int slider = valueToSlider(value, c1, c2, n);
         this.slider.setValue(slider);
@@ -471,7 +453,7 @@ final class StandardizedSemImGraphicalEditor extends JPanel {
     private void resetNodeLabel(Node node) {
         JLabel label = new JLabel();
         label.setBackground(Color.WHITE);
-        label.addMouseListener(new NodeMouseListener(node, this));
+        label.addMouseListener(new NodeMouseListener());
         label.setFont(StandardizedSemImGraphicalEditor.SMALL_FONT);
 
         NodeType nodeType = node.getNodeType();
@@ -487,25 +469,8 @@ final class StandardizedSemImGraphicalEditor extends JPanel {
 
         // Offset the nodes slightly differently depending on whether
         // they're error nodes or not.
-        if (nodeType == NodeType.ERROR) {
-            label.setOpaque(false);
-            workbench().setNodeLabel(node, label, -10, -10);
-        } else {
-            label.setOpaque(false);
-            workbench().setNodeLabel(node, label, 0, 0);
-        }
-    }
-
-    private void setEdgeValue(Edge edge, String text) {
-        resetLabels();
-        workbench().repaint();
-        setLastEditedObject(null);
-    }
-
-    private void setNodeValue(Node node, String text) {
-        resetLabels();
-        workbench().repaint();
-        setLastEditedObject(null);
+        label.setOpaque(false);
+        workbench().setNodeLabel(node, label, -10, -10);
     }
 
     private int getSavedTooltipDelay() {
@@ -568,74 +533,11 @@ final class StandardizedSemImGraphicalEditor extends JPanel {
 
     static final class NodeMouseListener extends MouseAdapter {
 
-        private final Node node;
-        private final StandardizedSemImGraphicalEditor editor;
-
-        public NodeMouseListener(Node node, StandardizedSemImGraphicalEditor editor) {
-            this.node = node;
-            this.editor = editor;
-        }
-
-        private Node getNode() {
-            return this.node;
-        }
-
-        private StandardizedSemImGraphicalEditor getEditor() {
-            return this.editor;
+        public NodeMouseListener() {
         }
 
         public void mouseClicked(MouseEvent e) {
-//            getEditor().beginNodeEdit(getIndex());
         }
     }
 
-    static final class EdgeActionListener implements ActionListener {
-
-        private final StandardizedSemImGraphicalEditor editor;
-        private final Edge edge;
-
-        public EdgeActionListener(StandardizedSemImGraphicalEditor editor, Edge edge) {
-            this.editor = editor;
-            this.edge = edge;
-        }
-
-        public void actionPerformed(ActionEvent ev) {
-            DoubleTextField doubleTextField = (DoubleTextField) ev.getSource();
-            String s = doubleTextField.getText();
-            getEditor().setEdgeValue(getEdge(), s);
-        }
-
-        private StandardizedSemImGraphicalEditor getEditor() {
-            return this.editor;
-        }
-
-        private Edge getEdge() {
-            return this.edge;
-        }
-    }
-
-    static final class NodeActionListener implements ActionListener {
-
-        private final StandardizedSemImGraphicalEditor editor;
-        private final Node node;
-
-        public NodeActionListener(StandardizedSemImGraphicalEditor editor, Node node) {
-            this.editor = editor;
-            this.node = node;
-        }
-
-        public void actionPerformed(ActionEvent ev) {
-            DoubleTextField doubleTextField = (DoubleTextField) ev.getSource();
-            String s = doubleTextField.getText();
-            getEditor().setNodeValue(getNode(), s);
-        }
-
-        private StandardizedSemImGraphicalEditor getEditor() {
-            return this.editor;
-        }
-
-        private Node getNode() {
-            return this.node;
-        }
-    }
 }

@@ -66,8 +66,6 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
 
     /**
      * Constructs the data editor with an empty list of data displays.
-     *
-     * @param simulation
      */
     public SimulationEditor(Simulation simulation) {
         this.simulation = simulation;

@@ -31,8 +31,6 @@ import edu.cmu.tetradapp.util.StringTextField;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -103,16 +101,10 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
     }
 
     public void setup() {
-        SplitCasesSpec spec = (SplitCasesSpec) this.params.get("splitCasesSpec", null);
-        if (spec != null) {
-            spec = SplitCasesParamsEditor.getDefaultSpec(this.dataSet.getNumRows(), this.params.getInt("numSplits", 3));
-        }
         this.numSplitsField = new IntTextField(this.params.getInt("numSplits", 3), 2);
-        this.numSplitsField.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
-                SplitCasesParamsEditor.this.setNumSplits(value);
-                return value;
-            }
+        this.numSplitsField.setFilter((value, oldValue) -> {
+            SplitCasesParamsEditor.this.setNumSplits(value);
+            return value;
         });
 
         splitEditorPanel = new JPanel();
@@ -122,17 +114,9 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
         JRadioButton shuffleButton = new JRadioButton("Shuffled order");
         JRadioButton noShuffleButton = new JRadioButton("Original order");
 
-        shuffleButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                params.set("dataShuffled", true);
-            }
-        });
+        shuffleButton.addActionListener(e -> params.set("dataShuffled", true));
 
-        noShuffleButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                params.set("dataShuffled", false);
-            }
-        });
+        noShuffleButton.addActionListener(e -> params.set("dataShuffled", false));
 
         ButtonGroup group = new ButtonGroup();
         group.add(shuffleButton);
@@ -327,26 +311,25 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
                 splitNameFields[i] = new StringTextField(split, 6);
                 StringTextField _field = splitNameFields[i];
 
-                splitNameFields[i].setFilter(new StringTextField.Filter() {
-                    public String filter(String value, String oldValue) {
-                        if (labels.get(_field) != null) {
-                            int index = labels.get(_field);
+                splitNameFields[i].setFilter((value, oldValue) -> {
+                    if (labels.get(_field) != null) {
+                        int index = labels.get(_field);
 
-                            if (value == null) {
-                                value = splitNames.get(index);
-                            }
-
-                            for (int i = 0; i < splitNames.size(); i++) {
-                                if (i != index && splitNames.get(i).equals(value)) {
-                                    value = splitNames.get(index);
-                                }
-                            }
-
-                            splitNames.set(index, value);
+                        if (value == null) {
+                            value = splitNames.get(index);
                         }
 
-                        return value;
+                        for (int i1 = 0; i1 < splitNames.size(); i1++) {
+                            if (i1 != index && splitNames.get(i1).equals(value)) {
+                                value = splitNames.get(index);
+                                break;
+                            }
+                        }
+
+                        splitNames.set(index, value);
                     }
+
+                    return value;
                 });
 
                 labels.put(splitNameFields[i], i);
@@ -362,19 +345,11 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
 
             leftSplitFields[0] = new IntTextField(1, 6);
             leftSplitFields[0].setFilter(
-                    new IntTextField.Filter() {
-                        public int filter(int value, int oldValue) {
-                            return oldValue;
-                        }
-                    });
+                    (value, oldValue) -> oldValue);
 
             rightSplitFields[maxSplit] = new IntTextField(sampleSize, 6);
             rightSplitFields[maxSplit].setFilter(
-                    new IntTextField.Filter() {
-                        public int filter(int value, int oldValue) {
-                            return oldValue;
-                        }
-                    });
+                    (value, oldValue) -> oldValue);
 
             leftSplitFields[0].setEditable(false);
             rightSplitFields[maxSplit].setEditable(false);
@@ -386,33 +361,31 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
 
                 leftSplitFields[i + 1] = new IntTextField(breakpoints[i], 6);
                 labels.put(leftSplitFields[i + 1], i + 1);
-                Object label = labels.get(leftSplitFields[i + 1]);
+                Integer label = labels.get(leftSplitFields[i + 1]);
 
                 leftSplitFields[i + 1].setFilter(
-                        new IntTextField.Filter() {
-                            public int filter(int value, int oldValue) {
-                                if (label == null) {
-                                    return oldValue;
-                                }
-
-                                int index = (Integer) label;
-
-                                if (index - 1 > 0 &&
-                                        !(SplitEditor.this.breakpoints[index - 2] < value)) {
-                                    value = SplitEditor.this.breakpoints[index - 1];
-                                }
-
-                                if (index - 1 < SplitEditor.this.breakpoints.length - 1 &&
-                                        !(value < SplitEditor.this.breakpoints[index])) {
-                                    value = SplitEditor.this.breakpoints[index - 1];
-                                }
-
-                                SplitEditor.this.breakpoints[index - 1] = value;
-
-                                getRightSplitFields()[index - 1].setValue(
-                                        value - 1);
-                                return value;
+                        (value, oldValue) -> {
+                            if (label == null) {
+                                return oldValue;
                             }
+
+                            int index = label;
+
+                            if (index - 1 > 0 &&
+                                    !(SplitEditor.this.breakpoints[index - 2] < value)) {
+                                value = SplitEditor.this.breakpoints[index - 1];
+                            }
+
+                            if (index - 1 < SplitEditor.this.breakpoints.length - 1 &&
+                                    !(value < SplitEditor.this.breakpoints[index])) {
+                                value = SplitEditor.this.breakpoints[index - 1];
+                            }
+
+                            SplitEditor.this.breakpoints[index - 1] = value;
+
+                            getRightSplitFields()[index - 1].setValue(
+                                    value - 1);
+                            return value;
                         });
 
                 this.labels.put(this.leftSplitFields[i + 1], i + 1);
@@ -426,10 +399,6 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
 
         private int getNumSplits() {
             return this.splitNames.size();
-        }
-
-        public int[] getBreakpoints() {
-            return this.breakpoints;
         }
 
         public List<String> getSplitNames() {
