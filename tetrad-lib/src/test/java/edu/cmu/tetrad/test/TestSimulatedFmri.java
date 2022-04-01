@@ -50,10 +50,10 @@ import java.text.ParseException;
 public class TestSimulatedFmri {
 
     public static void main(String... args) {
-        new TestSimulatedFmri().task(false);
+        new TestSimulatedFmri().task();
     }
 
-    private void task(boolean testing) {
+    private void task() {
         Parameters parameters = new Parameters();
         parameters.set(Params.PENALTY_DISCOUNT, 4);
         parameters.set(Params.DEPTH, -1);
@@ -89,7 +89,7 @@ public class TestSimulatedFmri {
 
         String dir;
         final String subdir = "data_fslfilter";
-        if (!testing) {
+        if (!false) {
             dir = "/Users/user/Downloads/Cycles_Data_fMRI/";
 
             simulations.add(new LoadContinuousDataAndSingleGraph(
@@ -190,7 +190,7 @@ public class TestSimulatedFmri {
 
         String directory;
 
-        if (!testing) {
+        if (!false) {
             directory = "comparison_training";
         } else {
             directory = "comparison_testing";

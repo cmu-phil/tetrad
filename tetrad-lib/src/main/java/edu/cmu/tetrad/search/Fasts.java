@@ -743,12 +743,6 @@ public class Fasts implements IFas {
         return this.numIndependenceTests;
     }
 
-    public void setTrueGraph(Graph trueGraph) {
-        /**
-         * The true graph, for purposes of comparison. Temporary.
-         */
-    }
-
     public int getNumFalseDependenceJudgments() {
         return this.numFalseDependenceJudgments;
     }
@@ -776,11 +770,6 @@ public class Fasts implements IFas {
     @Override
     public boolean isAggressivelyPreventCycles() {
         return false;
-    }
-
-    @Override
-    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
-
     }
 
     @Override

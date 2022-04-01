@@ -249,7 +249,6 @@ public class Kpc implements GraphSearch {
         Fas fas = new Fas(getIndependenceTest());
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
-        fas.setTrueGraph(this.trueGraph);
         this.graph = fas.search();
         this.sepset = fas.getSepsets();
         this.numIndependenceTests = fas.getNumIndependenceTests();

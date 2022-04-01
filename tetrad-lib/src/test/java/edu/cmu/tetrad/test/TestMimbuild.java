@@ -93,7 +93,7 @@ public class TestMimbuild {
                 throw new IllegalStateException();
             }
 
-            List<String> latentVarList = reidentifyVariables(mim, data, partition, 2);
+            List<String> latentVarList = reidentifyVariables(mim, data, partition);
 
             Graph mimbuildStructure;
 
@@ -165,12 +165,12 @@ public class TestMimbuild {
     }
 
 
-    private List<String> reidentifyVariables(Graph mim, DataSet data, List<List<Node>> partition, int method) {
+    private List<String> reidentifyVariables(Graph mim, DataSet data, List<List<Node>> partition) {
         List<String> latentVarList = null;
 
-        if (method == 1) {
+        if (2 == 1) {
             latentVarList = ReidentifyVariables.reidentifyVariables1(partition, mim);
-        } else if (method == 2) {
+        } else if (2 == 2) {
             latentVarList = ReidentifyVariables.reidentifyVariables2(partition, mim, data);
         } else {
             throw new IllegalStateException();

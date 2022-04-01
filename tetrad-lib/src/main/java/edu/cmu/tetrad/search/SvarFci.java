@@ -182,9 +182,6 @@ public final class SvarFci implements GraphSearch {
     }
 
 
-    public void setExternalGraph(Graph externalGraph) {
-    }
-
     public Graph search(IFas fas) {
         this.logger.log("info", "Starting FCI algorithm.");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");

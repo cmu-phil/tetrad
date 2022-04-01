@@ -73,7 +73,7 @@ public class TestCpc {
         knowledge.setForbidden("D", "B");
         knowledge.setForbidden("C", "B");
 
-        checkWithKnowledge("A-->B,C-->B,B-->D", "A---B,B-->C,D",/*"A-->B,C-->B,A-->D,C-->D",*/
+        checkWithKnowledge(/*"A-->B,C-->B,A-->D,C-->D",*/
                 knowledge);
     }
 
@@ -133,10 +133,9 @@ public class TestCpc {
      * Presents the input graph to FCI and checks to make sure the output of FCI is equivalent to the given output
      * graph.
      */
-    private void checkWithKnowledge(String inputGraph, String outputGraph,
-                                    IKnowledge knowledge) {
+    private void checkWithKnowledge(IKnowledge knowledge) {
         // Set up graph and node objects.
-        Graph graph = GraphConverter.convert(inputGraph);
+        Graph graph = GraphConverter.convert("A-->B,C-->B,B-->D");
 
         // Set up search.
         IndependenceTest independence = new IndTestDSep(graph);
@@ -150,7 +149,7 @@ public class TestCpc {
         Graph resultGraph = cpc.search();
 
         // Build comparison graph.
-        Graph trueGraph = GraphConverter.convert(outputGraph);
+        Graph trueGraph = GraphConverter.convert("A---B,B-->C,D");
 
         // Do test.
         assertTrue(resultGraph.equals(trueGraph));

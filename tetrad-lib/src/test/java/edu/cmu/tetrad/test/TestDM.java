@@ -486,10 +486,6 @@ public class TestDM {
         print("DONE");
     }
 
-    @Test
-    public void test8() {
-    }
-
     @Ignore
     public void rtest9() {
         internaltest9(10);
@@ -1044,7 +1040,7 @@ public class TestDM {
     }
 
     public static void main(String... args) {
-        new TestDM().test8();
+        new TestDM().test2();
     }
 
 }

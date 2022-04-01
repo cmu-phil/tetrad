@@ -369,27 +369,27 @@ public class TestStandardizedSem {
         final int n = 100;
 
         for (int i = 0; i <= 100; i++) {
-            assertEquals(i, sliderToSlider(i, -5, 5, n));
+            assertEquals(i, sliderToSlider(i, -5, 5));
         }
 
         for (int i = 0; i <= 100; i++) {
-            assertEquals(i, sliderToSlider(i, -5, Double.POSITIVE_INFINITY, n));
+            assertEquals(i, sliderToSlider(i, -5, Double.POSITIVE_INFINITY));
         }
 
         for (int i = 0; i <= 100; i++) {
-            assertEquals(i, sliderToSlider(i, Double.NEGATIVE_INFINITY, 5, n));
+            assertEquals(i, sliderToSlider(i, Double.NEGATIVE_INFINITY, 5));
         }
 
         for (int i = 0; i <= 100; i++) {
-            assertEquals(i, sliderToSlider(i, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, n));
+            assertEquals(i, sliderToSlider(i, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
         }
 
 
     }
 
-    private int sliderToSlider(int slider, double min, double max, int n) {
-        double value = sliderToValue(slider, min, max, n);
-        return valueToSlider(value, min, max, n);
+    private int sliderToSlider(int slider, double min, double max) {
+        double value = sliderToValue(slider, min, max, 100);
+        return valueToSlider(value, min, max, 100);
     }
 
 

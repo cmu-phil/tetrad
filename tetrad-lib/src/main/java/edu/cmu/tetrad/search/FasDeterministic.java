@@ -408,9 +408,6 @@ public class FasDeterministic implements IFas {
         return this.numIndependenceTests;
     }
 
-    public void setTrueGraph(Graph trueGraph) {
-    }
-
     public int getNumDependenceJudgments() {
         return this.numDependenceJudgement;
     }
@@ -434,11 +431,6 @@ public class FasDeterministic implements IFas {
     @Override
     public boolean isAggressivelyPreventCycles() {
         return false;
-    }
-
-    @Override
-    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
-
     }
 
     @Override

@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 
 import java.text.DecimalFormat;
@@ -70,9 +69,6 @@ public class PurifySextadBased {
         System.out.println(convertedResult);
 
         return convertedResult;
-    }
-
-    public void setTrueGraph(Graph mim) {
     }
 
     private List<List<Integer>> combinedSearch(List<List<Integer>> clustering) {

@@ -149,10 +149,6 @@ public class BdeuScoreImages implements IBDeuScore {
         return sum / this.scores.size();
     }
 
-    public void setOut() {
-        // The printstream output should be sent to.
-    }
-
     @Override
     public boolean isEffectEdge(double bump) {
         return false;

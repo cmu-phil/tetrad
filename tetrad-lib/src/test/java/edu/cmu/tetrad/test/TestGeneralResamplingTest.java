@@ -56,12 +56,6 @@ import java.util.List;
  */
 public class TestGeneralResamplingTest {
 
-    /**
-     * @param args
-     */
-    public static void main(String[] args) {
-    }
-
     @Test
     public void testFGESc() {
         final int penaltyDiscount = 2;
@@ -75,7 +69,7 @@ public class TestGeneralResamplingTest {
         final int numBootstrapSamples = 5;
         final boolean verbose = true;
 
-        Graph dag = TestGeneralResamplingTest.makeContinuousDAG(numVars, numLatentConfounders, edgesPerNode);
+        Graph dag = TestGeneralResamplingTest.makeContinuousDAG(numLatentConfounders);
 
         System.out.println("Truth Graph:");
         System.out.println(dag);
@@ -137,7 +131,7 @@ public class TestGeneralResamplingTest {
         final boolean verbose = true;
         final long seed = 123;
 
-        Graph dag = TestGeneralResamplingTest.makeDiscreteDAG(numVars, numLatentConfounders, edgesPerNode);
+        Graph dag = TestGeneralResamplingTest.makeDiscreteDAG(numLatentConfounders);
 
         BayesPm pm = new BayesPm(dag, 2, 3);
         BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
@@ -189,7 +183,7 @@ public class TestGeneralResamplingTest {
         final int numBootstrapSamples = 5;
         final boolean verbose = true;
 
-        Graph dag = TestGeneralResamplingTest.makeContinuousDAG(numVars, numLatentConfounders, edgesPerNode);
+        Graph dag = TestGeneralResamplingTest.makeContinuousDAG(numLatentConfounders);
 
         BayesPm pm = new BayesPm(dag, 2, 3);
         BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
@@ -253,7 +247,7 @@ public class TestGeneralResamplingTest {
         final boolean verbose = true;
         final long seed = 123;
 
-        Graph dag = TestGeneralResamplingTest.makeDiscreteDAG(numVars, numLatentConfounders, edgesPerNode);
+        Graph dag = TestGeneralResamplingTest.makeDiscreteDAG(numLatentConfounders);
 
         DagToPag dagToPag = new DagToPag(dag);
         Graph truePag = dagToPag.convert();
@@ -310,7 +304,7 @@ public class TestGeneralResamplingTest {
         final int numBootstrapSamples = 5;
         final boolean verbose = true;
 
-        Graph dag = TestGeneralResamplingTest.makeContinuousDAG(numVars, numLatentConfounders, edgesPerNode);
+        Graph dag = TestGeneralResamplingTest.makeContinuousDAG(numLatentConfounders);
 
         DagToPag dagToPag = new DagToPag(dag);
         Graph truePag = dagToPag.convert();
@@ -373,7 +367,7 @@ public class TestGeneralResamplingTest {
         final boolean verbose = true;
         final long seed = 123;
 
-        Graph dag = TestGeneralResamplingTest.makeDiscreteDAG(numVars, numLatentConfounders, edgesPerNode);
+        Graph dag = TestGeneralResamplingTest.makeDiscreteDAG(numLatentConfounders);
 
         DagToPag dagToPag = new DagToPag(dag);
         Graph truePag = dagToPag.convert();
@@ -490,26 +484,26 @@ public class TestGeneralResamplingTest {
         System.out.println();
     }
 
-    private static Graph makeContinuousDAG(int numVars, int numLatentConfounders, double edgesPerNode) {
-        int numEdges = (int) (numVars * edgesPerNode);
+    private static Graph makeContinuousDAG(int numLatentConfounders) {
+        int numEdges = (int) (20 * (double) 2);
 
         List<Node> vars = new ArrayList<>();
 
-        for (int i = 0; i < numVars; i++) {
+        for (int i = 0; i < 20; i++) {
             vars.add(new ContinuousVariable(Integer.toString(i)));
         }
 
         return GraphUtils.randomGraph(vars, numLatentConfounders, numEdges, 30, 15, 15, false);
     }
 
-    private static Graph makeDiscreteDAG(int numVars, int numLatentConfounders, double edgesPerNode) {
-        int numEdges = (int) (numVars * edgesPerNode);
+    private static Graph makeDiscreteDAG(int numLatentConfounders) {
+        int numEdges = (int) (20 * (double) 2);
 
         // System.out.println("Making list of vars");
 
         List<Node> vars = new ArrayList<>();
 
-        for (int i = 0; i < numVars; i++) {
+        for (int i = 0; i < 20; i++) {
             vars.add(new DiscreteVariable(Integer.toString(i)));
         }
 

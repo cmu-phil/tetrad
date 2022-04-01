@@ -62,10 +62,6 @@ public class EvaluationExpression implements Expression {
         return new EvaluationExpression(VariableExpression.serializableInstance(), "a");
     }
 
-    public String toString() {
-        return super.toString();
-    }
-
     public double evaluate(Context context) {
         Object o = this.variable.evaluateGeneric(context);
         if (o != null && this.string.equals(o.toString())) {

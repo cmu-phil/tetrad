@@ -320,7 +320,7 @@ public final class TestCellTable {
         int[] testCell;
 
         for (int c = 0; c < 8; c++) {
-            testCell = TestCellTable.pickRandomCell(4);
+            testCell = TestCellTable.pickRandomCell();
 
             int myCount = 0;
 
@@ -354,7 +354,7 @@ public final class TestCellTable {
             // array of variable indices to marginalize and (b) a
             // "wildcard" version of this cell with those indices
             // replaced by -1.
-            int[] cell = TestCellTable.pickRandomCell(4);
+            int[] cell = TestCellTable.pickRandomCell();
 
             // The indices to marginalize. (No repeats.)
             int numMargin = RandomUtil.getInstance().nextInt(4);
@@ -405,11 +405,11 @@ public final class TestCellTable {
         }
     }
 
-    private static int[] pickRandomCell(int size) {
+    private static int[] pickRandomCell() {
 
-        int[] cell = new int[size];
+        int[] cell = new int[4];
 
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < 4; i++) {
             cell[i] = RandomUtil.getInstance().nextInt(2);
         }
 

@@ -91,9 +91,6 @@ public class LingamPattern2 {
 
     //===============================PUBLIC METHODS========================//
 
-    public void setKnowledge() {
-    }
-
     public Graph search() {
         Graph _cpdag = GraphUtils.bidirectedToUndirected(getCpdag());
 

@@ -35,8 +35,6 @@ import java.util.List;
 public interface IFas {
     boolean isAggressivelyPreventCycles();
 
-    void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles);
-
     IndependenceTest getIndependenceTest();
 
     IKnowledge getKnowledge();
@@ -56,8 +54,6 @@ public interface IFas {
     long getElapsedTime();
 
     int getNumIndependenceTests();
-
-    void setTrueGraph(Graph trueGraph);
 
     List<Node> getNodes();
 

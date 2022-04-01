@@ -107,7 +107,7 @@ public class TestRfciBsc {
         RandomUtil.getInstance().setSeed(seed);
 
         // get the Bayesian network (graph and parameters) of the given model
-        BayesIm im = TestRfciBsc.loadBayesIm(modelName);
+        BayesIm im = TestRfciBsc.loadBayesIm();
         BayesPm pm = im.getBayesPm();
         Graph dag = pm.getDag();
 
@@ -180,10 +180,10 @@ public class TestRfciBsc {
         return latents;
     }
 
-    private static BayesIm loadBayesIm(String filename) {
+    private static BayesIm loadBayesIm() {
         try {
             Builder builder = new Builder();
-            File file = new File("src/test/resources/" + filename);
+            File file = new File("src/test/resources/" + "Alarm.xdsl");
             System.out.println(file.getAbsolutePath());
             Document document = builder.build(file);
             XdslXmlParser parser = new XdslXmlParser();

@@ -28,12 +28,12 @@ public class TestFisherZCalibration {
     @Test
     public void test1() {
         RandomUtil.getInstance().setSeed(105034020L);
-        toTest(0.05);
+        toTest();
     }
 
-    private void toTest(double alpha) {
+    private void toTest() {
         Parameters parameters = new Parameters();
-        parameters.set(Params.ALPHA, alpha);
+        parameters.set(Params.ALPHA, 0.05);
         parameters.set(Params.DEPTH, 2);
         parameters.set(Params.PENALTY_DISCOUNT, 1);
         parameters.set(Params.STRUCTURE_PRIOR, 0);
@@ -58,11 +58,11 @@ public class TestFisherZCalibration {
         IndependenceTest dsep = new IndTestDSep(graph);
 
         for (int depth : new int[]{0, 1}) {
-            testOneDepth(parameters, numDraws, test1, test2, variables, dsep, depth);
+            testOneDepth(parameters, test1, test2, variables, dsep, depth);
         }
     }
 
-    private void testOneDepth(Parameters parameters, int numDraws, IndependenceTest test1, IndependenceTest test2, List<Node> variables, IndependenceTest dsep, int depth) {
+    private void testOneDepth(Parameters parameters, IndependenceTest test1, IndependenceTest test2, List<Node> variables, IndependenceTest dsep, int depth) {
         int countSame = 0;
         int fn1 = 0;
         int fn2 = 0;
@@ -70,7 +70,7 @@ public class TestFisherZCalibration {
         int fp2 = 0;
         int ds = 0;
 
-        for (int i = 0; i < numDraws; i++) {
+        for (int i = 0; i < 2000; i++) {
             Collections.shuffle(variables);
             Collections.shuffle(variables);
             Collections.shuffle(variables);
@@ -110,7 +110,7 @@ public class TestFisherZCalibration {
         System.out.println();
         System.out.println("Depth = " + depth);
         System.out.println();
-        System.out.println("Same = " + countSame + " out of " + numDraws);
+        System.out.println("Same = " + countSame + " out of " + 2000);
         System.out.println();
         System.out.println(table);
 

@@ -63,13 +63,13 @@ public final class TestBayesBicScorer {
     public void testGregsBdeuStructurePrior() {
         for (int i = 100; i >= 1; i--) {
             double e = .0001 / i;
-            System.out.println("e = " + e + "\t" + prior(e, 1, 10));
+            System.out.println("e = " + e + "\t" + prior(e));
         }
     }
 
-    private double prior(double e, int k, int v) {
-        double choose = Math.exp(MathUtils.choose(v - 1, k));
-        return choose * Math.pow(e / (v - 1), k) * Math.pow(1.0 - e / (v - 1), (v - k - 1));
+    private double prior(double e) {
+        double choose = Math.exp(MathUtils.choose(10 - 1, 1));
+        return choose * Math.pow(e / (10 - 1), 1) * Math.pow(1.0 - e / (10 - 1), (10 - 1 - 1));
     }
 
     // Greg's structure prior

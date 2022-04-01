@@ -447,18 +447,12 @@ public class FasFdr implements IFas {
         return this.numIndependenceTests;
     }
 
-    public void setTrueGraph(Graph trueGraph) {
-    }
-
     public int getNumDependenceJudgments() {
         return this.numDependenceJudgement;
     }
 
     public SepsetMap getSepsets() {
         return this.sepset;
-    }
-
-    public void setExternalGraph() {
     }
 
     public boolean isVerbose() {
@@ -472,11 +466,6 @@ public class FasFdr implements IFas {
     @Override
     public boolean isAggressivelyPreventCycles() {
         return false;
-    }
-
-    @Override
-    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
-
     }
 
     @Override

@@ -152,9 +152,6 @@ public class Purify {
         this.outputMessage = true;
     }
 
-    public void setConstraintSearchVariation(int type) {
-    }
-
     public void setOutputMessage(boolean outputMessage) {
         this.outputMessage = outputMessage;
     }

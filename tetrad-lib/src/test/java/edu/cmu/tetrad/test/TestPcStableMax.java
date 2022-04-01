@@ -80,7 +80,7 @@ public class TestPcStableMax {
 
         System.out.println(knowledge);
 
-        checkWithKnowledge("A-->B,C-->B,B-->D", "A---B,B-->C,D", /*"A---B,B-->C,A-->D,C-->D", */
+        checkWithKnowledge(  /*"A---B,B-->C,A-->D,C-->D", */
                 knowledge);
     }
 
@@ -163,10 +163,9 @@ public class TestPcStableMax {
      * Presents the input graph to FCI and checks to make sure the output of FCI is equivalent to the given output
      * graph.
      */
-    private void checkWithKnowledge(String inputGraph, String outputGraph,
-                                    IKnowledge knowledge) {
+    private void checkWithKnowledge(IKnowledge knowledge) {
         // Set up graph and node objects.
-        Graph graph = GraphConverter.convert(inputGraph);
+        Graph graph = GraphConverter.convert("A-->B,C-->B,B-->D");
 
         // Set up search.
         IndependenceTest independence = new IndTestDSep(graph);
@@ -179,7 +178,7 @@ public class TestPcStableMax {
         Graph resultGraph = pc.search();
 
         // Build comparison graph.
-        Graph trueGraph = GraphConverter.convert(outputGraph);
+        Graph trueGraph = GraphConverter.convert("A---B,B-->C,D");
 
         // Do test.
         assertEquals(trueGraph, resultGraph);

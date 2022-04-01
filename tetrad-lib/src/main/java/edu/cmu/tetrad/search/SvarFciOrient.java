@@ -220,7 +220,7 @@ public final class SvarFciOrient {
                         System.out.println(SearchLogUtils.colliderOrientedMsg(a, b, c));
                         final String location = "R0";
 
-                        printWrongColliderMessage(a, b, c, location, graph);
+                        printWrongColliderMessage(a, b, c, graph);
                     }
                     this.orientSimilarPairs(graph, this.knowledge, a, b, Endpoint.ARROW);
                     this.orientSimilarPairs(graph, this.knowledge, c, b, Endpoint.ARROW);
@@ -229,9 +229,9 @@ public final class SvarFciOrient {
         }
     }
 
-    private void printWrongColliderMessage(Node a, Node b, Node c, String location, Graph graph) {
+    private void printWrongColliderMessage(Node a, Node b, Node c, Graph graph) {
         if (this.truePag != null && graph.isDefCollider(a, b, c) && !this.truePag.isDefCollider(a, b, c)) {
-            System.out.println(location + ": Orienting collider by mistake: " + a + "*->" + b + "<-*" + c);
+            System.out.println("R0" + ": Orienting collider by mistake: " + a + "*->" + b + "<-*" + c);
         }
     }
 

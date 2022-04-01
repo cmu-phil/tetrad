@@ -857,10 +857,10 @@ public class TestFges {
         return newGraph;
     }
 
-    private Graph searchSemFges(DataSet Dk, double penalty) {
+    private Graph searchSemFges(DataSet Dk) {
         Dk = DataUtils.convertNumericalDiscreteToContinuous(Dk);
         SemBicScore score = new SemBicScore(new CovarianceMatrix(Dk));
-        score.setPenaltyDiscount(penalty);
+        score.setPenaltyDiscount(2.0);
         Fges fges = new Fges(score);
         return fges.search();
     }
@@ -884,9 +884,9 @@ public class TestFges {
         return fges.search();
     }
 
-    private Graph searchMixedFges(DataSet dk, double penalty) {
-        ConditionalGaussianScore score = new ConditionalGaussianScore(dk, penalty, 0.0, true);
-        score.setPenaltyDiscount(penalty);
+    private Graph searchMixedFges(DataSet dk) {
+        ConditionalGaussianScore score = new ConditionalGaussianScore(dk, 2.0, 0.0, true);
+        score.setPenaltyDiscount(2.0);
         Fges fges = new Fges(score);
         return fges.search();
     }
@@ -965,8 +965,8 @@ public class TestFges {
             double[][][] allRet = new double[algorithms.length][][];
 
             for (int t = 0; t < algorithms.length; t++) {
-                allRet[t] = printStats(algorithms, t, numRuns, sampleSize, numMeasures,
-                        numCategories, numEdges);
+                allRet[t] = printStats(algorithms, t,
+                        numCategories);
             }
 
             allAllRet[latentIndex] = allRet;
@@ -991,12 +991,11 @@ public class TestFges {
         System.out.println("num measures = " + numMeasures);
         System.out.println("num edges = " + numEdges);
 
-        printBestStats(allAllRet, algorithms, statLabels, maxCategories, ofInterestCutoff);
+        printBestStats(allAllRet, algorithms, statLabels);
     }
 
-    private double[][] printStats(String[] algorithms, int t, int numRuns,
-                                  int sampleSize, int numMeasures, int numCategories,
-                                  int numEdges) {
+    private double[][] printStats(String[] algorithms, int t,
+                                  int numCategories) {
         NumberFormat nf = new DecimalFormat("0.00");
 
         double[] sumAdjPrecision = new double[4];
@@ -1020,17 +1019,17 @@ public class TestFges {
         int[] countF1Adj = new int[4];
         int[] countF1Or = new int[4];
 
-        for (int i = 0; i < numRuns; i++) {
+        for (int i = 0; i < 50; i++) {
             List<Node> nodes = new ArrayList<>();
 
-            for (int r = 0; r < numMeasures; r++) {
+            for (int r = 0; r < 30; r++) {
                 String name = "X" + (r + 1);
                 nodes.add(new ContinuousVariable(name));
             }
 
-            Graph dag = GraphUtils.randomGraphRandomForwardEdges(nodes, 0, numEdges,
+            Graph dag = GraphUtils.randomGraphRandomForwardEdges(nodes, 0, 60,
                     10, 10, 10, false);
-            DataSet data = getMixedDataAjStyle(dag, numCategories, sampleSize);
+            DataSet data = getMixedDataAjStyle(dag, numCategories, 1000);
 
             Graph out;
             final double penalty = 2;
@@ -1039,13 +1038,13 @@ public class TestFges {
 
             switch (t) {
                 case 0:
-                    out = searchSemFges(data, penalty);
+                    out = searchSemFges(data);
                     break;
                 case 1:
                     out = searchBdeuFges(data, numCategories);
                     break;
                 case 2:
-                    out = searchMixedFges(data, penalty);
+                    out = searchMixedFges(data);
                     break;
                 case 3:
                     out = searchMGMFges(data, penalty);
@@ -1224,7 +1223,7 @@ public class TestFges {
             avgMcOr[u] = sumMcOr[u] / (double) countMcOr[u];
             avgF1Adj[u] = sumF1Adj[u] / (double) countF1Adj[u];
             avgF1Or[u] = sumF1Or[u] / (double) countF1Or[u];
-            avgElapsed[u] = -totalElapsed / (double) numRuns;
+            avgElapsed[u] = -totalElapsed / (double) 50;
         }
 
         double[][] ret = {
@@ -1285,8 +1284,7 @@ public class TestFges {
         return header;
     }
 
-    private void printBestStats(double[][][][] allAllRet, String[] algorithms, String[] statLabels,
-                                int maxCategories, double ofInterestCutoff) {
+    private void printBestStats(double[][][][] allAllRet, String[] algorithms, String[] statLabels) {
         TextTable table = new TextTable(allAllRet.length + 1, allAllRet[0][0].length + 1);
 
 
@@ -1313,7 +1311,7 @@ public class TestFges {
         System.out.println("And the winners are... !");
 
         for (int u = 0; u < 4; u++) {
-            for (int numCategories = 2; numCategories <= maxCategories; numCategories++) {
+            for (int numCategories = 2; numCategories <= 5; numCategories++) {
 
                 table.setToken(numCategories - 1, 0, numCategories + "");
 
@@ -1347,7 +1345,7 @@ public class TestFges {
                         double minStat = algStats.get(algStats.size() - 1).getStat();
 
                         double diff = maxStat - minStat;
-                        double ofInterest = maxStat - ofInterestCutoff * (diff);
+                        double ofInterest = maxStat - 0.05 * (diff);
 
                         for (int i = 1; i < algStats.size(); i++) {
                             if (algStats.get(i).getStat() >= ofInterest) {
@@ -1384,7 +1382,7 @@ public class TestFges {
             System.out.println(getHeader(u));
             System.out.println();
 
-            for (int numCategories = 2; numCategories <= maxCategories; numCategories++) {
+            for (int numCategories = 2; numCategories <= 5; numCategories++) {
                 System.out.println("\n# categories = " + numCategories);
 
                 for (int t = 0; t < algorithms.length; t++) {

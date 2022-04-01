@@ -41,8 +41,8 @@ public final class TestAndersonDarling {
     public void test1() {
         RandomUtil.getInstance().setSeed(384829384L);
 
-        double[] x = rand1(100);
-        double[] y = rand2(100);
+        double[] x = rand1();
+        double[] y = rand2();
 
         x = standardize(x);
         y = standardize(y);
@@ -62,7 +62,7 @@ public final class TestAndersonDarling {
     public void test2() {
         RandomUtil.getInstance().setSeed(4838582394L);
 
-        double[] x = rand1(100);
+        double[] x = rand1();
 
         double aa = new AndersonDarlingTest(x).getASquared();
 
@@ -75,8 +75,8 @@ public final class TestAndersonDarling {
         return z;
     }
 
-    private double[] rand1(int n) {
-        double[] x = new double[n];
+    private double[] rand1() {
+        double[] x = new double[100];
 
         for (int i = 0; i < x.length; i++) {
             x[i] = RandomUtil.getInstance().nextUniform(0, 1);
@@ -84,8 +84,8 @@ public final class TestAndersonDarling {
         return x;
     }
 
-    private double[] rand2(int n) {
-        double[] x = new double[n];
+    private double[] rand2() {
+        double[] x = new double[100];
 
         for (int i = 0; i < x.length; i++) {
             x[i] = RandomUtil.getInstance().nextBeta(2, 5);

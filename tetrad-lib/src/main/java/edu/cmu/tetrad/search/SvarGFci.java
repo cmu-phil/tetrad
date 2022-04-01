@@ -280,8 +280,8 @@ public final class SvarGFci implements GraphSearch {
                     this.graph.setEndpoint(a, b, Endpoint.ARROW);
                     this.graph.setEndpoint(c, b, Endpoint.ARROW);
                     //  orienting similar pairs to enforce repeating structure **/
-                    orientSimilarPairs(this.graph, this.knowledge, a, b, Endpoint.ARROW);
-                    orientSimilarPairs(this.graph, this.knowledge, c, b, Endpoint.ARROW);
+                    orientSimilarPairs(this.graph, this.knowledge, a, b);
+                    orientSimilarPairs(this.graph, this.knowledge, c, b);
                     //  **/
 
                 } else if (fgesGraph.isAdjacentTo(a, c) && !this.graph.isAdjacentTo(a, c)) {
@@ -291,8 +291,8 @@ public final class SvarGFci implements GraphSearch {
                         this.graph.setEndpoint(a, b, Endpoint.ARROW);
                         this.graph.setEndpoint(c, b, Endpoint.ARROW);
                         //  orienting similar pairs to enforce repeating structure **/
-                        orientSimilarPairs(this.graph, this.knowledge, a, b, Endpoint.ARROW);
-                        orientSimilarPairs(this.graph, this.knowledge, c, b, Endpoint.ARROW);
+                        orientSimilarPairs(this.graph, this.knowledge, a, b);
+                        orientSimilarPairs(this.graph, this.knowledge, c, b);
                         //  **/
                     }
                 }
@@ -491,7 +491,7 @@ public final class SvarGFci implements GraphSearch {
         return max;
     }
 
-    private void orientSimilarPairs(Graph graph, IKnowledge knowledge, Node x, Node y, Endpoint mark) {
+    private void orientSimilarPairs(Graph graph, IKnowledge knowledge, Node x, Node y) {
         if (x.getName().equals("time") || y.getName().equals("time")) {
             return;
         }
@@ -546,7 +546,7 @@ public final class SvarGFci implements GraphSearch {
 
                 if (graph.isAdjacentTo(x1, y1) && graph.getEndpoint(x1, y1) == Endpoint.CIRCLE) {
                     System.out.print("Orient edge " + graph.getEdge(x1, y1).toString());
-                    graph.setEndpoint(x1, y1, mark);
+                    graph.setEndpoint(x1, y1, Endpoint.ARROW);
                     System.out.println(" by structure knowledge as: " + graph.getEdge(x1, y1).toString());
                 }
             } else {

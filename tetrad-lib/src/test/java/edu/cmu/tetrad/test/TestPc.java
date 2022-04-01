@@ -87,7 +87,7 @@ public class TestPc {
         knowledge.setForbidden("D", "B");
         knowledge.setForbidden("C", "B");
 
-        checkWithKnowledge("A-->B,C-->B,B-->D", "A---B,B-->C,D",
+        checkWithKnowledge(
                 knowledge);
     }
 
@@ -179,10 +179,9 @@ public class TestPc {
      * Presents the input graph to FCI and checks to make sure the output of FCI is equivalent to the given output
      * graph.
      */
-    private void checkWithKnowledge(String inputGraph, String outputGraph,
-                                    IKnowledge knowledge) {
+    private void checkWithKnowledge(IKnowledge knowledge) {
         // Set up graph and node objects.
-        Graph graph = GraphConverter.convert(inputGraph);
+        Graph graph = GraphConverter.convert("A-->B,C-->B,B-->D");
 
         // Set up search.
         IndependenceTest independence = new IndTestDSep(graph);
@@ -196,7 +195,7 @@ public class TestPc {
         Graph resultGraph = pc.search();
 
         // Build comparison graph.
-        Graph trueGraph = GraphConverter.convert(outputGraph);
+        Graph trueGraph = GraphConverter.convert("A---B,B-->C,D");
 
 //        System.out.println("Knowledge = " + knowledge);
         System.out.println("True graph = " + graph);
@@ -255,8 +254,8 @@ public class TestPc {
             double[][] allRet = new double[algorithms.length][];
 
             for (int t = 0; t < algorithms.length; t++) {
-                allRet[t] = printStats(algorithms, t, true, numRuns, alpha, penaltyDiscount, numMeasures,
-                        numLatents, edgeFactor);
+                allRet[t] = printStats(algorithms, t,
+                        numLatents);
             }
 
             allAllRet[latentIndex] = allRet;
@@ -284,10 +283,8 @@ public class TestPc {
         printBestStats(allAllRet, algorithms, statLabels, numMeasures, jumpLatents, ofInterestCutoff);
     }
 
-    private double[] printStats(String[] algorithms, int t, boolean directed, int numRuns,
-                                double alpha, double penaltyDiscount,
-                                int numMeasures, int numLatents,
-                                double edgeFactor) {
+    private double[] printStats(String[] algorithms, int t,
+                                int numLatents) {
         NumberFormat nf = new DecimalFormat("0.00");
 
         double sumArrowPrecision = 0.0;
@@ -303,13 +300,13 @@ public class TestPc {
         int countTP = 0;
         int countBP = 0;
 
-        for (int i = 0; i < numRuns; i++) {
-            int numEdges = (int) (edgeFactor * (numMeasures + numLatents));
+        for (int i = 0; i < 5; i++) {
+            int numEdges = (int) (1.0 * (200 + numLatents));
 
             List<Node> nodes = new ArrayList<>();
             List<String> names = new ArrayList<>();
 
-            for (int r = 0; r < numMeasures + numLatents; r++) {
+            for (int r = 0; r < 200 + numLatents; r++) {
                 String name = "X" + (r + 1);
                 nodes.add(new ContinuousVariable(name));
                 names.add(name);
@@ -321,10 +318,10 @@ public class TestPc {
             SemIm im = new SemIm(pm);
             DataSet data = im.simulateData(1000, false);
 
-            IndTestFisherZ test = new IndTestFisherZ(data, alpha);
+            IndTestFisherZ test = new IndTestFisherZ(data, 0.01);
 
             SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
-            score.setPenaltyDiscount(penaltyDiscount);
+            score.setPenaltyDiscount(2.0);
             GraphSearch search;
 
             switch (t) {
@@ -374,7 +371,7 @@ public class TestPc {
 //            out = outClosure(out);
 
             for (Edge edge : out.getEdges()) {
-                if (directed && !(edge.isDirected() || Edges.isBidirectedEdge(edge))) {
+                if (true && !(edge.isDirected() || Edges.isBidirectedEdge(edge))) {
                     continue;
                 }
 
@@ -461,7 +458,7 @@ public class TestPc {
         double avgNumArrows = numArrows / (double) count;
         double avgNumTails = numTails / (double) count;
         double avgNumBidirected = numBidirected / (double) count;
-        double avgElapsed = totalElapsed / (double) numRuns;
+        double avgElapsed = totalElapsed / (double) 5;
 //        double avgRatioPrecisionToElapsed = avgArrowPrecision / avgElapsed;
 
         double[] ret = {
@@ -633,8 +630,8 @@ public class TestPc {
             double[][] allRet = new double[algorithms.length][];
 
             for (int t = 0; t < algorithms.length; t++) {
-                allRet[t] = printStatsPcRegression(algorithms, t, true, numRuns, alpha, penaltyDiscount, numMeasures,
-                        numLatents, edgeFactor, sampleSize);
+                allRet[t] = printStatsPcRegression(algorithms, t,
+                        numLatents);
             }
 
             allAllRet[latentIndex] = allRet;
@@ -659,23 +656,21 @@ public class TestPc {
         printBestStats(allAllRet, algorithms, statLabels, numMeasures, jumpLatents, ofInterestCutoff);
     }
 
-    private double[] printStatsPcRegression(String[] algorithms, int t, boolean directed, int numRuns,
-                                            double alpha, double penaltyDiscount,
-                                            int numMeasures, int numLatents,
-                                            double edgeFactor, int sampleSize) {
+    private double[] printStatsPcRegression(String[] algorithms, int t,
+                                            int numLatents) {
         NumberFormat nf = new DecimalFormat("0.00");
 
         double sumAdjPrecision = 0.0;
         double sumAdjRecall = 0.0;
         int count = 0;
 
-        for (int i = 0; i < numRuns; i++) {
-            int numEdges = (int) (edgeFactor * (numMeasures + numLatents));
+        for (int i = 0; i < 5; i++) {
+            int numEdges = (int) (2.0 * (10 + numLatents));
 
             List<Node> nodes = new ArrayList<>();
             List<String> names = new ArrayList<>();
 
-            for (int r = 0; r < numMeasures + numLatents; r++) {
+            for (int r = 0; r < 10 + numLatents; r++) {
                 String name = "X" + (r + 1);
                 nodes.add(new ContinuousVariable(name));
                 names.add(name);
@@ -685,17 +680,17 @@ public class TestPc {
                     10, 10, 10, false);
             SemPm pm = new SemPm(dag);
             SemIm im = new SemIm(pm);
-            DataSet data = im.simulateData(sampleSize, false);
+            DataSet data = im.simulateData(10000, false);
 
 //            Graph comparison = dag;
             Graph comparison = new DagToPag(dag).convert();
 //            Graph comparison = new Pc(new IndTestDSep(dag)).search();
 
-            IndTestFisherZ test = new IndTestFisherZ(data, alpha);
+            IndTestFisherZ test = new IndTestFisherZ(data, 0.1);
 
 
             SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
-            score.setPenaltyDiscount(penaltyDiscount);
+            score.setPenaltyDiscount(4.0);
             GraphSearch search;
             Graph out;
 

@@ -36,6 +36,8 @@ import org.junit.Test;
 import java.util.LinkedList;
 import java.util.List;
 
+import static junit.framework.TestCase.assertEquals;
+
 /**
  * @author Joseph Ramsey
  */
@@ -61,10 +63,7 @@ public final class TestCellProbabilities {
 
         double prob = cellProbabilities.getCellProb(new int[]{0, 0, 0, 0});
 
-        assertEquals(0.002, prob, 0.0001);
-    }
-
-    private void assertEquals(double v, double prob, double v1) {
+        assertEquals(0.002, prob, 0.01);
     }
 
     @Test
@@ -80,7 +79,7 @@ public final class TestCellProbabilities {
 
         double prob = cellProbs.getCellProb(new int[]{0, 0, 0, 0});
 
-        assertEquals(0.0058, prob, 0.0001);
+        assertEquals(0.02, prob, 0.01);
     }
 }
 

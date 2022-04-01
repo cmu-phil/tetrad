@@ -285,7 +285,7 @@ public class TestFci {
             SemIm im = new SemIm(pm);
             DataSet data = im.simulateData(1000, false);
 
-            Graph pag = getPag(alpha, penaltyDiscount, data);
+            Graph pag = getPag(data);
 
             DataSet marginalData = data.copy();
 
@@ -296,7 +296,7 @@ public class TestFci {
                 marginalData.removeColumn(marginalData.getColumn(variables.get(m)));
             }
 
-            Graph margPag = getPag(alpha, penaltyDiscount, marginalData);
+            Graph margPag = getPag(marginalData);
 
             int ancAnc = 0;
             int ancNanc = 0;
@@ -409,11 +409,11 @@ public class TestFci {
         return uncoveredPotentiallyDirectedPathStarts(n, q, pag, new LinkedList<>()).isEmpty();
     }
 
-    private Graph getPag(double alpha, double penaltyDiscount, DataSet data) {
-        IndTestFisherZ test = new IndTestFisherZ(data, alpha);
+    private Graph getPag(DataSet data) {
+        IndTestFisherZ test = new IndTestFisherZ(data, 0.01);
 
         SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
-        score.setPenaltyDiscount(penaltyDiscount);
+        score.setPenaltyDiscount(4.0);
 
         GraphSearch search = new Pc(test);
 

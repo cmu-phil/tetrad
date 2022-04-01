@@ -73,7 +73,7 @@ public class TestLingamPattern {
         SemPm semPm = new SemPm(graph);
         SemIm semIm = new SemIm(semPm);
 
-        DataSet dataSet = simulateDataNonNormal(semIm, sampleSize, variableDistributions);
+        DataSet dataSet = simulateDataNonNormal(semIm, variableDistributions);
         Score score = new SemBicScore(new CovarianceMatrix(dataSet));
         Graph estnumCPDAGsToStore = new Fges(score).search();
 
@@ -93,10 +93,9 @@ public class TestLingamPattern {
      * This simulates data by picking random values for the exogenous terms and percolating this information down
      * through the SEM, assuming it is acyclic. Fast for large simulations but hangs for cyclic models.
      *
-     * @param sampleSize > 0.
      * @return the simulated data set.
      */
-    private DataSet simulateDataNonNormal(SemIm semIm, int sampleSize,
+    private DataSet simulateDataNonNormal(SemIm semIm,
                                           List<Distribution> distributions) {
         List<Node> variables = new LinkedList<>();
         List<Node> variableNodes = semIm.getSemPm().getVariableNodes();
@@ -106,7 +105,7 @@ public class TestLingamPattern {
             variables.add(var);
         }
 
-        DataSet dataSet = new BoxDataSet(new DoubleDataBox(sampleSize, variables.size()), variables);
+        DataSet dataSet = new BoxDataSet(new DoubleDataBox(1000, variables.size()), variables);
 
         // Create some index arrays to hopefully speed up the simulation.
         SemGraph graph = semIm.getSemPm().getGraph();
@@ -141,7 +140,7 @@ public class TestLingamPattern {
         }
 
         // Do the simulation.
-        for (int row = 0; row < sampleSize; row++) {
+        for (int row = 0; row < 1000; row++) {
 //            System.out.println(row);
 
             for (int i = 0; i < tierOrdering.size(); i++) {

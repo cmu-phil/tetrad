@@ -303,11 +303,6 @@ public class FasConcurrent implements IFas {
     }
 
     @Override
-    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
-
-    }
-
-    @Override
     public IndependenceTest getIndependenceTest() {
         return this.test;
     }
@@ -483,11 +478,6 @@ public class FasConcurrent implements IFas {
 
     public int getNumIndependenceTests() {
         return this.numIndependenceTests;
-    }
-
-    @Override
-    public void setTrueGraph(Graph trueGraph) {
-
     }
 
     @Override

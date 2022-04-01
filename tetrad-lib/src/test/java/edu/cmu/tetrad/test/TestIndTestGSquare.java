@@ -49,7 +49,7 @@ public class TestIndTestGSquare {
     @Test
     public void testIsIndependent() {
         try {
-            DataSet dataSet = getDataSet(1);
+            DataSet dataSet = getDataSet();
 
             IndTestGSquare test = new IndTestGSquare(dataSet, 0.05);
             List<Node> v = test.getVariables();
@@ -71,7 +71,7 @@ public class TestIndTestGSquare {
     @Test
     public void testDetermination() {
         try {
-            DataSet dataSet = getDataSet(1);
+            DataSet dataSet = getDataSet();
 
             IndTestGSquare test = new IndTestGSquare(dataSet, 0.05);
 
@@ -85,8 +85,8 @@ public class TestIndTestGSquare {
         }
     }
 
-    private DataSet getDataSet(int i) throws IOException {
-        String filename = this.discreteFiles[i];
+    private DataSet getDataSet() throws IOException {
+        String filename = this.discreteFiles[1];
         System.out.println("Loading " + filename);
 
         return DataUtils.loadDiscreteData(new File(filename),
