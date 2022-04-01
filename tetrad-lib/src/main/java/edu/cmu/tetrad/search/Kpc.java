@@ -97,11 +97,6 @@ public class Kpc implements GraphSearch {
     private int numIndependenceTests;
 
     /**
-     * The true graph, for purposes of comparison. Temporary.
-     */
-    private Graph trueGraph;
-
-    /**
      * The threshold for rejecting the null
      */
     private double alpha;
@@ -252,10 +247,6 @@ public class Kpc implements GraphSearch {
         this.graph = fas.search();
         this.sepset = fas.getSepsets();
         this.numIndependenceTests = fas.getNumIndependenceTests();
-        /**
-         * The number of dependence judgements from FAS. Temporary.
-         */
-        int numDependenceJudgements = fas.getNumDependenceJudgments();
 
         enumerateTriples();
 
@@ -382,10 +373,6 @@ public class Kpc implements GraphSearch {
 
     public int getNumIndependenceTests() {
         return this.numIndependenceTests;
-    }
-
-    public void setTrueGraph(Graph trueGraph) {
-        this.trueGraph = trueGraph;
     }
 
     public void setVerbose(boolean verbose) {
