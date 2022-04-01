@@ -87,6 +87,7 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
 
     public static StoredCellProbs createRandomCellTable(List<Node> variables) {
         StoredCellProbs cellProbs = new StoredCellProbs(variables);
+        RandomUtil.getInstance().setSeed(39492993L);
 
         double sum = 0.0;
 
