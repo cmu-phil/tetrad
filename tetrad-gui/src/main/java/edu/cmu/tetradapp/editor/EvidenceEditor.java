@@ -155,8 +155,7 @@ class EvidenceEditor extends JPanel {
             checkbox.addActionListener(e -> {
                 JCheckBox checkbox1 = (JCheckBox) e.getSource();
                 boolean selected = checkbox1.isSelected();
-                Integer o = EvidenceEditor.this.checkBoxesToVariables.get(checkbox1);
-                int variable = o;
+                int variable = this.checkBoxesToVariables.get(checkbox1);
 
                 if (getEvidence().getProposition().getSingleCategory(
                         variable) == -1) {
@@ -183,7 +182,7 @@ class EvidenceEditor extends JPanel {
             int _i = this.buttonsToVariables.get(_button);
             int _j = this.buttonsToCategories.get(_button);
 
-            if (!!proposition.isConditioned(_i) && proposition.isAllowed(_i, _j)) {
+            if (proposition.isConditioned(_i) && proposition.isAllowed(_i, _j)) {
                 _button.setBackground(Color.LIGHT_GRAY);
             } else {
                 _button.setBackground(Color.WHITE);

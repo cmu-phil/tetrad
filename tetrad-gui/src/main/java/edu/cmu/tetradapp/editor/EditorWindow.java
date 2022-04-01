@@ -26,8 +26,6 @@ import edu.cmu.tetradapp.util.FinalizingEditor;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import javax.swing.event.InternalFrameAdapter;
-import javax.swing.event.InternalFrameEvent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -96,14 +94,6 @@ public class EditorWindow extends JInternalFrame
      */
     private void doSetup(JPanel editor, boolean cancellable) {
         this.editor = editor;
-
-        addInternalFrameListener(new InternalFrameAdapter() {
-            public void InternalFrameClosing(InternalFrameEvent evt) {
-                EditorWindow.this.canceled = true;
-                closeDialog();
-            }
-        });
-
         this.okButton = null;
 
         if (this.buttonName != null) {

@@ -23,10 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.TimeLagGraph;
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.FactorAnalysisRunner;
-import edu.cmu.tetradapp.model.IFgesRunner;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -130,42 +127,12 @@ public class FactorAnalysisEditor extends AbstractSearchEditor {
 
     //================================PRIVATE METHODS====================//
 
-    /**
-     * Factory to return the correct param editor for independence test params.
-     * This will go in a little box in the search editor.
-     */
-    private JComponent getIndTestParamBox(Parameters params) {
-        if (params == null) {
-            throw new NullPointerException();
-        }
-
-        if (getAlgorithmRunner() instanceof IFgesRunner) {
-            IFgesRunner gesRunner = ((IFgesRunner) getAlgorithmRunner());
-            return new FgesIndTestParamsEditor(params, gesRunner.getType());
-        }
-
-        if (getAlgorithmRunner().getSourceGraph() instanceof TimeLagGraph) {
-            return new TimeSeriesIndTestParamsEditor(getAlgorithmRunner().getParams());
-        }
-
-        if (getAlgorithmRunner().getSourceGraph() != null) {
-            return new IndTestParamsEditor(params);
-        }
-
-        return new PcIndTestParamsEditor(params);
-    }
-
     protected void doDefaultArrangement(Graph resultGraph) {
         if (getLatestWorkbenchGraph() != null) {   //(alreadyLaidOut) {
             GraphUtils.arrangeBySourceGraph(resultGraph,
                     getLatestWorkbenchGraph());
-//        } else if (getKnowledge().isDefaultToKnowledgeLayout()) {
-//            SearchGraphUtils.arrangeByKnowledgeTiers(resultGraph,
-//                    getKnowledge());
-//            alreadyLaidOut = true;
         } else {
             GraphUtils.circleLayout(resultGraph, 200, 200, 150);
-//            alreadyLaidOut = true;
         }
     }
 
