@@ -73,30 +73,11 @@ public class TextAreaOutputStream extends OutputStream implements TetradLogger.L
         this.buf.append((char) b);
 
         if ((char) b == '\n') {
-            final int maxSize = 50000;
 
-            if (false) {//lengthWritten > maxSize) {
-                String text = this.textArea.getText();
-                StringBuilder buf1 = new StringBuilder(text.substring(maxSize - 10000));
-                buf1.append(this.buf);
-                this.textArea.setText(buf1.toString());
-                this.lengthWritten = buf1.length();
-                this.buf.setLength(0);
-                this.buf = new StringBuilder();
-                moveToEnd();
-
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                this.textArea.append(this.buf.toString());
-//            textArea.setText(buf.toString());
-                this.lengthWritten = this.lengthWritten + this.buf.length();
-                this.buf.setLength(0);
-                moveToEnd();
-            }
+            this.textArea.append(this.buf.toString());
+            this.lengthWritten = this.lengthWritten + this.buf.length();
+            this.buf.setLength(0);
+            moveToEnd();
         }
     }
 

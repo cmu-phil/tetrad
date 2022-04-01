@@ -50,7 +50,7 @@ public final class ScoreModels {
 
         this.models = Collections.unmodifiableList(
                 list.stream()
-                        .map(e -> new ScoreModel(e))
+                        .map(ScoreModel::new)
                         .sorted()
                         .collect(Collectors.toList()));
 
@@ -66,7 +66,7 @@ public final class ScoreModels {
         }
 
         // group by datatype
-        this.models.stream().forEach(e -> {
+        this.models.forEach(e -> {
             DataType[] types = e.getScore().getAnnotation().dataType();
             for (DataType dataType : types) {
                 this.modelMap.get(dataType).add(e);
@@ -105,7 +105,7 @@ public final class ScoreModels {
                         Optional<ScoreModel> result = list.stream()
                                 .filter(e -> e.getScore().getClazz().getName().equals(value))
                                 .findFirst();
-                        this.defaultModelMap.put(dataType, result.isPresent() ? result.get() : list.get(0));
+                        this.defaultModelMap.put(dataType, result.orElseGet(() -> list.get(0)));
                     }
                 }
             }
@@ -134,9 +134,7 @@ public final class ScoreModels {
     }
 
     public List<ScoreModel> getModels(DataType dataType) {
-        return this.modelMap.containsKey(dataType)
-                ? this.modelMap.get(dataType)
-                : Collections.EMPTY_LIST;
+        return this.modelMap.getOrDefault(dataType, Collections.EMPTY_LIST);
     }
 
     public ScoreModel getDefaultModel(DataType dataType) {

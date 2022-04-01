@@ -56,8 +56,8 @@ public class GraphHistory {
             throw new NullPointerException();
         }
 
-        for (int i = this.graphs.size() - 1; i > this.index; i--) {
-            this.graphs.remove(i);
+        if (this.graphs.size() > this.index + 1) {
+            this.graphs.subList(this.index + 1, this.graphs.size()).clear();
         }
 
         this.graphs.addLast(new EdgeListGraph(graph));

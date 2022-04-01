@@ -23,8 +23,7 @@ package edu.cmu.tetradapp.util;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.util.Objects;
 
 /**
  * A JSpinner that uses a <code>IntTextField</code> as its editor.  When changes are made from the
@@ -69,38 +68,34 @@ public class IntSpinner extends JSpinner {
         super(new SpinnerNumberModel(value, null, null, step));
         this.editor = new IntTextField(value, size);
         // make the spinner a bit bigger than the text field (looks better)
-        this.setPreferredSize(IntSpinner.increment(this.editor.getPreferredSize(), 2));
-        this.setMaximumSize(IntSpinner.increment(this.editor.getMaximumSize(), 2));
-        this.setMinimumSize(IntSpinner.increment(this.editor.getMinimumSize(), 2));
-        this.setSize(IntSpinner.increment(this.editor.getSize(), 2));
+        this.setPreferredSize(IntSpinner.increment(this.editor.getPreferredSize()));
+        this.setMaximumSize(IntSpinner.increment(this.editor.getMaximumSize()));
+        this.setMinimumSize(IntSpinner.increment(this.editor.getMinimumSize()));
+        this.setSize(IntSpinner.increment(this.editor.getSize()));
 
-        this.editor.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
-                if (IntSpinner.this.min != null && value < IntSpinner.this.min) {
-                    value = IntSpinner.this.min;
-                } else if (IntSpinner.this.max != null && IntSpinner.this.max < value) {
-                    value = IntSpinner.this.max;
-                }
-                return value;
+        this.editor.setFilter((value1, oldValue) -> {
+            if (IntSpinner.this.min != null && value1 < IntSpinner.this.min) {
+                value1 = IntSpinner.this.min;
+            } else if (IntSpinner.this.max != null && IntSpinner.this.max < value1) {
+                value1 = IntSpinner.this.max;
             }
+            return value1;
         });
 
         // Can't do this in the filter, due to other events calling the filter
-        this.editor.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                IntTextField field = (IntTextField) e.getSource();
-                String text = field.getText();
-                try {
-                    // parse value and let the field filter it.
-                    int value = Integer.parseInt(text);
-                    field.setValue(value);
-                    value = field.getValue();
-                    if (!IntSpinner.this.getValue().equals(value)) {
-                        IntSpinner.this.setValue(value);
-                    }
-                } catch (Exception ex) {
-                    // do nothing in this case
+        this.editor.addActionListener(e -> {
+            IntTextField field = (IntTextField) e.getSource();
+            String text = field.getText();
+            try {
+                // parse value and let the field filter it.
+                int value12 = Integer.parseInt(text);
+                field.setValue(value12);
+                value12 = field.getValue();
+                if (!IntSpinner.this.getValue().equals(value12)) {
+                    IntSpinner.this.setValue(value12);
                 }
+            } catch (Exception ex) {
+                // do nothing in this case
             }
         });
 
@@ -110,7 +105,7 @@ public class IntSpinner extends JSpinner {
     //=========================== Public Methods ============================//
 
     public void setMin(Integer min) {
-        if (this.min != min) {
+        if (!Objects.equals(this.min, min)) {
             this.min = min;
             SpinnerNumberModel model = (SpinnerNumberModel) this.getModel();
             model.setMinimum(min);
@@ -124,7 +119,7 @@ public class IntSpinner extends JSpinner {
      * Sets the max value for the spinner.
      */
     public void setMax(Integer max) {
-        if (this.max != max) {
+        if (!Objects.equals(this.max, max)) {
             this.max = max;
             SpinnerNumberModel model = (SpinnerNumberModel) this.getModel();
             model.setMaximum(max);
@@ -152,8 +147,8 @@ public class IntSpinner extends JSpinner {
     }
 
 
-    private static Dimension increment(Dimension dim, int increment) {
-        return new Dimension(dim.width + increment, dim.height + increment);
+    private static Dimension increment(Dimension dim) {
+        return new Dimension(dim.width + 2, dim.height + 2);
     }
 
     //=========================== private methods ======================//

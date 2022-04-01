@@ -26,8 +26,6 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.prefs.Preferences;
 
 /**
@@ -57,58 +55,50 @@ public class GraphEditorUtils {
             randomCombo.setSelectedItem("Yes");
         }
 
-        randomCombo.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JComboBox combo = (JComboBox) e.getSource();
-                String selection = (String) combo.getSelectedItem();
-                Preferences.userRoot().putBoolean(
-                        "kamadaKawaiLayoutInitializeRandomly", !"No".equals(selection));
-            }
+        randomCombo.addActionListener(e -> {
+            JComboBox combo = (JComboBox) e.getSource();
+            String selection = (String) combo.getSelectedItem();
+            Preferences.userRoot().putBoolean(
+                    "kamadaKawaiLayoutInitializeRandomly", !"No".equals(selection));
         });
 
         DoubleTextField naturalEdgeLengthField = new DoubleTextField(
                 naturalEdgeLength, 4, NumberFormatUtil.getInstance().getNumberFormat());
         naturalEdgeLengthField.setFilter(
-                new DoubleTextField.Filter() {
-                    public double filter(double value, double oldValue) {
-                        if (value <= 0.0) {
-                            return oldValue;
-                        }
-
-                        Preferences.userRoot().putDouble(
-                                "kamadaKawaiLayoutNaturalEdgeLength", value);
-                        return value;
+                (value, oldValue) -> {
+                    if (value <= 0.0) {
+                        return oldValue;
                     }
+
+                    Preferences.userRoot().putDouble(
+                            "kamadaKawaiLayoutNaturalEdgeLength", value);
+                    return value;
                 });
 
         DoubleTextField springConstantField = new DoubleTextField(
                 springConstant, 4, NumberFormatUtil.getInstance().getNumberFormat());
         springConstantField.setFilter(
-                new DoubleTextField.Filter() {
-                    public double filter(double value, double oldValue) {
-                        if (value < 0.0) {
-                            return oldValue;
-                        }
-
-
-                        Preferences.userRoot().putDouble(
-                                "kamadaKawaiLayoutSpringConstant", value);
-                        return value;
+                (value, oldValue) -> {
+                    if (value < 0.0) {
+                        return oldValue;
                     }
+
+
+                    Preferences.userRoot().putDouble(
+                            "kamadaKawaiLayoutSpringConstant", value);
+                    return value;
                 });
 
         DoubleTextField stopEnergyField =
                 new DoubleTextField(stopEnergy, 4, NumberFormatUtil.getInstance().getNumberFormat());
-        stopEnergyField.setFilter(new DoubleTextField.Filter() {
-            public double filter(double value, double oldValue) {
-                if (value < 0.0) {
-                    return oldValue;
-                }
-
-                Preferences.userRoot().putDouble("kamadaKawaiLayoutStopEnergy",
-                        value);
-                return value;
+        stopEnergyField.setFilter((value, oldValue) -> {
+            if (value < 0.0) {
+                return oldValue;
             }
+
+            Preferences.userRoot().putDouble("kamadaKawaiLayoutStopEnergy",
+                    value);
+            return value;
         });
 
         Box b = Box.createVerticalBox();

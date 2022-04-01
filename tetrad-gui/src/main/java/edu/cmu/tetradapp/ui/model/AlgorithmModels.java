@@ -51,7 +51,7 @@ public final class AlgorithmModels {
                 : algoAnno.filterOutExperimental(algoAnno.getAnnotatedClasses());
         this.models = Collections.unmodifiableList(
                 list.stream()
-                        .map(e -> new AlgorithmModel(e))
+                        .map(AlgorithmModel::new)
                         .sorted()
                         .collect(Collectors.toList()));
 
@@ -63,9 +63,7 @@ public final class AlgorithmModels {
         }
 
         // group by datatype
-        this.models.stream().forEach(e -> {
-            map.get(e.getAlgorithm().getAnnotation().algoType()).add(e);
-        });
+        this.models.forEach(e -> map.get(e.getAlgorithm().getAnnotation().algoType()).add(e));
 
         // make it unmodifiable
         map.forEach((k, v) -> map.put(k, Collections.unmodifiableList(v)));
@@ -83,9 +81,7 @@ public final class AlgorithmModels {
         return (dataType == DataType.All)
                 ? algorithmModels
                 : algorithmModels.stream()
-                .filter(e -> {
-                    return !multiDataSetAlgorithm || algoAnno.acceptMultipleDataset(e.getAlgorithm().getClazz());
-                })
+                .filter(e -> !multiDataSetAlgorithm || algoAnno.acceptMultipleDataset(e.getAlgorithm().getClazz()))
                 .filter(e -> {
                     for (DataType dt : e.getAlgorithm().getAnnotation().dataType()) {
                         if (dt == DataType.All || dt == dataType) {

@@ -64,13 +64,13 @@ public class FileLoadingUtils {
             BufferedReader bufReader = new BufferedReader(reader);
 
             String line;
-            String spec = "";
+            StringBuilder spec = new StringBuilder();
             while ((line = bufReader.readLine()) != null) {
-                spec += line + "\n";
+                spec.append(line).append("\n");
             }
             bufReader.close();
 
-            return spec;
+            return spec.toString();
         } catch (IOException e) {
             e.printStackTrace();
         }

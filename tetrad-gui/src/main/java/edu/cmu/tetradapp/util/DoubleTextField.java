@@ -23,8 +23,6 @@ package edu.cmu.tetradapp.util;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.text.NumberFormat;
@@ -170,20 +168,12 @@ public class DoubleTextField extends JTextField {
         this.smallNumberCutoff = smallNumberCutoff;
         smartSetText(nf, this.value);
 
-        addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    double value = Double.parseDouble(e.getActionCommand());
-                    setValue(value);
-                } catch (NumberFormatException e1) {
-                    setText(DoubleTextField.this.format.format(getValue()));
-//                    if ("".equals(getText().trim())) {
-//                        setValue(Double.NaN);
-//                    }
-//                    else {
-//                        setValue(getValue());
-//                    }
-                }
+        addActionListener(e -> {
+            try {
+                double value1 = Double.parseDouble(e.getActionCommand());
+                setValue(value1);
+            } catch (NumberFormatException e1) {
+                setText(DoubleTextField.this.format.format(getValue()));
             }
         });
 

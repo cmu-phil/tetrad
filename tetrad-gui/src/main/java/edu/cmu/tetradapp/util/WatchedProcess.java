@@ -25,8 +25,6 @@ import edu.cmu.tetrad.util.TaskManager;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 /**
  * Runs a process, popping up a dialog with a stop button if the time to
@@ -150,31 +148,25 @@ public abstract class WatchedProcess {
         return WatchedProcess.SHOW_DIALOG;
     }
 
-    public void setShowDialog(boolean showDialog) {
-        WatchedProcess.SHOW_DIALOG = showDialog;
-    }
-
     public boolean isAlive() {
         return this.thread.isAlive();
     }
 
     //================================PRIVATE METHODS====================//
     private void watchProcess() {
-        Runnable runnable = new Runnable() {
-            public void run() {
-                try {
-                    watch();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    String message = e.getMessage();
+        Runnable runnable = () -> {
+            try {
+                watch();
+            } catch (Exception e) {
+                e.printStackTrace();
+                String message = e.getMessage();
 
-                    if (e.getCause() != null) {
-                        message = e.getCause().getMessage();
-                    }
-
-                    setErrorMessage(message);
-                    throw e;
+                if (e.getCause() != null) {
+                    message = e.getCause().getMessage();
                 }
+
+                setErrorMessage(message);
+                throw e;
             }
         };
 
@@ -184,106 +176,90 @@ public abstract class WatchedProcess {
         thread.start();
 
         if (isShowDialog()) {
-            Thread watcher = new Thread() {
-                public void run() {
-                    try {
-                        Thread.sleep(WatchedProcess.this.delay);
-                    } catch (InterruptedException e) {
-                        return;
-                    }
+            Thread watcher = new Thread(() -> {
+                try {
+                    Thread.sleep(WatchedProcess.this.delay);
+                } catch (InterruptedException e) {
+                    return;
+                }
 
-                    if (getErrorMessage() != null) {
-                        JOptionPane.showMessageDialog(
-                                WatchedProcess.this.centeringComp, getErrorMessage());
-                        return;
-                    }
+                if (getErrorMessage() != null) {
+                    JOptionPane.showMessageDialog(
+                            WatchedProcess.this.centeringComp, getErrorMessage());
+                    return;
+                }
 
-                    JProgressBar progressBar = new JProgressBar(0, 100);
-                    progressBar.setIndeterminate(true);
+                JProgressBar progressBar = new JProgressBar(0, 100);
+                progressBar.setIndeterminate(true);
 
-                    JButton stopButton = new JButton("Stop");
+                JButton stopButton = new JButton("Stop");
 
-                    stopButton.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            if (getThread() != null) {
-                                while (getThread().isAlive()) {
-                                    TaskManager.getInstance().setCanceled(true);
-                                    getThread().stop();
-
-                                    try {
-                                        Thread.sleep(500);
-                                    } catch (InterruptedException e1) {
-                                        JOptionPane.showMessageDialog(
-                                                WatchedProcess.this.centeringComp,
-                                                "Could not stop thread.");
-                                        return;
-                                    }
-                                }
-
-//                                JOptionPane.showMessageDialog(
-//                                        JOptionUtils.centeringComp(),
-//                                        "Execution stopped.");
-                            }
-                        }
-                    });
-
-                    Box b = Box.createVerticalBox();
-                    Box b1 = Box.createHorizontalBox();
-                    b1.add(progressBar);
-                    b1.add(stopButton);
-                    b.add(b1);
-
-//                    final JTextArea anomaliesTextArea = new JTextArea();
-//                    final TextAreaOutputStream out = new TextAreaOutputStream(
-//                            anomaliesTextArea);
-//
-//                    Box b2 = Box.createHorizontalBox();
-//                    JScrollPane scroll = new JScrollPane(anomaliesTextArea);
-//                    scroll.setPreferredSize(new Dimension(300, 50));
-//                    b2.add(scroll);
-//                    b.add(b2);
-                    if (isShowDialog()) {
-                        Frame ancestor = (Frame) JOptionUtils.centeringComp()
-                                .getTopLevelAncestor();
-                        JDialog dialog
-                                = new JDialog(ancestor, "Executing...", false);
-                        setStopDialog(dialog);
-
-                        dialog.getContentPane().add(b);
-                        dialog.pack();
-                        dialog.setLocationRelativeTo(
-                                WatchedProcess.this.centeringComp);
-
-//                        LogUtils.getInstance().add(out, Level.FINER);
+                stopButton.addActionListener(e -> {
+                    if (getThread() != null) {
                         while (getThread().isAlive()) {
-                            try {
-                                Thread.sleep(200);
-                                if (existsOtherDialog()) {
-                                    dialog.setVisible(false);
-                                } else {
-                                    dialog.setVisible(true);
-                                    dialog.toFront();
-                                }
+                            TaskManager.getInstance().setCanceled(true);
+                            getThread().stop();
 
-//                                anomaliesTextArea.setCaretPosition(out.getLengthWritten());
-                            } catch (InterruptedException e) {
+                            try {
+                                Thread.sleep(500);
+                            } catch (InterruptedException e1) {
+                                JOptionPane.showMessageDialog(
+                                        WatchedProcess.this.centeringComp,
+                                        "Could not stop thread.");
                                 return;
                             }
                         }
 
-//                        LogUtils.getInstance().remove(out);
-                        dialog.setVisible(false);
-                        dialog.dispose();
+                    }
+                });
 
-                        if (getErrorMessage() != null) {
-                            JOptionPane.showMessageDialog(
-                                    WatchedProcess.this.centeringComp,
-                                    "Stopped with error:\n"
-                                            + getErrorMessage());
+                Box b = Box.createVerticalBox();
+                Box b1 = Box.createHorizontalBox();
+                b1.add(progressBar);
+                b1.add(stopButton);
+                b.add(b1);
+
+                if (isShowDialog()) {
+                    Frame ancestor = (Frame) JOptionUtils.centeringComp()
+                            .getTopLevelAncestor();
+                    JDialog dialog
+                            = new JDialog(ancestor, "Executing...", false);
+                    setStopDialog(dialog);
+
+                    dialog.getContentPane().add(b);
+                    dialog.pack();
+                    dialog.setLocationRelativeTo(
+                            WatchedProcess.this.centeringComp);
+
+//                        LogUtils.getInstance().add(out, Level.FINER);
+                    while (getThread().isAlive()) {
+                        try {
+                            Thread.sleep(200);
+                            if (existsOtherDialog()) {
+                                dialog.setVisible(false);
+                            } else {
+                                dialog.setVisible(true);
+                                dialog.toFront();
+                            }
+
+//                                anomaliesTextArea.setCaretPosition(out.getLengthWritten());
+                        } catch (InterruptedException e) {
+                            return;
                         }
                     }
+
+//                        LogUtils.getInstance().remove(out);
+                    dialog.setVisible(false);
+                    dialog.dispose();
+
+                    if (getErrorMessage() != null) {
+                        JOptionPane.showMessageDialog(
+                                WatchedProcess.this.centeringComp,
+                                "Stopped with error:\n"
+                                        + getErrorMessage());
+                    }
                 }
-            };
+            });
 
             watcher.start();
         }
@@ -321,7 +297,6 @@ public abstract class WatchedProcess {
      * check for this periodically and respond gracefully.
      */
     public boolean isCanceled() {
-        final boolean isCanceled = false;
-        return isCanceled;
+        return false;
     }
 }

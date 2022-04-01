@@ -103,10 +103,8 @@ public class SessionFileTransferHandler extends TransferHandler {
                             throw e1;
                         } catch (Exception e2) {
                             e2.printStackTrace();
-                            sessionWrapper = null;
                         }
                     } else if (o instanceof SessionWrapper) {
-                        metadata = null;
                         sessionWrapper = (SessionWrapper) o;
                     }
 

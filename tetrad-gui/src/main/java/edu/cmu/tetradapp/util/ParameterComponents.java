@@ -41,7 +41,7 @@ public final class ParameterComponents {
     private ParameterComponents() {
     }
 
-    public static final Box[] toArray(Map<String, Box> parameterComponents) {
+    public static Box[] toArray(Map<String, Box> parameterComponents) {
         ParamDescriptions paramDescs = ParamDescriptions.getInstance();
 
         List<Box> boolComps = new LinkedList<>();
@@ -58,7 +58,7 @@ public final class ParameterComponents {
                 .toArray(Box[]::new);
     }
 
-    public static final Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters) {
+    public static Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters) {
         ParamDescriptions paramDescs = ParamDescriptions.getInstance();
         return params.stream()
                 .collect(Collectors.toMap(
@@ -70,8 +70,8 @@ public final class ParameterComponents {
                         TreeMap::new));
     }
 
-    public static final DoubleTextField getDoubleField(String parameter, Parameters parameters,
-                                                       double defaultValue, double lowerBound, double upperBound) {
+    public static DoubleTextField getDoubleField(String parameter, Parameters parameters,
+                                                 double defaultValue, double lowerBound, double upperBound) {
         DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
                 8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
 
@@ -100,8 +100,8 @@ public final class ParameterComponents {
         return field;
     }
 
-    public static final IntTextField getIntTextField(String parameter, Parameters parameters,
-                                                     int defaultValue, double lowerBound, double upperBound) {
+    public static IntTextField getIntTextField(String parameter, Parameters parameters,
+                                               int defaultValue, double lowerBound, double upperBound) {
         IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 8);
 
         field.setFilter((value, oldValue) -> {
@@ -129,7 +129,7 @@ public final class ParameterComponents {
         return field;
     }
 
-    public static final Box getBooleanSelectionBox(String parameter, Parameters parameters, boolean defaultValue) {
+    public static Box getBooleanSelectionBox(String parameter, Parameters parameters, boolean defaultValue) {
         Box selectionBox = Box.createHorizontalBox();
 
         JRadioButton yesButton = new JRadioButton("Yes");
@@ -172,7 +172,7 @@ public final class ParameterComponents {
         return selectionBox;
     }
 
-    public static final StringTextField getStringField(String parameter, Parameters parameters, String defaultValue) {
+    public static StringTextField getStringField(String parameter, Parameters parameters, String defaultValue) {
         StringTextField field = new StringTextField(parameters.getString(parameter, defaultValue), 20);
 
         field.setFilter((value, oldValue) -> {

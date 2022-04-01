@@ -34,20 +34,17 @@ import java.awt.*;
 public class SplashScreen {
 
     private static int MAX;
-    private static int COUNTER;
     private static SplashWindow WINDOW;
     private static JFrame frame;
 
     public static void show(Frame parent, String title, int max) {
         SplashScreen.hide();
-        SplashScreen.COUNTER = 0;
         SplashScreen.MAX = max;
         SplashScreen.WINDOW = new SplashWindow(parent, null, title);
     }
 
     public static void show(String title, int max) {
         SplashScreen.hide();
-        SplashScreen.COUNTER = 0;
         SplashScreen.MAX = max;
         SplashScreen.frame = new JFrame();
         SplashScreen.WINDOW = new SplashWindow(SplashScreen.frame, null, title);
@@ -68,20 +65,6 @@ public class SplashScreen {
         if (SplashScreen.frame != null) {
             SplashScreen.frame.dispose();
             SplashScreen.frame = null;
-        }
-    }
-
-    public static void increment() {
-        SplashScreen.increment(1);
-    }
-
-    private static void increment(int by) {
-        SplashScreen.COUNTER += by;
-        if (SplashScreen.COUNTER > SplashScreen.MAX) {
-            SplashScreen.COUNTER = SplashScreen.MAX;
-        }
-        if (SplashScreen.WINDOW != null) {
-            SplashScreen.WINDOW.bar.setValue(SplashScreen.COUNTER);
         }
     }
 
@@ -117,7 +100,6 @@ public class SplashScreen {
             String text = LicenseUtils.copyright();
 
             // optionally check if we are running latest version
-            String version = this.getClass().getPackage().getImplementationVersion();
 
             JTextArea textArea = new JTextArea(text);
             textArea.setBorder(new EmptyBorder(5, 5, 5, 5));
