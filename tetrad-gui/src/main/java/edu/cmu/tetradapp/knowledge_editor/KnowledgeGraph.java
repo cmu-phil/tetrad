@@ -257,6 +257,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     }
 
     public boolean equals(Object o) {
+        if (!(o instanceof KnowledgeGraph)) return false;
         return getGraph().equals(o);
     }
 
@@ -277,7 +278,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         return getGraph().existsUndirectedPathFromTo(node1, node2);
     }
 
-    public boolean existsSemiDirectedPathFromTo(Node node1, Set node2) {
+    public boolean existsSemiDirectedPathFromTo(Node node1, Set<Node> node2) {
         return getGraph().existsSemiDirectedPathFromTo(node1, node2);
     }
 
@@ -409,11 +410,10 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         return getGraph().removeEdge(edge);
     }
 
-    public boolean removeEdges(Collection edges) {
+    public boolean removeEdges(Collection<Edge> edges) {
         boolean removed = false;
 
-        for (Object edge1 : edges) {
-            Edge edge = (Edge) edge1;
+        for (Edge edge : edges) {
             removed = removed || removeEdge(edge);
         }
 

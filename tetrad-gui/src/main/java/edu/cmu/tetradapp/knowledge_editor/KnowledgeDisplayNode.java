@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.knowledge_editor;
 
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
@@ -157,7 +158,7 @@ public class KnowledgeDisplayNode extends DisplayNode {
      * Launches an editor for this node.
      */
     public void doDoubleClickAction() {
-        doDoubleClickAction(null);
+        doDoubleClickAction(new EdgeListGraph());
     }
 
     /**

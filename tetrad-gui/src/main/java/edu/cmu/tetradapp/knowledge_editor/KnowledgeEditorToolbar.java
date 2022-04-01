@@ -35,7 +35,10 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.MatteBorder;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -138,13 +141,11 @@ class KnowledgeEditorToolbar extends JPanel {
 
         // Add an action listener to help send messages to the
         // workbench.
-        ActionListener changeListener = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JToggleButton _button = (JToggleButton) e.getSource();
+        ActionListener changeListener = e -> {
+            JToggleButton _button = (JToggleButton) e.getSource();
 
-                if (_button.getModel().isSelected()) {
-                    setWorkbenchMode(_button);
-                }
+            if (_button.getModel().isSelected()) {
+                setWorkbenchMode(_button);
             }
         };
 
@@ -289,10 +290,6 @@ class KnowledgeEditorToolbar extends JPanel {
 
         public String getDisplayName() {
             return this.displayName;
-        }
-
-        public void setNodeTypeName(String nodeTypeName) {
-            this.nodeTypeName = nodeTypeName;
         }
 
         public String getImagePrefix() {

@@ -28,11 +28,7 @@ import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.CharArrayReader;
 import java.io.File;
 import java.io.FileReader;
@@ -70,11 +66,7 @@ public class IndependenceFactsEditor extends JPanel {
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.add("Text", textDisplay());
 
-        tabbedPane.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                resetTextDisplay();
-            }
-        });
+        tabbedPane.addChangeListener(e -> resetTextDisplay());
 
         add(tabbedPane, BorderLayout.CENTER);
         setPreferredSize(new Dimension(550, 500));
@@ -84,42 +76,38 @@ public class IndependenceFactsEditor extends JPanel {
         JButton loadButton = new JButton("Load from File");
         JButton parseButton = new JButton("Parse Text");
 
-        loadButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        loadButton.addActionListener(e -> {
 
-                JFileChooser chooser = IndependenceFactsEditor.getJFileChooser();
-                chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-                chooser.showOpenDialog(IndependenceFactsEditor.this);
+            JFileChooser chooser = IndependenceFactsEditor.getJFileChooser();
+            chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+            chooser.showOpenDialog(IndependenceFactsEditor.this);
 
-                File file = chooser.getSelectedFile();
+            File file = chooser.getSelectedFile();
 
-                // Can this happen?
-                if (file == null) {
-                    return;
-                }
-
-                Preferences.userRoot().put("fileSaveLocation", file.getParent());
-
-                try {
-                    IndependenceFactsEditor.this.facts.setFacts(IndependenceFactsModel.loadFacts(new FileReader(file)).getFacts());
-                    getTextArea().setText(IndependenceFactsEditor.this.facts.toString());
-                } catch (IOException e1) {
-                    throw new RuntimeException("Couldn't find that file: " + file.getAbsolutePath());
-                }
-
+            // Can this happen?
+            if (file == null) {
+                return;
             }
+
+            Preferences.userRoot().put("fileSaveLocation", file.getParent());
+
+            try {
+                IndependenceFactsEditor.this.facts.setFacts(IndependenceFactsModel.loadFacts(new FileReader(file)).getFacts());
+                getTextArea().setText(IndependenceFactsEditor.this.facts.toString());
+            } catch (IOException e1) {
+                throw new RuntimeException("Couldn't find that file: " + file.getAbsolutePath());
+            }
+
         });
 
-        parseButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    String text = getTextArea().getText();
-                    IndependenceFactsEditor.this.facts.setFacts(IndependenceFactsModel.loadFacts(new CharArrayReader(text.toCharArray())).getFacts());
-                    getTextArea().setText(IndependenceFactsEditor.this.facts.toString());
-                } catch (Exception e1) {
-                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                            e1.getMessage());
-                }
+        parseButton.addActionListener(e -> {
+            try {
+                String text = getTextArea().getText();
+                IndependenceFactsEditor.this.facts.setFacts(IndependenceFactsModel.loadFacts(new CharArrayReader(text.toCharArray())).getFacts());
+                getTextArea().setText(IndependenceFactsEditor.this.facts.toString());
+            } catch (Exception e1) {
+                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                        e1.getMessage());
             }
         });
 

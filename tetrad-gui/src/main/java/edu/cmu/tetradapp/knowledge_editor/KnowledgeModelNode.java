@@ -20,7 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.knowledge_editor;
 
-import edu.cmu.tetrad.data.AbstractVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.graph.NodeVariableType;
@@ -40,7 +39,6 @@ import java.util.Map;
 public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
 
     static final long serialVersionUID = 23L;
-    private final int uniqueId = AbstractVariable.LAST_ID++;
 
     /**
      * @serial
@@ -72,12 +70,6 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
         }
 
         this.name = varName;
-    }
-
-    public KnowledgeModelNode(KnowledgeModelNode node) {
-        this.name = node.name;
-        this.centerX = node.centerX;
-        this.centerY = node.centerY;
     }
 
     /**

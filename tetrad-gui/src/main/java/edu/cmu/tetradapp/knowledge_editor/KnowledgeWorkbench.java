@@ -171,35 +171,6 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
     }
 
     /**
-     * Given base b (a String), returns the first node in the sequence "b1",
-     * "b2", "b3", etc., which is not already the name of a node in the
-     * workbench.
-     *
-     * @param base the base string.
-     * @return the first string in the sequence not already being used.
-     */
-    public String nextVariableName(String base) {
-
-        // Variable names should start with "1."
-        int i = 0;
-
-        loop:
-        while (true) {
-            String name = base + (++i);
-
-            for (Node node1 : getGraph().getNodes()) {
-                if (node1.getName().equals(name)) {
-                    continue loop;
-                }
-            }
-
-            break;
-        }
-
-        return base + i;
-    }
-
-    /**
      * Sets the edge mode to the given mode.
      */
     public void setEdgeMode(int edgeMode) {

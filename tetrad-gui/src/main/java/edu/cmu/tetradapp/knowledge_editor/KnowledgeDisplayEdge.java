@@ -181,10 +181,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      */
     private Polygon clickRegion;
 
-    /**
-     * True iff only adacencies (and no endpoints) should be shown.
-     */
-    private boolean showAdjacenciesOnly;
+    private boolean showAdjacenciesOnly = false;
 
     /**
      * The offset of this edge for multiple edges between node pairs.
@@ -390,7 +387,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
         getConnectedPoints().getTo().translate(-getLocation().x,
                 -getLocation().y);
 
-        setClickRegion(null);
+        setClickRegion();
 
         g.drawLine(getConnectedPoints().getFrom().x,
                 getConnectedPoints().getFrom().y,
@@ -521,9 +518,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
         if (this.mode != KnowledgeDisplayEdge.HALF_ANCHORED) {
             this.mode = (selected ? KnowledgeDisplayEdge.ANCHORED_SELECTED : KnowledgeDisplayEdge.ANCHORED_UNSELECTED);
             firePropertyChange("selected", oldSelected, selected);
-            if (oldSelected != selected) {
-                repaint();
-            }
+            repaint();
         }
     }
 
@@ -600,8 +595,8 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     /**
      * Allows subclasses to set the clickable region is for this component.
      */
-    private void setClickRegion(Polygon clickRegion) {
-        this.clickRegion = clickRegion;
+    private void setClickRegion() {
+        this.clickRegion = null;
     }
 
     //==========================PROTECTED METHODS========================//
@@ -812,7 +807,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
         final int d = 7;    // halfwidth of the sleeve.
 
         if (Math.abs(pp.getFrom().y - pp.getTo().y) <= 3) {
-            return KnowledgeDisplayEdge.getHorizSleeve(pp, d);
+            return KnowledgeDisplayEdge.getHorizSleeve(pp);
         }
 
         int[] xpoints = new int[4];
@@ -851,10 +846,9 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      * pair is near horizontal.
      *
      * @param pp        the given point pair.
-     * @param halfWidth the half-width of the sleeve.
      * @return the sleeve as a polygon.
      */
-    private static Polygon getHorizSleeve(PointPair pp, int halfWidth) {
+    private static Polygon getHorizSleeve(PointPair pp) {
         int[] xpoints = new int[4];
         int[] ypoints = new int[4];
 
@@ -862,10 +856,10 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
         xpoints[1] = pp.getFrom().x;
         xpoints[2] = pp.getTo().x;
         xpoints[3] = pp.getTo().x;
-        ypoints[0] = pp.getFrom().y + halfWidth;
-        ypoints[1] = pp.getFrom().y - halfWidth;
-        ypoints[2] = pp.getTo().y - halfWidth;
-        ypoints[3] = pp.getTo().y + halfWidth;
+        ypoints[0] = pp.getFrom().y + 7;
+        ypoints[1] = pp.getFrom().y - 7;
+        ypoints[2] = pp.getTo().y - 7;
+        ypoints[3] = pp.getTo().y + 7;
 
         return new Polygon(xpoints, ypoints, 4);
     }
@@ -940,10 +934,6 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
         return this.showAdjacenciesOnly;
     }
 
-    public final void setShowAdjacenciesOnly(boolean showAdjacenciesOnly) {
-        this.showAdjacenciesOnly = showAdjacenciesOnly;
-    }
-
     public final Edge getModelEdge() {
         return this.modelEdge;
     }
@@ -982,7 +972,6 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     /**
      * Unimplemented.
      *
-     * @throws UnsupportedOperationException
      */
     public void setLineColor(Color lineColor) {
 //        throw new UnsupportedOperationException();
@@ -999,7 +988,6 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     /**
      * Unimplemented.
      *
-     * @throws UnsupportedOperationException
      */
     public Color getSelectedColor() {
         throw new UnsupportedOperationException();
@@ -1008,7 +996,6 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     /**
      * Unimplemented.
      *
-     * @throws UnsupportedOperationException
      */
     public void setSelectedColor(Color selectedColor) {
         throw new UnsupportedOperationException();
@@ -1025,7 +1012,6 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     /**
      * Unimplemented.
      *
-     * @throws UnsupportedOperationException
      */
     public float getStrokeWidth() {
         throw new UnsupportedOperationException();
@@ -1034,7 +1020,6 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     /**
      * Unimplemented.
      *
-     * @throws UnsupportedOperationException
      */
     public void setStrokeWidth(float strokeWidth) {
         throw new UnsupportedOperationException();
@@ -1044,7 +1029,10 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
         /*
       True iff this edge is highlighted.
      */
-        boolean highlighted1 = highlighted;
+    }
+
+    public void setShowAdjacenciesOnly(boolean showAdjacenciesOnly) {
+        this.showAdjacenciesOnly = showAdjacenciesOnly;
     }
 
     //======================= Event handler class========================//
@@ -1058,7 +1046,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
          * This method captures motion events on the components to which the
          * edge is anchored and repaints the edge accordingly.
          */
-        public final void componentMoved(ComponentEvent e) {
+        public void componentMoved(ComponentEvent e) {
             resetBounds();
             repaint();
         }
@@ -1075,7 +1063,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
          * @param evt A PropertyChangeEvent object describing the event source
          *            and the property that has changed.
          */
-        public final void propertyChange(PropertyChangeEvent evt) {
+        public void propertyChange(PropertyChangeEvent evt) {
             String name = evt.getPropertyName();
 
             if ("selected".equals(name)) {
