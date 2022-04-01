@@ -48,7 +48,7 @@ public final class ExploreAutisticsNeurotypicals {
         final String path = "/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_108_Variable";
 //        String path = "/Users/jdramsey/Documents/LAB_NOTEBOOee.2012.04.20/data/USM_Datasets";
         List<List<DataSet>> allDatasets = loadData(path, "autistic", "typical");
-        List<List<Graph>> allGraphs = runAlgorithm(path, allDatasets, 10);
+        List<List<Graph>> allGraphs = runAlgorithm(path, allDatasets);
         List<List<Graph>> graphs = ExploreAutisticsNeurotypicals.reconcileNodes(allGraphs);
         List<Edge> _edges = ExploreAutisticsNeurotypicals.getAllEdges(allGraphs);
         DataSet dataSet = ExploreAutisticsNeurotypicals.createEdgeDataSet(graphs, _edges);
@@ -59,7 +59,7 @@ public final class ExploreAutisticsNeurotypicals {
     public void printTrekNodeData() {
         final String path = "/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_90_Variable";
         List<List<DataSet>> allDatasets = loadData(path, "autistic", "typical");
-        List<List<Graph>> allGraphs = runAlgorithm(path, allDatasets, 10);
+        List<List<Graph>> allGraphs = runAlgorithm(path, allDatasets);
 
         DataSet dataSet = ExploreAutisticsNeurotypicals.getTrekNodeDataSet(allGraphs);
 
@@ -70,28 +70,28 @@ public final class ExploreAutisticsNeurotypicals {
         final String path = "/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_90_Variable";
         List<List<DataSet>> allDatasets = loadData(path, "autistic", "typical");
 
-        List<List<Graph>> allGraphs = runAlgorithm(path, allDatasets, 10);
+        List<List<Graph>> allGraphs = runAlgorithm(path, allDatasets);
 
         List<Node> nodes = allGraphs.get(0).get(0).getNodes();
         allGraphs = ExploreAutisticsNeurotypicals.reconcileNodes(allGraphs);
         List<Edge> allTrekEdges = ExploreAutisticsNeurotypicals.getAllTrekEdges(allGraphs, 5);
         DataSet dataSet = ExploreAutisticsNeurotypicals.createEdgeDataSet(allGraphs, allTrekEdges);
-        dataSet = ExploreAutisticsNeurotypicals.restrictDataRange(dataSet, .3, .7);
+        dataSet = ExploreAutisticsNeurotypicals.restrictDataRange(dataSet);
         ExploreAutisticsNeurotypicals.printData(path, "trekedgedata", dataSet);
     }
 
-    private List<List<Graph>> runAlgorithm(String path, List<List<DataSet>> allDatasets, double penaltyDiscount) {
+    private List<List<Graph>> runAlgorithm(String path, List<List<DataSet>> allDatasets) {
         List<List<Graph>> allGraphs = new ArrayList<>();
 
         for (List<DataSet> dataSets : allDatasets) {
             List<Graph> graphs = new ArrayList<>();
 
             for (DataSet dataSet : dataSets) {
-                String name = dataSet.getName() + "." + penaltyDiscount + ".graph.txt";
+                String name = dataSet.getName() + "." + (double) 10 + ".graph.txt";
                 File file = new File(path, name);
 
                 SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
-                score.setPenaltyDiscount(penaltyDiscount);
+                score.setPenaltyDiscount(10);
                 Fges search = new Fges(score);
                 search.setVerbose(false);
                 Graph graph = search.search();
@@ -154,7 +154,7 @@ public final class ExploreAutisticsNeurotypicals {
 //        String path = "/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_108_Variable";
         final String path = "/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/USM_Datasets/all";
         List<List<DataSet>> allDatasets = loadData(path, "ROI_data_autistic", "ROI_data_typical");
-        List<List<Graph>> allGraphs = runAlgorithm(path, allDatasets, 10);
+        List<List<Graph>> allGraphs = runAlgorithm(path, allDatasets);
         List<List<Graph>> graphs = ExploreAutisticsNeurotypicals.reconcileNodes(allGraphs);
         List<Node> nodes = graphs.get(0).get(0).getNodes();
 
@@ -251,7 +251,7 @@ public final class ExploreAutisticsNeurotypicals {
         return null;
     }
 
-    private static DataSet restrictDataRange(DataSet dataSet, double lowerRange, double upperRange) {
+    private static DataSet restrictDataRange(DataSet dataSet) {
         int total = dataSet.getNumRows();
 
         List<Node> nodes = dataSet.getVariables();
@@ -269,7 +269,7 @@ public final class ExploreAutisticsNeurotypicals {
                 }
             }
 
-            if (count < lowerRange * total || count > upperRange * total) {
+            if (count < 0.3 * total || count > 0.7 * total) {
                 nodes.remove(node);
             }
         }

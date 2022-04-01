@@ -182,7 +182,7 @@ public class BCCausalInference {
         while (instancePtr < countsTracker.countsPtr) {
             double score;
             if (this.scoreFn == 1) {
-                score = scoringFn1(node, instancePtr, q, BCCausalInference.PESS_VALUE, countsTracker);
+                score = scoringFn1(node, instancePtr, q, countsTracker);
             } else {
                 score = scoringFn2(node, instancePtr, countsTracker);
             }
@@ -200,17 +200,16 @@ public class BCCausalInference {
      * @param instancePtr
      * @param q           is the number of possible joint instantiation of the parents of
      *                    the parents of the node.
-     * @param pess        is the prior equivalent sample size
      * @return
      */
-    private double scoringFn1(int node, int instancePtr, double q, double pess, CountsTracker countsTracker) {
+    private double scoringFn1(int node, int instancePtr, double q, CountsTracker countsTracker) {
         int[] counts = countsTracker.counts;
 
         int Nij = 0;
         double scoreOfSum = 0;
         int r = (node > this.numberOfNodes) ? countsTracker.xyDim : this.nodeDimension[node];
-        double pessDivQR = pess / (q * (double) r);
-        double pessDivQ = pess / q;
+        double pessDivQR = BCCausalInference.PESS_VALUE / (q * (double) r);
+        double pessDivQ = BCCausalInference.PESS_VALUE / q;
         double lngammPessDivQR = gammln(pessDivQR);
         for (int k = 0; k <= (r - 1); k++) {
             int Nijk = counts[instancePtr + k];

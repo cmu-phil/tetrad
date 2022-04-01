@@ -198,11 +198,11 @@ public class Cstar {
             if (new File(dir, "possible.causes.txt").exists() && new File(dir, "possible.causes.txt").exists()) {
                 possibleCauses = readVars(dataSet, dir, "possible.causes.txt");
                 possibleEffects = readVars(dataSet, dir, "possible.effects.txt");
-                dataSet = readData(dir, "data.txt");
+                dataSet = readData(dir);
             } else {
                 writeVars(possibleCauses, dir, "possible.causes.txt");
                 writeVars(possibleEffects, dir, "possible.effects.txt");
-                writeData(dataSet, dir, "data.txt");
+                writeData(dataSet, dir);
             }
         }
 
@@ -446,9 +446,9 @@ public class Cstar {
         return allRecords;
     }
 
-    private DataSet readData(File dir, String s) {
+    private DataSet readData(File dir) {
         try {
-            DataSet dataSet = DataUtils.loadContinuousData(new File(dir, s), "//", '*', "*", true, Delimiter.TAB);
+            DataSet dataSet = DataUtils.loadContinuousData(new File(dir, "data.txt"), "//", '*', "*", true, Delimiter.TAB);
 
             TetradLogger.getInstance().forceLogMessage(
                     "Loaded data " + dataSet.getNumRows() + " x " + dataSet.getNumColumns());
@@ -459,9 +459,9 @@ public class Cstar {
         }
     }
 
-    private void writeData(DataSet dataSet, File dir, String s) {
+    private void writeData(DataSet dataSet, File dir) {
         try {
-            PrintStream out = new PrintStream(new FileOutputStream(new File(dir, s)));
+            PrintStream out = new PrintStream(new FileOutputStream(new File(dir, "data.txt")));
             out.println(dataSet.toString());
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);

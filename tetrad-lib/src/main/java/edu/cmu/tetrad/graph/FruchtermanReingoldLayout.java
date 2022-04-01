@@ -128,7 +128,7 @@ public final class FruchtermanReingoldLayout {
         double avgDegree = 2 * this.graph.getNumEdges() / (double) this.graph.getNumNodes();
 
         setOptimalDistance(20.0 + 20.0 * avgDegree);
-        setTemperature(5.0);
+        setTemperature();
 
         for (int i = 0; i < numIterations(); i++) {
 
@@ -289,8 +289,8 @@ public final class FruchtermanReingoldLayout {
         return this.temperature;
     }
 
-    private void setTemperature(double temperature) {
-        this.temperature = temperature;
+    private void setTemperature() {
+        this.temperature = 5.0;
     }
 }
 

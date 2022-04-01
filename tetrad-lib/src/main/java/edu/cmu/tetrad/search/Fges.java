@@ -750,10 +750,10 @@ public final class Fges implements GraphSearch, GraphScorer {
             private final int from;
             private final int to;
 
-            private BackwardTask(Node r, List<Node> adj, int chunk, int from, int to) {
+            private BackwardTask(Node r, List<Node> adj, int chunk, int to) {
                 this.adj = adj;
                 this.chunk = chunk;
-                this.from = from;
+                this.from = 0;
                 this.to = to;
                 this.r = r;
             }
@@ -787,7 +787,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         for (Node r : toProcess) {
             List<Node> adjacentNodes = this.graph.getAdjacentNodes(r);
             adjacentNodes.retainAll(toProcess);
-            BackwardTask task = new BackwardTask(r, adjacentNodes, getChunkSize(adjacentNodes.size()), 0,
+            BackwardTask task = new BackwardTask(r, adjacentNodes, getChunkSize(adjacentNodes.size()),
                     adjacentNodes.size());
 
             if (this.maxThreads == 1) {

@@ -38,7 +38,7 @@ public class Hsim {
                     "Please specify the nodes Hsim will resimulate.");
         }
         // (Optional: Eventually want options for search methods for picking out the DAG)
-        setVerbose(false);
+        setVerbose();
         setDag(thedag);
         setData(thedata);
         setSimnodes(thesimnodes);
@@ -208,8 +208,8 @@ public class Hsim {
     }
 
     /// *********Private methods for setting private variables***********//
-    private void setVerbose(boolean verbosity) {
-        this.verbose = verbosity;
+    private void setVerbose() {
+        this.verbose = false;
     }
 
     private void setDag(Dag thedag) {

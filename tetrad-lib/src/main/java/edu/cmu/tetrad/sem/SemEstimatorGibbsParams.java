@@ -48,15 +48,14 @@ public final class SemEstimatorGibbsParams implements TetradSerializable {
     /**
      *
      */
-    private SemEstimatorGibbsParams(SemIm startIm, boolean flatPrior,
-                                    double stretch, int numIterations) {
+    private SemEstimatorGibbsParams(SemIm startIm) {
 
         // note that seed is never used... just as well to get rid of it?
 
         this.startIm = startIm;
-        this.flatPrior = flatPrior;
-        this.stretch = stretch;
-        this.numIterations = numIterations;
+        this.flatPrior = false;
+        this.stretch = 0.0;
+        this.numIterations = 1;
 
         this.tolerance = 0.0001;
     }
@@ -67,8 +66,8 @@ public final class SemEstimatorGibbsParams implements TetradSerializable {
     public static SemEstimatorGibbsParams serializableInstance() {
         SemGraph graph = new SemGraph();
         graph.addNode(new GraphNode("X"));
-        return new SemEstimatorGibbsParams(new SemIm(new SemPm(graph)), false,
-                0.0d, 1);
+        return new SemEstimatorGibbsParams(new SemIm(new SemPm(graph))
+        );
     }
 
     public SemIm getStartIm() {

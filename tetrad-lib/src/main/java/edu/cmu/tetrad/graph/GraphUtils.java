@@ -4366,14 +4366,14 @@ public final class GraphUtils {
     // Finds a sepset for x and y, if there is one; otherwise, returns null.
     public static List<Node> getSepset(Node x, Node y, Graph graph) {
         final int bound = -1;
-        List<Node> sepset = GraphUtils.getSepsetVisit(x, y, graph, bound);
+        List<Node> sepset = GraphUtils.getSepsetVisit(x, y, graph);
         if (sepset == null) {
-            sepset = GraphUtils.getSepsetVisit(y, x, graph, bound);
+            sepset = GraphUtils.getSepsetVisit(y, x, graph);
         }
         return sepset;
     }
 
-    private static List<Node> getSepsetVisit(Node x, Node y, Graph graph, int bound) {
+    private static List<Node> getSepsetVisit(Node x, Node y, Graph graph) {
         if (x == y) {
             return null;
         }
@@ -4390,7 +4390,7 @@ public final class GraphUtils {
             Set<Triple> colliders = new HashSet<>();
 
             for (Node b : graph.getAdjacentNodes(x)) {
-                if (GraphUtils.sepsetPathFound(x, b, y, path, z, graph, colliders, bound)) {
+                if (GraphUtils.sepsetPathFound(x, b, y, path, z, graph, colliders, -1)) {
                     return null;
                 }
             }

@@ -1310,7 +1310,7 @@ public class Purify {
 
         do {
             this.modifiedGraph = false;
-            double score = gaussianEM(bestGraph, null);
+            double score = gaussianEM(bestGraph);
             printlnMessage("Initial score" + score);
             impurityScoreSearch(score);
             if (this.modifiedGraph) {
@@ -1571,7 +1571,7 @@ public class Purify {
      * multiple latent and observed parents.
      */
 
-    private double gaussianEM(SemGraph semdag, SemIm initialSemIm) {
+    private double gaussianEM(SemGraph semdag) {
         double score, newScore = -Double.MAX_VALUE, bestScore =
                 -Double.MAX_VALUE;
         SemPm semPm = new SemPm(semdag);
@@ -1594,8 +1594,8 @@ public class Purify {
         for (int i = 0; i < 3; i++) {
             System.out.println("--Trial " + i);
             SemIm semIm;
-            if (i == 0 && initialSemIm != null) {
-                semIm = initialSemIm;
+            if (i == 0 && null != null) {
+                semIm = null;
             } else {
                 semIm = new SemIm(semPm);
                 semIm.setCovMatrix(this.covarianceMatrix);

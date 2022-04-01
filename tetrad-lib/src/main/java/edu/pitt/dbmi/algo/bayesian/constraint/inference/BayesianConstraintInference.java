@@ -55,7 +55,7 @@ public class BayesianConstraintInference {
             String flag = args[i];
             if (flag.equals(BayesianConstraintInference.CAS_FLAG)) {
                 BayesianConstraintInference.casFile = new File(args[++i]);
-                BayesianConstraintInference.checkFile(BayesianConstraintInference.casFile, false);
+                BayesianConstraintInference.checkFile(BayesianConstraintInference.casFile);
             } else {
                 System.out.printf("Unknown switch %s.\n", flag);
                 System.exit(-1);
@@ -159,9 +159,9 @@ public class BayesianConstraintInference {
         return dataset;
     }
 
-    private static void checkFile(File file, boolean checkDirectory) {
+    private static void checkFile(File file) {
         if (file.exists()) {
-            if (checkDirectory) {
+            if (false) {
                 if (file.isFile()) {
                     System.err.printf("%s is not a directory.", file.getName());
                     System.exit(-1);

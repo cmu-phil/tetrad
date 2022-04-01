@@ -316,13 +316,13 @@ public class BooleanGlassGeneIm implements SessionModel {
         }
 
         if (measuredData[0][0].length == 1) {
-            dataModelList.add(0, asTimeSeriesData(measuredData, 0, factors));
+            dataModelList.add(0, asTimeSeriesData(measuredData, factors));
         }
 
         return dataModelList;
     }
 
-    private TimeSeriesData asTimeSeriesData(double[][][] cube, int cell,
+    private TimeSeriesData asTimeSeriesData(double[][][] cube,
                                             List<String> factors) {
         int numTimeSteps = cube[0].length;
         int numFactors = cube.length;
@@ -330,7 +330,7 @@ public class BooleanGlassGeneIm implements SessionModel {
 
         for (int timeStep = 0; timeStep < numTimeSteps; timeStep++) {
             for (int factor = 0; factor < numFactors; factor++) {
-                square[timeStep][factor] = cube[factor][timeStep][cell];
+                square[timeStep][factor] = cube[factor][timeStep][0];
             }
         }
 

@@ -945,7 +945,7 @@ public class PerformanceTests {
         }
 
 
-        printAverageConfusion("Average", allCounts);
+        printAverageConfusion(allCounts);
         printAveragePrecisionRecall(comparisons);
         printAverageStatistics(elapsedTimes, degrees);
 
@@ -1654,8 +1654,8 @@ public class PerformanceTests {
         this.out.println();
     }
 
-    private void printAverageConfusion(String name, List<int[][]> comparisons) {
-        printAverageConfusion(name, comparisons, new DecimalFormat("0.0"));
+    private void printAverageConfusion(List<int[][]> comparisons) {
+        printAverageConfusion("Average", comparisons, new DecimalFormat("0.0"));
     }
 
     private void printAverageConfusion(String name, List<int[][]> comparisons, NumberFormat nf) {

@@ -68,14 +68,14 @@ public class BiolinguaRunner {
     /**
      * Used to display the usage info and an error message
      */
-    static void bailout(String errorMsg, boolean showUsageInfo, int exitCode) {
+    static void bailout(String errorMsg, int exitCode) {
         final String highlight =
                 "***************************************************************";
-        if (showUsageInfo) {
+        if (true) {
             BiolinguaRunner.usageInfo(false);
         }
         System.out.println(highlight + "\nError: " + errorMsg);
-        if (showUsageInfo) {
+        if (true) {
             System.out.println("See program parameters above");
         }
         System.out.println(highlight);
@@ -116,9 +116,9 @@ public class BiolinguaRunner {
                     BiolinguaRunner.kp = Float.parseFloat(varg.substring(3));
                     continue;
                 }
-                BiolinguaRunner.bailout("Unrecognized parameter  " + arg, true, 2);
+                BiolinguaRunner.bailout("Unrecognized parameter  " + arg, 2);
             } catch (Exception xcp) {
-                BiolinguaRunner.bailout("Unable to parse value from parameter  " + arg, true,
+                BiolinguaRunner.bailout("Unable to parse value from parameter  " + arg,
                         1);
             }
         }

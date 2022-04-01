@@ -152,7 +152,7 @@ public final class DirichletBayesIm implements BayesIm {
      *                                  provided.
      */
     private DirichletBayesIm(BayesPm bayesPm) throws IllegalArgumentException {
-        this(bayesPm, null, Double.NaN);
+        this(bayesPm, Double.NaN);
     }
 
     /**
@@ -167,9 +167,6 @@ public final class DirichletBayesIm implements BayesIm {
      *
      * @param bayesPm        the given Bayes PM. Carries with it the underlying graph
      *                       model.
-     * @param oldBayesIm     an already-constructed DirichletBayesIm whose values
-     *                       may be used where possible to initialize this DirichletBayesIm. May be
-     *                       null.
      * @param symmetricAlpha the value that all Dirichlet parameters are
      *                       initially set to, which must be nonnegative, or Double.naN if all
      *                       parameters should be set initially to "unspecified."
@@ -177,8 +174,7 @@ public final class DirichletBayesIm implements BayesIm {
      *                                  permutation of the nodes contained in the bayes parametric model
      *                                  provided.
      */
-    private DirichletBayesIm(BayesPm bayesPm, DirichletBayesIm oldBayesIm,
-                             double symmetricAlpha) throws IllegalArgumentException {
+    private DirichletBayesIm(BayesPm bayesPm, double symmetricAlpha) throws IllegalArgumentException {
         if (bayesPm == null) {
             throw new NullPointerException("BayesPm must not be null.");
         }
@@ -197,27 +193,7 @@ public final class DirichletBayesIm implements BayesIm {
         }
 
         // Initialize.
-        initialize(oldBayesIm, symmetricAlpha);
-    }
-
-    /**
-     * Constructs a new DirichletBayesIm from the given BayesPm, initializing
-     * all parameters to the given symmetric alpha. (If the symmetric alpha is
-     * Double.NaN, all parameters will be initialized as unspecified, requiring
-     * manual setting.)
-     *
-     * @param bayesPm        the given Bayes PM. Carries with it the underlying graph
-     *                       model.
-     * @param symmetricAlpha the value that all Dirichlet parameters are
-     *                       initially set to, which must be nonnegative, or Double.NaN if all
-     *                       parameters should be set initially to "unspecified."
-     * @throws IllegalArgumentException if the array of nodes provided is not a
-     *                                  permutation of the nodes contained in the bayes parametric model
-     *                                  provided.
-     */
-    private DirichletBayesIm(BayesPm bayesPm, double symmetricAlpha)
-            throws IllegalArgumentException {
-        this(bayesPm, null, symmetricAlpha);
+        initialize(null, symmetricAlpha);
     }
 
     /**
