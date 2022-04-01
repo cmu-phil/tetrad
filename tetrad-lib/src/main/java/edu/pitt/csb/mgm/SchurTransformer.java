@@ -204,8 +204,6 @@ class SchurTransformer {
                 // stop transformation after too many iterations
                 if (++iteration > SchurTransformer.MAX_ITERATIONS) {
                     return;
-//                    throw new MaxCountExceededException(LocalizedFormats.CONVERGENCE_FAILED,
-//                            MAX_ITERATIONS);
                 }
 
                 // the initial houseHolder vector for the QR step

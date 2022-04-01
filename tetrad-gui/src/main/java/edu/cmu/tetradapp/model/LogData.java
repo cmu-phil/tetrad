@@ -46,10 +46,6 @@ public class LogData extends DataWrapper {
 
             DataSet dataSet = (DataSet) model;
 
-//            if (!(dataSet.isContinuous())) {
-//                throw new IllegalArgumentException("Not a continuous data set: " + dataSet.getName());
-//            }
-
             double a = params.getDouble("a");
             boolean isUnlog = params.getBoolean("unlog");
             int base = params.getInt("base");

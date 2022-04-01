@@ -75,7 +75,7 @@ public class Ida {
      *
      * @author jdramsey@andrew.cmu.edu
      */
-    public class NodeEffects {
+    public static class NodeEffects {
         private List<Node> nodes;
         private LinkedList<Double> effects;
 

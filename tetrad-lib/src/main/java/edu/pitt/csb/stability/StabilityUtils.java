@@ -175,7 +175,7 @@ public class StabilityUtils {
         int[] contInds = MixedUtils.getContinuousInds(vars);
         int p = contInds.length;
         int q = discInds.length;
-        D[0] = xi.zSum() / ((p + q - 1) * (p + q) / 2);
+        D[0] = xi.zSum() / (((p + q - 1) * (p + q) / 2.));
 
         D[1] = xi.viewSelection(contInds, contInds).zSum() / (p * (p - 1));
         D[2] = xi.viewSelection(contInds, discInds).zSum() / (p * q);

@@ -220,9 +220,7 @@ public class GeneHistory implements TetradSerializable {
 
         double[] last = this.historyArray[this.historyArray.length - 1];
 
-        for (int i = this.historyArray.length - 1; i > 0; i--) {
-            this.historyArray[i] = this.historyArray[i - 1];
-        }
+        System.arraycopy(this.historyArray, 0, this.historyArray, 1, this.historyArray.length - 1);
 
         this.historyArray[0] = last;
 

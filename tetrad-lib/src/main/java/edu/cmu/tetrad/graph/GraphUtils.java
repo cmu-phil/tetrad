@@ -2199,8 +2199,6 @@ public final class GraphUtils {
 
             String value = edgeElement.getValue();
 
-//            System.out.println("value = " + value);
-//            String regex = "([A-Za-z0-9_-]*) ?(.)-(.) ?([A-Za-z0-9_-]*)";
             final String regex = "([A-Za-z0-9_-]*:?[A-Za-z0-9_-]*) ?(.)-(.) ?([A-Za-z0-9_-]*:?[A-Za-z0-9_-]*)";
 //            String regex = "([A-Za-z0-9_-]*) ?([<o])-([o>]) ?([A-Za-z0-9_-]*)";
 
@@ -2368,9 +2366,6 @@ public final class GraphUtils {
     }
 
     public static Graph loadGraph(File file) {
-//        if (!file.getNode().endsWith(".xml")) {
-//            throw new IllegalArgumentException("Not an XML file.");
-//        }
 
         Element root;
         Graph graph;
@@ -2705,26 +2700,10 @@ public final class GraphUtils {
 
                     if (tokens2[0].isEmpty()) continue;
 
-//                    String name = "X" + (Integer.parseInt(tokens2[0]) + 1);
-//                    Node x = graph.getNode(name);
-//
-//                    if (x == null) {
-//                        x = new GraphNode(name);
-//                        graph.addNode(x);
-//                    }
-
                     Node x = variables.get(Integer.parseInt(tokens2[0]));
 
                     for (int j = 1; j < tokens2.length; j++) {
                         if (tokens2[j].isEmpty()) continue;
-
-//                        String name2 = "X" + (Integer.parseInt(tokens2[j]) + 1);
-//                        Node y = graph.getNode(name2);
-//
-//                        if (y == null) {
-//                            y = new GraphNode(name2);
-//                            graph.addNode(y);
-//                        }
 
                         Node y = variables.get(Integer.parseInt(tokens2[j]));
 
@@ -3673,9 +3652,6 @@ public final class GraphUtils {
             }
         }
 
-//        System.out.println("Forming edge union");
-//        topGraph = GraphUtils.replaceNodes(topGraph, leftGraph.getNodes());
-//        int[][] counts = new int[8][6];
         Set<Edge> edgeSet = new HashSet<>();
         edgeSet.addAll(topGraph.getEdges());
         edgeSet.addAll(leftGraph.getEdges());
@@ -3999,41 +3975,12 @@ public final class GraphUtils {
 
             // We will print edge's properties in the edge (via toString() function) level.
             //List<Edge.Property> properties = edge.getProperties();
-            if (count < size) {
-                final String f = "%d. %s";
-
-                //for (int i = 0; i < properties.size(); i++) {
-                //    f += " %s";
-                //}
-                Object[] o = new Object[2 /*+ properties.size()*/];
-
-                o[0] = count;
-                o[1] = edge; // <- here we include its properties (nl dd pl pd)
-
-                //for (int i = 0; i < properties.size(); i++) {
-                //    o[2 + i] = properties.get(i);
-                //}
-                fmt.format(f, o);
-
-                fmt.format("\n");
-            } else {
-                final String f = "%d. %s";
-
-                //for (int i = 0; i < properties.size(); i++) {
-                //    f += " %s";
-                //}
-                Object[] o = new Object[2 /*+ properties.size()*/];
-
-                o[0] = count;
-                o[1] = edge; // <- here we include its properties (nl dd pl pd)
-
-                //for (int i = 0; i < properties.size(); i++) {
-                //    o[2 + i] = properties.get(i);
-                //}
-                fmt.format(f, o);
-
-                fmt.format("\n");
-            }
+            final String f = "%d. %s";
+            Object[] o = new Object[2 /*+ properties.size()*/];/*+ properties.size()*/// <- here we include its properties (nl dd pl pd)
+            o[0] = count;
+            o[1] = edge; // <- here we include its properties (nl dd pl pd)
+            fmt.format(f, o);
+            fmt.format("\n");
         }
 
         return fmt.toString();
@@ -4117,20 +4064,15 @@ public final class GraphUtils {
         Graph undirectedGraph = GraphUtils.undirectedGraph(estTwoCycleGraph);
         int adjCorrect = undirectedGraph.getNumEdges() - adjFp;
 
-        TwoCycleErrors twoCycleErrors = new TwoCycleErrors(
+        return new TwoCycleErrors(
                 adjCorrect,
                 adjFn,
                 adjFp
         );
-
-        return twoCycleErrors;
     }
 
     public static boolean isDConnectedTo(Node x, Node y, List<Node> z, Graph graph) {
         return GraphUtils.isDConnectedTo1(x, y, z, graph);
-//        return isDConnectedTo2(x, y, z, graph);
-//        return isDConnectedTo3(x, y, z, graph);
-//        return isDConnectedTo4(x, y, z, graph);
     }
 
     // Breadth first.
@@ -4582,14 +4524,6 @@ public final class GraphUtils {
     }
 
     private static boolean isAncestor(Node b, List<Node> z, Graph graph) {
-//        for (Node n : z) {
-//            if (graph.isAncestorOf(b, n)) {
-//                return true;
-//            }
-//        }
-//
-//        return false;
-//
         if (z.contains(b)) {
             return true;
         }

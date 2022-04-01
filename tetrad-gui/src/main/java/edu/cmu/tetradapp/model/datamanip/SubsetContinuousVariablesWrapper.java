@@ -69,12 +69,6 @@ public class SubsetContinuousVariablesWrapper extends DataWrapper {
 
 
     private static DataModel createModel(DataSet data) {
-//        for (int i = data.getNumColumns() -1; i >= 0; i--) {
-//            if (!(data.getVariable(i) instanceof ContinuousVariable)) {
-//                data.removeColumn(i);
-//            }
-//        }
-//        return data;
 
         List<Node> variables = data.getVariables();
 

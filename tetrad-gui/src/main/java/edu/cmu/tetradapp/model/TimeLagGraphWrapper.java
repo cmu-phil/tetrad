@@ -115,12 +115,11 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
             String tmp;
             if (varName.indexOf(':') == -1) {
                 lag = 0;
-                laglist.add(lag);
             } else {
                 tmp = varName.substring(varName.indexOf(':') + 1);
                 lag = Integer.parseInt(tmp);
-                laglist.add(lag);
             }
+            laglist.add(lag);
         }
         numLags = Collections.max(laglist);
         for (Node node : variables) {
@@ -128,17 +127,15 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
             String tmp;
             if (varName.indexOf(':') == -1) {
                 lag = 0;
-                laglist.add(lag);
             } else {
                 tmp = varName.substring(varName.indexOf(':') + 1);
                 lag = Integer.parseInt(tmp);
-                laglist.add(lag);
             }
+            laglist.add(lag);
             knowledge1.addToTier(numLags - lag, node.getName());
         }
 
         System.out.println("Knowledge in graph = " + knowledge1);
-        IKnowledge knowledge = knowledge1;
     }
 
     public TimeLagGraphWrapper() {
@@ -229,12 +226,11 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
             String tmp;
             if (varName.indexOf(':') == -1) {
                 lag = 0;
-                laglist.add(lag);
             } else {
                 tmp = varName.substring(varName.indexOf(':') + 1);
                 lag = Integer.parseInt(tmp);
-                laglist.add(lag);
             }
+            laglist.add(lag);
         }
         numLags = Collections.max(laglist);
         for (Node node : variables) {
@@ -242,12 +238,11 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
             String tmp;
             if (varName.indexOf(':') == -1) {
                 lag = 0;
-                laglist.add(lag);
             } else {
                 tmp = varName.substring(varName.indexOf(':') + 1);
                 lag = Integer.parseInt(tmp);
-                laglist.add(lag);
             }
+            laglist.add(lag);
             knowledge1.addToTier(numLags - lag, node.getName());
         }
 

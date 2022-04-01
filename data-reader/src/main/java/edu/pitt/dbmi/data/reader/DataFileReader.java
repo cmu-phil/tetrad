@@ -119,16 +119,14 @@ public abstract class DataFileReader implements DataReader {
                             hasQuoteChar = !hasQuoteChar;
                         } else {
                             if (!hasQuoteChar) {
-                                switch (this.delimiter) {
-                                    case WHITESPACE:
-                                        if (currChar <= DataFileReader.SPACE_CHAR && prevChar > DataFileReader.SPACE_CHAR) {
-                                            count++;
-                                        }
-                                        break;
-                                    default:
-                                        if (currChar == delimChar) {
-                                            count++;
-                                        }
+                                if (this.delimiter == Delimiter.WHITESPACE) {
+                                    if (currChar <= DataFileReader.SPACE_CHAR && prevChar > DataFileReader.SPACE_CHAR) {
+                                        count++;
+                                    }
+                                } else {
+                                    if (currChar == delimChar) {
+                                        count++;
+                                    }
                                 }
                             }
                         }

@@ -112,7 +112,7 @@ public class FloatDataBox implements DataBox {
     public Number get(int row, int col) {
         float datum = this.data[row][col];
 
-        if (datum == Float.NaN) {
+        if (Double.isNaN(datum)) {
             return null;
         } else {
             return datum;

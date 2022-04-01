@@ -44,17 +44,9 @@ public class TestImagesSimulation {
         parameters.set("numRuns", 1);
         parameters.set("numMeasures", 100);
         parameters.set("avgDegree", 8);
-//        parameters.set("maxDegree", 8);
-//        parameters.set("maxIndegree",  3);
-//        parameters.set("maxOutdegree", 3);
 
         parameters.set("sampleSize", 500);
         parameters.set("penaltyDiscount", 4);
-//        parameters.set("alpha", 0.001);
-
-//        parameters.set("maxDegree", 5);
-
-//        parameters.set("numCategoriesToDiscretize", 3);
 
         parameters.set("intervalBetweenRecordings", 20);
 
@@ -65,11 +57,6 @@ public class TestImagesSimulation {
         parameters.set("coefSymmetric", true);
         parameters.set("meanLow", -1);
         parameters.set("meanHigh", 1);
-
-//        parameters.set("scaleFreeAlpha", .9);
-//        parameters.set("scaleFreeBeta", .05);
-//        parameters.set("scaleFreeDeltaIn", 3);
-//        parameters.set("scaleFreeDeltaOut", .1);
 
         parameters.set("numRuns", 1);
         parameters.set("randomSelectionSize", 3);

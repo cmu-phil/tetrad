@@ -101,8 +101,6 @@ public class HitonVariant implements MbSearch {
 
         long time2 = System.currentTimeMillis() - time;
         TetradLogger.getInstance().log("info", "Number of seconds: " + (time2 / 1000.0));
-        //        LogUtils.getInstance().info("Number of independence tests performed: " +
-//            numIndTests);
 
         return nodes;
     }
@@ -130,7 +128,7 @@ public class HitonVariant implements MbSearch {
         currentMb.remove(t);
 
         HashSet<Node> diff = new HashSet<>(currentMb);
-        diff.removeAll(pc);
+        pc.forEach(diff::remove);
         diff.remove(t);
 
         //for each x in PCPC \ PC
@@ -187,88 +185,6 @@ public class HitonVariant implements MbSearch {
         mb.addAll(pc);
         return new LinkedList<>(mb);
     }
-
-//    public List<Node> findMb(String targetName) {
-//        final Node t = getVariableForName(targetName);
-//
-//        // Sort variables by decreasing association with the target.
-//        sortedVariables = new LinkedList<Node>(variables);
-//
-//        Collections.sort(sortedVariables, new Comparator<Node>() {
-//            public int compare(Node o1, Node o2) {
-//                double score1 = o1 == t ? 1.0 : association(o1, t);
-//                double score2 = o2 == t ? 1.0 : association(o2, t);
-//
-//                if (score1 < score2) {
-//                    return 1;
-//                }
-//                else if (score1 > score2) {
-//                    return -1;
-//                }
-//                else {
-//                    return 0;
-//                }
-//            }
-//        });
-//
-//        Set<Node> pc = new HashSet<Node>(hitonPc(t));
-//        Set<Node> pcpc = new HashSet<Node>();
-//
-//        for (Node node : pc) {
-//            pcpc.addAll(hitonPc(node));
-//        }
-//
-//        Set<Node> currentMb = new HashSet<Node>(pc);
-//        currentMb.addAll(pcpc);
-//        currentMb.remove(t);
-//
-//        // For each x...
-//
-//        X:
-//        for (Node x : new HashSet<Node>(currentMb)) {
-//
-//            // Look for a y such that conditioning on any set containing y
-//            // renders x dependent on the target...
-//
-//            Y:
-//            for (Node y : pc) {
-//                if (x == y) continue;
-//
-//                List<Node> b = new LinkedList<Node>(currentMb);
-//                b.remove(x);
-//                b.remove(y);
-//
-//                // We're going to add y to it, so go on lower.
-//                for (int d = 0; d <= Math.min(b.size(), depth) - 1; d++) {
-//                    ChoiceGenerator generator =
-//                            new ChoiceGenerator(b.size(), d);
-//                    int[] choice;
-//
-//                    while ((choice = generator.next()) != null) {
-//                        List<Node> s = new LinkedList<Node>();
-//
-//                        for (int index : choice) {
-//                            s.add(b.get(index));
-//                        }
-//
-//                        s.add(y);
-//
-//                        if (independenceTest.isIndependent(t, x, s)) {
-//                            continue Y;
-//                        }
-//                    }
-//                }
-//
-//                // If there is such a y, leave x in.
-//                continue X;
-//            }
-//
-//            // Otherwise, take x out.
-//            currentMb.remove(x);
-//        }
-//
-//        return new ArrayList<Node>(currentMb);
-//    }
 
     private List<Node> hitonPc(Node t) {
         LinkedList<Node> variables = new LinkedList<>(this.sortedVariables);

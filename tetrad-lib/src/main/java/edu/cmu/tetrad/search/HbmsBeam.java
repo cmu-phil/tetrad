@@ -141,18 +141,11 @@ public final class HbmsBeam implements Hbsms {
                 moves.addAll(getAddMoves(s));
 //                moves.addAll(getRemoveMoves(s));
                 moves.addAll(getRedirectMoves(s));
-//                moves.addAll(getAddColliderMoves(s));
-//                moves.addAll(getDoubleRemoveMoves(s));
-//                moves.addAll(getRemoveColliderMoves(s));
-//                moves.addAll(getRemoveTriangleMoves(s));
-//                moves.addAll(getSwapMoves(s));
 
                 boolean found = false;
 
                 for (Move move : moves) {
                     Graph graph = makeMove(s, move);
-//                    if (P.contains(graph)) continue;
-//                    P.add(graph);
 
                     if (getKnowledge().isViolatedBy(graph)) {
                         continue;

@@ -57,11 +57,6 @@ public class TimeSeriesWrapper2 extends DataWrapper implements KnowledgeTransfer
             timeSeriesDataSets.add(timeSeries);
         }
 
-//        DataModel model = data.getSelectedDataModel();
-//        if (!(model instanceof DataSet)) {
-//            throw new IllegalArgumentException("The data model must be a rectangular dataset");
-//        }
-//        model = TimeSeriesUtils.createLagData((DataSet) model, params.getNumOfTimeLags());
         this.setDataModel(timeSeriesDataSets);
         this.setSourceGraph(data.getSourceGraph());
 

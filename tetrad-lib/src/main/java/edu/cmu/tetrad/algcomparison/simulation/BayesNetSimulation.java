@@ -149,12 +149,9 @@ public class BayesNetSimulation implements Simulation {
                     im = new MlBayesIm(pm, MlBayesIm.RANDOM);
                     this.im = im;
                 }
-                this.ims.add(im);
-                return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
-            } else {
-                this.ims.add(im);
-                return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
             }
+            this.ims.add(im);
+            return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
         } catch (Exception e) {
             e.printStackTrace();
             throw new IllegalArgumentException("Sorry, I couldn't simulate from that Bayes IM; perhaps not all of\n"

@@ -66,7 +66,7 @@ public class SemXmlParser {
         }
         Element var;
         GraphNode node;
-        Integer x, y;
+        int x, y;
         Dag semGraph = new Dag();
         Elements vars = variablesElement.getChildElements(SemXmlConstants.CONTINUOUS_VARIABLE);
 
@@ -78,8 +78,8 @@ public class SemXmlParser {
             } else {
                 node.setNodeType(NodeType.MEASURED);
             }
-            x = new Integer(var.getAttributeValue(SemXmlConstants.X));
-            y = new Integer(var.getAttributeValue(SemXmlConstants.Y));
+            x = Integer.parseInt(var.getAttributeValue(SemXmlConstants.X));
+            y = Integer.parseInt(var.getAttributeValue(SemXmlConstants.Y));
             node.setCenterX(x);
             node.setCenterY(y);
             semGraph.addNode(node);

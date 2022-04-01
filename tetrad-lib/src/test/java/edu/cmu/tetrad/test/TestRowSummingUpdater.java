@@ -199,8 +199,6 @@ public final class TestRowSummingUpdater {
         BayesPm bayesPm = new BayesPm(graph);
         MlBayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
 
-        //        int x0 = bayesIm.getNodeIndex(x0Node);
-        //        int x1 = bayesIm.getNodeIndex(x1Node);
         int x2 = bayesIm.getNodeIndex(x2Node);
         int x3 = bayesIm.getNodeIndex(x3Node);
 

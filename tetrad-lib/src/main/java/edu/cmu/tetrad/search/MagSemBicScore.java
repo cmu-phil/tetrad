@@ -384,10 +384,6 @@ public class MagSemBicScore implements Score {
 
         this.dataModel = covariances;
 
-//        double n = covariances.getSampleSize();
-//        double ess = DataUtils.getEss(covariances);
-//
-//        System.out.println("n = " + n + " ess = " + ess);
     }
 
     private static int[] append(int[] z, int x) {

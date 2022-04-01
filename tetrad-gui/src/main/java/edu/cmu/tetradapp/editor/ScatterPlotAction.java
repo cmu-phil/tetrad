@@ -68,9 +68,6 @@ class ScatterPlotAction extends AbstractAction {
         JPanel panel = new ScatterPlotView(dataSet);
         EditorWindow editorWindow = new EditorWindow(panel, "Scatter Plots", "Save", true, this.dataEditor);
 
-//        JPanel dialog = createScatterPlotDialog(null, null);
-//        EditorWindow editorWindow = new EditorWindow(dialog, "Scatter Plots", "Save", true, dataEditor);
-
         DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
         editorWindow.pack();
         editorWindow.setVisible(true);
@@ -137,9 +134,6 @@ class ScatterPlotAction extends AbstractAction {
         panel.add(bar, BorderLayout.NORTH);
         panel.add(vBox, BorderLayout.CENTER);
 
-//        dialog.getContentPane().add(bar, BorderLayout.NORTH);
-//        dialog.getContentPane().add(vBox, BorderLayout.CENTER);
-//        return dialog;
         return panel;
     }
 

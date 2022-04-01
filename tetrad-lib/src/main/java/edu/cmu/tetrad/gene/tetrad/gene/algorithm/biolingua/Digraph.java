@@ -21,6 +21,11 @@
 
 package edu.cmu.tetrad.gene.tetrad.gene.algorithm.biolingua;
 
+import edu.cmu.tetrad.gene.tetrad.gene.algorithm.util.BasicGraph;
+import edu.cmu.tetrad.gene.tetrad.gene.algorithm.util.MatrixF;
+
+import java.io.IOException;
+
 /**
  * Simple implementation of a directed Graph.  edges are just represented by
  * float values (a zero == no edge) stored in a matrix.
@@ -31,12 +36,6 @@ package edu.cmu.tetrad.gene.tetrad.gene.algorithm.biolingua;
  * @author <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul Saavedra</a>
  * (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
  */
-
-import edu.cmu.tetrad.gene.tetrad.gene.algorithm.util.BasicGraph;
-import edu.cmu.tetrad.gene.tetrad.gene.algorithm.util.MatrixF;
-
-import java.io.IOException;
-
 public class Digraph extends BasicGraph {
 
     /**

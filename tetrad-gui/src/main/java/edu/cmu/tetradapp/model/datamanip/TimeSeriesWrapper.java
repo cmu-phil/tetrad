@@ -34,6 +34,7 @@ import edu.cmu.tetradapp.model.PcRunner;
 public class TimeSeriesWrapper extends DataWrapper implements KnowledgeTransferable {
     static final long serialVersionUID = 23L;
 
+    @SuppressWarnings("FieldCanBeLocal")
     private IKnowledge knowledge = new Knowledge2();
 
     /**
@@ -60,11 +61,6 @@ public class TimeSeriesWrapper extends DataWrapper implements KnowledgeTransfera
             timeSeriesDataSets.add(timeSeries);
         }
 
-//        DataModel model = data.getSelectedDataModel();
-//        if (!(model instanceof DataSet)) {
-//            throw new IllegalArgumentException("The data model must be a rectangular dataset");
-//        }
-//        model = TimeSeriesUtils.createLagData((DataSet) model, params.getNumOfTimeLags());
         this.setDataModel(timeSeriesDataSets);
         this.setSourceGraph(data.getSourceGraph());
 

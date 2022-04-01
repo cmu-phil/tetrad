@@ -61,11 +61,6 @@ public final class CellTableProbs implements DiscreteProbs {
      */
     private int numPoints;
 
-    /**
-     * True iff a missing value case was found.
-     */
-    private boolean missingValueCaseFound;
-
     //============================CONSTRUCTORS===========================//
 
     /**
@@ -96,7 +91,10 @@ public final class CellTableProbs implements DiscreteProbs {
         int numRows = dataSet.getNumRows();
 
         int[] point = new int[this.dims.length];
-        this.missingValueCaseFound = false;
+        /**
+         * True iff a missing value case was found.
+         */
+        boolean missingValueCaseFound = false;
 
         point:
         for (int i = 0; i < numRows; i++) {
@@ -104,7 +102,7 @@ public final class CellTableProbs implements DiscreteProbs {
                 point[j] = dataSet.getInt(i, j);
 
                 if (point[j] == DiscreteVariable.MISSING_VALUE) {
-                    this.missingValueCaseFound = true;
+                    missingValueCaseFound = true;
                     continue point;
                 }
             }

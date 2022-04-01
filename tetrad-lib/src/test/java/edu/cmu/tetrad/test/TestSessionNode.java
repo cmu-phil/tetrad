@@ -179,8 +179,6 @@ public class TestSessionNode {
         SessionNode node3 = new SessionNode(Type3.class);
         SessionNode node4 =
                 new SessionNode(new Class[]{Type1.class, Type2.class});
-        //        SessionNode node5 = new SessionNode(new Class[]{Type1.class,
-        //                                                        Type2.class});
         SessionNode node6 = new SessionNode(
                 new Class[]{Type1.class, Type2.class, Type3.class});
         SessionNode node7 =

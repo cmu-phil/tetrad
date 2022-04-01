@@ -50,7 +50,6 @@ public class VcpcFastRunner extends AbstractAlgorithmRunner
     private Set<Edge> fvcpcAdjacent;
     private Set<Edge> fvcpcApparent;
     private Set<Edge> fvcpcDefinite;
-    private List<Node> fvcpcNodes;
 
     //============================CONSTRUCTORS============================//
 
@@ -171,16 +170,12 @@ public class VcpcFastRunner extends AbstractAlgorithmRunner
 
     public void execute() {
         IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
-        Parameters searchParams = getParams();
-
-        Parameters params =
-                searchParams;
 
 
         VcpcFast fvcpc = new VcpcFast(getIndependenceTest());
         fvcpc.setKnowledge(knowledge);
         fvcpc.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
-        fvcpc.setDepth(params.getInt("depth", -1));
+        fvcpc.setDepth(getParams().getInt("depth", -1));
         if (this.independenceFactsModel != null) {
             fvcpc.setFacts(this.independenceFactsModel.getFacts());
         }
@@ -226,8 +221,6 @@ public class VcpcFastRunner extends AbstractAlgorithmRunner
      */
     public List<String> getTriplesClassificationTypes() {
         List<String> names = new ArrayList<>();
-//        names.add("ColliderDiscovery");
-//        names.add("Noncolliders");
         names.add("Ambiguous Triples");
         return names;
     }
@@ -238,8 +231,6 @@ public class VcpcFastRunner extends AbstractAlgorithmRunner
     public List<List<Triple>> getTriplesLists(Node node) {
         List<List<Triple>> triplesList = new ArrayList<>();
         Graph graph = getGraph();
-//        triplesList.add(DataGraphUtils.getCollidersFromGraph(node, graph));
-//        triplesList.add(DataGraphUtils.getNoncollidersFromGraph(node, graph));
         triplesList.add(GraphUtils.getAmbiguousTriplesFromGraph(node, graph));
         return triplesList;
     }
@@ -283,12 +274,9 @@ public class VcpcFastRunner extends AbstractAlgorithmRunner
         this.fvcpcAdjacent = fvcpc.getAdjacencies();
         this.fvcpcApparent = fvcpc.getApparentNonadjacencies();
         this.fvcpcDefinite = fvcpc.getDefiniteNonadjacencies();
-        this.fvcpcNodes = getGraph().getNodes();
+        List<Node> fvcpcNodes = getGraph().getNodes();
     }
 
-//    public Vcpc getVcpc() {
-//        return vcpc;
-//    }
 }
 
 

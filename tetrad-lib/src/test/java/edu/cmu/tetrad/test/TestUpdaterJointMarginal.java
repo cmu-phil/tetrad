@@ -79,13 +79,9 @@ public final class TestUpdaterJointMarginal {
         //int x3Index = bayesImMixed.getNodeIndex(x3Node);
         int x3Index = estimatedIm.getNodeIndex(x3Node);
 
-        //bayesImMixed.setProbability(l1Index, 0, 0, 0.5);
-        //bayesImMixed.setProbability(l1Index, 0, 1, 0.5);
         estimatedIm.setProbability(l1Index, 0, 0, 0.5);
         estimatedIm.setProbability(l1Index, 0, 1, 0.5);
 
-        //bayesImMixed.setProbability(x1Index, 0, 0, 0.33333);
-        //bayesImMixed.setProbability(x1Index, 0, 1, 0.66667);
         estimatedIm.setProbability(x1Index, 0, 0,
                 0.33333);      //p(x1 = 0 | l1 = 0)
         estimatedIm.setProbability(x1Index, 0, 1,
@@ -95,8 +91,6 @@ public final class TestUpdaterJointMarginal {
         estimatedIm.setProbability(x1Index, 1, 1,
                 0.33333);      //p(x1 = 1 | l1 = 1)
 
-        //bayesImMixed.setProbability(x2Index, 1, 0, 0.66667);
-        //bayesImMixed.setProbability(x2Index, 1, 1, 0.33333);
         estimatedIm.setProbability(x2Index, 1, 0,
                 0.66667);      //p(x2 = 0 | l1 = 1)
         estimatedIm.setProbability(x2Index, 1, 1,
@@ -106,8 +100,6 @@ public final class TestUpdaterJointMarginal {
         estimatedIm.setProbability(x2Index, 0, 1,
                 0.66667);      //p(x2 = 1 | l1 = 0)
 
-        //bayesImMixed.setProbability(x3Index, 1, 0, 0.66667);
-        //bayesImMixed.setProbability(x3Index, 1, 1, 0.33333);
         estimatedIm.setProbability(x3Index, 1, 0,
                 0.66667);      //p(x3 = 0 | l1 = 1)
         estimatedIm.setProbability(x3Index, 1, 1,

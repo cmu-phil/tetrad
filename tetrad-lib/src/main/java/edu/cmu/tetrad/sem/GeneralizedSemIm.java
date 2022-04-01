@@ -281,9 +281,6 @@ public class GeneralizedSemIm implements IM, Simulator {
             return simulateTimeSeries(sampleSize);
         }
 
-//        return simulateDataRecursive(sampleSize, latentDataSaved);
-//        return simulateDataMinimizeSurface(sampleSize, latentDataSaved);
-//        return simulateDataAvoidInfinity(sampleSize, latentDataSaved);
         return simulateDataFisher(sampleSize);
     }
 

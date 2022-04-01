@@ -132,9 +132,6 @@ public class FgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
 
                 if (dataSet.isContinuous()) {
                     SemBicScore gesScore = new SemBicScore(new CovarianceMatrix((DataSet) model));
-//                    SemBicScore2 gesScore = new SemBicScore2(new CovarianceMatrix((DataSet) model));
-//                    SemGpScore gesScore = new SemGpScore(new CovarianceMatrix((DataSet) model));
-//                    SvrScore gesScore = new SvrScore((DataSet) model);
                     gesScore.setPenaltyDiscount(penaltyDiscount);
                     System.out.println("Score done");
                     this.fges = new Fges(gesScore);

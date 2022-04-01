@@ -65,9 +65,6 @@ public class TestGraphConverter {
                 "X1-->X2,X1---X3,X2<->X4,X3o->X4," + "X5<--X1,X5o-oX2,X5<-oX3");
 
         convertedGraph = GraphUtils.replaceNodes(convertedGraph, graph.getNodes());
-        //
-        //        System.out.println(graph);
-        //        System.out.println(convertedGraph);
         assertTrue(graph.equals(convertedGraph));
     }
 }

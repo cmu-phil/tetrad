@@ -64,47 +64,9 @@ public class CovMatrixWrapper extends DataWrapper {
 
         setDataModel(out);
 
-//        setDataModel(out);
-//        setSourceGraph(wrapper.getSourceGraph());
-//
-//        DataModel model = wrapper.getSelectedDataModel();
-//        if (model instanceof DataSet) {
-//            DataSet dataSet = (DataSet) model;
-//            if (!(dataSet.isContinuous())) {
-//               throw new IllegalArgumentException("The data must be continuous");
-//            }
-//
-//            ICovarianceMatrix covarianceMatrix = new CovarianceMatrix(dataSet);
-//            setDataModel(covarianceMatrix);
-//            setSourceGraph(wrapper.getSourceGraph());
-//        } else if (model instanceof ICovarianceMatrix) {
-//            ICovarianceMatrix covarianceMatrix = new CovarianceMatrix((CovarianceMatrix)model);
-//            setDataModel(covarianceMatrix);
-//            setSourceGraph(wrapper.getSourceGraph());
-//        } else {
-//            throw new IllegalArgumentException("Must be a dataset or a covariance  matrix");
-//        }
-
         LogDataUtils.logDataModelList("Conversion of data to covariance matrix form.", getDataModelList());
 
     }
-
-//    public CovMatrixWrapper(SemImWrapper wrapper) {
-//        if (wrapper == null) {
-//            throw new NullPointerException("The Sem IM must not be null.");
-//        }
-//
-//        SemIm semIm = wrapper.getSemIm();
-//
-//        TetradMatrix matrix = semIm.getImplCovar(true);
-//        List<Node> variables = semIm.getSemPm().getVariableNodes();
-//
-//        ICovarianceMatrix covarianceMatrix = new CovarianceMatrix(variables, matrix, semIm.getSampleSize());
-//        setDataModel(covarianceMatrix);
-//        setSourceGraph(semIm.getSemPm().getGraph());
-//
-//        LogDataUtils.logDataModelList("Conversion of data to covariance matrix form.", getDataModelList());
-//    }
 
 
     /**

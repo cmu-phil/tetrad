@@ -72,8 +72,6 @@ public class HsimRepeatAutoRun {
         evalTotal[4] = 0;
 
         double[] evalIncrement;
-        //evalIncrement = new double[5];
-        //Integer count = 0;
         Integer count0 = 1;
         Integer count1 = 1;
         Integer count2 = 1;

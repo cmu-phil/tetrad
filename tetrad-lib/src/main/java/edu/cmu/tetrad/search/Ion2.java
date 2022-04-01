@@ -100,10 +100,7 @@ public class Ion2 {
      * @param pags The PAGs to be integrated
      */
     public Ion2(List<Graph> pags) {
-        for (Graph pag : pags) {
-            this.input.add(pag);
-
-        }
+        this.input.addAll(pags);
         for (Graph pag : this.input) {
             for (Node node : pag.getNodes()) {
                 if (!this.variables.contains(node.getName())) {
@@ -261,9 +258,6 @@ public class Ion2 {
                     }
                     // accept PAG_of_the_true_DAG go to next PAG_of_the_true_DAG if no possibly d-connecting undirectedPaths
                     if (dConnections.isEmpty()) {
-//                        doFinalOrientation(pag);
-//                        Graph p = screenForKnowledge(pag);
-//                        if (p != null) step3PagsSet.add(p);
                         step3PagsSet.add(pag);
                         continue;
                     }
@@ -406,8 +400,6 @@ public class Ion2 {
 //                        doFinalOrientation(changed);
                         // now add graph to queue
 
-//                        Graph p = screenForKnowledge(changed);
-//                        if (p != null) step3PagsSet.add(p);
                         step3PagsSet.add(changed);
                     }
                 }
@@ -1165,12 +1157,6 @@ public class Ion2 {
                 Node C = adj.get(combination[1]);
 
                 //choice gen doesnt do diff orders, so must switch A & C around.
-//                awayFromCollider(graph, A, B, C);
-//                awayFromCollider(graph, C, B, A);
-//                awayFromAncestor(graph, A, B, C);
-//                awayFromAncestor(graph, C, B, A);
-//                awayFromCycle(graph, A, B, C);
-//                awayFromCycle(graph, C, B, A);
                 ruleR1(A, B, C, graph);
                 ruleR1(C, B, A, graph);
                 ruleR2(A, B, C, graph);
@@ -1233,9 +1219,8 @@ public class Ion2 {
             return false;
         }
 
-        if (graph.getEndpoint(y, x) == Endpoint.ARROW &&
-                graph.getEndpoint(x, y) == Endpoint.CIRCLE) {
-            return true;
+        if (graph.getEndpoint(y, x) == Endpoint.ARROW) {
+            graph.getEndpoint(x, y);
         }
         return true;
     }
@@ -1526,12 +1511,6 @@ public class Ion2 {
                             break GRAPH;
                         }
                     }
-//                    if (Edges.isNondirectedEdge(edge)) {
-//                        if (!pag.existsTrek(node1, node2)) {
-//                            allAccountFor = false;
-//                            break Graph;
-//                        }
-//                    }
                 }
             }
 
@@ -1548,7 +1527,7 @@ public class Ion2 {
      * sets to be associated with a single pair of nodes, which is necessary for the proper ordering of iterations in
      * the ION search.
      */
-    private final class IonIndependenceFacts {
+    private static final class IonIndependenceFacts {
         private final Node x;
         private final Node y;
         private final Collection<List<Node>> z;
@@ -1566,15 +1545,15 @@ public class Ion2 {
             this.z = z;
         }
 
-        public final Node getX() {
+        public Node getX() {
             return this.x;
         }
 
-        public final Node getY() {
+        public Node getY() {
             return this.y;
         }
 
-        public final Collection<List<Node>> getZ() {
+        public Collection<List<Node>> getZ() {
             return this.z;
         }
 
@@ -1582,14 +1561,14 @@ public class Ion2 {
             this.z.add(moreZ);
         }
 
-        public final int hashCode() {
+        public int hashCode() {
             int hash = 17;
             hash += 19 * this.x.hashCode() * this.y.hashCode();
             hash += 23 * this.z.hashCode();
             return hash;
         }
 
-        public final boolean equals(Object obj) {
+        public boolean equals(Object obj) {
             if (!(obj instanceof IonIndependenceFacts)) {
                 return false;
             }
@@ -1614,7 +1593,7 @@ public class Ion2 {
      * @author pingel
      */
 
-    private class PowerSet<E> implements Iterable<Set<E>> {
+    private static class PowerSet<E> implements Iterable<Set<E>> {
         Collection<E> all;
 
         public PowerSet(Collection<E> all) {
@@ -1680,8 +1659,7 @@ public class Ion2 {
 
             public Set<InE> next() {
 
-                Set<InE> result = new HashSet<>();
-                result.addAll(this.mask);
+                Set<InE> result = new HashSet<>(this.mask);
                 result.remove(null);
 
                 this.hasNext = this.mask.size() < this.powerSet.all.size() || !allOnes();

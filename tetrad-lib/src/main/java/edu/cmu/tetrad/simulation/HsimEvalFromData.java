@@ -38,8 +38,8 @@ public class HsimEvalFromData {
         int cases = 500;
         int edgeratio = 3;
 
-        List<Integer> hsimRepeat = Arrays.asList(40);
-        List<Integer> fsimRepeat = Arrays.asList(40);
+        List<Integer> hsimRepeat = Collections.singletonList(40);
+        List<Integer> fsimRepeat = Collections.singletonList(40);
 
         List<PRAOerrors>[] fsimErrsByPars = new ArrayList[fsimRepeat.size()];
         int whichFrepeat = 0;
@@ -92,9 +92,6 @@ public class HsimEvalFromData {
                         Graph fgsDag = SearchGraphUtils.dagFromCPDAG(oFGSGraph);
                         Dag fgsdag2 = new Dag(fgsDag);
                         //then fit an IM to this dag and the data. GeneralizedSemEstimator seems to bug out
-                        //GeneralizedSemPm simSemPm = new GeneralizedSemPm(fgsdag2);
-                        //GeneralizedSemEstimator gsemEstimator = new GeneralizedSemEstimator();
-                        //GeneralizedSemIm fittedIM = gsemEstimator.estimate(simSemPm, oData);
 
                         SemPm simSemPm = new SemPm(fgsdag2);
                         //BayesPm simBayesPm = new BayesPm(fgsdag2, bayesPm);
@@ -150,7 +147,7 @@ public class HsimEvalFromData {
             //Average the squared errors for each set of fsim/hsim params across all iterations
             PRAOerrors[] fMSE = new PRAOerrors[fsimRepeat.size()];
             PRAOerrors[][] hMSE = new PRAOerrors[1][hsimRepeat.size()];
-            String[][] latexTableArray = new String[1 * hsimRepeat.size() + fsimRepeat.size()][5];
+            String[][] latexTableArray = new String[hsimRepeat.size() + fsimRepeat.size()][5];
             for (int j = 0; j < fMSE.length; j++) {
                 fMSE[j] = new PRAOerrors(fsimErrsByPars[j], "MSE for Fsim at vars=" + vars + " edgeratio=" + edgeratio
                         + " cases=" + cases + " frepeat=" + fsimRepeat.get(j) + " iterations=" + iterations);
@@ -191,9 +188,7 @@ public class HsimEvalFromData {
         double[] values = input.toArray();
         String[] vStrings = HsimUtils.formatErrorsArray(values, "%7.4e");
         output[0] = input.getName();
-        for (int i = 1; i < output.length; i++) {
-            output[i] = vStrings[i - 1];
-        }
+        System.arraycopy(vStrings, 0, output, 1, output.length - 1);
         return output;
     }
 }

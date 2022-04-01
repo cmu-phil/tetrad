@@ -47,8 +47,6 @@ public class ImpliedCovarianceDataAllWrapper extends DataWrapper {
     //==============================CONSTRUCTORS=============================//
 
     public ImpliedCovarianceDataAllWrapper(SemEstimatorWrapper wrapper, Parameters params) {
-//        int sampleSize = params.getSampleSize();
-//        boolean latentDataSaved = params.isIncludeLatents();
         SemEstimator semEstimator = wrapper.getSemEstimator();
         SemIm semIm1 = semEstimator.getEstimatedSem();
 

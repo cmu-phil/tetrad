@@ -112,15 +112,6 @@ public class LingamRunner extends AbstractAlgorithmRunner implements
             throw new IllegalArgumentException("Expecting a continuous data set.");
         }
 
-//        Lingam_old lingam = new Lingam_old();
-//        lingam.setAlternativePenalty(getParameters().getAlternativePenalty());
-//        lingam.setPruningDone(true);
-//
-//        double lingamPruningAlpha = Preferences.userRoot().getDouble("lingamPruningAlpha", 0.05);
-//
-//        lingam.setAlternativePenalty(lingamPruningAlpha);
-//        Graph graph = lingam.lingam(data).getGraph();
-
         Lingam lingam = new Lingam();
         Graph graph = lingam.search(data);
 

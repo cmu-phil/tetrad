@@ -97,17 +97,6 @@ public class LinearSimExp1 {
         function.setIntercept("G3", 0.4);
         function.setCoefficient("G3", new LaggedFactor("G3", 1), 0.9);
 
-        /*
-        function.setIntercept(0, 0.0);
-        function.setCoefficient(0, 0, 0.5);
-        function.setIntercept(1, 0.1);
-        function.setCoefficient(1, 0, 1.5);
-        function.setCoefficient(1, 1, -1.5);
-        function.setCoefficient(1, 2, +1.3);
-        function.setIntercept(2, -1.8);
-        function.setCoefficient(2, 0, 1.1);
-        */
-
         System.out.println(function);
 
         return function;

@@ -155,10 +155,6 @@ public class ProximalGradient {
                     //System.out.println("Close Rule");
 
                     //it shouldn't be possible for GrX to be null here...
-                    //if(GrX==null)
-                    //GrX = factory1D.make(gradient(Xpar).toVector()[0]);
-                    //Fx = alg.mult(YmX, Gx.assign(G, Functions.minus));
-                    //Qx = (L / 2.0) * alg.norm2(YmX);
                     LocalL = 2 * this.alg.mult(XmY, GrX.assign(GrY, Functions.minus)) / normXY;
 
                 }
@@ -224,8 +220,6 @@ public class ProximalGradient {
                 Y.assign(X.copy());
                 //Ypar = new MGMParams(Xpar);
                 Z.assign(X.copy());
-                //Fy = Fx;
-                //GrY.assign(GrX.copy());
             } else if (theta == 1) {
                 Z.assign(X.copy());
             } else {
@@ -239,8 +233,6 @@ public class ProximalGradient {
                         Fx + " reg: " + Gx + " DiffEdges: " + diffEdges + " L: " + L);
                 //System.out.println("Iter: " + iterCount + " |dx|/|x|: " + dx + " nll: " + negLogLikelihood(params) + " reg: " + regTerm(params));
             }
-            //System.out.println("t: " + t);
-            //System.out.println("Parameters: " + params);
 
             iterCount++;
             if (iterCount >= iterLimit) {

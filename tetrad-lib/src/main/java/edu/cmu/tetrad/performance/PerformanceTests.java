@@ -46,7 +46,6 @@ import java.util.*;
  */
 public class PerformanceTests {
     private PrintStream out = System.out;
-    private final boolean writeToFile = true;
 
     public void testPc(int numVars, double edgeFactor, int numCases, double alpha) {
         final int depth = -1;
@@ -90,12 +89,6 @@ public class PerformanceTests {
 
 //        ICovarianceMatrix cov = new CovarianceMatrix2(data);
         ICovarianceMatrix cov = new CovarianceMatrix(data);
-//        ICovarianceMatrix cov = new CorreqlationMatrix(new CovarianceMatrix2(data));
-//        ICovarianceMatrix cov = new CovarianceMatrix(data, false);
-//        ICovarianceMatrix cov = DataUtils.covarianceParanormalDrton(data);
-//        ICovarianceMatrix cov = new CovarianceMatrix(DataUtils.covarianceParanormalWasserman(data));
-
-//        System.out.println(cov);
 
         System.gc();
 
@@ -212,11 +205,6 @@ public class PerformanceTests {
 
 //        ICovarianceMatrix cov = new CovarianceMatrix(data);
         ICovarianceMatrix cov = new CovarianceMatrix(data);
-//        ICovarianceMatrix cov = new CorrelationMatrix(new CovarianceMatrix(data));
-//        ICovarianceMatrix cov = DataUtils.covarianceParanormalDrton(data);
-//        ICovarianceMatrix cov = new CovarianceMatrix(DataUtils.covarianceParanormalWasserman(data));
-
-//        System.out.println(cov);
 
         System.out.println("Covariance matrix done");
 
@@ -229,9 +217,6 @@ public class PerformanceTests {
         IndTestFisherZ test = new IndTestFisherZ(cov, alpha);
 
         PcStable pcStable = new PcStable(test);
-//        pcStable.setVerbose(false);
-//        pcStable.setDepth(depth);
-//        pcStable.setOut(out);
 
         Graph estCPDAG = pcStable.search();
 
@@ -239,8 +224,6 @@ public class PerformanceTests {
 
         long time4 = System.currentTimeMillis();
 
-//        out.println("# Vars = " + numVars);
-//        out.println("# Edges = " + (int) (numVars * edgeFactor));
         this.out.println("# Cases = " + numCases);
         this.out.println("alpha = " + alpha);
         this.out.println("depth = " + depth);
@@ -292,11 +275,6 @@ public class PerformanceTests {
 
 //        ICovarianceMatrix cov = new CovarianceMatrix(data);
         ICovarianceMatrix cov = new CovarianceMatrix(data);
-//        ICovarianceMatrix cov = new CorrelationMatrix(new CovarianceMatrix(data));
-//        ICovarianceMatrix cov = DataUtils.covarianceParanormalDrton(data);
-//        ICovarianceMatrix cov = new CovarianceMatrix(DataUtils.covarianceParanormalWasserman(data));
-
-//        System.out.println(cov);
 
         System.out.println("Covariance matrix done");
 
@@ -309,9 +287,6 @@ public class PerformanceTests {
         IndTestFisherZ test = new IndTestFisherZ(cov, alpha);
 
         PcStableMax pcStable = new PcStableMax(test);
-//        pcStable.setVerbose(false);
-//        pcStable.setDepth(depth);
-//        pcStable.setOut(out);
 
         Graph estCPDAG = pcStable.search();
 
@@ -319,8 +294,6 @@ public class PerformanceTests {
 
         long time4 = System.currentTimeMillis();
 
-//        out.println("# Vars = " + numVars);
-//        out.println("# Edges = " + (int) (numVars * edgeFactor));
         this.out.println("# Cases = " + numCases);
         this.out.println("alpha = " + alpha);
         this.out.println("depth = " + depth);
@@ -387,8 +360,6 @@ public class PerformanceTests {
 
         long time4 = System.currentTimeMillis();
 
-//        out.println("# Vars = " + numVars);
-//        out.println("# Edges = " + (int) (numVars * edgeFactor));
         this.out.println("# Cases = " + numCases);
         this.out.println("penalty discount = " + penaltyDiscount);
 
@@ -454,12 +425,6 @@ public class PerformanceTests {
 
 //        ICovarianceMatrix cov = new CovarianceMatrix2(data);
         ICovarianceMatrix cov = new CovarianceMatrix(data);
-//        ICovarianceMatrix cov = new CorreqlationMatrix(new CovarianceMatrix2(data));
-//        ICovarianceMatrix cov = new CovarianceMatrix(data, false);
-//        ICovarianceMatrix cov = DataUtils.covarianceParanormalDrton(data);
-//        ICovarianceMatrix cov = new CovarianceMatrix(DataUtils.covarianceParanormalWasserman(data));
-
-//        System.out.println(cov);
 
         System.gc();
 
@@ -513,8 +478,6 @@ public class PerformanceTests {
 
         System.out.println("Making graph");
 
-//        Graph graph = DataGraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor));
-//        Graph graph = DataGraphUtils.randomGraphUniform(vars, 0, (int) (numVars * edgeFactor), 5, 5, 5, false);
         Graph graph = makeDag(numVars, edgeFactor);
 
 
@@ -538,12 +501,6 @@ public class PerformanceTests {
 
 //        ICovarianceMatrix cov = new CovarianceMatrix2(data);
         ICovarianceMatrix cov = new CovarianceMatrix(data);
-//        ICovarianceMatrix cov = new CorrelationMatrix(new CovarianceMatrix2(data));
-//        ICovarianceMatrix cov = new CovarianceMatrix(data, false);
-//        ICovarianceMatrix cov = DataUtils.covarianceParanormalDrton(data);
-//        ICovarianceMatrix cov = new CovarianceMatrix(DataUtils.covarianceParanormalWasserman(data));
-
-//        System.out.println(cov);
 
         System.out.println("Covariance matrix done");
 
@@ -566,8 +523,6 @@ public class PerformanceTests {
 
         long time4 = System.currentTimeMillis();
 
-//        out.println("# Vars = " + numVars);
-//        out.println("# Edges = " + (int) (numVars * edgeFactor));
         this.out.println("# Cases = " + numCases);
 
         this.out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
@@ -628,12 +583,6 @@ public class PerformanceTests {
 
 //        ICovarianceMatrix cov = new CovarianceMatrix2(data);
         ICovarianceMatrix cov = new CovarianceMatrix(data);
-//        ICovarianceMatrix cov = new CorreqlationMatrix(new CovarianceMatrix2(data));
-//        ICovarianceMatrix cov = new CovarianceMatrix(data, false);
-//        ICovarianceMatrix cov = DataUtils.covarianceParanormalDrton(data);
-//        ICovarianceMatrix cov = new CovarianceMatrix(DataUtils.covarianceParanormalWasserman(data));
-
-//        System.out.println(cov);
 
         System.out.println("Covariance matrix done");
 
@@ -789,6 +738,7 @@ public class PerformanceTests {
         List<Double> degrees = new ArrayList<>();
         List<Long> elapsedTimes = new ArrayList<>();
 
+        //noinspection IfStatementWithIdenticalBranches
         if (continuous) {
             init(new File("fges.comparison.continuous" + numVars + "." + (int) (edgeFactor * numVars) +
                     "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
@@ -944,25 +894,7 @@ public class PerformanceTests {
 
             System.out.println(new Date());
 
-//            System.out.println("Replacing nodes");d
-//
-//            estCPDAG = GraphUtils.replaceNodes(estCPDAG, dag.getNodes());
-
-//            System.out.println("Calculating degree");
-//
-//            double degree = GraphUtils.degree(estCPDAG);
-//            degrees.add(degree);
-//
-//            out.println("Degree out output graph = " + degree);
-
             double[] comparison = new double[4];
-
-//            int adjFn = GraphUtils.countAdjErrors(CPDAG, estCPDAG);
-//            int adjFp = GraphUtils.countAdjErrors(estCPDAG, CPDAG);
-//            int trueAdj = CPDAG.getNumEdges();
-//
-//            comparison[0] = trueAdj / (double) (trueAdj + adjFp);
-//            comparison[1] = trueAdj / (double) (trueAdj + adjFn);
 
             System.out.println("Counting misclassifications.");
 
@@ -1251,13 +1183,6 @@ public class PerformanceTests {
             comparison[2] = trueArrow / (double) sumCol;
             comparison[3] = trueArrow / (double) sumRow;
 
-//            if (Double.isNaN(comparison[0]) || Double.isNaN(comparison[1]) || Double.isNaN(comparison[2]) ||
-//                    Double.isNaN(comparison[3])) {
-//                run--;
-//                numSkipped++;
-//                continue;
-//            }
-
             comparisons.add(comparison);
 
             this.out.println(GraphUtils.edgeMisclassifications(counts));
@@ -1294,11 +1219,11 @@ public class PerformanceTests {
         return b.toString();
     }
 
-    public void testGFciComparison(int numVars, double edgeFactor, int numCases, int numLatents) {
-        numVars = 1000;
-        edgeFactor = 1.0;
-        numLatents = 100;
-        numCases = 1000;
+    public void testGFciComparison() {
+        int numVars = 1000;
+        double edgeFactor = 1.0;
+        int numLatents = 100;
+        int numCases = 1000;
         final int numRuns = 5;
         final double alpha = 0.01;
         final double penaltyDiscount = 3.0;
@@ -1385,8 +1310,6 @@ public class PerformanceTests {
 
 //            FCI fci = new FCI(independenceTest);
             GFci fci = new GFci(independenceTest, score);
-//            TFci fci = new TFci(independenceTest);
-//            fci.setVerbose(false);
             fci.setMaxDegree(depth);
             fci.setMaxPathLength(maxPathLength);
 //            fci.setPossibleDsepSearchDone(possibleDsepDone);
@@ -1442,11 +1365,11 @@ public class PerformanceTests {
     }
 
     // Compares two different ways of calculating a PAG_of_the_true_DAG from a DAG, to see if they match up
-    public void testCompareDagToCPDAG(int numVars, double edgeFactor, int numLatents) {
+    public void testCompareDagToCPDAG(int numLatents) {
         System.out.println("Making list of vars");
 
-        numVars = 20;
-        edgeFactor = 2.0;
+        int numVars = 20;
+        double edgeFactor = 2.0;
         int numEdges = (int) (numVars * edgeFactor);
 
         List<Node> vars = new ArrayList<>();
@@ -1467,8 +1390,6 @@ public class PerformanceTests {
         } else {
 //            dag = DataGraphUtils.randomDagRandomFowardEdges(vars, 0, numEdges);
             dag = GraphUtils.randomGraph(vars, 0, numEdges, 100, 100, 100, false);
-//            dag = DataGraphUtils.randomDagUniform(vars, numEdges, false);
-//            dag = DataGraphUtils.randomDagUniform(vars, 0, numEdges, 100, 100, 100, false);
             List<Node> ordering = dag.getCausalOrdering();
         }
         System.out.println("DAG = " + dag);
@@ -1504,19 +1425,12 @@ public class PerformanceTests {
         topEdges.removeAll(left.getEdges());
         System.out.println("DAGTOPAG but not FCI " + topEdges);
 
-//        final List<Node> path = DataGraphUtils.getInducingPath(dag.getNode("X14"), dag.getNode("X11"), dag);
-//        System.out.println(DataGraphUtils.pathString(path, dag));
-
         System.out.println("seed = " + RandomUtil.getInstance().getSeed() + "L");
     }
 
     // Fas is calibrated; we need to calibrate other FAS versions to it.
     public void testComparePcVersions(int numVars, double edgeFactor, int numLatents) {
         System.out.println("Making list of vars");
-
-//        RandomUtil.getInstance().setSeed(1429287088750L);
-//        RandomUtil.getInstance().setSeed(1429287454751L);
-//        RandomUtil.getInstance().setSeed(1429309942146L);
 
         List<Node> vars = new ArrayList<>();
 
@@ -1567,210 +1481,9 @@ public class PerformanceTests {
         System.out.println("seed = " + RandomUtil.getInstance().getSeed() + "L");
     }
 
-//    public void testIcaOutputForDan() {
-//        int numRuns = 100;
-//
-//        for (int run = 0; run < numRuns; run++) {
-//            double alphaGFci = 0.01;
-//            double alphaPc = 0.01;
-//            int penaltyDiscount = 1;
-//            int depth = 3;
-//            int maxPathLength = 3;
-//
-//            final int numVars = 15;
-//            final double edgeFactor = 1.0;
-//            final int numCases = 1000;
-//            final int numLatents = RandomUtil.getInstance().nextInt(3) + 1;
-//
-////        writeToFile = false;
-//
-//            PrintStream out1 = System.out;
-//            PrintStream out2 = System.out;
-//            PrintStream out3 = System.out;
-//            PrintStream out4 = System.out;
-//            PrintStream out5 = System.out;
-//            PrintStream out6 = System.out;
-//            PrintStream out7 = System.out;
-//            PrintStream out8 = System.out;
-//            PrintStream out9 = System.out;
-//            PrintStream out10 = System.out;
-//            PrintStream out11 = System.out;
-//            PrintStream out12 = System.out;
-//
-//            if (writeToFile) {
-//                File dir0 = new File("fci.output");
-//                dir0.mkdirs();
-//
-//                File dir = new File(dir0, "" + (run + 1));
-//                dir.mkdir();
-//
-//                try {
-//                    out1 = new PrintStream(new File(dir, "hyperparameters.txt"));
-//                    out2 = new PrintStream(new File(dir, "variables.txt"));
-//                    out3 = new PrintStream(new File(dir, "dag.long.txt"));
-//                    out4 = new PrintStream(new File(dir, "dag.matrix.txt"));
-//                    out5 = new PrintStream(new File(dir, "coef.matrix.txt"));
-//                    out6 = new PrintStream(new File(dir, "pag.long.txt"));
-//                    out7 = new PrintStream(new File(dir, "pag.matrix.txt"));
-//                    out8 = new PrintStream(new File(dir, "CPDAG.long.txt"));
-//                    out9 = new PrintStream(new File(dir, "CPDAG.matrix.txt"));
-//                    out10 = new PrintStream(new File(dir, "data.txt"));
-//                    out11 = new PrintStream(new File(dir, "true.pag.long.txt"));
-//                    out12 = new PrintStream(new File(dir, "true.pag.matrix.txt"));
-//                } catch (FileNotFoundException e) {
-//                    e.printStackTrace();
-//                    throw new RuntimeException(e);
-//                }
-//            }
-//
-//            out1.println("Num _vars = " + numVars);
-//            out1.println("Num edges = " + (int) (numVars * edgeFactor));
-//            out1.println("Num cases = " + numCases);
-//            out1.println("Alpha for PC = " + alphaPc);
-//            out1.println("Alpha for FFCI = " + alphaGFci);
-//            out1.println("Penalty discount = " + penaltyDiscount);
-//            out1.println("Depth = " + depth);
-//            out1.println("Maximum reachable path length for dsep search and discriminating undirectedPaths = " + maxPathLength);
-//
-//            List<Node> vars = new ArrayList<Node>();
-//            for (int i = 0; i < numVars; i++) vars.add(new GraphNode("X" + (i + 1)));
-//
-////        Graph dag = DataGraphUtils.randomDagQuick2(varsWithLatents, 0, (int) (varsWithLatents.size() * edgeFactor));
-//            Graph dag = GraphUtils.randomGraph(vars, 0, (int) (vars.size() * edgeFactor), 5, 5, 5, false);
-//
-//            GraphUtils.fixLatents1(numLatents, dag);
-////        List<Node> varsWithLatents = new ArrayList<Node>();
-////
-////        Graph dag = getLatentGraph(_vars, varsWithLatents, edgeFactor, numLatents);
-//
-//
-//            out3.println(dag);
-//
-//            printDanMatrix(vars, dag, out4);
-//
-//            SemPm pm = new SemPm(dag);
-//            SemIm im = new SemIm(pm);
-//            NumberFormat nf = new DecimalFormat("0.0000");
-//
-//            for (int i = 0; i < vars.size(); i++) {
-//                for (int j = 0; j < vars.size(); j++) {
-//                    if (im.existsEdgeCoef(vars.get(j), vars.get(i))) {
-//                        double coef = im.getEdgeCoef(vars.get(j), vars.get(i));
-//                        out5.print(nf.format(coef) + "\t");
-//                    } else {
-//                        out5.print(nf.format(0) + "\t");
-//                    }
-//                }
-//
-//                out5.println();
-//            }
-//
-//            out5.println();
-//
-//            out2.println(vars);
-//
-//            List<Node> _vars = new ArrayList<Node>();
-//
-//            for (Node node : vars) {
-//                if (node.getNodeType() == NodeType.MEASURED) {
-//                    _vars.add(node);
-//                }
-//            }
-//
-//            out2.println(_vars);
-//
-//            DataSet fullData = im.simulateData(numCases, false);
-//
-//            DataSet data = DataUtils.restrictToMeasured(fullData);
-//
-//            ICovarianceMatrix cov = new CovarianceMatrix(data);
-//
-//            final IndTestFisherZ independenceTestGFci = new IndTestFisherZ(cov, alphaGFci);
-//
-//            out6.println("FCI.FGES.PAG_of_the_true_DAG");
-//
-//            GFci GFci = new GFci(independenceTestGFci);
-//            GFci.setVerbose(false);
-//            GFci.setCorrErrorsAlpha(penaltyDiscount);
-//            GFci.setMaxDegree(depth);
-//            GFci.setMaxPathLength(maxPathLength);
-//            GFci.setPossibleDsepSearchDone(true);
-//            GFci.setCompleteRuleSetUsed(true);
-//
-//            Graph pag = GFci.search();
-//
-//            pag = GraphUtils.replaceNodes(pag, _vars);
-//
-//            out6.println(pag);
-//
-//            printDanMatrix(_vars, pag, out7);
-//
-//            out8.println("CPDAG OVER MEASURED VARIABLES");
-//
-//            final IndTestFisherZ independencePc = new IndTestFisherZ(cov, alphaPc);
-//
-//            PC pc = new PC(independencePc);
-//            pc.setVerbose(false);
-//            pc.setMaxDegree(depth);
-//
-//            Graph CPDAG = pc.search();
-//
-//            CPDAG = GraphUtils.replaceNodes(CPDAG, _vars);
-//
-//            out8.println(CPDAG);
-//
-//            printDanMatrix(_vars, CPDAG, out9);
-//
-//            out10.println(data);
-//
-//            out11.println("True PAG_of_the_true_DAG");
-//            final Graph truePag = new DagToPag(dag).convert();
-//            out11.println(truePag);
-//            printDanMatrix(_vars, truePag, out12);
-//
-//            out1.close();
-//            out2.close();
-//            out3.close();
-//            out4.close();
-//            out5.close();
-//            out6.close();
-//            out7.close();
-//            out8.close();
-//            out9.close();
-//            out10.close();
-//            out11.close();
-//            out12.close();
-//        }
-//    }
-
-//    private void printDanMatrix(List<Node> vars, Graph CPDAG, PrintStream out) {
-//        for (int i = 0; i < vars.size(); i++) {
-//            for (int j = 0; j < vars.size(); j++) {
-//                Edge edge = CPDAG.getEdge(vars.get(i), vars.get(j));
-//
-//                if (edge == null) {
-//                    out.print(0 + "\t");
-//                } else {
-//                    Endpoint ej = edge.getProximalEndpoint(vars.get(j));
-//
-//                    if (ej == Endpoint.TAIL) {
-//                        out.print(3 + "\t");
-//                    } else if (ej == Endpoint.ARROW) {
-//                        out.print(2 + "\t");
-//                    } else if (ej == Endpoint.CIRCLE) {
-//                        out.print(1 + "\t");
-//                    }
-//                }
-//            }
-//
-//            out.println();
-//        }
-//
-//        out.println();
-//    }
-
     private void init(File file, String x) {
-        if (this.writeToFile) {
+        boolean writeToFile = true;
+        if (writeToFile) {
             try {
                 File dir = new File("performance");
                 dir.mkdir();
@@ -2253,9 +1966,6 @@ public class PerformanceTests {
 
         return table2.toString();
 
-        //        println("\n" + name);
-        //        println(table2.toString());
-        //        println("");
     }
 
 
@@ -2270,10 +1980,8 @@ public class PerformanceTests {
     private Graph getLatentGraph(List<Node> vars, double edgeFactor, int numLatents) {
         int numEdges = (int) (vars.size() * edgeFactor);
 
-        Graph dag = GraphUtils.randomGraph(vars,
+        return GraphUtils.randomGraph(vars,
                 numLatents, numEdges, 3, 3, 3, false);
-
-        return dag;
     }
 
     @Test
@@ -2315,16 +2023,13 @@ public class PerformanceTests {
 
 
         if (args.length == 3) {
-            switch (args[0]) {
-                case "GFCI": {
-                    int numVars = Integer.parseInt(args[1]);
-                    double edgeFactor = Double.parseDouble(args[2]);
+            if ("GFCI".equals(args[0])) {
+                int numVars = Integer.parseInt(args[1]);
+                double edgeFactor = Double.parseDouble(args[2]);
 //                    final int numCases = Integer.parseInt(args[3]);
-                    performanceTests.testGfci(numVars, edgeFactor);
-                    break;
-                }
-                default:
-                    throw new IllegalArgumentException("Not a configuration!");
+                performanceTests.testGfci(numVars, edgeFactor);
+            } else {
+                throw new IllegalArgumentException("Not a configuration!");
             }
         }
 //        else if (args.length == 4) {
@@ -2406,15 +2111,8 @@ public class PerformanceTests {
                     throw new IllegalArgumentException("Not a configuration.");
             }
         } else if (args.length == 6) {
-            switch (args[0]) {
-                default:
-                    throw new IllegalArgumentException("Not a configuration.");
-            }
+            throw new IllegalArgumentException("Not a configuration.");
         }
-//        else {
-//            new PerformanceTests().printStuffForKlea();
-//            throw new IllegalArgumentException("Not a configuration!");
-//        }
 
         System.out.println("Finish");
 
@@ -2423,20 +2121,6 @@ public class PerformanceTests {
 
 //        performanceTests.testPcStable(20000, 1, 1000, .00001);
         performanceTests.testPcStableMax(5000, 1, 1000, .0001);
-//        performanceTests.testPcStableMax(5000, 5, 1000, .0001);
-//        performanceTests.testFges(5000, 5, 1000, 4);
-
-//        performanceTests.testPcStable(10000, 1, 1000, .0001);
-//        performanceTests.testPcStableMax(10000, 1, 1000, .0001);
-//
-//        performanceTests.testPcStable(10000, 1, 1000, .001);
-//        performanceTests.testPcStableMax(10000, 1, 1000, .001);
-//
-//        performanceTests.testPcStable(10000, 1, 1000, .01);
-//        performanceTests.testPcStableMax(10000, 1, 1000, .01);
-//
-//        performanceTests.testPcStable(10000, 1, 1000, .05);
-//        performanceTests.testPcStableMax(10000, 1, 1000, .05);
 
     }
 }

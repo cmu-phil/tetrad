@@ -64,81 +64,7 @@ public class BayesImWrapperObs implements SessionModel, Memorable {
     // If from a regular BayesIm, the new probability values are
     // the marginalized values of the allowUnfaithfulness probability values in
     // the old BayesIm, stored in a JPD
-    //
-//    public BayesImWrapperObs(BayesPmWrapper bayesPmWrapper,
-//							 BayesImWrapperObs oldBayesImwrapper,
-//							 Parameters params) {
-//        if (bayesPmWrapper == null) {
-//            throw new NullPointerException("BayesPmWrapper must not be null.");
-//        }
-//
-//        if (params == null) {
-//            throw new NullPointerException("Parameters must not be null.");
-//        }
-//
-//        BayesPm bayesPm = new BayesPm(bayesPmWrapper.getBayesPm());
-//        BayesIm oldBayesIm = oldBayesImwrapper.getBayesIm();
-//
-//        if (params.getString("initializationMode", "manualRetain").equals("manualRetain")) {
-//            this.bayesIm = new MlBayesImObs(bayesPm, oldBayesIm, MlBayesIm.MANUAL);
-//        } else if (params.getString("initializationMode", "manualRetain").equals("randomRetain")) {
-//            this.bayesIm = new MlBayesImObs(bayesPm, oldBayesIm, MlBayesIm.RANDOM);
-//        } else if (params.getString("initializationMode", "manualRetain").equals("randomOverwrite")) {
-//            this.bayesIm = new MlBayesImObs(bayesPm, MlBayesIm.RANDOM);
-//        }
-//
-//        log(bayesIm);
-//    }
 
-    /*
-    public BayesImWrapperObs(BayesEstimatorWrapper wrapper) {
-        if (wrapper == null) {
-            throw new NullPointerException();
-        }
-        this.bayesIm = wrapper.getEstimatedBayesIm();
-        log(bayesIm);
-    }
-
-    public BayesImWrapperObs(DirichletEstimatorWrapper wrapper) {
-        if (wrapper == null) {
-            throw new NullPointerException();
-        }
-        this.bayesIm = wrapper.getEstimatedBayesIm();
-        log(bayesIm);
-    }
-
-    public BayesImWrapperObs(DirichletBayesImWrapper wrapper) {
-        if (wrapper == null) {
-            throw new NullPointerException();
-        }
-        this.bayesIm = new MlBayesIm(wrapper.getDirichletBayesIm());
-        log(bayesIm);
-    }
-
-    public BayesImWrapperObs(RowSummingExactWrapper wrapper) {
-        if (wrapper == null) {
-            throw new NullPointerException();
-        }
-        this.bayesIm = wrapper.getBayesUpdater().getUpdatedBayesIm();
-        log(bayesIm);
-    }
-
-    public BayesImWrapperObs(CptInvariantUpdaterWrapper wrapper) {
-        if (wrapper == null) {
-            throw new NullPointerException();
-        }
-        this.bayesIm = wrapper.getBayesUpdater().getUpdatedBayesIm();
-        log(bayesIm);
-    }
-
-    public BayesImWrapperObs(ApproximateUpdaterWrapper wrapper) {
-        if (wrapper == null) {
-            throw new NullPointerException();
-        }
-        this.bayesIm = wrapper.getBayesUpdater().getUpdatedBayesIm();
-        log(bayesIm);
-    }
-     */
     public BayesImWrapperObs(BayesPmWrapper bayesPmWrapper, Parameters params) {
         if (bayesPmWrapper == null) {
             throw new NullPointerException("BayesPmWrapper must not be null.");
@@ -160,37 +86,6 @@ public class BayesImWrapperObs implements SessionModel, Memorable {
 
         log(this.bayesIm);
     }
-
-//	// from regular allowUnfaithfulness BayesIm
-//	// marginalize the probability values from the old BayesIm
-//    public BayesImWrapperObs(BayesImWrapper bayesImWrapper) {
-//        if (bayesImWrapper == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        this.bayesIm = new MlBayesImObs(bayesImWrapper.getBayesIm());
-//
-//		log(bayesIm);
-//    }
-//	// from BayesIm with only observed variables
-//    public BayesImWrapperObs(BayesImWrapperObs bayesImWrapperObs) {
-//        if (bayesImWrapperObs == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        this.bayesIm = new MlBayesImObs(bayesImWrapperObs.getBayesIm());
-//
-//        log(bayesIm);
-//    }
-//	// brand new BayesIm
-//    public BayesImWrapperObs() {
-//        Dag graph = new Dag();
-//        BayesPm pm = new BayesPm(graph);
-//
-//        this.bayesIm = new MlBayesImObs(pm);
-//
-//        log(bayesIm);
-//    }
 
     /**
      * Generates a simple exemplar of this class to test serialization.

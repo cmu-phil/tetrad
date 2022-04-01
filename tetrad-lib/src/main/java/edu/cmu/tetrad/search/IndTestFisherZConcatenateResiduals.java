@@ -157,9 +157,6 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
 
         if (Double.isNaN(fisherZ)) {
             return false;
-//            throw new IllegalArgumentException("The Fisher's Z " +
-//                    "score for independence fact " + x + " _||_ " + y + " | " +
-//                    z + " is undefined. r = " + r);
         }
 
         double pvalue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, Math.abs(fisherZ)));

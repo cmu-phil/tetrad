@@ -73,9 +73,7 @@ public class CovNoise implements CovarianceFunction {
 
         double s2 = Math.exp(2 * loghyper.get(0, 0));                             // noise variance
 
-        Matrix K = Matrix.identity(X.getRowDimension(), X.getRowDimension()).times(s2);
-
-        return K;
+        return Matrix.identity(X.getRowDimension(), X.getRowDimension()).times(s2);
 
     }
 
@@ -121,9 +119,8 @@ public class CovNoise implements CovarianceFunction {
 
         //noise parameter
         double s2 = Math.exp(2 * loghyper.get(0, 0));
-        Matrix A = Matrix.identity(X.getRowDimension(), X.getRowDimension()).times(2 * s2);
 
-        return A;
+        return Matrix.identity(X.getRowDimension(), X.getRowDimension()).times(2 * s2);
     }
 }
 

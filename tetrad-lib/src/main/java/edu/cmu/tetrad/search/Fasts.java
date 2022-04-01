@@ -595,17 +595,8 @@ public class Fasts implements IFas {
 
                     int cond_diff = indx_tier - ind_temptier;
                     int condAB_tier = this.knowledge.isInWhichTier(x1) - cond_diff;
-//                    System.out.println("tempNode = " + tempNode);
-//                    System.out.println("ind_temptier = " + ind_temptier);
-//                    System.out.println("indx_tier = " + indx_tier);
-//                    System.out.println("cond_diff = " + cond_diff);
-//                    System.out.println("condAB_tier = " + condAB_tier);
-//                    System.out.println("max_tier = " + max_tier);
-//                    System.out.println("ntiers = " + ntiers);
                     if (condAB_tier < 0 || condAB_tier > (ntiers - 1)
                             || this.knowledge.getTier(condAB_tier).size() == 1) { // added condition for time tier 05.29.2016
-//                        List<Node> empty = Collections.emptyList();
-//                        getSepsets2().set(x1, y1, empty); // added 05.01.2016
                         System.out.println("Warning: For nodes " + x1 + "," + y1 + " the conditioning variable is outside "
                                 + "of window, so not added to SepSet");
                         continue;
@@ -619,8 +610,6 @@ public class Fasts implements IFas {
                 System.out.println("done");
                 getSepsets().set(x1, y1, condSetAB);
             } else {
-                //System.out.println("############## WARNING (removeSimilarPairs): did not catch x,y pair " + x + ", " + y);
-                //System.out.println();
                 List tmp_tier1 = this.knowledge.getTier(i);
 //                Collections.sort(tmp_tier1);
                 List tmp_tier2 = this.knowledge.getTier(i + tier_diff);
@@ -650,17 +639,8 @@ public class Fasts implements IFas {
 
                     int cond_diff = indx_tier - ind_temptier;
                     int condAB_tier = this.knowledge.isInWhichTier(x1) - cond_diff;
-//                    System.out.println("tempNode = " + tempNode);
-//                    System.out.println("ind_temptier = " + ind_temptier);
-//                    System.out.println("indx_tier = " + indx_tier);
-//                    System.out.println("cond_diff = " + cond_diff);
-//                    System.out.println("condAB_tier = " + condAB_tier);
-//                    System.out.println("max_tier = " + max_tier);
-//                    System.out.println("ntiers = " + ntiers);
                     if (condAB_tier < 0 || condAB_tier > (ntiers - 1)
                             || this.knowledge.getTier(condAB_tier).size() == 1) { // added condition for time tier 05.29.2016
-//                        List<Node> empty = Collections.emptyList();
-//                        getSepsets2().set(x1, y1, empty); // added 05.01.2016
                         System.out.println("Warning: For nodes " + x1 + "," + y1 + " the conditioning variable is outside "
                                 + "of window, so not added to SepSet");
                         continue;
@@ -732,32 +712,22 @@ public class Fasts implements IFas {
 //                Collections.sort(tmp_tier2);
                 A = (String) tmp_tier1.get(indx_comp);
                 B = (String) tmp_tier2.get(indy_comp);
-                if (A.equals(B)) continue;
-                if (A.equals(tier_x.get(indx_comp)) && B.equals(tier_y.get(indy_comp))) continue;
-                if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;
-                x1 = test.getVariable(A);
-                y1 = test.getVariable(B);
-                System.out.println("Adding pair to simList = " + x1 + " and " + y1);
-                simListX.add(x1);
-                simListY.add(y1);
             } else {
-                //System.out.println("############## WARNING (returnSimilarPairs): did not catch x,y pair " + x + ", " + y);
-                //System.out.println();
                 List tmp_tier1 = this.knowledge.getTier(i);
 //                Collections.sort(tmp_tier1);
                 List tmp_tier2 = this.knowledge.getTier(i + tier_diff);
 //                Collections.sort(tmp_tier2);
                 A = (String) tmp_tier1.get(indx_comp);
                 B = (String) tmp_tier2.get(indy_comp);
-                if (A.equals(B)) continue;
-                if (A.equals(tier_x.get(indx_comp)) && B.equals(tier_y.get(indy_comp))) continue;
-                if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;
-                x1 = test.getVariable(A);
-                y1 = test.getVariable(B);
-                System.out.println("Adding pair to simList = " + x1 + " and " + y1);
-                simListX.add(x1);
-                simListY.add(y1);
             }
+            if (A.equals(B)) continue;
+            if (A.equals(tier_x.get(indx_comp)) && B.equals(tier_y.get(indy_comp))) continue;
+            if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;
+            x1 = test.getVariable(A);
+            y1 = test.getVariable(B);
+            System.out.println("Adding pair to simList = " + x1 + " and " + y1);
+            simListX.add(x1);
+            simListY.add(y1);
         }
 
         List<List<Node>> pairList = new ArrayList<>();

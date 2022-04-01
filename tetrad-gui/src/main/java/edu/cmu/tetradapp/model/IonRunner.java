@@ -246,20 +246,14 @@ public class IonRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<>();
-//        names.add("Definite ColliderDiscovery");
-//        names.add("Definite Noncolliders");
-        return names;
+        return new ArrayList<>();
     }
 
     /**
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<>();
-//        triplesList.add(DataGraphUtils.getDefiniteCollidersFromGraph(node, graph));
-//        triplesList.add(DataGraphUtils.getDefiniteNoncollidersFromGraph(node, graph));
-        return triplesList;
+        return new ArrayList<>();
     }
 
     public boolean supportsKnowledge() {

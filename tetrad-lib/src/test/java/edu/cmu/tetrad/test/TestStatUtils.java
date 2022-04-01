@@ -672,8 +672,6 @@ public class TestStatUtils {
 
             if (holds) count++;
 
-//            System.out.println(
-            //x);// + " v1 = " + v1  + " v2 = " + v2  + " m1 = " + m1  + " m2 = " + m2);
         }
 
         System.out.println(count);

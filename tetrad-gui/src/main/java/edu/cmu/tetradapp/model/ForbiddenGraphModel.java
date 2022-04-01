@@ -43,17 +43,6 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
 
     static final long serialVersionUID = 23L;
 
-    /**
-     * @serial @deprecated
-     */
-    private final IKnowledge knowledge;
-
-    /**
-     * @serial @deprecated
-     */
-//    private List<Knowledge> knowledgeList;
-    private List<Node> variables = new ArrayList<>();
-    private List<String> variableNames = new ArrayList<>();
     private Graph resultGraph = new EdgeListGraph();
 
     public ForbiddenGraphModel(BayesPmWrapper wrapper, Parameters params) {
@@ -138,21 +127,25 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
             throw new NullPointerException();
         }
 
-        SortedSet<Node> variableNodes = new TreeSet<>();
-        SortedSet<String> variableNames = new TreeSet<>();
+        SortedSet<Node> variableNodes = new TreeSet<>(input.getVariables());
+        SortedSet<String> variableNames = new TreeSet<>(input.getVariableNames());
 
-        variableNodes.addAll(input.getVariables());
-        variableNames.addAll(input.getVariableNames());
-
-        this.variables = new ArrayList<>(variableNodes);
-        this.variableNames = new ArrayList<>(variableNames);
+        /**
+         * @serial @deprecated
+         */
+        //    private List<Knowledge> knowledgeList;
+        List<Node> variables = new ArrayList<>(variableNodes);
+        List<String> variableNames1 = new ArrayList<>(variableNames);
 
         this.resultGraph = input.getResultGraph();
 
-        this.knowledge = new Knowledge2();
+        /**
+         * @serial @deprecated
+         */
+        IKnowledge knowledge = new Knowledge2();
 
         for (Node v : input.getVariables()) {
-            this.knowledge.addVariable(v.getName());
+            knowledge.addVariable(v.getName());
         }
 
         createKnowledge(params);

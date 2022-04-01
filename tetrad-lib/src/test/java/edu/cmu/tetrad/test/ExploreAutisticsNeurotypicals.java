@@ -219,20 +219,6 @@ public final class ExploreAutisticsNeurotypicals {
                 List<List<Node>> treks = GraphUtils.treks(graph, fusiformLeft, fusiformRight, 7);
 
                 for (List<Node> trek : treks) {
-//                    Node n1 = trek.get(1);
-//                    Node n2 = trek.get(trek.size() - 2);
-//
-//                    int col1 = nodes.indexOf(n1);
-//                    int col2 = nodes.indexOf(n2);
-//
-//                    dataSet.setDouble(row, col1, 1);
-//                    dataSet.setDouble(row, col2, 1);
-
-//                    Node source = getTrekSource(trek, graph);
-//
-//                    int col = nodes.indexOf(source);
-////                    dataSet.setDouble(row, col, dataSet.getInt(row, col) + 1);
-//                    dataSet.setDouble(row, col, 1);
 
 
                     for (int i = 1; i < trek.size() - 1; i++) {

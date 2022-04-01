@@ -50,11 +50,6 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
 
                 System.out.println("Loading graph from " + file.getAbsolutePath());
                 this.graph = readGraph(file);
-//            this.graph = GraphUtils.loadGraphTxt(file);
-
-//            if (!graph.isAdjacentTo(graph.getNode("X3"), graph.getNode("X4"))) {
-//                graph.addUndirectedEdge(graph.getNode("X3"), graph.getNode("X4"));
-//            }
 
                 GraphUtils.circleLayout(this.graph, 225, 200, 150);
 

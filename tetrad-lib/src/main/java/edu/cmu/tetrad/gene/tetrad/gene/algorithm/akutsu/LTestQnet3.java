@@ -41,11 +41,6 @@ public class LTestQnet3 {
         final int nrecords = 5;
         final int nchips = 4;
 
-        //        double[] chisq = {3.84, 5.99, 7.81, 9.49, 11.1, 12.6, 14.1, 15.5,
-        //                          16.9, 18.3, 19.7, 21.0, 22.4, 23.7, 25.0, 26.3,
-        //                          27.6, 28.9, 30.1, 31.4, 32.7, 33.9, 35.2, 36.4,
-        //                          37.7, 38.9, 40.1, 41.3, 42.6, 43.8};
-
         double[][] cases = new double[4][2004];
 
         try {
@@ -63,8 +58,6 @@ public class LTestQnet3 {
                 if (k == 0) {
                     continue;
                 }
-                //                int idish = Integer.parseInt(st.nextToken("\t"));
-                //                int ichip = Integer.parseInt(st.nextToken("\t"));
                 for (int j = 0; j < ntimes * ngenes; j++) {
                     cases[k - 1][j] = Double.parseDouble(st.nextToken("\t"));
                 }
@@ -73,8 +66,6 @@ public class LTestQnet3 {
                 return;
             }
         }
-        //System.out.println("Read " + cases[0][0] + " " + cases[1][0] + " " +
-        //                  cases[2][0] + " " + cases[3][0]);
 
         double[][] gene = new double[ntimes][ngenes];
         double[][] deriv = new double[ntimes][ngenes];
@@ -94,11 +85,6 @@ public class LTestQnet3 {
                 }
 
                 gene[j][g] = sum[g];
-                //if(sum[g] > 0.0) gene[j][g] = +1;
-                //if(sum[g] > chisq[nchips - 1]) gene[j][g] = +1;
-                //  else gene[j][g] = -1;
-
-                //System.out.print(gene[j][g] + " ");
 
 
                 if (j != 0) {
@@ -107,14 +93,6 @@ public class LTestQnet3 {
                 }
 
             }
-            /*
-            if(j != 0) {
-              System.out.println();
-              for(int k = 0; k < ngenes; k++)
-                System.out.print(deriv[j][k] + " ");
-              System.out.println();
-            }
-            */
         }
 
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
@@ -150,15 +128,6 @@ public class LTestQnet3 {
             }
         }
 
-        /*
-        double[] p = new double[ngenes];
-        for(int g = 0; g < ngenes; g++) {
-          for(int j = 0; j < ntimes; j++)
-            if(gene[j][g] > 0) p[g]++;
-          p[g] /= ntimes;
-          //System.out.println(" gene " + g + " p = " + p[g]);
-        }
-        */
     }
 
 }

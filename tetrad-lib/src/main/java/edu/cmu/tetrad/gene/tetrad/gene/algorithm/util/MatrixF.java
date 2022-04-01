@@ -21,15 +21,14 @@
 
 package edu.cmu.tetrad.gene.tetrad.gene.algorithm.util;
 
+import java.io.IOException;
+
 /**
  * Implements a Matrix of elements of type <code>float</code>
  *
  * @author <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul Saavedra</a>
  * (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
  */
-
-import java.io.IOException;
-
 public class MatrixF extends BasicMatrix {
     protected float[][] A;
 

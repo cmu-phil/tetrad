@@ -292,9 +292,6 @@ public class TimeoutComparison {
 
                 if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm) {
                     ExternalAlgorithm external = (ExternalAlgorithm) algorithmWrapper.getAlgorithm();
-//                    external.setSimulation(simulationWrapper.getSimulation());
-//                    external.setPath(dirs.get(simulationWrappers.indexOf(simulationWrapper)));
-//                    external.setPath(resultsPath);
                     external.setSimIndex(simulationWrappers.indexOf(external.getSimulation()));
                 }
 
@@ -319,13 +316,7 @@ public class TimeoutComparison {
         }
 
         this.out.println();
-//        out.println("Parameters:");
-////        out.println(parameters);
-//        out.println();
 
-//        printParameters(new ArrayList<>(parameters.getParametersNames()), parameters, out);
-//
-//        out.println();
         if (allStats != null) {
             int numTables = allStats.length;
             int numStats = allStats[0][0].length - 1;
@@ -367,9 +358,6 @@ public class TimeoutComparison {
 
                 printParameters(simulation.getParameters(), simulation.getSimulationSpecificParameters(), this.out);
 
-//                    for (String param : simulation.getParameters()) {
-//                        out.println(param + " = " + simulation.getValue(param));
-//                    }
                 this.out.println();
             }
 //            }
@@ -467,16 +455,7 @@ public class TimeoutComparison {
         final int i = 0;
 
         dir = new File(dir0, "save");
-//
-//        do {
-//            dir = new File(dir0, "Simulation" + (++i));
-//        } while (dir.exists());
 
-//        if (dir.exists()) {
-//            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-//                    "A file already exists named 'Simulation' in directory '" + dir0.getPath() + "'; \n" +
-//                            "please remove it first or move it out of the way.");
-//        }
         deleteFilesThenDirectory(dir);
 
         try {
@@ -558,21 +537,15 @@ public class TimeoutComparison {
 
             Parameters allParams = new Parameters();
 
-            List<Class> algorithms = new ArrayList<>();
-            List<Class> statistics = new ArrayList<>();
-            List<Class> independenceWrappers = new ArrayList<>();
-            List<Class> scoreWrappers = new ArrayList<>();
-            List<Class> simulations = new ArrayList<>();
+            List<Class> algorithms = new ArrayList<>(getClasses(Algorithm.class));
 
-            algorithms.addAll(getClasses(Algorithm.class));
+            List<Class> statistics = new ArrayList<>(getClasses(Statistic.class));
 
-            statistics.addAll(getClasses(Statistic.class));
+            List<Class> independenceWrappers = new ArrayList<>(getClasses(IndependenceWrapper.class));
 
-            independenceWrappers.addAll(getClasses(IndependenceWrapper.class));
+            List<Class> scoreWrappers = new ArrayList<>(getClasses(ScoreWrapper.class));
 
-            scoreWrappers.addAll(getClasses(ScoreWrapper.class));
-
-            simulations.addAll(getClasses(Simulation.class));
+            List<Class> simulations = new ArrayList<>(getClasses(Simulation.class));
 
             out.println("Available Algorithms:");
             out.println();
@@ -742,39 +715,6 @@ public class TimeoutComparison {
         }
     }
 
-    //    private void printParameters(HasParameters hasParameters, PrintStream out, Parameters allParams) {
-//        List<String> paramDescriptions = new ArrayList<>(hasParameters.getParameters());
-//        if (paramDescriptions.isEmpty()) return;
-//        out.print("\tParameters: ");
-//
-//        for (int i = 0; i < paramDescriptions.size(); i++) {
-//            out.print(paramDescriptions.get(i));
-//            out.print(" = ");
-//            Object[] values = allParams.getValues(paramDescriptions.get(i));
-//            if (values == null || values.length == 0) {
-//                out.print("no default");
-//
-//                if (i < paramDescriptions.size() - 1) {
-//                    out.print("; ");
-//                    if ((i + 1) % 4 == 0) out.print("\n\t\t");
-//                }
-//
-//                continue;
-//            }
-//
-//            for (int j = 0; j < values.length; j++) {
-//                out.print(values[j]);
-//                if (j < values.length - 1) out.print(",");
-//            }
-//
-//            if (i < paramDescriptions.size() - 1) {
-//                out.print("; ");
-//                if ((i + 1) % 4 == 0) out.print("\n\t\t");
-//            }
-//        }
-//
-//        out.println();
-//    }
     private List<Class> getClasses(Class type) {
         Reflections reflections = new Reflections();
         Set<Class> allClasses = reflections.getSubTypesOf(type);
@@ -1631,7 +1571,7 @@ public class TimeoutComparison {
         }
     }
 
-    private class AlgorithmWrapper implements Algorithm {
+    private static class AlgorithmWrapper implements Algorithm {
 
         static final long serialVersionUID = 23L;
         private final Algorithm algorithm;
@@ -1745,7 +1685,7 @@ public class TimeoutComparison {
         }
     }
 
-    private class SimulationWrapper implements Simulation {
+    private static class SimulationWrapper implements Simulation {
 
         static final long serialVersionUID = 23L;
         private final Simulation simulation;

@@ -120,28 +120,10 @@ public final class TimeSeriesLagSearch implements GraphSearch {
         this.aggressivelyPreventCycles = aggressivelyPreventCycles;
     }
 
-//    /**
-//     * Sets the maximum number of variables conditioned on in any conditional
-//     * independence test. If set to -1, the value of 1000 will be used. May
-//     * not be set to Integer.MAX_VALUE, due to a Java bug on multi-core systems.
-//     */
-//    public final void setMaxIndegree(int depth) {
-//        if (depth < -1) {
-//            throw new IllegalArgumentException("Depth must be -1 or >= 0: "  + depth);
-//        }
-//
-//        if (depth == Integer.MAX_VALUE) {
-//            throw new IllegalArgumentException("Depth must not be Integer.MAX_VALUE, " +
-//                    "due to a known bug.");
-//        }
-//
-//        this.depth = depth;
-//    }
-
     /**
      * @return the elapsed time of search in milliseconds, after <code>search()</code> has been run.
      */
-    public final long getElapsedTime() {
+    public long getElapsedTime() {
         return this.elapsedTime;
     }
 
@@ -211,7 +193,7 @@ public final class TimeSeriesLagSearch implements GraphSearch {
      * Runs PC starting with a fully connected graph over all of the variables in the domain of the independence test.
      * See PC for caveats. The number of possible cycles and bidirected edges is far less with CPC than with PC.
      */
-    public final Graph search() {
+    public Graph search() {
         return search(this.independenceTest.getVariables());
     }
 
@@ -251,12 +233,6 @@ public final class TimeSeriesLagSearch implements GraphSearch {
 
 //        SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
         orientUnshieldedTriples(this.knowledge, getIndependenceTest(), 3);
-//        MeekRules meekRules = new MeekRules();
-//
-//        meekRules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
-//        meekRules.setKnowledge(knowledge);
-//
-//        meekRules.orientImplied(graph);
 
         TetradLogger.getInstance().log("graph", "\nReturning this graph: " + this.graph);
 
@@ -277,7 +253,7 @@ public final class TimeSeriesLagSearch implements GraphSearch {
      * Orients the given graph using CPC orientation with the conditional independence test provided in the
      * constructor.
      */
-    public final Graph orientationForGraph(Dag trueGraph) {
+    public Graph orientationForGraph(Dag trueGraph) {
         Graph graph = new EdgeListGraph(this.independenceTest.getVariables());
 
         for (Edge edge : trueGraph.getEdges()) {

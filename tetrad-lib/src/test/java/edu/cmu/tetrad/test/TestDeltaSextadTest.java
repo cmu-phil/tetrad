@@ -226,13 +226,6 @@ public class TestDeltaSextadTest {
 
         Collections.shuffle(indices);
 
-//        Node x1 = data.getVariable(indices.get(0));
-//        Node x2 = data.getVariable(indices.get(1));
-//        Node x3 = data.getVariable(indices.get(2));
-//        Node x4 = data.getVariable(indices.get(3));
-//        Node x5 = data.getVariable(indices.get(4));
-//        Node x6 = data.getVariable(indices.get(5));
-
         int x1 = indices.get(0);
         int x2 = indices.get(1);
         int x3 = indices.get(2);

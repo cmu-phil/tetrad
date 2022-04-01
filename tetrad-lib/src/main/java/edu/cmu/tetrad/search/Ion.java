@@ -68,7 +68,6 @@ public class Ion {
      * separations and associations found in the input PAGs
      */
     private Set<IonIndependenceFacts> separations;
-    private Set<IonIndependenceFacts> associations;
 
     /**
      * tracks changes for final orientations orientation methods
@@ -94,10 +93,7 @@ public class Ion {
      * @param pags The PAGs to be integrated
      */
     public Ion(List<Graph> pags) {
-        for (Graph pag : pags) {
-            this.input.add(pag);
-
-        }
+        this.input.addAll(pags);
         for (Graph pag : this.input) {
             for (Node node : pag.getNodes()) {
                 if (!this.variables.contains(node.getName())) {
@@ -174,7 +170,7 @@ public class Ion {
         // get d-separations and d-connections
         List<Set<IonIndependenceFacts>> sepAndAssoc = findSepAndAssoc(graph);
         this.separations = sepAndAssoc.get(0);
-        this.associations = sepAndAssoc.get(1);
+        Set<IonIndependenceFacts> associations = sepAndAssoc.get(1);
         Map<Collection<Node>, List<PossibleDConnectingPath>> paths;
         Queue<Graph> step3Pags = new LinkedList<>();
         Set<Graph> reject = new HashSet<>();
@@ -380,7 +376,7 @@ public class Ion {
                             continue;
                         }
                         // reject if null, predicts false independencies or has cycle
-                        if (predictsFalseIndependence(this.associations, changed)
+                        if (predictsFalseIndependence(associations, changed)
                                 || changed.existsDirectedCycle()) {
                             reject.add(changed);
                         }
@@ -419,7 +415,7 @@ public class Ion {
                 necEdges.put(edge, false);
             }
             // look for unconditional associations
-            for (IonIndependenceFacts fact : this.associations) {
+            for (IonIndependenceFacts fact : associations) {
                 for (List<Node> nodes : fact.getZ()) {
                     if (nodes.isEmpty()) {
                         List<List<Node>> treks = Ion.treks(pag, fact.x, fact.y);
@@ -452,7 +448,7 @@ public class Ion {
             for (Graph newPag : possRemovePags) {
                 elimTreks = false;
                 // looks for unconditional associations
-                for (IonIndependenceFacts fact : this.associations) {
+                for (IonIndependenceFacts fact : associations) {
                     for (List<Node> nodes : fact.getZ()) {
                         if (nodes.isEmpty()) {
                             if (Ion.treks(newPag, fact.x, fact.y).isEmpty()) {
@@ -499,7 +495,7 @@ public class Ion {
                 doFinalOrientation(newGraph);
             }
             for (Graph outputPag : this.finalResult) {
-                if (!predictsFalseIndependence(this.associations, outputPag)) {
+                if (!predictsFalseIndependence(associations, outputPag)) {
                     Set<Triple> underlineTriples = new HashSet<>(outputPag.getUnderLines());
                     for (Triple triple : underlineTriples) {
                         outputPag.removeUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
@@ -1157,9 +1153,8 @@ public class Ion {
             return false;
         }
 
-        if (graph.getEndpoint(y, x) == Endpoint.ARROW &&
-                graph.getEndpoint(x, y) == Endpoint.CIRCLE) {
-            return true;
+        if (graph.getEndpoint(y, x) == Endpoint.ARROW) {
+            graph.getEndpoint(x, y);
         }
         return true;
     }
@@ -1431,7 +1426,7 @@ public class Ion {
      * sets to be associated with a single pair of nodes, which is necessary for the proper ordering of iterations in
      * the ION search.
      */
-    private final class IonIndependenceFacts {
+    private static final class IonIndependenceFacts {
         private final Node x;
         private final Node y;
         private final Collection<List<Node>> z;
@@ -1449,15 +1444,15 @@ public class Ion {
             this.z = z;
         }
 
-        public final Node getX() {
+        public Node getX() {
             return this.x;
         }
 
-        public final Node getY() {
+        public Node getY() {
             return this.y;
         }
 
-        public final Collection<List<Node>> getZ() {
+        public Collection<List<Node>> getZ() {
             return this.z;
         }
 
@@ -1465,14 +1460,14 @@ public class Ion {
             this.z.add(moreZ);
         }
 
-        public final int hashCode() {
+        public int hashCode() {
             int hash = 17;
             hash += 19 * this.x.hashCode() * this.y.hashCode();
             hash += 23 * this.z.hashCode();
             return hash;
         }
 
-        public final boolean equals(Object obj) {
+        public boolean equals(Object obj) {
             if (!(obj instanceof IonIndependenceFacts)) {
                 return false;
             }
@@ -1497,7 +1492,7 @@ public class Ion {
      * @author pingel
      */
 
-    private class PowerSet<E> implements Iterable<Set<E>> {
+    private static class PowerSet<E> implements Iterable<Set<E>> {
         Collection<E> all;
 
         public PowerSet(Collection<E> all) {
@@ -1563,8 +1558,7 @@ public class Ion {
 
             public Set<InE> next() {
 
-                Set<InE> result = new HashSet<>();
-                result.addAll(this.mask);
+                Set<InE> result = new HashSet<>(this.mask);
                 result.remove(null);
 
                 this.hasNext = this.mask.size() < this.powerSet.all.size() || !allOnes();

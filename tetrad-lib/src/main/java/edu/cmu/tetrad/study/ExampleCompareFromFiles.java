@@ -73,27 +73,14 @@ public class ExampleCompareFromFiles {
         statistics.setWeight("AR", 0.5);
         statistics.setWeight("AHP", 1.0);
         statistics.setWeight("AHR", 0.5);
-//        statistics.setWeight("TP", 1.0);
-//        statistics.setWeight("TR", 0.5);
 
         Algorithms algorithms = new Algorithms();
 
-//        algorithms.add(new Gfci(new ChiSquare(), new BdeuScore()));
-//        algorithms.add(new Fci(new FisherZ()));
-//        algorithms.add(new Fci(new ChiSquare()));
-//        algorithms.add(new Rfci(new ChiSquare()));
-//        algorithms.add(new Rfci(new FisherZ()));
         algorithms.add(new Gfci(new FisherZ(), new SemBicScore()));
 //        algorithms.add(new Fges(new BdeuScore(),true));
 //        algorithms.add(new Fges(new DiscreteBicScore(),true));
 //        algorithms.add(new Fges(new SemBicScore()));
 //        algorithms.add(new Gfci(new ChiSquare(), new DiscreteBicScore())));
-//        algorithms.add(new Fges(new BdeuScore()));
-//        algorithms.add(new Fges(new DiscreteBicScore()));
-//        algorithms.add(new PcMax(new FisherZ(), false));
-//        algorithms.add(new PcMax(new ChiSquare(),true));
-//        algorithms.add(new PcMax(new FisherZ(), false));
-//        algorithms.add(new Pc(new FisherZ()));
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);

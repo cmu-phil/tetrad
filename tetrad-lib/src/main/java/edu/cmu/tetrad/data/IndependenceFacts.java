@@ -138,9 +138,7 @@ public class IndependenceFacts implements DataModel {
             variables.add(fact.getX());
             variables.add(fact.getY());
 
-            for (Node z : fact.getZ()) {
-                variables.add(z);
-            }
+            variables.addAll(fact.getZ());
         }
 
         return new ArrayList<>(variables);

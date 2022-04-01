@@ -60,14 +60,6 @@ public class BoxCoxWrapper extends DataWrapper {
         setDataModelList(convertedList);
 
 
-//        DataModel model = data.getSelectedDataModel();
-//        if (!(model instanceof DataSet)) {
-//            throw new IllegalArgumentException("The data model must be a rectangular dataset");
-//        }
-//        model = TimeSeriesUtils.ar2((DataSet) model, params.getNumOfTimeLags());
-//        this.setDataModel(model);
-//        this.setSourceGraph(data.getSourceGraph());
-
         LogDataUtils.logDataModelList("Result data from an AR residual calculation.", getDataModelList());
 
     }

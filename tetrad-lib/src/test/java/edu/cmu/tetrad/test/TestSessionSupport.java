@@ -42,11 +42,6 @@ public class TestSessionSupport {
     private SessionSupport sessionSupport;
 
     /**
-     * A Session object to facilitate testing.
-     */
-    private Session session;
-
-    /**
      * A session node to facilitate testing.
      */
     private SessionNode node1;
@@ -72,8 +67,11 @@ public class TestSessionSupport {
     public void setUp() {
         this.node1 = new SessionNode(Type1.class);
         this.node2 = new SessionNode(Type2.class);
-        this.session = new Session("Test");
-        this.sessionSupport = new SessionSupport(this.session);
+        /**
+         * A Session object to facilitate testing.
+         */
+        Session session = new Session("Test");
+        this.sessionSupport = new SessionSupport(session);
     }
 
     /**

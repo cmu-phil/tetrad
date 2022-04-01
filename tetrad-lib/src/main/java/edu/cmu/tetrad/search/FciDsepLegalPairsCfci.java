@@ -79,10 +79,6 @@ class FciDsepLegalPairsCfci implements LegalPairs {
             return true;
         }
 
-//        if (graph.getEndpoint(x, y) == Endpoint.TAIL || graph.getEndpoint(z, y) == Endpoint.TAIL) {
-//            return false;
-//        }
-
         if (this.ambiguousTriples.contains(new Triple(x, y, z))) {
             return true;
         }

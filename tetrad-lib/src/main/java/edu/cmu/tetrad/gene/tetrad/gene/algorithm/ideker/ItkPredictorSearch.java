@@ -39,7 +39,7 @@ public class ItkPredictorSearch {
     String[] names;
     int[][] expression;
 
-    public class Gene implements Comparable {
+    public static class Gene implements Comparable {
         int gene;
 
         public Gene(int gene) {
@@ -206,9 +206,6 @@ public class ItkPredictorSearch {
                 }
             }
 
-            //System.out.println("index = " + subSetIndex + " subset = ");
-            //display(subSet);
-
             sizes[subSetIndex] = subSet.size();
             if (sizes[subSetIndex] > minSize) {
                 continue;
@@ -260,9 +257,6 @@ public class ItkPredictorSearch {
             }
         }
 
-        //for(int i = 0; i < coveringSets.length; i++) {
-        //  display(coveringSets[i]);
-        //}
         return coveringSets;
     }
 
@@ -348,8 +342,6 @@ public class ItkPredictorSearch {
     }
 
     public boolean differExpressions(int e1, int e2) {
-//        return !((e1 == e2) || (e1 == -1 && e2 == 0) || (e2 == -1 && e2 == 0) ||
-//                (e1 * e2 == 2));
         return true;
     }
 

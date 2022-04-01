@@ -143,10 +143,6 @@ public class GraphNode implements Node {
             throw new NullPointerException("Name must not be null.");
         }
 
-//        if (!NamingProtocol.isLegalName(name)) {
-//            throw new IllegalArgumentException(
-//                    NamingProtocol.getProtocolDescription() + ": " + name);
-//        }
         String oldName = this.name;
         this.name = name;
         getPcs().firePropertyChange("name", oldName, this.name);
@@ -220,9 +216,6 @@ public class GraphNode implements Node {
             return this.getName().hashCode();
         }
 
-//        return 17 * getNode().hashCode() + 19 * getNodeType().hashCode();
-//        return 17 * getNode().hashCode();
-//        return getNode().hashCode();
         throw new IllegalArgumentException();
     }
 

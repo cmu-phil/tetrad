@@ -102,12 +102,10 @@ class GeneralizedSemPmListEditor extends JPanel {
             c.add(label);
             c.add(Box.createHorizontalGlue());
 
-            Node _node = node;
-
             label.addMouseListener(new MouseAdapter() {
                 public void mouseClicked(MouseEvent mouseEvent) {
                     if (mouseEvent.getClickCount() == 2) {
-                        beginNodeEdit(_node, label, label);
+                        beginNodeEdit(node, label, label);
                     }
                 }
             });
@@ -172,33 +170,6 @@ class GeneralizedSemPmListEditor extends JPanel {
             }
         });
 
-//        GeneralizedExpressionEditor paramEditor = new GeneralizedExpressionEditor(semPm, node);
-//
-//        int ret = JOptionPane.showOptionDialog(centering, paramEditor,
-//                "Edit Expression", JOptionPane.OK_CANCEL_OPTION,
-//                JOptionPane.PLAIN_MESSAGE, null, null, null);
-//
-//        if (ret == JOptionPane.OK_OPTION) {
-//            String expressionString = paramEditor.getExpressionString();
-//            try {
-//                semPm.setNodeExpression(node, expressionString);
-//
-//                if (node.getNodeType() == NodeType.ERROR) {
-//                    label.setText(node + " = " + semPm().getNodeExpressionString(node));
-//                }
-//                else {
-//                    label.setText(node + " ~ " + semPm().getNodeExpressionString(node));
-//                }
-//
-//                paramsEditor.freshenDisplay();
-//            } catch (ParseException e) {
-//                // This is an expression that's been vetted by the expression editor.
-//                e.printStackTrace();
-//                throw new RuntimeException("The expression editor returned an unparseable string: " + expressionString, e);
-//            }
-//
-//            firePropertyChange("modelChanged", null, null);
-//        }
     }
 
     private GeneralizedSemPm semPm() {

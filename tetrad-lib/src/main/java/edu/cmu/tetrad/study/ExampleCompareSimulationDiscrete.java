@@ -82,17 +82,8 @@ public class ExampleCompareSimulationDiscrete {
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadPrecisionCommonEdges());
         statistics.add(new ArrowheadRecall());
-//        statistics.add(new MathewsCorrAdj());
-//        statistics.add(new MathewsCorrArrow());
-//        statistics.add(new F1Adj());
-//        statistics.add(new F1Arrow());
         statistics.add(new SHD());
-//        statistics.add(new ElapsedTime());
 
-//        statistics.setWeight("AP", 1.0);
-//        statistics.setWeight("AR", 1.0);
-//        statistics.setWeight("AHP", 1.0);
-//        statistics.setWeight("AHR", 1.0);
         statistics.setWeight("SHD", 1.0);
 
         Algorithms algorithms = new Algorithms();

@@ -121,10 +121,6 @@ public class GraphComparisonParams extends SessionAdapter
         ContinuousVariable arrowptRec = new ContinuousVariable("ARROWPT_REC");
         ContinuousVariable shd = new ContinuousVariable("SHD");
 
-//        ContinuousVariable twoCycleCorrect = new ContinuousVariable("TC_COR");
-//        ContinuousVariable twoCycleFn = new ContinuousVariable("TC_FN");
-//        ContinuousVariable twoCycleFp = new ContinuousVariable("TC_FP");
-
         List<Node> variables = new LinkedList<>();
         variables.add(adjCorrect);
         variables.add(adjFn);
@@ -137,9 +133,6 @@ public class GraphComparisonParams extends SessionAdapter
         variables.add(arrowptPrec);
         variables.add(arrowptRec);
         variables.add(shd);
-//        variables.add(twoCycleCorrect);
-//        variables.add(twoCycleFn);
-//        variables.add(twoCycleFp);
 
         this.dataSet = new BoxDataSet(new VerticalDoubleDataBox(0, variables.size()), variables);
         this.dataSet.setNumberFormat(new DecimalFormat("0"));

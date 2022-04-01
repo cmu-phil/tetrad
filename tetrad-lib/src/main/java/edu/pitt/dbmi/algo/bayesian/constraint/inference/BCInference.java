@@ -63,14 +63,7 @@ public class BCInference {
 
     private int maxParents;
 
-    /**
-     * Max value per node.
-     */
-    private final int maxValues;
-
     private int maxCells;
-
-    private final int maxLogFact;
 
     private int countsTreePtr;
 
@@ -115,12 +108,15 @@ public class BCInference {
         this.maxCases = this.numberOfCases;
 //        this.maxCases = max(numberOfCases, 1);
         this.maxNodes = this.numberOfNodes;
-        this.maxValues = findMaxValue(nodeDimension);
-        this.maxLogFact = (2 * this.maxCases) + this.maxValues;
+        /**
+         * Max value per node.
+         */
+        int maxValues = findMaxValue(nodeDimension);
+        int maxLogFact = (2 * this.maxCases) + maxValues;
 
         this.scoreFn = 1;
 
-        this.logfact = new double[this.maxLogFact + 1];
+        this.logfact = new double[maxLogFact + 1];
 
         int[] _nodeDimension = Arrays.copyOf(nodeDimension, nodeDimension.length);
         Arrays.sort(_nodeDimension);
@@ -175,8 +171,7 @@ public class BCInference {
         this.logfact[0] = 0;
 
         if (z.length > this.maxParents) {
-            int maxConditioningNodes = z.length;  // max size of set Z in ind(X, Y, | Z)
-            this.maxParents = maxConditioningNodes;
+            this.maxParents = z.length;
 
             int[] _nodeDimension = Arrays.copyOf(this.nodeDimension, this.nodeDimension.length);
             Arrays.sort(_nodeDimension);
@@ -194,14 +189,10 @@ public class BCInference {
 
         int n = z[0];
         this.parents[x][0] = n;
-        for (int i = 1; i <= n; i++) {
-            this.parents[x][i] = z[i];
-        }
+        if (n >= 0) System.arraycopy(z, 1, this.parents[x], 1, n);
         double lnMarginalLikelihood_X = scoreNode(x, 1);  // the 1 indicates the scoring of X
         this.parents[y][0] = n;
-        for (int i = 1; i <= n; i++) {
-            this.parents[y][i] = z[i];
-        }
+        if (n >= 0) System.arraycopy(z, 1, this.parents[y], 1, n);
         double lnMarginalLikelihood_Y = scoreNode(y, 2);  // the 2 indicates the scoring of Y
         double lnMarginalLikelihood_X_Y = lnMarginalLikelihood_X + lnMarginalLikelihood_Y;  // lnMarginalLikelihood_X_Y is the ln of the marginal likelihood, assuming X and Y are conditionally independence given Z.
         p = priorIndependent(x, y, z); // p should be in (0, 1), and thus, not 0 or 1.
@@ -227,9 +218,7 @@ public class BCInference {
         }
         this.nodeDimension[xy] = this.nodeDimension[x] * this.nodeDimension[y];
         this.parents[xy][0] = n;
-        for (int i = 1; i <= n; i++) {
-            this.parents[xy][i] = z[i];
-        }
+        if (n >= 0) System.arraycopy(z, 1, this.parents[xy], 1, n);
         double lnMarginalLikelihood_XY = scoreNode(xy, 3);  // the 3 indicates the scoring of XY, which assumes X and Y are dependent given Z;
         //Note: lnMarginalLikelihood_XY is not used, but the above call to ScoreNode creates scores^[*, 3], which is used below
         this.numberOfNodes--;
@@ -372,8 +361,7 @@ public class BCInference {
         int Nij = 0;
         double scoreOfSum = 0;
         int r = this.nodeDimension[node];
-        double rr = r;
-        double pessDivQR = pess / (q * rr);
+        double pessDivQR = pess / (q * (double) r);
         double pessDivQ = pess / q;
         double lngammPessDivQR = gammln(pessDivQR);
         for (int k = 0; k <= (r - 1); k++) {
@@ -481,7 +469,6 @@ public class BCInference {
 
         if (ptr > 0) {
             cPtr = ctPtr;
-            this.counts[cPtr + nodeValue - 1]++;
         } else {
             // GrowBranch
             for (int i = parenti; i <= numberOfParents; i++) {
@@ -538,8 +525,8 @@ public class BCInference {
                 throw new IllegalArgumentException();
             }
             // end of GrowBranch
-            this.counts[cPtr + nodeValue - 1]++;
         } // end of else
+        this.counts[cPtr + nodeValue - 1]++;
     }
 
     private int findMaxValue(int[] nodeDimension) {

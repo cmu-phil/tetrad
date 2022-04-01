@@ -102,10 +102,6 @@ public class TestDeltaTetradTest {
                 _answer[j] = v;
             }
 
-//            System.out.println(MatrixUtils.toString(_answer));
-//            System.out.println(MatrixUtils.toString(answers[i]));
-
-//            assertTrue(Arrays.equals(_answer, answers[i]));
         }
     }
 

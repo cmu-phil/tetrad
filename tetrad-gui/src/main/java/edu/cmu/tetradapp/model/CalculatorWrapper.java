@@ -76,7 +76,7 @@ public class CalculatorWrapper extends DataWrapper {
 
             if (!equations.isEmpty()) {
                 try {
-                    Transformation.transform(copy, equations.toArray(new String[equations.size()]));
+                    Transformation.transform(copy, equations.toArray(new String[0]));
                 } catch (ParseException e) {
                     throw new IllegalStateException("Was given unparsable expressions.");
                 }

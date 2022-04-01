@@ -81,7 +81,6 @@ public class HsimAutoRun {
             final double penaltyDiscount = 2.0;
             Fges fges = new Fges(score);
             fges.setVerbose(false);
-            fges.setPenaltyDiscount(penaltyDiscount);
 
             Graph estGraph = fges.search();
             //if (verbose) System.out.println(estGraph);
@@ -153,18 +152,10 @@ public class HsimAutoRun {
                 fileWriter.close();
             }
             //=======Run FGES on the output data, and compare it to the original learned graph
-            //Path dataFileOut = Paths.get(filenameOut);
-            //edu.cmu.tetrad.io.DataReader dataReaderOut = new VerticalTabularDiscreteDataReader(dataFileOut, delimiter);
 
-            //DataSet dataSetOut = dataReaderOut.readInData(eVars);
             BDeuScore newscore = new BDeuScore(newDataSet);
             Fges fgesOut = new Fges(newscore);
             fgesOut.setVerbose(false);
-            fgesOut.setPenaltyDiscount(2.0);
-            //fgesOut.setOut(out);
-            //fgesOut.setFaithfulnessAssumed(true);
-            // fgesOut.setMaxIndegree(1);
-            // fgesOut.setCycleBound(5);
 
             Graph estGraphOut = fgesOut.search();
             //if (verbose) System.out.println(" bugchecking: fges estGraphOut: " + estGraphOut);
@@ -180,10 +171,7 @@ public class HsimAutoRun {
 
             //SearchGraphUtils.graphComparison(estGraph, estGraphOut, System.out);
             estEvalGraphOut = GraphUtils.replaceNodes(estEvalGraphOut, estEvalGraph.getNodes());
-            //if (verbose) System.out.println(estEvalGraph);
-            //if (verbose) System.out.println(estEvalGraphOut);
 
-            //SearchGraphUtils.graphComparison(estEvalGraphOut, estEvalGraph, System.out);
             output = HsimUtils.errorEval(estEvalGraphOut, estEvalGraph);
             if (this.verbose) {
                 System.out.println(output[0] + " " + output[1] + " " + output[2] + " " + output[3] + " " + output[4]);

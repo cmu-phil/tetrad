@@ -199,12 +199,10 @@ public class LowerCovarianceDataFileValidation extends AbstractDataFileValidatio
                                 hasQuoteChar = !hasQuoteChar;
                             } else if (!hasQuoteChar) {
                                 boolean isDelimiter;
-                                switch (this.delimiter) {
-                                    case WHITESPACE:
-                                        isDelimiter = (currChar <= DataFileReader.SPACE_CHAR) && (prevChar > DataFileReader.SPACE_CHAR);
-                                        break;
-                                    default:
-                                        isDelimiter = (currChar == delimChar);
+                                if (this.delimiter == Delimiter.WHITESPACE) {
+                                    isDelimiter = (currChar <= DataFileReader.SPACE_CHAR) && (prevChar > DataFileReader.SPACE_CHAR);
+                                } else {
+                                    isDelimiter = (currChar == delimChar);
                                 }
 
                                 if (isDelimiter) {
@@ -435,12 +433,10 @@ public class LowerCovarianceDataFileValidation extends AbstractDataFileValidatio
                                 hasQuoteChar = !hasQuoteChar;
                             } else if (!hasQuoteChar) {
                                 boolean isDelimiter;
-                                switch (this.delimiter) {
-                                    case WHITESPACE:
-                                        isDelimiter = (currChar <= DataFileReader.SPACE_CHAR) && (prevChar > DataFileReader.SPACE_CHAR);
-                                        break;
-                                    default:
-                                        isDelimiter = (currChar == delimChar);
+                                if (this.delimiter == Delimiter.WHITESPACE) {
+                                    isDelimiter = (currChar <= DataFileReader.SPACE_CHAR) && (prevChar > DataFileReader.SPACE_CHAR);
+                                } else {
+                                    isDelimiter = (currChar == delimChar);
                                 }
 
                                 if (isDelimiter) {

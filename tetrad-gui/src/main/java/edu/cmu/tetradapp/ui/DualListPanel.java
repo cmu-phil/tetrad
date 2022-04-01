@@ -29,6 +29,7 @@ import java.awt.*;
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
+@SuppressWarnings("ALL")
 public class DualListPanel extends JPanel {
 
     private static final long serialVersionUID = -5301381955599984479L;

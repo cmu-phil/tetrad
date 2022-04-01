@@ -35,8 +35,6 @@ import java.util.List;
 public class LowerCovarianceDataFileReaderTest {
 
     private final Delimiter delimiter = Delimiter.SPACE;
-    private final char quoteCharacter = '"';
-    private final String commentMarker = "//";
 
     private final Path[] dataFiles = {
             Paths.get(getClass().getResource("/data/covariance/spartina.txt").getFile()),
@@ -55,8 +53,10 @@ public class LowerCovarianceDataFileReaderTest {
     public void testReadInData() throws IOException {
         for (Path dataFile : this.dataFiles) {
             CovarianceDataReader dataFileReader = new LowerCovarianceDataFileReader(dataFile, this.delimiter);
-            dataFileReader.setCommentMarker(this.commentMarker);
-            dataFileReader.setQuoteCharacter(this.quoteCharacter);
+            String commentMarker = "//";
+            dataFileReader.setCommentMarker(commentMarker);
+            char quoteCharacter = '"';
+            dataFileReader.setQuoteCharacter(quoteCharacter);
 
             CovarianceData covarianceData = dataFileReader.readInData();
 

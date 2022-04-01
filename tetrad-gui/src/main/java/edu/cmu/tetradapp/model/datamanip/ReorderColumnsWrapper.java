@@ -91,12 +91,11 @@ public class ReorderColumnsWrapper extends DataWrapper {
     }
 
     public static DataSet shuffleColumns(DataSet dataModel) {
-        DataSet dataSet = dataModel;
 
         List<Node> vars = new ArrayList<>();
 
-        for (Node node : dataSet.getVariables()) {
-            Node _node = dataSet.getVariable(node.getName());
+        for (Node node : dataModel.getVariables()) {
+            Node _node = dataModel.getVariable(node.getName());
 
             if (_node != null) {
                 vars.add(_node);
@@ -104,7 +103,7 @@ public class ReorderColumnsWrapper extends DataWrapper {
         }
 
         Collections.shuffle(vars);
-        return dataSet.subsetColumns(vars);
+        return dataModel.subsetColumns(vars);
     }
 
     /**

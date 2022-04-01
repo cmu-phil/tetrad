@@ -147,13 +147,8 @@ public class FciRunner extends AbstractAlgorithmRunner
         Parameters params = getParams();
         IndTestType testType;
 
-        if (getParams() instanceof Parameters) {
-            Parameters _params = params;
-            testType = (IndTestType) _params.get("indTestType", IndTestType.FISHER_Z);
-        } else {
-            Parameters _params = params;
-            testType = (IndTestType) _params.get("indTestType", IndTestType.FISHER_Z);
-        }
+        Parameters _params = params;
+        testType = (IndTestType) _params.get("indTestType", IndTestType.FISHER_Z);
 
         return new IndTestChooser().getTest(dataModel, params, testType);
     }
@@ -167,10 +162,7 @@ public class FciRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<>();
-//        names.add("Definite ColliderDiscovery");
-//        names.add("Definite Noncolliders");
-        return names;
+        return new ArrayList<>();
     }
 
     /**
@@ -179,8 +171,6 @@ public class FciRunner extends AbstractAlgorithmRunner
     public List<List<Triple>> getTriplesLists(Node node) {
         List<List<Triple>> triplesList = new ArrayList<>();
         Graph graph = getGraph();
-//        triplesList.add(DataGraphUtils.getDefiniteCollidersFromGraph(node, graph));
-//        triplesList.add(DataGraphUtils.getDefiniteNoncollidersFromGraph(node, graph));
         return triplesList;
     }
 

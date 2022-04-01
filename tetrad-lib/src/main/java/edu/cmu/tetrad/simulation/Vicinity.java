@@ -91,10 +91,8 @@ public class Vicinity {
     //******************* This finds the range when edge is Undirected **********
     private int findRangeU(Edge edge, int chunksize) {
         Set<Edge> edges = new HashSet<>();
-        //System.out.println("edges is empty?"+edges.isEmpty());
-        //System.out.println("edges is null?"+edges == null);
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
-        int range = 0 - chunksize;
+        int range = -chunksize;
         while (edges.isEmpty()) {
             //increment range by chunk
             range += chunksize;
@@ -123,8 +121,6 @@ public class Vicinity {
                 }
             }
             //for bugchecking
-            //System.out.println("node1edges1 is empty? "+node1edges1.isEmpty());
-            //System.out.println("node1edges2 is empty? "+node1edges2.isEmpty());
 
             int x2 = this.getX(edge.getNode2(), locationMap);
             int y2 = this.getY(edge.getNode2(), locationMap);
@@ -158,8 +154,6 @@ public class Vicinity {
                     }
                 }
             }
-            //System.out.println("edges is empty?"+edges.isEmpty()+" at range "+range);
-            //System.out.println(edges);
         }
 
         return range;
@@ -171,7 +165,7 @@ public class Vicinity {
         //It matters whether Node1 is the tail or the head of the arrow
         //Because of how the Edge class works, it looks like Node1 is ALWAYS the TAIL
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
-        int range = 0 - chunksize;
+        int range = -chunksize;
         while (edges.isEmpty()) {
             //increment range by chunk
             range += chunksize;
@@ -231,8 +225,6 @@ public class Vicinity {
                     }
                 }
             }
-            //System.out.println("edges is empty?"+edges.isEmpty()+" at range "+range);
-            //System.out.println(edges);
         }
 
         return range;

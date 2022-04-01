@@ -126,8 +126,6 @@ public class TestSimulatedFmr3 {
                 dir + "Network9_cont_amp", subdir));
         simulations.add(new LoadContinuousDataAndSingleGraph(
                 dir + "Diamond", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Markov_Complex_1", subdir));
 
         Algorithms algorithms = new Algorithms();
 

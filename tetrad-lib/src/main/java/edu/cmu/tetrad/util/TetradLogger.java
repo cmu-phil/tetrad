@@ -163,11 +163,6 @@ public class TetradLogger {
             this.config = config;
             this.fireActived(this.config);
 
-//            TetradLogger.getInstance().info("Supported events");
-//
-//            for (TetradLoggerConfig.Event event : config.getSupportedEvents()) {
-//                TetradLogger.getInstance().info(event + " " + config.isEventActive(event.getSampleId()));
-//            }
         }
     }
 
@@ -199,9 +194,6 @@ public class TetradLogger {
      */
     public void setConfigForClass(Class model) {
         TetradLoggerConfig config = this.classConfigMap.get(model);
-//        if (config == null) {
-//            System.out.println("There is no pre-defined logger config for the model " + model);
-//        }
         setTetradLoggerConfig(config);
     }
 

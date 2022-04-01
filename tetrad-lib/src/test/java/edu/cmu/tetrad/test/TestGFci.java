@@ -70,8 +70,6 @@ public class TestGFci {
         }
 
         Graph dag = GraphUtils.randomGraphUniform(vars, numLatents, numEdges, 4, 4, 4, false);
-//        Graph dag = GraphUtils.randomGraphRandomForwardEdges1(vars, numLatents, numEdges);
-//        Graph dag = DataGraphUtils.scaleFreeGraph(vars, numLatents, .05, .05, .05, 3);
 
         DataSet data;
 
@@ -120,8 +118,6 @@ public class TestGFci {
             assertTrue(Arrays.equals(counts[i], expectedCounts[i]));
         }
 
-//        System.out.println(MatrixUtils.toString(counts));
-//        System.out.println(MatrixUtils.toString(expectedCounts));
     }
 
     @Test

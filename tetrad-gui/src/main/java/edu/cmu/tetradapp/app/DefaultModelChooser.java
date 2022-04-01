@@ -132,7 +132,6 @@ class DefaultModelChooser extends JComponent implements ModelChooser {
         /*(
       The session node for the getModel node.
      */
-        SessionNode sessionNode1 = sessionNode;
         this.nodeName = sessionNode.getDisplayName();
     }
 

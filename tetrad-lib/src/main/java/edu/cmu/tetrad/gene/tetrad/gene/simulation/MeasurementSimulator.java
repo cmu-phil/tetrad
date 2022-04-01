@@ -81,12 +81,6 @@ public class MeasurementSimulator implements TetradSerializable {
 
     private final int interval = 1;
 
-    private final boolean rawDataSaved = false;
-
-    private final boolean measuredDataSaved = true;
-
-    private final boolean initSync = true;
-
     private final double dishDishVariability = 10.0;
 
     private final int numSamplesPerDish = 4;
@@ -96,8 +90,6 @@ public class MeasurementSimulator implements TetradSerializable {
     private final double chipChipVariability = 0.1;
 
     private final double pixelDigitalization = 0.025;
-
-    private final boolean antilogCalculated = false;
 
     // Constructed parameters available for retrieval after data has
     // been simulated.
@@ -129,8 +121,6 @@ public class MeasurementSimulator implements TetradSerializable {
      * @serial
      */
     private int cellNumber = -1;
-
-    private final boolean includeDishAndChipColumns = true;
 
     //=============================CONSTRUCTORS============================//
 
@@ -189,9 +179,6 @@ public class MeasurementSimulator implements TetradSerializable {
     }
 
     /**
-     * @serial
-     */
-    /**
      * Returns the number of dishes that are to be simulated.
      */
     public int getNumDishes() {
@@ -200,7 +187,8 @@ public class MeasurementSimulator implements TetradSerializable {
     }
 
     public boolean isIncludeDishAndChipColumns() {
-        return this.parameters.getBoolean("includeDishAndChipColumns", this.includeDishAndChipColumns);
+        boolean includeDishAndChipColumns = true;
+        return this.parameters.getBoolean("includeDishAndChipColumns", includeDishAndChipColumns);
 //        return includeDishAndChipColumns;
     }
 
@@ -224,9 +212,6 @@ public class MeasurementSimulator implements TetradSerializable {
         }
     }
 
-    /**
-     * @serial
-     */
     /**
      * Returns the number of cells per dish.
      */
@@ -286,14 +271,10 @@ public class MeasurementSimulator implements TetradSerializable {
     }
 
     /**
-     * @serial
-     */
-    /**
      * Returns the index of the first step to actually be stored out.
      */
     public int getFirstStepStored() {
         return this.parameters.getInt("firstStepStored", this.firstStepStored);
-//        return this.firstStepStored;
     }
 
     /**
@@ -314,9 +295,6 @@ public class MeasurementSimulator implements TetradSerializable {
         }
     }
 
-    /**
-     * @serial
-     */
     /**
      * Sets the interval (in time steps) between time steps stored out. For
      * instance, if the first step stored is 5 and the interval is 3, then the
@@ -340,16 +318,14 @@ public class MeasurementSimulator implements TetradSerializable {
     }
 
     /**
-     * @serial
-     */
-    /**
      * Returns true if raw data is being saved in the getModel simulation, false
      * if not.
      *
      * @see #setRawDataSaved
      */
     public boolean isRawDataSaved() {
-        return this.parameters.getBoolean("rawDataSaved", this.rawDataSaved);
+        boolean rawDataSaved = false;
+        return this.parameters.getBoolean("rawDataSaved", rawDataSaved);
 //        return this.rawDataSaved;
     }
 
@@ -364,16 +340,14 @@ public class MeasurementSimulator implements TetradSerializable {
     }
 
     /**
-     * @serial
-     */
-    /**
      * Returns 'true' if measured data is being saved out for the getModel
      * simulation, 'false' if not.
      *
      * @see #setMeasuredDataSaved
      */
     public boolean isMeasuredDataSaved() {
-        return this.parameters.getBoolean("measuredDataSaved", this.measuredDataSaved);
+        boolean measuredDataSaved = true;
+        return this.parameters.getBoolean("measuredDataSaved", measuredDataSaved);
 //        return this.measuredDataSaved;
     }
 
@@ -400,16 +374,14 @@ public class MeasurementSimulator implements TetradSerializable {
     }
 
     /**
-     * @serial
-     */
-    /**
      * Returns 'true' if cells in the simulation will be synchronized, 'false'
      * if not.
      *
      * @see #setInitSync
      */
     public boolean isInitSync() {
-        return this.parameters.getBoolean("initSync", this.initSync);
+        boolean initSync = true;
+        return this.parameters.getBoolean("initSync", initSync);
 //        return this.initSync;
     }
 
@@ -422,14 +394,12 @@ public class MeasurementSimulator implements TetradSerializable {
     }
 
     /**
-     * @serial
-     */
-    /**
      * Returns true iff the antilog of each expression level should be
      * calculated.
      */
     public boolean isAntilogCalculated() {
-        return this.parameters.getBoolean("antilogCalculated", this.antilogCalculated);
+        boolean antilogCalculated = false;
+        return this.parameters.getBoolean("antilogCalculated", antilogCalculated);
 //        return this.antilogCalculated;
     }
 
@@ -453,9 +423,6 @@ public class MeasurementSimulator implements TetradSerializable {
         }
     }
 
-    /**
-     * @serial
-     */
     /**
      * Returns the standard deviation in percent of random dish bump values away
      * from 100%.
@@ -488,9 +455,6 @@ public class MeasurementSimulator implements TetradSerializable {
     }
 
     /**
-     * @serial
-     */
-    /**
      * Returns the number of samples generated per dish in the measurement
      * model.
      *
@@ -522,9 +486,6 @@ public class MeasurementSimulator implements TetradSerializable {
         }
     }
 
-    /**
-     * @serial
-     */
     /**
      * Returns the sample to sample variability, which is the standard deviation
      * of a normal distribution with mean 0 from which errors in measured
@@ -559,9 +520,6 @@ public class MeasurementSimulator implements TetradSerializable {
     }
 
     /**
-     * @serial
-     */
-    /**
      * Returns the chip to chip variability.
      *
      * @see #setChipChipVariability
@@ -589,9 +547,6 @@ public class MeasurementSimulator implements TetradSerializable {
         }
     }
 
-    /**
-     * @serial
-     */
     /**
      * Returns the pixel digitalization error.
      *
@@ -822,8 +777,6 @@ public class MeasurementSimulator implements TetradSerializable {
                 if ((c + 1) % 50 == 0) {
                     this.dishNumber = d;
                     this.cellNumber = c;
-                    //                    System.out.println("Dish # " + (d + 1) + ", Cell # " +
-                    //                            (c + 1));
                 }
 
                 // Reset the cell data.
@@ -876,9 +829,6 @@ public class MeasurementSimulator implements TetradSerializable {
                             // be null.)
                             if (isRawDataSaved()) {
                                 int row = d * getNumCellsPerDish() + c;
-
-                                /*this.rawData[f][sIndex][row] =
-                                historyArray[0][f];*/
 
                                 this.rawData[f][sIndex][row] =
                                         cellData[sIndex][f];

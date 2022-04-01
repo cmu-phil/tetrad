@@ -67,9 +67,6 @@ public class FaskVote {
             fask.setKnowledge(this.knowledge);
 
 
-//            Lingam lingam = new Lingam();
-//            Graph g = lingam.search(dataSet);
-//
             Graph g = fask.search();
             g = GraphUtils.replaceNodes(g, nodes);
             fasks.add(g);

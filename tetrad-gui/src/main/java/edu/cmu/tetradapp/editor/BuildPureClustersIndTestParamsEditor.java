@@ -91,14 +91,13 @@ class BuildPureClustersIndTestParamsEditor extends JComponent {
                 testSelector.removeAllItems();
                 testSelector.addItem(TestType.SAG);
                 testSelector.addItem(TestType.GAP);
-                testSelector.revalidate();
             } else {
                 testSelector.removeAllItems();
                 testSelector.addItem(TestType.TETRAD_WISHART);
                 testSelector.addItem(TestType.TETRAD_DELTA);
 
-                testSelector.revalidate();
             }
+            testSelector.revalidate();
 
 
             if (paramsPureClusters.get("tetradTestType", TestType.TETRAD_WISHART) == TestType.TETRAD_WISHART) {

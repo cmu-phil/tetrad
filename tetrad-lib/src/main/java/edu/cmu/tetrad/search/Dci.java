@@ -228,8 +228,6 @@ public class Dci {
         // resolved
         if (this.method != null) {
             System.out.println("Resolving conflicting independence/dependence constraints");
-            //resolveResultingIndependencies();
-            //resolveResultingIndependenciesB();
             resolveResultingIndependenciesC();
         }
         // now remove edges
@@ -450,7 +448,7 @@ public class Dci {
                                 checkABC = true;
                             }
                         }
-                        if (!checkABC || !checkADC) {
+                        if (true) {
                             continue;
                         }
 
@@ -476,9 +474,8 @@ public class Dci {
             return false;
         }
 
-        if (graph.getEndpoint(y, x) == Endpoint.ARROW &&
-                graph.getEndpoint(x, y) == Endpoint.CIRCLE) {
-            return true;
+        if (graph.getEndpoint(y, x) == Endpoint.ARROW) {
+            graph.getEndpoint(x, y);
         }
         return true;
     }
@@ -631,6 +628,7 @@ public class Dci {
                         if (marginalSet.contains(a) && marginalSet.contains(b) &&
                                 marginalSet.contains(c)) {
                             checkABC = true;
+                            break;
                         }
                     }
                     if (!checkABC) {
@@ -679,6 +677,7 @@ public class Dci {
                     if (marginalSet.contains(a) && marginalSet.contains(b) &&
                             marginalSet.contains(c) && marginalSet.contains(l)) {
                         checkABCL = true;
+                        break;
                     }
                 }
                 if (!checkABCL) {
@@ -718,7 +717,6 @@ public class Dci {
 
         if (sepset.contains(b)) {
             graph.setEndpoint(c, b, Endpoint.TAIL);
-            this.changeFlag = true;
         } else {
             if (!isArrowpointAllowed(graph, a, b)) {
                 return;
@@ -730,8 +728,8 @@ public class Dci {
 
             graph.setEndpoint(a, b, Endpoint.ARROW);
             graph.setEndpoint(c, b, Endpoint.ARROW);
-            this.changeFlag = true;
         }
+        this.changeFlag = true;
     }
 
     /**
@@ -844,7 +842,7 @@ public class Dci {
                         continue;
                     }
                     Set<Node> otherNodes = new HashSet<>(Dci.this.currentMarginalSet);
-                    otherNodes.removeAll(trek);
+                    trek.forEach(otherNodes::remove);
 //                  allPaths.get(trek.size()).put(trek, otherNodes);
                     newPaths.get(trek.size()).put(trek, otherNodes);
                 }
@@ -964,8 +962,8 @@ public class Dci {
      */
     private static Map<Set<Edge>, Map<Triple, List<Set<Edge>>>> pathsEnsuringTrek(Graph graph, List<Node> ensureTrek, Set<Node> conditioning) {
         Map<Set<Edge>, Map<Triple, List<Set<Edge>>>> paths = new HashMap<>();
-        Dci.pathsEnsuringTrek(graph, ensureTrek, 1, new LinkedList<>(Arrays.asList(ensureTrek.get(0))),
-                conditioning, new HashMap<Triple, NodePair>(), paths, new HashSet<>(Arrays.asList(ensureTrek.get(0))));
+        Dci.pathsEnsuringTrek(graph, ensureTrek, 1, new LinkedList<>(Collections.singletonList(ensureTrek.get(0))),
+                conditioning, new HashMap<Triple, NodePair>(), paths, new HashSet<>(Collections.singletonList(ensureTrek.get(0))));
         return paths;
     }
 
@@ -980,10 +978,6 @@ public class Dci {
                 treks.addAll(GraphUtils.treks(graph, triple.getY(), colliders.get(triple).getFirst(), -1));
                 treks.addAll(GraphUtils.treks(graph, triple.getY(), colliders.get(triple).getSecond(), -1));
                 for (List<Node> trek : treks) {
-                    /*             if (trek.get(1).equals(triple.getZ())) {
-                                     continue;
-                                 }
-                    */
                     Set<Edge> edges = new HashSet<>();
                     boolean okay = true;
                     for (int k = 0; k < trek.size() - 1; k++) {
@@ -1034,12 +1028,6 @@ public class Dci {
             visited.add(next);
 
             if (conditioning.contains(node1)) {
-                /*    if (next.equals(node2)) {
-                        path.removeLast();
-                        visited.remove(next);
-                        continue;
-                    }
-                */
                 Node node0 = path.get(path.size() - 3);
                 if (graph.getEndpoint(node0, node1).equals(Endpoint.TAIL) ||
                         graph.getEndpoint(next, node1).equals(Endpoint.TAIL)) {
@@ -1901,7 +1889,7 @@ public class Dci {
                         condSet.add(newNode);
                         //    }
                     }
-                } catch (Exception e) {
+                } catch (Exception ignored) {
 
                 }
                 try {
@@ -1911,27 +1899,10 @@ public class Dci {
                         condSet.add(newNode);
                         //    }
                     }
-                } catch (Exception e) {
+                } catch (Exception ignored) {
 
                 }
             }
-/*            condSet.remove(pair.getFirst());
-            condSet.remove(pair.getSecond());
-            List<Node> remove = new ArrayList<Node>();
-            for (Node node : condSet) {
-                boolean include = false;
-                for (Graph graph : marginals) {
-                    if (graph.isAdjacentTo(node, pair.getFirst())||
-                            graph.isAdjacentTo(node, pair.getSecond())) {
-                        include = true;
-                        break;
-                    }
-                }
-                if (!include) {
-                    remove.add(node);
-                }
-            }
-*/
 //            condSet.remove(remove);
             int c = 1;
             int cs = (int) Math.pow(2, condSet.size());
@@ -2088,7 +2059,7 @@ public class Dci {
     /**
      * Constructs a powerset for an arbitrary collection
      */
-    private class PowerSet<E> implements Iterable<Set<E>> {
+    private static class PowerSet<E> implements Iterable<Set<E>> {
         Collection<E> all;
 
         public PowerSet(Collection<E> all) {
@@ -2154,8 +2125,7 @@ public class Dci {
 
             public Set<InE> next() {
 
-                Set<InE> result = new HashSet<>();
-                result.addAll(this.mask);
+                Set<InE> result = new HashSet<>(this.mask);
                 result.remove(null);
 
                 this.hasNext = this.mask.size() < this.powerSet.all.size() || !allOnes();

@@ -506,11 +506,6 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
         if (getDataModelList().size() == 0 && getSourceGraph() != null) {
             // We inject the graph to the test to satisfy the tests like DSeparationTest - Zhou
-//            IndependenceWrapper indTestWrapper = ((TakesIndependenceWrapper) algo).getIndependenceWrapper();
-//            if (indTestWrapper instanceof DSeparationTest) {
-//                ((DSeparationTest) indTestWrapper).setGraph(getSourceGraph());
-//            }
-//
             IndependenceWrapper test = new DSeparationTest(getSourceGraph());
 
             if (this.independenceTests == null) {
@@ -532,21 +527,6 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                 IndependenceTest test = indTestWrapper.getTest(getDataModelList().get(0), this.parameters);
                 this.independenceTests.add(test);
             }
-//            else if (getDataModelList().size() == 0 && getSourceGraph() != null) {
-//                // We inject the graph to the test to satisfy the tests like DSeparationTest - Zhou
-//                IndependenceWrapper indTestWrapper = ((TakesIndependenceWrapper) algo).getIndependenceWrapper();
-//                if (indTestWrapper instanceof DSeparationTest) {
-//                    ((DSeparationTest) indTestWrapper).setGraph(getSourceGraph());
-//                }
-//
-//                if (this.independenceTests == null) {
-//                    this.independenceTests = new ArrayList<>();
-//                }
-//
-//                // Grabbing this independence test for the independence tests interface. JR 2020.8.24
-//                IndependenceTest test = indTestWrapper.getTest(null, parameters);
-//                this.independenceTests.add(test);
-//            }
         } else if (algo instanceof UsesScoreWrapper) {
             if (getDataModelList().size() == 1) {
                 ScoreWrapper wrapper = ((UsesScoreWrapper) getAlgorithm()).getScoreWrapper();
@@ -559,21 +539,6 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                 Score score = wrapper.getScore(getDataModelList().get(0), this.parameters);
                 this.independenceTests.add(new IndTestScore(score));
             }
-//            else if (getDataModelList().size() == 0 && getSourceGraph() != null) {
-//                // We inject the graph to the test to satisfy the tests like DSeparationTest - Zhou
-//                ScoreWrapper wrapper = ((UsesScoreWrapper) getAlgorithm()).getScoreWrapper();
-//                if (wrapper instanceof DSeparationScore) {
-//                    ((DSeparationScore) wrapper).setGraph(getSourceGraph());
-//                }
-//
-//                if (this.independenceTests == null) {
-//                    this.independenceTests = new ArrayList<>();
-//                }
-//
-//                // Grabbing this independence test for the independence tests interface. JR 2020.8.24
-//                Score score = wrapper.getScore(null, parameters);
-//                this.independenceTests.add(new IndTestScore(score));
-//            }
         }
 
         if (this.independenceTests.isEmpty()) {

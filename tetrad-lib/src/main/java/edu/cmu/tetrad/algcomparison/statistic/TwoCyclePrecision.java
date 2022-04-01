@@ -30,9 +30,8 @@ public class TwoCyclePrecision implements Statistic {
         ArrowConfusion adjConfusion = new ArrowConfusion(trueGraph, estGraph);
         double TwoCycleTp = adjConfusion.getTwoCycleTp();
         double TwoCycleFp = adjConfusion.getTwoCycleFp();
-        double precision = TwoCycleTp / (TwoCycleTp + TwoCycleFp);
-//        if (precision == 0) precision = Double.NaN;
-        return precision;
+        //        if (precision == 0) precision = Double.NaN;
+        return TwoCycleTp / (TwoCycleTp + TwoCycleFp);
 
     }
 

@@ -82,32 +82,6 @@ public class DirichletBayesImWrapper implements KnowledgeBoxInput {
 
     }
 
-    //    public DirichletBayesImWrapper(BayesPmWrapper bayesPmWrapper,
-//                                   DataWrapper dataWrapper) {
-//        if (bayesPmWrapper == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        if (dataWrapper == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        DataSet dataSet =
-//                (DataSet) dataWrapper.getSelectedDataModel();
-//
-//        BayesPm bayesPm = new BayesPm(bayesPmWrapper.getBayesPm());
-//        DirichletBayesIm emptyPrior =
-//                DirichletBayesIm.blankDirichletIm(bayesPm);
-//
-//        DirichletEstimator estimator = new DirichletEstimator();
-//
-//        this.dirichletBayesIm = DirichletEstimator.estimate(emptyPrior, dataSet);
-//
-//        log(this.dirichletBayesIm);
-//    }
-//    public DirichletBayesImWrapper(BayesPmWrapper bayesPmWrapper, Simulation simulation) {
-//        this(bayesPmWrapper, (DataWrapper) simulation);
-//    }
     public DirichletBayesImWrapper(DirichletEstimatorWrapper wrapper) {
         if (wrapper == null) {
             throw new NullPointerException();

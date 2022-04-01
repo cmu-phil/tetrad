@@ -176,11 +176,6 @@ public final class SvarFci implements GraphSearch {
         return search(getIndependenceTest().getVariables());
     }
 
-//    public Graph search(List<Node> nodes) {
-//        return search(new FasStableConcurrent(getIndependenceTest()));
-////        return search(new Fas(getIndependenceTest()));
-//    }
-
     public Graph search(List<Node> nodes) {
         return search(new Fasts(getIndependenceTest()));
 //        return search(new Fas(getIndependenceTest()));
@@ -257,8 +252,6 @@ public final class SvarFci implements GraphSearch {
         // Step CI C (Zhang's step F3.)
         long time5 = System.currentTimeMillis();
         //fciOrientbk(getKnowledge(), graph, independenceTest.getVariable());    - Robert Tillman 2008
-//        fciOrientbk(getKnowledge(), graph, variables);
-//        new FciOrient(graph, new Sepsets(this.sepsets)).ruleR0(new Sepsets(this.sepsets));
 
         long time6 = System.currentTimeMillis();
         this.logger.log("info", "Step CI C: " + (time6 - time5) / 1000. + "s");
@@ -504,8 +497,6 @@ public final class SvarFci implements GraphSearch {
                 if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;
                 x1 = test.getVariable(A);
                 y1 = test.getVariable(B);
-                //adjacencies.get(x1).remove(y1);
-                //adjacencies.get(y1).remove(x1);
                 this.graph.removeEdge(x1, y1);
                 System.out.println("removed edge between " + x1 + " and " + y1 + " because of structure knowledge");
                 List<Node> condSetAB = new ArrayList<>();
@@ -530,17 +521,8 @@ public final class SvarFci implements GraphSearch {
                     }
                     int cond_diff = indx_tier - ind_temptier;
                     int condAB_tier = this.knowledge.isInWhichTier(x1) - cond_diff;
-//                    System.out.println("tempNode = " + tempNode);
-//                    System.out.println("ind_temptier = " + ind_temptier);
-//                    System.out.println("indx_tier = " + indx_tier);
-//                    System.out.println("cond_diff = " + cond_diff);
-//                    System.out.println("condAB_tier = " + condAB_tier);
-//                    System.out.println("max_tier = " + max_tier);
-//                    System.out.println("ntiers = " + ntiers);
                     if (condAB_tier < 0 || condAB_tier > (ntiers - 1)
                             || this.knowledge.getTier(condAB_tier).size() == 1) { // added condition for time tier 05.29.2016
-//                        List<Node> empty = Collections.emptyList();
-//                        getSepsets2().set(x1, y1, empty); // added 05.01.2016
                         System.out.println("Warning: For nodes " + x1 + "," + y1 + " the conditioning variable is outside "
                                 + "of window, so not added to SepSet");
                         continue;
@@ -554,8 +536,6 @@ public final class SvarFci implements GraphSearch {
                 System.out.println("done");
                 getSepsets().set(x1, y1, condSetAB);
             } else {
-                //System.out.println("############## WARNING (removeSimilarPairs): did not catch x,y pair " + x + ", " + y);
-                //System.out.println();
                 List tmp_tier1 = this.knowledge.getTier(i);
 //                   Collections.sort(tmp_tier1);
                 List tmp_tier2 = this.knowledge.getTier(i + tier_diff);
@@ -567,8 +547,6 @@ public final class SvarFci implements GraphSearch {
                 if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;
                 x1 = test.getVariable(A);
                 y1 = test.getVariable(B);
-                //adjacencies.get(x1).remove(y1);
-                //adjacencies.get(y1).remove(x1);
                 this.graph.removeEdge(x1, y1);
                 System.out.println("removed edge between " + x1 + " and " + y1 + " because of structure knowledge");
                 List<Node> condSetAB = new ArrayList<>();
@@ -590,17 +568,8 @@ public final class SvarFci implements GraphSearch {
 
                     int cond_diff = indx_tier - ind_temptier;
                     int condAB_tier = this.knowledge.isInWhichTier(x1) - cond_diff;
-//                   System.out.println("tempNode = " + tempNode);
-//                   System.out.println("ind_temptier = " + ind_temptier);
-//                   System.out.println("indx_tier = " + indx_tier);
-//                   System.out.println("cond_diff = " + cond_diff);
-//                   System.out.println("condAB_tier = " + condAB_tier);
-//                   System.out.println("max_tier = " + max_tier);
-//                   System.out.println("ntiers = " + ntiers);
                     if (condAB_tier < 0 || condAB_tier > (ntiers - 1)
                             || this.knowledge.getTier(condAB_tier).size() == 1) { // added condition for time tier 05.29.2016
-//                        List<Node> empty = Collections.emptyList();
-//                        getSepsets2().set(x1, y1, empty); // added 05.01.2016
                         System.out.println("Warning: For nodes " + x1 + "," + y1 + " the conditioning variable is outside "
                                 + "of window, so not added to SepSet");
                         continue;

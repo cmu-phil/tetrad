@@ -153,16 +153,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     private final boolean allowMultipleSelection = true;
 
     /**
-     * True iff the user is allowed to add measured variables.
-     */
-    private boolean addMeasuredVarsAllowed = true;
-
-    /**
-     * True iff the user is allowed to delete variables.
-     */
-    private boolean deleteVariablesAllowed = true;
-
-    /**
      * ` Handler for ComponentEvents.
      */
     private final ComponentHandler compHandler = new ComponentHandler(this);
@@ -209,18 +199,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     private KeyEventDispatcher controlDispatcher;
 
     private Point currentMouseLocation;
-
-    /**
-     * TEMPORARY bug fix added 4/15/2005. The bug is that in JDK 1.5.0_02
-     * (without this bug fix) groups of nodes cannot be selected, because if you
-     * click and drag, an extra mouseClicked event is fired when you release the
-     * mouse. This is a known bug, #5039416 in Sun's bug database. To get around
-     * the problem, we set this flag to true when a mouseDragged event is fired
-     * and ignore the first click (and reset this flag to false) on the first
-     * mouseClicked event after any mouseDragged event. When this bug is fixed
-     * in JDK 1.5, this temporary bug fix shold be removed. jdramsey 4/15/2005
-     */
-    private boolean mouseDragging;
 
     /**
      * Returns the current displayed mouseover equation label. Returns null if
@@ -2323,14 +2301,28 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     private void setMouseDragging() {
-        this.mouseDragging = true;
+        /**
+         * TEMPORARY bug fix added 4/15/2005. The bug is that in JDK 1.5.0_02
+         * (without this bug fix) groups of nodes cannot be selected, because if you
+         * click and drag, an extra mouseClicked event is fired when you release the
+         * mouse. This is a known bug, #5039416 in Sun's bug database. To get around
+         * the problem, we set this flag to true when a mouseDragged event is fired
+         * and ignore the first click (and reset this flag to false) on the first
+         * mouseClicked event after any mouseDragged event. When this bug is fixed
+         * in JDK 1.5, this temporary bug fix shold be removed. jdramsey 4/15/2005
+         */
+        boolean mouseDragging = true;
     }
 
     /**
      * True if the user is allowed to add measured variables.
      */
     private boolean isAddMeasuredVarsAllowed() {
-        return this.addMeasuredVarsAllowed;
+        /**
+         * True iff the user is allowed to add measured variables.
+         */
+        boolean addMeasuredVarsAllowed = true;
+        return addMeasuredVarsAllowed;
     }
 
     /**
@@ -2344,7 +2336,11 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * @return true iff the user is allowed to delete variables.
      */
     private boolean isDeleteVariablesAllowed() {
-        return this.deleteVariablesAllowed;
+        /**
+         * True iff the user is allowed to delete variables.
+         */
+        boolean deleteVariablesAllowed = true;
+        return deleteVariablesAllowed;
     }
 
     public boolean isEnableEditing() {

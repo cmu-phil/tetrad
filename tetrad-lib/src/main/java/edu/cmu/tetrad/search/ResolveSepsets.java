@@ -48,7 +48,7 @@ public final class ResolveSepsets {
      * separations and associations. resolvedIndependent and resolvedDependent keep up with the number resolved to check
      * later against the truth
      */
-    public static SepsetMapDci ResolveSepsets(List<SepsetMapDci> sepsets, List<IndependenceTest> independenceTests,
+    public static SepsetMapDci resolveSepsets(List<SepsetMapDci> sepsets, List<IndependenceTest> independenceTests,
                                               Method method, SepsetMapDci resolvedIndependent, SepsetMapDci resolvedDependent) {
         SepsetMapDci resolvedSepset = new SepsetMapDci();
         // get all variables
@@ -451,13 +451,6 @@ public final class ResolveSepsets {
             numTests++;
         }
 
-//        if (p > alpha) {
-//            System.out.println("Independent: " + SearchLogUtils.independenceFact(x, y, condSet) + " " + p);
-//        }
-//        else {
-//            System.out.println("Dependent: " + SearchLogUtils.independenceFact(x, y, condSet) + " " + p);
-//        }
-
 
         return (sum / numTests > alpha);
     }
@@ -571,11 +564,10 @@ public final class ResolveSepsets {
 
         if (independent) {
             TetradLogger.getInstance().log("independence", "***FDR judges " + SearchLogUtils.independenceFact(x, y, condSet) + " independent");
-            TetradLogger.getInstance().log("independence", "c = " + c);
         } else {
             TetradLogger.getInstance().log("independence", "###FDR judges " + SearchLogUtils.independenceFact(x, y, condSet) + " dependent");
-            TetradLogger.getInstance().log("independence", "c = " + c);
         }
+        TetradLogger.getInstance().log("independence", "c = " + c);
 
         return independent;
     }
@@ -622,11 +614,10 @@ public final class ResolveSepsets {
 
         if (independent) {
             TetradLogger.getInstance().log("independence", "***Majority = " + SearchLogUtils.independenceFact(x, y, condSet) + " independent");
-            TetradLogger.getInstance().log("independence", "c = " + c);
         } else {
             TetradLogger.getInstance().log("independence", "###Majority = " + SearchLogUtils.independenceFact(x, y, condSet) + " dependent");
-            TetradLogger.getInstance().log("independence", "c = " + c);
         }
+        TetradLogger.getInstance().log("independence", "c = " + c);
 
         return independent;
     }

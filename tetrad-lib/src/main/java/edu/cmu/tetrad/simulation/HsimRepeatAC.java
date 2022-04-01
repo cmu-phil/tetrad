@@ -63,8 +63,6 @@ public class HsimRepeatAC {
         evalTotal[4] = 0;
 
         double[] evalIncrement;
-        //evalIncrement = new double[5];
-        //Integer count = 0;
         Integer count0 = 0;
         Integer count1 = 0;
         Integer count2 = 0;

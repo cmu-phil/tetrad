@@ -306,20 +306,11 @@ public class SessionNode implements Node {
             }
 
             if (isConsistentModelClass(modelClass, parentClasses, false, null)) {
-                if (this.getModel() == null) {
-                    this.parents.add(parent);
-                    parent.addChild(this);
-                    parent.addSessionListener(getSessionHandler());
-                    getSessionSupport().fireParentAdded(parent, this);
-                    return true;
-                } else {
-                    this.parents.add(parent);
-                    parent.addChild(this);
-                    parent.addSessionListener(getSessionHandler());
-                    getSessionSupport().fireParentAdded(parent, this);
-
-                    return true;
-                }
+                this.parents.add(parent);
+                parent.addChild(this);
+                parent.addSessionListener(getSessionHandler());
+                getSessionSupport().fireParentAdded(parent, this);
+                return true;
             }
         }
 
@@ -1403,9 +1394,6 @@ public class SessionNode implements Node {
                     if (!constructorType.isAssignableFrom(modelType)) {
                         allAssigned = false;
                     }
-//                    else {
-//                        System.out.println("aa " + constructorType + " assignable from " + modelType);
-//                    }
                 }
 
                 if (allAssigned) {
@@ -1517,10 +1505,6 @@ public class SessionNode implements Node {
         for (SessionNode node : this.parents) {
             Object model = node.getModel();
 
-//            if (model == null) {
-//                throw new RuntimeException(
-//                        "One of the parents has an empty model.");
-//            }
             if (model != null) {
                 models.add(model);
             }
@@ -1662,6 +1646,7 @@ public class SessionNode implements Node {
             for (int j = 0; j < constructorTypes.length; j++) {
                 if (constructorTypes[j] == Parameters.class) {
                     hasParameters = true;
+                    break;
                 }
             }
 
@@ -1794,8 +1779,7 @@ public class SessionNode implements Node {
         }
 
         // Collect up the model types from the parents.
-        List<Class<? extends Object>> list1
-                = new ArrayList<>();
+        ArrayList<Class<?>> list1 = new ArrayList<>();
 
         for (SessionNode node : this.parents) {
             Object model = node.getModel();

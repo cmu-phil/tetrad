@@ -130,12 +130,6 @@ public class Biolingua {
             SymMatrixF correlMatrix, SymMatrixF signifMatrix,
             BiolinguaDigraph initGraph, float vBitsAnnotat, float vBitsErrors,
             float vbitsLinks, float vBitsPredic) {
-        /*
-        // A null pointer exception will be thrown anyway if some of the
-        // arguments are null, so this test is really not that necessary
-        if ((correlMatrix==null) || (initGraph==null))
-            throw new IllegalArgumentException ("Null argument");
-        */
         Biolingua.nvars = correlMatrix.getSize();
         Biolingua.bitsAnnotat = vBitsAnnotat;
         Biolingua.bitsErrors = vBitsErrors;
@@ -207,10 +201,6 @@ public class Biolingua {
                             continue;
                         }
                         Biolingua.g.setEdge(vi, vj, state);
-
-                        //if (g.getNumParents (vj) > 1) {
-                        //    System.out.println ("Node "+vj+" being tested with "+g.getNumParents(vj)+" parents");
-                        //}
 
                         Biolingua.emtempG = Biolingua.evalCurrentModel();
 
@@ -345,10 +335,9 @@ public class Biolingua {
         }
         // Compute evaluation metric for this model and return that value
         int nEdges = Biolingua.g.getNumEdges();
-        float evalMetric = Biolingua.bitsLinks * nEdges + Biolingua.bitsAnnotat * annotations +
-                Biolingua.bitsErrors * errors - Biolingua.bitsPredic * predictions;
 
-        return evalMetric;
+        return Biolingua.bitsLinks * nEdges + Biolingua.bitsAnnotat * annotations +
+                Biolingua.bitsErrors * errors - Biolingua.bitsPredic * predictions;
     }
 
     // Think about a new name for this method, since it not only "finds"
@@ -405,20 +394,6 @@ public class Biolingua {
             Biolingua.visited[vj] = false;
         }
     }
-
-    //    private static void dumpPath() {
-    //        int i = 0;
-    //        while (path[i] != targetParent) {
-    //            System.out.print("" + path[i++] + " ");
-    //        }
-    //        System.out.println(path[i]);
-    //    }
-
-    //    private static String pathToStr(int j) {
-    //        String s = "";
-    //        for (int i = 0; i <= j; i++) s = s + path[i] + " ";
-    //        return s;
-    //    }
 
 
     private static boolean isZero(float x) {

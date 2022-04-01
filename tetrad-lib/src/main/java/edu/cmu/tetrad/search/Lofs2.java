@@ -709,13 +709,6 @@ public class Lofs2 {
         List<Node> condyMinus = Collections.emptyList();
         List<Node> condyPlus = Collections.singletonList(x);
 
-//        double px = pValue(x, condxMinus);
-//        double py = pValue(y, condyMinus);
-
-//        if (px > alpha || py > alpha) {
-//            return;
-//        }
-
         double xPlus = score(x, condxPlus);
         double xMinus = score(x, condxMinus);
 
@@ -1139,9 +1132,6 @@ public class Lofs2 {
         int yIndex = data.getColumn(_y);
 
         double[][] _data = data.getDoubleData().transpose().toArray();
-
-//        double[] xData = _data.viewColumn(xIndex).toArray();
-//        double[] yData = _data.viewColumn(yIndex).toArray();
 
         double[] xData = _data[xIndex];
         double[] yData = _data[yIndex];
@@ -1789,8 +1779,6 @@ public class Lofs2 {
         double median = median(xCol);
         for (int j = 0; j < xCol.length; j++) g[j] = abs(xCol[j] - median);
         return median(g) / 0.6745 * pow((4.0 / 3.0) / xCol.length, 0.2);
-//        return median(g) * pow((4.0 / 3.0) / xCol.length, 0.2);
-//        return sd(xCol) * pow((4.0 / 3.0) / xCol.length, 0.2);
     }
 
     public double kernel(double z) {

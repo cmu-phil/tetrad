@@ -50,7 +50,6 @@ public class VcpcRunner extends AbstractAlgorithmRunner
     private Set<Edge> vcpcAdjacent;
     private Set<Edge> vcpcApparent;
     private Set<Edge> vcpcDefinite;
-    private List<Node> vcpcNodes;
 
     //============================CONSTRUCTORS============================//
 
@@ -171,16 +170,12 @@ public class VcpcRunner extends AbstractAlgorithmRunner
 
     public void execute() {
         IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
-        Parameters searchParams = getParams();
-
-        Parameters params =
-                searchParams;
 
 
         Vcpc vcpc = new Vcpc(getIndependenceTest());
         vcpc.setKnowledge(knowledge);
         vcpc.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
-        vcpc.setDepth(params.getInt("depth", -1));
+        vcpc.setDepth(getParams().getInt("depth", -1));
         if (this.independenceFactsModel != null) {
             vcpc.setFacts(this.independenceFactsModel.getFacts());
         }
@@ -226,8 +221,6 @@ public class VcpcRunner extends AbstractAlgorithmRunner
      */
     public List<String> getTriplesClassificationTypes() {
         List<String> names = new ArrayList<>();
-//        names.add("ColliderDiscovery");
-//        names.add("Noncolliders");
         names.add("Ambiguous Triples");
         return names;
     }
@@ -238,8 +231,6 @@ public class VcpcRunner extends AbstractAlgorithmRunner
     public List<List<Triple>> getTriplesLists(Node node) {
         List<List<Triple>> triplesList = new ArrayList<>();
         Graph graph = getGraph();
-//        triplesList.add(DataGraphUtils.getCollidersFromGraph(node, graph));
-//        triplesList.add(DataGraphUtils.getNoncollidersFromGraph(node, graph));
         triplesList.add(GraphUtils.getAmbiguousTriplesFromGraph(node, graph));
         return triplesList;
     }
@@ -286,12 +277,9 @@ public class VcpcRunner extends AbstractAlgorithmRunner
         this.vcpcAdjacent = vcpc.getAdjacencies();
         this.vcpcApparent = vcpc.getApparentNonadjacencies();
         this.vcpcDefinite = vcpc.getDefiniteNonadjacencies();
-        this.vcpcNodes = getGraph().getNodes();
+        List<Node> vcpcNodes = getGraph().getNodes();
     }
 
-//    public Vcpc getVcpc() {
-//        return vcpc;
-//    }
 }
 
 

@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -57,9 +58,7 @@ public class IndTestModel implements SessionModel {
     public IndTestModel(IndTestProducer[] producers, Parameters parameters) {
         this.indTestProducers = new ArrayList<>();
 
-        for (IndTestProducer producer : producers) {
-            this.indTestProducers.add(producer);
-        }
+        this.indTestProducers.addAll(Arrays.asList(producers));
     }
 
     public List<IndTestProducer> getIndTestProducers() {

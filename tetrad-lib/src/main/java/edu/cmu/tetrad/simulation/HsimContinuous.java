@@ -46,8 +46,8 @@ public class HsimContinuous {
     //**************Public methods***********************//
 
     public DataSet hybridsimulate() {
-        /**Find Markov Blankets for resimulated variables**/
-        /**this needs to be made general, rather than only for two specific names nodes**/
+        // Find Markov Blankets for resimulated variables**/
+        // this needs to be made general, rather than only for two specific names nodes**/
         if (this.verbose) System.out.println("Finding a Markov blanket for resimulated nodes");
         Set<Node> mbAll = new HashSet<Node>(); //initialize an empty set of nodes;
         Set<Node> mbAdd = new HashSet<Node>(); //init set for adding
@@ -60,14 +60,14 @@ public class HsimContinuous {
 
         if (this.verbose) System.out.println("The Markov Blanket is " + mbAll);
 
-        /**Find the subgraph for the resimulated variables and their markov blanket**/
+        // Find the subgraph for the resimulated variables and their markov blanket**/
         if (this.verbose) System.out.println("Finding a subgraph over the Markov Blanket and Resimulated Nodes");
 
         //need a List as input for subgraph method, but mbAll is a Set
         List<Node> mbListAll = new ArrayList<Node>(mbAll);
         Graph subgraph = this.mydag.subgraph(mbListAll);
 
-        /**Learn an instantiated model over the subgraph**/
+        // Learn an instantiated model over the subgraph**/
         if (this.verbose) System.out.println("Learning an instantiated model for the subgraph");
 
         //Do this step continuous instead of discrete:
@@ -78,7 +78,7 @@ public class HsimContinuous {
 
         //if (verbose) System.out.println(fittedsubgraphIM.getVariable());
 
-        /**Use the learned instantiated subgraph model to create the resimulated data**/
+        // Use the learned instantiated subgraph model to create the resimulated data**/
         if (this.verbose) System.out.println("Starting resimulation loop");
 
         //Use the BayesIM to learn the conditional marginal distribution of X given mbAll
@@ -103,14 +103,13 @@ public class HsimContinuous {
             SemEvidence evidence = new SemEvidence(subgraphIM);
 
             //need to define the set of variables being conditioned upon. Start with the outer set of MB
-            Set<Node> mbOuter = mbAll;
             //need to remove the whole set of starters, not just some X and Y... how do? loop a .remove?
             for (Node node : this.simnodes) {
-                mbOuter.remove(node);
+                mbAll.remove(node);
             }
 
             //loop through all the nodes being conditioned upon, and set their values in the evidence prop
-            for (Node i : mbOuter) {
+            for (Node i : mbAll) {
                 //int nodeIndex = evidence.getNodeIndex(i.getName());
                 int nodeColumn = this.data.getColumn(i);
                 evidence.getProposition().setValue(i, this.data.getDouble(row, nodeColumn));
@@ -153,7 +152,7 @@ public class HsimContinuous {
         return mb;
     }
 
-    //***********Private methods for setting private variables***********//
+    /// *********Private methods for setting private variables***********//
     private void setVerbose(boolean verbosity) {
         this.verbose = verbosity;
     }

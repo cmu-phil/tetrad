@@ -136,9 +136,6 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
                     oldReferencedNames.add(node2.getName());
                 }
 
-//                System.out.println("\nnode = " + node);
-//                System.out.println("Parents = " + parents);
-//                System.out.println("Old referenced names = " + oldReferencedNames);
                 String template;
 
                 if (this.semPm.getVariableNodes().contains(node)) {

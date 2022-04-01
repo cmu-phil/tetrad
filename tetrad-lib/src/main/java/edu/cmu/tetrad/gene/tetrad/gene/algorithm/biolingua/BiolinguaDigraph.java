@@ -21,17 +21,17 @@
 
 package edu.cmu.tetrad.gene.tetrad.gene.algorithm.biolingua;
 
+
+import edu.cmu.tetrad.gene.tetrad.gene.algorithm.util.OutputGraph;
+
+import java.io.IOException;
+
 /**
  * Implements a digraph to be used by the Biolingua algorithm.<p>
  *
  * @author <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul Saavedra</a>
  * (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
  */
-
-import edu.cmu.tetrad.gene.tetrad.gene.algorithm.util.OutputGraph;
-
-import java.io.IOException;
-
 public class BiolinguaDigraph extends Digraph implements OutputGraph {
 
     /**

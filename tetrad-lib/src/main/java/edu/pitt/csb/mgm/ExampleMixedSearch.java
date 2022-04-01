@@ -36,9 +36,6 @@ public class ExampleMixedSearch {
     public static void main(String[] args) {
         try {
             String path = args[0];
-            //String path = ExampleMixedSearch.class.getResource("test_data").getPath();
-            //DoubleMatrix2D xIn = DoubleFactory2D.dense.make(MixedUtils.loadDataSelect(path, "med_test_C.txt"));
-            //DoubleMatrix2D yIn = DoubleFactory2D.dense.make(MixedUtils.loadDataSelect(path, "med_test_D.txt"));
             Graph trueGraph = GraphUtils.loadGraphTxt(new File(path, "DAG_0_graph.txt"));
             DataSet data = MixedUtils.loadDataSet(path, "DAG_0_data.txt");
 

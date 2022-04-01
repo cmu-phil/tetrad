@@ -76,15 +76,15 @@ public class ADTreeTest {
         // create the tree
         long start = System.currentTimeMillis();
         ADTree<Node, Short> adTree = new ADTree<>(dataTable);
-        System.out.println(String.format("Generated tree in %s millis", System.currentTimeMillis() - start));
+        System.out.printf("Generated tree in %s millis%n", System.currentTimeMillis() - start);
 
         // the query is an arbitrary map of vars and their values
         TreeMap<Node, Short> query = new TreeMap<>();
         query.put(ADTreeTest.node(pm, "X1"), (short) 1);
         query.put(ADTreeTest.node(pm, "X5"), (short) 0);
         start = System.currentTimeMillis();
-        System.out.println(String.format("Count is %d", adTree.count(query)));
-        System.out.println(String.format("Query in %s ms", System.currentTimeMillis() - start));
+        System.out.printf("Count is %d%n", adTree.count(query));
+        System.out.printf("Query in %s ms%n", System.currentTimeMillis() - start);
 
         query.clear();
         query.put(ADTreeTest.node(pm, "X1"), (short) 1);
@@ -92,8 +92,8 @@ public class ADTreeTest {
         query.put(ADTreeTest.node(pm, "X5"), (short) 0);
         query.put(ADTreeTest.node(pm, "X10"), (short) 1);
         start = System.currentTimeMillis();
-        System.out.println(String.format("Count is %d", adTree.count(query)));
-        System.out.println(String.format("Query in %s ms", System.currentTimeMillis() - start));
+        System.out.printf("Count is %d%n", adTree.count(query));
+        System.out.printf("Query in %s ms%n", System.currentTimeMillis() - start);
 
 
     }

@@ -69,9 +69,7 @@ public class Gdistance {
 
         //This for loop should be parallelized in the future.
         //let the for loop do its thing, and create a new thread for each task inside of it.
-        //int edgetracker=1;
 
-        //ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
         List<Callable<Void>> todo = new ArrayList<Callable<Void>>();
         ExecutorService executorService = Executors.newCachedThreadPool();
 
@@ -124,7 +122,7 @@ public class Gdistance {
             System.out.println("number of parallel tasks being invoked: " + todo.size());
             executorService.invokeAll(todo);
             executorService.shutdown();
-        } catch (Exception e) {
+        } catch (Exception ignored) {
 
         }
         System.out.println(this.leastList.size());
@@ -142,13 +140,6 @@ public class Gdistance {
 
         protected void compute(List<Edge> edges) {
             //System.out.println("running thread");
-            /*
-            try{
-                TimeUnit.SECONDS.sleep(3);
-            } catch (Exception e){
-
-            }
-            */
 
             for (Edge edge1 : edges) {
                 //the variable "count" is used to initialize leastDistance to the first thisDistance
@@ -206,10 +197,9 @@ public class Gdistance {
         //taxicab distance
         //double taxicab = Math.abs(value11 - value21) + Math.abs(value12 - value22) + Math.abs(value13 - value23);
         //euclidian distance instead of taxicab
-        double euclid = Math.sqrt((value11 - value21) * x * (value11 - value21) * x + (value12 - value22) * y *
-                (value12 - value22) * y + (value13 - value23) * z * (value13 - value23) * z);
 
-        return euclid;
+        return Math.sqrt((value11 - value21) * x * (value11 - value21) * x + (value12 - value22) * y *
+                (value12 - value22) * y + (value13 - value23) * z * (value13 - value23) * z);
     }
 
     private static double edgesDistance(Edge edge1, Edge edge2, DataSet locationMap, double xD, double yD, double zD) {

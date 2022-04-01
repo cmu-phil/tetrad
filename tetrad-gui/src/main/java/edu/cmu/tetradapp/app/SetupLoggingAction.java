@@ -133,19 +133,8 @@ public class SetupLoggingAction extends AbstractAction {
         // Do Layout.
         Box b1 = Box.createVerticalBox();
 
-//        Box b2 = Box.createHorizontalBox();
-//        b2.add(new JLabel("Activate Logging: "));
-//        b2.add(Box.createHorizontalStrut(5));
-//        b2.add(activateCombo);
-//        b2.add(Box.createHorizontalGlue());
-//
-//        b1.add(b2);
-//        b1.add(Box.createVerticalStrut(5));
-
         b1.add(SetupLoggingAction.createLogToBox());
         b1.add(Box.createVerticalStrut(5));
-//        b1.add(automaticBox);
-//        b1.add(Box.createVerticalStrut(10));
 
         Box b4 = Box.createHorizontalBox();
         b4.add(new JLabel("Output Directory:"));

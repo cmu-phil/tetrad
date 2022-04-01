@@ -127,10 +127,6 @@ public class TestFges {
         for (int i = 0; i < counts.length; i++) {
             assertTrue(Arrays.equals(counts[i], expectedCounts[i]));
         }
-//
-
-//        System.out.println(MatrixUtils.toString(expectedCounts));
-//        System.out.println(MatrixUtils.toString(counts));
 
     }
 
@@ -185,13 +181,6 @@ public class TestFges {
                 {0, 0, 0, 0, 0, 0},
         };
 
-//        for (int i = 0; i < counts.length; i++) {
-//            assertTrue(Arrays.equals(counts[i], expectedCounts[i]));
-//        }
-
-//        System.out.println(MatrixUtils.toString(expectedCounts));
-//        System.out.println(MatrixUtils.toString(counts));
-//        System.out.println(RandomUtil.getInstance().getSeed());
     }
 
 
@@ -246,9 +235,6 @@ public class TestFges {
         Fges fges = new Fges(new GraphScore(g));
         fges.setFaithfulnessAssumed(true);
         Graph CPDAG2 = fges.search();
-
-//        System.out.println(CPDAG1);
-//        System.out.println(CPDAG2);
 
         assertEquals(CPDAG1, CPDAG2);
     }
@@ -570,9 +556,6 @@ public class TestFges {
         knowledge.addToTier(6, "CITES");
 
         SemBicScore score = new SemBicScore(cov);
-//        score.setRuleType(SemBicScore.RuleType.NANDY);
-//        score.setPenaltyDiscount(1);
-//        score.setStructurePrior(0);
         Fges fges = new Fges(score);
         fges.setKnowledge(knowledge);
 
@@ -629,12 +612,6 @@ public class TestFges {
         Graph trueGraph = GraphConverter.convert(outputGraph);
 
         // PrintUtil out problem and graphs.
-//        System.out.println("\nInput graph:");
-//        System.out.println(graph);
-//        System.out.println("\nResult graph:");
-//        System.out.println(resultGraph);
-//        System.out.println("\nTrue graph:");
-//        System.out.println(trueGraph);
 
         resultGraph = GraphUtils.replaceNodes(resultGraph, trueGraph.getNodes());
 
@@ -852,62 +829,6 @@ public class TestFges {
         return knowledge;
     }
 
-
-//    @Test
-//    public void testFromData() {
-//        Parameters parameters = new Parameters();
-//        parameters.set(Params.STANDARDIZE, false);
-//        parameters.set(Params.MEASUREMENT_VARIANCE, 0);
-//        parameters.set(Params.NUM_RUNS, 1);
-//        parameters.set(Params.DIFFERENT_GRAPHS, true);
-//        parameters.set(Params.SAMPLE_SIZE, 1000);
-//
-//        parameters.set(Params.NUM_MEASURES, 100);
-//        parameters.set(Params.NUM_LATENTS, 0);
-//        parameters.set(Params.AVG_DEGREE, 6);
-//
-////        parameters.set("maxDegree", 100);
-////        parameters.set("maxIndegree", 100);
-////        parameters.set("maxOutdegree", 100);
-//
-//        parameters.set(Params.SYMMETRIC_FIRST_STEP, true);
-//
-//        parameters.set(Params.ADJACENCY_FAITHFULNESS_ASSUMED, false);
-//        parameters.set(Params.PENALTY_DISCOUNT, 2);
-//        parameters.set(Params.ALPHA, 0.001);
-//
-//        parameters.set(Params.COEF_LOW, 0.2);
-//        parameters.set(Params.COEF_HIGH, 0.9);
-//        parameters.set(Params.VAR_LOW, 1);
-//        parameters.set(Params.VAR_HIGH, 3);
-//        parameters.set(Params.COEF_SYMMETRIC, true);
-//        parameters.set(Params.COV_SYMMETRIC, true);
-//
-//        parameters.set(Params.RANDOMIZE_COLUMNS, true);
-//
-//        SemSimulation simulation = new SemSimulation(new RandomForward());
-//        simulation.createData(parameters);
-//        Graph dag = simulation.getTrueGraph(0);
-//
-//        DataModel dataSet = simulation.getDataModel(0);
-//
-//        edu.cmu.tetrad.algcomparison.algorithm.oracle.CPDAG.PcFges pcFges
-//                = new edu.cmu.tetrad.algcomparison.algorithm.oracle.CPDAG.PcFges(
-//                new edu.cmu.tetrad.algcomparison.score.SemBicScore(),false);
-//
-//        long start = System.currentTimeMillis();
-//
-//        Graph graph = pcFges.search(dataSet, parameters);
-//
-//        long stop = System.currentTimeMillis();
-//
-//        System.out.println("Elapsed " + (stop - start) + " ms");
-//
-//        graph = GraphUtils.replaceNodes(graph, dag.getNodes());
-//
-//        System.out.println(MisclassificationUtils.edgeMisclassifications(graph, dag));
-//
-//    }
 
     private Graph getSubgraph(Graph graph, boolean discrete1, boolean discrete2, DataSet dataSet) {
         Graph newGraph = new EdgeListGraph(graph.getNodes());
@@ -1589,10 +1510,6 @@ public class TestFges {
 //        for (int l = 7; l >= 1; l--) {
         for (int i = 2; i <= 20; i++) {
             parameters.set(Params.PENALTY_DISCOUNT, i / (double) 10);
-//            parameters.set("alpha", Double.parseDouble("1E-" + l));
-
-//            ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
-//            Algorithm alg = new edu.cmu.tetrad.algcomparison.algorithm.oracle.CPDAG.Fges(score);
 
             ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
             Algorithm alg = new CPC(new FisherZ());

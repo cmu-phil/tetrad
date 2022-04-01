@@ -246,17 +246,6 @@ public class TestFci {
 
         // Run search
         Graph resultGraph = fci.search();
-//
-//        // Build comparison graph.
-//        Graph compareGraph = new EdgeListGraph(GraphConverter.convert(outputGraph));
-//
-//        // Do test (output of FCI search equals true graph)
-//        resultGraph.setUnderLineTriples(compareGraph.getUnderLines());
-//        resultGraph.setDottedUnderLineTriples(compareGraph.getDottedUnderlines());
-//
-//        resultGraph = GraphUtils.replaceNodes(resultGraph, compareGraph.getNodes());
-//
-//        assertTrue(compareGraph.equals(resultGraph));
     }
 
     //    @Test
@@ -347,27 +336,6 @@ public class TestFci {
                 }
             }
 
-//            {
-//                TextTable table = new TextTable(5, 3);
-//                table.setToken(0, 1, "Ancestral");
-//                table.setToken(0, 2, "Nonancestral");
-//                table.setToken(1, 0, "Ancestral");
-//                table.setToken(2, 0, "Nonancestral");
-//                table.setToken(3, 0, "Ambiguous");
-//                table.setToken(4, 0, "Total");
-//
-//                table.setToken(1, 1, ancAnc + "");
-//                table.setToken(2, 1, nancAnc + "");
-//                table.setToken(3, 1, ambAnc + "");
-//                table.setToken(1, 2, ancNanc + "");
-//                table.setToken(2, 2, nancNanc + "");
-//                table.setToken(3, 2, ambNanc + "");
-//                table.setToken(4, 1, totalAncMarg + "");
-//                table.setToken(4, 2, totalNancMarg + "");
-//
-//                System.out.println(table);
-//            }
-
             {
                 TextTable table = new TextTable(5, 3);
                 table.setToken(0, 1, "Ancestral");
@@ -447,8 +415,6 @@ public class TestFci {
         SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
         score.setPenaltyDiscount(penaltyDiscount);
 
-//        GraphSearch search = new Fci(test);
-//        GraphSearch search = new GFci(score);
         GraphSearch search = new Pc(test);
 
         return search.search();

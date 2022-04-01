@@ -162,9 +162,6 @@ public class TestSemVarMeans {
         Node x4 = new GraphNode("X4");
         Node x5 = new GraphNode("X5");
 
-        //x1.setNodeType(NodeType.LATENT);
-        //x2.setNodeType(NodeType.LATENT);
-
         graph.addNode(x1);
         graph.addNode(x2);
         graph.addNode(x3);

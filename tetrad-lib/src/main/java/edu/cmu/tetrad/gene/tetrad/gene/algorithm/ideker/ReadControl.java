@@ -64,8 +64,6 @@ public class ReadControl {
                 try {
                     st = new StringTokenizer(in.readLine());
                     if (j == 0) {
-                        //                        String lbl = st.nextToken(" ");
-                        //System.out.println("label = " + lbl);
                         continue;
                     }
                     if (k == 0) {
@@ -104,8 +102,6 @@ public class ReadControl {
                 for (int k = 0; k < readingsPerPerturbation; k++) {
                     if (rawData[j][i * readingsPerPerturbation + k] > -900) {
                         n++;
-                        //if(i ==0 && j ==0)
-                        //System.out.println(k + " " + rawData[j][i*readingsPerPerturbation+k]);
                         sum += rawData[j][i * readingsPerPerturbation + k];
                     }
                 }

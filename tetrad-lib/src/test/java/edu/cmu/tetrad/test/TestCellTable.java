@@ -287,7 +287,7 @@ public final class TestCellTable {
             {0, 0, 1, 0}, {0, 1, 0, 1}, {1, 1, 1, 0}, {0, 1, 0, 1},
             {0, 1, 0, 1}, {0, 0, 0, 1}};
 
-    public final void setUp() {
+    public void setUp() {
 
         this.table = new CellTable(this.dims);
 
@@ -312,7 +312,7 @@ public final class TestCellTable {
     }
 
     @Test
-    public final void testCount() {
+    public void testCount() {
         setUp();
 
         // Pick 8 random cells, count those cells, test the counts in
@@ -330,6 +330,7 @@ public final class TestCellTable {
                 for (int j = 0; j < this.data[0].length; j++) {
                     if (aData[j] != testCell[j]) {
                         inCell = false;
+                        break;
                     }
                 }
 
@@ -343,7 +344,7 @@ public final class TestCellTable {
     }
 
     @Test
-    public final void testMargins() {
+    public void testMargins() {
         setUp();
 
         // Test 15 margin calculations.

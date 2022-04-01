@@ -66,16 +66,6 @@ public class ShiftDataWrapper extends DataWrapper {
 
             DataSet dataSet = (DataSet) model;
 
-//            if (rows == -1) {
-//                rows = dataSet.getNumRows();
-//                cols = dataSet.getNumColumns();
-//            } else {
-//                if (dataSet.getNumRows() != rows || dataSet.getNumColumns() != cols) {
-//                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-//                            "For the shift search, all of the data sets in the data box must have the same dimensions.");
-//                    return;
-//                }
-//            }
         }
 
         List<DataSet> dataSets = new ArrayList<>();
@@ -94,9 +84,7 @@ public class ShiftDataWrapper extends DataWrapper {
 
         DataModelList _list = new DataModelList();
 
-        for (DataSet dataSet : backshiftedDataSets) {
-            _list.add(dataSet);
-        }
+        _list.addAll(backshiftedDataSets);
 
         this.setDataModel(_list);
         this.setSourceGraph(data.getSourceGraph());

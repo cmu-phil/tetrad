@@ -60,9 +60,9 @@ public class MathUtils {
         if (a == 0 && b == 0) {
             return 1;
         } else if (a == 0 && b > 0) {
-            return (int) Math.round(Math.exp(1 - (MathUtils.logFactorial(b) + MathUtils.logFactorial(0 - b))));
+            return (int) Math.round(Math.exp(1 - (MathUtils.logFactorial(b) + MathUtils.logFactorial(-b))));
         } else if (a > 0 && b == 0) {
-            return (int) Math.round(Math.exp(MathUtils.logFactorial(a) - (1 + MathUtils.logFactorial(a - 0))));
+            return (int) Math.round(Math.exp(MathUtils.logFactorial(a) - (1 + MathUtils.logFactorial(a))));
         } else if (a > 0 && b > 0) {
             return (int) Math.round(Math.exp(MathUtils.logFactorial(a) - (MathUtils.logFactorial(b) + MathUtils.logFactorial(a - b))));
         } else {

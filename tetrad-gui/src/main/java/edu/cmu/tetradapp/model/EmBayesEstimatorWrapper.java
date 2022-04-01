@@ -69,26 +69,6 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
 
     //============================CONSTRUCTORS==========================//
 
-//    public EmBayesEstimatorWrapper(DataWrapper dataWrapper,
-//            BayesPmWrapper bayesPmWrapper) {
-//        if (dataWrapper == null) {
-//            throw new NullPointerException(
-//                    "BayesDataWrapper must not be null.");
-//        }
-//
-//        if (bayesPmWrapper == null) {
-//            throw new NullPointerException("BayesPmWrapper must not be null");
-//        }
-//
-//        this.dataSet = (RectangularDataSet) dataWrapper.getSelectedDataModel();
-//        BayesPm bayesPm = bayesPmWrapper.getBayesPm();
-//
-//        estimate(this.dataSet, bayesPm, 0.001);
-//
-//        LogUtils.getInstance().finer("Estimated Bayes IM:");
-//        LogUtils.getInstance().finer("" + estimateBayesIm);
-//    }
-
     public EmBayesEstimatorWrapper(DataWrapper dataWrapper,
                                    BayesPmWrapper bayesPmWrapper, Parameters params) {
         if (dataWrapper == null) {
@@ -121,45 +101,6 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
         TetradLogger.getInstance().log("info", "EM-Estimated Bayes IM:");
         TetradLogger.getInstance().log("im", "" + this.estimateBayesIm);
     }
-
-//    public EmBayesEstimatorWrapper(DataWrapper dataWrapper,
-//            BayesImWrapper bayesImWrapper, Parameters params) {
-//        TetradLogger.getInstance().log("info", "EM-Estimated Bayes IM:");
-//
-//        if (dataWrapper == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        if (bayesImWrapper == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        if (params == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        DataSet dataSet =
-//                (DataSet) dataWrapper.getSelectedDataModel();
-//        BayesPm bayesPm = bayesImWrapper.getBayesIm().getBayesPm();
-//
-//        EmBayesEstimator estimator = new EmBayesEstimator(bayesPm, dataSet);
-//        this.dataSet = estimator.getMixedDataSet();
-//
-//        System.out.println("B" + dataSet.getVariable());
-//
-//        try {
-//            estimator.maximization(params.getDouble("tolerance", 0.0001));
-//            this.estimateBayesIm = estimator.getEstimatedIm();
-//        }
-//        catch (IllegalArgumentException e) {
-//            e.printStackTrace();
-//
-//            throw new RuntimeException(
-//                    "Please specify the search tolerance first.");
-//        }
-//
-//        TetradLogger.getInstance().log("im", "" + estimateBayesIm);
-//    }
 
     /**
      * Generates a simple exemplar of this class to test serialization.

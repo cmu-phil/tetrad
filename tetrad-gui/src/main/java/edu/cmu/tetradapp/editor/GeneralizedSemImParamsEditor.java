@@ -65,7 +65,6 @@ class GeneralizedSemImParamsEditor extends JPanel {
         /*
       The set of launched editors--or rather, the nodes for the launched editors.
      */
-        Map<Object, EditorWindow> launchedEditors1 = launchedEditors;
         this.semPm = semIm.getSemPm();
         freshenDisplay();
     }
@@ -104,7 +103,6 @@ class GeneralizedSemImParamsEditor extends JPanel {
         Collections.sort(_parameters);
 
         for (String parameter : _parameters) {
-            String _parameter = parameter;
 
             Box c = Box.createHorizontalBox();
             c.add(new JLabel(parameter + " = "));
@@ -113,7 +111,7 @@ class GeneralizedSemImParamsEditor extends JPanel {
 
             field.setFilter(new DoubleTextField.Filter() {
                 public double filter(double value, double oldValue) {
-                    GeneralizedSemImParamsEditor.this.semIm.setParameterValue(_parameter, value);
+                    GeneralizedSemImParamsEditor.this.semIm.setParameterValue(parameter, value);
                     return value;
                 }
             });

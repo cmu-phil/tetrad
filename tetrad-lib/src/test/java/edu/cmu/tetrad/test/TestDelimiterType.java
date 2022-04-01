@@ -34,7 +34,7 @@ import static org.junit.Assert.assertTrue;
 public final class TestDelimiterType {
 
     @Test
-    public final void testTypes() {
+    public void testTypes() {
         assertTrue("Tab".equals(DelimiterType.TAB.toString()));
         assertTrue("Whitespace".equals(DelimiterType.WHITESPACE.toString()));
         assertTrue("Comma".equals(DelimiterType.COMMA.toString()));

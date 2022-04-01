@@ -171,12 +171,10 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
                                     dataBuilder.append((char) currChar);
                                 } else {
                                     boolean isDelimiter;
-                                    switch (this.delimiter) {
-                                        case WHITESPACE:
-                                            isDelimiter = (currChar <= DataFileReader.SPACE_CHAR) && (prevChar > DataFileReader.SPACE_CHAR);
-                                            break;
-                                        default:
-                                            isDelimiter = (currChar == delimChar);
+                                    if (this.delimiter == Delimiter.WHITESPACE) {
+                                        isDelimiter = (currChar <= DataFileReader.SPACE_CHAR) && (prevChar > DataFileReader.SPACE_CHAR);
+                                    } else {
+                                        isDelimiter = (currChar == delimChar);
                                     }
 
                                     if (isDelimiter) {
@@ -352,12 +350,10 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
                                     dataBuilder.append((char) currChar);
                                 } else {
                                     boolean isDelimiter;
-                                    switch (this.delimiter) {
-                                        case WHITESPACE:
-                                            isDelimiter = (currChar <= DataFileReader.SPACE_CHAR) && (prevChar > DataFileReader.SPACE_CHAR);
-                                            break;
-                                        default:
-                                            isDelimiter = (currChar == delimChar);
+                                    if (this.delimiter == Delimiter.WHITESPACE) {
+                                        isDelimiter = (currChar <= DataFileReader.SPACE_CHAR) && (prevChar > DataFileReader.SPACE_CHAR);
+                                    } else {
+                                        isDelimiter = (currChar == delimChar);
                                     }
 
                                     if (isDelimiter) {
@@ -507,7 +503,7 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
         return numOfCases;
     }
 
-    private final class LowerCovarianceData implements CovarianceData {
+    private static final class LowerCovarianceData implements CovarianceData {
 
         private final int numberOfCases;
         private final List<String> variables;

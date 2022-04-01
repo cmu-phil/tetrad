@@ -40,10 +40,6 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
 
     static final long serialVersionUID = 23L;
 
-//    private String name;
-//    private Parameters params;
-//    private KnowledgeBoxInput knowledgeBoxInput;
-//    private List<String> varNames = new ArrayList<String>();
     /**
      * @serial @deprecated
      */
@@ -139,11 +135,8 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
             throw new NullPointerException();
         }
 
-        SortedSet<Node> variableNodes = new TreeSet<>();
-        SortedSet<String> variableNames = new TreeSet<>();
-
-        variableNodes.addAll(input.getVariables());
-        variableNames.addAll(input.getVariableNames());
+        SortedSet<Node> variableNodes = new TreeSet<>(input.getVariables());
+        SortedSet<String> variableNames = new TreeSet<>(input.getVariableNames());
 
         this.variables = new ArrayList<>(variableNodes);
         this.variableNames = new ArrayList<>(variableNames);

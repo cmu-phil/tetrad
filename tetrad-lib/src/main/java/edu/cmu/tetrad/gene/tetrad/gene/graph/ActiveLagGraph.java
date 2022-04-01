@@ -124,7 +124,7 @@ public class ActiveLagGraph implements LagGraph {
                 this.lagGraph.addEdge(factor, laggedFactor);
                 getPropertyChangeManager().firePropertyChange("edgeAdded", null,
                         new LaggedEdge(factor, laggedFactor));
-            } catch (Exception e) {
+            } catch (Exception ignored) {
             }
         }
     }
@@ -145,7 +145,7 @@ public class ActiveLagGraph implements LagGraph {
                 this.lagGraph.addFactor(factor);
                 getPropertyChangeManager().firePropertyChange("nodeAdded", null,
                         factor);
-            } catch (Exception e) {
+            } catch (Exception ignored) {
             }
         }
     }

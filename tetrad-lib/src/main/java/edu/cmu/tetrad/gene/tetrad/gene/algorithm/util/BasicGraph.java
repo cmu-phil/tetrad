@@ -21,15 +21,15 @@
 
 package edu.cmu.tetrad.gene.tetrad.gene.algorithm.util;
 
+
+import java.io.*;
+
 /**
  * Basic functionality that all graph-derived classes should provide.
  *
  * @author <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul Saavedra</a>
  * (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
  */
-
-import java.io.*;
-
 public abstract class BasicGraph {
 
     /**

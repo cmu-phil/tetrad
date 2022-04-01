@@ -122,8 +122,6 @@ public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
-//        return SearchGraphUtils.cpdagForDag(graph);
-//        return new TsDagToPag(new EdgeListGraph(graph)).convert();
     }
 
     @Override

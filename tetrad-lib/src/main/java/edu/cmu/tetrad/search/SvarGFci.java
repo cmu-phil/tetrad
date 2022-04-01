@@ -104,9 +104,6 @@ public final class SvarGFci implements GraphSearch {
     // The structure prior for the Bdeu score (discrete data).
     private double structurePrior = 1;
 
-    // Map from variables to their column indices in the data set.
-    private ConcurrentMap<Node, Integer> hashIndices;
-
     // The print stream that output is directed to.
     private PrintStream out = System.out;
 
@@ -117,7 +114,6 @@ public final class SvarGFci implements GraphSearch {
     private Score score;
 
     private SepsetProducer sepsets;
-    private long elapsedTime;
 
     private final int depth = -1;
 
@@ -163,13 +159,6 @@ public final class SvarGFci implements GraphSearch {
 //        System.out.println("GFCI: FGES done");
 
         this.sepsets = new SepsetsGreedy(fgesGraph, this.independenceTest, null, this.maxIndegree);
-//        ((SepsetsGreedy) sepsets).setMaxDegree(3);
-//        sepsets = new SepsetsConservative(fgesGraph, independenceTest, null, maxIndegree);
-//        sepsets = new SepsetsConservativeMajority(fgesGraph, independenceTest, null, maxIndegree);
-//        sepsets = new SepsetsMaxPValue(fgesGraph, independenceTest, null, maxIndegree);
-//        sepsets = new SepsetsMinScore(fgesGraph, independenceTest, null, maxIndegree);
-//
-//        System.out.println("GFCI: Look inside triangles starting");
 
         for (Node b : nodes) {
             List<Node> adjacentNodes = fgesGraph.getAdjacentNodes(b);
@@ -192,54 +181,15 @@ public final class SvarGFci implements GraphSearch {
                 if (this.graph.isAdjacentTo(a, c) && fgesGraph.isAdjacentTo(a, c)) {
                     if (this.sepsets.getSepset(a, c) != null) {
                         this.graph.removeEdge(a, c);
-                        /** removing similar edges to enforce repeating structure **/
+                        //  removing similar edges to enforce repeating structure **/
                         removeSimilarEdges(a, c);
-                        /** **/
+                        //  **/
                     }
                 }
             }
         }
 
-//        SepsetMap map = new SepsetMap();
-//
-//        for (Edge edge : graph.getEdges()) {
-//            Node a = edge.getNode1();
-//            Node c = edge.getNode2();
-//
-//            Edge e = fgesGraph.getEdge(a, c);
-//
-//            if (e != null && e.isDirected()) {
-//
-//                // Only the ones that are in triangles.
-//                Set<Node> _adj = new HashSet<>(fgesGraph.getAdjacentNodes(a));
-//                _adj.retainAll(fgesGraph.getAdjacentNodes(c));
-//                if (_adj.isEmpty()) continue;
-//
-//                Node f = Edges.getDirectedEdgeHead(e);
-//                List<Node> adj = fgesGraph.getAdjacentNodes(f);
-//                adj.remove(Edges.getDirectedEdgeTail(e));
-//
-//                DepthChoiceGenerator gen = new DepthChoiceGenerator(adj.size(), adj.size());
-//                int[] choice;
-//
-//                while ((choice = gen.next()) != null) {
-//                    List<Node> cond = GraphUtils.asList(choice, adj);
-//
-//                    if (independenceTest.isIndependent(a, c, cond)) {
-//                        graph.removeEdge(a, c);
-//                        map.set(a, c, cond);
-//                    }
-//                }
-//            }
-//        }
-
-//        System.out.println("GFCI: Look inside triangles done");
-
         modifiedR0(fgesGraph);
-
-//    modifiedR0(fgesGraph, map);
-
-//        System.out.println("GFCI: R0 done");
 
         SvarFciOrient fciOrient = new SvarFciOrient(this.sepsets, this.independenceTest);
         fciOrient.setKnowledge(getKnowledge());
@@ -253,7 +203,7 @@ public final class SvarGFci implements GraphSearch {
 
         long time2 = System.currentTimeMillis();
 
-        this.elapsedTime = time2 - time1;
+        long elapsedTime = time2 - time1;
 
         this.graph.setPag(true);
 
@@ -329,10 +279,10 @@ public final class SvarGFci implements GraphSearch {
                 if (fgesGraph.isDefCollider(a, b, c)) {
                     this.graph.setEndpoint(a, b, Endpoint.ARROW);
                     this.graph.setEndpoint(c, b, Endpoint.ARROW);
-                    /** orienting similar pairs to enforce repeating structure **/
+                    //  orienting similar pairs to enforce repeating structure **/
                     orientSimilarPairs(this.graph, this.knowledge, a, b, Endpoint.ARROW);
                     orientSimilarPairs(this.graph, this.knowledge, c, b, Endpoint.ARROW);
-                    /** **/
+                    //  **/
 
                 } else if (fgesGraph.isAdjacentTo(a, c) && !this.graph.isAdjacentTo(a, c)) {
                     List<Node> sepset = this.sepsets.getSepset(a, c);
@@ -340,10 +290,10 @@ public final class SvarGFci implements GraphSearch {
                     if (sepset != null && !sepset.contains(b)) {
                         this.graph.setEndpoint(a, b, Endpoint.ARROW);
                         this.graph.setEndpoint(c, b, Endpoint.ARROW);
-                        /** orienting similar pairs to enforce repeating structure **/
+                        //  orienting similar pairs to enforce repeating structure **/
                         orientSimilarPairs(this.graph, this.knowledge, a, b, Endpoint.ARROW);
                         orientSimilarPairs(this.graph, this.knowledge, c, b, Endpoint.ARROW);
-                        /** **/
+                        //  **/
                     }
                 }
             }
@@ -453,12 +403,13 @@ public final class SvarGFci implements GraphSearch {
     //===========================================PRIVATE METHODS=======================================//
 
     private void buildIndexing(List<Node> nodes) {
-        this.hashIndices = new ConcurrentHashMap<>();
+        // Map from variables to their column indices in the data set.
+        ConcurrentMap<Node, Integer> hashIndices = new ConcurrentHashMap<>();
 
         int i = 0;
 
         for (Node node : nodes) {
-            this.hashIndices.put(node, i++);
+            hashIndices.put(node, i++);
         }
     }
 
@@ -593,11 +544,6 @@ public final class SvarGFci implements GraphSearch {
                 x1 = this.independenceTest.getVariable(A);
                 y1 = this.independenceTest.getVariable(B);
 
-//                if(getSepset2(x1,y1) != null) if (getSepset2(x1,y1).isEmpty() || getSepset2(y1,x1).isEmpty()){
-//                    System.out.println("$$$ empty sepset between x1,y1 = " + x1 + " and " + y1);
-//                    continue;
-//                } // added 05.01.2016
-
                 if (graph.isAdjacentTo(x1, y1) && graph.getEndpoint(x1, y1) == Endpoint.CIRCLE) {
                     System.out.print("Orient edge " + graph.getEdge(x1, y1).toString());
                     graph.setEndpoint(x1, y1, mark);
@@ -672,32 +618,22 @@ public final class SvarGFci implements GraphSearch {
 //                Collections.sort(tmp_tier2);
                 A = (String) tmp_tier1.get(indx_comp);
                 B = (String) tmp_tier2.get(indy_comp);
-                if (A.equals(B)) continue;
-                if (A.equals(tier_x.get(indx_comp)) && B.equals(tier_y.get(indy_comp))) continue;
-                if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;
-                x1 = this.graph.getNode(A);
-                y1 = this.graph.getNode(B);
-                System.out.println("Adding pair to simList = " + x1 + " and " + y1);
-                simListX.add(x1);
-                simListY.add(y1);
             } else {
-                //System.out.println("############## WARNING (returnSimilarPairs): did not catch x,y pair " + x + ", " + y);
-                //System.out.println();
                 List tmp_tier1 = this.knowledge.getTier(i);
 //                Collections.sort(tmp_tier1);
                 List tmp_tier2 = this.knowledge.getTier(i + tier_diff);
 //                Collections.sort(tmp_tier2);
                 A = (String) tmp_tier1.get(indx_comp);
                 B = (String) tmp_tier2.get(indy_comp);
-                if (A.equals(B)) continue;
-                if (A.equals(tier_x.get(indx_comp)) && B.equals(tier_y.get(indy_comp))) continue;
-                if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;
-                x1 = this.graph.getNode(A);
-                y1 = this.graph.getNode(B);
-                System.out.println("Adding pair to simList = " + x1 + " and " + y1);
-                simListX.add(x1);
-                simListY.add(y1);
             }
+            if (A.equals(B)) continue;
+            if (A.equals(tier_x.get(indx_comp)) && B.equals(tier_y.get(indy_comp))) continue;
+            if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;
+            x1 = this.graph.getNode(A);
+            y1 = this.graph.getNode(B);
+            System.out.println("Adding pair to simList = " + x1 + " and " + y1);
+            simListX.add(x1);
+            simListY.add(y1);
         }
 
         List<List<Node>> pairList = new ArrayList<>();

@@ -60,12 +60,6 @@ public class TestGeneralResamplingTest {
      * @param args
      */
     public static void main(String[] args) {
-        //testFGESc();
-        //testFGESd();
-        //testGFCIc();
-        //testGFCId();
-        //testFCIc();
-        //testFCId();
     }
 
     @Test
@@ -145,9 +139,6 @@ public class TestGeneralResamplingTest {
 
         Graph dag = TestGeneralResamplingTest.makeDiscreteDAG(numVars, numLatentConfounders, edgesPerNode);
 
-        //System.out.println("Truth Graph:");
-        //System.out.println(dag.toString());
-
         BayesPm pm = new BayesPm(dag, 2, 3);
         BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
 
@@ -205,9 +196,6 @@ public class TestGeneralResamplingTest {
 
         DagToPag dagToPag = new DagToPag(dag);
         Graph truePag = dagToPag.convert();
-
-        //System.out.println("Truth PAG_of_the_true_DAG Graph:");
-        //System.out.println(truePag.toString());
 
         int[] causalOrdering = new int[numVars];
 
@@ -270,9 +258,6 @@ public class TestGeneralResamplingTest {
         DagToPag dagToPag = new DagToPag(dag);
         Graph truePag = dagToPag.convert();
 
-        //System.out.println("Truth PAG_of_the_true_DAG Graph:");
-        //System.out.println(truePag.toString());
-
         BayesPm pm = new BayesPm(dag, 2, 3);
         BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
 
@@ -329,9 +314,6 @@ public class TestGeneralResamplingTest {
 
         DagToPag dagToPag = new DagToPag(dag);
         Graph truePag = dagToPag.convert();
-
-        //System.out.println("Truth PAG_of_the_true_DAG Graph:");
-        //System.out.println(truePag.toString());
 
         int[] causalOrdering = new int[numVars];
 
@@ -395,9 +377,6 @@ public class TestGeneralResamplingTest {
 
         DagToPag dagToPag = new DagToPag(dag);
         Graph truePag = dagToPag.convert();
-
-        //System.out.println("Truth PAG_of_the_true_DAG Graph:");
-        //System.out.println(truePag.toString());
 
         BayesPm pm = new BayesPm(dag, 2, 3);
         BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);

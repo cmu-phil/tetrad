@@ -51,11 +51,6 @@ public final class IndTestPositiveCorr implements IndependenceTest {
     private final ICovarianceMatrix covMatrix;
     private final double[][] data;
 
-//    /**
-//     * The matrix out of the cov matrix.
-//     */
-//    private final TetradMatrix _covMatrix;
-
     /**
      * The variables of the covariance matrix, in order. (Unmodifiable list.)
      */
@@ -263,10 +258,6 @@ public final class IndTestPositiveCorr implements IndependenceTest {
             parents[j] = this.covMatrix.getVariables().indexOf(z.get(j));
         }
 
-//        int i = covMatrix.getVariable().indexOf(x);
-
-//        double variance = covMatrix.getValue(i, i);
-
         if (parents.length > 0) {
 
             // Regress z onto i, yielding regression coefficients b.
@@ -282,10 +273,6 @@ public final class IndTestPositiveCorr implements IndependenceTest {
                 return true;
             }
 
-//            TetradVector Cyz = covMatrix.getSelection(parents, new int[]{i}).getColumn(0);
-//            TetradVector b = inverse.times(Cyz);
-//
-//            variance -= Cyz.dotProduct(b);
         }
 
         return false;

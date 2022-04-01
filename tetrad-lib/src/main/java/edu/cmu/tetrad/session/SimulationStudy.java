@@ -293,9 +293,6 @@ public final class SimulationStudy {
             collectParentParamSettings(parent, paramSettings);
         }
 
-//        if (sessionNode.getModel() instanceof SimulationParamsSource) {
-//            paramSettings.putAll(((SimulationParamsSource) sessionNode.getModel()).getParamSettings());
-//        }
     }
 
     /**
@@ -318,11 +315,10 @@ public final class SimulationStudy {
         Set<SessionNode> sessionNodes = session.getNodes();
 
         LinkedList<SessionNode> found = new LinkedList<>();
-        Set<SessionNode> notFound = new HashSet<>();
 
         // The getVariableNodes() method already returns a copy, so there's no
         // need to make a new copy.
-        notFound.addAll(sessionNodes);
+        Set<SessionNode> notFound = new HashSet<>(sessionNodes);
 
         while (!notFound.isEmpty()) {
             for (Iterator<SessionNode> it = notFound.iterator(); it.hasNext(); ) {

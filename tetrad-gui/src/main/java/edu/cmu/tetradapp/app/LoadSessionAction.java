@@ -188,11 +188,6 @@ final class LoadSessionAction extends AbstractAction {
                 long localSUID = localClassDescriptor.getSerialVersionUID();
                 long streamSUID = resultClassDescriptor.getSerialVersionUID();
                 if (streamSUID != localSUID) { // check for serialVersionUID mismatch.
-//                    final StringBuffer s = new StringBuffer("Overriding serialized class version mismatch: ");
-//                    s.append("local serialVersionUID = ").append(localSUID);
-//                    s.append(" stream serialVersionUID = ").append(streamSUID);
-//                    Exception e = new InvalidClassException(s.toString());
-//                    TetradLogger.getInstance().forceLogMessage("Potentially Fatal Deserialization Operation.");
                     resultClassDescriptor = localClassDescriptor; // Use local class descriptor for deserialization
                 }
             }

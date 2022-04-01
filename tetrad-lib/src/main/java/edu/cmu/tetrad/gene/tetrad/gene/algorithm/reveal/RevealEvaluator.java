@@ -206,7 +206,6 @@ public class RevealEvaluator {
         }
 
         //int ntot = ns[0][0] + ns[0][1] + ns[1][0] + ns[1][1];
-        int ntot = n;
 
         double[][] p = new double[2][2];
         double lp00;
@@ -214,10 +213,10 @@ public class RevealEvaluator {
         double lp10;
         double lp11;
 
-        p[0][0] = (double) ns[0][0] / (double) ntot;
-        p[0][1] = (double) ns[0][1] / (double) ntot;
-        p[1][0] = (double) ns[1][0] / (double) ntot;
-        p[1][1] = (double) ns[1][1] / (double) ntot;
+        p[0][0] = (double) ns[0][0] / (double) n;
+        p[0][1] = (double) ns[0][1] / (double) n;
+        p[1][0] = (double) ns[1][0] / (double) n;
+        p[1][1] = (double) ns[1][1] / (double) n;
 
         if (p[0][0] == 0.0) {
             lp00 = 0.0;

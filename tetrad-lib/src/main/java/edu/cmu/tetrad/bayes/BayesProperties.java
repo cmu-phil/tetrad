@@ -61,7 +61,6 @@ public final class BayesProperties {
             VerticalIntDataBox box = new VerticalIntDataBox(dataBox);
 
             this.data = box.getVariableVectors();
-            this.sampleSize = dataSet.getNumRows();
         } else {
             this.data = new int[dataSet.getNumColumns()][];
             this.variables = dataSet.getVariables();
@@ -74,8 +73,8 @@ public final class BayesProperties {
                 }
             }
 
-            this.sampleSize = dataSet.getNumRows();
         }
+        this.sampleSize = dataSet.getNumRows();
 
         List<Node> variables = dataSet.getVariables();
         this.numCategories = new int[variables.size()];
@@ -92,7 +91,7 @@ public final class BayesProperties {
     /**
      * Calculates the p-value of the graph with respect to the given data.
      */
-    public final double getLikelihoodRatioP(Graph graph) {
+    public double getLikelihoodRatioP(Graph graph) {
 
         // Null hypothesis = complete graph.
         List<Node> nodes = graph.getNodes();
@@ -116,19 +115,18 @@ public final class BayesProperties {
         System.out.println("nDiff = " + nDiff);
 
         double chisq = 2.0 * lDiff;
-        double dof = nDiff;
 
         this.chisq = chisq;
-        this.dof = dof;
+        this.dof = nDiff;
 
         int N = this.dataSet.getNumRows();
         this.bic = 2 * r1.getLik() - r1.getDof() * Math.log(N);
         System.out.println("bic = " + this.bic);
 
         System.out.println("chisq = " + chisq);
-        System.out.println("dof = " + dof);
+        System.out.println("dof = " + (double) nDiff);
 
-        double p = 1.0 - new ChiSquaredDistribution(dof).cumulativeProbability(chisq);
+        double p = 1.0 - new ChiSquaredDistribution(nDiff).cumulativeProbability(chisq);
 
         System.out.println("p = " + p);
 
@@ -327,7 +325,7 @@ public final class BayesProperties {
         return new Ret(lik, dof);
     }
 
-    private class Ret {
+    private static class Ret {
         private final double lik;
         private final int dof;
 

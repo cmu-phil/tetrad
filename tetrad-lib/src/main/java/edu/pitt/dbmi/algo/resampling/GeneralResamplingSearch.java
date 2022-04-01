@@ -1,6 +1,3 @@
-/**
- *
- */
 package edu.pitt.dbmi.algo.resampling;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
@@ -216,9 +213,7 @@ public class GeneralResamplingSearch {
                     task = new GeneralResamplingSearchRunnable(this.data, this.algorithm, this.parameters, this, this.verbose);
                 } else {
                     List<DataModel> dataModels = new ArrayList<>();
-                    for (DataSet data : this.dataSets) {
-                        dataModels.add(data);
-                    }
+                    dataModels.addAll(this.dataSets);
                     task = new GeneralResamplingSearchRunnable(dataModels, this.multiDataSetAlgorithm, this.parameters, this,
                             this.verbose);
                 }
@@ -285,9 +280,7 @@ public class GeneralResamplingSearch {
                     task = new GeneralResamplingSearchRunnable(this.data, this.algorithm, this.parameters, this, this.verbose);
                 } else {
                     List<DataModel> dataModels = new ArrayList<>();
-                    for (DataSet data : this.dataSets) {
-                        dataModels.add(data);
-                    }
+                    dataModels.addAll(this.dataSets);
                     task = new GeneralResamplingSearchRunnable(dataModels, this.multiDataSetAlgorithm, this.parameters, this,
                             this.verbose);
                 }
@@ -363,9 +356,7 @@ public class GeneralResamplingSearch {
                     task = new GeneralResamplingSearchRunnable(this.data, this.algorithm, this.parameters, this, this.verbose);
                 } else {
                     List<DataModel> dataModels = new ArrayList<>();
-                    for (DataSet data : this.dataSets) {
-                        dataModels.add(data);
-                    }
+                    dataModels.addAll(this.dataSets);
                     task = new GeneralResamplingSearchRunnable(dataModels, this.multiDataSetAlgorithm, this.parameters, this,
                             this.verbose);
                 }

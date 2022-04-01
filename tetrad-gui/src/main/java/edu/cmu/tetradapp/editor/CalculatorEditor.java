@@ -93,12 +93,6 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
      * Empty constructor required for Parameter Editors.
      */
     public CalculatorEditor() {
-//        super(JOptionUtils.getCenteringFrame(), "Calculator", true);
-//        this.addWindowListener(new WindowAdapter() {
-//            public void windowClosing(WindowEvent e) {
-//                canceled = true;
-//            }
-//        });
     }
 
     //================================= Public Methods ============================//
@@ -152,46 +146,13 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
 //        getContentPane().setLayout(new BorderLayout());
         JComponent calculator = buildCalculator();
 
-//        JButton close = new JButton("Close");
-//        close.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent e) {
-//                canceled = true;
-//                setVisible(false);
-//                dispose();
-//            }
-//        });
-//
-//        JButton save = new JButton("Save");
-//        save.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent e) {
-//                List<Equation> eqs = parseEquations();
-//                if (eqs != null) {
-//                    setVisible(false);
-//                    dispose();
-//                }
-//            }
-//        });
-
         Box box = Box.createVerticalBox();
         box.setBorder(new EmptyBorder(5, 5, 5, 5));
 
-//        Box buttonBox = Box.createHorizontalBox();
-//        buttonBox.add(Box.createHorizontalGlue());
-//        buttonBox.add(save);
-//        buttonBox.add(Box.createHorizontalStrut(5));
-//        buttonBox.add(close);
-//        buttonBox.add(Box.createHorizontalGlue());
-
         box.add(calculator);
-//        box.add(Box.createVerticalStrut(10));
-//        box.add(buttonBox);
 
         add(box);
 
-//        getContentPane().add(box, BorderLayout.CENTER);
-//        pack();
-//        setLocation(this);
-//        setVisible(true);
     }
 
     /**
@@ -626,7 +587,7 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
      */
     private JComponent createFunctionList() {
         List<ExpressionDescriptor> des = ExpressionManager.getInstance().getDescriptors();
-        Object[] descriptors = des.toArray(new Object[des.size()]);
+        Object[] descriptors = des.toArray(new Object[0]);
         JList list = new JList(descriptors);
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.setCellRenderer(new Renderer());

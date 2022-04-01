@@ -67,8 +67,6 @@ public class TestKunMeasurementError {
 
 //        String dir = "/Users/user/Downloads/Simul1_T500";
         final String dir = "/Users/user/Downloads/Simul1_T2000";
-//        String dir = "/Users/user/Downloads/Simul2_T500";
-//        String dir = "/Users/user/Downloads/Simul2_T2000";
 
         simulations.add(new LoadContinuousDataAndSingleGraphKun(
                 dir, "Cov_X"));

@@ -400,41 +400,6 @@ public final class SvarFciOrient {
         }
     }
 
-//    /**
-//     * Implements the double-triangle orientation rule, which states that if D*-oB, A*->B<-*C and A*-oDo-*C, then
-//     * D*->B.
-//     * <p/>
-//     * This is Zhang's rule R3.
-//     */
-//    private void ruleR3(Graph graph) {
-//        List<Node> nodes = graph.getNodes();
-//
-//        for (Node d : nodes) {
-//            final List<Node> adjacentNodes = graph.getAdjacentNodes(d);
-//
-//            if (adjacentNodes.size() < 3) {
-//                continue;
-//            }
-//
-//            ChoiceGenerator gen = new ChoiceGenerator(adjacentNodes.size(), 3);
-//            int[] choice;
-//
-//            while ((choice = gen.next()) != null) {
-//                List<Node> adj = DataGraphUtils.asList(choice, adjacentNodes);
-//
-//                Node a = adj.get(0);
-//                Node b = adj.get(1);
-//                Node c = adj.get(2);
-//
-//                if (graph.getEndpoint(a, b) == Endpoint.ARROW && graph.getEndpoint(c, b) == Endpoint.ARROW
-//                    && graph.getEndpoint(a, d) == Endpoint.CIRCLE && graph.getEndpoint(c, d) == Endpoint.ARROW
-//                        && !graph.isAdjacentTo(a, c) && graph.getEndpoint(d, b) == Endpoint.CIRCLE) {
-//                    graph.setEndpoint(d, b, Endpoint.ARROW);
-//                }
-//            }
-//        }
-//    }
-
     /**
      * Implements the double-triangle orientation rule, which states that if D*-oB, A*->B<-*C and A*-oDo-*C, then
      * D*->B.
@@ -496,22 +461,6 @@ public final class SvarFciOrient {
     }
 
 
-//    public void ruleR4(Graph graph) {
-//        System.out.println("Starting DDP");
-//
-////        if (false) {
-////
-////            // Original implementation
-////            ruleR4A(graph);
-////        } else {
-////
-////            // Alternative implementation.
-////            ruleR4B(graph);
-////        }
-//
-//        System.out.println("Finishing DDP");
-//    }
-
     /**
      * The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
      * the dots are a collider path from L to A with each node on the path (except L) a parent of C.
@@ -564,10 +513,6 @@ public final class SvarFciOrient {
      */
     private void reachablePathFind(Node a, Node b, Node c,
                                    LinkedList<Node> reachable, Graph graph) {
-//        Map<Node, Node> next = new HashMap<Node, Node>();   // RFCI: stores the next node in the disciminating path
-//        // path containing the nodes in the traiangle
-//        next.put(a, b);
-//        next.put(b, c);
 
         Set<Node> cParents = new HashSet<>(graph.getParents(c));
 
@@ -615,9 +560,6 @@ public final class SvarFciOrient {
                         reachable.add(d);
 
                         // RFCI: only record the next node of the first (shortest) occurrence
-//                        if (next.get(d) == null) {
-//                            next.put(d, x);  // next node of d is x in the shortest path from a
-//                        }
                     }
                 }
             }
@@ -641,7 +583,6 @@ public final class SvarFciOrient {
                 System.out.println(SearchLogUtils.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c)));
             }
 
-            this.changeFlag = true;
         } else {
             if (!isArrowpointAllowed(a, b, graph)) {
                 return;
@@ -656,8 +597,8 @@ public final class SvarFciOrient {
             this.orientSimilarPairs(graph, this.getKnowledge(), a, b, Endpoint.ARROW);
             this.orientSimilarPairs(graph, this.getKnowledge(), c, b, Endpoint.ARROW);
             this.logger.log("colliderOrientations", SearchLogUtils.colliderOrientedMsg("Definite discriminating path.. d = " + d, a, b, c));
-            this.changeFlag = true;
         }
+        this.changeFlag = true;
     }
 
     /**
@@ -805,8 +746,6 @@ public final class SvarFciOrient {
                 System.out.println(SearchLogUtils.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c)));
             }
 
-            this.changeFlag = true;
-            return true;
         } else {
             if (!isArrowpointAllowed(a, b, graph)) {
                 return false;
@@ -825,9 +764,9 @@ public final class SvarFciOrient {
                 System.out.println(SearchLogUtils.colliderOrientedMsg("Definite discriminating path.. d = " + d, a, b, c));
             }
 
-            this.changeFlag = true;
-            return true;
         }
+        this.changeFlag = true;
+        return true;
     }
 
     private void printDdp(Node d, List<Node> path, Node a, Node b, Node c, Graph graph) {
@@ -1414,11 +1353,6 @@ public final class SvarFciOrient {
                 x1 = this.independenceTest.getVariable(A);
                 y1 = this.independenceTest.getVariable(B);
 
-//                if(getSepset2(x1,y1) != null) if (getSepset2(x1,y1).isEmpty() || getSepset2(y1,x1).isEmpty()){
-//                    System.out.println("$$$ empty sepset between x1,y1 = " + x1 + " and " + y1);
-//                    continue;
-//                } // added 05.01.2016
-
                 if (graph.isAdjacentTo(x1, y1) && graph.getEndpoint(x1, y1) == Endpoint.CIRCLE) {
                     System.out.print("Orient edge " + graph.getEdge(x1, y1).toString());
                     graph.setEndpoint(x1, y1, mark);
@@ -1440,64 +1374,5 @@ public final class SvarFciOrient {
     }
 
 
-//    private void orientSimilarPairs(Graph graph, IKnowledge knowledge, Node x, Node y, Endpoint mark) {
-//        System.out.println("orienting similar pairs for x and y: " + x + ", " + y);
-//        int ntiers = knowledge.getNumTiers();
-//        int indx_tier = knowledge.isInWhichTier(x);
-//        int indy_tier = knowledge.isInWhichTier(y);
-//        int tier_diff = Math.max(indx_tier, indy_tier) - Math.min(indx_tier, indy_tier);
-//        int indx_comp = -1;
-//        int indy_comp = -1;
-//        List tier_x = knowledge.getTier(indx_tier);
-//        Collections.sort(tier_x);
-//        List tier_y = knowledge.getTier(indy_tier);
-//        Collections.sort(tier_y);
-//
-//        int i;
-//        for(i = 0; i < tier_x.size(); ++i) {
-//            if(x.getName().equals(tier_x.get(i))) {
-//                indx_comp = i;
-//                break;
-//            }
-//        }
-//
-//        for(i = 0; i < tier_y.size(); ++i) {
-//            if(y.getName().equals(tier_y.get(i))) {
-//                indy_comp = i;
-//                break;
-//            }
-//        }
-//
-//        for(i = 0; i < ntiers - tier_diff; ++i) {
-//            String A;
-//            Node x1;
-//            String B;
-//            Node y1;
-//            if(indx_tier >= indy_tier) {
-//                if(i != indy_tier) {
-//                    A = (String)knowledge.getTier(i + tier_diff).get(indx_comp);
-//                    B = (String)knowledge.getTier(i).get(indy_comp);
-//                    x1 = this.independenceTest.getVariable(A);
-//                    y1 = this.independenceTest.getVariable(B);
-//                    if(graph.isAdjacentTo(x1, y1) && graph.getEndpoint(x1, y1) == Endpoint.CIRCLE) {
-//                        System.out.print("Orient edge " + graph.getEdge(x1, y1).toString());
-//                        graph.setEndpoint(x1, y1, mark);
-//                        System.out.println(" by structure knowledge as: " + graph.getEdge(x1, y1).toString());
-//                    }
-//                }
-//            } else if(i != indx_tier) {
-//                A = (String)knowledge.getTier(i).get(indx_comp);
-//                B = (String)knowledge.getTier(i + tier_diff).get(indy_comp);
-//                x1 = this.independenceTest.getVariable(A);
-//                y1 = this.independenceTest.getVariable(B);
-//                if(graph.isAdjacentTo(x1, y1) && graph.getEndpoint(x1, y1) == Endpoint.CIRCLE) {
-//                    System.out.print("Orient edge " + graph.getEdge(x1, y1).toString());
-//                    graph.setEndpoint(x1, y1, mark);
-//                    System.out.println(" by structure knowledge as: " + graph.getEdge(x1, y1).toString());
-//                }
-//            }
-//        }
-//
-//    }
 }
 

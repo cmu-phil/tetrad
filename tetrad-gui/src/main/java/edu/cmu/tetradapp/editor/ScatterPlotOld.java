@@ -93,9 +93,6 @@ public class ScatterPlotOld {
         setxData(new double[dataSet.getNumRows()]);
         setyData(new double[dataSet.getNumRows()]);
 
-//        xMin = xMax = dataSet.getDouble(0, xIndex);
-//        yMin = yMax = dataSet.getDouble(0, yIndex);
-
         this.xMin = Double.MAX_VALUE;
         this.xMax = Double.MIN_VALUE;
         this.yMin = Double.MAX_VALUE;

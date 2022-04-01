@@ -143,18 +143,9 @@ public class MbfsRunner extends AbstractAlgorithmRunner implements
      * implemented in the extending class.
      */
     public void execute() {
-//		int pcDepth = ((Parameters) getParameters()).getMaxIndegree();
-//		Mbfs mbfs = new Mbfs(getIndependenceTest(), pcDepth);
-//		Parameters params = getParameters();
-//		if (params instanceof Parameters) {
-//			mbfs.setAggressivelyPreventCycles(((Parameters) params)
-//					.isAggressivelyPreventCycles());
-//		}
         IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
 //		mbfs.setKnowledge(knowledge);
         String targetName = getParams().getString("targetName", null);
-//		Graph searchGraph = mbfs.search(targetName);
-//		setResultGraph(searchGraph);
 
         DataSet dataSet = (DataSet) getDataModelList().get(0);
 

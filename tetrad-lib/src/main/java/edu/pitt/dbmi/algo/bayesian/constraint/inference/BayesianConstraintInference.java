@@ -93,29 +93,6 @@ public class BayesianConstraintInference {
             pc = bci.probConstraint(constraint, x, y, z);  // returns P(node1 independent node5 given {node3} | data)
             System.out.printf("Probability constraint: %7.5f\n", pc);  // if fn = 1 then 0.93535; if fn = 2 then 0.70853
 
-//            BCInference.OP constraint = BCInference.OP.independent;
-//            int x = 1;
-//            int y = 5;
-//            int[] z = new int[2];
-//            z[0] = 1;
-//            z[1] = 3;
-//            double pc = bci.probConstraint(constraint, x, y, z);  // returns P(node1 independent node5 given {node3} | data)
-//            System.out.printf("Probability constraint: %7.5f\n", pc);
-//
-//            constraint = BCInference.OP.dependent;
-//            x = 3;
-//            y = 5;
-//            z = new int[1];
-//            z[0] = 0;  // empty set
-//            pc = bci.probConstraint(constraint, x, y, z);  // returns P(node3 dependent node5 given {} | data)
-//            System.out.printf("Probability constraint: %7.5f\n", pc);
-//
-//            constraint = BCInference.OP.independent;
-//            x = 1;
-//            y = 4;
-//            z = new int[]{2, 2, 3};
-//            pc = bci.probConstraint(constraint, x, y, z);  // returns P(node1 independent node4 given {node2, node3} | data)
-//            System.out.printf("Probability constraint: %7.5f\n", pc);
         } catch (Exception exception) {
             exception.printStackTrace(System.err);
         }

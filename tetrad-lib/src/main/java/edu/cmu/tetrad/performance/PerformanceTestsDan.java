@@ -118,9 +118,6 @@ public class PerformanceTestsDan {
             Graph dag = GraphUtils.randomGraph(vars, 0, (int) (vars.size() * edgesPerNode), 5, 5, 5, false);
 
             GraphUtils.fixLatents1(numLatents, dag);
-//        List<Node> varsWithLatents = new ArrayList<Node>();
-//
-//        Graph dag = getLatentGraph(_vars, varsWithLatents, edgesPerNode, numLatents);
 
 
             out3.println(dag);

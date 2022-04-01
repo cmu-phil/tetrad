@@ -60,8 +60,6 @@ public class EbicScore implements Score {
     // True if row subsets should be calculated.
     private boolean calculateRowSubsets;
 
-    private double correlationThreshold = 1.0;
-
     // The gamma paramter for EBIC.
     private double gamma = 1;
 
@@ -211,11 +209,12 @@ public class EbicScore implements Score {
 
         boolean exists = false;
 
+        double correlationThreshold = 1.0;
         for (int i = 0; i < correlations.getSize(); i++) {
             for (int j = 0; j < correlations.getSize(); j++) {
                 if (i == j) continue;
                 double r = correlations.getValue(i, j);
-                if (abs(r) > this.correlationThreshold) {
+                if (abs(r) > correlationThreshold) {
                     System.out.println("Absolute correlation too high: " + r);
                     exists = true;
                 }
@@ -223,7 +222,7 @@ public class EbicScore implements Score {
         }
 
         if (exists) {
-            throw new IllegalArgumentException("Some correlations are too high (> " + this.correlationThreshold
+            throw new IllegalArgumentException("Some correlations are too high (> " + correlationThreshold
                     + ") in absolute value.");
         }
 

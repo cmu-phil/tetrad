@@ -30,6 +30,7 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -79,9 +80,7 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
     public boolean isIndependent(Node x, Node y, Node... z) {
         List<Node> zz = new ArrayList<>();
 
-        for (Node node : z) {
-            zz.add(node);
-        }
+        zz.addAll(Arrays.asList(z));
 
         return isIndependent(x, y, zz);
     }

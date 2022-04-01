@@ -29,7 +29,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.kernel.KernelGaussian;
 import org.junit.Test;
 
-import java.util.Arrays;
+import java.util.Collections;
 
 import static org.junit.Assert.assertTrue;
 
@@ -46,7 +46,7 @@ public class TestKernelGaussian {
     @Test
     public void testMedianBandwidth() {
         Node X = new ContinuousVariable("X");
-        DataSet dataset = new BoxDataSet(new VerticalDoubleDataBox(5, 1), Arrays.asList(X));
+        DataSet dataset = new BoxDataSet(new VerticalDoubleDataBox(5, 1), Collections.singletonList(X));
         dataset.setDouble(0, 0, 1);
         dataset.setDouble(1, 0, 2);
         dataset.setDouble(2, 0, 3);

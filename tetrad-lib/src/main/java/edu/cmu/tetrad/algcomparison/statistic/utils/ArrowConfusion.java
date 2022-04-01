@@ -79,8 +79,6 @@ public class ArrowConfusion {
                 e1Est = edge1.getProximalEndpoint(edge.getNode1());
                 e2Est = edge1.getProximalEndpoint(edge.getNode2());
             }
-            //      System.out.println(e1Est);
-            //      System.out.println(e2Est);
 
             List<Edge> edges2 = this.truth.getEdges(edge.getNode1(), edge.getNode2());
             Edge edge2;
@@ -101,8 +99,6 @@ public class ArrowConfusion {
                 e1True = edge2.getProximalEndpoint(edge.getNode1());
                 e2True = edge2.getProximalEndpoint(edge.getNode2());
             }
-            //       System.out.println(e1True);
-            //       System.out.println(e2True);
 
 
             if (e1True == Endpoint.ARROW && e1Est != Endpoint.ARROW) {
@@ -176,8 +172,6 @@ public class ArrowConfusion {
                 e1Est = edge1.getProximalEndpoint(edge.getNode1());
                 e2Est = edge1.getProximalEndpoint(edge.getNode2());
             }
-            //       System.out.println(e1Est);
-            //       System.out.println(e2Est);
 
 
             List<Edge> edges2 = this.truth.getEdges(edge.getNode1(), edge.getNode2());
@@ -199,18 +193,6 @@ public class ArrowConfusion {
                 e1True = edge2.getProximalEndpoint(edge.getNode1());
                 e2True = edge2.getProximalEndpoint(edge.getNode2());
             }
-            //          System.out.println(e1True);
-            //          System.out.println(e2True);
-
-//            if ((isTruthAdj() && truth.isAdjacentTo(edge.getNode1(), edge.getNode2()))) {
-//                if (e1Est == Endpoint.ARROW && e1True!= Endpoint.ARROW) {
-//                    arrowsFp++;
-//                }
-//
-//                if (e2Est == Endpoint.ARROW && e2True!= Endpoint.ARROW) {
-//                    arrowsFp++;
-//                }
-//            }
 
             if (isTruthAdj()) {
                 if (truth.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
@@ -244,9 +226,6 @@ public class ArrowConfusion {
 
 
         // test for 2-cycle
-        //Set<Edge> allOriented = new HashSet<>();
-        //allOriented.addAll(this.truth.getEdges());
-        //allOriented.addAll(this.est.getEdges());
 
         for (Edge edge : this.truth.getEdges()) {
 
@@ -276,18 +255,10 @@ public class ArrowConfusion {
             }
         }
 
-  /*      System.out.println(arrowsTp);
-        System.out.println(arrowsTn);
-        System.out.println(arrowsFn);
-        System.out.println(arrowsFp);
-*/
         //divide by 2, the 2cycle accuracy is duplicated due to how getEdges is used
         this.TCtp = this.TCtp / 2;
         this.TCfn = this.TCfn / 2;
         this.TCfp = this.TCfp / 2;
-        //       System.out.println(TCtp);
-        //       System.out.println(TCfn);
-        //       System.out.println(TCfp);
 
     }
 

@@ -45,7 +45,7 @@ import static org.junit.Assert.assertTrue;
 public final class TestKnowledge {
 
     @Test
-    public final void test1() {
+    public void test1() {
         List<Node> nodes1 = new ArrayList<>();
 
         for (int i1 = 0; i1 < 10; i1++) {
@@ -113,7 +113,7 @@ public final class TestKnowledge {
     }
 
     @Test
-    public final void test2() {
+    public void test2() {
         List<Node> nodes1 = new ArrayList<>();
 
         for (int i = 0; i < 100; i++) {
@@ -141,7 +141,7 @@ public final class TestKnowledge {
     }
 
     @Test
-    public final void test3() {
+    public void test3() {
         List<String> vars = new ArrayList<>();
 
         final int numVars = 1000;

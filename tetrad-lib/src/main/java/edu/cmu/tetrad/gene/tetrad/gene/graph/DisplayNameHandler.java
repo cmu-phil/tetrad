@@ -64,9 +64,8 @@ public final class DisplayNameHandler {
     public static String extractFactor_Display(String laggedFactor) {
 
         int colonIndex = laggedFactor.indexOf(":L");
-        String factor = laggedFactor.substring(0, colonIndex);
 
-        return factor;
+        return laggedFactor.substring(0, colonIndex);
     }
 
     /**
@@ -79,10 +78,9 @@ public final class DisplayNameHandler {
     public static int extractLag_Display(String laggedFactor) {
 
         int colonIndex = laggedFactor.indexOf(":L");
-        int lag = Integer.parseInt(
-                laggedFactor.substring(colonIndex + 2));
 
-        return lag;
+        return Integer.parseInt(
+                laggedFactor.substring(colonIndex + 2));
     }
 }
 

@@ -90,52 +90,6 @@ public class LingRunner extends AbstractAlgorithmRunner implements
      * implemented in the extending class.
      */
 
-//    public void execute() {
-//        DataModel source = getDataModel();
-//
-//        if (!(source instanceof DataSet)) {
-//            throw new IllegalArgumentException("Expecting a rectangular data set.");
-//        }
-//
-//        DataSet data = (DataSet) source;
-//
-//        if (!data.isContinuous()) {
-//            throw new IllegalArgumentException("Expecting a continuous data set.");
-//        }
-//
-//        Ling ling = new Ling(data);
-//        Parameters searchParams = (Parameters) getParameters();
-//        ling.setErrorThreshold(searchParams.getThresholdAlpha());
-//        Ling.StoredGraphs graphs = ling.search();
-//        Graph graph = null;
-//
-//        for (int i = 0; i < graphs.getNumGraphs(); i++) {
-//            System.out.println(graphs.getGraph(i));
-//            System.out.println(graphs.isStable(i));
-//        }
-//
-//        for (int i = 0; i < graphs.getNumGraphs(); i++) {
-//            if (graphs.isStable(i)) {
-//                graph = graphs.getGraph(i);
-//                break;
-//            }
-//        }
-//
-//        if (graph == null) {
-//            graph = new EdgeListGraph();
-//        }
-//
-//        setResultGraph(graph);
-//        setStoredGraphs(graphs);
-//
-//        if (getSourceGraph() != null) {
-//            DataGraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
-//        }
-//        else {
-//            DataGraphUtils.circleLayout(graph, 200, 200, 150);
-//        }
-//
-//    }
     public void execute() {
         DataModel source = this.getDataModel();
 

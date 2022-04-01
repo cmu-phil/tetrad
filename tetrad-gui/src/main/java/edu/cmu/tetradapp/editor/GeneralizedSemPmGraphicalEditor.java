@@ -203,18 +203,6 @@ class GeneralizedSemPmGraphicalEditor extends JPanel {
     }
 
     private void addMouseListenerToGraphNodesMeasured() {
-//        List nodes = graph().getNodes();
-//
-//        for (Object node : nodes) {
-//            Object displayNode = workbench().getModelToDisplay().get(node);
-//
-//            if (displayNode instanceof GraphNodeMeasured) {
-//                DisplayNode _displayNode = (DisplayNode) displayNode;
-//                _displayNode.setToolTipText(
-//                        getEquationOfNode(_displayNode.getModelNode())
-//                );
-//            }
-//        }
     }
 
     public GraphWorkbench getWorkbench() {

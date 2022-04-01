@@ -70,7 +70,6 @@ public class Comparison {
     private PrintStream out;
     private boolean tabDelimitedTables;
     private boolean saveGraphs;
-    private boolean copyData = true;
     private boolean showSimulationIndices;
     private boolean showAlgorithmIndices;
     private boolean showUtilities;
@@ -78,7 +77,6 @@ public class Comparison {
     private String dataPath;
     private String resultsPath;
     private boolean saveCPDAGs;
-    private boolean saveData = true;
     private boolean savePags;
     private ComparisonGraph comparisonGraph = ComparisonGraph.true_DAG;
 
@@ -969,7 +967,8 @@ public class Comparison {
      * @return True if CPDAGs should be saved out.
      */
     public boolean isSaveData() {
-        return this.saveData;
+        boolean saveData = true;
+        return saveData;
     }
 
     /**
@@ -1150,7 +1149,8 @@ public class Comparison {
                 Parameters _params = algorithmWrapper.getAlgorithmSpecificParameters();
                 graphOut = ((MultiDataSetAlgorithm) algorithm).search(dataModels, _params);
             } else {
-                DataModel dataModel = this.copyData ? data.copy() : data;
+                boolean copyData = true;
+                DataModel dataModel = copyData ? data.copy() : data;
                 Parameters _params = algorithmWrapper.getAlgorithmSpecificParameters();
                 graphOut = algorithm.search(dataModel, _params);
             }
@@ -1834,7 +1834,7 @@ public class Comparison {
         }
     }
 
-    private class Run {
+    private static class Run {
 
         private final int algSimIndex;
         private final int runIndex;

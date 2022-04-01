@@ -44,9 +44,6 @@ public class TestRfciBsc {
         Dag dag = new Dag(g);
 
         // set a number of latent variables
-        //int LV = 1;
-        //GraphUtils.fixLatents4(LV, dag);
-        //System.out.println("Variables set to be latent:" + getLatents(dag));
 
         BayesPm bayesPm = new BayesPm(dag);
         BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);

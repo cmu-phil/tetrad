@@ -28,17 +28,6 @@ public class SimulateNetworkMain {
         double[] inputs = new double[4];
         inputs[1] = 0.0;
 
-        /*
-        for(int i0 = 0; i0 < 11; i0++)
-          for(int i2 = 0; i2 < 11; i2++)
-            for(int i3 = 0; i3 < 11; i3++) {
-              inputs[0] = 0.5 + i0*0.1;
-              inputs[2] = 0.5 + i2*0.1;
-              inputs[3] = 0.5 + i3*0.1;
-              NetBuilderModel nbm = new NetBuilderModel(inputs, 10);
-        }
-        */
-
         inputs[0] = 1.0;
         inputs[2] = 1.0;
         inputs[3] = 1.0;

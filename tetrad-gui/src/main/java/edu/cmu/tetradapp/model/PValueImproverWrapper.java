@@ -56,10 +56,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
     private transient List<PropertyChangeListener> listeners;
     private final DataWrapper dataWrapper;
 
-    /**
-     * @deprecated
-     */
-    private Parameters params;
+    private Parameters params = new Parameters();
     private Parameters params2;
     private SemIm estSem;
     private Graph trueDag;
@@ -196,8 +193,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
     }
 
     public boolean isShuffleMoves() {
-        final boolean shuffleMoves = false;
-        return shuffleMoves;
+        return false;
     }
 
     /**
@@ -236,8 +232,6 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
                 search = new HbmsBeam(graph2, covarianceMatrix, knowledge);
             } else if (getAlgorithmType() == AlgorithmType.FGES) {
                 throw new IllegalArgumentException("GES method requires a dataset; a covariance matrix was provided.");
-//                search = new BffGes(graph2, covarianceMatrix);
-//                search.setKnowledge(knowledge);
             } else {
                 throw new IllegalStateException();
             }
@@ -334,9 +328,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
     public DataSet simulateDataCholesky(int sampleSize, Matrix covar, List<Node> variableNodes) {
         List<Node> variables = new LinkedList<>();
 
-        for (Node node : variableNodes) {
-            variables.add(node);
-        }
+        variables.addAll(variableNodes);
 
         List<Node> newVariables = new ArrayList<>();
 
@@ -346,10 +338,8 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
             newVariables.add(continuousVariable);
         }
 
-        Matrix impliedCovar = covar;
-
         DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, newVariables.size()), newVariables);
-        Matrix cholesky = MatrixUtils.cholesky(impliedCovar);
+        Matrix cholesky = MatrixUtils.cholesky(covar);
 
         // Simulate the data by repeatedly calling the Cholesky.exogenousData
         // method. Store only the data for the measured variables.
@@ -376,11 +366,9 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
                 point[i] = sum;
             }
 
-            double[] rowData = point;
-
             for (int col = 0; col < variables.size(); col++) {
                 int index = variableNodes.indexOf(variables.get(col));
-                double value = rowData[index];
+                double value = point[index];
 
                 if (Double.isNaN(value) || Double.isInfinite(value)) {
                     throw new IllegalArgumentException("Value out of range: " + value);

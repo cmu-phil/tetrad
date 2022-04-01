@@ -85,13 +85,6 @@ public class StabilitySelection implements Algorithm, TakesExternalGraph {
 
         pool.invoke(new StabilityAction(chunk, 0, numSubsamples));
 
-//        for (int i = 0; i < numSubsamples; i++) {
-//            BootstrapSampler sampler = new BootstrapSampler();
-//            sampler.setWithoutReplacements(true);
-//            DataSet sample = sampler.sample(_dataSet, (int) (percentageB * _dataSet.getNumRows()));
-//            Graph graph = algorithm.search(sample, parameters);
-//            graphs.add(graph);
-//        }
         for (Graph graph : graphs) {
             for (Edge edge : graph.getEdges()) {
                 increment(edge, counts);

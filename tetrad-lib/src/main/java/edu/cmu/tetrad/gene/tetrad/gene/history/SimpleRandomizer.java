@@ -177,8 +177,6 @@ public class SimpleRandomizer implements GraphInitializer {
                     extraEdges = RandomUtil.getInstance().nextInt(
                             2 * (this.indegree - 1) - 1) + 1;
 
-                    //                    System.out.println("Mean indegree selection: " +
-                    //                            extraEdges);
                     break;
 
                 default:

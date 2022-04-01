@@ -103,9 +103,6 @@ public class ExampleCompareSimulation {
         statistics.add(new ArrowheadPrecisionCommonEdges());
         statistics.add(new ArrowheadRecallCommonEdges());
         statistics.add(new F1All());
-//        statistics.add(new BicTrue());
-//        statistics.add(new BicEst());
-//        statistics.add(new BicDiffPerRecord());
         statistics.add(new ElapsedTime());
         statistics.add(new TailPrecision());
         statistics.add(new TailRecall());

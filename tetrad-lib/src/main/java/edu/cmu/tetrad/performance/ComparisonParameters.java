@@ -248,15 +248,6 @@ public class ComparisonParameters {
         }
 
 
-//        if (dataFile != null) {
-//            b.append("\nData File = " + dataFile);
-//        }
-//
-//
-//        if (graphFile != null) {
-//            b.append("\nGraph File = " + graphFile);
-//        }
-
         if (this.oneEdgeFaithfulnessAssumed) {
             b.append("\nOne Edge Faithfulnes = true");
         }

@@ -74,26 +74,15 @@ final class IndTestChooser {
                 DataSet dataContinuous =
                         (DataSet) dataSource;
 
-//                if (dataContinuous.isMulipliersCollapsed()) {
-//                    dataContinuous = new CaseExpander().filter(dataSet);
-//                }
-
                 return getContinuousTest(dataContinuous, params, testType);
             } else if (dataSet.isDiscrete()) {
                 DataSet dataDiscrete =
                         (DataSet) dataSource;
 
-//                if (dataDiscrete.isMulipliersCollapsed()) {
-//                    dataDiscrete = new CaseExpander().filter(dataSet);
-//                }
-
                 return getDiscreteTest(dataDiscrete, params, testType);
             }
             if (dataSet.isMixed()) {
                 DataSet dataMixed = (DataSet) dataSource;
-//                if (dataMixed.isMulipliersCollapsed()) {
-//                    dataMixed = new CaseExpander().filter(dataSet);
-//                }
 
                 return getMixedTest(dataMixed, params, testType);
             }
@@ -172,7 +161,7 @@ final class IndTestChooser {
 
         if (IndTestType.SEM_BIC == testType) {
             List<DataModel> dataModels = new ArrayList<>();
-            for (DataSet dataSet : dataSets) dataModels.add(dataSet);
+            dataModels.addAll(dataSets);
             return new IndTestScore(new SemBicScoreImages(dataModels));
         }
 
@@ -198,12 +187,10 @@ final class IndTestChooser {
 
     private IndependenceTest getGraphTest(Graph graph, Parameters params,
                                           IndTestType testType) {
-        if (IndTestType.D_SEPARATION == testType) {
-            return new IndTestDSep(graph);
-        } else {
+        if (IndTestType.D_SEPARATION != testType) {
             params.set("indTestType", IndTestType.D_SEPARATION);
-            return new IndTestDSep(graph);
         }
+        return new IndTestDSep(graph);
     }
 
     private IndependenceTest getCovMatrixTest(ICovarianceMatrix covMatrix,

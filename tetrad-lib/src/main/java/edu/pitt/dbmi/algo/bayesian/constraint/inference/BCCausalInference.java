@@ -103,14 +103,10 @@ public class BCCausalInference {
 
         int n = z[0];
         parents[x][0] = n;
-        for (int i = 1; i <= n; i++) {
-            parents[x][i] = z[i];
-        }
+        if (n >= 0) System.arraycopy(z, 1, parents[x], 1, n);
         double lnMarginalLikelihood_X = scoreNode(x, 1, countsTracker);  // the 1 indicates the scoring of X
         parents[y][0] = n;
-        for (int i = 1; i <= n; i++) {
-            parents[y][i] = z[i];
-        }
+        if (n >= 0) System.arraycopy(z, 1, parents[y], 1, n);
         double lnMarginalLikelihood_Y = scoreNode(y, 2, countsTracker);  // the 2 indicates the scoring of Y
         double lnMarginalLikelihood_X_Y = lnMarginalLikelihood_X + lnMarginalLikelihood_Y;  // lnMarginalLikelihood_X_Y is the ln of the marginal likelihood, assuming X and Y are conditionally independence given Z.
         probability = priorIndependent(x, y, z); // p should be in (0, 1), and thus, not 0 or 1.
@@ -126,9 +122,7 @@ public class BCCausalInference {
         }
         countsTracker.xyDim = this.nodeDimension[x] * this.nodeDimension[y];
         parents[xy][0] = n;
-        for (int i = 1; i <= n; i++) {
-            parents[xy][i] = z[i];
-        }
+        if (n >= 0) System.arraycopy(z, 1, parents[xy], 1, n);
         double lnMarginalLikelihood_XY = scoreNode(xy, 3, countsTracker);  // the 3 indicates the scoring of XY, which assumes X and Y are dependent given Z;
         //Note: lnMarginalLikelihood_XY is not used, but the above call to ScoreNode creates scores^[*, 3], which is used below
         countsTracker.numOfNodes--;
@@ -215,8 +209,7 @@ public class BCCausalInference {
         int Nij = 0;
         double scoreOfSum = 0;
         int r = (node > this.numberOfNodes) ? countsTracker.xyDim : this.nodeDimension[node];
-        double rr = r;
-        double pessDivQR = pess / (q * rr);
+        double pessDivQR = pess / (q * (double) r);
         double pessDivQ = pess / q;
         double lngammPessDivQR = gammln(pessDivQR);
         for (int k = 0; k <= (r - 1); k++) {
@@ -296,7 +289,6 @@ public class BCCausalInference {
 
         if (ptr > 0) {
             cPtr = ctPtr;
-            counts[cPtr + nodeValue - 1]++;
         } else {
             // GrowBranch
             for (int i = parenti; i <= numberOfParents; i++) {
@@ -334,8 +326,8 @@ public class BCCausalInference {
                 throw new IllegalArgumentException();
             }
             // end of GrowBranch
-            counts[cPtr + nodeValue - 1]++;
         } // end of else
+        counts[cPtr + nodeValue - 1]++;
     }
 
     private CountsTracker createCountsTracker(int[] z) {
@@ -449,7 +441,7 @@ public class BCCausalInference {
         return tmp + Math.log(stp * ser);
     }
 
-    private class CountsTracker {
+    private static class CountsTracker {
 
         int numOfNodes;
         int numOfCases;

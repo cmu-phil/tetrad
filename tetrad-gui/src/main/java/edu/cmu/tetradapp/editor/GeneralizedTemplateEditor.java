@@ -103,24 +103,6 @@ class GeneralizedTemplateEditor extends JComponent {
      */
     private final JComboBox<String> combo = new JComboBox<>();
 
-//    /**
-//     * If this is selected, then variables are listed in the box. Exclusive with <code>errorsCheckBox</code> and
-//     * <code>parametersCheckBox</code>.
-//     */
-//    private JRadioButton variablesButton;
-//
-//    /**
-//     * If this is selected, then error terms are listed in the box. Exclusive with <code>variablesCheckBox</code> and
-//     * <code>parametersCheckBox</code>.
-//     */
-//    private JRadioButton errorsButton;
-//
-//    /**
-//     * If this is selected, then parameters are listed in the box. Exclusive with <code>variablesCheckBox</code> and
-//     * <code>errorsCheckBox</code>.
-//     */
-//    private JRadioButton parametersButton;
-
     /**
      * The field that indicates what names of variables or parameters should start with in order to be changed.
      */
@@ -213,8 +195,7 @@ class GeneralizedTemplateEditor extends JComponent {
                     String startsWith = GeneralizedTemplateEditor.this.startsWithField.getText();
                     String template = getSemPm().getStartsWithParameterTemplate(startsWith);
                     if (template == null) {
-                        String parametersTemplate = getSemPm().getParametersTemplate();
-                        template = parametersTemplate;
+                        template = getSemPm().getParametersTemplate();
                     }
 
                     setParseText(template);
@@ -223,8 +204,7 @@ class GeneralizedTemplateEditor extends JComponent {
                     String startsWith = GeneralizedTemplateEditor.this.startsWithField.getText();
                     String template = getSemPm().getStartsWithParameterEstimationInitializatonTemplate(startsWith);
                     if (template == null) {
-                        String parametersTemplate = getSemPm().getParametersEstimationInitializationTemplate();
-                        template = parametersTemplate;
+                        template = getSemPm().getParametersEstimationInitializationTemplate();
                     }
 
                     setParseText(template);
@@ -314,8 +294,7 @@ class GeneralizedTemplateEditor extends JComponent {
                     String startsWith = GeneralizedTemplateEditor.this.startsWithField.getText();
                     String template = getSemPm().getStartsWithParameterTemplate(startsWith);
                     if (template == null) {
-                        String parametersTemplate = getSemPm().getParametersTemplate();
-                        template = parametersTemplate;
+                        template = getSemPm().getParametersTemplate();
                     }
 
                     setParseText(template);
@@ -324,8 +303,7 @@ class GeneralizedTemplateEditor extends JComponent {
                     String startsWith = GeneralizedTemplateEditor.this.startsWithField.getText();
                     String template = getSemPm().getStartsWithParameterEstimationInitializatonTemplate(startsWith);
                     if (template == null) {
-                        String parametersTemplate = getSemPm().getParametersEstimationInitializationTemplate();
-                        template = parametersTemplate;
+                        template = getSemPm().getParametersEstimationInitializationTemplate();
                     }
 
                     setParseText(template);

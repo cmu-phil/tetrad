@@ -78,10 +78,6 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
             System.out.println("Loading graph from " + file.getAbsolutePath());
             this.graph = GraphUtils.loadGraphTxt(file);
 
-//            if (!graph.isAdjacentTo(graph.getNode("X3"), graph.getNode("X4"))) {
-//                graph.addUndirectedEdge(graph.getNode("X3"), graph.getNode("X4"));
-//            }
-
             GraphUtils.circleLayout(this.graph, 225, 200, 150);
         }
 

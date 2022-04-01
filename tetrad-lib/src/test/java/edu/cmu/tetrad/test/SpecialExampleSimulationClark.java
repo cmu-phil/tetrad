@@ -41,10 +41,6 @@ public class SpecialExampleSimulationClark {
         parameters.set("maxOutdegree", 100);
         parameters.set("connected", false);
 
-//
-//        statistics.setWeight("AP", 1.0);
-//        statistics.setWeight("AR", 0.5);
-
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new Fask());

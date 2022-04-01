@@ -238,39 +238,6 @@ public final class DagToPag {
         return false;
     }
 
-//    private static boolean existsInducingPathVisit(Graph graph, Node a, Node b, Node x, Node y,
-//                                                   LinkedList<Node> path) {
-//        if (b == y) {
-//            path.addLast(b);
-//            return true;
-//        }
-//
-//        if (path.contains(b)) {
-//            return false;
-//        }
-//
-//        path.addLast(b);
-//
-//        for (Node c : graph.getAdjacentNodes(b)) {
-//            if (c == a) continue;
-//
-//            if (b.getNodeType() == NodeType.MEASURED) {
-//                if (!graph.isDefCollider(a, b, c)) continue;
-//
-//                if (!(graph.isAncestorOf(b, x) || graph.isAncestorOf(b, y))) {
-//                    continue;
-//                }
-//            }
-//
-//            if (DataGraphUtils.existsInducingPathVisit(graph, b, c, x, y, path)) {
-//                return true;
-//            }
-//        }
-//
-//        path.removeLast();
-//        return false;
-//    }
-
 
     public IKnowledge getKnowledge() {
         return this.knowledge;

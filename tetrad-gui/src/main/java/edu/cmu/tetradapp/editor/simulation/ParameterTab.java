@@ -162,9 +162,6 @@ public class ParameterTab extends JPanel {
                     case SimulationTypes.STRUCTURAL_EQUATION_MODEL:
                         this.simulation.setSimulation(new SemSimulation(randomGraph), this.simulation.getParams());
                         break;
-//                    case SimulationTypes.LINEaAR_FISHER_MODEL:
-//                        simulation.setSimulation(new LinearFisherModel(randomGraph, simulation.getInputDataModelList()), simulation.getParams());
-//                        break;
                     case SimulationTypes.GENERAL_STRUCTURAL_EQUATION_MODEL:
                         this.simulation.setSimulation(new GeneralSemSimulationSpecial1(randomGraph), this.simulation.getParams());
                         break;

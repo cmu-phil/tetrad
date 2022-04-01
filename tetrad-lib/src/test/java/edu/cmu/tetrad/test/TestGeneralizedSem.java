@@ -574,11 +574,6 @@ public class TestGeneralizedSem {
             pm.setNodeExpression(x3, "a2 * tan(X2) + E_X3");
             pm.setNodeExpression(x4, "a3 * tan(X1) + a4 * tan(X3) ^ 2 + E_X4");
 
-//            pm.setNodeExpression(x1, "E_X1");
-//            pm.setNodeExpression(x2, "a1 * X1^2 + E_X2");
-//            pm.setNodeExpression(x3, "a2 * X2^2 + E_X3");
-//            pm.setNodeExpression(x4, "a3 * X1^2 + a4 * X3 ^ 2 + E_X4");
-//
             pm.setNodeExpression(pm.getErrorNode(x1), "Beta(5, 2)");
             pm.setNodeExpression(pm.getErrorNode(x2), "Beta(2, 5)");
             pm.setNodeExpression(pm.getErrorNode(x3), "Beta(1, 3)");
@@ -648,10 +643,6 @@ public class TestGeneralizedSem {
             pm.setNodeExpression(x2, "a1 * tan(X1) + E_X2");
             pm.setNodeExpression(x3, "a2 * tan(X2) + E_X3");
             pm.setNodeExpression(x4, "a3 * tan(X1) * a4 * tan(X3) ^ 2 + E_X4");
-//
-//            pm.setNodeExpression(x2, "a1 * X1 + E_X2");
-//            pm.setNodeExpression(x3, "a2 * X2 + E_X3");
-//            pm.setNodeExpression(x4, "a3 * X1 + a4 * X3 + E_X4");
 
             pm.setNodeExpression(pm.getErrorNode(x1), "Gamma(5, 2)");
             pm.setNodeExpression(pm.getErrorNode(x2), "Gamma(5, 2)");
@@ -788,10 +779,6 @@ public class TestGeneralizedSem {
             pm.setNodeExpression(x2, "a1 * tan(X1) + E_X2");
             pm.setNodeExpression(x3, "a2 * tan(X2) + E_X3");
             pm.setNodeExpression(x4, "a3 * tan(X1) + a4 * tan(X3) ^ 2 + E_X4");
-//
-//            pm.setNodeExpression(x2, "a1 * X1 + E_X1");
-//            pm.setNodeExpression(x3, "a2 * X2 + E_X1");
-//            pm.setNodeExpression(x4, "a3 * X1 + a4 * X3 + E_X1");
 
             pm.setNodeExpression(pm.getErrorNode(x1), "Normal(c1, c2)");
             pm.setNodeExpression(pm.getErrorNode(x2), "Normal(c3, c4)");
@@ -866,21 +853,11 @@ public class TestGeneralizedSem {
             pm.setNodeExpression(x2, "a1 * tan(X1) + E_X1");
             pm.setNodeExpression(x3, "a2 * tan(X2) + E_X1");
             pm.setNodeExpression(x4, "a3 * tan(X1) + a4 * tan(X3) + E_X1");
-//
-//            pm.setNodeExpression(x1, "E_X1");
-//            pm.setNodeExpression(x2, "a1 * X1 + E_X2");
-//            pm.setNodeExpression(x3, "a2 * X2 + E_X3");
-//            pm.setNodeExpression(x4, "a3 * X1 + a4 * X3 + E_X4");
 
             pm.setNodeExpression(pm.getErrorNode(x1), "StudentT(c2)");
             pm.setNodeExpression(pm.getErrorNode(x2), "StudentT(c4)");
             pm.setNodeExpression(pm.getErrorNode(x3), "StudentT(c6)");
             pm.setNodeExpression(pm.getErrorNode(x4), "StudentT(c8)");
-//
-//            pm.setNodeExpression(pm.getErrorNode(x1), "N(0, c2)");
-//            pm.setNodeExpression(pm.getErrorNode(x2), "N(0, c4)");
-//            pm.setNodeExpression(pm.getErrorNode(x3), "N(0, c6)");
-//            pm.setNodeExpression(pm.getErrorNode(x4), "N(0, c8)");
 
             pm.setParameterExpression("c2", "3");
             pm.setParameterExpression("c4", "3");
@@ -1085,11 +1062,6 @@ public class TestGeneralizedSem {
             pm.setNodeExpression(pm.getErrorNode(x3), "N(0, c3)");
             pm.setNodeExpression(pm.getErrorNode(x4), "N(0, c4)");
 
-//            pm.setParameterExpression("c1", "1");
-//            pm.setParameterExpression("c2", "1");
-//            pm.setParameterExpression("c3", "1");
-//            pm.setParameterExpression("c4", "1");
-
             GeneralizedSemIm im = new GeneralizedSemIm(pm);
 
             im.setParameterValue("a1", 1);
@@ -1164,11 +1136,6 @@ public class TestGeneralizedSem {
             pm.setNodeExpression(pm.getErrorNode(x2), "N(0, c2)");
             pm.setNodeExpression(pm.getErrorNode(x3), "N(0, c3)");
             pm.setNodeExpression(pm.getErrorNode(x4), "N(0, c4)");
-
-//            pm.setParameterExpression("c1", "1");
-//            pm.setParameterExpression("c2", "1");
-//            pm.setParameterExpression("c3", "1");
-//            pm.setParameterExpression("c4", "1");
 
             GeneralizedSemIm im = new GeneralizedSemIm(pm);
 

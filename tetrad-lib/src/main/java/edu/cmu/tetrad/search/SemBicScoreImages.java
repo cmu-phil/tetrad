@@ -212,30 +212,6 @@ public class SemBicScoreImages implements ISemBicScore {
     }
 
     // Prints a smallest subset of parents that causes a singular matrix exception.
-//    private void printMinimalLinearlyDependentSet(int[] parents, ICovarianceMatrix cov) {
-//        List<Node> _parents = new ArrayList<>();
-//        for (int p : parents) _parents.add(variables.get(p));
-//
-//        DepthChoiceGenerator gen = new DepthChoiceGenerator(_parents.size(), _parents.size());
-//        int[] choice;
-//
-//        while ((choice = gen.next()) != null) {
-//            int[] sel = new int[choice.length];
-//            List<Node> _sel = new ArrayList<>();
-//            for (int m = 0; m < choice.length; m++) {
-//                sel[m] = parents[m];
-//                _sel.add(variables.get(sel[m]));
-//            }
-//
-//            Matrix m = cov.getSelection(sel, sel);
-//
-//            try {
-//                m.inverse();
-//            } catch (Exception e2) {
-//                out.println("### Linear dependence among variables: " + _sel);
-//            }
-//        }
-//    }
 
     @Override
     public Node getVariable(String targetName) {

@@ -60,20 +60,6 @@ public class SemImWrapper implements SessionModel {
         setSemIm(semIm);
     }
 
-//    public SemImWrapper(SemEstimatorWrapper semEstWrapper) {
-//        if (semEstWrapper == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        SemIm oldSemIm = semEstWrapper.getSemEstimator().getEstimatedSem();
-//
-//        try {
-//            setSemIm((SemIm) new MarshalledObject(oldSemIm).get());
-//        } catch (Exception e) {
-//            throw new RuntimeException("SemIm could not be deep cloned.", e);
-//        }
-//    }
-
     public SemImWrapper(Simulation simulation) {
         if (simulation == null) {
             throw new NullPointerException("The Simulation box does not contain a simulation.");
@@ -150,14 +136,6 @@ public class SemImWrapper implements SessionModel {
         }
     }
 
-//    public SemImWrapper(SemImWrapper semImWrapper) {
-//        if (semImWrapper == null) {
-//            throw new NullPointerException("SemPmWrapper must not be null.");
-//        }
-//
-//        setSemIm(semImWrapper.getSemIm());
-//    }
-
     public SemImWrapper(PValueImproverWrapper wrapper) {
         SemIm oldSemIm = wrapper.getNewSemIm();
         setSemIm(oldSemIm);
@@ -170,9 +148,6 @@ public class SemImWrapper implements SessionModel {
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
-//        return new SemImWrapper(SemPmWrapper.serializableInstance(),
-//                new SemImWrapper(SemPmWrapper.serializableInstance(),
-//                        new Parameters()), new Parameters());
     }
 
     //===========================PUBLIC METHODS=========================//

@@ -284,8 +284,7 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
     }
 
     public List<Graph> getGraphs() {
-        List<Graph> graphs = new ArrayList<>();
-        graphs.addAll(this.dags);
+        List<Graph> graphs = new ArrayList<>(this.dags);
         return graphs;
     }
 }

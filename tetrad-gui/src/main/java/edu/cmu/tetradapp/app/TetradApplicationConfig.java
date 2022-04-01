@@ -471,7 +471,6 @@ public class TetradApplicationConfig {
     private static class DefaultModelConfig implements SessionNodeModelConfig {
 
         private final Class model;
-        private final Class params;
         private final Class paramsEditor;
         private final Class editor;
         private final String name;
@@ -486,7 +485,6 @@ public class TetradApplicationConfig {
                 throw new NullPointerException("Values must not be null");
             }
             this.model = model;
-            this.params = params;
             this.paramsEditor = paramsEditor;
             this.editor = editor;
             this.name = name;

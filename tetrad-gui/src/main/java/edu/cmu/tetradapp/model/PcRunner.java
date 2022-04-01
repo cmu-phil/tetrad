@@ -41,7 +41,6 @@ public class PcRunner extends AbstractAlgorithmRunner
     private Graph externalGraph;
     private Set<Edge> pcAdjacent;
     private Set<Edge> pcNonadjacent;
-    private List<Node> pcNodes;
 
 
     //============================CONSTRUCTORS============================//
@@ -172,10 +171,7 @@ public class PcRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with getTriplesList.
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<>();
-//        names.add("ColliderDiscovery");
-//        names.add("Noncolliders");
-        return names;
+        return new ArrayList<>();
     }
 
     /**
@@ -183,11 +179,7 @@ public class PcRunner extends AbstractAlgorithmRunner
      * for the given node.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<>();
-//        Graph graph = getGraph();
-//        triplesList.add(DataGraphUtils.getCollidersFromGraph(node, graph));
-//        triplesList.add(DataGraphUtils.getNoncollidersFromGraph(node, graph));
-        return triplesList;
+        return new ArrayList<>();
     }
 
     public Set<Edge> getAdj() {
@@ -218,7 +210,7 @@ public class PcRunner extends AbstractAlgorithmRunner
     private void setPcFields(Pc pc) {
         this.pcAdjacent = pc.getAdjacencies();
         this.pcNonadjacent = pc.getNonadjacencies();
-        this.pcNodes = getGraph().getNodes();
+        List<Node> pcNodes = getGraph().getNodes();
     }
 }
 

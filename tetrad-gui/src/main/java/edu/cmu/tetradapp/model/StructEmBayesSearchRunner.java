@@ -173,14 +173,6 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
     private void estimate(DataSet DataSet, BayesPm bayesPm) {
         final double thresh = 0.0001;
 
-        //        for (Iterator i = graph.getNodes().iterator(); i.hasNext();) {
-        //            Node node = (Node) i.next();
-        //            if (node.getNodeType() == NodeType.LATENT) {
-        //                throw new IllegalArgumentException("Estimation of Bayes IM's " +
-        //                        "with latents is not supported.");
-        //            }
-        //        }
-
         try {
             FactoredBayesStructuralEM estimator =
                     new FactoredBayesStructuralEM(DataSet, bayesPm);
@@ -213,10 +205,6 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-
-//        if (bayesPm == null) {
-//            throw new NullPointerException();
-//        }
 
         if (this.estimatedBayesIm == null) {
             throw new NullPointerException();

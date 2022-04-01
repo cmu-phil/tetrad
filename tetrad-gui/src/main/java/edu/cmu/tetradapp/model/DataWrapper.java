@@ -69,14 +69,6 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
     private Graph sourceGraph;
 
     /**
-     //     * A list of known variables. Variables can be looked up in this list and
-     //     * reused where appropriate.
-     //     *
-     //     * @serial Can be null.
-     //     */
-//    private List<Node> knownVariables;
-
-    /**
      * The parameters being edited.
      */
     private Parameters parameters;
@@ -150,10 +142,6 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
             this.sourceGraph = new EdgeListGraph(wrapper.sourceGraph);
         }
 
-//        if (wrapper.knownVariables != null) {
-//            this.knownVariables = new ArrayList<>(wrapper.knownVariables);
-//        }
-
         this.dataModelList = dataModelList;
 
         LogDataUtils.logDataModelList("Standalone data set.", getDataModelList());
@@ -212,9 +200,6 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
 
     // Computes regression predictions.
     public DataWrapper(RegressionResult result, DataSet data, Parameters parameters) {
-//        if (!data.isContinuous()) {
-//            throw new IllegalArgumentException("Must provide a continuous data set.");
-//        }
 
         DataSet data2 = data.copy();
         String predictedVariable = nextVariableName("Pred", data);
@@ -317,9 +302,7 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
 
     public List<DataModel> getDataModels() {
         List<DataModel> dataModels = new ArrayList<>();
-        for (DataModel model : this.dataModelList) {
-            dataModels.add(model);
-        }
+        dataModels.addAll(this.dataModelList);
         return dataModels;
     }
 
@@ -396,16 +379,9 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
      * //     * Sets the source graph.
      * //
      */
-//    public void setKnownVariables(List<Node> variables) {
-//        this.knownVariables = variables;
-//    }
     public Map getDiscretizationSpecs() {
         return this.discretizationSpecs;
     }
-
-//    public List<Node> getKnownVariables() {
-//        return knownVariables;
-//    }
 
     /**
      * Adds semantic checks to the default deserialization method. This method

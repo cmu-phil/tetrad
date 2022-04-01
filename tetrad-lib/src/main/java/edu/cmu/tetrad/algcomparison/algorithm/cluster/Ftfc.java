@@ -69,10 +69,6 @@ public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
         } else {
             Ftfc algorithm = new Ftfc();
 
-            //algorithm.setKnowledge(knowledge);
-//          if (externalGraph != null) {
-//      		algorithm.setExternalGraph(externalGraph);
-//  		}
             DataSet data = (DataSet) dataSet;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
             search.setKnowledge(this.knowledge);

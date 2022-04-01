@@ -54,8 +54,6 @@ public class BryanSensitivityStudy {
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
         statistics.add(new F1All());
-//        statistics.add(new ArrowheadPrecisionCommonEdges());
-//        statistics.add(new ArrowheadRecallCommonEdges());
         statistics.add(new GraphExactlyRight());
         statistics.add(new ElapsedTime());
 

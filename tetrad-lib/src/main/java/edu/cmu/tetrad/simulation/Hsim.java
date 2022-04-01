@@ -12,7 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-/**
+/*
  * Created by Erich on 3/27/2016.
  */
 public class Hsim {
@@ -22,7 +22,7 @@ public class Hsim {
     private Set<Node> simnodes;
     private DataSet data;
 
-    //************Constructors***************//
+    /// **********Constructors***************//
 
     public Hsim(Dag thedag, Set<Node> thesimnodes, DataSet thedata) {
         if (thedata.isContinuous()) {
@@ -44,11 +44,11 @@ public class Hsim {
         setSimnodes(thesimnodes);
     }
 
-    //**************Public methods***********************//
+    /// ************Public methods***********************//
 
     public DataSet hybridsimulate() {
-        /**Find Markov Blankets for resimulated variables**/
-        /**this needs to be made general, rather than only for two specific names nodes**/
+        // Find Markov Blankets for resimulated variables**/
+        // this needs to be made general, rather than only for two specific names nodes**/
         if (this.verbose) System.out.println("Finding a Markov blanket for resimulated nodes");
         Set<Node> mbAll = new HashSet<Node>(); //initialize an empty set of nodes;
         Set<Node> mbAdd = new HashSet<Node>(); //init set for adding
@@ -61,14 +61,14 @@ public class Hsim {
 
         if (this.verbose) System.out.println("The Markov Blanket is " + mbAll);
 
-        /**Find the subgraph for the resimulated variables and their markov blanket**/
+        // Find the subgraph for the resimulated variables and their markov blanket**/
         if (this.verbose) System.out.println("Finding a subgraph over the Markov Blanket and Resimulated Nodes");
 
         //need a List as input for subgraph method, but mbAll is a Set
         List<Node> mbListAll = new ArrayList<Node>(mbAll);
         Graph subgraph = this.mydag.subgraph(mbListAll);
 
-        /**Learn an instantiated model over the subgraph**/
+        // Learn an instantiated model over the subgraph**/
         if (this.verbose) System.out.println("Learning an instantiated model for the subgraph");
 
         //learn a dirichlet IM for the subgraph using dataSet
@@ -78,7 +78,7 @@ public class Hsim {
         DirichletBayesIm fittedsubgraphIM = DirichletEstimator.estimate(subgraphIM, this.data);
         //if (verbose) System.out.println(fittedsubgraphIM.getVariable());
 
-        /**Use the learned instantiated subgraph model to create the resimulated data**/
+        // Use the learned instantiated subgraph model to create the resimulated data**/
         if (this.verbose) System.out.println("Starting resimulation loop");
 
         //Use the BayesIM to learn the conditional marginal distribution of X given mbAll
@@ -100,19 +100,17 @@ public class Hsim {
             Evidence evidence = Evidence.tautology(fittedsubgraphIM);
 
             //need to define the set of variables being conditioned upon. Start with the outer set of MB
-            Set<Node> mbOuter = mbAll;
             //need to remove the whole set of starters, not just some X and Y... how do? loop a .remove?
             for (Node node : this.simnodes) {
-                mbOuter.remove(node);
+                mbAll.remove(node);
             }
             //THIS SHOULD ALL BE INSIDE ANOTHER LOOP THROUGH THE RESIM VARS:
             //this actually needs to be more careful than a for each. I think a causal ordering of resim should be used?
-            Set<Node> conditionNodes = mbOuter;
             for (Node node : this.simnodes) {
                 //identify the conditioning set for this node, which is mbAll plus the previously resimmed nodes
 
                 //loop through all the nodes being conditioned upon, and set their values in the evidence prop
-                for (Node i : conditionNodes) {
+                for (Node i : mbAll) {
                     int nodeIndex = evidence.getNodeIndex(i.getName());
                     //how do i get the category index from a value in the data?
                     //int catIndex =
@@ -156,7 +154,7 @@ public class Hsim {
                 double cutoff = random.nextDouble();
                 //if (verbose) System.out.println(cutoff);
 
-                //****** turns out, this needs to be generalized outside of just X and Y as well. doh!*******//
+                /// **** turns out, this needs to be generalized outside of just X and Y as well. doh!*******//
                 //for (resimvars) {do the next stuff} //how to iterate through them? order matters, need causal ordering
 
                 double sum = 0.0;
@@ -180,7 +178,7 @@ public class Hsim {
                 //if (verbose) System.out.println(" and again?: " + data.getInt(row,data.getColumn(nodeX)) + " old vs new " + newXvalue);
 
                 //at the end, at this node to the conditioning set
-                conditionNodes.add(node);
+                mbAll.add(node);
             }
         }
 
@@ -209,7 +207,7 @@ public class Hsim {
         return mb;
     }
 
-    //***********Private methods for setting private variables***********//
+    /// *********Private methods for setting private variables***********//
     private void setVerbose(boolean verbosity) {
         this.verbose = verbosity;
     }

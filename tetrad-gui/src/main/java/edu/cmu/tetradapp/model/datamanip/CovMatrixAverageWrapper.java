@@ -32,6 +32,7 @@ import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.PcRunner;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -45,9 +46,7 @@ public class CovMatrixAverageWrapper extends DataWrapper {
     public CovMatrixAverageWrapper(DataWrapper[] covs, Parameters params) {
         List<DataWrapper> matrices = new ArrayList<>();
 
-        for (DataWrapper cov : covs) {
-            matrices.add(cov);
-        }
+        matrices.addAll(Arrays.asList(covs));
 
         calcAverage(matrices);
     }

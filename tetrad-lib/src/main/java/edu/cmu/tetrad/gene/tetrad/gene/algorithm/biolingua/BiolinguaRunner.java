@@ -21,15 +21,14 @@
 
 package edu.cmu.tetrad.gene.tetrad.gene.algorithm.biolingua;
 
+import edu.cmu.tetrad.gene.tetrad.gene.algorithm.util.SymMatrixF;
+
 /**
  * Client of the Biolingua class, can be used to easily
  * run the algorithm with different inputs.<p>
  *
  * @author Raul Saavedra, rsaavedr@ai.uwf.edu
  */
-
-import edu.cmu.tetrad.gene.tetrad.gene.algorithm.util.SymMatrixF;
-
 public class BiolinguaRunner {
     static final String dashes =
             "===================================================================\n";

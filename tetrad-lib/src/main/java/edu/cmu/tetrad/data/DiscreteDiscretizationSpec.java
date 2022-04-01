@@ -64,11 +64,6 @@ public final class DiscreteDiscretizationSpec implements TetradSerializable, Dis
             throw new NullPointerException();
         }
 
-//        if (remap.length != categories.size()) {
-//            System.out.println("Remap length " + remap.length + " Categories = " + categories);
-//            throw new IllegalArgumentException();
-//        }
-
         this.remap = remap;
         this.categories = categories;
     }

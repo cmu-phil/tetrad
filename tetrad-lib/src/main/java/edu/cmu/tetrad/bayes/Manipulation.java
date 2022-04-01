@@ -164,9 +164,6 @@ public final class Manipulation implements TetradSerializable {
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-//        if (variableSource == null) {
-//            throw new NullPointerException("Variable source must not be null.");
-//        }
     }
 
     private VariableSource getVariableSource() {

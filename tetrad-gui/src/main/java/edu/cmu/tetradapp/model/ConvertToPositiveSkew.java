@@ -69,9 +69,7 @@ public class ConvertToPositiveSkew extends DataWrapper {
             List<Node> list = dataSet.getVariables();
             List<Node> list2 = new ArrayList<>();
 
-            for (Node node : list) {
-                list2.add(node);
-            }
+            list2.addAll(list);
 
             DataSet dataSet2 = new BoxDataSet(new DoubleDataBox(matrix2D.toArray()), list2);
             outList.add(dataSet2);

@@ -231,16 +231,8 @@ public class TestExpressionParser {
         final String regex3 = "(\\.?)[0-9]+";
         final String regex4 = "[0-9]+(\\.?)";
         final String regex5 = "([0-9]+)|([0-9]+\\.?[0-9]*)|([0-9]*\\.?[0-9]+)";
-        final String regex6 = "(-?[0-9]+\\.[0-9]*)|(-?[0-9]*\\.[0-9]+)|(-?[0-9]+)";
 
-//        String regex = regex1;
-//        String regex = regex2;
-//        String regex = regex3;
-//        String regex = regex4;
-//        String regex = regex5;
-        final String regex = regex6;
-
-        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(regex);
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(-?[0-9]+\\.[0-9]*)|(-?[0-9]*\\.[0-9]+)|(-?[0-9]+)");
         Matcher matcher = pattern.matcher("0.5");
         boolean matches = matcher.matches();
 

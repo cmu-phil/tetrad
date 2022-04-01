@@ -145,18 +145,6 @@ public class PossibleDConnectingPath {
         return p.pag.equals(this.pag) && p.path.equals(this.path) && p.conditions.equals(this.conditions);
     }
 
-    /*
-     public int hashCode(){
-         int result = 17;
-         result += 19 * pag.hashCode();
-         result += 23 * path.hashCode();
-         result += 27 * conditions.hashCode();
-
-         return result;
-     }
-
-    */
-
     //================================== Private methods =======================//
 
 

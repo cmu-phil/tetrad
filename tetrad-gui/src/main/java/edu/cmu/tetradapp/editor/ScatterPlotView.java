@@ -61,13 +61,11 @@ public class ScatterPlotView extends JPanel {
 //        if (!dataSet.isContinuous()) throw new IllegalArgumentException("Data set not continuous.");
         if (!(dataSet.getNumColumns() >= 2)) throw new IllegalArgumentException("Need at least two columns.");
 
-        DataSet dataSet1 = dataSet;
-
         this.x = dataSet.getVariable(0).getName();
         this.y = dataSet.getVariable(1).getName();
 
         setLayout(new BorderLayout());
-        ScatterPlot ScatterPlot = new ScatterPlot(dataSet1, false, this.x, this.y);
+        ScatterPlot ScatterPlot = new ScatterPlot(dataSet, false, this.x, this.y);
         ScatterPlotChart ScatterPlotChart = new ScatterPlotChart(ScatterPlot);
         this.scatterPlot = ScatterPlot;
         this.scatterPlotChart = ScatterPlotChart;
@@ -722,7 +720,7 @@ public class ScatterPlotView extends JPanel {
             chunks.add(new Chunk(startChunkCount, _data.length, _data[_data.length - 1]));
 
             // now find the breakpoints.
-            double interval = _data.length / ntiles;
+            double interval = _data.length / (double) ntiles;
             double[] breakpoints = new double[ntiles + 1];
             breakpoints[0] = StatUtils.min(_data);
 

@@ -185,10 +185,6 @@ public class TemplateExpander {
 
             String target = formula.substring(m.end() + 1, pos);
 
-//            if (!target.contains("$")) {
-//                throw new ParseException("Templating operators only apply to expressions containg $.", 0);
-//            }
-
             for (String _operator : templateOperators) {
                 if (operator.equals(_operator)) continue;
 

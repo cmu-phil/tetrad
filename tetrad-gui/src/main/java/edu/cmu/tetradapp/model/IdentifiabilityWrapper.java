@@ -70,32 +70,6 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
         BayesIm bayesIm = wrapper.getBayesIm();
         setup(bayesIm, params);
     }
-/*
-    public RowSummingExactWrapper(DirichletBayesImWrapper wrapper, Parameters params) {
-        if (wrapper == null) {
-            throw new NullPointerException();
-        }
-        DirichletBayesIm bayesIm = wrapper.getDirichletBayesIm();
-        setup(bayesIm, params);
-    }
-
-    public RowSummingExactWrapper(BayesEstimatorWrapper wrapper, Parameters params) {
-        if (wrapper == null) {
-            throw new NullPointerException();
-        }
-
-        BayesIm bayesIm = wrapper.getEstimatedBayesIm();
-        setup(bayesIm, params);
-    }
-
-    public RowSummingExactWrapper(DirichletEstimatorWrapper wrapper, Parameters params) {
-        if (wrapper == null) {
-            throw new NullPointerException();
-        }
-        DirichletBayesIm bayesIm = wrapper.getEstimatedBayesIm();
-        setup(bayesIm, params);
-    }
- */
 
     /**
      * Generates a simple exemplar of this class to test serialization.
@@ -104,8 +78,6 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
-//        return new IdentifiabilityWrapper(
-//                BayesImWrapperObs.serializableInstance(), new Parameters());
     }
 
     //==============================PUBLIC METHODS========================//

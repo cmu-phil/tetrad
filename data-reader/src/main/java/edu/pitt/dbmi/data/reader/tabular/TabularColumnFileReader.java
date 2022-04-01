@@ -105,7 +105,7 @@ public final class TabularColumnFileReader extends AbstractTabularColumnFileRead
             }
         }
 
-        return columns.toArray(new DataColumn[columns.size()]);
+        return columns.toArray(new DataColumn[0]);
     }
 
     private DataColumn[] getColumns(int[] columnsToExclude, boolean isDiscrete) throws IOException {
@@ -197,12 +197,10 @@ public final class TabularColumnFileReader extends AbstractTabularColumnFileRead
                                 dataBuilder.append((char) currChar);
                             } else {
                                 boolean isDelimiter;
-                                switch (this.delimiter) {
-                                    case WHITESPACE:
-                                        isDelimiter = (currChar <= DataFileReader.SPACE_CHAR) && (prevChar > DataFileReader.SPACE_CHAR);
-                                        break;
-                                    default:
-                                        isDelimiter = (currChar == delimChar);
+                                if (this.delimiter == Delimiter.WHITESPACE) {
+                                    isDelimiter = (currChar <= DataFileReader.SPACE_CHAR) && (prevChar > DataFileReader.SPACE_CHAR);
+                                } else {
+                                    isDelimiter = (currChar == delimChar);
                                 }
 
                                 if (isDelimiter) {
@@ -251,7 +249,7 @@ public final class TabularColumnFileReader extends AbstractTabularColumnFileRead
             }
         }
 
-        return columns.toArray(new DataColumn[columns.size()]);
+        return columns.toArray(new DataColumn[0]);
     }
 
 }

@@ -76,9 +76,7 @@ public class CovSEiso implements CovarianceFunction {
         double ell = Math.exp(loghyper.get(0, 0));
         double sf2 = Math.exp(2 * loghyper.get(1, 0));
 
-        Matrix K = exp(CovSEiso.squareDist(X.transpose().times(1 / ell)).times(-0.5)).times(sf2);
-
-        return K;
+        return exp(CovSEiso.squareDist(X.transpose().times(1 / ell)).times(-0.5)).times(sf2);
     }
 
     /**
@@ -167,17 +165,6 @@ public class CovSEiso implements CovarianceFunction {
 
         Matrix X = Matrix.identity(6, 6);
         Matrix logtheta = new Matrix(new double[][]{{0.1}, {0.2}});
-
-//        Matrix z = new Matrix(new double[][]{{1,2,3,4,5,6},{1,2,3,4,5,6}});
-//
-//            System.out.println("");
-//            Matrix K = cf.compute(logtheta,X);
-//            K.print(K.getColumnDimension(), 8);
-//
-//            Matrix[] res = cf.compute(logtheta,X,z);
-//
-//            res[0].print(res[0].getColumnDimension(), 20);
-//            res[1].print(res[1].getColumnDimension(), 20);
 
         Matrix d = cf.computeDerivatives(logtheta, X, 1);
 

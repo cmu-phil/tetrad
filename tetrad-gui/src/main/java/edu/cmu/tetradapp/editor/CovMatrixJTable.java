@@ -206,8 +206,6 @@ public class CovMatrixJTable extends JTable implements DataModelContainer,
         }
 
 
-//        covCellRenderer.setPositiveDefinite(
-//                covMatrixTable.isEditingMatrixPositiveDefinite());
         return this.covCellRenderer;
     }
 

@@ -59,10 +59,6 @@ public class RevealSearch {
 
         double[] entropies = new double[this.ngenes];
         for (int g = 0; g < this.ngenes; g++) {
-            //int[] x = new int[ntimes - lag];
-            //for(int i = 0; i < ntimes - lag; i++)
-            //  x[i] = cases[i + lag][g];
-            //entropies[g] = re.entropy(x);
             entropies[g] = this.re.entropy(g, lag);
         }
 
@@ -182,9 +178,8 @@ public class RevealSearch {
             }
         }
 
-        RevealOutputGraph rog = new RevealOutputGraph(this.ngenes, parents, lags,
+        return new RevealOutputGraph(this.ngenes, parents, lags,
                 this.names, "TestReveal");
-        return rog;
     }
 
     /**
@@ -348,9 +343,8 @@ public class RevealSearch {
 
         }
 
-        RevealOutputGraph rog = new RevealOutputGraph(this.ngenes, parents, lags,
+        return new RevealOutputGraph(this.ngenes, parents, lags,
                 this.names, "TestReveal");
-        return rog;
 
     }
 

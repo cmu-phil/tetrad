@@ -100,8 +100,6 @@ public abstract class AbstractAlgorithmRunner
      * Constructs a wrapper for the given DataWrapper. The DatWrapper must
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
-     *
-     * @param knowledgeBoxModel
      */
     public AbstractAlgorithmRunner(DataWrapper dataWrapper,
                                    Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
@@ -133,8 +131,6 @@ public abstract class AbstractAlgorithmRunner
      * Constructs a wrapper for the given DataWrapper. The DatWrapper must
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
-     *
-     * @param knowledgeBoxModel
      */
     public AbstractAlgorithmRunner(DataWrapper dataWrapper,
                                    Parameters params, KnowledgeBoxModel knowledgeBoxModel, IndependenceFactsModel facts) {
@@ -390,17 +386,11 @@ public abstract class AbstractAlgorithmRunner
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-//        if (getParams() == null) {
-//            throw new NullPointerException();
-//        }
     }
 
     public String getName() {

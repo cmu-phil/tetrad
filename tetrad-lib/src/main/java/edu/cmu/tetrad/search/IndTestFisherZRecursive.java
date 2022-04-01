@@ -197,15 +197,6 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
     private double partialCorrelation(Node x, Node y, List<Node> z) throws SingularMatrixException {
         return this.recursivePartialCorrelation.corr(x, y, z);
 
-//        int[] indices = new int[z.size() + 2];
-//        indices[0] = indexMap.get(x);
-//        indices[1] = indexMap.get(y);
-//
-//        if (z.isEmpty()) return corr.getValue(indices[0], indices[1]);
-//
-//        for (int i = 0; i < z.size(); i++) indices[i + 2] = indexMap.get(z.get(i));
-//        TetradMatrix submatrix = corr.getSubmatrix(indices).getMatrix();
-//        return StatUtils.partialCorrelationPrecisionMatrix(submatrix);
     }
 
     public boolean isIndependent(Node x, Node y, Node... z) {

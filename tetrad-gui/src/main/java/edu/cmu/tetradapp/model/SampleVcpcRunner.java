@@ -173,26 +173,17 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
 
     public void execute() {
         IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
-        Parameters searchParams = getParams();
-
-        Parameters params =
-                searchParams;
 
 
         SampleVcpc svcpc = new SampleVcpc(getIndependenceTest());
 
         svcpc.setKnowledge(knowledge);
         svcpc.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
-        svcpc.setDepth(params.getInt("depth", -1));
+        svcpc.setDepth(getParams().getInt("depth", -1));
         if (this.independenceFactsModel != null) {
             svcpc.setFacts();
         }
 
-//        vcpc.setSemPm(semPm);
-//
-//        if (semPm != null) {
-//            vcpc.setSemPm(getSemPm());
-//        }
         svcpc.setSemIm(this.semIm);
 
         if (this.semIm != null) {
@@ -235,8 +226,6 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
      */
     public List<String> getTriplesClassificationTypes() {
         List<String> names = new ArrayList<>();
-//        names.add("ColliderDiscovery");
-//        names.add("Noncolliders");
         names.add("Ambiguous Triples");
         return names;
     }
@@ -247,8 +236,6 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
     public List<List<Triple>> getTriplesLists(Node node) {
         List<List<Triple>> triplesList = new ArrayList<>();
         Graph graph = getGraph();
-//        triplesList.add(DataGraphUtils.getCollidersFromGraph(node, graph));
-//        triplesList.add(DataGraphUtils.getNoncollidersFromGraph(node, graph));
         triplesList.add(GraphUtils.getAmbiguousTriplesFromGraph(node, graph));
         return triplesList;
     }
@@ -305,9 +292,6 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
         this.sVcpcNodes = getGraph().getNodes();
     }
 
-//    public Vcpc getVcpc() {
-//        return vcpc;
-//    }
 }
 
 

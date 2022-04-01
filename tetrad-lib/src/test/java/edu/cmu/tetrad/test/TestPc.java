@@ -168,12 +168,6 @@ public class TestPc {
         Graph trueGraph = GraphConverter.convert(outputGraph);
 
         // PrintUtil out problem and graphs.
-//        System.out.println("\nInput graph:");
-//        System.out.println(graph);
-//        System.out.println("\nResult graph:");
-//        System.out.println(resultGraph);
-//        System.out.println("\nTrue graph:");
-//        System.out.println(trueGraph);
 
         resultGraph = GraphUtils.replaceNodes(resultGraph, trueGraph.getNodes());
 
@@ -235,19 +229,18 @@ public class TestPc {
         final double edgeFactor = 1.0;
 
         final int numRuns = 5;
-        final int maxLatents = numMeasures;
-        final int jumpLatents = maxLatents / 5;
+        final int jumpLatents = numMeasures / 5;
         final double alpha = 0.01;
         final double penaltyDiscount = 2.0;
         final double ofInterestCutoff = 0.1;
 
-        if (maxLatents % jumpLatents != 0) throw new IllegalStateException();
-        final int numLatentGroups = maxLatents / jumpLatents + 1;
+        if (numMeasures % jumpLatents != 0) throw new IllegalStateException();
+        final int numLatentGroups = numMeasures / jumpLatents + 1;
 
         double[][][] allAllRet = new double[numLatentGroups][][];
         int latentIndex = -1;
 
-        for (int numLatents = 0; numLatents <= maxLatents; numLatents += jumpLatents) {
+        for (int numLatents = 0; numLatents <= numMeasures; numLatents += jumpLatents) {
             latentIndex++;
 
             System.out.println();
@@ -262,7 +255,7 @@ public class TestPc {
             double[][] allRet = new double[algorithms.length][];
 
             for (int t = 0; t < algorithms.length; t++) {
-                allRet[t] = printStats(algorithms, t, true, numRuns, alpha, penaltyDiscount, maxLatents,
+                allRet[t] = printStats(algorithms, t, true, numRuns, alpha, penaltyDiscount, numMeasures,
                         numLatents, edgeFactor);
             }
 
@@ -279,7 +272,7 @@ public class TestPc {
         System.out.println("NT = Average Number of Tails; NB = Average Number of Bidirected");
         System.out.println("E = Averaged Elapsed Time (ms), AP/P");
         System.out.println();
-        System.out.println("num latents = 0 to " + maxLatents);
+        System.out.println("num latents = 0 to " + numMeasures);
         System.out.println("alpha = " + alpha);
         System.out.println("penaltyDiscount = " + penaltyDiscount);
         System.out.println("num runs = " + numRuns);
@@ -288,7 +281,7 @@ public class TestPc {
         System.out.println("edge factor = " + edgeFactor);
 
 
-        printBestStats(allAllRet, algorithms, statLabels, maxLatents, jumpLatents, ofInterestCutoff);
+        printBestStats(allAllRet, algorithms, statLabels, numMeasures, jumpLatents, ofInterestCutoff);
     }
 
     private double[] printStats(String[] algorithms, int t, boolean directed, int numRuns,
@@ -612,20 +605,19 @@ public class TestPc {
         final double edgeFactor = 2.0;
 
         final int numRuns = 5;
-        final int maxLatents = numMeasures;
-        final int jumpLatents = maxLatents / 5;
+        final int jumpLatents = numMeasures / 5;
         final double alpha = 0.1;
         final double penaltyDiscount = 4.0;
         final double ofInterestCutoff = 0.01;
         final int sampleSize = 10000;
 
-        if (maxLatents % jumpLatents != 0) throw new IllegalStateException();
-        final int numLatentGroups = maxLatents / jumpLatents + 1;
+        if (numMeasures % jumpLatents != 0) throw new IllegalStateException();
+        final int numLatentGroups = numMeasures / jumpLatents + 1;
 
         double[][][] allAllRet = new double[numLatentGroups][][];
         int latentIndex = -1;
 
-        for (int numLatents = 0; numLatents <= maxLatents; numLatents += jumpLatents) {
+        for (int numLatents = 0; numLatents <= numMeasures; numLatents += jumpLatents) {
             latentIndex++;
 
             System.out.println();
@@ -641,7 +633,7 @@ public class TestPc {
             double[][] allRet = new double[algorithms.length][];
 
             for (int t = 0; t < algorithms.length; t++) {
-                allRet[t] = printStatsPcRegression(algorithms, t, true, numRuns, alpha, penaltyDiscount, maxLatents,
+                allRet[t] = printStatsPcRegression(algorithms, t, true, numRuns, alpha, penaltyDiscount, numMeasures,
                         numLatents, edgeFactor, sampleSize);
             }
 
@@ -655,7 +647,7 @@ public class TestPc {
         System.out.println();
         System.out.println("AP = Average Adjacency Precision; AR = Average Adjacency Recall");
         System.out.println();
-        System.out.println("num latents = 0 to " + maxLatents);
+        System.out.println("num latents = 0 to " + numMeasures);
         System.out.println("alpha = " + alpha);
         System.out.println("penaltyDiscount = " + penaltyDiscount);
         System.out.println("num runs = " + numRuns);
@@ -664,7 +656,7 @@ public class TestPc {
         System.out.println("edge factor = " + edgeFactor);
 
 
-        printBestStats(allAllRet, algorithms, statLabels, maxLatents, jumpLatents, ofInterestCutoff);
+        printBestStats(allAllRet, algorithms, statLabels, numMeasures, jumpLatents, ofInterestCutoff);
     }
 
     private double[] printStatsPcRegression(String[] algorithms, int t, boolean directed, int numRuns,

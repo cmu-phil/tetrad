@@ -196,8 +196,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
 //            LogisticRegression.Result result0 = logisticRegression.regress((DiscreteVariable) _x, regressors0);
 
             // With y.
-            List<Node> regressors1 = new ArrayList<>();
-            regressors1.addAll(this.variablesPerNode.get(y));
+            List<Node> regressors1 = new ArrayList<>(this.variablesPerNode.get(y));
 
             for (Node _z : z) {
                 regressors1.addAll(this.variablesPerNode.get(_z));
@@ -206,14 +205,6 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
             LogisticRegression.Result result1 = this.logisticRegression.regress((DiscreteVariable) _x, regressors1);
 
             // Returns -2 LL
-//            double ll0 = result0.getLogLikelihood();
-//            double ll1 = result1.getLogLikelihood();
-//
-//            double chisq = (ll0 - ll1);
-//            int df = variablesPerNode.get(y).size();
-//            double p = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(chisq);
-//            pValues.add(p);
-            //double[] wald = new double[variablesPerNode.get(y).size()];
             int n = this.originalData.getNumRows();
             int k = regressors1.size() + 1;
 
@@ -249,9 +240,6 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
 
         // Choose the minimum of the p-values
         // This is only one method that can be used, this requires every coefficient to be significant
-//        for (double val : pValues) {
-//            if (val < p) p = val;
-//        }
 
         indep = p > this.alpha;
 
@@ -268,29 +256,6 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
 
     // This takes an inordinate amount of time. -jdramsey 20150929
     private int[] getNonMissingRows(Node x, Node y, List<Node> z) {
-//        List<Integer> rows = new ArrayList<Integer>();
-//
-//        I:
-//        for (int i = 0; i < internalData.getNumRows(); i++) {
-//            for (Node node : variablesPerNode.get(x)) {
-//                if (isMissing(node, i)) continue I;
-//            }
-//
-//            for (Node node : variablesPerNode.get(y)) {
-//                if (isMissing(node, i)) continue I;
-//            }
-//
-//            for (Node _z : z) {
-//                for (Node node : variablesPerNode.get(_z)) {
-//                    if (isMissing(node, i)) continue I;
-//                }
-//            }
-//
-//            rows.add(i);
-//        }
-
-//        int[] _rows = new int[rows.size()];
-//        for (int k = 0; k < rows.size(); k++) _rows[k] = rows.get(k);
 
         int[] _rows = new int[this.internalData.getNumRows()];
         for (int k = 0; k < _rows.length; k++) _rows[k] = k;

@@ -63,11 +63,10 @@ public class HsimAutoC {
         //========first make the Dag for Hsim==========
         ICovarianceMatrix cov = new CovarianceMatrix(this.data);
         SemBicScore score = new SemBicScore(cov);
+        score.setPenaltyDiscount(2.0);
 
-        final double penaltyDiscount = 2.0;
         Fges fges = new Fges(score);
         fges.setVerbose(false);
-        fges.setPenaltyDiscount(penaltyDiscount);
 
         Graph estGraph = fges.search();
         //if (verbose) System.out.println(estGraph);
@@ -119,13 +118,11 @@ public class HsimAutoC {
         }
 
         //=======Run FGS on the output data, and compare it to the original learned graph
-        //Path dataFileOut = Paths.get(filenameOut);
-        //edu.cmu.tetrad.io.DataReader dataReaderOut = new VerticalTabularDiscreteDataReader(dataFileOut, delimiter);
         ICovarianceMatrix newcov = new CovarianceMatrix(this.data);
         SemBicScore newscore = new SemBicScore(newcov);
+        newscore.setPenaltyDiscount(2.0);
         Fges fgesOut = new Fges(newscore);
         fgesOut.setVerbose(false);
-        fgesOut.setPenaltyDiscount(2.0);
 
         Graph estGraphOut = fgesOut.search();
         //if (verbose) System.out.println(" bugchecking: fgs estGraphOut: " + estGraphOut);
@@ -141,10 +138,7 @@ public class HsimAutoC {
 
         //SearchGraphUtils.graphComparison(estGraph, estGraphOut, System.out);
         estEvalGraphOut = GraphUtils.replaceNodes(estEvalGraphOut, estEvalGraph.getNodes());
-        //if (verbose) System.out.println(estEvalGraph);
-        //if (verbose) System.out.println(estEvalGraphOut);
 
-        //SearchGraphUtils.graphComparison(estEvalGraphOut, estEvalGraph, System.out);
         output = HsimUtils.errorEval(estEvalGraphOut, estEvalGraph);
         if (this.verbose) {
             System.out.println(output[0] + " " + output[1] + " " + output[2] + " " + output[3] + " " + output[4]);

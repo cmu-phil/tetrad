@@ -115,8 +115,6 @@ public final class TestSearchGraph {
                 Node y = nodes.get(j);
 
                 List<Node> theRest = new ArrayList<>(nodes);
-//                theRest.remove(x);
-//                theRest.remove(y);
 
                 DepthChoiceGenerator gen = new DepthChoiceGenerator(theRest.size(), depth);
                 int[] choice;
@@ -225,19 +223,6 @@ public final class TestSearchGraph {
     }
 
     public void testAlternativeGraphs() {
-
-//        UniformGraphGenerator gen = new UniformGraphGenerator(UniformGraphGenerator.ANY_DAG);
-//        gen.setNumNodes(100);
-//        gen.setMaxEdges(200);
-//        gen.setMaxDegree(30);
-//        gen.setMaxInDegree(30);
-//        gen.setMaxOutDegree(30);
-////        gen.setNumIterations(3000000);
-//        gen.setResamplingDegree(10);
-//
-//        gen.generate();
-//
-//        Graph graph = gen.getDag();
 
         Graph graph = TestSearchGraph.weightedRandomGraph(250, 400);
 

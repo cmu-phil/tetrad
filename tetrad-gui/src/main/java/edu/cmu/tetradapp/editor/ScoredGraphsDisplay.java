@@ -106,9 +106,7 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
                 }
             }
         } else {
-            for (Graph dag : this.dagsToScores.keySet()) {
-                dags.add(dag);
-            }
+            dags.addAll(this.dagsToScores.keySet());
         }
 
         if (max != Double.NEGATIVE_INFINITY) {

@@ -40,7 +40,6 @@ public class PurifyTetradBased2 implements IPurify {
     private final TetradTest tetradTest;
 
     private final List<Node> nodes;
-    private Graph mim;
 
     public PurifyTetradBased2(TetradTest tetradTest) {
         this.tetradTest = tetradTest;
@@ -80,7 +79,6 @@ public class PurifyTetradBased2 implements IPurify {
     }
 
     public void setTrueGraph(Graph mim) {
-        this.mim = mim;
     }
 
 

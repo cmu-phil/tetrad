@@ -243,10 +243,6 @@ public class PurifyTetradBased implements IPurify {
 
                 int index = minList.get(RandomUtil.getInstance().nextInt(minList.size()));
 
-//                eliminated[index] = true;
-//                numImpurities = min;
-//                System.out.println("Dropped " + tetradTest.getVarNames()[index]);
-
                 for (int m = 0; m < minList.size(); m++) {
                     eliminated[index] = true;
                     numImpurities = min;

@@ -182,9 +182,7 @@ public class FindTwoFactorClusters {
     // renjiey
     private Integer[] removeZeroIndex(Integer[] outlier) {
         List<Integer> list = new ArrayList<>();
-        for (int i = 0; i < outlier.length; i++) {
-            list.add(outlier[i]);
-        }
+        list.addAll(Arrays.asList(outlier));
         for (Integer element : outlier) {
             if (element < 1) {
                 list.remove(element);
@@ -346,9 +344,6 @@ public class FindTwoFactorClusters {
 
                     _cluster.add(o);
 
-//                    if (!(avgSumLnP(new ArrayList<Integer>(_cluster)) > -10)) {
-//                        _cluster.remove(o);
-//                    }
                 }
 
                 // This takes out all pure clusters that are subsets of _cluster.
@@ -579,32 +574,6 @@ public class FindTwoFactorClusters {
             }
         }
 
-//        C:
-//        for (List<Integer> cluster : new HashSet<>(out)) {
-//            if (cluster.size() >= 6) {
-//                ChoiceGenerator gen = new ChoiceGenerator(cluster.size(), 6);
-//                int[] choice;
-//
-//                while ((choice = gen.next()) != null) {
-//                    int n1 = cluster.get(choice[0]);
-//                    int n2 = cluster.get(choice[1]);
-//                    int n3 = cluster.get(choice[2]);
-//                    int n4 = cluster.get(choice[3]);
-//                    int n5 = cluster.get(choice[4]);
-//                    int n6 = cluster.get(choice[5]);
-//
-//                    List<Integer> _cluster = sextet(n1, n2, n3, n4, n5, n6);
-//
-//                    // Note that purity needs to be assessed with respect to all of the variables in order to
-//                    // remove all latent-measure impurities between pairs of latents.
-//                    if (!pure(_cluster)) {
-//                        out.remove(cluster);
-//                        continue C;
-//                    }
-//                }
-//            }
-//        }
-
         return out;
     }
 
@@ -659,31 +628,6 @@ public class FindTwoFactorClusters {
                 break;
             }
 
-//            C:
-//            for (List<Integer> cluster : new HashSet<>(clusters)) {
-//                if (cluster.size() >= 6) {
-//                    ChoiceGenerator gen = new ChoiceGenerator(cluster.size(), 6);
-//                    int[] choice;
-//
-//                    while ((choice = gen.next()) != null) {
-//                        int n1 = cluster.get(choice[0]);
-//                        int n2 = cluster.get(choice[1]);
-//                        int n3 = cluster.get(choice[2]);
-//                        int n4 = cluster.get(choice[3]);
-//                        int n5 = cluster.get(choice[4]);
-//                        int n6 = cluster.get(choice[5]);
-//
-//                        List<Integer> _cluster = sextet(n1, n2, n3, n4, n5, n6);
-//
-//                        // Note that purity needs to be assessed with respect to all of the variables in order to
-//                        // remove all latent-measure impurities between pairs of latents.
-//                        if (!pure(_cluster)) {
-//                            clusters.remove(cluster);
-//                            continue C;
-//                        }
-//                    }
-//                }
-//            }
         }
 
         return clusters;
@@ -1091,12 +1035,6 @@ public class FindTwoFactorClusters {
 
             if (p < this.alpha) return false;
         }
-
-//        IntSextad[] sextads = new IntSextad[]{t1, t2, t3, t4, t5, t6, t7, t8, t9, t10};
-//
-//        for (IntSextad sextad : sextads) {
-//            if (test.getScore(sextad) < alpha) return false;
-//        }
 
         return true;
     }

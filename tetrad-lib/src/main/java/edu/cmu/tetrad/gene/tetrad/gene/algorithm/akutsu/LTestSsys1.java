@@ -58,8 +58,6 @@ public class LTestSsys1 {
                 if (k == 0) {
                     continue;
                 }
-                //                int idish = Integer.parseInt(st.nextToken("\t"));
-                //                int ichip = Integer.parseInt(st.nextToken("\t"));
                 for (int j = 0; j < ntimes * ngenes; j++) {
                     cases[k - 1][j] = Double.parseDouble(st.nextToken("\t"));
                 }
@@ -151,15 +149,6 @@ public class LTestSsys1 {
             }
         }
 
-        /*
-        double[] p = new double[ngenes];
-        for(int g = 0; g < ngenes; g++) {
-          for(int j = 0; j < ntimes; j++)
-            if(gene[j][g] > 0) p[g]++;
-          p[g] /= ntimes;
-          //System.out.println(" gene " + g + " p = " + p[g]);
-        }
-        */
     }
 
 }

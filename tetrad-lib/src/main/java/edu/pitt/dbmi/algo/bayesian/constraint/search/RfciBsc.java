@@ -1,6 +1,3 @@
-/**
- *
- */
 package edu.pitt.dbmi.algo.bayesian.constraint.search;
 
 import edu.cmu.tetrad.bayes.BayesIm;
@@ -64,17 +61,11 @@ public class RfciBsc implements GraphSearch {
     // Where printed output is sent.
     private PrintStream out = System.out;
 
-    private long start;
-
-    private long stop;
-
     private boolean thresholdNoRandomDataSearch;
     private double cutoffDataSearch = 0.5;
 
     private boolean thresholdNoRandomConstrainSearch = true;
     private double cutoffConstrainSearch = 0.5;
-
-    private final int numCandidatePagSearchTrial = 1000;
 
     public RfciBsc(Rfci rfci) {
         this.rfci = rfci;
@@ -82,8 +73,8 @@ public class RfciBsc implements GraphSearch {
 
     @Override
     public Graph search() {
-        this.stop = 0;
-        this.start = System.currentTimeMillis();
+        long stop = 0;
+        long start = System.currentTimeMillis();
 
         IndTestProbabilistic _test = (IndTestProbabilistic) this.rfci.getIndependenceTest();
 
@@ -161,7 +152,8 @@ public class RfciBsc implements GraphSearch {
 
         int trial = 0;
 
-        while (vars.size() == 0 && trial < this.numCandidatePagSearchTrial) {
+        int numCandidatePagSearchTrial = 1000;
+        while (vars.size() == 0 && trial < numCandidatePagSearchTrial) {
             tasks.clear();
 
             for (int i = 0; i < this.numRandomizedSearchModels; i++) {
@@ -184,7 +176,7 @@ public class RfciBsc implements GraphSearch {
         }
 
         // Failed to generate a list of qualified constraints
-        if (trial == this.numCandidatePagSearchTrial) {
+        if (trial == numCandidatePagSearchTrial) {
             return new EdgeListGraph(dataSet.getVariables());
         }
 
@@ -195,14 +187,13 @@ public class RfciBsc implements GraphSearch {
 
             private final int row_index;
 
-            private final DataSet bsData;
             private final IndTestProbabilistic bsTest;
 
             public BootstrapDepDataTask(int row_index, int rows) {
                 this.row_index = row_index;
 
-                this.bsData = DataUtils.getBootstrapSample(dataSet, rows);
-                this.bsTest = new IndTestProbabilistic(this.bsData);
+                DataSet bsData = DataUtils.getBootstrapSample(dataSet, rows);
+                this.bsTest = new IndTestProbabilistic(bsData);
                 this.bsTest.setThreshold(RfciBsc.this.thresholdNoRandomConstrainSearch);
                 if (RfciBsc.this.thresholdNoRandomConstrainSearch) {
                     this.bsTest.setCutoff(RfciBsc.this.cutoffConstrainSearch);
@@ -372,9 +363,9 @@ public class RfciBsc implements GraphSearch {
             this.out.println("graphRBD:\n" + this.graphRBD);
             this.out.println("graphRBI:\n" + this.graphRBI);
 
-            this.stop = System.currentTimeMillis();
+            stop = System.currentTimeMillis();
 
-            this.out.println("Elapsed " + (this.stop - this.start) + " ms");
+            this.out.println("Elapsed " + (stop - start) + " ms");
         }
 
         Graph output = this.graphRBD;
@@ -594,14 +585,11 @@ public class RfciBsc implements GraphSearch {
                     int rowIndex = im.getRowIndex(im.getNodeIndex(node), parentValues);
                     p = im.getProbability(im.getNodeIndex(node), rowIndex, 1);
 
-                    if (op == BCInference.OP.dependent) {
-                        p = 1.0 - p;
-                    }
                 } else {
                     p = im.getProbability(im.getNodeIndex(node), 0, 1);
-                    if (op == BCInference.OP.dependent) {
-                        p = 1.0 - p;
-                    }
+                }
+                if (op == BCInference.OP.dependent) {
+                    p = 1.0 - p;
                 }
 
                 if (p < -0.0001 || p > 1.0001 || Double.isNaN(p) || Double.isInfinite(p)) {

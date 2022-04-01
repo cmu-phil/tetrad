@@ -133,39 +133,6 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
                     (Evidence) params.get("evidence", null));
         }
 
-//        Node node = getParameters().getVariable();
-//
-//        if (node != null) {
-//            NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-//
-//            TetradLogger.getInstance().log("info", "\nCPT Invariant Exact Updater");
-//
-//            String nodeName = node.getNode();
-//            int nodeIndex = bayesIm.getNodeIndex(bayesIm.getNode(nodeName));
-//            double[] priors = getBayesUpdater().calculatePriorMarginals(nodeIndex);
-//            double[] marginals = getBayesUpdater().calculateUpdatedMarginals(nodeIndex);
-//
-//            TetradLogger.getInstance().log("details", "\nVariable = " + nodeName);
-//            TetradLogger.getInstance().log("details", "\nEvidence:");
-//            Evidence evidence = getParameters().getEvidence();
-//            Proposition proposition = evidence.getProposition();
-//
-//            for (int i = 0; i < proposition.getNumVariables(); i++) {
-//                Node variable = proposition.getVariableSource().getVariable().get(i);
-//                int category = proposition.getSingleCategory(i);
-//
-//                if (category != -1) {
-//                    TetradLogger.getInstance().log("details", "\t" + variable + " = " + category);
-//                }
-//            }
-//
-//            TetradLogger.getInstance().log("details", "\nCat.\tPrior\tMarginal");
-//
-//            for (int i = 0; i < priors.length; i++) {
-//                TetradLogger.getInstance().log("details", category(evidence, nodeName, i) + "\t"
-//                                + nf.format(priors[i]) + "\t" + nf.format(marginals[i]));
-//            }
-//        }
         TetradLogger.getInstance().reset();
     }
 

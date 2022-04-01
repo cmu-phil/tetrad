@@ -173,10 +173,7 @@ public class FasRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with getTriplesList.
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<>();
-//        names.add("ColliderDiscovery");
-//        names.add("Noncolliders");
-        return names;
+        return new ArrayList<>();
     }
 
     /**
@@ -184,11 +181,7 @@ public class FasRunner extends AbstractAlgorithmRunner
      * for the given node.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<>();
-//        Graph graph = getGraph();
-//        triplesList.add(DataGraphUtils.getCollidersFromGraph(node, graph));
-//        triplesList.add(DataGraphUtils.getNoncollidersFromGraph(node, graph));
-        return triplesList;
+        return new ArrayList<>();
     }
 
     public boolean supportsKnowledge() {

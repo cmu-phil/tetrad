@@ -82,8 +82,6 @@ public final class LoadDataDialog extends JPanel {
 
     private JDialog loadingIndicatorDialog;
 
-    private JScrollPane filesToValidateScrollPane;
-
     private final DefaultListModel fileListModel;
 
     private final DefaultListModel validatedFileListModel;
@@ -390,10 +388,10 @@ public final class LoadDataDialog extends JPanel {
         });
 
         // Put the list in a scrollable area
-        this.filesToValidateScrollPane = new JScrollPane(this.validationFileList);
-        this.filesToValidateScrollPane.setAlignmentX(Component.LEFT_ALIGNMENT);
+        JScrollPane filesToValidateScrollPane = new JScrollPane(this.validationFileList);
+        filesToValidateScrollPane.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        filesToValidateBox.add(this.filesToValidateScrollPane);
+        filesToValidateBox.add(filesToValidateScrollPane);
 
         validationResultsBox.add(filesToValidateBox);
 

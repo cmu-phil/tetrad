@@ -110,9 +110,7 @@ public class RemoveSelectedVariablesWrapper extends DataWrapper {
                 selectedIndices, selectedIndices).copy();
 
 
-        ICovarianceMatrix newCov = new CovarianceMatrix(DataUtils.createContinuousVariables(nodeNames), newMatrix, data.getSampleSize());
-
-        return newCov;
+        return new CovarianceMatrix(DataUtils.createContinuousVariables(nodeNames), newMatrix, data.getSampleSize());
     }
 
 

@@ -303,9 +303,7 @@ public class AlgorithmCard extends JPanel {
             Optional<JRadioButton> opt = this.algoTypeOpts.stream()
                     .filter(e -> e.getActionCommand().equals(actCmd))
                     .findFirst();
-            if (opt.isPresent()) {
-                opt.get().setSelected(true);
-            }
+            opt.ifPresent(jRadioButton -> jRadioButton.setSelected(true));
         }
 
         refreshAlgorithmList();
@@ -687,7 +685,7 @@ public class AlgorithmCard extends JPanel {
         }
     }
 
-    private class DescriptionPanel extends JPanel {
+    private static class DescriptionPanel extends JPanel {
 
         private static final long serialVersionUID = 2329356999486712496L;
 
@@ -864,10 +862,6 @@ public class AlgorithmCard extends JPanel {
 
         private static final long serialVersionUID = -1594897454478052884L;
 
-        private JLabel assumptionsLabel;
-        private JLabel scoreLabel;
-        private JLabel testLabel;
-
         public TestAndScorePanel() {
             this.initComponents();
         }
@@ -885,9 +879,9 @@ public class AlgorithmCard extends JPanel {
 
             datasetFilterBtnGrp.setSelected(allRadBtn.getModel(), true);
 
-            assumptionsLabel = new JLabel();
-            testLabel = new JLabel();
-            scoreLabel = new JLabel();
+            JLabel assumptionsLabel = new JLabel();
+            JLabel testLabel = new JLabel();
+            JLabel scoreLabel = new JLabel();
 
             this.setBorder(BorderFactory.createTitledBorder("Choose Statistical Test and Score"));
 
@@ -1007,7 +1001,7 @@ public class AlgorithmCard extends JPanel {
                                         .addPreferredGap(ComponentPlacement.RELATED)
                                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                                 .addComponent(AlgorithmCard.this.scoreComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addComponent(this.scoreLabel))
+                                                .addComponent(scoreLabel))
                                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 );
             }

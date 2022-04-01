@@ -87,9 +87,10 @@ public class TestSimulatedFmri {
 
         Simulations simulations = new Simulations();
 
+        final String dir;
+        final String subdir = "data_fslfilter";
         if (!testing) {
-            final String dir = "/Users/user/Downloads/Cycles_Data_fMRI/";
-            final String subdir = "data_fslfilter";
+            dir = "/Users/user/Downloads/Cycles_Data_fMRI/";
 
             simulations.add(new LoadContinuousDataAndSingleGraph(
                     dir + "Network1_amp", subdir));
@@ -127,14 +128,9 @@ public class TestSimulatedFmri {
                     dir + "Network9_amp_contr", subdir));
             simulations.add(new LoadContinuousDataAndSingleGraph(
                     dir + "Network9_contr_amp", subdir));
-            simulations.add(new LoadContinuousDataAndSingleGraph(
-                    dir + "Diamond", subdir));
-            simulations.add(new LoadContinuousDataAndSingleGraph(
-                    dir + "Markov_Complex_1", subdir));
         } else {
 
-            final String dir = "/Users/user/Downloads/CyclesTestingData/";
-            final String subdir = "data_fslfilter";
+            dir = "/Users/user/Downloads/CyclesTestingData/";
 
             simulations.add(new LoadContinuousDataAndSingleGraph(
                     dir + "Network1_amp", subdir));
@@ -172,18 +168,15 @@ public class TestSimulatedFmri {
                     dir + "Network9_amp_cont", subdir));
             simulations.add(new LoadContinuousDataAndSingleGraph(
                     dir + "Network9_cont_amp", subdir));
-            simulations.add(new LoadContinuousDataAndSingleGraph(
-                    dir + "Diamond", subdir));
-            simulations.add(new LoadContinuousDataAndSingleGraph(
-                    dir + "Markov_Complex_1", subdir));
         }
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                dir + "Diamond", subdir));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                dir + "Markov_Complex_1", subdir));
 
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new FaskConcatenated(new SemBicScore(), new FisherZ()));
-//        algorithms.add(new FaskGfciConcatenated(new SemBicTest()));
-
-//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.RSkew));
 
         Comparison comparison = new Comparison();
 
@@ -244,30 +237,12 @@ public class TestSimulatedFmri {
         for (int i = 1; i <= 28; i++) {
 //            if (i == 21) continue;
             simulations.add(new LoadContinuousDataSmithSim("/Users/user/Downloads/smithsim/", i));
-//            simulations.add(new LoadContinuousDataPwdd7("/Users/user/Downloads/pwdd7/", i, "50_BOLDdemefilt1"));
-//            simulations.add(new LoadContinuousDataPwdd7("/Users/user/Downloads/pwdd7/", i, "50_BOLDnoise"));
         }
-
-//        algorithms.add(new LofsConcatenated(Lofs2.Rule.FASKLR));
-//        algorithms.add(new LofsConcatenated(Lofs2.Rule.R1));
-//        algorithms.add(new LofsConcatenated(Lofs2.Rule.R3));
-//        algorithms.add(new LofsConcatenated(Lofs2.Rule.RSkew));
-//        algorithms.add(new LofsConcatenated(Lofs2.Rule.RSkewE));
-//        algorithms.add(new LofsConcatenated(Lofs2.Rule.Skew));
-//        algorithms.add(new LofsConcatenated(Lofs2.Rule.SkewE));
-//        algorithms.add(new LofsConcatenated(Lofs2.Rule.Patel));
 
         algorithms.add(new FaskConcatenated(
                 new SemBicScore(),
                 new FisherZ() {
                 }));
-//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R1));
-//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R3));
-//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.RSkew));
-//        algorithms.add(new FasLofsConfcatenated(Lofs2.Rule.RSkewE));
-//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.Skew));
-//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.SkewE));
-//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.Patel));
 
         Comparison comparison = new Comparison();
 
@@ -330,24 +305,9 @@ public class TestSimulatedFmri {
 
         Algorithms algorithms = new Algorithms();
 
-//        algorithms.add(new FasLofs(Lofs2.Rule.R1));
-//        algorithms.add(new FasLofs(Lofs2.Rule.R2));
-//        algorithms.add(new FasLofs(Lofs2.Rule.R3));
-//        algorithms.add(new FasLofs(Lofs2.Rule.Patel));
-//        algorithms.add(new FasLofs(Lofs2.Rule.Skew));
-//        algorithms.add(new FasLofs(Lofs2.Rule.RSkew));
-//
-//        algorithms.add(new FgesConcatenated(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
-//        algorithms.add(new PcStableMaxConcatenated(new SemBicTest(), true));
         algorithms.add(new FaskConcatenated(
                 new SemBicScore(),
                 new FisherZ()));
-//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R1));
-//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R2));
-//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R3));
-//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.Patel));
-//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.Skew));
-//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.RSkew));
 
         Comparison comparison = new Comparison();
 
@@ -396,7 +356,7 @@ public class TestSimulatedFmri {
                     pm.setNodeExpression(pm.getErrorNode(g.getNode("Y")), error);
                     pm.setNodeExpression(pm.getErrorNode(g.getNode("Z")), error);
                 } catch (ParseException e) {
-                    System.out.println(e);
+                    e.printStackTrace();
                 }
 
                 GeneralizedSemIm im = new GeneralizedSemIm(pm);
@@ -437,7 +397,7 @@ public class TestSimulatedFmri {
                     pm.setNodeExpression(pm.getErrorNode(g.getNode("Y")), error);
                     pm.setNodeExpression(pm.getErrorNode(g.getNode("Z")), error);
                 } catch (ParseException e) {
-                    System.out.println(e);
+                    e.printStackTrace();
                 }
 
                 GeneralizedSemIm im = new GeneralizedSemIm(pm);
@@ -482,7 +442,7 @@ public class TestSimulatedFmri {
             pm.setNodeExpression(pm.getErrorNode(g.getNode("Y")), error);
             pm.setNodeExpression(pm.getErrorNode(g.getNode("Z")), error);
         } catch (ParseException e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
 
 

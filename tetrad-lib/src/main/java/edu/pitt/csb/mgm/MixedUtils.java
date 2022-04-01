@@ -126,20 +126,6 @@ public class MixedUtils {
             }
         }
 
-//        MixedDataBox box = new MixedDataBox(mixVars, dsCont.getNumRows());
-//
-//        for (int i = 0; i < box.numRows(); i++) {
-//            for (int j = 0; j < box.numCols(); j++) {
-//                if (mixVars.get(j) instanceof ContinuousVariable) {
-//                    box.set(i, j, dsCont.getDouble(i, j));
-//                } else {
-//                    box.set(i, j, (int) Math.round(dsCont.getDouble(i, j)));
-//                }
-//            }
-//        }
-
-//        return new BoxDataSet(box, mixVars);
-
         return new BoxDataSet(new DoubleDataBox(dsCont.getDoubleData().toArray()), mixVars);
     }
 
@@ -159,9 +145,8 @@ public class MixedUtils {
             else
                 throw new IllegalArgumentException("Variable type of node " + n + "could not be determined");
         }
-        DataSet out = new BoxDataSet(new DoubleDataBox(ds.getDoubleData().toArray()), vars);
 
-        return out;
+        return new BoxDataSet(new DoubleDataBox(ds.getDoubleData().toArray()), vars);
     }
 
     //Takes a mixed dataset and returns only data corresponding to ContinuousVariables in order
@@ -335,8 +320,6 @@ public class MixedUtils {
             semPm.setStartsWithParametersTemplate("s", "U(1,2)");
 
             //if we don't use NB error, we could do this instead
-            //String templateDisc = "DiscError(err, (TSUM(NEW(B)*$)), (TSUM(NEW(B)*$)), (TSUM(NEW(B)*$)))";
-//            String templateDisc0 = "DiscError(err, 1,1,1)";
 
             final String templateDisc0 = "DiscError(err, ";
 
@@ -366,15 +349,14 @@ public class MixedUtils {
                         for (int l = 0; l < curDist; l++) {
                             newTemp += ",1";
                         }
-                        newTemp += ")";
-//                        newTemp = templateDisc0;
+                        //                        newTemp = templateDisc0;
                     } else {
                         newTemp = "DiscError(err";
                         for (int l = 0; l < curDist; l++) {
                             newTemp += ", TSUM(NEW(C)*$)";
                         }
-                        newTemp += ")";
                     }
+                    newTemp += ")";
                     newTemp = newTemp.replaceAll("err", eNode.getName());
                     curEx = TemplateExpander.getInstance().expandTemplate(newTemp, semPm, node);
                     //System.out.println("Disc CurEx: " + curEx);
@@ -499,18 +481,10 @@ public class MixedUtils {
                 // d-d edges use one vector and permute edges, could use different strategy
                 if (cL > 0 && pL > 0) {
                     double[][] newWeights = new double[cL][pL];
-                    //List<Integer> indices = new ArrayList<Integer>(pL);
-                    //PermutationGenerator pg = new PermutationGenerator(pL);
-                    //int[] permInd = pg.next();
                     w = Math.abs(w);
                     double bgW = w / ((double) pL - 1.0);
                     double[] weightVals;
 
-                    /*if(discParamRand)
-                        weightVals = generateMixedEdgeParams(w, pL);
-                    else
-                        weightVals = evenSplitVector(w, pL);
-                    */
                     int[] weightInds = new int[cL];
                     for (int i = 0; i < cL; i++) {
                         if (i < pL)
@@ -636,11 +610,7 @@ public class MixedUtils {
             if (parent instanceof DiscreteVariable) {
                 curGroup = curGroup.substring(("Switch(" + parent.getName()).length() + 1, curGroup.length() - 1);
                 String[] pars = curGroup.split(",");
-                for (String p : pars) {
-                    //if(!allParams.contains(p))
-                    //    throw exception;
-                    paramList.add(p);
-                }
+                paramList.addAll(Arrays.asList(pars));
             } else {
                 String p = curGroup.split("\\*")[0];
                 paramList.add(p);
@@ -650,15 +620,6 @@ public class MixedUtils {
         //if(child instanceof DiscreteVariable){
         //    if(parent instanceof DiscreteVariable)
         //}
-
-        /*Expression exp = pm.getNodeExpression(child);
-        List<Expression> test = exp.getExpressions();
-        for(Expression t : test){
-            List<Expression> test2 = t.getExpressions();
-            for(Expression t2: test2) {
-                System.out.println(t2.toString());
-            }
-        }*/
 
         return paramList;
     }
@@ -1026,17 +987,6 @@ public class MixedUtils {
 
         g = MixedUtils.makeMixedGraph(g, nd);
 
-        /*Graph g = new EdgeListGraph();
-        g.addNode(new ContinuousVariable("X1"));
-        g.addNode(new ContinuousVariable("X2"));
-        g.addNode(new DiscreteVariable("X3", 4));
-        g.addNode(new DiscreteVariable("X4", 4));
-        g.addNode(new ContinuousVariable("X5"));
-        g.addDirectedEdge(g.getNode("X1"), g.getNode("X2"));
-        g.addDirectedEdge(g.getNode("X2"), g.getNode("X3"));
-        g.addDirectedEdge(g.getNode("X3"), g.getNode("X4"));
-        g.addDirectedEdge(g.getNode("X4"), g.getNode("X5"));
-        */
         GeneralizedSemPm pm = MixedUtils.GaussianCategoricalPm(g, "Split(-1.5,-1,1,1.5)");
         System.out.println(pm);
 
@@ -1065,28 +1015,5 @@ public class MixedUtils {
 
         System.out.println("num cats " + ((DiscreteVariable) g.getNode("X4")).getNumCategories());
 
-        /*Graph trueGraph = DataGraphUtils.loadGraphTxt(new File(MixedUtils.class.getResource("test_data").getPath(), "DAG_0_graph.txt"));
-        HashMap<String, Integer> nd = new HashMap<>();
-        List<Node> nodes = trueGraph.getNodes();
-        for(int i = 0; i < nodes.size(); i++){
-            int coin = RandomUtil.getInstance().nextInt(2);
-            int dist = (coin==0) ? 0 : 3; //continuous if coin == 0
-            nd.put(nodes.get(i).getNode(), dist);
-        }
-        //System.out.println(getEdgeParams(g.getNode("X3"), g.getNode("X2"), pm).toString());
-        //System.out.println(getEdgeParams(g.getNode("X4"), g.getNode("X3"), pm).toString());
-        //System.out.println(getEdgeParams(g.getNode("X5"), g.getNode("X4"), pm).toString());
-        //System.out.println("num cats " + ((DiscreteVariable) g.getNode("X4")).getNumCategories());
-        /*
-        HashMap<String, String> nd2 = new HashMap<>();
-        nd2.put("X1", "Norm");
-        nd2.put("X2", "Norm");
-        nd2.put("X3", "Disc");
-        nd2.put("X4", "Disc");
-        nd2.put("X5", "Disc");
-        GeneralizedSemPm pm2 = GaussianTrinaryPm(g, nd2, 10, "Split(-1.5,-.5,.5,1.5)");
-        System.out.println("OLD pm:");
-        System.out.print(pm2);
-        */
     }
 }

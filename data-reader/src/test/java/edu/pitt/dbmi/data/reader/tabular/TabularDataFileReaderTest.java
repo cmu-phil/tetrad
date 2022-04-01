@@ -780,8 +780,7 @@ public class TabularDataFileReaderTest {
                     .count();
 
             final long expected = 5;
-            long actual = numOfDiscrete;
-            Assert.assertEquals(expected, actual);
+            Assert.assertEquals(expected, numOfDiscrete);
         }
     }
 

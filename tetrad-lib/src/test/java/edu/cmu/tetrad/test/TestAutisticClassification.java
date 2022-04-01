@@ -415,10 +415,6 @@ public class TestAutisticClassification {
 
         double prob = isTheCase / (double) occurs;
 
-//        if (occurs >= 4 && isTheCase >= .75 * occurs) {
-//            System.out.println();
-//        }
-
         return occurs >= min && prob >= 0.75;
     }
 

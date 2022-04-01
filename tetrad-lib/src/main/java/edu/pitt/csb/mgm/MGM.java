@@ -45,13 +45,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-//import cern.colt.Arrays;
-//import la.matrix.Matrix;
-//import la.matrix.DenseMatrix;
-//import ml.optimization.AcceleratedProximalGradient;
-//import ml.optimization.ProximalMapping;
-//import ml.utils.Matlab;
-
 /**
  * Implementation of Lee and Hastie's (2012) pseudolikelihood method for learning
  * Mixed Gaussian-Categorical Graphical Models
@@ -60,9 +53,6 @@ import java.util.List;
 public class MGM extends ConvexProximal implements GraphSearch {
     private final DoubleFactory2D factory2D = DoubleFactory2D.dense;
     private final DoubleFactory1D factory1D = DoubleFactory1D.dense;
-
-    //private DoubleFactory2D factory2D = DoubleFactory2D.sparse;
-    //private DoubleFactory1D factory1D = DoubleFactory1D.sparse;
 
     //Continuous Data
     private final DoubleMatrix2D xDat;
@@ -772,8 +762,6 @@ public class MGM extends ConvexProximal implements GraphSearch {
         MGM.upperTri(par.phi, 0);
         par.phi.assign(this.alg.transpose(par.phi), Functions.plus);
 
-        //Xbeta=X*beta*diag(1./betad);
-        //Dtheta=D*theta*diag(1./betad);
         DoubleMatrix2D divBetaD = this.factory2D.diagonal(this.factory1D.make(this.p, 1.0).assign(par.betad, Functions.div));
 
         DoubleMatrix2D xBeta = this.alg.mult(this.alg.mult(this.xDat, par.beta), divBetaD);
@@ -1146,29 +1134,6 @@ public class MGM extends ConvexProximal implements GraphSearch {
         return this.lambda.get(0) * betaNorms + this.lambda.get(1) * thetaNorms + this.lambda.get(2) * phiNorms;
     }
 
-        /*public Matrix compute(double t, Matrix X){
-            double[][] out = new double[1][];
-            out[0] = computeColt(t, factory1D.make(X.getContinuousData()[0])).toArray();
-            return new DenseMatrix(out);
-        }*/
-
-    /*public static class softThreshold implements DoubleFunction{
-        public double th;
-        public softThreshold(double th){
-            this.th = Math.abs(th);
-        }
-
-        public double apply(double x){
-            if(x > th){
-                return x-th;
-            } else if(x < -th){
-                return x+th;
-            } else {
-                return 0;
-            }
-        }
-    }*/
-
 
     /**
      * Learn MGM traditional way with objective function tolerance. Recommended for inference applications that need
@@ -1453,9 +1418,6 @@ public class MGM extends ConvexProximal implements GraphSearch {
 
     private static void runTests1() {
         try {
-            //DoubleMatrix2D xIn = DoubleFactory2D.dense.make(loadDataSelect("/Users/ajsedgewick/tetrad/test_data", "med_test_C.txt"));
-            //DoubleMatrix2D yIn = DoubleFactory2D.dense.make(loadDataSelect("/Users/ajsedgewick/tetrad/test_data", "med_test_D.txt"));
-            //String path = MGM.class.getResource("test_data").getPath();
             final String path = "/Users/ajsedgewick/tetrad_master/tetrad/tetrad-lib/src/main/java/edu/pitt/csb/mgm/test_data";
             System.out.println(path);
             DoubleMatrix2D xIn = DoubleFactory2D.dense.make(MixedUtils.loadDelim(path, "med_test_C.txt").getDoubleData().toArray());

@@ -184,22 +184,6 @@ public class MisclassificationUtils {
         }
 
         builder.append("\n").append(table2);
-//
-//        TextTable table3 = new TextTable(3, 3);
-//
-//        table3.setToken(1, 0, "Non-Null");
-//        table3.setToken(2, 0, "Null");
-//        table3.setToken(0, 1, "Non-Null");
-//        table3.setToken(0, 2, "Null");
-//
-//        for (int i = 0; i < 7; i++) {
-//            for (int j = 0; j < 5; j++) {
-//                if (i == 6 && j == 4) table2.setToken(i + 1, j + 1, "*");
-//                else table2.setToken(i + 1, j + 1, "" + counts[i][j]);
-//            }
-//        }
-//
-//        builder.append("\n").append(table3.toString());
 
         return builder.toString();
     }
@@ -239,10 +223,6 @@ public class MisclassificationUtils {
 
         if (e1 == Endpoint.ARROW && e2 == Endpoint.ARROW) {
             return 4;
-        }
-
-        if (e1 == Endpoint.NULL && e2 == Endpoint.NULL) {
-            return 5;
         }
 
         return 5;

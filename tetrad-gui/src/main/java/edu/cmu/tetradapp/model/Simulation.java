@@ -280,7 +280,6 @@ public class Simulation extends DataWrapper implements
         //}
     }
 
-    @Override
     /**
      * Returns all of the graphs in the simulation, in order.
      */

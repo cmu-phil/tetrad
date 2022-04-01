@@ -197,8 +197,6 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
                                         + exception.getMessage());
                     }
 
-//                    paramBkBtn.setEnabled(true);
-//                    paramFwdBtn.setEnabled(true);
                 }
             }
         };

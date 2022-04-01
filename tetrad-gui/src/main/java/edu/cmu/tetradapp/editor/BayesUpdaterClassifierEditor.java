@@ -53,8 +53,6 @@ public class BayesUpdaterClassifierEditor extends JPanel {
     private JComboBox variableDropdown;
     private JTabbedPane tabbedPane;
     private JComboBox categoryDropdown;
-    //    private double binaryCutoff = 0.5;
-//    private DoubleTextField binaryCutoffField;
     private GraphWorkbench workbench;
     private RocPlot rocPlot;
     private final JMenuItem saveRoc;
@@ -176,14 +174,6 @@ public class BayesUpdaterClassifierEditor extends JPanel {
                         categories.toArray(new String[0]));
                 getCategoryDropdown().setModel(newModel);
 
-//                if (categories.size() == 2) {
-//                    getBinaryCutoffField().setEnabled(true);
-//                    getBinaryCutoffField().setEditable(true);
-//                }
-//                else {
-//                    getBinaryCutoffField().setEnabled(false);
-//                    getBinaryCutoffField().setEditable(false);
-//                }
             }
         });
 
@@ -192,32 +182,6 @@ public class BayesUpdaterClassifierEditor extends JPanel {
                 showRocCurve();
             }
         });
-
-//        this.binaryCutoffField = new DoubleTextField(getBinaryCutoff(), 5,
-//                NumberFormatUtil.getInstance().getNumberFormat());
-//        this.binaryCutoffField.setFilter(new DoubleTextField.Filter() {
-//            public double filter(double value, double oldValue) {
-//                if (value >= 0.0 && value <= 1.0) {
-//                    setBinaryCutoff(value);
-//                    return value;
-//                }
-//
-//                return oldValue;
-//            }
-//        });
-
-//        DiscreteVariable selectedVar =
-//                (DiscreteVariable) this.variableDropdown.getSelectedItem();
-//        List<String> categories = selectedVar.getCategories();
-//
-//        if (categories.size() == 2) {
-//            getBinaryCutoffField().setEnabled(true);
-//            getBinaryCutoffField().setEditable(true);
-//        }
-//        else {
-//            getBinaryCutoffField().setEnabled(false);
-//            getBinaryCutoffField().setEditable(false);
-//        }
 
 
         Box toolbar = Box.createVerticalBox();
@@ -234,14 +198,6 @@ public class BayesUpdaterClassifierEditor extends JPanel {
         row1.add(Box.createHorizontalGlue());
         toolbar.add(row1);
         toolbar.add(Box.createVerticalStrut(5));
-
-//        Box row2 = Box.createHorizontalBox();
-//        row2.add(Box.createHorizontalStrut(5));
-//        row2.add(new JLabel("(Cutoff for binary target = "));
-//        row2.add(getBinaryCutoffField());
-//        row2.add(new JLabel(" )"));
-//        row2.add(Box.createHorizontalGlue());
-//        toolbar.add(row2);
 
         toolbar.setBorder(new EmptyBorder(2, 2, 2, 2));
 
@@ -407,8 +363,6 @@ public class BayesUpdaterClassifierEditor extends JPanel {
         int ncases = getClassifier().getNumCases();
         int ntot = getClassifier().getTotalUsableCases();
 
-        //System.out.println("Number correct = " + numCorrect);
-        //        buf.append("<html><pre>");
         buf.append("Total number of usable cases = ");
         buf.append(ntot);
         buf.append(" out of ");
@@ -490,18 +444,6 @@ public class BayesUpdaterClassifierEditor extends JPanel {
         return this.categoryDropdown;
     }
 
-//    private double getBinaryCutoff() {
-//        return binaryCutoff;
-//    }
-//
-//    private void setBinaryCutoff(double binaryCutoff) {
-//        this.binaryCutoff = binaryCutoff;
-//        getClassifier().setBinaryCutoff(binaryCutoff);
-//    }
-//
-//    private DoubleTextField getBinaryCutoffField() {
-//        return binaryCutoffField;
-//    }
 }
 
 

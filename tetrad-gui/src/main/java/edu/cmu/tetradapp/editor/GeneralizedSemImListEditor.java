@@ -95,12 +95,11 @@ class GeneralizedSemImListEditor extends JPanel {
             Box c = Box.createHorizontalBox();
 
             JLabel label = new JLabel(node + " := " + this.semIm.getNodeSubstitutedString(node));
-            Node _node = node;
 
             label.addMouseListener(new MouseAdapter() {
                 public void mouseClicked(MouseEvent mouseEvent) {
                     if (mouseEvent.getClickCount() == 2) {
-                        beginNodeEdit(_node, label, label);
+                        beginNodeEdit(node, label, label);
                     }
                 }
             });
@@ -116,12 +115,11 @@ class GeneralizedSemImListEditor extends JPanel {
             Box c = Box.createHorizontalBox();
 
             JLabel label = new JLabel(node + " ~ " + this.semIm.getNodeSubstitutedString(node));
-            Node _node = node;
 
             label.addMouseListener(new MouseAdapter() {
                 public void mouseClicked(MouseEvent mouseEvent) {
                     if (mouseEvent.getClickCount() == 2) {
-                        beginNodeEdit(_node, label, label);
+                        beginNodeEdit(node, label, label);
                     }
                 }
             });
@@ -170,13 +168,6 @@ class GeneralizedSemImListEditor extends JPanel {
             public void internalFrameClosing(InternalFrameEvent internalFrameEvent) {
                 if (!editorWindow.isCanceled()) {
                     GeneralizedSemImListEditor.this.semIm.setSubstitutions(paramEditor.getParameterValues());
-
-//                    if (node.getNodeType() == NodeType.ERROR) {
-//                        label.setText(node + " = " + semIm.getNodeSubstitutedString(node));
-//                    }
-//                    else {
-//                        label.setText(node + " ~ " + semIm.getNodeSubstitutedString(node));
-//                    }
 
                     refreshLabels();
 

@@ -113,8 +113,6 @@ public class TestMeasurementSimulator extends TestCase {
         //glassFunction.initialize();
 
         // Create a GlassHistory for this random Boolean Glass
-        // function.
-        //this.history = new GlassHistory(glassFunction);
 
         this.history = new GeneHistory(historyInitializer, this.updateFunction);
 

@@ -56,8 +56,6 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
     private List<Node> vcpcNodes;
 
     private Set<Edge> fvcpcAdjacent;
-    private Set<Edge> fvcpcApparent;
-    private Set<Edge> fvcpcDefinite;
     private List<Node> fvcpcNodes;
 
     private Set<Edge> sfVcpcAdjacent;
@@ -141,9 +139,7 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
             if (this.referenceGraphs.size() == 1 && this.targetGraphs.size() > 1) {
                 Graph graph = this.referenceGraphs.get(0);
                 this.referenceGraphs = new ArrayList<>();
-                for (Graph _graph : this.targetGraphs) {
-                    this.referenceGraphs.add(_graph);
-                }
+                this.referenceGraphs.addAll(this.targetGraphs);
             }
 
             if (this.targetGraphs.size() == 1 && this.referenceGraphs.size() > 1) {
@@ -175,9 +171,7 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
             if (this.referenceGraphs.size() == 1 && this.targetGraphs.size() > 1) {
                 Graph graph = this.referenceGraphs.get(0);
                 this.referenceGraphs = new ArrayList<>();
-                for (Graph _graph : this.targetGraphs) {
-                    this.referenceGraphs.add(_graph);
-                }
+                this.referenceGraphs.addAll(this.targetGraphs);
             }
 
             if (this.targetGraphs.size() == 1 && this.referenceGraphs.size() > 1) {
@@ -204,18 +198,6 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
         for (int i = 0; i < this.targetGraphs.size(); i++) {
             this.targetGraphs.set(i, GraphUtils.replaceNodes(this.targetGraphs.get(i), this.referenceGraphs.get(i).getNodes()));
         }
-
-//        if (model1 instanceof GeneralAlgorithmRunner && model2 instanceof GeneralAlgorithmRunner) {
-//            throw new IllegalArgumentException("Both parents can't be general algorithm runners.");
-//        }
-//
-//        if (model1 instanceof GeneralAlgorithmRunner) {
-//            GeneralAlgorithmRunner generalAlgorithmRunner = (GeneralAlgorithmRunner) model1;
-//            this.algorithm = generalAlgorithmRunner.getAlgorithm();
-//        } else if (model2 instanceof GeneralAlgorithmRunner) {
-//            GeneralAlgorithmRunner generalAlgorithmRunner = (GeneralAlgorithmRunner) model2;
-//            this.algorithm = generalAlgorithmRunner.getAlgorithm();
-//        }
 
         if (this.algorithm != null) {
             for (int i = 0; i < this.referenceGraphs.size(); i++) {
@@ -260,8 +242,8 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
 
     private void setVcpcFastFields(VcpcFastRunner fvcpc) {
         this.fvcpcAdjacent = fvcpc.getAdj();
-        this.fvcpcApparent = fvcpc.getAppNon();
-        this.fvcpcDefinite = fvcpc.getDefNon();
+        Set<Edge> fvcpcApparent = fvcpc.getAppNon();
+        Set<Edge> fvcpcDefinite = fvcpc.getDefNon();
         this.fvcpcNodes = fvcpc.getGraph().getNodes();
     }
 

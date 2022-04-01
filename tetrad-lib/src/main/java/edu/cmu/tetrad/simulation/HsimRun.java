@@ -92,11 +92,6 @@ public class HsimRun {
             _score.setPenaltyDiscount(2.0);
             Fges fgesOut = new Fges(_score);
             fgesOut.setVerbose(false);
-//            fgesOut.setCorrErrorsAlpha(2.0);
-            //fgesOut.setOut(out);
-            //fgesOut.setFaithfulnessAssumed(true);
-            // fgesOut.setMaxIndegree(1);
-            // fgesOut.setCycleBound(5);
 
             Graph estGraphOut = fgesOut.search();
             System.out.println(estGraphOut);

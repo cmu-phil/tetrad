@@ -45,7 +45,7 @@ import static org.junit.Assert.*;
 public final class TestBoxDataSet {
 
     @Test
-    public final void testContinuous() {
+    public void testContinuous() {
         final int rows = 10;
         final int cols = 5;
         List<Node> _variables = new LinkedList<>();
@@ -99,29 +99,6 @@ public final class TestBoxDataSet {
 
         assertEquals(dataSet, _dataSet);
     }
-
-//    @Test
-//    public void testDiscreteFromScratch() {
-//        DataSet dataSet = new BoxDataSet(new DoubleDataBox(0, 0), Collections.EMPTY_LIST);
-//
-//        DiscreteVariable x1 = new DiscreteVariable("X1");
-//        dataSet.addVariable(x1);
-//        dataSet.setInt(0, 0, 0);
-//        dataSet.setInt(1, 0, 2);
-//        dataSet.setInt(2, 0, 1);
-//
-//        DiscreteVariable x2 = new DiscreteVariable("X2");
-//        dataSet.addVariable(x2);
-//        dataSet.setInt(0, 1, 0);
-//        dataSet.setInt(1, 1, 2);
-//        dataSet.setInt(2, 1, 1);
-//
-//        BoxDataSet _dataSet = new BoxDataSet((BoxDataSet) dataSet);
-//
-//        assertEquals(dataSet, _dataSet);
-//
-//        assertEquals(dataSet.getInt(1, 1), 2);
-//    }
 
     @Test
     public void testMixed() {

@@ -73,7 +73,7 @@ public final class SimulationGraphEditor extends JPanel {
      *
      * @param graphs - The graphs to display now.
      */
-    public final void replace(List<Graph> graphs) {
+    public void replace(List<Graph> graphs) {
         this.tabbedPane.removeAll();
         setPreferredSize(new Dimension(600, 400));
 

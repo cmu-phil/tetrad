@@ -38,7 +38,6 @@ public class ParamConstraint implements TetradSerializable {
 
 
     private final double number;
-    private final Parameter param1;
     private final Parameter param2;
     private ParamConstraintType type;
     private final SemIm semIm;
@@ -51,31 +50,15 @@ public class ParamConstraint implements TetradSerializable {
     public ParamConstraint(SemIm semIm, Parameter param1,
                            ParamConstraintType type, double number) {
         this.semIm = semIm;
-        this.param1 = param1;
         this.param2 = null;
         this.type = type;
         this.number = number;
     }
 
-//    /**
-//     * The second constructor specifies two freeParameters and the type of relation
-//     * between their values.
-//     */
-//    public ParamConstraint(SemIm semIm, Parameter param1, Parameter param2,
-//                           ParamConstraintType type) {
-//        this.semIm = semIm;
-//        this.param1 = param1;
-//        this.param2 = param2;
-//        this.type = type;
-//        this.number = 0.0;
-//    }
-
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
     public static ParamConstraint serializableInstance() {
-        //return new ParamConstraint(SemIm.serializableInstance(), new Parameter("X", ParamType.COEF, new GraphNode("X"),
-        //        new GraphNode("Y")), ParamConstraintType.EQ, 1.0);
         return new ParamConstraint(SemIm.serializableInstance(),
                 Parameter.serializableInstance(), ParamConstraintType.EQ, 1.0);
     }
@@ -92,49 +75,9 @@ public class ParamConstraint implements TetradSerializable {
         return this.number;
     }
 
-//    public void setNumber(double number) {
-//        this.number = number;
-//    }
-
     public Parameter getParam2() {
         return this.param2;
     }
-
-//    public boolean isSatisfied() {
-//        if (type == ParamConstraintType.NONE) {
-//            return true;
-//        }
-//
-//        if (param2 == null) {
-//            if (type == ParamConstraintType.EQ &&
-//                    semIm.getParamValue(param1) == number) {
-//                return true;
-//            }
-//            if (type == ParamConstraintType.GT &&
-//                    semIm.getParamValue(param1) > number) {
-//                return true;
-//            }
-//            if (type == ParamConstraintType.LT &&
-//                    semIm.getParamValue(param1) < number) {
-//                return true;
-//            } else {
-//                if (type == ParamConstraintType.EQ && semIm.getParamValue(
-//                        param1) == semIm.getParamValue(param2)) {
-//                    return true;
-//                }
-//                if (type == ParamConstraintType.LT && semIm.getParamValue(
-//                        param1) < semIm.getParamValue(param2)) {
-//                    return true;
-//                }
-//                if (type == ParamConstraintType.GT && semIm.getParamValue(
-//                        param1) > semIm.getParamValue(param2)) {
-//                    return true;
-//                }
-//            }
-//        }
-//
-//        return false;
-//    }
 
     /**
      * This method is for testing whether a value that might be assigned to a

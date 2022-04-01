@@ -110,7 +110,7 @@ public class BooleanGlassFunction implements UpdateFunction {
      *
      * @serial
      */
-    private final double trueValue = +1.0;
+    private final double trueValue = 1.0;
 
     /**
      * The real number that is returned if the value from the Boolean lookup
@@ -275,9 +275,8 @@ public class BooleanGlassFunction implements UpdateFunction {
         double v2 = this.booleanInfluenceRate * getFValue(factor, history);
         double v3 = this.errorDistributions[factor].nextRandom();
         double v4 = v0 + v1 + v2 + v3;
-        double v5 = Math.max(this.lowerBound, v4);
 
-        return v5;
+        return Math.max(this.lowerBound, v4);
     }
 
     /**

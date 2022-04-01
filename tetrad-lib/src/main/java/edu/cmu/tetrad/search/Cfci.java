@@ -165,9 +165,8 @@ public final class Cfci implements GraphSearch {
         setMaxReachablePathLength(this.maxReachablePathLength);
 
         //List<Node> variables = independenceTest.getVariable();       - Robert Tillman 2008
-        List<Node> nodes = new LinkedList<>();
 
-        nodes.addAll(this.variables);
+        List<Node> nodes = new LinkedList<>(this.variables);
 
         this.graph = new EdgeListGraph(nodes);
         this.graph.fullyConnect(Endpoint.TAIL);

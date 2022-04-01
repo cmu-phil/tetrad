@@ -109,8 +109,6 @@ public class BoolSearch {
                             }
                         }
 
-                        //for(int parent = 0; parent < k; parent++)
-                        //  System.out.println("Parent " + parent + " = " + pars[parent]);
                     } else {
                         //System.out.println("Not k bits for " + input);
                         continue;

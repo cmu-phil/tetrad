@@ -140,8 +140,6 @@ class StructEmBayesSearchEditor extends JPanel {
      */
     public StructEmBayesSearchEditor(
             StructEmBayesSearchRunner semBayesEstWrapper) {
-        //this(seMbayesEstWrapper.getEstimateBayesIm(),
-        //eMbayesEstWrapper.getSelectedDataModel());
         this(semBayesEstWrapper.getEstimatedBayesIm(),
                 semBayesEstWrapper.getDataSet());
     }

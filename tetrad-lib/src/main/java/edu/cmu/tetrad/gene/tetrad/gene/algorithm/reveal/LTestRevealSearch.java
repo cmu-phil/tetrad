@@ -64,10 +64,6 @@ public class LTestRevealSearch {
             }
         }
 
-        //System.out.println("case 0 " + cases[0][0] + " " + cases[0][1] + " " +
-        //                               cases[0][2] + " " + cases[0][3] + " " +
-        //                               cases[0][4]);
-
         for (int k = 0; k < LTestRevealSearch.ntimes; k++) {
             for (int j = 0; j < LTestRevealSearch.ngenes; j++) {
                 if (LTestRevealSearch.cases[k][j] == -1) {

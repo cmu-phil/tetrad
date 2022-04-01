@@ -59,7 +59,6 @@ public final class CPDAGFitModel implements SessionModel {
     private List<Graph> referenceGraphs;
     private final DataModelList dataModelList;
     private List<SemPm> semPms;
-    private List<SemIm> semIms;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -97,7 +96,7 @@ public final class CPDAGFitModel implements SessionModel {
             }
         } else if (dataModels.get(0).isContinuous()) {
             this.semPms = new ArrayList<>();
-            this.semIms = new ArrayList<>();
+            List<SemIm> semIms = new ArrayList<>();
 
             for (int i = 0; i < dataModels.size(); i++) {
                 DataSet dataSet = (DataSet) dataModels.get(0);
@@ -106,7 +105,7 @@ public final class CPDAGFitModel implements SessionModel {
                 try {
                     SemPm pm = new SemPm(dag);
                     this.semPms.add(pm);
-                    this.semIms.add(estimate(dataSet, pm));
+                    semIms.add(estimate(dataSet, pm));
                 } catch (Exception e) {
                     e.printStackTrace();
 
@@ -117,7 +116,7 @@ public final class CPDAGFitModel implements SessionModel {
                     graph.setShowErrorTerms(false);
                     SemPm pm = new SemPm(graph);
                     this.semPms.add(pm);
-                    this.semIms.add(estimatePag(dataSet, pm));
+                    semIms.add(estimatePag(dataSet, pm));
                 }
             }
         }

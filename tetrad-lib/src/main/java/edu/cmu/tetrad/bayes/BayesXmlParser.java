@@ -81,8 +81,8 @@ public final class BayesXmlParser {
             String isLatentVal = e1.getAttributeValue("latent");
             boolean isLatent =
                     "yes".equals(isLatentVal);
-            Integer x = new Integer(e1.getAttributeValue("x"));
-            Integer y = new Integer(e1.getAttributeValue("y"));
+            int x = Integer.parseInt(e1.getAttributeValue("x"));
+            int y = Integer.parseInt(e1.getAttributeValue("y"));
 
             int numCategories = e2Elements.size();
             List<String> categories = new LinkedList<>();
@@ -197,7 +197,7 @@ public final class BayesXmlParser {
 
             if (e1Elements.size() != numRows) {
                 throw new IllegalArgumentException("Element cpt claimed " +
-                        +numRows + " rows, but there are only " +
+                        numRows + " rows, but there are only " +
                         e1Elements.size() + " rows in the file.");
             }
 

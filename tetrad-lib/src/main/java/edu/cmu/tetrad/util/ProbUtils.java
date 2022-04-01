@@ -1888,23 +1888,7 @@ public class ProbUtils {
         for (int i = 0; i < a.length; i++) {
             assert a[i] <= b[i];
         }
-        /*for (int i = 0; i < a.length; i++)
-            System.out.println("a = " + a[i] + ", b = " + b[i]);
-        for (int i = 0; i < cov.length; i++) {
-             for (int j = 0; j < cov.length; j++)
-                 System.out.print(cov[i][j] + "\t");
-            System.out.println();
-        }
-        System.out.println();*/
         ProbUtils.orderIntegral(a, b, cov);
-        /*for (int i = 0; i < a.length; i++)
-            System.out.println("a = " + a[i] + ", b = " + b[i]);
-        for (int i = 0; i < cov.length; i++) {
-             for (int j = 0; j < cov.length; j++)
-                 System.out.print(cov[i][j] + "\t");
-            System.out.println();
-        }
-        System.exit(0);*/
         double[][] c = MatrixUtils.cholesky(new Matrix(cov)).toArray();
         double[] d = new double[a.length];
         double[] e = new double[a.length];

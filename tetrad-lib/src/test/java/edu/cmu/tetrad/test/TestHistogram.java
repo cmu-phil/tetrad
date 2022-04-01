@@ -102,15 +102,11 @@ public final class TestHistogram {
         Histogram histogram2 = new Histogram(data2);
         histogram2.setTarget("X1");
         int[] frequencies1 = histogram2.getFrequencies();
-//        assertEquals(928, frequencies1[0]);
-//        assertEquals(72, frequencies1[1]);
 
         histogram2.setTarget("X1");
         histogram2.addConditioningVariable("X2", 0);
         histogram2.addConditioningVariable("X3", 1);
         int[] frequencies = histogram2.getFrequencies();
-//        assertEquals(377, frequencies[0]);
-//        assertEquals(28, frequencies[1]);
     }
 }
 

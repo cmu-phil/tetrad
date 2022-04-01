@@ -61,8 +61,7 @@ public class HsimUtils {
         //remove any of the input nodes from the output set
         parents.removeAll(inputnodes);
         //turn list into set
-        Set<Node> output = new HashSet<Node>(parents);
-        return output;
+        return new HashSet<Node>(parents);
     }
 
     //this method returns an array of doubles, which are standard error metrics for graph learning
@@ -141,10 +140,6 @@ public class HsimUtils {
                 estimatedEdges += counts[i][j];
             }
         }
-
-        //NumberFormat nf = new DecimalFormat("0.00");
-
-        //builder.append("\nRatio correct edges to estimated edges = ").append(nf.format((correctEdges / (double) estimatedEdges)));
 
         return (correctEdges / (double) estimatedEdges);
     }

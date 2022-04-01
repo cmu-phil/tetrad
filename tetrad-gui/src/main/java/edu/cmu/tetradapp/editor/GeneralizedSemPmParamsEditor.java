@@ -75,24 +75,9 @@ class GeneralizedSemPmParamsEditor extends JPanel {
         refreshLabels();
 
 
-//        this.semPm = semPm;
-//        this.launchedEditors = launchedEditors;
-//        setLayout(new BorderLayout());
-//        JScrollPane scroll = new JScrollPane(equationPane());
-//        scroll.setPreferredSize(new Dimension(450, 450));
-//
-//        add(scroll, BorderLayout.CENTER);
     }
 
     //========================PRIVATE PROTECTED METHODS======================//
-
-//    public void freshenDisplay() {
-//        removeAll();
-//        setLayout(new BorderLayout());
-//        JScrollPane scroll = new JScrollPane(initialValuesPane());
-//        scroll.setPreferredSize(new Dimension(450, 450));
-//        add(scroll, BorderLayout.CENTER);
-//    }
 
     private JComponent initialValuesPane() {
         this.formulasBox = Box.createVerticalBox();
@@ -109,12 +94,11 @@ class GeneralizedSemPmParamsEditor extends JPanel {
         for (String parameter : parameters) {
             Box c = Box.createHorizontalBox();
             JLabel label = new JLabel(parameter + " ~ " + semPm().getParameterExpressionString(parameter));
-            String _parameter = parameter;
 
             label.addMouseListener(new MouseAdapter() {
                 public void mouseClicked(MouseEvent mouseEvent) {
                     if (mouseEvent.getClickCount() == 2) {
-                        beginParamEdit(_parameter, label, label);
+                        beginParamEdit(parameter, label, label);
                     }
                 }
             });

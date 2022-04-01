@@ -72,10 +72,6 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
         init(params, graphs);
     }
 
-//    private Object getGraphs(Parameters params) {
-//        return params.get("graphs", null);
-//    }
-
 
     public GraphSelectionWrapper(Graph graph, Parameters params) {
         if (graph == null) {

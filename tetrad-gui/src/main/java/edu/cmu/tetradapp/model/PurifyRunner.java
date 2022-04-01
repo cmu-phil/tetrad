@@ -53,26 +53,6 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
         params.set("clusters", mmWrapper.getClusters());
     }
 
-//    public PurifyRunner(DataWrapper dataWrapper, Parameters params) {
-//        super(dataWrapper, (Clusters) params.get("clusters", null), params);
-//    }
-//
-//    public PurifyRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params) {
-//        super(dataWrapper, (Clusters) params.get("clusters", null), params);
-//
-//        Graph mim = graphWrapper.getGraph();
-//        DataModel selectedDataModel = dataWrapper.getSelectedDataModel();
-//
-//        List<List<Node>> partition = ClusterUtils.mimClustering(mim, selectedDataModel.getVariable());
-//        Clusters clusters = ClusterUtils.partitionToClusters(partition);
-//        setClusters(clusters);
-//        params.set("clusters", clusters);
-//    }
-//
-//    public PurifyRunner(BuildPureClustersRunner bpc, Parameters params) {
-//        super(bpc, params);
-//    }
-
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
@@ -90,23 +70,6 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
      */
     public void execute() {
         Object source = getData();
-//        Purify purify;
-//
-//        if (source instanceof CovarianceMatrix) {
-//            CovarianceMatrix covMatrix = (CovarianceMatrix) source;
-//            CorrelationMatrix corrMatrix = new CorrelationMatrix(covMatrix);
-//            purify = new Purify(corrMatrix, getParameters().getAlternativePenalty(),
-//                    getParameters().getTetradTestType(), getParameters().getClusters());
-//        }
-//        else if (source instanceof DataSet) {
-//            purify = new Purify((DataSet) source,
-//                    getParameters().getAlternativePenalty(), getParameters().getTetradTestType(),
-//                    getParameters().getClusters());
-//        }
-//        else {
-//            throw new RuntimeException(
-//                    "Data source for Purify of invalid type!");
-//        }
 
         TetradTest test;
 
@@ -134,8 +97,6 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
         List<List<Node>> inputPartition = ClusterUtils.clustersToPartition((Clusters) getParams().get("clusters", null), test.getVariables());
 
         IPurify purify = new PurifyTetradBased2(test);
-//        IPurify purify = new PurifySextadBased(sextadTest, test.getSignificance());
-//        IPurify purify = new PurifyTetradBasedH(test, 15);
 
 
         List<List<Node>> partition = purify.purify(inputPartition);

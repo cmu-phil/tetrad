@@ -388,11 +388,11 @@ public class ExpressionParser {
                 } else {
                     List<Expression> expressionList = parseExpressionList();
                     expect(Token.RPAREN);
-                    expressions = expressionList.toArray(new Expression[expressionList.size()]);
+                    expressions = expressionList.toArray(new Expression[0]);
                 }
             } else if ("+".equals(chompTokenString) || "-".equals(chompTokenString)) {
                 List<Expression> expressionList = parseSingleExpression();
-                expressions = expressionList.toArray(new Expression[expressionList.size()]);
+                expressions = expressionList.toArray(new Expression[0]);
             } else {
                 throw new ParseException("Expecting a parenthesized list of arguments.", chompOffset);
             }

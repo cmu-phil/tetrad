@@ -135,7 +135,7 @@ public final class Session implements TetradSerializable {
     /**
      * Sets the name.
      */
-    public final void setName(String name) {
+    public void setName(String name) {
         if (name == null) {
             throw new NullPointerException("Name must not be null.");
         }
@@ -176,11 +176,6 @@ public final class Session implements TetradSerializable {
         }
 
         // Causing templates not to work sometimes. Unnecessary. jdramsey 6/5/2015
-//        if (existsNodeByName(node.getDisplayName())) {
-//            throw new IllegalArgumentException(
-//                    "Attempt to add node to the session with duplicate name: " +
-//                            node.getDisplayName());
-//        }
 
         this.nodes.add(node);
         node.addSessionListener(getSessionHandler());

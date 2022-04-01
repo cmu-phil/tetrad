@@ -43,11 +43,6 @@ public class ExampleStARS {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
-//        parameters.set("numMeasures", 100);
-//        parameters.set("avgDegree", 2, 4);
-//        parameters.set("sampleSize", 100, 500);
-//        parameters.set("numRuns", 5);
-
         parameters.set("numMeasures", 200);
         parameters.set("avgDegree", 2, 4, 6);
         parameters.set("sampleSize", 100, 500);

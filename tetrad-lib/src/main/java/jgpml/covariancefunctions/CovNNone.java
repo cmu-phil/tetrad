@@ -83,13 +83,6 @@ public class CovNNone implements CovarianceFunction {
         int n = X.getColumnDimension();
         double[][] x = X.getArray();
 
-//        Matrix Xc= X.times(1/ell);
-//
-//        Q = Xc.times(Xc.transpose());
-//        System.out.print("Q=");Q.print(Q.getColumnDimension(), 8);
-
-//        Q = new Matrix(m,m);
-//        double[][] q = Q.getArray();
         this.q = new double[m][m];
 
         for (int i = 0; i < m; i++) {
@@ -101,13 +94,6 @@ public class CovNNone implements CovarianceFunction {
                 this.q[i][j] = t;
             }
         }
-//        System.out.print("q=");Q.print(Q.getColumnDimension(), 8);
-
-//        Matrix dQ = diag(Q);
-//        Matrix dQT = dQ.transpose();
-//        Matrix Qc = Q.copy();
-//        K = addValue(Qc,em2).arrayRightDivide(sqrt(addValue(dQ,1+em2)).times(sqrt(addValue(dQT,1+em2))));
-//        System.out.print("K=");K.print(K.getColumnDimension(), 8);
 
         double[] dq = new double[m];
         for (int i = 0; i < m; i++) {
@@ -126,10 +112,7 @@ public class CovNNone implements CovarianceFunction {
                 a[i][j] = sf2 * Math.asin(t);
             }
         }
-//        System.out.print("k=");K.print(K.getColumnDimension(), 8);
-//        System.out.println("");
 
-//        Matrix A = asin(K).times(sf2);
         return A;
     }
 
@@ -177,16 +160,6 @@ public class CovNNone implements CovarianceFunction {
         }
 
 
-//        X = X.times(1/ell);
-//        Xstar = Xstar.times(1/ell);
-//        Matrix tmp = sumRows(Xstar.arrayTimes(Xstar));
-//
-//        Matrix tmp2 = tmp.copy();
-//        addValue(tmp,em2);
-//        addValue(tmp2,oneplusem2);
-//        Matrix A = asin(tmp.arrayRightDivide(tmp2)).times(sf2);
-
-
         double[] sumxdotTimesx = new double[m];
         for (int i = 0; i < m; i++) {
             double t = 0;
@@ -218,15 +191,6 @@ public class CovNNone implements CovarianceFunction {
         }
 
 
-//        tmp = sumRows(X.arrayTimes(X));
-//        addValue(tmp,oneplusem2);
-//
-//        tmp2=tmp2.transpose();
-//
-//        tmp = addValue(X.times(Xstar.transpose()),em2).arrayRightDivide(sqrt(tmp.times(tmp2)));
-//        Matrix B = asin(tmp).times(sf2);
-
-        //System.out.println("");
         return new Matrix[]{A, B};
     }
 
@@ -287,14 +251,6 @@ public class CovNNone implements CovarianceFunction {
             }
         }
 
-//        Matrix Xc= XX.times(1/ell);
-//        Matrix Q = Xc.times(Xc.transpose());
-//
-//        Matrix dQ = diag(Q);
-//        Matrix dQT = dQ.transpose();
-//        Matrix K = addValue(Q.copy(),em2).arrayRightDivide(sqrt(addValue(dQ.copy(),1+em2)).times(sqrt(addValue(dQT,1+em2))));
-//        Matrix dQc = dQ.copy();
-
         Matrix A;
         if (index == 0) {
             for (int i = 0; i < m; i++) {
@@ -310,13 +266,6 @@ public class CovNNone implements CovarianceFunction {
                 v[i] = (t + em2) / (dq[i]);
             }
 
-//            Matrix test = addValue(sumRows(X.arrayTimes(X)),em2);
-//            Matrix tmp = addValue(dQc,1+em2);
-//            Matrix V = addValue(sumRows(X.arrayTimes(X)),em2).arrayRightDivide(tmp);
-//
-//            tmp = sqrt(tmp);
-//            tmp = addValue(Q.copy(),em2).arrayRightDivide(tmp.times(tmp.transpose()));
-
             for (int i = 0; i < m; i++) {
                 double vi = v[i];
                 for (int j = 0; j < m; j++) {
@@ -325,14 +274,6 @@ public class CovNNone implements CovarianceFunction {
                     this.q[i][j] = -twosf2 * ((t - (0.5 * kij * (vi + v[j]))) / Math.sqrt(1 - kij * kij));
                 }
             }
-
-//            Matrix tmp2 = new Matrix(m,m);
-//            for(int j=0; j<m; j++)
-//                tmp2.setMatrix(0,m-1,j,j,V);
-//
-//            tmp = tmp.minus(K.arrayTimes(tmp2.plus(tmp2.transpose())).times(0.5));
-//
-//            A = tmp.arrayRightDivide(sqrtOneMinusSqr(K)).times(-twosf2);
 
             A = new Matrix(this.q);
 //            System.out.println("");
@@ -343,8 +284,6 @@ public class CovNNone implements CovarianceFunction {
                     this.k[i][j] = Math.asin(this.k[i][j]) * twosf2;
                 }
             }
-//            A = asin(K).times(twosf2);
-//            K=null;
             A = new Matrix(this.k);
             this.k = null;
         }
@@ -352,16 +291,6 @@ public class CovNNone implements CovarianceFunction {
 
         return A;
     }
-
-//    private static Matrix sqrtOneMinusSqr(Matrix in){
-//        Matrix out = new Matrix(in.getRowDimension(),in.getColumnDimension());
-//        for(int i=0; i<in.getRowDimension(); i++)
-//            for(int j=0; j<in.getColumnDimension(); j++) {
-//                final double tmp = in.get(i,j);
-//                out.set(i,j,Math.sqrt(1-tmp*tmp));
-//            }
-//        return out;
-//    }
 
     public static void main(String[] args) {
 

@@ -154,9 +154,6 @@ public class TestFaskSimpleSimulaton {
             z = DataUtils.center(z);
 
             // Swap x and y so y->x instead.
-//            double[] w = x;
-//            x = y;
-//            y = w;
 
             if (leftright(x, y))
                 xtoy = xtoy + 1;

@@ -35,29 +35,6 @@ import java.io.File;
  */
 public class ExploreIndepTests {
     public static void main(String[] args) {
-//        Graph g = new EdgeListGraph();
-//        g.addNode(new ContinuousVariable("X1"));
-//        g.addNode(new ContinuousVariable("X2"));
-//        g.addNode(new DiscreteVariable("X3", 4));
-//        g.addNode(new DiscreteVariable("X4", 4));
-//        g.addNode(new ContinuousVariable("X5"));
-//
-//        g.addDirectedEdge(g.getNode("X1"), g.getNode("X2"));
-//        g.addDirectedEdge(g.getNode("X2"), g.getNode("X3"));
-//        g.addDirectedEdge(g.getNode("X3"), g.getNode("X4"));
-//        g.addDirectedEdge(g.getNode("X4"), g.getNode("X5"));
-//
-//        GeneralizedSemPm pm = MixedUtils.GaussianCategoricalPm(g, "Split(-1.5,-.5,.5,1.5)");
-////        System.out.println(pm);
-//
-//        GeneralizedSemIm im = MixedUtils.GaussianCategoricalIm(pm);
-////        System.out.println(im);
-//
-//        int samps = 200;
-//        DataSet ds = im.simulateDataAvoidInfinity(samps, false);
-//        ds = MixedUtils.makeMixedData(ds, MixedUtils.getNodeDists(g));
-//        //System.out.println(ds);
-//        System.out.println(ds.isMixed());
         try {
             String path = ExampleMixedSearch.class.getResource("test_data").getPath();
             Graph trueGraph = SearchGraphUtils.cpdagFromDag(GraphUtils.loadGraphTxt(new File(path, "DAG_0_graph.txt")));
@@ -82,11 +59,6 @@ public class ExploreIndepTests {
             time = System.currentTimeMillis();
             Graph g3 = SearchGraphUtils.cpdagFromDag(s3.search());
             System.out.println("Wald log Time " + ((System.currentTimeMillis() - time) / 1000.0));
-
-//            System.out.println(g);
-//            System.out.println("IndMix: " + s1.search());
-//            System.out.println("IndWalLin: " + s2.search());
-//            System.out.println("IndWalLog: " + s3.search());
 
             System.out.println(MixedUtils.EdgeStatHeader);
             System.out.println(MixedUtils.stringFrom2dArray(MixedUtils.allEdgeStats(trueGraph, g1)));

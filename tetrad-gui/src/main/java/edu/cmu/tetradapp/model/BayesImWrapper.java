@@ -117,30 +117,6 @@ public class BayesImWrapper implements SessionModel, Memorable {
         this.modelSourceName = simulation.getName();
     }
 
-//    public BayesImWrapper(BayesEstimatorWrapper wrapper, Parameters parameters) {
-//        if (wrapper == null) {
-//            throw new NullPointerException();
-//        }
-//        setBayesIm(wrapper.getEstimatedBayesIm());
-////        log(bayesIm);
-//    }
-
-//    public BayesImWrapper(DirichletEstimatorWrapper wrapper, Parameters parameters) {
-//        if (wrapper == null) {
-//            throw new NullPointerException();
-//        }
-//        setBayesIm(wrapper.getEstimatedBayesIm());
-////        log(bayesIm);
-//    }
-
-//    public BayesImWrapper(DirichletBayesImWrapper wrapper, Parameters parameters) {
-//        if (wrapper == null) {
-//            throw new NullPointerException();
-//        }
-//        setBayesIm(new MlBayesIm(wrapper.getDirichletBayesIm()));
-////        log(bayesIm);
-//    }
-
     public BayesImWrapper(RowSummingExactWrapper wrapper, Parameters parameters) {
         if (wrapper == null) {
             throw new NullPointerException();
@@ -185,15 +161,6 @@ public class BayesImWrapper implements SessionModel, Memorable {
         }
 //        log(bayesIm);
     }
-
-//    public BayesImWrapper(BayesImWrapper bayesImWrapper) {
-//        if (bayesImWrapper == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        setBayesIm(new MlBayesIm(bayesImWrapper.getBayesIm()));
-////        log(bayesIm);
-//    }
 
 
     public BayesImWrapper(BayesIm bayesIm) {
@@ -268,10 +235,6 @@ public class BayesImWrapper implements SessionModel, Memorable {
     }
 
     //============================== private methods ============================//
-//    private void log(BayesIm im) {
-//        TetradLogger.getInstance().log("info", "Maximum likelihood Bayes IM");
-//        TetradLogger.getInstance().log("im", im.toString());
-//    }
 
     /**
      * Adds semantic checks to the default deserialization method. This method
