@@ -19,7 +19,6 @@ import org.apache.commons.math3.random.Well44497b;
 
 import java.util.*;
 
-import static com.google.common.primitives.Doubles.asList;
 import static edu.cmu.tetrad.util.StatUtils.median;
 import static java.lang.Math.*;
 
@@ -715,7 +714,11 @@ public class Kci implements IndependenceTest {
 
             EigenDecomposition ed = new EigenDecomposition(new BlockRealMatrix(this.k.toArray()));
 
-            List<Double> evxAll = asList(ed.getRealEigenvalues());
+            double[] arr = ed.getRealEigenvalues();
+
+            List<Double> evxAll = new ArrayList<>();
+            for (double v : arr) evxAll.add(v);
+
             List<Integer> indx = series(evxAll.size()); // 1 2 3...
             topIndices = getTopIndices(evxAll, indx, getThreshold());
 
