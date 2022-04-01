@@ -197,9 +197,6 @@ public class MbfsRunner extends AbstractAlgorithmRunner implements
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s) throws IOException,
             ClassNotFoundException {

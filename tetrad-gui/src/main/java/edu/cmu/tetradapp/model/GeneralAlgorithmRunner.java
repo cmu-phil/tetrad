@@ -64,7 +64,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     private Graph sourceGraph;
     private Graph externalGraph;
     private List<Graph> graphList = new ArrayList<>();
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge;
     private final Map<String, Object> userAlgoSelections = new HashMap<>();
     private transient List<IndependenceTest> independenceTests;
 
@@ -470,7 +470,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     }
 
     //===========================PRIVATE METHODS==========================//
-    private void transferVarNamesToParams(List names) {
+    private void transferVarNamesToParams(List<String> names) {
         getParameters().set("varNames", names);
     }
 
@@ -483,9 +483,6 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

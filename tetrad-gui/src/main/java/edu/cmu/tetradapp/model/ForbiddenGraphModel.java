@@ -119,10 +119,6 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
     public ForbiddenGraphModel(Parameters params, KnowledgeBoxInput input) {
         super(new KnowledgeBoxInput[]{input}, params);
 
-        if (params == null) {
-            throw new NullPointerException();
-        }
-
         if (input == null) {
             throw new NullPointerException();
         }
@@ -130,16 +126,15 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
         SortedSet<Node> variableNodes = new TreeSet<>(input.getVariables());
         SortedSet<String> variableNames = new TreeSet<>(input.getVariableNames());
 
-        /**
+        /*
          * @serial @deprecated
          */
-        //    private List<Knowledge> knowledgeList;
         List<Node> variables = new ArrayList<>(variableNodes);
         List<String> variableNames1 = new ArrayList<>(variableNames);
 
         this.resultGraph = input.getResultGraph();
 
-        /**
+        /*
          * @serial @deprecated
          */
         IKnowledge knowledge = new Knowledge2();

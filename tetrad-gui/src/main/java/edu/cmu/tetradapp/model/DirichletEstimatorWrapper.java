@@ -148,9 +148,6 @@ public class DirichletEstimatorWrapper implements SessionModel {
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      * <p>
      * LogUtils.getInstance().finer("Estimated Bayes IM:");
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

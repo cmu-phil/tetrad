@@ -65,7 +65,6 @@ public class DataCenterer extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @return
      * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {

@@ -227,9 +227,6 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     @SuppressWarnings("UnusedDeclaration")
     private void readObject(ObjectInputStream s)

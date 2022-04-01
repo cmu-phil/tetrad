@@ -192,7 +192,7 @@ public class FasRunner extends AbstractAlgorithmRunner
 
     private boolean isAggressivelyPreventCycles() {
         Parameters params = getParams();
-        if (params instanceof Parameters) {
+        if (params != null) {
             return params.getBoolean("aggressivelyPreventCycles", false);
         }
         return false;
