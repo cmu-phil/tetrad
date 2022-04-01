@@ -84,11 +84,6 @@ public class Fasts implements IFas {
     private final TetradLogger logger = TetradLogger.getInstance();
 
     /**
-     * The true graph, for purposes of comparison. Temporary.
-     */
-    private Graph trueGraph;
-
-    /**
      * The number of false dependence judgements, judged from the true graph using d-separation. Temporary.
      */
     private int numFalseDependenceJudgments;
@@ -168,7 +163,7 @@ public class Fasts implements IFas {
         List<Node> nodes = this.graph.getNodes();
 
         for (Node node : nodes) {
-            adjacencies.put(node, new TreeSet<Node>());
+            adjacencies.put(node, new TreeSet<>());
         }
 
         for (int d = 0; d <= _depth; d++) {
@@ -218,7 +213,7 @@ public class Fasts implements IFas {
         List<Node> nodes = this.graph.getNodes();
 
         for (Node node : nodes) {
-            adjacencies.put(node, new TreeSet<Node>());
+            adjacencies.put(node, new TreeSet<>());
         }
 
         for (int d = 0; d <= _depth; d++) {
@@ -749,7 +744,9 @@ public class Fasts implements IFas {
     }
 
     public void setTrueGraph(Graph trueGraph) {
-        this.trueGraph = trueGraph;
+        /**
+         * The true graph, for purposes of comparison. Temporary.
+         */
     }
 
     public int getNumFalseDependenceJudgments() {

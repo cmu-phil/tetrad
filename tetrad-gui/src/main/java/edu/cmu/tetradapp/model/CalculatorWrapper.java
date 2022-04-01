@@ -80,10 +80,8 @@ public class CalculatorWrapper extends DataWrapper {
                 } catch (ParseException e) {
                     throw new IllegalStateException("Was given unparsable expressions.");
                 }
-                list.add(copy);
-            } else {
-                list.add(copy);
             }
+            list.add(copy);
         }
 
         setDataModel(list);

@@ -55,7 +55,6 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
     private Set<Edge> sVcpcAdjacent;
     private Set<Edge> sVcpcApparent;
     private Set<Edge> sVcpcDefinite;
-    private List<Node> sVcpcNodes;
 
     //============================CONSTRUCTORS============================//
 
@@ -289,7 +288,7 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
         this.sVcpcAdjacent = svcpc.getAdjacencies();
         this.sVcpcApparent = svcpc.getApparentNonadjacencies();
         this.sVcpcDefinite = svcpc.getDefiniteNonadjacencies();
-        this.sVcpcNodes = getGraph().getNodes();
+        List<Node> sVcpcNodes = getGraph().getNodes();
     }
 
 }

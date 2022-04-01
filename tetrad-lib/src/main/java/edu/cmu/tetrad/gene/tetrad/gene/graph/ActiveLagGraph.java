@@ -32,7 +32,10 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.SortedSet;
 
 /**
  * Adds Javabean property change events so that it can be used in a MVC type
@@ -181,25 +184,22 @@ public class ActiveLagGraph implements LagGraph {
             // and remove them
             ArrayList toDelete = new ArrayList();
             SortedSet factors = getFactors();
-            Iterator f = factors.iterator();
             // have to search through all destination factors to find edges to remove
-            while (f.hasNext()) {
-                String destFactor = (String) f.next();
+            for (Object value : factors) {
+                String destFactor = (String) value;
                 SortedSet parents = this.lagGraph.getParents(destFactor);
-                Iterator p = parents.iterator();
 
                 // find edges sourced by factor
-                while (p.hasNext()) {
-                    LaggedFactor lf = (LaggedFactor) p.next();
+                for (Object parent : parents) {
+                    LaggedFactor lf = (LaggedFactor) parent;
                     if (lf.getFactor().equals(factor)) {
                         toDelete.add(lf);
                     }
                 }
 
                 // remove those edges
-                Iterator d = toDelete.iterator();
-                while (d.hasNext()) {
-                    removeEdge(destFactor, (LaggedFactor) d.next());
+                for (Object o : toDelete) {
+                    removeEdge(destFactor, (LaggedFactor) o);
                 }
                 toDelete.clear();
             }

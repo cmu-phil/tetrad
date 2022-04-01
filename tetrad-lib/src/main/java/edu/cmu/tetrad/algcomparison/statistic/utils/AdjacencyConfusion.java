@@ -13,47 +13,43 @@ import java.util.Set;
  * @author jdramsey
  */
 public class AdjacencyConfusion {
-    private final Graph truth;
-    private final Graph est;
     private int adjTp;
     private int adjFp;
     private int adjFn;
     private final int adjTn;
 
     public AdjacencyConfusion(Graph truth, Graph est) {
-        this.truth = truth;
-        this.est = est;
         this.adjTp = 0;
         this.adjFp = 0;
         this.adjFn = 0;
 
         Set<Edge> allUnoriented = new HashSet<>();
-        for (Edge edge : this.truth.getEdges()) {
+        for (Edge edge : truth.getEdges()) {
             allUnoriented.add(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
         }
 
-        for (Edge edge : this.est.getEdges()) {
+        for (Edge edge : est.getEdges()) {
             allUnoriented.add(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
         }
 
         for (Edge edge : allUnoriented) {
-            if (this.est.isAdjacentTo(edge.getNode1(), edge.getNode2()) &&
-                    !this.truth.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+            if (est.isAdjacentTo(edge.getNode1(), edge.getNode2()) &&
+                    !truth.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
                 this.adjFp++;
             }
 
-            if (this.truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) &&
-                    !this.est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+            if (truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) &&
+                    !est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
                 this.adjFn++;
             }
 
-            if (this.truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) &&
-                    this.est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+            if (truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) &&
+                    est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
                 this.adjTp++;
             }
         }
 
-        int allEdges = this.truth.getNumNodes() * (this.truth.getNumNodes() - 1) / 2;
+        int allEdges = truth.getNumNodes() * (truth.getNumNodes() - 1) / 2;
 
         this.adjTn = allEdges - this.adjFn;
     }

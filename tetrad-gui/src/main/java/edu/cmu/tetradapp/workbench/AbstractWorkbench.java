@@ -2321,8 +2321,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         /**
          * True iff the user is allowed to add measured variables.
          */
-        boolean addMeasuredVarsAllowed = true;
-        return addMeasuredVarsAllowed;
+        return true;
     }
 
     /**
@@ -2339,8 +2338,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         /**
          * True iff the user is allowed to delete variables.
          */
-        boolean deleteVariablesAllowed = true;
-        return deleteVariablesAllowed;
+        return true;
     }
 
     public boolean isEnableEditing() {

@@ -65,7 +65,7 @@ public final class Polynomial implements TetradSerializable {
      * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static Polynomial serializableInstance() {
-        return new Polynomial(new ArrayList<PolynomialTerm>());
+        return new Polynomial(new ArrayList<>());
     }
 
     //==============================PUBLIC METHODS========================//

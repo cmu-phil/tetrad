@@ -372,7 +372,7 @@ public class GeneralResamplingTest {
                 if (num_edge == null) {
                     num_edge = 0;
                 }
-                num_edge = num_edge.intValue() + 1;
+                num_edge = num_edge + 1;
                 edgeDist.put(edgeString, num_edge);
             } else {
                 no_edge_num++;

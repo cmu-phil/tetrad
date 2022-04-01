@@ -169,8 +169,8 @@ public class TestDeltaSextadTest {
         List<Node> vars = new ArrayList<>();
 
         for (int y = 0; y < c; y++) {
-            varClusters.add(new ArrayList<Node>());
-            latents.add(new ArrayList<Node>());
+            varClusters.add(new ArrayList<>());
+            latents.add(new ArrayList<>());
         }
 
         int e = 0;

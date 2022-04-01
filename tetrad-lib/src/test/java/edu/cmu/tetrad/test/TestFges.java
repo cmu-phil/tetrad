@@ -330,7 +330,7 @@ public class TestFges {
         Map<Integer, List<Node>> names = new HashMap<>();
 
         for (int i = 0; i <= max; i++) {
-            names.put(i, new ArrayList<Node>());
+            names.put(i, new ArrayList<>());
         }
 
         for (Node node : dag.getNodes()) {

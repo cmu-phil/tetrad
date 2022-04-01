@@ -119,7 +119,7 @@ public class TimeoutComparison {
             throw new NullPointerException("No files in " + file.getAbsolutePath());
         }
 
-        this.dirs = new ArrayList<String>();
+        this.dirs = new ArrayList<>();
 
         int count = 0;
 
@@ -168,7 +168,7 @@ public class TimeoutComparison {
             throw new NullPointerException("No files in " + file.getAbsolutePath());
         }
 
-        this.dirs = new ArrayList<String>();
+        this.dirs = new ArrayList<>();
 
         int count = 0;
 
@@ -1635,7 +1635,7 @@ public class TimeoutComparison {
         }
     }
 
-    private class AlgorithmSimulationWrapper implements Algorithm {
+    private static class AlgorithmSimulationWrapper implements Algorithm {
 
         static final long serialVersionUID = 23L;
         private final SimulationWrapper simulationWrapper;

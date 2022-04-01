@@ -160,8 +160,7 @@ final class IndTestChooser {
         }
 
         if (IndTestType.SEM_BIC == testType) {
-            List<DataModel> dataModels = new ArrayList<>();
-            dataModels.addAll(dataSets);
+            List<DataModel> dataModels = new ArrayList<>(dataSets);
             return new IndTestScore(new SemBicScoreImages(dataModels));
         }
 

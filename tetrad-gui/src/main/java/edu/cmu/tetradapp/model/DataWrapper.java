@@ -76,7 +76,7 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
 
     //==============================CONSTRUCTORS===========================//
     protected DataWrapper() {
-        setDataModel(new BoxDataSet(new VerticalDoubleDataBox(0, 0), new LinkedList<Node>()));
+        setDataModel(new BoxDataSet(new VerticalDoubleDataBox(0, 0), new LinkedList<>()));
         this.parameters = new Parameters();
     }
 
@@ -84,7 +84,7 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
      * Constructs a data wrapper using a new DataSet as data model.
      */
     public DataWrapper(Parameters parameters) {
-        setDataModel(new BoxDataSet(new VerticalDoubleDataBox(0, 0), new LinkedList<Node>()));
+        setDataModel(new BoxDataSet(new VerticalDoubleDataBox(0, 0), new LinkedList<>()));
         this.parameters = parameters;
     }
 
@@ -301,8 +301,7 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
     }
 
     public List<DataModel> getDataModels() {
-        List<DataModel> dataModels = new ArrayList<>();
-        dataModels.addAll(this.dataModelList);
+        List<DataModel> dataModels = new ArrayList<>(this.dataModelList);
         return dataModels;
     }
 

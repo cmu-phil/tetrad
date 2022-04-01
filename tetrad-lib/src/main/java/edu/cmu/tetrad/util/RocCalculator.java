@@ -127,13 +127,11 @@ public class RocCalculator {
 
             if (tPrime.getHasProperty()) {
                 pPrime = new OrderedPairInt(p0.getFirst(), p0.getSecond() + 1);
-                plot.add(pPrime);
-                p0 = pPrime;
             } else {
                 pPrime = new OrderedPairInt(p0.getFirst() + 1, p0.getSecond());
-                plot.add(pPrime);
-                p0 = pPrime;
             }
+            plot.add(pPrime);
+            p0 = pPrime;
         }
 
         this.points = new int[plot.size()][2];

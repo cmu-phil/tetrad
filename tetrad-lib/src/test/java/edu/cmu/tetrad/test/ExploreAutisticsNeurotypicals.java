@@ -112,7 +112,7 @@ public final class ExploreAutisticsNeurotypicals {
 
         try {
             for (int i = 0; i < prefixes.length; i++) {
-                allDataSets.add(new ArrayList<DataSet>());
+                allDataSets.add(new ArrayList<>());
             }
 
             File dir = new File(path);
@@ -296,9 +296,7 @@ public final class ExploreAutisticsNeurotypicals {
 
         Set<Edge> trekEdges = new HashSet<>();
 
-        for (int _group = 0; _group < graphs.size(); _group++) {
-            List<Graph> __graphs = graphs.get(_group);
-
+        for (List<Graph> __graphs : graphs) {
             for (Graph graph : __graphs) {
                 List<List<Node>> treks = GraphUtils.treks(graph, fusiformLeft, fusiformRight, maxLength);
 
@@ -387,8 +385,8 @@ public final class ExploreAutisticsNeurotypicals {
 
         List<Node> edgeVars = new ArrayList<>();
 
-        for (int i = 0; i < edges.size(); i++) {
-            edgeVars.add(new ContinuousVariable(edges.get(i).toString()));
+        for (Edge edge : edges) {
+            edgeVars.add(new ContinuousVariable(edge.toString()));
         }
 
         edgeVars.add(new ContinuousVariable("Group"));
@@ -400,11 +398,11 @@ public final class ExploreAutisticsNeurotypicals {
         for (int i = 0; i < graphs2.size(); i++) {
             List<Graph> graphs3 = graphs2.get(i);
 
-            for (int k = 0; k < graphs3.size(); k++) {
+            for (Graph graph : graphs3) {
                 row++;
 
                 for (int j = 0; j < edges.size(); j++) {
-                    dataSet.setDouble(row, j, graphs3.get(k).containsEdge(edges.get(j)) ? 1 : 0);
+                    dataSet.setDouble(row, j, graph.containsEdge(edges.get(j)) ? 1 : 0);
                 }
 
                 dataSet.setDouble(row, edges.size(), i);

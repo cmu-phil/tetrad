@@ -28,7 +28,6 @@ import edu.cmu.tetrad.util.RandomUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -71,8 +70,8 @@ public class PurifyTetradBased implements IPurify {
         for (int i = 0; i < clustering.size(); i++) {
             int[] cluster = clustering.get(i);
             System.out.print(i + ": ");
-            for (int j = 0; j < cluster.length; j++) {
-                System.out.print(cluster[j] + " ");
+            for (int k : cluster) {
+                System.out.print(k + " ");
             }
 
             System.out.println();
@@ -85,8 +84,7 @@ public class PurifyTetradBased implements IPurify {
         List<Node> nodes = this.tetradTest.getVariables();
         List<int[]> _clustering = new ArrayList<>();
 
-        for (int i = 0; i < clustering.size(); i++) {
-            List<Node> cluster = clustering.get(i);
+        for (List<Node> cluster : clustering) {
             int[] _cluster = new int[cluster.size()];
 
             for (int j = 0; j < cluster.size(); j++) {
@@ -107,12 +105,11 @@ public class PurifyTetradBased implements IPurify {
         List<Node> nodes = this.tetradTest.getVariables();
         List<List<Node>> _clustering = new ArrayList<>();
 
-        for (int i = 0; i < clustering.size(); i++) {
-            int[] cluster = clustering.get(i);
+        for (int[] cluster : clustering) {
             List<Node> _cluster = new ArrayList<>();
 
-            for (int j = 0; j < cluster.length; j++) {
-                _cluster.add(nodes.get(cluster[j]));
+            for (int k : cluster) {
+                _cluster.add(nodes.get(k));
             }
 
             _clustering.add(_cluster);
@@ -144,8 +141,8 @@ public class PurifyTetradBased implements IPurify {
         printlnMessage("INTRA-CONSTRUCT PHASE.");
         printlnMessage("----------------------");
         printlnMessage();
-        for (Iterator it = clustering.iterator(); it.hasNext(); ) {
-            intraConstructPhase2((int[]) it.next(), eliminated);
+        for (Object o : clustering) {
+            intraConstructPhase2((int[]) o, eliminated);
         }
         printlnMessage();
 
@@ -518,9 +515,8 @@ public class PurifyTetradBased implements IPurify {
     }
 
     private void printClustering(List clustering, boolean[] eliminated) {
-        Iterator it = clustering.iterator();
-        while (it.hasNext()) {
-            int[] c = (int[]) it.next();
+        for (Object o : clustering) {
+            int[] c = (int[]) o;
             printCluster(c, eliminated);
         }
     }
@@ -544,22 +540,21 @@ public class PurifyTetradBased implements IPurify {
             sorted[i] = min;
             sorted[min_idx] = temp;
         }
-        for (int i = 0; i < sorted.length; i++) {
-            printMessage(sorted[i] + " ");
+        for (String s : sorted) {
+            printMessage(s + " ");
         }
         printlnMessage();
     }
 
     private List buildSolution(List clustering, boolean[] eliminated) {
         List solution = new ArrayList();
-        Iterator it = clustering.iterator();
-        while (it.hasNext()) {
-            int[] next = (int[]) it.next();
+        for (Object o : clustering) {
+            int[] next = (int[]) o;
             int[] draftArea = new int[next.length];
             int draftCount = 0;
-            for (int i = 0; i < next.length; i++) {
-                if (!eliminated[next[i]]) {
-                    draftArea[draftCount++] = next[i];
+            for (int j : next) {
+                if (!eliminated[j]) {
+                    draftArea[draftCount++] = j;
                 }
             }
             int[] realCluster = new int[draftCount];

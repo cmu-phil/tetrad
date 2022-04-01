@@ -384,9 +384,9 @@ public class Biolingua {
             int[] parent = Biolingua.g.getParents(vj);
             Biolingua.visited[vj] = true;
             int np = parent.length;
-            for (int p = 0; p < np; p++) {
+            for (int i : parent) {
                 // Recursive call to findPaths()
-                Biolingua.findPaths(parent[p], pathLen + 1);
+                Biolingua.findPaths(i, pathLen + 1);
                 if (Biolingua.cycle) {
                     return;
                 }

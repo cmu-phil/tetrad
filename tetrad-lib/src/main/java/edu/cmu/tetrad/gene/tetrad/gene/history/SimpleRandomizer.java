@@ -24,7 +24,6 @@ package edu.cmu.tetrad.gene.tetrad.gene.history;
 import edu.cmu.tetrad.util.RandomUtil;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -136,8 +135,8 @@ public class SimpleRandomizer implements GraphInitializer {
         List factors = new ArrayList(lagGraph.getFactors());
 
         // Add edges one time step back.
-        for (Iterator it = factors.iterator(); it.hasNext(); ) {
-            String factor = (String) it.next();
+        for (Object value : factors) {
+            String factor = (String) value;
             LaggedFactor laggedFactor = new LaggedFactor(factor, 1);
 
             lagGraph.addEdge(factor, laggedFactor);
@@ -146,8 +145,8 @@ public class SimpleRandomizer implements GraphInitializer {
         //        System.out.println("Indegree = " + indegree);
 
         // Add remaining edges for each factor.
-        for (Iterator it = factors.iterator(); it.hasNext(); ) {
-            String factor = (String) it.next();
+        for (Object o : factors) {
+            String factor = (String) o;
 
             // Pick an indegree for this variable
             int extraEdges = 1;

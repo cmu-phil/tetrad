@@ -212,39 +212,39 @@ public class ComparisonParameters {
         StringBuilder b = new StringBuilder();
 
         if (this.dataType != null) {
-            b.append("\nData Type = " + this.dataType);
+            b.append("\nData Type = ").append(this.dataType);
         }
 
         if (this.resultType != null) {
-            b.append("\nResult Type = " + this.resultType);
+            b.append("\nResult Type = ").append(this.resultType);
         }
 
         if (this.numVars != -1) {
-            b.append("\nNum Vars = " + this.numVars);
+            b.append("\nNum Vars = ").append(this.numVars);
         }
 
         if (this.numEdges != -1) {
-            b.append("\nNum Edges = " + this.numEdges);
+            b.append("\nNum Edges = ").append(this.numEdges);
         }
 
         if (this.numEdges != -1) {
-            b.append("\nSample Size = " + this.sampleSize);
+            b.append("\nSample Size = ").append(this.sampleSize);
         }
 
         if (this.independenceTest != null) {
-            b.append("\nIndependence Test = " + this.independenceTest);
+            b.append("\nIndependence Test = ").append(this.independenceTest);
         }
 
         if (!Double.isNaN(this.alpha)) {
-            b.append("\nAlpha = " + this.alpha);
+            b.append("\nAlpha = ").append(this.alpha);
         }
 
         if (this.score != null) {
-            b.append("\nScore = " + this.score);
+            b.append("\nScore = ").append(this.score);
         }
 
         if (this.algorithm != null) {
-            b.append("\nAlgorithm = " + this.algorithm);
+            b.append("\nAlgorithm = ").append(this.algorithm);
         }
 
 

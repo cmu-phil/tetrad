@@ -743,7 +743,7 @@ public final class SemEstimatorEditor extends JPanel {
      * Dispays the implied covariance and correlation matrices for the given
      * SemIm.
      */
-    class ImpliedMatricesPanel extends JPanel {
+    static class ImpliedMatricesPanel extends JPanel {
 
         private static final long serialVersionUID = 2462316724126834072L;
 

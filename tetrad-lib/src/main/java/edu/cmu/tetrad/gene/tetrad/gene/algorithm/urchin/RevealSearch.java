@@ -35,16 +35,13 @@ package edu.cmu.tetrad.gene.tetrad.gene.algorithm.urchin;
  * @author Frank Wimberly
  */
 public class RevealSearch {
-    private final int[][] cases;
     private final int ngenes;
-    private final int ntimes;
     String[] names;
     RevealEvaluator re;
 
     public RevealSearch(int[][] cases, String[] names) {
-        this.cases = cases;
         this.names = names;
-        this.ntimes = cases.length;
+        int ntimes = cases.length;
         this.ngenes = cases[0].length;
         this.re = new RevealEvaluator(cases);
     }

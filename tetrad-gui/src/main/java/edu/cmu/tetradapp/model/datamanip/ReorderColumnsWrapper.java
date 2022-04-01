@@ -56,8 +56,8 @@ public class ReorderColumnsWrapper extends DataWrapper {
 
         if (dataModelList.get(0) instanceof DataSet) {
             List<DataSet> dataSets = new ArrayList<>();
-            for (int i = 0; i < dataModelList.size(); i++) {
-                dataSets.add((DataSet) dataModelList.get(i));
+            for (DataModel dataModel : dataModelList) {
+                dataSets.add((DataSet) dataModel);
             }
             newData.addAll((DataUtils.shuffleColumns2(dataSets)));
         } else {

@@ -411,6 +411,7 @@ public class TetradSerializableUtils {
                     "'serialVersionUID' in " + clazz +
                     ". Please make one and set it " + "to 23L."));
         } catch (NoSuchMethodException e) {
+            e.printStackTrace();
         } catch (IllegalAccessException e) {
             throw new RuntimeException("The method serializableInstance() of " +
                     "class " + clazz + " is not public.", e);

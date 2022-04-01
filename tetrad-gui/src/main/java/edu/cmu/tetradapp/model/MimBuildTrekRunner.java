@@ -210,10 +210,10 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
             children.removeAll(latents);
             Collections.sort(children);
 
-            builder.append(latent.getName() + ": ");
+            builder.append(latent.getName()).append(": ");
 
-            for (int j = 0; j < children.size(); j++) {
-                builder.append(children.get(j) + " ");
+            for (Node child : children) {
+                builder.append(child + " ");
             }
 
             builder.append("\n");

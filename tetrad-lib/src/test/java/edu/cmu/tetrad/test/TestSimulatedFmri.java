@@ -87,7 +87,7 @@ public class TestSimulatedFmri {
 
         Simulations simulations = new Simulations();
 
-        final String dir;
+        String dir;
         final String subdir = "data_fslfilter";
         if (!testing) {
             dir = "/Users/user/Downloads/Cycles_Data_fMRI/";

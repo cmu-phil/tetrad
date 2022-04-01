@@ -326,43 +326,6 @@ public class CovNNoneNoise implements CovarianceFunction {
 
         Matrix z = new Matrix(new double[][]{{1, 2, 3, 4, 5, 6}, {1, 2, 3, 4, 5, 6}});
 
-//        long start = System.currentTimeMillis();
-//        Matrix K = cf.compute(logtheta,X);
-//        K.print(K.getColumnDimension(), 15);
-
-//        long stop = System.currentTimeMillis();
-//        System.out.println(""+(stop-start));
-//
-//        start = System.currentTimeMillis();
-//        K = cf2.compute(logtheta,X);
-//        K.print(K.getColumnDimension(), 15);
-//        stop = System.currentTimeMillis();
-//        System.out.println(""+(stop-start));
-
-
-//        long start = System.currentTimeMillis();
-//        Matrix[] res = cf.compute(logtheta,X,z);
-//        res[0].print(res[0].getColumnDimension(), 8);
-//        res[1].print(res[1].getColumnDimension(), 8);
-
-//        long stop = System.currentTimeMillis();
-//        System.out.println(""+(stop-start));
-
-
-//        res = cf2.compute(logtheta,X,z);
-//        res[0].print(res[0].getColumnDimension(), 8);
-//        res[1].print(res[1].getColumnDimension(), 8);
-
-//        long stop = System.currentTimeMillis();
-//        System.out.println(""+(stop-start));
-
-
-//        Matrix d = cf.computeDerivatives(logtheta,X,0);
-//        d.print(d.getColumnDimension(), 8);
-
-        //d = cf2.computeDerivatives(logtheta,X,0);
-        //d.print(d.getColumnDimension(), 8);
-
 
     }
 }

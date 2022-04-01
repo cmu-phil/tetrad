@@ -70,7 +70,7 @@ public abstract class BasicLTMatrix extends BasicMatrix {
         // Read matrix name
         int nt = strmTok.nextToken();
         if ((strmTok.sval == null) ||
-                (strmTok.sval.toUpperCase().indexOf("LTMATRIX") < 0)) {
+                (!strmTok.sval.toUpperCase().contains("LTMATRIX"))) {
             throw new IllegalArgumentException(
                     "First token does not contain 'LTMATRIX': " + strmTok.sval);
         }
@@ -122,17 +122,17 @@ public abstract class BasicLTMatrix extends BasicMatrix {
      * matrix
      */
     public String toString() {
-        String s = this.getClass().getName() + " " + this.name + "\n" + this.n +
-                " // <- Total # rows\n";
+        StringBuilder s = new StringBuilder(this.getClass().getName() + " " + this.name + "\n" + this.n +
+                " // <- Total # rows\n");
         for (int r = 0; r < this.n; r++) {
             //s = s + "/* "+r+" */  ";
             for (int c = 0; c <= r; c++) {
-                s = s + this.getDoubleValue(r, c) + " ";
+                s.append(this.getDoubleValue(r, c)).append(" ");
             }
-            s = s + "\n";
+            s.append("\n");
 
         }
-        return s;
+        return s.toString();
     }
 
 }

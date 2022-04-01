@@ -753,8 +753,8 @@ public class Ion {
 
             List<Set<Node>> subsets = SearchGraphUtils.powerSet(variables);
 
-            IonIndependenceFacts indep = new IonIndependenceFacts(x, y, new HashSet<List<Node>>());
-            IonIndependenceFacts assoc = new IonIndependenceFacts(x, y, new HashSet<List<Node>>());
+            IonIndependenceFacts indep = new IonIndependenceFacts(x, y, new HashSet<>());
+            IonIndependenceFacts assoc = new IonIndependenceFacts(x, y, new HashSet<>());
             boolean addIndep = false;
             boolean addAssoc = false;
 
@@ -930,7 +930,7 @@ public class Ion {
                             List<PossibleDConnectingPath> decendantPaths = new ArrayList<>();
                             decendantPaths
                                     = PossibleDConnectingPath.findDConnectingPaths
-                                    (possible.getPag(), current, outside, new ArrayList<Node>());
+                                    (possible.getPag(), current, outside, new ArrayList<>());
 
                             if (decendantPaths.isEmpty()) {
                                 gc = new GraphChange();
@@ -1508,7 +1508,7 @@ public class Ion {
             return new PowerSetIterator<>(this);
         }
 
-        class PowerSetIterator<InE> implements Iterator<Set<InE>> {
+        static class PowerSetIterator<InE> implements Iterator<Set<InE>> {
             PowerSet<InE> powerSet;
             List<InE> canonicalOrder = new ArrayList<>();
             List<InE> mask = new ArrayList<>();
@@ -1575,7 +1575,7 @@ public class Ion {
 
     public static List<List<Node>> treks(Graph graph, Node node1, Node node2) {
         List<List<Node>> paths = new LinkedList<>();
-        Ion.treks(graph, node1, node2, new LinkedList<Node>(), paths);
+        Ion.treks(graph, node1, node2, new LinkedList<>(), paths);
         return paths;
     }
 

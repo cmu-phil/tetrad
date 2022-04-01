@@ -33,14 +33,14 @@ public class RBExperiments {
 
     private static class MapUtil {
         public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
-            List<Map.Entry<K, V>> list = new LinkedList<Map.Entry<K, V>>(map.entrySet());
+            List<Map.Entry<K, V>> list = new LinkedList<>(map.entrySet());
             Collections.sort(list, new Comparator<Map.Entry<K, V>>() {
                 public int compare(Map.Entry<K, V> o1, Map.Entry<K, V> o2) {
                     return (o2.getValue()).compareTo(o1.getValue());
                 }
             });
 
-            Map<K, V> result = new LinkedHashMap<K, V>();
+            Map<K, V> result = new LinkedHashMap<>();
             for (Map.Entry<K, V> entry : list) {
                 result.put(entry.getKey(), entry.getValue());
             }
@@ -110,27 +110,11 @@ public class RBExperiments {
         return im;
     }
 
-//	private static DataSet readInDataSet(Path dataFile) {
-//		DataSet dataSet = null;
-//		DataReader dataReader = new VerticalTabularDiscreteDataReader(dataFile, ',');
-//
-//		try {
-//			dataSet = dataReader.readInData();
-//		} catch (IOException exception) {
-//			String errMsg = String.format("Failed when reading data file '%s'.", dataFile.getFileName());
-//			System.err.println(errMsg);
-//			System.exit(-128);
-//		}
-//
-//		return dataSet;
-//	}
-
-
     public static void main(String[] args) throws IOException {
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
 
         // read and process input arguments
-        double alpha = 0.05, numLatentConfounders = 0, lower = 0.3, upper = 0.7;
+        double alpha = 0.05, lower = 0.3, upper = 0.7;
         int numCases = 100, numModels = 5, numBootstrapSamples = 10, round = 0;
         String modelName = "Alarm", filePath = "/Users/chw20/Documents/DBMI/bsc-results",
                 dataPath = System.getProperty("user.dir");
@@ -141,7 +125,7 @@ public class RBExperiments {
                     numCases = Integer.parseInt(args[i + 1]);
                     break;
                 case "-lv":
-                    numLatentConfounders = Double.parseDouble(args[i + 1]);
+                    Double.parseDouble(args[i + 1]);
                     break;
                 case "-bs":
                     numBootstrapSamples = Integer.parseInt(args[i + 1]);
@@ -251,7 +235,7 @@ public class RBExperiments {
 
         // run RFCI-BSC (RB) search using BSC test and obtain constraints that
         // are queried during the search
-        List<Graph> bscPags = new ArrayList<Graph>();
+        List<Graph> bscPags = new ArrayList<>();
         start = System.currentTimeMillis();
         IndTestProbabilistic testBSC = runRB(data, bscPags, numModels, threshold1);
         long BscRfciTime = System.currentTimeMillis() - start;
@@ -315,10 +299,6 @@ public class RBExperiments {
         //
         out.println("P(maxBNI): \n" + 1.0);//normalizedInd.get(maxBNI));
         out.println("P(maxBND): \n" + 1.0);// normalizedDep.get(maxBND));
-        //		out.println("------------------------------------------");
-        //		out.println(normalizedInd.values());
-        //		out.println("------------------------------------------");
-        //		out.println(normalizedDep.values());
         out.println("------------------------------------------");
         out.println("PAG_True: \n" + PAG_True);
         out.println("------------------------------------------");
@@ -331,148 +311,6 @@ public class RBExperiments {
         out.close();
 
     }
-
-	/*public void experiment2(String modelName, int numCases, int numModels, int numBootstrapSamples, double alpha,
-			double numLatentConfounders, boolean threshold1, boolean threshold2, double lower, double upper,
-			String filePath, int round) {
-		// 32827167123L
-		modelName = "MCBN1";
-		Long seed = 32827167123L;
-		RandomUtil.getInstance().setSeed(seed);
-		PrintStream out;
-
-		// Path to data file
-
-		// create a Bayesian network (dag) and its parameters
-		Graph dag = makeSimpleDAG(0);
-		BayesPm pm = new BayesPm(dag, 2, 2);
-		BayesIm im = new MlBayesIm(pm, MlBayesIm.MANUAL);
-		im = initializeIM(im);
-		System.out.println("MCBN1: " + dag);
-
-
-		// set the "numLatentConfounders" percentage of variables to be latent
-		int numVars = im.getNumNodes();
-		int LV = (int) Math.floor(numLatentConfounders * numVars);
-		//		GraphUtils.fixLatents4(LV, dag);
-		System.out.println("Variables set to be latent:" +getLatents(dag));
-		Path dataFile = Paths.get("/Users/fattanehjabbari/Downloads/", "mcbn1.txt");
-		//		DataSet fullData = readInDataSet(dataFile);
-		DataSet fullData = im.simulateData(numCases, round * 1000000 + 71512, true);
-		DataSet data = DataUtils.restrictToMeasured(fullData);
-
-		// create output directory and files
-		filePath = filePath + "/" + modelName + "-Vars" + dag.getNumNodes() + "-Edges" + dag.getNumEdges() + "-H"
-				+ numLatentConfounders + "-Cases" + numCases + "-numModels" + numModels + "-BS" + numBootstrapSamples;
-		try {
-			File dir = new File(filePath);
-			dir.mkdirs();
-			File file = new File(dir,
-					"Results-" + modelName + "-Vars" + dag.getNumNodes() + "-Edges" + dag.getNumEdges() + "-H"
-							+ numLatentConfounders + "-Cases" + numCases + "-numModels" + numModels + "-BS"
-							+ numBootstrapSamples + "-" + round + ".txt");
-			if (!file.exists() || file.length() == 0) {
-				out = new PrintStream(new FileOutputStream(file));
-			} else {
-				return;
-			}
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-
-		// get the true underlying PAG
-		final DagToPag dagToPag = new DagToPag(dag);
-		dagToPag.setCompleteRuleSetUsed(false);
-		Graph PAG_True = dagToPag.convert();
-		PAG_True = GraphUtils.replaceNodes(PAG_True, data.getVariables());
-
-		// run RFCI to get a PAG using chi-squared test
-		long start = System.currentTimeMillis();
-		Graph rfciPag = runPagCs(data, alpha);
-		long RfciTime = System.currentTimeMillis() - start;
-		System.out.println("RFCI done!");
-
-		// run RFCI-BSC (RB) search using BSC test and obtain constraints that
-		// are queried during the search
-		List<Graph> bscPags = new ArrayList<Graph>();
-		start = System.currentTimeMillis();
-		IndTestProbabilistic testBSC = runRB(data, bscPags, numModels, threshold1);
-		long BscRfciTime = System.currentTimeMillis() - start;
-		Map<IndependenceFact, Double> H = testBSC.getH();
-		//		out.println("H Size:" + H.size());
-		System.out.println("RB (RFCI-BSC) done!");
-
-		// create empirical data for constraints
-		start = System.currentTimeMillis();
-		DataSet depData = createDepDataFiltering(H, data, numBootstrapSamples, threshold2, lower, upper);
-		//		out.println("DepData(row,col):" + depData.getNumRows() + "," + depData.getNumColumns());
-		System.out.println("Dep data creation done!");
-
-		// learn structure of constraints using empirical data => constraint meta data
-		Graph depPattern = runFGS(depData);
-		Graph estDepBN = SearchGraphUtils.dagFromPattern(depPattern);
-		System.out.println("estDepBN: " + estDepBN.getEdges());
-		//		out.println("DepGraph(nodes,edges):" + estDepBN.getNumNodes() + "," + estDepBN.getNumEdges());
-		System.out.println("Dependency graph done!");
-
-		// estimate parameters of the graph learned for constraints
-		BayesPm pmHat = new BayesPm(estDepBN, 2, 2);
-		DirichletBayesIm prior = DirichletBayesIm.symmetricDirichletIm(pmHat, 0.5);
-		BayesIm imHat = DirichletEstimator.estimate(prior, depData);
-		Long BscdTime = System.currentTimeMillis() - start;
-		System.out.println("Dependency BN_Param done");
-
-		// compute scores of graphs that are output by RB search using BSC-I and
-		// BSC-D methods
-		start = System.currentTimeMillis();
-		allScores lnProbs = getLnProbsAll(bscPags, H, data, imHat, estDepBN);
-		Long mutualTime = (System.currentTimeMillis() - start) / 2;
-
-		// normalize the scores
-		start = System.currentTimeMillis();
-		Map<Graph, Double> normalizedDep = normalProbs(lnProbs.LnBSCD);
-		Long dTime = System.currentTimeMillis() - start;
-
-		start = System.currentTimeMillis();
-		Map<Graph, Double> normalizedInd = normalProbs(lnProbs.LnBSCI);
-		Long iTime = System.currentTimeMillis() - start;
-
-		// get the most probable PAG using each scoring method
-		normalizedDep = MapUtil.sortByValue(normalizedDep);
-		Graph maxBND = normalizedDep.keySet().iterator().next();
-
-		normalizedInd = MapUtil.sortByValue(normalizedInd);
-		Graph maxBNI = normalizedInd.keySet().iterator().next();
-
-		// summarize and write the results into output files
-		out.println("*** RFCI time (sec):" + (RfciTime / 1000));
-		summarize(rfciPag, PAG_True, out);
-
-		out.println("\n*** RB-I time (sec):" + ((BscRfciTime + mutualTime + iTime) / 1000));
-		summarize(maxBNI, PAG_True, out);
-
-		out.println("\n*** RB-D time (sec):" + ((BscRfciTime + BscdTime + mutualTime + dTime) / 1000));
-		summarize(maxBND, PAG_True, out);
-
-		out.println("P(maxBNI): \n" + normalizedInd.get(maxBNI));
-		out.println("P(maxBND): \n" + normalizedDep.get(maxBND));
-		out.println("------------------------------------------");
-		out.println(normalizedInd.values());
-		out.println("------------------------------------------");
-		out.println(normalizedDep.values());
-		out.println("------------------------------------------");
-		out.println("PAG_True: \n" + PAG_True);
-		out.println("------------------------------------------");
-		out.println("Rfci: \n" + rfciPag);
-		out.println("------------------------------------------");
-		out.println("RB-I: \n" + maxBNI);
-		out.println("------------------------------------------");
-		out.println("RB-D: \n" + maxBND);
-
-		out.close();
-
-	}
-*/
 
     private DataSet refineData(DataSet fullData) {
         for (int c = 0; c < fullData.getNumColumns(); c++) {
@@ -583,21 +421,13 @@ public class RBExperiments {
 
         //		out.println(getTextTable(dataSet, cols, new DecimalFormat("0.00")));
         out.println(MisclassificationUtils.edgeMisclassifications(graph, trueGraph));
-        //		printCorrectArrows(graph, trueGraph, out);
-        //		printCorrectTails(graph, trueGraph, out);
         int SHDAdj = comparison.getEdgesAdded().size() + comparison.getEdgesRemoved().size();
         int diffEdgePoint = comparison.getShd() - SHDAdj * 2;
         out.println("# missing/extra edges: " + SHDAdj);
         out.println("# different edge points: " + diffEdgePoint);
 
-        //		out.println("getEdgesAdded: " + comparison.getEdgesAdded());
-        //		out.println("getEdgesRemoved: " + comparison.getEdgesRemoved());
-        //		out.println("getEdgesReorientedFrom: " + comparison.getEdgesReorientedFrom());
-        //		out.println("getEdgesReorientedTo: " + comparison.getEdgesReorientedTo());
         out.println("-------------------------------");
 
-        // return getTextTable(dataSet, cols, new DecimalFormat("0.00"));
-        // //deleted .toString()
     }
 
     private double[] printCorrectArrows(Graph outGraph, Graph truePag, PrintStream out) {
@@ -815,11 +645,10 @@ public class RBExperiments {
     private allScores getLnProbsAll(List<Graph> pags, Map<IndependenceFact, Double> H, DataSet data, BayesIm im,
                                     Graph dep) {
         // Map<Graph, Double> pagLnBDeu = new HashMap<Graph, Double>();
-        Map<Graph, Double> pagLnBSCD = new HashMap<Graph, Double>();
-        Map<Graph, Double> pagLnBSCI = new HashMap<Graph, Double>();
+        Map<Graph, Double> pagLnBSCD = new HashMap<>();
+        Map<Graph, Double> pagLnBSCI = new HashMap<>();
 
-        for (int i = 0; i < pags.size(); i++) {
-            Graph pagOrig = pags.get(i);
+        for (Graph pagOrig : pags) {
             if (!pagLnBSCD.containsKey(pagOrig)) {
                 double lnInd = getLnProb(pagOrig, H);
 
@@ -836,7 +665,7 @@ public class RBExperiments {
         return new allScores(pagLnBSCD, pagLnBSCI);
     }
 
-    private class allScores {
+    private static class allScores {
         Map<Graph, Double> LnBSCD;
         Map<Graph, Double> LnBSCI;
 
@@ -858,8 +687,6 @@ public class RBExperiments {
         BSCrfci.setDepth(this.depth);
 
         for (int i = 0; i < numModels; i++) {
-            //			if (i % 100 == 0)
-            //				System.out.print(", i: " + i);
             Graph BSCPag = BSCrfci.search();
             BSCPag = GraphUtils.replaceNodes(BSCPag, data.getVariables());
             pags.add(BSCPag);
@@ -879,83 +706,6 @@ public class RBExperiments {
         PAG_CS = GraphUtils.replaceNodes(PAG_CS, data.getVariables());
         return PAG_CS;
     }
-
-    // private double getLnProbUsingDep(Graph pag, Map<IndependenceFact, Double>
-    // H, BayesIm im, Graph dep) {
-    // double lnQ = 0;
-    //
-    // for (IndependenceFact fact : H.keySet()) {
-    // BCInference.OP op;
-    // double p = 0.0;
-    //
-    // if (pag.isDSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
-    // op = BCInference.OP.independent;
-    // } else {
-    // op = BCInference.OP.dependent;
-    // }
-    //
-    // Node node = im.getNode(fact.toString());
-    //
-    // int[] parents = im.getParents(im.getNodeIndex(node));
-    //
-    // if (parents.length > 0){
-    //
-    // int[] parentValues = new int[parents.length];
-    //
-    // for (int parentIndex = 0; parentIndex < parentValues.length;
-    // parentIndex++) {
-    // String parentName = im.getNode(parents[parentIndex]).getName();
-    // String[] splitParent = parentName.split(Pattern.quote("_||_"));
-    // Node X = pag.getNode(splitParent[0].trim());
-    //
-    // String[] splitParent2 = splitParent[1].trim().split(Pattern.quote("|"));
-    // Node Y = pag.getNode(splitParent2[0].trim());
-    //
-    // List<Node> Z = new ArrayList<Node>();
-    // if(splitParent2.length>1){
-    // String[] splitParent3 = splitParent2[1].trim().split(Pattern.quote(","));
-    // for(String s: splitParent3){
-    // Z.add(pag.getNode(s.trim()));
-    // }
-    // }
-    // IndependenceFact parentFact = new IndependenceFact(X, Y, Z);
-    // if (pag.isDSeparatedFrom(parentFact.getX(), parentFact.getY(),
-    // parentFact.getZ())) {
-    // parentValues[parentIndex] = 1;
-    // } else {
-    // parentValues[parentIndex] = 0;
-    // }
-    // }
-    //
-    // int rowIndex = im.getRowIndex(im.getNodeIndex(node), parentValues);
-    // p = im.getProbability(im.getNodeIndex(node), rowIndex, 1);
-    //
-    // if (op == BCInference.OP.dependent) {
-    // p = 1.0 - p;
-    // }
-    // }
-    // else{
-    // p = im.getProbability(im.getNodeIndex(node), 0, 1);
-    // if (op == BCInference.OP.dependent) {
-    // p = 1.0 - p;
-    // }
-    // }
-    //
-    // if (p < -0.0001 || p > 1.0001 || Double.isNaN(p) || Double.isInfinite(p))
-    // {
-    // throw new IllegalArgumentException("p illegally equals " + p);
-    // }
-    //
-    // double v = lnQ + log(p);
-    //
-    // if (Double.isNaN(v) || Double.isInfinite(v)) {
-    // continue;
-    // }
-    //
-    // lnQ = v;
-    // }
-    // return lnQ;
-    // }
 
     private double getLnProbUsingDepFiltering(Graph pag, Map<IndependenceFact, Double> H, BayesIm im, Graph dep) {
         double lnQ = 0;
@@ -987,7 +737,7 @@ public class RBExperiments {
                         String[] splitParent2 = splitParent[1].trim().split(Pattern.quote("|"));
                         Node Y = pag.getNode(splitParent2[0].trim());
 
-                        List<Node> Z = new ArrayList<Node>();
+                        List<Node> Z = new ArrayList<>();
                         if (splitParent2.length > 1) {
                             String[] splitParent3 = splitParent2[1].trim().split(Pattern.quote(","));
                             for (String s : splitParent3) {
@@ -1005,14 +755,11 @@ public class RBExperiments {
                     int rowIndex = im.getRowIndex(im.getNodeIndex(node), parentValues);
                     p = im.getProbability(im.getNodeIndex(node), rowIndex, 1);
 
-                    if (op == BCInference.OP.dependent) {
-                        p = 1.0 - p;
-                    }
                 } else {
                     p = im.getProbability(im.getNodeIndex(node), 0, 1);
-                    if (op == BCInference.OP.dependent) {
-                        p = 1.0 - p;
-                    }
+                }
+                if (op == BCInference.OP.dependent) {
+                    p = 1.0 - p;
                 }
 
                 if (p < -0.0001 || p > 1.0001 || Double.isNaN(p) || Double.isInfinite(p)) {
@@ -1084,7 +831,7 @@ public class RBExperiments {
 
     private Map<Graph, Double> normalProbs(Map<Graph, Double> pagLnProbs) {
         double lnQTotal = lnQTotal(pagLnProbs);
-        Map<Graph, Double> normalized = new HashMap<Graph, Double>();
+        Map<Graph, Double> normalized = new HashMap<>();
         for (Graph pag : pagLnProbs.keySet()) {
             double lnQ = pagLnProbs.get(pag);
             double normalizedlnQ = lnQ - lnQTotal;
@@ -1102,39 +849,10 @@ public class RBExperiments {
             XdslXmlParser parser = new XdslXmlParser();
             parser.setUseDisplayNames(useDisplayNames);
             return parser.getBayesIm(document.getRootElement());
-        } catch (ParsingException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
+        } catch (ParsingException | IOException e) {
             throw new RuntimeException(e);
         }
     }
-    // private Map<Graph, Double> getLnProbs(List<Graph> pags,
-    // Map<IndependenceFact, Double> H) {
-    // Map<Graph, Double> pagLnProb = new HashMap<Graph, Double>();
-    // for (int i = 0; i < pags.size(); i++) {
-    // Graph pag = pags.get(i);
-    // double lnQ = getLnProb(pag, H);
-    // pagLnProb.put(pag, lnQ);
-    // }
-    // System.out.println("pags size: " + pags.size());
-    // System.out.println("unique pags size: " + pagLnProb.size());
-    //
-    // return pagLnProb;
-    // }
-
-    // private Map<Graph, Double> getLnProbsUsingDep(List<Graph> pags,
-    // Map<IndependenceFact, Double> H, BayesIm imHat, Graph estDepBN) {
-    // Map<Graph, Double> pagLnProb = new HashMap<Graph, Double>();
-    // for (int i = 0; i < pags.size(); i++) {
-    // Graph pag = pags.get(i);
-    // double lnQ = getLnProbUsingDep(pag, H, imHat, estDepBN);
-    // pagLnProb.put(pag, lnQ);
-    // }
-    // System.out.println("pags size: " + pags.size());
-    // System.out.println("unique pags size: " + pagLnProb.size());
-    //
-    // return pagLnProb;
-    // }
 
     protected double lnXplusY(double lnX, double lnY) {
         double lnYminusLnX;
@@ -1172,42 +890,9 @@ public class RBExperiments {
 
     private static final int MININUM_EXPONENT = -1022;
 
-    // public Graph makeDAG(int numVars, double edgesPerNode, int
-    // numLatentConfounders){
-    // final int numEdges = (int) (numVars * edgesPerNode);
-    // List<Node> vars = new ArrayList<Node>();
-    // for (int i = 0; i < numVars; i++) {
-    // vars.add(new DiscreteVariable(Integer.toString(i)));
-    // }
-    // return GraphUtils.randomGraphRandomForwardEdges(vars,
-    // numLatentConfounders, numEdges, 30, 15, 15, false,
-    // true);//randomGraphRandomForwardEdges(vars, 0,numEdges);
-    // }
-    //
-    // public Graph makeSimpleDAG(int numLatentConfounders){
-    // List<Node> nodes = new ArrayList<Node>();
-    // for (int i=0; i<5; i++){
-    // nodes.add(new DiscreteVariable(Integer.toString(i+1)));
-    // }
-    //
-    // Graph dag = new EdgeListGraph(nodes);
-    // dag.addDirectedEdge(nodes.get(0), nodes.get(1));
-    // dag.addDirectedEdge(nodes.get(0), nodes.get(2));
-    // dag.addDirectedEdge(nodes.get(1), nodes.get(3));
-    // dag.addDirectedEdge(nodes.get(2), nodes.get(3));
-    // dag.addDirectedEdge(nodes.get(2), nodes.get(4));
-    // return dag;
-    // }
-
     public DataSet bootStrapSampling(DataSet data, int numBootstrapSamples, int bootsrapSampleSize) {
 
-        DataSet bootstrapSample = DataUtils.getBootstrapSample(data, bootsrapSampleSize);
-        return bootstrapSample;
+        return DataUtils.getBootstrapSample(data, bootsrapSampleSize);
     }
 
-    // private void print(Map<Graph, Double> probs, PrintStream out) {
-    // for (Graph g: probs.keySet()){
-    // out.println(g +"\t" + probs.get(g));
-    // }
-    // }
 }

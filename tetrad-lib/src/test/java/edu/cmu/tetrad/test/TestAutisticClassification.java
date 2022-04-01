@@ -47,53 +47,49 @@ import java.util.*;
 public class TestAutisticClassification {
     enum Type {LEAVE_ONE_OUT, TRAIN_TEST}
 
-    // Parameters.
-    private final double penaltyDiscount = 2;
-    private final int depth = 3;
-    private final int cutoffPresent = 10;
-    private final int cutoffAbsent = 10;
-
-    private final int trainIndex = 2;
-    private final int testIndex = 0;
-
     private final Type type = Type.LEAVE_ONE_OUT;
 
     public void testAutistic() {
         Parameters parameters = new Parameters();
 
-        parameters.set("penaltyDiscount", this.penaltyDiscount);
-        parameters.set("depth", this.depth);
+        // Parameters.
+        double penaltyDiscount = 2;
+        parameters.set("penaltyDiscount", penaltyDiscount);
+        int depth = 3;
+        parameters.set("depth", depth);
         parameters.set("twoCycleAlpha", 1e-5);
 
         FaskGraphs train;
         FaskGraphs test = null;
 
-        if (this.trainIndex == 1) {
+        int trainIndex = 2;
+        if (trainIndex == 1) {
             train = new FaskGraphs("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_108_Variable",
                     parameters, "ROI_data");
-        } else if (this.trainIndex == 2) {
+        } else if (trainIndex == 2) {
             train = new FaskGraphs("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/USM_Datasets2",
                     parameters, "ROI_data");
-        } else if (this.trainIndex == 3) {
+        } else if (trainIndex == 3) {
             train = new FaskGraphs("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Whole_Cerebellum_Scans",
                     parameters, "ROI_data");
-        } else if (this.trainIndex == 4) {
+        } else if (trainIndex == 4) {
             train = new FaskGraphs("/Users/jdramsey/Downloads/USM_ABIDE", new Parameters());
         } else {
             throw new IllegalArgumentException("Type must be an index 1-4");
         }
 
         if (this.type == Type.TRAIN_TEST) {
-            if (this.testIndex == 1) {
+            int testIndex = 0;
+            if (testIndex == 1) {
                 test = new FaskGraphs("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_108_Variable",
                         parameters, "ROI_data");
-            } else if (this.testIndex == 2) {
+            } else if (testIndex == 2) {
                 test = new FaskGraphs("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/USM_Datasets2",
                         parameters, "ROI_data");
-            } else if (this.testIndex == 3) {
+            } else if (testIndex == 3) {
                 test = new FaskGraphs("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Whole_Cerebellum_Scans",
                         parameters, "ROI_data");
-            } else if (this.testIndex == 4) {
+            } else if (testIndex == 4) {
                 test = new FaskGraphs("/Users/jdramsey/Downloads/USM_ABIDE", new Parameters());
             } else {
                 throw new IllegalArgumentException("Type must be an index 1-4");
@@ -179,19 +175,21 @@ public class TestAutisticClassification {
         for (Edge edge : allEdges) {
             double[] est = getEst(trainingGraphs, edge);
 
-            if (cond(est, truth, 1, 1, this.cutoffPresent)) {
+            int cutoffPresent = 10;
+            if (cond(est, truth, 1, 1, cutoffPresent)) {
                 forAutismIfPresent.add(edge);
             }
 
-            if (cond(est, truth, 0, 1, this.cutoffAbsent)) {
+            int cutoffAbsent = 10;
+            if (cond(est, truth, 0, 1, cutoffAbsent)) {
                 forAutismIfAbsent.add(edge);
             }
 
-            if (cond(est, truth, 1, 0, this.cutoffPresent)) {
+            if (cond(est, truth, 1, 0, cutoffPresent)) {
                 forTypicalIfPresent.add(edge);
             }
 
-            if (cond(est, truth, 0, 0, this.cutoffAbsent)) {
+            if (cond(est, truth, 0, 0, cutoffAbsent)) {
                 forTypicalIfAbsent.add(edge);
             }
         }
@@ -470,8 +468,8 @@ public class TestAutisticClassification {
             StringBuilder b = new StringBuilder();
 
             for (int j = 0; j < nodes.size(); j++) {
-                for (int k = 0; k < nodes.size(); k++) {
-                    if (graph.isAdjacentTo(nodes.get(j), nodes.get(k))) {
+                for (Node node : nodes) {
+                    if (graph.isAdjacentTo(nodes.get(j), node)) {
                         b.append("1 ");
                     } else {
                         b.append("0 ");

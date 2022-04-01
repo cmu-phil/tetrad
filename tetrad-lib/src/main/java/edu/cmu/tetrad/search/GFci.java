@@ -82,7 +82,6 @@ public final class GFci implements GraphSearch {
     private final Score score;
 
     private SepsetProducer sepsets;
-    private long elapsedTime;
 
     //============================CONSTRUCTORS============================//
     public GFci(IndependenceTest test, Score score) {
@@ -160,7 +159,7 @@ public final class GFci implements GraphSearch {
 
         long time2 = System.currentTimeMillis();
 
-        this.elapsedTime = time2 - time1;
+        long elapsedTime = time2 - time1;
 
         this.graph.setPag(true);
 

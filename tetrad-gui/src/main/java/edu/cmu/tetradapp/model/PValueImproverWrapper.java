@@ -326,9 +326,8 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
 
 
     public DataSet simulateDataCholesky(int sampleSize, Matrix covar, List<Node> variableNodes) {
-        List<Node> variables = new LinkedList<>();
 
-        variables.addAll(variableNodes);
+        List<Node> variables = new LinkedList<>(variableNodes);
 
         List<Node> newVariables = new ArrayList<>();
 

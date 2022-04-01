@@ -107,7 +107,7 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
     public String getDescription() {
         try {
             StringBuilder b = new StringBuilder();
-            b.append("Smith sim " + this.index).append("\n\n");
+            b.append("Smith sim ").append(this.index).append("\n\n");
             return b.toString();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -142,8 +142,8 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
             List<Node> variables = data.getVariables();
 
             List<Node> _variables = new ArrayList<>();
-            for (int i = 0; i < variables.size(); i++) {
-                _variables.add(new ContinuousVariable(variables.get(i).getName()));
+            for (Node variable : variables) {
+                _variables.add(new ContinuousVariable(variable.getName()));
             }
 
             Graph graph = new EdgeListGraph(_variables);

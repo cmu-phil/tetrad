@@ -71,7 +71,6 @@ public class Ion2 {
      * separations and associations found in the input PAGs
      */
     private Set<IonIndependenceFacts> separations;
-    private Set<IonIndependenceFacts> associations;
 
     /**
      * tracks changes for final orientations orientation methods
@@ -185,7 +184,7 @@ public class Ion2 {
         // get d-separations and d-connections
         List<Set<IonIndependenceFacts>> sepAndAssoc = findSepAndAssoc(graph);
         this.separations = sepAndAssoc.get(0);
-        this.associations = sepAndAssoc.get(1);
+        Set<IonIndependenceFacts> associations = sepAndAssoc.get(1);
         Map<Collection<Node>, List<PossibleDConnectingPath>> paths;
 //        Queue<Graph> step3PagsSet = new LinkedList<Graph>();
         HashSet<Graph> step3PagsSet = new HashSet<>();
@@ -391,7 +390,7 @@ public class Ion2 {
                             continue;
                         }
                         // reject if null, predicts false independencies or has cycle
-                        if (predictsFalseIndependence(this.associations, changed)
+                        if (predictsFalseIndependence(associations, changed)
                                 || changed.existsDirectedCycle()) {
                             reject.add(changed);
                         }
@@ -433,7 +432,7 @@ public class Ion2 {
                 necEdges.put(edge, false);
             }
             // look for unconditional associations
-            for (IonIndependenceFacts fact : this.associations) {
+            for (IonIndependenceFacts fact : associations) {
                 for (List<Node> nodes : fact.getZ()) {
                     if (nodes.isEmpty()) {
                         List<List<Node>> treks = Ion2.treks(pag, fact.x, fact.y);
@@ -466,7 +465,7 @@ public class Ion2 {
             for (Graph newPag : possRemovePags) {
                 elimTreks = false;
                 // looks for unconditional associations
-                for (IonIndependenceFacts fact : this.associations) {
+                for (IonIndependenceFacts fact : associations) {
                     for (List<Node> nodes : fact.getZ()) {
                         if (nodes.isEmpty()) {
                             if (Ion2.treks(newPag, fact.x, fact.y).isEmpty()) {
@@ -514,7 +513,7 @@ public class Ion2 {
                 doFinalOrientation(newGraph);
             }
             for (Graph outputPag : this.finalResult) {
-                if (!predictsFalseIndependence(this.associations, outputPag)) {
+                if (!predictsFalseIndependence(associations, outputPag)) {
                     Set<Triple> underlineTriples = new HashSet<>(outputPag.getUnderLines());
                     for (Triple triple : underlineTriples) {
                         outputPag.removeUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
@@ -776,8 +775,8 @@ public class Ion2 {
 
             List<Set<Node>> subsets = SearchGraphUtils.powerSet(variables);
 
-            IonIndependenceFacts indep = new IonIndependenceFacts(x, y, new HashSet<List<Node>>());
-            IonIndependenceFacts assoc = new IonIndependenceFacts(x, y, new HashSet<List<Node>>());
+            IonIndependenceFacts indep = new IonIndependenceFacts(x, y, new HashSet<>());
+            IonIndependenceFacts assoc = new IonIndependenceFacts(x, y, new HashSet<>());
             boolean addIndep = false;
             boolean addAssoc = false;
 
@@ -953,7 +952,7 @@ public class Ion2 {
                             List<PossibleDConnectingPath> decendantPaths = new ArrayList<>();
                             decendantPaths
                                     = PossibleDConnectingPath.findDConnectingPaths
-                                    (possible.getPag(), current, outside, new ArrayList<Node>());
+                                    (possible.getPag(), current, outside, new ArrayList<>());
 
                             if (decendantPaths.isEmpty()) {
                                 gc = new GraphChange();
@@ -1609,7 +1608,7 @@ public class Ion2 {
             return new PowerSetIterator<>(this);
         }
 
-        class PowerSetIterator<InE> implements Iterator<Set<InE>> {
+        static class PowerSetIterator<InE> implements Iterator<Set<InE>> {
             PowerSet<InE> powerSet;
             List<InE> canonicalOrder = new ArrayList<>();
             List<InE> mask = new ArrayList<>();
@@ -1676,7 +1675,7 @@ public class Ion2 {
 
     public static List<List<Node>> treks(Graph graph, Node node1, Node node2) {
         List<List<Node>> paths = new LinkedList<>();
-        Ion2.treks(graph, node1, node2, new LinkedList<Node>(), paths);
+        Ion2.treks(graph, node1, node2, new LinkedList<>(), paths);
         return paths;
     }
 

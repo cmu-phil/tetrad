@@ -419,8 +419,7 @@ class RemovalListener implements ActionListener {
         this.sp.scrollers.remove(this.index);
         this.sp.condVariables.remove(this.index);
         this.sp.redrawScatterPlot();
-        for (int i = 0; i < this.contained.length; i++)
-            this.container.remove(this.contained[i]);
+        for (JComponent jComponent : this.contained) this.container.remove(jComponent);
         this.container.revalidate();
         this.container.repaint();
     }

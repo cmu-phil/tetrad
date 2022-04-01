@@ -90,7 +90,7 @@ class ADTreeHelper implements Serializable {
 
             List<List<Integer>> childArrayIndexes = new ArrayList<>(airity);
             for (int i = 0; i < airity; i++)
-                childArrayIndexes.add(new ArrayList<Integer>());
+                childArrayIndexes.add(new ArrayList<>());
 
             for (int r = 0; r < array.length; r++)
                 childArrayIndexes.get(array[r][attr]).add(r);

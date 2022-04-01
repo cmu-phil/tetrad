@@ -45,9 +45,6 @@ public class ProximalGradient {
     private final boolean edgeConverge; //if this is true we look to stop optimization when the edge predictions stop changing
     private int noEdgeChangeTol = 3; //number of iterations in a row with no edge changes before we break
 
-    private final int printIter = 100;
-    private final double backtrackTol = 1e-10;
-
 
     /**
      * Constructor, set parameters for a proximal gradient run
@@ -150,7 +147,8 @@ public class ProximalGradient {
                     //System.out.println("Back Norm");
                     Qx = Fy + this.alg.mult(XmY, GrY) + (L / 2.0) * normXY;
                     LocalL = L + 2 * Math.max(Fx - Qx, 0) / normXY;
-                    backtrackSwitch = Math.abs(Fy - Fx) >= this.backtrackTol * Math.max(Math.abs(Fx), Math.abs(Fy));
+                    double backtrackTol = 1e-10;
+                    backtrackSwitch = Math.abs(Fy - Fx) >= backtrackTol * Math.max(Math.abs(Fx), Math.abs(Fy));
                 } else {
                     //System.out.println("Close Rule");
 
@@ -228,7 +226,8 @@ public class ProximalGradient {
             }
 
 
-            if (iterCount % this.printIter == 0) {
+            int printIter = 100;
+            if (iterCount % printIter == 0) {
                 System.out.println("Iter: " + iterCount + " |dx|/|x|: " + dx + " normX: " + ProximalGradient.norm2(X) + " nll: " +
                         Fx + " reg: " + Gx + " DiffEdges: " + diffEdges + " L: " + L);
                 //System.out.println("Iter: " + iterCount + " |dx|/|x|: " + dx + " nll: " + negLogLikelihood(params) + " reg: " + regTerm(params));

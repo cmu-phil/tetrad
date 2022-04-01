@@ -39,7 +39,6 @@ public class CovSum implements CovarianceFunction {
 
     CovarianceFunction[] f;
     int[] idx;
-    private final int D;
 
     /**
      * Create a new <code>CovarianceFunction</code> as sum of the
@@ -50,7 +49,6 @@ public class CovSum implements CovarianceFunction {
      * @see CovarianceFunction
      */
     public CovSum(int inputDimensions, CovarianceFunction... f) {
-        this.D = inputDimensions;
         this.f = f;
         this.idx = new int[f.length + 1];
         for (int i = 0; i < f.length; i++) {

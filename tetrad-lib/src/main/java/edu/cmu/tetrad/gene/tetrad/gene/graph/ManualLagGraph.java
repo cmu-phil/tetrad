@@ -29,7 +29,6 @@ import edu.cmu.tetrad.util.PointXy;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -57,8 +56,8 @@ public final class ManualLagGraph implements LagGraph {
         setMaxLagAllowable(params.getMlag());
 
         // Add edges one time step back.
-        for (Iterator it = getFactors().iterator(); it.hasNext(); ) {
-            String factor = (String) it.next();
+        for (Object o : getFactors()) {
+            String factor = (String) o;
             LaggedFactor laggedFactor = new LaggedFactor(factor, 1);
             addEdge(factor, laggedFactor);
         }

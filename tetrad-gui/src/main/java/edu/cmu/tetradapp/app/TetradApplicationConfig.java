@@ -393,9 +393,7 @@ public class TetradApplicationConfig {
                 try {
                     chooser = (ModelChooser) this.chooserClass.newInstance();
                     chooser.setSessionNode(sessionNode);
-                } catch (InstantiationException e) {
-                    throw new IllegalStateException("Model chooser must have empty constructor", e);
-                } catch (IllegalAccessException e) {
+                } catch (InstantiationException | IllegalAccessException e) {
                     throw new IllegalStateException("Model chooser must have empty constructor", e);
                 }
             }

@@ -114,7 +114,7 @@ public abstract class BasicMatrix {
         // Read matrix name
         int nt = strmTok.nextToken();
         if ((strmTok.sval == null) ||
-                (strmTok.sval.toUpperCase().indexOf("MATRIX") < 0)) {
+                (!strmTok.sval.toUpperCase().contains("MATRIX"))) {
             throw new IllegalArgumentException(
                     "First token does not contain 'MATRIX': " + strmTok.sval);
         }
@@ -188,16 +188,16 @@ public abstract class BasicMatrix {
      * matrix
      */
     public String toString() {
-        String s = this.getClass().getName() + " " + this.name + "\n" + this.n +
-                " // <- Total # rows\n";
+        StringBuilder s = new StringBuilder(this.getClass().getName() + " " + this.name + "\n" + this.n +
+                " // <- Total # rows\n");
         for (int r = 0; r < this.n; r++) {
             //s = s + "/* "+r+" */  ";
             for (int c = 0; c < this.n; c++) {
-                s = s + this.getDoubleValue(r, c) + " ";
+                s.append(this.getDoubleValue(r, c)).append(" ");
             }
-            s = s + "\n";
+            s.append("\n");
         }
-        return s;
+        return s.toString();
     }
 
     protected void badIndexXcp(int r, int c) {

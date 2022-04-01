@@ -23,7 +23,6 @@ package edu.cmu.tetrad.gene.tetrad.gene.algorithm.ideker;
 
 import edu.cmu.tetrad.util.ChoiceGenerator;
 
-import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -123,8 +122,8 @@ public class ItkPredictorSearch {
             }
 
             System.out.print("sem" + rows[0] + rows[1] + " = ");
-            for (Iterator it = S[rows[0]][rows[1]].iterator(); it.hasNext(); ) {
-                System.out.print(((Gene) it.next()).getIndex());
+            for (Object o : S[rows[0]][rows[1]]) {
+                System.out.print(((Gene) o).getIndex());
             }
             System.out.println();
 

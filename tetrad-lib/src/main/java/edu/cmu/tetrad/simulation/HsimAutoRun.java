@@ -43,7 +43,7 @@ public class HsimAutoRun {
     public HsimAutoRun(String readfilename, char delim) {
         String workingDirectory = System.getProperty("user.dir");
         System.out.println(workingDirectory);
-        Set<String> eVars = new HashSet<String>();
+        Set<String> eVars = new HashSet<>();
         eVars.add("MULT");
         Path dataFile = Paths.get(readfilename);
 
@@ -60,7 +60,7 @@ public class HsimAutoRun {
     public double[] run(int resimSize) {
         //modify this so that verbose is a private data value, and so that data can be taken from either a dataset or a file.
         //===========read data from file=============
-        Set<String> eVars = new HashSet<String>();
+        Set<String> eVars = new HashSet<>();
         eVars.add("MULT");
 
         double[] output;
@@ -101,7 +101,7 @@ public class HsimAutoRun {
 
             List<Node> queue = new ArrayList<>();
             queue.add(centroid);
-            List<Node> queueAdd = new ArrayList<Node>();
+            List<Node> queueAdd = new ArrayList<>();
             //while queue has size less than the resim size, grow it
             //if (verbose) System.out.println(queue);
             while (queue.size() < resimSize) {
@@ -136,7 +136,7 @@ public class HsimAutoRun {
                 //if (verbose) System.out.println(queue);
             }
 
-            Set<Node> simnodes = new HashSet<Node>(queue);
+            Set<Node> simnodes = new HashSet<>(queue);
             if (this.verbose) {
                 System.out.println("the resimmed nodes are " + simnodes);
             }

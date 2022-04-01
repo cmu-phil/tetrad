@@ -181,8 +181,7 @@ public class FindTwoFactorClusters {
 
     // renjiey
     private Integer[] removeZeroIndex(Integer[] outlier) {
-        List<Integer> list = new ArrayList<>();
-        list.addAll(Arrays.asList(outlier));
+        List<Integer> list = new ArrayList<>(Arrays.asList(outlier));
         for (Integer element : outlier) {
             if (element < 1) {
                 list.remove(element);

@@ -137,9 +137,7 @@ public class SemPmWrapper implements SessionModel {
         try {
             SemPm pm = (SemPm) new MarshalledObject(oldSemPm).get();
             this.semPms = Collections.singletonList(pm);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
     }

@@ -212,8 +212,8 @@ public class BoolSearch {
     public int sumBits(byte[] b) {
         int sum = 0;
 
-        for (int i = 0; i < b.length; i++) {
-            sum += b[i];
+        for (byte value : b) {
+            sum += value;
         }
 
         return sum;

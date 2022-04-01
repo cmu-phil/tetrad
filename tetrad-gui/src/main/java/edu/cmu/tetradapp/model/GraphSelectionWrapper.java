@@ -114,17 +114,6 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
         }
 
         // No variable is selected by default - Updated 11/19/2018 by Zhou
-//        List<Node> nodes = getVariables();
-//
-//        // Default to select the first 50 variables to render graph
-//        List<Node> first50 = new ArrayList<>();
-//
-//        for (int i = 0; i < 50; i++) {
-//            if (i >= nodes.size()) continue;
-//            first50.add(nodes.get(i));
-//        }
-//
-//        setSelectedVariables(first50);
 
         log();
     }
@@ -380,7 +369,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
                 }
             }
 
-            selectedGraph = graphFromEdges(edges, new ArrayList<Node>());
+            selectedGraph = graphFromEdges(edges, new ArrayList<>());
             this.params.set("highlightInEditor", selectedVariables);
         } else if (this.params.getString("graphSelectionType", "Subgraph").equals(Type.Paths.toString())) {
             Graph g = new EdgeListGraph(selectedVariables);
@@ -451,7 +440,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
                 }
             }
 
-            selectedGraph = graphFromEdges(edges, new ArrayList<Node>());
+            selectedGraph = graphFromEdges(edges, new ArrayList<>());
             this.params.set("highlightInEditor", selectedVariables);
         } else if (this.params.getString("graphSelectionType", "Subgraph").equals(Type.Directed_Paths.toString())) {
             Graph g = new EdgeListGraph(selectedVariables);
@@ -526,7 +515,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
                 }
             }
 
-            selectedGraph = graphFromEdges(edges, new ArrayList<Node>());
+            selectedGraph = graphFromEdges(edges, new ArrayList<>());
             this.params.set("highlightInEditor", selectedVariables);
         } else if (this.params.getString("graphSelectionType", "Subgraph").equals(Type.Indegree.toString())) {
             Set<Edge> g = new HashSet<>();
@@ -553,7 +542,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
                 }
             }
 
-            selectedGraph = graphFromEdges(g, new ArrayList<Node>());
+            selectedGraph = graphFromEdges(g, new ArrayList<>());
             this.params.set("highlightInEditor", nodes);
         } else if (this.params.getString("graphSelectionType", "Subgraph").equals(Type.Out_Degree.toString())) {
             Set<Edge> g = new HashSet<>();
@@ -644,7 +633,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
             selectionGraphs.add(new EdgeListGraph());
         }
 
-        setSelectedVariables(new ArrayList<Node>());
+        setSelectedVariables(new ArrayList<>());
         this.params.set("selectionGraphs", selectionGraphs);
 
         List<Node> highlighted = (List<Node>) this.params.get("highlightInEditor", new ArrayList<>());

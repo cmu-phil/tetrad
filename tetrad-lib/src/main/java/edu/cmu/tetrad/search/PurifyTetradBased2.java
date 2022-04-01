@@ -153,7 +153,7 @@ public class PurifyTetradBased2 implements IPurify {
         Map<Node, Set<Tetrad>> impuritiesPerNode = new HashMap<>();
 
         for (Node node : this.nodes) {
-            impuritiesPerNode.put(node, new HashSet<Tetrad>());
+            impuritiesPerNode.put(node, new HashSet<>());
         }
 
         for (Tetrad tetrad : allImpurities) {

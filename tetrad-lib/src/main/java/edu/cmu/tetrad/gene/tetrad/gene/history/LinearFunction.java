@@ -184,8 +184,7 @@ public class LinearFunction implements UpdateFunction {
         IndexedLagGraph connectivity = this.polynomialFunction.getIndexedLagGraph();
         buf.append("\n\nLinear Function:");
         for (int i = 0; i < connectivity.getNumFactors(); i++) {
-            buf.append("\n\tFactor " + connectivity.getFactor(i) + " --> " +
-                    this.polynomialFunction.getPolynomial(i));
+            buf.append("\n\tFactor ").append(connectivity.getFactor(i)).append(" --> ").append(this.polynomialFunction.getPolynomial(i));
         }
         return buf.toString();
     }

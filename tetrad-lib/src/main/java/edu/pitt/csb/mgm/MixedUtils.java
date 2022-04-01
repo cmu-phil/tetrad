@@ -781,10 +781,10 @@ public class MixedUtils {
 
     public static String stringFrom2dArray(int[][] arr) {
         String outStr = "";
-        for (int i = 0; i < arr.length; i++) {
-            for (int j = 0; j < arr[i].length; j++) {
-                outStr += Integer.toString(arr[i][j]);
-                if (j != arr[i].length - 1)
+        for (int[] ints : arr) {
+            for (int j = 0; j < ints.length; j++) {
+                outStr += Integer.toString(ints[j]);
+                if (j != ints.length - 1)
                     outStr += "\t";
             }
             outStr += "\n";

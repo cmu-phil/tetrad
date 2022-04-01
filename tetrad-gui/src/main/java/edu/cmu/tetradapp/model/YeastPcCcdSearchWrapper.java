@@ -115,7 +115,7 @@ public class YeastPcCcdSearchWrapper {
 
             // read in variable name and set up DataSet.
 
-            int ngenes = Integer.valueOf(args[2]);
+            int ngenes = Integer.parseInt(args[2]);
             IKnowledge bk = new Knowledge2();
             bk.addToTiersByVarNames(listOfNames);
 

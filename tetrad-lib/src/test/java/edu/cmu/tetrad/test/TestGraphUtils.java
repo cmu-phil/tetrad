@@ -101,9 +101,7 @@ public final class TestGraphUtils {
                 List<List<Node>> treks = GraphUtils.treks(graph, node1, node2, -1);
 
                 TREKS:
-                for (int k = 0; k < treks.size(); k++) {
-                    List<Node> trek = treks.get(k);
-
+                for (List<Node> trek : treks) {
                     Node m0 = trek.get(0);
                     Node m1 = trek.get(trek.size() - 1);
 
@@ -216,8 +214,8 @@ public final class TestGraphUtils {
         assertTrue(!graph.isAncestorOf(y, a));
         assertTrue(!graph.isAncestorOf(x, b));
 
-        assertTrue(graph.isDConnectedTo(a, y, new ArrayList<Node>()));
-        assertTrue(graph.isDConnectedTo(b, x, new ArrayList<Node>()));
+        assertTrue(graph.isDConnectedTo(a, y, new ArrayList<>()));
+        assertTrue(graph.isDConnectedTo(b, x, new ArrayList<>()));
 
         assertTrue(graph.isDConnectedTo(a, y, Collections.singletonList(x)));
         assertTrue(graph.isDConnectedTo(b, x, Collections.singletonList(y)));
@@ -317,7 +315,7 @@ public final class TestGraphUtils {
 
     public static boolean existsLatentPath(Graph graph, Node b, Node y) {
         if (b == y) return false;
-        return TestGraphUtils.existsLatentPath(graph, b, y, new LinkedList<Node>());
+        return TestGraphUtils.existsLatentPath(graph, b, y, new LinkedList<>());
     }
 
     public static boolean existsLatentPath(Graph graph, Node b, Node y, LinkedList<Node> path) {

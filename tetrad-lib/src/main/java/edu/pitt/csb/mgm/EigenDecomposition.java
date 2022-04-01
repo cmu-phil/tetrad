@@ -271,8 +271,8 @@ public class EigenDecomposition {
      * @since 3.1
      */
     public boolean hasComplexEigenvalues() {
-        for (int i = 0; i < this.imagEigenvalues.length; i++) {
-            if (!Precision.equals(this.imagEigenvalues[i], 0.0, EigenDecomposition.EPSILON)) {
+        for (double imagEigenvalue : this.imagEigenvalues) {
+            if (!Precision.equals(imagEigenvalue, 0.0, EigenDecomposition.EPSILON)) {
                 return true;
             }
         }

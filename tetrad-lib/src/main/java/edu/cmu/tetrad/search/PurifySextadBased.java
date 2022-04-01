@@ -40,7 +40,6 @@ public class PurifySextadBased {
     private final DeltaSextadTest sextadTest;
 
     private final List<Integer> nodes;
-    private Graph mim;
     private double alpha = 0.05;
 
     public PurifySextadBased(DeltaSextadTest sextadTest, double alpha) {
@@ -65,9 +64,8 @@ public class PurifySextadBased {
         }
 
         List<List<Integer>> result = combinedSearch(clustering);
-        List<List<Integer>> convertedResult = new ArrayList<>();
 
-        convertedResult.addAll(result);
+        List<List<Integer>> convertedResult = new ArrayList<>(result);
 
         System.out.println(convertedResult);
 
@@ -75,7 +73,6 @@ public class PurifySextadBased {
     }
 
     public void setTrueGraph(Graph mim) {
-        this.mim = mim;
     }
 
     private List<List<Integer>> combinedSearch(List<List<Integer>> clustering) {
@@ -154,7 +151,7 @@ public class PurifySextadBased {
         Map<Integer, Set<IntSextad>> impuritiesPerNode = new HashMap<>();
 
         for (Integer node : this.nodes) {
-            impuritiesPerNode.put(node, new HashSet<IntSextad>());
+            impuritiesPerNode.put(node, new HashSet<>());
         }
 
         for (IntSextad IntSextad : allImpurities) {

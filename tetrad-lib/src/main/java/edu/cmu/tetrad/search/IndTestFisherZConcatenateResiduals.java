@@ -90,8 +90,8 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
 
         List<DataSet> dataSets2 = new ArrayList<>();
 
-        for (int i = 0; i < dataSets.size(); i++) {
-            DataSet dataSet = new BoxDataSet(new DoubleDataBox(dataSets.get(i).getDoubleData().toArray()), this.variables);
+        for (DataSet set : dataSets) {
+            DataSet dataSet = new BoxDataSet(new DoubleDataBox(set.getDoubleData().toArray()), this.variables);
             dataSets2.add(dataSet);
         }
 

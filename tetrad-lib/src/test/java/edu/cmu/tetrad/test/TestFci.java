@@ -367,7 +367,7 @@ public class TestFci {
         if (pag.isAncestorOf(n, q)) {
             return true;
         } else {
-            List<Node> adj = uncoveredPotentiallyDirectedPathStarts(n, q, pag, new LinkedList<Node>());
+            List<Node> adj = uncoveredPotentiallyDirectedPathStarts(n, q, pag, new LinkedList<>());
 
             if (adj.size() >= 2) {
                 ChoiceGenerator gen = new ChoiceGenerator(adj.size(), 2);
@@ -406,7 +406,7 @@ public class TestFci {
             }
         }
 
-        return uncoveredPotentiallyDirectedPathStarts(n, q, pag, new LinkedList<Node>()).isEmpty();
+        return uncoveredPotentiallyDirectedPathStarts(n, q, pag, new LinkedList<>()).isEmpty();
     }
 
     private Graph getPag(double alpha, double penaltyDiscount, DataSet data) {

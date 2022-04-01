@@ -44,7 +44,7 @@ public class HsimEvalFromData {
         List<PRAOerrors>[] fsimErrsByPars = new ArrayList[fsimRepeat.size()];
         int whichFrepeat = 0;
         for (int frepeat : fsimRepeat) {
-            fsimErrsByPars[whichFrepeat] = new ArrayList<PRAOerrors>();
+            fsimErrsByPars[whichFrepeat] = new ArrayList<>();
             whichFrepeat++;
         }
         List<PRAOerrors>[][] hsimErrsByPars = new ArrayList[1][hsimRepeat.size()];
@@ -53,7 +53,7 @@ public class HsimEvalFromData {
         whichHrepeat = 0;
         for (int hrepeat : hsimRepeat) {
             //System.out.println(whichrsize+" "+whichHrepeat);
-            hsimErrsByPars[0][whichHrepeat] = new ArrayList<PRAOerrors>();
+            hsimErrsByPars[0][whichHrepeat] = new ArrayList<>();
             whichHrepeat++;
         }
 
@@ -66,7 +66,7 @@ public class HsimEvalFromData {
                 Graph graph1 = GraphUtils.loadGraphTxt(new File("graph/graph.1.txt"));
                 Dag odag = new Dag(graph1);
 
-                Set<String> eVars = new HashSet<String>();
+                Set<String> eVars = new HashSet<>();
                 eVars.add("MULT");
                 Path dataFile = Paths.get("data/data.1.txt");
 
@@ -87,7 +87,7 @@ public class HsimEvalFromData {
 
                 //**then step 1: full resim. iterate through the combinations of estimator parameters (just repeat num)
                 for (whichFrepeat = 0; whichFrepeat < fsimRepeat.size(); whichFrepeat++) {
-                    ArrayList<PRAOerrors> errorsList = new ArrayList<PRAOerrors>();
+                    ArrayList<PRAOerrors> errorsList = new ArrayList<>();
                     for (int r = 0; r < fsimRepeat.get(whichFrepeat); r++) {
                         Graph fgsDag = SearchGraphUtils.dagFromCPDAG(oFGSGraph);
                         Dag fgsdag2 = new Dag(fgsDag);

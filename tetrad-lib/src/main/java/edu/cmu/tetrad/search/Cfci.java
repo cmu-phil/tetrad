@@ -118,8 +118,6 @@ public final class Cfci implements GraphSearch {
 
     private boolean verbose;
 
-    private final CorrelationMatrix corr;
-
     //============================CONSTRUCTORS============================//
 
     /**
@@ -133,7 +131,7 @@ public final class Cfci implements GraphSearch {
         this.independenceTest = independenceTest;
         this.variables.addAll(independenceTest.getVariables());
 
-        this.corr = new CorrelationMatrix(independenceTest.getCov());
+        CorrelationMatrix corr = new CorrelationMatrix(independenceTest.getCov());
     }
 
     //========================PUBLIC METHODS==========================//

@@ -726,12 +726,12 @@ public class SessionNode implements Node {
         // Go through the model classes of this node and see which
         // ones are consistent with the array of parent classes just
         // constructed.
-        for (int i = 0; i < this.modelClasses.length; i++) {
+        for (Class modelClass : this.modelClasses) {
 
             // If this model class is consistent, add it to the list.
-            if (isConsistentModelClass(this.modelClasses[i],
+            if (isConsistentModelClass(modelClass,
                     parentModelClasses, exact, null)) {
-                classes.add(this.modelClasses[i]);
+                classes.add(modelClass);
             }
         }
 
@@ -1538,15 +1538,15 @@ public class SessionNode implements Node {
                 Class<?> c1 = constructorTypes[0].getComponentType();
                 Parameters parameters = null;
 
-                for (int i = 0; i < models.size(); i++) {
-                    Class<?> c2 = models.get(i).getClass();
+                for (Object value : models) {
+                    Class<?> c2 = value.getClass();
 
                     if ((c1.isAssignableFrom(c2))) {
-                        _objects.add(models.get(i));
+                        _objects.add(value);
                     }
 
                     if (c2 == Parameters.class) {
-                        parameters = (Parameters) models.get(i);
+                        parameters = (Parameters) value;
                     }
                 }
 
@@ -1584,11 +1584,7 @@ public class SessionNode implements Node {
                 try {
                     this.model = (SessionModel) constructor.newInstance(arguments);
                     this.model.setName(getDisplayName());
-                } catch (InstantiationException e) {
-                    e.printStackTrace();
-                    continue;
-//                    throw e;
-                } catch (IllegalAccessException e) {
+                } catch (InstantiationException | IllegalAccessException e) {
                     e.printStackTrace();
                     continue;
 //                    throw e;
@@ -1643,8 +1639,8 @@ public class SessionNode implements Node {
 
             boolean hasParameters = false;
 
-            for (int j = 0; j < constructorTypes.length; j++) {
-                if (constructorTypes[j] == Parameters.class) {
+            for (Class<?> type : constructorTypes) {
+                if (type == Parameters.class) {
                     hasParameters = true;
                     break;
                 }
@@ -1656,12 +1652,12 @@ public class SessionNode implements Node {
                         return false;
                     }
 
-                    for (int i = 0; i < parentClasses.length; i++) {
+                    for (Class[] parentClass : parentClasses) {
                         boolean found = false;
 
-                        for (int j = 0; j < parentClasses[i].length; j++) {
+                        for (int j = 0; j < parentClass.length; j++) {
                             Class<?> c1 = constructorTypes[0].getComponentType();
-                            Class<?> c2 = parentClasses[i][j];
+                            Class<?> c2 = parentClass[j];
 
                             if (c2 == Parameters.class || c1.isAssignableFrom(c2)) {
                                 found = true;
@@ -1681,15 +1677,15 @@ public class SessionNode implements Node {
             List<List<Class>> summary = new ArrayList<>();
 
             for (int i = 0; i < parentClasses.length; i++) {
-                summary.add(new ArrayList<Class>());
+                summary.add(new ArrayList<>());
             }
 
             for (int i = 0; i < parentClasses.length; i++) {
                 for (int j = 0; j < parentClasses[i].length; j++) {
-                    for (int k = 0; k < constructorTypes.length; k++) {
-                        if (constructorTypes[k].isAssignableFrom(parentClasses[i][j])) {
-                            if (!summary.get(i).contains(constructorTypes[k])) {
-                                summary.get(i).add(constructorTypes[k]);
+                    for (Class<?> constructorType : constructorTypes) {
+                        if (constructorType.isAssignableFrom(parentClasses[i][j])) {
+                            if (!summary.get(i).contains(constructorType)) {
+                                summary.get(i).add(constructorType);
                             }
                         }
                     }

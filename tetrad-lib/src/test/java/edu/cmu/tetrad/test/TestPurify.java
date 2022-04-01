@@ -293,8 +293,8 @@ public class TestPurify {
         List<List<Node>> purifiedClustering = purify.purify(clustering);
         List<String> latentsNames = new ArrayList<>();
 
-        for (int i = 0; i < latents.size(); i++) {
-            latentsNames.add(latents.get(i).getName());
+        for (Node latent : latents) {
+            latentsNames.add(latent.getName());
         }
 
         Mimbuild mimbuild = new Mimbuild();

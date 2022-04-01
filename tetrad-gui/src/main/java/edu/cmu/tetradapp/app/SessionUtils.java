@@ -69,7 +69,7 @@ final class SessionUtils {
         for (int i = 0; i < parentCombinations.length; i++) {
             String[] parentCombination = parentCombinations[i];
 
-            b.append("\n  " + (i + 1) + ". ");
+            b.append("\n  ").append(i + 1).append(". ");
 
             if (parentCombination.length == 0) {
                 b.append("No inputs");
@@ -138,7 +138,7 @@ final class SessionUtils {
         }
 
         if (foundNull) {
-            parentCombinations.add(0, new LinkedList<String>());
+            parentCombinations.add(0, new LinkedList<>());
         }
 
         String[][] _parentCombinations =

@@ -40,7 +40,7 @@ public class HsimRepeatAutoRun {
     public HsimRepeatAutoRun(String readfilename, char delim) {
         String workingDirectory = System.getProperty("user.dir");
         System.out.println(workingDirectory);
-        Set<String> eVars = new HashSet<String>();
+        Set<String> eVars = new HashSet<>();
         eVars.add("MULT");
         Path dataFile = Paths.get(readfilename);
 
@@ -56,7 +56,7 @@ public class HsimRepeatAutoRun {
     //***************PUBLIC METHODS********************//
     public double[] run(int resimSize, int repeat) {
         //parameter: set of positive integers, which are resimSize values.
-        List<Integer> schedule = new ArrayList<Integer>();
+        List<Integer> schedule = new ArrayList<>();
 
         for (int i = 0; i < repeat; i++) {
             schedule.add(resimSize);

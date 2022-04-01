@@ -70,8 +70,8 @@ public class HsimRun {
             //use for loop through that collection, get each node from the names, add to the set
             Set<Node> simnodes = new HashSet<>();
 
-            for (int i = 0; i < resimNodeNames.length; i++) {
-                Node thisNode = estDAG.getNode(resimNodeNames[i]);
+            for (String resimNodeName : resimNodeNames) {
+                Node thisNode = estDAG.getNode(resimNodeName);
                 simnodes.add(thisNode);
             }
 

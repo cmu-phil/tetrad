@@ -201,8 +201,8 @@ public class SessionSupport {
             event = new SessionEvent(this.source, event);
         }
 
-        for (int i = 0; i < this.sessionListeners.size(); i++) {
-            SessionListener l = (SessionListener) this.sessionListeners.get(i);
+        for (Object sessionListener : this.sessionListeners) {
+            SessionListener l = (SessionListener) sessionListener;
 
             switch (event.getType()) {
                 case SessionEvent.NODE_ADDED:

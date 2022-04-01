@@ -304,20 +304,6 @@ public class CovNNone implements CovarianceFunction {
 //            System.out.println("")
 //
 //        long start = System.currentTimeMillis()
-//
-//            Matrix K = cf.compute(logtheta,X);
-//        long stop = System.currentTimeMillis();
-//        System.out.println(""+(stop-start));
-
-//            K.print(K.getColumnDimension(), 15);
-
-//        long start = System.currentTimeMillis();
-//        Matrix[] res = cf.compute(logtheta,X,z);
-//        long stop = System.currentTimeMillis();
-//        System.out.println(""+(stop-start));
-
-//            res[0].print(res[0].getColumnDimension(), 8);
-//            res[1].print(res[1].getColumnDimension(), 8);
 
         Matrix d = cf.computeDerivatives(logtheta, X, 1);
 

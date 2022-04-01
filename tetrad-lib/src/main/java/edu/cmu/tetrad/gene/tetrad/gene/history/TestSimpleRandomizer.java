@@ -26,7 +26,6 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import java.util.Iterator;
 import java.util.SortedSet;
 
 /**
@@ -82,8 +81,8 @@ public class TestSimpleRandomizer extends TestCase {
         // Make sure all nonhousekeeping genes have indegree edges.
         SortedSet factors = this.lagGraph.getFactors();
 
-        for (Iterator it = factors.iterator(); it.hasNext(); ) {
-            String factor = (String) it.next();
+        for (Object o : factors) {
+            String factor = (String) o;
             SortedSet parents = this.lagGraph.getParents(factor);
 
             // Make sure it's not a housekeeping gene.
@@ -121,8 +120,8 @@ public class TestSimpleRandomizer extends TestCase {
         int numNonHousekeeping = 0;
         SortedSet factors = this.lagGraph.getFactors();
 
-        for (Iterator it = factors.iterator(); it.hasNext(); ) {
-            String factor = (String) it.next();
+        for (Object o : factors) {
+            String factor = (String) o;
             SortedSet parents = this.lagGraph.getParents(factor);
 
             if (parents.size() > 1) {
@@ -171,8 +170,8 @@ public class TestSimpleRandomizer extends TestCase {
         int max = 0;
         SortedSet factors = this.lagGraph.getFactors();
 
-        for (Iterator it = factors.iterator(); it.hasNext(); ) {
-            String factor = (String) it.next();
+        for (Object o : factors) {
+            String factor = (String) o;
             SortedSet parents = this.lagGraph.getParents(factor);
 
             if (parents.size() > max) {

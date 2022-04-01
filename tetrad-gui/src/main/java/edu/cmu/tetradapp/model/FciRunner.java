@@ -147,8 +147,7 @@ public class FciRunner extends AbstractAlgorithmRunner
         Parameters params = getParams();
         IndTestType testType;
 
-        Parameters _params = params;
-        testType = (IndTestType) _params.get("indTestType", IndTestType.FISHER_Z);
+        testType = (IndTestType) params.get("indTestType", IndTestType.FISHER_Z);
 
         return new IndTestChooser().getTest(dataModel, params, testType);
     }

@@ -73,7 +73,7 @@ public final class DiscreteDiscretizationSpec implements TetradSerializable, Dis
      */
     public static DiscreteDiscretizationSpec serializableInstance() {
         return new DiscreteDiscretizationSpec(new int[0],
-                new ArrayList<String>());
+                new ArrayList<>());
     }
 
     //============================PUBLIC METHODS========================//

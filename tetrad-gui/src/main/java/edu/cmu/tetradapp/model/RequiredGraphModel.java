@@ -45,12 +45,6 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
      */
     private IKnowledge knowledge;
 
-    /**
-     * @serial @deprecated
-     */
-//    private List<Knowledge> knowledgeList;
-    private List<Node> variables = new ArrayList<>();
-    private List<String> variableNames = new ArrayList<>();
     private Graph resultGraph = new EdgeListGraph();
 
     public RequiredGraphModel(BayesPmWrapper wrapper, Parameters params) {
@@ -138,8 +132,12 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
         SortedSet<Node> variableNodes = new TreeSet<>(input.getVariables());
         SortedSet<String> variableNames = new TreeSet<>(input.getVariableNames());
 
-        this.variables = new ArrayList<>(variableNodes);
-        this.variableNames = new ArrayList<>(variableNames);
+        /**
+         * @serial @deprecated
+         */
+        //    private List<Knowledge> knowledgeList;
+        List<Node> variables = new ArrayList<>(variableNodes);
+        List<String> variableNames1 = new ArrayList<>(variableNames);
 
         this.resultGraph = input.getResultGraph();
 

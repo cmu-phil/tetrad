@@ -128,9 +128,7 @@ public class TestMimbuild {
 
         try {
             g2 = (Graph) new MarshalledObject(full).get();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
 

@@ -133,8 +133,8 @@ public class PurifyScoreBased implements IPurify {
         for (int i = 0; i < partition.size(); i++) {
             int[] cluster = partition.get(i);
             System.out.print(i + ": ");
-            for (int j = 0; j < cluster.length; j++) {
-                System.out.print(cluster[j] + " ");
+            for (int k : cluster) {
+                System.out.print(k + " ");
             }
 
             System.out.println();
@@ -147,8 +147,7 @@ public class PurifyScoreBased implements IPurify {
         List<Node> nodes = this.tetradTest.getVariables();
         List<int[]> _partition = new ArrayList<>();
 
-        for (int i = 0; i < partition.size(); i++) {
-            List<Node> cluster = partition.get(i);
+        for (List<Node> cluster : partition) {
             int[] _cluster = new int[cluster.size()];
 
             for (int j = 0; j < cluster.size(); j++) {
@@ -169,12 +168,11 @@ public class PurifyScoreBased implements IPurify {
         List<Node> nodes = this.tetradTest.getVariables();
         List<List<Node>> _partition = new ArrayList<>();
 
-        for (int i = 0; i < partition.size(); i++) {
-            int[] cluster = partition.get(i);
+        for (int[] cluster : partition) {
             List<Node> _cluster = new ArrayList<>();
 
-            for (int j = 0; j < cluster.length; j++) {
-                _cluster.add(nodes.get(cluster[j]));
+            for (int k : cluster) {
+                _cluster.add(nodes.get(k));
             }
 
             _partition.add(_cluster);
@@ -191,9 +189,7 @@ public class PurifyScoreBased implements IPurify {
         }
         List inputIndicators = new ArrayList();
         List inputLatents = new ArrayList();
-        Iterator it = input.getNodes().iterator();
-        while (it.hasNext()) {
-            Node next = (Node) it.next();
+        for (Node next : input.getNodes()) {
             if (next.getNodeType() == NodeType.MEASURED) {
                 inputIndicators.add(next);
             } else if (next.getNodeType() == NodeType.LATENT) {
@@ -205,12 +201,8 @@ public class PurifyScoreBased implements IPurify {
         allNodes.addAll(inputLatents);
         Graph output = new EdgeListGraph(allNodes);
 
-        Iterator nit1 = input.getNodes().iterator();
-        while (nit1.hasNext()) {
-            Node node1 = (Node) nit1.next();
-            Iterator nit2 = input.getNodes().iterator();
-            while (nit2.hasNext()) {
-                Node node2 = (Node) nit2.next();
+        for (Node node1 : input.getNodes()) {
+            for (Node node2 : input.getNodes()) {
                 Edge edge = input.getEdge(node1, node2);
                 if (edge != null) {
                     if (node1.getNodeType() == NodeType.ERROR &&
@@ -292,8 +284,8 @@ public class PurifyScoreBased implements IPurify {
                     bestGraph.getNode(this.measuredNodes.get(i).toString()));
             if (parents.size() > 1) {
                 boolean latent_found = false;
-                for (Iterator it = parents.iterator(); it.hasNext(); ) {
-                    Node parent = (Node) it.next();
+                for (Object o : parents) {
+                    Node parent = (Node) o;
                     if (parent.getNodeType() == NodeType.LATENT) {
                         if (latent_found) {
                             impurities[i][i] = true;
@@ -333,16 +325,15 @@ public class PurifyScoreBased implements IPurify {
             Node newLatent = new GraphNode("_L" + p);
             newLatent.setNodeType(NodeType.LATENT);
             this.basicGraph.addNode(newLatent);
-            Iterator it = this.latentNodes.iterator();
-            while (it.hasNext()) {
-                Node previousLatent = (Node) it.next();
+            for (Object latentNode : this.latentNodes) {
+                Node previousLatent = (Node) latentNode;
                 this.basicGraph.addDirectedEdge(previousLatent, newLatent);
             }
             this.latentNodes.add(newLatent);
             this.latentNames.put(newLatent.toString(), this.numLatent);
             this.numLatent++;
-            for (int i = 0; i < next.length; i++) {
-                Node newNode = new GraphNode(this.tetradTest.getVarNames()[next[i]]);
+            for (int j : next) {
+                Node newNode = new GraphNode(this.tetradTest.getVarNames()[j]);
                 this.basicGraph.addNode(newNode);
                 this.basicGraph.addDirectedEdge(newLatent, newNode);
                 this.observableNames.put(newNode.toString(), this.numObserved);
@@ -448,9 +439,8 @@ public class PurifyScoreBased implements IPurify {
     }
 
     private void printClustering(List clustering) {
-        Iterator it = clustering.iterator();
-        while (it.hasNext()) {
-            int[] c = (int[]) it.next();
+        for (Object o : clustering) {
+            int[] c = (int[]) o;
             printCluster(c);
         }
     }
@@ -473,8 +463,8 @@ public class PurifyScoreBased implements IPurify {
             sorted[i] = min;
             sorted[min_idx] = temp;
         }
-        for (int i = 0; i < sorted.length; i++) {
-            printMessage(sorted[i] + " ");
+        for (String s : sorted) {
+            printMessage(s + " ");
         }
         printlnMessage();
     }
@@ -551,9 +541,7 @@ public class PurifyScoreBased implements IPurify {
                 this.parentsLat[i] =
                         new int[semMag.getParents(node).size() - 1];
                 int count = 0;
-                for (Iterator it =
-                     semMag.getParents(node).iterator(); it.hasNext(); ) {
-                    Node parent = (Node) it.next();
+                for (Node parent : semMag.getParents(node)) {
                     if (parent.getNodeType() == NodeType.LATENT) {
                         this.parentsLat[i][count++] =
                                 ((Integer) this.latentNames.get(
@@ -574,8 +562,7 @@ public class PurifyScoreBased implements IPurify {
                 correlatedErrors[i][j] = false;
             }
         }
-        for (Iterator it = semMag.getEdges().iterator(); it.hasNext(); ) {
-            Edge nextEdge = (Edge) it.next();
+        for (Edge nextEdge : semMag.getEdges()) {
             if (nextEdge.getEndpoint1() == Endpoint.ARROW &&
                     nextEdge.getEndpoint2() == Endpoint.ARROW) {
                 //By construction, getNode1() and getNode2() are error nodes. They have only one child each.
@@ -598,9 +585,7 @@ public class PurifyScoreBased implements IPurify {
             this.parents[i] = new int[semMag.getParents(node).size() - 1];
             this.parentsL[i] = new boolean[semMag.getParents(node).size() - 1];
             int count = 0;
-            for (Iterator it =
-                 semMag.getParents(node).iterator(); it.hasNext(); ) {
-                Node parent = (Node) it.next();
+            for (Node parent : semMag.getParents(node)) {
                 if (parent.getNodeType() == NodeType.LATENT) {
                     this.parents[i][count] =
                             ((Integer) this.latentNames.get(parent.getName()));
@@ -816,8 +801,7 @@ public class PurifyScoreBased implements IPurify {
                 this.covErrors[i][j] = 0.;
             }
         }
-        for (Iterator it = semIm.getFreeParameters().iterator(); it.hasNext(); ) {
-            Parameter nextP = (Parameter) it.next();
+        for (Parameter nextP : semIm.getFreeParameters()) {
             if (nextP.getType() == ParamType.COEF) {
                 Node node1 = nextP.getNodeA();
                 Node node2 = nextP.getNodeB();
@@ -1367,10 +1351,7 @@ public class PurifyScoreBased implements IPurify {
                 if (semIm.getSemPm().getGraph().getParents(node).size() == 0) {
                     semIm.setParamValue(node, node, this.varErrorLatent[i]);
                 } else {
-                    for (Iterator it =
-                         semIm.getSemPm().getGraph().getParents(node)
-                                 .iterator(); it.hasNext(); ) {
-                        Node nextParent = (Node) it.next();
+                    for (Node nextParent : semIm.getSemPm().getGraph().getParents(node)) {
                         if (nextParent.getNodeType() == NodeType.ERROR) {
                             semIm.setParamValue(nextParent, nextParent,
                                     this.varErrorLatent[i]);
@@ -1441,19 +1422,18 @@ public class PurifyScoreBased implements IPurify {
         for (Object latentClique : latentCliques) {
             int[] nextLatentList = (int[]) latentClique;
             List nextPartition = new ArrayList();
-            for (int p = 0; p < nextLatentList.length; p++) {
-                nextPartition.add(partition.get(nextLatentList[p]));
+            for (int j : nextLatentList) {
+                nextPartition.add(partition.get(j));
             }
             List solution = findInducedPureGraph(nextPartition, impurities);
             if (solution != null) {
 
                 System.out.println("--Solution");
-                Iterator it = solution.iterator();
-                while (it.hasNext()) {
-                    int[] c = (int[]) it.next();
-                    for (int v = 0; v < c.length; v++) {
+                for (Object o : solution) {
+                    int[] c = (int[]) o;
+                    for (int i : c) {
                         System.out.print(
-                                this.measuredNodes.get(c[v]).toString() + " ");
+                                this.measuredNodes.get(i).toString() + " ");
                     }
                     System.out.println();
                 }
@@ -1469,9 +1449,9 @@ public class PurifyScoreBased implements IPurify {
                             new GraphNode(ClusterUtils.LATENT_PREFIX + (p + 1));
                     latentsArray[p].setNodeType(NodeType.LATENT);
                     graph2.addNode(latentsArray[p]);
-                    for (int q = 0; q < cluster.length; q++) {
+                    for (int i : cluster) {
                         Node newIndicator = new GraphNode(
-                                this.measuredNodes.get(cluster[q]).toString());
+                                this.measuredNodes.get(i).toString());
                         graph2.addNode(newIndicator);
                         graph2.addDirectedEdge(latentsArray[p], newIndicator);
                     }
@@ -1498,8 +1478,8 @@ public class PurifyScoreBased implements IPurify {
         for (int p = 0; p < partition.size(); p++) {
             int[] next = (int[]) partition.get(p);
             partitionCount[p] = 0;
-            for (int i = 0; i < next.length; i++) {
-                elements[countElements][0] = next[i]; // global ID
+            for (int j : next) {
+                elements[countElements][0] = j; // global ID
                 elements[countElements][1] = p;       // set partition ID
                 countElements++;
                 partitionCount[p]++;
@@ -1517,17 +1497,16 @@ public class PurifyScoreBased implements IPurify {
 
         //Iteratively eliminate impurities till some solution (or no solution) is found
         boolean[] eliminated = new boolean[this.numVars];
-        for (int i = 0; i < elements.length; i++) {
-            eliminated[elements[i][0]] = impurities[elements[i][0]][elements[i][0]];
+        for (int[] element : elements) {
+            eliminated[element[0]] = impurities[element[0]][element[0]];
         }
         return buildSolution2(elements, eliminated, partition);
     }
 
     private int sizeCluster(List cluster) {
         int total = 0;
-        Iterator it = cluster.iterator();
-        while (it.hasNext()) {
-            int[] next = (int[]) it.next();
+        for (Object o : cluster) {
+            int[] next = (int[]) o;
             total += next.length;
         }
         return total;
@@ -1536,16 +1515,15 @@ public class PurifyScoreBased implements IPurify {
     private List buildSolution2(int[][] elements, boolean[] eliminated,
                                 List partition) {
         List solution = new ArrayList();
-        Iterator it = partition.iterator();
-        while (it.hasNext()) {
-            int[] next = (int[]) it.next();
+        for (Object o : partition) {
+            int[] next = (int[]) o;
             int[] draftArea = new int[next.length];
             int draftCount = 0;
-            for (int i = 0; i < next.length; i++) {
-                for (int j = 0; j < elements.length; j++) {
-                    if (elements[j][0] == next[i] &&
-                            !eliminated[elements[j][0]]) {
-                        draftArea[draftCount++] = next[i];
+            for (int j : next) {
+                for (int[] element : elements) {
+                    if (element[0] == j &&
+                            !eliminated[element[0]]) {
+                        draftArea[draftCount++] = j;
                     }
                 }
             }
@@ -1664,8 +1642,8 @@ public class PurifyScoreBased implements IPurify {
         if (this.forbiddenList == null) {
             return false;
         }
-        for (Iterator it = this.forbiddenList.iterator(); it.hasNext(); ) {
-            Set nextPair = (Set) it.next();
+        for (Object o : this.forbiddenList) {
+            Set nextPair = (Set) o;
             if (nextPair.contains(name1) && nextPair.contains(name2)) {
                 return true;
             }
@@ -1828,8 +1806,8 @@ public class PurifyScoreBased implements IPurify {
 
     private int numNotEliminated(int[] cluster, boolean[] eliminated) {
         int n1 = 0;
-        for (int i = 0; i < cluster.length; i++) {
-            if (!eliminated[cluster[i]]) {
+        for (int j : cluster) {
+            if (!eliminated[j]) {
                 n1++;
             }
         }

@@ -59,8 +59,6 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
     private List<Node> fvcpcNodes;
 
     private Set<Edge> sfVcpcAdjacent;
-    private Set<Edge> sfVcpcApparent;
-    private Set<Edge> sfVcpcDefinite;
     private List<Node> sfVcpcNodes;
 
     private Set<Edge> sVcpcAdjacent;
@@ -249,8 +247,8 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
 
     private void setSfvcpcFields(SampleVcpcFastRunner sfvcpc) {
         this.sfVcpcAdjacent = sfvcpc.getAdj();
-        this.sfVcpcApparent = sfvcpc.getAppNon();
-        this.sfVcpcDefinite = sfvcpc.getDefNon();
+        Set<Edge> sfVcpcApparent = sfvcpc.getAppNon();
+        Set<Edge> sfVcpcDefinite = sfvcpc.getDefNon();
         this.sfVcpcNodes = sfvcpc.getGraph().getNodes();
     }
 

@@ -66,7 +66,6 @@ public final class TimeLagGraphEditor extends JPanel
 
     private TimeLagGraphWorkbench workbench;
     private final LayoutEditable layoutEditable;
-    private CopyLayoutAction copyLayoutAction;
 
     private final JScrollPane graphEditorScroll = new JScrollPane();
 
@@ -74,7 +73,6 @@ public final class TimeLagGraphEditor extends JPanel
 
     //===========================CONSTRUCTOR========================//
     public TimeLagGraphEditor(TimeLagGraphWrapper timeLagGraphWrapper, CopyLayoutAction copyLayoutAction) {
-        this.copyLayoutAction = copyLayoutAction;
         setLayout(new BorderLayout());
         this.layoutEditable = this;
         this.edgeTypeTable = new EdgeTypeTable();

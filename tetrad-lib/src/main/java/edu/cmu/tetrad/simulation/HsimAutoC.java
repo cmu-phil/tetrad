@@ -43,7 +43,7 @@ public class HsimAutoC {
     public HsimAutoC(String readfilename, char delim) {
         String workingDirectory = System.getProperty("user.dir");
         System.out.println(workingDirectory);
-        Set<String> eVars = new HashSet<String>();
+        Set<String> eVars = new HashSet<>();
         eVars.add("MULT");
         Path dataFile = Paths.get(readfilename);
 
@@ -97,7 +97,7 @@ public class HsimAutoC {
             queue.add(randomnode);
         }
 
-        Set<Node> simnodes = new HashSet<Node>(queue);
+        Set<Node> simnodes = new HashSet<>(queue);
         if (this.verbose) {
             System.out.println("the resimmed nodes are " + simnodes);
         }

@@ -259,7 +259,7 @@ public final class TestGraph {
         List<Node> children = graph.getChildren(x1);
         List<Node> parents = graph.getParents(x4);
 
-        assertTrue(graph.isDConnectedTo(x1, x3, new LinkedList<Node>()));
+        assertTrue(graph.isDConnectedTo(x1, x3, new LinkedList<>()));
 
 
         graph.removeNode(x2);

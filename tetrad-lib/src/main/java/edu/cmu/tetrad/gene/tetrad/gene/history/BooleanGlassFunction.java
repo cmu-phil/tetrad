@@ -105,22 +105,6 @@ public class BooleanGlassFunction implements UpdateFunction {
     private double basalExpression;
 
     /**
-     * The real number that is returned if the value from the Boolean lookup
-     * table is "true". Must be > basalExpression.
-     *
-     * @serial
-     */
-    private final double trueValue = 1.0;
-
-    /**
-     * The real number that is returned if the value from the Boolean lookup
-     * table is "false". Must be < basalExpression.
-     *
-     * @serial
-     */
-    private final double falseValue = -1.0;
-
-    /**
      * The rate at which expression levels for a gene tend to return to basal
      * level.
      *
@@ -316,7 +300,21 @@ public class BooleanGlassFunction implements UpdateFunction {
 
             // We return 1.0 and -1.0 because we use a basalExpression of
             // 0.0. (If the basalExpression were 1/2, we would use 1 and 0.)
-            return functionValue ? this.trueValue : this.falseValue;
+            /**
+             * The real number that is returned if the value from the Boolean lookup
+             * table is "true". Must be > basalExpression.
+             *
+             * @serial
+             */
+            double trueValue = 1.0;
+            /**
+             * The real number that is returned if the value from the Boolean lookup
+             * table is "false". Must be < basalExpression.
+             *
+             * @serial
+             */
+            double falseValue = -1.0;
+            return functionValue ? trueValue : falseValue;
         }
     }
 

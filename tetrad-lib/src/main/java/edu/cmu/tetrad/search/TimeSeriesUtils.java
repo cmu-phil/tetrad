@@ -227,12 +227,12 @@ public class TimeSeriesUtils {
         int min = Integer.MAX_VALUE;
         int max = Integer.MIN_VALUE;
 
-        for (int i1 = 0; i1 < shifts.length; i1++) {
-            if (shifts[i1] < min) {
-                min = shifts[i1];
+        for (int shift : shifts) {
+            if (shift < min) {
+                min = shift;
             }
-            if (shifts[i1] > max) {
-                max = shifts[i1];
+            if (shift > max) {
+                max = shift;
             }
         }
 
@@ -317,8 +317,8 @@ public class TimeSeriesUtils {
 
             double[] coef = result.getCoef();
 
-            for (int k = 0; k < coef.length; k++) {
-                sum += coef[k] * coef[k];
+            for (double v : coef) {
+                sum += v * v;
                 n++;
             }
 

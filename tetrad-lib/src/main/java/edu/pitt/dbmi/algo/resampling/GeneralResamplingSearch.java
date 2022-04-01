@@ -212,8 +212,7 @@ public class GeneralResamplingSearch {
                 if (this.data != null) {
                     task = new GeneralResamplingSearchRunnable(this.data, this.algorithm, this.parameters, this, this.verbose);
                 } else {
-                    List<DataModel> dataModels = new ArrayList<>();
-                    dataModels.addAll(this.dataSets);
+                    List<DataModel> dataModels = new ArrayList<>(this.dataSets);
                     task = new GeneralResamplingSearchRunnable(dataModels, this.multiDataSetAlgorithm, this.parameters, this,
                             this.verbose);
                 }
@@ -279,8 +278,7 @@ public class GeneralResamplingSearch {
                 if (this.data != null) {
                     task = new GeneralResamplingSearchRunnable(this.data, this.algorithm, this.parameters, this, this.verbose);
                 } else {
-                    List<DataModel> dataModels = new ArrayList<>();
-                    dataModels.addAll(this.dataSets);
+                    List<DataModel> dataModels = new ArrayList<>(this.dataSets);
                     task = new GeneralResamplingSearchRunnable(dataModels, this.multiDataSetAlgorithm, this.parameters, this,
                             this.verbose);
                 }
@@ -355,8 +353,7 @@ public class GeneralResamplingSearch {
                 if (this.data != null) {
                     task = new GeneralResamplingSearchRunnable(this.data, this.algorithm, this.parameters, this, this.verbose);
                 } else {
-                    List<DataModel> dataModels = new ArrayList<>();
-                    dataModels.addAll(this.dataSets);
+                    List<DataModel> dataModels = new ArrayList<>(this.dataSets);
                     task = new GeneralResamplingSearchRunnable(dataModels, this.multiDataSetAlgorithm, this.parameters, this,
                             this.verbose);
                 }

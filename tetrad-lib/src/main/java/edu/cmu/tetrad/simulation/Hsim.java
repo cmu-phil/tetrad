@@ -50,8 +50,8 @@ public class Hsim {
         // Find Markov Blankets for resimulated variables**/
         // this needs to be made general, rather than only for two specific names nodes**/
         if (this.verbose) System.out.println("Finding a Markov blanket for resimulated nodes");
-        Set<Node> mbAll = new HashSet<Node>(); //initialize an empty set of nodes;
-        Set<Node> mbAdd = new HashSet<Node>(); //init set for adding
+        Set<Node> mbAll = new HashSet<>(); //initialize an empty set of nodes;
+        Set<Node> mbAdd = new HashSet<>(); //init set for adding
         for (Node node : this.simnodes) {
             mbAdd = Hsim.mb(this.mydag, node); //find mb for that node
             mbAll.addAll(mbAdd); //use .addAll to add this mb to the set
@@ -65,7 +65,7 @@ public class Hsim {
         if (this.verbose) System.out.println("Finding a subgraph over the Markov Blanket and Resimulated Nodes");
 
         //need a List as input for subgraph method, but mbAll is a Set
-        List<Node> mbListAll = new ArrayList<Node>(mbAll);
+        List<Node> mbListAll = new ArrayList<>(mbAll);
         Graph subgraph = this.mydag.subgraph(mbListAll);
 
         // Learn an instantiated model over the subgraph**/

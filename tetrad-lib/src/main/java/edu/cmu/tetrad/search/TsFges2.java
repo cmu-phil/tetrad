@@ -1069,7 +1069,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
 
                             adj = new ArrayList<>(g);
                         } else if (TsFges2.this.mode == Mode.allowUnfaithfulness) {
-                            HashSet<Node> D = new HashSet<>(GraphUtils.getDconnectedVars(x, new ArrayList<Node>(), TsFges2.this.graph));
+                            HashSet<Node> D = new HashSet<>(GraphUtils.getDconnectedVars(x, new ArrayList<>(), TsFges2.this.graph));
                             D.remove(x);
                             adj = new ArrayList<>(D);
                         } else {
@@ -1130,7 +1130,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
         int _max = Math.min(TNeighbors.size(), _maxIndegree - this.graph.getIndegree(b));
 
         Set<Set<Node>> previousCliques = new HashSet<>();
-        previousCliques.add(new HashSet<Node>());
+        previousCliques.add(new HashSet<>());
         Set<Set<Node>> newCliques = new HashSet<>();
 
         FOR:

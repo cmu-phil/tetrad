@@ -210,8 +210,8 @@ public class RevealEvaluator {
         double ln2 = Math.log(2.0);
 
         int n0 = 0;
-        for (int i = 0; i < n; i++) {
-            if (x[i] == 0) {
+        for (int j : x) {
+            if (j == 0) {
                 n0++;
             }
         }
@@ -345,9 +345,9 @@ public class RevealEvaluator {
         for (int i = 0; i < n; i++) {
             power = 1;
             config = x[i] * power;
-            for (int j = 0; j < m; j++) {
+            for (int[] ints : y) {
                 power *= 2;
-                config += y[j][i] * power;
+                config += ints[i] * power;
             }
             counts[config]++;
             ntot++;

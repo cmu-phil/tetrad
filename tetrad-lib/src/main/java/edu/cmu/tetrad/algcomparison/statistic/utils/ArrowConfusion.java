@@ -19,8 +19,6 @@ public class ArrowConfusion {
     // For arrowhead FP's, don't count an error unless the variables are adj in the true graph.
     private final boolean truthAdj;
 
-    private Graph truth;
-    private Graph est;
     private int arrowsTp;
     private int arrowsTpc;
     private int arrowsFp;
@@ -38,8 +36,8 @@ public class ArrowConfusion {
     }
 
     public ArrowConfusion(Graph truth, Graph est, boolean truthAdj) {
-        this.truth = truth;
-        this.est = est;
+        Graph truth1 = truth;
+        Graph est1 = est;
         this.arrowsTp = 0;
         this.arrowsTpc = 0;
         this.arrowsFp = 0;
@@ -52,22 +50,22 @@ public class ArrowConfusion {
         this.truthAdj = truthAdj;
 
 
-        this.est = GraphUtils.replaceNodes(est, truth.getNodes());
-        this.truth = GraphUtils.replaceNodes(truth, est.getNodes());
+        est1 = GraphUtils.replaceNodes(est, truth.getNodes());
+        truth1 = GraphUtils.replaceNodes(truth, est.getNodes());
 
 
         // Get edges from the true Graph to compute TruePositives, TrueNegatives and FalseNeagtives
         //    System.out.println(this.truth.getEdges());
 
-        for (Edge edge : this.truth.getEdges()) {
+        for (Edge edge : truth1.getEdges()) {
 
-            List<Edge> edges1 = this.est.getEdges(edge.getNode1(), edge.getNode2());
+            List<Edge> edges1 = est1.getEdges(edge.getNode1(), edge.getNode2());
             Edge edge1;
 
             if (edges1.size() == 1) {
                 edge1 = edges1.get(0);
             } else {
-                edge1 = this.est.getDirectedEdge(edge.getNode1(), edge.getNode2());
+                edge1 = est1.getDirectedEdge(edge.getNode1(), edge.getNode2());
             }
 
             //      System.out.println(edge1 + "(est)");
@@ -80,14 +78,14 @@ public class ArrowConfusion {
                 e2Est = edge1.getProximalEndpoint(edge.getNode2());
             }
 
-            List<Edge> edges2 = this.truth.getEdges(edge.getNode1(), edge.getNode2());
+            List<Edge> edges2 = truth1.getEdges(edge.getNode1(), edge.getNode2());
             Edge edge2;
 
             if (edges2.size() == 1) {
                 edge2 = edges2.get(0);
 //                if (Edges.isUndirectedEdge(edge2)) continue;
             } else {
-                edge2 = this.truth.getDirectedEdge(edge.getNode1(), edge.getNode2());
+                edge2 = truth1.getDirectedEdge(edge.getNode1(), edge.getNode2());
             }
 
             //       System.out.println(edge2 + "(truth)");
@@ -153,15 +151,15 @@ public class ArrowConfusion {
 // Get edges from the estimated graph to compute only FalsePositives
         // System.out.println(this.est.getEdges());
 
-        for (Edge edge : this.est.getEdges()) {
+        for (Edge edge : est1.getEdges()) {
 
-            List<Edge> edges1 = this.est.getEdges(edge.getNode1(), edge.getNode2());
+            List<Edge> edges1 = est1.getEdges(edge.getNode1(), edge.getNode2());
             Edge edge1;
 
             if (edges1.size() == 1) {
                 edge1 = edges1.get(0);
             } else {
-                edge1 = this.est.getDirectedEdge(edge.getNode1(), edge.getNode2());
+                edge1 = est1.getDirectedEdge(edge.getNode1(), edge.getNode2());
             }
             //      System.out.println(edge1 + "(est)");
 
@@ -174,14 +172,14 @@ public class ArrowConfusion {
             }
 
 
-            List<Edge> edges2 = this.truth.getEdges(edge.getNode1(), edge.getNode2());
+            List<Edge> edges2 = truth1.getEdges(edge.getNode1(), edge.getNode2());
             Edge edge2;
 
             if (edges2.size() == 1) {
                 edge2 = edges2.get(0);
 //                if (Edges.isUndirectedEdge(edge2)) continue;
             } else {
-                edge2 = this.truth.getDirectedEdge(edge.getNode1(), edge.getNode2());
+                edge2 = truth1.getDirectedEdge(edge.getNode1(), edge.getNode2());
             }
 
             //          System.out.println(edge2 + "(truth)");
@@ -227,11 +225,11 @@ public class ArrowConfusion {
 
         // test for 2-cycle
 
-        for (Edge edge : this.truth.getEdges()) {
+        for (Edge edge : truth1.getEdges()) {
 
 
-            List<Edge> TwoCycle1 = this.truth.getEdges(edge.getNode1(), edge.getNode2());
-            List<Edge> TwoCycle2 = this.est.getEdges(edge.getNode1(), edge.getNode2());
+            List<Edge> TwoCycle1 = truth1.getEdges(edge.getNode1(), edge.getNode2());
+            List<Edge> TwoCycle2 = est1.getEdges(edge.getNode1(), edge.getNode2());
 
             if (TwoCycle1.size() == 2 && TwoCycle2.size() == 2) {
                 //              System.out.println("2-cycle correctly inferred " + TwoCycle1);
@@ -244,10 +242,10 @@ public class ArrowConfusion {
             }
         }
 
-        for (Edge edge : this.est.getEdges()) {
+        for (Edge edge : est1.getEdges()) {
 
-            List<Edge> TwoCycle1 = this.truth.getEdges(edge.getNode1(), edge.getNode2());
-            List<Edge> TwoCycle2 = this.est.getEdges(edge.getNode1(), edge.getNode2());
+            List<Edge> TwoCycle1 = truth1.getEdges(edge.getNode1(), edge.getNode2());
+            List<Edge> TwoCycle2 = est1.getEdges(edge.getNode1(), edge.getNode2());
 
             if (TwoCycle1.size() != 2 && TwoCycle2.size() == 2) {
                 //              System.out.println("2-cycle falsely inferred" + TwoCycle2);

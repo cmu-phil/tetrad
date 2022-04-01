@@ -77,8 +77,8 @@ public final class TestSearchGraph {
                 while ((choice = gen.next()) != null) {
                     List<Node> z = new LinkedList<>();
 
-                    for (int k = 0; k < choice.length; k++) {
-                        z.add(theRest.get(choice[k]));
+                    for (int value : choice) {
+                        z.add(theRest.get(value));
                     }
 
                     if (graph.isDSeparatedFrom(x, y, z) != graph.isDSeparatedFrom(y, x, z)) {
@@ -122,8 +122,8 @@ public final class TestSearchGraph {
                 while ((choice = gen.next()) != null) {
                     List<Node> z = new LinkedList<>();
 
-                    for (int k = 0; k < choice.length; k++) {
-                        z.add(theRest.get(choice[k]));
+                    for (int value : choice) {
+                        z.add(theRest.get(value));
                     }
 
                     boolean dConnectedTo = graph.isDConnectedTo(x, y, z);
@@ -145,10 +145,10 @@ public final class TestSearchGraph {
     // Trying to trip up the breadth first algorithm.
     public void testDSeparation3() {
         Graph graph = GraphConverter.convert("x-->s1,x-->s2,s1-->s3,s3-->s2,s3<--y");
-        assertTrue(graph.isDSeparatedFrom(graph.getNode("x"), graph.getNode("y"), new ArrayList<Node>()));
+        assertTrue(graph.isDSeparatedFrom(graph.getNode("x"), graph.getNode("y"), new ArrayList<>()));
 
         graph = GraphConverter.convert("1-->2,2<--4,2-->7,2-->3");
-        assertTrue(graph.isDSeparatedFrom(graph.getNode("4"), graph.getNode("1"), new ArrayList<Node>()));
+        assertTrue(graph.isDSeparatedFrom(graph.getNode("4"), graph.getNode("1"), new ArrayList<>()));
 
         graph = GraphConverter.convert("X1-->X5,X1-->X6,X2-->X3,X4-->X6,X5-->X3,X6-->X5,X7-->X3");
         assertTrue(dConnected(graph, "X2", "X4", "X3", "X6"));

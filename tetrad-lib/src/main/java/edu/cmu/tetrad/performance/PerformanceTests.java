@@ -170,7 +170,7 @@ public class PerformanceTests {
             out1.close();
             out2.close();
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
 
 
@@ -1214,8 +1214,7 @@ public class PerformanceTests {
 
         b.append("\n");
         b.append("APRE\tAREC\tOPRE\tOREC\n");
-        b.append(nf.format(comparison[0] * 100) + "%\t" + nf.format(comparison[1] * 100)
-                + "%\t" + nf.format(comparison[2] * 100) + "%\t" + nf.format(comparison[3] * 100) + "%");
+        b.append(nf.format(comparison[0] * 100)).append("%\t").append(nf.format(comparison[1] * 100)).append("%\t").append(nf.format(comparison[2] * 100)).append("%\t").append(nf.format(comparison[3] * 100)).append("%");
         return b.toString();
     }
 
@@ -1358,7 +1357,7 @@ public class PerformanceTests {
         }
 
 //        printAverageConfusion("Average", ffciCounts);
-        printAverageStatistics(ffciElapsedTimes, new ArrayList<Double>());
+        printAverageStatistics(ffciElapsedTimes, new ArrayList<>());
 
         this.out.close();
 
@@ -1528,7 +1527,7 @@ public class PerformanceTests {
         Map<Integer, List<Node>> names = new HashMap<>();
 
         for (int i = 0; i <= max; i++) {
-            names.put(i, new ArrayList<Node>());
+            names.put(i, new ArrayList<>());
         }
 
         for (Node node : dag.getNodes()) {
@@ -1562,7 +1561,7 @@ public class PerformanceTests {
         Map<Integer, List<Node>> names = new HashMap<>();
 
         for (int i = 0; i <= max; i++) {
-            names.put(i, new ArrayList<Node>());
+            names.put(i, new ArrayList<>());
         }
 
         for (Node node : dag.getNodes()) {
@@ -1634,8 +1633,8 @@ public class PerformanceTests {
         if (degrees.size() > 0) {
             double sumDegrees = 0;
 
-            for (int i = 0; i < degrees.size(); i++) {
-                sumDegrees += degrees.get(i);
+            for (Double degree : degrees) {
+                sumDegrees += degree;
             }
 
             double avgDegree = sumDegrees / degrees.size();
@@ -1709,8 +1708,7 @@ public class PerformanceTests {
 
         b.append("\n");
         b.append("APRE\tAREC\tOPRE\tOREC\n");
-        b.append(nf.format(avg1 * 100) + "%\t" + nf.format(avg2 * 100)
-                + "%\t" + nf.format(avg3 * 100) + "%\t" + nf.format(avg4 * 100) + "%");
+        b.append(nf.format(avg1 * 100)).append("%\t").append(nf.format(avg2 * 100)).append("%\t").append(nf.format(avg3 * 100)).append("%\t").append(nf.format(avg4 * 100)).append("%");
 
         this.out.println(b);
     }
@@ -1753,8 +1751,7 @@ public class PerformanceTests {
 
         b.append("\n");
         b.append("APRE\tAREC\tOPRE\tOREC\n");
-        b.append(nf.format(comparison[0] * 100) + "%\t" + nf.format(comparison[1] * 100)
-                + "%\t" + nf.format(comparison[2] * 100) + "%\t" + nf.format(comparison[3] * 100) + "%");
+        b.append(nf.format(comparison[0] * 100)).append("%\t").append(nf.format(comparison[1] * 100)).append("%\t").append(nf.format(comparison[2] * 100)).append("%\t").append(nf.format(comparison[3] * 100)).append("%");
 
         this.out.println(b);
     }

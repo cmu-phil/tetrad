@@ -125,10 +125,6 @@ public class Dci {
      */
     private ResolveSepsets.Method method;
 
-    /**
-     * For multithreading
-     */
-    private int maxThreads = 1;
     private int totalThreads;
     private int currentThread;
     private final Lock lock = new ReentrantLock();
@@ -741,14 +737,18 @@ public class Dci {
         System.out.println("Graph now\n" + graph);
         this.currentGraph = graph;
         this.currentMarginalSet = marginalNodes;
-        this.allPaths = Collections.synchronizedMap(new HashMap<Integer, Map<List<Node>, Set<Node>>>());
+        this.allPaths = Collections.synchronizedMap(new HashMap<>());
         for (int k = 2; k <= size; k++) {
-            this.allPaths.put(k, new HashMap<List<Node>, Set<Node>>());
+            this.allPaths.put(k, new HashMap<>());
         }
         this.currentNodePairs = allNodePairs(new ArrayList<>(marginalNodes));
         this.totalThreads = this.currentNodePairs.size();
         List<FindMinimalSpanningTrek> threads = new ArrayList<>();
-        for (int k = 0; k < this.maxThreads; k++) {
+        /**
+         * For multithreading
+         */
+        int maxThreads = 1;
+        for (int k = 0; k < maxThreads; k++) {
             threads.add(new FindMinimalSpanningTrek());
         }
         for (FindMinimalSpanningTrek thread : threads) {
@@ -828,7 +828,7 @@ public class Dci {
                 }
                 Map<Integer, Map<List<Node>, Set<Node>>> newPaths = new HashMap<>();
                 for (int k = 2; k <= size; k++) {
-                    newPaths.put(k, new HashMap<List<Node>, Set<Node>>());
+                    newPaths.put(k, new HashMap<>());
                 }
                 for (List<Node> trek : GraphUtils.treks(Dci.this.currentGraph, Dci.this.currentGraph.getNode(nodePair.getFirst().getName()), Dci.this.currentGraph.getNode(nodePair.getSecond().getName()), -1)) {
                     boolean inMarginal = true;
@@ -877,8 +877,8 @@ public class Dci {
      */
     public boolean isSubtrek(List<Node> trek, List<Node> subtrek) {
         int l = 0;
-        for (int k = 0; k < subtrek.size(); k++) {
-            while (!subtrek.get(k).equals(trek.get(l))) {
+        for (Node node : subtrek) {
+            while (!node.equals(trek.get(l))) {
                 l++;
                 if (l >= trek.size()) {
                     return false;
@@ -963,7 +963,7 @@ public class Dci {
     private static Map<Set<Edge>, Map<Triple, List<Set<Edge>>>> pathsEnsuringTrek(Graph graph, List<Node> ensureTrek, Set<Node> conditioning) {
         Map<Set<Edge>, Map<Triple, List<Set<Edge>>>> paths = new HashMap<>();
         Dci.pathsEnsuringTrek(graph, ensureTrek, 1, new LinkedList<>(Collections.singletonList(ensureTrek.get(0))),
-                conditioning, new HashMap<Triple, NodePair>(), paths, new HashSet<>(Collections.singletonList(ensureTrek.get(0))));
+                conditioning, new HashMap<>(), paths, new HashSet<>(Collections.singletonList(ensureTrek.get(0))));
         return paths;
     }
 
@@ -1413,7 +1413,7 @@ public class Dci {
                             }
                         }
                         if (!graph.existsDirectedCycle()) {
-                            graph.setUnderLineTriples(new HashSet<Triple>());
+                            graph.setUnderLineTriples(new HashSet<>());
                             this.output.add(graph);
                         }
                     }
@@ -1919,9 +1919,9 @@ public class Dci {
             p++;
         }
         this.sepsetMaps.clear();
-        for (int k = 0; k < this.marginalVars.size(); k++) {
+        for (Set<Node> marginalVar : this.marginalVars) {
             SepsetMapDci newSepset = new SepsetMapDci();
-            List<NodePair> pairs2 = allNodePairs(new ArrayList<>(this.marginalVars.get(k)));
+            List<NodePair> pairs2 = allNodePairs(new ArrayList<>(marginalVar));
             for (NodePair pair : pairs2) {
                 Node x = pair.getFirst();
                 Node y = pair.getSecond();
@@ -1930,14 +1930,14 @@ public class Dci {
                 }
                 List<List<Node>> conds = combinedSepset.getSet(x, y);
                 for (List<Node> z : conds) {
-                    if (this.marginalVars.get(k).containsAll(z)) {
+                    if (marginalVar.containsAll(z)) {
                         newSepset.set(x, y, z);
                     }
                 }
             }
             //sepsetMaps.add(newSepset);
             this.sepsetMaps.add(newSepset);
-            List<Node> variables = new ArrayList<>(this.marginalVars.get(k));
+            List<Node> variables = new ArrayList<>(marginalVar);
             Graph newGraph = new EdgeListGraph(variables);
             newGraph.fullyConnect(Endpoint.CIRCLE);
             FasDci fas = new FasDci(newGraph, new IndTestSepset(newSepset, variables));
@@ -2075,7 +2075,7 @@ public class Dci {
             return new PowerSetIterator<>(this);
         }
 
-        class PowerSetIterator<InE> implements Iterator<Set<InE>> {
+        static class PowerSetIterator<InE> implements Iterator<Set<InE>> {
             PowerSet<InE> powerSet;
             List<InE> canonicalOrder = new ArrayList<>();
             List<InE> mask = new ArrayList<>();

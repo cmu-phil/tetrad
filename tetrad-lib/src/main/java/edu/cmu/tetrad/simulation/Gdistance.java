@@ -70,7 +70,7 @@ public class Gdistance {
         //This for loop should be parallelized in the future.
         //let the for loop do its thing, and create a new thread for each task inside of it.
 
-        List<Callable<Void>> todo = new ArrayList<Callable<Void>>();
+        List<Callable<Void>> todo = new ArrayList<>();
         ExecutorService executorService = Executors.newCachedThreadPool();
 
         List<Edge> taskEdges = new ArrayList<>();

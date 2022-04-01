@@ -240,7 +240,7 @@ public class HitonVariant implements MbSearch {
      * A measure of strength of association.
      */
     private double association(Node x, Node y) {
-        this.independenceTest.isIndependent(x, y, new LinkedList<Node>());
+        this.independenceTest.isIndependent(x, y, new LinkedList<>());
         return 1.0 - this.independenceTest.getPValue();
     }
 

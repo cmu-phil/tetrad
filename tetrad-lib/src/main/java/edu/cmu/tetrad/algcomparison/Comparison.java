@@ -967,8 +967,7 @@ public class Comparison {
      * @return True if CPDAGs should be saved out.
      */
     public boolean isSaveData() {
-        boolean saveData = true;
-        return saveData;
+        return true;
     }
 
     /**

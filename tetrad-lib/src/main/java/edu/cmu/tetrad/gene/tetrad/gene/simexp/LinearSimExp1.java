@@ -114,9 +114,9 @@ public class LinearSimExp1 {
         int[] timeSteps = this.simulator.getTimeSteps();
 
         out.print("Dish\tInd\t");
-        for (int i = 0; i < timeSteps.length; i++) {
+        for (int timeStep : timeSteps) {
             for (int j = 0; j < updateFunction.getNumFactors(); j++) {
-                out.print("G" + j + ":t" + timeSteps[i] + "\t");
+                out.print("G" + j + ":t" + timeStep + "\t");
             }
         }
         out.println();
@@ -129,8 +129,8 @@ public class LinearSimExp1 {
             out.print((i / cellsPerDish + 1) + "\t");
             out.print((i + 1) + "\t");
             for (int j = 0; j < data[0].length; j++) {
-                for (int k = 0; k < data.length; k++) {
-                    out.print(nf.format(data[k][j][i]) + "\t");
+                for (double[][] datum : data) {
+                    out.print(nf.format(datum[j][i]) + "\t");
                 }
             }
             out.println();
@@ -145,9 +145,9 @@ public class LinearSimExp1 {
 
         out.print("Dish\tChip\t");
 
-        for (int i = 0; i < timeSteps.length; i++) {
+        for (int timeStep : timeSteps) {
             for (int j = 0; j < updateFunction.getNumFactors(); j++) {
-                out.print("G" + j + ":t" + timeSteps[i] + "\t");
+                out.print("G" + j + ":t" + timeStep + "\t");
             }
         }
         out.println();
@@ -159,8 +159,8 @@ public class LinearSimExp1 {
             out.print((i / samplesPerDish + 1) + "\t");
             out.print((i + 1) + "\t");
             for (int j = 0; j < data[0].length; j++) {
-                for (int k = 0; k < data.length; k++) {
-                    out.print(nf.format(data[k][j][i]) + "\t");
+                for (double[][] datum : data) {
+                    out.print(nf.format(datum[j][i]) + "\t");
                 }
             }
             out.println();

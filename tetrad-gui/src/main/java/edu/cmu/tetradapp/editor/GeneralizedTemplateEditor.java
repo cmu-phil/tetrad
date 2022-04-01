@@ -340,9 +340,6 @@ class GeneralizedTemplateEditor extends JComponent {
         Box b7 = Box.createHorizontalBox();
         b7.add(new JLabel("Apply to: "));
         b7.add(this.combo);
-//        b7.add(variablesButton);
-//        b7.add(errorsButton);
-//        b7.add(parametersButton);
         b7.add(Box.createHorizontalGlue());
         b7.add(new JLabel("Starts with: "));
         b7.add(this.startsWithField);
@@ -553,16 +550,16 @@ class GeneralizedTemplateEditor extends JComponent {
 
         Map<String, String> expressionsMap = new LinkedHashMap<>();
 
-        for (int i = 0; i < templateExpressions.length; i++) {
-            expressionsMap.put(templateExpressions[i][0], templateExpressions[i][1]);
+        for (String[] templateExpression : templateExpressions) {
+            expressionsMap.put(templateExpression[0], templateExpression[1]);
         }
 
-        for (int i = 0; i < nodes.size(); i++) {
-            expressionsMap.put(nodes.get(i).getName(), nodes.get(i).getName());
+        for (Node node : nodes) {
+            expressionsMap.put(node.getName(), node.getName());
         }
 
-        for (int i = 0; i < expressions.length; i++) {
-            expressionsMap.put(expressions[i][0], expressions[i][1]);
+        for (String[] expression : expressions) {
+            expressionsMap.put(expression[0], expression[1]);
         }
         return expressionsMap;
     }
