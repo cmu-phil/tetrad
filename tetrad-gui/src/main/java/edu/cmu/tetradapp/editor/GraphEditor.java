@@ -441,6 +441,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
 
         graph.add(new GraphPropertiesAction(getWorkbench()));
         graph.add(new PathsAction(getWorkbench()));
+        graph.add(new UnderliningsAction(getWorkbench()));
 
         graph.addSeparator();
 

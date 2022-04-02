@@ -620,8 +620,7 @@ public final class SessionEditorNode extends DisplayNode {
         renameBox.setToolTipText("<html>Renames this session box.</html>");
         renameBox.addActionListener((e) -> {
             Component centeringComp = this;
-            String name
-                    = JOptionPane.showInputDialog(centeringComp, "New name:");
+            String name = JOptionPane.showInputDialog(centeringComp, "New name:");
 
             if (!NamingProtocol.isLegalName(name)) {
                 JOptionPane.showMessageDialog(centeringComp,

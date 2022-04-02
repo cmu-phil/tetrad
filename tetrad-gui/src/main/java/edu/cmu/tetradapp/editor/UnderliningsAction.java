@@ -45,16 +45,16 @@ import java.util.List;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-class TriplesAction extends AbstractAction implements ClipboardOwner {
-    private Graph graph;
+class UnderliningsAction extends AbstractAction implements ClipboardOwner {
+    private final GraphWorkbench workbench;
 
     /**
      * Creates a new copy subsession action for the given LayoutEditable and
      * clipboard.
      */
-    public TriplesAction(Graph graph) {
+    public UnderliningsAction(GraphWorkbench graph) {
         super("Underlinings");
-        this.graph = graph;
+        this.workbench = graph;
     }
 
     /**
@@ -70,12 +70,12 @@ class TriplesAction extends AbstractAction implements ClipboardOwner {
 
         textArea.append("Underlinings:");
         boolean allEmpty = true;
-        List<Node> nodes = this.graph.getNodes();
+        List<Node> nodes = workbench.getGraph().getNodes();
         Collections.sort(nodes);
 
         for (Node node : nodes) {
-            List<String> types = this.graph.getTriplesClassificationTypes();
-            List<List<Triple>> triplesList = this.graph.getTriplesLists(node);
+            List<String> types = this.workbench.getTriplesClassificationTypes();
+            List<List<Triple>> triplesList = this.workbench.getTriplesLists(node);
 
             boolean existsClassification = false;
 
@@ -134,7 +134,7 @@ class TriplesAction extends AbstractAction implements ClipboardOwner {
         buf.append("\n\n        ");
 
         for (int i = 0; i < triples.size(); i++) {
-            buf.append(pathFor(triples.get(i), this.graph));
+            buf.append(pathFor(triples.get(i), this.workbench.getGraph()));
 
             if (i < triples.size() - 1) {
                 buf.append("\n        ");
@@ -162,11 +162,6 @@ class TriplesAction extends AbstractAction implements ClipboardOwner {
      * Required by the AbstractAction interface; does nothing.
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {
-    }
-
-
-    public void setGraph(Graph graph, GraphWorkbench workbench) {
-        this.graph = graph;
     }
 }
 

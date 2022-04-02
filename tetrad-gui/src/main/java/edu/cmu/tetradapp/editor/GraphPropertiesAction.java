@@ -120,7 +120,7 @@ class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
         panel.add(b);
 
         EditorWindow window = new EditorWindow(panel,
-                "Graph Properties", "Close", false, this.workbench);
+                "Graph Properties", "Close", false, workbench);
         DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
         window.setVisible(true);
     }

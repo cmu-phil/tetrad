@@ -399,6 +399,7 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
      */
     public List<String> getTriplesClassificationTypes() {
         List<String> names = new ArrayList<>();
+        names.add("Ambiguous");
         names.add("Underlines");
         names.add("Dotted Underlines");
         return names;
@@ -411,6 +412,7 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
     public List<List<Triple>> getTriplesLists(Node node) {
         List<List<Triple>> triplesList = new ArrayList<>();
         Graph graph = getGraph();
+        triplesList.add(GraphUtils.getAmbiguousTriplesFromGraph(node, graph));
         triplesList.add(GraphUtils.getUnderlinedTriplesFromGraph(node, graph));
         triplesList.add(GraphUtils.getDottedUnderlinedTriplesFromGraph(node, graph));
         return triplesList;
