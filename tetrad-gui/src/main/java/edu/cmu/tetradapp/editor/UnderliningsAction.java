@@ -68,7 +68,7 @@ class UnderliningsAction extends AbstractAction implements ClipboardOwner {
         textArea.setLineWrap(true);
         textArea.setWrapStyleWord(true);
         JScrollPane scroll = new JScrollPane(textArea);
-        scroll.setPreferredSize(new Dimension(600, 600));
+        scroll.setPreferredSize(new Dimension(600, 400));
 
         textArea.append("Underlinings:");
         boolean allEmpty = true;
