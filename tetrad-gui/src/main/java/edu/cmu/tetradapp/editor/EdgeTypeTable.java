@@ -82,7 +82,7 @@ public class EdgeTypeTable extends JPanel {
         tableModel.setRowCount(0);
 
         if (hasEdgeProbabilities(graph)) {
-            this.title.setText("Edges and Edge Type Probabilities");
+            this.title.setText("Edges and Edge Type Frequencies");
 
             this.table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
