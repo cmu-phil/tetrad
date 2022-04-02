@@ -65,6 +65,8 @@ class UnderliningsAction extends AbstractAction implements ClipboardOwner {
         Box b = Box.createVerticalBox();
 
         JTextArea textArea = new JTextArea();
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
         JScrollPane scroll = new JScrollPane(textArea);
         scroll.setPreferredSize(new Dimension(600, 600));
 
@@ -106,7 +108,9 @@ class UnderliningsAction extends AbstractAction implements ClipboardOwner {
         }
 
         if (allEmpty) {
-            textArea.append("\n\nAll triple classifications can be read from the graph.");
+            textArea.append(
+                    "\n\nNo underlinings were marked in this graph. All triple classifications are inferrable" +
+                            " from the graph itself.");
         }
 
         Box b2 = Box.createHorizontalBox();
