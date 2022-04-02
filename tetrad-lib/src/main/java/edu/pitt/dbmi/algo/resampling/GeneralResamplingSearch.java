@@ -30,7 +30,7 @@ public class GeneralResamplingSearch {
 
     private boolean resamplingWithReplacement = true;
 
-    private int numberResampling;
+    private final int numberResampling;
 
     private boolean runParallel;
 
@@ -39,8 +39,6 @@ public class GeneralResamplingSearch {
     private boolean verbose;
 
     private final List<Graph> PAGs = Collections.synchronizedList(new ArrayList<>());
-
-    // private ForkJoinPool pool = null;
 
     private final ExecutorService pool;
 
@@ -62,16 +60,16 @@ public class GeneralResamplingSearch {
      */
     private Graph externalGraph;
 
-    public GeneralResamplingSearch(DataSet data) {
+    public GeneralResamplingSearch(DataSet data, int numberResampling) {
         this.data = data;
-        // pool = ForkJoinPoolInstance.getInstance().getPool();
         this.pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        this.numberResampling = numberResampling;
     }
 
-    public GeneralResamplingSearch(List<DataSet> dataSets) {
+    public GeneralResamplingSearch(List<DataSet> dataSets, int numberResampling) {
         this.dataSets = dataSets;
-        // pool = ForkJoinPoolInstance.getInstance().getPool();
         this.pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        this.numberResampling = numberResampling;
     }
 
     public void addPAG(Graph pag) {
@@ -94,10 +92,6 @@ public class GeneralResamplingSearch {
 
     public void setResamplingWithReplacement(boolean resamplingWithReplacement) {
         this.resamplingWithReplacement = resamplingWithReplacement;
-    }
-
-    public void setNumberResampling(int numberResampling) {
-        this.numberResampling = numberResampling;
     }
 
     public void setRunParallel(boolean runParallel) {
@@ -166,7 +160,7 @@ public class GeneralResamplingSearch {
                 this.out.println("Running Resamplings in Sequential Mode, numberResampling = " + this.numberResampling);
             }
             for (int i1 = 0; i1 < this.numberResampling; i1++) {
-                GeneralResamplingSearchRunnable task = null;
+                GeneralResamplingSearchRunnable task;
 
                 // Bootstrapping
                 if (this.resamplingWithReplacement) {
@@ -207,7 +201,7 @@ public class GeneralResamplingSearch {
 
             // Search again with original dataset
             if (this.resamplingWithReplacement && this.addOriginalDataset) {
-                GeneralResamplingSearchRunnable task = null;
+                GeneralResamplingSearchRunnable task;
 
                 if (this.data != null) {
                     task = new GeneralResamplingSearchRunnable(this.data, this.algorithm, this.parameters, this, this.verbose);
@@ -232,7 +226,7 @@ public class GeneralResamplingSearch {
 
             for (int i1 = 0; i1 < this.numberResampling; i1++) {
 
-                GeneralResamplingSearchRunnable task = null;
+                GeneralResamplingSearchRunnable task;
 
                 // Bootstrapping
                 if (this.resamplingWithReplacement) {
@@ -273,7 +267,7 @@ public class GeneralResamplingSearch {
 
             // Search again with original dataset
             if (this.resamplingWithReplacement && this.addOriginalDataset) {
-                GeneralResamplingSearchRunnable task = null;
+                GeneralResamplingSearchRunnable task;
 
                 if (this.data != null) {
                     task = new GeneralResamplingSearchRunnable(this.data, this.algorithm, this.parameters, this, this.verbose);
@@ -305,7 +299,7 @@ public class GeneralResamplingSearch {
         }
 
         // If the pool is prematurely terminated, do sequentially
-        if (this.PAGs == null || this.PAGs.size() == 0) {
+        if (this.PAGs.size() == 0) {
             for (int i1 = 0; i1 < this.numberResampling; i1++) {
                 GeneralResamplingSearchRunnable task = null;
 
@@ -348,7 +342,7 @@ public class GeneralResamplingSearch {
 
             // Search again with original dataset
             if (this.resamplingWithReplacement && this.addOriginalDataset) {
-                GeneralResamplingSearchRunnable task = null;
+                GeneralResamplingSearchRunnable task;
 
                 if (this.data != null) {
                     task = new GeneralResamplingSearchRunnable(this.data, this.algorithm, this.parameters, this, this.verbose);

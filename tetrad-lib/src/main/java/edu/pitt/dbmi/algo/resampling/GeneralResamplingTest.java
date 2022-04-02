@@ -94,10 +94,6 @@ public class GeneralResamplingTest {
         this.resamplingSearch.setResamplingWithReplacement(ResamplingWithReplacement);
     }
 
-    public void setNumberResampling(int numberResampling) {
-        this.resamplingSearch.setNumberResampling(numberResampling);
-    }
-
     /**
      * Sets the background knowledge.
      *
@@ -140,26 +136,14 @@ public class GeneralResamplingTest {
         RandomUtil.getInstance().setSeed(seed);
     }
 
-    public GeneralResamplingTest(DataSet data, Algorithm algorithm) {
-        this.algorithm = algorithm;
-        this.resamplingSearch = new GeneralResamplingSearch(data);
-    }
-
     public GeneralResamplingTest(DataSet data, Algorithm algorithm, int numberResampling) {
         this.algorithm = algorithm;
-        this.resamplingSearch = new GeneralResamplingSearch(data);
-        this.resamplingSearch.setNumberResampling(numberResampling);
-    }
-
-    public GeneralResamplingTest(List<DataSet> dataSets, MultiDataSetAlgorithm multiDataSetAlgorithm) {
-        this.multiDataSetAlgorithm = multiDataSetAlgorithm;
-        this.resamplingSearch = new GeneralResamplingSearch(dataSets);
+        this.resamplingSearch = new GeneralResamplingSearch(data, numberResampling);
     }
 
     public GeneralResamplingTest(List<DataSet> dataSets, MultiDataSetAlgorithm multiDataSetAlgorithm, int numberResampling) {
         this.multiDataSetAlgorithm = multiDataSetAlgorithm;
-        this.resamplingSearch = new GeneralResamplingSearch(dataSets);
-        this.resamplingSearch.setNumberResampling(numberResampling);
+        this.resamplingSearch = new GeneralResamplingSearch(dataSets, numberResampling);
     }
 
     public Graph search() {
@@ -277,7 +261,7 @@ public class GeneralResamplingTest {
                     EdgeType edgeType = etp.getEdgeType();
                     double prob = etp.getProbability();
                     //out.println(edgeType + ": " + prob);
-                    if (edgeType != EdgeType.nil && prob > max_edge_prob) {
+                    if (edgeType != EdgeType.nil) {
                         if (prob > max_edge_prob) {
                             chosen_edge_type = etp;
                             max_edge_prob = prob;

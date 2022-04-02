@@ -69,6 +69,7 @@ public class ParameterTab extends JPanel {
     private final Box parameterBox = Box.createVerticalBox();
 
     private final Simulation simulation;
+    private boolean initial = true;
 
     public ParameterTab(Simulation simulation) {
         this.simulation = simulation;
@@ -293,8 +294,6 @@ public class ParameterTab extends JPanel {
         if (ret == JOptionPane.CANCEL_OPTION) {
             JOptionPane.showMessageDialog(getPanel(), "Keeping existing datasets(s)");
             return;
-        } else {
-            JOptionPane.showMessageDialog(getPanel(), "Created new datasets(s); check the Data tab");
         }
 
         new WatchedProcess((Window) getTopLevelAncestor()) {
@@ -305,6 +304,7 @@ public class ParameterTab extends JPanel {
                     newSimulation(randomGraph);
                     ParameterTab.this.simulation.getSimulation().createData(ParameterTab.this.simulation.getParams(), false);
 
+                    initial = false;
                     firePropertyChange("modelChanged", null, null);
                 } catch (Exception exception) {
                     exception.printStackTrace(System.err);
@@ -375,4 +375,7 @@ public class ParameterTab extends JPanel {
         return items;
     }
 
+    public boolean isInitial() {
+        return initial;
+    }
 }
