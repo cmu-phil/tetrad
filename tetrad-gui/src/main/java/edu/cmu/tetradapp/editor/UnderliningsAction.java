@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.util.DesktopController;
+import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
 import java.awt.*;
@@ -164,7 +165,7 @@ class TriplesAction extends AbstractAction implements ClipboardOwner {
     }
 
 
-    public void setGraph(Graph graph) {
+    public void setGraph(Graph graph, GraphWorkbench workbench) {
         this.graph = graph;
     }
 }
