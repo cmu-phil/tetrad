@@ -162,7 +162,7 @@ public class CPDAGDisplay extends JPanel implements GraphEditable {
         return selectedModelComponents;
     }
 
-    public void pasteSubsession(List sessionElements, Point upperLeft) {
+    public void pasteSubsession(List<Object> sessionElements, Point upperLeft) {
         getWorkbench().pasteSubgraph(sessionElements, upperLeft);
         getWorkbench().deselectAll();
 

@@ -131,7 +131,7 @@ public final class SemGraphEditor extends JPanel
      * Pastes list of session elements into the workbench.
      */
     @Override
-    public void pasteSubsession(List sessionElements, Point upperLeft) {
+    public void pasteSubsession(List<Object> sessionElements, Point upperLeft) {
         getWorkbench().pasteSubgraph(sessionElements, upperLeft);
         getWorkbench().deselectAll();
 

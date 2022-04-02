@@ -71,10 +71,10 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
     private final GraphSelectionWrapper wrapper;
     private final JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.LEFT);
     private final List<GraphWorkbench> workbenches = new ArrayList<>();
-    // Need this initialization.
+
+    // Need this initialization. Don't delete.
     private JPanel workbenchScrollsPanel = new JPanel();
     private GraphPropertiesAction graphAction;
-    private UnderliningsAction underliningsAction;
     private Map<String, List<Integer>> layoutGraph;
     private int prevSelected = 0;
 
@@ -210,6 +210,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
 
         graphTypeCombo.addActionListener(e -> {
             GraphSelectionWrapper.Type selectedItem = (GraphSelectionWrapper.Type) graphTypeCombo.getSelectedItem();
+            assert selectedItem != null;
             wrapper.setType(selectedItem);
             setSelectedGraphType(selectedItem);
         });
@@ -384,7 +385,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         graphAction = new GraphPropertiesAction(getWorkbench());
         graph.add(graphAction);
         graph.add(new PathsAction(getWorkbench()));
-        underliningsAction = new UnderliningsAction(getWorkbench());
+        UnderliningsAction underliningsAction = new UnderliningsAction(getWorkbench());
         graph.add(underliningsAction);
 
         return graph;
@@ -421,7 +422,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
     }
 
     @Override
-    public void pasteSubsession(List sessionElements, Point upperLeft) {
+    public void pasteSubsession(List<Object> sessionElements, Point upperLeft) {
         getWorkbench().pasteSubgraph(sessionElements, upperLeft);
         getWorkbench().deselectAll();
 
@@ -681,7 +682,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         // The font to render fields in.
         private final Font _font = new Font("Dialog", Font.PLAIN, 12);
         //The list of source variables.
-        private JList<Node> sourceList;
+        private final JList<Node> sourceList;
 
         /**
          * Constructs the editor given the <code>Parameters</code> and the

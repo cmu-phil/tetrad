@@ -55,7 +55,7 @@ public interface GraphEditable {
      * @param sessionElements The session elements.
      * @param upperLeft       the upper left point of the paste area.
      */
-    void pasteSubsession(List sessionElements, Point upperLeft);
+    void pasteSubsession(List<Object> sessionElements, Point upperLeft);
 
     /**
      * @return the graph workbench.

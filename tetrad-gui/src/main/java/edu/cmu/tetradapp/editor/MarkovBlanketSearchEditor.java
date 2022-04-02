@@ -380,7 +380,7 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
         throw new UnsupportedOperationException("Cannot return selected components.");
     }
 
-    public void pasteSubsession(List sessionElements, Point upperLeft) {
+    public void pasteSubsession(List<Object> sessionElements, Point upperLeft) {
         throw new UnsupportedOperationException("Cannot paste subsessions on a search editor.");
     }
 

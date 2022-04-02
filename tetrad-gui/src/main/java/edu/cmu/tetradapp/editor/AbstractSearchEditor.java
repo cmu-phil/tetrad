@@ -187,7 +187,7 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
     /**
      * Not supported.
      */
-    public void pasteSubsession(java.util.List sessionElements, Point upperLeft) {
+    public void pasteSubsession(java.util.List<Object> sessionElements, Point upperLeft) {
         throw new UnsupportedOperationException("Cannot paste into Search editor.");
     }
 
