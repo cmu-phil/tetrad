@@ -39,6 +39,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.text.NumberFormat;
 import java.util.List;
@@ -267,7 +268,7 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
         JMenu edit = new JMenu("Edit");
         JMenuItem copy = new JMenuItem(new CopySubgraphAction(this));
         copy.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
         edit.add(copy);
 
         JMenuBar menuBar = new JMenuBar();

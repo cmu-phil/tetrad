@@ -1841,7 +1841,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         Object source = e.getSource();
         Point loc = e.getPoint();
 
-        if (isRightClickPopupAllowed() && source == this && SwingUtilities.isRightMouseButton(e)) {
+        if (isRightClickPopupAllowed() && source == this && (SwingUtilities.isRightMouseButton(e))) {
             launchPopup(e);
             return;
         }
