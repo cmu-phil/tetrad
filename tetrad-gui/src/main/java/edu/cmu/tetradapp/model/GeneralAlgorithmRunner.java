@@ -75,6 +75,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         this.knowledge = runner.knowledge;
         this.algorithm = runner.algorithm;
         this.parameters = parameters;
+
+        this.userAlgoSelections.putAll(runner.userAlgoSelections);
     }
 
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, Parameters parameters) {
@@ -87,7 +89,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * containing either a DataSet or a DataSet as its selected model.
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, Parameters parameters,
-                                  KnowledgeBoxModel knowledgeBoxModel) {
+            KnowledgeBoxModel knowledgeBoxModel) {
         this(dataWrapper, null, parameters, knowledgeBoxModel, null);
     }
 
@@ -96,8 +98,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     }
 
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource,
-                                  KnowledgeBoxModel knowledgeBoxModel,
-                                  Parameters parameters) {
+            KnowledgeBoxModel knowledgeBoxModel,
+            Parameters parameters) {
         this(dataWrapper, graphSource, parameters, knowledgeBoxModel, null);
     }
 
@@ -107,13 +109,15 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * containing either a DataSet or a DataSet as its selected model.
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, Parameters parameters,
-                                  KnowledgeBoxModel knowledgeBoxModel, IndependenceFactsModel facts) {
+            KnowledgeBoxModel knowledgeBoxModel, IndependenceFactsModel facts) {
         this(dataWrapper, null, parameters, knowledgeBoxModel, facts);
     }
 
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GeneralAlgorithmRunner runner, Parameters parameters) {
         this(dataWrapper, null, parameters, null, null);
         this.algorithm = runner.algorithm;
+
+        this.userAlgoSelections.putAll(runner.userAlgoSelections);
     }
 
     /**
@@ -122,15 +126,19 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * containing either a DataSet or a DataSet as its selected model.
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GeneralAlgorithmRunner runner, Parameters parameters,
-                                  KnowledgeBoxModel knowledgeBoxModel) {
+            KnowledgeBoxModel knowledgeBoxModel) {
         this(dataWrapper, null, parameters, knowledgeBoxModel, null);
         this.algorithm = runner.algorithm;
+
+        this.userAlgoSelections.putAll(runner.userAlgoSelections);
     }
 
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource, GeneralAlgorithmRunner runner,
-                                  Parameters parameters) {
+            Parameters parameters) {
         this(dataWrapper, graphSource, parameters, null, null);
         this.algorithm = runner.algorithm;
+
+        this.userAlgoSelections.putAll(runner.userAlgoSelections);
     }
 
     /**
@@ -139,10 +147,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * containing either a DataSet or a DataSet as its selected model.
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource, GeneralAlgorithmRunner runner,
-                                  Parameters parameters,
-                                  KnowledgeBoxModel knowledgeBoxModel) {
+            Parameters parameters,
+            KnowledgeBoxModel knowledgeBoxModel) {
         this(dataWrapper, graphSource, parameters, knowledgeBoxModel, null);
         this.algorithm = runner.algorithm;
+
+        this.userAlgoSelections.putAll(runner.userAlgoSelections);
     }
 
     /**
@@ -151,15 +161,17 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     public GeneralAlgorithmRunner(GraphSource graphSource, GeneralAlgorithmRunner runner, Parameters parameters) {
         this(null, graphSource, parameters, null, null);
         this.algorithm = runner.algorithm;
+
+        this.userAlgoSelections.putAll(runner.userAlgoSelections);
     }
 
     public GeneralAlgorithmRunner(GraphSource graphSource, Parameters parameters,
-                                  KnowledgeBoxModel knowledgeBoxModel) {
+            KnowledgeBoxModel knowledgeBoxModel) {
         this(null, graphSource, parameters, knowledgeBoxModel, null);
     }
 
     public GeneralAlgorithmRunner(IndependenceFactsModel model,
-                                  Parameters parameters, KnowledgeBoxModel knowledgeBoxModel) {
+            Parameters parameters, KnowledgeBoxModel knowledgeBoxModel) {
         this(null, null, parameters, knowledgeBoxModel, model);
     }
 
@@ -176,7 +188,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * containing either a DataSet or a DataSet as its selected model.
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource, Parameters parameters,
-                                  KnowledgeBoxModel knowledgeBoxModel, IndependenceFactsModel facts) {
+            KnowledgeBoxModel knowledgeBoxModel, IndependenceFactsModel facts) {
         if (parameters == null) {
             throw new NullPointerException();
         }
