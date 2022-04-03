@@ -12,13 +12,12 @@ import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.GraspTol;
+import edu.cmu.tetrad.search.GraspOrig;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
-import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,23 +29,23 @@ import java.util.List;
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "GRaSP-tol",
-        command = "grasp-tol",
+        name = "GRaSP-orig",
+        command = "grasp-orig",
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
 @Experimental
-public class GRaSP_Tol implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
+public class GRaSP_Orig implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private IndependenceWrapper test;
     private IKnowledge knowledge = new Knowledge2();
 
-    public GRaSP_Tol() {
+    public GRaSP_Orig() {
         // Used in reflection; do not delete.
     }
 
-    public GRaSP_Tol(ScoreWrapper score, IndependenceWrapper test) {
+    public GRaSP_Orig(ScoreWrapper score, IndependenceWrapper test) {
         this.score = score;
         this.test = test;
     }
@@ -58,12 +57,11 @@ public class GRaSP_Tol implements Algorithm, UsesScoreWrapper, TakesIndependence
             IndependenceTest test = this.test.getTest(dataSet, parameters);
 
             test.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            GraspTol grasp = new GraspTol(test, score);
+            GraspOrig grasp = new GraspOrig(test, score);
 
             grasp.setDepth(parameters.getInt(Params.GRASP_DEPTH));
             grasp.setUncoveredDepth(parameters.getInt(Params.GRASP_UNCOVERED_DEPTH));
             grasp.setNonSingularDepth(parameters.getInt(Params.GRASP_NONSINGULAR_DEPTH));
-            grasp.setToleranceDepth(parameters.getInt(Params.GRASP_TOLERANCE_DEPTH));
             grasp.setOrdered(parameters.getBoolean(Params.GRASP_ORDERED_ALG));
             grasp.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
             grasp.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_VERMA_PEARL));
@@ -77,7 +75,7 @@ public class GRaSP_Tol implements Algorithm, UsesScoreWrapper, TakesIndependence
             grasp.bestOrder(score.getVariables());
             return grasp.getGraph(parameters.getBoolean(Params.OUTPUT_CPDAG));
         } else {
-            GRaSP_Tol algorithm = new GRaSP_Tol(this.score, this.test);
+            GRaSP_Orig algorithm = new GRaSP_Orig(this.score, this.test);
 
             DataSet data = (DataSet) dataSet;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
@@ -97,7 +95,7 @@ public class GRaSP_Tol implements Algorithm, UsesScoreWrapper, TakesIndependence
 
     @Override
     public String getDescription() {
-        return "GRaSP-tol (Greedy Relaxed Sparsest Permutation) using " + this.test.getDescription()
+        return "GRaSP-Orig (Greedy Relaxed Sparsest Permutation) using " + this.test.getDescription()
                 + " or " + this.score.getDescription();
     }
 
@@ -114,9 +112,7 @@ public class GRaSP_Tol implements Algorithm, UsesScoreWrapper, TakesIndependence
         params.add(Params.GRASP_DEPTH);
         params.add(Params.GRASP_UNCOVERED_DEPTH);
         params.add(Params.GRASP_NONSINGULAR_DEPTH);
-        params.add(Params.GRASP_TOLERANCE_DEPTH);
         params.add(Params.GRASP_ORDERED_ALG);
-//        params.add(Params.GRASP_USE_SCORE);
         params.add(Params.GRASP_USE_VERMA_PEARL);
         params.add(Params.GRASP_USE_DATA_ORDER);
         params.add(Params.GRASP_ALLOW_RANDOMNESS_INSIDE_ALGORITHM);

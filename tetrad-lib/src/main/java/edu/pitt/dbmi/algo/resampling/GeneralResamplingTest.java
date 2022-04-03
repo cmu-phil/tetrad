@@ -100,7 +100,7 @@ public class GeneralResamplingTest {
                 this.edgeEnsemble = ResamplingEdgeEnsemble.Majority;
                 break;
             default:
-                throw new IllegalArgumentException("Expecting 0, 2, or 3.");
+                throw new IllegalArgumentException("Expecting 0, 1, or 2.");
         }
     }
 

@@ -22,7 +22,6 @@ import static java.util.Collections.shuffle;
  */
 public class Grasp {
     private final List<Node> variables;
-    double sNew = Double.NaN;
     private Score score;
     private IndependenceTest test;
     private IKnowledge knowledge = new Knowledge2();
@@ -36,6 +35,7 @@ public class Grasp {
     private boolean cachingScores = true;
     private int uncoveredDepth = 1;
     private int nonSingularDepth = 1;
+    private int toleranceDepth;
     private boolean useDataOrder = true;
     private boolean allowRandomnessInsideAlgorithm;
 
@@ -167,7 +167,7 @@ public class Grasp {
         for (int[] depth : depths) {
             do {
                 sOld = sNew;
-                graspDfs(scorer, sOld, depth, 1, new HashSet<>(), new HashSet<>());
+                graspDfsTol(scorer, sOld, depth, 1, this.toleranceDepth, 0, new HashSet<>(), new HashSet<>());
                 sNew = scorer.score();
             } while (sNew > sOld);
         }
@@ -183,8 +183,9 @@ public class Grasp {
     }
 
 
-    private void graspDfs(@NotNull TeyssierScorer scorer, double sOld, int[] depth, int currentDepth,
-                          Set<Set<Node>> tucks, Set<Set<Set<Node>>> dfsHistory) {
+    private void graspDfsTol(@NotNull TeyssierScorer scorer, double sOld, int[] depth, int currentDepth,
+                             int tol, int tolCur,
+                             Set<Set<Node>> tucks, Set<Set<Set<Node>>> dfsHistory) {
         List<Node> variables;
 
         if (this.allowRandomnessInsideAlgorithm) {
@@ -246,25 +247,26 @@ public class Grasp {
 
                 if (violatesKnowledge(scorer.getPi())) continue;
 
-                this.sNew = scorer.score();
-                if (this.sNew > sOld) {
+                double sNew = scorer.score();
+
+                if (sNew > sOld) {
                     if (this.verbose) {
                         System.out.printf("Edges: %d \t|\t Score Improvement: %f \t|\t Tucks Performed: %s %s \n",
-                                scorer.getNumEdges(), this.sNew - sOld, tucks, tuck);
+                                scorer.getNumEdges(), sNew - sOld, tucks, tuck);
                     }
                     return;
-                }
-
-                if (this.sNew == sOld && currentDepth < depth[0]) {
+                } else if (sNew == sOld && currentDepth < depth[0]) {
                     tucks.add(tuck);
                     if (currentDepth > depth[1]) {
                         if (!dfsHistory.contains(tucks)) {
                             dfsHistory.add(new HashSet<>(tucks));
-                            graspDfs(scorer, sOld, depth, currentDepth + 1, tucks, dfsHistory);
+                            graspDfsTol(scorer, sOld, depth, currentDepth + 1, tol, tolCur, tucks, dfsHistory);
                         }
-                    } else {
-                        graspDfs(scorer, sOld, depth, currentDepth + 1, tucks, dfsHistory);
                     }
+                    tucks.remove(tuck);
+                } else if (sNew < sOld && currentDepth < depth[0] && tolCur < tol) {
+                    tucks.add(tuck);
+                    graspDfsTol(scorer, sOld, depth, currentDepth + 1, tol, tolCur + 1, tucks, dfsHistory);
                     tucks.remove(tuck);
                 }
 
@@ -357,5 +359,9 @@ public class Grasp {
 
     public void setAllowRandomnessInsideAlgorithm(boolean allowRandomnessInsideAlgorithm) {
         this.allowRandomnessInsideAlgorithm = allowRandomnessInsideAlgorithm;
+    }
+
+    public void setToleranceDepth(int toleranceDepth) {
+        this.toleranceDepth = toleranceDepth;
     }
 }

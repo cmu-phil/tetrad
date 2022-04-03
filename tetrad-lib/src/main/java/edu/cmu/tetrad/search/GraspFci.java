@@ -78,12 +78,13 @@ public final class GraspFci implements GraphSearch {
     // GRaSP parameters
     private int numStarts;
     private int depth = 4;
+    private int nonsingularDepth = 1;
     private int uncoveredDepth = 1;
+    private int toleranceDepth = 0;
     private boolean useRaskuttiUhler;
     private boolean useDataOrder = true;
     private boolean allowRandomnessInsideAlgorithm;
 
-    private int nonsingularDepth = 1;
     private boolean ordered = true;
     private boolean useScore = true;
     private boolean cacheScores = true;
@@ -109,6 +110,7 @@ public final class GraspFci implements GraphSearch {
         grasp.setDepth(this.depth);
         grasp.setUncoveredDepth(this.uncoveredDepth);
         grasp.setNonSingularDepth(this.nonsingularDepth);
+        grasp.setToleranceDepth(this.toleranceDepth);
         grasp.setOrdered(this.ordered);
         grasp.setUseScore(this.useScore);
         grasp.setUseRaskuttiUhler(this.useRaskuttiUhler);
@@ -407,6 +409,10 @@ public final class GraspFci implements GraphSearch {
 
     public void setNonSingularDepth(int nonsingularDepth) {
         this.nonsingularDepth = nonsingularDepth;
+    }
+
+    public void setToleranceDepth(int toleranceDepth) {
+        this.toleranceDepth = toleranceDepth;
     }
 
     public void setOrdered(boolean ordered) {

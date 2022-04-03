@@ -20,8 +20,9 @@ import static java.util.Collections.shuffle;
  * @author bryanandrews
  * @author josephramsey
  */
-public class GraspTol {
+public class GraspOrig {
     private final List<Node> variables;
+    double sNew = Double.NaN;
     private Score score;
     private IndependenceTest test;
     private IKnowledge knowledge = new Knowledge2();
@@ -35,7 +36,6 @@ public class GraspTol {
     private boolean cachingScores = true;
     private int uncoveredDepth = 1;
     private int nonSingularDepth = 1;
-    private int toleranceDepth;
     private boolean useDataOrder = true;
     private boolean allowRandomnessInsideAlgorithm;
 
@@ -43,19 +43,19 @@ public class GraspTol {
     private int depth = 4;
     private int numStarts = 1;
 
-    public GraspTol(@NotNull Score score) {
+    public GraspOrig(@NotNull Score score) {
         this.score = score;
         this.variables = new ArrayList<>(score.getVariables());
         this.useScore = true;
     }
 
-    public GraspTol(@NotNull IndependenceTest test) {
+    public GraspOrig(@NotNull IndependenceTest test) {
         this.test = test;
         this.variables = new ArrayList<>(test.getVariables());
         this.useScore = false;
     }
 
-    public GraspTol(@NotNull IndependenceTest test, Score score) {
+    public GraspOrig(@NotNull IndependenceTest test, Score score) {
         this.test = test;
         this.score = score;
         this.variables = new ArrayList<>(test.getVariables());
@@ -167,7 +167,7 @@ public class GraspTol {
         for (int[] depth : depths) {
             do {
                 sOld = sNew;
-                graspDfsTol(scorer, sOld, depth, 1, this.toleranceDepth, 0, new HashSet<>(), new HashSet<>());
+                graspDfs(scorer, sOld, depth, 1, new HashSet<>(), new HashSet<>());
                 sNew = scorer.score();
             } while (sNew > sOld);
         }
@@ -183,9 +183,8 @@ public class GraspTol {
     }
 
 
-    private void graspDfsTol(@NotNull TeyssierScorer scorer, double sOld, int[] depth, int currentDepth,
-                             int tol, int tolCur,
-                             Set<Set<Node>> tucks, Set<Set<Set<Node>>> dfsHistory) {
+    private void graspDfs(@NotNull TeyssierScorer scorer, double sOld, int[] depth, int currentDepth,
+                          Set<Set<Node>> tucks, Set<Set<Set<Node>>> dfsHistory) {
         List<Node> variables;
 
         if (this.allowRandomnessInsideAlgorithm) {
@@ -247,26 +246,25 @@ public class GraspTol {
 
                 if (violatesKnowledge(scorer.getPi())) continue;
 
-                double sNew = scorer.score();
-
-                if (sNew > sOld) {
+                this.sNew = scorer.score();
+                if (this.sNew > sOld) {
                     if (this.verbose) {
                         System.out.printf("Edges: %d \t|\t Score Improvement: %f \t|\t Tucks Performed: %s %s \n",
-                                scorer.getNumEdges(), sNew - sOld, tucks, tuck);
+                                scorer.getNumEdges(), this.sNew - sOld, tucks, tuck);
                     }
                     return;
-                } else if (sNew == sOld && currentDepth < depth[0]) {
+                }
+
+                if (this.sNew == sOld && currentDepth < depth[0]) {
                     tucks.add(tuck);
                     if (currentDepth > depth[1]) {
                         if (!dfsHistory.contains(tucks)) {
                             dfsHistory.add(new HashSet<>(tucks));
-                            graspDfsTol(scorer, sOld, depth, currentDepth + 1, tol, tolCur, tucks, dfsHistory);
+                            graspDfs(scorer, sOld, depth, currentDepth + 1, tucks, dfsHistory);
                         }
+                    } else {
+                        graspDfs(scorer, sOld, depth, currentDepth + 1, tucks, dfsHistory);
                     }
-                    tucks.remove(tuck);
-                } else if (sNew < sOld && currentDepth < depth[0] && tolCur < tol) {
-                    tucks.add(tuck);
-                    graspDfsTol(scorer, sOld, depth, currentDepth + 1, tol, tolCur + 1, tucks, dfsHistory);
                     tucks.remove(tuck);
                 }
 
@@ -359,9 +357,5 @@ public class GraspTol {
 
     public void setAllowRandomnessInsideAlgorithm(boolean allowRandomnessInsideAlgorithm) {
         this.allowRandomnessInsideAlgorithm = allowRandomnessInsideAlgorithm;
-    }
-
-    public void setToleranceDepth(int toleranceDepth) {
-        this.toleranceDepth = toleranceDepth;
     }
 }
