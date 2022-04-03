@@ -42,7 +42,6 @@ import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
-import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -94,12 +93,11 @@ public class TestGeneralResamplingTest {
         ScoreWrapper score = new BdeuScore();
         Algorithm algorithm = new Fges(score);
 
-        GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm, numBootstrapSamples);
-        bootstrapTest.setResamplingWithReplacement(false);
-        bootstrapTest.setPercentResampleSize(80.00);
+        GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(
+                data, algorithm, numBootstrapSamples, 100.0,
+                true, 1, true);
         bootstrapTest.setVerbose(verbose);
         bootstrapTest.setParameters(parameters);
-        bootstrapTest.setEdgeEnsemble(ResamplingEdgeEnsemble.Highest);
         Graph resultGraph = bootstrapTest.search();
 //		System.out.println("Estimated Graph:");
 //		System.out.println(resultGraph.toString());
@@ -149,15 +147,12 @@ public class TestGeneralResamplingTest {
         ScoreWrapper score = new BdeuScore();
         Algorithm algorithm = new Fges(score);
 
-        GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm, numBootstrapSamples);
-        bootstrapTest.setResamplingWithReplacement(true);
-        bootstrapTest.setPercentResampleSize(100.00);
+        GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm,
+                numBootstrapSamples, 100.0,
+                true, 1, true);
         bootstrapTest.setVerbose(verbose);
         bootstrapTest.setParameters(parameters);
-        bootstrapTest.setEdgeEnsemble(ResamplingEdgeEnsemble.Highest);
         Graph resultGraph = bootstrapTest.search();
-        //System.out.println("Estimated Graph:");
-        //System.out.println(resultGraph.toString());
 
         // Adjacency Confusion Matrix
         int[][] adjAr = GeneralResamplingTest.getAdjConfusionMatrix(dag, resultGraph);
@@ -210,12 +205,11 @@ public class TestGeneralResamplingTest {
         IndependenceWrapper test = new BDeuTest();
         Algorithm algorithm = new Gfci(test, score);
 
-        GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm, numBootstrapSamples);
-        bootstrapTest.setResamplingWithReplacement(true);
-        bootstrapTest.setPercentResampleSize(100.00);
+        GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm,
+                numBootstrapSamples, 100.0,
+                true, 1, true);
         bootstrapTest.setVerbose(verbose);
         bootstrapTest.setParameters(parameters);
-        bootstrapTest.setEdgeEnsemble(ResamplingEdgeEnsemble.Highest);
         Graph resultGraph = bootstrapTest.search();
         //System.out.println("Estimated PAG_of_the_true_DAG Graph:");
         //System.out.println(resultGraph.toString());
@@ -269,12 +263,11 @@ public class TestGeneralResamplingTest {
         IndependenceWrapper test = new ChiSquare();
         Algorithm algorithm = new Gfci(test, score);
 
-        GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm, numBootstrapSamples);
-        bootstrapTest.setResamplingWithReplacement(true);
-        bootstrapTest.setPercentResampleSize(100.00);
+        GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm,
+                numBootstrapSamples, 100.0,
+                true, 1, true);
         bootstrapTest.setVerbose(verbose);
         bootstrapTest.setParameters(parameters);
-        bootstrapTest.setEdgeEnsemble(ResamplingEdgeEnsemble.Highest);
         Graph resultGraph = bootstrapTest.search();
         //System.out.println("Estimated Bootstrapped PAG_of_the_true_DAG Graph:");
         //System.out.println(resultGraph.toString());
@@ -329,12 +322,11 @@ public class TestGeneralResamplingTest {
         IndependenceWrapper test = new FisherZ();
         Fci algorithm = new Fci(test);
 
-        GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm, numBootstrapSamples);
-        bootstrapTest.setResamplingWithReplacement(true);
-        bootstrapTest.setPercentResampleSize(100.00);
+        GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm,
+                numBootstrapSamples, 100.0,
+                true, 0, true);
         bootstrapTest.setVerbose(verbose);
         bootstrapTest.setParameters(parameters);
-        bootstrapTest.setEdgeEnsemble(ResamplingEdgeEnsemble.Preserved);
         //bootstrapTest.setParallelMode(false);
         Graph resultGraph = bootstrapTest.search();
         //System.out.println("Estimated PAG_of_the_true_DAG Graph:");
@@ -388,12 +380,11 @@ public class TestGeneralResamplingTest {
         IndependenceWrapper test = new ChiSquare();
         Algorithm algorithm = new Fci(test);
 
-        GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm, numBootstrapSamples);
-        bootstrapTest.setResamplingWithReplacement(true);
-        bootstrapTest.setPercentResampleSize(100.00);
+        GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm,
+                numBootstrapSamples, 100.0,
+                true, 1, true);
         bootstrapTest.setVerbose(verbose);
         bootstrapTest.setParameters(parameters);
-        bootstrapTest.setEdgeEnsemble(ResamplingEdgeEnsemble.Highest);
         Graph resultGraph = bootstrapTest.search();
         //System.out.println("Estimated Bootstrapped PAG_of_the_true_DAG Graph:");
         //System.out.println(resultGraph.toString());

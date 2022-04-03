@@ -42,14 +42,67 @@ public class GeneralResamplingTest {
      */
     private IKnowledge knowledge = new Knowledge2();
 
-    private ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
-
-    private boolean addOriginalDataset;
+    private final ResamplingEdgeEnsemble edgeEnsemble;
 
     /**
      * An initial graph to start from.
      */
     private Graph externalGraph;
+
+
+    public GeneralResamplingTest(
+            DataSet data,
+            Algorithm algorithm,
+            int numberResampling,
+            double percentResamplingSize,
+            boolean resamplingWithReplacement, int edgeEnsemble, boolean addOriginalDataset) {
+        this.algorithm = algorithm;
+        this.resamplingSearch = new GeneralResamplingSearch(data, numberResampling);
+        this.resamplingSearch.setPercentResampleSize(percentResamplingSize);
+        this.resamplingSearch.setResamplingWithReplacement(resamplingWithReplacement);
+        this.resamplingSearch.setAddOriginalDataset(addOriginalDataset);
+
+        switch (edgeEnsemble) {
+            case 0:
+                this.edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
+                break;
+            case 1:
+                this.edgeEnsemble = ResamplingEdgeEnsemble.Highest;
+                break;
+            case 2:
+                this.edgeEnsemble = ResamplingEdgeEnsemble.Majority;
+                break;
+            default:
+                throw new IllegalArgumentException("Expecting 0, 2, or 3.");
+        }
+    }
+
+    public GeneralResamplingTest(
+            List<DataSet> dataSets, MultiDataSetAlgorithm multiDataSetAlgorithm,
+            int numberResampling,
+            double percentResamplingSize,
+            boolean resamplingWithReplacement,
+            int edgeEnsemble, boolean addOriginalDataset) {
+        this.multiDataSetAlgorithm = multiDataSetAlgorithm;
+        this.resamplingSearch = new GeneralResamplingSearch(dataSets, numberResampling);
+        this.resamplingSearch.setPercentResampleSize(percentResamplingSize);
+        this.resamplingSearch.setResamplingWithReplacement(resamplingWithReplacement);
+        this.resamplingSearch.setAddOriginalDataset(addOriginalDataset);
+
+        switch (edgeEnsemble) {
+            case 0:
+                this.edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
+                break;
+            case 1:
+                this.edgeEnsemble = ResamplingEdgeEnsemble.Highest;
+                break;
+            case 2:
+                this.edgeEnsemble = ResamplingEdgeEnsemble.Majority;
+                break;
+            default:
+                throw new IllegalArgumentException("Expecting 0, 2, or 3.");
+        }
+    }
 
     public void setParallelMode(boolean runParallel) {
         this.runParallel = runParallel;
@@ -86,14 +139,6 @@ public class GeneralResamplingTest {
         }
     }
 
-    public void setPercentResampleSize(double percentResampleSize) {
-        this.resamplingSearch.setPercentResampleSize(percentResampleSize);
-    }
-
-    public void setResamplingWithReplacement(boolean ResamplingWithReplacement) {
-        this.resamplingSearch.setResamplingWithReplacement(ResamplingWithReplacement);
-    }
-
     /**
      * Sets the background knowledge.
      *
@@ -103,26 +148,6 @@ public class GeneralResamplingTest {
         if (knowledge == null)
             throw new NullPointerException();
         this.knowledge = knowledge;
-    }
-
-    public ResamplingEdgeEnsemble getEdgeEnsemble() {
-        return this.edgeEnsemble;
-    }
-
-    public void setEdgeEnsemble(ResamplingEdgeEnsemble edgeEnsemble) {
-        this.edgeEnsemble = edgeEnsemble;
-    }
-
-    public void setEdgeEnsemble(String edgeEnsemble) {
-        if (edgeEnsemble.equalsIgnoreCase("Highest")) {
-            this.edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-        } else if (edgeEnsemble.equalsIgnoreCase("Majority")) {
-            this.edgeEnsemble = ResamplingEdgeEnsemble.Majority;
-        }
-    }
-
-    public void setAddOriginalDataset(boolean addOriginalDataset) {
-        this.addOriginalDataset = addOriginalDataset;
     }
 
     /**
@@ -136,15 +161,6 @@ public class GeneralResamplingTest {
         RandomUtil.getInstance().setSeed(seed);
     }
 
-    public GeneralResamplingTest(DataSet data, Algorithm algorithm, int numberResampling) {
-        this.algorithm = algorithm;
-        this.resamplingSearch = new GeneralResamplingSearch(data, numberResampling);
-    }
-
-    public GeneralResamplingTest(List<DataSet> dataSets, MultiDataSetAlgorithm multiDataSetAlgorithm, int numberResampling) {
-        this.multiDataSetAlgorithm = multiDataSetAlgorithm;
-        this.resamplingSearch = new GeneralResamplingSearch(dataSets, numberResampling);
-    }
 
     public Graph search() {
         long start, stop;
@@ -163,8 +179,6 @@ public class GeneralResamplingTest {
         if (!this.knowledge.isEmpty()) {
             this.resamplingSearch.setKnowledge(this.knowledge);
         }
-
-        this.resamplingSearch.setAddOriginalDataset(this.addOriginalDataset);
 
         if (this.externalGraph != null) {
             this.resamplingSearch.setExternalGraph(this.externalGraph);
