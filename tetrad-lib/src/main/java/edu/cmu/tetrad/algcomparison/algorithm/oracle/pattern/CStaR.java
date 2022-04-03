@@ -83,6 +83,9 @@ public class CStaR implements Algorithm, TakesIndependenceWrapper {
 
         records = allRecords.getLast();
 
+        TetradLogger.getInstance().forceLogMessage("CStaR Table");
+        TetradLogger.getInstance().forceLogMessage(cStaR.makeTable(Cstar.cStar(allRecords), true));
+        TetradLogger.getInstance().forceLogMessage("\nStability Selection Table");
         TetradLogger.getInstance().forceLogMessage(cStaR.makeTable(getRecords(), true));
 
         return cStaR.makeGraph(this.getRecords());

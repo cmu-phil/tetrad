@@ -251,8 +251,12 @@ public class Grasp {
 
                 if (sNew > sOld) {
                     if (this.verbose) {
-                        System.out.printf("Edges: %d \t|\t Score Improvement: %f \t|\t Tucks Performed: %s %s \n",
+                        String s = String.format("Edges: %d \t|\t Score Improvement: %f \t|\t Tucks Performed: %s %s",
                                 scorer.getNumEdges(), sNew - sOld, tucks, tuck);
+                        TetradLogger.getInstance().forceLogMessage(s);
+
+//                        System.out.printf("Edges: %d \t|\t Score Improvement: %f \t|\t Tucks Performed: %s %s \n",
+//                                scorer.getNumEdges(), sNew - sOld, tucks, tuck);
                     }
                     return;
                 } else if (sNew == sOld && currentDepth < depth[0]) {

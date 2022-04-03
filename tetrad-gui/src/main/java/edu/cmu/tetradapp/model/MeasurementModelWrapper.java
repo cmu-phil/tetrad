@@ -63,7 +63,9 @@ public final class MeasurementModelWrapper implements ParamsResettable,
 
     public MeasurementModelWrapper(Parameters params) {
         this.setVarNames(new ArrayList<>());
-        this.setClusters((Clusters) params.get("clusters", null));
+        Clusters clusters = (Clusters) params.get("clusters", null);
+        if (clusters == null) clusters = new Clusters();
+        this.setClusters(clusters);
         this.params = params;
     }
 
